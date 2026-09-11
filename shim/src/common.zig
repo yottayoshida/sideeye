@@ -38,7 +38,11 @@ const shim_build_options = @import("shim_build_options");
 /// same three names so every use site below reads the same on both platforms.
 const syscalls = if (builtin.os.tag == .linux) @import("syscalls.zig") else struct {
     pub var armed: bool = false;
+    pub var guard_signal: bool = false;
+    pub fn armGuards() void {}
+    pub fn resolveGuards() void {}
     pub const Install = enum { armed, unsupported, failed };
+    pub fn installHandler() void {}
     pub fn install() Install {
         return .unsupported;
     }
@@ -47,16 +51,21 @@ const syscalls = if (builtin.os.tag == .linux) @import("syscalls.zig") else stru
     }
 };
 
-/// Whether a `write` recorded at a libc entry point would be recorded a second time at
-/// the syscall boundary.
+/// Whether an operation recorded at a libc entry point would be recorded a second time
+/// at the syscall boundary.
 ///
-/// True for exactly the four syscalls `syscalls.zig` traps. `copy_file_range` and
-/// `sendfile` are not among them and their wrappers keep recording, because libc never
-/// issues those from inside stdio so the wrapper sees every call that is not raw.
-/// `pwritev2` is not among them either and is handled a third way — refused rather than
-/// counted, for the reason spelled out where its wrapper is (`ops.zig`): neither counting
-/// it here nor silencing it is correct on both kernels.
-pub inline fn writeCountedAtSyscall() bool {
+/// `syscalls.armed` is the one flag both doors read: the `SIGSYS` handler records only
+/// while it is set, and every wrapper whose syscall the filter traps stays silent while
+/// it is set. Exactly one of the two counts any operation, in every case — including a
+/// process standing in front of a filter it inherited without installing one, where the
+/// flag is false, the handler only re-issues, and the wrappers count.
+///
+/// Two writers are outside the trap set and their wrappers keep recording unconditionally:
+/// `copy_file_range` and `pwritev2` take six arguments, which leaves the filter no free
+/// register for the re-issue sentinel. `pwritev2` is handled a third way on top of that —
+/// refused rather than counted, for the reason spelled out where its wrapper is
+/// (`ops.zig`): neither counting it nor silencing it is correct on both kernels.
+pub inline fn countedAtSyscall() bool {
     return syscalls.armed;
 }
 
@@ -73,9 +82,9 @@ pub const c = struct {
     pub extern "c" fn _exit(status: c_int) noreturn;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
     /// Reads the trace back to find the run's highest operation number (v15). Not
-    /// interposed — the shim wraps writes, not reads — so this extern reaches libc
+    /// interposed — the shim wraps mutations, not reads — so this extern reaches libc
     /// directly on both platforms, and `--observe syscalls` does not trap it either
-    /// (`syscalls.zig` traps `write`/`pwrite64`/`writev`/`pwritev` and nothing else).
+    /// (`syscalls.zig`'s set holds kill points only, and reading is not one).
     /// Positional because the read must not depend on where the descriptor happens to be:
     /// the offset is shared with a forked child, and `refreshCount` moves it itself with
     /// `lseek(SEEK_END)` to find the file's size. Moving it is harmless — every write here
@@ -407,7 +416,7 @@ pub fn noteStdioFlush(stream: *FILE) void {
     // uses it to decide whether to perform an explicit `fflush`, and answering "no"
     // there would change what the target does rather than what the shim records. That
     // flush still happens, its `write(2)` still traps, and the handler still counts it.
-    if (writeCountedAtSyscall()) return;
+    if (countedAtSyscall()) return;
     if (pendingBytes(stream) == 0) return;
     noteFd(.write, c.fileno(stream));
 }
@@ -788,9 +797,27 @@ fn parseU32(s: []const u8) u32 {
 /// same empty trace. The `shim_ready` marker written here is what lets the engine tell
 /// those apart, so it has to be written whether or not the target does anything.
 pub fn init() void {
+    // FIRST, before anything else this function does, and whatever mode this process is
+    // in: a seccomp filter survives `execve` and a `SIGSYS` handler does not, so an image
+    // the target exec'd stands in front of the trap set with the signal back at its
+    // default. The trap set includes an open for writing — which is the next thing below
+    // — so a handler installed any later is installed too late for the image that needs
+    // it most. Measured in a probe of this design (2026-09-11): with the two in the other
+    // order, the `cat` an `sh -c` exec'd died of `SIGSYS`, exit 159; in this order both
+    // survived. Costless where no filter exists: it only changes a disposition.
+    syscalls.installHandler();
+
     // macOS fills `real` from extern declarations before this runs (see shim.zig);
     // dlsym is a Linux-only step.
     if (builtin.os.tag != .macos) resolveAll();
+
+    // The four signal entry points, resolved here rather than on first use. They are
+    // exported in every mode — a symbol cannot be exported conditionally — so a target
+    // that never asked for `--observe syscalls` still forwards through them, and the
+    // forward must not reach `dlsym`: it is not async-signal-safe while `signal` and
+    // `sigprocmask` are, so a target calling one of those from inside a signal handler
+    // would have met the loader's lock (`syscalls.resolveGuards`, review P1).
+    syscalls.resolveGuards();
 
     // Both platforms ask for __fpending at runtime rather than assuming it. Recording
     // paths are gated on `active`, which is only set at the end of this function, so a
@@ -929,10 +956,17 @@ pub fn init() void {
     if (c.getenv(contract.env.observe)) |raw| {
         if (contract.ObserveMode.parse(std.mem.span(raw))) |mode| switch (mode) {
             .wrappers => {},
-            .syscalls => observe_note = switch (syscalls.install()) {
-                .armed => contract.observe_aux.armed,
-                .failed => contract.observe_aux.failed,
-                .unsupported => contract.observe_aux.unsupported,
+            .syscalls => observe_note = blk: {
+                // Before the filter, not after: a trap can arrive the instant it is up,
+                // and the guards are what keep the signal reaching the handler. Set here
+                // rather than beside `installHandler` because this one is observable —
+                // see its declaration for why the default mode must not have it.
+                syscalls.armGuards();
+                break :blk switch (syscalls.install()) {
+                    .armed => contract.observe_aux.armed,
+                    .failed => contract.observe_aux.failed,
+                    .unsupported => contract.observe_aux.unsupported,
+                };
             },
         } else {
             // An unparseable value is the engine's bug, not the target's. Announcing it
@@ -1352,7 +1386,65 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
     writeRecord(ts, op, s, path, aux);
 }
 
+// --- the two doors ------------------------------------------------------------------
+//
+// `note1` / `note2` / `noteFd` / `noteLinkByDescriptor` are the WRAPPER's door and carry
+// the gate; the `*FromTrap` names beside them are the handler's and do not. One operation
+// reaches the account once because exactly one door is open at a time: under
+// `--observe syscalls` the handler counts and the wrappers are silent, otherwise the
+// wrappers count and the handler only re-issues (`syscalls.armed`, read by both).
+//
+// **The gate is the class, not a list of wrappers, and that is what makes it reliable.**
+// The trap set is exactly the operations `OpClass.isKillPoint` admits (ADR 0059), so the
+// class a wrapper is about to record already answers "is the handler counting this" —
+// there is no per-wrapper fact to remember and no way for a new wrapper to forget. An
+// earlier version of this change wrote the gate at each of the 31 call sites in
+// `ops.zig`, which needed a check in `spike/check-shim-coverage.py` to hold them; that
+// check went away with the call sites, three reviewers having pointed at the same place.
+//
+// `copy_file_range` is the one wrapper that records a kill point the handler never sees —
+// six arguments leave the filter no register for its marker, so that syscall is not in
+// the set. It calls `noteFdFromTrap` for that reason and no other.
+//
+// `.close` needs nothing: it is not a kill point, not in the trap set, and the gate lets
+// it through on the class alone.
+
+inline fn wrapperSilent(op: contract.OpClass) bool {
+    return countedAtSyscall() and op.isKillPoint();
+}
+
+/// The wrapper door. See "the two doors" above.
 pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
+    if (wrapperSilent(op)) return;
+    note1FromTrap(op, dirfd, path);
+}
+
+/// The wrapper door. See "the two doors" above.
+pub fn note2(
+    op: contract.OpClass,
+    dirfd: c_int,
+    path: [*:0]const u8,
+    adirfd: c_int,
+    apath: [*:0]const u8,
+) void {
+    if (wrapperSilent(op)) return;
+    note2FromTrap(op, dirfd, path, adirfd, apath);
+}
+
+/// The wrapper door. See "the two doors" above.
+pub fn noteFd(op: contract.OpClass, fd: c_int) void {
+    if (wrapperSilent(op)) return;
+    noteFdFromTrap(op, fd);
+}
+
+/// The wrapper door. See "the two doors" above. `linkat(…, AT_EMPTY_PATH)` is a `.link`,
+/// and `linkat` is trapped, so the gate is unconditional here.
+pub fn noteLinkByDescriptor(fd: c_int) void {
+    if (countedAtSyscall()) return;
+    noteLinkByDescriptorFromTrap(fd);
+}
+
+pub fn note1FromTrap(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
     if (!active) return;
     const ts = mine();
     if (ts.busy) return;
@@ -1420,7 +1512,7 @@ pub fn noteUnsupportedInScope2(
     if (in_scope) writeRecord(ts, .unsupported, 0, std.mem.span(label), "");
 }
 
-pub fn note2(
+pub fn note2FromTrap(
     op: contract.OpClass,
     dirfd: c_int,
     path: [*:0]const u8,
@@ -1639,7 +1731,7 @@ pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
     writeRecord(ts, .unsupported, 0, std.mem.span(label), "");
 }
 
-pub fn noteFd(op: contract.OpClass, fd: c_int) void {
+pub fn noteFdFromTrap(op: contract.OpClass, fd: c_int) void {
     if (!active) return;
     // The ONLY early return keyed on the descriptor itself. Contract v8: no descriptor
     // number is exempt from observation — not 0/1/2 (a target can dup2 a state file
@@ -2147,7 +2239,7 @@ pub inline fn callFsetpos64(stream: *FILE, pos: *const anyopaque) c_int {
 /// source: its old path is empty, so there is nothing to resolve or place, and the
 /// engine must refuse rather than judge a link it cannot address (ADR 0006). Recorded
 /// even where an oracle would also catch it, so the platform with no oracle refuses too.
-pub fn noteLinkByDescriptor(fd: c_int) void {
+pub fn noteLinkByDescriptorFromTrap(fd: c_int) void {
     if (!active) return;
     const ts = mine();
     if (ts.busy) return;

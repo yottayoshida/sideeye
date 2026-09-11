@@ -137,7 +137,7 @@ const Args = struct {
     has_oracle: bool = false,
     check: ?config.Command = null,
     allow_unverified: bool = false,
-    /// Which observation path counts the write family (contract v14). The default is
+    /// Which observation path counts the operations (contract v14). The default is
     /// the only one that existed through v13, so an invocation that never names this
     /// flag behaves exactly as it did.
     observe: contract.ObserveMode = .wrappers,
@@ -1218,26 +1218,34 @@ const usage_fmt =
     \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
     \\               replay
     \\  --observe wrappers|syscalls
-    \\               where the write family is counted. Default `wrappers`: the
+    \\               where operations are counted. Default `wrappers`: the
     \\               interposed libc entry points, with buffered stdio observed at
-    \\               flush granularity (ADR 0005). `syscalls` (Linux) counts writes
-    \\               at the kernel boundary instead, through a seccomp filter and a
-    \\               SIGSYS handler in the target's own process, which is the only
-    \\               way to see a write libc issues from inside itself — an `fwrite`
-    \\               past the buffer, or a raw `syscall(SYS_write, ...)`. Everything
-    \\               else stays at the libc entry points in both modes, so a raw
-    \\               `openat` or `rename` is no more visible than before. An oracle
-    \\               watches this mode's own run, as it does every other mode's: a
-    \\               trapped write reaches strace twice, once refused and once
-    \\               re-issued, and the refused entry is retracted on the SIGSYS that
-    \\               refused it. So the claim is `oracle_verified`, and the report's
-    \\               oracle line says how the capture was read.
+    \\               flush granularity (ADR 0005). `syscalls` (Linux) counts at the
+    \\               kernel boundary instead, through a seccomp filter and a SIGSYS
+    \\               handler in the target's own process, which is the only way to
+    \\               see an operation libc issues from inside itself — an `fwrite`
+    \\               past the buffer — or one that never reaches libc at all: a raw
+    \\               `syscall(SYS_write, ...)`, or a runtime like Go's that issues
+    \\               every file call directly. Its trap set is every operation that
+    \\               can be a crash point: open, write, rename, unlink, fsync,
+    \\               truncate, mkdir, rmdir, link, symlink. Two stay outside —
+    \\               `copy_file_range` and `pwritev2` take six arguments, leaving the
+    \\               filter no register for its re-issue marker. An oracle watches
+    \\               this mode's own run, as it does every other mode's: a trapped
+    \\               call reaches strace twice, once refused and once re-issued, and
+    \\               the refused entry is retracted on the SIGSYS that refused it. So
+    \\               the claim is `oracle_verified`, and the report's oracle line says
+    \\               how the capture was read.
     \\               **Do not use it on a target that execs an image the shim cannot be
     \\               loaded into.** A filter is inherited across exec and cannot be
     \\               replaced, while exec resets the SIGSYS handler that makes it
-    \\               survivable, so a statically linked helper dies on its first write
-    \\               (measured: exit 0 under wrappers, killed by SIGSYS under this).
-    \\               A child the shim IS loaded into is unaffected
+    \\               survivable, so a statically linked helper dies at its first
+    \\               state-changing call (measured: exit 0 under wrappers, killed by
+    \\               SIGSYS under this). A child the shim IS loaded into is unaffected.
+    \\               In this mode the shim also keeps SIGSYS deliverable, interposing
+    \\               sigaction/signal/sigprocmask/pthread_sigmask so a target cannot
+    \\               take the handler away; one that reaches those as raw syscalls
+    \\               still dies
     \\  --allow-unverified
     \\               accept PASS with no completeness check. On macOS this is the
     \\               answer when no privilege is available: SIP leaves DTrace's
@@ -4178,7 +4186,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // reading: a trapped write reaches the oracle twice, and the refused entry is
         // retracted when its `--- SIGSYS … si_code=SYS_SECCOMP ---` is read.
         const mode_hint = if (args.observe == .syscalls)
-            " — and under --observe syscalls each trapped write reaches the oracle twice, once refused and once re-issued, so this can also mean a refusal the capture did not carry (one operation too many) or a retraction that fired on an entry that had run (one too few)"
+            " — and under --observe syscalls each trapped call reaches the oracle twice, once refused and once re-issued, so this can also mean a refusal the capture did not carry (one operation too many) or a retraction that fired on an entry that had run (one too few)"
         else
             "";
         if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
@@ -4262,10 +4270,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 // looks at for the witness. It is a disclosure, not a narrowing: the
                 // oracle watches the run whose trace is judged, so the claim is the full
                 // `oracle_verified`. What a reader needs to know is that the capture holds
-                // each trapped write twice and the refused entry was dropped.
+                // each trapped call twice and the refused entry was dropped.
                 note = std.fmt.allocPrint(
                     arena,
-                    "{s} of THIS run — the kernel refuses each trapped write and the handler re-issues it, " ++
+                    "{s} of THIS run — the kernel refuses each trapped call and the handler re-issues it, " ++
                         "so the capture carries the refused entry beside the one that ran; each refused entry " ++
                         "is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read",
                     .{note},

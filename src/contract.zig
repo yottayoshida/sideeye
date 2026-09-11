@@ -247,20 +247,25 @@ pub const ExitCode = enum(u8) {
 /// meet a record written by an older shim with an empty `aux`, and a closed set
 /// would have to admit that case anyway. These are the values the current shim
 /// writes, named so both sides spell them the same way.
-/// Which observation path counts the write family.
+/// Which observation path counts the operations.
 ///
-/// A flag rather than a replacement: `wrappers` is the default and its behaviour is
-/// byte-for-byte what v13 did. See ADR (0052) for why the syscall path is not the
-/// default and why its trap set stops at the write family.
+/// A flag rather than a replacement: `wrappers` is the default, and what it records is
+/// what v13 recorded. It is not byte-for-byte v13 in every other respect since #542: the
+/// shim installs its `SIGSYS` handler in every mode and forwards four signal entry points
+/// in every mode (ADR 0059 decisions 3 and 5). See ADR (0052) for why the syscall path is
+/// not the default, and ADR (0059) for the trap set it carries since #542.
 pub const ObserveMode = enum {
     /// libc entry points, interposed. Buffered stdio is observed at flush granularity
     /// (ADR 0005); writes issued inside libc, and raw syscalls, are not observed.
     wrappers,
-    /// The syscall boundary, for the write family only. Everything else — `openat`,
-    /// `rename`, `unlink`, `fsync`, `copy_file_range`, `sendfile` — is still observed at
-    /// the libc entry points in this mode. `pwritev2` is the exception in the other
-    /// direction: it cannot be trapped and cannot be counted correctly on both kernels,
-    /// so it is refused (`unsupported_syscall_observed`) rather than counted.
+    /// The syscall boundary, for every operation that can be a crash point — open,
+    /// write, rename, unlink, fsync, truncate, mkdir, rmdir, link, symlink — in each
+    /// spelling the target's architecture has (ADR 0059, #542). Two calls stay at the
+    /// libc entry points in this mode: `copy_file_range` and `pwritev2` take six
+    /// arguments, which leaves the filter no register for its re-issue marker.
+    /// `pwritev2` is the exception in the other direction as well: it cannot be counted
+    /// correctly on both kernels either, so it is refused
+    /// (`unsupported_syscall_observed`) rather than counted.
     syscalls,
 
     pub fn parse(text: []const u8) ?ObserveMode {
@@ -281,7 +286,7 @@ pub const ObserveMode = enum {
 /// a `--observe syscalls` run whose announcement does not say `armed`, which is what
 /// stops a report from claiming an observation path that was never installed.
 pub const observe_aux = struct {
-    /// The filter is in place; the handler counts the write family.
+    /// The filter is in place; the handler counts the trapped operations.
     pub const armed = "observe:syscalls";
     /// The kernel refused the filter or the handler could not be installed.
     pub const failed = "observe:syscalls-failed";

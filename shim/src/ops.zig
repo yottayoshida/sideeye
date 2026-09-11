@@ -30,18 +30,26 @@ const AT_FDCWD = common.AT_FDCWD;
 // the world killed immediately before it is byte-identical to the world killed at the
 // next address — the same treatment as a path outside the state directory. The oracle
 // applies the matching predicate textually and skips the same opens.
+//
+// `countedAtSyscall()` guards this family the way it guards every wrapper below whose
+// syscall the filter traps: under `--observe syscalls` the handler records the open, and
+// recording here as well would put two records in the account for one operation. The
+// filter tests the same flag word against the same mask this wrapper asks
+// `openIsWriteCapable` about, so the two doors admit exactly the same opens.
 const open_impl = if (builtin.os.tag == .macos) struct {
     pub fn f(path: [*:0]const u8, flags: c_int, ...) callconv(.c) c_int {
         var ap = @cVaStart();
         defer @cVaEnd(&ap);
         // Reading it when O_CREAT is absent would consume something never pushed.
         const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
-        if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, path);
+        if (common.openIsWriteCapable(flags))
+            common.note1(.open, AT_FDCWD, path);
         return common.callOpen(path, flags, mode);
     }
 } else struct {
     pub fn f(path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
-        if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, path);
+        if (common.openIsWriteCapable(flags))
+            common.note1(.open, AT_FDCWD, path);
         return common.callOpen(path, flags, mode);
     }
 };
@@ -52,26 +60,31 @@ const openat_impl = if (builtin.os.tag == .macos) struct {
         var ap = @cVaStart();
         defer @cVaEnd(&ap);
         const mode: c_uint = if (flags & common.O_CREAT != 0) @cVaArg(&ap, c_uint) else 0;
-        if (common.openIsWriteCapable(flags)) common.note1(.open, dirfd, path);
+        if (common.openIsWriteCapable(flags))
+            common.note1(.open, dirfd, path);
         return common.callOpenat(dirfd, path, flags, mode);
     }
 } else struct {
     pub fn f(dirfd: c_int, path: [*:0]const u8, flags: c_int, mode: c_uint) callconv(.c) c_int {
-        if (common.openIsWriteCapable(flags)) common.note1(.open, dirfd, path);
+        if (common.openIsWriteCapable(flags))
+            common.note1(.open, dirfd, path);
         return common.callOpenat(dirfd, path, flags, mode);
     }
 };
 pub const openat = openat_impl.f;
 
 pub fn creat(path: [*:0]const u8, mode: c_uint) callconv(.c) c_int {
-    // creat is always write-capable: it implies O_CREAT|O_WRONLY|O_TRUNC.
+    // creat is always write-capable: it implies O_CREAT|O_WRONLY|O_TRUNC. On the one
+    // architecture that still has the syscall it is trapped unconditionally for that
+    // reason; on the other, glibc spells it as an `openat` carrying those three flags,
+    // which the filter's flag test admits.
     common.note1(.open, AT_FDCWD, path);
     return common.callCreat(path, mode);
 }
 
 // --- kill-point ops: write family ------------------------------------------------
 
-// Four of these five ask `writeCountedAtSyscall()` first. Under `--observe syscalls`
+// Four of these five ask `countedAtSyscall()` first. Under `--observe syscalls`
 // the syscall each one is about to issue is trapped and counted by the handler, so
 // recording here as well would count one operation twice — and the engine compares the
 // two accounts position by position, so a doubled shim account refuses every run
@@ -98,27 +111,27 @@ pub fn creat(path: [*:0]const u8, mode: c_uint) callconv(.c) c_int {
 // default mode, on either kernel, with no oracle required to notice.
 
 pub fn write(fd: c_int, buf: [*]const u8, count: usize) callconv(.c) isize {
-    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
+    common.noteFd(.write, fd);
     return common.callWrite(fd, buf, count);
 }
 
 pub fn pwrite(fd: c_int, buf: [*]const u8, count: usize, offset: i64) callconv(.c) isize {
-    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
+    common.noteFd(.write, fd);
     return common.callPwrite(fd, buf, count, offset);
 }
 
 pub fn writev(fd: c_int, iov: *const anyopaque, iovcnt: c_int) callconv(.c) isize {
-    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
+    common.noteFd(.write, fd);
     return common.callWritev(fd, iov, iovcnt);
 }
 
 pub fn pwritev(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64) callconv(.c) isize {
-    if (!common.writeCountedAtSyscall()) common.noteFd(.write, fd);
+    common.noteFd(.write, fd);
     return common.callPwritev(fd, iov, iovcnt, offset);
 }
 
 pub fn pwritev2(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64, flags: c_int) callconv(.c) isize {
-    if (common.writeCountedAtSyscall())
+    if (common.countedAtSyscall())
         common.noteUnsupportedInScopeFd("pwritev2 (--observe syscalls)", fd)
     else
         common.noteFd(.write, fd);
@@ -131,8 +144,14 @@ pub fn pwritev2(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64, fl
 /// this file where the written descriptor is not `fd`. `src/oracle.zig`'s
 /// `fd_write_args` carries the same fact for the other observer; both must agree or
 /// the copy is counted on one side only.
+///
+/// Records unconditionally, like `pwritev2`'s wrapper and unlike everything else here:
+/// six arguments leave the filter no free register for the re-issue sentinel, so this
+/// syscall is not in the trap set and the handler never sees it. Unlike `pwritev2` there
+/// is nothing to refuse — glibc has no fallback that lands on a trapped number, so the
+/// wrapper is the only door in both modes.
 pub fn copy_file_range(fd_in: c_int, off_in: ?*i64, fd_out: c_int, off_out: ?*i64, len: usize, flags: c_uint) callconv(.c) isize {
-    common.noteFd(.write, fd_out);
+    common.noteFdFromTrap(.write, fd_out);
     return common.callCopyFileRange(fd_in, off_in, fd_out, off_out, len, flags);
 }
 
@@ -520,8 +539,10 @@ fn mkstempImpl(template: [*:0]u8, suffixlen: c_int, extra_flags: c_int) c_int {
     for (0..tempAttempts(slot.len)) |_| {
         fillTempName(slot);
         // Recorded the way `open` records it, and before the call like every kill
-        // point: a failed attempt counts on both sides or the accounts desync.
-        if (common.openIsWriteCapable(flags)) common.note1(.open, AT_FDCWD, template);
+        // point: a failed attempt counts on both sides or the accounts desync. The
+        // `callOpen` below reaches a trapped number, so the same gate applies.
+        if (common.openIsWriteCapable(flags))
+            common.note1(.open, AT_FDCWD, template);
         const fd = common.callOpen(template, flags, 0o600);
         if (fd >= 0) return fd;
         if (std.c._errno().* != EEXIST) return -1;
@@ -670,6 +691,17 @@ pub fn close(fd: c_int) callconv(.c) c_int {
 // lands *before* the flush and the crash world loses the unflushed buffer — which is
 // what a real crash loses.
 
+// The open a stdio wrapper records is an ordinary `openat` once libc issues it, so under
+// `--observe syscalls` the handler counts it and `common.note1`'s wrapper door keeps these
+// three silent, on the class, like every other recorder in this file.
+//
+// One asymmetry follows, and it runs in the improving direction. `stdioActive()` is false
+// on a Linux whose libc has no `__fpending`, and there these three record nothing in the
+// default mode — the oracle then sees an `openat` the shim did not, and the run refuses.
+// Under `--observe syscalls` the same `openat` traps and the handler records it whatever
+// `stdioActive()` says, so that run is judged. The account differs by mode only where the
+// default mode was already refusing (review, P2).
+
 pub fn fopen(path: [*:0]const u8, mode: [*:0]const u8) callconv(.c) ?*common.FILE {
     if (common.stdioActive() and common.modeIsWriteCapable(mode))
         common.note1(.open, AT_FDCWD, path);
@@ -705,7 +737,7 @@ pub fn fclose(stream: *common.FILE) callconv(.c) c_int {
     // order has to be the order the syscalls happen in, or the oracle's
     // position-by-position comparison diverges. Measured before the fix — the trace came
     // back `.close` and then the `.write` it should have preceded.
-    if (common.writeCountedAtSyscall() and common.stdioHasPending(stream))
+    if (common.countedAtSyscall() and common.stdioHasPending(stream))
         _ = common.callFflush(stream);
     common.noteStdioFlush(stream);
     common.noteStdioClose(stream);

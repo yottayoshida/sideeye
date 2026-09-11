@@ -1789,10 +1789,25 @@ TOY_STATE=/tmp/acc/state LD_PRELOAD="$SHIM" \
     SIDEEYE_STATE_DIR=/tmp/acc/state SIDEEYE_TRACE_PATH=/tmp/acc/close-trace.bin \
     "$OUT/toy-bug" rotate >/dev/null 2>&1
 close_recs=$(count_op_records /tmp/acc/close-trace.bin 100)
-if [ "${close_recs:-0}" -ge 1 ]; then
-    echo "ok   close is still recorded in the trace ($close_recs record)"
+# And the same under `--observe syscalls` (#542). The wrapper door there is silent for
+# every class the filter traps, and the thing that keeps `close` out of that is its
+# CLASS — `close` is not a kill point and the trap set is exactly the kill points, so one
+# test covers it and no wrapper carries a fact of its own. Seen red by removing
+# `op.isKillPoint()` from that test: the whole suite stayed green without this leg, which
+# is what says the leg was missing rather than redundant. The filter's own install is not
+# asserted here; the legs above do that, and a run where it failed would count `close` at
+# the wrapper anyway and still pass — which is the right answer for this leg's question.
+rm -f /tmp/acc/close-trace-sys.bin
+TOY_STATE=/tmp/acc/state LD_PRELOAD="$SHIM" \
+    SIDEEYE_STATE_DIR=/tmp/acc/state SIDEEYE_TRACE_PATH=/tmp/acc/close-trace-sys.bin \
+    SIDEEYE_OBSERVE=syscalls "$OUT/toy-bug" rotate >/dev/null 2>&1
+close_recs_sys=$(count_op_records /tmp/acc/close-trace-sys.bin 100)
+if [ "${close_recs:-0}" -ge 1 ] && [ "${close_recs_sys:-0}" -ge 1 ]; then
+    echo "ok   close is still recorded in the trace, in both observation modes"
+    echo "     (wrappers: $close_recs, syscalls: $close_recs_sys)"
 else
-    echo "FAIL no close record in the trace: the comparison exclusion became a removal"
+    echo "FAIL no close record in the trace (wrappers: ${close_recs:-0}, syscalls:"
+    echo "     ${close_recs_sys:-0}): the comparison exclusion became a removal"
     fails=$((fails + 1))
 fi
 
@@ -2030,12 +2045,160 @@ else
     fails=$((fails + 1))
 fi
 
+# ---- #542: every trapped syscall, issued raw, and the same run under wrappers ----
+# The whole point of widening the trap set, as one pair of runs. `toy-raw raw-all` issues
+# ONE OF EVERY name the filter traps through `syscall(2)`, reaching no libc wrapper at
+# all — the shape mlr is, and the shape `--observe syscalls` exists for. Under `wrappers`
+# the shim's account is empty and the oracle refuses at operation 1; under `syscalls`
+# every one is counted, by the HANDLER, and the two accounts match position by position.
+#
+# That second run is what holds each arm of the handler's dispatch honest. A wrong class
+# (`unlinkat` with AT_REMOVEDIR read as an unlink), a missed record, or a wrapper that
+# records what the handler already counted all end the same way: the comparison stops
+# matching and the run refuses rather than reaching a verdict. The count is asserted too,
+# because a verdict alone would survive a handler that recorded nothing and an oracle that
+# saw nothing — both accounts empty agree with each other.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw raw-all" \
+    --observe syscalls --shim "$SHIM" --work /tmp/acc/work \
+    --oracle /usr/bin/strace 2>&1)
+rc=$?
+# What "agreed on N" pins is the two accounts being the SAME, which is the property this
+# leg is for: a handler arm that records the wrong class or nothing at all makes them
+# differ and the run refuses. The floor guards the other way — two empty accounts also
+# agree — and 20 is the portable set's own count, MEASURED on aarch64 rather than derived:
+# mkdirat, a write-capable openat, write, pwrite64, writev, pwritev, ftruncate, fsync,
+# fdatasync, truncate, linkat, symlinkat, renameat, renameat2, three unlinkats (one of
+# them AT_REMOVEDIR), a second openat, sendfile and openat2. x86-64 compiles in eight more
+# spellings on `#ifdef` and lands above the floor; its exact total is not pinned here
+# because this file would then carry a number nobody on the other machine can check.
+want_ops=20
+raw_fails=0
+got_ops=$(echo "$o" | sed -n 's/.*oracle: agreed on \([0-9][0-9]*\) operations.*/\1/p' | head -1)
+if [ "$rc" != "0" ]; then
+    echo "FAIL raw-all under --observe syscalls was refused: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -8
+    raw_fails=1
+elif [ -z "$got_ops" ]; then
+    echo "FAIL raw-all: the run reported no oracle agreement at all — with an oracle"
+    echo "     attached, that line is how this leg knows the two accounts were compared"
+    echo "$o" | grep -E "^ +oracle:|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
+    raw_fails=1
+elif [ "$got_ops" -lt "$want_ops" ]; then
+    echo "FAIL raw-all: the two accounts agreed on only $got_ops operations on"
+    echo "     $(uname -m), below the $want_ops this sequence issues on every architecture"
+    echo "$o" | grep -E "^ +oracle:|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
+    raw_fails=1
+fi
+# The contrast, on the same binary and the same sequence: without the filter the shim is
+# blind to all of it. Asserted so that a green run above cannot come from the toy having
+# quietly started to use libc.
+rm -rf /tmp/acc2 && mkdir -p /tmp/acc2/state
+o2=$(TOY_STATE=/tmp/acc2/state "$SIDEEYE" explore --state /tmp/acc2/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw raw-all" \
+    --observe wrappers --shim "$SHIM" --work /tmp/acc2/work \
+    --oracle /usr/bin/strace 2>&1)
+if ! echo "$o2" | grep -q "oracle_missed_operation"; then
+    echo "FAIL raw-all under --observe wrappers was NOT refused — the toy has stopped"
+    echo "     bypassing libc, so the syscalls-mode run above measures nothing"
+    echo "$o2" | sed 's/^/     | /' | head -6
+    raw_fails=1
+fi
+if [ "$raw_fails" = "0" ]; then
+    echo "ok   every trapped syscall issued raw is counted under --observe syscalls"
+    echo "     ($got_ops operations, both accounts agreeing) and none under --observe wrappers"
+else
+    fails=$((fails + raw_fails))
+fi
+
+# ---- #542: a target that blocks SIGSYS is still observed ----
+# A seccomp TRAP on a thread with SIGSYS BLOCKED does not reach the handler: the kernel
+# resets the disposition rather than queueing a signal it forced, and the process dies
+# (measured 2026-09-11 — "Bad system call", exit 159). The hazard is older than the
+# widened set; `write` alone was enough for it. The shim answers by interposing both doors
+# to the mask and keeping SIGSYS out of the blocked set, and this is the leg that says so.
+#
+# Seen red the only way it can be: with the unblock removed from `maskGuard`, this same
+# run came back UNKNOWN `recording_run_failed` — the operation did not exit normally —
+# rather than the PASS below. There is no refusal to assert on in that state, which is
+# exactly why this is measured here instead of being written down as a risk.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw blocked" \
+    --observe syscalls --shim "$SHIM" --work /tmp/acc/work \
+    --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "oracle: agreed on 3 operations"; then
+    echo "ok   a target that blocks SIGSYS through both libc doors is still counted"
+else
+    echo "FAIL a target blocking SIGSYS was not observed: exit $rc (wanted 0 with three"
+    echo "     operations; recording_run_failed means the process died of the trap)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# ---- #542: a SIGSYS that is NOT a seccomp trap is not the shim's to answer ----
+# The handler reads a syscall number out of the `siginfo_t` and re-issues it. Only a
+# seccomp trap puts one there — and `si_value` sits at the SAME offset as `si_syscall` on
+# both platforms (measured), so `sigqueue(pid, SIGSYS, value)` hands the handler a number
+# of the sender's choosing. The handler tests `si_code` first and, for anything that is
+# not a trap, restores the default disposition and raises again: what would have happened
+# with no shim loaded.
+#
+# The shim is preloaded directly rather than through `explore`, because the thing being
+# asserted is how the process DIES, and every path through the engine turns that into a
+# refusal. Three conditions, one expected status: without the shim, and with it in each
+# mode, `SIGSYS` kills the process — 128 + 31 = 159 through `sh`.
+#
+# Seen red before the `si_code` test existed: the toy printed "sigqueue: Success" and
+# exited 2, the handler having executed the number in `si_value` and written its result
+# into the register `sigqueue`'s own return value comes from. A failed call read as a
+# successful one and the process carried on.
+rm -rf /tmp/acc-fs && mkdir -p /tmp/acc-fs/state
+fs_fails=0
+for fs_mode in none wrappers syscalls; do
+    : > /tmp/acc-fs/trace.bin
+    if [ "$fs_mode" = "none" ]; then
+        TOY_STATE=/tmp/acc-fs/state "$OUT/toy-raw" foreign-sigsys >/dev/null 2>&1
+    else
+        TOY_STATE=/tmp/acc-fs/state LD_PRELOAD="$SHIM" \
+            SIDEEYE_STATE_DIR=/tmp/acc-fs/state SIDEEYE_TRACE_PATH=/tmp/acc-fs/trace.bin \
+            SIDEEYE_OBSERVE="$fs_mode" "$OUT/toy-raw" foreign-sigsys >/dev/null 2>&1
+    fi
+    fs_rc=$?
+    # A positive control for the two shim rows: an empty trace means the preload never
+    # took, and then the row measured the unshimmed case twice under two names.
+    fs_bytes=$(wc -c < /tmp/acc-fs/trace.bin 2>/dev/null | tr -d ' ')
+    if [ "$fs_rc" != "159" ]; then
+        echo "FAIL foreign SIGSYS ($fs_mode): exit $fs_rc, wanted 159 — the shim answered a"
+        echo "     signal that was not its trap instead of letting it kill the process"
+        fs_fails=$((fs_fails + 1))
+    elif [ "$fs_mode" != "none" ] && [ "${fs_bytes:-0}" -lt 1 ]; then
+        echo "FAIL foreign SIGSYS ($fs_mode): the trace is empty, so the shim was never"
+        echo "     loaded and this row measured the same thing the 'none' row did"
+        fs_fails=$((fs_fails + 1))
+    fi
+done
+if [ "$fs_fails" = "0" ]; then
+    echo "ok   a SIGSYS that is not a seccomp trap kills the target, shim loaded or not"
+else
+    fails=$((fails + fs_fails))
+fi
+
 # ---- contract v14: a self-exec chain still crosses under the filter ----
 # The negation of the failure this design was chosen to avoid. A filter keyed on the
 # thunk's ADDRESS was measured dying two ways across an exec — exit 159 (an unhandled
 # SIGSYS in the new image, when the trap set included openat) and exit 139 (the inherited
 # filter's allowance pointing at the old image's mapping). The sentinel lives in an
 # argument register instead, so neither can happen; this is what says so on every push.
+#
+# Since #542 it carries a second load. The trap set now holds `openat`, which is the
+# arrangement ADR 0052 decision 1 measured as fatal across an exec — the new image's
+# `ld.so` opens its libraries before any constructor runs. Two things make this leg green
+# instead: the filter admits an open only when its flags say it can change something, and
+# `installHandler` runs from `common.init` before the shim's own trace open. Break either
+# and this is the leg that turns red, with exit 159.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_SELFEXEC=1 TOY="$OUT/toy-bug" "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
@@ -2094,7 +2257,7 @@ observe_case "  …and exactly one under syscalls, not two" TOY_LINK "$OUT/toy-f
 # installs, so the refusal is unreachable without an apparatus — which is what would leave
 # that check an unfalsified guard. `-Dtest-observe-fail` builds a shim whose install always
 # reports failure; the engine must refuse as a setup error and name the cause, rather than
-# recording the write family through the wrappers and reporting a verdict for the mode
+# recording through the wrappers and reporting a verdict for the mode
 # nobody got.
 OBSFAIL=$ROOT/zig-out/lib/libsideeye_shim_observefail.so
 if [ ! -f "$OBSFAIL" ]; then
@@ -3462,21 +3625,22 @@ echo "=========== check 2sx: every classified syscall is interposed or explained
 # as set equality — before this batch that comparison had 32 differences and 29 of
 # them were legitimate — but as "classified implies interposed or explained". CI runs
 # it too; here it sits beside the behaviour it protects.
-o=$(python3 "$ROOT/spike/check-shim-coverage.py" "$ROOT/src/oracle.zig" "$ROOT/shim/src/linux.zig" "$ROOT/shim/src/syscalls.zig" 2>&1)
+o=$(python3 "$ROOT/spike/check-shim-coverage.py" "$ROOT/src/oracle.zig" "$ROOT/shim/src/linux.zig" "$ROOT/shim/src/syscalls.zig" "$ROOT/src/contract.zig" 2>&1)
 rc=$?
 # All THREE sections asserted by name, not just the exit code: the trap comparisons are
-# optional in the script's own signature (a two-argument call skips them), so a leg that
-# only read `rc` would go green on an invocation that never ran them. The third was added
-# with the retraction (ADR 0054) and named here in the same breath — the first two were
-# already asserted by name and the third would otherwise have been the one that could
-# vanish silently.
+# optional in the script's own signature (a shorter call skips them), so a leg that only
+# read `rc` would go green on an invocation that never ran them. The third was added with
+# the retraction (ADR 0054) and named here in the same breath — otherwise the newest is
+# always the one that can vanish silently. #542 widened the second from the write class to
+# every kill point and added no fourth: the gate it would have checked lives in one place
+# now (`common.zig`'s wrapper door), so there is nothing left to walk.
 if [ "$rc" = "0" ] &&
    echo "$o" | grep -q "interposed or explained" &&
    echo "$o" | grep -q "trapped or explained" &&
-   echo "$o" | grep -q "copy of the trap set is the shim's trap set"; then
+   echo "$o" | grep -q "copy of the trap set is both architectures"; then
     echo "ok   the shim covers every syscall the oracle classifies (or says why not),"
-    echo "     every write it classifies is trapped in syscalls mode or explained, and the"
-    echo "     oracle's own copy of the trap set is the filter's"
+    echo "     every kill point it classifies is trapped in syscalls mode or explained,"
+    echo "     and the oracle's own copy of the trap set is the filter's"
 else
     echo "FAIL shim coverage: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
