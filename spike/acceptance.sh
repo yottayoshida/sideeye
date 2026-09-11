@@ -8145,7 +8145,7 @@ fi
 }
 
 echo "=========== check: every command the define runs starts with stdin at end-of-file (#263) ==========="
-# The promise (README, Usage): every command sideeye runs — setup, operation and checker
+# The promise (docs/cli.md, Usage): every command sideeye runs — setup, operation and checker
 # among them — starts with its standard input at end-of-file, on the CLI and MCP paths
 # alike. Before this the redirect lived on the MCP path only; on the CLI every spawn
 # inherited the engine's fd 0, and a target that read it hung the explore forever.

@@ -391,7 +391,7 @@ pub const unresolved_kind = struct {
     /// Returns the class only for `unlinked_fd`. `fd_without_path` is deliberately not
     /// read: there the path query itself failed, so where the descriptor pointed is
     /// unknown and a close on it cannot be said to be out of harm's way — ADR 0013's
-    /// "a failed measurement never passes as a clean one", and `README.md`'s promise that
+    /// "a failed measurement never passes as a clean one", and `docs/cli.md`'s promise that
     /// a host without `statx` keeps refusing. It reaches this record from an unlinked
     /// descriptor too (`shim/src/common.zig` writes it before the `deleted` branch), which
     /// is exactly why the caller's question has to be about the recorded kind rather than

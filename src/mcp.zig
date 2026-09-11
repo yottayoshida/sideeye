@@ -141,7 +141,7 @@ pub fn ownerAccepted(owner: u32, self_uid: u32, binary_uid: ?u32) bool {
 /// later. Anyone who can write the directory between the two has not been stopped by this,
 /// and anyone who is the accepted owner was never being stopped. `--shim` and
 /// `SIDEEYE_MCP_SHIM` are the caller naming the file, and permissions on the install
-/// directory are what actually bound this; both are documented in README.md.
+/// directory are what actually bound this; both are documented in docs/mcp.md.
 ///
 /// Only the final component is inspected. A `../lib` that is itself a link is followed, and
 /// the owner checked is the owner of what it leads to — refusing on the way would turn

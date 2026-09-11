@@ -149,13 +149,13 @@ destruction range, so every depth-1 path this now accepts is a directory
 whose children a replayed case may empty. `/work` and `/repo` are the
 intended shape; `/opt` also passes the vet and is where installed software
 lives. The relaxation rests on ADR 0010's precondition — the root is the
-operator's own workspace — and the README carries the part no denylist can:
+operator's own workspace — and docs/mcp.md carries the part no denylist can:
 name a directory whose contents are yours to lose.
 
 ## Consequences
 
 - CLI-made cases are not replayable through a default server; the
-  refusal message, the tool description, the README and the quickstart
+  refusal message, the tool description, docs/mcp.md and the quickstart
   all name `SIDEEYE_MCP_STATE_ROOT` as the recovery.
 - `resolveInsideRoot` and the new check share one predicate family
   (`contract.isInsideDir` / `isStrictlyInsideDir`). The unification and

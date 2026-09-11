@@ -105,6 +105,6 @@ under no budget, which is the silent hang this change exists to remove.
   "could not run".
 - The `fs_usage` sidecar is covered by the same sentence; `sudo -n` never prompted, so
   nothing observable moves there.
-- README's Usage section carries the promise; `spike/acceptance.sh` holds it on the CLI
+- docs/cli.md's Usage section carries the promise; `spike/acceptance.sh` holds it on the CLI
   with a FIFO held open across setup, operation and checker, and `spike/mcp-acceptance.sh`
   holds it on the MCP path with the transport held open past the cut.

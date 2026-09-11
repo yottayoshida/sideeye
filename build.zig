@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) void {
     // of any size — until #489 gave the trace read `O_NOFOLLOW` too, which shuts the
     // symlink road. Two roads stay open and neither is closed by a flag: a **hard link**,
     // which `O_NOFOLLOW` does not see, and the target itself, which holds the trace path in
-    // its environment and can write the work directory (README says so). So the claim here
+    // its environment and can write the work directory (docs/cli.md says so). So the claim here
     // is still the weak one — no committed fixture aims anything at a large file — rather
     // than the structural one it was before #488.
     // So without these artifacts the

@@ -649,7 +649,7 @@ fn assertRootNotDeniedOrAncestor(root: []const u8) RestoreError!void {
 /// this now accepts is a directory whose *children* a replayed case may name and empty.
 /// `/work` and `/repo` are the intended shape; `/opt` also passes and is where installed
 /// software lives. The relaxation is defensible on ADR 0010's precondition — the root is
-/// the operator's own workspace — and the README says which directories that excludes,
+/// the operator's own workspace — and docs/mcp.md says which directories that excludes,
 /// because the lists cannot.
 ///
 /// Lexical only, like `assertSafeRoot`, and the caller must hand over the resolved

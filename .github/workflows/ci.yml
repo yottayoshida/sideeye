@@ -173,6 +173,12 @@ jobs:
       - name: Every classified syscall is interposed or explained (#256)
         run: python3 spike/check-shim-coverage.py src/oracle.zig shim/src/linux.zig shim/src/syscalls.zig src/contract.zig
 
+      # The README is the one document the onboarding clock hands its driver, so what it keeps
+      # is what that driver needed to reach a verdict; the bound keeps the record of each
+      # decision on the page the decision lives on. Sunset 2026-12-04 (see the script).
+      - name: The README keeps the path to a first verdict, and stays short
+        run: sh spike/check-readme-shape.sh README.md
+
       - name: Install the completeness oracle
         run: sudo apt-get update && sudo apt-get install -y strace
 
@@ -328,16 +334,16 @@ jobs:
       # extracted into a script of its own rather than the whole file being wired here.
       # It needs no oracle: the config names a target with a real bug, and a FAIL is a
       # verdict on its own evidence.
-      - name: The README's own MCP first call reaches a verdict, from a cleared environment (#389)
+      - name: The MCP page's own first call reaches a verdict, from a cleared environment (#389)
         run: |
           mkdir -p /tmp/mcp-readme
           cc -DBUGGY=1 -o /tmp/mcp-readme/toy-bug spike/toys/toy.c -lpthread
-          sh spike/check-readme-mcp-call.sh README.md \
+          sh spike/check-readme-mcp-call.sh docs/mcp.md \
              zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib \
              /tmp/mcp-readme /tmp/mcp-readme/toy-bug
 
       - name: Every MCP environment read is documented, and every documented one is read (#389)
-        run: python3 spike/check-mcp-env.py README.md src/mcp.zig
+        run: python3 spike/check-mcp-env.py docs/mcp.md src/mcp.zig
 
       # #325's call site, on the platform the author works on. The property — a relative
       # `define.state` resolves against the case file, not the invoking cwd — is held in

@@ -3,7 +3,7 @@ name: quickstart
 # This workflow IS the CI quickstart: docs/ci-quickstart.md documents this exact
 # file, and this file runs on every push to main and every pull request, so the
 # example can never quietly rot into fiction (the same discipline as the
-# README's generated examples). It explores this repo's demo target — a toy
+# generated recipes in docs/checker-cookbook.md). It explores this repo's demo target — a toy
 # with a planted delete-before-rename bug — so the job passes exactly when
 # sideeye FINDS the counterexample (exit 1). In your project the gate inverts:
 # a clean target must exit 0.

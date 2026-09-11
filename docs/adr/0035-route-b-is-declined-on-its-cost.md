@@ -107,9 +107,9 @@ stop producing.
   the code checks the exit status and the reason and never checks `oracle_verified`,
   which it only echoes. Both are quoted accurately here rather than relied on loosely;
   neither is fixed by this change, and the pull request records why.
-- **Without an oracle, nothing covers it, and that is already documented.** The README's
-  limits say a single-process target with no oracle reaches PASS only under
-  `--allow-unverified`, "and the report says the weaker claim out loud". Unchanged.
+- **Without an oracle, nothing covers it, and that is already documented.** DESIGN's constraint list says a single-process target with no oracle reaches PASS only under
+  `--allow-unverified`, "and the report says the weaker claim out loud"; the README's limits
+  carry the rule without that phrase. Unchanged.
 - **`#344`'s premise now depends on this ruling.** It exists to restore route B's
   sensitivity leg; with route B declined, whether it is still worth doing is a question
   for whoever picks it up. Its state is **not** changed here — it belongs to another

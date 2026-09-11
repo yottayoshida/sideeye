@@ -1,7 +1,7 @@
 #!/bin/sh
-# Run the README's own MCP first call, from a cleared environment.
+# Run the documented MCP first call, from a cleared environment.
 #
-# Usage: check-readme-mcp-call.sh <README.md> <sideeye> <shim> <workdir> <toy-bug>
+# Usage: check-readme-mcp-call.sh <docs/mcp.md> <sideeye> <shim> <workdir> <toy-bug>
 #
 # #389: driving `sideeye mcp` from the README alone was refused four times on the shipped
 # v1.0.0, and three of the four were recoverable only by reading `src/mcp.zig`. The
@@ -16,20 +16,20 @@
 # copy of `mcp 1`.
 #
 # PATH is the one thing passed through, on the grounds `spike/check-mcp-env.py` records
-# for excusing it from the README's table: nobody sets PATH in order to run this, and a
+# for excusing it from the page's table: nobody sets PATH in order to run this, and a
 # caller who has a shell has it already. Everything else must come from the page. (An
-# earlier version of this comment said the README's table carries that reasoning. It does
+# earlier version of this comment said the page's table carries that reasoning. It does
 # not — the table lists only the six `SIDEEYE_MCP_*` variables, and `PATH` appears nowhere
 # in the section.)
 #
 # A separate script rather than a leg body so that (a) the macOS job can run it without
 # the rest of the suite, which is Linux-shaped (a `.so` shim and an strace oracle), and
-# (b) the README side can be falsified in isolation by pointing it at a mutated copy —
+# (b) the page side can be falsified in isolation by pointing it at a mutated copy —
 # the same reason `check-report-schema.py` takes paths.
 set -u
 
 if [ $# -ne 5 ]; then
-    echo "usage: check-readme-mcp-call.sh <README.md> <sideeye> <shim> <workdir> <toy-bug>" >&2
+    echo "usage: check-readme-mcp-call.sh <docs/mcp.md> <sideeye> <shim> <workdir> <toy-bug>" >&2
     exit 2
 fi
 README=$1
@@ -45,7 +45,7 @@ TOY=$5
 [ -x "$SIDEEYE" ] || { echo "FAIL $SIDEEYE is not executable" >&2; exit 1; }
 # The shim is not substituted into anything any more — the server finds it. It is still a
 # precondition: if the build did not produce one, this check would fail for a reason that
-# has nothing to do with the README, and saying so here is cheaper than reading the
+# has nothing to do with the page, and saying so here is cheaper than reading the
 # server's refusal and guessing.
 [ -f "$SHIM" ] || { echo "FAIL $SHIM is missing — the build produced no shim for the server to find" >&2; exit 1; }
 [ -x "$TOY" ] || { echo "FAIL $TOY is missing or not executable — the caller must name a built target with a real bug" >&2; exit 1; }
@@ -70,12 +70,12 @@ import re, sys
 readme, ws, shim, workdir = sys.argv[1:5]
 lines = open(readme, encoding="utf-8").read().split("\n")
 
-# The section, not the page. The promise is about the README's MCP section, and a fence
+# The section, not the whole file. The promise is about the documented MCP section, and a fence
 # that wandered out of it would still be found by a whole-file scan.
 start = next((i for i, l in enumerate(lines)
               if l.strip() == "## Driving it from an agent (MCP)"), None)
 if start is None:
-    sys.exit("the README has no '## Driving it from an agent (MCP)' heading")
+    sys.exit("the page has no '## Driving it from an agent (MCP)' heading")
 end = next((j for j in range(start + 1, len(lines)) if lines[j].startswith("## ")), len(lines))
 section = "\n".join(lines[start:end])
 
@@ -102,7 +102,7 @@ if stray:
 
 # No byte comparison against a copy of the protocol fragment. The first revision had one
 # and claimed it was what separated this check from `mcp 1`; measured, it is not — with
-# the assertion removed, a README whose `_meta` has drifted to the short spelling still
+# the assertion removed, a page whose `_meta` has drifted to the short spelling still
 # fails, at the server, with `missing params._meta["io.modelcontextprotocol/…"]`. What
 # separates this check from `mcp 1` is that the bytes come from the page. The assertion
 # only moved the failure earlier, and it needed a second copy of the fragment living here
@@ -142,5 +142,5 @@ if result.get("isError") is not False:
 verdict = result["structuredContent"].get("verdict")
 if verdict not in ("FAIL", "PASS"):
     sys.exit("isError was false without a verdict: %r" % verdict)
-print("the README's environment block and exchange reached %s with nothing else set" % verdict)
+print("the page's environment block and exchange reached %s with nothing else set" % verdict)
 PY
