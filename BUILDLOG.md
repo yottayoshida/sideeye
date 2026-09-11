@@ -49,6 +49,12 @@ verbatim but for two phrases that named a position on the old page — "on this 
 status, is **not** in DESIGN's list and was not added: the page keeps its two lines, so a
 reader loses nothing, but the list is still short one entry.
 
+**Each of the new check's predicates was seen refusing.** Against the pre-change page it
+fails 4 of 12 (size, length, the issue numbers, the ADR numbers); against a one-line file it
+fails on the seven content predicates; with no argument it exits 2 and on a missing file 1.
+The eighth predicate — that the page can start the release artifact — was written *because*
+it was already red: the cut had removed the untar lines, and the box holds nothing else.
+
 **What now holds the shape.** `spike/check-readme-shape.sh` pins the seven things run 1 of
 the onboarding clock recorded its driver leaning on, each by a sentence that carries its
 meaning rather than by a flag name a list could carry without explaining, plus the size and
