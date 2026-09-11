@@ -171,7 +171,7 @@ language, and made a hand-written Zig server small.
   - **They measure the wrong thing.** A container reading *maximally confined* by all of
     them — `/.dockerenv` present, `Seccomp: 2`, ten masked `/proc` entries, no extra
     capabilities, its own PID namespace — destroyed a file on the host through its
-    bind-mounted root, which is exactly the shape README recommends ("a directory the
+    bind-mounted root, which is exactly the shape docs/mcp.md recommends ("a directory the
     container exists to hold"). Nothing a process can read tells it whether the root it
     was handed is the operator's to lose.
 
@@ -181,7 +181,7 @@ language, and made a hand-written Zig server small.
   question on each side — the shape `requireCompleteness` rejects, "which would break the
   claim that both operating systems produce the same verdict for the same scenario".
 
-  So the deployment guidance in README is the control, and it is guidance rather than
+  So the deployment guidance in docs/mcp.md is the control, and it is guidance rather than
   a gate: **in a deployment where the agent can write the root, this ADR's precondition
   does not hold and nothing in the engine restores it.** Sandboxed command execution
   remains a posture change with its own cost line.

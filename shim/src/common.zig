@@ -854,7 +854,7 @@ pub fn init() void {
     // `O_EXCL` is not the answer here the way it was for the captures (#469): those are
     // opened once by a parent that unlinked first, while this channel is shared — every
     // shim'd process appends to it, so `O_CREAT|O_EXCL` would refuse from the second
-    // process onward. A hard link therefore stays unrefused; README says so rather than
+    // process onward. A hard link therefore stays unrefused; docs/cli.md says so rather than
     // implying this open is now safe against everything.
     //
     // Dropping `O_CREAT` is not available either: the reproduce line the engine prints

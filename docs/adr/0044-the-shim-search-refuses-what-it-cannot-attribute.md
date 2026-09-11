@@ -89,7 +89,7 @@ a pathname; there is no descriptor to pass.
 - A layout whose binary and shim have *different* owners, neither of them the invoking user
   nor root, is refused. The refusal names the uid and the two ways past it, and this is
   recorded in CHANGELOG.md as a 1.x behaviour change rather than as a fix alone.
-- The guard is a mitigation. README.md's environment table says so in the same breath as
+- The guard is a mitigation. docs/mcp.md's environment table says so in the same breath as
   the guard, so an operator does not read a refusal-free run as a proof of anything.
 - The owner predicate is a function of three uids rather than a stat inside the search,
   because the refusing case cannot be built without `chown`: unit tests falsify the

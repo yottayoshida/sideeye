@@ -715,16 +715,16 @@ else
 fi
 
 echo ""
-echo "=========== mcp 15: the README's own first call reaches a verdict, from a cleared environment ==========="
+echo "=========== mcp 15: docs/mcp.md's own first call reaches a verdict, from a cleared environment ==========="
 # #389. The body lives in spike/check-readme-mcp-call.sh so the macOS job can run it
 # without the rest of this suite, which is Linux-shaped (a .so shim, an strace oracle),
-# and so the README side can be falsified by pointing the script at a mutated copy.
+# and so the page side can be falsified by pointing the script at a mutated copy.
 #
 # It clears the environment; every leg above inherits the exports at the top of this file
 # (:47-53) and therefore cannot observe what a caller starting from nothing must supply —
 # which is exactly the class #389 was in.
-if sh "$ROOT/spike/check-readme-mcp-call.sh" "$ROOT/README.md" "$SIDEEYE" "$SHIM" /tmp/mcp-readme "$OUT/toy-bug"; then
-    pass "the README's environment block and exchange reach a verdict with nothing else set"
+if sh "$ROOT/spike/check-readme-mcp-call.sh" "$ROOT/docs/mcp.md" "$SIDEEYE" "$SHIM" /tmp/mcp-readme "$OUT/toy-bug"; then
+    pass "docs/mcp.md's environment block and exchange reach a verdict with nothing else set"
 else
     fails=$((fails + 1))
 fi
@@ -734,8 +734,8 @@ echo "=========== mcp 16: every environment read is documented, and every docume
 # `getenv` CALL SITES rather than matching variable names, because a name-shaped regex
 # cannot report the reads it does not know how to spell (src/mcp.zig also reads PATH, and
 # one read takes its name from a runtime value).
-if python3 "$ROOT/spike/check-mcp-env.py" "$ROOT/README.md" "$ROOT/src/mcp.zig"; then
-    pass "the README's MCP table and the server's environment reads agree, both directions"
+if python3 "$ROOT/spike/check-mcp-env.py" "$ROOT/docs/mcp.md" "$ROOT/src/mcp.zig"; then
+    pass "docs/mcp.md's MCP table and the server's environment reads agree, both directions"
 else
     fails=$((fails + 1))
 fi
@@ -862,7 +862,7 @@ if b"\n" in mb:
 PY
 
 echo "=========== mcp 18: the explore child's commands start with stdin at end-of-file while the transport stays open (#263) ==========="
-# The MCP half of README's promise ("on the CLI and MCP paths alike"). The same
+# The MCP half of docs/cli.md's promise ("on the CLI and MCP paths alike"). The same
 # three-role fixture as the CLI leg in acceptance.sh, driven through
 # sideeye_explore_config. The shape has to be able to go red on a regression, and
 # `drive()` cannot: it closes the transport at once, so an engine that inherited the

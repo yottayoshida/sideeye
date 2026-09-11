@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Hold the README's MCP environment table to what the server actually reads.
+"""Hold the documented MCP environment table to what the server actually reads.
 
-Usage: check-mcp-env.py <README.md> <src/mcp.zig>
+Usage: check-mcp-env.py <docs/mcp.md> <src/mcp.zig>
 
 The failure this exists for (#389): the server reads six `SIDEEYE_MCP_*` variables and
 the operating documentation named two. `SIDEEYE_MCP_SHIM` — without which every
@@ -63,7 +63,7 @@ def mcp_section(md):
             start = i
             break
     if start is None:
-        sys.exit("the README has no %r heading; the section this checks is gone or renamed"
+        sys.exit("the page has no %r heading; the section this checks is gone or renamed"
                  % SECTION_START)
     for j in range(start + 1, len(lines)):
         if lines[j].startswith("## "):
@@ -112,7 +112,7 @@ def parse_is_complete(zig, sites):
 
 def main():
     if len(sys.argv) != 3:
-        sys.exit("usage: check-mcp-env.py <README.md> <src/mcp.zig>")
+        sys.exit("usage: check-mcp-env.py <docs/mcp.md> <src/mcp.zig>")
     md = open(sys.argv[1], encoding="utf-8").read()
     zig = open(sys.argv[2], encoding="utf-8").read()
 
@@ -160,7 +160,7 @@ def main():
 
     if unaccounted:
         sys.exit("\n".join(unaccounted))
-    print("the README's MCP table and the server's %d environment reads agree "
+    print("the documented MCP table and the server's %d environment reads agree "
           "(%d documented, %d excused)" % (len(sites), len(doc), EXCUSED_COUNT))
 
 

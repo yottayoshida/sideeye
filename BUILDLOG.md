@@ -2,6 +2,67 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-12 — the front page was 33 KB because every decision's record was written into it
+
+The ask was "hono's README is 85 lines; ours is 238". Measured before cutting: 33,714 bytes
+against hono's 3,690, and the shape of the difference was not length. hono puts no reason
+on its front page — five feature bullets and a link to a documentation site. This page had
+the reason behind every refusal, ten issue numbers and eleven ADR numbers in its body, and
+single bullets over a thousand bytes.
+
+**The page is not read only by people.** Four call sites hand it to a checker
+(`.github/workflows/ci.yml` twice, `spike/mcp-acceptance.sh` twice; all four find the MCP
+section by its exact heading, and the two that drive the server also require exactly one `sh`
+and one `jsonrpc` fence inside it, while the other two hold its environment table against
+`src/mcp.zig`), three acceptance legs grep it for particular sentences, and a refusal a user reads
+names one of its headings out of `src/contract.zig`. Cutting it is a code change with a
+documentation-shaped diff, and the first draft of the plan had found two of those four call
+sites, one of those three legs, and four of the twenty-two doc comments that point here.
+
+**The bound came from a sum, not from hono.** Adding up what the page has to keep — the
+three commands, a define, the checker and its falsification, the flags a driver needed,
+the limits, the index — gave 7,410 bytes, and 8,000 was that plus slack. Twice during the
+cut the total sat above it, and both times the move was to cut prose rather than to slide
+the bound to where the draft already was.
+
+**Then the sum turned out to be wrong twice, and that is a different thing.** The first
+review found that the cut had dropped the clause naming the one exception to "never a silent
+PASS" — a directory a recorded `rename` moved in from outside the judged tree — which an owner
+ruling records as belonging in the sentence that makes the promise, and which two documents
+assert the page carries. The second review found the larger one: the page had sent the
+`tar xzf` line to `docs/cli.md`, and the onboarding box holds README.md and a tarball and
+nothing else, network-off, with no Homebrew — so the only artifact in the box had no documented
+way to start. Both runs of the clock actually used that path. Neither element was in the sum;
+both are restored; the sum reads 8076 and the bound 8076 + 590 = 8666, with the slack the
+same 590 the first sum used rather than a rounded number. A draft that will not fit is not a
+reason to move a bound. A required element that was never counted is.
+
+**What "it is already in DESIGN" was worth checking.** The plan's first version moved the
+limit list's detail to DESIGN's constraint list on the grounds that the same ground was
+covered there in more depth. Counted rather than read: three of the constraints had no
+counterpart there at all — the footprint, the `SIGSYS` disposition, and that an `exec`'d
+image the shim cannot reach dies rather than being refused. Those three went into DESIGN
+first and the page was cut second, with two sentences appended to constraints already there
+(a declared `scratch` path, and what a no-oracle single-process run owes). The move was
+verbatim but for two phrases that named a position on the old page — "on this page" became
+"in this list", "the next item" became "below". A fourth constraint, the declared success
+status, is **not** in DESIGN's list and was not added: the page keeps its two lines, so a
+reader loses nothing, but the list is still short one entry.
+
+**Each of the new check's predicates was seen refusing.** Against the pre-change page it
+fails 4 of 12 (size, length, the issue numbers, the ADR numbers); against a one-line file it
+fails on the seven content predicates; with no argument it exits 2 and on a missing file 1.
+The eighth predicate — that the page can start the release artifact — was written *because*
+it was already red: the cut had removed the untar lines, and the box holds nothing else.
+
+**What now holds the shape.** `spike/check-readme-shape.sh` pins the seven things run 1 of
+the onboarding clock recorded its driver leaning on, each by a sentence that carries its
+meaning rather than by a flag name a list could carry without explaining, plus the size and
+the absence of issue and ADR numbers. It has a sunset: if it has not failed once by
+2026-12-04, it goes. The criterion the clock measures is deliberately not re-scored here —
+re-scoring a met criterion inside a documentation change is the move this repository
+refuses — and a re-run is still owed.
+
 ## 2026-09-11 — the trap set grows from the write family to every kill point, and one flag decides which door counts (#542, second of two)
 
 The first change made mlr refuse honestly: `oracle_missed_operation` at the `openat` of

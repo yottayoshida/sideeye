@@ -171,5 +171,5 @@ the recorded one has its answer.
 
 The saved case is the handoff: a coding agent given the report, the case it
 names and the checkout has produced the fix and passed the judge's own
-replay — twice, measured. That loop and what it needs are the README's
-agent section; the report's machine fields are `docs/report-schema.md`.
+replay — twice, measured. That loop and what it needs are in
+`docs/mcp.md`; the report's machine fields are `docs/report-schema.md`.

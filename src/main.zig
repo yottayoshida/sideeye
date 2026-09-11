@@ -371,7 +371,7 @@ fn l1NoteFor(d: Declared) []const u8 {
         // True from the moment a marker is known until the recording run's stdout is
         // scanned, which is where the next assignment sits.
         .named => "marker configured; the recording run has not been scanned yet",
-        // Byte for byte the pre-#352 wording; README and docs/report-schema.md show it.
+        // Byte for byte the pre-#352 wording; docs/cli.md and docs/report-schema.md show it.
         .none => "no marker configured",
     };
 }
@@ -3642,7 +3642,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // `op_argv[0]` may resolve to a different file than the one the kernel executed, so
     // the reading has to happen on this side of the spawn — but it walks a file the
     // target named and its cost is not bounded by anything this engine controls, and
-    // `--twice` promises the two runs *start* at least two seconds apart (README,
+    // `--twice` promises the two runs *start* at least two seconds apart (docs/cli.md,
     // `--help`, CHANGELOG). Sitting between the mark and the spawn, a slow reading is
     // spent out of that gap, and two starts closer than two seconds would satisfy a wait
     // computed from a mark taken before it. Taken once per run rather than per world:
@@ -5318,7 +5318,7 @@ fn observeAgain(
 ) Repeat {
     // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
     // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
-    // the README and the CHANGELOG all promise "at least two seconds". Without this
+    // docs/cli.md and the CHANGELOG all promise "at least two seconds". Without this
     // loop the command could print `two runs 47 ms apart left equal state` and
     // contradict its own help (review, P2). The clock is monotonic, so each pass
     // shortens the remainder and the loop terminates.
@@ -5565,8 +5565,8 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             var shown: usize = 0;
             for (r.diffs, 0..) |d, i| {
                 const rel = textShown(arena, d.rel);
-                // The FIRST path is always named, whatever it costs: `--help`, the
-                // README and the headline all say the differing paths are named, and a
+                // The FIRST path is always named, whatever it costs: `--help`,
+                // docs/cli.md and the headline all say the differing paths are named, and a
                 // single path over the budget — `contract.max_path` is 4096 — would
                 // otherwise print nothing but "… and 1 more" (review, P3). Truncating
                 // it instead would risk cutting a UTF-8 sequence mid-character, so the
@@ -8892,7 +8892,7 @@ test "noteOracle assigns both accounts, and the initialiser is the unparsed stat
 }
 
 test "the checker and marker accounts say none was configured only once every source was read (#352)" {
-    // The two "none" wordings are byte-for-byte pins: docs/report-schema.md, README's
+    // The two "none" wordings are byte-for-byte pins: docs/report-schema.md, docs/cli.md's
     // sample report and spike/acceptance.sh (check 2 and 2fi) carry them.
     try std.testing.expectEqualStrings("none configured", checkerNoteFor(.none));
     try std.testing.expectEqualStrings("no marker configured", l1NoteFor(.none));
