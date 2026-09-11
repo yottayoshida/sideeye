@@ -268,6 +268,22 @@ else
 fi
 
 echo ""
+echo "=========== check 2st: what the shim takes from a target thread's memory (#555) ==========="
+# README, "What the target has to be": less than 1 KiB of thread-local storage and at most
+# 5 KiB of stack per interposed call, plus the kernel's signal frame under --observe
+# syscalls. The checks live in their own script so the same call with an older shim can
+# show each of them red; here they run against the shipped one.
+fp=$(sh "$ROOT/spike/check-shim-footprint.sh" "$SHIM" "$OUT/toy-stack" 2>&1)
+fp_fails=$(printf '%s\n' "$fp" | grep -c '^FAIL')
+printf '%s\n' "$fp"
+# A script that died before printing a verdict is a failure too, not silence.
+if ! printf '%s\n' "$fp" | grep -q '^\(ok\|FAIL\) '; then
+    echo "FAIL check-shim-footprint.sh printed no verdict at all"
+    fp_fails=1
+fi
+fails=$((fails + fp_fails))
+
+echo ""
 echo "=========== check 2q: a boundary is judged by what the child did ==========="
 # One binary, one environment variable of difference per case. An engine that decides by
 # anything other than the child's actual behaviour — always refuse, always tolerate,

@@ -1339,8 +1339,11 @@ pub fn normalizePath(out: []u8, base: []const u8, path: []const u8) NormalizeErr
     const is_abs = path.len > 0 and path[0] == '/';
     if (!is_abs and (base.len == 0 or base[0] != '/')) return error.NotAbsolute;
 
-    // Offsets where each surviving component starts, so `..` can pop one.
-    var starts: [max_components]usize = undefined;
+    // How many components survive, for the `max_components` limit. Where each one starts
+    // is not stored: a component never contains '/', so the last one begins just after
+    // the last separator in `out`, and `..` finds it by scanning back. The array of
+    // starts this replaced was 2 KB on the stack of every thread the shim interposes on,
+    // the largest frame left once the shim's own buffers moved into its slots (#555).
     var depth: usize = 0;
 
     if (out.len < 1) return error.BufferTooSmall;
@@ -1359,8 +1362,10 @@ pub fn normalizePath(out: []u8, base: []const u8, path: []const u8) NormalizeErr
             if (std.mem.eql(u8, comp, "..")) {
                 if (depth > 0) {
                     depth -= 1;
-                    len = starts[depth];
-                    if (len > 1) len -= 1; // also drop the separator written before it
+                    // Drop the last component and the separator written before it. At the
+                    // first level that separator is the root's own, which stays.
+                    const sep = std.mem.lastIndexOfScalar(u8, out[0..len], '/').?;
+                    len = if (sep == 0) 1 else sep;
                 }
                 // At the root, `..` is the root. Matches how the kernel resolves it.
                 continue;
@@ -1371,7 +1376,6 @@ pub fn normalizePath(out: []u8, base: []const u8, path: []const u8) NormalizeErr
                 out[len] = '/';
                 len += 1;
             }
-            starts[depth] = len;
             depth += 1;
             if (len + comp.len > out.len) return error.BufferTooSmall;
             @memcpy(out[len..][0..comp.len], comp);
@@ -1427,6 +1431,110 @@ test "normalizePath escaping the state dir is visible to the containment test" {
     const inside = try normalizePath(&buf, "/work", "state/./sub/../key.json");
     try std.testing.expectEqualStrings("/work/state/key.json", inside);
     try std.testing.expect(isInsideDir(inside, "/work/state"));
+}
+
+/// The array-of-starts version `normalizePath` replaced (#555), kept for the test below
+/// and nothing else: the rewrite must answer exactly as this did, errors included.
+fn normalizePathWithStarts(out: []u8, base: []const u8, path: []const u8) NormalizeError![]const u8 {
+    const is_abs = path.len > 0 and path[0] == '/';
+    if (!is_abs and (base.len == 0 or base[0] != '/')) return error.NotAbsolute;
+    var starts: [max_components]usize = undefined;
+    var depth: usize = 0;
+    if (out.len < 1) return error.BufferTooSmall;
+    out[0] = '/';
+    var len: usize = 1;
+    const parts = [_][]const u8{ if (is_abs) path else base, if (is_abs) "" else path };
+    for (parts) |part| {
+        var it = std.mem.splitScalar(u8, part, '/');
+        while (it.next()) |comp| {
+            if (comp.len == 0 or std.mem.eql(u8, comp, ".")) continue;
+            if (std.mem.eql(u8, comp, "..")) {
+                if (depth > 0) {
+                    depth -= 1;
+                    len = starts[depth];
+                    if (len > 1) len -= 1;
+                }
+                continue;
+            }
+            if (depth >= max_components) return error.TooDeep;
+            if (len > 1) {
+                if (len + 1 > out.len) return error.BufferTooSmall;
+                out[len] = '/';
+                len += 1;
+            }
+            starts[depth] = len;
+            depth += 1;
+            if (len + comp.len > out.len) return error.BufferTooSmall;
+            @memcpy(out[len..][0..comp.len], comp);
+            len += comp.len;
+        }
+    }
+    return out[0..len];
+}
+
+test "normalizePath answers exactly as the array-of-starts version did (#555)" {
+    // Every path of up to six components drawn from a small alphabet that has all the
+    // cases — empty, `.`, `..`, one and two letters — against three bases and as an
+    // absolute path, into a roomy buffer and into one too small to hold some of them.
+    // 7^6 paths × 4 spellings × 2 buffers; a difference in value or in error fails.
+    const alphabet = [_][]const u8{ "", ".", "..", "a", "bb", "c", ".." };
+    const bases = [_][]const u8{ "/", "/w", "/w/state/sub" };
+    var pbuf: [64]u8 = undefined;
+    var idx = [_]usize{0} ** 6;
+    var checked: usize = 0;
+    while (true) {
+        for (1..7) |n| {
+            var plen: usize = 0;
+            for (idx[0..n], 0..) |k, j| {
+                if (j > 0) {
+                    pbuf[plen] = '/';
+                    plen += 1;
+                }
+                @memcpy(pbuf[plen..][0..alphabet[k].len], alphabet[k]);
+                plen += alphabet[k].len;
+            }
+            const rel = pbuf[0..plen];
+            var abuf: [65]u8 = undefined;
+            abuf[0] = '/';
+            @memcpy(abuf[1..][0..plen], rel);
+            const abs = abuf[0 .. plen + 1];
+            for ([_]usize{ 64, 5 }) |cap| {
+                for (bases) |b| {
+                    for ([_][]const u8{ rel, abs }) |p| {
+                        var o1: [64]u8 = undefined;
+                        var o2: [64]u8 = undefined;
+                        const r1 = normalizePath(o1[0..cap], b, p);
+                        const r2 = normalizePathWithStarts(o2[0..cap], b, p);
+                        if (r2) |want| {
+                            try std.testing.expectEqualStrings(want, try r1);
+                        } else |err| {
+                            try std.testing.expectError(err, r1);
+                        }
+                        checked += 1;
+                    }
+                }
+            }
+        }
+        var d: usize = 0;
+        while (d < idx.len) : (d += 1) {
+            idx[d] += 1;
+            if (idx[d] < alphabet.len) break;
+            idx[d] = 0;
+        }
+        if (d == idx.len) break;
+    }
+    try std.testing.expect(checked > 100_000);
+}
+
+test "normalizePath still refuses the 257th component" {
+    var p: [2 * (max_components + 1)]u8 = undefined;
+    for (0..max_components + 1) |i| {
+        p[2 * i] = 'x';
+        p[2 * i + 1] = '/';
+    }
+    var buf: [max_path]u8 = undefined;
+    try std.testing.expectError(error.TooDeep, normalizePath(&buf, "/", p[0..]));
+    _ = try normalizePath(&buf, "/", p[0 .. 2 * max_components]);
 }
 
 test "normalizePath refuses a relative path with no absolute base" {
