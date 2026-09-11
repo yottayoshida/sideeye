@@ -178,14 +178,19 @@ stack is unaffected: the flag then means nothing and the handler runs where it w
   and it runs on every syscall the process makes — measured, and below the noise.** A
   classic-BPF program is a linear chain of `JEQ`s, so a syscall the set does not hold now
   walks 22 instructions instead of 9 on aarch64. Review raised it as the widest path this
-  change touches, which is true of the path and not of the cost: a tight loop of
-  `getpid(2)`, two million calls, five pairs run alternating to cancel drift, gives
-  **117.4–117.7 ns/call with the filter and 117.4–117.5 without it** — a difference of
-  ±0.3 ns, which is the measurement's own noise. The filter's share of a syscall is not
-  visible beside the syscall. If a much larger set ever makes it visible, the answer is
-  named here so it need not be rediscovered: sort the set by number and emit a `BPF_JGE`
-  binary search, which `buildProgram` is already positioned for — it computes every jump
-  offset at comptime from the set's own length.
+  change touches, which is true of the path and not of the cost. Measured with the shim
+  preloaded directly, and with two positive controls so that a quiet result could not be a
+  shim that never loaded or a filter that never went up — the trace was non-empty and
+  announced `observe:syscalls`, and a *trapped* call (raw `write(-1, …)`, 200,000 of them)
+  cost **127 ns/call without the filter and 625 ns/call with it**, which says the filter was
+  live and puts one trap's round trip at about half a microsecond. Against that, an
+  *untrapped* call (`getpid(2)`, two million, five pairs run alternating to cancel drift)
+  cost **117.8–118.9 ns/call in every condition**, no shim, shim without the filter and
+  shim with it, each pair within a nanosecond of itself. The filter's share of a syscall it
+  does not trap is not visible beside the syscall. If a much larger set ever makes it
+  visible, the answer is named here so it need not be rediscovered: sort the set by number
+  and emit a `BPF_JGE` binary search, which `buildProgram` is already positioned for — it
+  computes every jump offset at comptime from the set's own length.
 - **Filters stack across `exec`, and each one is now larger.** A seccomp filter cannot be
   replaced, so every image in a self-exec chain that loads the shim installs its own on top
   of what it inherited. The program is 66 instructions on x86-64 where it was about a

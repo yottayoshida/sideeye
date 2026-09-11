@@ -128,16 +128,22 @@ calls (measured: 0 matches in a 186-line capture). The evidence that survives is
 a target that replaces the shim's handler dies at its first trap, which is where mlr was,
 so three traps delivered plus a process that ran to completion says the handler held.
 
-**What the wider filter costs, measured rather than argued.** Review raised the linear
-`JEQ` chain: it grew from 4 comparisons to 17 (aarch64) or 25 (x86-64), and a seccomp
-program runs on *every* syscall the process makes, not only the trapped ones — the widest
-path this change touches. So it was measured: a tight loop of `getpid(2)`, two million
-calls, five pairs run alternating so machine drift cancels. **117.4–117.7 ns/call with the
-filter, 117.4–117.5 without it.** The difference is ±0.3 ns, which is the measurement's own
-noise, and the filter condition came out fastest as often as not. 22 BPF instructions do
-not show up beside a syscall. The finding named a real path and the wrong order of
-magnitude; the binary-search alternative is written into ADR 0059 so nobody has to
-rediscover it if a much larger set ever makes it visible.
+**What the wider filter costs, measured rather than argued — twice, because the first
+measurement had no positive control.** Review raised the linear `JEQ` chain: it grew from 4
+comparisons to 17 (aarch64) or 25 (x86-64), and a seccomp program runs on *every* syscall
+the process makes, not only the trapped ones — the widest path this change touches. The
+first measurement timed `getpid(2)` with and without the filter and found no difference,
+and it was written down before anything showed that the shim had loaded or the filter had
+gone up; later the same day a different measurement came back three identical rows because
+`zig-out` held the x86-64 build and the preload was being silently ignored. So it was run
+again with both controls: the trace non-empty and announcing `observe:syscalls`, and a
+**trapped** call timed beside the untrapped one. Raw `write(-1, …)`: **127 ns/call without
+the filter, 625 ns/call with it** — the filter was live, and one trap's round trip is about
+half a microsecond, which is this mode's real per-operation price. `getpid(2)`, five pairs
+alternating: **117.8–118.9 ns/call in all three conditions**, each pair within a nanosecond.
+The first result stands; it just had not earned the right to. The binary-search
+alternative is written into ADR 0059 so nobody has to rediscover it if a much larger set
+ever makes it visible.
 
 **Re-measuring the `SA_NODEFER` premise found a wrong comment.** The handler runs with
 `SIGSYS` blocked, so a nested trap ends the process; the standing justification was
