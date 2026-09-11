@@ -2,6 +2,211 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-11 — The shim takes a bounded amount of a target thread's memory, and says how much (#555)
+
+#555 said the shim's 256 KiB of static TLS stops a target from starting a thread with a
+small stack. The fix for that is one line — `std_options.signal_stack_size = null` in the
+shim's root — and it was measured before the plan was written, on copies built outside
+this tree: `PT_TLS` 262,165 → 21 bytes (aarch64 ReleaseSafe), 262,168 → 24 (x86_64
+Debug); a thread of each platform's minimum stack goes from `EINVAL` to started under a
+loaded shim, on both CPUs, and `LD_PRELOAD=… node -e 1` stops printing
+`pthread_create: Invalid argument`.
+
+**The plan's first review found the second half.** Its reviewer pointed out that the check
+only loaded the shim and never let it record, and that a recording shim spends path
+buffers on the target's stack. Measured on the copy with the TLS already removed, in an
+amd64 container (emulated): a thread of x86_64's 16 KiB minimum that opens, writes and
+closes a file runs to the end without the shim and does not exit normally under a
+recording one — at 16 and 18 KiB, in both Debug and ReleaseSafe; from 20 KiB it survives.
+aarch64's 128 KiB minimum hides it. The shim held twelve 4 KiB arrays in seven functions,
+up to twenty kilobytes in one call, plus the exec carry's 8 KB envp rebuild, plus 2 KB in
+`contract.normalizePath`. The owner's call: fix both in this PR.
+
+**The second review changed what the PR promises.** "The shim does not change what the
+target does" cannot be made true — every wrapper spends some stack — so the promise
+became a bound written down and measured: under 1 KiB of TLS, at most N KiB of stack per
+interposed call, plus the kernel's signal frame under `--observe syscalls`. The owner
+chose that form, and chose to move the exec carry's 8 KB as well rather than keep it as a
+second, larger bound. N is decided by measurement after the change.
+
+**Design.** The buffers move into `ThreadState`, one field per function and none shared:
+sharing by role would need five instead of twelve, but then someone has to keep proving
+which ones are live together, and a mistake there corrupts recorded paths silently.
+Per-thread storage is safe because every entry point takes `busy` before touching them and
+`observe`/`resolveAt` are called from those entry points only — the review checked both.
+The exec carry takes `busy` too, and a nested exec drops the carry (the engine refuses a
+broken chain). *(Reversed in the diff review: a flag of its own — below.)* `normalizePath` loses its array: a component never contains '/', so `..`
+can scan back to the last separator; an exhaustive test compares it with the old version.
+
+**Measured after the change**, with `spike/toys/toy_stack.c` — the depth a thread reaches
+on a patterned 256 KiB stack doing open/write/close/rename in the state directory, under a
+recording shim minus the same work bare. "TLS only" is the shim with just the first fix:
+
+| build | TLS only (wrappers / syscalls) | this change (wrappers / syscalls) |
+|---|---|---|
+| aarch64 ReleaseSafe | +14,816 / +15,840 | **+32 / +3,592** (kernel frame 4,720) |
+| aarch64 Debug | +17,256 / +18,472 | **+1,448 / +6,864** (kernel frame 4,720) |
+| x86_64 Debug, emulated | min-stack thread: segfault | **+1,592**, min-stack thread runs |
+| x86_64 ReleaseSafe, emulated | — | **+0** |
+
+The shim's own share is at most 2,144 bytes (aarch64 Debug, syscalls, less the kernel's
+4,720). Rounded up and a kilobyte added, the written bound is **N = 4 KiB**. *(Wrong: the
+toy hid the shim's chain under its own. Remeasured below, and N = 5 KiB.)* What this
+table does not hold: x86_64 under `--observe syscalls`, which the emulated container cannot
+install (and whose `AT_MINSIGSTKSZ` it reports as 0), so CI is the first to measure it.
+The exhaustive `normalizePath` test was seen red on a copy with the root-level branch of
+the new scan removed (`len = sep`), and green on the unmutated copy.
+
+**The checks live in `spike/check-shim-footprint.sh`**, which acceptance calls with the
+shipped shim — a script of its own rather than a block in acceptance, so the same call with
+an older shim shows each check red. It was not in the plan's file list; it serves the same
+promise. Seen red and green, in the spike image (aarch64) and in an emulated amd64 box:
+
+| shim | A wrappers | A syscalls | B TLS | C frames |
+|---|---|---|---|---|
+| `main`, aarch64 ReleaseSafe | FAIL: min thread `EINVAL` | FAIL: same | FAIL 262,165 | FAIL 6 functions |
+| TLS fix only, aarch64 ReleaseSafe | FAIL: +14,576 > 4,096 | FAIL: +15,600 > 8,816 | ok 21 | FAIL 6 functions |
+| this change, aarch64 Debug | ok +1,160 | ok +6,576 ≤ 8,816 | ok 24 | ok, largest 896 |
+| this change, aarch64 ReleaseSafe | ok +32 | ok +3,304 | ok 21 | ok, largest 416 |
+| `main`, x86_64 Debug (emulated) | FAIL: min thread `EINVAL` | cannot measure | FAIL 262,168 | FAIL 8 functions |
+| this change, x86_64 Debug (emulated) | ok +1,592 | cannot measure | ok 24 | ok, largest 896 |
+
+Check C's first parser read x86_64 Debug and flagged only `normalizePath`: frames of a page
+or more are not `sub $N,%rsp` there but `mov $N,%eax`, a call to the stack probe, and
+`sub %rax,%rsp`. The eight it then names include `callExecveSeqCarry` at 8,880. "Cannot
+measure" is the emulated box refusing `SECCOMP_RET_TRAP` and reporting `AT_MINSIGSTKSZ` as 0;
+the check says so rather than assuming a frame size, so CI's native x86_64 is the first real
+run of that row.
+
+**Acceptance, whole suite, in the spike image (aarch64 Debug, non-root): 352 ok, 0 FAIL**
+*(a run from before the write count was added; the final script's run is below)*, two checks not measured for reasons of this host (chown needs root; git inside the
+container). The first run reported 7 FAILs, every one an apparatus build CI makes in a step
+of its own (`-Dtest-seq-gap`, `-Dtest-observe-fail`, `-Dtest-trace-cap`,
+`-Dtest-trace-budget`, `-Dtest-ancestor-probe`); built the same way, they passed. The new
+section was first labelled `check 2r`, which an unrelated check already carries — renamed
+`2st`. The worker-thread record count now includes `write` as well as `open` and `rename`:
+under `--observe syscalls` a write is counted by the trap, so it is the record that says
+the SIGSYS path ran on the thread being measured. *(False — below.)*
+
+**The diff review's first round found that the measurement hid what it measured.** Three
+findings falsified what this entry said, and eleven smaller ones followed. What each
+changed:
+
+- *The toy's own work hid the shim.* `work()` formatted its two paths with `snprintf`
+  inside the thread, and the depth is a high-water mark, so the bare run's deepest point
+  was `snprintf`'s and the difference was the shim's chain *less* snprintf's depth. The
+  reviewer read it off this entry's own tables: aarch64 ReleaseSafe's +32 in the default
+  mode is the TLS difference rounded up, not stack at all; and the syscalls rows' Debug
+  minus ReleaseSafe is 3,272 in both tables, which "at most 2,144" above contradicts. The
+  paths are built in main now, and the thread makes interposed calls and nothing else —
+  more of them than before: `pwritev2`, `unlink`, `mkdir`, `rmdir`, and an `execve` that
+  fails, which walks the exec carry to the end without replacing the process.
+- *Removing snprintf was not enough.* Remeasured, x86_64 ReleaseSafe still read +0: the
+  thread's own start-up and exit, which glibc runs on the same stack, went deeper than
+  the calls. The toy now re-patterns everything below its stack pointer immediately before
+  the calls and reads it back right after, so the number is the calls' alone — 128 bytes
+  bare on aarch64 and 152 on x86_64, where the whole-thread figure had been 6,032 and 6,264.
+- *A write record does not say the filter went up.* If `install()` fails, the wrappers
+  count writes and the syscalls row passes on the wrappers' numbers; a mutant whose
+  install always returned `.failed` would have been green. The check now requires the
+  announcement's aux to be `observe:syscalls` under that mode and empty under the default.
+- *The README said more than was measured.* "A thread of the platform's minimum stack does
+  not [fail]" is universal where a toy was measured, and "What the target has to be" is
+  not a Linux-only section while nothing measured the macOS dylib. The sentence is gone;
+  the item says Linux, names the calls, and says the dylib is not measured. "Until 1.3.0"
+  is "Through 1.3.0" — the issue measured the 1.3.0 tarball.
+
+Remeasured, same containers (x86_64 emulated, so its syscalls row cannot be measured):
+
+| build | default mode | `--observe syscalls` (over the kernel's 4,720-byte frame) |
+|---|---|---|
+| aarch64 Debug | +3,376 | +8,688 (3,968) |
+| aarch64 ReleaseSafe | +920 | +5,416 (696) |
+| x86_64 Debug | +3,288 (the first toy: +1,592; the second: +1,640) | cannot measure |
+| x86_64 ReleaseSafe | +888 (the second toy: +0) | cannot measure |
+
+The plan's rule for N — the largest share over both CPUs and both modes, rounded up to a
+KiB, plus one — gives 3,968 → **N = 5 KiB**. The bound held at 4 KiB, with 128 bytes to
+spare on the Debug syscalls row, and CI's native x86_64 is the first to measure that row.
+Debug is the deep build — what `zig build` makes and acceptance measures; the release
+tarball's ReleaseSafe spent under 1 KiB. The README says both.
+
+*Check C read no exported wrapper.* GNU objdump labels a function by its global symbol
+when it has one, so `ops.rename` printed as `<rename>` and fell outside the prefix list.
+It joins labels to `nm` by address now: 56 of 161 functions (Debug) are read under an
+exported name, and on the `main` ReleaseSafe shim the check names `ops.execve` at 8,448
+and `ops.pwritev2` at 4,208 — the exec carry and the pwritev2 path inlined into exported
+wrappers, which the first parser could not see. Nothing of this change's shim is over the
+line in either build. Check B read `-gt 1024` against "less than 1 KiB"; it is `-ge`.
+
+*The exec carry does not take `busy` after all.* Taking it for the rebuild would also stop
+the shim recording anything a signal handler does meanwhile — recorded before the array
+moved into the slot. A flag of its own, `exec_carrying`, guards `exec_env` instead. And
+threads past the 64th share one slot, the reserve, so they share its `exec_env`: two of
+them exec'ing together could build their environments in one array. The reserve drops the
+carry — its run is refused on `thread-slots-exhausted` already, and the target's
+environment passes through untouched. A unit test calls the carry with an exec that
+cannot succeed, on the thread's own slot, re-entered, and on the reserve; removing either
+guard turns it red at that guard's assertion, and the file came back by hash.
+
+Red and green with the final toy and script (the bound at 4 KiB when run; every red row
+is over 5 KiB and every green one under 4):
+
+| shim | A default | A syscalls | B TLS | C frames |
+|---|---|---|---|---|
+| `main`, aarch64 ReleaseSafe | FAIL: min thread `EINVAL` | FAIL: same | FAIL 262,165 | FAIL 8 functions |
+| TLS only, aarch64 ReleaseSafe | FAIL +17,072 | FAIL +17,712 | ok 21 | FAIL 8 |
+| TLS only, aarch64 Debug | FAIL +19,080 | FAIL +20,296 | ok 24 | FAIL 8 |
+| this change, aarch64 Debug | ok +3,376 | ok +8,688 | ok 24 | ok, largest 896 |
+| this change, aarch64 ReleaseSafe | ok +920 | ok +5,416 | ok 21 | ok, largest 416 |
+| `main`, x86_64 Debug | FAIL: min thread `EINVAL` | cannot measure | FAIL 262,168 | FAIL 8 |
+| TLS only, x86_64 Debug and ReleaseSafe | FAIL: killed by signal 11 | cannot measure | ok 24 / 21 | FAIL 8 |
+| this change, x86_64 Debug | ok +3,288 | cannot measure | ok 24 | ok, largest 896 |
+| this change, x86_64 ReleaseSafe | ok +888 | cannot measure | ok 21 | ok, largest 336 |
+
+The TLS-only x86_64 rows first read "the shim is not mapped": the minimum-stack thread
+overran its 16 KiB, SIGSEGV took the process, and the toy's block-buffered stdout went with
+it. The toy's stdout is unbuffered now and the check names a death by signal.
+
+The node line was rechecked on this build: the earlier "prints nothing" came from the
+TLS-only copy. With this change's aarch64 ReleaseSafe shim `node -e 1` prints nothing,
+the `main` shim beside it prints `pthread_create: Invalid argument`, and node writing a
+file under a recording shim exits 0.
+
+Left as they are: check C bounds one function at a time, not a chain, and A measures the
+calls the toy makes — the README names them. std's fmt and `Io.Writer` sit on those paths
+and A counts them; C does not.
+
+**Acceptance, whole suite, with the final toy and script** (spike image, aarch64 Debug with
+the apparatus builds, non-root): **352 ok, 0 FAIL**, the same two checks not measured for
+reasons of this host. `check 2st` read +3,376 of 5,120 and +8,688 of 9,840. `sideeye demo`
+on this build: FAIL 1 of 6 explored worlds, exit 1 — the planted bug found as before.
+
+**The diff review's second round** found eleven of the fourteen resolved, and five new
+small things in the fixes, all fixed here:
+
+- The syscalls row returned on a missing frame size before anything else, so the new
+  announcement check had never run under the one mode it exists for — and a toy that died
+  before printing `sigframe=` (it printed it last) would have been reported as a kernel
+  that does not say. The toy prints it second now, and the check tests it last. Seen red:
+  the observe-fail apparatus shim reads `announced 'observe:syscalls-failed'`, and so does
+  the emulated amd64 box, which had read "cannot be checked" until then — its seccomp
+  refusal was the true reason all along.
+- With `nm` failing, check C fell back to not reading the exported wrappers and passed.
+  No function read under an exported name is a FAIL now, seen red with an `nm` that exits 1.
+- acceptance's comment still said 4 KiB; the exec-carry test left `exec_carrying` set if an
+  assertion failed, and restores it by `defer` now; node's run had no transcript, and has
+  one now, with both shims' sha256.
+
+Left as it is: "at most 5 KiB of its stack for an interposed call" stays a statement about
+every call, with the measured ones named in the same item. Calls outside the list are
+bounded one function at a time by check C, not measured as a chain; narrowing the sentence
+to the measured calls would be a smaller promise, which is the owner's to choose, not a
+correction.
+
+Acceptance, whole suite, once more after these: 352 ok, 0 FAIL, the same two not measured;
+`check 2st` read the same +3,376 and +8,688.
+
 ## 2026-09-11 — The targets v1.3.0's walls had turned away, met again: three verdicts, two refusals that now say the true reason, and an error message that was Sideeye's
 
 v1.3.0 moved three walls, and the earlier dogfood runs had turned six targets away on

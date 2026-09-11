@@ -540,7 +540,9 @@ var kill_group: bool = false;
 /// than judges it.
 ///
 /// Zero-initialised on purpose, not `undefined`: an all-zero global lands in `.bss`,
-/// and sixty-four of these are a megabyte the file need not carry.
+/// and sixty-five of these — some 72 KB each since the scratch buffers moved in (#555) —
+/// are nearly five megabytes the file need not carry. Only the pages a thread touches
+/// become memory.
 const ThreadState = struct {
     /// Owner's thread id; 0 is free. Written once, by the compare-and-swap in `mine`.
     tid: u64 = 0,
@@ -548,6 +550,11 @@ const ThreadState = struct {
     /// while none of those calls are interposed today, a future addition to the symbol
     /// list would silently start recording the shim's own behaviour as the target's.
     busy: bool = false,
+    /// Guards `exec_env` alone (#555): an exec from a signal handler that interrupted the
+    /// carry on this thread finds it set and drops its own carry. Not `busy`, which would
+    /// also stop the shim recording anything else that handler does — recorded before the
+    /// array moved here.
+    exec_carrying: bool = false,
     /// The highest in-scope operation number this thread knows the RUN to have reached
     /// (v15) — not a count of its own operations. `refreshCount` brings it up to what the
     /// trace holds before every number is handed out, so a parent that resumes after an
@@ -563,6 +570,37 @@ const ThreadState = struct {
     /// One record is built here and written with a single `write(2)`, so a trace never
     /// ends with half a record even when the process dies mid-run.
     record_buf: [contract.max_record_len]u8 = [_]u8{0} ** contract.max_record_len,
+
+    // Scratch space for path resolution and for the exec carry's rebuilt environment
+    // (#555). These were arrays on the TARGET thread's stack — up to twenty kilobytes for
+    // one interposed call — and a thread whose stack was x86_64's 16 KiB minimum died
+    // under a recording shim while it ran to the end without one. Held here instead, one
+    // field per function and none shared, so a chain such as `note2 → resolveAt →
+    // observe` is safe without anyone proving which buffers are live together.
+    //
+    // Per-thread storage is enough because every entry point that uses these takes
+    // `busy` before touching them, and `observe` and `resolveAt` are called from those
+    // entry points only: a signal handler that re-enters the shim on the same thread
+    // returns before it reaches a buffer. That argument covers the path buffers and
+    // nothing else. `exec_env` has a flag of its own, `exec_carrying`, and the reserve does
+    // not carry at all; `noteTraceClose` and both forms of the exec carry reach
+    // `record_buf` and `scan_buf` without `busy`, as they did before. On the reserve,
+    // `busy` is one non-atomic flag for every thread past the 64th, so two of them can
+    // meet in the path buffers as they already could in `record_buf` — a run the engine
+    // refuses on `thread-slots-exhausted`.
+    resolve_base: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    observe_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    observe_aux: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    note1_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    note2_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    note2_aux: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    unsup2_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    unsup2_canon: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    unsup2_aux: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    unsup2_aux_canon: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    unsup_fd_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    fd_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
+    exec_env: [max_env_entries + 1]?[*:0]const u8 = [_]?[*:0]const u8{null} ** (max_env_entries + 1),
 };
 const max_threads = 64;
 var slots: [max_threads]ThreadState = [_]ThreadState{.{}} ** max_threads;
@@ -640,9 +678,9 @@ fn mine() *ThreadState {
 /// must not do this — the child runs in the parent's memory — and a raw `clone` bypasses
 /// the wrapper and inherits the table as it stands: a parent past sixty-four threads that
 /// forks through a raw syscall keeps the false refusal, which is the honest direction.
-/// The claim words and the counters are cleared and the buffers are not: 64 × 16 KB is a
-/// megabyte of copy-on-write pages the child would otherwise touch at once, and every
-/// buffer is written whole before it is read.
+/// The claim words and the counters are cleared and the buffers are not: sixty-five slots
+/// of some 72 KB each are nearly five megabytes of copy-on-write pages the child would
+/// otherwise touch at once, and every buffer is written whole before it is read.
 pub fn resetSlotsInChild() void {
     for (&slots) |*s| {
         s.tid = 0;
@@ -1088,7 +1126,7 @@ fn cwdPath(out: []u8) ?[]const u8 {
 /// directory, and treating that as uncertainty would make ordinary programs
 /// unjudgeable. A descriptor whose directory has been unlinked is the opposite: it
 /// named something once, and where that was decides whether this matters.
-fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) ?[]const u8 {
+fn resolveAt(ts: *ThreadState, out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) ?[]const u8 {
     unresolvable.* = false;
     const p = std.mem.span(path);
     if (p.len == 0) return null;
@@ -1099,10 +1137,10 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) 
         };
     }
 
-    var base_buf: [contract.max_path]u8 = undefined;
+    const base_buf = &ts.resolve_base;
     var base_deleted = false;
     const base = if (dirfd == AT_FDCWD) blk: {
-        break :blk cwdPath(&base_buf) orelse {
+        break :blk cwdPath(base_buf) orelse {
             // The working directory itself could not be read; a relative path cannot be
             // placed, and it may well have been inside the state directory.
             unresolvable.* = true;
@@ -1127,7 +1165,7 @@ fn resolveAt(out: []u8, dirfd: c_int, path: [*:0]const u8, unresolvable: *bool) 
         // and letting it share `base_deleted` would erase fdKind's nlink==0 finding —
         // exactly the macOS deleted-directory case that flag exists to carry.
         var base_link_deleted = false;
-        const b = fdPath(&base_buf, dirfd, &base_link_deleted) orelse {
+        const b = fdPath(base_buf, dirfd, &base_link_deleted) orelse {
             unresolvable.* = true;
             return null;
         };
@@ -1235,10 +1273,8 @@ fn refreshCount(ts: *ThreadState) bool {
 /// where the process dies.
 fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void {
     // Both spellings count; one is recorded.
-    var pbuf: [contract.max_path]u8 = undefined;
-    var abuf: [contract.max_path]u8 = undefined;
-    const path = canonical(&pbuf, raw_path);
-    const aux = canonical(&abuf, raw_aux);
+    const path = canonical(&ts.observe_path, raw_path);
+    const aux = canonical(&ts.observe_aux, raw_aux);
 
     var s: u32 = 0;
     if (op.isKillPoint()) {
@@ -1323,9 +1359,8 @@ pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
     ts.busy = true;
     defer ts.busy = false;
 
-    var buf: [contract.max_path]u8 = undefined;
     var unresolvable = false;
-    const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
+    const resolved = resolveAt(ts, &ts.note1_path, dirfd, path, &unresolvable) orelse {
         // Recorded only when the path genuinely could not be determined. A descriptor
         // that names no path at all says the operation is elsewhere, which is an answer.
         if (unresolvable) noteUnresolved(ts, std.mem.span(path), contract.unresolved_kind.unresolvable_path);
@@ -1361,12 +1396,10 @@ pub fn noteUnsupportedInScope2(
     ts.busy = true;
     defer ts.busy = false;
 
-    var buf: [contract.max_path]u8 = undefined;
-    var cbuf: [contract.max_path]u8 = undefined;
     var unresolvable = false;
     var in_scope = false;
-    if (resolveAt(&buf, dirfd, path, &unresolvable)) |resolved| {
-        in_scope = contract.isInsideDir(canonical(&cbuf, resolved), stateDir());
+    if (resolveAt(ts, &ts.unsup2_path, dirfd, path, &unresolvable)) |resolved| {
+        in_scope = contract.isInsideDir(canonical(&ts.unsup2_canon, resolved), stateDir());
     } else if (unresolvable) {
         // Cannot place it, so cannot clear it: the unconditional channel is right
         // exactly here, for the reason its own doc gives.
@@ -1375,11 +1408,9 @@ pub fn noteUnsupportedInScope2(
     }
     if (!in_scope) {
         if (apath) |ap| {
-            var abuf: [contract.max_path]u8 = undefined;
-            var acbuf: [contract.max_path]u8 = undefined;
             var aunresolvable = false;
-            if (resolveAt(&abuf, adirfd, ap, &aunresolvable)) |ares| {
-                in_scope = contract.isInsideDir(canonical(&acbuf, ares), stateDir());
+            if (resolveAt(ts, &ts.unsup2_aux, adirfd, ap, &aunresolvable)) |ares| {
+                in_scope = contract.isInsideDir(canonical(&ts.unsup2_aux_canon, ares), stateDir());
             } else if (aunresolvable) {
                 noteUnresolved(ts, std.mem.span(ap), contract.unresolved_kind.unresolvable_path);
                 return;
@@ -1402,14 +1433,12 @@ pub fn note2(
     ts.busy = true;
     defer ts.busy = false;
 
-    var buf: [contract.max_path]u8 = undefined;
-    var abuf: [contract.max_path]u8 = undefined;
     var unresolvable = false;
-    const resolved = resolveAt(&buf, dirfd, path, &unresolvable) orelse {
+    const resolved = resolveAt(ts, &ts.note2_path, dirfd, path, &unresolvable) orelse {
         if (unresolvable) noteUnresolved(ts, std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     };
-    const aresolved = resolveAt(&abuf, adirfd, apath, &unresolvable) orelse {
+    const aresolved = resolveAt(ts, &ts.note2_aux, adirfd, apath, &unresolvable) orelse {
         // Half of a rename is not something to record as a rename.
         if (unresolvable) noteUnresolved(ts, std.mem.span(apath), contract.unresolved_kind.unresolvable_path);
         return;
@@ -1601,9 +1630,8 @@ pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
         },
         .path_backed => {},
     }
-    var buf: [contract.max_path]u8 = undefined;
     var link_deleted = false;
-    const resolved = fdPath(&buf, fd, &link_deleted) orelse {
+    const resolved = fdPath(&ts.unsup_fd_path, fd, &link_deleted) orelse {
         noteUnresolvedFd(ts, fd);
         return;
     };
@@ -1639,9 +1667,8 @@ pub fn noteFd(op: contract.OpClass, fd: c_int) void {
         .path_backed => {},
     }
 
-    var buf: [contract.max_path]u8 = undefined;
     var link_deleted = false;
-    const resolved = fdPath(&buf, fd, &link_deleted) orelse {
+    const resolved = fdPath(&ts.fd_path, fd, &link_deleted) orelse {
         // A regular file or directory whose path could not be read back. That is a
         // failed measurement, not evidence of innocence — recorded, so the engine
         // refuses to judge a run whose operations it cannot place.
@@ -1945,13 +1972,17 @@ pub fn execCarryAllowed() bool {
 /// silently changes the target.
 const max_env_entries = 1024;
 
-/// execve with the current operation count appended to the environment. The
-/// rebuilt array and the entry's bytes live on THIS stack frame: heap is forbidden
-/// in a vfork child, a global would be written into memory a suspended vfork
-/// parent shares, and a frame below the vfork point is dead space to that parent —
-/// on success the image (and the frame) is replaced, on failure the frame unwinds
-/// normally. A stale SEQ_BASE already in the caller's envp (a previous failed
-/// exec's leftover) is dropped rather than duplicated.
+/// execve with the current operation count appended to the environment. A stale
+/// SEQ_BASE already in the caller's envp (a previous failed exec's leftover) is dropped
+/// rather than duplicated.
+///
+/// The rebuilt array lives in the calling thread's slot, not on its stack (#555): at
+/// 8 KB it was the largest single frame the shim took from a target thread. It used to be
+/// on the stack for a vfork child's sake — no heap there, and a global is memory the
+/// suspended parent shares — and that reason does not reach this point:
+/// `execCarryAllowed` admits the armed process only, and a vfork child answers
+/// `getpid()` differently and returns before `mine()` is called. The entry's own bytes,
+/// 64 of them, stay on the stack.
 pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
     if (!execCarryAllowed()) return callExecve(p, a, e);
     // The count carried across the image change is the RUN's, not this process's (v15).
@@ -1962,11 +1993,23 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
     // the old value, which the engine then refuses as a broken chain: fail closed either
     // way, and the honest direction of the two.
     const ts = mine();
+    // The reserve is shared by every thread past the 64th, and its `exec_env` with it: two
+    // of them exec'ing at once would build their environments in the one array. The carry
+    // is dropped there. The target's own environment goes through untouched, and the run
+    // is refused on `thread-slots-exhausted` already (review, #555).
+    if (ts == &reserve) return callExecve(p, a, e);
+    // Re-entered on this thread — an exec from a signal handler that interrupted this
+    // rebuild — the inner call would overwrite the array the outer one is still filling.
+    // The carry is dropped instead: the chain breaks and the engine refuses a broken
+    // chain, where a count carried from a half-written array would not be refused.
+    if (ts.exec_carrying) return callExecve(p, a, e);
+    ts.exec_carrying = true;
+    defer ts.exec_carrying = false;
     _ = refreshCount(ts);
     var entry_buf: [64]u8 = undefined;
     const entry = std.fmt.bufPrintZ(&entry_buf, "{s}={d}", .{ contract.env.seq_base, ts.seq }) catch return callExecve(p, a, e);
     const prefix = contract.env.seq_base ++ "=";
-    var new_env: [max_env_entries + 1]?[*:0]const u8 = undefined;
+    const new_env = &ts.exec_env;
     var n: usize = 0;
     var i: usize = 0;
     while (e[i]) |kv| : (i += 1) {
@@ -1978,7 +2021,7 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
     if (n >= max_env_entries) return callExecve(p, a, e);
     new_env[n] = entry.ptr;
     new_env[n + 1] = null;
-    return callExecve(p, a, @ptrCast(&new_env));
+    return callExecve(p, a, @ptrCast(new_env));
 }
 
 /// setenv-based carry for `execv`/`execvp`, which use the ambient environment.
@@ -2549,4 +2592,54 @@ test "mine: the 65th thread takes the reserve, and the notice is in the trace at
     // A second overflow takes the reserve again and writes nothing more.
     try std.testing.expectEqual(&reserve, mine());
     try std.testing.expectEqual(n, c.pread(fd, &buf, buf.len, 0));
+}
+
+test "exec carry: builds in the thread's own slot, and not on the reserve or when re-entered (#555)" {
+    // An exec that cannot succeed, so the carry runs to the end and returns. Whether it
+    // built the environment is read off `exec_env[0]`, cleared before each call.
+    if (builtin.os.tag != .macos) resolveAll();
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_pid = armed_pid;
+    defer armed_pid = saved_pid;
+    active = true;
+    armed_pid = c.getpid();
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    trace_fd = -1;
+    defer resetSlotsInChild();
+    resetSlotsInChild();
+    const argv = [_]?[*:0]const u8{ "x", null };
+    const env = [_]?[*:0]const u8{ "SIDEEYE_TEST_EXEC=1", null };
+    const nowhere = "/nonexistent-sideeye-test/exec";
+
+    // Control: the thread's own slot, nothing in the way — the array is built.
+    const own = mine();
+    try std.testing.expect(own != &reserve);
+    own.exec_env[0] = null;
+    try std.testing.expectEqual(@as(c_int, -1), callExecveSeqCarry(nowhere, &argv, &env));
+    try std.testing.expect(own.exec_env[0] != null);
+    try std.testing.expect(!own.exec_carrying);
+
+    // Re-entered: a carry already in progress on this thread — the array is left alone.
+    {
+        // Cleared on the way out even when an assertion fails: `resetSlotsInChild` does not
+        // touch the flag, and a later test in this binary would find it set.
+        own.exec_env[0] = null;
+        own.exec_carrying = true;
+        defer own.exec_carrying = false;
+        try std.testing.expectEqual(@as(c_int, -1), callExecveSeqCarry(nowhere, &argv, &env));
+        try std.testing.expect(own.exec_env[0] == null);
+    }
+
+    // The reserve: every slot taken by ids no real thread has — the shared array is left
+    // alone. The notice is marked written so this test writes nothing.
+    for (&slots, 0..) |*s, i| s.tid = 100_000_000 + @as(u64, i);
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    exhaustion_announced = true;
+    try std.testing.expectEqual(&reserve, mine());
+    reserve.exec_env[0] = null;
+    try std.testing.expectEqual(@as(c_int, -1), callExecveSeqCarry(nowhere, &argv, &env));
+    try std.testing.expect(reserve.exec_env[0] == null);
 }

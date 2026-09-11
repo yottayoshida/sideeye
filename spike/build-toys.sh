@@ -90,6 +90,11 @@ echo "building toy-copy"
 # runtime's internal choice of copy primitive.
 gcc $cc_flags -o "$out/toy-copy" "$root/spike/toys/toy_copy.c"
 
+echo "building toy-stack"
+# How much of a thread's stack the target spends, bare and under the shim (#555): the
+# platform-minimum thread and a patterned 256 KiB one, both doing interposed work.
+gcc $cc_flags -o "$out/toy-stack" "$root/spike/toys/toy_stack.c" -lpthread
+
 echo "building toy-rust"
 rustc -O -o "$out/toy-rust" "$root/spike/toys/toy_rust.rs"
 
