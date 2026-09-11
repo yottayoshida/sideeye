@@ -10,8 +10,18 @@
 //! than a wrapper each, so there is one body to keep correct.
 
 const ops = @import("ops.zig");
+const syscalls = @import("syscalls.zig");
 
 comptime {
+    // Not kill points: these four keep `SIGSYS` deliverable so that a trap reaches the
+    // shim's handler instead of ending the process. Linux only, and exported in every
+    // mode — a filter is inherited across `exec`, so a `wrappers`-mode image can be
+    // standing in front of one (see syscalls.zig).
+    @export(&syscalls.sigaction, .{ .name = "sigaction" });
+    @export(&syscalls.signal, .{ .name = "signal" });
+    @export(&syscalls.sigprocmask, .{ .name = "sigprocmask" });
+    @export(&syscalls.pthread_sigmask, .{ .name = "pthread_sigmask" });
+
     @export(&ops.open, .{ .name = "open" });
     @export(&ops.open, .{ .name = "open64" });
     @export(&ops.openat, .{ .name = "openat" });

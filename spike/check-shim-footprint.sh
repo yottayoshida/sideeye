@@ -105,7 +105,7 @@ stack_case() { # stack_case <mode>
     recs=$(printf '%s\n' "$facts" | grep -v '^announce=' | tr '\n' ' ')
     # The order is the order of what can break first: a shim that is not there measures
     # nothing, and one that did not set itself up the way this row names measures the
-    # other row — under syscalls the write family is counted by the trap only when the
+    # other row — under syscalls the trapped operations are counted by the trap only when
     # filter went up, and a filter that failed to install leaves the wrappers counting,
     # which passes every line below on the wrappers' numbers (review, #555). Then a thread
     # that never started records nothing, and only then is a missing record the shim's.

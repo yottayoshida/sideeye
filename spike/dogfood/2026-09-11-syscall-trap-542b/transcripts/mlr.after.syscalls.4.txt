@@ -1,0 +1,13 @@
+UNKNOWN  multiple_threads_detected
+         two threads of process 74 wrote in the judged directory: tid 74 performed open(/tmp/localrun/st/4/mlr/mlr-in-place-2073878607) and tid 78 performed write(/tmp/localrun/st/4/mlr/mlr-in-place-2073878607). Two threads' writes are ordered by the scheduler, so the sequence they were numbered in is the one this run happened to produce and a crash point would not name the same operation on the next. A run whose state-directory writes come from one thread of each process is judged, however many threads it created
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   the shim recorded a thread; the strace account was not read; the shim recorded 6 thread(s) created, and 2 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

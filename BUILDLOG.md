@@ -2,6 +2,262 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-11 — the trap set grows from the write family to every kill point, and one flag decides which door counts (#542, second of two)
+
+The first change made mlr refuse honestly: `oracle_missed_operation` at the `openat` of
+`mlr-in-place-*`, 6 runs of 6. That is the real wall, and it is not an oracle problem — mlr
+is Go, it issues `openat`, `write` and `renameat` straight to the kernel, and the shim's
+account holds `shim_ready` and one `thread` record and nothing else. Under `--observe
+syscalls` today the write family traps, so `write` would be counted, but the `openat` that
+creates the file and the `renameat` that installs it would not. Counting a target's writers
+means the trap set has to cover the operations `contract.OpClass.isKillPoint` admits, not
+just the ones that spell `write`.
+
+**Everything below was measured on the spike image (aarch64, glibc 2.36) before any of it
+was written**, because ADR 0052 decision 1 says the opposite — that the set stops at the
+write family — and the whole change rests on that decision being wrong for a reason, not
+wrong by preference.
+
+*`ld.so` was the reason, and the flags are the way past it* (`go542/ldso-probe.c`). A filter
+trapping **every** `openat` then `exec`ing `/bin/ls`: "Bad system call", rc 159 — ADR 0052
+decision 1 reproduced exactly. The same filter trapping `openat` only when
+`flags & (O_ACCMODE|O_CREAT|O_TRUNC)`: the exec survives, rc 0. And the writable-only filter
+against `sh -c 'echo x > /tmp/f'`: rc 159 — so the surviving case is a live filter that let a
+read-only open through, not a filter that died. A loader opens read-only; the mask is the one
+`common.openIsWriteCapable` already applies and the oracle's `isReadOnlyOpen` already mirrors,
+so admitting exactly the write-capable opens costs no new predicate.
+
+*A Go target keeps the handler if the shim keeps it* (`go542/trapgo.c`, a preloaded miniature
+of this design). Go installs its own `SIGSYS` handler through libc `sigaction`, with
+`SA_ONSTACK` (`probe-sigaction.txt`: a query, then a set with `onstack=1`). Interposing that
+one call — accept it, answer success, do not apply it — leaves the shim's handler in place and
+mlr runs to completion, rc 0, file rewritten, with `openat` (56), `write` (64) and `renameat`
+(38) each trapped and re-issued through the sentinel.
+
+*Ordering is a requirement, and the first version got it wrong.* That miniature opened its own
+log `O_WRONLY|O_CREAT` before installing the handler. An exec'd image inherits the filter and
+**not** the handler, so that open trapped with nothing to catch it and the exec'd `cat` died,
+rc 159. Handler first, then any write-capable open. So `installHandler` is now its own call,
+made from `common.init` before the trace open, **in every mode** — a process whose own mode is
+`wrappers` can still be standing in front of a filter its parent installed.
+
+*A blocked `SIGSYS` still kills* (`go542/blocked.c`). A trap on a thread with `SIGSYS` blocked
+does not reach the handler: the kernel resets the disposition and ends the process, rc 159.
+The plan's risk table said the signal is "delivered even when blocked"; that sentence is
+false, and it was false for the write family too — the hazard is disclosed in
+`docs/report-schema.md` item (4) and this change widens the exposure rather than creating it.
+The second door is interposable the same way: mlr touches `SIGSYS` through libc
+`pthread_sigmask` five times and still completes (`go542/trapgo-mask.txt`), so the mask calls
+get the same "answer success, do not apply" treatment as `sigaction`. Not yet written.
+
+**One flag, not two mechanisms.** With the set widened, the wrappers and the handler are two
+doors into one account, and the engine compares the shim's account to the oracle's position by
+position — so an operation counted twice refuses every run (`oracle_saw_phantom`) and doubles
+every crash-point number. `PR_GET_SECCOMP` was considered for the inherited-filter case and
+dropped: `syscalls.armed` already answers the question that matters, and answering it in two
+places is how the two places disagree. The handler records only while `armed`; each wrapper
+whose syscall is in the set stays silent while `armed` (`common.countedAtSyscall`, renamed from
+`writeCountedAtSyscall` because it is no longer about writes). A process in front of an
+inherited filter has `armed` false: the handler re-issues without recording and the wrappers
+count, which is the correct answer there and falls out of the same flag.
+
+**Building the filter had to change shape.** The old program was a flat list of `JEQ`
+comparisons and one shared tail. A per-member flag test cannot be written that way — each open
+needs its own `LD args[k]`, `AND mask`, `JEQ 0` block — so `buildProgram` now emits a
+comparison run that jumps to a per-member block, and the blocks fall through to the shared
+sentinel check. Classic BPF has forward-only jumps with `u8` offsets, which is the constraint
+that fixes the layout; `BPF_JA` and `BPF_ALU|AND|K` joined the simulator the tests run against.
+
+Three mutants, one at a time, all killed (`spike/` harness restored the source by hash
+afterwards): a read-only open falling into the trap, a member's jump landing one block late,
+and the mask losing `O_CREAT`. That run also found something the tests could not have told
+me: `shim/src/syscalls.zig`'s tests are only collected when the target is Linux
+(`build.zig:432`), so on this host `zig build test` was never building that binary at all —
+the first mutation attempt killed nothing because nothing ran. The tests are compiled with
+`--test-no-exec` and executed in the container now.
+
+**The fixture is the one that was already there.** `spike/toys/toy_raw.c` has been the
+standing "the shim sees nothing" target since v0.1 — it issues everything through
+`syscall(2)` — so it is also the exact shape this change is for, and a new `raw-all`
+subcommand issues ONE OF EVERY trapped name. Measured on aarch64, both modes, same binary
+and same sequence:
+
+    --observe wrappers   UNKNOWN oracle_missed_operation, divergence at operation 1
+                         (mkdirat); the shim's account ends after 0 operations
+    --observe syscalls   PASS, 21 worlds, oracle agreed on 20 operations
+
+Twenty is the whole portable set with nothing left over: mkdirat, a write-capable openat,
+write, pwrite64, writev, pwritev, ftruncate, fsync, fdatasync, truncate, linkat, symlinkat,
+renameat, renameat2, three unlinkats (one `AT_REMOVEDIR`), a second openat, sendfile,
+openat2. The agreement is what holds each arm of the handler's dispatch honest, and it was
+seen red: with the `AT_REMOVEDIR` arm removed, the same run refused at operation 17 naming
+both sides — "the oracle saw `unlinkat(…, AT_REMOVEDIR)`; the shim recorded
+`unlink(…)`". x86-64's eight legacy spellings compile in behind `#ifdef` and land above
+that floor; the acceptance leg asserts agreement plus the floor rather than a total,
+because a total measured on one machine is a number the other row cannot check.
+
+**A blocked `SIGSYS` is now measured rather than disclosed.** `toy-raw blocked` asks for
+exactly the thing that kills the mode — `sigprocmask` and `pthread_sigmask`, both doors,
+both blocking `SIGSYS` — and then writes raw. With the mask guards in place: PASS, oracle
+agreed on 3 operations. With the unblock removed from `maskGuard`: UNKNOWN
+`recording_run_failed`, the operation did not exit normally. That second state has no
+refusal to assert on, which is the argument for measuring it in the suite instead of
+leaving it in the risk table, where it had been written down **wrongly** — the plan said
+the signal is "delivered even when blocked", and it is not.
+
+**mlr's wall moved, and the writer count came out.** Same build, same define, six runs
+each (`spike/dogfood/2026-09-11-syscall-trap-542b/`): under `--observe wrappers` all six
+refuse `oracle_missed_operation` at operation 1 with the shim's account ending after **0**
+operations; under `--observe syscalls` none of them do. Five refuse
+`multiple_threads_detected` — naming the count the issue asked for, from the other
+direction: *"two threads of process 25 wrote in the judged directory: tid 25 performed
+`open(…)` and tid 28 performed `write(…)`"*, both on the in-place temporary — and the
+sixth is judged, exploring 3 crash points with the oracle agreeing on 3 operations. Those three are
+mlr's writers, one `SYS_SECCOMP` trap each in the capture: `__NR_openat`, `__NR_write`,
+`__NR_renameat`. Which thread gets which is Go's scheduler, so the split varies run to run
+and run 6 happened to land both on one.
+
+That is the answer to #542 and not a verdict on mlr: what stops five of six runs now is
+the v16 thread rule doing its job on an account it could not previously see.
+
+The plan's evidence for the `sigaction` interposition was wrong and is corrected in that
+record: it named "the `rt_sigaction(SIGSYS, …) = 0` line in the oracle capture", and that
+line cannot be there — the engine's strace arguments are
+`-e trace=%file,%desc,%process,setsid,setpgid`, which does not carry the signal-setting
+calls (measured: 0 matches in a 186-line capture). The evidence that survives is better:
+a target that replaces the shim's handler dies at its first trap, which is where mlr was,
+so three traps delivered plus a process that ran to completion says the handler held.
+
+**What the wider filter costs, measured rather than argued.** Review raised the linear
+`JEQ` chain: it grew from 4 comparisons to 17 (aarch64) or 25 (x86-64), and a seccomp
+program runs on *every* syscall the process makes, not only the trapped ones — the widest
+path this change touches. So it was measured: a tight loop of `getpid(2)`, two million
+calls, five pairs run alternating so machine drift cancels. **117.4–117.7 ns/call with the
+filter, 117.4–117.5 without it.** The difference is ±0.3 ns, which is the measurement's own
+noise, and the filter condition came out fastest as often as not. 22 BPF instructions do
+not show up beside a syscall. The finding named a real path and the wrong order of
+magnitude; the binary-search alternative is written into ADR 0059 so nobody has to
+rediscover it if a much larger set ever makes it visible.
+
+**Re-measuring the `SA_NODEFER` premise found a wrong comment.** The handler runs with
+`SIGSYS` blocked, so a nested trap ends the process; the standing justification was
+"nothing the handler calls is in the trap set". Read out of a capture of `toy-raw raw-all`
+— what the shim issues between each trap and its re-issue, over 20 traps — that is false:
+`lseek` 20, `pread64` 20, `statx` 8, `readlinkat` 8, and **`write` 19**. The trace channel
+is a write, and `write` is trapped. What makes it safe is not absence but marking:
+`traceWrite` carries the re-issue sentinel, so the filter allows it. The comment now says
+that, because the version that named absence would have had the next reader looking for a
+member that is there.
+
+**The review found a hole this change had opened in the handler, and it is the entry worth
+reading.** `onSigsys` never looked at `si_code`. It reads a syscall number out of the
+`siginfo_t` and **re-issues it**, and only a seccomp trap puts a number there — measured on
+both platforms the same day: `si_code` is at offset 8, `si_syscall` at 24, and `si_value`
+at 24 **as well**. So `sigqueue(pid, SIGSYS, value)` hands the handler a number of the
+sender's choosing, and `kill(pid, SIGSYS)` hands it a zero, which on x86-64 is `read`. That
+was true of the mode before this change; what this change did was install the handler in
+**every** mode, which carried it into the default one.
+
+Measured rather than reasoned about, with a toy that `sigqueue`s `SIGSYS` to itself
+carrying `getpid`'s number — and with a positive control, because the first attempt
+measured nothing: `zig-out` held the x86-64 build, the preload was silently ignored, and
+three identical rows came back. With the shim actually loaded (asserted by a non-empty
+trace):
+
+    si_code untested   "sigqueue: Success", exit 2 — the handler executed the number in
+                       si_value and wrote the result into the register sigqueue's own
+                       return value comes from, so a failed call read as a successful one
+    si_code tested     exit 159, in both modes and without the shim at all
+
+The fix is not `return`: returning swallows a signal the process would have died from,
+which changes the target as surely as running the wrong syscall does. The handler restores
+the default disposition and raises again — what would have happened with no shim loaded.
+`toy-raw foreign-sigsys` and an acceptance leg over all three conditions pin it.
+
+The same review found `openat2` making four sentences false. Its flags live in a struct,
+which classic BPF cannot follow, so it is trapped **unconditionally** while everything else
+in the open family is trapped on its flags — and "the two observers admit exactly the same
+opens" was written in the ADR, DESIGN, the README and this file's own header. The account
+is unaffected (the handler re-reads the struct and records nothing for a read-only one),
+but `src/oracle.zig`'s copy said "not trapped" for a read-only `openat2` and now says what
+the filter does. Three more from the same pass: the signal guards declined a target's
+`sigaction` on an architecture where `installHandler` had declined to install anything
+(`armGuards` ties the two decisions together), the handler's `renameat2` arm recorded
+`.unsupported` where the wrapper records nothing — two doors, one account, and the mode
+would have decided which — and the report line an operator reads still said "each trapped
+write".
+
+**A second first-look reader found the sentence that was still false, and it was one this
+entry had just written.** "The default mode is byte-for-byte what it was" — said in the
+README, in ADR 0059 and in the flag's own doc comment — was wrong in a way the `guard_signal`
+flag could not fix, because the flag gates *declining* and not *interposing*. The four
+symbols are exported in every mode, since a symbol cannot be exported conditionally, so a
+default-mode target forwards every `sigaction` and `sigprocmask` through a wrapper of ours.
+And that wrapper reached `dlsym` first: **`dlsym` is not async-signal-safe while `signal`
+and `sigprocmask` are**, so a target calling one of those from inside a signal handler
+could have met the loader's lock, in a process that never asked for the mode. All four are
+resolved in `common.init` now, a miss memoised as a miss, and the three sentences say what
+the default mode actually gets — a forward, one load and one indirect call.
+
+The same reader held the dogfood record to its own evidence, which is the axis this repo
+keeps for exactly this: `RESULTS.md` quoted `si_syscall=__NR_openat` lines and "a 186-line
+capture", and **no capture was committed** — the twelve transcripts hold the engine's
+report and nothing else. A seventh run now sits beside them with its `oracle.txt`, 190
+lines, absolute paths rewritten, and the three `SYS_SECCOMP` lines are quoted from the file
+that is there. The `rt_sigaction` count is re-measured on it (0 of 190). The record also
+now says that `sideeye version` prints `1.3.0` in every transcript because the version is
+bumped at release, so the string does not identify the build — what does is that a real
+1.3.0 would refuse every `syscalls` row at operation 1, exactly as the `wrappers` rows do.
+
+**The fix-confirmation pass found the same false sentence twice more.** A third fresh
+reader confirmed all eleven first-review findings closed in code and walked every
+Linux-exported recording site against `wrapperSilent` without finding one that misbehaves.
+What it found was prose: "the default mode is untouched" in `syscalls.zig`'s module header
+and "byte-for-byte what v13 did" in `contract.zig`'s `ObserveMode` doc — the *same* claim
+this entry records correcting in three other places, surviving in two this change had
+itself rewritten. They were found this time by grepping for every such claim rather than
+fixing the ones in view: exactly two, and every other `byte-for-byte` in the tree is about
+repeatable writes. It also caught the CHANGELOG still describing the deleted fourth
+comparison, and "every path here ends the same way" on the foreign-`SIGSYS` path, which a
+pid namespace's init falsifies by ignoring a signal it has no handler for.
+
+**The gate moved from 31 call sites to one, and a check went away with them.** The first
+version of this change wrote `if (!common.countedAtSyscall())` at each of `ops.zig`'s 31
+recording sites, and then — because a new wrapper could forget one — grew a fourth
+comparison in `check-shim-coverage.py`: a ninety-line function parser that walked the file
+and a fourteen-entry table of wrappers exempted with reasons. Three reviewers pointed at
+the same place independently. The trap set is exactly the classes
+`contract.OpClass.isKillPoint` admits, so the class a wrapper is about to record already
+answers "is the handler counting this" — the gate belongs in `common.zig`'s recording
+functions, asked once, with nothing per-wrapper to remember:
+
+    inline fn wrapperSilent(op) bool { return countedAtSyscall() and op.isKillPoint(); }
+
+`note1`/`note2`/`noteFd`/`noteLinkByDescriptor` are the wrapper's door and carry it; the
+`*FromTrap` names beside them are the handler's and do not — the handler calls the same
+functions, so a gate at the top of one body would have silenced both doors. One wrapper
+uses the handler's door: `copy_file_range`, whose six arguments keep it out of the set.
+31 gates → 1, and the ninety lines of Python and the fourteen-entry table are deleted
+rather than maintained.
+
+Falsifying the new shape found a hole in what was falsifying the old one. Removing the
+gate entirely turns **eight** acceptance legs red — the one that names it is "a libc
+`write()` … exactly one under syscalls, **not two**", which the previous PR left behind for
+exactly this. But removing only `op.isKillPoint()` kept the **whole suite green**, and it
+is not a no-op: `.close` is recorded by a wrapper, is not a kill point, and would stop
+being recorded in syscalls mode. The `raw-all` leg cannot see it — that toy reaches no
+libc wrapper at all, which is its whole point — so a leg was added beside the existing
+"close is still recorded in the trace" one, running the same toy in the other mode. It
+goes red on that mutant (`wrappers: 1, syscalls: 0`) and green without it.
+
+The drift detector grew with the set. `spike/check-shim-coverage.py` now reads the trap set
+per architecture, compares the oracle's copy against the union of both, and asks about
+every KILL-POINT member of `known` rather than only the `.write` ones — the classes read
+from `contract.OpClass.isKillPoint`, not listed in the script. Four falsifications, each
+caught by the comparison meant for it: the oracle's copy losing a member, the copy
+claiming one the filter does not trap, a kill point leaving the filter on both
+architectures, and a `NOT_TRAPPED` reason naming nothing.
+
 ## 2026-09-11 — `epoll_ctl` and `faccessat2` are reads, and mlr's refusal will name its real wall (#542, first of two)
 
 #542 said mlr refuses `unsupported_syscall_observed` on `epoll_ctl` before the thread rule

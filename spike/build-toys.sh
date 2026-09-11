@@ -5,6 +5,8 @@
 #   toy-bug     supported target with a real crash-consistency bug -> expect FAIL
 #   toy-fixed   supported target without it                        -> expect PASS
 #   toy-raw     bypasses libc entirely                             -> expect UNKNOWN
+#               (and, under --observe syscalls, a verdict: `raw-all` issues one of every
+#                trapped name, so the handler's whole dispatch is read against the oracle)
 #   toy-static  no dynamic linker, so no injection at all          -> expect UNKNOWN
 #   toy-rust    a real-language stand-in; what it calls is measured, not assumed
 set -eu

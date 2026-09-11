@@ -417,9 +417,9 @@ pub fn holdsId(list: []const Event, id: u64) bool {
 
 /// Is this the kernel refusing a syscall under a seccomp filter?
 ///
-/// `--observe syscalls` traps the write family with `SECCOMP_RET_TRAP`, so a write the
-/// target issued reaches this reader twice: the refused entry, and the handler's re-issue
-/// carrying the sentinel. Only the second one ran. strace prints the signal without being
+/// `--observe syscalls` traps every kill point with `SECCOMP_RET_TRAP`, so an operation
+/// the target issued reaches this reader twice: the refused entry, and the handler's
+/// re-issue carrying the sentinel. Only the second one ran. strace prints the signal without being
 /// asked — `-e trace=` filters syscalls, not signals — so the flags the engine already
 /// passes carry it, measured in `spike/followup-trapwitness/`:
 ///
@@ -442,6 +442,15 @@ fn isSeccompRefusal(raw: []const u8) bool {
 
 /// The syscalls `--observe syscalls` traps, spelled as strace prints them.
 ///
+/// The union of both architectures' sets. The eight legacy spellings at the end exist as
+/// syscalls on x86-64 only; on aarch64 glibc issues the `*at` form instead, so a name
+/// that cannot appear in a capture from that machine costs nothing to carry here — and
+/// carrying both means this list does not have to know which machine it is reading.
+///
+/// The open family is admitted by the filter only when its flags say the call can change
+/// something, so it is conditional here too: `isReadOnlyOpen` is the text form of the mask
+/// the filter applies, and answers false for every name that is not an open.
+///
 /// The shim builds a BPF program and this reader parses text, so there is no declaration
 /// for the two to share and this is a copy. **The standing drift detector is
 /// `spike/check-shim-coverage.py`**, which reads both lists from the code that uses them
@@ -450,13 +459,34 @@ fn isSeccompRefusal(raw: []const u8) bool {
 /// that should have happened, which the completeness comparison refuses on loudly but in a
 /// place that names neither list — while a member here that the filter does not trap is
 /// silent, because nothing ever raises the signal that would use it.
-fn isTrappedWrite(name: []const u8) bool {
-    const family = [_][]const u8{ "write", "pwrite64", "writev", "pwritev" };
-    for (family) |f| {
-        if (std.mem.eql(u8, name, f)) return true;
+fn isTrapped(name: []const u8, line: []const u8) bool {
+    // The first seventeen exist on both architectures. The last eight are x86-64's legacy
+    // spellings, for which aarch64 has no syscall at all.
+    const set = [_][]const u8{
+        "write",   "pwrite64",  "writev",    "pwritev",   "sendfile",
+        "openat",  "openat2",   "renameat",  "renameat2", "unlinkat",
+        "mkdirat", "linkat",    "symlinkat", "truncate",  "ftruncate",
+        "fsync",   "fdatasync", "open",      "creat",     "rename",
+        "unlink",  "rmdir",     "mkdir",     "link",      "symlink",
+    };
+    for (set) |f| {
+        if (!std.mem.eql(u8, name, f)) continue;
+        // `openat2` carries its flags inside a struct, and a BPF program cannot follow a
+        // pointer — so the filter traps EVERY `openat2` and the handler re-reads the
+        // struct to decide whether to record. The other two open spellings have their
+        // flags in a register, and there the filter applies the same mask this side reads
+        // from the text. Answering "trapped" for a read-only `openat2` is therefore the
+        // truth about the filter, not a looser rule (review, P1).
+        if (std.mem.eql(u8, name, "openat2")) return true;
+        return !isReadOnlyOpen(name, line);
     }
     return false;
 }
+// The open arm above cannot fire from either of this file's two call sites: both drop a
+// read-only open before they get here, for their own reason (it is not an operation on
+// either side — ADR 0003). It is written anyway because this predicate answers "does the
+// filter trap this", and answering yes for a call the filter admits would be a trap laid
+// for the next caller. The test asserts it directly for the same reason; no capture can.
 
 /// A write this reader appended that the kernel may not have executed.
 ///
@@ -1306,7 +1336,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // (ADR 0003), so an in-scope and an unresolvable operation are judged alike.
             if (is_shared_write_map or changesPersistentState(name, line)) {
                 try noteEvent(arena, &out.mutations, pid.?, out.lines_seen);
-                if (isTrappedWrite(name))
+                if (isTrapped(name, line))
                     try setPending(arena, &pending, .{ .pid = pid, .op = null, .mutation = out.mutations.items.len - 1 });
             }
             continue;
@@ -1371,7 +1401,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // a child had not been collected yet, and the parent is the anyone else that
             // most often has.
             if (pid) |me| try noteEvent(arena, &out.mutations, me, out.lines_seen);
-            if (isTrappedWrite(name)) try setPending(arena, &pending, .{
+            if (isTrapped(name, line)) try setPending(arena, &pending, .{
                 .pid = pid,
                 .op = out.classes.items.len - 1,
                 .mutation = if (pid == null) null else out.mutations.items.len - 1,
@@ -1484,18 +1514,21 @@ test "every member of the trapped family is retracted, not just write" {
     defer arena_state.deinit();
 
     // `write` is the member every other test here uses, and it is the one member whose
-    // retraction working proves least about the other three: they reach `isTrappedWrite`
-    // through the same list but the oracle spells and places them differently.
+    // retraction working proves least about the rest: they reach `isTrapped` through the
+    // same list but the oracle spells and places them differently.
     // `spike/check-shim-coverage.py` holds the list against the filter's; this holds the
     // list against the reader that consumes it.
-    try std.testing.expect(isTrappedWrite("write"));
-    try std.testing.expect(isTrappedWrite("pwrite64"));
-    try std.testing.expect(isTrappedWrite("writev"));
-    try std.testing.expect(isTrappedWrite("pwritev"));
+    try std.testing.expect(isTrapped("write", ""));
+    try std.testing.expect(isTrapped("pwrite64", ""));
+    try std.testing.expect(isTrapped("writev", ""));
+    try std.testing.expect(isTrapped("pwritev", ""));
     // Not trapped: six arguments leave the filter no register for the re-issue marker,
-    // so nothing raises a signal for it and an entry here could never fire (ADR 0052).
-    try std.testing.expect(!isTrappedWrite("pwritev2"));
-    try std.testing.expect(!isTrappedWrite("openat"));
+    // so nothing raises a signal for either and an entry here could never fire (ADR 0052).
+    try std.testing.expect(!isTrapped("pwritev2", ""));
+    try std.testing.expect(!isTrapped("copy_file_range", ""));
+    // Not trapped for a different reason: the comparison excludes it, so trapping it
+    // would buy an interception with nothing to count (ADR 0003).
+    try std.testing.expect(!isTrapped("close", ""));
 
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
@@ -1518,6 +1551,72 @@ test "every member of the trapped family is retracted, not just write" {
     try std.testing.expectEqual(@as(usize, 3), p.mutations.items.len);
     // And the line kept for each is the one that ran.
     for (p.lines.items) |l| try std.testing.expect(std.mem.endsWith(u8, l, "= 1"));
+}
+
+test "a refused open, rename or unlink is retracted the way a refused write is (#542)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+
+    // The set stopped at the write family until #542, so every retraction test above is
+    // about a `.write`. These three are the ones the widening is FOR — mlr's account is
+    // an openat, a write and a renameat, and none of the three reaches a libc wrapper —
+    // and each is placed differently by the reader: an open carries a flags test, a
+    // rename carries two paths, an unlink carries one.
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    openat(AT_FDCWD, "/tmp/o/state/a.tmp", O_WRONLY|O_CREAT|O_EXCL, 0600) = -1 ENOSYS (Function not implemented)
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_openat, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    openat(AT_FDCWD, "/tmp/o/state/a.tmp", O_WRONLY|O_CREAT|O_EXCL, 0600) = 3</tmp/o/state/a.tmp>
+        \\10    renameat(AT_FDCWD, "/tmp/o/state/a.tmp", AT_FDCWD, "/tmp/o/state/a") = -1 ENOSYS (Function not implemented)
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_renameat, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    renameat(AT_FDCWD, "/tmp/o/state/a.tmp", AT_FDCWD, "/tmp/o/state/a") = 0
+        \\10    unlinkat(AT_FDCWD, "/tmp/o/state/old", 0) = -1 ENOSYS (Function not implemented)
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_unlinkat, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    unlinkat(AT_FDCWD, "/tmp/o/state/old", 0) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
+    // Three operations, not six, and in the order they ran.
+    const want = [_]contract.OpClass{ .open, .rename, .unlink };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(usize, 3), p.mutations.items.len);
+    // The line kept for each is the one that ran, not the one the kernel refused.
+    for (p.lines.items) |l| try std.testing.expect(std.mem.indexOf(u8, l, "ENOSYS") == null);
+    // And nothing here reads as a call this mode cannot account for.
+    try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+}
+
+test "a read-only open is not in the trap set, whatever spelling it arrives in (#542)" {
+    // The filter admits an open only when its flags say the call can change something —
+    // that test is what lets an exec'd image's loader survive, and `isTrapped` has to
+    // describe the same set or a caller reading it would expect a signal that never
+    // comes. Asserted directly because neither call site can drive it: both drop a
+    // read-only open before they ask (ADR 0003).
+    const ro_at = "10    openat(AT_FDCWD, \"/tmp/o/state/a\", O_RDONLY|O_CLOEXEC) = 3";
+    const rw_at = "10    openat(AT_FDCWD, \"/tmp/o/state/a\", O_RDWR) = 3";
+    try std.testing.expect(!isTrapped("openat", ro_at));
+    try std.testing.expect(isTrapped("openat", rw_at));
+
+    // The legacy spelling, whose flags are one argument earlier, and the one whose flags
+    // live inside a struct. A single shared argument index would get one of them wrong.
+    try std.testing.expect(!isTrapped("open", "10    open(\"/tmp/o/state/a\", O_RDONLY) = 3"));
+    try std.testing.expect(isTrapped("open", "10    open(\"/tmp/o/state/a\", O_WRONLY|O_CREAT, 0644) = 3"));
+    // `openat2` is the exception in the other direction, and the reason is the filter's
+    // and not this reader's: its flags are inside a struct, which a BPF program cannot
+    // follow, so EVERY `openat2` traps and the handler re-reads the struct. A read-only
+    // one is trapped and then not recorded — which is why this answers true for both.
+    try std.testing.expect(isTrapped(
+        "openat2",
+        "10    openat2(AT_FDCWD, \"/tmp/o/state/a\", {flags=O_RDONLY|O_CLOEXEC, mode=0, resolve=0}, 24) = 3",
+    ));
+    try std.testing.expect(isTrapped(
+        "openat2",
+        "10    openat2(AT_FDCWD, \"/tmp/o/state/a\", {flags=O_RDWR|O_CREAT, mode=0600, resolve=0}, 24) = 3",
+    ));
+
+    // `creat` spells none of the three flags and is trapped unconditionally, on the one
+    // architecture that still has the syscall.
+    try std.testing.expect(isTrapped("creat", "10    creat(\"/tmp/o/state/a\", 0644) = 3"));
 }
 
 test "a refused write is retracted whatever the register held (x86-64)" {

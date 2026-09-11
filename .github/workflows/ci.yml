@@ -171,7 +171,7 @@ jobs:
       # class-drift check lives in spike/cohort4/ and is reachable only from that
       # cohort's own script, which is why it could not have caught this one.
       - name: Every classified syscall is interposed or explained (#256)
-        run: python3 spike/check-shim-coverage.py src/oracle.zig shim/src/linux.zig shim/src/syscalls.zig
+        run: python3 spike/check-shim-coverage.py src/oracle.zig shim/src/linux.zig shim/src/syscalls.zig src/contract.zig
 
       - name: Install the completeness oracle
         run: sudo apt-get update && sudo apt-get install -y strace
