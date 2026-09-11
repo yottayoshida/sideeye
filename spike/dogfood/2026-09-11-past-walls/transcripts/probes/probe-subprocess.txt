@@ -1,0 +1,29 @@
+jbig2: absent   pngquant: absent
+==================== sp3 / plain ====================
+abs path, no pipes  -> FileNotFoundError
+abs path, pipes     -> FileNotFoundError
+PATH name, no pipes -> FileNotFoundError
+PATH name, pipes    -> FileNotFoundError
+==================== sp3 / preflight --observe wrappers ====================
+abs path, no pipes  -> FileNotFoundError
+abs path, pipes     -> FileNotFoundError
+PATH name, no pipes -> FileNotFoundError
+PATH name, pipes    -> FileNotFoundError
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+==================== sp3 / preflight --observe syscalls ====================
+abs path, no pipes  -> FileNotFoundError
+abs path, pipes     -> FileNotFoundError
+PATH name, no pipes -> ran, returncode -31
+PATH name, pipes    -> ran, returncode -31
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+==================== sp2 / plain ====================
+main-thread: get_version(jbig2) raised MissingDependencyError Could not find program 'jbig2' on the PATH
+worker-thread: get_version(jbig2) raised MissingDependencyError Could not find program 'jbig2' on the PATH
+==================== sp2 / preflight --observe wrappers ====================
+main-thread: get_version(jbig2) raised MissingDependencyError Could not find program 'jbig2' on the PATH
+worker-thread: get_version(jbig2) raised MissingDependencyError Could not find program 'jbig2' on the PATH
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+==================== sp2 / preflight --observe syscalls ====================
+main-thread: get_version(jbig2) raised MissingDependencyError Ran program 'jbig2' but it exited with an error:
+worker-thread: get_version(jbig2) raised MissingDependencyError Ran program 'jbig2' but it exited with an error:
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed

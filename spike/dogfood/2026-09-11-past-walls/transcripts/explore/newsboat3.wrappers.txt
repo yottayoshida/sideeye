@@ -1,0 +1,24 @@
+falsify: cache.db: Traceback (most recent call last):
+falsify:   File "<stdin>", line 3, in <module>
+falsify: sqlite3.DatabaseError: file is not a database
+FAIL  15 of 44 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 26 of 43
+            after  write(/localrun/st/wrappers/newsboat3/cache.db)
+            before write(/localrun/st/wrappers/newsboat3/cache.db)
+path        cache.db
+observed    holding neither the old nor the new content
+explored    44 worlds (crash points 43 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 43 operations (889 syscall lines examined, 337 in scope of the judged state), witness strace
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 44 world(s)
+l1          no marker configured
+case        /localrun/wk/wrappers/newsboat3/cases/000001.json
+replay      sideeye replay /localrun/wk/wrappers/newsboat3/cases/000001.json --shim /se/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/wrappers/newsboat3 SIDEEYE_TRACE_PATH=/localrun/wk/wrappers/newsboat3/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=26 SIDEEYE_SEQ_BASE= <operation>

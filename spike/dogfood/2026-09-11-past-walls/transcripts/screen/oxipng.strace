@@ -1,0 +1,28 @@
+80    execve("/usr/local/bin/oxipng", ["oxipng", "-q", "-o", "2", "/localrun/st/strace/oxipng/a.png"], 0xffffd0139548 /* 9 vars */) = 0
+80    openat(AT_FDCWD</w>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+80    openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgcc_s.so.1>
+80    openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+80    openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+80    openat(AT_FDCWD</w>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/80/cgroup>
+80    openat(AT_FDCWD</w>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3</sys/fs/cgroup/cpu.max>
+80    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff9b81f190, parent_tid=0xffff9b81f190, exit_signal=0, stack=0xffff9b610000, stack_size=0x20e9a0, tls=0xffff9b81f7e0}, 88) = -1 ENOSYS (Function not implemented)
+80    clone(child_stack=0xffff9b81e9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[81], tls=0xffff9b81f7e0, child_tidptr=0xffff9b81f190) = 81
+80    clone(child_stack=0xffff9b60e9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[82], tls=0xffff9b60f7e0, child_tidptr=0xffff9b60f190) = 82
+80    clone(child_stack=0xffff9b3fe9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[83], tls=0xffff9b3ff7e0, child_tidptr=0xffff9b3ff190) = 83
+80    clone(child_stack=0xffff9b1ee9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[84], tls=0xffff9b1ef7e0, child_tidptr=0xffff9b1ef190) = 84
+80    clone(child_stack=0xffff9afde9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[85], tls=0xffff9afdf7e0, child_tidptr=0xffff9afdf190) = 85
+80    clone(child_stack=0xffff9adce9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[86], tls=0xffff9adcf7e0, child_tidptr=0xffff9adcf190) = 86
+80    clone(child_stack=0xffff9abbe9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[87], tls=0xffff9abbf7e0, child_tidptr=0xffff9abbf190) = 87
+80    clone(child_stack=0xffff9a9ae9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[88], tls=0xffff9a9af7e0, child_tidptr=0xffff9a9af190) = 88
+80    clone(child_stack=0xffff9a79e9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[89], tls=0xffff9a79f7e0, child_tidptr=0xffff9a79f190) = 89
+89    openat(AT_FDCWD</w>, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC <unfinished ...>
+80    clone(child_stack=0xffff9a58e9a0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID <unfinished ...>
+89    <... openat resumed>)             = 3</sys/devices/system/cpu/online>
+80    <... clone resumed>, parent_tid=[90], tls=0xffff9a58f7e0, child_tidptr=0xffff9a58f190) = 90
+80    openat(AT_FDCWD</w>, "/localrun/st/strace/oxipng/a.png", O_RDONLY|O_CLOEXEC) = 4</localrun/st/strace/oxipng/a.png>
+80    openat(AT_FDCWD</w>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 3</proc/80/auxv>
+80    openat(AT_FDCWD</w>, "/sys/devices/system/cpu/cpu0/regs/identification/midr_el1", O_RDONLY|O_CLOEXEC) = 3</sys/devices/system/cpu/cpu0/regs/identification/midr_el1>
+80    openat(AT_FDCWD</w>, "/localrun/st/strace/oxipng/a.png", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</localrun/st/strace/oxipng/a.png>
+80    write(3</localrun/st/strace/oxipng/a.png>, "\211PNG\r\n\32\n\0\0\0\rIHDR\0\0\0@\0\0\0@\10\2\0\0\0%\v\346"..., 177) = 177
+83    ???( <unfinished ...>
+82    ???( <detached ...>

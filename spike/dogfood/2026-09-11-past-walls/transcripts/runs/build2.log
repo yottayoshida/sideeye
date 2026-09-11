@@ -1,0 +1,63 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.85kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/11] FROM docker.io/library/debian:trixie-slim@sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132
+#4 resolve docker.io/library/debian:trixie-slim@sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 920.32kB 0.0s done
+#5 DONE 0.0s
+
+#6 [ 2/11] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 ca-certificates unzip procps
+#6 CACHED
+
+#7 [ 3/11] RUN for p in newsboat oxipng rsync ocrmypdf tesseract-ocr-eng ghostscript ansible-core; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#7 CACHED
+
+#8 [ 6/11] RUN pip3 install --break-system-packages       --trusted-host pypi.org --trusted-host files.pythonhosted.org setuptools
+#8 CACHED
+
+#9 [ 4/11] COPY bun /usr/local/bin/bun
+#9 CACHED
+
+#10 [ 5/11] RUN apt-get install -y --no-install-recommends       nodejs npm make g++ python3-dev python3-pip libsecret-1-dev pkg-config libnode-dev
+#10 CACHED
+
+#11 [ 7/11] RUN npm config set registry https://registry.npmjs.org/  && npm config set strict-ssl false  && npm install -g --unsafe-perm joplin
+#11 CACHED
+
+#12 [ 8/11] RUN joplin version > /dev/null 2>&1; echo "joplin version rc=$?"; bun --version
+#12 0.996 joplin version rc=0
+#12 0.997 1.4.2
+#12 DONE 1.0s
+
+#13 [ 9/11] COPY oxipng /usr/local/bin/oxipng
+#13 DONE 0.0s
+
+#14 [10/11] RUN oxipng --version
+#14 0.095 oxipng 10.2.1
+#14 DONE 0.1s
+
+#15 [11/11] WORKDIR /w
+#15 DONE 0.0s
+
+#16 exporting to image
+#16 exporting layers 0.0s done
+#16 exporting manifest sha256:06d0eabba4a5747f21a69b6c5dbdcf90314f9aed237ed9caf6eb61391e022a75 done
+#16 exporting config sha256:f49e54133ea04435be1a21071fa27be26422967195ab422605acef1fdfb84a5c done
+#16 exporting attestation manifest sha256:3bf717de0da3521321980a2a846eefc6285a4cdfa10cc0241b4c7c55d56abc16 done
+#16 exporting manifest list sha256:21c4a521ca129071055ad690a563d08dcc92c8221b272e56011ceb04bd278797 done
+#16 naming to docker.io/library/sideeye-dogfood:2026-09-11 done
+#16 unpacking to docker.io/library/sideeye-dogfood:2026-09-11 0.0s done
+#16 DONE 0.1s

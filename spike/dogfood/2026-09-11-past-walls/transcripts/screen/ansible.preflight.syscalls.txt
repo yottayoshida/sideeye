@@ -1,0 +1,13 @@
+UNKNOWN  child_process_detected
+         a process left the containment group (setsid/setpgid); the engine cannot claim to have stopped it
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   0 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): f.txt
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   a process other than the subject operated on the judged directory; its operations have no crash-point address; the shim recorded 1 thread(s) created, and 0 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

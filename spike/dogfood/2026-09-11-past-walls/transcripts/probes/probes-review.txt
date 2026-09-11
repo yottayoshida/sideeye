@@ -1,0 +1,64 @@
+==================== versions ====================
+sideeye 1.3.0 (trace contract v16)
+ansible-core 2.19.4-0+deb13u1
+ghostscript 10.05.1~dfsg-1+deb13u1
+libc6 2.41-12+deb13u3
+newsboat 2.36-1.1
+nodejs 20.19.2+dfsg-1+deb13u2
+ocrmypdf 16.7.0+dfsg1-3
+python3 3.13.5-1
+rsync 3.4.1+ds1-5+deb13u4
+tesseract-ocr 5.5.0-1+b1
+oxipng: oxipng 10.2.1
+bun: 1.4.2
+node: v20.19.2
+`-- joplin@3.7.1
+PTHREAD_STACK_MIN 131072
+
+==================== newsboat: plain preflight and --twice, undated (newsboat2) and dated (newsboat3) ====================
+newsboat2 wrappers plain rc=0  PREFLIGHT  recording accepted — 43 state-changing operation(s) observed
+    next         sideeye explore --state /localrun/st/pf-newsboat2-wrappers-plain --setup "/localrun/ap/setup-newsboat2.sh" --operation "newsboat -u /localrun/st/pf-newsboat2-wrappers-plain/urls -c /local
+newsboat2 wrappers twice rc=1  PREFLIGHT  not accepted — the two observed runs left different state
+    PREFLIGHT  not accepted — the two observed runs left different state
+    difference   cache.db (content differs)
+    repeatability  two runs 2005 ms apart differed under --state
+newsboat2 syscalls plain rc=0  PREFLIGHT  recording accepted — 43 state-changing operation(s) observed
+    next         sideeye explore --state /localrun/st/pf-newsboat2-syscalls-plain --setup "/localrun/ap/setup-newsboat2.sh" --operation "newsboat -u /localrun/st/pf-newsboat2-syscalls-plain/urls -c /local
+newsboat2 syscalls twice rc=1  PREFLIGHT  not accepted — the two observed runs left different state
+    PREFLIGHT  not accepted — the two observed runs left different state
+    difference   cache.db (content differs)
+    repeatability  two runs 2004 ms apart differed under --state
+newsboat3 wrappers plain rc=0  PREFLIGHT  recording accepted — 43 state-changing operation(s) observed
+    next         sideeye explore --state /localrun/st/pf-newsboat3-wrappers-plain --setup "/localrun/ap/setup-newsboat3.sh" --operation "newsboat -u /localrun/st/pf-newsboat3-wrappers-plain/urls -c /local
+newsboat3 wrappers twice rc=0  PREFLIGHT  recording accepted — 43 state-changing operation(s) observed
+    next         sideeye explore --state /localrun/st/pf-newsboat3-wrappers-twice --setup "/localrun/ap/setup-newsboat3.sh" --operation "newsboat -u /localrun/st/pf-newsboat3-wrappers-twice/urls -c /local
+newsboat3 syscalls plain rc=0  PREFLIGHT  recording accepted — 43 state-changing operation(s) observed
+    next         sideeye explore --state /localrun/st/pf-newsboat3-syscalls-plain --setup "/localrun/ap/setup-newsboat3.sh" --operation "newsboat -u /localrun/st/pf-newsboat3-syscalls-plain/urls -c /local
+newsboat3 syscalls twice rc=0  PREFLIGHT  recording accepted — 43 state-changing operation(s) observed
+    next         sideeye explore --state /localrun/st/pf-newsboat3-syscalls-twice --setup "/localrun/ap/setup-newsboat3.sh" --operation "newsboat -u /localrun/st/pf-newsboat3-syscalls-twice/urls -c /local
+
+==================== newsboat: what an undated item is stamped with ====================
+run 1 read at 1789105606 stored: [('undated', 1789105606)]
+run 2 read at 1789105608 stored: [('undated', 1789105608)]
+
+==================== oxipng under ulimit -f 0, and its write path ====================
+before: 12420 bytes
+oxipng rc=153
+File size limit exceeded
+after:  0 bytes
+[pid   270] openat(AT_FDCWD</w>, "/localrun/st/ulimit/a.png", O_RDONLY|O_CLOEXEC) = 3</localrun/st/ulimit/a.png>
+[pid   270] openat(AT_FDCWD</w>, "/localrun/st/ulimit/a.png", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</localrun/st/ulimit/a.png>
+[pid   270] write(3</localrun/st/ulimit/a.png>, "\211PNG\r\n\32\n\0\0\0\rIHDR\0\0\0@\0\0\0@\10\2\0\0\0%\v\346"..., 177) = 177
+
+==================== strace -k in this image ====================
+strace -- version 6.13
+strace: Stack traces (-k/--stack-trace option) are not supported by this build of strace
+rc=1
+
+==================== ansible: which call leaves the containment group ====================
+ansible rc=0
+pid 292 setsid() = 292   the process: (no exec of its own; a fork of 289, /usr/bin/ansible)
+
+==================== --scratch with an absolute path ====================
+explore rc=3
+SETUP ERROR  a scratch path is relative to the state directory; an absolute path cannot be under it

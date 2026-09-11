@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (197 syscall lines examined, 15 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped write and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+processes    single process in the recording; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/syscalls/oxipng --setup "/localrun/ap/setup-oxipng.sh" --operation "oxipng -q -o 2 /localrun/st/syscalls/oxipng/a.png" \
+               --check <your-invariant.sh> --shim /se/libsideeye_shim.so --oracle /usr/bin/strace

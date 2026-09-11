@@ -1,0 +1,24 @@
+# python3 apparatus/elfsyms.py, run on the host against the release tarball's libsideeye_shim.so and Bun 1.4.2's bun-linux-aarch64 binary (2026-09-11T05:46:52Z)
+## shim: phdr
+PT_TLS filesz=0 memsz=262165 align=8
+## shim: tls (the STT_TLS symbols, largest first)
+262144 Thread.maybeAttachSignalStack.global.signal_stack
+8 debug.panic_stage
+8 Io.Threaded.Thread.current
+4 Thread.LinuxThreadImpl.tls_thread_id.0
+1 Thread.LinuxThreadImpl.tls_thread_id.1
+0 $d
+## bun: which of these it imports from libc (undefined in .dynsym)
+imports write
+imports unlinkat
+imports unlink
+imports renameat
+imports rename
+imports pwrite64
+imports openat
+imports open64
+imports open
+imports mkdirat
+imports mkdir
+imports ftruncate
+not imported: ['openat64', 'renameat2']
