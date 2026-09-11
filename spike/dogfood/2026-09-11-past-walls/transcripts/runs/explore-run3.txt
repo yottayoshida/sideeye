@@ -1,0 +1,22 @@
+sideeye 1.3.0 (trace contract v16)
+==================== newsboat3 / wrappers ====================
+op: newsboat -u /localrun/st/wrappers/newsboat3/urls -c /localrun/st/wrappers/newsboat3/cache.db -C /localrun/st/wrappers/newsboat3/config -x reload
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+FAIL  15 of 44 explored worlds violated an invariant
+earliest    crash point 26 of 43
+explored    44 worlds (crash points 43 + 1 baseline)
+oracle      agreed on 43 operations (889 syscall lines examined, 337 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 44 world(s)
+processes   single process
+
+==================== newsboat3 / syscalls ====================
+op: newsboat -u /localrun/st/syscalls/newsboat3/urls -c /localrun/st/syscalls/newsboat3/cache.db -C /localrun/st/syscalls/newsboat3/config -x reload
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+FAIL  15 of 44 explored worlds violated an invariant
+earliest    crash point 26 of 43
+explored    44 worlds (crash points 43 + 1 baseline)
+oracle      agreed on 43 operations (959 syscall lines examined, 337 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped write and the handler re-issues it, so the capture carries the refused entry beside the one that 
+checker     falsified before the run (corrupted state -> check failed); ran in 44 world(s)
+processes   single process
+
+docker rc=0

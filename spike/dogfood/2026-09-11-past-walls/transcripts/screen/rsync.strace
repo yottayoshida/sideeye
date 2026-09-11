@@ -1,0 +1,73 @@
+154   execve("/usr/bin/rsync", ["rsync", "-a", "/localrun/aux/rsrc/", "/localrun/st/strace/rsync/"], 0xffffcd81d450 /* 9 vars */) = 0
+154   openat(AT_FDCWD</w>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libacl.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libacl.so.1.1.2302>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libpopt.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpopt.so.0.0.2>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/liblz4.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblz4.so.1.10.0>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libzstd.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libzstd.so.1.5.7>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libxxhash.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libxxhash.so.0.8.3>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libcrypto.so.3", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libcrypto.so.3>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+154   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+154   openat(AT_FDCWD</w>, "/etc/popt", O_RDONLY) = -1 ENOENT (No such file or directory)
+154   openat(AT_FDCWD</w>, "/localrun/aux/home/.popt", O_RDONLY) = -1 ENOENT (No such file or directory)
+154   clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xffffbabf1810) = 155
+154   openat(AT_FDCWD</w>, "/usr/lib/aarch64-linux-gnu/gconv/gconv-modules.cache", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/gconv/gconv-modules.cache>
+155   write(1<socket:[20064]>, " \0\0\0", 4 <unfinished ...>
+154   write(4<socket:[20062]>, " \0\0\0", 4 <unfinished ...>
+155   <... write resumed>)              = 4
+154   <... write resumed>)              = 4
+155   write(1<socket:[20064]>, "\201\377", 2) = 2
+155   openat(AT_FDCWD</w>, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 3</etc/ssl/openssl.cnf>
+154   openat(AT_FDCWD</w>, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 3</etc/ssl/openssl.cnf>
+154   write(4<socket:[20062]>, "\36", 1 <unfinished ...>
+155   write(1<socket:[20064]>, "#", 1 <unfinished ...>
+154   <... write resumed>)              = 1
+155   <... write resumed>)              = 1
+154   write(4<socket:[20062]>, "xxh128 xxh3 xxh64 md5 md4 sha1", 30 <unfinished ...>
+155   write(1<socket:[20064]>, "xxh128 xxh3 xxh64 md5 md4 sha1 n"..., 35 <unfinished ...>
+154   <... write resumed>)              = 30
+155   <... write resumed>)              = 35
+155   write(1<socket:[20064]>, "\33\254\243j", 4) = 4
+154   openat(AT_FDCWD</localrun/aux/rsrc>, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 3</etc/nsswitch.conf>
+154   openat(AT_FDCWD</localrun/aux/rsrc>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3</etc/passwd>
+154   openat(AT_FDCWD</localrun/aux/rsrc>, "/etc/group", O_RDONLY|O_CLOEXEC) = 3</etc/group>
+154   openat(AT_FDCWD</localrun/aux/rsrc>, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</localrun/aux/rsrc>
+154   write(4<socket:[20062]>, "J\0\0\7\254\1\1.\0\0\20j\333\212\243\360\245&\32\30\355A\0\0\0\4root\0\4"..., 78) = 78
+155   clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xffffbabf1810) = 156
+156   write(4<socket:[21855]>, "\4\0\0\7\376\377\377\377", 8) = 8
+155   write(1<socket:[20064]>, "&\0\0\7\3\4\200\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\1\0\240\0\0\0\0\0\0"..., 42) = 42
+154   openat(AT_FDCWD</localrun/aux/rsrc>, "f1.txt", O_RDONLY|O_NOFOLLOW) = 3</localrun/aux/rsrc/f1.txt>
+154   openat(AT_FDCWD</localrun/aux/rsrc>, "f2.txt", O_RDONLY|O_NOFOLLOW) = 3</localrun/aux/rsrc/f2.txt>
+154   write(4<socket:[20062]>, "f\0\0\7\3\4\200\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\10\0\0\0new o"..., 106) = 106
+156   openat(AT_FDCWD</localrun/st/strace/rsync>, ".f1.txt.Fp4l8R", O_RDWR|O_CREAT|O_EXCL, 0600) = 3</localrun/st/strace/rsync/.f1.txt.Fp4l8R>
+156   write(3</localrun/st/strace/rsync/.f1.txt.Fp4l8R>, "new one\n", 8) = 8
+156   renameat(AT_FDCWD</localrun/st/strace/rsync>, ".f1.txt.Fp4l8R", AT_FDCWD</localrun/st/strace/rsync>, "f1.txt") = 0
+156   openat(AT_FDCWD</localrun/st/strace/rsync>, ".f2.txt.OTRlPx", O_RDWR|O_CREAT|O_EXCL, 0600) = 1</localrun/st/strace/rsync/.f2.txt.OTRlPx>
+156   write(1</localrun/st/strace/rsync/.f2.txt.OTRlPx>, "new two\n", 8) = 8
+156   renameat(AT_FDCWD</localrun/st/strace/rsync>, ".f2.txt.OTRlPx", AT_FDCWD</localrun/st/strace/rsync>, "f2.txt") = 0
+156   write(4<socket:[21855]>, "\24\0\0k\2\0\0\0>\0\0\0\0\0\0\0&\212\2\0\0\0\0\0\24\0\0k\3\0\0\0"..., 48) = 48
+155   write(1<socket:[20064]>, "\1\0\0\7\0", 5) = 5
+154   write(4<socket:[20062]>, "\1\0\0\7\0", 5) = 5
+156   write(4<socket:[21855]>, "\4\0\0\7\377\377\377\377", 8) = 8
+155   write(1<socket:[20064]>, "\3\0\0\7\0\0\0", 7) = 7
+154   write(4<socket:[20062]>, "\2\0\0\7\0\0", 6) = 6
+154   write(4<socket:[20062]>, "\1\0\0\7\0", 5) = 5
+156   write(4<socket:[21855]>, "\4\0\0\7\377\377\377\377", 8) = 8
+156   write(4<socket:[21855]>, "\10\0\0\21\310\0\0\0\0\0\0\0", 12) = 12
+156   write(4<socket:[21855]>, "\4\0\0\7\377\377\377\377", 8) = 8
+156   write(4<socket:[21855]>, "\4\0\0\7\377\377\377\377", 8) = 8
+155   write(1<socket:[20064]>, "\1\0\0\7\0", 5) = 5
+154   wait4(155, 0xfffff7c680f4, WNOHANG, NULL) = 0
+155   wait4(156,  <unfinished ...>
+156   --- SIGUSR2 {si_signo=SIGUSR2, si_code=SI_USER, si_pid=155, si_uid=0} ---
+155   <... wait4 resumed>0xfffff7c67f94, WNOHANG, NULL) = 0
+155   --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=156, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+155   wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG, NULL) = 156
+155   wait4(-1, 0xfffff7c66c74, WNOHANG, NULL) = -1 ECHILD (No child processes)
+154   wait4(155, 0xfffff7c680f4, WNOHANG, NULL) = 0
+155   wait4(156, 0xfffff7c67f94, WNOHANG, NULL) = -1 ECHILD (No child processes)
+154   --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=155, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+154   wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG, NULL) = 155
+154   wait4(-1, 0xfffff7c66dd4, WNOHANG, NULL) = -1 ECHILD (No child processes)
+154   wait4(155, 0xfffff7c680f4, WNOHANG, NULL) = -1 ECHILD (No child processes)
+154   wait4(155, 0xfffff7c680d4, WNOHANG, NULL) = -1 ECHILD (No child processes)

@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted — 403 state-changing operation(s) observed
+
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 403 operations (3593 syscall lines examined, 1884 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/wrappers/newsboat --setup "/localrun/ap/setup-newsboat.sh" --operation "newsboat -u /localrun/st/wrappers/newsboat/urls -c /localrun/st/wrappers/newsboat/cache.db -C /localrun/st/wrappers/newsboat/config -x reload" \
+               --check <your-invariant.sh> --shim /se/libsideeye_shim.so --oracle /usr/bin/strace

@@ -1,0 +1,12 @@
+falsify: f1.txt holds neither version (25 bytes)
+PASS  7/7 explored worlds satisfied the built-in atomicity invariant
+      explored 7 worlds (crash points 6 + 1 baseline)
+      expected status: 0
+      atomicity: 2 path(s) judged pre-or-post
+      oracle: agreed on 0 operations (583 syscall lines examined, 0 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped write and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and ordered rather than compared one by one: this is `oracle_verified_subject_only`, and `oracle_verified` stays false. What accounts for a write neither observer placed is the per-path reconciliation, not this comparison
+      metadata: 6 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x2, utimensat x2, fchmodat2 x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 7 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because it runs without an oracle
+      not tested: power loss, torn writes, concurrent processes

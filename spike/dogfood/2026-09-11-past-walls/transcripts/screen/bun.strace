@@ -1,0 +1,84 @@
+517   execve("/usr/local/bin/bun", ["bun", "add", "--cwd", "/localrun/st/strace/bun", "/localrun/aux/bun/dep-1.0.0.tgz"], 0xfffff8413108 /* 9 vars */) = 0
+517   openat(AT_FDCWD</w>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+517   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+517   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+517   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+517   openat(AT_FDCWD</w>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+517   openat(AT_FDCWD</w>, "/proc/sys/vm/overcommit_memory", O_RDONLY) = 3</proc/sys/vm/overcommit_memory>
+517   openat(AT_FDCWD</w>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+517   openat(AT_FDCWD</w>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/517/maps>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/strace/bun/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = 3</localrun/st/strace/bun/package.json>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/strace/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "//package.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/aux/home/.bunfig.toml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/strace/bun/bunfig.toml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/strace/bun", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = 4</localrun/st/strace/bun>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/aux/home/.npmrc", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, ".npmrc", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 5</sys/devices/system/cpu/online>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 5</proc/517/cgroup>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 7</usr/share/zoneinfo/Etc/UTC>
+517   clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffffaeff9b30, parent_tid=0xffffaeff9b30, exit_signal=0, stack=0xffffaebf0000, stack_size=0x409340, tls=0xffffaeffa180}, 88) = -1 ENOSYS (Function not implemented)
+517   clone(child_stack=0xffffaeff9340, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[518], tls=0xffffaeffa180, child_tidptr=0xffffaeff9b30) = 518
+517   write(1</run/host_virtiofs/Users/i.yoshida/.cctmp/se-dogfood-0911-nKiqGM/out/screen/bun.op.txt>, "bun add v1.4.2 (744846f84)\n", 27) = 27
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/strace/bun/package.json", O_RDONLY|O_LARGEFILE) = 7</localrun/st/strace/bun/package.json>
+517   clone(child_stack=0xffffaebe9340, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[519], tls=0xffffaebea180, child_tidptr=0xffffaebe9b30) = 519
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "bun.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "bun.lockb", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "package-lock.json", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "yarn.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "pnpm-lock.yaml", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/aux/bun-cache", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 7</localrun/aux/bun-cache>
+518   clone(child_stack=0xffffae7d9340, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID <unfinished ...>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/aux/tmp", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 8</localrun/aux/tmp>
+518   <... clone resumed>, parent_tid=[520], tls=0xffffae7da180, child_tidptr=0xffffae7d9b30) = 520
+517   openat(8</localrun/aux/tmp>, ".deff2ddb56d5d01d-0.hm", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 9</localrun/aux/tmp/.deff2ddb56d5d01d-0.hm>
+517   renameat(8</localrun/aux/tmp>, ".deff2ddb56d5d01d-0.hm", 7</localrun/aux/bun-cache>, ".deff2ddb56d5d01d-0.hm") = 0
+517   unlinkat(7</localrun/aux/bun-cache>, ".deff2ddb56d5d01d-0.hm", 0) = 0
+517   clone(child_stack=0xffffadfc9340, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[521], tls=0xffffadfca180, child_tidptr=0xffffadfc9b30) = 521
+517   write(2</run/host_virtiofs/Users/i.yoshida/.cctmp/se-dogfood-0911-nKiqGM/out/screen/bun.op.txt>, "Resolving dependencies\n", 23) = 23
+519   clone(child_stack=0xffffadbb9340, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[522], tls=0xffffadbba180, child_tidptr=0xffffadbb9b30) = 522
+521   clone(child_stack=0xffffad7a9340, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tid=[523], tls=0xffffad7aa180, child_tidptr=0xffffad7a9b30) = 523
+521   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/aux/bun/dep-1.0.0.tgz", O_RDONLY|O_LARGEFILE <unfinished ...>
+519   openat(AT_FDCWD</localrun/st/strace/bun>, "/etc/host.conf", O_RDONLY|O_CLOEXEC <unfinished ...>
+521   <... openat resumed>)             = 11</localrun/aux/bun/dep-1.0.0.tgz>
+519   <... openat resumed>)             = 12</etc/host.conf>
+521   openat(8</localrun/aux/tmp>, ".deff2ddb57305498-1.package", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+521   mkdirat(8</localrun/aux/tmp>, ".deff2ddb57305498-1.package", 0755 <unfinished ...>
+519   openat(AT_FDCWD</localrun/st/strace/bun>, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 11</etc/resolv.conf>
+521   <... mkdirat resumed>)            = 0
+521   openat(8</localrun/aux/tmp>, ".deff2ddb57305498-1.package", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 12</localrun/aux/tmp/.deff2ddb57305498-1.package>
+521   openat(AT_FDCWD</localrun/st/strace/bun>, "/proc/self/auxv", O_RDONLY) = 13</proc/517/auxv>
+521   openat(12</localrun/aux/tmp/.deff2ddb57305498-1.package>, "package.json", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) = 13</localrun/aux/tmp/.deff2ddb57305498-1.package/package.json>
+521   pwrite64(13</localrun/aux/tmp/.deff2ddb57305498-1.package/package.json>, "{ \"name\": \"probe-dep\", \"version\""..., 64, 0) = 64
+521   openat(12</localrun/aux/tmp/.deff2ddb57305498-1.package>, "index.js", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) = 13</localrun/aux/tmp/.deff2ddb57305498-1.package/index.js>
+521   pwrite64(13</localrun/aux/tmp/.deff2ddb57305498-1.package/index.js>, "module.exports = \"probe-dep\";\n", 30, 0) = 30
+519   openat(AT_FDCWD</localrun/st/strace/bun>, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC <unfinished ...>
+521   renameat2(8</localrun/aux/tmp>, ".deff2ddb57305498-1.package", 7</localrun/aux/bun-cache>, "@T@58e72ba5723955d3@@@1", RENAME_NOREPLACE <unfinished ...>
+519   <... openat resumed>)             = 11</etc/nsswitch.conf>
+521   <... renameat2 resumed>)          = 0
+521   openat(7</localrun/aux/bun-cache>, "@T@58e72ba5723955d3@@@1", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 12</localrun/aux/bun-cache/@T@58e72ba5723955d3@@@1>
+521   openat(7</localrun/aux/bun-cache>, "@T@58e72ba5723955d3@@@1/package.json", O_RDONLY|O_LARGEFILE) = 13</localrun/aux/bun-cache/@T@58e72ba5723955d3@@@1/package.json>
+519   openat(AT_FDCWD</localrun/st/strace/bun>, "/etc/hosts", O_RDONLY|O_CLOEXEC) = 11</etc/hosts>
+521   write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+517   write(2</run/host_virtiofs/Users/i.yoshida/.cctmp/se-dogfood-0911-nKiqGM/out/screen/bun.op.txt>, "Resolved, downloaded and extract"..., 39) = 39
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "node_modules", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+517   mkdirat(AT_FDCWD</localrun/st/strace/bun>, "node_modules", 0755) = 0
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "node_modules", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 12</localrun/st/strace/bun/node_modules>
+517   openat(12</localrun/st/strace/bun/node_modules>, "/localrun/st/strace/bun/node_modules", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 13</localrun/st/strace/bun/node_modules>
+517   openat(7</localrun/aux/bun-cache>, "@T@58e72ba5723955d3@@@1", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 14</localrun/aux/bun-cache/@T@58e72ba5723955d3@@@1>
+517   openat(13</localrun/st/strace/bun/node_modules>, "probe-dep", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+517   mkdirat(13</localrun/st/strace/bun/node_modules>, "probe-dep", 0755) = 0
+517   openat(13</localrun/st/strace/bun/node_modules>, "probe-dep", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 15</localrun/st/strace/bun/node_modules/probe-dep>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "bun.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+517   openat(AT_FDCWD</localrun/st/strace/bun>, ".lock-9868224180955807.tmp", O_WRONLY|O_CREAT|O_LARGEFILE, 0777) = 12</localrun/st/strace/bun/.lock-9868224180955807.tmp>
+517   write(12</localrun/st/strace/bun/.lock-9868224180955807.tmp>, "{\n  \"lockfileVersion\": 2,\n  \"con"..., 394) = 394
+517   renameat(AT_FDCWD</localrun/st/strace/bun>, ".lock-9868224180955807.tmp", AT_FDCWD</localrun/st/strace/bun>, "bun.lock") = 0
+517   write(2</run/host_virtiofs/Users/i.yoshida/.cctmp/se-dogfood-0911-nKiqGM/out/screen/bun.op.txt>, "Saved lockfile\n", 15) = 15
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/strace/bun/package.json", O_RDONLY|O_LARGEFILE) = 12</localrun/st/strace/bun/package.json>
+517   openat(AT_FDCWD</localrun/st/strace/bun>, "/localrun/st/strace/bun/package.json", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0664) = 12</localrun/st/strace/bun/package.json>
+517   write(12</localrun/st/strace/bun/package.json>, "{\n  \"name\": \"probe-proj\",\n  \"ver"..., 125) = 125
+517   write(1</run/host_virtiofs/Users/i.yoshida/.cctmp/se-dogfood-0911-nKiqGM/out/screen/bun.op.txt>, "\ninstalled probe-dep@/localrun/a"..., 84) = 84

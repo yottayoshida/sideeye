@@ -1,0 +1,8 @@
+bun add v1.4.2 (744846f84)
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+
+installed probe-dep@/localrun/aux/bun/dep-1.0.0.tgz
+
+1 package installed [11.00ms]

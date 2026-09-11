@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted — 403 state-changing operation(s) observed
+
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 403 operations (4079 syscall lines examined, 1884 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped write and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/syscalls/newsboat --setup "/localrun/ap/setup-newsboat.sh" --operation "newsboat -u /localrun/st/syscalls/newsboat/urls -c /localrun/st/syscalls/newsboat/cache.db -C /localrun/st/syscalls/newsboat/config -x reload" \
+               --check <your-invariant.sh> --shim /se/libsideeye_shim.so --oracle /usr/bin/strace

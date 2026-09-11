@@ -1,0 +1,3 @@
+sed: couldn't edit /dev/null: not a regular file
+sideeye 1.3.0 (trace contract v16)
+docker rc=0

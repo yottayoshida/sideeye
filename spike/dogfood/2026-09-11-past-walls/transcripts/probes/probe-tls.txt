@@ -1,0 +1,16 @@
+PTHREAD_STACK_MIN 131072
+## plain
+stack  128 KiB: pthread_create ok
+stack  256 KiB: pthread_create ok
+stack  384 KiB: pthread_create ok
+stack  512 KiB: pthread_create ok
+## LD_PRELOAD=libsideeye_shim.so
+stack  128 KiB: pthread_create Invalid argument
+stack  256 KiB: pthread_create Invalid argument
+stack  384 KiB: pthread_create ok
+stack  512 KiB: pthread_create ok
+## node -e 1
+rc=0
+## LD_PRELOAD=libsideeye_shim.so node -e 1
+node[29]: pthread_create: Invalid argument
+rc=0

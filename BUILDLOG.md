@@ -2,6 +2,93 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-11 — The targets v1.3.0's walls had turned away, met again: three verdicts, two refusals that now say the true reason, and an error message that was Sideeye's
+
+v1.3.0 moved three walls, and the earlier dogfood runs had turned six targets away on
+them that nothing since had re-measured; cohort 2's Bun is the seventh, because #540
+asks for it beside joplin. This run met all seven with the released tarball
+rather than a build — its sha256 matched the digest the release publishes — which removes
+the 2026-09-06 failure (a run on its own branch reporting the wrong version) instead of
+checking for it. The record is `spike/dogfood/2026-09-11-past-walls/`.
+
+**Three reach a verdict.** oxipng FAIL 1/3: `File::create` truncates the input before the
+write, with ten threads created and one writing, so the thread rule is what let it in.
+rsync PASS 7/7: its writer is a reaped child — the first dogfood target through contract
+v15 — with `oracle_verified_subject_only`. newsboat PASS 44/44, on the third define.
+
+**newsboat's first two answers were about the apparatus and about bytes.** The first
+define refused `baseline_violates_invariant`: the feed had no `pubDate`, and newsboat
+stores the second it read an undated item as its date. The screen had preflighted a
+different define (the first reload into an empty directory); a plain preflight of this
+one accepts it too, and `--twice` refuses it — measured after the review asked. The
+screen should run `--twice` on the define it screens. With dates, FAIL 15/44 between two page writes to `cache.db`: the
+buku lesson a third time. With the database and its journal declared scratch and SQLite's
+own recovery as the checker, PASS 44/44 in both modes.
+
+**The reversal: joplin's error message was ours.** Since 2026-09-05 the joplin row carried
+`node[54]: pthread_create: Invalid argument` as the target's, unexplained, and #540 said it
+needed attributing before the writer count was even asked. The plain run under `strace`
+printed nothing; the preflight printed it; and preloading the shim into `node -e 1`, with
+no engine running, printed it too. The shim carries a `PT_TLS` segment of 262,165 bytes,
+262,144 of them Zig std's per-thread signal stack. glibc refuses a thread stack smaller
+than the static TLS, and node's SIGUSR1 watchdog thread asks for
+`max(4 * 8192, PTHREAD_STACK_MIN)`, which is 128 KiB on this aarch64 host; a C probe puts the line
+between 256 and 384 KiB. The shim's own comment says its state is not `threadlocal`, and it
+is not — std's is. Filed as #555. joplin itself is refused by the writer count, correctly:
+four threads other than the main one write the profile.
+
+**A hypothesis refuted before it was filed.** ocrmypdf's syscalls-mode transcript showed two
+absent optional tools dying of `SIGSYS`. The first probe — a missing program run by absolute
+path — returned `FileNotFoundError` in every mode, and would have closed the question the
+wrong way. Copying ocrmypdf's own call reproduced it, and four variants put the cause on the
+bare name. CPython spawns an absolute path with `posix_spawn` and a bare name through
+`_posixsubprocess`, whose child writes the errno after resetting its signal handlers — that
+mechanism is read from CPython, not measured. The README says a child the shim is loaded
+into is unaffected. Filed as #556.
+
+**Bun: the thread wall hid the raw-syscall one.** The writer count admits it — six threads,
+one writing — and its first operation is an `openat` the shim never saw. Bun 1.4 is Rust,
+and on Linux its `openat` goes through a raw-syscall backend; this build of `strace` has no
+`-k`, so the attribution rests on Bun's source rather than on a stack. That is cargo's
+class. ansible refuses on a `setsid`, ocrmypdf on `faccessat2` — #542's shape.
+
+**The first review** — a fresh reader, against the committed transcripts — found that
+this record quoted eight things measured by hand and never kept: the `ulimit` run, the
+`PT_TLS` size, Bun's import table, the `strace -k` refusal, the package versions, the
+novelty counts, the absolute-`--scratch` refusal and the digest check. The node
+attribution was inference until the source was cited. All of it is in
+`transcripts/probes/` now — through `apparatus/probes-review.sh` in the image,
+`apparatus/elfsyms.py` on the host, and the `gh` queries whose command line heads each
+file — except the first scratch run, whose refusal was reproduced rather than kept. The
+review also caught claims the page itself contradicted: the stacked walls were not a
+third time (zstd, cargo and lbdb are on the same page), and all four joplin threads
+write `log.txt`, not three. It also said oxipng was not the first truncating create
+through the thread rule, because bundler came first — and **that correction was
+wrong, which the second review caught**: bundler's `Gemfile` and vips's `out.png` are
+new files left empty, with no original to lose, so oxipng is the first of the
+original-lost shape to come through that rule. A fix taken from a review is a claim
+like any other and needed checking against the record it cited.
+It found `setsid` asserted where the report says `setsid/setpgid` — the capture it
+asked for names a `setsid` by a forked worker — and the newsboat `preflight` sentence
+describing a different define. One finding was not taken: bogofilter-sqlite is on that
+page, in the buku row.
+
+**Five apparatus errors**, each visible in the record: `mkpdf.py` copied into the build
+context instead of the mounted directory; rsync's two files equal in size and written in the
+same second, so its quick check skipped one; newsboat's undated feed; a define name with no
+call line, whose "fix" was a `sed` pointed at `/dev/null` (`transcripts/runs/explore-run2.txt`
+is the run that judged nothing); absolute `--scratch` paths.
+
+**oxipng went upstream as oxipng/oxipng#873**, on the owner's sign-off of the full text.
+The first draft was 291 words, 2.6 times the median of 110 over that tracker's eleven most
+recent issues (measured through the API before filing, and not kept); cutting the `strace` block and folding the provenance into a `<details>`
+brought it to 224. `oxipng` was not in the issue guard's list of outside owners, so the
+filing would have been refused as an unmarked defect until it was added — the list says to
+add an owner when reporting to it, and that is the whole of the edit.
+
+**Not done here**: #542 was not amended with `faccessat2` — the row says it, the issue does
+not.
+
 ## 2026-09-09 — Two designs measured, both false, and a promise cut in half (#515)
 
 The third of the batch. `judge.sh`'s header has carried its own caveat since #63: the

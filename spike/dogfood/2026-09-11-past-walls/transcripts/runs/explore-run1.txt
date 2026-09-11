@@ -1,0 +1,90 @@
+sideeye 1.3.0 (trace contract v16)
+==================== newsboat / wrappers ====================
+op: newsboat -u /localrun/st/wrappers/newsboat/urls -c /localrun/st/wrappers/newsboat/cache.db -C /localrun/st/wrappers/newsboat/config -x reload
+raw rc=2   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+UNKNOWN  baseline_violates_invariant
+processes   single process
+
+==================== newsboat / syscalls ====================
+op: newsboat -u /localrun/st/syscalls/newsboat/urls -c /localrun/st/syscalls/newsboat/cache.db -C /localrun/st/syscalls/newsboat/config -x reload
+raw rc=2   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+UNKNOWN  baseline_violates_invariant
+processes   single process
+
+==================== oxipng / wrappers ====================
+op: oxipng -q -o 2 /localrun/st/wrappers/oxipng/a.png
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+FAIL  1 of 3 explored worlds violated an invariant
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (187 syscall lines examined, 15 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+
+==================== oxipng / syscalls ====================
+op: oxipng -q -o 2 /localrun/st/syscalls/oxipng/a.png
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+FAIL  1 of 3 explored worlds violated an invariant
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (193 syscall lines examined, 15 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped write and the handler re-issues it, so the capture carries the refused entry beside the one that ra
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+
+==================== rsync / wrappers ====================
+op: rsync -a /localrun/aux/rsrc/ /localrun/st/wrappers/rsync/
+raw rc=0   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+PASS  7/7 explored worlds satisfied the built-in atomicity invariant
+      explored 7 worlds (crash points 6 + 1 baseline)
+      oracle: agreed on 0 operations (521 syscall lines examined, 0 in scope of the judged state), witness strace — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and order
+      checker: falsified before the run (corrupted state -> check failed); ran in 7 world(s)
+      processes: a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check
+
+==================== rsync / syscalls ====================
+op: rsync -a /localrun/aux/rsrc/ /localrun/st/syscalls/rsync/
+raw rc=0   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+PASS  7/7 explored worlds satisfied the built-in atomicity invariant
+      explored 7 worlds (crash points 6 + 1 baseline)
+      oracle: agreed on 0 operations (583 syscall lines examined, 0 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped write and the handler re-issues it, so the capture carries the refused entry beside the one that r
+      checker: falsified before the run (corrupted state -> check failed); ran in 7 world(s)
+      processes: a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check
+
+==================== oxipng x5 / wrappers ====================
+run 1 FAIL  cp=2 hash=None
+run 2 FAIL  cp=2 hash=None
+run 3 FAIL  cp=2 hash=None
+run 4 FAIL  cp=2 hash=None
+run 5 FAIL  cp=2 hash=None
+
+==================== rsync x5 / wrappers ====================
+run 1 PASS  cp=6 hash=None
+run 2 PASS  cp=6 hash=None
+run 3 PASS  cp=6 hash=None
+run 4 PASS  cp=6 hash=None
+run 5 PASS  cp=6 hash=None
+
+==================== joplin preflight x5 / wrappers ====================
+run 1 rc=2  UNKNOWN multiple_threads_detected
+    two threads of process N wrote in the judged directory: tid N performed rmdir(/localrun/st/prep1/joplin/tmp) and tid N performed mkdir(/localrun/st/prep1/joplin). Two threads' writes are ordered by the scheduler, so 
+run 2 rc=2  UNKNOWN multiple_threads_detected
+    two threads of process N wrote in the judged directory: tid N performed rmdir(/localrun/st/prep2/joplin/tmp) and tid N performed mkdir(/localrun/st/prep2/joplin). Two threads' writes are ordered by the scheduler, so 
+run 3 rc=2  UNKNOWN multiple_threads_detected
+    two threads of process N wrote in the judged directory: tid N performed rmdir(/localrun/st/prep3/joplin/tmp) and tid N performed mkdir(/localrun/st/prep3/joplin). Two threads' writes are ordered by the scheduler, so 
+run 4 rc=2  UNKNOWN multiple_threads_detected
+    two threads of process N wrote in the judged directory: tid N performed rmdir(/localrun/st/prep4/joplin/tmp) and tid N performed mkdir(/localrun/st/prep4/joplin). Two threads' writes are ordered by the scheduler, so 
+run 5 rc=2  UNKNOWN multiple_threads_detected
+    two threads of process N wrote in the judged directory: tid N performed rmdir(/localrun/st/prep5/joplin/tmp) and tid N performed mkdir(/localrun/st/prep5/joplin). Two threads' writes are ordered by the scheduler, so 
+
+==================== bun preflight x5 / wrappers ====================
+run 1 rc=2  UNKNOWN oracle_missed_operation
+    the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 1848  openat(AT_FDCWD</localrun/st/prep1/bun>, "/localrun/st/prep1/bun/package.json", O_RDWR|O_LARGEFILE|
+run 2 rc=2  UNKNOWN oracle_missed_operation
+    the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 1876  openat(AT_FDCWD</localrun/st/prep2/bun>, "/localrun/st/prep2/bun/package.json", O_RDWR|O_LARGEFILE|
+run 3 rc=2  UNKNOWN oracle_missed_operation
+    the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 1904  openat(AT_FDCWD</localrun/st/prep3/bun>, "/localrun/st/prep3/bun/package.json", O_RDWR|O_LARGEFILE|
+run 4 rc=2  UNKNOWN oracle_missed_operation
+    the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 1932  openat(AT_FDCWD</localrun/st/prep4/bun>, "/localrun/st/prep4/bun/package.json", O_RDWR|O_LARGEFILE|
+run 5 rc=2  UNKNOWN oracle_missed_operation
+    the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 1960  openat(AT_FDCWD</localrun/st/prep5/bun>, "/localrun/st/prep5/bun/package.json", O_RDWR|O_LARGEFILE|
+
+docker rc=0

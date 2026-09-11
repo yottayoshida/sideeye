@@ -1,0 +1,10 @@
+# gh search issues --repo oxipng/oxipng <word> --limit 100 --json number,title  (2026-09-11T05:44:41Z)
+# one word or phrase per query, passed as one argument; the hits include oxipng#873 once it existed
+interrupted: 2 hit(s): #566 #873
+atomic: 1 hit(s): #333
+truncate: 4 hit(s): #452 #678 #714 #873
+in place: 8 hit(s): #97 #214 #440 #478 #730 #757 #762 #873
+0 bytes: 10 hit(s): #60 #71 #128 #414 #540 #572 #579 #666 #678 #873
+data loss: 1 hit(s): #478
+temporary file: 4 hit(s): #275 #436 #549 #873
+killed: 3 hit(s): #100 #125 #834

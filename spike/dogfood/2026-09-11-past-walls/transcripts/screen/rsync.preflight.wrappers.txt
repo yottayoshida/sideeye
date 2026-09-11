@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted — 6 state-changing operation(s) observed
+
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 0 operations (528 syscall lines examined, 0 in scope of the judged state), witness strace — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and ordered rather than compared one by one: this is `oracle_verified_subject_only`, and `oracle_verified` stays false. What accounts for a write neither observer placed is the per-path reconciliation, not this comparison
+processes    a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/wrappers/rsync --setup "/localrun/ap/setup-rsync.sh" --operation "rsync -a /localrun/aux/rsrc/ /localrun/st/wrappers/rsync/" \
+               --check <your-invariant.sh> --shim /se/libsideeye_shim.so --oracle /usr/bin/strace

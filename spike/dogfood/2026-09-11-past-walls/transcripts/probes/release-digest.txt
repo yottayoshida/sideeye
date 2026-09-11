@@ -1,0 +1,3 @@
+# the release tarball measured, against the digest the release publishes (2026-09-11T05:44:51Z)
+published: sha256:ef94464f5d96f2e23b65ab8a55abe7cc34bafe1c2a5295cba303a23bfc92db8e
+local:     sha256:ef94464f5d96f2e23b65ab8a55abe7cc34bafe1c2a5295cba303a23bfc92db8e
