@@ -2,6 +2,34 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-12 (later) — a pointer fixed in the rendering instead of in the thing that renders
+
+The README cut repointed a sentence in `docs/freeze-audit.md`'s #328 row from README to
+`docs/mcp.md`, where the deployment guidance had moved. That row sits between
+`<!-- BEGIN generated: freeze-audit resolved rows -->` and its END marker, and the row is
+rendered from `spike/freeze-audit/audit.tsv`, which still said README. So the page and its
+trust root disagreed, which is precisely what `spike/freeze-audit/check-freeze-audit.sh`
+reports. The fix is one field in the manifest.
+
+**Measured before and after.** Before: the gate's resolved block differs from a fresh render
+in two rows — #202 and #328. After: one, #202. That row is a hand-edited narrowing note added
+2026-09-08, already there at `b175d4b`, and it is left alone deliberately: re-rendering the
+block to close it would delete the note rather than take it into the manifest, and the change
+doing that properly is in flight elsewhere.
+
+**What went wrong is not the edit, it is what made it invisible.** CI was fully green on the
+PR that introduced it, because no workflow runs this gate — it is in neither
+`.github/workflows` nor `spike/acceptance.sh`. A green run said nothing at all about this
+file, and the #202 row had sat unnoticed for four days for the same reason. It surfaced only
+because another session hit the same class in the other row and said so.
+
+**The class, swept.** `grep -rln 'BEGIN generated' --include='*.md'` finds exactly two pages,
+`docs/checker-cookbook.md` and `docs/freeze-audit.md`, and the README cut had touched both.
+The cookbook edit is at line 9 and the first block opens at 11 — but that was established by
+running `python3 spike/render-cookbook.py check` (exit 0, four recipes), not by reading line
+numbers, because reading line numbers is how the first one was missed. Whether this gate
+should run in CI is a decision for the owner and is not taken here.
+
 ## 2026-09-12 — the front page was 33 KB because every decision's record was written into it
 
 The ask was "hono's README is 85 lines; ours is 238". Measured before cutting: 33,714 bytes
