@@ -4949,15 +4949,19 @@ fi
 # bits, the kernel's anon-inode spelling — must be invisible to the verdict. Before
 # fdKind knew that spelling, one close() of an eventfd sent the whole run to
 # unresolvable_path (measured), which made every epoll-based target unjudgeable.
+# The same toy also registers a state file with epoll (EPERM) and queries it with
+# faccessat2 — calls on the state that change nothing, which the oracle refused as
+# unsupported_syscall_observed until #542 named them reads. The strace lines are real,
+# so this is where a name dropping out of the oracle's read-only list shows.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
 if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
-    echo "ok   anon-inode descriptors (eventfd, epoll) are invisible to the verdict"
+    echo "ok   anon-inode descriptors (eventfd, epoll), and epoll_ctl and faccessat2 on a state file, are invisible to the verdict"
 else
-    echo "FAIL anon-inode descriptors moved the verdict: exit $rc"
+    echo "FAIL anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi

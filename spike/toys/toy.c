@@ -209,6 +209,9 @@
  *                  and epoll on Linux (fstat type bits zero — the kernel's
  *                  anon-inode spelling), kqueue on macOS (stats as a FIFO). Must be
  *                  invisible to the verdict: none can be state-directory content.
+ *                  On Linux it also asks two things of key.json that change nothing —
+ *                  an epoll registration (EPERM for a regular file) and a faccessat2
+ *                  permission query — which the oracle must read as reads (#542).
  *   TOY_EXIT_STATUS=N  rotate exits N after completing all of its state work — the
  *                  git-convention shape (#3). Without --expect-status N the run must
  *                  refuse as recording_run_failed naming both statuses; with it, the
@@ -1012,6 +1015,20 @@ static int cmd_rotate_body(void) {
         int efd = eventfd(0, 0);
         int epfd = epoll_create1(0);
         if (efd < 0 || epfd < 0) return 1;
+        /* Two calls on a state file that change nothing (#542): an epoll registration —
+         * the kernel refuses a regular file with EPERM, the shape Go's netpoller leaves
+         * on every file it opens — and a permission query, which glibc issues as
+         * faccessat2 because it carries a flag. Their answers are ignored on purpose:
+         * what matters is that each reaches the kernel with the state file on its
+         * strace line, where the oracle has to read it as a read. */
+        char kp[4096];
+        join_path(kp, sizeof kp, "key.json");
+        int kfd = open(kp, O_RDONLY);
+        if (kfd < 0) { close(efd); close(epfd); return 1; }
+        struct epoll_event ev = { .events = EPOLLIN };
+        (void)epoll_ctl(epfd, EPOLL_CTL_ADD, kfd, &ev);
+        (void)faccessat(AT_FDCWD, kp, R_OK, AT_EACCESS);
+        close(kfd);
         close(efd);
         close(epfd);
 #else

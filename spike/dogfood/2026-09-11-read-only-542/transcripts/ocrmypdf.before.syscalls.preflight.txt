@@ -1,0 +1,61 @@
+
+
+
+
+
+Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 158, in get_version
+    proc = run(
+        args_prog,
+    ...<5 lines>...
+        env=env,
+    )
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 62, in run
+    proc = subprocess_run(args, env=env, check=check, **kwargs)
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+
+Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 158, in get_version
+    proc = run(
+        args_prog,
+    ...<5 lines>...
+        env=env,
+    )
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 62, in run
+    proc = subprocess_run(args, env=env, check=check, **kwargs)
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+Command '['pngquant', '--version']' died with <Signals.SIGSYS: 31>.
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 158, in get_version
+    proc = run(
+        args_prog,
+    ...<5 lines>...
+        env=env,
+    )
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 62, in run
+    proc = subprocess_run(args, env=env, check=check, **kwargs)
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['pngquant', '--version']' died with <Signals.SIGSYS: 31>.
+UNKNOWN  unsupported_syscall_observed
+         faccessat2
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   14 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -1,0 +1,4 @@
+sideeye 1.3.0 (trace contract v16)
+16.7.0+dfsg1
+twice plain rc=1: PREFLIGHT not accepted — the two observed runs left different state difference a.pdf (content differs) 
+twice epoch rc=1: PREFLIGHT not accepted — the two observed runs left different state difference a.pdf (content differs) 
