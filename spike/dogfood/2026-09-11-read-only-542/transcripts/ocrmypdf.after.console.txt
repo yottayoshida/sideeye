@@ -1,0 +1,6 @@
+sideeye 1.3.0 (trace contract v16)
+16.7.0+dfsg1
+wrappers preflight rc=0:  
+wrappers explore rc=2:  
+syscalls preflight rc=0:  
+syscalls explore rc=2:  

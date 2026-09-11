@@ -210,6 +210,20 @@ const read_only = [_][]const u8{
     // The subject's own `chdir` never reaches this list — it is handled above, where a
     // successful one moves the cwd this reader resolves relative paths against.
        "chdir",    "fchdir",
+    // `faccessat2` is `faccessat` with a flags argument: the `access` family, a permission
+    // query that changes nothing, and with it that family is complete here. glibc 2.33 and
+    // later issues it for any `faccessat` that passes flags, `AT_EACCESS` among them.
+    // Found by measurement: ocrmypdf asks whether it may write its input before it
+    // rewrites it, and was refused for asking (#542).
+        "faccessat2",
+    // `epoll_ctl` changes an in-kernel interest list that dies with the process — the
+    // reason `flock` is here — and a regular file cannot even be added (`EPERM`). It is the
+    // one member of the epoll family that takes a descriptor this reader can scope in:
+    // `epoll_create1` makes a descriptor and `epoll_pwait` takes only the epoll one, so
+    // neither line can carry a state-directory annotation. Found by measurement: Go's
+    // runtime registers every file it opens with its netpoller, and mlr's in-place rewrite
+    // was refused for registering its temporary file (#542).
+    "epoll_ctl",
 };
 
 /// Syscalls that cross a process boundary.
@@ -2268,6 +2282,50 @@ test "read-only syscalls do not enter the comparison" {
     try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
     try std.testing.expectEqual(@as(usize, 2), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+}
+
+test "faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // One line per case, the shapes measured on real targets: ocrmypdf's write-permission
+    // query, Go's netpoller registering mlr's temporary file (EPERM: a regular file), the
+    // same call split by another thread, and cargo's query of a path outside the state
+    // directory whose AT_FDCWD annotation is inside it (cohort 3's cargo strace) — scoped
+    // in by the annotation alone. Each is its own parse, so a name dropped from the list
+    // fails at its own case rather than at the first line of a shared capture.
+    const Case = struct { what: []const u8, line: []const u8 };
+    const cases = [_]Case{
+        .{ .what = "faccessat2 on a state file", .line = "faccessat2(AT_FDCWD</work>, \"/tmp/s/a.pdf\", W_OK, AT_EACCESS) = 0" },
+        .{ .what = "faccessat2 from a cwd inside the state", .line = "faccessat2(AT_FDCWD</tmp/s/app>, \"/usr/local/bin/\", F_OK, AT_EACCESS) = 0" },
+        .{ .what = "epoll_ctl of a state file", .line = "epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/s/key.json>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x0}) = -1 EPERM (Operation not permitted)" },
+        .{ .what = "epoll_ctl split across two lines", .line = "epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/s/key.json>, {events=EPOLLIN, data=0x0} <unfinished ...>\n42    <... epoll_ctl resumed>) = -1 EPERM (Operation not permitted)" },
+    };
+    for (cases) |c| {
+        // The subject. In scope — the line names the state directory — and neither
+        // refused nor compared.
+        const subject = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    {s}\n", .{c.line});
+        const p = try parse(a, subject, "/tmp/s", "", "/work");
+        if (p.unsupported) |u| {
+            std.debug.print("{s}: the subject was refused on {s}\n", .{ c.what, u });
+            return error.TestUnexpectedResult;
+        }
+        try std.testing.expect(p.lines_in_scope >= 1);
+        try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
+        // A child. The same line is a read, not a touch of what only the subject may.
+        const child = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  {s}\n", .{try std.mem.replaceOwned(u8, a, c.line, "\n42    ", "\n4242  ")});
+        const q = try parse(a, child, "/tmp/s", "", "/work");
+        if (q.childTouched()) {
+            std.debug.print("{s}: the child was counted as touching the state\n", .{c.what});
+            return error.TestUnexpectedResult;
+        }
+        try std.testing.expectEqual(@as(usize, 1), q.children);
+    }
+    // The control: a call nobody names, on the same kind of line, still refuses — the list
+    // grew by two names, not into a rule that waves through anything unrecognised.
+    const unknown_sys = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    frobnicate(3</tmp/s/key.json>) = 0\n";
+    const r = try parse(a, unknown_sys, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("frobnicate", r.unsupported.?);
 }
 
 test "both of strace's -f pid prefixes are stripped" {

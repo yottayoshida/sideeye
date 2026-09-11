@@ -1,0 +1,30 @@
+# One name at a time: oracle.zig's read_only list with faccessat2 dropped, then with
+# epoll_ctl dropped — the unit test and the toy's exploration each time, and the source
+# restored and hashed afterwards. Paths are rewritten: the worktree root is stripped, and
+# the host's scratch directory reads <scratch>.
+=== unmutated
+Build Summary: 23/23 steps succeeded; 763/765 tests passed (2 skipped)
+=== mutant: "faccessat2" dropped from read_only
+error: 'oracle.test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542)' failed:
+       faccessat2 on a state file: the subject was refused on faccessat2
+       src/oracle.zig:2310:13: 0x104daa4af in test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542) (test)
+error: 'oracle.test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542)' failed:
+       faccessat2 on a state file: the subject was refused on faccessat2
+       src/oracle.zig:2310:13: 0x1001728a7 in test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542) (test)
+mutant build rc=0
+toy explore rc=2
+UNKNOWN  unsupported_syscall_observed
+         faccessat2
+=== mutant: "epoll_ctl" dropped from read_only
+error: 'oracle.test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542)' failed:
+       epoll_ctl of a state file: the subject was refused on epoll_ctl
+       src/oracle.zig:2310:13: 0x10085a4af in test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542) (test)
+error: 'oracle.test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542)' failed:
+       epoll_ctl of a state file: the subject was refused on epoll_ctl
+       src/oracle.zig:2310:13: 0x104fde8a7 in test.faccessat2 and epoll_ctl on the state directory are reads, for the subject and for a child (#542) (test)
+mutant build rc=0
+toy explore rc=2
+UNKNOWN  unsupported_syscall_observed
+         epoll_ctl
+restored: hash matches
+output kept in <scratch>/mut542-190503

@@ -1,0 +1,17 @@
+
+
+
+
+
+
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (30052 syscall lines examined, 67 in scope of the judged state), witness strace
+processes    14 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /tmp/localrun/st/wrappers-preflight/ocr --setup "/tmp/localrun/ap/setup.sh" --operation "ocrmypdf -q --force-ocr /tmp/localrun/st/wrappers-preflight/ocr/a.pdf /tmp/localrun/st/wrappers-preflight/ocr/a.pdf" \
+               --check <your-invariant.sh> --shim /se/lib/libsideeye_shim.so --oracle /usr/bin/strace

@@ -2,6 +2,120 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-11 — `epoll_ctl` and `faccessat2` are reads, and mlr's refusal will name its real wall (#542, first of two)
+
+#542 said mlr refuses `unsupported_syscall_observed` on `epoll_ctl` before the thread rule
+is asked, and asked for the epoll family and whatever a Go runtime issues idle to join the
+oracle's read-only list. **Measured before planning, with the engine's own strace
+arguments** (`-f -y -e trace=%file,%desc,%process,setsid,setpgid`, `src/main.zig:2606`):
+mlr 6.13.0 three times, and the calls on lines that name the state directory were the
+same all three — close, epoll_ctl, execve, fcntl, newfstatat, openat, read, renameat,
+write. `epoll_ctl` was the only one the oracle had no name for, and it is Go registering
+its temporary file with the netpoller. ocrmypdf 16.7.0 once: the only unnamed one was
+`faccessat2(AT_FDCWD</w>, "/st/a.pdf", W_OK, AT_EACCESS)`, from the subject. The idle calls
+the issue listed are not in the trace at all (`futex`, `sched_yield`, `nanosleep` are
+outside those three classes) or cannot carry a state path (`eventfd2`, `epoll_create1`,
+`epoll_pwait`), so adding them would change nothing and could not be tested.
+
+**The plan's first review found that this does not do what #542 wanted.** The thread rule
+already runs on mlr's recording (`src/main.zig:3928`, before the oracle's unsupported at
+4155), and it counts nothing because the shim records none of mlr's file operations:
+preloaded into mlr alone, the shim wrote `shim_ready` and five `thread` records and not one
+open, write or rename, while mlr rewrote the file. Linux Go issues its file calls as raw
+syscalls. So past `epoll_ctl` the next refusal is `oracle_missed_operation`, index 0, and
+mlr's writer count stays unmeasurable. The owner widened #542 to "count Go's writes" and
+chose how: widen `--observe syscalls` inside the process, a second plan (L). This entry is
+the first of the two — the refusal names the real wall, and ocrmypdf moves on.
+
+**Before the change, same images:** `main` (`abad4ce`) on mlr — `UNKNOWN
+unsupported_syscall_observed epoll_ctl`, "6 thread(s) created, and 0 thread id(s) … wrote";
+on ocrmypdf, both modes — `unsupported_syscall_observed faccessat2`, fourteen other processes
+that touched nothing, one writing thread. The ocrmypdf image is `debian:trixie-slim` with
+ocrmypdf, tesseract-ocr-eng, ghostscript and strace from apt (16.7.0+dfsg1): the
+2026-09-11 Dockerfile copies an oxipng and a Bun binary from the host, which are gone.
+
+**Expected after, written before running:** mlr — `oracle_missed_operation`, index 0 the
+openat of `mlr-in-place-*`. ocrmypdf — past `faccessat2` in both modes, to a verdict or a
+different refusal; under syscalls, #556's SIGSYS in the children probing for absent tools,
+with ocrmypdf itself carrying on as it did on 2026-09-11.
+
+The toy gets the two calls on a state file under `TOY_ANONFD`, so acceptance checks them
+with real strace lines on every run. Measured in the spike image (glibc 2.36) first:
+`epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/st/k.txt>, …) = -1 EPERM`, and
+`faccessat(…, AT_EACCESS)` reaches the kernel as `faccessat2`. Both lines name the state
+file, so both are in scope.
+
+**The acceptance check, red then green.** The same explore it runs (`TOY_ANONFD=1`,
+`toy-fixed rotate`, `--oracle strace`), in the spike image: the `main` build refuses
+`UNKNOWN unsupported_syscall_observed epoll_ctl`; this change's build reads `PASS 5/5`,
+`explored 5 worlds (crash points 4 + 1 baseline)` — the count the check asserts, unchanged
+by the toy's new read-only open of `key.json`. The unit test's cases were added one per
+line shape so a name dropped from the list fails at its own case.
+
+**One name at a time.** Before the change only the first unnamed call reaches the
+refusal, so a toy whose second call had drifted out of scope would still have gone red on
+the first. Dropping each name from the list in turn: without `faccessat2` the unit test
+fails at "faccessat2 on a state file: the subject was refused on faccessat2" and the toy
+refuses `unsupported_syscall_observed faccessat2`; without `epoll_ctl`, the same at the
+`epoll_ctl` case and on `epoll_ctl`. The source was restored after each mutant and its hash
+compared with the original at the end. The run is
+`spike/dogfood/2026-09-11-read-only-542/transcripts/mutants-one-name-at-a-time.txt`.
+
+**mlr, as predicted.** `spike/dogfood/2026-09-11-read-only-542/mlr.sh`, six explorations
+of the same define per build, run as an unprivileged user (the first attempt put its state
+under `/localrun`, which that user cannot create, and every run was a SETUP ERROR — moved
+under `/tmp`). `main`: 6 of 6 `unsupported_syscall_observed epoll_ctl`. This change: 6 of 6
+`oracle_missed_operation`, "divergence at operation 1: the oracle saw … openat(…,
+"…/mlr-in-place-…", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600)", `divergence_syscall: openat`,
+and the thread clause at 5 or 6 threads created and 0 that wrote. The refusal now names
+the wall mlr is actually behind — its writes do not pass through libc — which is where the
+second plan starts.
+
+**ocrmypdf, past `faccessat2`, meets byte repeatability.** `main`: all four runs (preflight
+and explore, both modes) refuse `unsupported_syscall_observed faccessat2`. This change:
+`recording accepted — 2 state-changing operation(s) observed` in both modes, the oracle
+agreeing on 2; and both explorations refuse `baseline_violates_invariant` — the re-run from
+the restored state left `a.pdf` holding neither recorded content. The prediction said "a
+verdict or a different refusal" and did not name this one. `preflight --twice` names the
+cause: `a.pdf (content differs)`, and the same with `SOURCE_DATE_EPOCH` pinned, so no define
+tried here makes it repeatable. The first measurement of it ran with an unwritable `HOME`
+(fontconfig and tesseract could not cache), which alone could have split the output; it was
+re-run with a writable one before anything was read off it.
+
+**Acceptance, whole suite** (spike image, aarch64 Debug with the apparatus builds,
+non-root): 352 ok, 0 FAIL, the usual two not measured for reasons of this host — after
+the code, after the documents, and once more after the review's fixes (the toy now closes
+its descriptors on the path where it cannot open `key.json`). `sideeye demo` on this build:
+FAIL 1 of 6 explored worlds, exit 1.
+
+**The diff review's first round** found no defect in the code and judged the promise true,
+having followed every reader of `read_only` (`changesPersistentState`, the subject's
+branch) and the scope decision, which never consults it. What it found was in the record:
+`spike/dogfood/RUNS.md` had no row for the new directory, though its own first line says a
+row is written when the directory is committed; the ocrmypdf row cited only the older
+run; a `report-schema.md` paragraph said "the paragraph above" of the one this change put
+above it; an `[Unreleased]` entry still called `faccessat2` ocrmypdf's refusal; RESULTS said
+both expectations came out as written, where ocrmypdf's had not named the refusal it met;
+and the one-name-at-a-time outputs this entry cites had not been kept (the script teed to
+a directory it created afterwards) — re-run so they are. And one thing none of the records
+said: **in both modes one of ocrmypdf's two crash worlds left `a.pdf` empty** — the
+checker's `a.pdf does not start with %PDF- (0 bytes)` — the shape of a rewrite that
+truncates before it writes. Seen, not judged: the baseline's refusal stands in front of
+every world. It is written into RESULTS and the ocrmypdf row as a lead for a later run.
+
+**The second round** found the first round's nine resolved and three more things about the
+record. The empty file was called a crashed world's without the record saying how it was
+told from the baseline's — RESULTS now gives the two readings it rests on (the report counts
+`violations: 1`, and the baseline's refusal carries no "the checker rejected that state too"
+clause). The one-name-at-a-time output was named but lived outside the repository, where the
+scratch sweep would take it in a week — it is `transcripts/mutants-one-name-at-a-time.txt`
+now. And the suite had not been run on the tree as it stands: the last whole run overlapped
+the mutants' own builds. It was run again at the end — 352 ok, 0 FAIL — after the run directory was given the
+shape `spike/dogfood/README.md` asks for — `SELECTION.md`, `apparatus/` with the three
+scripts and the ocrmypdf image's Dockerfile, `transcripts/` — and the three scripts were
+re-run from their new place so that what is committed is what ran: same results, line for
+line.
+
 ## 2026-09-11 — The shim takes a bounded amount of a target thread's memory, and says how much (#555)
 
 #555 said the shim's 256 KiB of static TLS stops a target from starting a thread with a

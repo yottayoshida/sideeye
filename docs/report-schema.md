@@ -156,9 +156,19 @@ the version moved because the recorded account did, not the vocabulary):
 A new refusal joins this list in the change that introduces it, and the
 acceptance check above holds this page to that.
 
+**`faccessat2` and `epoll_ctl` on the state directory are read as reads** — a
+permission query, and an event loop registering a descriptor — not refused as
+unmodelled (#542). A call the oracle has no name for is refused as
+`unsupported_syscall_observed` when its line reaches the state directory, because it
+may have changed something; these two cannot, and they are the two that refused real
+targets for nothing (ocrmypdf asking whether it may write its input, mlr's Go runtime
+registering a file with its netpoller). Other calls that change nothing on disk and
+have no name yet — extended-attribute reads, `inotify_add_watch`, `preadv`, `poll` —
+still refuse as unmodelled.
+
 `setup_error_reason` values (closed set — added with #518, ADR 0057, held to the
 contract's enum by the same acceptance check, and carrying no version of its own: the
-paragraph above is the one the version check reads; the list below is what the set check
+`unknown_reason` paragraph is the one the version check reads; the list below is what the set check
 reads, so it names members and nothing else):
 `define_invalid`, `setup_failed`, `environment`, `platform_unsupported`, `internal`.
 

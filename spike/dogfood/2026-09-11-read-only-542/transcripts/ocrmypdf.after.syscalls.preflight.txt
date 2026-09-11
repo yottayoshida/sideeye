@@ -1,0 +1,59 @@
+
+
+
+
+
+Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 158, in get_version
+    proc = run(
+        args_prog,
+    ...<5 lines>...
+        env=env,
+    )
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 62, in run
+    proc = subprocess_run(args, env=env, check=check, **kwargs)
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+
+Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 158, in get_version
+    proc = run(
+        args_prog,
+    ...<5 lines>...
+        env=env,
+    )
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 62, in run
+    proc = subprocess_run(args, env=env, check=check, **kwargs)
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['jbig2', '--version']' died with <Signals.SIGSYS: 31>.
+Command '['pngquant', '--version']' died with <Signals.SIGSYS: 31>.
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 158, in get_version
+    proc = run(
+        args_prog,
+    ...<5 lines>...
+        env=env,
+    )
+  File "/usr/lib/python3/dist-packages/ocrmypdf/subprocess/__init__.py", line 62, in run
+    proc = subprocess_run(args, env=env, check=check, **kwargs)
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['pngquant', '--version']' died with <Signals.SIGSYS: 31>.
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (22700 syscall lines examined, 67 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped write and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+processes    14 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /tmp/localrun/st/syscalls-preflight/ocr --setup "/tmp/localrun/ap/setup.sh" --operation "ocrmypdf -q --force-ocr /tmp/localrun/st/syscalls-preflight/ocr/a.pdf /tmp/localrun/st/syscalls-preflight/ocr/a.pdf" \
+               --check <your-invariant.sh> --shim /se/lib/libsideeye_shim.so --oracle /usr/bin/strace
