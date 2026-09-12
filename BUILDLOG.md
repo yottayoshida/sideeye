@@ -2,6 +2,240 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-12 — the fs_usage oracle is told which threads are the subject's, and the refusal for the rest stops calling them processes (#544)
+
+Contract v16 made a thread judgeable everywhere except under `--oracle-fs-usage`, where
+`src/main.zig` refused any run carrying a `pthread_create` record. The reason was real and
+ADR 0031 measured it: `fs_usage` attributes a line to a thread id and prints no process
+anywhere, so `src/fsusage.zig` sets no `primary_pid`, and a subject thread's write reached
+`childTouched()` as another party's. Refusing by name was the honest exit — the alternative
+was `child_touched_state_dir`, which ADR 0055 itself calls "the right exit for the wrong
+reason, calling a thread another process".
+
+What was missing was a map from thread to process, and only that reader was missing it. The
+trace names both on every record, and the shim was already counting the thread ids that
+wrote under the subject's pid — `TraceInfo.subject_writer_tids`, the number the report
+prints. The change publishes the same variable as a list (`subject_writer_tid_list`), hands
+it to `fsusage.read`, and widens that reader's `is_subject` from "the tid that opened the
+trace" to "that tid, or one on the list". ADR 0060 carries the decision; it amends ADR
+0055's exemption and ADR 0031 §3 ("The subject is the thread that writes the shim's
+trace"), and withdraws neither measurement. Three places first cited §2a, which is the
+process-boundary section and has no thread clause; review caught all three.
+
+**The reversal, written at the moment it happened.** With the early refusal removed, a
+writer the shim never recorded falls through to `childrenMayBeJudged`, whose refusal said
+"process N" — which is exactly the sentence ADR 0055 refused to publish. The first
+implementation of the fix asked the *trace* whether it held any record from a process with
+that id. That reads as the right question and is not: it reworded the refusal on the strace
+path too, where the id really is a pid because strace names the process on every line. The
+v15 fixture in `src/main.zig` (`.primary_pid = 7`, a writer 99 that recorded nothing) went
+red on the first `zig build test` after the change — 770 of 773, one failure, and it was
+this. The discriminator is `Parsed.primary_pid`: set by the strace reader, never by the
+fs_usage reader, and the same absence `childTouched()` already keys on. The wording now
+changes only on the path where the ambiguity is real.
+
+Two things this does not do. It does not teach `fs_usage` anything — that reader still
+knows no process, and the list it is handed comes from the other witness. And it does not
+move the process boundary: `boundary_without_oracle` refuses as before, because `fs_usage`
+drops whole processes by name and `-e` does not lift that (Probe 0 in
+`spike/fsusage/acceptance-local.sh` measures that on every run).
+
+The leg is check 6 in that script. It **asserts** — it has not been run here — that a toy
+whose every state-directory write happens on a worker thread reaches exit 0 with
+`oracle_verified`, and that the control, the same toy with one added write on the main
+thread, still refuses `multiple_threads_detected`. **That control does not discriminate
+this change**, and an earlier draft of this entry said it did: two writing threads are
+caught by `second_writer_thread` from the trace, several statements before the oracle block
+this change lives in, so an implementation that simply called every thread the subject
+produces the same exit and the same reason. What does discriminate it is the `named` /
+`unnamed` pair in `src/fsusage.zig` — the same capture read twice, once with the list and
+once without — and check 7, which a "call every thread the subject" implementation fails
+because its raw-syscall worker would then be the subject and the run would reach exit 0.
+The control is kept because a second writing thread must keep refusing, which is worth
+holding for its own sake.
+
+**The first review found that the reader could not have worked at all.** `src/fsusage.zig`
+keys its fd table by `(tid, fd)`: `fs_usage` prints no path on a write, so a write is
+placed through the open that preceded it *on the same thread*. The shim keeps one trace
+descriptor per process, opened by the thread that initialises, and the thread that performs
+an operation is the thread that writes its record. A worker's write to that descriptor
+therefore resolved against nothing, and the run refused `unresolved_fd` →
+`oracle_saw_nothing`. Not a corner: a worker reaches `subject_writer_tid_list` only by
+having written a record, and writing a record IS that line — so every run the widening
+applied to refused before the widening could matter. A synthetic capture carrying the
+worker's `write` on the trace descriptor was red before the fix and is green after. **The
+two tests written first had no such line in them**, which is exactly why they passed; the
+review axis that asks a new check to be falsified against its own predicate is what found
+it.
+
+The fix is at the root rather than at the symptom. The subject's threads share ONE
+descriptor namespace, because they share a process; the per-thread key was a consequence of
+having no pid on a line, and the trace now supplies precisely that. `const fd_tid = if
+(is_subject) subject else ln.tid;`, threaded through the ten sites that key the descriptor
+table and the dup window — eight and two, and that split is the whole of the paragraph
+below. An
+empty list makes `fd_tid` equal to `ln.tid` again, so a single-threaded run is unchanged
+byte for byte.
+
+**And it went one site too far.** The substitution was applied with a single `sed` over
+every `.tid = ln.tid` in the file — nine of them — but two were not the namespace at all.
+`dup_pending` is a *window*: one line wide, opened by a thread's `fcntl <DUPFD>` and closed
+by that same thread's very next line, and the comment above it still said "the very next
+line by **the same thread**" while the code no longer meant it. Keyed process-wide, a
+worker's line lands in a window the main thread opened and either completes the dup against
+the wrong descriptor or consumes it and drops the shim's trace descriptor from the table —
+which would make check 6's outcome depend on the scheduler. The second review found it;
+those two sites are back on `ln.tid` and the table's reads and writes stay on `fd_tid`. No
+run is known to have hit it, because the trace's dup happens during init before any worker
+exists — which is why it was invisible, not why it was safe. The lesson is narrower than
+"be careful with `sed`": **two things spelled the same way were not the same thing**, and a
+mechanical rewrite cannot see the difference between a namespace and a window.
+
+**The second change is which refusal an unattributable writer gets.** Removing the early
+refusal moved a class from an honest exit to a mislabelled one: a worker whose writes the
+shim missed — stdio past the buffer, a raw syscall, the class this oracle exists to catch —
+fell through to `child_touched_state_dir`, the sentence ADR 0055 declined to publish. The
+reason is now chosen on evidence the call site holds. A boundary the shim saw has already
+refused above, so if the shim also recorded threads being created and recorded no boundary,
+"another thread of this process wrote" is the reading the run supports and
+`multiple_threads_detected` is the reason; with no thread records the raw-fork shape is
+what is left and #405's exit stands. That is also the reason the build before this change
+produced for the class, by refusing at the flag — so the removal costs nothing there.
+
+**A third, and the one that shows what widening a predicate costs when you widen only
+one.** `is_subject` grew; `relevant()` did not. They are different sets: `state_tids` is
+built in an earlier pass from lines that NAME a path under the root, and a worker's
+`write F=5` and `fsync F=5` name none — so a thread can be on the list, be the subject, and
+still fall outside every refusal gate `is_relevant` controls (`cwd_moved` on a `chdir`,
+`.truncated`, `.unresolvable_path`, `.unresolved_fd`, an out-of-root rename). Review
+constructed the consequence: the worker writes through the main thread's descriptor, then
+`chdir`s to the root's parent, and a later relative raw operand joins to the STARTING cwd,
+lands outside, and is dropped — while the file it creates is inside the judged directory
+and raw enough that the shim says nothing either. The verdict does not become a PASS, the
+snapshot layer still refuses `state_changed_unaccounted`; what is lost is the guard ADR
+0031 §2b exists to be, and the refusal names another wall. Before this change the path was
+unreachable — every threaded run refused at the flag — so this diff is what makes it
+reachable, and leaving it would have been a regression this diff introduced.
+
+`const is_relevant = is_subject or relevant(...)`. Widening turns silent drops into
+refusals at every gate but one, so it cannot manufacture a PASS — and **the exception is
+one this entry got wrong on the first writing**: a `chdir` INTO the judged directory is in
+scope, used to refuse as an unknown call, and now sets `cwd_moved` and continues, so that
+line refuses *less*. The behaviour is right (a `chdir` changes no state, and everything
+relative after it is unplaceable from that point, so the run still closes), but the claim
+was false as written, in three places, while the test written for this decision named the
+counterexample in its own comment. Review found it there.
+
+A second cost, unmeasured and worth stating: `cwd_moved` is one flag for the whole run, and
+the gate admits `__pthread_chdir` / `__pthread_fchdir`, which on macOS move only the
+calling thread's directory. A listed worker calling one now disarms relative operands for
+the main thread too, so a run that could have been judged refuses instead. Safe direction,
+real price; per-thread working directories in this reader are a separate change.
+
+**The order matters and only one order works**: before the
+descriptor namespace was merged, a worker's write to the shim's own trace descriptor was
+unresolvable, and widening first would have turned that into a refusal on every run rather
+than a hole. The test builds the constructed capture and puts the `chdir` at the root's
+PARENT — a `chdir` into the judged directory is in scope and refuses as an unknown call
+instead, which would have made the test green for a reason that has nothing to do with the
+guard.
+
+**A fourth, and this one came from scanning for the same shape rather than from review.**
+The correction in decision 3 is about the refusal's message. The report's `processes`
+account is rendered by different code, and it still said "a process other than the subject
+operated on the judged directory" — so a run would have carried the corrected refusal and
+the uncorrected account in two fields of the same report. Reaching it with a thread is new
+for the same reason as everything else here: until this change a threaded run under that
+oracle refused at the flag and rendered no account at all. The clause now softens when the
+evidence is an oracle that names threads *and* the shim saw no foreign pid of its own (with
+one, "a process" is established and the sentence stays). Two rows in the boundary-evidence
+table hold it rather than one — the fs_usage row pins "knows no process for it", the strace
+row pins "a process other than the subject" — because a single row cannot tell "softened
+both" from "softened the right one", and check 7 now reads the `processes` field as well as
+the message.
+
+The first attempt to see those rows red was itself the failure it was looking for: the
+`sed` that broke the sentence broke the pinned phrase in the same pass, so the check
+matched its own mutation and stayed green. Targeting the sentence line alone makes each row
+fail on its own — the fs_usage row on the softened wording, the strace row on the hard one.
+
+**What is pinned, stated precisely — the first writing of this paragraph was not.** There
+are two decisions here and one sentence claimed a single test covered both. The *message*
+branch in `childrenMayBeJudged` is mutated both ways: switched off, the new `src/main.zig`
+test fails; switched on for every witness, the v15 fixture fails. The *reason* — which
+`unknown_reason` an unattributed writer gets — was decided inline at the call site, had no
+unit test at all, and switching it off left everything green; the only thing holding it was
+check 7, which needs root and has never run. It is now `unattributedWriterReason`, a
+function of the two witnesses with a test asserting each of its three conditions: drop the
+thread-record condition or drop the witness-kind condition and it fails.
+
+**Extracting it opened a second hole, and the review named that too**: a rule with a test
+and no caller is invisible to both. The unit test cannot say the engine still asks the
+question, and the leg that does — check 7 — needs root and macOS. The engine's one call
+site is pinned by a grep in `spike/acceptance.sh`, beside the `--help` parse-loop check
+that is the same kind of cheap structural second opinion: it says nothing about whether the
+rule is right, only that the rule is still consulted, which is exactly the half the unit
+test gave up when the code moved out of the call site. Seen red by putting the literal back
+at the call site. It goes when a rootless path drives that refusal end to end.
+
+Measured on this tree after all of the above — `zig build test --summary all`: 23/23 steps,
+**775 of 777 tests passed, 2 skipped**. The number this entry carried before, "770 of 773",
+was taken before any review fix and by then described nothing; `fd_tid`, the `is_relevant`
+widening, four `src/fsusage.zig` tests and two `src/main.zig` tests have landed since.
+
+Eleven mutations, each killing the check it was aimed at and only that one: the widened
+subject predicate both ways, the message branch both ways, the `is_relevant` union, the two
+conditions of the reason rule, the two halves of the `processes` clause (softened wording
+and hard wording, one row each), the thread-under-fs_usage account arm, and a reader that
+drops a worker's operations instead of counting them.
+
+**Three of those runs lied before they told the truth, and each lied differently.** One
+`sed` rewrote the pinned phrase in the same pass as the sentence it was breaking, so the
+check matched its own mutation — normalisation erasing the anomaly it was looking for. One
+reported no failure because the `grep` filtering the output dropped the line that said so,
+while the exit code said 1. One `sed` addressed the wrong occurrence of a string that
+appears twice, so nothing changed and the run was green for the most boring reason there
+is. All three read as "the check is not load-bearing", and all three were wrong. The only
+thing that separated them from a real green was going back and asking what the command had
+actually done to the file — printing the mutated line before running, and reading the exit
+code rather than a filtered stream.
+Check 7 in `spike/fsusage/acceptance-local.sh` drives the shape end to end — a worker
+writing through raw syscalls — because **check 6's own control does not discriminate this
+change**: two writing threads are caught by the v16 rule from the trace, at
+`second_writer_thread`, before the flag is consulted. The plan review said that about the
+plan and it was still true of the leg as written.
+
+**Written first as though it had passed, which it had not.** The two paragraphs above said
+the toy "reaches exit 0 with `oracle_verified`" in the same voice as the measurements
+beside them. `fs_usage` needs root, this laptop's sudo cache was cold, and the leg runs
+only on CI's macOS runner — so nothing had exercised it when that sentence was written.
+The repository's own review axis names this shape: a claim whose measurement did not look
+at what the claim covers must say so in the claim. It now does.
+
+**What the local dry-run could and could not reach.** `--oracle-fs-usage` needs root and
+this laptop's sudo cache was cold, so the flagged half is exercised by CI's macOS runner,
+where sudo is passwordless and `ci.yml` runs that script — not here. The half that needs no
+root was run locally against a prefix installed by the same invocation (`zig build test`
+installs nothing, so `zig-out` was two edits stale and would have measured the wrong
+binary). The v16 clause reads correctly on the worker-thread toy: `processes` says "the
+shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote
+the judged directory", and the control refuses `multiple_threads_detected` naming both —
+"tid 110596493 performed open(…/also-main) and tid 110596511 performed open(…/keep)".
+Without the flag both end at `completeness_not_verified`, which is what a macOS run with no
+witness is supposed to reach.
+
+One run ended `kill_did_not_land` instead — "a world that should have been killed exited on
+its own", whose own next step says it is a defect in Sideeye. **Measured against the
+unchanged tree before writing anything about it**: b175d4b, in a detached worktree built
+into its own prefix, answers the same thing on the same toy binary at a similar rate — 2 of
+9 there against 1 of 11 here, the eight-run halves declared before either was read. It is
+intermittent and older than this change, and a toy that writes one file from a worker and
+exits immediately is the shape most likely to finish before a kill lands. Recorded rather
+than filed: it is a loud UNKNOWN rather than a silent verdict, and nothing in this change's
+promise touches it. The first single-threaded comparison in that sitting measured nothing —
+`spike/toys/toy.c` takes a subcommand and the harness passed none, so it printed its usage
+and refused `recording_run_failed`, which is the apparatus failing rather than the target.
+
 ## 2026-09-12 (later) — a pointer fixed in the rendering instead of in the thing that renders
 
 The README cut repointed a sentence in `docs/freeze-audit.md`'s #328 row from README to

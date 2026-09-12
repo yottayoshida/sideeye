@@ -289,5 +289,160 @@ echo "  exit=$rc5 reason=$(field c5 unknown_reason)"
 echo "  PASS"
 
 echo "=================================================================="
-echo "all five checks passed"
+echo "Check 6 — a worker thread's writes are the subject's (#544)"
+echo "  predicate: exit 0 AND oracle_verified true, on a target whose state-directory"
+echo "             writes ALL come from a thread other than the one this oracle"
+echo "             identifies the subject by (whoever opened the trace write-capably)"
+echo "  control:   a second writing thread of the same process still refuses"
+echo "             multiple_threads_detected — the v16 rule, decided from the trace"
+cat > "$WORK/worker_toy.c" <<'EOF'
+/* Every state-directory write happens on a worker thread; the main thread only starts and
+ * joins it. The main thread is the one that opened the trace, which is how src/fsusage.zig
+ * identifies the subject — so this toy's only writes are the ones that reader attributed
+ * to another party before #544, and the run refused. */
+#include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+static int writefile(const char *d, const char *name) {
+    char p[1024]; snprintf(p, sizeof(p), "%s/%s", d, name);
+    int fd = open(p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    if (fd < 0) { perror("open"); return 1; }
+    if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
+    if (close(fd) != 0) { perror("close"); return 1; }
+    return 0;
+}
+static void *worker(void *arg) { return writefile((const char *)arg, "keep") ? (void *)1 : NULL; }
+int main(void) {
+    const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
+    pthread_t t;
+    if (pthread_create(&t, NULL, worker, (void *)d) != 0) return 1;
+    void *rv; if (pthread_join(t, &rv) != 0) return 1;
+    return rv == NULL ? 0 : 1;
+}
+EOF
+cat > "$WORK/twowriters_toy.c" <<'EOF'
+/* The control. Identical but for one line: the main thread writes as well, so the process
+ * has two writing threads and the v16 rule refuses.
+ *
+ * What this does NOT do is discriminate #544: the refusal comes from `second_writer_thread`
+ * in the shim's trace, several statements before the oracle block that change lives in, so
+ * an implementation calling every thread the subject reaches the same exit for the same
+ * reason. Check 7 is the leg that separates those, and the `named`/`unnamed` pair in
+ * src/fsusage.zig is the unit-level one. This control is here because a second writing
+ * thread must keep refusing, which is worth pinning on its own. */
+#include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+static int writefile(const char *d, const char *name) {
+    char p[1024]; snprintf(p, sizeof(p), "%s/%s", d, name);
+    int fd = open(p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    if (fd < 0) { perror("open"); return 1; }
+    if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
+    if (close(fd) != 0) { perror("close"); return 1; }
+    return 0;
+}
+static void *worker(void *arg) { return writefile((const char *)arg, "keep") ? (void *)1 : NULL; }
+int main(void) {
+    const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
+    pthread_t t;
+    if (pthread_create(&t, NULL, worker, (void *)d) != 0) return 1;
+    if (writefile(d, "also-main")) return 1;
+    void *rv; if (pthread_join(t, &rv) != 0) return 1;
+    return rv == NULL ? 0 : 1;
+}
+EOF
+for t in worker_toy twowriters_toy; do
+    "$CC" -O0 -pthread -o "$WORK/$t" "$WORK/$t.c" 2>/dev/null || fail "could not build $t"
+done
+rc6=$(run c6 worker_toy --oracle-fs-usage)
+echo "  exit=$rc6 oracle_verified=$(field c6 oracle_verified) verdict=$(field c6 verdict) reason=$(field c6 unknown_reason)"
+[ "$rc6" = "0" ] || { sed -n '1,12p' "$WORK/c6.txt"; fail "check 6: expected exit 0 — a worker thread's writes were not read as the subject's"; }
+[ "$(field c6 oracle_verified)" = "True" ] || fail "check 6: oracle_verified is not true; a verdict nothing verified is not what this check claims"
+rc6ctl=$(run c6ctl twowriters_toy --oracle-fs-usage)
+echo "  control exit=$rc6ctl reason=$(field c6ctl unknown_reason)"
+[ "$rc6ctl" = "2" ] || { sed -n '1,12p' "$WORK/c6ctl.txt"; fail "check 6 control: expected exit 2 — two writing threads must still refuse"; }
+[ "$(field c6ctl unknown_reason)" = "multiple_threads_detected" ] || fail "check 6 control: expected multiple_threads_detected, got $(field c6ctl unknown_reason)"
+echo "  PASS"
+
+echo "=================================================================="
+echo "Check 7 — a thread the shim did not record is refused as a thread, not as a child"
+echo "  predicate: exit 2 AND multiple_threads_detected, on a target whose worker writes"
+echo "             through raw syscalls. The shim records the thread being created and"
+echo "             nothing it wrote, so the worker is NOT on the list handed to the"
+echo "             reader; the oracle sees a tid nothing attributes (#544, ADR 0060)"
+echo "  why it is here: check 6's own control passes without this change — two writing"
+echo "             threads are caught by the v16 rule from the trace, before the flag is"
+echo "             consulted. THIS is the leg that fails if the refusal goes back to"
+echo "             calling a thread another process (child_touched_state_dir)"
+cat > "$WORK/rawworker_toy.c" <<'EOF'
+/* The main thread writes through libc, so the run has a recorded account. The worker
+ * writes through raw syscalls, so the shim records nothing of its operations — it is not
+ * on the list handed to src/fsusage.zig, and the oracle sees a tid nothing attributes.
+ * The shim DID record the thread being created and no process boundary, which is the
+ * evidence the refusal is chosen on. Catching what the shim missed is what this oracle is
+ * for, so this shape is the main case rather than a corner. */
+#define _GNU_SOURCE
+#include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+static void *worker(void *arg) {
+    const char *d = (const char *)arg;
+    char p[1024]; snprintf(p, sizeof(p), "%s/raw", d);
+    long fd = syscall(SYS_openat, -2 /* AT_FDCWD */, p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    if (fd < 0) return (void *)1;
+    syscall(SYS_write, (int)fd, "r\n", 2);
+    syscall(SYS_close, (int)fd);
+    return NULL;
+}
+int main(void) {
+    const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
+    char p[1024]; snprintf(p, sizeof(p), "%s/keep", d);
+    int fd = open(p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    if (fd < 0) { perror("open"); return 1; }
+    if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
+    if (close(fd) != 0) { perror("close"); return 1; }
+    pthread_t t;
+    if (pthread_create(&t, NULL, worker, (void *)d) != 0) return 1;
+    void *rv; if (pthread_join(t, &rv) != 0) return 1;
+    return rv == NULL ? 0 : 1;
+}
+EOF
+"$CC" -O0 -pthread -o "$WORK/rawworker_toy" "$WORK/rawworker_toy.c" 2>/dev/null || fail "could not build rawworker_toy"
+rc7=$(run c7 rawworker_toy --oracle-fs-usage)
+# Read once. Each `field` call starts a python3, and this check asks for the same three
+# values a dozen times between here and its PASS.
+c7_reason=$(field c7 unknown_reason)
+c7_msg=$(field c7 message)
+c7_proc=$(field c7 processes)
+echo "  exit=$rc7 reason=$c7_reason"
+[ "$rc7" = "2" ] || { sed -n '1,12p' "$WORK/c7.txt"; fail "check 7: expected exit 2 — a writer the shim never recorded must refuse"; }
+[ "$c7_reason" = "multiple_threads_detected" ] || fail "check 7: expected multiple_threads_detected, got $c7_reason — child_touched_state_dir here is the refusal ADR 0055 declined to publish, calling a thread another process"
+# The message must not assert the half this witness cannot see. fs_usage names a thread and
+# knows no process for it, so "process N" is a claim the run did not establish.
+case "$c7_msg" in *"mutated the judged directory"*) ;; *) fail "check 7: the refusal does not name the unattributed writer: $c7_msg" ;; esac
+# Matched on a phrase unique to each sentence rather than on word order. The two refusals
+# share "mutated the judged directory in the oracle's account and recorded nothing of its
+# own", so a glob like *"process "*"mutated"* only works while "process" happens to come
+# first — it would pass silently the day anything is prepended or the sentence is
+# rearranged.
+case "$c7_msg" in *"calling it a process would assert"*) ;; *) fail "check 7: the refusal does not carry the thread-naming witness's limit: $c7_msg" ;; esac
+case "$c7_msg" in *"A child that never loaded the shim"*) fail "check 7: the refusal is the one that asserts a process: $c7_msg" ;; esac
+# And the account beside it must say the same thing. The refusal message and the
+# `processes` field are rendered by different code, so one can be corrected while the
+# other keeps asserting that the writer was a process — which would be a report
+# contradicting itself in two of its own fields (#544).
+case "$c7_proc" in *"knows no process for it"*) ;; *) fail "check 7: the processes account does not carry this witness's limit: $c7_proc" ;; esac
+case "$c7_proc" in *"a process other than the subject operated"*) fail "check 7: the account calls an unattributable id a process: $c7_proc" ;; esac
+echo "  PASS"
+
+echo "=================================================================="
+echo "all seven checks passed"
 echo "artifacts: $WORK"

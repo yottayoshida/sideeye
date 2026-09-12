@@ -122,6 +122,14 @@ trace descriptor; there is no writer a second witness exists to catch (ADR 0002
 decision 3's reason). A thread beside a fork, a spawn or a foreign record still needs one,
 for those.
 
+**Amended 2026-09-12 by ADR 0060 (#544): the exception below is withdrawn.** The map that
+reader was missing comes from the trace, which names the process and the thread on every
+record; the subject's writing thread ids are handed to it, and a single-process run whose
+state-directory writes come from one recorded thread is judged under that oracle as under
+any other. The paragraph is kept as the decision stood — its last sentence names the change
+ADR 0060 turned out to be, and the refusal it describes was correct for as long as nothing
+supplied the map.
+
 **Except under `--oracle-fs-usage`, where a threaded run is refused by name** (owner
 ruling, 2026-09-08). Where an oracle is given its account is compared against the
 shim's, and the fs_usage reader attributes a line to a thread id and knows no process for

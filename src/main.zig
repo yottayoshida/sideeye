@@ -709,6 +709,18 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
     if (ev.shim_foreign_touch or ev.oracle_child_touched)
         return if (ev.children_judged)
             "a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered"
+            // The same correction as the refusal this run carries (#544, ADR 0060), one
+            // layer over. When the only evidence is an oracle that names threads — the
+            // shim saw no foreign pid, or this account would rest on something that does
+            // name processes — "a process" is a claim the run did not establish. Reaching
+            // this with a thread is new: until #544 a threaded run under that oracle
+            // refused at the flag and never rendered an account at all, so the sentence
+            // below and the refusal beside it would have disagreed inside one report.
+        else if (!ev.shim_foreign_touch and switch (ev.witness) {
+            .read => |r| r.kind == .fs_usage,
+            else => false,
+        })
+            "an id other than the subject's operated on the judged directory; this witness names a thread and knows no process for it, so whether that id is another process or a thread the shim never recorded is not established here. Its operations have no crash-point address"
         else
             "a process other than the subject operated on the judged directory; its operations have no crash-point address";
     if (ev.shim_hard) |name|
@@ -778,11 +790,16 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
             // discloses it. Measured 2026-09-07 on a judged self-exec.
             .strace => "single process",
             // Not the same claim as strace's zero — see `fs_usage_silence`. **This side
-            // is unreachable today**: a boundary under fs_usage is refused before the
-            // account renders (`boundary_without_oracle`, ADR 0031 §2a). Written rather
-            // than left to fall through, so lifting that gate cannot make this arm borrow
-            // strace's stronger wording. No case pins it: pinning a state the engine
-            // cannot produce is its own defect.
+            // became reachable in #544**, and the comment that stood here said it could
+            // not be: a boundary under fs_usage is refused before the account renders
+            // (`boundary_without_oracle`, ADR 0031 §2a), which held while every threaded
+            // run refused at the flag instead. A thread is a boundary for
+            // `crossedBoundary` and not for `needsOracle` (v16, ADR 0055), so a
+            // single-process threaded run now arrives here with no process boundary and no
+            // other writer. The wording was already right and nothing fell over; what was
+            // wrong was the claim that nothing could produce it — which is the kind of
+            // breakage that fails silently, since a stale reachability note compiles.
+            // A case pins it now, on the same reasoning the old note used to decline one.
             .fs_usage => fs_usage_silence,
         },
     };
@@ -1504,6 +1521,28 @@ fn stopLiveSidecar() posix.SidecarEnd {
 /// untrapped run, so nothing accounted for a child in the run the trace came from. The
 /// oracle now watches the run it judges in that mode too, and the two conditions below are
 /// asked of it the way they are asked of any other run.
+/// Which refusal an unattributed writer gets, when `childrenMayBeJudged` has already said
+/// that the run is refused (#544, ADR 0060 decision 8).
+///
+/// Separate from the message that names the writer, and separate on purpose: the two are
+/// decided in different places and only the message had a test, so switching this off left
+/// every unit test green. Callers pass the two witnesses; the answer is a function of them
+/// and nothing else.
+///
+/// A process boundary the shim saw has already refused before this is asked
+/// (`boundary_without_oracle`), so reaching it means none was recorded. If the shim also
+/// recorded threads being created, "another thread of this process wrote" is the reading
+/// the run supports — a child with no boundary record needs a raw `fork`, while an
+/// unattributed thread needs only that the shim missed its writes, which is the class the
+/// fs_usage oracle exists to catch. With no thread records the raw-fork shape is what is
+/// left and #405's exit stands. On the strace path `primary_pid` is set from a pid, the
+/// id really is a process, and nothing here changes.
+fn unattributedWriterReason(trace: engine.TraceInfo, parsed: oracle.Parsed) contract.UnknownReason {
+    if (parsed.primary_pid == null and trace.thread_records > 0 and !trace.process_boundary)
+        return .multiple_threads_detected;
+    return .child_touched_state_dir;
+}
+
 fn childrenMayBeJudged(
     arena: std.mem.Allocator,
     trace: engine.TraceInfo,
@@ -1570,12 +1609,37 @@ fn childrenMayBeJudged(
         for (shim_writers.items) |sw| {
             if (sw.pid == w.id) recorded = sw;
         }
-        if (recorded == null)
+        if (recorded == null) {
+            // That this id is a PROCESS is a claim, and until #544 the refusal below made
+            // it whatever the witness was. It holds for a witness that reads pids: strace
+            // names the process on every line, and `Parsed.primary_pid` is set from one.
+            // It does not hold for `fs_usage`, which attributes a line to a THREAD id and
+            // prints no process anywhere (ADR 0031) — `src/fsusage.zig` sets no
+            // `primary_pid` in consequence, and that absence is the discriminator here,
+            // the same one `childTouched()` already keys on. Under that witness an id
+            // which mutated the judged directory and matched none of the subject's
+            // recorded writing threads (`isSubject`, above) can be either thing: a process
+            // that never loaded the shim, or a thread whose operations went around the
+            // shim's wrappers — a raw syscall, or a thread started before the shim was in
+            // the image. Both are refused; what changes is that the sentence stops naming
+            // one of the two as though the run had established which.
+            //
+            // A first version of this arm asked the TRACE whether it held a record from a
+            // process with that id. It reads as the same question and is not: it reworded
+            // the refusal on the strace path too, where the id really is a pid, and the
+            // v15 fixture in this file caught it.
+            if (parsed.primary_pid == null)
+                return std.fmt.allocPrint(
+                    arena,
+                    "id {d} mutated the judged directory in the oracle's account and recorded nothing of its own. This witness names a thread and knows no process for it, so this is either a process that never loaded the shim or a thread whose operations went around the shim's wrappers; calling it a process would assert the half this run cannot see. Either way its operations hold no crash-point number and the sequence the crash points were read from is incomplete",
+                    .{w.id},
+                ) catch "an id mutated the judged directory and the witness cannot say whether it is a process";
             return std.fmt.allocPrint(
                 arena,
                 "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle",
                 .{w.id},
             ) catch "a process mutated the judged directory without recording anything of its own";
+        }
 
         // Where this child was created. Without it the window would start at the child's
         // own first write, and a parent that wrote in between — with the child already
@@ -4016,21 +4080,28 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // child that execs one of them mutates the judged directory in nobody's account.
     // Children that are visible are still caught by path scope (#405's shape refuses
     // `child_touched_state_dir`); what this refuses is the tolerance, not the detection.
-    // A thread under `--oracle-fs-usage` is refused by name (v16, owner ruling 2026-09-08).
-    // The rule that judges one writing thread per process is decided from the shim's
-    // trace and needs no oracle — but where an oracle IS given, its account is compared
-    // against the shim's, and the fs_usage reader attributes a line to a thread id and
-    // knows no process for it (`src/fsusage.zig` sets no `primary_pid`), so a subject
-    // thread's write reaches `childTouched()` as a child's and the run would refuse
-    // `child_touched_state_dir` — the right exit for the wrong reason, calling a thread
-    // another process. Refusing here, with the thread named as the cause, keeps the
-    // account true; teaching that reader which thread belongs to which process is a
-    // separate change that cannot be measured on the machine this was written on. A
-    // thread reached through a raw `clone` leaves no `pthread_create` record for this
-    // arm to key on, and under that oracle refuses `child_touched_state_dir` as it did
-    // before v16 — UNKNOWN either way, so no verdict is wrong, only the sentence.
-    if (args.oracle_fs_usage and trace.thread_records > 0)
-        unknown(.multiple_threads_detected, "the target created a thread and the fs_usage oracle cannot attribute a thread's operations to its process (ADR 0031), so its account cannot be compared against the shim's; a threaded run is judged on Linux, or on macOS without --oracle-fs-usage", .class_wall);
+    // A thread under `--oracle-fs-usage` was refused by name here until #544 (v16, owner
+    // ruling 2026-09-08). The rule that judges one writing thread per process is decided
+    // from the shim's trace and needs no oracle — but where an oracle IS given its account
+    // is compared against the shim's, and the fs_usage reader attributes a line to a
+    // thread id and knows no process for it (`src/fsusage.zig` sets no `primary_pid`), so
+    // a subject thread's write reached `childTouched()` as a child's. Refusing by name
+    // kept the account true while that stood: the alternative was
+    // `child_touched_state_dir`, the right exit for the wrong reason, calling a thread
+    // another process.
+    //
+    // The map that reader was missing now comes from the trace, where every record names
+    // both the process and the thread: `subject_writer_tid_list` carries the subject's
+    // writing threads into `fsusage.read`, which counts their lines as the subject's. So a
+    // single-process run whose state-directory writes come from one thread the shim
+    // recorded — the main thread or a worker — is explored and judged. A second writing
+    // thread of that process is still refused, by the v16 thread rule, which names both
+    // threads and is decided from the trace alone.
+    //
+    // What that list cannot hold is a thread the shim never recorded being created: a raw
+    // `clone`, or one started before the shim loaded. Its writes carry an id the trace
+    // never saw at all, and the refusal for those lives in `childrenMayBeJudged`, which
+    // names such an id as an id rather than asserting it is another process.
     if (trace.needsOracle() and args.oracle_fs_usage)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .class_wall);
 
@@ -4074,7 +4145,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const oracle_cwd = args.cwd orelse
             if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
         const parsed = if (args.oracle_fs_usage) blk: {
-            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd) catch setupError(.environment, "out of memory");
+            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd, trace.subject_writer_tid_list.items) catch setupError(.environment, "out of memory");
             // A capture with a hole in it is not an account to compare against. Each
             // of these says the witness itself is unreadable, which is a different
             // statement from "the two witnesses disagreed" — and only the second one
@@ -4154,8 +4225,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // them, which is why this is the site — the shim's own view is in `trace` and the
         // oracle's has just been parsed.
         if (trace.foreign_kill_point or parsed.childTouched()) {
-            if (childrenMayBeJudged(arena, trace, parsed)) |why|
-                unknown(.child_touched_state_dir, withOracleCapture(arena, why, if (args.oracle != null) oracle_out else null, why), .unwrap_or_class_wall);
+            if (childrenMayBeJudged(arena, trace, parsed)) |why| {
+                // WHICH refusal this is, and not only how it reads: under a witness that
+                // names threads an id nothing attributes may be a thread or a process, the
+                // message above says so, and the machine-readable reason still has to pick
+                // one. The rule and the evidence it reads live in
+                // `unattributedWriterReason`, as a function so that a test can reach it —
+                // written inline here it had no check at all, and switching it off left
+                // every unit test green while only the message branch was pinned.
+                //
+                // Removing the early refusal without this would have moved a whole class
+                // from an honest exit to one calling a thread another process, which is
+                // the sentence ADR 0055 declined to publish.
+                const reason = unattributedWriterReason(trace, parsed);
+                unknown(reason, withOracleCapture(arena, why, if (args.oracle != null) oracle_out else null, why), .unwrap_or_class_wall);
+            }
             children_admitted = true;
             boundary_ev.children_judged = true;
         }
@@ -8529,6 +8613,12 @@ const boundary_cases = [_]struct {
     .{ .what = "no boundary recorded, strace read and saw two other processes", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 2, .lines = 400 } } }, .may_say_single = false, .pins = "2 other process(es) observed" },
     // fs_usage drops whole processes by name, so its zero is not an observation of none.
     .{ .what = "no boundary recorded, fs_usage read and saw no other process", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 0, .lines = 3858 } } }, .may_say_single = false, .pins = "excludes some processes by name" },
+    // #544 made this one reachable, and the arm's own comment used to say no run could
+    // produce it: a thread sets `shim_boundary` through `crossedBoundary` but leaves
+    // `needsOracle` false, so a single-process threaded run under fs_usage renders an
+    // account where it used to refuse at the flag. Pinned because it can now happen, which
+    // is the test the old note applied and answered the other way.
+    .{ .what = "the shim recorded a thread, fs_usage read and saw no other process", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 0, .lines = 3858 } } }, .may_say_single = false, .pins = "excludes some processes by name" },
     // An account of nothing is not an observation that there was nothing: the run
     // refuses `oracle_saw_nothing`, and this used to report a single process (review).
     .{ .what = "the strace capture was empty (oracle_saw_nothing)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 0 } } }, .may_say_single = false, .pins = "capture was empty" },
@@ -8544,15 +8634,22 @@ const boundary_cases = [_]struct {
     // read as a single process until review measured a CLONE_THREAD capture.
     .{ .what = "strace reported a clone that crosses a boundary the shim missed", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 120 } }, .oracle_boundary = "clone" }, .may_say_single = false, .pins = "crosses a process boundary the shim did not record" },
     .{ .what = "another process performed a kill-point operation (shim)", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .shim_foreign_touch = true }, .may_say_single = false, .pins = "no crash-point address" },
-    .{ .what = "another process touched the judged directory (oracle)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 1, .lines = 900 } }, .oracle_child_touched = true }, .may_say_single = false, .pins = "no crash-point address" },
+    .{ .what = "an id the fs_usage account cannot attribute touched the judged directory", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .fs_usage, .children = 1, .lines = 900 } }, .oracle_child_touched = true }, .may_say_single = false, .pins = "knows no process for it" },
+    // The same state under a witness that DOES name processes, and the reason these are
+    // two rows rather than one: the pair is what holds the distinction. Soften both
+    // sentences and this row fails; soften neither and the row above does (#544).
+    .{ .what = "another process touched the judged directory (strace)", .ev = .{ .trace_read = true, .shim_reported = true, .witness = .{ .read = .{ .kind = .strace, .children = 1, .lines = 900 } }, .oracle_child_touched = true }, .may_say_single = false, .pins = "a process other than the subject" },
     // The same evidence with the slice admitted (v15). Pinned separately because the two
     // sentences differ in what they claim about the SAME observation, and a table that
     // held only the refusing one would let the admitting one drift into saying the
     // window is the subject's alone.
     .{ .what = "another process's operations were admitted as crash points", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .shim_foreign_touch = true, .children_judged = true }, .may_say_single = false, .pins = "hold crash-point addresses" },
     // A `.shim_hard = "a thread"` case stood here until v16. `hard_boundary` no longer takes
-    // `.thread`, so the case pinned a state the engine cannot produce — the defect this
-    // file names for the fs_usage arm below — and review struck it. The two below are what
+    // `.thread`, so the case pinned a state the engine cannot produce and review struck it.
+    // (That cross-reference used to point at the fs_usage arm as the example of the same
+    // defect. It no longer applies there: #544 made that arm reachable and it has a case of
+    // its own now — a reachability note is only as good as the run that cannot happen.)
+    // The two below are what
     // a threaded run renders now: the committed vips report's shape (six threads, one
     // writer, judged, oracle read), and a world that created a thread the recording did
     // not. Both must say "single process" only as scoped to the recording, and both must
@@ -8937,6 +9034,103 @@ fn traceFileForTest(tag: []const u8, records: []const contract.Record, fbuf: *[c
     }
     _ = posix.close(fd);
     return fz.ptr;
+}
+
+test "an unattributed writer's reason is chosen on what the shim saw" {
+    // The reason and the message are decided in different places, and until #544's review
+    // only the message had a test — switching this rule off left every unit test green,
+    // with `spike/fsusage/acceptance-local.sh` check 7 the only thing holding it and root
+    // the only way to run that. Three assertions, one per condition.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const threaded_path = try traceFileForTest("reason-threaded", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(threaded_path);
+    var tb = engine.unboundedBudget(std.testing.allocator);
+    var threaded = try engine.readTrace(&tb, std.mem.span(threaded_path));
+    defer threaded.deinit();
+    try std.testing.expect(threaded.thread_records > 0);
+    try std.testing.expect(!threaded.process_boundary);
+
+    var fbuf2: [contract.max_path]u8 = undefined;
+    const lone_path = try traceFileForTest("reason-lone", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf2);
+    defer _ = posix.unlink(lone_path);
+    var tb2 = engine.unboundedBudget(std.testing.allocator);
+    var lone = try engine.readTrace(&tb2, std.mem.span(lone_path));
+    defer lone.deinit();
+    try std.testing.expectEqual(@as(u32, 0), lone.thread_records);
+
+    const names_threads = oracle.Parsed{
+        .classes = .empty,
+        .names = .empty,
+        .lines = .empty,
+        .metadata_observed = .empty,
+        .mutations = .empty,
+        .reaps = .empty,
+        .spawns = .empty,
+        .subject_tids = .empty,
+        .primary_pid = null,
+    };
+    var names_processes = names_threads;
+    names_processes.primary_pid = 7;
+
+    // Threads recorded, no boundary, and a witness that names threads: the writer reads as
+    // another thread of this process — the reason the build before #544 gave this class by
+    // refusing at the flag.
+    try std.testing.expectEqual(contract.UnknownReason.multiple_threads_detected, unattributedWriterReason(threaded, names_threads));
+    // A witness that names processes: the id really is a pid, and #405's exit stands.
+    try std.testing.expectEqual(contract.UnknownReason.child_touched_state_dir, unattributedWriterReason(threaded, names_processes));
+    // No thread record: the raw-fork shape is what is left, whatever the witness names.
+    try std.testing.expectEqual(contract.UnknownReason.child_touched_state_dir, unattributedWriterReason(lone, names_threads));
+}
+
+test "an id a thread-naming witness cannot attribute is refused as an id, not as a process" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    // The fs_usage shape, which the v15 fixture below is not: one process, one recorded
+    // writer, and a witness that names threads rather than processes. `Parsed.primary_pid`
+    // is the whole of the discriminator — the strace reader sets it from a pid and
+    // `src/fsusage.zig` never does — and a version of this branch that asked the TRACE
+    // instead reworded the strace path too, which the fixture below caught (#544).
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try traceFileForTest("thread-witness", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(fz);
+    var tb = engine.unboundedBudget(std.testing.allocator);
+    var trace = try engine.readTrace(&tb, std.mem.span(fz));
+    defer trace.deinit();
+
+    var subject_tids: std.ArrayList(u64) = .empty;
+    try subject_tids.append(arena, 7);
+    var mutations: std.ArrayList(oracle.Event) = .empty;
+    try mutations.append(arena, .{ .id = 99, .at = 20 });
+
+    const witness = oracle.Parsed{
+        .classes = .empty,
+        .names = .empty,
+        .lines = .empty,
+        .metadata_observed = .empty,
+        .mutations = mutations,
+        .reaps = .empty,
+        .spawns = .empty,
+        .subject_tids = subject_tids,
+        .primary_pid = null,
+    };
+    const why = childrenMayBeJudged(arena, trace, witness) orelse return error.TestExpectedRefusal;
+    // The run is refused either way; what this pins is the sentence. Delete the branch and
+    // the old wording comes back, which the first assertion fails on; widen it to every
+    // witness and the v15 fixture below fails. Neither direction stays green.
+    try std.testing.expect(std.mem.indexOf(u8, why, "id 99 mutated the judged directory") != null);
+    try std.testing.expect(std.mem.indexOf(u8, why, "process 99 mutated") == null);
 }
 
 test "the two conditions on a run with a writing child (v15)" {
