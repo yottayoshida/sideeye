@@ -5,6 +5,10 @@ a real workflow that runs on every push to main and every pull request in this
 repository, against [`docs/ci-quickstart/sideeye.toml`](ci-quickstart/sideeye.toml).
 A quickstart that CI itself executes cannot quietly rot into fiction. To adopt
 it: copy the workflow, swap the define, invert one gate.
+Its actions are pinned to commit SHAs rather than tags, which is this repository's own
+rule (ADR 0061) and not something the quickstart needs: copy it as it stands and let
+whatever keeps your actions current update them, or put the tags back. The gate below is
+the part that matters.
 
 ## The three pieces
 

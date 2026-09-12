@@ -20,7 +20,10 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      # Pinned by commit: these actions run before a script that runs as root.
+      # Pinned by commit, like every action in this repository (ADR 0061,
+      # spike/check-action-pins.sh). These three were pinned first, when the
+      # reason was local to this file — they run before a script that runs as
+      # root — and the rule now covers the whole set rather than this one leg.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2

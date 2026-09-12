@@ -2,6 +2,154 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-12 (later still, renumbered) — 0060 was taken by a branch cut from the same base
+
+This ADR was written as 0060 and is 0061. #567 (the fs_usage oracle told which threads are the
+subject's) was cut from the same `main` and allocated 0060 too. The slugs differ, so the filenames
+differ, so nothing collides in git and **both pull requests are green**: the collision surfaces only
+on the post-merge run of `main`, where `check-adr-numbering.sh` would find two 0060s. This is the
+case that script's header names and declines to prevent — "two branches taken from the same base can
+each carry a unique number, both go green, and both merge" — and 0028 went through it on 2026-08-27.
+
+What found it was the same thing that found 0028: the two sessions holding the branches told each
+other. Nothing mechanical was involved, which is the standing gap, not a new one.
+
+This side renumbered because it was cheaper: eleven citations across six files here against sixteen
+across thirteen in #567. With this branch on 0061 the merge order is free.
+
+**Re-read at merge time: #567 landed first** (`493ac5a`), so this branch carries the only 0061 and
+the repository holds one 0060. The two entries below sat in two branches and meet here; the merge
+conflicted on this file and on CHANGELOG.md — the only two files both branches touched, and both
+because each appends to the top. That is the standing cost of a newest-first journal with parallel
+work, not a defect in either change.
+
+The citations were changed by replacing the string `ADR 0060`, never the digits alone. `grep 0060`
+over the tree hits twenty-one files — sha256 digests in `spike/cohort3/pins-*.txt` and a blind-hunt
+manifest, fs_usage timings that read `0.000060`, an strace address, and `flags=0x00000601` twice in
+this very file. A bare digit replacement would have rewritten pinned hashes. Verified after: `ADR
+0060` returns nothing, and every changed line in the diff is a prose citation.
+
+## 2026-09-12 (later still) — every action pinned, and the checksum that was already there
+
+An outside review raised five things about this repository. Two looked like one problem
+about supply chain; measuring them split them apart.
+
+**Pinning was real.** Twenty-one of twenty-four action references named a tag, and a tag is
+a pointer its owner can move. The judgment that they should not was already here —
+`spike-fsusage.yml` pins its three by commit — but it was written about that file ("these
+actions run before a script that runs as root"), so it stayed there, and `release.yml`,
+whose output leaves this machine, was not the leg it covered. ADR 0061 widens it;
+`spike/check-action-pins.sh` holds it; that file's comment now points at the rule.
+
+**The checksum was not.** The review asked for a `SHA256SUMS` beside each release, on the
+grounds that a downloader cannot check what they got. They can: GitHub computes a sha256
+per asset at upload and serves it from the API and the Releases page. This project has used
+it twice and recorded both — the v1.3.0 ceremony ("each asset's sha256 was computed from the
+downloaded bytes and matched the release's own digest") and the 09-11 dogfood run, which
+established it was measuring the released tarball "because its sha256 matched the digest the
+release publishes". **The plan that went to first-read review asserted that no existing
+document writes a word about it, on the strength of a grep over README, docs/, PRD and a
+SECURITY.md that does not exist. BUILDLOG was outside the range — and BUILDLOG is where both
+measurements live.** The reviewer found it by running `gh api`, which the plan's author had
+not. What was missing was never the mechanism; it was the sentence pointing at it, and that
+is now five lines in `docs/cli.md`, including what comparing a digest does not establish.
+
+A `SHA256SUMS` would sit in the same release as the digest it duplicates, so its trust root
+is the same account and a tampered release moves both. What it adds is convenience, and the
+price is a job on every release, plus a round-trip check to keep that job honest — a checksum
+generated and verified in the same directory from the same bytes passes by construction —
+plus `contents: write` at pull-request time to exercise it before a tag exists. Owner ruling:
+not worth it. Signature or attestation is the only shape that answers the question a digest
+cannot, *who built this*, and it is left unbuilt rather than deferred with a date attached.
+
+**The check is held by mutation, not by inspection**, because its failure mode is the quiet
+kind. The first draft ran three mutations and killed all three, which is where the review
+found it — killing the mutations you thought of says nothing about the ones you did not.
+
+**First-read review found three assertions this header made that the code did not hold.**
+All three are the same shape: the prose described a stronger check than the script performed,
+and the prose was written first.
+
+1. **The contract said "SHA plus the tag it came from as a trailing comment" and nothing
+   looked at the comment.** `value=${value%%#*}` threw it away before the test. A reference
+   with no comment passed. The header even carried a "what this does NOT check" list and
+   this was not on it — the requirement sat in the Contract section instead.
+2. **"Two counts, from two tools, so a narrowing of one cannot reach the other" was false.**
+   Both counts, and the file count, came from one `find`. What was split was the LINE
+   pattern; the INPUT was one set. Narrowing that `find` to `-name 'ci.yml'` produced `ok 16
+   action reference(s) across 1 workflow(s) … every one pinned` — release.yml, the leg
+   holding the release token, never read. This repository had already written the rule down:
+   `check-adr-numbering.sh`'s header records walking 29 of 31 files and reporting `ok`, with
+   the sentence "a count and a re-run of the same command are not two predicates" — and this
+   draft cited that header as its authority while reproducing the defect it describes.
+3. **The count-disagreement branch was asserted here and exercised nowhere.** The selftest's
+   eight cases never made grep and awk disagree, so the one branch supporting claim 2 was a
+   one-time manual falsification — which this header's own rule says does not carry forward.
+   The BUILDLOG table confessed it: that row alone read `red on the real directory` rather
+   than `selftest red`.
+
+A fourth, from the same review: two YAML forms the narrow pattern cannot read — `- {uses:
+a/b@v4}` and `uses : a/b@v4`, both legal — were missed by grep AND by awk, so the counts
+agreed and a file holding three references of which two named tags reported `ok 1 action
+reference(s) … every one pinned`. And `is_pinned` accepted anything ending in forty hex, so
+`docker://evil@<sha>` passed.
+
+**What the check does now**, and the mutation that each assertion survives:
+
+| assertion | mutation | the mutated check said | result |
+|---|---|---|---|
+| two file sets, `find` and the shell glob | `find` narrowed to `-name 'ci.yml'` | (before the fix) `ok 16 … across 1 workflow(s)` | `find sees 1 file(s), the shell glob sees 4` — red |
+| `<owner>/<repo>@<40 hex>`, not "ends in hex" | the pattern loosened to `^[^[:space:]]+@[0-9a-fA-F]{40}$` | `docker://evil@<sha>` and `./.github/actions/x@<sha>` pass | selftest red, both cases |
+| the trailing tag comment is required | the comment test deleted | a bare SHA passes | selftest red |
+| a wider pattern counts what the walk cannot read | the wide comparison disabled | flow mapping and `uses :` pass unread | selftest red, both cases |
+
+The selftest is fifteen cases now: three that must pass (pinned, an upper-case SHA — git
+resolves either and refusing it would be the check inventing a rule — and `owner/repo/path`),
+twelve that must refuse. The walk/count disagreement is driven by data rather than by editing
+the script: a vertical tab is `[[:space:]]` to grep and not `[ \t]` to awk, so a line behind
+one is read by exactly one of them.
+
+One implementation note worth keeping, because it cost a full run. Handing awk `"$dir"/*.yaml`
+when no `.yaml` exists passes the literal glob, awk exits non-zero with no output, and the
+`|| printf '0'` written to be safe turned that into a count of zero — so the fixed check
+refused every real directory. The glob set is held in the positional parameters instead, which
+is also what makes it genuinely independent of `find`.
+
+**The follow-up read found the same defect one line over.** P1-3 above was "the count
+comparison is asserted here and exercised nowhere"; the fix added a selftest case for it and
+left the branch beside it — the one comparing the two FILE listings — in exactly that state.
+It was visible from the BUILDLOG table, where that row alone carried a measured message
+instead of `selftest red`, which is the marker that found P1-3 in the first place. And the
+CHANGELOG had already been written to say each of the four defects was now a selftest case,
+which made a false sentence out of a true intention. Driven by data now, like the other:
+`find -name '*.yml'` matches a leading dot and the shell's glob does not, so a `.hidden.yml`
+holding an unpinned action makes the two listings disagree. Planting it also exposed that the
+selftest's own cleanup — `rm -f "$tmp"/*` in both `reset` and the trap — does not match a
+dot-prefixed name, so the fixture would have leaked into the following cases and left the
+scratch directory undeletable.
+
+**Fixing the first of a class and not looking one line over is the shape to take from this.**
+Two branches, same assertion style, same defect; the second was found by a reader rather than
+by the author who had just written the first one's fix.
+
+**One assertion caught a case it was not built for.** `find -type f` skips a symlinked
+workflow while the glob's `[ -f ]` follows it, so a symlink under `.github/workflows` is
+refused as "two listings disagree" — measured with a symlink pointing at a file naming `@v4`,
+which the pre-fix check would have passed over entirely because both of its counts read the
+same `find`. Whether GitHub executes a symlinked workflow is not measured here; refusing is
+the direction that does not require knowing.
+
+**The wider pattern's first catch was this change's own CI comment.** The job comment written
+to explain the check spelled the key with its colon, the wide count went to 26 against a walk of
+25, and the job went red on the commit that introduced it. That is the designed direction — an
+unreadable spelling refuses rather than being skipped — and the cost is one reword. Erring
+toward refusal has a price and this is what the price looks like.
+
+**A number in the first draft was wrong by one, in a way worth naming.** The plan's falsifiable
+check said the script should read 24 references. It reads 25, because the job that runs the
+check carries a `checkout` of its own. A count written before a change and compared after it
+counts what the change added. The same error reached ADR 0061, which asserted twenty-five
+references and then accounted for 3 + 21; the review caught that too.
 ## 2026-09-12 (third) — a thread the shim never saw created is named in the account, and the two edges of the thread rule are written down (#543)
 
 #543 asked for two edges of the v16 thread rule to be recorded: a raw `clone` leaves no

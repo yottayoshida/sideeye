@@ -15,9 +15,9 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: mlugg/setup-zig@v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
           version: 0.16.0
 
@@ -308,9 +308,9 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: mlugg/setup-zig@v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
           version: 0.16.0
 
@@ -1133,9 +1133,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: mlugg/setup-zig@v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
           version: 0.16.0
 
@@ -1158,7 +1158,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -1187,7 +1187,7 @@ jobs:
   classification:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
@@ -1204,7 +1204,7 @@ jobs:
   veto-rate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: The rate checker can still see its own predicates fail
         run: python3 spike/check-veto-rate.py --selftest
@@ -1226,7 +1226,7 @@ jobs:
   upstream-ledger:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: The ledger checker can still see its own predicates fail
         run: sh spike/check-upstream-ledger.sh --selftest
@@ -1246,7 +1246,7 @@ jobs:
   changelog-block:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # First, for the reason the ADR job gives: a green from a check that cannot go red
       # says nothing. Four planted defects, each of which must redden exactly one clause —
@@ -1269,7 +1269,7 @@ jobs:
   ledger-prose:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: The prose checker can still see its own predicates fail
         run: sh spike/check-ledger-prose.sh --selftest
@@ -1280,7 +1280,7 @@ jobs:
   adr-numbering:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # First, because a green from a check that cannot go red says nothing. The
       # uniqueness pass is a pipeline with no `set -e` behind it: break its sed and
@@ -1308,6 +1308,41 @@ jobs:
       - name: Every ADR says whether its decision shipped
         run: sh spike/check-adr-status.sh
 
+  # Action pinning — one judgment that was already in this repository, scoped to one
+  # file. `spike-fsusage.yml` pinned its three actions by commit and explained why
+  # about ITSELF ("these actions run before a script that runs as root"), while the
+  # other twenty-one stayed on `@v4`: a pointer the action's owner can move, running
+  # in front of this repository's checkout and, in release.yml, in front of the token
+  # that uploads what people download. ADR 0061 widens the scope and this job holds
+  # it, because pinning is not done once — the next workflow anyone adds will be
+  # copied from a README that says `@v4`.
+  #
+  # Its own job for the same reason as the three above: no toolchain, so a failure
+  # here names the instrument. Selftest first, and this check's failure mode is the
+  # quiet kind: every assertion it makes exists because the draft without it went
+  # GREEN over a subset. One shared `find`, narrowed to a single file, reported
+  # `ok 16 action reference(s) across 1 workflow(s) ... every one pinned` with
+  # release.yml never read; and two legal YAML spellings of the key (a flow mapping,
+  # and a space before the colon) were missed by the walk and by the independent
+  # count alike, so a file holding two tag references reported `ok 1 action
+  # reference(s)`. The selftest drives fifteen cases and every assertion has a
+  # mutation that kills it.
+  #
+  # This comment writes "the key" rather than spelling it, because the wider pattern
+  # counts an occurrence in a comment too and the check refuses what it cannot read
+  # rather than skipping it. Erring toward refusal is the point; it cost one reword
+  # here, which is the correct price.
+  action-pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: The check proves it can go red
+        run: sh spike/check-action-pins.sh --selftest
+
+      - name: Every action a workflow runs is pinned to a commit
+        run: sh spike/check-action-pins.sh
+
   # Criterion 3's status lives in three documents (#356): PRD.md carries the one current
   # status, docs/kill-criteria-review.md the dated state markers it cites, DESIGN.md §18
   # a pointer. Nothing compared them until this job, and the repository has a recorded
@@ -1319,7 +1354,7 @@ jobs:
   criterion-3-status:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: The status check proves it can go red, and stays green where it must
         run: sh spike/check-criterion3-status.sh --selftest
@@ -1336,7 +1371,7 @@ jobs:
   onboarding-clock:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: The clock's audit still holds its own predicates
         run: python3 spike/onboarding-clock/clock-audit.py --selftest
