@@ -48,7 +48,7 @@
 set -u
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-FN_MAX=95
+FN_MAX=89
 VAR_MAX=32
 
 # count <file> -> "<fn> <var>"
@@ -153,6 +153,7 @@ EOF
     red "one more plain fn"          "fn one_too_many() void {}"
     red "one more export fn"         "export fn one_too_many() void {}"
     red "one more pub inline fn"     "pub inline fn one_too_many() void {}"
+    red "one more noinline fn"       "noinline fn one_too_many() void {}"
     red "one more extern fn"         "extern fn one_too_many() void;"
     red "one more extern \"c\" fn"   "pub extern \"c\" fn one_too_many(n: usize) c_int;"
     red "one more plain var"         "var one_too_many: u32 = 0;"

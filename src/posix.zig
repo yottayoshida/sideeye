@@ -224,7 +224,7 @@ pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 /// they do:
 ///
 /// - `image.zig` (#398): flag, then `lseek` — ESPIPE ends it there.
-/// - `engine/read.zig`'s `readWhole`, `main.zig`'s `readFileFrom` and `observeCapture`,
+/// - `engine/read.zig`'s `readWhole`, `capture.zig`'s `readFileFrom` and `observeCapture`,
 ///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`.
 ///
 ///   This list used to add "all four read paths the engine itself produced, so nothing
@@ -242,7 +242,7 @@ pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 ///   the open. Closing *that* window changes what a snapshot refuses — it needs an entry
 ///   to be reported rather than silently dropped (#5) — so it stays a promise of its own,
 ///   with its own leg, rather than something acquired as a side effect here.
-/// - `main.zig`'s `readFileAllocCapped`: the flag comes with **either** half of its
+/// - `capture.zig`'s `readFileAllocCapped`: the flag comes with **either** half of its
 ///   `ReadMode`, and the two halves answer the same question differently. The case read
 ///   *classifies*: it needs the open to return so it can ask what the descriptor is, and
 ///   refuses anything but a regular file. The `--config` read is *bounded*: it may not
