@@ -1277,6 +1277,22 @@ jobs:
       - name: The pages' ledger counts are what the ledgers hold (#342)
         run: sh spike/check-ledger-prose.sh
 
+  main-shape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # #572 (ADR 0062): src/main.zig only loses top-level declarations. The ceilings
+      # are the counts the last seam left and come down with the next one; a change
+      # that needs a new function or module-level variable puts it in the module that
+      # owns the behaviour, which main.zig's module map names. Not a line count —
+      # #572 forbids one — and tests are not counted, so moving them buys nothing.
+      - name: The check proves it can go red
+        run: sh spike/check-main-shape.sh --selftest
+
+      - name: main.zig declares no more than the last seam left it
+        run: sh spike/check-main-shape.sh
+
   adr-numbering:
     runs-on: ubuntu-latest
     steps:
