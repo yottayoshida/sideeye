@@ -48,7 +48,7 @@
 set -u
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-FN_MAX=95
+FN_MAX=89
 VAR_MAX=32
 
 # count <file> -> "<fn> <var>"

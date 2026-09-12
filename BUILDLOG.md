@@ -2,6 +2,137 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-12 (fifth) — the capture readers leave main.zig; the CLI stays, because its parse loop writes report state in an order a test pins (#572, second seam)
+
+ADR 0062 says each seam is re-measured before it is cut, so this entry opens with the
+measurement and the predictions, written before `src/capture.zig` exists.
+
+**The capture readers, re-measured at `dbcfe7a`.** The plan's list was `CaptureObservation`,
+`observeCapture`, `ReadMode`, `readFileAllocCapped`, `readFileAlloc`, `lastNonEmptyLine` and
+their six tests (521 lines). The closure of what those reference adds what the hand-made
+list had missed, for the second seam running: `config_read_deadline_ms` and
+`config_read_poll_ms` (two constants only `readFileAllocCapped` reads), and `readFileFrom`
+with its `Appended` — the #400 test's title is "the readers ask what the descriptor is before
+reading it, at every call site", it calls all three readers, and leaving one of the three
+behind would split the sentence that test holds across two files (its one production
+caller, `startFsUsage`, stays and will call `capture.readFileFrom`). Also going, on
+ownership rather than closure: the setup-capture reader — `readSetupCapture`,
+`SetupCapture`, `setup_capture_cap` — whose own doc comment says "one reader for both
+callers" and whose three answers (`unreadable`, `empty`, `line`) are the reader's contract,
+while the renderer that turns them into a sentence, `setupOutputDetail`, is the report's and
+stays. Thirteen declarations, six tests, 617 lines. Imports: `std`, `contract`, `posix`.
+Globals read: none. Globals written: none. Exits: none. `main.zig` keeps nineteen code lines
+that call in — seven for `readSetupCapture` (five of them the #483 renderer test), five for
+`readFileAllocCapped`, four for `observeCapture`, one each for `readFileFrom`, `readFileAlloc`
+and the `CaptureObservation` type.
+
+Two lines of moved code change, and two nested `pub`s are added, and that is the whole
+list: the `observeCapture` tests' `defer removeFile(path)` becomes `defer _ =
+posix.unlink(z.ptr)` on the handle both tests already hold — `removeFile` has twenty-five
+callers in `main.zig` and is the orchestrator's unlink glue, not a reader — and
+`CaptureObservation.fingerprintEql` and `.sawTruncation` gain `pub` because `main.zig`
+compares captures with them at four sites (the same shape as `BoundaryEvidence.Kind` in the
+first seam, which the dry run also could not see).
+
+**The CLI cannot return its refusals as values today, so it does not move.** The parse loop
+(`main.zig` 2075–2225 at `dbcfe7a`) exits through about twenty (sixteen, counted in review)
+`setupError` calls, and between them it writes state fifteen times: `json_arena`, `noteOracle` three times,
+`stop_when_orphaned`, `checker_note`, `l1_note`, the apparatus and scratch flag buffers,
+`expected_status_val`, `SIGCHLD`'s disposition, `json_path` and the `removeFile` beside it,
+`settleDeclared`, and `boundary_ev.witness` twice. The order of those writes relative to the
+exits is product behaviour: #352's tests pin that an oracle named by a flag is reported as
+named by a refusal that comes later in the same argv, and `--json` deletes the previous
+report before any refusal that follows can write a new one. A parser that returned a
+refusal instead of exiting would have to return the ordered list of effects to replay
+first, which is glue larger than the coupling removed, or call into report state that has
+an owner — and that owner is seam 3. So the CLI moves with seam 3 or after it, which is the
+stop condition ADR 0062 wrote for it. Moving `Args`, `splitArgs` and the `resolve*` family
+alone, with the loop left behind, would split one family across two files, the coupling
+#572 is about; not done. The freeze-audit list therefore does not move either: `splitArgs`
+and `resolvePathAgainst` are still in `main.zig`.
+
+**Predictions, before the move.** `main.zig` 7,652 → about 7,036 lines (617 out, one import
+and a longer module map in); `capture.zig` about 650. Nineteen `capture.` prefixes. The
+ratchet's function ceiling 95 → 89 (six top-level `fn` leave: `lastNonEmptyLine`,
+`readSetupCapture`, `readFileFrom`, `observeCapture`, `readFileAllocCapped`, `readFileAlloc`);
+the variable ceiling stays at 32 — nothing here is state. `zig build test --summary all`:
+one more `run test` row (12 → 13 on macOS); the main root stays at 311 — `main.zig`'s #483
+renderer test calls `readSetupCapture`, so collection reaches `capture.zig` from the main
+root and its six tests are re-collected there, as the boundary's sixteen were; the boundary
+root stays at 253 (`boundary.zig` never references `capture.zig`); the new capture root runs
+31 — its own six plus `posix.zig`'s 25, since referencing `posix.zig` collects that file's
+tests and `contract` is a module, across which tests do not travel; the total goes 1,033 →
+1,064. The acceptance suite in the Linux container fails the same twelve legs as `main`.
+Falsifications to run: dropping `capture.zig` from `test_sources` loses one row; an
+`expect(false)` in a moved test turns both the capture root and the main root red; the
+ratchet at 89 against the pre-move `main.zig` is red; an unused `@import` in `capture.zig`
+fails the edge check.
+
+**Measured, after the move.** Every count landed but one. Nineteen `capture.` prefixes; the
+ratchet reads 89 and 32, and run against the pre-move file at the new ceiling it is red at
+95. `zig build test --summary all`: 13 `run test` rows, the main root at 311, the boundary
+root at 253, the capture root at 31, 1,064 in all, 29 of 29 steps. The moved bodies diffed
+against the originals with difflib read 616 lines against 616 — the 617 above counts the
+last chunk's trailing blank line, which the comparison drops — and the only lines that
+differ are the nine `pub` prefixes, the two nested `pub`s and the two `defer` lines named
+above. The one miss is the line count: `main.zig` is 7,046 lines, not the predicted 7,036 —
+641 left (the 617 moved, the rewritten call sites, the old module map) and 35 came in (one
+import, a module map nine lines longer, one line more after a review edit) — and the first
+figure written in this paragraph, 7,035, was a `wc -l` taken before the import and the
+module map went in: the prediction's arithmetic dressed as a measurement, which the review
+caught. Seam 1 drifted the same way once, 0047 four times. `capture.zig` is 664 lines after
+its header was rewritten in both review rounds (below). Falsifications: `capture.zig` taken
+out of `test_sources` loses one row (12); an `expect(false)` in the shrink test turns both
+the capture root (30 pass, 1 fail of 31) and the main root (309 pass, 1 skip, 1 fail of 311)
+red, which is the six running in both places; an unused `@import("fsusage.zig")` appended to
+a copy reads `used 0` in the edge check. Acceptance in the Linux container (`sideeye-spike`,
+aarch64 cross-build, `build-toys.sh` first): `main` at `dbcfe7a` fails twelve legs and the
+new tree fails the same twelve — the six `-Dtest-*` apparatus legs including `ancprobe`,
+the four that need a non-root user, and the vfork toy — with 343 `ok` lines on each side. On
+macOS the binary answers `version` and `--help`, and `demo` runs to its expected exit 1,
+which passes a real stdout capture through `observeCapture` and a setup capture through
+`readSetupCapture`. `zig fmt --check` is clean on every touched Zig file.
+
+**Review, round one** (a fresh reviewer who ran the tests and the ratchet and diffed the
+moved bodies by taking `git diff`'s removed lines against the new file): no behavioural
+finding; three sentences in the new module map stronger than the code, and four numbers.
+The header said every reader is bounded in bytes, classifies its descriptor and refuses a
+link at a name the operator did not choose. `readFileAlloc` reads the strace oracle's
+capture with `maxInt(usize)` as its cap, while the fs_usage side is capped at 2 GiB by the
+caller — older than this change and left as it is, a cap being a behaviour change and this
+a move; `readFileAllocCapped` classifies only under `require_regular`, which `--config`
+deliberately does not set (`/dev/stdin` and a process substitution are legitimate
+spellings); `/etc/ld.so.preload` is the system's name, not the operator's, and is followed.
+Each of the three was falsified by a doc comment inside the same file — `ReadMode`'s
+three-part rule, and "`readFileAlloc` with a ceiling" at the top of the capped reader — which
+is the lesson: a header's universal claim is checked against the bodies under it before it
+is checked against anything else. The header now states the one rule every reader does keep
+— "could not be read" is never answered as "was empty" — and leaves the other guards to the
+caller through `ReadMode`; it also says that the FIFO refusal on work-directory captures is
+a rule of how a capture is created and not a reading rule, so the ADR's "the next reader
+rule opens one file" names `posix.zig` for that case. The numbers:
+"about twenty `setupError`" in the parse loop is sixteen, counted over the range the ADR
+names; of the fifteen state writes between them, six are report state (`noteOracle` three
+times, `checker_note`, `l1_note`, `settleDeclared`) and the decision to leave the CLI for
+seam 3 stands on those six, the other nine being run configuration, the allocator, `SIGCHLD`
+and the boundary's witness; the 7,035 and the 617-against-616 above.
+
+**Review, round two** (a second fresh reviewer, on the fixes): the seven resolved; two of
+the sentences written in the fix were themselves too strong, and three smaller ones. The
+header credited `posix.captureFlags` with `O_EXCL`; it adds `O_CREAT|O_TRUNC|O_NOFOLLOW`, and
+`O_EXCL` comes from `Capture.exclusive`, which every work-directory capture sets and whose
+default is false — a reader of the header who added a capture without it would meet the hang
+`posix.zig`'s doc warns of. "The further guards follow from who named the path" held only
+for link refusal: `/etc/ld.so.preload` is the system's name and is classified, `--config` is
+the operator's and is not, and the byte ceiling is a caller's budget (1 MiB for a case, none
+for `oracle.txt`). Both corrected in the header, `main.zig`'s map, the CHANGELOG line and the
+ADR. Smaller: "the #400 test asserts the classification at every call site" — the test says
+itself that its `readFileAllocCapped` assertion pins rather than measures, and that
+`spike/case-path-deadline.py` measures it from outside; "where the engine produced the name"
+— `/etc/ld.so.preload` is a literal in this engine's source, so the line is about the
+artifact the engine produced, as `ReadMode`'s doc already said; and "about twenty" above now
+carries its count beside it. No third round.
+
 ## 2026-09-12 (fourth) — the process boundary leaves main.zig, and a ratchet is set so nothing moves back in (#572, first seam)
 
 #572 asks for `src/main.zig` — 9,367 lines at `2adec70`; `main()` alone 2,529 lines in nine

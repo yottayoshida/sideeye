@@ -1,6 +1,6 @@
 # 0062 — main.zig is cut along measured seams, the process boundary first, and a ratchet keeps it from growing back
 
-Status: Accepted (2026-09-12)
+Status: Accepted (seam 1 merged as `dbcfe7a`, 2026-09-12; amended for seam 2 the same day — see Amendments)
 
 This ADR records the series #572 asked for — one plan, several pull requests — and the
 first seam in full. Later seams amend this file when they land rather than opening one
@@ -187,3 +187,94 @@ the last three did (#553's account classes, #562's mode account, #567's fs_usage
   the boundary, the first new report field against the report module.
 - #572 stays open until the last seam. `Refs #572` in every commit and PR, no closing
   keyword.
+
+## Amendments
+
+### Seam 2 — the capture readers (2026-09-12)
+
+Re-measured at `dbcfe7a` before the cut, as the Decision requires. What moved to
+`src/capture.zig`: `observeCapture` and `CaptureObservation`, `readFileAllocCapped` and
+`ReadMode`, `readFileAlloc`, `readFileFrom` and `Appended`, `readSetupCapture` with
+`SetupCapture`, `setup_capture_cap` and `lastNonEmptyLine`, the two `config_read_*`
+constants, and the six tests that hold them — thirteen declarations, 617 lines. The closure
+again found what the list in this file had not: `readFileFrom` (the #400 test names all
+three readers under one title, "at every call site", so leaving one behind would split the
+sentence that test holds across two files) and the two constants
+only `readFileAllocCapped` reads. The setup-capture reader went on ownership rather than
+closure: its three answers (`unreadable`, `empty`, `line`) are the reader's contract and its
+doc comment says "one reader for both callers"; the renderer that turns them into a
+sentence, `setupOutputDetail`, is the report's and stays. Bodies moved byte-identical with
+`pub` on nine declarations and on two nested methods (`fingerprintEql` and `sawTruncation`,
+which `main.zig` compares captures with at four sites); two lines changed — the
+`observeCapture` tests' `defer removeFile(path)` became `defer _ = posix.unlink(z.ptr)` on
+the handle each test already held, because `removeFile` is the orchestrator's glue with
+twenty-five callers and this file imports nothing of `main.zig`. Imports: `std`, `contract`,
+`posix`; no global read or written, no exit. `main.zig` calls in at nineteen lines and went
+from 7,652 to 7,046 lines (641 out — the 617 moved, the rewritten call sites and the old
+module map — and 35 in: one import and a longer module map); `capture.zig` is 664, counted
+after its header was rewritten twice in review.
+
+**Why this seam removes coupling after all.** The Alternatives above called the readers
+"already a leaf: nothing reasons across it, so extracting it removes no coupling". That was
+measured on identifier references and is true of them; it is not true of the rules. The
+guards are one rule set applied at several sites, and twice a rule reached some readers and
+not others while they sat four thousand lines apart in one file — the descriptor
+classification (#400: an `lseek` happened to refuse a FIFO and nothing refused `/dev/zero`)
+and the symlink refusal (#469: given to one of the two readers of `<work>/oracle.txt`). The
+next change to a reader rule opens one file whose header states the rule, instead of three
+sites found by grep. That is edit coupling in #572's sense, measured on two incidents rather
+than on reference counts, and it corrects the sentence above.
+
+**What the header may claim, corrected in review.** The first draft of `capture.zig`'s
+module map said every reader is bounded in bytes, classifies its descriptor and refuses a
+link at a name the operator did not choose. The file's own bodies falsify each:
+`readFileAlloc` reads the strace oracle's capture with `maxInt(usize)` as its cap (its
+fs_usage sibling is capped at 2 GiB by the caller — an asymmetry older than this change and
+left as it is, since a cap is a behaviour change and this is a move); `readFileAllocCapped`
+classifies only when asked (`require_regular`), and `--config` deliberately does not ask,
+because `/dev/stdin` and a process substitution are legitimate spellings; and
+`/etc/ld.so.preload` is neither the operator's name nor the engine's, and is followed —
+`ReadMode`'s doc draws that line in three parts, not two. The header now states the one
+rule every reader keeps — "could not be read" is never answered as "was empty" — and says
+that the other guards are the caller's to choose through `ReadMode`, link refusal alone
+following from who named the path (the second review caught the first fix saying all three
+did: `/etc/ld.so.preload` is the system's name and is classified, `--config` is the
+operator's and is not, and a byte ceiling is a caller's budget). It also names the capture
+rule that is not a reading rule: the work-directory captures refuse a FIFO at the name
+because they are created with `Capture.exclusive`, which adds `O_EXCL` to
+`posix.captureFlags`' `O_CREAT|O_TRUNC|O_NOFOLLOW` (the same review corrected a draft that
+credited `captureFlags` itself with the `O_EXCL` — `exclusive` defaults to false, and a
+capture added without it would meet the hang `posix.zig`'s doc warns of), so a change to how
+a capture is made opens `src/posix.zig`.
+
+**The CLI stays, and the order changes for it.** The Decision made the CLI's move
+conditional on its parse loop returning refusals as values. Measured: the loop (`main.zig`
+2075–2225 at `dbcfe7a`) exits through sixteen `setupError` calls and between them writes
+state fifteen times — six of it report state (`noteOracle` three times, `checker_note`,
+`l1_note`, `settleDeclared`), the rest run configuration (`stop_when_orphaned`,
+`expected_status_val`, `json_path` with the `removeFile` beside it, the apparatus and
+scratch flag buffers), the allocator `json_arena`, `SIGCHLD`'s disposition, and
+`boundary_ev.witness` twice — and the order of the six relative to the exits is product
+behaviour that #352's tests pin: an oracle named by a flag is reported as named by a refusal
+later in the same argv, and `--json` removes the previous report before any later refusal
+can write a new one. A parser that returned a refusal instead of exiting would have to return
+the ordered effects to replay first, which is glue larger than the coupling removed, or call
+report state that has an owner — and that owner is seam 3. So the CLI moves with seam 3 or
+after it, which is the stop condition written above. Moving `Args`, `splitArgs` and the
+`resolve*` family alone, with the loop left behind, would split one family across two files;
+not done. The freeze-audit rung-1 list is unchanged for the same reason: `splitArgs` and
+`resolvePathAgainst` are still in `main.zig`.
+
+**Ratchet**: 95 → 89 functions; 32 variables unchanged — nothing here is state. **Test
+roots**: one more `run test` step (12 → 13 on macOS, 13 → 14 on Linux); the main root stayed
+at 311 (its #483 renderer test calls `readSetupCapture`, so collection reaches `capture.zig`
+from that root and the six run there as well), the boundary root at 253 (`boundary.zig` never
+references `capture.zig`), and the capture root runs 31 — its own six plus `posix.zig`'s 25;
+`contract` is a module, across which tests do not travel. The total went 1,033 → 1,064. Every
+number in this paragraph was written in BUILDLOG before the move and matched after it.
+
+**What measures this seam next**: the next reader rule — a new descriptor kind to refuse, a
+new bound, a new link policy — should open `src/capture.zig` and its header, `src/main.zig`
+only where a call site chooses a `ReadMode`, and `src/posix.zig` only if the rule is about
+how a capture is created rather than read. If it needs a change to a body in `main.zig`, the
+seam was drawn wrong.

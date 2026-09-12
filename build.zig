@@ -420,6 +420,10 @@ pub fn build(b: *std.Build) void {
         // that stays true.
         "src/boundary.zig",
         "src/defang.zig",
+        // The second seam of #572: the capture readers. Collection through main.zig reaches
+        // it today — the #483 renderer test calls `readSetupCapture` — and naming it makes
+        // the six run whether or not that stays true.
+        "src/capture.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.
