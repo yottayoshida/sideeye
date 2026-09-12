@@ -6765,6 +6765,22 @@ else
     fails=$((fails + 1))
 fi
 
+# The same cheap second opinion, for the refusal reason #544 introduced.
+# `unattributedWriterReason` was pulled out of the call site so that a unit test could
+# reach the rule — and a rule that is tested while nobody calls it is a shape this
+# repository has paid for before. The leg that exercises the call end to end is check 7 of
+# spike/fsusage/acceptance-local.sh, which needs root and macOS and so cannot answer here.
+# One grep covers exactly the gap the extraction opened: not whether the rule is right (the
+# unit test says that), but whether the engine still asks it.
+# Delete this when a rootless path drives that refusal end to end.
+reason_call=$(grep -cE 'unattributedWriterReason\(trace, parsed\)' "$ROOT/src/main.zig")
+if [ "$reason_call" = "1" ]; then
+    echo "ok   the engine still asks unattributedWriterReason at the refusal site (#544)"
+else
+    echo "FAIL src/main.zig asks unattributedWriterReason $reason_call time(s) at the refusal site, want 1"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 16: the destructive root is vetted before setup, and again before each delete (#267) ==========="
 
 # Two directions, and the second is the one that matters. A denylist in front of the

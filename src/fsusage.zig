@@ -599,6 +599,14 @@ pub fn read(
     /// takes the same thing as `initial_cwd`. Empty means a relative operand cannot be
     /// placed and refuses if it could have changed state.
     cwd: []const u8,
+    /// Thread ids the shim recorded writing under the subject's pid (#544). This reader
+    /// identifies ONE subject thread on its own — whoever opened the trace for writing,
+    /// which is the process's main thread — and a worker's lines would otherwise read as
+    /// another process's. `fs_usage` prints a thread id and knows no process; the trace
+    /// does, because every record names its thread, so the map comes from there.
+    ///
+    /// Empty is the single-threaded case and leaves every decision below where it was.
+    subject_thread_ids: []const u64,
 ) !Reading {
     var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty } };
     var fds: FdTable = .{};
@@ -698,6 +706,17 @@ pub fn read(
     }
     out.subject_tid = subject;
 
+    // The shim's writers, in both shapes this file needs them: as numbers for
+    // `Parsed.isSubject` (which `childrenMayBeJudged` asks, id by id), and as the decimal
+    // text `fs_usage` prints, built ONCE here rather than parsed per line — a capture
+    // measured at 5,558,556 lines pays for every extra ask in the loop below.
+    var subject_tid_text: std.ArrayList([]const u8) = .empty;
+    for (subject_thread_ids) |t| {
+        try out.parsed.subject_tids.append(arena, t);
+        const txt = try std.fmt.allocPrint(arena, "{d}", .{t});
+        if (!std.mem.eql(u8, txt, subject)) try subject_tid_text.append(arena, txt);
+    }
+
     // Whether a hole in this line would be a hole in the account of the judged
     // directory. The subject always counts; so does any thread that named a path under
     // the root. Everything else is a neighbour going about its business.
@@ -764,12 +783,74 @@ pub fn read(
         // a fragment after this line is nobody's.
         in_cut_event = false;
 
-        const is_subject = std.mem.eql(u8, ln.tid, subject);
+        // Widened for #544: the thread that opened the trace, or any thread the shim
+        // recorded writing under the subject's pid. **The predicate, not just the account
+        // branch** — it also decides whether a read-only directory open is remembered in
+        // the fd table and whether a descriptor this thread opens is kept (`keep` below),
+        // and a worker that writes both inside the judged directory and outside it (a log)
+        // would otherwise lose the outside descriptor and refuse the run on a `write` it
+        // could no longer place.
+        const is_subject = std.mem.eql(u8, ln.tid, subject) or blk: {
+            for (subject_tid_text.items) |t| {
+                if (std.mem.eql(u8, ln.tid, t)) break :blk true;
+            }
+            break :blk false;
+        };
+        // The subject's threads share ONE descriptor namespace, because they share a
+        // process. The table below is keyed by thread only because `fs_usage` prints no
+        // pid and nothing else could tell two threads of one process from two processes;
+        // the trace can, for the threads it names, which is what this change hands over.
+        //
+        // Without this the shim's own trace descriptor — opened by the thread that
+        // initialises, written by whichever thread recorded an operation — resolves
+        // against nothing on a worker's line, and `fs_usage` prints no path on a write, so
+        // the run refuses as a hole (#544). That line is not an incidental shape: a worker
+        // reaches `subject_thread_ids` at all by having written a record, and writing a
+        // record IS a write on that descriptor. The first version of this change widened
+        // the subject predicate and left the table keyed by thread, which made the list
+        // impossible to exercise: every run it applied to refused before the widening
+        // could matter. Review found it and a synthetic capture carrying the worker's
+        // `write` on the trace descriptor pins it.
+        //
+        // Within a process an fd number names one open file, so merging the namespace is
+        // exact rather than approximate. A tid the trace does not name keeps its own —
+        // nothing places it in the subject's process, and a system-wide capture holds
+        // other processes using the same small numbers.
+        const fd_tid = if (is_subject) subject else ln.tid;
         // Asked once per line, not once per test. `classOf` is a linear walk of the
         // call table and `relevant` a linear walk of the touching-thread list; a
         // capture measured at 5,558,556 lines pays for every extra ask.
         const cls_opt = classOf(ln.call);
-        const is_relevant = relevant(ln.tid, subject, state_tids.items);
+        // Widened with `is_subject` for the same reason that predicate was (#544), and it
+        // is a different set: `state_tids` is built in the pass above from lines that NAME
+        // a path under the root, and a worker's `write F=5` / `fsync F=5` name none — so a
+        // thread on the list can be the subject and still not be "relevant". Everything
+        // this gates is a refusal (`cwd_moved` on a `chdir`, `.truncated`,
+        // `.unresolvable_path`, `.unresolved_fd`, a rename whose visible path is outside
+        // the root), so leaving it narrow disables those guards for exactly the threads
+        // this change newly admits. Review constructed the case: a worker writes through
+        // the main thread's descriptor, then `chdir`s into the state, and a later relative
+        // raw operand joins to the STARTING cwd and is dropped as out of scope while it
+        // lands inside the judged directory. The verdict does not become a PASS — the
+        // snapshot layer still refuses `state_changed_unaccounted` — but the guard ADR
+        // 0031 §2b exists to be is off, and the refusal names another wall.
+        //
+        // Widening turns silent drops into refusals at every gate but one, so it cannot
+        // make a PASS. The exception: a `chdir` INTO the judged directory is in scope and
+        // used to refuse as an unknown call, and now sets `cwd_moved` and continues — that
+        // line refuses LESS. Correct, since a `chdir` changes no state and everything
+        // relative after it is unplaceable from that point, so the run still closes.
+        // The price is also real: `cwd_moved` is one flag for the whole run and the gate
+        // below admits `__pthread_chdir`/`__pthread_fchdir`, which move only the calling
+        // thread's directory on macOS — so a listed worker calling one disarms relative
+        // operands for the main thread too, and a run that could have been judged refuses.
+        // Per-thread working directories in this reader are a separate change.
+        //
+        // It is safe in this order and not the other: before the descriptor namespace was
+        // merged above, a
+        // worker's write to the shim's own trace descriptor was unresolvable, and this
+        // would have turned that into a refusal on every run instead of a hole.
+        const is_relevant = is_subject or relevant(ln.tid, subject, state_tids.items);
         const fd = fdOf(ln.middle);
 
         // Complete a pending dup — strictly. fs_usage prints the dup's source and never
@@ -788,15 +869,26 @@ pub fn read(
             var i: usize = 0;
             while (i < dup_pending.items.len) {
                 const d = dup_pending.items[i];
+                // `ln.tid` and NOT `fd_tid`, unlike the table itself. The merged namespace
+                // says "one fd number, one open file, process-wide"; this is a different
+                // claim — a WINDOW, one line wide, opened by a thread and closed by that
+                // thread's very next line. Keyed process-wide, a worker's line lands in
+                // the window main opened and either completes the dup against the wrong
+                // descriptor or consumes it and drops the shim's trace fd from the table,
+                // which makes the run's outcome depend on the scheduler. #544's first
+                // version keyed both on `fd_tid` because one `sed` ran over nine sites;
+                // review separated them. The trace's dup happens during init, before any
+                // worker exists, so no run is known to have hit it — which is a reason it
+                // stayed invisible, not a reason it was safe.
                 if (!std.mem.eql(u8, d.tid, ln.tid)) {
                     i += 1;
                     continue;
                 }
                 const is_inert_fcntl = std.mem.eql(u8, canonicalCall(ln.call), "fcntl") and fcntlIsInert(ln.middle);
                 if (fd) |f| {
-                    if (is_inert_fcntl and fds.get(.{ .tid = ln.tid, .fd = f }) == null and !std.mem.eql(u8, d.fd, f)) {
-                        if (fds.get(.{ .tid = ln.tid, .fd = d.fd })) |src_in_state|
-                            try fds.set(arena, .{ .tid = ln.tid, .fd = f }, src_in_state);
+                    if (is_inert_fcntl and fds.get(.{ .tid = fd_tid, .fd = f }) == null and !std.mem.eql(u8, d.fd, f)) {
+                        if (fds.get(.{ .tid = fd_tid, .fd = d.fd })) |src_in_state|
+                            try fds.set(arena, .{ .tid = fd_tid, .fd = f }, src_in_state);
                     }
                 }
                 // Consumed either way: the window was this one line.
@@ -814,6 +906,8 @@ pub fn read(
                 // `write F=200`. The first version of this file did not follow the dup
                 // and refused every run on the shim's first trace write.
                 if (!hasErrno(ln.middle)) {
+                    // `ln.tid`, for the reason the loop above carries: the window is one
+                    // thread's next line, not a process-wide fact about a descriptor.
                     if (fd) |src| try dup_pending.append(arena, .{ .tid = ln.tid, .fd = src });
                 }
                 continue;
@@ -844,7 +938,7 @@ pub fn read(
                     if (cwd.len != 0 and !cwd_moved) path = try joinPath(arena, cwd, op.text) else path_unresolvable = true;
                 } else {
                     const key = try std.fmt.allocPrint(arena, "{d}", .{d});
-                    if (fds.get(.{ .tid = ln.tid, .fd = key })) |in| dir_scope = in else path_unresolvable = true;
+                    if (fds.get(.{ .tid = fd_tid, .fd = key })) |in| dir_scope = in else path_unresolvable = true;
                 }
             } else path_unresolvable = true;
         }
@@ -868,7 +962,7 @@ pub fn read(
             // whatever resolves through them later refuses on its own.
             if (fd) |f| {
                 if (scope_known) |in| {
-                    if (is_subject or in) try fds.set(arena, .{ .tid = ln.tid, .fd = f }, in);
+                    if (is_subject or in) try fds.set(arena, .{ .tid = fd_tid, .fd = f }, in);
                 }
             }
             continue;
@@ -894,7 +988,7 @@ pub fn read(
                 if (keep) {
                     if (fd) |f| {
                         if (scope_known) |in| {
-                            try fds.set(arena, .{ .tid = ln.tid, .fd = f }, in);
+                            try fds.set(arena, .{ .tid = fd_tid, .fd = f }, in);
                         } else if (is_relevant) {
                             // A write-capable open this reader cannot place, by a thread
                             // whose account matters: a descriptor into who-knows-where.
@@ -904,7 +998,7 @@ pub fn read(
                     }
                 }
             } else if (cls == .close) {
-                if (fd) |f| fds.clear(.{ .tid = ln.tid, .fd = f });
+                if (fd) |f| fds.clear(.{ .tid = fd_tid, .fd = f });
                 continue;
             }
         }
@@ -947,7 +1041,7 @@ pub fn read(
             continue;
         } else if (fd) |f| {
             // Pathless: `write F=3 B=0x7`. Resolve through the open, or refuse.
-            const known = fds.get(.{ .tid = ln.tid, .fd = f }) orelse {
+            const known = fds.get(.{ .tid = fd_tid, .fd = f }) orelse {
                 // Only calls that could change state make an unresolved descriptor a
                 // hole; a read on an inherited descriptor is not this module's problem.
                 // Same reachability as above: a close never gets here. The unwrap is kept
@@ -1111,6 +1205,151 @@ test "the handshake predicate is the reader's, not a substring search" {
     try testing.expect(!capturesPath("garbage /Users/i.yoshida/w/state/.sideeye-fsusage-open\n", "/Users/i.yoshida/w/state/.sideeye-fsusage-open"));
 }
 
+test "a listed worker's chdir still arms the relative-operand guard" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // Review's construction (#544). The worker is on the list — the shim recorded its
+    // `write` and `fsync` — so it is the subject. It is NOT in `state_tids`: that set is
+    // built in the pass above from lines that NAME a path under the root, and neither of
+    // those two lines names one. So a `relevant()` keyed on `state_tids` alone leaves this
+    // thread outside every refusal gate, and its `chdir` does not arm `cwd_moved`.
+    //
+    // The `chdir` goes to the root's PARENT, which is where ADR 0031 §2b's own example
+    // goes: a `chdir` INTO the judged directory is in scope and refuses as an unknown call
+    // instead, so it would fail this test for a different reason. Outside the root it is
+    // dropped silently, which is the shape that disables the guard rather than tripping
+    // another one.
+    const text =
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   main.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   main.111\n" ++
+        "10:00:00.000003  open              F=5   (_WC_T_______)  /tmp/st/data          0.000100   main.111\n" ++
+        "10:00:00.000004  write             F=5   B=0x4                                 0.000100   work.222\n" ++
+        "10:00:00.000005  fsync             F=5                                         0.000100   work.222\n" ++
+        "10:00:00.000006  chdir                   /tmp                                  0.000100   work.222\n" ++
+        // `openat` with the flags bracket, which is what a real capture prints for a
+        // dirfd-relative operand. Spelled `open` with no bracket, this line would be
+        // write-capable only through `openIsWriteCapable`'s fail-safe default for an
+        // unrecognised bracket — the test would pass on the default rather than on a shape
+        // fs_usage produces.
+        "10:00:00.000007  openat            F=6   (_WC_T_______)  [-2]/st/sneak         0.000100   work.222\n" ++
+        "10:00:00.000008  open              F=2   /tmp/st/sentinel-b                    0.000100   main.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/work", &.{222});
+    // Without the widening the relative operand joins to `/work`, lands outside the root
+    // and is dropped — while the file it creates is `/tmp/st/sneak`, inside the judged
+    // directory, and raw enough that the shim says nothing either. The verdict would not
+    // become a PASS (the snapshot layer refuses `state_changed_unaccounted`), but this
+    // guard would be off and the refusal would name another wall.
+    try testing.expect(r.defect != null);
+    switch (r.defect.?) {
+        .unresolvable_path => {},
+        else => return error.WrongDefect,
+    }
+
+    // The other side of the same capture, so the discrimination is pinned rather than
+    // demonstrated once by hand. With no list the worker is not the subject, its `chdir`
+    // is another party's and is ignored, and the relative operand resolves outside the
+    // root and is dropped — which is the correct reading when nothing says that thread
+    // belongs to the judged process. A change that makes `state_tids` cover this thread,
+    // or that drops the widening, moves one of these two and fails here.
+    const unlisted = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/work", &.{});
+    try testing.expect(unlisted.defect == null);
+}
+
+test "a worker thread's write to the shim's own trace descriptor is not a hole" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // The shape a real capture ALWAYS has when the list below is non-empty, and the one
+    // the first two tests of this change left out. The shim keeps one trace descriptor per
+    // process (`shim/src/common.zig`), opened by the thread that initialises — the main
+    // one — and the thread that performs an operation is the thread that writes its
+    // record. This reader's fd table is keyed by `(tid, fd)` and `fs_usage` prints no path
+    // on a write, so a worker's write to that descriptor has no open of its own to resolve
+    // against.
+    //
+    // Not an incidental shape: a worker reaches `subject_writer_tid_list` only by having
+    // written a kill-point record, which IS this line. If it refuses, the list is never
+    // non-empty on a real run and the widening below can never be exercised.
+    const text =
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   /tmp/st/data                          0.000100   subj.222\n" ++
+        "10:00:00.000004  write             F=9   B=0x20                                0.000100   subj.222\n" ++
+        "10:00:00.000005  write             F=5   B=0x4                                 0.000100   subj.222\n" ++
+        "10:00:00.000006  write             F=9   B=0x20                                0.000100   subj.222\n" ++
+        "10:00:00.000007  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{222});
+    try testing.expect(r.defect == null);
+    try testing.expectEqual(@as(usize, 0), r.parsed.mutations.items.len);
+    // The trace writes are the observer's shadow and must not be counted; the worker's own
+    // `open` and `write` on `/tmp/st/data` must be. "No hole" and "counted" are different
+    // claims and only the first was asserted here at first.
+    try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
+}
+
+test "a worker thread the shim recorded is the subject, and only when it is named" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // The subject is whoever opened the trace write-capably, which is the main thread —
+    // `fs_usage` knows no process for a line, only the thread that issued it, so a
+    // worker's write reads as another party's until the trace says otherwise. The same
+    // capture is read twice here; the ONLY difference is the list.
+    const text =
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   /tmp/st/data                          0.000100   subj.222\n" ++
+        "10:00:00.000004  write             F=5   B=0x4                                 0.000100   subj.222\n" ++
+        "10:00:00.000005  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+
+    const named = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{222});
+    try testing.expect(named.defect == null);
+    // Not another party's: nothing for `childrenMayBeJudged` to refuse, and no second
+    // writer to count.
+    try testing.expectEqual(@as(usize, 0), named.parsed.mutations.items.len);
+    try testing.expectEqual(@as(usize, 0), named.parsed.children);
+    try testing.expect(named.parsed.isSubject(222));
+    // And the positive side, which the first version of this test left out: "not another
+    // party's" is not the same as "counted". A reader that quietly dropped the worker's
+    // operations would satisfy every assertion above and then fail on a real run as
+    // `oracle_missed_operation`, because the shim's account holds two operations this one
+    // does not. The promise is that the run is explored and JUDGED, so the operations
+    // reaching the comparison is part of it.
+    try testing.expectEqual(@as(usize, 2), named.parsed.classes.items.len);
+
+    // The control, and the reason this test is a pair: without the list the widened
+    // predicate would be indistinguishable from one that calls every thread the subject.
+    const unnamed = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
+    try testing.expect(unnamed.defect == null);
+    try testing.expect(unnamed.parsed.mutations.items.len > 0);
+    try testing.expectEqual(@as(u64, 222), unnamed.parsed.mutations.items[0].id);
+    try testing.expectEqual(@as(usize, 1), unnamed.parsed.children);
+    try testing.expect(!unnamed.parsed.isSubject(222));
+}
+
+test "a thread the shim never recorded stays another party's, list or no list" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // A raw `clone`, or a thread writing through raw syscalls: the shim recorded no
+    // kill-point of its own for it, so it is not in the list handed here. The list widens
+    // the predicate for the threads the trace names and for nothing else — the refusal
+    // for this one lives in `childrenMayBeJudged`, which is told an id rather than a pid.
+    const text =
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   /tmp/st/data                          0.000100   subj.333\n" ++
+        "10:00:00.000004  write             F=5   B=0x4                                 0.000100   subj.333\n" ++
+        "10:00:00.000005  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{222});
+    try testing.expect(r.defect == null);
+    try testing.expect(r.parsed.mutations.items.len > 0);
+    try testing.expectEqual(@as(u64, 333), r.parsed.mutations.items[0].id);
+    try testing.expectEqual(@as(usize, 1), r.parsed.children);
+    try testing.expect(!r.parsed.isSubject(333));
+}
+
 test "a write on a descriptor nobody opened is a hole, not a skipped line" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
@@ -1121,7 +1360,7 @@ test "a write on a descriptor nobody opened is a hole, not a skipped line" {
         "10:00:00.000003  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n" ++
         "10:00:00.000005  write             F=7   B=0x1                                 0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolved_fd => {},
@@ -1142,7 +1381,7 @@ test "an open whose path cannot be read is a hole, not a descriptor to trust lat
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  open              F=6   (_WC_T_______)                        0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         // A write-capable open with no operand at all: nothing to place it by.
@@ -1162,7 +1401,7 @@ test "a truncated read-only line from the subject is not a hole" {
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:23:17.677297  stat64                 [  2]           /System/Volumes/Preboot/Cryptexes/OS/System/Library/Frameworks/CoreServices.framework>>>                                                                              0.000001   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
 }
@@ -1178,7 +1417,7 @@ test "a truncated mutating line from the subject still refuses" {
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  unlink                                 /System/Volumes/Data/Users/x/some/very/long/dir/na>>>                                     0.000001   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .truncated => {},
@@ -1200,7 +1439,7 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n";
     const tail = "\n10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
     const text = head ++ daemon ++ tail;
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
     try testing.expectEqual(@as(usize, 0), r.parsed.mutations.items.len);
@@ -1208,7 +1447,7 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
     // what the account must not omit.
     const mutating = "13:47:23.434908  write                  [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
     const text2 = head ++ mutating ++ tail;
-    const r2 = try read(a, text2, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r2 = try read(a, text2, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r2.defect != null);
     try testing.expect(r2.defect.? == .unparsed);
 }
@@ -1238,7 +1477,7 @@ test "the lines after a skipped cut head, up to its tail, are fragments of that 
         .{ .text = before ++ head_line ++ "\n" ++ tail_line ++ "\n" ++ tail_line ++ after, .hole = true, .why = "the first tail ended the event; the second is nobody's" },
     };
     for (cases) |c| {
-        const r = try read(a, c.text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+        const r = try read(a, c.text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
         if (c.hole) {
             testing.expect(r.defect != null) catch |e| {
                 std.debug.print("expected a hole: {s}\n", .{c.why});
@@ -1279,7 +1518,7 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
         "21:03:21.588001  write             F=3   B=0x3                                                  0.000004   subj.111\n" ++
         "21:03:21.588002  close             F=3                                                          0.000002   subj.111\n" ++
         "21:03:21.588100  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqualStrings("111", r.subject_tid.?);
     try testing.expect(!r.parsed.childTouched());
@@ -1314,7 +1553,7 @@ test "a neighbour that only read the judged directory is not made relevant by it
         "10:36:22.000003  open              F=17       (R___________)  /tmp/st/keep                      0.000072   wdavdaemon_enterprise.555\n" ++
         "10:36:22.388237  write             F=22  B=0xad                                                 0.000071   wdavdaemon_enterprise.555\n" ++
         "10:36:22.000005  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expect(!r.parsed.childTouched());
 }
@@ -1332,7 +1571,7 @@ test "a neighbour that opened the judged directory for writing is relevant, and 
         "10:36:22.000003  open              F=17       (_W__________)  /tmp/st/keep                      0.000072   neighbour.555\n" ++
         "10:36:22.388237  write             F=22  B=0xad                                                 0.000071   neighbour.555\n" ++
         "10:36:22.000005  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolved_fd => {},
@@ -1353,7 +1592,7 @@ test "openat through AT_FDCWD with an absolute operand is the mkstemp line, and 
         "10:39:10.143700  write             F=3   B=0x3                                                  0.000004   subj.111\n" ++
         "10:39:10.143701  close             F=3                                                          0.000002   subj.111\n" ++
         "10:39:10.200000  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
@@ -1371,7 +1610,7 @@ test "a directory opened read-only places the openat that follows through it" {
         "10:00:00.000004  openat            F=6        (_WC_T_______)  [5]/inside                        0.000010   subj.111\n" ++
         "10:00:00.000005  write             F=6   B=0x3                                                  0.000004   subj.111\n" ++
         "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
 }
@@ -1385,14 +1624,14 @@ test "a relative operand with no cwd, on a call that could change state, refuses
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
         "10:00:00.000003  openat            F=6        (_WC_T_______)  [-2]/relative/file                0.000010   subj.111\n" ++
         "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolvable_path => {},
         else => return error.WrongDefect,
     }
     // With a cwd it resolves, and lands outside the root.
-    const r2 = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/elsewhere");
+    const r2 = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/elsewhere", &.{});
     try testing.expect(r2.defect == null);
     try testing.expectEqual(@as(usize, 0), r2.parsed.classes.items.len);
 }
@@ -1406,7 +1645,7 @@ test "a relative operand with .. is unplaceable through AT_FDCWD too" {
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
         "10:00:00.000003  openat            F=6        (_WC_T_______)  [-2]/../st/x                      0.000010   subj.111\n" ++
         "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/tmp/work");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/tmp/work", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolvable_path => {},
@@ -1428,7 +1667,7 @@ test "after the subject chdirs, a relative operand that could change state refus
         "10:00:00.000003  chdir                                  /tmp                                    0.000010   subj.111\n" ++
         "10:00:00.000004  openat            F=6        (_WC_T_______)  [-2]/st/missed                    0.000010   subj.111\n" ++
         "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/tmp/work");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/tmp/work", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolvable_path => {},
@@ -1451,7 +1690,7 @@ test "a dup completes only on the next line, and only onto an inert fcntl of an 
         "10:00:00.000004  fcntl             F=4   <DUPFD>                                                0.000003   subj.111\n" ++
         "10:00:00.000005  write             F=7   B=0x3                                                  0.000004   subj.111\n" ++
         "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                                     0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolved_fd => {},
@@ -1466,7 +1705,7 @@ test "a missing sentinel refuses before anything is compared" {
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000003  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .missing_sentinel => |p| try testing.expectEqualStrings("/tmp/st/sentinel-b", p),
@@ -1481,7 +1720,7 @@ test "no tid writes the trace: the subject cannot be named and the run refuses" 
     const text =
         "10:00:00.000003  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .no_subject => {},
@@ -1503,7 +1742,7 @@ test "a second tid mutating the judged directory is recorded in the touch set" {
         "10:00:00.000005  open              F=4   /tmp/st/from-raw-child                0.000100   subj.222\n" ++
         "10:00:00.000006  write             F=4   B=0x9                                 0.000100   subj.222\n" ++
         "10:00:00.000007  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expect(r.parsed.childTouched());
     try testing.expectEqual(@as(usize, 1), r.parsed.children);
@@ -1522,7 +1761,7 @@ test "an unknown CALL inside the judged directory refuses rather than being igno
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  exchangedata            /tmp/st/thing                         0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unknown_call => {},
@@ -1543,7 +1782,7 @@ test "a failed call in the judged directory is still an operation, as it is for 
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
         "10:00:00.000003  unlink            [  2]  /tmp/st/missing                      0.000100   subj.111\n" ++
         "10:00:00.000004  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 1), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.unlink, r.parsed.classes.items[0]);
@@ -1559,7 +1798,7 @@ test "work outside the judged directory is not the subject's account" {
         "10:00:00.000003  open              F=5   /somewhere/else                       0.000100   subj.111\n" ++
         "10:00:00.000004  write             F=5   B=0x7                                 0.000100   subj.111\n" ++
         "10:00:00.000005  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
-    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "");
+    const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
 }

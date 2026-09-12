@@ -96,6 +96,17 @@ lines are the subject's. Only the subject carries the shim, and the shim writes 
 field is added for this — a contract bump orphans every saved case (#279) — and the
 identification is self-checking: no such tid, no verdict.
 
+**Amended 2026-09-12 by ADR 0060 (#544): that tid, or one the trace names beside it.**
+The reader is handed the thread ids the shim recorded writing under the subject's pid, so
+the subject is the thread that opened the trace *together with* the worker threads of the
+same process. Still no contract field: the ids come from records that already name both
+the process and the thread. Two consequences follow for this section. The identification
+stays self-checking — an empty list is the single-threaded case and leaves the sentence
+above exactly as it was. And the subject's threads now share one descriptor namespace in
+this reader, because they share a process: the per-thread fd table was a consequence of
+having no pid, and a worker's write to the shim's own trace descriptor — opened by the
+thread that initialises — could not otherwise be placed at all.
+
 ### 4. The capture must prove it covered the window
 
 `oracle_verified` now rests on the capture, and a start sentinel establishes only that

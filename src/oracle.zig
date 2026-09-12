@@ -1019,16 +1019,24 @@ pub const Parsed = struct {
     /// identifier that reader has. Through v15 the distinction never reached a
     /// comparison, because a run with a thread in it was refused first; since v16 a
     /// thread of the subject is the subject (`subject_tids`, `isSubject`), so an id
-    /// here that is not the subject's is a child's. 64-bit because a mach thread id is
-    /// not bounded by the width of a pid.
+    /// here that is not the subject's is a child's — **under a witness that names
+    /// processes.** Under one that names only threads it is a child's *or* a thread the
+    /// list does not hold, and `childrenMayBeJudged` says which it can establish rather
+    /// than picking (#544, ADR 0060). 64-bit because a mach thread id is not bounded by
+    /// the width of a pid.
     mutations: std.ArrayList(Event),
-    /// Threads of the subject, by the id strace prints for them (v16). Filled from the
-    /// subject's own `clone` lines carrying `CLONE_THREAD`, in both spellings strace uses
-    /// (one line, or an unfinished half and a resumed half). A line from one of these
-    /// is the subject's line: its operations go to `classes`, its relative paths resolve
-    /// against the subject's cwd, and its writes are not a child's touch. What this list
-    /// does NOT decide is whether more than one of them wrote — that is the shim's
-    /// trace to answer, record by record, since every record names its thread.
+    /// Threads of the subject (v16). **Two readers fill this, from different evidence.**
+    /// The strace reader fills it from the subject's own `clone` lines carrying
+    /// `CLONE_THREAD`, in both spellings strace uses (one line, or an unfinished half and
+    /// a resumed half), by the id strace prints for them. The fs_usage reader cannot: its
+    /// capture names no process anywhere, so it is handed the ids the shim recorded
+    /// writing under the subject's pid and fills the list from those (#544, ADR 0060) —
+    /// which is a narrower set, since a thread the shim never recorded writing is not on
+    /// it. A line from one of these is the subject's line: its operations go to `classes`,
+    /// its relative paths resolve against the subject's cwd, and its writes are not a
+    /// child's touch. What this list does NOT decide is whether more than one of them
+    /// wrote — that is the shim's trace to answer, record by record, since every record
+    /// names its thread.
     subject_tids: std.ArrayList(u64),
     /// The processes some other process waited for and collected, and where. See
     /// `reapedPid` for what this does and does not claim.
@@ -1036,7 +1044,19 @@ pub const Parsed = struct {
     /// Where each child process was created. The other end of the window a writing child
     /// is judged in; `spawnedPid` says why it is the creation and not the first write.
     spawns: std.ArrayList(Event),
-    /// Distinct pids other than the subject's that appeared at all.
+    /// Distinct ids other than the subject's — and **the two readers count different
+    /// things**, which went unwritten until #544 while an argument about what is reachable
+    /// rested on it. The strace reader counts pids that appeared AT ALL. The fs_usage
+    /// reader counts tids that MUTATED the judged directory, because it fills this and
+    /// `mutations` at the same place (`src/fsusage.zig`, the `!is_subject` arm); its
+    /// capture is system-wide, so counting every id that appeared would count the
+    /// neighbours.
+    ///
+    /// What rests on the difference: `toleratedChildrenClause` in `src/main.zig` says "N
+    /// other process(es) observed; none touched the state directory", and it can only be
+    /// reached where this is non-zero while nothing was touched — the strace side alone.
+    /// Widen the fs_usage side to match the strace sentence and that clause starts saying
+    /// "process" about thread ids, which is the claim #544 spent its length removing.
     children: usize = 0,
 
     /// The subject's pid: whoever performed the launch execve. Null when the trace
