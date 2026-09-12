@@ -131,7 +131,13 @@ itself that its `readFileAllocCapped` assertion pins rather than measures, and t
 `spike/case-path-deadline.py` measures it from outside; "where the engine produced the name"
 — `/etc/ld.so.preload` is a literal in this engine's source, so the line is about the
 artifact the engine produced, as `ReadMode`'s doc already said; and "about twenty" above now
-carries its count beside it. No third round.
+carries its count beside it. The reviewer also ran the ratchet against its own predicate in
+five spellings, all red, and found the one spelling the selftest names but never tries in
+the red direction: `noinline fn` sat in the at-ceiling decoy only, so the script's claim to go
+red "in each of the spellings above" was false for it. One `red` case added (seventeen now);
+a copy of the script with `noinline` dropped from the predicate fails the selftest on that
+case and on the five other function spellings, since the decoy's `noinline` then stops
+counting and every one-over file lands exactly at the ceiling. No third round.
 
 ## 2026-09-12 (fourth) — the process boundary leaves main.zig, and a ratchet is set so nothing moves back in (#572, first seam)
 
