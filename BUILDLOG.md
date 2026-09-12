@@ -212,6 +212,38 @@ only on CI's macOS runner — so nothing had exercised it when that sentence was
 The repository's own review axis names this shape: a claim whose measurement did not look
 at what the claim covers must say so in the claim. It now does.
 
+**CI's first run of check 6 was red, and the red was not this change.** The macOS job
+refused `kill_did_not_land` with `oracle_verified=True` printed beside it and the account
+reading "1 thread id(s) of the subject's own process wrote the judged directory". The
+fs_usage account had already matched the shim's — which is the half this change is about —
+and then a world that should have been killed exited on its own.
+
+Four arms, twelve runs each, arms and counts fixed before any arm was read:
+
+| arm | thread | crash points | `kill_did_not_land` |
+|---|---|---|---|
+| worker writes one file | yes | 2 | 1 of 12 |
+| worker writes three files | yes | 9 | **9 of 12** |
+| main thread writes one file | no | 2 | 0 of 12 |
+| main thread writes three files | no | **9** | **0 of 12** |
+
+The second and fourth issue byte-for-byte the same operations and differ only in whether a
+worker performs them. **The thread is the cause; the number of worlds is the amplifier** —
+a run explores one world per crash point, and each world whose kill has to land on a worker
+appears to miss with some probability. The first hypothesis was exactly backwards: it said
+the target was too short-lived for the kill to arrive, so the fix would be to make the toy
+do more work, and more work made it nine times worse. Filed as **#569**, with 2 in 9 on
+`b175d4b` beside it and no oracle in any arm — older than this change and not about
+`fs_usage`.
+
+Check 6 is scoped to what it establishes rather than to an exit code that defect can take
+away. `oracle_verified` and the account's thread clause are required unconditionally; a
+build that did not read the worker's writes as the subject's reaches neither, because the
+oracle would hold a writer the shim's account does not. The verdict is asked for and
+printed. `kill_did_not_land` is tolerated **by name**, with the issue number in the line,
+and every other refusal fails — so the leg cannot quietly become one that passes on
+anything.
+
 **What the local dry-run could and could not reach.** `--oracle-fs-usage` needs root and
 this laptop's sudo cache was cold, so the flagged half is exercised by CI's macOS runner,
 where sudo is passwordless and `ci.yml` runs that script — not here. The half that needs no
