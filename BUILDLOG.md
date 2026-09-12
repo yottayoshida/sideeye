@@ -164,6 +164,40 @@ once". The failure described is real enough to keep recording, since the number 
 on three pages, and `shim/src/common.zig`'s assertion comment now names both of the ones a
 change to `max_threads` must follow rather than only DESIGN.
 
+**The confirming review found where the inference breaks, and it was measurable.** The flag
+reads "a writer tid that is not the initial one" as "a thread the shim did not see created".
+That holds only while a thread's id is the thread. On Darwin the shim takes the id from
+`pthread_threadid_np`, and an `exec` hands the same surviving thread a **different** id —
+five self-exec runs on this host, same pid, a new id every time:
+
+```
+before exec: pid=77382 tid=111017761      after exec: pid=77382 tid=111017793
+before exec: pid=77387 tid=111017795      after exec: pid=77387 tid=111017796
+before exec: pid=77388 tid=111017798      after exec: pid=77388 tid=111017801
+```
+
+So a single-threaded macOS target whose writes all fall after its own `exec` reaches a
+verdict with one writer — and would have been told that a thread the shim never recorded
+wrote the judged directory, about a process that only ever had one thread. The question is
+no longer asked once the image changed, and the fourth fixture in the trace test is that
+run; removing the guard fails it at the `!unrecorded_writer_thread` assertion and nothing
+else. On Linux the surviving thread becomes the thread-group leader and `gettid()` returns
+the pid, so both sides agree and none of this arises.
+
+**What that guard does not fix is filed as #571.** The run where *both* sides of the exec
+write is refused `multiple_threads_detected` on Darwin — two ids that are one thread —
+because `writer_tids` matches on the pid alone and has no notion of an image change. That
+is a v16 defect against DESIGN's own promise that a target which execs over itself is
+judged, it predates this change, and correcting it means re-baselining thread identity at
+the image change rather than guarding one inference. The id is measured; the verdict is
+read off the code, because reaching one with an image change on macOS needs an oracle and
+therefore root.
+
+Two edits of this change's own making, both caught by the same review: the insertion into
+`docs/report-schema.md` replaced a semicolon with a full stop and left the clause after it
+starting in lower case, and a sentence rewritten in §9 read "Which writers that list can
+hold turns on…", whose subject and verb do not agree.
+
 Not closed: no real target has met either edge. Both are still pinned on toys and unit
 tests, which is what #543 says and what this change does not change.
 

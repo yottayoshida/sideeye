@@ -872,7 +872,19 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // Against the initial thread's id, NOT against the list being non-empty — the first
     // writer of the subject's pid is appended unconditionally above, so an ordinary
     // single-threaded run has exactly one entry and an emptiness test fires on every run.
-    if (info.thread_records == 0) {
+    //
+    // And not at all once the image changed. The inference here is "a tid that is not the
+    // initial one means a thread the shim did not see created", and an `exec` breaks it on
+    // Darwin: `pthread_threadid_np`, which is where the shim's tid comes from there
+    // (`shim/src/common.zig`), returns a DIFFERENT id to the same surviving thread after an
+    // exec — measured on this host, five runs of a self-exec, same pid and a new id every
+    // time. A single-threaded target whose writes all happen after the image change would
+    // then be told that a thread the shim never recorded wrote, which is false: it is the
+    // same thread, renamed. The run where both sides write is refused by the thread rule
+    // above before this matters, and that refusal is itself wrong on Darwin for the same
+    // reason — but that is a v16 defect this flag did not introduce and cannot fix here,
+    // because `writer_tids` keys on the pid alone and has no notion of an image change.
+    if (info.thread_records == 0 and info.exec_continuations == 0) {
         if (info.initial_writer_tid) |main_tid| {
             for (subject_tids.items) |t| {
                 if (t != main_tid) {
@@ -1956,6 +1968,35 @@ test "a writer the shim never recorded creating is named, and an ordinary run is
     try std.testing.expectEqual(@as(u32, 1), c.thread_records);
     try std.testing.expect(!c.unrecorded_writer_thread);
     _ = posix.unlink(recorded);
+
+    // The control the flag's inference needs, because an `exec` renames a thread on
+    // Darwin. `pthread_threadid_np` — where the shim's tid comes from there — hands the
+    // same surviving thread a different id after an image change (measured: five self-exec
+    // runs, same pid, a new id every time). This is that run: nothing written before the
+    // exec, everything after it, from what the trace sees as another tid. One writer, so
+    // the thread rule judges it — and without the `exec_continuations` guard the account
+    // would tell the reader that a thread the shim never recorded creating wrote, about a
+    // single-threaded target that only ever had one.
+    var fbuf4: [contract.max_path]u8 = undefined;
+    const after_exec = try writeTraceForTest("renamed-by-exec", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .exec, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 9, .path = "/tmp/s", .aux = "" },
+        .{ .op = .open, .seq = 1, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf4);
+    var tb_d = unboundedBudget(std.testing.allocator);
+    var d = try readTrace(&tb_d, std.mem.span(after_exec));
+    defer d.deinit();
+    try std.testing.expectEqual(@as(u32, 1), d.exec_continuations);
+    try std.testing.expect(!d.exec_chain_broken);
+    try std.testing.expectEqual(@as(?u64, 7), d.initial_writer_tid);
+    // One writer and no second-thread refusal: this run reaches a verdict, which is why
+    // the false clause would have been on a judged report rather than a refused one.
+    try std.testing.expectEqual(@as(u32, 1), d.subject_writer_tids);
+    try std.testing.expect(d.second_writer_thread == null);
+    try std.testing.expect(!d.unrecorded_writer_thread);
+    _ = posix.unlink(after_exec);
 }
 
 test "the shim's slot-exhaustion notice is an unplaceable record the run refuses on (v16)" {
