@@ -161,8 +161,10 @@ worse than the original error. It read a stale copy: all three had already moved
 cumulative reading. A repo-wide sweep for the phrase returns three hits and every one is
 the negation — "rather than by how many are alive at once", "however few are alive at
 once". The failure described is real enough to keep recording, since the number does live
-on three pages, and `shim/src/common.zig`'s assertion comment now names both of the ones a
-change to `max_threads` must follow rather than only DESIGN.
+on three pages — DESIGN §9, `docs/target-classes.md`, and the CHANGELOG entry, which is
+history rather than a page a later change updates — and `shim/src/common.zig`'s assertion
+comment now names the two that a change to `max_threads` must follow, rather than only
+DESIGN.
 
 **The confirming review found where the inference breaks, and it was measurable.** The flag
 reads "a writer tid that is not the initial one" as "a thread the shim did not see created".

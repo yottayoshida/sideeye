@@ -146,7 +146,9 @@ pub const TraceInfo = struct {
     ///
     /// **One entry on an ordinary single-threaded run, not zero.** The first writer of the
     /// subject's pid is appended unconditionally below, so this list is empty only for a
-    /// run that wrote nothing. #544 wrote "empty for a single-threaded run" here and that
+    /// run in which the *subject itself* wrote nothing — only kill points of the subject's
+    /// own pid are appended, so a run whose state-directory writes all came from children
+    /// leaves it empty too. #544 wrote "empty for a single-threaded run" here and that
     /// was false; a caller testing emptiness to mean "no threads" fires on every run.
     /// Compare against `initial_writer_tid` instead, the way `unrecorded_writer_thread`
     /// does.
@@ -884,6 +886,8 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // above before this matters, and that refusal is itself wrong on Darwin for the same
     // reason — but that is a v16 defect this flag did not introduce and cannot fix here,
     // because `writer_tids` keys on the pid alone and has no notion of an image change.
+    // On Linux the guard costs nothing: the thread that survives an exec becomes the
+    // thread-group leader, `gettid()` returns the pid, and both sides carry the same id.
     if (info.thread_records == 0 and info.exec_continuations == 0) {
         if (info.initial_writer_tid) |main_tid| {
             for (subject_tids.items) |t| {
