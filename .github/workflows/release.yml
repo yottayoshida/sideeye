@@ -56,11 +56,11 @@ jobs:
       # run that rebuilt current main and uploaded it under the old tag's name would
       # attach an artifact whose content is not the tag's (R1 finding). On a release
       # event the default checkout is already the tag; on a PR it is the merge ref.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || '' }}
 
-      - uses: mlugg/setup-zig@v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
           version: 0.16.0
 
@@ -179,7 +179,7 @@ jobs:
           printf '%s\n' "LICENSE-APACHE" "LICENSE-MIT" "${{ matrix.shim }}" "sideeye" | sort > want.txt
           diff -u want.txt got.txt || { echo "::error::tarball contents differ from the expected inventory"; exit 1; }
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: sideeye-${{ matrix.artifact }}
           path: dist/*.tar.gz
@@ -192,7 +192,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: dist
           merge-multiple: true

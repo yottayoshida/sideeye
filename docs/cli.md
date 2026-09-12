@@ -11,6 +11,15 @@ $ tar xzf sideeye-v1.3.0-aarch64-macos.tar.gz && cd sideeye-v1.3.0-aarch64-macos
 $ ./sideeye version
 ```
 
+Each release asset carries a sha256 GitHub computed when it was uploaded, so checking a download needs nothing published beside it:
+
+```
+$ gh api repos/yottayoshida/sideeye/releases/tags/v1.3.0 --jq '.assets[] | "\(.digest)  \(.name)"'
+$ shasum -a 256 sideeye-v1.3.0-aarch64-macos.tar.gz     # sha256sum, on Linux
+```
+
+The digest reads `sha256:<hex>`; compare the hex. What this establishes is that the bytes are the ones GitHub holds — not who produced them: the digest and the release are the same account's word, and a checksum file published in the same release would be too.
+
 Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`, which is the same shape.
 
 ## Usage
