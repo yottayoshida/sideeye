@@ -142,9 +142,35 @@ pub const TraceInfo = struct {
     /// The same ids as a list (#544). The count above is what the account prints; the list
     /// is what the macOS oracle needs. `fs_usage` attributes a line to a thread id and
     /// knows no process for it, so the map from thread to subject cannot come from that
-    /// reader — it comes from here, where every record names both. Arena-backed like
-    /// `ops`, and empty for a single-threaded run, which leaves that reader where it was.
+    /// reader — it comes from here, where every record names both. Arena-backed like `ops`.
+    ///
+    /// **One entry on an ordinary single-threaded run, not zero.** The first writer of the
+    /// subject's pid is appended unconditionally below, so this list is empty only for a
+    /// run that wrote nothing. #544 wrote "empty for a single-threaded run" here and that
+    /// was false; a caller testing emptiness to mean "no threads" fires on every run.
+    /// Compare against `initial_writer_tid` instead, the way `unrecorded_writer_thread`
+    /// does.
     subject_writer_tid_list: std.ArrayList(u64) = .empty,
+    /// The thread that wrote the first `shim_ready` — the subject's initial thread, since
+    /// the shim initialises on whichever thread reaches it first and that is the one the
+    /// process started with. Null only when no announcement was read, which refuses the
+    /// run earlier for want of a subject.
+    initial_writer_tid: ?u64 = null,
+    /// A thread the shim never recorded being created wrote the judged directory (#543).
+    ///
+    /// Set when the trace holds **no `.thread` record at all** and a writer tid other than
+    /// `initial_writer_tid` appears under the subject's pid. That is what a raw `clone`, or
+    /// a thread started before the shim was in the image, leaves behind: the creation is
+    /// invisible to the shim and the writes are not.
+    ///
+    /// The account has to say so. `docs/report-schema.md` promises that a judged run whose
+    /// threads the shim saw says so in a clause of its own, so that "single process" is
+    /// never read as single-threaded — and without this the reader takes it for
+    /// single-threaded on exactly the runs the shim could not count. What no field here can
+    /// carry is a thread that was created and never wrote: it leaves the same pid, no
+    /// `.thread` record and no kill point, so the trace holds nothing to key on at all.
+    /// That limit is stated in `docs/report-schema.md` rather than papered over.
+    unrecorded_writer_thread: bool = false,
     /// The first kill-point record from a SECOND thread of one process (v16): `pid` says
     /// which process, `tid` which thread, `class` and `path` what it did — the refusal
     /// names all four, and the thread that wrote first is named beside them. Null while
@@ -666,6 +692,12 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 if (info.primary_pid == null) {
                     info.primary_pid = op.pid;
                     info.observe_aux = op.aux;
+                    // The thread that ran `init`, kept so that "a worker wrote" can be told
+                    // from "the main thread wrote" on a run where the shim recorded no
+                    // thread creation at all (#543). Not re-set on a later announcement:
+                    // an exec'd image re-announces from whichever thread survived, and the
+                    // question this answers is about the run's own initial thread.
+                    info.initial_writer_tid = op.tid;
                 } else if (pending_exec and op.pid == info.primary_pid.?) {
                     // The new image announcing itself. Its seq is the carried base
                     // (v10); anything else — a fresh 0 from a stripped environment
@@ -828,6 +860,28 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // Handed over whole rather than copied: both this list and `info` live in the same
     // arena, and the count beside it was already being kept from the same variable (#544).
     info.subject_writer_tid_list = subject_tids;
+    // A writer the shim never saw created (#543). Asked only when it recorded no thread
+    // creation at all — and NOT because two clauses would be redundant, which is what an
+    // earlier version of this comment said. With a `.thread` record present the question
+    // cannot be answered at all: that record carries the id of the thread that CALLED
+    // `pthread_create`, never the id of the thread it made, so a writer that is not the
+    // initial thread may be one the shim counted or one it missed and nothing here
+    // separates them. Such a run gets the counting clause, and `docs/report-schema.md`
+    // states that limit rather than leaving it to be found.
+    //
+    // Against the initial thread's id, NOT against the list being non-empty — the first
+    // writer of the subject's pid is appended unconditionally above, so an ordinary
+    // single-threaded run has exactly one entry and an emptiness test fires on every run.
+    if (info.thread_records == 0) {
+        if (info.initial_writer_tid) |main_tid| {
+            for (subject_tids.items) |t| {
+                if (t != main_tid) {
+                    info.unrecorded_writer_thread = true;
+                    break;
+                }
+            }
+        }
+    }
     return info;
 }
 
@@ -1844,6 +1898,64 @@ test "a child's two writing threads refuse the same way, and are not the subject
     // A forked child is a process boundary whatever its threads did.
     try std.testing.expect(info.needsOracle());
     _ = posix.unlink(fz);
+}
+
+test "a writer the shim never recorded creating is named, and an ordinary run is not (v16, #543)" {
+    // The shape #543 is about: no `.thread` record anywhere, and a kill point from a tid
+    // that is not the one that wrote `shim_ready`. A raw `clone`, or a thread started
+    // before the shim was in the image, produces exactly this — the creation is invisible
+    // to the shim and the writes are not.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const unrecorded = try writeTraceForTest("unrecorded-writer", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .open, .seq = 1, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    var tb_a = unboundedBudget(std.testing.allocator);
+    var a = try readTrace(&tb_a, std.mem.span(unrecorded));
+    defer a.deinit();
+    try std.testing.expectEqual(@as(u32, 0), a.thread_records);
+    try std.testing.expectEqual(@as(?u64, 7), a.initial_writer_tid);
+    try std.testing.expect(a.unrecorded_writer_thread);
+    // One writing thread, so the thread rule still judges the run. The flag is about what
+    // the account says, not about refusing.
+    try std.testing.expectEqual(@as(u32, 1), a.subject_writer_tids);
+    try std.testing.expect(a.second_writer_thread == null);
+    _ = posix.unlink(unrecorded);
+
+    // The control that matters most: an ordinary single-threaded run. Its
+    // `subject_writer_tid_list` has ONE entry — the first writer of the subject's pid is
+    // appended unconditionally — so a condition written as "the list is not empty" fires
+    // on every run ever recorded. #544's doc said "empty for a single-threaded run" and
+    // that was false; this is the assertion that stops the next reader believing it.
+    var fbuf2: [contract.max_path]u8 = undefined;
+    const plain = try writeTraceForTest("plain-single-thread", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf2);
+    var tb_b = unboundedBudget(std.testing.allocator);
+    var b = try readTrace(&tb_b, std.mem.span(plain));
+    defer b.deinit();
+    try std.testing.expectEqual(@as(usize, 1), b.subject_writer_tid_list.items.len);
+    try std.testing.expect(!b.unrecorded_writer_thread);
+    _ = posix.unlink(plain);
+
+    // The other control: a thread the shim DID record. The account already carries a
+    // clause for that one, so the two must never both fire.
+    var fbuf3: [contract.max_path]u8 = undefined;
+    const recorded = try writeTraceForTest("recorded-worker", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .open, .seq = 1, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .write, .seq = 2, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf3);
+    var tb_c = unboundedBudget(std.testing.allocator);
+    var c = try readTrace(&tb_c, std.mem.span(recorded));
+    defer c.deinit();
+    try std.testing.expectEqual(@as(u32, 1), c.thread_records);
+    try std.testing.expect(!c.unrecorded_writer_thread);
+    _ = posix.unlink(recorded);
 }
 
 test "the shim's slot-exhaustion notice is an unplaceable record the run refuses on (v16)" {

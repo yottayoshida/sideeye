@@ -2666,6 +2666,13 @@ test "mine: the 65th thread takes the reserve, and the notice is in the trace at
     trace_fd = fd;
     // Leaves the live table the way the other tests in this binary expect to find it.
     defer resetSlotsInChild();
+    // The number itself, because nothing else pins it (#543). The loop below fills the
+    // live table by its own length, so it proves the overflow path for whatever
+    // `max_threads` happens to be — change it to 128 and every test here stays green while
+    // DESIGN §9 goes on telling readers that the sixty-fifth thread is refused. If this
+    // line fails, two pages carry the number and both need updating: DESIGN §9's threads
+    // paragraph and the threads row of `docs/target-classes.md`.
+    try std.testing.expectEqual(@as(usize, 64), slots.len);
     for (&slots, 0..) |*s, i| s.tid = 100_000_000 + @as(u64, i);
     exhaustion_announced = false;
 
