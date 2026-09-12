@@ -1204,8 +1204,8 @@ var setup_oom_buf: [contract.max_path + 64]u8 = undefined;
 /// falsification gate says a capture it cannot read back out loud for the same reason.
 ///
 /// Sanitised once at the end, like `unresolvedDetail` and `withOracleCapture` in
-/// `boundary.zig`, rather than per field — and it is needed here more than there, because `setupError`
-/// prints its detail through `say` with no defang of its own, and every byte of the line
+/// `boundary.zig`, rather than per field — and it is needed here more than there, because
+/// `setupError` prints its detail through `say` with no defang of its own, and every byte of the line
 /// is the target's. One choke point also means one spelling: `textShown` per field and
 /// `sanitizeForReport` at the end defang differently, so mixing them put two renderings of
 /// a control byte in the same sentence.

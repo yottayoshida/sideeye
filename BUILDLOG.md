@@ -54,7 +54,7 @@ still spells the name, prefixes applied to code and not to comments — produced
 `src/defang.zig` at 111 (99 plus 12); `src/main.zig` went from 9,367 to **7,650** — those
 three numbers as measured right after the move; the two review rounds below lengthened two
 comments and a module map, and the counts at commit time are `boundary.zig` **1,688**
-(1,653 moved, head of 35), `defang.zig` 111, `main.zig` **7,652**. Forty-seven
+(1,653 moved, head of 35), `defang.zig` 112, `main.zig` **7,652**. Forty-seven
 code lines took the `boundary.` prefix, the number predicted; the mentions inside comments
 were left as written. `zig fmt --check` is clean on all three files (and was on `main.zig`
 before the move, which is what made running it safe to consider). **Two things the dry run

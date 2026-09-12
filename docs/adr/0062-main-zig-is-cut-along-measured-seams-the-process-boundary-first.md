@@ -83,9 +83,10 @@ The two exceptions the dry run could not see are nested: `BoundaryEvidence.Kind`
 
 **A shared leaf `src/defang.zig`** takes `sanitizeForReport`, `textShown`, `appendSanitized`,
 `DefangUnit`, `defangUnit` and the #167 classifier test — the choke point every
-target-influenced string passes before it reaches a report line. Boundary sentences and
-seventeen other call sites in `main.zig` both need it; inside either file it is an import
-from the other. Same shape as `engine/read.zig` in ADR 0047. `main.zig` aliases the three
+target-influenced string passes before it reaches a report line. Boundary sentences (six call
+sites in `boundary.zig`) and the report side (thirty-four call sites across fourteen
+functions of `main.zig`, tests excluded, counted at the move) both need it; inside either
+file it is an import from the other. Same shape as `engine/read.zig` in ADR 0047. `main.zig` aliases the three
 names it calls, so no call site changes.
 
 Both files sit flat under `src/` and are named in `build.zig`'s `test_sources`. Not because
@@ -123,8 +124,8 @@ the last three did (#553's account classes, #562's mode account, #567's fs_usage
   next candidate with its numbers.
 - **Decisions only, refusal sentences stay.** Avoids `defang.zig` and splits one family's
   sentences across two files, which is the coupling #572 is about.
-- **`defang` inside `boundary.zig`.** Wrong owner: most of its eighteen callers render the
-  report.
+- **`defang` inside `boundary.zig`.** Wrong owner: thirty-four of its forty call sites are
+  in `main.zig`, rendering the report.
 - **`rec_image` as a field of `BoundaryEvidence`.** Probably the right ownership; also a
   change of shape, not a move. Left for the first real change that wants it.
 - **`BoundaryEvidence.Kind` relocated to `oracle.zig`** (a reviewer's proposal). The enum
@@ -146,7 +147,7 @@ the last three did (#553's account classes, #562's mode account, #567's fs_usage
 ## Consequences
 
 - `main.zig` went from 9,367 to 7,652 lines; `boundary.zig` is 1,688 (1,653 moved plus a
-  35-line head of module map, imports and aliases) and `defang.zig` 111 — the counts at
+  35-line head of module map, imports and aliases) and `defang.zig` 112 — the counts at
   commit time, two comments longer than at the move (0047's counts drifted four times
   between plan and merge; these drifted once). Report, case, CLI, MCP and contract
   surfaces are unchanged: the acceptance suite's failure set is identical before and after.

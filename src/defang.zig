@@ -3,8 +3,9 @@
 //! file name a target chose cannot forge a line of the report that judges it.
 //!
 //! A leaf beside `main.zig` and `boundary.zig` rather than inside either (#572, ADR 0062):
-//! the boundary's refusal sentences and seventeen other call sites in `main.zig` both pass
-//! through it, and inside either file it would be an import from the other — the shape
+//! the boundary's refusal sentences (six call sites in `boundary.zig`) and the report side
+//! (thirty-four call sites across fourteen functions of `main.zig`, at the time of the move)
+//! both pass through it, and inside either file it would be an import from the other — the shape
 //! ADR 0047 gave `engine/read.zig`. Imports `std` and nothing else. The bodies moved from
 //! `main.zig` byte for byte on 2026-09-12.
 
