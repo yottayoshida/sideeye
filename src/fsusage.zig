@@ -1332,10 +1332,16 @@ test "a thread the shim never recorded stays another party's, list or no list" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // A raw `clone`, or a thread writing through raw syscalls: the shim recorded no
-    // kill-point of its own for it, so it is not in the list handed here. The list widens
-    // the predicate for the threads the trace names and for nothing else — the refusal
-    // for this one lives in `childrenMayBeJudged`, which is told an id rather than a pid.
+    // A writer whose operations the shim never recorded — one going straight to syscalls.
+    // No kill-point record of its own, so it is not in the list handed here. The list
+    // widens the predicate for the threads the trace names and for nothing else, and the
+    // refusal for this one lives in `childrenMayBeJudged`, which is told an id rather than
+    // a pid.
+    //
+    // NOT a raw `clone`, which is what this comment said until #543. That thread's writes
+    // through libc are recorded under the subject's pid, so its tid would be in the list
+    // and this fixture would be measuring the opposite case. The test was green for a
+    // reason it did not have.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++

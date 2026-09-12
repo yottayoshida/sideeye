@@ -150,6 +150,207 @@ check said the script should read 24 references. It reads 25, because the job th
 check carries a `checkout` of its own. A count written before a change and compared after it
 counts what the change added. The same error reached ADR 0061, which asserted twenty-five
 references and then accounted for 3 + 21; the review caught that too.
+## 2026-09-12 (third) — a thread the shim never saw created is named in the account, and the two edges of the thread rule are written down (#543)
+
+#543 asked for two edges of the v16 thread rule to be recorded: a raw `clone` leaves no
+`pthread_create` record, so the shim's thread count is a floor; and the slot table holds
+sixty-four threads, so the sixty-fifth is refused. Both were pinned on toys and unit tests
+and neither appeared in any page a user reads. The plan was to write two sentences and add
+a leg.
+
+**The first review found that one of the two was worse than undocumented.**
+`boundaryAccount`'s thread clause fires on `boundary_ev.threads > 0`, which is
+`trace.thread_records`. A raw `clone` leaves no such record, so a run whose only writer is
+that thread renders `processes: single process` and reaches a verdict — and
+`docs/report-schema.md` promises the opposite in as many words: "a judged run that created
+threads says so in a clause of its own … so 'single process' is never read as
+'single-threaded'". The plan's own property was false the moment it was written, and the
+first draft's acceptance leg would have pinned the wrong behaviour as correct — a green
+check that a later fix would have had to delete.
+
+**The second review found that fixing it does not make that sentence true either.** A
+thread created but never writing leaves the trace nothing at all: same pid, no `.thread`
+record, no crash point. Nothing can name it. The shipped sentence promised more than the
+trace can carry, so the sentence is what moves — owner ruling, and `docs/report-schema.md`
+now says which threads the clause covers and which it structurally cannot.
+
+Three things about the fix that the reviews had to supply:
+
+- **The clause goes through the `threads` variable, not a return.** `boundaryAccount` has
+  three returns (654 / 660 / 675) and all three interpolate `{threads}`; a clause added at
+  one would vanish on the other two. The function's own comment already records losing a
+  clause exactly that way.
+- **The scoping condition needed the flag separately.** `single process` is demoted to
+  `single process in the recording` when something follows it, and that test keys on
+  `threads > 0` — which is zero here by construction. Without adding the new flag the
+  sentence would open with a bare claim and then disclose a thread, which is the reading
+  report-schema says the clause exists to prevent.
+- **The condition is against the initial thread's id, not against an empty list.**
+  `subject_writer_tid_list` appends the first writer of the subject's pid unconditionally,
+  so it holds one entry on every ordinary run. #544's doc on that field said "empty for a
+  single-threaded run"; that was false, and a condition written from it would have printed
+  the clause on every run ever recorded. The doc is corrected in the same change and the
+  unit test asserts the one-entry case directly.
+
+**The number sixty-four had no check.** `shim/src/common.zig`'s exhaustion test fills the
+live table with `for (&slots, 0..)`, so it proves the overflow path for whatever
+`max_threads` is; change it to 128 and every test stays green while DESIGN goes on saying
+the sixty-fifth is refused. One `expectEqual(64, slots.len)` with a pointer to DESIGN §9
+ties them. The first plan proposed a grep in `spike/acceptance.sh` comparing source to
+prose; the reviewer's one line is cheaper and lands where the invariant lives.
+
+**The fixture stopped using a raw `clone`.** A hand-rolled `clone` shares the parent's TLS
+block unless CLONE_SETTLS is arranged, and calling libc from such a thread is outside what
+glibc promises — ADR 0055 decision 1 declined `threadlocal` in the shim for that same
+reason, so a fixture resting on it would prove things about one glibc rather than about
+the rule. `spike/toys/toy_rawthread.c` reaches libc's own `pthread_create` through
+`dlopen`+`dlsym` instead: the shim's `@export`ed replacement is bypassed, no `.thread`
+record is written, and the thread is completely ordinary. `dlsym(RTLD_NEXT, …)` does not
+work — the next object after the executable is the preloaded shim, which hands back its
+own symbol. The accompanying syscalls are not a hazard: four existing legs already run
+glibc's thread-start sequence through the oracle and read `oracle_verified True`, and the
+shim's wrapper only records and forwards, so the kernel-visible sequence is identical.
+
+One thing measured by being wrong: the new `boundary_cases` row was written with
+`may_say_single = false` and the table refused it. The rendering is `single process in the
+recording; a thread the shim never recorded creating wrote …` — the run **is** one
+process, and what the sentence must not do is stop there. That bit only asks whether the
+words appear; the scoping is held by a different test, which is where the assertion for it
+belongs.
+
+**And #544's own wording was wrong in five places, in the same way.** The plan review found
+it after the code was already written. `subject_writer_tid_list` is keyed on "wrote a
+kill-point record under the subject's pid" and knows nothing about how a thread came to
+exist; a raw `clone` shares the pid and its writes through libc are interposed like any
+other thread's, so **its tid is in that list**. The list is what `fsusage.read` is handed,
+so on macOS such a thread is the subject and the run is judged. Yesterday's sentences said
+the opposite — "such a run is refused" — in `DESIGN.md`, `docs/target-classes.md`, ADR
+0060's own consequences, a comment in `src/main.zig`, and the comment on a test in
+`src/fsusage.zig` where the test was green for a reason it did not have. #543's issue text
+carries the same stale claim.
+
+All five are corrected here, and the axis is named rather than left implicit: **two records
+can go missing and they are not the same miss.** A missed *creation* leaves the operations
+recorded, so the run is judged and the account discloses it; missed *operations* leave
+nothing to attribute, so the run is refused. Writing "an unrecorded thread" without saying
+which record is what made the two look like one thing — the reviewer's diagnosis, and the
+reason DESIGN now spells the adjective out every time. The two edges moved out of §9's
+2,000-character paragraph into bullets of their own, because the contrast is the content
+and it does not survive being appended to something else.
+
+The measurement that settled it was already on the bench: the `child-only` shape reached a
+verdict rather than a refusal, which is only possible if the thread's tid was in the list.
+
+**Both new legs were run for real before the PR was opened**, which #544's were not. The
+engine and shim were cross-built for `aarch64-linux-gnu` on the host and driven inside the
+`sideeye-spike` container, which carries gcc, strace and python3 but no zig:
+
+```
+both-libc   exit 2  multiple_threads_detected
+            "two threads of process 19 wrote in the judged directory: tid 19 performed
+             open(/tmp/acc/state/a) and tid 20 performed open(/tmp/acc/state/b)"
+child-only  exit 1  FAIL, 1 of 4 explored worlds, oracle_verified True, 3 crash points
+            processes: "single process in the recording; a thread the shim never recorded
+             creating wrote the judged directory, so its count of threads is a floor and
+             no witness is held against it (v16, #543)"
+```
+
+The second line is the property, measured: the run reached a verdict, the account named the
+thread, and the sentence is scoped rather than a bare "single process". It also settles the
+fixture, which no unit test could — the clause only renders when `thread_records == 0` and
+a writer other than the initial thread appears, so the `dlopen`/`dlsym` route really does
+produce a thread the shim never saw created.
+
+**Both legs were then seen red, and only one of them can be.** This repository asks every
+new acceptance check to be seen red once before it is trusted. Cutting the account clause
+out (`else if (boundary_ev.unrecorded_writer_thread)` → `else if (false)`), cross-building
+that binary and running the real `spike/acceptance.sh` against it in the container gives:
+
+```
+ok   two writers, one of them a thread the shim never recorded, is UNKNOWN (v16, #543)
+FAIL an unrecorded thread as the only writer: exit 1, named=0, processes=single process in the recording
+```
+
+Leg 1 is green against the mutant — and against builds from before this change, because
+two writing threads are refused from the trace whatever the account says. So **leg 1 cannot
+fail on this change and leg 2 is the entire discriminator**: it requires a verdict *and* the
+clause, so it fails an engine that refuses every such run and one that says nothing about
+it. The comment above the pair claimed both shapes were needed because "either alone is
+satisfied by an engine that is wrong in one direction", which is the job leg 2 does by
+itself; it now says leg 2 discriminates and leg 1 is a regression control on a refusal that
+has to survive an unrecorded creation. The review found the overstatement; the mutation is
+what settled which leg was which. The other twelve failures in that run are the container's
+own — six `-Dtest-*` binaries not cross-built, `sideeye-ancprobe`, four cases needing a
+non-root user, one vfork timing — identical with and without the mutation.
+
+**Three sentences moved when §9's paragraph became bullets, and one changed meaning on the
+way.** `A single-process target run with no oracle at all reaches PASS only under
+--allow-unverified` ended up at the tail of the sixty-four-thread bullet, where it reads as
+a consequence of the slot table; it belongs to the process-and-oracle bullet it was written
+in. The same split left the operations-miss rule stated in full in two bullets ten lines
+apart — the exact shape this change came to fix — and a forward reference to "the two
+bullets below" pointing at one bullet about missed records and one about a capacity limit.
+Moving a sentence is not a neutral edit: its neighbours lend it a subject.
+
+**The dichotomy is mode-dependent and did not say so.** "Missed operations, so refused" is
+true of the default mode; since #542 `--observe syscalls` traps every crash point, so that
+writer's operations *are* recorded there and the run turns on the one-writer rule instead.
+A Go runtime's threads are both misses at once under the default mode and a creation-miss
+only under that one — the likeliest real target for either edge, and the mode went
+unmentioned. §9 says it now, which also bridges to the `--observe syscalls` bullet directly
+below it. Separately, "such a run is judged on those operations" read unconditionally: a
+second writing thread still refuses whether or not the shim saw it created, and the bullet
+says so in the same sentence.
+
+**One reported P0 was not one, and the sweep is why that is checkable.** The review quoted
+"a process with more than sixty-four threads alive at once is refused" from `DESIGN.md` and
+`CHANGELOG.md` against a corrected `docs/target-classes.md`, and called the disagreement
+worse than the original error. It read a stale copy: all three had already moved to the
+cumulative reading. A repo-wide sweep for the phrase returns three hits and every one is
+the negation — "rather than by how many are alive at once", "however few are alive at
+once". The failure described is real enough to keep recording, since the number does live
+on three pages — DESIGN §9, `docs/target-classes.md`, and the CHANGELOG entry, which is
+history rather than a page a later change updates — and `shim/src/common.zig`'s assertion
+comment now names the two that a change to `max_threads` must follow, rather than only
+DESIGN.
+
+**The confirming review found where the inference breaks, and it was measurable.** The flag
+reads "a writer tid that is not the initial one" as "a thread the shim did not see created".
+That holds only while a thread's id is the thread. On Darwin the shim takes the id from
+`pthread_threadid_np`, and an `exec` hands the same surviving thread a **different** id —
+five self-exec runs on this host, same pid, a new id every time:
+
+```
+before exec: pid=77382 tid=111017761      after exec: pid=77382 tid=111017793
+before exec: pid=77387 tid=111017795      after exec: pid=77387 tid=111017796
+before exec: pid=77388 tid=111017798      after exec: pid=77388 tid=111017801
+```
+
+So a single-threaded macOS target whose writes all fall after its own `exec` reaches a
+verdict with one writer — and would have been told that a thread the shim never recorded
+wrote the judged directory, about a process that only ever had one thread. The question is
+no longer asked once the image changed, and the fourth fixture in the trace test is that
+run; removing the guard fails it at the `!unrecorded_writer_thread` assertion and nothing
+else. On Linux the surviving thread becomes the thread-group leader and `gettid()` returns
+the pid, so both sides agree and none of this arises.
+
+**What that guard does not fix is filed as #571.** The run where *both* sides of the exec
+write is refused `multiple_threads_detected` on Darwin — two ids that are one thread —
+because `writer_tids` matches on the pid alone and has no notion of an image change. That
+is a v16 defect against DESIGN's own promise that a target which execs over itself is
+judged, it predates this change, and correcting it means re-baselining thread identity at
+the image change rather than guarding one inference. The id is measured; the verdict is
+read off the code, because reaching one with an image change on macOS needs an oracle and
+therefore root.
+
+Two edits of this change's own making, both caught by the same review: the insertion into
+`docs/report-schema.md` replaced a semicolon with a full stop and left the clause after it
+starting in lower case, and a sentence rewritten in §9 read "Which writers that list can
+hold turns on…", whose subject and verb do not agree.
+
+Not closed: no real target has met either edge. Both are still pinned on toys and unit
+tests, which is what #543 says and what this change does not change.
+
 ## 2026-09-12 — the fs_usage oracle is told which threads are the subject's, and the refusal for the rest stops calling them processes (#544)
 
 Contract v16 made a thread judgeable everywhere except under `--oracle-fs-usage`, where

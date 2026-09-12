@@ -514,6 +514,12 @@ const BoundaryEvidence = struct {
     /// a refusal naming two threads of a child, and the clause says "of the subject's own
     /// process" now so the two do not read as a contradiction.
     writer_threads: u32 = 0,
+    /// A thread whose creation the shim never recorded wrote the judged directory (#543;
+    /// `TraceInfo.unrecorded_writer_thread` says how it is decided). Mutually exclusive
+    /// with `threads > 0` by construction — the trace asks the question only when it holds
+    /// no `.thread` record at all — so the account's thread clause has two shapes and
+    /// never both.
+    unrecorded_writer_thread: bool = false,
     /// The shim's boundary is a thread and nothing else (v16): no other process, no image
     /// change. The account's recording clause has three shapes for a boundary the oracle
     /// did not corroborate — "a process boundary", "the subject replacing its own image",
@@ -623,7 +629,8 @@ fn boundaryAccount() []const u8 {
         // dropping the qualifier would let a sentence that goes on to disclose a world
         // boundary open by claiming the run had one process.
         if (std.mem.eql(u8, c, "single process") and
-            (world.len > 0 or boundary_ev.second_run != null or boundary_ev.threads > 0))
+            (world.len > 0 or boundary_ev.second_run != null or boundary_ev.threads > 0 or
+                boundary_ev.unrecorded_writer_thread))
             break :blk "single process in the recording";
         break :blk c;
     };
@@ -637,10 +644,21 @@ fn boundaryAccount() []const u8 {
     // image-change clause is: a judged run that created threads must say so, and say
     // that one thread wrote, or a reader of "single process" would take it for a
     // single-threaded one. The shim's count is a floor — a raw clone leaves no record.
+    //
+    // Two shapes and never both (#543). The second is for a run whose threads the shim
+    // could not count at all: a raw `clone`, or a thread started before the shim was in
+    // the image, leaves no `.thread` record while its writes still carry its tid. Without
+    // it that run renders a bare "single process" and a reader takes it for
+    // single-threaded — the exact reading `docs/report-schema.md` says this clause exists
+    // to prevent. Appended through this one variable rather than at a return site: the
+    // three returns below all interpolate `{threads}`, and a clause added at one of them
+    // would vanish on the other two. That has happened here before, to the world clause.
     var thread_buf: [200]u8 = undefined;
     const threads: []const u8 = if (boundary_ev.threads > 0)
         std.fmt.bufPrint(&thread_buf, "; the shim recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
             "; the shim recorded threads created (v16)"
+    else if (boundary_ev.unrecorded_writer_thread)
+        "; a thread the shim never recorded creating wrote the judged directory, so its count of threads is a floor and no witness is held against it (v16, #543)"
     else
         "";
     if (boundary_ev.exec_continuations > 0) {
@@ -671,7 +689,9 @@ fn boundaryAccount() []const u8 {
     // value; it read 494 before that day's wordings), and v16 widened the buffer to 1280
     // for a thread clause of at most 178 bytes (the literal and two u32 values; review
     // counted it), which keeps at least the margin the measurement had; the crossing itself was not re-run — but "unreachable" is not a
-    // lifetime.
+    // lifetime. #543 gave that clause a second shape, a fixed literal **measured at 152
+    // bytes**, which is under the 178 the bound was set from, so the bound does not move.
+    // The two shapes are mutually exclusive, so no run carries both.
     return std.fmt.bufPrint(&boundary_buf, "{s}{s}{s}{s}", .{ recording, world, second, threads }) catch
         "the process-boundary account did not fit its buffer; treat it as not established";
 }
@@ -3949,6 +3969,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // The thread account (v16): how many the shim saw made, how many wrote, and whether
     // a thread is the only boundary there was.
     boundary_ev.threads = trace.thread_records;
+    boundary_ev.unrecorded_writer_thread = trace.unrecorded_writer_thread;
     boundary_ev.writer_threads = trace.subject_writer_tids;
     boundary_ev.shim_thread_only = trace.boundary == .thread and !trace.crossedProcessBoundary() and trace.exec_continuations == 0;
 
@@ -4098,10 +4119,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // thread of that process is still refused, by the v16 thread rule, which names both
     // threads and is decided from the trace alone.
     //
-    // What that list cannot hold is a thread the shim never recorded being created: a raw
-    // `clone`, or one started before the shim loaded. Its writes carry an id the trace
-    // never saw at all, and the refusal for those lives in `childrenMayBeJudged`, which
-    // names such an id as an id rather than asserting it is another process.
+    // What that list cannot hold is a writer whose OPERATIONS the shim never recorded —
+    // one going straight to syscalls. Its writes carry an id the trace never saw at all,
+    // and the refusal for those lives in `childrenMayBeJudged`, which names such an id as
+    // an id rather than asserting it is another process.
+    //
+    // A thread reached through a raw `clone` is a different miss, and this comment named
+    // it here wrongly on the day #544 was written (#543). That thread shares the subject's
+    // pid and its writes through libc are interposed like any other thread's, so its tid
+    // IS in the list and the run is judged rather than refused. What went unrecorded is
+    // its creation, which the account discloses on its own
+    // (`TraceInfo.unrecorded_writer_thread`).
     if (trace.needsOracle() and args.oracle_fs_usage)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .class_wall);
 
@@ -8655,6 +8683,15 @@ const boundary_cases = [_]struct {
     // not. Both must say "single process" only as scoped to the recording, and both must
     // carry the thread clause, or a reader takes "single process" for single-threaded.
     .{ .what = "a judged run whose only boundary was a thread (v16)", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_thread_only = true, .threads = 6, .writer_threads = 1, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 1262 } } }, .may_say_single = true, .pins = "6 thread(s) created, and 1 thread id(s) of the subject's own process wrote" },
+    // #543: the shim recorded NO thread and a writer that is not the initial thread still
+    // appeared. `shim_boundary` stays false — a raw `clone` leaves no boundary record
+    // either — so before this row the state rendered a bare "single process" and nothing
+    // in the table noticed. `may_say_single` is TRUE and that is not a weakening: the run
+    // really is one process, and what the sentence must not do is stop there. The bit only
+    // asks whether the words appear; the scoping is held by the "a bare single-process
+    // claim is scoped the moment anything follows it" test below, and the clause itself by
+    // `pins` here. Writing `false` here was the first attempt and the table said so.
+    .{ .what = "a thread the shim never recorded creating wrote the judged directory (v16, #543)", .ev = .{ .trace_read = true, .shim_reported = true, .unrecorded_writer_thread = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 900 } } }, .may_say_single = true, .pins = "never recorded creating wrote the judged directory" },
     // `threads` is set from the same records that set `boundary`, so a run with threads
     // has `shim_boundary` — the first version of this case had `threads = 1` and no
     // boundary, a state the engine cannot produce (review, second round). The vips report
@@ -8743,6 +8780,14 @@ test "a bare single-process claim is scoped the moment anything follows it" {
     try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
     boundary_ev = witnessed;
     boundary_ev.second_run = "a thread";
+    try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
+    // #543. What follows here is a thread the shim could not count, and the scoping
+    // condition had to learn about it separately: the existing arm keys on `threads > 0`
+    // and this state has `threads == 0` by construction. Without the flag in that
+    // condition the sentence opens with a bare "single process" and then discloses a
+    // thread — the reading `docs/report-schema.md` says the clause exists to prevent.
+    boundary_ev = witnessed;
+    boundary_ev.unrecorded_writer_thread = true;
     try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
 }
 
