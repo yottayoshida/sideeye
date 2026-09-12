@@ -2,6 +2,27 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-12 (later still, renumbered) — 0060 was taken by a branch cut from the same base
+
+This ADR was written as 0060 and is 0061. #567 (the fs_usage oracle told which threads are the
+subject's) was cut from the same `main` and allocated 0060 too. The slugs differ, so the filenames
+differ, so nothing collides in git and **both pull requests are green**: the collision surfaces only
+on the post-merge run of `main`, where `check-adr-numbering.sh` would find two 0060s. This is the
+case that script's header names and declines to prevent — "two branches taken from the same base can
+each carry a unique number, both go green, and both merge" — and 0028 went through it on 2026-08-27.
+
+What found it was the same thing that found 0028: the two sessions holding the branches told each
+other. Nothing mechanical was involved, which is the standing gap, not a new one.
+
+This side renumbered because it was cheaper: eleven citations across six files here against sixteen
+across thirteen in #567. With this branch on 0061 the merge order is free.
+
+The citations were changed by replacing the string `ADR 0060`, never the digits alone. `grep 0060`
+over the tree hits twenty-one files — sha256 digests in `spike/cohort3/pins-*.txt` and a blind-hunt
+manifest, fs_usage timings that read `0.000060`, an strace address, and `flags=0x00000601` twice in
+this very file. A bare digit replacement would have rewritten pinned hashes. Verified after: `ADR
+0060` returns nothing, and every changed line in the diff is a prose citation.
+
 ## 2026-09-12 (later still) — every action pinned, and the checksum that was already there
 
 An outside review raised five things about this repository. Two looked like one problem
@@ -11,7 +32,7 @@ about supply chain; measuring them split them apart.
 a pointer its owner can move. The judgment that they should not was already here —
 `spike-fsusage.yml` pins its three by commit — but it was written about that file ("these
 actions run before a script that runs as root"), so it stayed there, and `release.yml`,
-whose output leaves this machine, was not the leg it covered. ADR 0060 widens it;
+whose output leaves this machine, was not the leg it covered. ADR 0061 widens it;
 `spike/check-action-pins.sh` holds it; that file's comment now points at the rule.
 
 **The checksum was not.** The review asked for a `SHA256SUMS` beside each release, on the
@@ -121,7 +142,7 @@ toward refusal has a price and this is what the price looks like.
 **A number in the first draft was wrong by one, in a way worth naming.** The plan's falsifiable
 check said the script should read 24 references. It reads 25, because the job that runs the
 check carries a `checkout` of its own. A count written before a change and compared after it
-counts what the change added. The same error reached ADR 0060, which asserted twenty-five
+counts what the change added. The same error reached ADR 0061, which asserted twenty-five
 references and then accounted for 3 + 21; the review caught that too.
 
 ## 2026-09-12 (later) — a pointer fixed in the rendering instead of in the thing that renders

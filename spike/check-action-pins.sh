@@ -8,7 +8,7 @@
 # three by commit and said why in a comment — but it said it about ITSELF ("these
 # actions run before a script that runs as root"), so the judgment sat in the
 # repository, scoped to one file, while the other twenty-one stayed on tags.
-# ADR 0060 widens the scope; this check is what holds it there, because pinning
+# ADR 0061 widens the scope; this check is what holds it there, because pinning
 # is not a thing you do once. The next workflow anyone adds will be written from
 # a README that says `@v4`.
 #
@@ -19,7 +19,7 @@
 #     both satisfied a looser rule and neither is a pinned action (both measured).
 #   * the version the SHA came from travels beside it as a trailing comment
 #     (`# v4`). This is checked, because the first draft wrote the requirement into
-#     this header and into ADR 0060 and then dropped the comment before testing —
+#     this header and into ADR 0061 and then dropped the comment before testing —
 #     a reference with no comment passed, so the page said a rule the code did not
 #     hold (measured, first-read review).
 #   * finding NOTHING is a FAILURE. A directory with no workflow files, or workflow
@@ -190,7 +190,7 @@ scan() {  # $1 = workflow directory. 0 = every action pinned, 1 = not.
             continue
         fi
 
-        # The trailing comment the contract requires, and ADR 0060 states.
+        # The trailing comment the contract requires, and ADR 0061 states.
         case "$after" in
             *'#'*) ;;
             *)

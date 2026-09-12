@@ -1,4 +1,4 @@
-# 0060 — Every action is pinned by commit, and the release checksum is GitHub's
+# 0061 — Every action is pinned by commit, and the release checksum is GitHub's
 
 Status: Accepted (2026-09-12)
 

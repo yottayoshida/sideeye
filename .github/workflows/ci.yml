@@ -1313,7 +1313,7 @@ jobs:
   # about ITSELF ("these actions run before a script that runs as root"), while the
   # other twenty-one stayed on `@v4`: a pointer the action's owner can move, running
   # in front of this repository's checkout and, in release.yml, in front of the token
-  # that uploads what people download. ADR 0060 widens the scope and this job holds
+  # that uploads what people download. ADR 0061 widens the scope and this job holds
   # it, because pinning is not done once — the next workflow anyone adds will be
   # copied from a README that says `@v4`.
   #
