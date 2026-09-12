@@ -139,6 +139,12 @@ pub const TraceInfo = struct {
     /// Distinct thread ids that wrote a kill-point record under the subject's pid (v16).
     /// One is the judged case; the account prints the number either way.
     subject_writer_tids: u32 = 0,
+    /// The same ids as a list (#544). The count above is what the account prints; the list
+    /// is what the macOS oracle needs. `fs_usage` attributes a line to a thread id and
+    /// knows no process for it, so the map from thread to subject cannot come from that
+    /// reader — it comes from here, where every record names both. Arena-backed like
+    /// `ops`, and empty for a single-threaded run, which leaves that reader where it was.
+    subject_writer_tid_list: std.ArrayList(u64) = .empty,
     /// The first kill-point record from a SECOND thread of one process (v16): `pid` says
     /// which process, `tid` which thread, `class` and `path` what it did — the refusal
     /// names all four, and the thread that wrote first is named beside them. Null while
@@ -819,6 +825,9 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         info.exec_chain_broken = true;
         if (info.hard_boundary == null) info.hard_boundary = .exec;
     }
+    // Handed over whole rather than copied: both this list and `info` live in the same
+    // arena, and the count beside it was already being kept from the same variable (#544).
+    info.subject_writer_tid_list = subject_tids;
     return info;
 }
 
