@@ -179,6 +179,16 @@ away. The paragraph was written from memory of a page that was open in the same 
   `childrenMayBeJudged`. Decision 3 is what keeps that refusal from asserting the writer is
   another process. The verdict is UNKNOWN in both arrangements — only the sentence differs
   — but the sentence is the part an operator acts on.
+
+  **Amended 2026-09-12 by #543: the raw `clone` half of that sentence is wrong, and was
+  wrong on the day it was written.** A thread reached through a raw `clone` shares the
+  subject's pid, and its writes through libc are interposed like any other thread's, so its
+  tid *is* in decision 1's list — that list is keyed on "wrote a kill-point record under
+  the subject's pid", not on how the thread came to exist. Such a run is judged, not
+  refused, and the account says the shim's count of threads is a floor. The bullet is true
+  of the other miss only: a writer whose *operations* the shim never recorded, going
+  straight to syscalls. The two were conflated here and in four other places the same day;
+  #543 separates them.
 - The report's `processes` account is unchanged in shape: it prints the number of threads
   the shim saw created (a floor — a raw `clone` leaves no record) and the number of thread
   ids that wrote. What changes is that on macOS a run can now reach a verdict with that

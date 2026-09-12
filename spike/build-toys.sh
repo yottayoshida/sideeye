@@ -34,6 +34,15 @@ echo "building toy-rawchild"
 # is what made this reach PASS before the per-path reconciliation existed.
 gcc $cc_flags -o "$out/toy-rawchild" "$root/spike/toys/toy_rawchild.c"
 
+echo "building toy-rawthread"
+# #543's fixture: a thread the shim never records creating. It reaches libc's own
+# `pthread_create` through a handle, so the shim's `@export`ed replacement — and the
+# `.thread` record it writes — is bypassed while the thread itself stays completely
+# ordinary. `-ldl` is harmless where glibc folds dl into libc and required where it does
+# not. Built here rather than inline in acceptance.sh because `$out` survives the
+# `rm -rf /tmp/acc` that the case helpers do between runs, the way toy-rawchild does.
+gcc $cc_flags -o "$out/toy-rawthread" "$root/spike/toys/toy_rawthread.c" -lpthread -ldl
+
 echo "building toy-symlink"
 # The other side of #405's fixture: a run the reconciliation must NOT refuse. Its judged
 # tree holds `cur -> v1` and its operation goes through the link, so the spelling the shim

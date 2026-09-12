@@ -267,6 +267,52 @@ else
     fails=$((fails + 1))
 fi
 
+# A thread the shim never recorded creating (#543). `toy-rawthread` reaches libc's own
+# `pthread_create` through a handle, so the shim's `@export`ed replacement — and the
+# `.thread` record it writes — is bypassed while the thread itself stays completely
+# ordinary. Its OPERATIONS are still recorded, because the wrappers are process-wide and
+# every record names the calling thread; that split is the whole of #543.
+#
+# Two shapes doing different jobs, and only the second can go red on this change. It
+# requires a verdict AND the account naming the thread, so it fails both an engine that
+# refuses every run with an unrecorded writer and one that says nothing about it. The
+# first is a regression control and is green on builds from before #543 as well — two
+# writing threads are refused from the trace whatever the account says — kept because that
+# refusal has to survive an unrecorded creation, which this change could have broken.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-rawthread init" --operation "$OUT/toy-rawthread both-libc" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/rt.json 2>&1)
+rc=$?
+rt_reason=$(python3 -c "import json;print(json.load(open('/tmp/acc/rt.json')).get('unknown_reason'))" 2>/dev/null)
+if [ "$rc" = "2" ] && [ "$rt_reason" = "multiple_threads_detected" ]; then
+    echo "ok   two writers, one of them a thread the shim never recorded, is UNKNOWN (v16, #543)"
+else
+    echo "FAIL two writers with an unrecorded thread: exit $rc, reason=$rt_reason"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-rawthread init" --operation "$OUT/toy-rawthread child-only" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/rt.json 2>&1)
+rc=$?
+rt_acct=$(python3 -c "import json;print(json.load(open('/tmp/acc/rt.json')).get('processes'))" 2>/dev/null)
+# "Judged" means a verdict was reached, not a particular one. Whether this toy's single
+# rewrite trips the built-in atomicity invariant is the toy's business, and pinning PASS or
+# FAIL here would break the leg the day its write pattern changes. What must hold is that
+# the run reached a verdict AND that the account named the thread the shim could not
+# count — a leg asserting only the first would go green on a build that says nothing.
+case "$rt_acct" in *"never recorded creating wrote the judged directory"*) rt_named=1 ;; *) rt_named=0 ;; esac
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && [ "$rt_named" = "1" ]; then
+    echo "ok   a run whose only writer is a thread the shim never recorded is judged, and the account says so (#543)"
+else
+    echo "FAIL an unrecorded thread as the only writer: exit $rc, named=$rt_named, processes=$rt_acct"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2st: what the shim takes from a target thread's memory (#555) ==========="
 # README, "What the target has to be": less than 1 KiB of thread-local storage and at most
