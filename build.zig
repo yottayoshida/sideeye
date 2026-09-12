@@ -412,6 +412,14 @@ pub fn build(b: *std.Build) void {
         "src/config.zig",
         "src/mcp.zig",
         "src/image.zig",
+        // The first seam of #572 (ADR 0062) and the leaf it forced. Named for the reason
+        // this list exists (above): collection through main.zig happens to reach both today
+        // — its tests call `buildJson`, which calls `boundary.boundaryAccount()`, and
+        // `setupOutputDetail`, which calls `defang.sanitizeForReport`, and collection
+        // follows those calls — and naming the files makes the seventeen run whether or not
+        // that stays true.
+        "src/boundary.zig",
+        "src/defang.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.

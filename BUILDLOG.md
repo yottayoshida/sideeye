@@ -2,6 +2,140 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-12 (fourth) — the process boundary leaves main.zig, and a ratchet is set so nothing moves back in (#572, first seam)
+
+#572 asks for `src/main.zig` — 9,367 lines at `2adec70`; `main()` alone 2,529 lines in nine
+phases; thirty-five module-level variables — to stop being the default home for product
+boundaries that change for different reasons, without pre-deciding the module graph. The
+plan measured six candidates and chose the process-and-thread boundary: it writes no
+global, exits nowhere, reads one variable from outside itself (`rec_image`, written once),
+and its only outward calls are the defang primitives. The measurement was made three times
+before it was right — the first count took `say` and `explored` in comments for calls, the
+second stripped comments but not the string `"in an explored world"`, and the awk meant to
+refute both used `\b`, which macOS awk does not read as a word boundary and so matched
+nothing. The numbers that stood are from `grep -w` and from a computed closure of the
+declarations the moved code references, which is also what found the two the hand-made list
+had missed: `fs_usage_silence` (a constant one clause reads) and `traceFileForTest` (the
+fixture five of the moving tests call). ADR 0062 records the series and the order after
+this seam.
+
+**Predictions, written before the move**, from the extraction script's dry run over
+`2adec70`:
+
+- `src/boundary.zig`: 37 chunks, **1,652 lines** counting doc comments and the blank lines
+  that separate declarations (1,553 by declaration bodies, the second reviewer's figure);
+  21 declarations and 16 tests. `pub` on fourteen — `BoundaryEvidence`, `boundary_ev`,
+  `rec_image`, `boundaryAccount`, `unattributedWriterReason`, `childrenMayBeJudged`,
+  `foreignTouchDetail`, `secondRunLabel`, `threadDetail`, `unresolvedDetail`, `noShimNext`,
+  `noShimDetail`, `noShimDetailSecondRun`, `withOracleCapture` — decided by whether anything
+  left in `main.zig` still spells the name; `boundary_buf`, `toleratedChildrenClause`,
+  `boundaryRecordingClause`, `fs_usage_silence`, `noShimNextFor`, `traceFileForTest` and
+  `boundary_cases` stay private.
+- `src/defang.zig`: 6 chunks, **99 lines**; `pub` on `sanitizeForReport`, `textShown`,
+  `appendSanitized`; `DefangUnit` and `defangUnit` private. Imports `std` and nothing else.
+- `main.zig`: **47 code lines** gain a `boundary.` prefix (mentions inside comments are left
+  as they are), three aliases for the defang names so no call site changes, two imports and
+  a module map. About 7,650 lines after.
+- `zig build test --summary all`: `run test` steps 10 → 12 on this Mac. **Main root
+  unchanged at 311**: three tests that stay reference `boundary.zig` — #280's tag test
+  through `BoundaryEvidence.Kind`, two #352 tests through `OracleAsked` — and Zig collects
+  an imported file's tests once any test in the root references a declaration of it, and
+  then the tests of what *those* tests import. **Boundary root 253**: its own 16, defang's
+  1, the whole engine root of 151 (touching `engine.zig` collects its three tests, which
+  collect the parts and `posix`), `oracle.zig`'s 61 and `image.zig`'s 24 — not `contract`'s
+  26, which is a module and does not cross (the main root's 311 holds none of them).
+  **Defang root 1.** Total 779 → 1,033.
+- Acceptance in the container: the set of `FAIL` lines identical to `main`'s.
+
+**Measured, after the move.** The extraction script — line ranges widened backwards over
+each declaration's `///` doc comment, `pub` decided by whether anything left in `main.zig`
+still spells the name, prefixes applied to code and not to comments — produced
+`src/boundary.zig` at 1,685 lines (1,652 moved plus the 33-line module map and imports) and
+`src/defang.zig` at 111 (99 plus 12); `src/main.zig` went from 9,367 to **7,650** — those
+three numbers as measured right after the move; the two review rounds below lengthened two
+comments and a module map, and the counts at commit time are `boundary.zig` **1,688**
+(1,653 moved, head of 35), `defang.zig` 111, `main.zig` **7,652**. Forty-seven
+code lines took the `boundary.` prefix, the number predicted; the mentions inside comments
+were left as written. `zig fmt --check` is clean on all three files (and was on `main.zig`
+before the move, which is what made running it safe to consider). **Two things the dry run
+could not see, both nested**: `BoundaryEvidence.Kind` and its `name()` are declarations
+inside the struct, the script marks `pub` only at column zero, and `main.zig`'s `OracleAsked`
+and #280's tag test reach both — the first `zig build` failed on `Kind`, the first `zig build
+test` on `name`. Those two words are the only edits inside a moved body.
+
+`zig build test --summary all`: **27/27 steps, 1,030 of 1,033 passed, 3 skipped** — the total
+exactly as predicted, twelve `run test` rows, **main root 311** (unchanged, as predicted),
+**boundary root 253** (as predicted, to the test), **defang root 1**. The third skip is
+engine's one skipped test running a second time under the boundary root. The ratchet's
+ceilings measured **95 and 32**, as predicted; its selftest goes red on a synthetic file one
+declaration over either ceiling and stays green at the ceilings with tests, a nested method
+and a nested helper present, and the real check goes red when one `fn` or one `var` is
+appended to a copy of `main.zig` and stays green when a `test` is.
+
+The baseline for the acceptance comparison cost two false starts of its own. A tree exported
+with `git archive` failed 265 legs, 174 of them `--setup exited 127`: the export is not what
+the container had been given before, and the difference was not worth chasing once a linked
+worktree of `origin/main` was to hand. That tree then failed the same way, because the
+morning's runs had built the toys from the wrapper (`spike/build-toys.sh` before
+`spike/acceptance.sh`, the `build-toys rc=0` line at the top of every log was the wrapper's
+own) and this wrapper had not. With the toys built, `main` fails the twelve legs it always
+fails in this container — six `-Dtest-*` binaries not cross-built, `sideeye-ancprobe`, four
+cases that need a non-root user, one vfork timing — and that is the set the PR's run is
+compared against.
+
+**The comparison, and the two reds.** The PR tree, cross-built and run in the same container
+with the toys built the same way, fails the same twelve legs and no other: the `diff` of the
+two sorted `FAIL` lists is empty. Then the two mutations the plan promised, each restored
+afterwards and `zig build test` green again. With `src/boundary.zig` taken out of
+`test_sources`, `--summary all` shows eleven `run test` rows and a total of 780 — `main`'s 779
+plus defang's one — which proves the twelfth row was the boundary root and nothing else. It
+does not prove the sixteen would stop running, because they would not: the main root still
+collects them through `OracleAsked`. With `try std.testing.expect(false)` put into one moved
+test, **both** the boundary root (251 pass, 1 skip, 1 fail of 253) and the main root (309
+pass, 1 skip, 1 fail of 311) go red, on the same test named `boundary.test.…` in each —
+which is the proof that the sixteen run, and run twice. Every check CI runs was run here
+with CI's own arguments and every one is green, `check-action-pins.sh` included for the new
+job's pinned checkout; `check-adr-status.sh` reads sixty-two ADRs.
+
+**The diff review found three sentences that were false, one of them about the guard.** The
+ratchet counted bare `fn ` and `var ` at column zero and its own comment said `pub var` does
+not exist in Zig — while this change had just declared `pub var boundary_ev` and `pub var
+rec_image`. The reviewer appended nine legal declarations to a copy of `main.zig` (`pub var`,
+`threadlocal var`, `export fn`, `pub inline fn`, `noinline fn`, and a `var` inside a
+top-level `const X = struct {}` — which is how `shim/src/common.zig` keeps real state) and the
+check reported 95 and 32, green. It now counts every spelling in front of a top-level `fn`
+or `var`, and a `var` directly inside a top-level container; the selftest goes red in each
+of those spellings and stays green with locals, tests and a struct nested inside a function
+present. `main.zig` itself measured the same 95 and 32 under the wider predicate, so the
+ceilings did not move. The second false sentence was the plan's prediction — repeated in
+ADR 0062 and in `build.zig`'s comment — that relocating `BoundaryEvidence.Kind` would drop the
+main root to 294 because only three tests reference `boundary.zig`: collection follows
+non-test helpers too (`buildJson` → `boundary.boundaryAccount()`), the reviewer showed it with
+a three-file reproduction, and the main root stays at 311 whatever happens to `Kind`. The
+third was a generalisation in CHANGELOG and both module maps — "the sentences the boundary
+refusals say" — when the `child_process_detected` sentences are still inline in `main.zig`;
+the property itself names four functions and is true, the sentence around it said more.
+Three comments that pointed at a neighbour that had moved (`metadata_note` "thirty lines
+above", `withOracleCapture` "beside it", the `foreignTouchDetail` test "neighbouring") were
+rewritten to say where the neighbour went.
+
+**The confirming review found the same shape of hole a second time, and it was the one that
+matters.** The widened ratchet took `extern` as a modifier but not `extern "c"` — the spelling
+`src/posix.zig` uses for every libc binding — so `pub extern "c" fn evade_one(n: usize)
+c_int;`, `extern "c" fn evade_two(p: ?*anyopaque) void;` and `pub extern "c" var evade_env:
+[*][*:0]u8;` appended to a copy of `main.zig` still read 95 and 32, green, while the script's
+own header said it took "any of the modifiers Zig allows" and the ADR said "every spelling".
+The first round had caught the first version claiming `pub var` does not exist; the second
+version made the same class of claim one spelling further out. The library name is now
+optional in both patterns, `extern struct`/`extern union` open a container scope like the
+others, and the selftest has the three spellings the review used plus `union(enum)` — sixteen
+cases, all red where they should be — and the reviewer's three appended lines read **97 and
+33**. `main.zig` has no `extern "c"` declaration, so the ceilings stayed at 95 and 32. The
+header also says now that "directly inside a container" means four spaces of indentation,
+which `zig fmt` produces and nothing in CI checks. And the review found the line counts
+above had gone stale by two comments' worth after the first round — the numbers at commit
+time are beside the ones measured at the move.
+
 ## 2026-09-12 (later still, renumbered) — 0060 was taken by a branch cut from the same base
 
 This ADR was written as 0060 and is 0061. #567 (the fs_usage oracle told which threads are the
