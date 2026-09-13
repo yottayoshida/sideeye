@@ -1,22 +1,28 @@
-//! The orchestrator: `main()` records a run — setup, apparatus, the recording run, the
-//! structural detectors, the oracle comparison, the preflight cut, the checker, the
-//! exploration, the report — and holds the state those nine phases share.
+//! The orchestrator: `main()` records a run — the define, then setup, apparatus, the
+//! recording run, the structural detectors, the oracle comparison, the preflight cut, the
+//! checker, the exploration, the report — each a function over the one `Run` the ten
+//! phases share.
 //!
-//! `src/main.zig` is the orchestrator and nothing else: every product boundary #572 names,
-//! other than the orchestration of a run, lives in a module whose header states its
-//! contract. That sentence is the promise #572's series makes true, and it is FALSE while
-//! the series is under way — this header lists what has moved and what has not, so a reader
-//! knows which.
+//! `src/main.zig` is the orchestrator: every product boundary #572 names, other than the
+//! orchestration of a run, lives in a module whose header states its contract, and this file
+//! holds none of their bodies. That sentence is the promise #572's series made true, seam by
+//! seam (ADR 0062), and it holds as of the fourth. What is here besides `main()`, `Run` and
+//! the ten phases — twenty-two functions, the orchestrator's own helpers and the ones kept by
+//! decision — is named at the end of this header, every one; the module map below lists
+//! what moved and where, so a reader knows which.
 //!
 //! Moved, with the module that owns it (ADR 0062):
 //!
 //!   - `boundary.zig` — the process-and-thread boundary: `BoundaryEvidence` (what each
-//!     witness saw, filled in from here across six of the nine phases), `childrenMayBeJudged`
+//!     witness saw, filled in from here by four of the ten phases — the structural
+//!     detectors, the oracle comparison, the exploration, and the preflight cut through
+//!     `observeAgain`), `childrenMayBeJudged`
 //!     and `unattributedWriterReason` (whether a run with another writer is judged), the
 //!     `processes` account both reports print (`boundaryAccount`), and the sentences of the
 //!     refusals that name another writer or an image change. The `child_process_detected`
-//!     sentences are still inline here, and `requireCompleteness` and the `crossed_boundary`
-//!     decisions are the orchestrator's; both go with the report seam.
+//!     sentences are still inline here; `requireCompleteness` went with the refusal seam
+//!     (`refuse.zig`, seam 3a) and the `crossed_boundary` decision is the orchestrator's
+//!     (`run.admitted`, seam 4).
 //!   - `defang.zig` — the choke point every target-influenced string passes before it
 //!     reaches a report line (`sanitizeForReport`, `textShown`, `appendSanitized`).
 //!   - `capture.zig` — the readers of bytes this program did not write, or wrote but must
@@ -51,11 +57,21 @@
 //!     `ReplayCase`. This file decides when a case is written and what a replayed one may
 //!     declare.
 //!
-//! Still here, and last in the series: `main()`'s nine phases, to become functions. Also here
-//! by decision, not by omission: the apparatus check, the fs_usage observer's start, the demo,
-//! `preflightReport`, and the three surface-1 functions above. `spike/check-main-shape.sh`
+//! Still here — twenty-two functions, each called from `main()`, from a phase, or from
+//! another of these (`isHex16` from its own test alone), named by what it is for: surface 1, which the freeze audit's rung 1 reads out of this file
+//! (`splitArgs`, `commandArgv`, `resolvePathAgainst`, `resolveCommandAgainst`,
+//! `resolveCommand`); the state directory's undo (`undoSetupMkdirs`); the operation's runs
+//! and their comparison (`runOperationObserved`, `recordingCapture`, `observeAgain`,
+//! `snapshotsEqual`); the observer's start (`startFsUsage`, `fsUsageSentinels`, `isHex16`);
+//! the apparatus check (`checkApparatus`, `envValue`, `namesLib`, `preloadNamed`,
+//! `pythonpathHas`); the preflight verdict (`preflightReport`); and the demo (`runDemo`,
+//! `findShim`, `shellSingleQuote`). Surface 1, the apparatus check, the observer's start,
+//! the demo and `preflightReport` are here by decision, with the reason for each in ADR
+//! 0062; the rest are the phases' own helpers. `main()`'s phases are the ten `phase*` functions below it, each
+//! reading and writing one `Run` (the struct above `main()`); `spike/check-main-shape.sh`
 //! holds the count of top-level functions and module-level variables in this file to a
-//! ceiling that only comes down.
+//! ceiling that came down through the seams, was set once at the fourth to the count the
+//! phases made, and only comes down from there.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -398,6 +414,78 @@ fn recordingCapture(stdout_path: []const u8) posix.Capture {
 
 /// Zig 0.16 passes the process's arguments and environment in; `std.process.argsAlloc`
 /// no longer exists. The shape of `Init.Minimal` comes from `std.start.callMain`.
+/// The state `main()`'s ten phases share, pinned in `main()`'s frame and handed to each
+/// phase by pointer (`run`). Grouped by the phase that writes each part, so `run.rec.trace` says where
+/// a value came from; a phase reads earlier groups and writes its own, and the two flags of
+/// `admitted` are the one exception (the oracle comparison changes them after the structural
+/// detectors set them). The buffers are fields because the slices into them
+/// (`define.state_abs`, `rec.rec_trace`, …) outlive the phase that filled them. Everything
+/// below the four values `main()` places — the two allocators and `cli.parse`'s answer — is
+/// `undefined` until its phase runs; the phases run in one order, from `main()`, and nowhere
+/// else (#572, ADR 0062).
+const Run = struct {
+    const Define = struct {
+        replay_case: ?case.ReplayCase,
+        only_k: ?u32,
+        state: []const u8,
+        operation: config.Command,
+        expect_status: u8,
+        shim: []const u8,
+        state_abs: []const u8,
+        state_alt: []const u8,
+        alt_differs: bool,
+        real_buf: [contract.max_path]u8,
+        alt_buf: [contract.max_path]u8,
+    };
+    const Recording = struct {
+        rec_trace: []const u8,
+        op_argv: []const []const u8,
+        oracle_out: []const u8,
+        rec_stdout: []const u8,
+        fsu_sentinel_a: []const u8,
+        fsu_sentinel_b: []const u8,
+        rec_started_ms: u64,
+        rec_capture: capture.CaptureObservation,
+        trace: engine.TraceInfo,
+        final: engine.Snapshot,
+        l0_plan: engine.L0Plan,
+        rec_trace_buf: [contract.max_path]u8,
+        oracle_out_buf: [contract.max_path]u8,
+        rec_stdout_buf: [contract.max_path]u8,
+        fsu_sentinel_a_buf: [contract.max_path]u8,
+        fsu_sentinel_b_buf: [contract.max_path]u8,
+    };
+    const Admission = struct {
+        children_admitted: bool,
+        crossed_boundary: bool,
+    };
+    const Firsts = struct {
+        first_failure: ?engine.WorldResult,
+        first_failure_l0: bool,
+        first_failure_l1: bool,
+        first_failure_l2: bool,
+        first_failure_path: [contract.max_path]u8,
+        first_failure_path_len: usize,
+        first_checker: ?engine.WorldResult,
+        first_checker_l0: bool,
+        first_checker_l1: bool,
+        first_checker_path: [contract.max_path]u8,
+        first_checker_path_len: usize,
+    };
+
+    gpa: std.mem.Allocator,
+    arena_state: *std.heap.ArenaAllocator,
+    arena: std.mem.Allocator,
+    parsed: cli.Parsed,
+    define: Define = undefined,
+    initial: engine.Snapshot = undefined,
+    rec: Recording = undefined,
+    admitted: Admission = undefined,
+    n: u32 = undefined,
+    check_argv: ?[]const []const u8 = undefined,
+    firsts: Firsts = undefined,
+};
+
 pub fn main(init: std.process.Init.Minimal) !void {
     // The baseline for `--stop-when-orphaned` (#269), read at the top of the process.
     //
@@ -535,10 +623,29 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // Before the loop, so that a parse error occurring *after* `--json` was read still
     // reaches the report rather than leaving whatever was there before.
     refuse.json_arena = arena_state.allocator();
-    const argv_parsed = cli.parse(argv);
-    const mode = argv_parsed.mode;
-    const case_arg = argv_parsed.case_arg;
-    var args = argv_parsed.args;
+    var run: Run = .{ .gpa = gpa, .arena_state = &arena_state, .arena = arena_state.allocator(), .parsed = cli.parse(argv) };
+    phaseDefine(&run);
+    phaseSetup(&run);
+    phaseApparatus(&run);
+    defer run.initial.deinit();
+    phaseRecording(&run);
+    defer run.rec.trace.deinit();
+    defer run.rec.final.deinit();
+    defer run.rec.l0_plan.deinit();
+    phaseStructural(&run);
+    phaseOracle(&run);
+    phasePreflight(&run);
+    phaseChecker(&run);
+    phaseExploration(&run);
+    phaseReport(&run);
+}
+
+/// Phase 0 of the run: The define, resolved: the replay case or the config, the flags on top, every path made absolute and vetted, the state directory created. Writes `run.define` and hands `run.parsed.args` back with the config's values in it.
+fn phaseDefine(run: *Run) void {
+    const arena_state = run.arena_state;
+    const mode = run.parsed.mode;
+    const case_arg = run.parsed.case_arg;
+    var args = run.parsed.args;
 
     // A replay's define comes from the case file itself: the counterexample's
     // identity includes what was run, not just where it was killed (ADR 0009).
@@ -849,7 +956,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     // Resolve the state directory once, so every later comparison is against one
     // spelling of the path. The shim resolves what it sees the same way.
-    var real_buf: [contract.max_path]u8 = undefined;
     var state_z_buf: [contract.max_path]u8 = undefined;
     const state_z = std.fmt.bufPrintZ(&state_z_buf, "{s}", .{state}) catch setupError(.define_invalid, "--state is too long");
     // Create the directory before resolving it, and refuse to continue if resolution
@@ -864,7 +970,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // like two views agreeing.
     const state_created = posix.mkdir(state_z.ptr, 0o755) == 0;
     const state_abs = blk: {
-        if (posix.realpath(state_z.ptr, &real_buf)) |p| break :blk std.mem.span(p);
+        if (posix.realpath(state_z.ptr, &run.define.real_buf)) |p| break :blk std.mem.span(p);
         // The errno is read first: the rmdir below issues its own syscall and would
         // overwrite it (#486).
         const why = std.c._errno().*;
@@ -1044,14 +1150,32 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // engine hands the target the resolved path; the `reproduce` line did, because there
     // the target finds its state its own way — and the result was a printed command that
     // ran to completion and changed nothing.
-    var alt_buf: [contract.max_path]u8 = undefined;
     const state_alt = blk: {
         var cwd_buf: [contract.max_path]u8 = undefined;
         const cwd = if (posix.getcwd(&cwd_buf, cwd_buf.len)) |p| std.mem.span(p) else "/";
-        const n = contract.normalizePath(&alt_buf, cwd, state) catch break :blk state_abs;
+        const n = contract.normalizePath(&run.define.alt_buf, cwd, state) catch break :blk state_abs;
         break :blk n;
     };
     const alt_differs = !std.mem.eql(u8, state_alt, state_abs);
+
+    run.parsed.args = args;
+    run.define.replay_case = replay_case;
+    run.define.only_k = only_k;
+    run.define.state = state;
+    run.define.operation = operation;
+    run.define.expect_status = expect_status;
+    run.define.shim = shim;
+    run.define.state_abs = state_abs;
+    run.define.state_alt = state_alt;
+    run.define.alt_differs = alt_differs;
+}
+
+/// Phase 1 of the run: Runs the setup command, if any, and refuses on its failure.
+fn phaseSetup(run: *Run) void {
+    const gpa = run.gpa;
+    const arena_state = run.arena_state;
+    const args = run.parsed.args;
+    const state_abs = run.define.state_abs;
 
     // ---- setup -------------------------------------------------------------------
     if (args.setup) |cmd| {
@@ -1128,6 +1252,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
         defer probe.deinit();
         if (capture.readSetupCapture(probe.allocator(), setup_out) == .empty) removeFile(setup_out);
     }
+}
+
+/// Phase 2 of the run: Checks the declared apparatus is present and takes the initial snapshot (`run.initial`).
+fn phaseApparatus(run: *Run) void {
+    const gpa = run.gpa;
+    const arena_state = run.arena_state;
+    const args = run.parsed.args;
+    const state_abs = run.define.state_abs;
 
     // ---- apparatus (ADR 0041) -----------------------------------------------------
     // After setup, which is where the cohorts generated their devices (a sitecustomize, a
@@ -1139,12 +1271,26 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // by the recording run included — carries it under the same presence rule.
     report.scratch_declared = args.scratch;
 
-    var initial = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the initial state");
+    const initial = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the initial state");
     // #5, checked before anything runs: an unreproducible entry the setup left (or
     // that predates the run) fails fast — no recording, no worlds. Nothing competes
     // with this refusal here.
     refuse.refuseUnsupportedEntry(arena_state.allocator(), initial, "present before the recording run");
-    defer initial.deinit();
+
+    run.initial = initial;
+}
+
+/// Phase 3 of the run: The recording run: the operation once, observed, its trace read back and the final state snapshotted and classified. Writes `run.rec`.
+fn phaseRecording(run: *Run) void {
+    const gpa = run.gpa;
+    const arena_state = run.arena_state;
+    const args = run.parsed.args;
+    const operation = run.define.operation;
+    const expect_status = run.define.expect_status;
+    const shim = run.define.shim;
+    const state_abs = run.define.state_abs;
+    const state_alt = run.define.state_alt;
+    const initial = run.initial;
 
     // ---- recording run -----------------------------------------------------------
     // The last snapshot that can honestly say "the define did not run" is above this
@@ -1158,15 +1304,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // by what reads it: the snapshot cap (#330) and the rewrite disposition (#363).
     refuse.run_phase = .exploring;
 
-    var rec_trace_buf: [contract.max_path]u8 = undefined;
-    const rec_trace = std.fmt.bufPrint(&rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError(.define_invalid, "path too long");
+    const rec_trace = std.fmt.bufPrint(&run.rec.rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(rec_trace);
 
     const op_argv = commandArgv(arena_state.allocator(), operation) catch setupError(.define_invalid, "--operation is empty");
     if (op_argv.len == 0) setupError(.define_invalid, "--operation is empty");
 
-    var oracle_out_buf: [contract.max_path]u8 = undefined;
-    const oracle_out = std.fmt.bufPrint(&oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
+    const oracle_out = std.fmt.bufPrint(&run.rec.oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(oracle_out);
 
     // The operation's stdout is evidence — the L1 marker is read from it (ADR 0008) —
@@ -1174,8 +1318,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // directory. Every run gets the same shape whether or not a marker is configured:
     // an isatty branch in the target must not differ between the recording run and
     // the worlds, or the recorded operation sequence describes a different execution.
-    var rec_stdout_buf: [contract.max_path]u8 = undefined;
-    const rec_stdout = std.fmt.bufPrint(&rec_stdout_buf, "{s}/stdout-record.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
+    const rec_stdout = std.fmt.bufPrint(&run.rec.rec_stdout_buf, "{s}/stdout-record.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(rec_stdout);
 
     const arena = arena_state.allocator();
@@ -1233,8 +1376,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // where `fsusage.read` can scope them, and are removed before the snapshot that
     // judges anything sees them.
     var fsu_pid: ?c_int = null;
-    var fsu_sentinel_a_buf: [contract.max_path]u8 = undefined;
-    var fsu_sentinel_b_buf: [contract.max_path]u8 = undefined;
     // Each name carries sixteen hex digits of its own entropy (#549), and both are
     // created O_EXCL. A fixed name would truncate a state file that happened to carry it
     // — and a failed handshake exits before the initial snapshot is restored, so the
@@ -1257,7 +1398,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // volume's firmlink prefix and the sentinel's own name ride on every line.
         if (state_abs.len > fsu_sentinel_max_root)
             setupError(.define_invalid, "--oracle-fs-usage cannot scope a state directory this deep: fs_usage prints pathnames with the data volume's firmlink prefix (20 bytes) and cuts long ones from the left at a display cap measured at 144, 153 and 156 bytes, and the sentinel's own name takes 40, so the state root must be 96 bytes or fewer (under a smaller cap a root over 84 passes here and is refused at the handshake or as missing_sentinel instead, never judged). Use a shorter --state path");
-        const pair = fsUsageSentinels(state_abs, &fsu_sentinel_a_buf, &fsu_sentinel_b_buf) orelse
+        const pair = fsUsageSentinels(state_abs, &run.rec.fsu_sentinel_a_buf, &run.rec.fsu_sentinel_b_buf) orelse
             setupError(.environment, "could not name the fs_usage sentinels: either getentropy refused to supply the eight bytes each name is drawn from, or the state path plus 40 bytes did not fit the path buffer; refusing to start an observer whose sentinel a target could name");
         fsu_sentinel_a = pair.a;
         fsu_sentinel_b = pair.b;
@@ -1361,11 +1502,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         report.l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
 
-    var trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
-    defer trace.deinit();
+    const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
 
-    var final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
-    defer final.deinit();
+    const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
 
     // Classified before the structural detectors, so every exit below — including the
     // UNKNOWNs — reports the classification that actually existed, not a placeholder.
@@ -1373,8 +1512,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // `scratch_declared` was published beside the apparatus check, before the recording
     // run: the plan matches on the same slice, so no rendering can name a declaration the
     // judge did not read, and a refusal raised between there and here carries it too.
-    var l0_plan = engine.classifyWith(gpa, initial, final, report.scratch_declared) catch setupError(.environment, "out of memory");
-    defer l0_plan.deinit();
+    const l0_plan = engine.classifyWith(gpa, initial, final, report.scratch_declared) catch setupError(.environment, "out of memory");
     report.l0_history_count = l0_plan.history_count;
     report.l0_note = report.buildL0Note(arena, l0_plan);
 
@@ -1382,6 +1520,25 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // of the version check below, and the two cannot both apply: a capped read returns
     // before `decodeHeader`, so `version_mismatch` is always false when `too_large` is set.
     refuse.answerForOversizedTrace(trace, "the recording run", trace_cap);
+
+    run.rec.rec_trace = rec_trace;
+    run.rec.op_argv = op_argv;
+    run.rec.oracle_out = oracle_out;
+    run.rec.rec_stdout = rec_stdout;
+    run.rec.fsu_sentinel_a = fsu_sentinel_a;
+    run.rec.fsu_sentinel_b = fsu_sentinel_b;
+    run.rec.rec_started_ms = rec_started_ms;
+    run.rec.rec_capture = rec_capture;
+    run.rec.trace = trace;
+    run.rec.final = final;
+    run.rec.l0_plan = l0_plan;
+}
+
+/// Phase 4 of the run: The structural detectors, before anything is explored: the process and thread boundary and the write account. Writes `run.admitted`.
+fn phaseStructural(run: *Run) void {
+    const args = run.parsed.args;
+    const arena = run.arena;
+    const trace = run.rec.trace;
 
     // ---- structural detectors, before exploring anything --------------------------
     //
@@ -1527,7 +1684,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // itself: a world runs without an oracle and run B's capture is written and not
     // parsed (`observeAgain` says so, and the report's `scope` line promises it). Both
     // inherit this answer and disclose that they did.
-    var children_admitted = false;
+    const children_admitted = false;
 
     // **The shim-side refusal that stood here is gone** (v15), and what replaced it is
     // one decision made where both witnesses are in hand (`childrenMayBeJudged`, called
@@ -1581,7 +1738,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // Mutable: the oracle can reveal children the shim never saw (a raw clone whose
     // child loads nothing), and every consequence of having crossed a boundary — the
     // quiescence sampling above all — must engage for those too.
-    var crossed_boundary = boundary.boundary_ev.shim_boundary;
+    const crossed_boundary = boundary.boundary_ev.shim_boundary;
     // `needsOracle`, not `crossed_boundary`, for the two requirements (v16): a thread
     // on its own arms the quiescence sampling below like any boundary, and needs no
     // second witness — its writes reach the shim, which shares its process. The
@@ -1626,6 +1783,29 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // (`TraceInfo.unrecorded_writer_thread`).
     if (trace.needsOracle() and args.oracle_fs_usage)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .class_wall);
+
+    run.admitted.children_admitted = children_admitted;
+    run.admitted.crossed_boundary = crossed_boundary;
+}
+
+/// Phase 5 of the run: The oracle comparison, and the crash points it leaves (`run.n`); may still change `run.admitted` when the oracle sees children.
+fn phaseOracle(run: *Run) void {
+    const gpa = run.gpa;
+    const args = run.parsed.args;
+    const replay_case = run.define.replay_case;
+    const state_abs = run.define.state_abs;
+    const state_alt = run.define.state_alt;
+    const alt_differs = run.define.alt_differs;
+    const initial = run.initial;
+    const rec_trace = run.rec.rec_trace;
+    const oracle_out = run.rec.oracle_out;
+    const rec_stdout = run.rec.rec_stdout;
+    const arena = run.arena;
+    const fsu_sentinel_a = run.rec.fsu_sentinel_a;
+    const fsu_sentinel_b = run.rec.fsu_sentinel_b;
+    const rec_capture = run.rec.rec_capture;
+    const trace = run.rec.trace;
+    const final = run.rec.final;
 
     // ---- oracle comparison ---------------------------------------------------------
     // The wording matters: a PASS carrying this line is making a weaker claim than one
@@ -1762,7 +1942,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 const reason = boundary.unattributedWriterReason(trace, parsed);
                 unknown(reason, boundary.withOracleCapture(arena, why, if (args.oracle != null) oracle_out else null, why), .unwrap_or_class_wall);
             }
-            children_admitted = true;
+            run.admitted.children_admitted = true;
             boundary.boundary_ev.children_judged = true;
         }
 
@@ -1830,7 +2010,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // `docs/contract-freeze.md` surface 2 says a machine field changes name before it
         // changes meaning. So the `verdict == "PASS" && oracle_verified` gate keeps
         // treating this class as unverified, which is the conservative reading.
-        if (children_admitted)
+        if (run.admitted.children_admitted)
             report.oracle_verified_subject_only = true
         else
             report.oracle_verified = true;
@@ -1884,7 +2064,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                         "is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read",
                     .{note},
                 ) catch note;
-            if (children_admitted)
+            if (run.admitted.children_admitted)
                 // The narrowing (v15). This comparison is the subject's account against
                 // the oracle's view of the subject, so a crash point performed by an
                 // awaited child is one the oracle placed and ordered and did not compare.
@@ -1910,7 +2090,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // itself needs no assignment here: the child count is in the evidence, and the
         // image disclosure rides beside it rather than having to be copied along, which
         // is what the wholesale replacement this replaced had to remember to do.
-        if (parsed.children > 0) crossed_boundary = true;
+        if (parsed.children > 0) run.admitted.crossed_boundary = true;
     }
 
     // Quiescence, observed rather than proven. A tolerated child was killed with the
@@ -1918,7 +2098,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // boundary was crossed, the final state is sampled twice and any disagreement is a
     // writer still alive. Two equal samples do not prove a future writer cannot exist;
     // the report says "observed", never "proven".
-    if (crossed_boundary) {
+    if (run.admitted.crossed_boundary) {
         var final_again = refuse.snapshotOrRefuse(gpa, state_abs, "could not re-snapshot the final state");
         defer final_again.deinit();
         if (!snapshotsEqual(final, final_again))
@@ -1987,6 +2167,29 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (!std.mem.eql(u8, after_path, rc.after_path) or !std.mem.eql(u8, before_path, rc.before_path))
             say("note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds\n", .{});
     }
+
+    run.n = n;
+}
+
+/// Phase 6 of the run: The preflight cut: in preflight mode, the verdict and the exit.
+fn phasePreflight(run: *Run) void {
+    const gpa = run.gpa;
+    const mode = run.parsed.mode;
+    const args = run.parsed.args;
+    const state = run.define.state;
+    const operation = run.define.operation;
+    const expect_status = run.define.expect_status;
+    const shim = run.define.shim;
+    const state_abs = run.define.state_abs;
+    const state_alt = run.define.state_alt;
+    const initial = run.initial;
+    const op_argv = run.rec.op_argv;
+    const arena = run.arena;
+    const rec_started_ms = run.rec.rec_started_ms;
+    const final = run.rec.final;
+    const children_admitted = run.admitted.children_admitted;
+    const n = run.n;
+
     // ---- preflight cut ------------------------------------------------------------
     //
     // Deliberately *before* the zero-op PASS branch and the exploration loop: preflight
@@ -2053,6 +2256,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
+}
+
+/// Phase 7 of the run: The checker's falsification against the recording run's own final state. Writes `run.check_argv`.
+fn phaseChecker(run: *Run) void {
+    const gpa = run.gpa;
+    const args = run.parsed.args;
+    const state_abs = run.define.state_abs;
+    const initial = run.initial;
+    const arena = run.arena;
 
     // ---- checker falsification (DESIGN §14-13) -------------------------------------
     //
@@ -2137,12 +2349,37 @@ pub fn main(init: std.process.Init.Minimal) !void {
         report.checker_note = "falsified before the run (corrupted state -> check failed)";
     }
 
+    run.check_argv = check_argv;
+}
+
+/// Phase 8 of the run: The worlds: one per crash point, restored, run again, judged. Writes `run.firsts`.
+fn phaseExploration(run: *Run) void {
+    const gpa = run.gpa;
+    const args = run.parsed.args;
+    const only_k = run.define.only_k;
+    const expect_status = run.define.expect_status;
+    const shim = run.define.shim;
+    const state_abs = run.define.state_abs;
+    const state_alt = run.define.state_alt;
+    const initial = run.initial;
+    const op_argv = run.rec.op_argv;
+    const oracle_out = run.rec.oracle_out;
+    const arena = run.arena;
+    const trace = run.rec.trace;
+    const final = run.rec.final;
+    const l0_plan = run.rec.l0_plan;
+    const children_admitted = run.admitted.children_admitted;
+    const crossed_boundary = run.admitted.crossed_boundary;
+    const n = run.n;
+    const check_argv = run.check_argv;
+    const first_failure_path = &run.firsts.first_failure_path;
+    const first_checker_path = &run.firsts.first_checker_path;
+
     // ---- exploration --------------------------------------------------------------
     var first_failure: ?engine.WorldResult = null;
     var first_failure_l0 = false;
     var first_failure_l1 = false;
     var first_failure_l2 = false;
-    var first_failure_path: [contract.max_path]u8 = undefined;
     var first_failure_path_len: usize = 0;
     // The claim exhibit (#231, ADR 0020): the earliest world whose violation
     // includes the declared checker, latched independently of the overall
@@ -2153,7 +2390,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var first_checker: ?engine.WorldResult = null;
     var first_checker_l0 = false;
     var first_checker_l1 = false;
-    var first_checker_path: [contract.max_path]u8 = undefined;
     var first_checker_path_len: usize = 0;
     var marker_worlds: u32 = 0;
     var checks_run: u32 = 0;
@@ -2549,6 +2785,42 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .{ report.checker_note, checks_run },
         ) catch report.checker_note;
     }
+
+    run.firsts.first_failure = first_failure;
+    run.firsts.first_failure_l0 = first_failure_l0;
+    run.firsts.first_failure_l1 = first_failure_l1;
+    run.firsts.first_failure_l2 = first_failure_l2;
+    run.firsts.first_failure_path_len = first_failure_path_len;
+    run.firsts.first_checker = first_checker;
+    run.firsts.first_checker_l0 = first_checker_l0;
+    run.firsts.first_checker_l1 = first_checker_l1;
+    run.firsts.first_checker_path_len = first_checker_path_len;
+}
+
+/// Phase 9 of the run: The report, text and JSON, and the exit code.
+fn phaseReport(run: *Run) void {
+    const mode = run.parsed.mode;
+    const case_arg = run.parsed.case_arg;
+    const args = run.parsed.args;
+    const only_k = run.define.only_k;
+    const shim = run.define.shim;
+    const state_abs = run.define.state_abs;
+    const state_alt = run.define.state_alt;
+    const alt_differs = run.define.alt_differs;
+    const arena = run.arena;
+    const trace = run.rec.trace;
+    const n = run.n;
+    const first_failure = run.firsts.first_failure;
+    const first_failure_l0 = run.firsts.first_failure_l0;
+    const first_failure_l1 = run.firsts.first_failure_l1;
+    const first_failure_l2 = run.firsts.first_failure_l2;
+    const first_failure_path = &run.firsts.first_failure_path;
+    const first_failure_path_len = run.firsts.first_failure_path_len;
+    const first_checker = run.firsts.first_checker;
+    const first_checker_l0 = run.firsts.first_checker_l0;
+    const first_checker_l1 = run.firsts.first_checker_l1;
+    const first_checker_path = &run.firsts.first_checker_path;
+    const first_checker_path_len = run.firsts.first_checker_path_len;
 
     // ---- report --------------------------------------------------------------------
     if (first_failure) |f| {

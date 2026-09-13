@@ -1,6 +1,6 @@
 # 0062 — main.zig is cut along measured seams, the process boundary first, and a ratchet keeps it from growing back
 
-Status: Accepted (seam 1 merged as `dbcfe7a`, 2026-09-12; amended for seam 2 the same day — see Amendments)
+Status: Accepted (seam 1 merged as `dbcfe7a`, 2026-09-12; amended for seams 2, 3 and 4, 2026-09-12..13 — see Amendments)
 
 This ADR records the series #572 asked for — one plan, several pull requests — and the
 first seam in full. Later seams amend this file when they land rather than opening one
@@ -430,3 +430,118 @@ of their bodies. What remains is the fourth seam the plan always named last: `ma
 nine phases as functions, with the twenty-three functions and one variable still here
 either the orchestrator's own or kept by decision (the surface-1 functions, the apparatus
 check, the observer's start, the demo, `preflightReport`).
+
+### Seam 4 — `main()`'s phases become functions, over one `Run` (2026-09-13)
+
+Re-measured at `a7f6d65` before the cut. `main()` was lines 401–2,767 of `src/main.zig`,
+2,367 lines, with nine banners of the form `// ---- <name> ---` at brace depth one — setup,
+apparatus, the recording run, the structural detectors, the oracle comparison, the preflight
+cut, the checker falsification, the exploration, the report — and, before the first banner,
+654 lines that resolve the define (the replay case or the config, the flags on top, the
+`resolve*` calls, the state and `--work` vets, the MCP confinement, the destructive-root vet,
+`--fresh-state`, `state_alt`). That prologue is 28% of the function and is the tenth
+function, `phaseDefine`; the allocators, the trace budget, the four branches before parsing
+(`mcp`, `help`, `version`, `<mode> --help`, `demo`) and the call to `cli.parse` stay in
+`main()`, because the `return` and the `std.process.exit` calls they hold would mean
+something else inside a function.
+
+A script measured what crosses each banner, with comments, string literals and char literals
+blanked — the first pass without the last two read `budget` and `argv` as inputs of two
+phases from the words inside refusal messages, and the checker's `n` from `'\n'`, the same
+trap seam 3a's extractor fell into. Each phase reads these many values declared by earlier
+phases: setup 4, apparatus 4, recording 9, structural 3, oracle 18, preflight 16, checker 5,
+exploration 18, report 22; the define declares 14 for the rest, the recording 12, the
+exploration 11. Two values are written by a phase other than the one that declared them —
+`children_admitted` and `crossed_boundary`, set by the structural detectors and changed by
+the oracle comparison, which reads them again afterwards. Six depth-one `defer`s: the two
+allocators' (they stay) and the `deinit`s of `initial`, `trace`, `final` and `l0_plan`,
+resources later phases read; every exit of `main()` after those four is a
+`std.process.exit`, which does not unwind, so they never ran and never will, and they are
+`main()`'s now, after the calls, in their order. No phase holds `try` or `errdefer`; the
+phase functions return `void`. Seven buffers whose slices cross a banner, plus the two
+`first_*_path` arrays with their lengths.
+
+**The decision.** Ten functions `phaseDefine` … `phaseReport`, each `fn (run: *Run) void`
+— one argument, which is how the plan's rule ("a phase asking for five or more arguments
+goes back to design") is met when even setup reads four values and the report twenty-two.
+`Run` is one struct, pinned in `main()`'s frame, grouped by the phase that writes each part:
+what `main()` places (`gpa`, `arena_state` as a pointer — a copy of an `ArenaAllocator` hands
+out an allocator pointing into the copy — its allocator, and `cli.parse`'s `Parsed` as it is,
+rather than three fields re-declaring it), then `define`,
+`initial`, `rec`, `admitted`, `n`, `check_argv`, `firsts`; the buffers are fields, because
+`define.state_abs` and `rec.rec_trace` are slices into them and would dangle otherwise. The
+phases are `main.zig`'s: they are the orchestrator's body and nothing else calls them, and
+moving them to a file of their own to spare a ratchet number would have moved the
+orchestrator out of the file this ADR's sentence is about — the same shape seam 3b refused
+for `stop_when_orphaned`.
+
+**Seven kinds of edit that are not moves, each declared, counted by the identity check**
+(`phasecheck.py`, kept with the session's working files rather than in the tree — its output
+is recorded in BUILDLOG; run per phase, red on any line outside the seven, and, since the
+diff review, red on an alias or a store wired to a field of another name — the shapes alone
+let `const state_abs = run.define.state_alt;` through, and so would Zig; seen red on both
+before it was believed. `main()` and `Run` are new lines and are read, not checked). (1) Aliases at the top of each phase for
+its inputs, `const state_abs = run.define.state_abs;` — 103 lines (the alias block is the
+record of what a phase reads; a `Reads:` line above each function said the same and was
+dropped by the cleanup pass); a copy of an
+`engine.Snapshot`, `TraceInfo`, `L0Plan` or `CaptureObservation` reads the same as the
+by-value passes the body already makes, and the design review confirmed no method on them
+takes `*self` but the three `deinit`s, which are `main()`'s. `arena_state` is aliased as the
+pointer it is; the two path arrays are aliased as pointers in the exploration and the report,
+so nothing copies 4 KiB and the exploration's `@memcpy` writes the field in place. (2)
+`run.admitted.` in front of the two flags on the five oracle-phase lines that write and
+re-read them — an alias would be a stale copy, the reason seam 3a spelled module variables
+with their module. (3) One store per output at the end of its phase, 36 lines at the seam, one field per
+line: a struct literal for a group would refill its buffer fields and overwrite what the
+group's own slices point at (the design review's one Critical); 35 after the cleanup pass
+moved `arena` to what `main()` places. (4) The buffers: nine
+declarations become fields, six use lines spell them through `run`. (5) The four `defer`s
+moved to `main()`. (6) `var` → `const` on six lines — the four resources, once their `deinit`
+left, and the two flags, written only by the next phase — because Zig refuses a local `var`
+that is never mutated; this kind was not in the design and was found by the first build.
+(7) `phaseDefine` takes `args` as a mutable alias and stores it back, since the replay and
+`--config` paths write into it; acceptance reaches that store through its `--config` legs
+and its `replay` invocations. `main()` itself is 153 lines: what it kept, the `Run`
+initialiser, ten calls and four `defer`s. The parameter is named `run` because `r` is a local
+of the oracle phase and Zig does not shadow.
+
+**The header.** Its first sentence counts the define. Its second — "`src/main.zig` is the
+orchestrator and nothing else", declared FALSE while the series ran — is true as of this seam
+in the words the plan's property uses: every boundary #572 names other than the
+orchestration of a run lives in a module whose header states its contract, and this file
+holds none of their bodies. What the file holds besides `main()`, `Run` and the phases —
+twenty-two functions, each called from `main()`, from a phase, or from another of them (`isHex16` from its own test alone; the second review of the diff found the first wording, "only from `main()` or from a phase", false for twelve of them) — is named at the end
+of the header, every one, by what it is for; the diff review found the first version named
+seven and said "named here" of all. By decision, with the reason recorded at the seam that
+kept it: surface 1's five (`splitArgs`, `commandArgv`, `resolvePathAgainst`,
+`resolveCommandAgainst`, `resolveCommand` — the freeze audit's rung 1 reads them out of
+this file), the apparatus check and its four helpers (seam 3a: the define's verification is
+setup's), the observer's start and its two (seam 3a: it registers in `refuse.fsu_live`), the
+demo and its two, and `preflightReport` (seam 3a: the preflight's verdict is the
+orchestrator's). The phases' own helpers, which nothing else could own: `undoSetupMkdirs`,
+`runOperationObserved`, `recordingCapture`, `observeAgain`, `snapshotsEqual`. The sentence
+was corrected to what is measured, not weakened — the
+property it stands for is the one seam 1 wrote into this ADR's Decision. #572 closes with
+this seam.
+
+**Ratchet**: 23 → 33 functions, 1 variable unchanged — the one time the function ceiling
+went up. The script's comment and sunset named "`main()` and its phases" as the end state
+from the first seam; the rise is exactly the ten phases, `Run`'s fields count for nothing,
+and its sentence now reads that the ceiling came down through the seams, was set once at
+the fourth to the count the phases made, and only comes down from there. The sunset's first
+clause ("`main()` and its phases and nothing else") is not met, because of the functions
+kept by decision, and the second — a ceiling unmoved for six months — was written for a
+series that stalls and means the opposite once the series closes; the sunset is one clause
+now: delete it after six months in which no pull request went red against it, keep it while
+one has (the diff review asked what the guard is for after the series, and that is the
+answer — a red is its evidence; its record is one line in BUILDLOG, since Actions logs expire
+before six months).
+**Test roots** 16, the main root 310, the total 1,662, all unchanged: no test moved.
+**Exits** in `main.zig` unchanged. **Acceptance**: the container fails `main`'s twelve legs and no other, passes 343, and not one `ok` line differs from seam 3b's last run; the `unattributedWriterReason(trace, parsed)` grep reads 1. `main.zig` is
+4,065 lines (was 3,793; the prediction was about 4,050; 4,070 before the reviews' and the cleanup pass's edits).
+
+**Done.** The series #572 asked for is complete: eight boundaries in modules of their own,
+the orchestration as ten functions over a named state, and a ratchet that says where the
+next declaration goes. The measurement the issue names as the proof — a later product change
+being more local than it would have been — is taken from here on, at the first change that
+adds a report field or a refusal.
