@@ -154,6 +154,21 @@ header read as covering the PASS and FAIL exits too, and now says "none of the f
 `refuse.zig` is 957 lines after its header grew, not 955; the fixtures are forty-three, the
 forty-five counted the ledger and its generator with them. No third round.
 
+**CI, first run (`e959159`)**: fourteen jobs green, `macos` red — in `src/posix.zig`, which this
+change does not touch: the #469 test "a hard link at an exclusive capture path is refused
+too, and /dev/null still works" failed its last assertion, `slurp(cap_z)` reading `"hello"`
+after `runChildImplWithOps(…, FakeWait)`, and only under the `mcp.zig` root (32 of 33); the
+`posix.zig` root ran the same test green in the same job, and so did the other seven roots
+that collect it. The fixture's path is pid-unique (`/tmp/sideeye-capture-excl-<pid>`), so
+this is not the fixed-path race of #28. `FakeWait` is a test double for the wait, and the
+assertion reads the capture the real child wrote, so the suspect is the parent reading
+before the child's write landed — a timing race that CI load makes more likely, and this
+change added two roots that run the test concurrently (seven to nine). Locally the full
+suite passed three times in a row after the failure; `main`'s last thirty CI runs hold no
+failure. Recorded rather than fixed here, by the repository's own rule: a test that has
+flaked CI twice is fixed before anything else merges, and this is the first. The owner chose
+to rerun and merge on green; the record is in this paragraph and the pull request.
+
 ## 2026-09-12 (fifth) — the capture readers leave main.zig; the CLI stays, because its parse loop writes report state in an order a test pins (#572, second seam)
 
 ADR 0062 says each seam is re-measured before it is cut, so this entry opens with the
