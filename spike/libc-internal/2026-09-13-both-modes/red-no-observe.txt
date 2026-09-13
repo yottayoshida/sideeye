@@ -1,0 +1,45 @@
+engine:  sideeye 1.3.0 (trace contract v16)
+commit:  unknown
+script:  a96b8a1367e1c49c4c2c5d874bd19340e7043494faf33576cac428ff5bdfb3e2  spike/measure-libc-internal.sh
+libc:    ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+compiler: gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+toy:     b91f317f082e25bcf55db1287d912ee860c7c87c583e745e347b2e174e3e38e8  spike/toys/toy_mkstemp.c
+arch:    aarch64
+modes:   wrappers syscalls
+
+ok   mkstemp    wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkstemp    syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkostemp   wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkostemp   syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkstemps   wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkstemps   syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkostemps  wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkostemps  syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkdtemp    wrappers judged (crash points 1, oracle agreed on 1)
+ok   mkdtemp    syscalls judged (crash points 1, oracle agreed on 1)
+ok   dprintf    wrappers wall
+MISMATCH dprintf (syscalls): declared judged, measured wall
+     | UNKNOWN  oracle_missed_operation
+     |          the oracle saw a state-directory operation the shim did not record; divergence at operation 2: the oracle saw: 384   write(3</tmp/libc-internal/state/log.txt>, "rotated to 2\n", 13) = 13; the shim's account ends after 1 operation(s)
+     | next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+     | divergence  write
+     | 
+     | atomicity   1 path(s) judged pre-or-post
+ok   dprintfbig wrappers wall
+MISMATCH dprintfbig (syscalls): declared judged, measured wall
+     | UNKNOWN  oracle_missed_operation
+     |          the oracle saw a state-directory operation the shim did not record; divergence at operation 2: the oracle saw: 432   write(3</tmp/libc-internal/state/log-big.txt>, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"..., 1048576) = 1048576; the shim's account ends after 1 operation(s)
+     | next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+     | divergence  write
+     | 
+     | atomicity   1 path(s) judged pre-or-post
+ok   tmpfile    wrappers inert
+ok   tmpfile    syscalls inert
+
+MISMATCH split: crash points not both measured under --observe syscalls (dprintf -, dprintfbig -)
+MISMATCH each write (dprintf): not both measured under --observe syscalls (crash points -, oracle agreed on -)
+MISMATCH each write (dprintfbig): not both measured under --observe syscalls (crash points -, oracle agreed on -)
+ok   contract  the five replacements answer what libc answers (25 cases)
+
+measured 16 runs (8 members in 2 modes) plus the split, each write and the contract differential, 5 did not match
+run rc=1

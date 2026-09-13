@@ -1,0 +1,4 @@
+libc: ldd (Debian GLIBC 2.36-9+deb12u14) 2.36  arch: aarch64  toy: b91f317f082e25bcf55db1287d912ee860c7c87c583e745e347b2e174e3e38e8
+dprintf rc=0: 1 write(s) to fd 3; byte counts, first three and last: 13 ... 13
+dprintfbig rc=0: 2 write(s) to fd 3; byte counts, first three and last: 1048576 1 ... 1
+log-big.txt size: 1048577

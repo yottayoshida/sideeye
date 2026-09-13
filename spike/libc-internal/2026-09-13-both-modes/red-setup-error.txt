@@ -1,0 +1,14 @@
+engine:  sideeye 1.3.0 (trace contract v16)
+commit:  unknown
+script:  5743b512fc5e7bf6d3965d60a1999fa02d8e8d15328bc9fdd13c14799f101ce8  spike/measure-libc-internal.sh
+libc:    ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+compiler: gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+toy:     b91f317f082e25bcf55db1287d912ee860c7c87c583e745e347b2e174e3e38e8  spike/toys/toy_mkstemp.c
+arch:    aarch64
+modes:   wrappers syscalls
+
+ok   mkstemp    wrappers judged (crash points 4, oracle agreed on 4)
+BROKEN: mkstemp (syscalls): the engine did not run (exit 3)
+run rc=2
+---- the engine output that was classified:
+SETUP ERROR  --observe syscalls was asked for and the shim's filter installation was refused inside the target's own process, although this kernel accepts SECCOMP_RET_TRAP. A target that drops privileges or clears PR_SET_NO_NEW_PRIVS reaches this; --observe wrappers does not need a filter

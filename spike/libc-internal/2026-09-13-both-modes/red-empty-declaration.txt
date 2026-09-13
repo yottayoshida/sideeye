@@ -1,0 +1,12 @@
+engine:  sideeye 1.3.0 (trace contract v16)
+commit:  unknown
+script:  77ede4c6d458c412961ae09b015395c3e3a3fa29cbf8df4cb75698492c48de94  spike/measure-libc-internal.sh
+libc:    ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+compiler: gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+toy:     b91f317f082e25bcf55db1287d912ee860c7c87c583e745e347b2e174e3e38e8  spike/toys/toy_mkstemp.c
+arch:    aarch64
+modes:   wrappers syscalls
+
+
+BROKEN: measured 0 runs, wanted 16 (the toy's 8 members in 2 modes) — the declared list did not drive the loop
+run rc=2
