@@ -3,7 +3,7 @@
 
 Usage: check-report-schema.py <schema.md> <contract.zig> <report.zig> <report.json>...
 
-Five claims, each enforced:
+Six claims, each enforced:
   1. every field present in any given report is documented (a table row whose
      first cell backticks the field name);
   2. every documented field appears in at least one given report — a row that
@@ -12,7 +12,10 @@ Five claims, each enforced:
      the same for setup_error_reason (#518), the second closed set;
   4. the contract version the doc names is the one the code speaks;
   5. every prose value the JSON report carries is read from the same place the text
-     report reads it, never built again inside the JSON writer (#280).
+     report reads it, never built again inside the JSON writer (#280);
+  6. the envelope's schema_status is "frozen": the doc's one `"schema_status": "<value>"`
+     anchor says so, the envelope table's row says the same, and every given report
+     carries it (#565).
 
 The verdict coverage itself is asserted too: the given reports must include all
 four verdicts, or the reverse direction would go vacuously green for the
@@ -147,10 +150,47 @@ def main():
                 problems.append("buildJson builds a value inline where the text report "
                                 "reads a shared one: jsonString(..., %s)" % arg.strip())
 
+    # Claim 6 (#565). `schema_status` is the one envelope field whose documented content
+    # is a literal, and no claim above reads a field's value. From v1.0.0 through v1.3.0
+    # the code wrote "experimental" and this page documented "experimental": they agreed
+    # with each other and disagreed with docs/contract-freeze.md, which declares the
+    # schema frozen (surface 2). Comparing the page with the reports alone would have been
+    # green on every one of those tags, so the value is held to the freeze as well — it
+    # must be "frozen". Moving it is a change to a frozen machine field, and an edit to the
+    # literal below is where that gets decided rather than drifting past.
+    #
+    # The anchor is the page's own sentence, required and single-valued for claim 4's
+    # reason — a check keyed on prose that gets reworded has to fail rather than stop
+    # reading — and the envelope table's row must open with the same value. The page
+    # writes the value's history without the key, so history is never a second anchor.
+    FROZEN = "frozen"
+    status_anchor = sorted(set(re.findall(r'`"schema_status": "([^"`]*)"`', md)))
+    status_doc = status_anchor[0] if len(status_anchor) == 1 else None
+    if status_doc is None:
+        problems.append("schema_status anchor: the doc must state `\"schema_status\": "
+                        "\"<value>\"` with exactly one value; found %s"
+                        % (", ".join(status_anchor) or "none"))
+    else:
+        if status_doc != FROZEN:
+            problems.append("schema_status: the doc states %r, and docs/contract-freeze.md "
+                            "declares the report schema frozen (surface 2), so the value is %r"
+                            % (status_doc, FROZEN))
+        row = re.search(r'^\| `schema_status` \|[^|]*\|[^|]*\| `"([^"`]*)"`', md, re.M)
+        if not row:
+            problems.append("schema_status row: the envelope table's row does not open its "
+                            "meaning with the value")
+        elif row.group(1) != status_doc:
+            problems.append("schema_status row: the table says %r where the anchor says %r"
+                            % (row.group(1), status_doc))
+        carried = sorted({str(r.get("schema_status")) for r in reports})
+        if carried != [status_doc]:
+            problems.append("schema_status drift: the doc states %r, the reports carry %s"
+                            % (status_doc, ", ".join(repr(c) for c in carried)))
+
     if problems:
         sys.exit("; ".join(problems))
-    print("schema page, %d reports (all four verdicts), the contract enum, and "
-          "buildJson's %d shared values agree" % (len(reports), len(calls)))
+    print("schema page, %d reports (all four verdicts), the contract enum, schema_status "
+          "%r, and buildJson's %d shared values agree" % (len(reports), status_doc, len(calls)))
 
 
 if __name__ == "__main__":

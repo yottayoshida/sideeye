@@ -4,16 +4,25 @@ Every `--json` run writes exactly one JSON document. This page documents that
 document field by field — for the coding agents DESIGN §3 names as the report's
 audience, and for anyone wiring the exit codes into CI.
 
-**Stability**: the document says so itself — `"schema_status": "experimental"`.
-Until v1.0 any release may change this schema without apology; at v1.0 it
-freezes (PRD, versioning philosophy). What is stable *now* is the meaning of
-the fields below, the verdict/exit-code pairing, and the promise that a field
-never silently changes meaning — it would change name instead.
+**Stability**: the document says so itself — `"schema_status": "frozen"`. The
+report schema is one of the five surfaces `docs/contract-freeze.md` declares
+frozen at the v1.0 tag (surface 2), and that page, not the version number, is
+where its compatibility is promised: a change the page does not allow is a
+breaking change whichever release carries it. The page allows a new optional
+field — so a consumer must tolerate fields it does not know — and better prose in
+the account fields, never a change to their presence. It does not allow a
+documented field to disappear or change meaning — a field would change name
+instead — or a closed set such as `unknown_reason` to gain a member; each time one
+of those has happened it was ruled on its own and recorded on that page. Every tag
+through v1.3.0 wrote `"experimental"` in this field, the value the tag was meant to
+turn over and did not (#565); the move to `"frozen"` is recorded there as the
+fourth break of surface 2.
 
 This page is held to the code by an acceptance check: every field that appears
 in a generated report must be named here, and every field named here must
 appear in a generated report. A field added to one side without the other goes
-red in CI.
+red in CI. The value of `schema_status` is held too: to the sentence above, to
+the table's row, and to `"frozen"`.
 
 ## The envelope
 
@@ -24,7 +33,7 @@ is removed at startup, so a report at the path always describes *this* run.
 | Field | Type | Always | Meaning |
 |---|---|---|---|
 | `schema` | string | yes | The literal `"sideeye/report"`. Reject anything else before reading further. |
-| `schema_status` | string | yes | `"experimental"` until the v1.0 freeze. |
+| `schema_status` | string | yes | `"frozen"`: the schema froze at the v1.0 tag (`docs/contract-freeze.md`, surface 2). Tags through v1.3.0 wrote `"experimental"` (#565). |
 | `contract_version` | int | yes | The trace contract the binary speaks (v17 today). Crash-point numbering does not carry across contract versions; a saved case from another version replays as `case_no_longer_applies`, never as a verdict. |
 | `verdict` | string | yes | `"PASS"`, `"FAIL"`, `"UNKNOWN"`, or `"SETUP_ERROR"`. The one field everything else hangs off. |
 | `exit_code` | int | yes | Mirrors the verdict: 0 PASS / 1 FAIL / 2 UNKNOWN / 3 SETUP_ERROR. The process exits with the same value. |
@@ -153,8 +162,7 @@ the version moved because the recorded account did, not the vocabulary):
 `state_not_quiescent`, `unsupported_state_entry`, `state_changed_unaccounted`,
 `trace_budget_exhausted`.
 
-A new refusal joins this list in the change that introduces it, and the
-acceptance check above holds this page to that.
+A member added after the v1.0 tag is a break of surface 2: each needs its own owner ruling, none licenses the next, and `docs/contract-freeze.md` records every one; whichever change adds one, the acceptance check above holds this page to the enum.
 
 **`faccessat2` and `epoll_ctl` on the state directory are read as reads** — a
 permission query, and an event loop registering a descriptor — not refused as

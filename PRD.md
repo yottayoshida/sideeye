@@ -1,7 +1,7 @@
 # Sideeye PRD — v0.1 to v1.0
 
 **Status:** active roadmap
-**Last updated:** 2026-08-23
+**Last updated:** 2026-09-13
 
 [DESIGN.md](DESIGN.md) says what Sideeye is. This document says in what order it becomes real, what each milestone must prove, and what v1.0 promises. Milestones are ordered by risk: the assumption most likely to kill the project is always the next one tested.
 
@@ -15,7 +15,7 @@
 - replay compatibility for saved cases,
 - the MCP surface (tool names, input schemas, the isError rule — added by decision in the freeze audit, 2026-08-13).
 
-Until 1.0, any release may break any of these without apology. After 1.0, breaking them is a 2.0. The normative declaration of all five surfaces is [docs/contract-freeze.md](docs/contract-freeze.md).
+Before the v1.0 tag, any release could break any of these. Since the tag, a change [docs/contract-freeze.md](docs/contract-freeze.md) — the normative declaration of all five surfaces — does not allow is a breaking change whichever version carries it: the version number does not record it, each is ruled on its own and licenses no other, and that page records each one (ADR 0064).
 
 ## Milestones
 

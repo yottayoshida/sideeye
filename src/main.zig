@@ -210,11 +210,13 @@ const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 /// Everything that can fail about the observer fails *here*, before the first child of
 /// the measured run exists: the credential check, the launch, and the proof that the
 /// capture is live. That placement is not a preference — `docs/contract-freeze.md`
-/// closes the `unknown_reason` set until 2.0, so a new way to fail that arrives after
-/// the recording has begun has no honest name to refuse under, and refusing here means
-/// it never needs one. (Two earlier revisions of this paragraph misattributed its
-/// warrant: first to the freeze page's surface 3, which fixes which code a verdict
-/// carries and says nothing about phase — caught by a reader, #406 follow-up — and then
+/// closes the `unknown_reason` set: a member added after the v1.0 tag is a breaking
+/// change that needs its own ruling, so a new way to fail that arrives after the
+/// recording has begun has no name to refuse under until a ruling gives it one, and
+/// refusing here means it never needs one. (Two earlier revisions of this paragraph
+/// misattributed its warrant: first to the freeze page's surface 3, which fixes which
+/// code a verdict carries and says nothing about phase — caught by a reader, #406
+/// follow-up — and then
 /// to DESIGN's exit-code table reading "before exploration began", which #469 corrected
 /// after finding the code had never matched it. The reason that survives both is the
 /// frozen reason set, which is about naming rather than about phase.)
@@ -3275,8 +3277,8 @@ fn observeAgain(
     // it matters: a second run that failed says nothing about repeatability, and
     // comparing its wreckage against a successful run would report the failure as a
     // split. `recording_run_failed` is the existing member for "the run this account
-    // rests on did not complete" — no new closed-set name, which the v1.0 freeze
-    // forbids until 2.0.
+    // rests on did not complete" — no new closed-set name, which after the v1.0 tag
+    // would be a breaking change (`docs/contract-freeze.md`, surface 2).
     switch (term) {
         // 126 first, for the reason the recording run's own check gives: the stub's code.
         .exited => |code| if (code == 126 and code != expect_status)
