@@ -759,7 +759,7 @@ def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions):
     L.append("")
     L.append("#### macOS column (derived, not measured)")
     L.append("")
-    L.append("Formula (mechanism: `requireCompleteness`, src/main.zig — no oracle exists on macOS,")
+    L.append("Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists on macOS,")
     L.append("so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own")
     L.append("evidence and is unchanged; a Linux UNKNOWN is not re-derived):")
     for group in ("A", "B"):
