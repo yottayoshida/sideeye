@@ -1,6 +1,6 @@
 # Sideeye — Design Document
 
-**Status:** implemented and released through v0.13.0; the v1.0 contract freeze is tracked in [PRD.md](PRD.md)
+**Status:** implemented and released; the five surfaces frozen at v1.0 are declared in [docs/contract-freeze.md](docs/contract-freeze.md)
 **Name:** Sideeye (confirmed 2026-08-10)
 **Tagline:** *Sideeye doesn't believe it.*
 **Initial focus:** process crash × persistent state consistency

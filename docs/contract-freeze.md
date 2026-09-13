@@ -5,13 +5,24 @@ the v1.0 tag. It was written by the contract-freeze audit (#86,
 `docs/freeze-audit.md`) and moved here because the audit page retires at
 the tag while the promise does not — a freeze whose only home is a retired
 page is a freeze nobody can read. Before v1.0, all of these may change in
-any release (the CHANGELOG's standing header says so); the tag flips that
+any release (the CHANGELOG's standing header said so until it was rewritten for #566); the tag flips that
 sentence — from then on, changing any of them is a breaking change.
 
 The audit that preceded this declaration — every open issue classified
 against these surfaces, every toucher fixed or documented before the
 freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
 2026-08-18) — is recorded with its adjudications on the audit page.
+
+**What the version number records, and what it does not** (ADR 0064). A change
+this page does not allow is a breaking change whichever release carries it, and
+the version number does not record one: the owner ruled on 2026-09-04 that the
+release carrying the first two breaks below is `v1.1.0`, not `v2.0.0`, and that
+ruling is about what the number is for, not a reading under which a break stops
+being one. Each break is ruled on its own and recorded in its surface's
+paragraph; none is a precedent that permits the next. `CHANGELOG.md`'s standing
+header points here for that reason — compatibility is promised by this page,
+not by the number — and nothing outside what this page names is promised to
+stay the same.
 
 ## The five surfaces
 
@@ -131,6 +142,22 @@ freeze, twice (the original sweep 2026-08-17, the pre-tag re-sweep
    unchanged** — a fourth ruling would be its own, and three is no more a pattern
    than two was. Its ledger row is a sweep's job for the reason the note above
    gives.
+
+   **Amended 2026-09-13: broken a fourth time, by owner ruling — and this one
+   changes a machine field's value.** `schema_status` reads `"frozen"` where
+   every tag through v1.3.0 wrote `"experimental"` (#565, ADR 0064).
+   `docs/report-schema.md` had documented the old value "until the v1.0 freeze",
+   which reads as though turning it over only keeps a promise the tag forgot. It
+   is recorded here as a break all the same: a consumer who read the field at
+   those tags sees a field whose documented content was a literal change that
+   literal — not a number the schema documents as moving, the way surface 4 expects
+   `contract_version` to — and an announcement no more stops a break from being one
+   than a ruling does. The code
+   and the schema page agreed on the old value at every one of those tags, so no
+   comparison between the two could have noticed; `spike/check-report-schema.py`
+   now holds the value to this page's declaration (claim 6: it must be `"frozen"`).
+   **The rule is unchanged** — a fifth ruling would be its own, and four is no more
+   a pattern than three was. Its ledger row is a sweep's job, as the notes above give.
 
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.

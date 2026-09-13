@@ -771,8 +771,8 @@ pub const UnknownReason = enum {
     /// operation's spawn carries a budget — a recording run, a setup command or a
     /// checker that hangs still hangs, and the flag's help text says so — but this set
     /// freezes at 1.0 while the mechanism does not, so a member named for worlds would
-    /// become a lie the day a 1.x release budgets the recording run, with no new name
-    /// available until 2.0. `child_*` is the family it joins.
+    /// become a lie the day a 1.x release budgets the recording run, and a new name
+    /// then would be a breaking change. `child_*` is the family it joins.
     ///
     /// What the refusal does NOT claim: that the child is gone. SIGKILL was sent, not
     /// observed delivered: the reap runs under a bounded grace, and a child in

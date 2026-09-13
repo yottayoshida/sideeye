@@ -895,8 +895,9 @@ fn apparatusNote(arena: std.mem.Allocator) []const u8 {
 /// value both forms carry has one definition, which is why every `jsonString` below reads
 /// a shared note rather than formatting one again.
 ///
-/// Hand-written rather than derived from a type: the schema is explicitly experimental
-/// until v1.0, and generating it would suggest a stability this release does not offer.
+/// Hand-written rather than derived from a type. That the fields it writes are the fields
+/// `docs/report-schema.md` documents — and that `schema_status` carries the value that page
+/// states — is held by `spike/check-report-schema.py` against reports this code produced.
 ///
 /// `std.json.Stringify.encodeJsonString` was the obvious alternative and does not fit.
 /// Its default options pass bytes 0x80–0xFF through unchanged — the same defect this
@@ -1047,7 +1048,7 @@ fn buildJson(
     const w = &buf;
     var nb: [16]u8 = undefined;
 
-    try w.appendSlice(arena, "{\n  \"schema\": \"sideeye/report\",\n  \"schema_status\": \"experimental\",\n");
+    try w.appendSlice(arena, "{\n  \"schema\": \"sideeye/report\",\n  \"schema_status\": \"frozen\",\n");
     try w.appendSlice(arena, "  \"contract_version\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}));
     try w.appendSlice(arena, ",\n  \"verdict\": ");
