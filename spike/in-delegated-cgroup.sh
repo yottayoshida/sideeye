@@ -17,9 +17,10 @@
 #   in-delegated-cgroup.sh --dropped <cmd>...            the user, in the scope: probe, then exec
 #
 # Needs systemd as PID 1, passwordless sudo that honours -E, and setpriv (util-linux): what
-# GitHub's ubuntu runners have. The last two stages were exercised in a privileged container as
-# root handing over to an unprivileged user; the first stage has not run anywhere yet and is the
-# runner's to measure — acceptance check 2cg is what goes red if the suite it wraps contains nothing.
+# GitHub's ubuntu runners have. All three stages ran on the runner on #559's pull request — the
+# suite as uid 1001 in a delegated `system.slice/run-*.scope` — and the last two were also run by
+# hand in a privileged container, root handing over to an unprivileged user. Acceptance check 2cg
+# is what goes red if the suite this wraps contains nothing.
 set -eu
 
 self=$0
