@@ -1,0 +1,9 @@
+runs: 20 given, 20 valid; kill-point calls not read over all of them: 0 unparsed, 0 unplaced
+all   (m) 8 multiset(s)  (o) at most 5 order(s) within one, 20 in all  (g) 20 grouping(s)  (b) strong in 20/20 runs, pairs {'0.25ms': 50, '0.5ms': 48, '1ms': 20}  weak pairs 113  op counts [(80, 4), (81, 2), (82, 3), (83, 3), (84, 5), (85, 1), (86, 1), (87, 1)]  threads [(4, 20)]
+log   (m) 8 multiset(s)  (o) at most 1 order(s) within one, 8 in all  (g) 20 grouping(s)  (b) strong in 0/20 runs, pairs {'0.25ms': 0, '0.5ms': 0, '1ms': 0}  weak pairs 0  op counts [(54, 4), (55, 2), (56, 3), (57, 3), (58, 5), (59, 1), (60, 1), (61, 1)]  threads [(4, 20)]
+rest  (m) 1 multiset(s)  (o) at most 1 order(s) within one, 1 in all  (g) 8 grouping(s)  (b) strong in 0/20 runs, pairs {'0.25ms': 0, '0.5ms': 0, '1ms': 0}  weak pairs 0  op counts [(26, 20)]  threads [(4, 20)]
+rest  (c) turns 114, after the previous thread exited 0; writers exited before REST's last operation 0
+io_uring lines: {'io_uring_setup=EPERM': 60}
+branch: T1 (ALL: threads write at the same time)
+branch: T2 (REST: same operations, same order, no strong overlap)
+both T1 and T2: the logger-off probe (step 6) is required before the #539 question

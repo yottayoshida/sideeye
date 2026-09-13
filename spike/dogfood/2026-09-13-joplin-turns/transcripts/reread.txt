@@ -1,0 +1,33 @@
+# The twenty captures of transcripts/run.txt, read again with the reader as changed after review.
+# run.txt's own readings came from turns.py 1f1095e271f250194c2aa89c5062a15a49902833468c2cc34aec29e6ee35270c;
+# these from turns.py f27b94a1d30732f0eb9a1dd56cbb7b1ec60f2c9235d1d5e28b16889590e57c2a (python3 3.14.7, on the host).
+run-01.json: valid True, unparsed 0, unplaced 0
+run-02.json: valid True, unparsed 0, unplaced 0
+run-03.json: valid True, unparsed 0, unplaced 0
+run-04.json: valid True, unparsed 0, unplaced 0
+run-05.json: valid True, unparsed 0, unplaced 0
+run-06.json: valid True, unparsed 0, unplaced 0
+run-07.json: valid True, unparsed 0, unplaced 0
+run-08.json: valid True, unparsed 0, unplaced 0
+run-09.json: valid True, unparsed 0, unplaced 0
+run-10.json: valid True, unparsed 0, unplaced 0
+run-11.json: valid True, unparsed 0, unplaced 0
+run-12.json: valid True, unparsed 0, unplaced 0
+run-13.json: valid True, unparsed 0, unplaced 0
+run-14.json: valid True, unparsed 0, unplaced 0
+run-15.json: valid True, unparsed 0, unplaced 0
+run-16.json: valid True, unparsed 0, unplaced 0
+run-17.json: valid True, unparsed 0, unplaced 0
+run-18.json: valid True, unparsed 0, unplaced 0
+run-19.json: valid True, unparsed 0, unplaced 0
+run-20.json: valid True, unparsed 0, unplaced 0
+20 of 20 readings identical to the first reader's apart from the two new counts; differing: none
+runs: 20 given, 20 valid; kill-point calls not read over all of them: 0 unparsed, 0 unplaced
+all   (m) 8 multiset(s)  (o) at most 5 order(s) within one, 20 in all  (g) 20 grouping(s)  (b) strong in 20/20 runs, pairs {'0.25ms': 50, '0.5ms': 48, '1ms': 20}  weak pairs 113  op counts [(80, 4), (81, 2), (82, 3), (83, 3), (84, 5), (85, 1), (86, 1), (87, 1)]  threads [(4, 20)]
+log   (m) 8 multiset(s)  (o) at most 1 order(s) within one, 8 in all  (g) 20 grouping(s)  (b) strong in 0/20 runs, pairs {'0.25ms': 0, '0.5ms': 0, '1ms': 0}  weak pairs 0  op counts [(54, 4), (55, 2), (56, 3), (57, 3), (58, 5), (59, 1), (60, 1), (61, 1)]  threads [(4, 20)]
+rest  (m) 1 multiset(s)  (o) at most 1 order(s) within one, 1 in all  (g) 8 grouping(s)  (b) strong in 0/20 runs, pairs {'0.25ms': 0, '0.5ms': 0, '1ms': 0}  weak pairs 0  op counts [(26, 20)]  threads [(4, 20)]
+rest  (c) turns 114, after the previous thread exited 0; writers exited before REST's last operation 0
+io_uring lines: {'io_uring_setup=EPERM': 60}
+branch: T1 (ALL: threads write at the same time)
+branch: T2 (REST: same operations, same order, no strong overlap)
+both T1 and T2: the logger-off probe (step 6) is required before the #539 question
