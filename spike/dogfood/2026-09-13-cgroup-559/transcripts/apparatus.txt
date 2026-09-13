@@ -1,0 +1,6 @@
+engine build: the #559 PR B working tree on main 0a05c47, uncommitted, after its second review, built for aarch64-linux-gnu (the copy mounted at /work)
+914a6f8ce4eedfb6d37289c4e8f8a4ffd5f424b79d973f6d7a4f4082e69fcc13  zig-out/bin/sideeye
+4434bdd012e711e54cadfdd463a9cbe6edfe6179e082b2e8dc94659ceab4d148  zig-out/bin/sideeye-testnocgroup
+f0319e2fd000fcb0df8ff69008540f0dd8f60bab6d9ba062042ba0dd777377dc  zig-out/lib/libsideeye_shim.so
+image: sideeye-559-proto:2026-09-13 sha256:93ee74c4f79512410ccba5b7118fb19450c8beb5ed0902a1422c0e25ac03a744
+docker: 29.4.0 arm64

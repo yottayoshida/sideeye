@@ -13,7 +13,7 @@
 //!
 //! This file is the engine's half of watching those exits. The shim's half is the `cgroup`
 //! record (`contract.cgroup_aux`); the oracle's is `oracle.Parsed.cgroup_move`. Every check
-//! here refuses and none admits: nothing in this file lifts a refusal.
+//! here refuses but one: `holds`, which says whether a detach may be judged (#559's second half).
 //!
 //! **The checks run after the refusals of the phase their run is judged in**, at the call sites
 //! in `main.zig`, so none of those changes name. Two things are asked later still. For the
@@ -33,6 +33,7 @@
 //! `refuse.unknown` ends the process, so the finding is what a test can reach.
 
 const std = @import("std");
+const builtin = @import("builtin");
 const contract = @import("contract");
 const engine_build_options = @import("engine_build_options");
 const posix = @import("posix.zig");
@@ -67,6 +68,56 @@ pub fn killName(cg: ?*const posix.CgroupSpawn) []const u8 {
 pub fn asideName(cg: ?*const posix.CgroupSpawn) []const u8 {
     const c = cg orelse return "";
     return if (c.world) c.asidePath() else "";
+}
+
+/// Whether the engine held this run for judging a process that left the process group (#559's
+/// second half): the spawn joined its cgroup, and every image that announced itself said it was
+/// inside it before doing anything else (`TraceInfo.cgroupAnswered`, with `cut_by_kill` for a
+/// world armed to die at its crash point). A world's `cgroup.kill` is not asked for: an image
+/// that reaches the crash point without it cannot kill, records that, and `killCameBack` refuses
+/// the world — asking here too added only the race `cut_by_kill` is about (review). A run the
+/// watch finds anything in is refused by the watch, later.
+pub fn holds(cg: ?*const posix.CgroupSpawn, trace: *const engine.TraceInfo, cut_by_kill: bool) bool {
+    const c = cg orelse return false;
+    return c.joined and trace.cgroupAnswered(cut_by_kill);
+}
+
+/// Refuse a process that left the process group in a run the engine did not hold, saying why
+/// it did not. `where` ends the detail.
+pub fn refuseDetach(arena: std.mem.Allocator, cg: ?*const posix.CgroupSpawn, where: []const u8) noreturn {
+    const can_contain = !engine_build_options.no_cgroup and posix.cgroupHome() != null;
+    const f = detachFinding(arena, cg, where, builtin.os.tag == .linux, can_contain);
+    refuse.unknown(f.reason, f.detail, f.next);
+}
+
+/// `refuseDetach`'s decision, the platform and the probe passed in so a test can ask each. On
+/// Linux, where the engine cannot make cgroups, the environment is what to fix, and the detail
+/// says what would let it: a writable cgroup v2 — a default container mounts it read-only, so
+/// root alone is not enough. Where it can and this run did not get one, the run is retried. A
+/// cgroup some image did not answer to, and every macOS run, keep the class wall.
+pub fn detachFinding(arena: std.mem.Allocator, cg: ?*const posix.CgroupSpawn, where: []const u8, linux: bool, can_contain: bool) Finding {
+    const lead = "a process left the containment group (setsid/setpgid)";
+    if (!linux) return .{
+        .reason = .child_process_detected,
+        .detail = std.fmt.allocPrint(arena, "{s}{s}; this platform gives the engine no cgroup to stop it with, so the engine cannot claim to have stopped it", .{ lead, where }) catch lead,
+        .next = .class_wall,
+    };
+    const joined = if (cg) |c| c.joined else false;
+    if (!joined and !can_contain) return .{
+        .reason = .child_process_detected,
+        .detail = std.fmt.allocPrint(arena, "{s}{s}, and the engine could not give this run a cgroup of its own, so it cannot claim to have stopped it. Run the engine where it can make cgroups under its own and move processes into them — a writable cgroup v2 delegated to its user, or root over a writable cgroup v2 (a default container mounts it read-only) — and a process that leaves the group is stopped with the run's cgroup and judged", .{ lead, where }) catch lead,
+        .next = .environment,
+    };
+    if (!joined) return .{
+        .reason = .child_process_detected,
+        .detail = std.fmt.allocPrint(arena, "{s}{s}, and this run did not get a cgroup although the engine can make them here, so the engine cannot claim to have stopped it", .{ lead, where }) catch lead,
+        .next = .retry_then_report,
+    };
+    return .{
+        .reason = .child_process_detected,
+        .detail = std.fmt.allocPrint(arena, "{s}{s}, and not every process that announced itself said it was inside the run's cgroup before it went on, so the engine cannot claim to have stopped it", .{ lead, where }) catch lead,
+        .next = .class_wall,
+    };
 }
 
 /// What a check found, in the shape `refuse.unknown` takes.
@@ -402,4 +453,55 @@ test "an uncontained spawn tells its shim nothing, pinned empty; a contained wor
     try t.expect(runName(&recording).len > 0);
     try t.expectEqualStrings("", killName(&recording));
     try t.expectEqualStrings("", asideName(&recording));
+}
+
+test "a run is held for a detach only when every image answered, and a killed world forgives only an answer its kill cut off (#559)" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    var trace = try testTrace(a, &.{});
+    defer trace.deinit();
+    trace.shim_ready_records = 2;
+    trace.cgroup_held_records = 2;
+    var cg = joinedCgroup();
+    try t.expect(holds(&cg, &trace, false));
+    try t.expect(!holds(null, &trace, false));
+    // One image cut off between its announcement and its answer: short where nothing was
+    // killed, forgiven in a world killed at its crash point.
+    trace.cgroup_held_records = 1;
+    trace.cgroup_unanswered_tail = 1;
+    try t.expect(!holds(&cg, &trace, false));
+    try t.expect(holds(&cg, &trace, true));
+    // One that went on without answering is not forgiven, killed or not.
+    trace.cgroup_unanswered_live = 1;
+    try t.expect(!holds(&cg, &trace, true));
+    trace.cgroup_unanswered_live = 0;
+    // A world's missing cgroup.kill is killCameBack's to refuse, not this.
+    trace.cgroup_held_records = 2;
+    trace.cgroup_unanswered_tail = 0;
+    trace.cgroup_kill_records = 0;
+    try t.expect(holds(&cg, &trace, true));
+    cg.joined = false;
+    try t.expect(!holds(&cg, &trace, true));
+}
+
+test "a detach the engine did not hold is refused with the reason, and the step is the environment's only where the engine cannot make cgroups (#559)" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const no_cgroup = detachFinding(a, null, " in an explored world", true, false);
+    try t.expectEqual(contract.NextStep.environment, no_cgroup.next);
+    try t.expect(std.mem.indexOf(u8, no_cgroup.detail, "left the containment group") != null);
+    try t.expect(std.mem.indexOf(u8, no_cgroup.detail, "writable cgroup v2 delegated") != null);
+    try t.expect(std.mem.indexOf(u8, no_cgroup.detail, " in an explored world") != null);
+    const mac = detachFinding(a, null, "", false, false);
+    try t.expectEqual(contract.NextStep.class_wall, mac.next);
+    // The engine can make cgroups and this run did not get one: not the environment's.
+    const missed = detachFinding(a, null, "", true, true);
+    try t.expectEqual(contract.NextStep.retry_then_report, missed.next);
+    try t.expect(std.mem.indexOf(u8, missed.detail, "can make them here") != null);
+    var cg = joinedCgroup();
+    const unanswered = detachFinding(a, &cg, "", true, true);
+    try t.expectEqual(contract.NextStep.class_wall, unanswered.next);
+    try t.expect(std.mem.indexOf(u8, unanswered.detail, "said it was inside") != null);
 }

@@ -1,0 +1,87 @@
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+spawn 
+thread 
+fork 
+detached 
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+close /localrun/st/sideeye-wrappers/f.txt
+rename /root/.ansible/tmp/ansible-tmp-1789297997.0003414-31-177045140395604/tmpmgqdopn7
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+cgroup /localrun/st/sideeye-wrappers

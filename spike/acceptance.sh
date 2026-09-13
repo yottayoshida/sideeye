@@ -484,11 +484,172 @@ fi
 rm -rf /tmp/acc-unwaited
 unset TOY_UNWAITED_CHILD
 
-# A child that leaves the process group: the engine cannot claim to have stopped it,
-# oracle or no oracle.
+# A child that leaves the process group (#559). Judged where the engine held the run in a
+# cgroup of its own, and refused everywhere else with the reason it was not held. Whether this
+# host contains runs is the environment's to say (SIDEEYE_EXPECT_CONTAINED, check 2cg); what
+# each side owes is fixed: the refusal comes from the shipped engine where runs are not
+# contained and from `sideeye-testnocgroup` where they are, and the judged side is asserted
+# only where they are.
+dt_nocg=$ROOT/zig-out/bin/sideeye-testnocgroup
+dt_witness=/tmp/acc-dt-witness
+case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+    0) dt_refuser=$SIDEEYE ;;
+    *) dt_refuser=$dt_nocg ;;
+esac
+dt_run() {   # dt_run <engine> <toy> — explore under --oracle; sets dt_rc, dt_out, dt_step
+    rm -rf /tmp/acc-dt && mkdir -p /tmp/acc-dt/state
+    : > "$dt_witness"
+    dt_out=$("$1" explore --state /tmp/acc-dt/state --setup "$2 init" --operation "$2 rotate" \
+        --shim "$SHIM" --work /tmp/acc-dt/work --oracle /usr/bin/strace --json /tmp/acc-dt/r.json 2>&1)
+    dt_rc=$?
+    dt_step=$(python3 -c "import json;print(json.load(open('/tmp/acc-dt/r.json')).get('next_step',''))" 2>/dev/null || echo "")
+}
+dt_fail() {   # dt_fail <message> — a failed leg, with the run's output
+    echo "FAIL $1"
+    printf '%s\n' "$dt_out" | sed 's/^/     | /' | head -14
+    fails=$((fails + 1))
+}
+# The uncontained side, for both shapes: refused, the step is the environment's, and the
+# detail names what would let the engine contain.
+dt_refused() {   # dt_refused <name> <toy>
+    if [ ! -x "$dt_refuser" ]; then
+        echo "FAIL $1, uncontained: $dt_refuser is not built (zig build -Dtest-no-cgroup)"
+        fails=$((fails + 1))
+        return
+    fi
+    dt_run "$dt_refuser" "$2"
+    if ! refused child_process_detected "$dt_rc" "$dt_out"; then dt_fail "$1, uncontained: exit $dt_rc, wanted child_process_detected"
+    elif ! printf '%s\n' "$dt_out" | grep -qF "left the containment group"; then dt_fail "$1, uncontained: the detail does not say a process left the containment group"
+    elif ! printf '%s\n' "$dt_out" | grep -qF "a writable cgroup v2 delegated to its user"; then dt_fail "$1, uncontained: the detail does not say what lets the engine contain the run"
+    # The shim's record is asked before the oracle's view, so a detach the shim recorded is
+    # refused as one; the oracle's wording here means the recording site did not refuse.
+    elif printf '%s\n' "$dt_out" | grep -qF "seen by the oracle"; then dt_fail "$1, uncontained: refused from the oracle's view, not from the shim's record, which is asked first"
+    elif ! printf '%s\n' "$dt_step" | grep -qF "in the environment"; then dt_fail "$1, uncontained: the step is not the environment's: $dt_step"
+    else echo "ok   $1 is refused where the run was not contained, naming the environment ($(basename "$dt_refuser"))"
+    fi
+}
+# The contained side: a verdict, and an account that does not name the refusal it no longer is.
+dt_judged() {   # dt_judged <name> <toy> <exit>
+    if [ "${SIDEEYE_EXPECT_CONTAINED:-}" != 1 ]; then
+        echo "     NOT MEASURED: $1, contained — SIDEEYE_EXPECT_CONTAINED is not 1"
+        return
+    fi
+    dt_run "$SIDEEYE" "$2"
+    if [ "$dt_rc" != "$3" ]; then dt_fail "$1, contained: exit $dt_rc, wanted $3"
+    # Indented in a PASS's block and not in a FAIL's, so neither anchor alone reads both
+    # (the first version of this leg anchored at the margin and missed the PASS's line).
+    elif ! printf '%s\n' "$dt_out" | grep -qE '^[[:space:]]*processes'; then dt_fail "$1, contained: the report carries no processes line"
+    elif printf '%s\n' "$dt_out" | grep -E '^[[:space:]]*processes' | grep -qE "leaving the containment group|reports set(sid|pgid)"; then dt_fail "$1, contained: the processes account still names the detach as a refusal"
+    else echo "ok   $1 reaches exit $3 where the run was contained"
+    fi
+}
 TOY_DETACH=1 export TOY_DETACH
-run_case "a child that detaches is refused" "$OUT/toy-bug" 2 "left the containment group"
+dt_refused "a child that detaches" "$OUT/toy-bug"
+dt_judged "a child that detaches" "$OUT/toy-bug" 1
 unset TOY_DETACH
+TOY_DETACH_WRITE=1 export TOY_DETACH_WRITE
+dt_refused "a detached worker's writer" "$OUT/toy-bug"
+dt_judged "a detached worker's writer, over the planted bug" "$OUT/toy-bug" 1
+dt_judged "a detached worker's writer, without the bug" "$OUT/toy-fixed" 0
+unset TOY_DETACH_WRITE
+# Three ways out of the cgroup, each walked in explored worlds only and each refused: the first
+# two by the watch built for that exit, the third by the world's numbering check, which is asked
+# before any watch (ADR 0065). The witness says the toy moved: a refusal with an empty witness is a toy that never
+# escaped, not a watch that caught it.
+dt_escape() {   # dt_escape <name> <reason> <detail>
+    if [ "${SIDEEYE_EXPECT_CONTAINED:-}" != 1 ]; then
+        echo "     NOT MEASURED: $1 — SIDEEYE_EXPECT_CONTAINED is not 1"
+        return
+    fi
+    dt_run "$SIDEEYE" "$OUT/toy-fixed"
+    if ! grep -q '^moved ' "$dt_witness"; then dt_fail "$1: the toy never moved out of the run's cgroup, so nothing was measured"
+    elif ! refused "$2" "$dt_rc" "$dt_out"; then dt_fail "$1: exit $dt_rc, wanted $2"
+    elif ! printf '%s\n' "$dt_out" | grep -qF "$3"; then dt_fail "$1: the detail does not say '$3'"
+    else echo "ok   $1 is refused: $3"
+    fi
+}
+TOY_ESCAPE_WITNESS=$dt_witness export TOY_ESCAPE_WITNESS
+TOY_ESCAPE_FORK=1 export TOY_ESCAPE_FORK
+dt_escape "a worker that moved out and then forked" child_process_detected "reported itself outside the run's cgroup"
+unset TOY_ESCAPE_FORK
+TOY_ESCAPE_LINGER=1 export TOY_ESCAPE_LINGER
+dt_escape "a detached child that moved out and outlived the world" child_process_detected "was still alive after the run's cgroup was stopped"
+unset TOY_ESCAPE_LINGER
+TOY_ESCAPE_PAST=1 export TOY_ESCAPE_PAST
+dt_escape "a direct child that moved out and wrote after its crash point" sequence_numbering_broken "gaps or duplicates in an explored world"
+unset TOY_ESCAPE_PAST TOY_ESCAPE_WITNESS
+# The three other places the detach refusal is asked, each reached by a shape only it sees: a
+# detach in explored worlds only, a setsid only the oracle sees (a child that never loads the
+# shim), and a detach on preflight's second run only. Where runs are not contained each is
+# refused naming its place; where they are, none is refused as a detach.
+dt_where() {   # dt_where <name> <place in the detail> — reads the run dt_run or dt_run2 made
+    if refused child_process_detected "$dt_rc" "$dt_out" && printf '%s\n' "$dt_out" | grep -qF "$2" \
+        && printf '%s\n' "$dt_out" | grep -qF "left the containment group"; then
+        echo "ok   $1 is refused where the run was not contained, naming where: $2"
+    else
+        dt_fail "$1, uncontained: wanted child_process_detected naming '$2'"
+    fi
+}
+dt_run2() {   # dt_run2 <engine> — preflight --twice, the detach on run B only; sets dt_rc, dt_out
+    rm -rf /tmp/acc-dt /tmp/acc-dt-run2.mark && mkdir -p /tmp/acc-dt/state
+    dt_out=$(TOY_DETACH_RUN2=1 TOY_RUN2_MARK=/tmp/acc-dt-run2.mark "$1" preflight --state /tmp/acc-dt/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
+        --work /tmp/acc-dt/work --oracle /usr/bin/strace --twice 2>&1)
+    dt_rc=$?
+}
+if [ -x "$dt_refuser" ]; then
+    TOY_DETACH_WORLD=1 export TOY_DETACH_WORLD
+    dt_run "$dt_refuser" "$OUT/toy-bug"
+    dt_where "a detach in explored worlds only" "in an explored world"
+    unset TOY_DETACH_WORLD
+    TOY_SPAWN_SETSID=1 export TOY_SPAWN_SETSID
+    dt_run "$dt_refuser" "$OUT/toy-bug"
+    dt_where "a setsid only the oracle sees" "seen by the oracle as a child's setsid"
+    unset TOY_SPAWN_SETSID
+    dt_run2 "$dt_refuser"
+    dt_where "a detach on preflight's second run only" "during the second observed run"
+else
+    echo "FAIL the detach refusal's other places: $dt_refuser is not built (zig build -Dtest-no-cgroup)"
+    fails=$((fails + 1))
+fi
+TOY_SPAWN_SETSID=1 export TOY_SPAWN_SETSID
+dt_judged "a setsid only the oracle sees" "$OUT/toy-bug" 1
+unset TOY_SPAWN_SETSID
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    dt_run2 "$SIDEEYE"
+    if printf '%s\n' "$dt_out" | grep -qF "left the containment group"; then dt_fail "a detach on preflight's second run only, contained: refused as a detach"
+    elif printf '%s\n' "$dt_out" | grep -qF "recorded a process leaving the containment group"; then dt_fail "a detach on preflight's second run only, contained: the account names a detach its cgroup held"
+    else echo "ok   a detach on preflight's second run only is not refused or named as one where the run was contained (exit $dt_rc)"
+    fi
+else
+    echo "     NOT MEASURED: a detach on preflight's second run only, contained — SIDEEYE_EXPECT_CONTAINED is not 1"
+fi
+# A worker that joins a process group outside the run, in the same session, and then reaches a
+# crash point (#559, second review). The crash point's group kill signals the caller's group,
+# which is not the run's once a process has joined another: a sleeper in a group of its own stands
+# in for the engine's group or its caller's, and it has to be alive when the run is over.
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    /bin/rm -f /tmp/acc-dt-pgid
+    python3 -c 'import os, time; os.setpgid(0, 0); open("/tmp/acc-dt-pgid", "w").write(str(os.getpgrp())); time.sleep(120)' &
+    dt_sleeper=$!
+    i=0
+    while [ ! -s /tmp/acc-dt-pgid ] && [ "$i" -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+    TOY_JOIN_PGID=$(cat /tmp/acc-dt-pgid 2>/dev/null) export TOY_JOIN_PGID
+    TOY_ESCAPE_WITNESS=$dt_witness export TOY_ESCAPE_WITNESS
+    dt_run "$SIDEEYE" "$OUT/toy-fixed"
+    unset TOY_JOIN_PGID TOY_ESCAPE_WITNESS
+    if [ ! -s /tmp/acc-dt-pgid ]; then dt_fail "a worker that joins a group outside the run: the sleeper never started, so nothing was measured"
+    elif ! grep -q '^joined ' "$dt_witness"; then dt_fail "a worker that joins a group outside the run: the toy never joined it, so nothing was measured"
+    elif ! kill -0 "$dt_sleeper" 2>/dev/null; then dt_fail "a worker that joins a group outside the run: the crash point's group kill took a process outside the run"
+    else echo "ok   a worker that joins a group outside the run takes nothing outside the run down at its crash point (exit $dt_rc)"
+    fi
+    kill "$dt_sleeper" 2>/dev/null
+    wait "$dt_sleeper" 2>/dev/null
+    /bin/rm -f /tmp/acc-dt-pgid
+else
+    echo "     NOT MEASURED: a worker that joins a group outside the run — SIDEEYE_EXPECT_CONTAINED is not 1"
+fi
+/bin/rm -f /tmp/acc-dt-run2.mark
 
 # And without an oracle the whole question is unanswerable: the shim only sees processes
 # that load it, and "was not seen" must never be read as "did nothing".

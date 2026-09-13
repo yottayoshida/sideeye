@@ -86,6 +86,13 @@ to be the subject's because a forked child counted its own operations and its k-
 to nobody. A number is a position in the run now, so the process that reaches k is the one
 the engine asked about.
 
+**Amended 2026-09-13 (contract v17, ADR 0065).** Where the engine gave a world a cgroup of its
+own, the crash point kills twice: it moves its own process from the run's `work` cgroup up into
+the run's, writes `work`'s `cgroup.kill`, and then signals its process group as above. The group
+kill alone does not reach a process that left the group, and the cgroup kill alone would end the
+writer before its group kill. A crash point that cannot step aside says so in the trace, and the
+world is refused. Where there is no cgroup, the kill is the group's, as this decision says.
+
 ### 3. Two conditions decide whether a run with a writing child may be judged
 
 Asked on the recording run, where both witnesses are in hand, and inherited by the explored

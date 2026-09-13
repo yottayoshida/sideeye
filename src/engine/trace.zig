@@ -128,21 +128,39 @@ pub const TraceInfo = struct {
     /// The boundaries that stay refusals regardless of tolerance, which are not the
     /// same set for every process: the *subject* replacing its image or creating a
     /// thread breaks addressing and determinism, while a **child** exec'ing is just a
-    /// spawn doing what spawns do. `detached` is hard from anyone — escape is escape.
+    /// spawn doing what spawns do. A process leaving the process group is not among them
+    /// since #559's second half: it has `detached` of its own, below.
     /// Kept separately from `boundary` because "first boundary" can be a tolerable
     /// fork that arrives before the record that must refuse the run.
     hard_boundary: ?contract.OpClass = null,
+    /// The first `.detached` record: a process that left the process group (`setsid`,
+    /// `setpgid`), from anyone. The engine judges it where it held the run in a cgroup of its
+    /// own and refuses it everywhere else (`containment.holds`, #559). A field of its own rather
+    /// than a value of `hard_boundary`, which keeps only the first hard boundary: a detach
+    /// recorded first would otherwise hide an image change that must refuse, in the very run
+    /// that lets the detach through.
+    detached: ?Op = null,
     /// `shim_ready` records the run holds — one per image a shim initialised in (v17). The
     /// denominator for the acknowledgement below: when the engine gave the spawn a cgroup,
     /// every announcement is followed by a `cgroup` record from the same image.
     shim_ready_records: u32 = 0,
     /// `cgroup` records saying the writer is inside the run's cgroup — `cgroup:held` or
-    /// `cgroup:held-kill` (v17, #559). `cgroupAcknowledged` compares this with
+    /// `cgroup:held-kill` (v17, #559). `cgroupAnswered` compares this with
     /// `shim_ready_records`: a v16 shim, or a shim that found no `SIDEEYE_RUN_CGROUP` in its
     /// environment, leaves it short, and a short count is a run that was not contained.
     cgroup_held_records: u32 = 0,
     /// Of those, the ones that also opened the cgroup's `cgroup.kill` — a world's shims (v17).
     cgroup_kill_records: u32 = 0,
+    /// Announcements whose process wrote something else before any `cgroup` record answered
+    /// them (#559's second half): an image that went on without saying where it stood.
+    cgroup_unanswered_live: u32 = 0,
+    /// Announcements still unanswered where the trace ends, with nothing from their process
+    /// after them. The shim writes `shim_ready` and its answer back to back, so in a world killed
+    /// at its crash point this is the kill landing between the two.
+    cgroup_unanswered_tail: u32 = 0,
+    /// The subject's own `.detached` record: it left its process group itself, which it can
+    /// under `--oracle`, where strace leads the group (#559's second half). Not a second process.
+    subject_detached: bool = false,
     /// The first `cgroup:outside` or `cgroup:unreadable` record (v17): a process that found itself outside the run's
     /// cgroup, kept whole for the refusal's detail. A field of its own rather than a boundary
     /// class read through `hard_boundary`, which keeps only the first boundary a trace holds —
@@ -262,11 +280,14 @@ pub const TraceInfo = struct {
     /// the oracle saw none. A same-pid image change claims no such thing, so a witness
     /// that saw one process agrees with it.
     ///
-    /// **Stated as a negative on purpose, because the positive would be false.** Two of
-    /// the classes it admits imply no second process either: the subject's own `setsid`
-    /// or `setpgid` (`.detached`), and an exec record written before the subject is known,
-    /// which fails the primary test and so is not excluded. Both set `hard_boundary`,
-    /// which the recording clause returns on before reaching this field. A `.thread` is
+    /// **Stated as a negative on purpose, because the positive would be false.** One of
+    /// the classes it admits implies no second process either: an exec record written before
+    /// the subject is known, which fails the primary test and so is not excluded; it sets
+    /// `hard_boundary`, which the recording clause returns on before reaching this field. The
+    /// subject's own `setsid` or `setpgid` was the other, and is excluded since #559's second
+    /// half, when a run the engine held stopped refusing it: under `--oracle` strace leads the
+    /// group, the subject's call succeeds, and the account would have read it as another
+    /// process the oracle did not see. A `.thread` is
     /// excluded here since v16: it is not a process, it is judged rather than refused,
     /// and a run whose only boundary is a thread must read as one process to the account
     /// and to the oracle requirement — `needsOracle` — while still arming the quiescence
@@ -314,13 +335,17 @@ pub const TraceInfo = struct {
         self.arena.deinit();
     }
 
-    /// Every image that announced itself also said it was inside the run's cgroup (v17,
-    /// #559). Asked of a recording run, never of a world: a world's crash-point kill can
-    /// land on a child between its `shim_ready` and its `cgroup` record, and a count short by
-    /// that race is not a process that escaped. What a world is held to instead is what it
-    /// wrote after the crash point and what outlived the kill.
-    pub fn cgroupAcknowledged(self: *const TraceInfo) bool {
-        return self.shim_ready_records > 0 and self.cgroup_held_records == self.shim_ready_records;
+    /// Every image that announced itself said it was inside the run's cgroup before it did
+    /// anything else (v17, #559). `cut_by_kill` is for a world killed at its crash point: the
+    /// kill can land on an image between its `shim_ready` and its `cgroup` record, and an
+    /// announcement left unanswered with nothing after it is that kill at work, not a process
+    /// that escaped. The first reader of this for a detach did not forgive it, so a world with a
+    /// detach was refused or not by when its kill landed (review, #559's second half). An image
+    /// that went on without answering is never forgiven, and anywhere else a count short is short.
+    pub fn cgroupAnswered(self: *const TraceInfo, cut_by_kill: bool) bool {
+        if (self.shim_ready_records == 0 or self.cgroup_unanswered_live > 0) return false;
+        const cut = if (cut_by_kill) self.cgroup_unanswered_tail else 0;
+        return self.cgroup_held_records + cut == self.shim_ready_records;
     }
 
     /// Did this run cross a boundary at all — the question the oracle requirement, the
@@ -699,6 +724,8 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // chain left off at. The window is open between those two records.
     var pending_exec = false;
     var pending_base: u32 = 0;
+    // Processes whose announcement no `cgroup` record has answered yet (v17).
+    var awaiting_answer: std.ArrayList(u32) = .empty;
 
     // The first thread to write a kill-point record in each process (v16). A second
     // thread of the same process writing is the refusal; the list is what tells a second
@@ -727,6 +754,10 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             .shim_ready => {
                 info.saw_shim_ready = true;
                 info.shim_ready_records += 1;
+                if (std.mem.indexOfScalar(u32, awaiting_answer.items, op.pid) != null)
+                    info.cgroup_unanswered_live += 1
+                else
+                    try awaiting_answer.append(arena, op.pid);
                 if (info.primary_pid == null) {
                     info.primary_pid = op.pid;
                     info.observe_aux = op.aux;
@@ -784,6 +815,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             // first record of each failure only: what a contained run is, the engine decides,
             // and the aux values are named once, in `contract.cgroup_aux`.
             .cgroup => {
+                if (std.mem.indexOfScalar(u32, awaiting_answer.items, op.pid)) |i| _ = awaiting_answer.swapRemove(i);
                 if (std.mem.eql(u8, op.aux, contract.cgroup_aux.held)) {
                     info.cgroup_held_records += 1;
                 } else if (std.mem.eql(u8, op.aux, contract.cgroup_aux.held_kill)) {
@@ -800,6 +832,15 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             },
             else => {},
         }
+        // A process that wrote anything but its answer while its announcement waited went on
+        // without saying where it stood (#559's second half).
+        if (op.class != .shim_ready and op.class != .cgroup) {
+            if (std.mem.indexOfScalar(u32, awaiting_answer.items, op.pid)) |i| {
+                info.cgroup_unanswered_live += 1;
+                _ = awaiting_answer.swapRemove(i);
+            }
+        }
+        info.cgroup_unanswered_tail = @intCast(awaiting_answer.items.len);
         const is_primary = info.primary_pid != null and op.pid == info.primary_pid.?;
         if (!is_primary) {
             info.foreign_pid_seen = true;
@@ -862,9 +903,17 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             // A thread is not one (v16), and is left out here so a run whose only
             // boundary is a thread reads as one process to the account and to
             // `needsOracle`.
-            if (!((op.class == .exec and is_primary) or op.class == .thread)) info.process_boundary = true;
+            // Nor is the subject leaving its own process group, which under `--oracle` it can:
+            // strace leads the group, so the subject's `setsid` succeeds (#559's second half).
+            if (op.class == .detached and is_primary) info.subject_detached = true;
+            if (!((op.class == .exec and is_primary) or op.class == .thread or (op.class == .detached and is_primary))) info.process_boundary = true;
             const hard = switch (op.class) {
-                .detached => true,
+                // Not hard since #559's second half: kept in `detached`, which the engine
+                // refuses unless the run was held in a cgroup of its own.
+                .detached => blk: {
+                    if (info.detached == null) info.detached = op;
+                    break :blk false;
+                },
                 // Not hard since v16: a thread is judged by what it wrote, above, and
                 // the record stays for the account's count only.
                 .thread => false,
@@ -1097,7 +1146,7 @@ test "cgroup records count against announcements, and an escape or a returned ki
     try std.testing.expectEqual(@as(u32, 2), info.shim_ready_records);
     try std.testing.expectEqual(@as(u32, 2), info.cgroup_held_records);
     try std.testing.expectEqual(@as(u32, 1), info.cgroup_kill_records);
-    try std.testing.expect(info.cgroupAcknowledged());
+    try std.testing.expect(info.cgroupAnswered(false));
     try std.testing.expectEqual(@as(u32, 8), info.cgroup_outside.?.pid);
     try std.testing.expectEqual(@as(u32, 7), info.cgroup_kill_returned.?.pid);
     // Its own field, not taken for an escape: the escape above is still pid 8's.
@@ -1124,7 +1173,8 @@ test "an announcement without an acknowledgement is an uncontained run, and an a
     defer info.deinit();
     try std.testing.expectEqual(@as(u32, 2), info.shim_ready_records);
     try std.testing.expectEqual(@as(u32, 1), info.cgroup_held_records);
-    try std.testing.expect(!info.cgroupAcknowledged());
+    try std.testing.expect(!info.cgroupAnswered(false));
+    try std.testing.expectEqual(@as(u32, 1), info.cgroup_unanswered_tail);
     try std.testing.expectEqualStrings("cgroup:a-later-value", info.cgroup_outside.?.aux);
     try std.testing.expect(info.cgroup_kill_returned == null);
     try std.testing.expect(info.cgroup_kill_alone == null);
@@ -1137,7 +1187,8 @@ test "an announcement without an acknowledgement is an uncontained run, and an a
     defer _ = posix.unlink(empty);
     var none = try readTrace(&tb_, std.mem.span(empty));
     defer none.deinit();
-    try std.testing.expect(!none.cgroupAcknowledged());
+    try std.testing.expect(!none.cgroupAnswered(false));
+    try std.testing.expect(!none.cgroupAnswered(true));
 }
 
 test "a subject exec followed by a shim_ready carrying the count is a continuation (#123)" {
@@ -2166,4 +2217,98 @@ test "the subject's writer count is distinct thread ids, not a flag that stops a
     const second = info.second_writer_thread orelse return error.TestUnexpectedResult;
     try std.testing.expectEqual(@as(u64, 9), second.tid);
     _ = posix.unlink(fz);
+}
+
+test "a detach is kept apart from the hard boundary, so an image change after it still refuses (#559)" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const path = try writeTraceForTest("trace-detach-then-exec", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .detached, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+        // The subject announcing itself again with no exec record in front: a chain that broke.
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(path);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(path));
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 8), info.detached.?.pid);
+    try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
+    // Still a second process for the oracle requirement and the account.
+    try std.testing.expect(info.crossedProcessBoundary());
+
+    // Control: the detach alone leaves no hard boundary behind it.
+    const alone = try writeTraceForTest("trace-detach-alone", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .detached, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(alone);
+    var tb2 = unboundedBudget(std.testing.allocator);
+    var only = try readTrace(&tb2, std.mem.span(alone));
+    defer only.deinit();
+    try std.testing.expect(only.detached != null);
+    try std.testing.expect(only.hard_boundary == null);
+}
+
+test "an announcement the crash point's kill cut off is not a process that escaped, and one that went on without answering is (#559)" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const cut = try writeTraceForTest("trace-cgroup-cut", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = contract.cgroup_aux.held_kill },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        // A child's image announcing itself as the kill before operation 2 lands on it.
+        .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+        .{ .op = .kill_landed, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(cut);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(cut));
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 1), info.cgroup_unanswered_tail);
+    try std.testing.expectEqual(@as(u32, 0), info.cgroup_unanswered_live);
+    try std.testing.expect(info.cgroupAnswered(true));
+    // Where nothing was killed, the same trace is short.
+    try std.testing.expect(!info.cgroupAnswered(false));
+
+    const went_on = try writeTraceForTest("trace-cgroup-went-on", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = contract.cgroup_aux.held_kill },
+        .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+        .{ .op = .detached, .seq = 0, .pid = 8, .tid = 8, .path = "", .aux = "" },
+        .{ .op = .kill_landed, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(went_on);
+    var tb2 = unboundedBudget(std.testing.allocator);
+    var on = try readTrace(&tb2, std.mem.span(went_on));
+    defer on.deinit();
+    try std.testing.expectEqual(@as(u32, 1), on.cgroup_unanswered_live);
+    try std.testing.expectEqual(@as(u32, 0), on.cgroup_unanswered_tail);
+    try std.testing.expect(!on.cgroupAnswered(true));
+}
+
+test "the subject leaving its own process group is not a second process, and a child leaving it is (#559)" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const own = try writeTraceForTest("trace-subject-detach", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .detached, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(own);
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(own));
+    defer info.deinit();
+    try std.testing.expect(info.subject_detached);
+    try std.testing.expect(info.detached != null);
+    try std.testing.expect(!info.process_boundary);
+
+    const child = try writeTraceForTest("trace-child-detach", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .detached, .seq = 0, .pid = 8, .tid = 8, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(child);
+    var tb2 = unboundedBudget(std.testing.allocator);
+    var other = try readTrace(&tb2, std.mem.span(child));
+    defer other.deinit();
+    try std.testing.expect(!other.subject_detached);
+    try std.testing.expect(other.process_boundary);
 }

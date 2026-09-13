@@ -236,7 +236,9 @@ pub const env = struct {
     /// Absolute path of the run's own `cgroup.procs`, one level above `work` (v17), set beside
     /// `kill_cgroup`. The crash point moves its own process there first, so the cgroup kill
     /// takes every other process of the run, and then signals its process group, which takes
-    /// the rest — the writer, and whatever left the cgroup without leaving the group.
+    /// the rest — the writer, and whatever left the cgroup without leaving the group. It signals
+    /// the group only while the group's leader is inside the run's cgroup: a process that joined
+    /// another group in the session dies alone rather than take that group down (#559).
     pub const kill_aside = "SIDEEYE_KILL_ASIDE";
 };
 
@@ -593,7 +595,8 @@ pub const OpClass = enum(u16) {
     //
     // Since v3 these no longer force UNKNOWN by themselves. A fork- or spawn-boundary is
     // tolerable when an oracle can account for every other process (none of them touched
-    // the state directory); exec, thread and detached stay refusals. The *classification*
+    // the state directory); an exec whose chain broke stays a refusal (v10), a thread is judged by what
+    // it wrote (v16), and a detach is judged where the engine held the run in a cgroup (v17). The *classification*
     // still matters even where the verdict is the same: `posix_spawn` was recorded as
     // `.fork` through v2, which was harmless while both were refused and becomes a hole
     // the moment one of them is not.
@@ -603,9 +606,9 @@ pub const OpClass = enum(u16) {
     /// A new process *and* a new image (`posix_spawn`/`posix_spawnp`).
     spawn = 203,
     /// The target (or one of its children) left the process group (`setsid`/`setpgid`).
-    /// The engine's containment is the group kill; a process that escapes the group is
-    /// one the engine can no longer claim to have stopped, so this is recorded to be
-    /// refused rather than silently outrun.
+    /// The group kill no longer reaches such a process; a cgroup does. Recorded so the escape
+    /// is never silently outrun: the engine judges it where it held the run in a cgroup of its
+    /// own (#559) and refuses it everywhere else.
     detached = 204,
 
     // --- markers written by the shim itself, never by the target ---

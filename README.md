@@ -79,10 +79,10 @@ Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2), wit
 - **Dynamically linked**, reaching its files through libc. Static linking and hardened runtimes are refused. Threads are judged while one thread of each process writes the state. `--observe syscalls` (Linux) also counts the operations that bypass libc — a Go runtime's, above all.
 - **Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset dies at its first state-changing call** — an `exec`'d image the shim cannot be loaded into, a `posix_spawn` child, a target that takes `SIGSYS` away. A target that dies is refused; a child that dies changes what the target does — check it before reaching for the flag.
 - **The shim's footprint on a target thread is bounded**: under 1 KiB of thread-local storage, at most 5 KiB of stack per interposed call (measured on Linux).
-- **State in one directory**, declared with `--state` or the toml. Symlinks inside it are snapshotted and restored as links.
-- **A clean run exits its declared success status** (default 0) — the crash points are read off that run.
-- **Byte-repeatable writes.** A second clean run must leave the same bytes under `--state`; `preflight --twice` measures this before you write a define.
-- **Other processes take turns with the state.** Forked helpers are judged under an oracle, provided no two processes' writes interleave and every writing child is reaped. Without an oracle, any process boundary is UNKNOWN.
+- **State in one directory**, declared with `--state` or the toml.
+- **A clean run exits its declared success status** (default 0).
+- **Byte-repeatable writes.** A second clean run must leave the same bytes under `--state`; `preflight --twice` measures this.
+- **Other processes take turns with the state.** Forked helpers are judged under an oracle, provided no two processes' writes interleave and every writing child is reaped. One leaving its process group is judged only on Linux, where the engine can make cgroups. Without an oracle, any process boundary is UNKNOWN.
 
 ## Driving it from an agent
 

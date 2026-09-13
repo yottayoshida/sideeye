@@ -1090,6 +1090,11 @@ pub const Parsed = struct {
     /// A syscall that stays a hard refusal whoever tolerates what: the subject
     /// replacing its own image, or namespace surgery.
     boundary: ?[]const u8 = null,
+    /// A process other than the subject leaving the process group (`setsid`, `setpgid`), by
+    /// the syscall's name, the first one. Kept apart from `boundary` since #559's second half:
+    /// `boundary` stays a refusal whoever tolerates what, and this is judged where the engine
+    /// held the run in a cgroup of its own.
+    detached: ?[]const u8 = null,
     /// The first move between cgroups this capture shows, from any process, described
     /// (contract v17, #559): an open for writing of a `cgroup.procs`, `cgroup.threads` or
     /// `cgroup.type`, or a `clone3` carrying `CLONE_INTO_CGROUP` (`cgroupMove`). Read from every
@@ -1366,7 +1371,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // call actually moved anything — the direct child re-electing itself leader is
         // a no-op that must not be refused.
         if (!is_primary and (std.mem.eql(u8, name, "setsid") or std.mem.eql(u8, name, "setpgid"))) {
-            if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
+            if (out.detached == null) out.detached = try arena.dupe(u8, name);
             continue;
         }
 
@@ -2800,7 +2805,9 @@ test "an unshimmed child detaching is caught by the oracle" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
-    try std.testing.expect(p.boundary != null);
+    try std.testing.expect(p.detached != null);
+    // Its own field (#559): namespace surgery and a subject exec stay in `boundary`.
+    try std.testing.expect(p.boundary == null);
 
     // The subject's own setsid/setpgid lines are the shim's to judge — its wrapper
     // knows whether the call moved anything, and this parser does not.
@@ -2811,6 +2818,7 @@ test "an unshimmed child detaching is caught by the oracle" {
     ;
     const q = try parse(arena_state.allocator(), own, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(?[]const u8, null), q.boundary);
+    try std.testing.expectEqual(@as(?[]const u8, null), q.detached);
 }
 
 test "a shared writable mapping of a state file is a mutation nobody models" {

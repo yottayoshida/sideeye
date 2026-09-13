@@ -962,15 +962,16 @@ pub fn pthread_create(
 // --- containment escapes -----------------------------------------------------------
 //
 // The engine confines the target by putting it in its own process group and killing the
-// group. A process that leaves the group is one the engine can no longer claim to have
-// stopped — so the departure itself is recorded, and the engine refuses rather than
-// pretends.
+// group, and where it can in a cgroup of its own as well (v17). A process that leaves the group
+// is one the group kill no longer reaches — so the departure itself is recorded, and the engine
+// judges it only where the cgroup held the run and refuses it everywhere else (#559).
 
 pub fn setsid() callconv(.c) c_int {
     const rc = common.callSetsid();
     // setsid fails for a process that is already a group leader, and the engine makes
-    // the direct child exactly that — so a successful setsid can only have come from a
-    // descendant, which is precisely the process that just escaped.
+    // the direct child exactly that — so without an oracle a successful setsid came from a
+    // descendant. Under `--oracle` strace leads the group and the subject's own setsid
+    // succeeds too; the engine tells the two apart by pid.
     if (rc >= 0) common.noteBoundary(.detached);
     return rc;
 }
