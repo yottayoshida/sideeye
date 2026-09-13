@@ -8,15 +8,16 @@
 //! none of those bodies.
 //!
 //! Everything here is a function of its inputs: nothing writes a variable of another module
-//! and nothing exits. `main.zig` records what the witnesses saw into `boundary_ev` (and the
-//! recording run's image observation into `rec_image`) across six of its nine phases, and
-//! calls in here for the two decisions and the account. The sentences of the refusals that
+//! and nothing exits. `main.zig` records what the witnesses saw into `boundary_ev` from four
+//! of its ten phases and the recording run's image observation into `rec_image` from a fifth
+//! (its module map names them), and calls in here for the two decisions and the account. The sentences of the refusals that
 //! name another writer or an image change — `foreignTouchDetail`, `threadDetail`,
 //! `unresolvedDetail`, the `noShimDetail` pair — live here too, and their only need outside
 //! this file is `defang.zig`, the choke point every target-influenced string passes
 //! through. Not every boundary refusal is here: the `child_process_detected` sentences are
-//! still inline in `main.zig`, and `requireCompleteness` and the `crossed_boundary`
-//! decisions are the orchestrator's. Both go with the report seam.
+//! still inline in `main.zig`; `requireCompleteness` went with the refusal seam
+//! (`refuse.zig`, seam 3a) and the `crossed_boundary` decision is the orchestrator's
+//! (`run.admitted`, seam 4).
 //!
 //! First seam of #572 (ADR 0062). The bodies moved from `main.zig` byte for byte on
 //! 2026-09-12, with `pub` added where `main.zig` still calls them; the sixteen tests that

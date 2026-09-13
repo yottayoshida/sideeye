@@ -3,10 +3,12 @@
 #
 # Counts the functions and the state declared by src/main.zig and fails when either count
 # exceeds its ceiling. The ceilings are the counts left by the last seam that moved code out
-# of the file, and they only ever come down: the pull request that moves the next boundary
-# out lowers them in the same change. This is not a line-count target — #572 names that as a
-# non-goal — it counts declarations, in one direction, and says where new behaviour goes:
-# into the module that owns it, which main.zig's module map names.
+# of the file — or, at the fourth seam, split `main()` into its phases, the one time the
+# function count went up (23 → 33, ten phase functions; ADR 0062 records it) — and from
+# there they only come down: the pull request that moves the next declaration out lowers
+# them in the same change. This is not a line-count target — #572 names that as a non-goal —
+# it counts declarations, in one direction, and says where new behaviour goes: into the
+# module that owns it, which main.zig's module map names.
 #
 # What counts as a function: a top-level `fn` with any of the modifiers Zig allows in front
 # of it — `pub`, `export`, `inline`, `noinline`, and `extern` with or without a library name
@@ -55,13 +57,14 @@
 # needs as the series proceeds. CI runs the selftest first, so a green from a check that
 # cannot go red is never reported.
 #
-# Sunset: delete this when main.zig holds `main()` and its phases and nothing else — the
-# module map will say so — or when a ceiling has not moved in six months, which means the
-# series has stopped and the guard is guarding a shape nobody is changing.
+# Sunset: the series closed with the fourth seam (2026-09-13). Delete this after six months
+# in which it has not gone red on any pull request — a guard nothing pushed against — and
+# keep it while it has; the record of a red is one line in BUILDLOG, written by the pull
+# request that saw it (Actions logs expire first).
 set -u
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-FN_MAX=23
+FN_MAX=33
 VAR_MAX=1
 
 # count <file> -> "<fn> <var>"
