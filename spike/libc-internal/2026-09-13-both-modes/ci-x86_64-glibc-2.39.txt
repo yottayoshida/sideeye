@@ -1,0 +1,98 @@
+# CI run 34745467126 (workflow ci, job linux, runner image ubuntu-24.04, x86_64) on head e3379c3 of #582:
+# the step 'The libc-internal-call class matches its declarations (#39)', copied from `gh run view --log`
+# with GitHub's line prefixes, timestamps and colour codes removed.
+##[group]Run sh spike/measure-libc-internal.sh --selftest
+^[[36;1msh spike/measure-libc-internal.sh --selftest^[[0m
+^[[36;1msh spike/measure-libc-internal.sh^[[0m
+shell: /usr/bin/bash -e {0}
+env:
+  ZIG_GLOBAL_CACHE_DIR: /home/runner/work/sideeye/sideeye/.zig-cache
+  ZIG_LOCAL_CACHE_DIR: /home/runner/work/sideeye/sideeye/.zig-cache
+  SIDEEYE_ROOT: /home/runner/work/sideeye/sideeye
+##[endgroup]
+== the classifier, against its own predicate
+ok   a PASS with the oracle's agreement is judged
+ok   a FAIL with the oracle's agreement is judged, in the FAIL report's own spelling
+ok   a verdict without the oracle's agreement is not judged
+ok   the agreement is read from a PASS report
+ok   the agreement is read from a FAIL report
+ok   the agreement is not read from prose that mentions it
+ok   the class refusal is a wall
+ok   another refusal is not the wall
+ok   a refusal reason inside prose is not the wall
+ok   the wall reason below another headline is not the wall
+ok   could-not-execute is BROKEN, not a mismatch
+ok   not-found is BROKEN too
+ok   killed by a signal is BROKEN
+ok   a SETUP ERROR is BROKEN, not a mismatch
+ok   the inert PASS is inert, not judged
+ok   an inert line with a bad exit is neither
+
+== each mode reads its own column
+ok   wrappers reads the second field
+ok   syscalls reads the third field
+ok   a two-field entry is malformed
+ok   a four-field entry is malformed
+ok   an empty field is malformed
+ok   an unknown mode is malformed
+
+== the comparison, per mode, against synthetic measurements
+ok   the right column is silent (wrappers)
+ok   the swapped columns are loud (wrappers)
+ok   the right column is silent (syscalls)
+ok   the swapped columns are loud (syscalls)
+
+== the split, both directions
+ok   more crash points for the big payload is silent
+ok   the same count is loud
+ok   fewer is loud
+ok   an unmeasured count is loud
+ok   an empty count is loud
+
+== each write a crash point, both directions
+ok   crash points equal to the agreed operations is silent
+ok   one crash point short is loud
+ok   one crash point over is loud
+ok   no agreement to compare with is loud
+
+== the run count
+ok   a full count passes
+ok   a short count fails
+ok   nothing measured against nothing expected fails
+
+== the member list does not drift from the toy
+ok   the toy dispatches exactly the declared members
+
+== self-test failures: 0
+engine:  sideeye 1.3.0 (trace contract v16)
+commit:  bd4fc83163fd42dd9a2bf73e38071d5e85321a95
+script:  5743b512fc5e7bf6d3965d60a1999fa02d8e8d15328bc9fdd13c14799f101ce8  spike/measure-libc-internal.sh
+libc:    ldd (Ubuntu GLIBC 2.39-0ubuntu8.8) 2.39
+compiler: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+toy:     b91f317f082e25bcf55db1287d912ee860c7c87c583e745e347b2e174e3e38e8  spike/toys/toy_mkstemp.c
+arch:    x86_64
+modes:   wrappers syscalls
+
+ok   mkstemp    wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkstemp    syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkostemp   wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkostemp   syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkstemps   wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkstemps   syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkostemps  wrappers judged (crash points 4, oracle agreed on 4)
+ok   mkostemps  syscalls judged (crash points 4, oracle agreed on 4)
+ok   mkdtemp    wrappers judged (crash points 1, oracle agreed on 1)
+ok   mkdtemp    syscalls judged (crash points 1, oracle agreed on 1)
+ok   dprintf    wrappers wall
+ok   dprintf    syscalls judged (crash points 2, oracle agreed on 2)
+ok   dprintfbig wrappers wall
+ok   dprintfbig syscalls judged (crash points 514, oracle agreed on 514)
+ok   tmpfile    wrappers inert
+ok   tmpfile    syscalls inert
+
+ok   split      dprintfbig has more crash points than dprintf under --observe syscalls (514 > 2)
+ok   each write (dprintf): 2 crash points under --observe syscalls, the oracle agreeing on 2 operations
+ok   each write (dprintfbig): 514 crash points under --observe syscalls, the oracle agreeing on 514 operations
+ok   contract  the five replacements answer what libc answers (25 cases)
+
+measured 16 runs (8 members in 2 modes) plus the split, each write and the contract differential, 0 did not match

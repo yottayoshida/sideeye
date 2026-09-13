@@ -1,0 +1,55 @@
+== the classifier, against its own predicate
+ok   a PASS with the oracle's agreement is judged
+ok   a FAIL with the oracle's agreement is judged, in the FAIL report's own spelling
+ok   a verdict without the oracle's agreement is not judged
+ok   the agreement is read from a PASS report
+ok   the agreement is read from a FAIL report
+ok   the agreement is not read from prose that mentions it
+ok   the class refusal is a wall
+ok   another refusal is not the wall
+ok   a refusal reason inside prose is not the wall
+ok   the wall reason below another headline is not the wall
+ok   could-not-execute is BROKEN, not a mismatch
+ok   not-found is BROKEN too
+ok   killed by a signal is BROKEN
+ok   a SETUP ERROR is BROKEN, not a mismatch
+ok   the inert PASS is inert, not judged
+ok   an inert line with a bad exit is neither
+
+== each mode reads its own column
+ok   wrappers reads the second field
+ok   syscalls reads the third field
+ok   a two-field entry is malformed
+ok   a four-field entry is malformed
+ok   an empty field is malformed
+ok   an unknown mode is malformed
+
+== the comparison, per mode, against synthetic measurements
+ok   the right column is silent (wrappers)
+ok   the swapped columns are loud (wrappers)
+ok   the right column is silent (syscalls)
+ok   the swapped columns are loud (syscalls)
+
+== the split, both directions
+ok   more crash points for the big payload is silent
+ok   the same count is loud
+ok   fewer is loud
+ok   an unmeasured count is loud
+ok   an empty count is loud
+
+== each write a crash point, both directions
+ok   crash points equal to the agreed operations is silent
+ok   one crash point short is loud
+ok   one crash point over is loud
+ok   no agreement to compare with is loud
+
+== the run count
+ok   a full count passes
+ok   a short count fails
+ok   nothing measured against nothing expected fails
+
+== the member list does not drift from the toy
+ok   the toy dispatches exactly the declared members
+
+== self-test failures: 0
+selftest rc=0

@@ -186,6 +186,10 @@ coincidence. Without the flag the leg would have passed either way.
 
 ## The two the change does not take, and why
 
+*(As of 2026-09-13 this section is the libc boundary's account, and its 8192 is glibc
+2.36's cut for one payload rather than a constant: the last section measures `dprintf`
+judged under `--observe syscalls`, and glibc 2.41 cutting 2048 bytes at a time.)*
+
 **`dprintf` / `vdprintf` stay a wall.** glibc splits at 8192 bytes (measured above).
 A replacement is free to issue whatever syscalls it likes — the oracle sees the
 replacement, not glibc, so the accounts would agree either way — but agreement is not
@@ -216,8 +220,9 @@ correction.**
 
 ## What a green `measure-libc-internal.sh` does not mean
 
-- Not that the class is closed: `dprintf` is declared `wall` and a green run **includes
-  it refusing**.
+- Not that the class is closed: under `--observe wrappers` `dprintf` is declared `wall`
+  and a green run **includes it refusing**. (Since 2026-09-13 the script runs both modes;
+  under `--observe syscalls` it is declared and measured `judged` — see the last section.)
 - Not anything about macOS: the oracle here is strace. **What the macOS CI leg gives is
   narrower than "the same thing over there"** — it runs the contract differential
   (plain against shimmed, with the resolved-image control), not an oracle comparison.
@@ -254,3 +259,86 @@ pointing `SIDEEYE_ROOT` at the older build moved the *toy source* with it, so ev
 member came back `other` with "unknown command". It was red, loudly, for a reason that
 had nothing to do with what the check measures. The script now takes the engine, the
 shim and the toy as separate overrides so the contrast can move one axis at a time.
+
+## 2026-09-13: both observation modes (#541)
+
+The wall above is a decision about the libc boundary. `--observe syscalls` (ADR 0052,
+widened by ADR 0059) counts at the kernel's, where glibc's split writes arrive one by
+one. Until this change the script ran only the default mode; it now runs every member
+under both, declared `member:wrappers:syscalls`.
+
+| | |
+|---|---|
+| engine | `sideeye 1.3.0`, trace contract **v16**, built from main `a56186a` with this change, cross-built for aarch64-linux |
+| libc | `ldd (Debian GLIBC 2.36-9+deb12u14) 2.36` (the acceptance image) and `ldd (Debian GLIBC 2.41-12+deb13u4) 2.41` (Debian trixie) |
+| compiler | `gcc (Debian 12.2.0-14+deb12u1) 12.2.0` and `gcc (Debian 14.2.0-19) 14.2.0` |
+| arch | `aarch64` |
+| oracle | `/usr/bin/strace` |
+| toy | `spike/toys/toy_mkstemp.c`, sha256 `b91f317f082e25bcf55db1287d912ee860c7c87c583e745e347b2e174e3e38e8` |
+| script | `spike/measure-libc-internal.sh`, sha256 `5743b512fc5e7bf6d3965d60a1999fa02d8e8d15328bc9fdd13c14799f101ce8`, printed by each run |
+
+Transcripts are in `2026-09-13-both-modes/` (`run.txt` is glibc 2.36, `run-glibc-2.41.txt`
+the other). The runs print `commit: unknown` because the containers have no git; the
+build is the one named above.
+
+| member | `--observe wrappers` | `--observe syscalls`, glibc 2.36 | `--observe syscalls`, glibc 2.41 |
+|---|---|---|---|
+| `mkstemp`, `mkostemp`, `mkstemps`, `mkostemps` | judged, 4 crash points | judged, 4 | judged, 4 |
+| `mkdtemp` | judged, 1 | judged, 1 | judged, 1 |
+| `dprintf` | `UNKNOWN oracle_missed_operation` | **judged, 2** | **judged, 2** |
+| `dprintfbig` (new) | `UNKNOWN oracle_missed_operation` | **judged, 3** | **judged, 514** |
+| `tmpfile` | inert | inert | inert |
+
+The `wrappers` column is the same on both glibc versions. Every judged report carries the
+oracle's agreement on as many operations as the run has crash points — the script prints
+both — a verdict without that line no longer counts as judged, and for the two `dprintf`
+members under `syscalls` the two numbers must be equal (`each write` in the run).
+
+`dprintf` is the only member from 2026-08-31 whose outcome depends on the mode, and
+`dprintfbig` is the one whose numbers depend on glibc. The plain `strace`
+(`plain-strace-writes.txt`, `plain-strace-writes-glibc-2.41.txt`) shows why: the one-line
+append is one `write` of 13 bytes on both, while the 2^20 + 1 bytes are **1048576 then 1**
+on glibc 2.36 and **513 writes of up to 2048 bytes** on glibc 2.41, where `dprintf` formats
+into a 2048-byte buffer of its own rather than a FILE's. Neither is the "8192 then the
+rest" that the 8999-byte payload in the first table suggested. One crash point per write
+plus the open, on both: 3 and 514. That is the reason the check compares the two members
+rather than pinning a number, and the reason the page no longer says where glibc cuts.
+**On x86_64 the measurement is CI's.** The pull request's run of this script (#582, run
+34745467126, runner image `ubuntu-24.04`, Ubuntu glibc 2.39, head `e3379c3`) matched all sixteen
+declarations and judged `dprintf` over 2 crash points and `dprintfbig` over 514 under
+`syscalls`, the oracle agreeing on each — the count glibc 2.41 gave on aarch64; the runner's
+write sizes were not traced (`ci-x86_64-glibc-2.39.txt`, the step's own lines).
+
+Before the change was written, the script with `--observe` added to its explore line and
+nothing else gave these outcomes for the seven members that existed, on main `39da3cf`
+(`before/both-modes-on-39da3cf.txt`, with that copy of the script beside it); and a
+separate probe toy appending 8999 bytes the same way was judged over 3 crash points under
+`syscalls`, four runs of four (`before/probe-8999-bytes.txt`, with its script and
+`big541.c`).
+
+### The reds
+
+Each on the real engine with glibc 2.36, from a copy of the final script or the toy with
+one change:
+
+| change | result |
+|---|---|
+| explore not given `--observe` | both `dprintf` members MISMATCH under `syscalls`, and the split and both each-write checks report them unmeasured — five mismatches; exit 1 (`red-no-observe.txt`) |
+| `dprintfbig`'s payload shrunk to 12 bytes | every declaration stays green and **only the split goes red**, 2 against 2; exit 1 (`red-small-payload.txt`) |
+| the declaration emptied | BROKEN, 0 runs of 16; exit 2 (`red-empty-declaration.txt`) |
+| `dprintf` declared `wall` under `syscalls` | one MISMATCH; exit 1 (`red-declared-wall.txt`) |
+| the shim swapped for `libsideeye_shim_observefail.so`, which always fails to install its filter | the engine's own SETUP ERROR, exit 3, reported BROKEN at the first `syscalls` run; exit 2 (`red-setup-error.txt`) |
+
+The second row is the one the design rests on. A big member declared only `judged` would
+have stayed green with a payload too small to split — review said so before the member
+was written — and the comparison is what turns it red. The requirement that a verdict
+carry the oracle's agreement, and the each-write equality, are red on synthetic input
+only: every run here passes `--oracle`, the engine produced no verdict without agreement
+on these toys, and it never counted a crash point the oracle did not. The synthetic
+reports are the engine's own two spellings — a PASS from this run, and a FAIL, whose
+oracle line has no colon, from `spike/cohort2/borg-r3/explore-transcript.txt`; the first
+version of the classifier read the PASS spelling only, which the second review caught.
+`--selftest` (`selftest.txt`, 39 checks, run under dash) holds those, the classifier, the
+column each mode reads, the split and each write in both directions, the run count and
+the member list against the toy. The three reds taken from a modified copy of the script
+print that copy's own sha256; the other runs print the final script's.
