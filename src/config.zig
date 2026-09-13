@@ -311,9 +311,54 @@ pub const ApparatusEntry = union(enum) {
 
 pub const ApparatusParse = union(enum) { ok: ApparatusEntry, bad: []const u8 };
 
+/// The digit grammar of an expected exit status: one to three digits, 0..255, nothing
+/// else (a leading zero is a digit). One grammar for the toml key `expected_status` and the
+/// `--expect-status` flag, so the two cannot drift into accepting different spellings — the
+/// same reason `parseApparatusEntry` below is one grammar. Null is "not that grammar"; the
+/// caller refuses in the words of its own surface (the flag's, the toml's); the value they
+/// produce governs the recording check, the baseline world, the saved case and the report
+/// alike (ADR 0014). Here and not beside the flag since #572 seam 3b: the freeze audit's rung 1 settles surface 1 — the
+/// config format — on this file and `src/main.zig` being unchanged, and a grammar that
+/// lived in `src/cli.zig` would have been outside what it looks at.
+pub fn parseExpectStatus(s: []const u8) ?u8 {
+    if (s.len == 0 or s.len > 3) return null;
+    var v: u32 = 0;
+    for (s) |ch| {
+        if (ch < '0' or ch > '9') return null;
+        v = v * 10 + (ch - '0');
+    }
+    if (v > 255) return null;
+    return @intCast(v);
+}
+
+test "parseExpectStatus: one to three digits, 0..255, nothing else" {
+    const expect = std.testing.expectEqual;
+    try expect(@as(?u8, 0), parseExpectStatus("0"));
+    try expect(@as(?u8, 7), parseExpectStatus("7"));
+    try expect(@as(?u8, 255), parseExpectStatus("255"));
+    // A leading zero is a digit: "042" was accepted as 42 before this function existed.
+    try expect(@as(?u8, 42), parseExpectStatus("042"));
+    try expect(@as(?u8, 0), parseExpectStatus("00"));
+    try expect(@as(?u8, null), parseExpectStatus(""));
+    try expect(@as(?u8, null), parseExpectStatus("256"));
+    try expect(@as(?u8, null), parseExpectStatus("1000"));
+    // Four digits under 256: the length rule alone refuses these, so a mutation that lets a
+    // fourth digit through is caught here and not by the range rule (review R2 of #572 seam 3b
+    // found the first version of this test had no such input, and a length mutation lived).
+    try expect(@as(?u8, null), parseExpectStatus("0042"));
+    try expect(@as(?u8, null), parseExpectStatus("0000"));
+    try expect(@as(?u8, null), parseExpectStatus("0255"));
+    try expect(@as(?u8, null), parseExpectStatus("-1"));
+    try expect(@as(?u8, null), parseExpectStatus("+1"));
+    try expect(@as(?u8, null), parseExpectStatus(" 1"));
+    try expect(@as(?u8, null), parseExpectStatus("1 "));
+    try expect(@as(?u8, null), parseExpectStatus("0x1"));
+}
+
 /// Parse one `kind:value` entry, or say why it is not one. One grammar for the toml key
 /// and the `--apparatus` flag, so the two cannot drift into accepting different spellings
-/// — the same reason `expected_status` shares its digit check with the flag.
+/// — the same reason `expected_status` shares its digit check with the flag
+/// (`parseExpectStatus` above).
 pub fn parseApparatusEntry(entry: []const u8) ApparatusParse {
     if (badBytes(entry)) |msg| return .{ .bad = msg };
     // The toml's array form cannot spell a double quote inside an element, so the flag

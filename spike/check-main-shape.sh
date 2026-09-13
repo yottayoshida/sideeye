@@ -50,8 +50,10 @@
 # Exit 0: within both ceilings, counts printed. Exit 1: a ceiling exceeded, or the file
 # unreadable. `--selftest`: proves the check goes red on a synthetic file one declaration
 # over either ceiling — in each of the spellings above — and stays green at the ceilings with
-# the non-counted forms present, then exits 0; any other outcome exits 1. CI runs the
-# selftest first, so a green from a check that cannot go red is never reported.
+# the non-counted forms present, then exits 0; any other outcome exits 1. The selftest uses
+# ceilings of its own (20 and 8), not the production ones, which will go below what its decoy
+# needs as the series proceeds. CI runs the selftest first, so a green from a check that
+# cannot go red is never reported.
 #
 # Sunset: delete this when main.zig holds `main()` and its phases and nothing else — the
 # module map will say so — or when a ceiling has not moved in six months, which means the
@@ -59,8 +61,8 @@
 set -u
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-FN_MAX=31
-VAR_MAX=4
+FN_MAX=23
+VAR_MAX=1
 
 # count <file> -> "<fn> <var>"
 count() {
@@ -104,6 +106,15 @@ judge() {
 }
 
 if [ "${1:-}" = "--selftest" ]; then
+    # The selftest proves the PREDICATE — that each spelling is counted and each non-spelling
+    # is not — and does that at ceilings of its own. The production ceilings come down with
+    # every seam and went below the decoy's three special variables at seam 3b (VAR_MAX 1),
+    # where a selftest tied to them read the at-ceiling file as over; tying it to fixed
+    # numbers keeps the two questions apart. The production judge (the last line of this
+    # script) runs at FN_MAX/VAR_MAX as set above whenever the script is invoked without
+    # --selftest; this block exits before reaching it.
+    FN_MAX=20
+    VAR_MAX=8
     tmp=$(mktemp -d) || { echo "FAIL selftest: cannot create a temp directory"; exit 1; }
     cleanup() { rm -f "$tmp"/*; rmdir "$tmp" 2>/dev/null; }
     trap cleanup EXIT HUP INT TERM

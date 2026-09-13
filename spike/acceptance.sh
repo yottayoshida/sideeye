@@ -6353,10 +6353,17 @@ printf '%s\n' "$bare_out" | head -1 | grep -q "^sideeye " || {
 #    makes "every mode" a claim the check does not support. Only the flag spellings of help
 #    (--help, -h) are dropped — they are answered by the same branch as `help` and get no
 #    synopsis line of their own.
-# The string literals the parser compares one argv slot against. Both callers below
-# want the same thing out of `src/main.zig` and differ only in which slot.
+# The string literals the parser compares one argv slot against. The callers below want
+# the same thing and differ only in which slot. Since #572 seam 3b the parser is in two
+# files — the `mcp`/`help`/`version`/`demo` branches and the `<mode> --help` branch in
+# `src/main.zig`, the mode dispatch and the flag loop in `src/cli.zig` — so both slots are
+# read out of both files and the set is the union: a mode word or a flag added in either
+# file is in it. Pointed at one file this read a slot short (measured at the move: cli.zig
+# alone holds three of the nine slot-1 words, main.zig alone none of the flags) and the
+# checks below went red for the wrong reason, or — a mode added only to the dispatch —
+# would have missed it without going red at all.
 parser_literals() { # argv-index
-    grep -oE "eql\(u8, argv\[$1\], \"[^\"]+\"\)" "$ROOT/src/main.zig" |
+    grep -ohE "eql\(u8, argv\[$1\], \"[^\"]+\"\)" "$ROOT/src/main.zig" "$ROOT/src/cli.zig" |
         sed -e 's/.*, "//' -e 's/")$//' | sort -u
 }
 
@@ -6681,7 +6688,7 @@ echo "=========== check 15: help is answered per mode, and cannot reach the pars
 # parser split into a side-effect-free stage and a side-effecting one, which is a
 # larger change than this ticket.
 #
-# The mode list is read out of src/main.zig, never written here. A list here would let
+# The mode list is read out of src/main.zig and src/cli.zig, never written here. A list here would let
 # the check pick its own population: add a mode and the check would keep passing over
 # the old set. Same reason #295 takes its flag candidates from the parser.
 help_fails=0
@@ -6796,9 +6803,24 @@ done
 # The cheap second opinion. Narrower than the check above by construction — it knows one
 # spelling of the comparison — so it is not load-bearing, and it is not described as if
 # it were. It costs nothing and names the design decision where a reader will look.
-help_loop=$(grep -cE 'eql\(u8, (argv|rest)\[i\], "(--help|-h)"\)' "$ROOT/src/main.zig")
+# Two files since #572 seam 3b: the flag loop is `cli.parse` and the demo's `rest[i]` loop is
+# still main.zig's. Each file is counted on its own and a file that cannot be read is a
+# failure, not a zero: a first two-file version summed `grep -ch` through awk, which prints
+# 0 for two missing files and reads as "no literal" — the fail-open a later seam could reach
+# by renaming a file. The one-file version before it went red on an unreadable file because
+# an empty count is not "0"; this keeps that.
+help_loop=0
+for help_src in "$ROOT/src/main.zig" "$ROOT/src/cli.zig"; do
+    help_n=$(grep -cE 'eql\(u8, (argv|rest)\[i\], "(--help|-h)"\)' "$help_src" 2>/dev/null)
+    case "$help_n" in
+        ''|*[!0-9]*)
+            echo "     $help_src could not be read for the --help/-h parse-loop literal count"
+            help_fails=$((help_fails + 1)); help_n=0 ;;
+    esac
+    help_loop=$((help_loop + help_n))
+done
 [ "$help_loop" = "0" ] || {
-    echo "     --help/-h appears as a parse-loop literal in src/main.zig ($help_loop site(s)); help must be answered before the loop, which calls removeFile for --json"
+    echo "     --help/-h appears as a parse-loop literal in src/main.zig or src/cli.zig ($help_loop site(s)); help must be answered before the loop, which calls removeFile for --json"
     help_fails=$((help_fails + 1)); }
 
 rm -f "$help_dir"/canonical "$help_dir"/canonical.err "$help_dir"/out "$help_dir"/err "$help_dir"/marker.err "$help_dir"/control.err

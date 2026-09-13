@@ -367,3 +367,66 @@ no tests and is not named in `test_sources`.
 `docs/report-schema.md`, and `src/main.zig` only where the phase that knows the value sets
 it. If it needs a new module-level variable in `main.zig`, the ratchet refuses it, and that
 is the seam working rather than a reason for an exception.
+
+### Seam 3, second half — the argv surface and the saved case (2026-09-13)
+
+The half the design review moved out of `config.zig` and back into `main.zig` for the
+freeze audit's sake goes to two files, and the parse loop becomes a function. `src/cli.zig`
+(606 lines) owns `Args`, `version`, the usage text and `parse`: the mode dispatch, the flag
+loop and the mode refusals that opened `main()`, with the two tests that hold `version` and
+the help text. `src/case.zig` (247 lines) owns `ReplayCase`, `writeCase`, `prefixHash` and
+`jsonCommand` — the case file on both sides; it holds no test and is not a test root.
+`main.zig` went from 4,570 to 3,793 lines and calls in at four `cli.` and six `case.` lines.
+`splitArgs`, `commandArgv` and the `resolve*` family stay, as decided above — and so, found
+by the review of this diff, does the digit grammar of `expected_status`: `parseExpectStatus`
+had left with the flag loop, but the toml key shares it (`config.zig` says so), and a grammar
+in `cli.zig` is outside what rung 1 reads. It is `config.parseExpectStatus(s) ?u8` now, pure,
+with the flag and the toml each refusing in its own words — the same inputs and the same
+sentences as before, in the file the freeze audit already pins, with a unit test.
+
+**Five edits that are not moves, each declared.** The Decision made the CLI's move
+conditional on its refusals being returnable as values; seam 2 measured that they are not,
+and this seam does not try — `parse` refuses through `refuse.setupError` exactly as the loop
+did, and the fifteen state writes between its refusals (`report.noteOracle`,
+`report.checker_note`, `report.l1_note`, `report.expected_status_val`, `report.settleDeclared`,
+`refuse.json_path` with the `removeFile` beside it, `boundary.boundary_ev.witness`, the flag
+buffers, `SIGCHLD`) happen in the same order, because the statements are the same. What the
+seam changed: (1) the loop's 166 source lines are the body of `pub fn parse(argv) Parsed`,
+at the indentation they already had inside `main()`, less the three lines that set
+`refuse.json_arena` — those stay in `main()` before the call, where they were — and less the
+`const Mode = enum …` line, which is a top-level `pub const Mode` now (a promotion, not a
+move), plus one `return`; (2) `stop_when_orphaned`, a module variable the loop wrote and the
+world loop read, is a field of `Args` with the same default, read as `args.stop_when_orphaned`
+at its one site; (3) `Parsed` is a new three-field struct, and `main()` receives it in four
+lines — `mode` and `case_arg` were assigned once each and are `const` there now; (4)
+`writeCase` in `case.zig` spells `cli.Args` and `cli.version`; (5) the digit grammar above is a
+pure function of `config.zig` returning null, and its two callers refuse where they always
+did. `cli.zig`'s header states its
+contract with the state writes in it, since "argv → Args" alone would be false (seam 2's
+finding, the design review's C4).
+
+**Ratchet**: 31 → 23 functions, 4 → 1 variable (`startup_ppid`). Its selftest no longer uses
+the production ceilings: the decoy that proves the predicate holds three special variables,
+and at a ceiling of one it read the at-ceiling file as over — the predicate and the ceiling
+are two questions, and the selftest now asks the first at fixed numbers (20 and 8).
+**Exits**: `main.zig` 12 → 11, `cli.zig` 1 (the unknown-mode banner), `refuse.zig` 2.
+**Test roots**: 15 → 16; **the main root moves for the first time**, 311 → 309 — the two
+CLI tests reach `version` and `usage_fmt` only, and no test left in `main.zig` reaches
+`cli.zig` through a helper, so they run under their own root alone (2) — which is what
+naming a file in `test_sources` is for, and the case where seam 1's prediction ("the main
+root does not move") stops holding. The grammar's new test in `config.zig` is then collected
+by four roots (config, main, report, refuse), so the counts read 310, 16, 296, 300 and the
+total 1,662; boundary 253, capture 31 unchanged. **Acceptance**: `parser_literals` reads both slots out of both
+files and takes the union, so a mode word or a flag added in either file is in the set (a
+per-slot version read one slot short); the sets are unchanged by the move — nine mode words,
+twenty-two flags. `help_loop` counts each file on its own and treats an unreadable file as a
+failure rather than a zero. The failure set in the container is `main`'s twelve.
+
+**Done, for the boundaries #572 names.** Every boundary the issue lists other than the
+orchestration of a run — the CLI, the saved case, the report's two renderings, the
+UNKNOWN/SETUP_ERROR classification, the process boundary, the capture readers, help and
+version — now lives in a module whose header states its contract, and `main.zig` holds none
+of their bodies. What remains is the fourth seam the plan always named last: `main()`'s
+nine phases as functions, with the twenty-three functions and one variable still here
+either the orchestrator's own or kept by decision (the surface-1 functions, the apparatus
+check, the observer's start, the demo, `preflightReport`).

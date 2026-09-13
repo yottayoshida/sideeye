@@ -430,6 +430,10 @@ pub fn build(b: *std.Build) void {
         // that stays true. `src/files.zig` holds no tests and is not named.
         "src/report.zig",
         "src/refuse.zig",
+        // The third seam's second half: the argv surface. Its two tests reach `version` and
+        // the help text only, and nothing left in main.zig reaches them, so without this
+        // name they would run nowhere. `src/case.zig` holds no tests and is not named.
+        "src/cli.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.
