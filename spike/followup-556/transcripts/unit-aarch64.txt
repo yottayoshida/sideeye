@@ -1,0 +1,12 @@
+aarch64
+ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+1/8 syscalls.test.the filter traps an unmarked write and allows the handler's re-issue...OK
+2/8 syscalls.test.an open's flags decide whether it is trapped...OK
+3/8 syscalls.test.the trap set's length does not move the jump targets...OK
+4/8 syscalls.test.the built-in program is the one this architecture's set describes...OK
+5/8 syscalls.test.AUDIT_ARCH values match the header's...OK
+6/8 syscalls.test.the trap frame's offsets keep the shape a transcription slip would break...OK
+7/8 syscalls.test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves...OK
+8/8 syscalls.test.a sa_mask without SIGSYS is forwarded as the caller's own...OK
+All 8 tests passed.
+test rc=0

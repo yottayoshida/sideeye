@@ -261,11 +261,13 @@ const usage_fmt =
     \\               replaced, while exec resets the SIGSYS handler that makes it
     \\               survivable, so a statically linked helper dies at its first
     \\               state-changing call (measured: exit 0 under wrappers, killed by
-    \\               SIGSYS under this). A child the shim IS loaded into is unaffected.
-    \\               In this mode the shim also keeps SIGSYS deliverable, interposing
-    \\               sigaction/signal/sigprocmask/pthread_sigmask so a target cannot
-    \\               take the handler away; one that reaches those as raw syscalls
-    \\               still dies
+    \\               SIGSYS under this). A child the shim IS loaded into is unaffected,
+    \\               except the child glibc's posix_spawn runs file actions in before
+    \\               its exec, with every signal blocked.
+    \\               In this mode a target must leave SIGSYS alone. The shim guards
+    \\               sigaction/signal/sigprocmask/pthread_sigmask against it, which a
+    \\               target can notice, but not every way in: docs/report-schema.md
+    \\               item (4) names the ways known
     \\  --allow-unverified
     \\               accept PASS with no completeness check. On macOS this is the
     \\               answer when no privilege is available: SIP leaves DTrace's

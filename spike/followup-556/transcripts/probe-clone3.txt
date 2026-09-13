@@ -1,0 +1,28 @@
+libc: ldd (Debian GLIBC 2.41-12+deb13u4) 2.41   arch: aarch64
+-- clone family lines (first 6):
+-- spawn toy under the main shim, preflight --observe syscalls:
+preflight rc=0
+no file actions, /bin/true           -> exited 0
+no file actions, missing program     -> posix_spawn failed: No such file or directory
+addopen O_RDONLY, /bin/true          -> exited 0
+addopen O_WRONLY|O_CREAT, /bin/true  -> killed by signal 31
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+-- head of the preflight output:
+no file actions, /bin/true           -> exited 0
+no file actions, missing program     -> posix_spawn failed: No such file or directory
+addopen O_RDONLY, /bin/true          -> exited 0
+addopen O_WRONLY|O_CREAT, /bin/true  -> killed by signal 31
+libc: ldd (Debian GLIBC 2.41-12+deb13u4) 2.41   arch: aarch64
+-- clone family lines (first 6):
+-- spawn toy under the main shim, preflight --observe syscalls:
+preflight rc=0
+no file actions, /bin/true           -> exited 0
+no file actions, missing program     -> posix_spawn failed: No such file or directory
+addopen O_RDONLY, /bin/true          -> exited 0
+addopen O_WRONLY|O_CREAT, /bin/true  -> killed by signal 31
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+-- head of the preflight output:
+no file actions, /bin/true           -> exited 0
+no file actions, missing program     -> posix_spawn failed: No such file or directory
+addopen O_RDONLY, /bin/true          -> exited 0
+addopen O_WRONLY|O_CREAT, /bin/true  -> killed by signal 31

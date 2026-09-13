@@ -1,0 +1,11 @@
+--- <worktree>/shim/src/syscalls.zig	2026-09-13 14:50:51
++++ <scratch>/mut556d/shim/src/syscalls.zig	2026-09-13 14:57:17
+@@ -789,7 +789,7 @@
+     var copy: std.c.Sigaction = undefined;
+     @memcpy(std.mem.asBytes(&copy), @as([*]const u8, @ptrCast(act)));
+     if (copy.mask[sigsys_word] & sigsys_bit == 0) return null;
+-    copy.mask[sigsys_word] &= ~sigsys_bit;
++    @memset(&copy.mask, 0); // MUTANT M4: the whole mask is dropped
+     return copy;
+ }
+ 

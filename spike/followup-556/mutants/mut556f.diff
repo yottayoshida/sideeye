@@ -1,0 +1,15 @@
+--- a/shim/src/syscalls.zig	2026-09-13 16:02:28
++++ b/shim/src/syscalls.zig	2026-09-13 16:02:28
+@@ -809,7 +809,11 @@
+     const f = nextSymbol(SigactionFn, "sigaction", &real_sigaction) orelse return -1;
+     if (!guard_signal or act == null) return f(signum, act, oldact);
+     if (signum != sigsys_no) {
+-        const trimmed = withoutSigsys(act.?) orelse return f(signum, act, oldact);
++        const trimmed = withoutSigsys(act.?) orelse {
++            var same: std.c.Sigaction = undefined;
++            @memcpy(std.mem.asBytes(&same), @as([*]const u8, @ptrCast(act.?)));
++            return f(signum, &same, oldact);
++        };
+         return f(signum, &trimmed, oldact);
+     }
+     // The query half is answered by the library, so `oldact` describes the handler that

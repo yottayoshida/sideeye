@@ -1,0 +1,22 @@
+engine: sideeye 1.3.0 (trace contract v16)
+shim sha256: 38eb4e277905e92a3ac397353a6181e71e635deba41bf6f45688d61dbbc9821b
+python: Python 3.13.5  libc: ldd (Debian GLIBC 2.41-12+deb13u3) 2.41
+==================== plain ====================
+abs path, no pipes  -> FileNotFoundError
+abs path, pipes     -> FileNotFoundError
+PATH name, no pipes -> FileNotFoundError
+PATH name, pipes    -> FileNotFoundError
+==================== preflight --observe wrappers ====================
+preflight rc=0
+abs path, no pipes  -> FileNotFoundError
+abs path, pipes     -> FileNotFoundError
+PATH name, no pipes -> FileNotFoundError
+PATH name, pipes    -> FileNotFoundError
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+==================== preflight --observe syscalls ====================
+preflight rc=0
+abs path, no pipes  -> FileNotFoundError
+abs path, pipes     -> FileNotFoundError
+PATH name, no pipes -> ran, returncode -31
+PATH name, pipes    -> ran, returncode -31
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed

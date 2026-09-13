@@ -1,0 +1,10 @@
+--- a/shim/src/syscalls.zig	2026-09-13 16:02:28
++++ b/shim/src/syscalls.zig	2026-09-13 16:02:28
+@@ -807,6 +807,7 @@
+ /// a handler installed this way reads its mask back without `SIGSYS`.
+ pub fn sigaction(signum: c_int, act: ?*const anyopaque, oldact: ?*anyopaque) callconv(.c) c_int {
+     const f = nextSymbol(SigactionFn, "sigaction", &real_sigaction) orelse return -1;
++    if (act != null and signum != sigsys_no) if (withoutSigsys(act.?)) |t| return f(signum, &t, oldact);
+     if (!guard_signal or act == null) return f(signum, act, oldact);
+     if (signum != sigsys_no) {
+         const trimmed = withoutSigsys(act.?) orelse return f(signum, act, oldact);

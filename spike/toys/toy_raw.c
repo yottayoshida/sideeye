@@ -240,6 +240,7 @@ static int cmd_foreign_sigsys(void) {
  * What this does NOT cover, and cannot: a target reaching `rt_sigprocmask` without libc.
  * Interposition does not see that, and the process dies rather than refusing, so there is
  * no verdict to assert on. `docs/report-schema.md` carries it as a disclosed limit.
+ * Nor does it cover the mask a handler of another signal runs under; `samask` does.
  */
 static int cmd_blocked(void) {
     sigset_t set;
@@ -259,6 +260,43 @@ static int cmd_blocked(void) {
     syscall(SYS_fsync, (int)fd);
     syscall(SYS_close, (int)fd);
     return 0;
+}
+
+/* A handler for another signal, installed with every signal in its sa_mask, that writes raw.
+ *
+ * Measured on 2026-09-13 before this was written: the kernel adds a handler's sa_mask to the
+ * blocked set while the handler runs, so this handler holds SIGSYS blocked, and its first
+ * trapped call killed the process with signal 31 under `--observe syscalls`. libuv installs
+ * its handlers this way, which is how node was refused `recording_run_failed`.
+ *
+ * The shim answers in its libc `sigaction`: a request for another signal reaches the library
+ * without SIGSYS in its mask and with everything else as written. Both halves are asserted
+ * here — the write completing (a run that reaches a verdict) and the rest of the mask still
+ * blocked inside the handler (exit 3 otherwise), so a shim that dropped the whole mask would
+ * not pass for one that dropped a bit.
+ */
+static char samask_path[4096];
+static volatile sig_atomic_t samask_wrote;
+static volatile sig_atomic_t samask_rest_blocked;
+
+static void samask_handler(int sig) {
+    (void)sig;
+    sigset_t cur;
+    if (sigprocmask(SIG_BLOCK, NULL, &cur) == 0)
+        samask_rest_blocked = sigismember(&cur, SIGUSR2) == 1 && sigismember(&cur, SIGTERM) == 1;
+    if (raw_write_file(samask_path, "m") == 0) samask_wrote = 1;
+}
+
+static int cmd_samask(void) {
+    join_path(samask_path, sizeof samask_path, "samask");
+    struct sigaction sa;
+    memset(&sa, 0, sizeof sa);
+    sa.sa_handler = samask_handler;
+    sigfillset(&sa.sa_mask);
+    if (sigaction(SIGUSR1, &sa, NULL) != 0) return 1;
+    if (raise(SIGUSR1) != 0) return 1;
+    if (!samask_wrote) return 1;
+    return samask_rest_blocked ? 0 : 3;
 }
 
 static int cmd_doctor(void) {
@@ -287,13 +325,14 @@ static int cmd_load_key(void) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s init|rotate|raw-all|blocked|foreign-sigsys|doctor|load-key\n", argv[0]);
+        fprintf(stderr, "usage: %s init|rotate|raw-all|blocked|samask|foreign-sigsys|doctor|load-key\n", argv[0]);
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
     if (strcmp(argv[1], "rotate") == 0) return cmd_rotate();
     if (strcmp(argv[1], "raw-all") == 0) return raw_all();
     if (strcmp(argv[1], "blocked") == 0) return cmd_blocked();
+    if (strcmp(argv[1], "samask") == 0) return cmd_samask();
     if (strcmp(argv[1], "foreign-sigsys") == 0) return cmd_foreign_sigsys();
     if (strcmp(argv[1], "doctor") == 0) return cmd_doctor();
     if (strcmp(argv[1], "load-key") == 0) return cmd_load_key();

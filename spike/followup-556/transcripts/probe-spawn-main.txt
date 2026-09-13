@@ -1,0 +1,21 @@
+engine: sideeye 1.3.0 (trace contract v16)   shim sha256: b952c105547c7ef15acb2a9276c9aff360b873e6d3cd67be077e42cb9d632cb9
+libc: ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+==================== plain ====================
+no file actions, /bin/true           -> exited 0
+no file actions, missing program     -> posix_spawn failed: No such file or directory
+addopen O_RDONLY, /bin/true          -> posix_spawn failed: No such file or directory
+addopen O_WRONLY|O_CREAT, /bin/true  -> exited 0
+==================== preflight --observe wrappers ====================
+preflight rc=0
+no file actions, /bin/true           -> exited 0
+no file actions, missing program     -> posix_spawn failed: No such file or directory
+addopen O_RDONLY, /bin/true          -> exited 0
+addopen O_WRONLY|O_CREAT, /bin/true  -> exited 0
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+==================== preflight --observe syscalls ====================
+preflight rc=0
+no file actions, /bin/true           -> exited 0
+no file actions, missing program     -> posix_spawn failed: No such file or directory
+addopen O_RDONLY, /bin/true          -> exited 0
+addopen O_WRONLY|O_CREAT, /bin/true  -> killed by signal 31
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
