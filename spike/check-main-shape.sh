@@ -10,7 +10,11 @@
 #
 # What counts as a function: a top-level `fn` with any of the modifiers Zig allows in front
 # of it — `pub`, `export`, `inline`, `noinline`, and `extern` with or without a library name
-# (`extern "c" fn`, which is how src/posix.zig declares libc). What counts as state: a
+# (`extern "c" fn`, which is how src/posix.zig declares libc) — AND a `fn` declared directly
+# inside a top-level container, for the same reason the container's `var` counts below: a
+# `const phases = struct { fn a() … fn b() … }` is a namespace with main.zig's functions in
+# it, and the third review of this check (seam 3a) appended one holding three functions to
+# a copy of main.zig and read green. What counts as state: a
 # top-level `var` with any of its modifiers (`pub`, `export`, `threadlocal`, `extern` with or
 # without a library name), AND a `var` declared directly inside a top-level container
 # (`const X = struct { var y … };`, `extern struct`, `packed struct`, `union`, `enum`,
@@ -20,7 +24,12 @@
 # check counted bare `fn ` and `var ` at column zero and said in its own comment that
 # `pub var` does not exist in Zig, while the same pull request had declared two; the second
 # version added the modifiers and missed `extern "c"`, the spelling the repository actually
-# uses. Two review rounds caught the two; the selftest below tries every spelling named here.
+# uses; the third counted a container's `var` but not its `fn`, and its own selftest decoy
+# held a method that pinned the hole; the fourth, in the same review, found the container's
+# rules without `extern "c"` — the spelling the second round had closed at top level only.
+# Four falsifications so far, each closing the accident's shape and leaving the predicate's
+# until the predicate itself was written down here; the selftest below tries every spelling
+# this comment names, in the red direction.
 #
 # What does NOT count, deliberately: `test` blocks (tests stay beside the behaviour they
 # hold; a ceiling on tests would reward moving them away from it); a `var` inside a function
@@ -28,8 +37,10 @@
 # struct, a struct inside a function) — those belong to the declaration that holds them.
 # The one-level rule is a parsing choice, not a claim that deeper nesting cannot hold state.
 # "Directly inside a container" is read as exactly four spaces of indentation, which is
-# what `zig fmt` produces and what every file here has; a hand-formatted one-line struct or
-# a tab-indented `var` would not be counted, and nothing in CI runs `zig fmt --check` today.
+# what `zig fmt` produces and what every file here has; a `fn` or `var` in a hand-formatted
+# one-line container, or tab-indented, would not be counted, and nothing in CI runs
+# `zig fmt --check` today — the selftest's at-ceiling file holds both forms so that "not
+# counted" is pinned rather than assumed.
 #
 # What this check does not decide is WHERE a declaration belongs: a function moved out of
 # main.zig into the wrong module satisfies it. The module maps say where, in prose, and a
@@ -48,8 +59,8 @@
 set -u
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-FN_MAX=89
-VAR_MAX=32
+FN_MAX=31
+VAR_MAX=4
 
 # count <file> -> "<fn> <var>"
 count() {
@@ -64,7 +75,8 @@ count() {
     /^((pub|export) )*const [A-Za-z_0-9]+ = (extern |packed )?(struct|union|enum|opaque)/ { in_type = ($0 !~ /};[ \t]*$/); next }
     /^};/ { in_type = 0; next }
     /^}/  { in_type = 0; next }
-    in_type && /^    ((pub|export|threadlocal) )*var / { var++; next }
+    in_type && /^    ((pub|export|threadlocal|extern( "[A-Za-z0-9_]+")?) )*var / { var++; next }
+    in_type && /^    ((pub|export|inline|noinline|extern( "[A-Za-z0-9_]+")?) )*fn / { fn++; next }
     END { print fn, var }
     ' "$1"
 }
@@ -96,10 +108,12 @@ if [ "${1:-}" = "--selftest" ]; then
     cleanup() { rm -f "$tmp"/*; rmdir "$tmp" 2>/dev/null; }
     trap cleanup EXIT HUP INT TERM
     # synth <file> <plain-fn> <plain-var>: a file whose counted declarations are the plain
-    # ones asked for PLUS five functions in the other spellings (outer, export, pub inline,
-    # noinline, extern) and three variables in theirs (pub, threadlocal, struct-scope pub),
+    # ones asked for PLUS six functions in the other spellings (outer, export, pub inline,
+    # noinline, extern, and the container's method) and three variables in theirs (pub,
+    # threadlocal, struct-scope pub),
     # PLUS the forms that must not count: tests holding locals, a function holding a local
-    # and a nested struct, a container holding a method with a local, a comment saying `fn `.
+    # and a nested struct (whose `fn inner` sits two levels deep), the method's own local,
+    # a comment saying `fn `.
     synth() {
         f=$1; nf=$2; nv=$3
         : > "$f"
@@ -135,13 +149,18 @@ fn outer() void {
     _ = helper;
 }
 const E = enum { a, b };
+const OneLine = struct { fn hand_formatted() void {} var hand_formatted_state: u32 = 0; };
+const Tabbed = struct {
+	fn tab_indented() void {}
+	var tab_indented_state: u32 = 0;
+};
 // fn in a comment is not a declaration either, nor is var here
 EOF
     }
     fails=0
-    # at the ceilings: five special functions and three special variables are in the decoy
+    # at the ceilings: six special functions and three special variables are in the decoy
     # block, so synth is asked for that many fewer plain ones.
-    synth "$tmp/at" $((FN_MAX - 5)) $((VAR_MAX - 3))
+    synth "$tmp/at" $((FN_MAX - 6)) $((VAR_MAX - 3))
     if judge "$tmp/at" "selftest at-ceiling" > /dev/null; then
         echo "ok   selftest: at the ceilings — with tests, locals, a nested struct and a comment present — is green"
     else echo "FAIL selftest: a file exactly at both ceilings was reported over: $(count "$tmp/at")"; fails=$((fails + 1)); fi
@@ -169,6 +188,19 @@ EOF
     red "one more union(enum) var"   "const Either = union(enum) {
     var one_too_many: u32 = 0;
 };"
+    red "one more struct-scope fn"   "const Phases = struct {
+    fn one_too_many() void {}
+};"
+    red "one more struct-scope pub fn" "const Steps = struct {
+    pub fn one_too_many() void {}
+};"
+    red "one more struct-scope extern \"c\" fn" "const Libc = struct {
+    pub extern \"c\" fn one_too_many(n: usize) c_int;
+};"
+    red "one more struct-scope extern \"c\" var" "const Environ = struct {
+    pub extern \"c\" var one_too_many: [*][*:0]u8;
+};"
+    red "one more export var"         "export var one_too_many: u32 = 0;"
     green() { # green <label> <extra line>
         cp "$tmp/at" "$tmp/still"; printf '%s\n' "$2" >> "$tmp/still"
         if judge "$tmp/still" "selftest $1" > /dev/null; then echo "ok   selftest: $1 stays green"
@@ -185,4 +217,4 @@ EOF
     exit 0
 fi
 
-judge "${MAIN_ZIG:-$ROOT/src/main.zig}" "src/main.zig"
+judge "${MAIN_ZIG:-$ROOT/src/main.zig}" "${MAIN_ZIG:-src/main.zig}"

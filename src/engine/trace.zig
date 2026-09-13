@@ -30,7 +30,8 @@ const Allocator = std.mem.Allocator;
 /// function does itself: formatting the path (`PathTooLong`) and allocating into the
 /// arena (`OutOfMemory`).
 ///
-/// The point of naming it is `main.zig`'s two switches over `SnapshotError`, which are
+/// The point of naming it is the two switches over `SnapshotError` — `report.zig`'s
+/// `snapshotDetail` and `refuse.zig`'s `snapshotRefusal`, both in `main.zig` until #572 — which are
 /// exhaustive on purpose so that an error member added later cannot silently take a
 /// neighbour's reason. While the trace reader declared `SnapshotError`, a member added
 /// for the trace forced an arm in `snapshotDetail`, whose every sentence describes the

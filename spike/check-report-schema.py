@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hold docs/report-schema.md to the generated reports, in both directions.
 
-Usage: check-report-schema.py <schema.md> <contract.zig> <main.zig> <report.json>...
+Usage: check-report-schema.py <schema.md> <contract.zig> <report.zig> <report.json>...
 
 Five claims, each enforced:
   1. every field present in any given report is documented (a table row whose

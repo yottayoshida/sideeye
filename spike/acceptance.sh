@@ -37,7 +37,7 @@ reasons=""
 # counted a detector no leg had watched fire. Saying it once makes that unwriteable.
 #
 # `-qxF`: F because a reason is a literal and not a pattern, x because the whole line has
-# to be it. `unknown()` in src/main.zig is the only writer of a `UNKNOWN  <reason>` line
+# to be it. `unknown()` in src/refuse.zig is the only writer of a `UNKNOWN  <reason>` line
 # and puts exactly two spaces there, so the anchored literal is exact rather than
 # optimistic — where a bare `grep -q` also matches the reason quoted inside a message.
 refused_uncredited() {   # refused_uncredited <reason> <rc> <output> — the same test, no ledger credit
@@ -4032,7 +4032,7 @@ if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
     fails=$((fails + 1))
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
-    "$ROOT/src/main.zig" \
+    "$ROOT/src/report.zig" \
     "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/observe.json" "$SD/children.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
@@ -7082,7 +7082,7 @@ fi
 # demonstrate the first branch.
 #
 # What this pins is the WIRING, which no unit test can reach: the branches live in
-# main.zig, whose refusals exit the process. Disabling the check turns BOTH legs red at
+# refuse.zig, whose refusals exit the process. Disabling the check turns BOTH legs red at
 # once, each with the refusal its own collapse produces — `no_shim_marker` at the
 # recording read, `kill_did_not_land` at the world read, the latter a claim about the
 # engine's own kill drawn from a trace the engine declined to read. Reverting either
@@ -7872,7 +7872,8 @@ if "crosses a process boundary" not in p:
 PYEOF
 fi
 # #506's fourth site, read off the run above rather than driven again. This is the only
-# case in the suite that reaches `src/main.zig:3002` — the oracle's own boundary — and its
+# case in the suite that reaches the oracle's own boundary refusal in `main()` — the site
+# that asks `boundary.unattributedWriterReason` — and its
 # population is threads, CLONE_FS, unshare and a non-primary setsid, none of them wrappers.
 # That is the point: the sentence asks a question and then says something true regardless of
 # the answer, so it has to be right here as well as on the wrapped case.

@@ -2,6 +2,158 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-13 — what a run says and how it stops leave main.zig: report.zig, refuse.zig and a leaf for two file operations (#572, third seam, first half)
+
+The seam the plan called the gravity source, cut after a design review of its own (two
+fresh reviewers, the second falsifying the first's fix) — the design and its record are in
+the plan; this entry is the measurement and the predictions, written before the cut.
+
+**Measured at `39da3cf`.** `main.zig` is 7,046 lines, 89 top-level functions, 32
+module-level variables, 29 tests. The declarations were put in seven groups and the edges
+between groups counted on code with comments and strings stripped (`closure3.py`): the
+report's state (36 declarations, 343 lines) is a leaf — it references nothing but imports;
+the renderers (54, 1,275 lines) reference the state and nothing that refuses — the plan's
+"rendering calls `setupError`" was false; the refusals (24, 810 lines) reference the state
+(10 names), six renderers, and the live-observer registry (`stopLiveSidecar`,
+`dropCapture`), and `startFsUsage` references the refusals back — the one cycle in the
+graph, broken by keeping the registry with the refusals (whose doc says it exists for them)
+and the observer's start in `main.zig`. The refusal exits are two of fourteen
+`std.process.exit` sites (a fifteenth is a doc comment); `main()` holds ten, `preflightReport`
+two. `setupError` is referenced 182 times, `unknown` 94, `removeFile` 23. The surface-1
+functions of the freeze audit (`splitArgs`, `commandArgv`, `resolve*`) are called only from
+`main()` and the apparatus check — never from the CLI group or the parse loop — and stay,
+which is what keeps `spike/freeze-audit/*` untouched by the whole seam (the design review's
+finding: the rung-1 list requires each path to exist at both ends of a window, so a new file
+cannot be added to it; and moving them into `config.zig` would close a cycle
+report → config → refuse → report through `apparatusUnchecked` and `setupError`).
+
+**What moves, and how.** Three files, cut in dependency order with the same extractor as
+seams 1 and 2, bodies byte-identical with `pub` added where another file reads or writes
+them: `src/files.zig` (leaf: `removeFile`, `writeWholeFile`; 25 lines of body), then
+`src/report.zig` (the state without `json_path`, `json_arena`, `run_phase`, `SpawnPhase`,
+plus every renderer and their thirteen tests; 1,561 lines of body, 44 names `pub`), then
+`src/refuse.zig` (`unknown`, `setupError`, `setupErrorFmt`, `spawnFailure`, the `*OrRefuse`
+and `*Failure` family, the four declarations above, `trace_budget`, the observer registry,
+four tests; 913 lines of body, 21 names `pub`). The dry run's `pub` counts, 44 and 21, are
+the numbers the design reviewer computed independently. One edit class is new and is
+declared here: a refusal body that reaches a fact or renderer of `report.zig` spells it
+`report.<name>` where `main.zig` had it bare — the state variables cannot be aliased (a
+container-level `const x = report.x;` would copy the initial value), so the qualifier is
+added by the extractor's pass over `main.zig` before the refusals leave it, and the diff will
+list every such line. Functions are aliased instead of qualified where seams 1 and 2 aliased
+(`main.zig` keeps `say`, `setupError`, `setupErrorFmt`, `unknown`, `spawnFailure`,
+`removeFile`, `writeWholeFile` as `const x = module.x;`), and `report.zig` and `refuse.zig`
+re-declare the aliases their bodies use — the price of byte identity, recorded in the ADR.
+
+**Predictions, before the move.** `main.zig` 7,046 → about 4,560 (2,499 lines of body out;
+three imports, seven aliases and a longer module map in); `report.zig` about 1,600,
+`refuse.zig` about 950, `files.zig` about 45. `report.` prefixes in `main.zig`: the dry run
+counts 118 on the whole file, of which those inside refusal bodies leave with them, so
+about 100 stay; `refuse.` prefixes: 36. Ratchet: functions 89 → **31** (29 renderers, 7
+account helpers, 20 refusal functions and the observer's two, the leaf's two), variables
+32 → **4** (`apparatus_flag_buf`, `scratch_flag_buf`, `stop_when_orphaned`,
+`startup_ppid`). Exits: twelve code lines in `main.zig`, two in `refuse.zig`. Test roots
+13 → 15 on macOS (report and refuse named in `test_sources`; `files.zig` has no tests and is
+not named): the main root stays at 311, boundary 253, capture 31; the report root runs its
+thirteen plus what its tests reach — `buildJson` → `boundary.boundaryAccount` collects the
+boundary chain (253), `setupOutputDetail` → `capture.readSetupCapture` (6) and
+`mcp.cutOnBoundary` (mcp's own 8), `apparatusHasUnchecked` → `config` (15) — predicted about
+295; the refuse root its four plus the report chain, about 299; total about 1,660. The
+acceptance suite in the Linux container fails the same twelve legs as `main`.
+`spike/acceptance.sh:4035` hands `src/report.zig` to `check-report-schema.py` instead of
+`src/main.zig`, and pointed back at `main.zig` the check must say "could not find buildJson".
+
+**Measured, after the move.** The counts landed. `main.zig` 4,570 lines, `report.zig` 1,603,
+`refuse.zig` 957 (955 before the review re-worded its header), `files.zig` 44; `pub` on 44, 21 and 2 declarations; `report.` on 88 lines of
+`main.zig` (the prediction said about 100 — the thirteen string literals below are the
+difference) and on 16 body lines of `refuse.zig`; `refuse.` on 36; the ratchet reads 31 and
+4; exits 12 and 2. `zig build test --summary all`: 33 of 33 steps, 15 rows, main 311,
+boundary 253, capture 31, report 295, refuse 299, 1,658 in all — both new roots exactly as
+predicted. Falsifications: the two files out of `test_sources` → 13 rows; `expect(false)` in
+one moved test of each file → red in its own root, in the main root, and, for the report
+test, in the refuse root too, which collects the report chain; the pre-move `main.zig` at the
+new ceilings → red at 89 over 31; `check-report-schema.py`'s `buildJson` search finds it in
+`report.zig` and reports "could not find buildJson" on `main.zig`; a dead
+`@import("fsusage.zig")` appended to a copy → `used 0` in the edge check, corrected as below.
+Those falsifications ran on the tree before the string-literal fix; that fix changed seventeen
+literals and no declaration, so collection is the same. The moved bodies diffed against the
+originals, with the chunk bounds read the way the extractor prints them (1-based, inclusive):
+`files.zig` 24 lines against 24 and the two `pub`s the only difference; `report.zig` 1,560
+against 1,560 and the 44 `pub`s the only difference; `refuse.zig` 912 against 913, the 21
+`pub`s and the 16 `report.` qualifiers and nothing else. Acceptance in the Linux container
+(`sideeye-spike`, aarch64 cross-build, `build-toys.sh` first): the tree fails the same twelve
+legs as `main` and prints the same 343 `ok` lines, and the schema leg reads `buildJson` out of
+`report.zig` — "30 shared values agree". Run three times: on the first generation (red on
+leg 2r, below), on the regenerated tree, and once more after the review's edits to comments
+and headers, so that the run and the commit are the same files. The last run read these
+(sha256, first twelve hex digits; compare with `git show <commit>:<path> | shasum -a 256`):
+`src/main.zig` 2ce267adf8c1, `src/report.zig` 747d02911114, `src/refuse.zig` 877f54ba81d5,
+`src/files.zig` 057db9620626, `src/engine/trace.zig` 1d34ab9172e3, `build.zig`
+a7d976d96929, `spike/acceptance.sh` 832d9953c957, `spike/build-toys.sh` 5754db4e82bc,
+`spike/check-report-schema.py` 0f8dfa1f5214.
+
+**Two things went wrong on the way, recorded because they are the point.** First, the
+extractor's identifier pass did not mask string literals. `explored` is a report fact and an
+English word, and the first tree said "a process boundary appeared in an report.explored
+world" in an UNKNOWN sentence — sixteen string literals in `main.zig` and one in `refuse.zig`
+rewritten. `zig build test` was green: no unit test pins those sentences. The acceptance
+suite's leg 2r ("a world-only boundary refuses under the recording-time reason") went red and
+took a second `ok` line with it. The extractor now substitutes outside string literals only,
+the tree was regenerated from the pre-move file, and the diff between the two generations is
+exactly those seventeen lines. The same tool had also, in its first pass here, inserted a
+blank line between declarations that were adjacent in the source (`var crash_points; var
+explored; var violations` and the like), which the identity diff caught before anything ran;
+it now keeps the source's spacing. Second, and older: seam 2's BUILDLOG and pull request said
+a dead `@import("fsusage.zig")` appended to a copy of `capture.zig` made the edge check read
+`used 0`. It did not. The check counted `fsusage.` in every non-comment line, the import line
+`@import("fsusage.zig")` contains `fsusage.`, so the copy read `used 1`, the transcript said
+so, and the sentence was written from what the check was meant to do. The check now excludes
+import lines; run that way it reads `used 0` on the same copy of `capture.zig` and on a copy
+of `report.zig`, and every import of the six seam files is used at least once outside its own
+import line — `capture.zig` has no dead import, but seam 2 did not measure that. A comment on
+#574 records the correction.
+
+**Review, round one** (a fresh reviewer who rebuilt, retested, replayed the byte identity by
+line multiset, scanned string, multi-line and character literals for stray qualifiers, and
+read every header sentence against the bodies): no behavioural finding; two P1, ten P2. The
+first P1 is the ratchet, falsified against its own predicate for the third time: a `const
+phases = struct { fn a() … fn b() … fn c() … }` appended to a copy of `main.zig` read green,
+because the check counted a container's `var` but not its `fn` — and its own selftest decoy
+held a `fn method()` that pinned the hole as green. A container-scope `fn` now counts (the
+tree has none, so the ceiling stays at 31), the selftest tries it in both spellings (19
+cases), the label follows `MAIN_ZIG`, and the reviewer's probe reads 34 over 31. Each of the
+three falsifications closed the accident's shape — `pub var`, `extern "c"`, a container's
+`var` — and left the predicate's open; the fix each time was the predicate, and the
+selftest's decoy is now read as a list of what must *not* count rather than as filler. The
+second P1 is provenance: the acceptance paragraph above said "the tree" without a way to
+tell, from the repository, which tree the container measured — the very run that caught the
+string-literal rewrite. The run was repeated on the final tree, and the digests below name
+the files it read. The P2s: four stale comments (`acceptance.sh:40` and `:7085`,
+`engine/trace.zig:33`, `check-report-schema.py`'s usage line) fixed; two header sentences
+narrowed — the usage banner prints the four verdict words, so the claim is about verdict
+lines, and the unknown-mode exit prints the banner to stdout rather than one line to stderr;
+the `mcp.cutOnBoundary` candidate the plan promised the ADR is in the ADR; two left for the
+second half and named in the pull request (`ci.yml:79`, a peer's file and a comment;
+`docs/unknown-rate.md` with its generator and forty-three fixtures).
+
+**Review, round two** (a second fresh reviewer, on the fixes; re-derived the nine digests
+above against the tree, all twelve first-round items, and every exit in `main.zig`): the
+twelve resolved, and the third fix to the ratchet had the same shape as the accidents before
+it — the container-scope rules took `pub`, `export`, `inline`, `noinline` and not `extern`
+with a library name, so `pub extern "c" fn` three times inside a struct read 31 and green,
+and `pub extern "c" var` beside them too; the reviewer built both with `zig build-exe -lc` to
+show Zig accepts them. Both container rules now carry the same `extern( "lib")?` the
+top-level rules do, with red cases for each (and one for `export var`, which the header named
+and the selftest had never tried); the at-ceiling decoy now holds a hand-formatted one-line
+container and a tab-indented pair so that "not counted" is pinned rather than assumed —
+twenty-two cases. That is four falsifications of this guard's predicate in three seams; the
+lesson the header now states is that each closed the accident's shape and left the
+predicate's, until the predicate was written down as a list of spellings and the selftest
+made to try every one. Smaller: "none of which prints a verdict line" in `refuse.zig`'s
+header read as covering the PASS and FAIL exits too, and now says "none of the four";
+`refuse.zig` is 957 lines after its header grew, not 955; the fixtures are forty-three, the
+forty-five counted the ledger and its generator with them. No third round.
+
 ## 2026-09-12 (fifth) — the capture readers leave main.zig; the CLI stays, because its parse loop writes report state in an order a test pins (#572, second seam)
 
 ADR 0062 says each seam is re-measured before it is cut, so this entry opens with the

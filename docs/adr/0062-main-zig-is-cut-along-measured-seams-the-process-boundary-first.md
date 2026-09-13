@@ -278,3 +278,92 @@ new bound, a new link policy — should open `src/capture.zig` and its header, `
 only where a call site chooses a `ReadMode`, and `src/posix.zig` only if the rule is about
 how a capture is created rather than read. If it needs a change to a body in `main.zig`, the
 seam was drawn wrong.
+
+### Seam 3, first half — what a run says and how it stops (2026-09-13)
+
+The seam the Decision called the region every change converges on, cut after a design
+review of its own: two fresh reviewers, the second falsifying the first's fix (the plan
+records both rounds). Re-measured at `39da3cf`: the declarations of `main.zig` in seven
+groups, edges between groups counted on code with comments and strings stripped. The
+report's state (36 declarations, 343 lines) references nothing but imports. The renderers
+(54, 1,275 lines) reference the state and no refusal — the Alternatives above say rendering
+calls `setupError`; measured, it does not, and the cycle this ADR feared is not there. The
+refusals (24, 810 lines) reference the state, six renderers, and the live-observer registry
+(`stopLiveSidecar`, `dropCapture`), while `startFsUsage` references the refusals back: the
+one cycle in the graph. It is broken by keeping the registry with the refusals — its own doc
+comment says it exists so the two exits cannot forget to stop the sidecar — and the
+observer's start in `main.zig`.
+
+**Three files.** `src/report.zig` (1,603 lines) owns what a run says: the account's facts
+(`oracle_note`, `checker_note`, `l1_note`, `l0_note`, `case_note`, `explored`, `violations`,
+`setup_status`, `scratch_declared`, …), the helpers that set them from what the parser has
+established (`noteOracle`, `settleDeclared`), and both renderings — `say` for the text,
+`buildJson` and `writeJsonReport` for the document — with thirteen tests. `src/refuse.zig`
+(957 lines) owns how a run stops: `unknown`, `setupError`, `setupErrorFmt`, `spawnFailure`,
+the classifiers and `*OrRefuse` helpers, `json_path`, `json_arena`, `run_phase`,
+`SpawnPhase`, `trace_budget`, and the observer registry, with four tests. `src/files.zig`
+(44 lines) is a leaf for `removeFile` and `writeWholeFile`, which the orchestrator, the
+renderers and the refusals all call: the second leaf a seam has forced (`defang.zig` was the
+first), forty-four lines against two thousand five hundred moved. `posix.zig` was the
+obvious owner and was not chosen because both bodies spell their calls with the `posix.`
+qualifier and size their buffers with `contract.max_path`, and that file imports `std` and
+`builtin` only. Edges are one-way: `report.zig` imports neither `refuse.zig` nor anything
+that will move later; `refuse.zig` imports `report.zig`; `main.zig` imports all three.
+
+**What the move changed, declared.** Bodies moved byte for byte, with `pub` on 44 names of
+`report.zig`, 21 of `refuse.zig` and both of `files.zig` — the counts the design reviewer
+had computed independently. Two edit classes beyond `pub`, both listed line by line in the
+pull request: a refusal body that reaches a fact of `report.zig` spells it `report.<name>`
+(16 lines), because a module-level variable cannot be aliased — a container-level `const x =
+report.x;` would copy its initial value — where functions can; and the aliases `main.zig`
+already carried for `defang.zig`'s primitives are re-declared in `report.zig` and
+`refuse.zig` beside new ones for `say`, `removeFile` and `writeWholeFile`, so that the moved
+call sites read as they did. `main.zig` keeps `say`, `setupError`, `setupErrorFmt`,
+`unknown`, `spawnFailure`, `removeFile` and `writeWholeFile` as aliases for the same reason,
+and spells the report's facts `report.<name>` at 88 lines and the other refusal helpers
+`refuse.<name>` at 36. One `say` call's hand-aligned argument columns were re-aligned by
+`zig fmt` after the prefixes lengthened its tokens — whitespace only. A first generation of
+the tree had the extractor rewrite the word `explored` inside seventeen string literals of
+refusal sentences; the unit tests stayed green, the acceptance suite in the container went
+red on one leg, and the tree was regenerated with string literals masked (BUILDLOG
+2026-09-13). The container run is a criterion of this series for that reason.
+
+**What stays in `main.zig` by decision.** `splitArgs`, `commandArgv`, `resolvePathAgainst`,
+`resolveCommandAgainst`, `resolveCommand`: the freeze audit's rung 1 reads surface 1 out of
+`src/main.zig` because they live there (see the Alternatives above), its list requires each
+path to exist at both ends of a window, and the two moves that would have taken them out
+both fail — into a new `cli.zig`, the list cannot follow (a path absent at the window's base
+is a `FAIL`); into `config.zig`, the graph closes a cycle, because `resolve*` call
+`setupError` and the renderers call `config.apparatusUnchecked`. Their callers are `main()`
+and the apparatus check only — never the CLI group or the parse loop — so leaving them
+splits no family. The ratchet stops at 31 functions rather than 26 for it. Also staying:
+the CLI parse loop and the saved-case code (the second half of this seam), the apparatus
+check, the observer's start, the demo, `preflightReport`.
+
+One edge is recorded as a candidate rather than moved: `report.zig`'s `setupOutputDetail`
+clamps a setup's output line with `mcp.cutOnBoundary`, so the report imports `mcp.zig` for
+one UTF-8 helper; the first real change to that renderer can move the helper to
+`defang.zig`, where the other clamping primitives live.
+
+**Ratchet**: 89 → 31 functions, 32 → 4 variables (`apparatus_flag_buf`, `scratch_flag_buf`,
+`stop_when_orphaned`, `startup_ppid`), and its predicate widened once more: the review of
+this seam appended a `const phases = struct { fn a() … fn b() … fn c() … }` to a copy of
+`main.zig` and the check read green — it counted a container's `var` but not its `fn`, and
+its own selftest decoy held a method that pinned the hole. A `fn` directly inside a
+top-level container now counts (the tree has none today, so the ceiling is unchanged), the
+selftest tries it in both spellings, and the check's label follows the file it was pointed
+at. Three reviews have now falsified the guard against its own predicate; each time the
+accident's shape had been closed and the predicate's had not. **Exits**: twelve `std.process.exit` lines stay in
+`main.zig` (ten in `main()`, two in `preflightReport`), two are in `refuse.zig`. **Test
+roots**: 13 → 15 on macOS; the main root stayed at 311, boundary 253, capture 31; the report
+root runs 295 — its thirteen, the boundary chain of 253 that `buildJson` reaches through
+`boundaryAccount`, `capture.zig`'s 6, `config.zig`'s 15 and `mcp.zig`'s own 8 — and the
+refuse root 299 — its four plus the report chain; total 1,064 → 1,658. Every number in this
+paragraph was written in BUILDLOG before the move and matched after it. `files.zig` holds
+no tests and is not named in `test_sources`.
+
+**What measures this seam next**: the first new report field. It should open
+`src/report.zig` (a fact, a line in `buildJson`, a line in the text renderer) and
+`docs/report-schema.md`, and `src/main.zig` only where the phase that knows the value sets
+it. If it needs a new module-level variable in `main.zig`, the ratchet refuses it, and that
+is the seam working rather than a reason for an exception.
