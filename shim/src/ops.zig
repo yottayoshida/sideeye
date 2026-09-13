@@ -402,10 +402,13 @@ pub fn remove(path: [*:0]const u8) callconv(.c) c_int {
 //
 // Two members of the same class are deliberately NOT here, and the record says why:
 //
-//   `dprintf`/`vdprintf` — glibc splits a large write at 8192 bytes (measured, same
-//   run). A wrapper writing once would delete a crash point the real program has;
-//   one that split would hard-code an undocumented libc constant that differs by
-//   platform. They stay a wall.
+//   `dprintf`/`vdprintf` — glibc splits a large write (measured, same run: at 8192 bytes
+//   on glibc 2.36; where it cuts moves with the version — 2048 at a time on 2.41, #541).
+//   A wrapper writing once would delete a crash point the real program has; one that
+//   split would hard-code an undocumented libc internal that differs by platform and
+//   version. They stay a wall under `--observe wrappers`. Under `--observe syscalls`
+//   the kernel sees each write glibc issues, and `dprintf` is judged there with no
+//   replacement at all (measured, #541).
 //
 //   `tmpfile` — **and here the two platforms disagree about whether it is even a
 //   member.** glibc reaches it through `openat(AT_FDCWD, "/tmp", O_TMPFILE)`

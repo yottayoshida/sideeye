@@ -224,15 +224,16 @@ jobs:
 
       # The libc-internal-call class (#39), one member per run. Its own invocation
       # rather than a check inside the acceptance suite: it drives the shipped engine
-      # seven times with its own toy build, and folding that into a suite that keeps a
-      # single `fails` counter would bury which member moved.
+      # once per member in each observation mode with its own toy build, and folding
+      # that into a suite that keeps a single `fails` counter would bury which member moved.
       #
       # The reds live behind `--selftest` and run first, so a run that reports green
       # has shown its own predicates red in the same job. What this leg asserts is
-      # *declared outcomes*, not syscall spellings: the runner's glibc moves when
-      # GitHub moves it, and pinning a spelling here would turn that into a failure
-      # about the runner. `dprintf` is declared a wall and its refusal is part of
-      # green — the negative control this leg did not have to invent.
+      # *declared outcomes* and one comparison between two members, not syscall
+      # spellings: the runner's glibc moves when GitHub moves it, and pinning a spelling
+      # here would turn that into a failure about the runner. `dprintf` is declared a
+      # wall under the default mode and its refusal there is part of green — the negative
+      # control this leg did not have to invent (#541).
       - name: The libc-internal-call class matches its declarations (#39)
         run: |
           sh spike/measure-libc-internal.sh --selftest

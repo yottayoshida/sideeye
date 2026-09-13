@@ -1,0 +1,49 @@
+engine: sideeye 1.3.0 (trace contract v16)   shim sha256: b952c105547c7ef15acb2a9276c9aff360b873e6d3cd67be077e42cb9d632cb9
+libc: ldd (Debian GLIBC 2.36-9+deb12u14) 2.36   arch: aarch64
+toy sha256: 86f8d0539581dceb23029633f38194b461040ed94da06b8f8367da9aea71696c
+==================== plain strace: the writes dprintf issues ====================
+small: 1 write(s) to fd 3: 12 
+large: 2 write(s) to fd 3: 8192 807 
+---- toy_mkstemp dprintf (the member measure-libc-internal.sh runs) / --observe wrappers: rc=2
+UNKNOWN  oracle_missed_operation
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 2: the oracle saw: 61    write(3</tmp/w541/state/log.txt>, "rotated to 2\n", 13) = 13; the shim's account ends after 1 operation(s)
+---- big541 small (12 bytes) / --observe wrappers: rc=2
+UNKNOWN  oracle_missed_operation
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 2: the oracle saw: 72    write(3</tmp/w541/state/log.txt>, "aaaaaaaaaaa\n", 12) = 12; the shim's account ends after 1 operation(s)
+---- big541 large (8999 bytes) / --observe wrappers: rc=2
+UNKNOWN  oracle_missed_operation
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 2: the oracle saw: 83    write(3</tmp/w541/state/log.txt>, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"..., 8192) = 8192; the shim's account ends after 1 operation(s)
+---- toy_mkstemp dprintf (the member measure-libc-internal.sh runs) / --observe syscalls: rc=0
+PASS  3/3 explored worlds satisfied the built-in atomicity invariant
+PASS  3/3 explored worlds satisfied the built-in atomicity invariant
+      explored 3 worlds (crash points 2 + 1 baseline)
+      oracle: agreed on 2 operations (70 syscall lines examined, 9 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+---- big541 small (12 bytes) / --observe syscalls: rc=0
+PASS  3/3 explored worlds satisfied the built-in atomicity invariant
+PASS  3/3 explored worlds satisfied the built-in atomicity invariant
+      explored 3 worlds (crash points 2 + 1 baseline)
+      oracle: agreed on 2 operations (70 syscall lines examined, 9 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+---- big541 large (8999 bytes) / --observe syscalls: rc=0
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      oracle: agreed on 3 operations (78 syscall lines examined, 12 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+==================== repeats: syscalls, large ====================
+---- repeat 1 / --observe syscalls: rc=0
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      oracle: agreed on 3 operations (78 syscall lines examined, 12 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+---- repeat 2 / --observe syscalls: rc=0
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      oracle: agreed on 3 operations (78 syscall lines examined, 12 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+---- repeat 3 / --observe syscalls: rc=0
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      oracle: agreed on 3 operations (78 syscall lines examined, 12 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
