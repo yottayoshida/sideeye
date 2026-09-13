@@ -67,6 +67,32 @@ static int append_via_dprintf(int value) {
     return 0;
 }
 
+/* The same append with a payload larger than the buffer glibc formats a dprintf into, so
+ * it reaches the kernel as more than one write (#541): a FILE's buffer, sized from
+ * st_blksize, up to glibc 2.36, and a 2048-byte buffer of dprintf's own since 2.37.
+ * 2^20 + 1 bytes is past both and odd, so no power-of-two buffer divides it. Measured on
+ * 2026-09-13: `write` 1048576 + 1 on glibc 2.36, 513 writes of up to 2048 bytes on 2.41 —
+ * which is why the check compares this member with `dprintf` rather than pinning a count.
+ * Written through "%s", the shape of that day's probe. Its own final path, like every
+ * member. */
+static int append_big_via_dprintf(void) {
+    enum { big = (1 << 20) + 1 };
+    char path[1024];
+    join_path(path, sizeof(path), "log-big.txt");
+    char *body = malloc(big + 1);
+    if (!body) { perror("malloc"); return 1; }
+    memset(body, 'a', big - 1);
+    body[big - 1] = '\n';
+    body[big] = '\0';
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0) { perror("open big log"); free(body); return 1; }
+    int failed = dprintf(fd, "%s", body) < 0;
+    if (failed) perror("dprintf");
+    free(body);
+    if (close(fd) != 0) { perror("close big log"); return 1; }
+    return failed;
+}
+
 /* tmpfile creates and unlinks inside libc; nothing should survive in-root.
  *
  * The parenthesis here used to read "it honours TMPDIR". That was never measured and
@@ -137,11 +163,15 @@ static int cmd_mkdtemp(void) {
     return 0;
 }
 
-/* The two members this change deliberately leaves as walls, kept runnable so the
- * record can show them still diverging in the same sitting as the five that no
- * longer do. Without them the check would have no negative control it did not
- * invent. */
+/* The members the shim deliberately does not replace, kept runnable so the record can
+ * show them in the same sitting as the five it does. Under `--observe wrappers` the two
+ * `dprintf` members still diverge — the negative control the check did not have to
+ * invent. Under `--observe syscalls` the kernel sees each write glibc issues, so they
+ * are judged there (#541), and `dprintfbig` is what says the split is counted rather
+ * than merely tolerated. `tmpfile` is inert on Linux in both. */
 static int cmd_dprintf(void) { return append_via_dprintf(2); }
+
+static int cmd_dprintfbig(void) { return append_big_via_dprintf(); }
 
 static int cmd_tmpfile(void) { return scratch_via_tmpfile(); }
 
@@ -163,7 +193,7 @@ int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr,
                 "usage: %s init|rotate"
-                "|mkstemp|mkostemp|mkstemps|mkostemps|mkdtemp|dprintf|tmpfile\n",
+                "|mkstemp|mkostemp|mkstemps|mkostemps|mkdtemp|dprintf|dprintfbig|tmpfile\n",
                 argv[0]);
         return 2;
     }
@@ -180,6 +210,7 @@ int main(int argc, char **argv) {
     if (strcmp(argv[1], "mkostemps") == 0) return cmd_mkostemps();
     if (strcmp(argv[1], "mkdtemp") == 0) return cmd_mkdtemp();
     if (strcmp(argv[1], "dprintf") == 0) return cmd_dprintf();
+    if (strcmp(argv[1], "dprintfbig") == 0) return cmd_dprintfbig();
     if (strcmp(argv[1], "tmpfile") == 0) return cmd_tmpfile();
     fprintf(stderr, "unknown command\n");
     return 2;

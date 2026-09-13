@@ -1,0 +1,44 @@
+################ OBSERVE=wrappers
+engine:  sideeye 1.3.0 (trace contract v16)
+libc:    ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+compiler: gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+toy:     86f8d0539581dceb23029633f38194b461040ed94da06b8f8367da9aea71696c  spike/toys/toy_mkstemp.c
+arch:    aarch64
+
+ok   mkstemp    judged
+ok   mkostemp   judged
+ok   mkstemps   judged
+ok   mkostemps  judged
+ok   mkdtemp    judged
+ok   dprintf    wall
+ok   tmpfile    inert
+
+ok   contract  the five replacements answer what libc answers (25 cases)
+
+measured 7 members plus the contract differential, 0 did not match
+rc=0
+################ OBSERVE=syscalls
+engine:  sideeye 1.3.0 (trace contract v16)
+libc:    ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+compiler: gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+toy:     86f8d0539581dceb23029633f38194b461040ed94da06b8f8367da9aea71696c  spike/toys/toy_mkstemp.c
+arch:    aarch64
+
+ok   mkstemp    judged
+ok   mkostemp   judged
+ok   mkstemps   judged
+ok   mkostemps  judged
+ok   mkdtemp    judged
+MISMATCH dprintf: declared wall, measured judged
+     | PASS  3/3 explored worlds satisfied the built-in atomicity invariant
+     |       explored 3 worlds (crash points 2 + 1 baseline)
+     |       expected status: 0
+     |       atomicity: 1 path(s) judged pre-or-post
+     |       oracle: agreed on 2 operations (70 syscall lines examined, 9 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+     |       metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+ok   tmpfile    inert
+
+ok   contract  the five replacements answer what libc answers (25 cases)
+
+measured 7 members plus the contract differential, 1 did not match
+rc=1
