@@ -424,6 +424,12 @@ pub fn build(b: *std.Build) void {
         // it today — the #483 renderer test calls `readSetupCapture` — and naming it makes
         // the six run whether or not that stays true.
         "src/capture.zig",
+        // The third seam of #572, first half: what a run says and how it stops. Collection
+        // through main.zig reaches both today — its tests call `setupOutputDetail` and
+        // `snapshotOrRefuse` — and naming them makes their seventeen run whether or not
+        // that stays true. `src/files.zig` holds no tests and is not named.
+        "src/report.zig",
+        "src/refuse.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.

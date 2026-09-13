@@ -28,13 +28,26 @@
 //!     which alone follows from who named the path — are chosen here at each call through
 //!     `ReadMode`, and this file turns the answers into refusals and report lines. The
 //!     reading itself is not here.
+//!   - `report.zig` — what a run says: the facts the phases here establish (`report.explored`,
+//!     `report.l0_note`, `report.setup_status`, …), the text rendering through `say` and the
+//!     JSON document through `writeJsonReport`. This file writes the facts and chooses when
+//!     each rendering runs; it renders nothing itself.
+//!   - `refuse.zig` — how a run stops: `unknown` and `setupError` (aliased here, so a refusal
+//!     reads as it always did), the classifiers that choose between them, the `*OrRefuse`
+//!     helpers, and the privileged observer's registry that every refusal stops on its way
+//!     out. `startFsUsage` here registers the observer in `refuse.fsu_live`; `run_phase` and
+//!     `trace_budget` are set here once and read there.
+//!   - `files.zig` — `removeFile` and `writeWholeFile`, a leaf the three of us share.
 //!
 //! Still here, in the order the series plans to move them: the CLI parse loop, which writes
-//! run and report state between its refusals in an order #352's tests pin and so moves with
-//! or after the report seam; the report's state and rendering together with the refusal exits
-//! (`unknown`, `setupError`, `spawnFailure`) and the saved-case format; and then `main()`'s
-//! nine phases as functions. `spike/check-main-shape.sh` holds the count of top-level
-//! functions and module-level variables in this file to a ceiling that only comes down.
+//! report state between its refusals in an order #352's tests pin, and the saved-case format
+//! (`ReplayCase`, `writeCase`), which reads `Args` and the JSON primitives; and then `main()`'s
+//! nine phases as functions. Also here by decision, not by omission: `splitArgs`,
+//! `commandArgv` and the `resolve*` family, which the freeze audit's rung 1 reads out of this
+//! file (`spike/freeze-audit/surface-drift.sh`); the apparatus check; the fs_usage observer's
+//! start; the demo; and `preflightReport`. `spike/check-main-shape.sh` holds the count of
+//! top-level functions and module-level variables in this file to a ceiling that only comes
+//! down.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -50,12 +63,22 @@ const engine_build_options = @import("engine_build_options");
 const boundary = @import("boundary.zig");
 const defang = @import("defang.zig");
 const capture = @import("capture.zig");
+const files = @import("files.zig");
+const report = @import("report.zig");
+const refuse = @import("refuse.zig");
 // Aliased rather than spelled `defang.` at each site, so the call sites read as they did
 // when the bodies lived here (#572): the report-side callers outnumber the boundary's, and
 // a move that renames every one of them is a move that cannot be read as a move.
 const sanitizeForReport = defang.sanitizeForReport;
 const textShown = defang.textShown;
 const appendSanitized = defang.appendSanitized;
+const removeFile = files.removeFile;
+const writeWholeFile = files.writeWholeFile;
+const say = report.say;
+const setupError = refuse.setupError;
+const setupErrorFmt = refuse.setupErrorFmt;
+const unknown = refuse.unknown;
+const spawnFailure = refuse.spawnFailure;
 
 /// The trace-read ceiling this binary uses (#324). Zero — the shipped value, written as
 /// a literal in build.zig rather than as a flag's default — means the engine's own
@@ -120,37 +143,6 @@ const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, cont
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
-}
-
-var out_buf: [16 * 1024]u8 = undefined;
-
-/// The report is the product. Losing it silently is not an option.
-///
-/// This used to `catch return` on overflow, so a FAIL whose paths pushed the text past
-/// 16 KB exited 1 having printed nothing at all — the caller would see a bare exit code
-/// and no counterexample. Formatting into a fixed buffer is still right for a tool that
-/// must work when the heap is uninteresting, so the failure is reported instead of
-/// swallowed.
-fn say(comptime fmt: []const u8, args: anytype) void {
-    const s = std.fmt.bufPrint(&out_buf, fmt, args) catch {
-        const msg = "sideeye: the report did not fit in the output buffer; paths are unusually long\n";
-        _ = posix.write(2, msg.ptr, msg.len);
-        return;
-    };
-    var off: usize = 0;
-    while (off < s.len) {
-        const w = posix.write(1, s[off..].ptr, s.len - off);
-        // A truncated report reads as a complete one — the reader has no way to know a
-        // line was cut. Nothing can be said about it on stdout, which is the stream that
-        // just failed, so it goes to stderr. Found by the same-class scan that this
-        // function's own overflow fix started.
-        if (w <= 0) {
-            const msg = "sideeye: the report was cut short; stdout stopped accepting output\n";
-            _ = posix.write(2, msg.ptr, msg.len);
-            return;
-        }
-        off += @intCast(w);
-    }
 }
 
 const Args = struct {
@@ -293,498 +285,6 @@ const ReplayCase = struct {
 /// the comparison needs no pid handed in from outside and nothing that could go stale.
 var stop_when_orphaned: bool = false;
 var startup_ppid: c_int = 0;
-var json_path: ?[]const u8 = null;
-var json_arena: ?std.mem.Allocator = null;
-/// The prose half of the oracle account. Assigned from `OracleAsked` at three points —
-/// here, the moment an oracle flag is consumed, and the end of the parse loop — and
-/// rewritten only inside the comparison block. See `noteOracle` (#352).
-var oracle_note: []const u8 = initialOracleNote(.unparsed);
-
-/// The machine-readable half of the oracle account (#94). Set true at exactly one
-/// point — beside the "agreed on N operations" note, after the comparison completed
-/// and agreed. Every other outcome keeps the initial false: no --oracle given,
-/// --allow-unverified without an oracle, or a comparison cut short by any refusal
-/// above it (the two flags are not exclusive: an oracle that ran and agreed sets
-/// true even beside an inert --allow-unverified). A fact
-/// about the run, never about the verdict — a FAIL stands without an oracle.
-var oracle_verified: bool = false;
-/// The same fact for a comparison that covered the subject's operations and not the
-/// children's (contract v15).
-///
-/// Set instead of `oracle_verified`, never beside it, and only where a run's writing
-/// children were admitted as crash points: the completeness comparison is the subject's
-/// account against the oracle's view of the subject, so a crash point performed by a child
-/// is one the oracle placed and ordered but did not compare operation by operation. "Both
-/// witnesses agreed about every operation the verdict rests on" and "both agreed about the
-/// subject's, and the children's were seen but not compared" are different claims, and
-/// `docs/contract-freeze.md` surface 2 says a machine field changes name before it changes
-/// meaning — so the weaker claim gets a name rather than the stronger field's. A new
-/// optional field, which surface 2 keeps open (#320).
-var oracle_verified_subject_only: bool = false;
-/// Ownership/permission writes on the state directory (#121, option b): observed by
-/// the oracle alone — the shim does not interpose them — and excluded from every
-/// verdict input. The default says why absence of a note is not absence of writes:
-/// without an oracle nothing can see a chown, and "was not seen" must not read as
-/// "did not happen" here any more than anywhere else in this tool.
-var metadata_note: []const u8 = initialMetadataNote(.unparsed);
-
-/// What the parser has established about the completeness oracle so far (#352). Both
-/// account strings above are assigned from this — at their initialisers, the moment either
-/// oracle flag is consumed, and once the parse loop has read the whole argv — so "no
-/// --oracle given" is written only after every argument was read and none named one.
-/// Every exit before the comparison block writes the report through the same
-/// `writeJsonReport` (`unknown()` and `setupError()` alike, parse errors included), and
-/// used to publish the no-oracle wording on runs that were given an oracle: the initialiser
-/// asserted a fact the parser had not yet established. Now it asserts nothing until it can.
-const OracleAsked = union(enum) {
-    /// The arguments have not been read to the end.
-    unparsed,
-    /// A flag naming an oracle was consumed; the comparison has not run.
-    named: boundary.BoundaryEvidence.Kind,
-    /// The arguments were read to the end and named none.
-    none,
-};
-
-fn initialOracleNote(asked: OracleAsked) []const u8 {
-    return switch (asked) {
-        .unparsed => "not established: this run stopped while its arguments were still being read",
-        // The flag is named so a reader can tell which observer was asked for; the two
-        // phrases are matched whole by spike/acceptance.sh (2fc, 2fd, 2fi), not by the
-        // `--oracle` prefix they share.
-        .named => |kind| switch (kind) {
-            .strace => "not compared: --oracle was named, and this run stopped before the comparison",
-            .fs_usage => "not compared: --oracle-fs-usage was named, and this run stopped before the comparison",
-        },
-        // Byte for byte what every run that named no oracle published before #352.
-        .none => "not run (no --oracle given)",
-    };
-}
-
-fn initialMetadataNote(asked: OracleAsked) []const u8 {
-    return switch (asked) {
-        .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose ownership/permission/timestamp calls, so only a completed oracle account could show them",
-        // "before its metadata account was completed", not "before its capture was read":
-        // the comparison block reads the capture and can refuse on it before
-        // `metadata_note` is assigned, and this wording has to stay true there too.
-        .named => |kind| switch (kind) {
-            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
-            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
-        },
-        .none => "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
-    };
-}
-
-/// Assign both accounts from what the parser has established.
-fn noteOracle(asked: OracleAsked) void {
-    oracle_note = initialOracleNote(asked);
-    metadata_note = initialMetadataNote(asked);
-}
-/// The declared invariant's account. Same rule as `oracle_note` (#352): "none configured"
-/// is written only once every source of a checker — the flag, a replayed case, the toml —
-/// has been read and none supplied one; a source that did supply one says so from that
-/// line on, and the initialiser establishes nothing. Rewritten inside the checker block.
-var checker_note: []const u8 = checkerNoteFor(.unparsed);
-/// The L1 story (ADR 0008): whether a success marker was declared, and in how many
-/// crash worlds it was observed — the worlds where the post-success invariant was
-/// enforced. Mirrors `checker_note`: one variable, read by text and JSON alike, and the
-/// same three-state rule for what it says before the recording run (#352).
-var l1_note: []const u8 = l1NoteFor(.unparsed);
-
-/// What the parser and the define sources have established about a declared checker or
-/// marker (#352). Like `OracleAsked` but with no kind: the account names no source.
-const Declared = enum {
-    /// The arguments and the define sources have not all been read.
-    unparsed,
-    /// A flag, a replayed case or the toml supplied one.
-    named,
-    /// Every source has been read and none supplied one.
-    none,
-};
-
-fn checkerNoteFor(d: Declared) []const u8 {
-    return switch (d) {
-        // "or define": a replayed case or a toml is read after the argv, and a run that
-        // stops while reading either is in this state too.
-        .unparsed => "not established: this run stopped while its arguments or define were still being read",
-        .named => "configured; this run stopped before the checker ran",
-        // Byte for byte the pre-#352 wording; docs/report-schema.md and acceptance pin it.
-        .none => "none configured",
-    };
-}
-
-fn l1NoteFor(d: Declared) []const u8 {
-    return switch (d) {
-        .unparsed => "not established: this run stopped while its arguments or define were still being read",
-        // True from the moment a marker is known until the recording run's stdout is
-        // scanned, which is where the next assignment sits.
-        .named => "marker configured; the recording run has not been scanned yet",
-        // Byte for byte the pre-#352 wording; docs/cli.md and docs/report-schema.md show it.
-        .none => "no marker configured",
-    };
-}
-
-/// Every source of a checker and a marker that this mode reads has been read: say
-/// "configured" where one came and "none configured" where none did (#352). Called at the
-/// line each mode's last source has been read by — right after the parse loop when neither
-/// a replayed case nor a toml follows, after the case in replay, after the toml under
-/// `--config`. Not later: the required-flag refusals and the marker vet sit after all three,
-/// and a run refused there with nothing declared must say "none", not "not established".
-fn settleDeclared(has_check: bool, has_marker: bool) void {
-    checker_note = checkerNoteFor(if (has_check) .named else .none);
-    l1_note = l1NoteFor(if (has_marker) .named else .none);
-}
-/// Whether a marker was configured at all; widens `not tested` (post-only file
-/// contents are checked for existence, not content).
-var l1_configured: bool = false;
-/// Which L0 form judged which files (ADR 0004). Starts as an explicit "not yet", so
-/// an UNKNOWN raised before the snapshots exist never carries an invented
-/// classification; set from the L0Plan the moment it is built.
-var l0_note: []const u8 = "not classified (the run was refused before L0 classification)";
-
-/// How many differences were attributed wholesale to a directory a recorded rename moved
-/// in from outside the judged root (#405, ADR 0032). Zero means the run has no such
-/// window — which is the point of carrying it as a number: "no window" is then something
-/// a caller reads, not something it infers from the absence of a sentence.
-var attributed_to_rename: usize = 0;
-/// Non-zero once any file is judged by the history form; widens `not tested`.
-var l0_history_count: u32 = 0;
-/// The case/replay story (ADR 0009), one variable each read by text and JSON alike
-/// (the checker_note pattern). A FAIL sets them to the saved case and its replay
-/// command; a replay sets the case to what it was asked to re-verify the moment the
-/// file parses, so even a `case_no_longer_applies` refusal names which case it
-/// refused — the JSON consumer is the §17 audience and must not need the text.
-var case_note: []const u8 = "(none)";
-
-/// The syscall the oracle saw at a divergence, for the report's `divergence_syscall`
-/// (#337). Empty until a divergence refusal builds its detail, which is the only writer
-/// — and it writes only where the oracle HAS a line at the diverging index, so
-/// `oracle_saw_phantom` (where the shim's account runs past the oracle's, and the index
-/// is exactly `oracle.len`) leaves it empty and the field stays absent.
-///
-/// The quoted line stays in `message`: a refusal that cannot name the operation it
-/// refused on is not a diagnostic (ADR 0010), and #326 marks those bytes rather than
-/// removing them. This is the same fact in a form a reader does not have to parse.
-///
-/// **It is the observer's vocabulary, never the target's** — which matters because the
-/// text report prints this value without passing it through `sanitizeForReport`, unlike
-/// every path-shaped string beside it. Two producers hold that line, and neither is
-/// visible from here: `src/oracle.zig`'s `syscallName` returns only `[A-Za-z0-9_]+`
-/// (its loop rejects anything else), and `src/fsusage.zig` appends `ln.call`, which by
-/// then has been matched against `classOf`'s table — a member of that table or its
-/// `_nocancel` variant, never free text from the capture. A third producer would have to
-/// keep that property; the alignment tests on both sides are where a new one would be
-/// noticed, not here.
-var divergence_syscall: []const u8 = "";
-/// How the `--setup` run ended (#518), set once from the value the refusal switches on and
-/// read by `buildJson` under `setup_failed` only — so a run whose setup succeeded leaves a
-/// status here that no report can reach. Carried the way `divergence_syscall` is, a global
-/// the one site with the value sets, rather than threaded through `setupError`, whose 190
-/// other sites have no status to hand over.
-var setup_status: ?posix.Term = null;
-var replay_note: []const u8 = "-";
-/// Progress, so an UNKNOWN raised mid-exploration reports what had been explored rather
-/// than zero. A caller aggregating coverage reads these.
-var crash_points: u32 = 0;
-var explored: u32 = 0;
-var violations: u32 = 0;
-/// The declared success status in effect (default 0), mirrored into every report so a
-/// PASS over a non-zero convention is machine-auditable (ADR 0014).
-var expected_status_val: u8 = 0;
-/// The define's apparatus as declared (ADR 0041), set by `checkApparatus` once every entry
-/// passed. Empty when nothing was declared, and the report then carries neither field: an
-/// empty array would read as "declared nothing" on a SETUP ERROR raised before any define
-/// was read. The unchecked subset is not stored: both renderings derive it through
-/// `config.apparatusUnchecked`, so they cannot disagree about it.
-var apparatus_declared: []const []const u8 = &.{};
-
-/// The define's scratch declaration (ADR 0043), set beside the L0 classification — the
-/// same slice the plan matches on, so the report's `scratch` field, the `atomicity`
-/// line's parenthesis and the `not tested` item cannot describe a declaration the judge
-/// did not read. Empty until the define was read, so a SETUP ERROR raised before that
-/// carries no field.
-var scratch_declared: []const []const u8 = &.{};
-
-fn apparatusHasUnchecked() bool {
-    for (apparatus_declared) |e| if (config.apparatusUnchecked(e)) return true;
-    return false;
-}
-
-/// The step for a `ReadFailed` past the recording run, chosen on the errno the walk
-/// measured (#535). Only a permission failure says "an entry this user cannot read":
-/// `EACCES`, and `EPERM` for the same reason on the platforms that answer with it. An
-/// entry that was gone by the time `open` reached it (`ENOENT`) is the state still
-/// moving after the run was contained — the step `quiesce` already describes — and
-/// every other failure, or a read that failed without a libc call (a descriptor that
-/// was not a regular file, a `readlink` that filled its buffer: errno `null`), keeps
-/// the environment step, which now has a named entry to point at. A first-read review
-/// of the first draft found the permission sentence attached to all five ways a read
-/// can fail, so one report could say `errno 2 ENOENT` in its detail and "this user
-/// cannot read" in its step.
-fn readFailedStep(errno: ?c_int) contract.NextStep {
-    const en = errno orelse return .environment;
-    if (en == posix.EACCES or en == posix.EPERM) return .unreadable_entry_appeared;
-    if (en == posix.ENOENT) return .quiesce;
-    return .environment;
-}
-
-test "the step for an unreadable entry is chosen on the measured errno, and only a permission failure blames the user's access (#535)" {
-    try std.testing.expectEqual(contract.NextStep.unreadable_entry_appeared, readFailedStep(posix.EACCES));
-    try std.testing.expectEqual(contract.NextStep.unreadable_entry_appeared, readFailedStep(posix.EPERM));
-    try std.testing.expectEqual(contract.NextStep.quiesce, readFailedStep(posix.ENOENT));
-    try std.testing.expectEqual(contract.NextStep.environment, readFailedStep(posix.EIO));
-    try std.testing.expectEqual(contract.NextStep.environment, readFailedStep(null));
-}
-
-/// Snapshot with the per-file cap, or refuse naming the file (#265). `what` is the
-/// call site's existing message, kept byte-identical for every failure except the
-/// cap — there the refusal must name the file, its size and the cap, or the operator
-/// is told "could not snapshot" about a tree that snapshotted fine yesterday and
-/// has no way to learn what grew.
-/// The entry name goes through `textShown`, the same defang every other target-chosen
-/// string in a refusal takes (#26/#167). It did not when this function was written — the
-/// name was spliced raw into the message, four lines of reasoning away from
-/// `refuseUnsupportedEntry`, which defangs. A Unix name may hold newlines and escape
-/// introducers; unlike the JSON side there is no second escaper behind the text.
-///
-/// The *verdict* every snapshot failure refuses with depends on `run_phase`: SETUP_ERROR
-/// only at the initial snapshot, UNKNOWN at every site at or past the recording run —
-/// `state_file_too_large` for the cap (#330), `state_unsnapshotable` for the rest (#351).
-/// The wording does not change with the verdict; whichever message applies, it applies on
-/// both sides of the split, so this reads as one refusal with two exits rather than two
-/// refusals. `OutOfMemory` is the one failure that stays SETUP_ERROR at every site, on the
-/// rule `spawnFailure` states — see the guard below.
-fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const u8) engine.Snapshot {
-    var diag: engine.SnapshotDiag = .{};
-    return engine.takeSnapshotCapped(gpa, root, engine.SnapshotCaps.shipped, &diag) catch |e| {
-        // An allocation failure is an environment problem in either phase, the rule
-        // `spawnFailure` already states. Routing it to UNKNOWN would leave a seam one
-        // statement wide: this snapshot exiting 2 for OOM while the `classify` that
-        // consumes it exits 3 for the same cause. The ruling on #351 listed it among the
-        // errors to move; this is the deviation, taken deliberately and approved.
-        if (e == error.OutOfMemory) setupError(.environment, what);
-
-        // **Decided once, for every exit below.** Threading the reason through as a
-        // parameter was the first design, and review counted what could then go wrong:
-        // of the sites that refuse here, the no-measured-size branch and the no-arena
-        // fallback (and, since #535, the empty-name fallbacks in `snapshotDetail`) are
-        // reached by nothing, so any of them could have named the wrong reason with
-        // every check in the tree still green. That is what #330
-        // rejected a per-site parameter to avoid. Computed here, the mistake has no
-        // shape to take, and inverting this line reddens the cap leg and the non-cap
-        // leg together — one expression cannot be half-broken.
-        // **Exhaustive over `SnapshotError` on purpose**, like `snapshotDetail` below and
-        // for the same reason: an error member added later must not silently take a
-        // neighbour's reason. The `if` this replaced would have handed `TreeTooLarge` the
-        // catch-all with nothing to notice (#323).
-        //
-        // The reason and the no-arena wording are decided **together, in one switch**.
-        // They were two, listing the same five errors twice, and the pairing between a
-        // reason and the sentence that goes with it was then a thing two lists had to
-        // agree about — with only one of them reachable, so a disagreement would sit
-        // there unobserved. One arm cannot disagree with itself.
-        //
-        // The next step is decided in the same arm (#274), and it is what splits the
-        // `state_unsnapshotable` group: one reason, several remedies — a tree the
-        // operator shapes (too deep, a path too long), an entry the run left that this
-        // user cannot read (#535, chosen on the measured errno by `readFailedStep`), an
-        // environment the operator fixes (an entry that could not be classified, or a
-        // read that failed some other way), and a sorted-entry invariant that is
-        // Sideeye's to fix. A reason-keyed table could not say that.
-        const answer: struct { reason: contract.UnknownReason, bare: []const u8, next: contract.NextStep, setup: contract.SetupErrorReason } = switch (e) {
-            error.FileTooLarge => .{
-                .reason = .state_file_too_large,
-                .bare = "a state file is too large for byte-level judgment",
-                .next = .narrow_state,
-                .setup = .environment,
-            },
-            error.TreeTooLarge => .{
-                .reason = .state_tree_too_large,
-                .bare = "the state tree is too large to snapshot",
-                .next = .narrow_state,
-                .setup = .environment,
-            },
-            error.TooDeep,
-            error.PathTooLong,
-            => .{
-                .reason = .state_unsnapshotable,
-                .bare = "the state tree could not be snapshotted",
-                .next = .narrow_state,
-                .setup = .environment,
-            },
-            // An entry the walk could not read (#535). The step is rendered only past
-            // the recording run — before it, `snapshotRefusal` calls `setupError`, which
-            // carries no step — and by then the initial snapshot has read the tree, so
-            // the entry appeared during the run. Which step depends on *why* the read
-            // failed, and only the measured errno can say: see `readFailedStep`.
-            error.ReadFailed => .{
-                .reason = .state_unsnapshotable,
-                .bare = "the state tree could not be snapshotted",
-                .next = readFailedStep(diag.entry.errno),
-                .setup = .environment,
-            },
-            // An entry whose kind could not be told: `statNoFollow` failing is the
-            // filesystem's answer, and the environment is where that is fixed.
-            error.ClassifyFailed => .{
-                .reason = .state_unsnapshotable,
-                .bare = "the state tree could not be snapshotted",
-                .next = .environment,
-                .setup = .environment,
-            },
-            error.EntriesNotSortedUnique => .{
-                .reason = .state_unsnapshotable,
-                .bare = "the state tree could not be snapshotted",
-                .next = .sideeye_defect,
-                // The one snapshot failure that is Sideeye's own (#518): the SETUP_ERROR class
-                // is chosen here, in the arm that already calls it a defect, and not from the
-                // reason — `state_unsnapshotable` covers this and four environment failures.
-                .setup = .internal,
-            },
-            error.OutOfMemory => unreachable, // refused above
-        };
-        const reason = answer.reason;
-
-        if (json_arena) |ja| snapshotRefusal(reason, answer.setup, snapshotDetail(ja, e, what, &diag), answer.next);
-
-        // Unreachable in practice: json_arena is assigned unconditionally before the
-        // parse loop, ahead of every call site. Kept so this function's contract does
-        // not depend on that ordering — but do not read it as a covered "no arena"
-        // message path; nothing exercises it, including the split below. It is a split
-        // rather than one string because the first draft let a `TooDeep` failure fall
-        // through to the cap's wording here, which nothing would have caught.
-        //
-        // The wording comes from the same arm the reason did. As `switch (reason) { ...
-        // else }` over `UnknownReason` it was not compiler-covered at all, and a new
-        // reason silently took the catch-all sentence — the mistake the switch above is
-        // exhaustive to prevent, one level down and on the path nothing exercises (#323).
-        snapshotRefusal(reason, answer.setup, answer.bare, answer.next);
-    };
-}
-
-/// The few errno values a snapshot refusal is likely to carry, spelled the way `man 2
-/// open` spells them, so the operator does not have to look the number up; anything
-/// else stays a number. Not `@errorName`: that would tie a message to a Zig identifier.
-fn errnoName(en: c_int) []const u8 {
-    if (en == posix.EACCES) return " EACCES";
-    if (en == posix.EPERM) return " EPERM";
-    if (en == posix.ENOENT) return " ENOENT";
-    if (en == posix.EIO) return " EIO";
-    if (en == posix.ELOOP) return " ELOOP";
-    return "";
-}
-
-test "a snapshot refusal for an unreadable entry names it, and the errno only when one was measured (#535)" {
-    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
-    defer arena_state.deinit();
-    const a = arena_state.allocator();
-    var diag: engine.SnapshotDiag = .{};
-    diag.entry.rel.set("m_inmail.6c3e.69");
-    diag.entry.kind = .file;
-    diag.entry.errno = posix.EACCES;
-    const with = snapshotDetail(a, error.ReadFailed, "could not snapshot a crashed state", &diag);
-    try std.testing.expect(std.mem.indexOf(u8, with, "m_inmail.6c3e.69 could not be read (file; errno ") != null);
-    try std.testing.expect(std.mem.indexOf(u8, with, " EACCES)") != null);
-    // No measured errno: the entry is still named, and no number is invented.
-    diag.entry.errno = null;
-    diag.entry.kind = .symlink;
-    const without = snapshotDetail(a, error.ReadFailed, "could not snapshot a crashed state", &diag);
-    try std.testing.expect(std.mem.indexOf(u8, without, "m_inmail.6c3e.69 could not be read (symlink)") != null);
-    try std.testing.expect(std.mem.indexOf(u8, without, "errno") == null);
-    // An entry that could not be classified is named too, with no errno clause.
-    diag.entry.kind = .unclassified;
-    const cls = snapshotDetail(a, error.ClassifyFailed, "could not snapshot a crashed state", &diag);
-    try std.testing.expect(std.mem.indexOf(u8, cls, "m_inmail.6c3e.69 could not be classified") != null);
-    try std.testing.expect(std.mem.indexOf(u8, cls, "errno") == null);
-    // A diag nobody filled keeps the old sentence rather than naming an empty path.
-    var empty: engine.SnapshotDiag = .{};
-    const bare = snapshotDetail(a, error.ReadFailed, "could not snapshot a crashed state", &empty);
-    try std.testing.expectEqualStrings("could not snapshot a crashed state: a file or symlink inside the state tree could not be read", bare);
-    // The names the table knows, and a number it does not.
-    try std.testing.expectEqualStrings(" EACCES", errnoName(posix.EACCES));
-    try std.testing.expectEqualStrings("", errnoName(12345));
-}
-
-/// What the operator is told, beyond which snapshot failed.
-///
-/// Sentences rather than error names: `@errorName` appears nowhere in this codebase, and
-/// `ClassifyFailed` tells an operator nothing. It would also tie an acceptance leg's text
-/// to a Zig identifier, so a rename would redden the suite for no behavioural reason.
-///
-/// The two failures with a limit behind them report it, because a limit is something the
-/// operator can act on — the same reason the cap names its own. The rest do not have one.
-///
-/// **Typed to `SnapshotError`, with no `else`, on purpose.** Taking `anyerror` and
-/// defaulting to `what` would compile cleanly when a member is added to that error set,
-/// and the new member would then produce the bare call-site wording — the pre-#351
-/// behaviour this function exists to remove — while still being classified
-/// `state_unsnapshotable` whether or not that is the right reason for it. Exhaustiveness
-/// turns that silent regression into a build failure — measured: deleting the `TooDeep`
-/// arm now fails to compile, where before it left every check green and the message bare.
-///
-/// `OutOfMemory` is `unreachable` here rather than absent, which states the carve-out at
-/// the point a reader meets the switch. **It does not enforce it**: deleting the guard
-/// above still builds, and the arm would then be reached at run time on a real allocation
-/// failure. Nothing in the tree can produce that, so the carve-out is unfalsified — said
-/// here rather than left for someone to assume the type checked it.
-fn snapshotDetail(ja: std.mem.Allocator, e: engine.SnapshotError, what: []const u8, diag: *engine.SnapshotDiag) []const u8 {
-    return switch (e) {
-        error.FileTooLarge => if (diag.file.size) |sz|
-            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} ({d} bytes, cap {d}); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel.get()), sz, engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment"
-        else
-            std.fmt.allocPrint(ja, "a state file is too large for byte-level judgment: {s} (over the {d}-byte cap); the state tree must hold files the judgment can hold in memory", .{ textShown(ja, diag.file.rel.get()), engine.max_state_file_bytes }) catch "a state file is too large for byte-level judgment",
-        // Says which of two things the numbers describe, because they are the prefix the
-        // walk had read when the ceiling broke and not the tree — `TreeTooLargeDiag`
-        // records why the honest answer is to point at `du`/`find` rather than to keep
-        // walking for the real figures. No entry name appears: the walk stops at whatever
-        // `readdir` happened to reach, so a "largest so far" would be a different name on
-        // a different filesystem.
-        error.TreeTooLarge => std.fmt.allocPrint(ja, "the state tree is too large to snapshot: holding it reached {d} bytes of memory against a {d}-byte ceiling, after reading {d} bytes of content across {d} entries; the walk stopped there, so those count what was read and not the tree — `du -sb <state>` and `find <state> -mindepth 1 | wc -l` show the whole of it", .{ diag.tree.reached, engine.max_state_tree_bytes, diag.tree.content, diag.tree.entries }) catch "the state tree is too large to snapshot",
-        // "deeper than", not "cap": the walk compares with a strict `>`, so a tree of
-        // exactly this many levels passes and the next one does not.
-        error.TooDeep => std.fmt.allocPrint(ja, "{s}: the state tree is nested deeper than the {d} levels the snapshot walks", .{ what, engine.max_depth }) catch what,
-        // The buffer holds the state root, a separator and the entry's relative path, so
-        // a long `--state` prefix reaches this with a short name inside the tree — saying
-        // "a path inside the state tree" would send the operator to look at the wrong
-        // half. And the bound is on the whole spelling INCLUDING its terminator, so a
-        // path of exactly this many bytes already fails: "at least", not "longer than",
-        // for the same reason `max_depth`'s message says "deeper than" and not "cap".
-        error.PathTooLong => std.fmt.allocPrint(ja, "{s}: the state root and an entry inside it spell a path of at least {d} bytes, which is the limit the snapshot can hold", .{ what, contract.max_path }) catch what,
-        // The entry is named when the walk recorded it (#535) — always, on the paths that
-        // reach here — and the errno only when a call actually failed with one:
-        // `readWholeDiag` leaves it null for a descriptor that was not a regular file.
-        error.ReadFailed => blk: {
-            const rel = diag.entry.rel.get();
-            if (rel.len == 0) break :blk std.fmt.allocPrint(ja, "{s}: a file or symlink inside the state tree could not be read", .{what}) catch what;
-            const kind: []const u8 = if (diag.entry.kind == .symlink) "symlink" else "file";
-            if (diag.entry.errno) |en| {
-                break :blk std.fmt.allocPrint(ja, "{s}: {s} could not be read ({s}; errno {d}{s})", .{ what, textShown(ja, rel), kind, en, errnoName(en) }) catch what;
-            }
-            break :blk std.fmt.allocPrint(ja, "{s}: {s} could not be read ({s})", .{ what, textShown(ja, rel), kind }) catch what;
-        },
-        error.ClassifyFailed => blk: {
-            const rel = diag.entry.rel.get();
-            if (rel.len == 0) break :blk std.fmt.allocPrint(ja, "{s}: an entry inside the state tree could not be classified as a file, directory or symlink", .{what}) catch what;
-            break :blk std.fmt.allocPrint(ja, "{s}: {s} could not be classified as a file, directory or symlink", .{ what, textShown(ja, rel) }) catch what;
-        },
-        // Not the operator's tree. Say so, or they go looking through their own files for
-        // a broken invariant of ours.
-        error.EntriesNotSortedUnique => std.fmt.allocPrint(ja, "{s}: the snapshot's own entry list came out unsorted or holding duplicates — that is a defect in sideeye, not in the state tree", .{what}) catch what,
-        // Refused above, before this function is called. If that guard goes, this stops
-        // being unreachable and the compiler says so.
-        error.OutOfMemory => unreachable,
-    };
-}
-
-/// A snapshot refusal's one exit, split by how far the run has got (#330, widened by #351).
-/// `setup` is the SETUP_ERROR class the raising arm chose beside its reason and step
-/// (#518): decided on `SnapshotError`, where an unsorted entry list is known to be
-/// Sideeye's own, not on `UnknownReason`, where it hides among four environment failures.
-fn snapshotRefusal(reason: contract.UnknownReason, setup: contract.SetupErrorReason, detail: []const u8, next: contract.NextStep) noreturn {
-    switch (run_phase) {
-        .before_exploration => setupError(setup, detail),
-        .exploring => unknown(reason, detail, next),
-    }
-}
-
 /// Undo the two mkdirs setup resolution needs (state, then work), so a refusal
 /// leaves the filesystem as it found it. Every vet between those mkdirs and the
 /// first destructive step shares this one helper: a refusal branch that forgets
@@ -986,597 +486,6 @@ fn usage() void {
     say(usage_fmt, .{ version, contract.contract_version });
 }
 
-/// Read a trace, or refuse. Pairs with `answerForOversizedTrace`, which every caller
-/// must reach: forgetting the cap check at one site is the defect this exists to fix
-/// (#324) — the world loop's read has no shim-marker branch to catch the collapse, so a
-/// missed check there refused with `kill_did_not_land`, a claim about the engine's own
-/// kill drawn from a trace it declined to read.
-/// **Every trace read allocates from the shared budget, and no call site gets a say**
-/// (#377). The defect this closes is that a property held by "there are two call sites
-/// and both do the right thing" stops holding the moment someone adds a third — which
-/// had already happened when it was written.
-///
-/// What enforces it is `engine.readTraceCapped`'s signature, not this function: it takes
-/// a `*TraceBudget`, so a read site cannot supply a plain allocator even by reaching past
-/// this wrapper. An earlier version injected the budget here instead, which left the
-/// engine's public API accepting any allocator while the documents claimed otherwise.
-/// All this wrapper does now is hand over the process-wide budget and turn a read that
-/// could not happen at all into a SETUP ERROR.
-fn readTraceOrRefuse(path: []const u8, cap: usize, setup_msg: []const u8) engine.TraceInfo {
-    // Not `.?`: an ordering mistake should report itself rather than panic. It cannot
-    // happen today — `main` installs the budget before any argument is parsed — and a
-    // local budget could not stand in if it could, because the `TraceInfo` returned here
-    // outlives this frame and frees through the budget's child.
-    const b = trace_budget orelse setupError(.internal, "internal: a trace was read before the whole-trace ceiling was installed");
-    return engine.readTraceCapped(b, path, cap) catch setupError(.environment, setup_msg);
-}
-
-/// The cap's refusal, separate from the read so a caller can classify first. The
-/// recording site does exactly that: the comment above `engine.classify` promises every
-/// UNKNOWN below it reports the classification that existed rather than the placeholder,
-/// and L0 comes from the snapshots, which an oversized trace does not affect. Refusing
-/// at the read would have made this the one structural UNKNOWN reporting "not
-/// classified" — a regression a simplification pass introduced and review caught.
-///
-/// The cost of the split, stated because it is the defect this issue is about: nothing
-/// forces a caller to reach this. A read site can read and never answer, which is
-/// exactly how the world loop came to refuse with `kill_did_not_land`. What holds it
-/// instead is the acceptance leg, which drives the recording and world sites through
-/// lowered-cap engines and fails on the reason rather than the exit code; a site added
-/// without an answer has no leg and is caught in review, not by the compiler.
-///
-/// **There are three read sites, not two** — the third arrived with `preflight --twice`
-/// (#199) and answers, but has no leg of its own, which it says where it stands. The
-/// sentence above used to say "a third read site COULD read and never answer", written
-/// while the third already existed: the count was a claim nothing rechecked, which is
-/// exactly what #377 is about. The per-read cap's pairing is still a rule callers must
-/// follow; **the whole-trace ceiling is not** — that one lives inside
-/// `readTraceOrRefuse`, where a site cannot fail to reach it.
-fn answerForOversizedTrace(t: engine.TraceInfo, where: []const u8, cap: usize) void {
-    if (t.too_large) traceTooLarge(t.too_large_size, where, cap);
-    // The whole-trace ceiling answers HERE, beside the per-read cap, rather than at the
-    // read (#377). Both refusals are structural UNKNOWNs, and this is the point every
-    // caller already reaches after classifying — refusing at the read instead cost the
-    // recording site its L0 account, measured as `atomicity: not classified`, because
-    // the final snapshot had not been taken yet.
-    if (t.budget_refused) |want| {
-        if (trace_budget) |b| traceBudgetExhausted(want, where, b.limit);
-    }
-}
-
-/// The trace read broke its cap (#324). Every read site refuses the same way, so the
-/// wording lives once; `where` names which read it was. (It said "both" until #377
-/// counted the sites and found three.) The size appears only when
-/// `lseek` measured it — a size nobody measured must not appear in the message, the
-/// rule the per-file cap's refusal already follows.
-fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
-    if (json_arena) |ja| {
-        if (size) |sz|
-            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read: {d} bytes against a {d}-byte cap; the shim's account is complete, but the engine declined to hold it", .{ where, sz, cap }) catch "the trace is larger than this engine will read", .narrow_state)
-        else
-            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read (over the {d}-byte cap); the shim's account is complete, but the engine declined to hold it", .{ where, cap }) catch "the trace is larger than this engine will read", .narrow_state);
-    }
-    // Unreachable in practice for the same reason snapshotOrRefuse's fallback is:
-    // json_arena is assigned before the parse loop, ahead of every call site. Kept so
-    // this function does not depend on that ordering; nothing exercises it.
-    unknown(.trace_too_large, "the trace is larger than this engine will read", .narrow_state);
-}
-
-/// The whole-trace ceiling refused an allocation (#377, ADR 0033).
-///
-/// The message says what `trace_too_large`'s does not: **the trace being read may be
-/// small**. What ran out is the ceiling every live trace shares, so an operator sent to
-/// look for one oversized file would find none — which is the reason this is a separate
-/// `unknown_reason` and not a second wording of the per-read one.
-/// `wanted` is not optional, unlike the per-file cap's size: that one comes from an
-/// `lseek` that can fail, this one from the budget's own record of the request it turned
-/// down, so there is no "a size nobody measured" case to guard against here.
-fn traceBudgetExhausted(wanted: usize, where: []const u8, limit: usize) noreturn {
-    if (json_arena) |ja| {
-        unknown(.trace_budget_exhausted, std.fmt.allocPrint(ja, "reading the trace from {s} would have taken this engine past the ceiling every trace it holds at once must fit under: a {d}-byte allocation against a {d}-byte ceiling. Each trace involved may be well under the per-read cap — what ran out is the sum", .{ where, wanted, limit }) catch "the engine's whole-trace ceiling was reached", .narrow_state);
-    }
-    unknown(.trace_budget_exhausted, "the engine's whole-trace ceiling was reached", .narrow_state);
-}
-
-/// The budget every trace read allocates from, from the moment `main` installs it
-/// (#377, ADR 0033). One per process, shared by every read site, and the reason
-/// `readTraceOrRefuse` is the only place that chooses an allocator for a trace.
-///
-/// A pointer rather than the object: the object lives as a local in `main`, which
-/// outlives every `TraceInfo` built on it — a budget that died first would leave those
-/// arenas holding a dangling child allocator to free through.
-var trace_budget: ?*engine.TraceBudget = null;
-
-/// The privileged observer, while it is running. Registered the moment it is spawned
-/// and cleared when it is stopped, so that the two functions every refusal exits
-/// through — `unknown` and `setupError` — can stop it on their way out.
-///
-/// This is the shape the alternative kept failing in: each refusing call site was
-/// supposed to remember to stop the sidecar first, and two of them did not, and each
-/// time one forgot, a root `fs_usage` outlived the engine holding kdebug (the single
-/// system-wide trace facility) until its `-t` bound — 3:52 of it measured, 741 MB of
-/// capture — and every later start on the machine failed with `Resource busy`. An
-/// exit that cannot forget is cheaper than a rule that every exit must remember.
-const LiveSidecar = struct { pid: c_int, gpa: std.mem.Allocator };
-var fsu_live: ?LiveSidecar = null;
-
-/// The observer's capture file, from spawn until it has been read. A `defer` on the
-/// block that stopped the observer removed it — at that block's closing brace, forty
-/// lines before the comparison opened it, so the comparison read nothing and the run
-/// refused with "could not be read". Measured on an otherwise green end-to-end run.
-/// The file is dropped at exactly two points instead: right after the comparison has
-/// the bytes in memory, and inside the two refusal exits, which is where a capture
-/// nobody will read again would otherwise be left at hundreds of megabytes.
-var fsu_capture: ?[]const u8 = null;
-
-fn dropCapture() void {
-    const c = fsu_capture orelse return;
-    fsu_capture = null;
-    removeFile(c);
-}
-
-/// Stop the registered observer if one is running, and report what the pre-signal
-/// observation said. `.had_exited` when nothing was registered, which is the answer
-/// every non-fs_usage run gets and costs it nothing.
-fn stopLiveSidecar() posix.SidecarEnd {
-    const live = fsu_live orelse return .had_exited;
-    fsu_live = null;
-    return posix.stopSidecar(live.gpa, live.pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
-}
-
-/// A clause for a status of 126 from any child the engine forked: since 2026-09-08 that
-/// is also the code `posix.childArrangeFailed` exits with when `setpgid` or a `dup2`
-/// failed in the child before `exec`, and the child says which on the engine's stderr.
-/// Empty for every other status, so the sentence a caller already prints is unchanged.
-fn exit126Note(code: anytype) []const u8 {
-    return if (code == 126) "; 126 is also the code the engine's own fork stub uses for a child it could not arrange before exec — if that was it, a line on the engine's stderr names the call and the errno" else "";
-}
-
-test "exit126Note speaks only for 126" {
-    try std.testing.expectEqualStrings("", exit126Note(@as(u8, 1)));
-    try std.testing.expectEqualStrings("", exit126Note(@as(u8, 127)));
-    try std.testing.expect(std.mem.startsWith(u8, exit126Note(@as(u8, 126)), "; 126 is also the code"));
-}
-
-/// The longest run of a target's own bytes that reaches `message`: a setup writing one
-/// 8 KiB line must not push the status and the path it is quoted beside out of view.
-///
-/// **Counted before defanging, not after.** The whole sentence goes through
-/// `sanitizeForReport`, which spells a defanged byte `\xNN` — four characters for one —
-/// so a line of 200 control bytes reaches the report as 800. That is bounded and it is
-/// arena-allocated rather than written into a fixed buffer, so nothing overflows; it is
-/// only not the same number, and saying "clipped to 200 bytes" of the *output* would be
-/// wrong. `textShown`'s one-`?`-per-unit spelling does hold that stronger property, and
-/// it is the right choice where a fixed buffer is downstream — here the single choke
-/// point at the end matters more (two spellings of a defanged byte in one sentence is
-/// what per-field sanitising produced).
-const setup_line_max: usize = 200;
-
-/// Backing store for the out-of-memory sentence in `setupOutputDetail`, at file scope
-/// because that sentence outlives the call that builds it.
-var setup_oom_buf: [contract.max_path + 64]u8 = undefined;
-
-/// The clause a SETUP_ERROR adds about what the failing `--setup` wrote (#483).
-///
-/// Three answers, never two. The issue's complaint is that the observation "is not merely
-/// unreported; it is gone", and collapsing "could not read it back" into "wrote nothing"
-/// would put a second, quieter version of that same loss into the fix: the run would
-/// assert something about a file it failed to open. `snapshotRefusal`'s neighbour at the
-/// falsification gate says a capture it cannot read back out loud for the same reason.
-///
-/// Sanitised once at the end, like `unresolvedDetail` and `withOracleCapture` in
-/// `boundary.zig`, rather than per field — and it is needed here more than there, because
-/// `setupError` prints its detail through `say` with no defang of its own, and every byte of the line
-/// is the target's. One choke point also means one spelling: `textShown` per field and
-/// `sanitizeForReport` at the end defang differently, so mixing them put two renderings of
-/// a control byte in the same sentence.
-///
-/// The ellipsis is derived from what the cut returned rather than from a second comparison
-/// against `setup_line_max`, so the mark cannot disagree with the cut.
-fn setupOutputDetail(arena: std.mem.Allocator, path: []const u8) []const u8 {
-    // Every `catch` below lands here rather than on `""`. An exhausted arena would
-    // otherwise turn the refusal back into the bare `--setup exited 7` this issue is
-    // about, and it would do it silently — the one failure mode where saying less looks
-    // exactly like a version that was never fixed. `unresolvedDetail` takes a fallback
-    // sentence for the same reason.
-    // Names the file even here: "the refusal names that file" is the half of the promise
-    // an exhausted arena cannot take away, since the path is the caller's and this only
-    // has to copy it.
-    //
-    // The buffer is at file scope, and that is the whole point of it being there. A first
-    // version declared it here, which returns a slice of this function's frame to a caller
-    // that reads it after the frame is gone — the exact shape `unresolved_kind.withFd`'s
-    // doc warns about two files away, written the same day. Safe as a global because every
-    // reader of the result is on the way to `setupError`, which is `noreturn`: there is no
-    // second refusal to overwrite it, and no thread that could be composing another.
-    const oom = std.fmt.bufPrint(
-        &setup_oom_buf,
-        "; what it wrote could not be described (out of memory); the capture is at {s}",
-        .{path},
-    ) catch "; what it wrote could not be described (out of memory)";
-    const composed = switch (capture.readSetupCapture(arena, path)) {
-        .unreadable => std.fmt.allocPrint(arena, "; its output could not be read back from {s}", .{path}) catch return oom,
-        .empty => blk: {
-            // Nothing was written, so there is nothing for the file to hold and no reason
-            // for the sentence to name it. Removed here because this is the only place
-            // that knows: `setupErrorFmt` never returns, so the failing path has no line
-            // after this one, and the MCP adapter hands every call the same `--work` —
-            // zero-byte pid-named files would accumulate there without bound.
-            removeFile(path);
-            break :blk "; it wrote nothing";
-        },
-        .line => |l| blk: {
-            const cut = mcp.cutOnBoundary(l, setup_line_max);
-            break :blk std.fmt.allocPrint(
-                arena,
-                "; its last output line was: {s}{s} (all of it is in {s})",
-                .{ cut, if (cut.len < l.len) "..." else "", path },
-            ) catch return oom;
-        },
-    };
-    return sanitizeForReport(arena, composed) catch oom;
-}
-
-test "setupOutputDetail separates read failure, empty output, and a line — and defangs it (#483)" {
-    const t = std.testing;
-    var arena_state = std.heap.ArenaAllocator.init(t.allocator);
-    defer arena_state.deinit();
-    const arena = arena_state.allocator();
-
-    var pb: [contract.max_path]u8 = undefined;
-    const path = std.fmt.bufPrint(&pb, ".zig-cache/tmp-setupout-{d}.txt", .{posix.getpid()}) catch unreachable;
-    defer removeFile(path);
-
-    // A file that is not there is not an empty file. Saying "wrote nothing" here would
-    // repeat #483's own defect inside its fix.
-    removeFile(path);
-    const missing = setupOutputDetail(arena, path);
-    try t.expect(std.mem.indexOf(u8, missing, "could not be read back") != null);
-    try t.expect(std.mem.indexOf(u8, missing, "wrote nothing") == null);
-
-    try t.expect(writeWholeFile(path, &.{""}));
-    const empty = setupOutputDetail(arena, path);
-    try t.expect(std.mem.indexOf(u8, empty, "wrote nothing") != null);
-    try t.expect(std.mem.indexOf(u8, empty, "could not be read back") == null);
-    // An empty capture is removed rather than named: nothing to hold, nothing to point at.
-    try t.expect(capture.readSetupCapture(arena, path) == .unreadable);
-
-    // The line the operator needs, and the file for the rest of it.
-    try t.expect(writeWholeFile(path, &.{"opening\nthe setup could not find its input\n"}));
-    const line = setupOutputDetail(arena, path);
-    try t.expect(std.mem.indexOf(u8, line, "the setup could not find its input") != null);
-    try t.expect(std.mem.indexOf(u8, line, "all of it is in") != null);
-
-    // A target that tries to forge a report line is the reason the sentence goes through
-    // `sanitizeForReport`: `setupError` hands its detail straight to `say`.
-    //
-    // The control bytes are asserted, not the newline. A first version of this test wrote
-    // `"x\nUNKNOWN  kill_did_not_land\n"` and checked that `"\nUNKNOWN"` was absent — but
-    // `lastNonEmptyLine` splits on `'\n'`, so no return value of it can ever contain one.
-    // That assertion held with `textShown` deleted outright (measured), which makes it a
-    // check on the splitter rather than on the defang. ESC and CR survive the split, so
-    // they are what proves the defang ran; the `foreignTouchDetail` test (in `boundary.zig`
-    // since #572) has used ESC for the same reason since #484.
-    try t.expect(writeWholeFile(path, &.{"safe\n\x1b[1mUNKNOWN  kill_did_not_land\rmore\n"}));
-    const forged = setupOutputDetail(arena, path);
-    try t.expect(std.mem.indexOfScalar(u8, forged, 0x1b) == null);
-    try t.expect(std.mem.indexOfScalar(u8, forged, '\r') == null);
-    try t.expect(std.mem.indexOf(u8, forged, "\nUNKNOWN") == null);
-    // The line is still quoted — defanging must not silently drop the observation, which
-    // is the whole point of #483.
-    try t.expect(std.mem.indexOf(u8, forged, "kill_did_not_land") != null);
-
-    // The clamp counts the target's bytes, and defanging spells each removed one `\xNN`.
-    // A line of control bytes therefore reaches the report longer than the cap -- bounded
-    // and arena-allocated, but not the same number, which is why the constant's doc says
-    // "before defanging". Pinned so that swapping the choke point back to a one-`?`
-    // spelling cannot silently change what the constant means.
-    const ctrl = "\x01" ** (setup_line_max + 20);
-    try t.expect(writeWholeFile(path, &.{ctrl}));
-    const defanged = setupOutputDetail(arena, path);
-    try t.expect(std.mem.indexOfScalar(u8, defanged, 0x01) == null);
-    try t.expect(std.mem.indexOf(u8, defanged, "\\x01") != null);
-    try t.expect(defanged.len > setup_line_max);
-
-    // Longer than the cap: clamped, marked, and the file still named.
-    const long = "E" ** (setup_line_max + 50);
-    try t.expect(writeWholeFile(path, &.{long}));
-    const clamped = setupOutputDetail(arena, path);
-    try t.expect(std.mem.indexOf(u8, clamped, "...") != null);
-    // Not `clamped.len < long.len`: the sentence carries a prefix and the file's path as
-    // well, so its total length says nothing about whether the line was cut. What the
-    // clamp promises is that the whole line is not in there.
-    try t.expect(std.mem.indexOf(u8, clamped, long) == null);
-    try t.expect(std.mem.indexOf(u8, clamped, "E" ** setup_line_max) != null);
-
-    // The same reader the success path deletes on. It has to agree with the sentences
-    // above about what "nothing" means, or a setup would be told it wrote nothing while
-    // its file was kept (or the reverse).
-    try t.expect(writeWholeFile(path, &.{""}));
-    try t.expect(capture.readSetupCapture(arena, path) == .empty);
-    try t.expect(writeWholeFile(path, &.{"\n \n"}));
-    try t.expect(capture.readSetupCapture(arena, path) == .empty);
-    try t.expect(writeWholeFile(path, &.{"using a stale fixture\n"}));
-    try t.expectEqualStrings("using a stale fixture", capture.readSetupCapture(arena, path).line);
-    // A capture that cannot be read is not an empty one: deleting it would destroy the
-    // only copy of an output the engine failed to see.
-    removeFile(path);
-    try t.expect(capture.readSetupCapture(arena, path) == .unreadable);
-
-    // The out-of-memory sentence, through an allocator that refuses. It still names the
-    // file, and — the reason the buffer moved to file scope — the bytes are still there
-    // to read after the call that built them has returned. A stack-local buffer makes
-    // this a read of a dead frame, which no assertion can be relied on to catch: the
-    // check that matters is that the sentence survives the return at all.
-    try t.expect(writeWholeFile(path, &.{"something"}));
-    var failing = std.testing.FailingAllocator.init(std.testing.allocator, .{ .fail_index = 0 });
-    const starved = setupOutputDetail(failing.allocator(), path);
-    try t.expect(std.mem.indexOf(u8, starved, "out of memory") != null);
-    try t.expect(std.mem.indexOf(u8, starved, path) != null);
-    // Read again after another call has had the chance to reuse the frame.
-    var failing2 = std.testing.FailingAllocator.init(std.testing.allocator, .{ .fail_index = 0 });
-    _ = setupOutputDetail(failing2.allocator(), path);
-    try t.expect(std.mem.indexOf(u8, starved, "out of memory") != null);
-    // Naming the buffer is the assertion. Moving it back into `setupOutputDetail` — the
-    // defect this test exists for — stops compiling here rather than failing at run time,
-    // which matters because the run-time failure is undefined behaviour: restoring the
-    // stack-local version and running the suite was measured green. A test that can only
-    // observe the bug by luck is not what pins it; the reference is.
-    try t.expect(std.mem.indexOf(u8, &setup_oom_buf, "out of memory") != null);
-    try t.expect(std.mem.indexOf(u8, &setup_oom_buf, path) != null);
-
-    // A capture that is a directory is not a capture. `require_regular` is what makes
-    // this the read-failure branch rather than a read that returns nothing.
-    removeFile(path);
-    var db: [contract.max_path]u8 = undefined;
-    const dz = try std.fmt.bufPrintZ(&db, "{s}", .{path});
-    try t.expect(posix.mkdir(dz.ptr, @as(c_uint, 0o755)) == 0);
-    defer _ = posix.rmdir(dz.ptr);
-    const dir = setupOutputDetail(arena, path);
-    try t.expect(std.mem.indexOf(u8, dir, "could not be read back") != null);
-}
-
-/// `next` is required, not optional, on purpose (#274): the site that raises a refusal is
-/// the one that knows why, and the compiler is what holds every site to choosing. The
-/// sentence is rendered exactly once here and handed to both forms — the JSON field and
-/// the text line are one value with one definition (DESIGN §13).
-fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.NextStep) noreturn {
-    _ = stopLiveSidecar();
-    dropCapture();
-    const next_step = next.render();
-    if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), null, detail, next_step);
-    // The classification lines appear here too. The reason used to be written as
-    // "DESIGN §13 demands text and JSON carry identical content, and the JSON below
-    // already does" -- false where it stood, on the most divergent path of the three,
-    // and §13 no longer says that (ruled 2026-09-01, #280: the JSON is the complete
-    // record, the text is the reader's view, and what binds them is that a shared value
-    // has one definition). The lines are here because a reader who is being refused
-    // still needs to know what was classified. Before the snapshots exist this honestly
-    // reads "not classified".
-    // `next` sits AFTER the detail line: the acceptance suite reads the detail as the line
-    // that follows `UNKNOWN  <reason>`, and that contract predates this line. `processes`
-    // goes in the lower block for the same reason and joins the other verdicts there (#123):
-    // the JSON has carried this account on every refusal since #405, the ordinary FAIL and
-    // PASS blocks both print it, and only the UNKNOWN text left it out — so a reader refused
-    // for touching the state could not tell that the engine had followed the subject across
-    // an image change. Two text blocks still do not carry it and are not meant to: a
-    // `SETUP_ERROR` is one line by design, and the zero-operation PASS renders its own.
-    // `boundaryAccount()` answers from this run's evidence, not from a capability blurb: a
-    // self-exec chain adds "the subject's image replaced N time(s), chain unbroken", a run
-    // refused before the trace was read says the account was never established.
-    say(
-        \\UNKNOWN  {s}
-        \\         {s}
-        \\next        {s}
-        \\
-    , .{ reason.name(), detail, next_step });
-    // #337: the same value the JSON carries, on its own line, and only when there is one
-    // — a `divergence` line reading empty would be a field pretending to an answer. After
-    // `next`, before the classification block, so the two lines the acceptance suite
-    // anchors on (the reason, and the detail beneath it) keep their positions.
-    if (divergence_syscall.len > 0) say("divergence  {s}\n", .{divergence_syscall});
-    sayApparatus(json_arena orelse std.heap.page_allocator, "apparatus   {s}\n");
-    say(
-        \\
-        \\atomicity   {s}
-        \\l1          {s}
-        \\case        {s}
-        \\expected    exit {d}
-        \\processes   {s}
-        \\not tested  {s}
-        \\
-        \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
-        \\caller has to decide deliberately what to do with it.
-        \\
-    , .{ l0_note, l1_note, case_note, expected_status_val, boundary.boundaryAccount(), notTestedText() });
-    std.process.exit(@intFromEnum(contract.ExitCode.unknown));
-}
-
-/// Guards every path that ends in PASS.
-///
-/// FAIL does not need this — a counterexample is real whether or not the account of the
-/// run was complete. "No counterexample found" is only worth something if what was
-/// looked at is known. Both PASS exits call this, including the one for a target that
-/// appeared to perform no operations at all: that is the case where the shim saw
-/// nothing, which is precisely when the question of whether it *could* see matters most.
-///
-/// `allow_unverified` exists because macOS has no oracle sideeye can use by default
-/// (measured, #181, spike/macos-oracle/): DTrace's syscall provider matches no probes
-/// under SIP even as root — `dtruss`, built on it, runs the target and exits 0 with no
-/// syscall in its capture — `fs_usage` gave an ordered, attributed, full-path account
-/// of the survey's toy but requires root, and Endpoint Security's shipped CLI
-/// (`eslogger`) refuses without root plus a Full Disk Access grant.
-/// Rather than branch on the platform — which would break the claim that both operating
-/// systems produce the same verdict for the same scenario — the caller states the
-/// weaker claim deliberately, and the report says which claim was made.
-fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool) void {
-    if (has_oracle or allow_unverified) return;
-    const base = "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim";
-    // A discovered strace is only ever NAMED here, never attached: a second witness
-    // joining on its own would silently strengthen what a flagless verdict claims —
-    // and flip every caller that measured the no-oracle behavior (#78).
-    const msg = if (findStraceForHint(arena)) |s|
-        std.fmt.allocPrint(arena, "{s} (strace is on this machine: pass --oracle {s})", .{ base, s }) catch base
-    else
-        base;
-    unknown(.completeness_not_verified, msg, .pass_oracle);
-}
-
-/// Linux-only PATH discovery used by refusal hints: the first absolute PATH entry
-/// holding an executable `strace`, or null. Relative and empty PATH entries are
-/// skipped — the hint must name a path that means the same thing wherever the
-/// user pastes it (#78).
-fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
-    if (builtin.os.tag != .linux) return null;
-    const path_env = posix.getenv("PATH") orelse return null;
-    var it = std.mem.splitScalar(u8, std.mem.span(path_env), ':');
-    while (it.next()) |dir| {
-        if (dir.len == 0 or dir[0] != '/') continue;
-        var zb: [contract.max_path]u8 = undefined;
-        const z = std.fmt.bufPrintZ(&zb, "{s}/strace", .{dir}) catch continue;
-        if (posix.access(z.ptr, posix.X_OK) == 0)
-            return arena.dupe(u8, z) catch null;
-    }
-    return null;
-}
-
-/// A setup error is a verdict too, and it has to reach the JSON.
-///
-/// It did not, and the file was neither written nor removed: a caller running twice into
-/// the same `--json` path read the *previous* run's document as this run's result. Since
-/// several of these fire mid-run — after the trace is read, after a world is restored —
-/// that stale verdict could be a PASS for a run that never explored anything.
-///
-/// `reason` is required, not optional, on purpose (#518, ADR 0057) — the rule `unknown()`
-/// keeps for `next`: the site that refuses is the one that knows which class it is, and the
-/// compiler is what holds every site to choosing. A site that funnels several failures
-/// chooses by an exhaustive switch on what it holds (`spawnFailure`, `snapshotRefusal`,
-/// `restoreFailure`). The reason reaches the JSON as `setup_error_reason`; the text line
-/// is unchanged, because its sentence already says what happened and the acceptance suite
-/// reads the rest of that line as the detail.
-fn setupError(reason: contract.SetupErrorReason, detail: []const u8) noreturn {
-    _ = stopLiveSidecar();
-    dropCapture();
-    if (json_path) |jp| if (json_arena) |ja|
-        writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, reason, detail, null);
-    say("SETUP ERROR  {s}\n", .{detail});
-    std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
-}
-
-/// A `runChild*` failure, refused with the right name **and the right verdict**.
-///
-/// `WaitFailed` names itself rather than borrowing the caller's wording: the child ran,
-/// but its exit status was never read, so nothing can be said about how it ended. Every
-/// verdict downstream rests on that status, and the defect #264 was filed for is exactly
-/// what happens when the distinction is dropped — an unread status reads as `.exited = 0`,
-/// which in a design where every explored world dies by signal becomes a confident
-/// `kill_did_not_land`. The other two failures keep `doing`, which says what was starting.
-///
-/// `phase` decides the verdict for `WaitFailed`, not just its wording. A child *ran* and
-/// its status was never read, which is a statement about the target's execution, so while
-/// worlds are being explored it has to be UNKNOWN — the distinction `recording_run_failed`
-/// and `baseline_run_failed` already draw for the same phase. A first version of #264's
-/// fix sent every call site to `setupError` and would have published
-/// `verdict: "SETUP_ERROR"` for a mid-exploration wait failure: honest about the failure,
-/// wrong about what it was about, and a silent change to the serialized shape.
-///
-/// **The other members are phase-independent and that is deliberate**, which DESIGN's
-/// exit-code table now says: `ForkFailed`, `OutOfMemory`, `StdinUnavailable` and
-/// `CaptureUnavailable` are all "the engine needed something and could not get it", with
-/// no child whose execution could be described. That row used to read "before exploration
-/// began" and the first three already contradicted it; #469 made the class reachable
-/// (2026-09-04, owner decision) and the row was corrected rather than the code.
-///
-/// How far the run has got. Three refusals share this one vocabulary rather than
-/// growing a second, and all ask the same question — did any of the define run before
-/// this failed? `spawnFailure` takes it as a parameter (the caller knows which step it
-/// was starting); the per-file snapshot cap (#330) and the rewrite disposition (#363)
-/// read `run_phase` below.
-const SpawnPhase = enum {
-    /// Before any world runs: `--setup`, the demo's compiler probe, the initial
-    /// snapshot. A failure here really does mean the define never got started.
-    before_exploration,
-    /// The recording run onward. The define is running; refusing is UNKNOWN.
-    exploring,
-};
-
-/// The phase the snapshot cap reads (#330). A *variable* rather than an argument
-/// threaded through `snapshotOrRefuse`, and the difference is what can be verified:
-/// `snapshotOrRefuse` has one call site before the recording run and the rest at or
-/// past it, and an acceptance leg can only reach one of the later ones. Passed as an
-/// argument, the others could name the wrong phase and every check in the tree would
-/// stay green. Assigned once, immediately before the recording run, a per-site mistake is not
-/// representable at all — what remains is where the single assignment sits, and the two
-/// legs bound that from both sides: move it above the initial snapshot and check 2fc goes
-/// red, delete it and check 2fd does. **They bound an interval, not a point** — measured,
-/// by moving the assignment down to just above the final snapshot, where both legs stay
-/// green because nothing between reads the variable. What is pinned is that the
-/// assignment lies after the initial snapshot and at or before the final one.
-///
-/// Another call site added above this assignment would be misread, and no check would
-/// say so — the same gap `answerForOversizedTrace` states for its own sites: caught in
-/// review, not by the compiler.
-var run_phase: SpawnPhase = .before_exploration;
-
-fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
-    // The SETUP_ERROR class, decided once for the whole error set (#518): every member is
-    // the engine needing something of the machine — a fork, memory, a descriptor, a capture,
-    // a wait — so every arm is `environment`, and the switch is exhaustive so a member added
-    // to `SpawnError` has to be given a class here rather than inherit one.
-    const reason: contract.SetupErrorReason = switch (e) {
-        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => .environment,
-    };
-    if (e == error.WaitFailed) {
-        const detail = "a child process ran, but its exit status could never be read: the wait was interrupted repeatedly, or failed permanently. Every verdict here rests on how that child ended, so the run refuses instead of deriving one from a status that was never written";
-        switch (phase) {
-            .before_exploration => setupError(reason, detail),
-            .exploring => unknown(.child_wait_failed, detail, .retry_then_report),
-        }
-    }
-    // A child's stdin source that could not be opened (#263) is refused in the parent,
-    // before any fork, and named here: the caller's `doing` says which step was starting,
-    // and this says why it never started. SETUP_ERROR in either phase, the same reading
-    // as a fork failure below — the environment, not the target, is what could not be
-    // arranged, and no child ran whose exit status could be read as anything.
-    if (e == error.StdinUnavailable) {
-        var buf: [512]u8 = undefined;
-        setupError(reason, std.fmt.bufPrint(&buf, "{s}: /dev/null could not be opened, so the command could not be started with its stdin at end-of-file", .{doing}) catch doing);
-    }
-    // The child's stdout capture, refused in the parent before any fork (#469). Same
-    // phase-independent SETUP_ERROR as the stdin arm above and for the same reason: the
-    // environment, not the target, is what could not be arranged, and no child ran whose
-    // exit status could be read as anything.
-    //
-    // **This arm is not enforced by the compiler.** The chain above is a run of `if`s
-    // ending in a bare `setupError(doing)`, so a member of `SpawnError` with no arm here
-    // is not a build error — it silently becomes "could not run --operation" with no
-    // reason. Adding a member to that error set means adding a line here, and the only
-    // thing that says so is this paragraph and the acceptance leg that reads the text.
-    //
-    // The message names the path because the operator's remedy is about that path — an
-    // ordinary run has nothing at it, so anything that stopped the open is either
-    // something else's file or a work directory that is not theirs alone.
-    //
-    // **Phase-independent, and unlike its two neighbours this one is reachable during
-    // exploration** — a blocked capture path is the threat the work directory actually
-    // has, which is why #469 exists. Weighed against making it UNKNOWN there, and the
-    // owner chose this (2026-09-04): the frozen `unknown_reason` set has no member for
-    // "the parent could not arrange a world's capture", so the UNKNOWN form would have
-    // had to borrow a name — `recording_run_failed` at one site, `checker_not_falsified`
-    // at another, and nothing honest at the world loop — which is the misattribution
-    // this change removes, reintroduced one layer down. DESIGN's exit-code table said
-    // "before exploration began" and now says what the code does; it was already false
-    // for `ForkFailed` and `OutOfMemory` below, which nothing had made reachable.
-    if (e == error.CaptureUnavailable) {
-        var buf: [512]u8 = undefined;
-        setupError(reason, std.fmt.bufPrint(&buf, "{s}: the command's stdout capture in the work directory could not be opened. The engine refuses a capture path that is a symlink, or that already holds a file or directory the engine did not just create — check --work, and what is at the capture path inside it", .{doing}) catch doing);
-    }
-    // Fork and allocation failures are environment problems in either phase, and the
-    // caller's wording already says which step was starting.
-    setupError(reason, doing);
-}
-
 /// How much fs_usage capture the engine will hold.
 ///
 /// The capture is system-wide (`src/fsusage.zig` explains why it cannot be filtered),
@@ -1640,8 +549,8 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         spawnFailure(e, .before_exploration, "could not start fs_usage");
     // Registered before anything below can refuse. From here on, every `setupError`
     // and `unknown` stops it; no call site has to.
-    fsu_live = .{ .pid = pid, .gpa = gpa };
-    fsu_capture = capture_path;
+    refuse.fsu_live = .{ .pid = pid, .gpa = gpa };
+    refuse.fsu_capture = capture_path;
 
     // The proof that the capture is live. Not a sleep: a sleep asserts a duration and
     // this has to assert an observation. The engine creates a file inside the state
@@ -1669,7 +578,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         var st: c_int = 0;
         const w = posix.waitpid(pid, &st, posix.WNOHANG);
         if (w == pid or w < 0) {
-            fsu_live = null;
+            refuse.fsu_live = null;
             removeFile(sentinel);
             setupError(.environment, "fs_usage exited before the handshake completed; if it printed `ktrace_start: Resource busy` above, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run");
         }
@@ -1826,7 +735,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // arenas freeing through a dangling child allocator. Nothing moves it after
     // `readTraceOrRefuse` starts handing out its allocator.
     var budget: engine.TraceBudget = .{ .child = gpa, .limit = trace_budget_limit };
-    trace_budget = &budget;
+    refuse.trace_budget = &budget;
 
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -1958,7 +867,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var args: Args = .{};
     // Before the loop, so that a parse error occurring *after* `--json` was read still
     // reaches the report rather than leaving whatever was there before.
-    json_arena = arena_state.allocator();
+    refuse.json_arena = arena_state.allocator();
     var i: usize = if (mode == .replay) 3 else 2;
     while (i < argv.len) {
         // Flags without a value are handled first; everything else consumes a pair.
@@ -1977,7 +886,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             args.oracle_fs_usage = true;
             // Said the moment the flag is read, so an exit anywhere after this line —
             // a later parse error included — reports the oracle as named (#352).
-            noteOracle(.{ .named = .fs_usage });
+            report.noteOracle(.{ .named = .fs_usage });
             i += 1;
             continue;
         }
@@ -2014,13 +923,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).
-            noteOracle(.{ .named = .strace });
+            report.noteOracle(.{ .named = .strace });
         } else if (std.mem.eql(u8, argv[i], "--check")) {
             args.check = .{ .str = v };
-            checker_note = checkerNoteFor(.named);
+            report.checker_note = report.checkerNoteFor(.named);
         } else if (std.mem.eql(u8, argv[i], "--marker")) {
             args.marker = v;
-            l1_note = l1NoteFor(.named);
+            report.l1_note = report.l1NoteFor(.named);
         }
         // Taken as spelled, unlike the toml's, which resolves against the file's own
         // directory: a flag is typed at a cwd, so a relative one already means what the
@@ -2029,7 +938,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
             // Mirrored immediately: a refusal between here and the canonical binding
             // below must not report the declaration as 0 (R1 finding).
-            expected_status_val = args.expect_status.?;
+            report.expected_status_val = args.expect_status.?;
         } else if (std.mem.eql(u8, argv[i], "--world-timeout")) {
             // #263. Worlds only — the recording run, setup and checkers have no
             // budget, and the help text says so: the flag must not read as a promise
@@ -2062,7 +971,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // the caller's previous report would be a refusal with a side effect.
             if (mode == .preflight) setupError(.define_invalid, "preflight has no machine-readable form; sideeye explore --config answers strictly more, and --json lives there");
             args.json = v;
-            json_path = v;
+            refuse.json_path = v;
             // Any document at this path describes some earlier run. Removing it now means
             // an exit that never reaches a writer leaves *no* report rather than a stale
             // one: absence is unambiguous, a previous verdict is not.
@@ -2084,13 +993,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     args.has_oracle = args.oracle != null or args.oracle_fs_usage;
     // Only now can "no --oracle given" be said: the whole argv has been read and no flag
     // named one. Before this line the account says nothing was established (#352).
-    if (!args.has_oracle) noteOracle(.none);
+    if (!args.has_oracle) report.noteOracle(.none);
     // The flags are the only source of a checker and a marker unless a replayed case or a
     // toml follows; those two blocks settle their own accounts once they have read theirs
     // (#352). Settled here and not at the marker vet: `--state is required` and its
     // siblings refuse between the two, and a flags-only run refused there with nothing
     // declared has read every source it will ever have.
-    if (mode != .replay and args.config == null) settleDeclared(args.check != null, args.marker != null);
+    if (mode != .replay and args.config == null) report.settleDeclared(args.check != null, args.marker != null);
     // Named, not yet read. The account distinguishes the two: an oracle whose capture
     // never parsed establishes nothing about other processes, and a run refused before
     // the comparison must not report as though it had one.
@@ -2234,7 +1143,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // The case is replay's last source of both (flags and --config were refused above),
         // so the accounts settle here — "configured" or "none configured" — and every exit
         // from here on, `case_no_longer_applies` included, reports what the case held (#352).
-        settleDeclared(args.check != null, args.marker != null);
+        report.settleDeclared(args.check != null, args.marker != null);
         args.expect_status = c.define.expected_status;
         // Taken as stored: a saved case always carries the resolved spelling, so there is
         // nothing here for a toml directory to resolve against. The vet below still runs
@@ -2256,13 +1165,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         // Mirrored into the report before any refusal below can fire: a contract
         // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
-        expected_status_val = c.define.expected_status orelse 0;
+        report.expected_status_val = c.define.expected_status orelse 0;
         replay_case = c;
         only_k = c.k;
         // From here on, every verdict — including a refusal — names the case it is
         // about, in text and JSON alike. Set before the contract gate so the one
         // refusal this block raises names it too.
-        case_note = case_arg.?;
+        report.case_note = case_arg.?;
         if (c.contract_version != contract.contract_version)
             unknown(.case_no_longer_applies, "the case was recorded under a different trace contract; the crash-point numbering does not carry over", .re_record);
         // --fresh-state (#69) is honoured further down, on state_abs — the guard in
@@ -2294,7 +1203,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 // flags were refused), and it has been read: settle both accounts here, before
                 // the two refusals below that can fire after a successful parse, so a toml
                 // that declared them is never reported as "not established" (#352, review).
-                settleDeclared(d.check != null, d.marker != null);
+                report.settleDeclared(d.check != null, d.marker != null);
                 // The dirname is absolutized before anything resolves against it: the
                 // resolved define is what a saved case stores as the counterexample's
                 // identity, and a relative spelling would make the case mean a
@@ -2317,7 +1226,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                     args.expect_status = parseExpectStatus(es, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
                     // canonical binding must report the declaration that was read.
-                    expected_status_val = args.expect_status.?;
+                    report.expected_status_val = args.expect_status.?;
                 }
             },
             .fault => |f| {
@@ -2338,14 +1247,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // untouched — a SIGKILL death is a signal, not an exit status, and the two never
     // substitute for each other.
     const expect_status: u8 = args.expect_status orelse 0;
-    expected_status_val = expect_status;
+    report.expected_status_val = expect_status;
     if (args.marker) |m| {
         if (m.len == 0) setupError(.define_invalid, "the marker is empty");
         if (m.len >= 4096) setupError(.define_invalid, "the marker is unreasonably long (>= 4 KiB)");
-        l1_configured = true;
+        report.l1_configured = true;
         // Already settled by whichever block read the marker's source; re-stated here so
         // the vet and the account it vouches for sit together.
-        l1_note = l1NoteFor(.named);
+        report.l1_note = report.l1NoteFor(.named);
     }
 
     // The declared cwd is resolved and vetted here, ahead of the state directory's mkdir
@@ -2441,7 +1350,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // Minor-3: this and the two --work refusals below predate the rule's helper
         // and were the last three keeping their side effect).
         if (state_created) _ = posix.rmdir(state_z.ptr);
-        setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, the shim and the engine would filter on different spellings of it", .{ textShown(arena_state.allocator(), state), resolveFailure(arena_state.allocator(), state, why) });
+        setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, the shim and the engine would filter on different spellings of it", .{ textShown(arena_state.allocator(), state), refuse.resolveFailure(arena_state.allocator(), state, why) });
     };
 
     // Still before setup runs, so the refusal is a configuration error and nothing has
@@ -2478,7 +1387,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // Before undoSetupMkdirs, which issues syscalls of its own (#486).
             const why = std.c._errno().*;
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupErrorFmt(arena_state.allocator(), .environment, "--work {s}: {s}", .{ textShown(arena_state.allocator(), args.work), resolveFailure(arena_state.allocator(), args.work, why) });
+            setupErrorFmt(arena_state.allocator(), .environment, "--work {s}: {s}", .{ textShown(arena_state.allocator(), args.work), refuse.resolveFailure(arena_state.allocator(), args.work, why) });
         };
         if (contract.isInsideDir(work_abs, state_abs)) {
             // Remove only what this invocation just created: refusing while leaving
@@ -2601,7 +1510,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // the one destructive step, and the mkdir-then-resolve above already covers a
     // state dir that does not exist yet.
     if (args.fresh_state)
-        engine.freshDir(state_abs) catch |e| restoreFailure(e, "--fresh-state could not empty the case's state directory");
+        engine.freshDir(state_abs) catch |e| refuse.restoreFailure(e, "--fresh-state could not empty the case's state directory");
 
     // The spelling the caller used, absolute but with symlinks left alone.
     //
@@ -2664,20 +1573,20 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // a fourth assignment nobody would notice was missing. Set before the switch and
         // read only under `setup_failed`, so the success path below leaves it where a
         // report that never refuses cannot reach it.
-        setup_status = term;
+        report.setup_status = term;
         switch (term) {
             // The status is the observation; "non-zero" was a restatement of the
             // refusal's own name (#483). The number alone is what #483 asks for, and it
             // is all this can honestly carry: a first draft annotated 127 as "command
             // not found", and `exec /no/such/binary` under /bin/sh measured 126 here —
             // the mapping from a failed exec to a status is the shell's, not ours.
-            .exited => |code| if (code != 0) setupErrorFmt(a, .setup_failed, "--setup exited {d}{s}{s}", .{ code, setupOutputDetail(a, setup_out), exit126Note(code) }),
+            .exited => |code| if (code != 0) setupErrorFmt(a, .setup_failed, "--setup exited {d}{s}{s}", .{ code, report.setupOutputDetail(a, setup_out), report.exit126Note(code) }),
             // The same class, found by this PR's own same-class scan: `Term` carries
             // `signaled: u8` and `unknown: c_int`, and the old `else` threw both away.
             // A setup killed by a guard on the machine (the case #483 was filed from)
             // lands here, not in `.exited`.
-            .signaled => |sig| setupErrorFmt(a, .setup_failed, "--setup was killed by signal {d}{s}", .{ sig, setupOutputDetail(a, setup_out) }),
-            .unknown => |st| setupErrorFmt(a, .setup_failed, "--setup ended in a way waitpid reported as status {d}{s}", .{ st, setupOutputDetail(a, setup_out) }),
+            .signaled => |sig| setupErrorFmt(a, .setup_failed, "--setup was killed by signal {d}{s}", .{ sig, report.setupOutputDetail(a, setup_out) }),
+            .unknown => |st| setupErrorFmt(a, .setup_failed, "--setup ended in a way waitpid reported as status {d}{s}", .{ st, report.setupOutputDetail(a, setup_out) }),
         }
         // The setup succeeded and nothing in the report names this file — but it is now
         // the only place its output exists at all, because capturing it took it off the
@@ -2704,13 +1613,13 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // The scratch declaration is published here too (ADR 0043), at the same point as the
     // apparatus: the define is final, and every report from here on — a refusal raised
     // by the recording run included — carries it under the same presence rule.
-    scratch_declared = args.scratch;
+    report.scratch_declared = args.scratch;
 
-    var initial = snapshotOrRefuse(gpa, state_abs, "could not snapshot the initial state");
+    var initial = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the initial state");
     // #5, checked before anything runs: an unreproducible entry the setup left (or
     // that predates the run) fails fast — no recording, no worlds. Nothing competes
     // with this refusal here.
-    refuseUnsupportedEntry(arena_state.allocator(), initial, "present before the recording run");
+    refuse.refuseUnsupportedEntry(arena_state.allocator(), initial, "present before the recording run");
     defer initial.deinit();
 
     // ---- recording run -----------------------------------------------------------
@@ -2723,7 +1632,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // missing `--operation` really is a configuration problem. They can, because they
     // reach `setupError` directly and never consult this variable. The line is placed
     // by what reads it: the snapshot cap (#330) and the rewrite disposition (#363).
-    run_phase = .exploring;
+    refuse.run_phase = .exploring;
 
     var rec_trace_buf: [contract.max_path]u8 = undefined;
     const rec_trace = std.fmt.bufPrint(&rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError(.define_invalid, "path too long");
@@ -2875,7 +1784,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // separates a capture of the whole window from one that closed early, and it
         // can only be asked before the signal.
         _ = pid;
-        const end = stopLiveSidecar();
+        const end = refuse.stopLiveSidecar();
         // Removed before the final snapshot, which is what judges the state: a file the
         // engine created for its own bookkeeping must not appear as an unexplained
         // entry in the tree the verdict is about. Unconditional, so the refusals below
@@ -2922,16 +1831,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
         setupError(.environment, "the recording run's stdout capture could not be read back");
     if (args.marker != null) {
         if (!rec_capture.marker_seen) {
-            l1_note = "marker configured; never observed, even in the recording run";
+            report.l1_note = "marker configured; never observed, even in the recording run";
             unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", .fix_define);
         }
-        l1_note = "marker observed in the recording run; crash worlds not explored yet";
+        report.l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
 
-    var trace = readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
+    var trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
     defer trace.deinit();
 
-    var final = snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
+    var final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
     defer final.deinit();
 
     // Classified before the structural detectors, so every exit below — including the
@@ -2940,15 +1849,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // `scratch_declared` was published beside the apparatus check, before the recording
     // run: the plan matches on the same slice, so no rendering can name a declaration the
     // judge did not read, and a refusal raised between there and here carries it too.
-    var l0_plan = engine.classifyWith(gpa, initial, final, scratch_declared) catch setupError(.environment, "out of memory");
+    var l0_plan = engine.classifyWith(gpa, initial, final, report.scratch_declared) catch setupError(.environment, "out of memory");
     defer l0_plan.deinit();
-    l0_history_count = l0_plan.history_count;
-    l0_note = buildL0Note(arena, l0_plan);
+    report.l0_history_count = l0_plan.history_count;
+    report.l0_note = report.buildL0Note(arena, l0_plan);
 
     // Now that the classification exists, not at the read: see the pairing above. Ahead
     // of the version check below, and the two cannot both apply: a capped read returns
     // before `decodeHeader`, so `version_mismatch` is always false when `too_large` is set.
-    answerForOversizedTrace(trace, "the recording run", trace_cap);
+    refuse.answerForOversizedTrace(trace, "the recording run", trace_cap);
 
     // ---- structural detectors, before exploring anything --------------------------
     //
@@ -3199,12 +2108,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // that says the two views agreed, and a reader should be able to see which is which
     // without knowing how the run was invoked.
     if (args.allow_unverified)
-        oracle_note = "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported";
+        report.oracle_note = "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported";
     if (args.has_oracle) {
         // Set before the exits below, not after them. Every `unknown()` in this block is
         // raised by the oracle having run and disagreed; a report saying "not run" beside
         // `unknown_reason: oracle_missed_operation` contradicts itself.
-        oracle_note = "ran; the comparison did not complete";
+        report.oracle_note = "ran; the comparison did not complete";
         // "could not be read", not "produced no output": an oracle that ran and
         // recorded nothing leaves a readable empty file, which the lines-seen check
         // below answers with oracle_saw_nothing. This site fires when the capture
@@ -3217,7 +2126,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             capture.readFileAlloc(arena, oracle_out) orelse setupError(.environment, "the oracle's capture file could not be read");
         // The bytes are in the arena now; the file has done its job. The capture is
         // system-wide and one measured run left 2.9 GB of it, so it does not stay.
-        dropCapture();
+        refuse.dropCapture();
         // The oracle resolves relative paths against the subject's cwd (ADR 0006). Where
         // the subject starts is the define's `cwd` when it declared one and the engine's
         // own otherwise; the subject's own chdir/fchdir move it from there. The alt
@@ -3264,7 +2173,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
         // Set before any exit below, like oracle_note: an UNKNOWN raised by this
         // block must still carry what the oracle saw being excluded (#121).
-        metadata_note = blk: {
+        report.metadata_note = blk: {
             const items = parsed.metadata_observed.items;
             // The restore sentence rides BOTH branches: flattening is a property of
             // restore, not of the target's syscalls — a setup-created 0600 file runs
@@ -3363,7 +2272,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         else
             "";
         if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
-            .missed => |m| unknown(.oracle_missed_operation, divergenceDetail(
+            .missed => |m| unknown(.oracle_missed_operation, report.divergenceDetail(
                 arena,
                 std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the shim did not record{s}", .{mode_hint}) catch
                     "the oracle saw a state-directory operation the shim did not record",
@@ -3372,7 +2281,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 parsed.lines.items,
                 parsed.names.items,
             ), .class_wall),
-            .phantom => |p| unknown(.oracle_saw_phantom, divergenceDetail(
+            .phantom => |p| unknown(.oracle_saw_phantom, report.divergenceDetail(
                 arena,
                 std.fmt.allocPrint(arena, "the shim recorded an operation the oracle did not see{s}", .{mode_hint}) catch
                     "the shim recorded an operation the oracle did not see",
@@ -3398,9 +2307,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // changes meaning. So the `verdict == "PASS" && oracle_verified` gate keeps
         // treating this class as unverified, which is the conservative reading.
         if (children_admitted)
-            oracle_verified_subject_only = true
+            report.oracle_verified_subject_only = true
         else
-            oracle_verified = true;
+            report.oracle_verified = true;
         // The account names the witness and, where the witness is narrower, what it did
         // not check. The promise this flag makes is that a macOS run *naming its oracle*
         // carries the Linux claim — and a reader could not tell the two apart from this
@@ -3420,7 +2329,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
-        oracle_note = if (args.oracle_fs_usage)
+        report.oracle_note = if (args.oracle_fs_usage)
             std.fmt.allocPrint(
                 arena,
                 "{s}, witness fs_usage. Narrower than strace, each toward refusal: a rename is checked at " ++
@@ -3486,7 +2395,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // writer still alive. Two equal samples do not prove a future writer cannot exist;
     // the report says "observed", never "proven".
     if (crossed_boundary) {
-        var final_again = snapshotOrRefuse(gpa, state_abs, "could not re-snapshot the final state");
+        var final_again = refuse.snapshotOrRefuse(gpa, state_abs, "could not re-snapshot the final state");
         defer final_again.deinit();
         if (!snapshotsEqual(final, final_again))
             unknown(.state_not_quiescent, "the state directory changed between two samples taken after the recording run was contained: something is still writing", .quiesce);
@@ -3508,7 +2417,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // precedence), and quiescence judged the samples themselves — this catches what
     // reaches here with no syscall witness at all, the no-oracle path being the one
     // place an unreproducible entry could otherwise slip into the worlds.
-    refuseUnsupportedEntry(arena, final, "appeared during the recording run");
+    refuse.refuseUnsupportedEntry(arena, final, "appeared during the recording run");
 
     // The general form of the zero-ops detector above (#405). That one asks whether the
     // state moved while *nothing* was counted, and goes silent the moment one operation
@@ -3525,10 +2434,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // names the specific syscall that went unseen, which is strictly more than "this
     // path is unexplained". This is the detector for the runs that have no second
     // witness at all, which is every macOS run that does not pay root.
-    reconcileOrRefuse(gpa, arena, initial, final, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
+    refuse.reconcileOrRefuse(gpa, arena, initial, final, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
 
     const n = trace.kill_point_count;
-    crash_points = n;
+    report.crash_points = n;
 
     // The landing context, before anything is explored — including before the
     // zero-crash-points PASS below, which would otherwise answer for a case whose
@@ -3593,11 +2502,11 @@ pub fn main(init: std.process.Init.Minimal) !void {
     }
 
     if (n == 0) {
-        requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+        refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
         // A PASS, not a refusal: the checker's pre-run wording says the run "stopped",
         // which is the wrong word beside a verdict. A declared checker had no world to be
         // falsified in, and the account says that (#352, review).
-        if (args.check != null) checker_note = "configured; not run (no crash point, so no world to falsify it in)";
+        if (args.check != null) report.checker_note = "configured; not run (no crash point, so no world to falsify it in)";
         // "judged state", not "state directory": a run whose only writes are
         // ownership/permission metadata lands exactly here with zero kill points,
         // and those writes DO change the directory — just nothing the verdict
@@ -3615,9 +2524,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\      case: {s}
             \\      not tested: {s}
             \\
-        , .{ expected_status_val, l0_note, oracle_note, metadata_note, l1_note, case_note, notTestedText() });
-        sayApparatus(arena, "      apparatus: {s}\n");
-        if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
+        , .{ report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.l1_note, report.case_note, report.notTestedText() });
+        report.sayApparatus(arena, "      apparatus: {s}\n");
+        if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -3635,19 +2544,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // Before the falsification exits, for the same reason as the oracle note above:
         // `checker_not_falsified` next to `checker: none configured` is a report arguing
         // with itself about whether a checker was given.
-        checker_note = "configured; falsification did not complete";
+        report.checker_note = "configured; falsification did not complete";
 
         if (engine.countCorruptible(initial) == 0)
             unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested", .fix_define);
 
-        engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore before falsifying the checker");
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore before falsifying the checker");
         // Through the same disposition as the restore one line up, not setupError:
         // corruption is the other rewrite of the recorded tree, its errors are the
         // same RestoreError set (UnsafeRoot included — engine/state_fs.zig's own comment on
         // corruptState says why it re-checks the root rather than trusting its
         // neighbour), and by this line the define has run, so exit 3 would claim
         // it never did (#363).
-        engine.corruptState(initial, state_abs) catch |e| restoreFailure(e, "could not corrupt the state for the falsification probe");
+        engine.corruptState(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not corrupt the state for the falsification probe");
 
         // The gate's child output is captured and re-emitted with a per-line
         // `falsify: ` marker (#134). By design this step produces exactly the output
@@ -3701,7 +2610,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             },
             else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .fix_define),
         }
-        checker_note = "falsified before the run (corrupted state -> check failed)";
+        report.checker_note = "falsified before the run (corrupted state -> check failed)";
     }
 
     // ---- exploration --------------------------------------------------------------
@@ -3750,7 +2659,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // the end of a world, not the start.
         if (stop_when_orphaned and posix.getppid() != startup_ppid)
             unknown(.parent_exited, "the process that launched this exploration is gone; stopping at a world boundary rather than continuing to kill processes and rewrite the state directory with nobody to report to", .relaunch);
-        engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory");
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory");
 
         var kbuf: [16]u8 = undefined;
         const kstr = std.fmt.bufPrint(&kbuf, "{d}", .{k}) catch unreachable;
@@ -3805,8 +2714,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
 
-        var wtrace = readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
-        answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
+        var wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
+        refuse.answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
         defer wtrace.deinit();
 
         // The same question the recording's announcement answers, asked of the run that
@@ -3947,7 +2856,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .fix_define),
         };
 
-        var crashed = snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
+        var crashed = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
         defer crashed.deinit();
 
         // Same observation as after the recording run: when a boundary was crossed,
@@ -3977,7 +2886,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         var world_capture_first: ?capture.CaptureObservation = null;
         if (world_armed) {
-            var crashed_again = snapshotOrRefuse(gpa, state_abs, "could not re-snapshot a crashed state");
+            var crashed_again = refuse.snapshotOrRefuse(gpa, state_abs, "could not re-snapshot a crashed state");
             defer crashed_again.deinit();
             if (!snapshotsEqual(crashed, crashed_again))
                 unknown(.state_not_quiescent, "the crashed state changed between two samples: something the subject started is still writing", .quiesce);
@@ -3987,7 +2896,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 setupError(.environment, "a world's stdout capture could not be read back");
         }
 
-        explored += 1;
+        report.explored += 1;
 
         // The checker runs in a fresh process, after the crash, exactly as DESIGN §12
         // requires: in-memory state hides corruption, so nothing is evaluated inside
@@ -4033,7 +2942,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // syscall witness saw it born; on macOS with no oracle, none did. The
         // baseline is the one un-killed world, and an entry only IT leaves gets
         // its own attribution instead of a fictitious crash (R1).
-        refuseUnsupportedEntry(arena, crashed, if (k <= n) "left in a crashed world" else "left by the baseline re-run");
+        refuse.refuseUnsupportedEntry(arena, crashed, if (k <= n) "left in a crashed world" else "left by the baseline re-run");
 
         if (marker_seen and k <= n) marker_worlds += 1;
         const l1 = if (marker_seen) engine.judgeL1(l0_plan, initial, final, crashed) else null;
@@ -4066,16 +2975,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (k > n and (l0 != null or l1 != null or l2_failed)) {
             const step: contract.NextStep = if (l0 != null) .class_wall else .fix_define;
             const what: []const u8 = if (l0) |v|
-                std.fmt.allocPrint(arena, "{s}{s}", .{ baselineObserved(arena, v), baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
+                std.fmt.allocPrint(arena, "{s}{s}", .{ report.baselineObserved(arena, v), report.baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
             else if (l1) |v|
-                std.fmt.allocPrint(arena, "the operation printed its success marker, and {s} did not hold the new state that marker promised{s}; check the marker and the operation against each other first", .{ textShown(arena, violationPath(v)), baselineAlsoFailed(false, l2_failed) }) catch "the success marker's promise did not hold in the un-killed re-run; check the marker and the operation against each other first"
+                std.fmt.allocPrint(arena, "the operation printed its success marker, and {s} did not hold the new state that marker promised{s}; check the marker and the operation against each other first", .{ textShown(arena, report.violationPath(v)), report.baselineAlsoFailed(false, l2_failed) }) catch "the success marker's promise did not hold in the un-killed re-run; check the marker and the operation against each other first"
             else
                 "the checker rejected the state the operation leaves on its own; check the operation and the checker against each other first";
-            unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "{s}: {s}", .{ baseline_refusal_lead, what }) catch what, step);
+            unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "{s}: {s}", .{ report.baseline_refusal_lead, what }) catch what, step);
         }
 
         if (l0 != null or l2_failed or l1 != null) {
-            violations += 1;
+            report.violations += 1;
             if (first_failure == null) {
                 const v = l0 orelse l1;
                 first_failure = .{ .k = k, .term = term, .landed = landed, .violation = v };
@@ -4083,7 +2992,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 first_failure_l1 = l1 != null;
                 first_failure_l2 = l2_failed;
                 if (v) |vv| {
-                    const p = violationPath(vv);
+                    const p = report.violationPath(vv);
                     @memcpy(first_failure_path[0..p.len], p);
                     first_failure_path_len = p.len;
                 }
@@ -4094,7 +3003,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 first_checker_l0 = l0 != null;
                 first_checker_l1 = l1 != null;
                 if (v) |vv| {
-                    const p = violationPath(vv);
+                    const p = report.violationPath(vv);
                     @memcpy(first_checker_path[0..p.len], p);
                     first_checker_path_len = p.len;
                 }
@@ -4102,19 +3011,19 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
     }
 
-    if (l1_configured) {
-        l1_note = std.fmt.allocPrint(
+    if (report.l1_configured) {
+        report.l1_note = std.fmt.allocPrint(
             arena,
             "marker observed in {d} of {d} crash worlds; the post-success invariant was enforced there",
             .{ marker_worlds, n },
         ) catch "marker configured";
     }
     if (check_argv != null) {
-        checker_note = std.fmt.allocPrint(
+        report.checker_note = std.fmt.allocPrint(
             arena,
             "{s}; ran in {d} world(s)",
-            .{ checker_note, checks_run },
-        ) catch checker_note;
+            .{ report.checker_note, checks_run },
+        ) catch report.checker_note;
     }
 
     // ---- report --------------------------------------------------------------------
@@ -4134,7 +3043,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             "the post-success invariant (L1)"
         else
             "the checker (L2)";
-        const what = violationObserved(f.violation);
+        const what = report.violationObserved(f.violation);
         const path_shown = if (first_failure_path_len > 0)
             first_failure_path[0..first_failure_path_len]
         else
@@ -4172,8 +3081,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
             "(this run is a replay; the case reproduced)"
         else
             "-";
-        case_note = case_shown;
-        replay_note = replay_cmd;
+        report.case_note = case_shown;
+        report.replay_note = replay_cmd;
         // The claim exhibit (#231, ADR 0020). Same world as the earliest: it
         // shares the earliest's case file — no duplicate is written. Different
         // world: its case is written strictly AFTER the earliest's, so in a
@@ -4182,7 +3091,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // case is not written either, keeping that ownership an invariant even
         // under write failure. The second write sits inside the same
         // explore-only condition as the first: a replay does not mint (ADR 0009).
-        const checker_detail: ?CheckerEarliest = if (first_checker) |fc| blk: {
+        const checker_detail: ?report.CheckerEarliest = if (first_checker) |fc| blk: {
             const caddr = trace.logicalAddress(fc.k);
             const cinvariant = if (first_checker_l0)
                 "built-in atomicity, and the checker"
@@ -4216,7 +3125,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                         first_checker_path[0..first_checker_path_len]
                     else
                         "(named by the checker, not by path)",
-                    .observed = violationObserved(fc.violation),
+                    .observed = report.violationObserved(fc.violation),
                     .invariant = cinvariant,
                 },
                 .case = ccase,
@@ -4243,7 +3152,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\replay      {s}
             \\
         , .{
-            violations,                    explored,
+            report.violations,             report.explored,
             invariant,                     f.k,
             n,
             // The three target-chosen operands go to the text defanged; the
@@ -4251,14 +3160,14 @@ pub fn main(init: std.process.Init.Minimal) !void {
                                         after,
             textShown(arena, after_path),  before,
             textShown(arena, before_path), textShown(arena, path_shown),
-            what,                          explored,
-            n,                             expected_status_val,
-            l0_note,                       oracle_note,
-            metadata_note,                 checker_note,
-            l1_note,                       case_shown,
+            what,                          report.explored,
+            n,                             report.expected_status_val,
+            report.l0_note,                report.oracle_note,
+            report.metadata_note,          report.checker_note,
+            report.l1_note,                case_shown,
             replay_cmd,
         });
-        sayApparatus(arena, "apparatus   {s}\n");
+        report.sayApparatus(arena, "apparatus   {s}\n");
         // Printed only when the two exhibits are different worlds; when the
         // earliest is itself checker-red — every FAIL this engine produced
         // before poetry — the text above is byte-identical to what it was.
@@ -4290,7 +3199,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             \\
         , .{
             boundary.boundaryAccount(),
-            notTestedText(),
+            report.notTestedText(),
             state_abs,
             alt_env,
             repro_trace,
@@ -4298,7 +3207,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             shim,
             f.k,
         });
-        if (args.json) |jp| writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
+        if (args.json) |jp| report.writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
             .k = f.k,
             .after = after,
             .after_path = after_path,
@@ -4311,7 +3220,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
-    requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+    refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
 
     say(
         \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}
@@ -4326,10 +3235,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ explored, explored, singleCrashPointClause(n), explored, n, expected_status_val, l0_note, oracle_note, metadata_note, checker_note, l1_note, case_note, boundary.boundaryAccount(), notTestedText() });
-    sayApparatus(arena, "      apparatus: {s}\n");
-    saySingleCrashPointNote(n);
-    if (args.json) |jp| writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
+    , .{ report.explored, report.explored, report.singleCrashPointClause(n), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
+    report.sayApparatus(arena, "      apparatus: {s}\n");
+    report.saySingleCrashPointNote(n);
+    if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -4519,7 +3428,7 @@ fn observeAgain(
     // collapsed back into one variable, because the refusals below still ask the other
     // question and that is what made them lie the first time.
     const attached: ?[]const u8 = oracle_path;
-    engine.restore(initial, state_abs) catch |e| restoreFailure(e, "could not restore the state directory before the second observed run");
+    engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory before the second observed run");
 
     var trace_buf: [contract.max_path]u8 = undefined;
     const trace_b = std.fmt.bufPrint(&trace_buf, "{s}/trace-record-2.bin", .{work}) catch setupError(.define_invalid, "path too long");
@@ -4554,7 +3463,7 @@ fn observeAgain(
         else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded", .fix_define),
     }
 
-    var trace = readTraceOrRefuse(trace_b, trace_cap, "could not read the second observed run's trace");
+    var trace = refuse.readTraceOrRefuse(trace_b, trace_cap, "could not read the second observed run's trace");
     defer trace.deinit();
     // #324's pairing: every site that reads with a cap must answer for it. Forgetting
     // this at one site is the defect that issue exists to fix, and its own doc warns
@@ -4563,7 +3472,7 @@ fn observeAgain(
     // constant, so run A's read fires first and run B is never reached. What holds it
     // is this comment and review. Without the answer the cap would return an empty
     // `TraceInfo` and every gate below would go vacuously green.
-    answerForOversizedTrace(trace, "the second observed run", trace_cap);
+    refuse.answerForOversizedTrace(trace, "the second observed run", trace_cap);
     // Recorded here, above every refusal below, for the same reason run A's evidence is
     // recorded above its own: each of them writes a report, and the account has to name
     // the run it is about. An earlier revision of this said "before the refusals" while
@@ -4653,12 +3562,12 @@ fn observeAgain(
     if (trace.unresolved_refusing != null)
         unknown(.unresolvable_path, boundary.unresolvedDetail(arena, trace.unresolved_refusing, " in the second observed run", "an operation was observed in the second observed run whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
 
-    var second = snapshotOrRefuse(gpa, state_abs, "could not snapshot the state after the second observed run");
+    var second = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the state after the second observed run");
     defer second.deinit();
     // Quiescence, the same way the exploration path asks it: two samples back to back.
     // A tree still being written would otherwise be compared at a moment nobody chose,
     // and the difference reported as the target's nondeterminism.
-    var again = snapshotOrRefuse(gpa, state_abs, "could not re-sample the state after the second observed run");
+    var again = refuse.snapshotOrRefuse(gpa, state_abs, "could not re-sample the state after the second observed run");
     defer again.deinit();
     var quiesce_buf: [1]engine.Difference = undefined;
     if (!engine.diffSnapshots(second, again, &quiesce_buf).equal())
@@ -4686,7 +3595,7 @@ fn observeAgain(
     // byte-repeatability wall's measurement, and a wall the exploration no longer hits on
     // a declared path must not still be reported by the preflight. Left out before it is
     // counted, so the total the report prints is the total of what was compared.
-    const count = engine.diffSnapshotsExcept(first, second, diffs, scratch_declared);
+    const count = engine.diffSnapshotsExcept(first, second, diffs, report.scratch_declared);
     // `Difference.rel` borrows from whichever snapshot holds the entry, and `second` is
     // freed by this function's own `defer`. An `only_in_second` row therefore points
     // into a released arena the moment this returns — read-after-free in
@@ -4769,7 +3678,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         \\             checker falsification — only a real exploration runs these
         \\
         \\
-    , .{ l0_note, oracle_note, boundary.boundaryAccount() });
+    , .{ report.l0_note, report.oracle_note, boundary.boundaryAccount() });
     if (repeat) |r| {
         // Reported whether the runs agreed or split, and worded as an observation
         // rather than a property: two samples cannot establish that a target is
@@ -4799,8 +3708,8 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             , .{});
         // ADR 0043: the declaration is the same one the atomicity line above carries; this
         // says what it did to the comparison, which the atomicity line is not about.
-        if (scratch_declared.len > 0)
-            say("scratch        declared scratch, not compared: {s}\n", .{scratchNote(arena)});
+        if (report.scratch_declared.len > 0)
+            say("scratch        declared scratch, not compared: {s}\n", .{report.scratchNote(arena)});
         say("\n", .{});
     }
     if (oracle_path == null)
@@ -4815,7 +3724,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
     // path so the next command is pasteable — named, never attached (#78).
     const oracle_part = if (oracle_path) |o|
         std.fmt.allocPrint(arena, " --oracle {s}", .{o}) catch " --oracle <strace>"
-    else if (findStraceForHint(arena)) |s|
+    else if (refuse.findStraceForHint(arena)) |s|
         std.fmt.allocPrint(arena, " --oracle {s}", .{s}) catch " --oracle <strace>"
     else
         " --oracle <strace>";
@@ -5021,25 +3930,6 @@ test "shellSingleQuote neutralizes metacharacters and embedded quotes" {
     try std.testing.expectEqualStrings("'a'\\''b; $(x) `y`'", shellSingleQuote(arena, "a'b; $(x) `y`"));
 }
 
-/// Create-or-truncate `path` and write `parts` in order. False on any failure —
-/// the demo treats a half-written asset as a setup error, never as material.
-fn writeWholeFile(path: []const u8, parts: []const []const u8) bool {
-    var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return false;
-    const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
-    if (fd < 0) return false;
-    defer _ = posix.close(fd);
-    for (parts) |p| {
-        var off: usize = 0;
-        while (off < p.len) {
-            const w = posix.write(fd, p[off..].ptr, p.len - off);
-            if (w <= 0) return false;
-            off += @intCast(w);
-        }
-    }
-    return true;
-}
-
 /// `sideeye demo`: materialize the embedded planted-bug toy and checker in a scratch
 /// directory, compile the toy with whatever C compiler this machine has, and self-exec
 /// `explore` against it. Never returns; the exit code is explore's own (1 expected —
@@ -5165,322 +4055,6 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
     setupError(.environment, "could not self-exec the exploration");
 }
 
-/// One sentence naming which form judged which files. Counts and names come from the
-/// same L0Plan the judgement reads (ADR 0004), so the report cannot describe a
-/// different classification than the one that ran. Names are bounded — the point is
-/// "which files got the weaker claim", not an inventory.
-fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
-    const base = buildL0NoteBase(arena, plan);
-    if (plan.scratch.len == 0) return base;
-    // ADR 0043: the declaration and its reach, read from the same plan the judge read.
-    // The count is recorded paths the declaration matched (before or after), so a reader
-    // can tell a declaration that reached something from one that named nothing the
-    // recording had; the names are the declaration itself, bounded like the history names.
-    var names: std.ArrayList(u8) = .empty;
-    var listed: u32 = 0;
-    for (plan.scratch) |p| {
-        if (listed == 3) break;
-        if (listed > 0) names.appendSlice(arena, ", ") catch return base;
-        appendSanitized(&names, arena, p) catch return base;
-        listed += 1;
-    }
-    if (plan.scratch.len > listed) {
-        const more = std.fmt.allocPrint(arena, " (+{d} more)", .{plan.scratch.len - listed}) catch return base;
-        names.appendSlice(arena, more) catch return base;
-    }
-    return std.fmt.allocPrint(arena, "{s}; {d} path(s) matched by scratch, not judged (declared: {s})", .{ base, plan.scratch_matched, names.items }) catch base;
-}
-
-fn buildL0NoteBase(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
-    const standard = plan.files.items.len - @as(usize, plan.history_count);
-    if (plan.history_count == 0) {
-        // "path(s)", not "file(s)": since #122 the judged pairs include symlinks and
-        // kind-changed pairs, and a stow-shaped PASS would otherwise claim to have
-        // judged N files over a directory holding none.
-        return std.fmt.allocPrint(arena, "{d} path(s) judged pre-or-post", .{standard}) catch "classified";
-    }
-    var names: std.ArrayList(u8) = .empty;
-    var listed: u32 = 0;
-    for (plan.files.items) |f| {
-        if (f.form != .history) continue;
-        if (listed == 3) break;
-        if (listed > 0) names.appendSlice(arena, ", ") catch return "classified";
-        appendSanitized(&names, arena, f.rel) catch return "classified";
-        listed += 1;
-    }
-    if (plan.history_count > listed) {
-        const more = std.fmt.allocPrint(arena, " (+{d} more)", .{plan.history_count - listed}) catch return "classified";
-        names.appendSlice(arena, more) catch return "classified";
-    }
-    return std.fmt.allocPrint(
-        arena,
-        "{d} path(s) judged pre-or-post; {d} file(s) judged by the history form (appended tails not judged): {s}",
-        .{ standard, plan.history_count, names.items },
-    ) catch "classified";
-}
-
-/// The text-shown spelling of a target-chosen string (#26): control bytes
-/// defanged through the same predicate as the l0 note — one predicate, not
-/// two that drift. The FAIL block's JSON (`earliest.*`) still reads the raw
-/// variables — `jsonString` escapes controls and substitutes U+FFFD for
-/// invalid UTF-8, so valid names round-trip there; prose fields built from
-/// this spelling (the l0 note, refusal messages) carry the defanged form in
-/// JSON too, the same bytes as the text (#167). `?` and not a hex spelling
-/// on purpose: one `?` per defanged unit, never more bytes out than in, so a
-/// hostile name can never bloat the report past its output buffer and erase
-/// the counterexample it names.
-/// #5's demotion, shared by the three snapshot sites: a state tree holding an entry
-/// `restore` cannot recreate must not be explored — every world would run against a
-/// tree the recording run never had, and the crash points were derived from the
-/// recording run. Ordering is deliberate at every call site: snapshot-trust
-/// detectors (the oracle's defined-list scrutiny, quiescence) come first, this
-/// demotion second, judgement last — so an existing refusal's reason is never
-/// overtaken. The entry name reaches the text through the same non-bloating
-/// defang as every other target-chosen string (#26/#167); `phase` says which
-/// snapshot saw it. Returns only when the snapshot is clean.
-fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase: []const u8) void {
-    if (engine.firstUnsupportedEntry(snap)) |rel| {
-        const detail = std.fmt.allocPrint(
-            arena,
-            "the state directory holds an entry that is neither a regular file, a directory nor a symlink ({s}: {s}) — restore cannot recreate it, so every explored world would run against a tree the recording run never had",
-            .{ phase, textShown(arena, rel) },
-        ) catch "the state directory holds an entry that restore cannot recreate (a FIFO, socket or device)";
-        unknown(.unsupported_state_entry, detail, .class_wall);
-    }
-}
-
-/// How many unaccounted paths the refusal names before it stops counting out loud.
-/// The count itself is never truncated — a caller reading three names must still be
-/// told the run had thirty.
-const unaccounted_shown = 4;
-
-/// Refuse when the judged state changed at a path no recorded operation names (#405).
-///
-/// The account this rests on is the shim's, and the shim sees only what crosses the
-/// libc boundary it interposes. A raw syscall is invisible to it — so was a raw-forked
-/// child's write, measured on the shipped build reaching PASS with the child's file
-/// still in the directory. The existing zero-ops detector cannot see that: it asks
-/// whether *nothing* was counted, and the parent's own recorded write answers no.
-///
-/// Returns only when every difference is accounted for, or is inside a subtree a
-/// recorded `rename` moved in. That second clause is a window, not a proof, and the
-/// report says how wide it is rather than leaving it to a comment: the source of such a
-/// rename was never snapshotted (for `papis add` it lives outside the judged root
-/// entirely), so which descendants arrived with the move cannot be recovered from
-/// anything this run holds.
-fn reconcileOrRefuse(
-    gpa: std.mem.Allocator,
-    arena: std.mem.Allocator,
-    initial: engine.Snapshot,
-    final: engine.Snapshot,
-    ops: []const engine.Op,
-    root: []const u8,
-    alt: []const u8,
-) void {
-    // The differences are walked a second time here — `snapshotsEqual` above already
-    // asked whether there were any — and that duplication is deliberate. Folding the two
-    // would mean the zero-ops detector and this one shared a computation, and the first
-    // is a frozen member whose firing condition must not move because the second wanted
-    // a value. The cost is one linear merge over a tree whose largest committed instance
-    // holds twenty-nine entries.
-    //
-    // Sized from the tree rather than fixed: a bound smaller than the difference count
-    // would still report `total` correctly, but the names it printed would be an
-    // arbitrary prefix of the problem.
-    const cap = initial.entries.items.len + final.entries.items.len + 1;
-    const diffs = gpa.alloc(engine.Difference, cap) catch setupError(.environment, "out of memory");
-    defer gpa.free(diffs);
-    const dc = engine.diffSnapshots(initial, final, diffs);
-    if (dc.equal()) return;
-
-    const found = gpa.alloc(engine.Unaccounted, dc.stored + 1) catch setupError(.environment, "out of memory");
-    defer gpa.free(found);
-
-    // The tree's own symlinks, from the snapshots rather than from the filesystem. The
-    // shim normalises path arguments lexically, so an operation on `cur/f` under
-    // `cur -> v1` is recorded as `cur/f` while the difference sits at `v1/f`; joining the
-    // two spellings without this turned a fully observed run into a refusal (measured:
-    // one unlink through an interior symlink, PASS on the shipped 1.0.0, UNKNOWN here).
-    // Reading the live tree instead would answer about the tree after the run, not the
-    // one the operation crossed.
-    var links: std.ArrayList(engine.Link) = .empty;
-    engine.collectLinks(arena, initial, final, &links) catch setupError(.environment, "out of memory");
-    const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError(.environment, "out of memory");
-    defer gpa.free(scratch);
-
-    const r = engine.reconcile(diffs[0..dc.stored], ops, links.items, root, alt, scratch, found);
-
-    // Disclosed on every run that has one, not only on the refusals: a reader deciding
-    // what a PASS covers needs to know a subtree went unexamined. Twice, on purpose — the
-    // number is the machine's copy and cannot be lost to an allocation failure, and the
-    // sentence rides `l0_note`, the line that already says what the judgement covered.
-    attributed_to_rename = r.by_rename_prefix;
-    if (r.by_rename_prefix > 0)
-        l0_note = std.fmt.allocPrint(
-            arena,
-            "{s}; {d} path(s) attributed to a directory a recorded rename moved in from outside the judged root, and not individually accounted for — that source subtree was never snapshotted, so what arrived with the move and what an unrecorded writer added afterwards cannot be told apart",
-            .{ l0_note, r.by_rename_prefix },
-        ) catch l0_note;
-
-    if (r.clean()) return;
-
-    // `written` rather than `shown`: an allocation failure mid-list leaves a shorter one,
-    // and a count computed from what was *intended* would then describe a list that was
-    // never printed — the detail would read "incomplete: a and 3 more" with two names
-    // missing and nothing saying so.
-    var names: std.ArrayList(u8) = .empty;
-    var written: usize = 0;
-    for (found[0..@min(r.stored, unaccounted_shown)]) |u| {
-        if (written > 0) names.appendSlice(arena, ", ") catch break;
-        names.appendSlice(arena, textShown(arena, u.rel)) catch break;
-        written += 1;
-    }
-    if (written == 0) names.appendSlice(arena, "(the names could not be rendered)") catch {};
-    const more = if (r.total > written)
-        std.fmt.allocPrint(arena, " and {d} more", .{r.total - written}) catch ""
-    else
-        "";
-    const detail = std.fmt.allocPrint(
-        arena,
-        "the judged state changed at {d} path(s) that no recorded operation names, so the account of this run is incomplete: {s}{s}. The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all",
-        .{ r.total, names.items, more },
-    ) catch "the judged state changed at a path that no recorded operation names";
-    unknown(.state_changed_unaccounted, detail, .class_wall);
-}
-
-/// The `not tested` list is not constant: whenever any file was judged by the history
-/// form, its appended tail joined the untested set, and a PASS headline must not
-/// stand without that narrowing beside it.
-///
-/// **One definition, two renderings** (#280). Both reports carry this list, and
-/// `DESIGN.md` §13's binding rule is that a value both forms carry has one definition.
-/// This one had two: hand-written functions holding the same four cases twice, with the
-/// JSON side escaping its quotes by hand, and nothing holding them together. Both are
-/// built at comptime from the items below now, so adding one puts it in both renderings
-/// and there is no way to edit one side alone.
-///
-/// Comptime rather than a runtime join, deliberately: the old functions returned static
-/// strings and allocate nothing, and **four of the five** call sites are inside format
-/// strings where an allocation failure has nowhere to go. The tables cost nothing at
-/// runtime and keep the output the same bytes it was.
-const not_tested_always = [_][]const u8{ "power loss", "torn writes", "concurrent processes" };
-const not_tested_history = "appended tails (files under the history form)";
-const not_tested_l1 = "post-only file contents (L1 checks existence only; post-only link targets are judged)";
-const not_tested_scratch = "declared scratch paths (neither bytes nor presence judged)";
-
-/// The conditions that widen the list, in bit order: bit i of the variant is condition i.
-/// One list binds the three tables AND `notTestedVariant` below, which derives its bits
-/// from this length — the comment that used to sit on `not_tested_bits` said binding the
-/// variant too was "one condition away from being worth it", and `scratch` (ADR 0043) is
-/// that condition. Adding an item here without a predicate in `notTestedCondition` is a
-/// compile error, not an out-of-range read.
-const not_tested_conditions = [_][]const u8{ not_tested_history, not_tested_l1, not_tested_scratch };
-const not_tested_variants = 1 << not_tested_conditions.len;
-
-/// Whether a list item could not be placed into JSON by quoting it and nothing else.
-/// Separated from the guard below so it can be tested: `@compileError` cannot be
-/// exercised from a test, but the predicate that decides it can.
-///
-/// Invalid UTF-8 counts, and that clause came from review: `jsonString` rewrites it to
-/// U+FFFD, with a comment recording that the raw bytes give "a file that jq, Python and
-/// Go all refuse". A `\xNN` escape in a Zig literal reaches this directly, so without
-/// this clause an item could build clean and ship a JSON document no parser accepts --
-/// measured, before the clause existed.
-fn notTestedNeedsEscaping(s: []const u8) bool {
-    for (s) |c| if (c == '"' or c == '\\' or c < 0x20) return true;
-    return !std.unicode.utf8ValidateSlice(s);
-}
-
-// The JSON rendering quotes each item and does nothing else, which is correct only while
-// no item contains a quote, a backslash or a control byte. Rather than carry a second
-// escaper beside `jsonString` -- one that could drift from it in silence -- an item that
-// would need one fails the build, and "escaping" here includes invalid UTF-8, which
-// `jsonString` also rewrites. Seen red by giving an item a quote and reading
-// the failure: "not-tested item needs JSON escaping: appended \"tails\" ...".
-comptime {
-    for (not_tested_always) |item| {
-        if (notTestedNeedsEscaping(item)) @compileError("not-tested item needs JSON escaping: " ++ item);
-    }
-    for (not_tested_conditions) |item| {
-        if (notTestedNeedsEscaping(item)) @compileError("not-tested item needs JSON escaping: " ++ item);
-    }
-}
-
-/// The list for one variant, indexed the way `notTestedVariant` indexes them: bit i of
-/// the variant appends condition i, in list order.
-fn notTestedList(comptime variant: usize) []const []const u8 {
-    comptime {
-        var out: []const []const u8 = &not_tested_always;
-        for (not_tested_conditions, 0..) |item, i| {
-            if (variant & (@as(usize, 1) << i) != 0) out = out ++ [_][]const u8{item};
-        }
-        return out;
-    }
-}
-
-/// Both renderings, from one walk of one list: `", "` between items either way, and the
-/// JSON form adds the brackets and the quotes. The separator is written once here rather
-/// than in two functions, which is the whole point.
-fn notTestedJoined(comptime variant: usize, comptime quoted: bool) []const u8 {
-    comptime {
-        var out: []const u8 = if (quoted) "[" else "";
-        for (notTestedList(variant), 0..) |item, i| {
-            if (i != 0) out = out ++ ", ";
-            out = out ++ if (quoted) "\"" ++ item ++ "\"" else item;
-        }
-        return out ++ if (quoted) "]" else "";
-    }
-}
-
-// The three tables, one row per variant, every row built from the one list above: the
-// width is derived from the conditions' count, so a condition added there widens all
-// three here and there is no second constant to keep in step.
-const not_tested_items_by_variant = blk: {
-    var t: [not_tested_variants][]const []const u8 = undefined;
-    for (0..not_tested_variants) |v| t[v] = notTestedList(v);
-    break :blk t;
-};
-const not_tested_text_by_variant = blk: {
-    var t: [not_tested_variants][]const u8 = undefined;
-    for (0..not_tested_variants) |v| t[v] = notTestedJoined(v, false);
-    break :blk t;
-};
-const not_tested_json_by_variant = blk: {
-    var t: [not_tested_variants][]const u8 = undefined;
-    for (0..not_tested_variants) |v| t[v] = notTestedJoined(v, true);
-    break :blk t;
-};
-
-/// The run-time predicate for condition i of `not_tested_conditions`, by index. `i` is
-/// comptime (the caller unrolls over the list), so a condition without a predicate here
-/// is a compile error — the binding the table's old comment said was one condition away.
-fn notTestedCondition(comptime i: usize) bool {
-    return switch (i) {
-        0 => l0_history_count > 0,
-        1 => l1_configured,
-        2 => scratch_declared.len > 0,
-        else => @compileError("a not-tested condition was added to the list without a predicate here"),
-    };
-}
-
-/// Bit i is condition i -- read once, so the two renderings cannot disagree about which
-/// list this run is even describing.
-fn notTestedVariant() usize {
-    var v: usize = 0;
-    inline for (0..not_tested_conditions.len) |i| {
-        if (notTestedCondition(i)) v |= @as(usize, 1) << i;
-    }
-    return v;
-}
-
-fn notTestedText() []const u8 {
-    return not_tested_text_by_variant[notTestedVariant()];
-}
-
-fn notTestedJson() []const u8 {
-    return not_tested_json_by_variant[notTestedVariant()];
-}
-
 /// `--apparatus ENTRY`: the same grammar the toml key uses, refused with the same words.
 fn appendApparatusFlag(args: *Args, v: []const u8) void {
     if (config.apparatusFault(v)) |m| setupError(.define_invalid, m);
@@ -5501,205 +4075,6 @@ fn appendScratchFlag(args: *Args, v: []const u8) void {
     if (n == max_scratch) setupError(.define_invalid, "--scratch: more than 32 entries; a define this large belongs in a toml");
     scratch_flag_buf[n] = norm;
     args.scratch = scratch_flag_buf[0 .. n + 1];
-}
-
-/// The text form of the declaration (ADR 0043): the entries as declared, comma-separated,
-/// neutralised the way every target-chosen path in the text report is.
-fn scratchNote(arena: std.mem.Allocator) []const u8 {
-    var out: std.ArrayList(u8) = .empty;
-    for (scratch_declared, 0..) |e, i| {
-        if (i > 0) out.appendSlice(arena, ", ") catch return "(allocation failed)";
-        out.appendSlice(arena, textShown(arena, e)) catch return "(allocation failed)";
-    }
-    return out.items;
-}
-
-/// A SETUP ERROR whose sentence carries values; when even the sentence cannot be built
-/// the format string itself is the fallback, so the refusal still names its subject.
-fn setupErrorFmt(arena: std.mem.Allocator, reason: contract.SetupErrorReason, comptime fmt: []const u8, args: anytype) noreturn {
-    setupError(reason, std.fmt.allocPrint(arena, fmt, args) catch fmt);
-}
-
-test "a SETUP_ERROR report carries its class, and the setup's status only under setup_failed and only as measured (#518)" {
-    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
-    defer arena_state.deinit();
-    const a = arena_state.allocator();
-    const saved = setup_status;
-    defer setup_status = saved;
-
-    setup_status = .{ .exited = 7 };
-    const exited = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .setup_failed, "--setup exited 7", null);
-    try std.testing.expect(std.mem.indexOf(u8, exited, "\n  \"setup_error_reason\": \"setup_failed\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, exited, "\n  \"setup_exit_code\": 7") != null);
-    try std.testing.expect(std.mem.indexOf(u8, exited, "setup_signal") == null);
-    // The class comes right after the other closed set's slot and before the message.
-    try std.testing.expect(std.mem.indexOf(u8, exited, "\"setup_error_reason\"").? < std.mem.indexOf(u8, exited, "\"message\"").?);
-
-    setup_status = .{ .signaled = 9 };
-    const killed = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .setup_failed, "--setup was killed by signal 9", null);
-    try std.testing.expect(std.mem.indexOf(u8, killed, "\n  \"setup_signal\": 9") != null);
-    try std.testing.expect(std.mem.indexOf(u8, killed, "setup_exit_code") == null);
-
-    // A status waitpid did not decode: the class, and no number nobody decoded.
-    setup_status = .{ .unknown = 0x1234 };
-    const undecoded = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .setup_failed, "--setup ended in a way waitpid reported as status 4660", null);
-    try std.testing.expect(std.mem.indexOf(u8, undecoded, "\"setup_error_reason\": \"setup_failed\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, undecoded, "setup_exit_code") == null and std.mem.indexOf(u8, undecoded, "setup_signal") == null);
-
-    // A status left behind by an earlier arm never reaches another class, nor a verdict
-    // that carries no class at all.
-    setup_status = .{ .exited = 7 };
-    const env = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .environment, "out of memory", null);
-    try std.testing.expect(std.mem.indexOf(u8, env, "\"setup_error_reason\": \"environment\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, env, "setup_exit_code") == null);
-    const unk = try buildJson(a, "UNKNOWN", 2, null, null, "no_shim_marker", null, "m", "Do this.");
-    try std.testing.expect(std.mem.indexOf(u8, unk, "setup_error_reason") == null and std.mem.indexOf(u8, unk, "setup_exit_code") == null);
-    const pass = try buildJson(a, "PASS", 0, null, null, null, null, null, null);
-    try std.testing.expect(std.mem.indexOf(u8, pass, "setup_") == null);
-}
-
-test "resolveFailure names the shallowest missing directory, and the errno otherwise (#486)" {
-    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
-    defer arena_state.deinit();
-    const arena = arena_state.allocator();
-
-    // ENOENT: the answer is a directory the operator can create, not the literal parent.
-    // `/` exists, so a deep absent path must name the shallowest absent step.
-    const deep = resolveFailure(arena, "/nope-for-test/a/b/leaf", posix.ENOENT);
-    try std.testing.expect(std.mem.indexOf(u8, deep, "/nope-for-test does not exist") != null);
-    try std.testing.expect(std.mem.indexOf(u8, deep, "the directory / does not exist") == null);
-
-    // A bare relative leaf has no directory above it: saying "." would be false.
-    const bare = resolveFailure(arena, "leaf", posix.ENOENT);
-    try std.testing.expect(std.mem.indexOf(u8, bare, "no directory above it") != null);
-    try std.testing.expect(std.mem.indexOf(u8, bare, "the directory . ") == null);
-
-    // Any other errno is named, not reduced to a number -- the four-arm switch this
-    // replaced covered four of ~130 and dropped the rest to a bare integer, which is
-    // the shape #486 is about.
-    const denied = resolveFailure(arena, "/x/y", @intFromEnum(std.posix.E.ACCES));
-    try std.testing.expect(std.mem.indexOf(u8, denied, "ACCES") != null);
-    const io = resolveFailure(arena, "/x/y", @intFromEnum(std.posix.E.IO));
-    try std.testing.expect(std.mem.indexOf(u8, io, "IO") != null);
-
-    // Control bytes from a case file's `define.state` do not reach the console raw (#266).
-    const forged = resolveFailure(arena, "/nope-for-test\x1b[1m/leaf", posix.ENOENT);
-    try std.testing.expect(std.mem.indexOf(u8, forged, "\x1b") == null);
-}
-
-/// Why `realpath` refused, in the words of the command the operator types next (#486).
-///
-/// The old sentence said the path "could not be resolved to an absolute path" about a
-/// path that visibly *is* absolute, so the first move it invites is to re-check the
-/// spelling of an already-correct flag. What was observed is the errno, and for the
-/// common case (`ENOENT`) the actionable half of it is which directory is missing:
-/// the engine creates the leaf and never the parent, and that contract is written
-/// nowhere else.
-///
-/// Read the errno BEFORE any cleanup call — `rmdir`/`undoSetupMkdirs` overwrite it.
-fn resolveFailure(arena: std.mem.Allocator, path: []const u8, err: c_int) []const u8 {
-    if (err == posix.ENOENT) {
-        // The *shallowest* missing component, not the literal parent: for
-        // `--state /nope/deep/leaf` with `/nope` absent, naming `/nope/deep` sends the
-        // operator to a `mkdir` that fails the same way. Walking up until something
-        // exists is the only form of this sentence that names a directory they can
-        // actually create.
-        //
-        // `dirname` returning null (a bare relative leaf) means there is no directory
-        // above it to be missing, so the generic clause is the honest one — the earlier
-        // version said "the parent directory . does not exist", which is false.
-        const parent = std.fs.path.dirname(path) orelse
-            return "it could not be resolved: ENOENT, and the name has no directory above it";
-        // Keep the shallowest component that is still missing, rather than stopping on
-        // the first one that exists: the loop below walks up, and the answer is the last
-        // absent step before something existed. Stopping *at* the existing directory
-        // named `/` in the first version, which is both true and useless.
-        var probe = parent;
-        var walk = parent;
-        while (true) {
-            var zbuf: [contract.max_path]u8 = undefined;
-            const z = std.fmt.bufPrintZ(&zbuf, "{s}", .{walk}) catch break;
-            if (posix.isDirPath(z.ptr)) break;
-            probe = walk;
-            const up = std.fs.path.dirname(walk) orelse break;
-            if (up.len == 0 or std.mem.eql(u8, up, walk)) break;
-            walk = up;
-        }
-        // Target- and case-file-influenced (a replayed case supplies `define.state`),
-        // so it goes through the same choke point the neighbouring refusals use (#266).
-        return std.fmt.allocPrint(arena, "the directory {s} does not exist (the leaf is created, the parent is not)", .{textShown(arena, probe)}) catch
-            "a directory above the leaf does not exist (the leaf is created, the parent is not)";
-    }
-    // The tag rather than a hand-written switch, for the reason `OpClass.name` records
-    // (#280): a switch spelling its own tags covers only the arms someone thought of.
-    // The first version here had four, out of the ~130 `std.posix.E` holds, so EPERM,
-    // EIO and EBADF fell to a bare number — which is the "restates its own name" shape
-    // #486 is about. `E` is non-exhaustive, so an unlisted value returns null rather
-    // than trapping, and the number is what remains to say.
-    if (std.enums.tagName(std.posix.E, @as(std.posix.E, @enumFromInt(err)))) |tag|
-        return std.fmt.allocPrint(arena, "it could not be resolved: {s} (errno {d})", .{ tag, err }) catch "it could not be resolved";
-    return std.fmt.allocPrint(arena, "it could not be resolved (errno {d})", .{err}) catch "it could not be resolved";
-}
-
-/// The text report's apparatus line, in the calling block's own style, only when
-/// something was declared.
-fn sayApparatus(arena: std.mem.Allocator, comptime fmt: []const u8) void {
-    if (apparatus_declared.len > 0) say(fmt, .{apparatusNote(arena)});
-}
-
-/// The verdict line's clause for a run with exactly one crash point (#487).
-///
-/// Zero has a verdict line of its own — "the operation performed nothing that can change the
-/// judged state" — and `docs/scouting.md` names it as the tell for a store that resolved
-/// outside `--state`. One had nothing: the count was in the account block and nowhere else,
-/// which is where #487's reporter read past it, at the price of a full exploration and the
-/// wrong conclusion. `preflight` has named its count on its own headline all along
-/// (`recording accepted — N state-changing operation(s) observed`), so this is explore
-/// catching up with a sibling rather than a new register.
-///
-/// **Not a threshold.** Two crash points get nothing added, deliberately: "two is enough" is
-/// a claim this cannot make, and a genuinely single-syscall operation is a legitimate target
-/// shape — `docs/target-classes.md` records papis reaching exactly one through a lone
-/// `renameat`. What this does is extend zero's
-/// register to the one case sitting next to it, and the cases at two and three are left
-/// where they were — a define whose store resolves outside `--state` but writes one file
-/// still reaches two (`open` + `write`) and gets no tell.
-fn singleCrashPointClause(n: usize) []const u8 {
-    return if (n == 1) ", over a single crash point" else "";
-}
-
-/// The advice that goes with the clause above, in the account block's own style, only when
-/// the run had exactly one crash point.
-///
-/// **The condition is `singleCrashPointClause`'s, spelled a second time.** Changing one
-/// without the other leaves a verdict line that names the count with no advice under it, or
-/// advice under a line that does not. They are two functions rather than one because they
-/// print in two places — the literal and after it — and there is no third caller to make a
-/// shared predicate worth its own name.
-///
-/// A separate call after the block, the way `sayApparatus` is, rather than a `{s}` line
-/// inside the multiline literal: `\\      {s}` prints six spaces on every *other* PASS when
-/// the string is empty, and a check that greps for wording would never see that. The cost is
-/// the position — this lands under `not tested:` rather than beside the count — and the
-/// alternative was splitting the report's one `say` in two for a single line of advice.
-fn saySingleCrashPointNote(n: usize) void {
-    if (n == 1) say("      if the define expected more, check that the target's store resolves inside the state directory\n", .{});
-}
-
-/// A JSON array of strings as a report field; with `only_unchecked`, the entries
-/// `config.apparatusUnchecked` selects.
-fn jsonArrayField(w: *std.ArrayList(u8), arena: std.mem.Allocator, name: []const u8, items: []const []const u8, only_unchecked: bool) !void {
-    try w.appendSlice(arena, ",\n  \"");
-    try w.appendSlice(arena, name);
-    try w.appendSlice(arena, "\": [");
-    var first = true;
-    for (items) |e| {
-        if (only_unchecked and !config.apparatusUnchecked(e)) continue;
-        if (!first) try w.appendSlice(arena, ", ");
-        first = false;
-        try jsonString(w, arena, e);
-    }
-    try w.append(arena, ']');
 }
 
 /// ADR 0041. Every entry the engine can check is checked against the environment the
@@ -5753,7 +4128,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
             .note => {},
         }
     }
-    apparatus_declared = entries;
+    report.apparatus_declared = entries;
 }
 
 fn envValue(name: []const u8) ?[]const u8 {
@@ -5799,18 +4174,6 @@ fn pythonpathHas(arena: std.mem.Allocator, pythonpath: []const u8, file: []const
     return false;
 }
 
-/// The text report's `apparatus` line: the entries as declared, comma-separated, each
-/// unchecked one saying so. The JSON carries the same list as two arrays.
-fn apparatusNote(arena: std.mem.Allocator) []const u8 {
-    var out: std.ArrayList(u8) = .empty;
-    for (apparatus_declared, 0..) |e, i| {
-        if (i > 0) out.appendSlice(arena, ", ") catch return "(allocation failed)";
-        out.appendSlice(arena, textShown(arena, e)) catch return "(allocation failed)";
-        if (config.apparatusUnchecked(e)) out.appendSlice(arena, " (declared, not checked)") catch return "(allocation failed)";
-    }
-    return out.items;
-}
-
 test "preloadNamed: /etc/ld.so.preload lines, by basename prefix, comments and blanks ignored" {
     try std.testing.expect(preloadNamed("/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1\n", "libfaketime"));
     try std.testing.expect(preloadNamed("# comment\n\n  /opt/pin/no-accel-copy.so  \n", "no-accel-copy"));
@@ -5834,516 +4197,16 @@ test "namesLib: an LD_PRELOAD value or a preload line, colon- or space-separated
 /// parses back through there.
 fn jsonCommand(w: *std.ArrayList(u8), arena: std.mem.Allocator, cmd: config.Command) !void {
     switch (cmd) {
-        .str => |s| try jsonString(w, arena, s),
+        .str => |s| try report.jsonString(w, arena, s),
         .argv => |a| {
             try w.append(arena, '[');
             for (a, 0..) |e, i| {
                 if (i != 0) try w.appendSlice(arena, ", ");
-                try jsonString(w, arena, e);
+                try report.jsonString(w, arena, e);
             }
             try w.append(arena, ']');
         },
     }
-}
-
-/// JSON for the caller, text for the reader (DESIGN §13). Not identical content: this is
-/// the complete record and the text is the reader's view of it. What §13 binds is that a
-/// value both forms carry has one definition, which is why every `jsonString` below reads
-/// a shared note rather than formatting one again.
-///
-/// Hand-written rather than derived from a type: the schema is explicitly experimental
-/// until v1.0, and generating it would suggest a stability this release does not offer.
-///
-/// `std.json.Stringify.encodeJsonString` was the obvious alternative and does not fit.
-/// Its default options pass bytes 0x80–0xFF through unchanged — the same defect this
-/// function had — and `escape_unicode` decodes them with `catch unreachable`, so invalid
-/// UTF-8 is a panic rather than a bad document.
-fn jsonString(w: *std.ArrayList(u8), arena: std.mem.Allocator, s: []const u8) !void {
-    try w.append(arena, '"');
-    var i: usize = 0;
-    while (i < s.len) {
-        const ch = s[i];
-        switch (ch) {
-            '"' => {
-                try w.appendSlice(arena, "\\\"");
-                i += 1;
-            },
-            '\\' => {
-                try w.appendSlice(arena, "\\\\");
-                i += 1;
-            },
-            '\n' => {
-                try w.appendSlice(arena, "\\n");
-                i += 1;
-            },
-            '\r' => {
-                try w.appendSlice(arena, "\\r");
-                i += 1;
-            },
-            '\t' => {
-                try w.appendSlice(arena, "\\t");
-                i += 1;
-            },
-            else => {
-                if (ch < 0x20) {
-                    var esc: [6]u8 = undefined;
-                    try w.appendSlice(arena, try std.fmt.bufPrint(&esc, "\\u{x:0>4}", .{ch}));
-                    i += 1;
-                } else if (ch < 0x80) {
-                    try w.append(arena, ch);
-                    i += 1;
-                } else {
-                    // A path on Linux is an arbitrary byte string; a JSON document must be
-                    // valid UTF-8. Passing these through raw produced a file that jq,
-                    // Python and Go all refuse — the caller loses the counterexample
-                    // entirely, which is worse than losing one character of a filename.
-                    // Valid sequences go through untouched; an invalid byte becomes
-                    // U+FFFD and the document still parses.
-                    const len = std.unicode.utf8ByteSequenceLength(ch) catch {
-                        try w.appendSlice(arena, "\\ufffd");
-                        i += 1;
-                        continue;
-                    };
-                    if (i + len > s.len or !std.unicode.utf8ValidateSlice(s[i..][0..len])) {
-                        try w.appendSlice(arena, "\\ufffd");
-                        i += 1;
-                        continue;
-                    }
-                    try w.appendSlice(arena, s[i..][0..len]);
-                    i += len;
-                }
-            },
-        }
-    }
-    try w.append(arena, '"');
-}
-
-fn violationPath(v: engine.Violation) []const u8 {
-    return switch (v) {
-        .missing => |p| p,
-        .hybrid => |p| p,
-        .rewritten => |p| p,
-        .not_durable => |p| p,
-    };
-}
-
-/// The opening clause of every `baseline_violates_invariant` refusal (#199): the acceptance
-/// suite and the docs quote it, so it has one home, the way `not_tested_*` fragments do.
-const baseline_refusal_lead = "the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing";
-
-/// The other layers that failed in the same un-killed world, as a trailing clause; empty
-/// when none did. The byte layer asks about both; the marker asks only about the checker.
-fn baselineAlsoFailed(marker: bool, checker: bool) []const u8 {
-    if (marker and checker) return "; the success marker's invariant and the checker failed there too";
-    if (checker) return "; the checker rejected that state too";
-    if (marker) return "; the success marker's invariant failed there too";
-    return "";
-}
-
-/// The baseline's reading of the same kinds (#199), worded for the world that was never
-/// killed: `violationObserved` speaks of a crashed state, and the baseline has none. The
-/// switch is the sibling's shape — a tail per kind — and the path is spliced in once.
-/// `judgeL0` hands the baseline only the first three kinds; `not_durable` is `judgeL1`'s
-/// and is worded here so the switch stays total rather than hiding an `unreachable` behind
-/// a judge's contract.
-fn baselineObserved(arena: std.mem.Allocator, v: engine.Violation) []const u8 {
-    const tail: []const u8 = switch (v) {
-        .missing => "gone, though the recording had it before and after",
-        .hybrid => "holding neither the old nor the new content",
-        .rewritten => "with its recorded history no longer a prefix of its content",
-        .not_durable => "not in its recorded final form",
-    };
-    return std.fmt.allocPrint(arena, "the re-run from the restored state left {s} {s}", .{ textShown(arena, violationPath(v)), tail }) catch "the re-run from the restored state did not leave the recorded bytes";
-}
-
-fn violationObserved(v: ?engine.Violation) []const u8 {
-    return if (v) |vv| switch (vv) {
-        .missing => "present before and after the operation, but gone from the crashed state",
-        .hybrid => "holding neither the old nor the new content",
-        .rewritten => "present, but its recorded history is no longer a prefix of its content",
-        .not_durable => "the operation claimed success before the kill, and this part of the new state did not survive",
-    } else "the checker exited non-zero after restart";
-}
-
-const Earliest = struct {
-    k: u32,
-    after: []const u8,
-    after_path: []const u8,
-    before: []const u8,
-    before_path: []const u8,
-    subject: []const u8,
-    observed: []const u8,
-    invariant: []const u8,
-};
-
-/// The claim exhibit (#231, ADR 0020): the `earliest` shape plus its own case
-/// and replay, nested so the object is absent — fields and all — whenever no
-/// violating world involved the declared checker.
-const CheckerEarliest = struct {
-    e: Earliest,
-    case: []const u8,
-    replay: []const u8,
-};
-
-fn buildJson(
-    arena: std.mem.Allocator,
-    verdict: []const u8,
-    exit_code: u8,
-    detail: ?Earliest,
-    checker_detail: ?CheckerEarliest,
-    // Typed, not a third `?[]const u8` beside the two this already takes (#518): with
-    // `unknown_reason` and `message` adjacent and same-typed, a positional slip compiles
-    // and writes the reason into the message.
-    unknown_reason: ?[]const u8,
-    setup_error_reason: ?contract.SetupErrorReason,
-    message: ?[]const u8,
-    next_step: ?[]const u8,
-) ![]const u8 {
-    var buf: std.ArrayList(u8) = .empty;
-    const w = &buf;
-    var nb: [16]u8 = undefined;
-
-    try w.appendSlice(arena, "{\n  \"schema\": \"sideeye/report\",\n  \"schema_status\": \"experimental\",\n");
-    try w.appendSlice(arena, "  \"contract_version\": ");
-    try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}));
-    try w.appendSlice(arena, ",\n  \"verdict\": ");
-    try jsonString(w, arena, verdict);
-    try w.appendSlice(arena, ",\n  \"exit_code\": ");
-    try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{exit_code}));
-    // The contractual spelling of "did a second witness check this?" (#94). A caller
-    // gates on `verdict == "PASS" && oracle_verified`, never on the prose `oracle` string.
-    try w.appendSlice(arena, ",\n  \"oracle_verified\": ");
-    try w.appendSlice(arena, if (oracle_verified) "true" else "false");
-    // Emitted only when it is true, so every report a v14 consumer has seen is
-    // byte-identical, and the `verdict == "PASS" &&
-    // oracle_verified` gate keeps treating a run whose crash points include a child's
-    // operations as unverified.
-    if (oracle_verified_subject_only)
-        try w.appendSlice(arena, ",\n  \"oracle_verified_subject_only\": true");
-    // Read from the run's own counters rather than passed in as zeroes. An UNKNOWN raised
-    // at world 4 of 6 used to report `"explored": 0`, so a caller aggregating coverage
-    // from the JSON recorded nothing for every run that ended early.
-    try w.appendSlice(arena, ",\n  \"crash_points\": ");
-    try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{crash_points}));
-    try w.appendSlice(arena, ",\n  \"explored\": ");
-    try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{explored}));
-    try w.appendSlice(arena, ",\n  \"violations\": ");
-    try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{violations}));
-    // Always present, even at the default: a PASS over a target whose success status
-    // is 3 must be distinguishable, by machine, from a PASS that required 0.
-    try w.appendSlice(arena, ",\n  \"expected_status\": ");
-    try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{expected_status_val}));
-
-    // ADR 0041: present only when the define declared something (the presence rule
-    // `next_step` and `divergence_syscall` follow), each entry as it was spelled; the
-    // unchecked list is the same entries through the one predicate the text line uses.
-    if (apparatus_declared.len > 0) {
-        try jsonArrayField(w, arena, "apparatus", apparatus_declared, false);
-        if (apparatusHasUnchecked()) try jsonArrayField(w, arena, "apparatus_unchecked", apparatus_declared, true);
-    }
-    // ADR 0043: the same presence rule, the same slice the plan judged by.
-    if (scratch_declared.len > 0) try jsonArrayField(w, arena, "scratch", scratch_declared, false);
-    if (unknown_reason) |r| {
-        try w.appendSlice(arena, ",\n  \"unknown_reason\": ");
-        try jsonString(w, arena, r);
-    }
-    // #518, ADR 0057: the SETUP_ERROR's class, beside the other closed set, and the status
-    // a failing `--setup` ended with — one integer or the other, only under `setup_failed`,
-    // and neither for a status `waitpid` did not decode (the message quotes the raw number).
-    // Gated on the reason rather than on `setup_status` alone: the global is set only in
-    // the failing arms, but the gate is what keeps a later PASS from ever carrying it.
-    if (setup_error_reason) |r| {
-        try w.appendSlice(arena, ",\n  \"setup_error_reason\": ");
-        try jsonString(w, arena, r.name());
-        if (r == .setup_failed) if (setup_status) |st| switch (st) {
-            .exited => |code| {
-                try w.appendSlice(arena, ",\n  \"setup_exit_code\": ");
-                try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{code}));
-            },
-            .signaled => |sig| {
-                try w.appendSlice(arena, ",\n  \"setup_signal\": ");
-                try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{sig}));
-            },
-            .unknown => {},
-        };
-    }
-    if (message) |m| {
-        try w.appendSlice(arena, ",\n  \"message\": ");
-        try jsonString(w, arena, m);
-    }
-    // #274: the same rendered sentence the text report prints on its `next` line —
-    // `unknown()` renders it once and passes it here, so `check-report-schema.py`'s fifth
-    // claim (a bare name through `jsonString`) holds, and acceptance check 2ns holds the
-    // two forms to each other by bytes.
-    // #337: the syscall the oracle saw at a divergence, beside the line `message` quotes.
-    // Present only on `oracle_missed_operation` — the one refusal where the oracle has a
-    // line at the diverging index — and written from the same `divergence_syscall` the
-    // text report prints, so the two forms cannot disagree.
-    if (divergence_syscall.len > 0) {
-        try w.appendSlice(arena, ",\n  \"divergence_syscall\": ");
-        try jsonString(w, arena, divergence_syscall);
-    }
-    if (next_step) |n| {
-        try w.appendSlice(arena, ",\n  \"next_step\": ");
-        try jsonString(w, arena, n);
-    }
-
-    if (detail) |d| {
-        try w.appendSlice(arena, ",\n  \"earliest\": {\n    \"crash_point\": ");
-        try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{d.k}));
-        try w.appendSlice(arena, ",\n    \"invariant\": ");
-        try jsonString(w, arena, d.invariant);
-        try w.appendSlice(arena, ",\n    \"after\": {\"op\": ");
-        try jsonString(w, arena, d.after);
-        try w.appendSlice(arena, ", \"path\": ");
-        try jsonString(w, arena, d.after_path);
-        try w.appendSlice(arena, "},\n    \"before\": {\"op\": ");
-        try jsonString(w, arena, d.before);
-        try w.appendSlice(arena, ", \"path\": ");
-        try jsonString(w, arena, d.before_path);
-        try w.appendSlice(arena, "},\n    \"subject\": ");
-        try jsonString(w, arena, d.subject);
-        try w.appendSlice(arena, ",\n    \"observed\": ");
-        try jsonString(w, arena, d.observed);
-        try w.appendSlice(arena, "\n  }");
-    }
-
-    if (checker_detail) |cd| {
-        try w.appendSlice(arena, ",\n  \"checker_earliest\": {\n    \"crash_point\": ");
-        try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{cd.e.k}));
-        try w.appendSlice(arena, ",\n    \"invariant\": ");
-        try jsonString(w, arena, cd.e.invariant);
-        try w.appendSlice(arena, ",\n    \"after\": {\"op\": ");
-        try jsonString(w, arena, cd.e.after);
-        try w.appendSlice(arena, ", \"path\": ");
-        try jsonString(w, arena, cd.e.after_path);
-        try w.appendSlice(arena, "},\n    \"before\": {\"op\": ");
-        try jsonString(w, arena, cd.e.before);
-        try w.appendSlice(arena, ", \"path\": ");
-        try jsonString(w, arena, cd.e.before_path);
-        try w.appendSlice(arena, "},\n    \"subject\": ");
-        try jsonString(w, arena, cd.e.subject);
-        try w.appendSlice(arena, ",\n    \"observed\": ");
-        try jsonString(w, arena, cd.e.observed);
-        try w.appendSlice(arena, ",\n    \"case\": ");
-        try jsonString(w, arena, cd.case);
-        try w.appendSlice(arena, ",\n    \"replay\": ");
-        try jsonString(w, arena, cd.replay);
-        try w.appendSlice(arena, "\n  }");
-    }
-
-    try w.appendSlice(arena, ",\n  \"l0\": ");
-    try jsonString(w, arena, l0_note);
-    try w.appendSlice(arena, ",\n  \"l1\": ");
-    try jsonString(w, arena, l1_note);
-    try w.appendSlice(arena, ",\n  \"case\": ");
-    try jsonString(w, arena, case_note);
-    try w.appendSlice(arena, ",\n  \"replay\": ");
-    try jsonString(w, arena, replay_note);
-    try w.appendSlice(arena, ",\n  \"oracle\": ");
-    try jsonString(w, arena, oracle_note);
-    try w.appendSlice(arena, ",\n  \"metadata_writes\": ");
-    try jsonString(w, arena, metadata_note);
-    try w.appendSlice(arena, ",\n  \"checker\": ");
-    try jsonString(w, arena, checker_note);
-    try w.appendSlice(arena, ",\n  \"processes\": ");
-    try jsonString(w, arena, boundary.boundaryAccount());
-    // Additive under the report-schema allowance the freeze keeps open (surface 2). A
-    // number rather than a sentence in `l0`, so "this run has no unexamined subtree" is
-    // machine-readable instead of being the absence of a phrase.
-    try w.print(arena, ",\n  \"paths_attributed_to_rename\": {d}", .{attributed_to_rename});
-    // Stated in the report itself, not only in the documentation: a PASS that does not
-    // say what it did not look at is the kind of reassurance this tool refuses to give.
-    try w.appendSlice(arena, ",\n  \"not_tested\": ");
-    try w.appendSlice(arena, notTestedJson());
-    try w.appendSlice(arena, "\n}\n");
-    return buf.items;
-}
-
-/// On stderr, not stdout: the text report is the process's output, and a diagnostic
-/// mixed into it would be read as part of the verdict.
-fn jsonFailed(detail: []const u8) void {
-    const prefix = "sideeye: the JSON report was not written: ";
-    _ = posix.write(2, prefix.ptr, prefix.len);
-    _ = posix.write(2, detail.ptr, detail.len);
-    _ = posix.write(2, "\n", 1);
-}
-
-/// Written whole or not at all.
-///
-/// Every step here used to fail silently: a failed open, a short write, a formatting
-/// error mid-document. The result was a truncated file — `{"schema": "sideeye/report",`
-/// with no closing brace — beside an exit code claiming a clean verdict, and the caller
-/// could not tell a broken write from a broken tool. Building the document first and
-/// moving it into place with `rename` is the same discipline sideeye exists to check for
-/// in other programs; applying it here is not decoration.
-fn writeJsonReport(
-    arena: std.mem.Allocator,
-    path: []const u8,
-    verdict: []const u8,
-    exit_code: u8,
-    detail: ?Earliest,
-    checker_detail: ?CheckerEarliest,
-    unknown_reason: ?[]const u8,
-    setup_error_reason: ?contract.SetupErrorReason,
-    message: ?[]const u8,
-    next_step: ?[]const u8,
-) void {
-    const doc = buildJson(arena, verdict, exit_code, detail, checker_detail, unknown_reason, setup_error_reason, message, next_step) catch
-        return jsonFailed("the document could not be built");
-
-    var pbuf: [contract.max_path]u8 = undefined;
-    const pz = std.fmt.bufPrintZ(&pbuf, "{s}", .{path}) catch
-        return jsonFailed("--json path is too long");
-    var tbuf: [contract.max_path]u8 = undefined;
-    const tz = std.fmt.bufPrintZ(&tbuf, "{s}.tmp", .{path}) catch
-        return jsonFailed("--json path is too long");
-
-    const fd = posix.open(tz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
-    if (fd < 0) return jsonFailed("the file could not be opened for writing");
-    var off: usize = 0;
-    while (off < doc.len) {
-        const written = posix.write(fd, doc[off..].ptr, doc.len - off);
-        if (written <= 0) {
-            _ = posix.close(fd);
-            _ = posix.unlink(tz.ptr);
-            return jsonFailed("the write did not complete");
-        }
-        off += @intCast(written);
-    }
-    _ = posix.close(fd);
-
-    if (posix.rename(tz.ptr, pz.ptr) != 0) {
-        _ = posix.unlink(tz.ptr);
-        return jsonFailed("the finished document could not be moved into place");
-    }
-}
-
-/// The destructive root stopped being the directory this run resolved.
-///
-/// Two decisions live here, deliberately in one pure function so they cannot drift.
-///
-/// **The error decides the wording.** Every `restore`/`freshDir`/`corruptState` call
-/// site folds its errors into one message, which used to swallow the one error that
-/// says something different: `UnsafeRoot` means the state directory was replaced between
-/// the resolution and the destructive step, not that the step failed. It no longer comes
-/// only from `assertRootResolvesToItself` — since #338 the identity comparison in
-/// `openRootDir` and `createRoot`'s `EEXIST` rule raise it too, which is why the wording
-/// below names a fourth cause. That is an actionable difference — a setup command or the
-/// recorded operation left a link there — and it is the case an acceptance check can
-/// assert on.
-///
-/// **The phase decides the verdict** (#330's discipline, third application after
-/// `spawnFailure` and `snapshotRefusal`): before the recording run a rewrite that
-/// fails really is a setup problem, and from the recording run onward the define is
-/// running, so exit 3 would claim it never did (#363).
-///
-/// Typed and exhaustive on purpose: a new member of `engine.RestoreError` must stop
-/// compilation here rather than inherit `state_rewrite_failed` unexamined — the same
-/// containment the snapshot's spawn-error switch keeps.
-const RewriteDisposition = struct { exit: enum { setup, unknown }, detail: []const u8, next: contract.NextStep, setup_reason: contract.SetupErrorReason };
-
-fn rewriteFailureDisposition(
-    phase: SpawnPhase,
-    e: engine.RestoreError,
-    doing: []const u8,
-) RewriteDisposition {
-    const ends: struct { next: contract.NextStep, setup: contract.SetupErrorReason } = switch (e) {
-        error.PathTooLong => .{ .next = .narrow_state, .setup = .define_invalid },
-        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed => .{ .next = .environment, .setup = .environment },
-    };
-    const detail: []const u8 = switch (e) {
-        // Four causes now, and the fourth reads nothing like the other three. #327 added
-        // the third by moving a non-directory at the root from DeleteFailed to UnsafeRoot,
-        // which is the right class — the root is not a thing to rewrite. #338 added the
-        // fourth, and it is the one an operator would otherwise stare at: the path is a
-        // perfectly ordinary readable directory that resolves to itself, and it is simply
-        // not the one this run has anything to do with.
-        //
-        // "Vetted or created", not "the one that was checked": #338 raises this on two
-        // paths and the narrower wording covers only one. Either the directory checked
-        // earlier was replaced by another, or nothing was there when the check looked and
-        // a directory appeared before this run could make its own. A refusal that states
-        // the wrong cause is worse than one that states none, which is why each is named,
-        // and why the message is generated from the error rather than written at the call
-        // sites: three of the four arrived after the first wording.
-        //
-        // "Destructive access", not "empty": the same refusal serves the falsification
-        // probe's corruption (#363), which overwrites rather than empties.
-        error.UnsafeRoot => "the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), it is not a directory, it could not be read at all, or the path names a directory this run neither vetted nor created (one appeared, or replaced another, between the check and the open). Refusing destructive access to it",
-        error.DeleteFailed, error.CreateFailed, error.PathTooLong => doing,
-    };
-    return .{
-        .exit = switch (phase) {
-            .before_exploration => .setup,
-            .exploring => .unknown,
-        },
-        .detail = detail,
-        // Decided per cause, beside the wording and for the same reason (#274): a path
-        // the engine cannot spell is the operator's tree to shorten; a root that
-        // resolves elsewhere, or a delete or create the filesystem refused, is the
-        // environment to put right. None is the define's.
-        // Step and SETUP_ERROR class, from one switch because they split the same way
-        // (#274 for the step, #518 for the class): a path the engine cannot spell is the
-        // operator's tree to shorten and the define's as written; a root that resolves
-        // elsewhere, or a delete or create the filesystem refused, is the environment to
-        // put right and the machine's answer. `UnsafeRoot` here and the parse-time
-        // `assertSafeRoot` refusal are two classes on purpose: at parse time the define
-        // named a root nothing sacrificial belongs in (`define_invalid`); here a root that
-        // was vetted moved under the run (`environment`).
-        .next = ends.next,
-        .setup_reason = ends.setup,
-    };
-}
-
-fn restoreFailure(e: engine.RestoreError, doing: []const u8) noreturn {
-    const d = rewriteFailureDisposition(run_phase, e, doing);
-    switch (d.exit) {
-        .setup => setupError(d.setup_reason, d.detail),
-        .unknown => unknown(.state_rewrite_failed, d.detail, d.next),
-    }
-}
-
-test "a failed rewrite is SETUP_ERROR before exploration and UNKNOWN after, UnsafeRoot keeping its safety wording in both (#363)" {
-    const doing = "could not restore the state directory";
-    // Every member, both phases. The production switch is exhaustive, so a fifth
-    // RestoreError member stops compilation there; this count keeps the TEST honest
-    // about having covered the whole set when that day comes.
-    const errs = [_]engine.RestoreError{
-        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed, error.PathTooLong,
-    };
-    try std.testing.expectEqual(@as(usize, 4), @typeInfo(engine.RestoreError).error_set.?.len);
-    for (errs) |e| {
-        for ([_]SpawnPhase{ .before_exploration, .exploring }) |phase| {
-            const d = rewriteFailureDisposition(phase, e, doing);
-            // The phase alone decides the exit.
-            try std.testing.expectEqual(phase == .exploring, d.exit == .unknown);
-            // The error alone decides the wording, phase-invariantly: what to tell
-            // the operator does not change with when it happened.
-            if (e == error.UnsafeRoot) {
-                try std.testing.expect(
-                    std.mem.indexOf(u8, d.detail, "Refusing destructive access") != null,
-                );
-            } else {
-                try std.testing.expectEqualStrings(doing, d.detail);
-            }
-            // The SETUP_ERROR class, also phase-invariant and also decided by the error
-            // (#518): a path the engine cannot spell is the define's as written, and the
-            // other three are the filesystem's answer. Asserted here because the
-            // `define_invalid` arm has no other coverage — the fresh-state acceptance leg
-            // reaches the `environment` one only.
-            try std.testing.expectEqual(
-                if (e == error.PathTooLong) contract.SetupErrorReason.define_invalid else contract.SetupErrorReason.environment,
-                d.setup_reason,
-            );
-        }
-    }
-}
-
-fn removeFile(path: []const u8) void {
-    var buf: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return;
-    _ = posix.unlink(z.ptr);
 }
 
 /// A relative path in a sideeye.toml means "relative to the toml", not to wherever
@@ -6499,11 +4362,11 @@ fn writeCase(
     w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
-    jsonString(w, arena, version) catch return null;
+    report.jsonString(w, arena, version) catch return null;
     w.appendSlice(arena, ",\n  \"contract_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"define\": {\n    \"state\": ") catch return null;
-    jsonString(w, arena, args.state.?) catch return null;
+    report.jsonString(w, arena, args.state.?) catch return null;
     if (args.setup) |s| {
         w.appendSlice(arena, ",\n    \"setup\": ") catch return null;
         jsonCommand(w, arena, s) catch return null;
@@ -6516,7 +4379,7 @@ fn writeCase(
     }
     if (args.marker) |m| {
         w.appendSlice(arena, ",\n    \"marker\": ") catch return null;
-        jsonString(w, arena, m) catch return null;
+        report.jsonString(w, arena, m) catch return null;
     }
     // Written only when it was declared, unlike `expected_status` above: an absent cwd
     // is not a default value the reader has to be told, it is the engine's own cwd — and
@@ -6524,7 +4387,7 @@ fn writeCase(
     // reader refuse files whose defines are unchanged.
     if (args.cwd) |c| {
         w.appendSlice(arena, ",\n    \"cwd\": ") catch return null;
-        jsonString(w, arena, c) catch return null;
+        report.jsonString(w, arena, c) catch return null;
     } else if (case_version >= 5) {
         // From version 5 `cwd` is explicit beside `scratch` (ADR 0043): `null` says "none
         // declared" in the file itself, so a reader can tell it from a key edited out.
@@ -6534,7 +4397,7 @@ fn writeCase(
         w.appendSlice(arena, ",\n    \"scratch\": [") catch return null;
         for (args.scratch, 0..) |s, i| {
             if (i > 0) w.appendSlice(arena, ", ") catch return null;
-            jsonString(w, arena, s) catch return null;
+            report.jsonString(w, arena, s) catch return null;
         }
         w.append(arena, ']') catch return null;
     }
@@ -6548,17 +4411,17 @@ fn writeCase(
     w.appendSlice(arena, ",\n  \"ops_total\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{ops_total}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"prefix_hash\": ") catch return null;
-    jsonString(w, arena, &hh) catch return null;
+    report.jsonString(w, arena, &hh) catch return null;
     w.appendSlice(arena, ",\n  \"after_class\": ") catch return null;
-    jsonString(w, arena, if (addr.after) |a| a.class.name() else "(start)") catch return null;
+    report.jsonString(w, arena, if (addr.after) |a| a.class.name() else "(start)") catch return null;
     w.appendSlice(arena, ",\n  \"after_path\": ") catch return null;
-    jsonString(w, arena, if (addr.after) |a| a.path else "") catch return null;
+    report.jsonString(w, arena, if (addr.after) |a| a.path else "") catch return null;
     w.appendSlice(arena, ",\n  \"before_class\": ") catch return null;
-    jsonString(w, arena, if (addr.before) |b| b.class.name() else "(end)") catch return null;
+    report.jsonString(w, arena, if (addr.before) |b| b.class.name() else "(end)") catch return null;
     w.appendSlice(arena, ",\n  \"before_path\": ") catch return null;
-    jsonString(w, arena, if (addr.before) |b| b.path else "") catch return null;
+    report.jsonString(w, arena, if (addr.before) |b| b.path else "") catch return null;
     w.appendSlice(arena, ",\n  \"violation\": ") catch return null;
-    jsonString(w, arena, violation_name) catch return null;
+    report.jsonString(w, arena, violation_name) catch return null;
     w.appendSlice(arena, "\n}\n") catch return null;
 
     const EEXIST: c_int = 17; // same value on Linux and Darwin
@@ -6591,99 +4454,6 @@ fn writeCase(
     return null;
 }
 
-/// Name the point where the two accounts split: the divergence index (1-based), the
-/// raw strace line the oracle holds there, and what the shim's account holds at the
-/// same position — or that either account simply ends. The detail travels through
-/// `unknown` into the text and the JSON alike (DESIGN §13), so nobody has to decode
-/// a binary trace by hand to learn which operation a refusal refused on (#41). On
-/// allocation failure the lead sentence alone is returned: the refusal is the point,
-/// the naming is the courtesy, and the courtesy must never cost the refusal.
-fn divergenceDetail(
-    arena: std.mem.Allocator,
-    lead: []const u8,
-    index: usize,
-    shim_ops: []const engine.Op,
-    oracle_lines: []const []const u8,
-    oracle_names: []const []const u8,
-) []const u8 {
-    const oracle_part = if (index < oracle_lines.len) blk: {
-        // The decomposition the reader would otherwise take from the quoted line (#337).
-        // Assigned inside this arm on purpose: the other arm is the phantom case, where
-        // the oracle has no line at this index and there is nothing to name.
-        // The observer's own name for this operation, carried beside the line by whichever
-        // reader produced it — strace's `openat`, fs_usage's `open`. Read from the list
-        // rather than parsed back out of the quoted line, so both oracles answer (review
-        // measured that parsing the line gives nothing on macOS: an fs_usage line opens
-        // with a timestamp, not a call name).
-        if (index < oracle_names.len and oracle_names[index].len > 0) divergence_syscall = oracle_names[index];
-        break :blk std.fmt.allocPrint(arena, "the oracle saw: {s}", .{oracle_lines[index]}) catch return lead;
-    } else std.fmt.allocPrint(arena, "the oracle's account ends after {d} operation(s)", .{index}) catch return lead;
-    const shim_part = if (index < shim_ops.len) blk: {
-        const op = shim_ops[index];
-        break :blk if (op.aux.len > 0)
-            std.fmt.allocPrint(arena, "the shim recorded: {s}(\"{s}\" -> \"{s}\")", .{ @tagName(op.class), op.path, op.aux }) catch return lead
-        else
-            std.fmt.allocPrint(arena, "the shim recorded: {s}(\"{s}\")", .{ @tagName(op.class), op.path }) catch return lead;
-    } else std.fmt.allocPrint(arena, "the shim's account ends after {d} operation(s)", .{index}) catch return lead;
-    const composed = std.fmt.allocPrint(arena, "{s}; divergence at operation {d}: {s}; {s}", .{
-        lead, index + 1, oracle_part, shim_part,
-    }) catch return lead;
-    // Shim paths are raw bytes the target chose, and even strace's own escaping is
-    // not a contract this report should lean on: a filename carrying a newline or an
-    // escape sequence must not be able to forge report lines (the class of #26). One
-    // choke point, applied to the whole composed detail, keeps the text and the JSON
-    // carrying the same bytes.
-    return sanitizeForReport(arena, composed) catch lead;
-}
-
-test "divergence detail escapes a control byte a target put in a path" {
-    // This calls `divergenceDetail`, which sets the module-level `divergence_syscall`;
-    // leaving it set would hand a later test a field it never wrote (#337 review).
-    defer divergence_syscall = "";
-    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
-    defer arena_state.deinit();
-    const ops = [_]engine.Op{.{
-        .class = .open,
-        .seq = 1,
-        .pid = 1,
-        .tid = 1,
-        .path = "/tmp/s/evil\nUNKNOWN  forged_reason",
-        .aux = "",
-    }};
-    const lines = [_][]const u8{"openat(AT_FDCWD, \"/tmp/s/a\", O_RDWR) = 3"};
-    const names = [_][]const u8{"openat"};
-    const detail = divergenceDetail(arena_state.allocator(), "lead", 0, &ops, &lines, &names);
-    // The newline must arrive spelled out, never as a line break the report obeys.
-    try std.testing.expect(std.mem.indexOf(u8, detail, "\n") == null);
-    try std.testing.expect(std.mem.indexOf(u8, detail, "\\x0a") != null);
-    try std.testing.expect(std.mem.indexOf(u8, detail, "divergence at operation 1") != null);
-}
-
-test "a phantom divergence names no syscall: the oracle's account does not reach that index (#337)" {
-    // `compare` returns `.phantom` only from the branch where the shim's list runs past
-    // the oracle's, so its index is exactly the oracle's length — there is no line and no
-    // name there. The report's page says the field is absent on that refusal; this is
-    // what holds it. A reader tempted to fall back to `index - 1` would name the WRONG
-    // operation, which is the failure this pins.
-    defer divergence_syscall = "";
-    divergence_syscall = "";
-    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
-    defer arena_state.deinit();
-    const ops = [_]engine.Op{
-        .{ .class = .open, .seq = 1, .pid = 1, .tid = 1, .path = "/tmp/s/a", .aux = "" },
-        .{ .class = .write, .seq = 2, .pid = 1, .tid = 1, .path = "/tmp/s/a", .aux = "" },
-    };
-    // The oracle saw one operation; the shim recorded two. `compare` answers
-    // `.phantom` at index 1, which is one past the end of both oracle lists.
-    const lines = [_][]const u8{"openat(AT_FDCWD, \"/tmp/s/a\", O_RDWR) = 3"};
-    const names = [_][]const u8{"openat"};
-    const detail = divergenceDetail(arena_state.allocator(), "lead", 1, &ops, &lines, &names);
-    try std.testing.expectEqualStrings("", divergence_syscall);
-    // And the detail says so in words, rather than borrowing the previous operation.
-    try std.testing.expect(std.mem.indexOf(u8, detail, "the oracle's account ends after 1 operation(s)") != null);
-    try std.testing.expect(std.mem.indexOf(u8, detail, "openat") == null);
-}
-
 /// Two snapshots agree, on the same three fields `diffSnapshots` compares.
 ///
 /// One implementation, not two. This was a length check plus a `find` per entry until
@@ -6696,180 +4466,6 @@ test "a phantom divergence names no syscall: the oracle's account does not reach
 fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
     var one: [1]engine.Difference = undefined;
     return engine.diffSnapshots(a, b, &one).equal();
-}
-
-test "the l0 note neutralises control bytes in target-chosen file names" {
-    // A Unix file name may contain a newline; unescaped it would let a target forge
-    // report lines ("log\nnot tested  nothing" reads as two lines of verdict). The
-    // note must carry the name defanged. Control: the printable part survives.
-    const gpa = std.testing.allocator;
-    var arena_state = std.heap.ArenaAllocator.init(gpa);
-    defer arena_state.deinit();
-
-    var plan: engine.L0Plan = .{
-        .arena = std.heap.ArenaAllocator.init(gpa),
-        .files = .empty,
-        .history_count = 1,
-    };
-    defer plan.deinit();
-    try plan.files.append(plan.arena.allocator(), .{
-        .rel = "evil\nname\x1b.log",
-        .pre_kind = .file,
-        .post_kind = .file,
-        .form = .history,
-        .pre_content = "a",
-        .post_content = "ab",
-    });
-
-    const note = buildL0Note(arena_state.allocator(), plan);
-    try std.testing.expect(std.mem.indexOfScalar(u8, note, '\n') == null);
-    try std.testing.expect(std.mem.indexOfScalar(u8, note, 0x1b) == null);
-    try std.testing.expect(std.mem.indexOf(u8, note, "evil?name?.log") != null);
-}
-
-test "the not-tested list renders the same eight strings it shipped as two hand-written functions (#280)" {
-    // The eight literals below are the output of the two functions this replaced, copied
-    // from them before they were deleted. They are the point of the test: the change was
-    // allowed to remove a duplicate definition and not allowed to move a byte of the
-    // report. A one-time before/after comparison proves that once; this proves it on
-    // every run, which is what a frozen report surface needs.
-    const want_text = [4][]const u8{
-        "power loss, torn writes, concurrent processes",
-        "power loss, torn writes, concurrent processes, appended tails (files under the history form)",
-        "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)",
-        "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)",
-    };
-    const want_json = [4][]const u8{
-        "[\"power loss\", \"torn writes\", \"concurrent processes\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
-    };
-    for (want_text, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_text_by_variant[i]);
-    for (want_json, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_json_by_variant[i]);
-    // Bit 2 (ADR 0043): the same four rows again with the scratch item last, since the
-    // list is built in condition order and scratch is the third condition.
-    const scratch_item = "declared scratch paths (neither bytes nor presence judged)";
-    for (want_text, 0..) |w, i| {
-        const got = not_tested_text_by_variant[4 + i];
-        try std.testing.expect(std.mem.startsWith(u8, got, w));
-        try std.testing.expectEqualStrings(", " ++ scratch_item, got[w.len..]);
-    }
-    for (want_json, 0..) |w, i| {
-        const got = not_tested_json_by_variant[4 + i];
-        try std.testing.expect(std.mem.startsWith(u8, got, w[0 .. w.len - 1]));
-        try std.testing.expectEqualStrings(", \"" ++ scratch_item ++ "\"]", got[w.len - 1 ..]);
-    }
-    try std.testing.expectEqual(@as(usize, 8), not_tested_text_by_variant.len);
-}
-
-test "the two renderings read the variant once, so they cannot describe different runs (#280)" {
-    // The pair used to branch separately on the same two globals. What the duplication
-    // put at risk is not whether the strings are right -- the goldens above hold that --
-    // but whether both sides are answering about the same run.
-    const saved_hist = l0_history_count;
-    const saved_l1 = l1_configured;
-    const saved_scratch = scratch_declared;
-    defer {
-        l0_history_count = saved_hist;
-        l1_configured = saved_l1;
-        scratch_declared = saved_scratch;
-    }
-    const one_scratch = [_][]const u8{"nondet.txt"};
-    for ([_]bool{ false, true }) |s| {
-        for ([_]bool{ false, true }) |h| {
-            for ([_]bool{ false, true }) |l| {
-                l0_history_count = if (h) 1 else 0;
-                l1_configured = l;
-                scratch_declared = if (s) &one_scratch else &.{};
-                const want_v: usize = (if (h) @as(usize, 1) else 0) | (if (l) @as(usize, 2) else 0) | (if (s) @as(usize, 4) else 0);
-                const v = notTestedVariant();
-                try std.testing.expectEqual(want_v, v);
-                try std.testing.expectEqualStrings(not_tested_text_by_variant[v], notTestedText());
-                try std.testing.expectEqualStrings(not_tested_json_by_variant[v], notTestedJson());
-                // Both renderings are the items and nothing else: the text joined by ", ",
-                // the JSON the same items quoted, bracketed and in the same order.
-                // Rebuilt from the item list, both forms, and compared for EQUALITY --
-                // review measured that an `indexOf` on the JSON side lets a ghost item ride
-                // along: appending one to the quoted rendering left the suite green.
-                const items = not_tested_items_by_variant[v];
-                var buf: [1024]u8 = undefined;
-                var n: usize = 0;
-                var jn: usize = 0;
-                var jbuf: [1024]u8 = undefined;
-                jbuf[jn] = '[';
-                jn += 1;
-                for (items, 0..) |item, i| {
-                    // The buffers are asserted rather than assumed: an item long enough to
-                    // overrun should report, not panic inside @memcpy.
-                    try std.testing.expect(n + 2 + item.len <= buf.len);
-                    try std.testing.expect(jn + 5 + item.len <= jbuf.len); // + the closing ']'
-                    if (i != 0) {
-                        @memcpy(buf[n..][0..2], ", ");
-                        n += 2;
-                        @memcpy(jbuf[jn..][0..2], ", ");
-                        jn += 2;
-                    }
-                    @memcpy(buf[n..][0..item.len], item);
-                    n += item.len;
-                    jbuf[jn] = '"';
-                    jn += 1;
-                    @memcpy(jbuf[jn..][0..item.len], item);
-                    jn += item.len;
-                    jbuf[jn] = '"';
-                    jn += 1;
-                }
-                jbuf[jn] = ']';
-                jn += 1;
-                try std.testing.expectEqualStrings(buf[0..n], notTestedText());
-                try std.testing.expectEqualStrings(jbuf[0..jn], notTestedJson());
-            }
-        }
-    }
-}
-
-test "an item that would need JSON escaping is rejected, and the ones shipped do not (#280)" {
-    // The comptime guard beside the items cannot be reached from a test -- @compileError
-    // is not catchable -- so the predicate it asks is tested here, and the guard itself
-    // was seen red once by giving an item a quote and reading the build failure. Without
-    // this, "the JSON side just quotes each item" rests on nothing.
-    try std.testing.expect(notTestedNeedsEscaping("has a \" quote"));
-    try std.testing.expect(notTestedNeedsEscaping("has a \\ backslash"));
-    try std.testing.expect(notTestedNeedsEscaping("has a \n newline"));
-    try std.testing.expect(notTestedNeedsEscaping("has a \t tab"));
-    try std.testing.expect(!notTestedNeedsEscaping("power loss"));
-    try std.testing.expect(!notTestedNeedsEscaping("post-only file contents (L1 checks existence only; post-only link targets are judged)"));
-    for (not_tested_always) |item| try std.testing.expect(!notTestedNeedsEscaping(item));
-    try std.testing.expect(!notTestedNeedsEscaping(not_tested_history));
-    try std.testing.expect(!notTestedNeedsEscaping(not_tested_l1));
-}
-
-test "every OpClass name is its own tag, which is why the hand-written switch could go (#280)" {
-    // The switch this replaced had twenty arms, each spelling its own tag, while
-    // src/main.zig printed @tagName(op.class) directly in divergence detail. This asserts
-    // the equality the removal rested on, so a member added with a name() that should
-    // differ from its tag is a decision someone has to take deliberately rather than a
-    // silent behaviour change. It also covers UnknownReason, whose name() was already
-    // @tagName and is the precedent the removal followed.
-    inline for (@typeInfo(contract.OpClass).@"enum".fields) |f| {
-        const v: contract.OpClass = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
-    inline for (@typeInfo(contract.UnknownReason).@"enum".fields) |f| {
-        const v: contract.UnknownReason = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
-    // The second closed set (#518), held to the same shape.
-    inline for (@typeInfo(contract.SetupErrorReason).@"enum".fields) |f| {
-        const v: contract.SetupErrorReason = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
-    // The oracle kind's name(), the third of the three and the one the first scan for
-    // this shape missed.
-    inline for (@typeInfo(boundary.BoundaryEvidence.Kind).@"enum".fields) |f| {
-        const v: boundary.BoundaryEvidence.Kind = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
 }
 
 test "the version in build.zig.zon and the one the CLI prints are the same string" {
@@ -6971,76 +4567,4 @@ test "every NextStep renders one sentence whose flags the help text accepts (#27
             i = end;
         }
     }
-}
-
-test "the oracle account says no oracle was given only once the arguments were read to the end (#352)" {
-    // The no-oracle wording is a byte-for-byte pin: it is what every run that named no
-    // oracle published before #352, and spike/acceptance.sh's 2fi control reads it out of
-    // the JSON and compares the whole string.
-    try std.testing.expectEqualStrings("not run (no --oracle given)", initialOracleNote(.none));
-    try std.testing.expectEqualStrings(
-        "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
-        initialMetadataNote(.none),
-    );
-    // Before the parse loop finishes, and once a flag was consumed, neither account may
-    // claim that none was given.
-    const states = [_]OracleAsked{ .unparsed, .{ .named = .strace }, .{ .named = .fs_usage } };
-    for (states) |s| {
-        try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(s), "no --oracle given") == null);
-        try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(s), "no oracle ran") == null);
-    }
-    try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.unparsed), "not established") != null);
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.unparsed), "not established") != null);
-    // The named wording carries the flag that was read, and the fs_usage one is not the
-    // strace one with a suffix — the acceptance legs match the whole phrase.
-    try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.{ .named = .strace }), "--oracle was named") != null);
-    try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.{ .named = .fs_usage }), "--oracle-fs-usage was named") != null);
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }), "--oracle was named") != null);
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .fs_usage }), "--oracle-fs-usage was named") != null);
-    // The named metadata wording asserts no progress: the comparison block can refuse
-    // after reading the capture and before assigning the metadata account, so "before its
-    // capture was read" would be false there.
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }), "capture was read") == null);
-}
-
-test "noteOracle assigns both accounts, and the initialiser is the unparsed state (#352)" {
-    const saved_o = oracle_note;
-    const saved_m = metadata_note;
-    defer {
-        oracle_note = saved_o;
-        metadata_note = saved_m;
-    }
-    // Fresh process state: the initialiser is the unparsed wording, not the no-oracle one.
-    // Nothing else in this test binary assigns these globals, so what was saved is the
-    // initialiser.
-    try std.testing.expectEqualStrings(initialOracleNote(.unparsed), saved_o);
-    try std.testing.expectEqualStrings(initialMetadataNote(.unparsed), saved_m);
-    noteOracle(.{ .named = .strace });
-    try std.testing.expect(std.mem.indexOf(u8, oracle_note, "--oracle was named") != null);
-    try std.testing.expect(std.mem.indexOf(u8, metadata_note, "--oracle was named") != null);
-    noteOracle(.none);
-    try std.testing.expectEqualStrings("not run (no --oracle given)", oracle_note);
-}
-
-test "the checker and marker accounts say none was configured only once every source was read (#352)" {
-    // The two "none" wordings are byte-for-byte pins: docs/report-schema.md, docs/cli.md's
-    // sample report and spike/acceptance.sh (check 2 and 2fi) carry them.
-    try std.testing.expectEqualStrings("none configured", checkerNoteFor(.none));
-    try std.testing.expectEqualStrings("no marker configured", l1NoteFor(.none));
-    // Before the sources are read, and once one supplied a checker or a marker, neither
-    // account may claim that none was configured.
-    const states = [_]Declared{ .unparsed, .named };
-    for (states) |s| {
-        try std.testing.expect(std.mem.indexOf(u8, checkerNoteFor(s), "none configured") == null);
-        try std.testing.expect(std.mem.indexOf(u8, l1NoteFor(s), "no marker configured") == null);
-    }
-    try std.testing.expect(std.mem.indexOf(u8, checkerNoteFor(.unparsed), "not established") != null);
-    try std.testing.expect(std.mem.indexOf(u8, l1NoteFor(.unparsed), "not established") != null);
-    try std.testing.expect(std.mem.indexOf(u8, checkerNoteFor(.named), "configured") != null);
-    try std.testing.expect(std.mem.indexOf(u8, l1NoteFor(.named), "marker configured") != null);
-    // The module initialisers are the unparsed state, not the "none" one. Nothing else in
-    // this test binary assigns these two globals except the l1_configured test, which
-    // touches only the flag.
-    try std.testing.expectEqualStrings(checkerNoteFor(.unparsed), checker_note);
-    try std.testing.expectEqualStrings(l1NoteFor(.unparsed), l1_note);
 }
