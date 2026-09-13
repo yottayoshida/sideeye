@@ -76,11 +76,13 @@ jobs:
       # shut. A hard link and the target's own writing are not shut by any flag, and what
       # keeps the ceiling out of reach is still the weak claim: nothing committed aims
       # anything at a large file. So
-      # without these the refusal is untested: its branches live in main.zig, whose refusals
-      # exit the process, which no unit test can drive.
+      # without these the refusal is untested: its two branches — the recording read and the
+      # world read — are main.zig's call sites (phaseRecording and phaseExploration, each
+      # with its own cap), and the refusal they reach, refuse.answerForOversizedTrace
+      # (src/refuse.zig since #575), exits the process, which no unit test can drive.
       #
       # Same blind spot as #270's step above, and the same fix (#365). This comparison
-      # sees the flag, not the shipped value: editing `engineOptions(b, 0, 0, false)`
+      # sees the flag, not the shipped value: editing `engineOptions(b, 0, 0, 0, false)`
       # puts the new ceiling in both arms. A LOUD edit is caught elsewhere — at 64 bytes
       # every acceptance leg that drives the SHIPPED binary refuses on a trace that size,
       # which is most of the suite though not all of it, since four apparatus binaries are
