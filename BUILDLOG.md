@@ -2,6 +2,148 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-13 (second) — the argv surface and the saved case leave main.zig, and the parse loop becomes a function (#572, third seam, second half)
+
+The second half of the seam the plan designed in one review (plan: "PR 3 の設計"), cut at
+`3183017`. Unlike the four cuts before it, this one has edits that are not moves, and they
+are listed before the numbers so the numbers can be read against them.
+
+**Re-measured at `3183017`.** `main.zig` is 4,570 lines, 31 functions, 4 variables, 12 tests.
+The CLI group — `Args`, `version`, `usage_fmt`, `usage`, `parseWorldTimeout`,
+`parseExpectStatus`, `appendApparatusFlag`, `appendScratchFlag`, the two flag buffers and
+their two ceilings, and two tests (the `build.zig.zon` version match, the `NextStep` help
+check) — references `report.*`, `refuse.setupError`, `files.removeFile`, `config`,
+`contract`, `posix` and nothing that stays. The parse loop (`main()` 852–1017: the mode
+dispatch, `var args`, the flag loop, the mode refusals after it) references the same set plus
+`boundary.boundary_ev.witness`, `posix.signal`, `usage`, the two `append*Flag` and the two
+parse helpers — and one module variable, `stop_when_orphaned`, which it writes and the world
+loop reads once at 2660. `Mode` is a local `enum` inside `main()`, not a declaration. The
+case group — `ReplayCase`, `writeCase`, `prefixHash`, `jsonCommand` — references
+`report.jsonString`, `Args` and `version` (both leaving with the CLI), `config`, `engine`,
+`contract`, `posix`; no tests. `splitArgs`, `commandArgv` and the `resolve*` family are
+called from `main()` and the apparatus check only, never from the CLI group or the loop,
+and stay for the freeze audit (design review R2). `build.zig` gives every test root the
+`build_zon` embed, so the version test can move.
+
+**What is not a move, declared.** (1) The loop becomes `cli.parse(argv) Parsed`. Its
+statements keep their four-space indentation — inside `main()` and inside `parse` alike —
+so the body is the source's lines with three changes: the `const Mode = enum …` line leaves
+the function to become a top-level `pub const Mode` (a promotion), `stop_when_orphaned =
+true;` becomes `args.stop_when_orphaned = true;`, and a `return .{ .mode, .case_arg, .args }`
+closes it. The three lines that set `refuse.json_arena` before the loop stay in `main()`,
+before the call, where they were. `main()` receives the result in four lines (`const
+argv_parsed = cli.parse(argv);` and the three names the rest of `main()` reads — `mode` and
+`case_arg` were assigned once each, so they can be `const`). (2) `stop_when_orphaned` moves
+from a module variable into `Args` as a field with the same default, because the loop is the
+only writer and the world loop the only reader (`args.stop_when_orphaned` at 2660); its doc
+comment stays with `startup_ppid`, which it also describes. (3) `Parsed` is a new three-field
+struct. (4) In `case.zig`, `writeCase`'s parameter type `Args` and the `version` it writes are
+spelled `cli.Args` and `cli.version` — the qualifier class seam 3a declared.
+
+**Predictions, before the move.** `cli.zig` about 575 lines (about 535 of body plus the
+header), `case.zig` about 275, `main.zig` 4,570 → about 3,800. `pub` in `cli.zig` on `Args`,
+`version`, `usage`, `parseExpectStatus` (the `--config` block still calls it), `Mode`,
+`Parsed`, `parse`; in `case.zig` on `ReplayCase`, `writeCase`, `prefixHash`. `cli.` at about
+five lines of `main.zig` (`usage` twice, `version` once, `parseExpectStatus` once, the
+`parse` call), `case.` at seven. Ratchet: functions 31 → **23** (`usage`, the two parse
+helpers, the two `append*Flag`, `writeCase`, `prefixHash`, `jsonCommand`), variables 4 → **1**
+(`startup_ppid`; the two flag buffers leave, `stop_when_orphaned` becomes a field). Exits:
+`main.zig` 12 → 11 (the unknown-mode `usage()` + exit 3 goes with the dispatch), `cli.zig`
+1, `refuse.zig` 2. Test roots 15 → 16 (`cli.zig` named; `case.zig` has no tests and is not).
+**The main root moves for the first time**, 311 → **309**: the two CLI tests reach
+`version` and `usage_fmt` only, and no test left in `main.zig` reaches `cli.zig` through a
+helper, so they run only under their own root — predicted 2 — and the total stays 1,658.
+Boundary 253, capture 31, report 295, refuse 299 unchanged. `spike/acceptance.sh`:
+`parser_literals` takes the file per slot (`argv[1]`'s mode names stay in `main.zig` — the
+dispatch leaves, but the `<mode> --help` branch above it names the same three modes, so the
+`sort -u` set is unchanged; `argv[i]`'s flags are in `cli.zig`), `help_loop` sums `grep -ch`
+over both files. The acceptance failure set in the container is `main`'s twelve.
+`rules/release-checklist.md` in the workspace names `src/main.zig` as where sideeye's
+`version` lives; it will name `src/cli.zig`.
+
+**Measured, after the move.** `main.zig` 3,791 lines (3,793 after the review's edit below), `cli.zig` 619 (606 after the two review rounds' edits), `case.zig` 247. The
+parse block was 166 source lines; the body of `parse` is 163 — those 166 less the three
+`json_arena` lines and the `Mode` line, plus the `return` — and the diff between them is
+exactly those five lines and `args.stop_when_orphaned = true;`. The CLI declarations diffed
+against the pre-move file read 403 lines against 407: the `pub`s and the four lines of the
+new `Args` field; `case.zig` 222 against 222, the three `pub`s and the two `cli.` qualifiers.
+`pub` in `cli.zig` on the seven predicted names, in `case.zig` on three; `cli.` on four lines
+of `main.zig` after the review's edit (five before it), `case.` on six; the ratchet reads 23 and 1; exits 11, 1 and 2. `zig build test
+--summary all`: 35 of 35 steps, 16 rows, main **309**, cli **2**, boundary 253, capture 31,
+report 295, refuse 299, 1,658 in all — the main root moved as predicted and by the predicted
+two. The `parser_literals` sets before and after, `sort -u`'d: slot 1 the same nine words
+(`--help -h demo explore help mcp preflight replay version`), slot i the same twenty-two
+flags; `help_loop` 0 across both files. One thing the prediction did not see: the ratchet's
+selftest builds its at-ceiling decoy with three special variables, so at `VAR_MAX=1` it read
+that file as over its own ceiling — the predicate and the production ceiling are two
+questions, and the selftest now asks the first at fixed ceilings of its own (20 and 8; 22
+cases, the same as before). The pre-move `main.zig` at 23 and 1 is red on both counts.
+Falsifications: `cli.zig` out of `test_sources` → 15 rows; `expect(false)` in a CLI test →
+the cli root red and the main root green (33 of 35 steps, one failure), which is the
+measurement behind naming the file; `parser_literals` pointed at one file reads slot 1 as
+three words from `cli.zig` alone and slot i as nothing from `main.zig` alone. Acceptance in
+the Linux container (`sideeye-spike`, aarch64 cross-build, `build-toys.sh` first): the same
+twelve legs as `main` fail, 343 `ok` lines, none different from seam 3a's run, and the CLI
+self-description leg reports "8 of 8 synopsis lines x 22 parser flags, 171 probes" through
+the two-file `parser_literals`. Run three times — before the review, after each round's edits
+— with the same result; the last run read (sha256, first twelve hex digits): `src/main.zig`
+cfd04bac6571, `src/cli.zig` b4a10919550f, `src/case.zig` ac8a937ea404, `src/config.zig`
+c8597104e1e1, `src/refuse.zig` 629b7c1edfd4, `build.zig` 23010990a3a4, `spike/acceptance.sh`
+6fcf090a34f2, `spike/build-toys.sh` 5754db4e82bc; its `expected_status` legs (the toml
+spelling, the account settled before the refusal, the v1 case with none) passed through
+`config.parseExpectStatus`. On macOS the binary answers `version`; an unknown mode
+prints the banner and exits 3 from `cli.parse`; `preflight --check x` refuses by name;
+`explore --json … --stop-when-orphaned --bogus` exits 3 with a document whose oracle account
+still reads "this run stopped while its arguments were still being read" — the #352 order
+survived the move — and `demo` finds its planted bug.
+
+**Review, round one** (a fresh reviewer who diffed all thirteen declarations and the parse
+body against the pre-move file, listed the thirty-two refusal sites of `cli.zig`, and read
+every exit): no behavioural finding; two P1, two P2. The first P1 is the freeze audit again,
+from the other side: `parseExpectStatus` left with the flag loop, but `config.zig`'s own doc
+says the toml key `expected_status` "shares its digit check with the flag" — that check IS
+`parseExpectStatus` — so the grammar of a config value had moved into a file rung 1 does not
+look at, and a change to it would have left `config.zig` and `main.zig` byte-identical and
+surface 1 "settled". The same class as the `splitArgs` decision, missed because the function
+was filed under the flag. Fixed by moving the grammar where the freeze audit already looks:
+`config.parseExpectStatus(s) ?u8`, pure — null for "not that grammar" — with the two callers
+refusing in their own words (`orelse setupError(.define_invalid, "--expect-status must be
+…")` in `cli.parse`, the toml's sentence in `main.zig`'s `--config` block). Same inputs, same
+refusals, same messages; the function is no longer beside the flag, and `cli.zig` publishes
+six names rather than seven. The grammar gained a unit test (twelve inputs, the leading zero
+included because "042" was accepted before), seen red under a mutation that accepts the
+empty string — the first mutation tried, one that allows a fourth digit, survived, and this
+paragraph first said that was because `v > 255` refuses the same inputs. It is not: `"0042"`
+is four digits and 42, and the mutant accepts it; the mutation lived because no input in the
+test was four digits under 256. The second review said so, the test holds `"0042"`, `"0000"`
+and `"0255"` now, the length mutation is red, and the sentence stands corrected — a survivor
+explained instead of killed is a test that does not pin its rule; `config.zig`'s test is collected by four roots (its own, main,
+report, refuse), so the totals rise by four to 1,662. The second P1: `main.zig` was 3,791
+lines, not the 3,785 written above — the module map grew by six lines after the count was
+taken; a fourth time in this series that a "measured" line count was the prediction's
+arithmetic, and the number stands corrected with the review's own edits counted in. The
+P2s: `parser_literals` read slot 1 from `main.zig` alone, so a mode word added only to the
+dispatch in `cli.parse` would have escaped the synopsis check without turning anything red —
+both slots read both files now and take the union; and the ratchet's selftest comment
+implied the production judge runs after it, when the block exits first — reworded.
+
+**Review, round two** (a second fresh reviewer, on the fixes; ran the grammar's three
+mutations in an independent program, planted a mode word in one file and a flag in the other
+to test the union, re-derived every count): the four resolved, and two of the fixes had
+opened holes of their own. The two-file `help_loop` summed `grep -ch` through awk, which
+prints 0 for two missing files — the one-file version had gone red on an unreadable file
+because an empty count is not "0"; this PR had traded that for a silent zero, the fail-open
+a later seam could reach by renaming a file. Each file is counted on its own now and an
+unreadable one is a failure; seen red with a missing path. And the sentence explaining the
+surviving length mutation was false, as recorded above; the test holds the four-digit
+inputs and the mutation is red. Smaller: the ADR, the CHANGELOG and the pull request still
+described `parser_literals` as per-slot after it had become the union; `cli.` is on four
+lines of `main.zig`, not five, since the `--config` block calls `config.parseExpectStatus`;
+a second acceptance comment still named `main.zig` alone as the mode list's source; and the
+doc paragraph for the old `parseExpectStatus` had stayed stacked above `parseWorldTimeout`
+in `cli.zig` — it had been stacked there in `main.zig` too, but it now described a function
+in another file — and is with `config.parseExpectStatus`. No third round.
+
 ## 2026-09-13 — what a run says and how it stops leave main.zig: report.zig, refuse.zig and a leaf for two file operations (#572, third seam, first half)
 
 The seam the plan called the gravity source, cut after a design review of its own (two

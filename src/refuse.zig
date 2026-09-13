@@ -17,11 +17,11 @@
 //! `trace_budget` are here because the refusals read them to choose a verdict or a wording;
 //! `main.zig` sets each once.
 //!
-//! Not here: the PASS and FAIL exits, `preflightReport`'s two, and the argv refusals in
-//! `main()` that exit 3 before any report exists — three that write one line to stderr
-//! (`mcp`, `help`, `version` given arguments) and the unknown-mode exit that prints the
-//! usage banner to stdout — none of the four prints a verdict line; they are the
-//! orchestrator's.
+//! Not here: the PASS and FAIL exits, `preflightReport`'s two, and the argv refusals that
+//! exit 3 before any report exists — three in `main()` that write one line to stderr
+//! (`mcp`, `help`, `version` given arguments) and the unknown-mode exit in `cli.parse` that
+//! prints the usage banner to stdout — none of the four prints a verdict line; they are the
+//! orchestrator's and the parser's.
 //!
 //! Third seam of #572 (ADR 0062), first half. Bodies moved from `main.zig` byte for byte on
 //! 2026-09-13, with `pub` added where `main.zig` still calls them — except that a fact or

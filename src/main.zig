@@ -38,16 +38,24 @@
 //!     out. `startFsUsage` here registers the observer in `refuse.fsu_live`; `run_phase` and
 //!     `trace_budget` are set here once and read there.
 //!   - `files.zig` — `removeFile` and `writeWholeFile`, a leaf the three of us share.
+//!   - `cli.zig` — the argv surface: `Args`, the usage text and `version`, and `parse`, which
+//!     is the mode dispatch, the flag loop and the mode refusals that used to open `main()`.
+//!     `main()` sets `refuse.json_arena`, calls `cli.parse(argv)` and reads the mode, replay's
+//!     case path and the flags back; the branches before parsing (`mcp`, `help`, `version`,
+//!     `demo`) are still here, and so are `splitArgs`, `commandArgv` and the `resolve*` family,
+//!     because the freeze audit's rung 1 reads surface 1 out of this file
+//!     (`spike/freeze-audit/surface-drift.sh`) and nothing in `cli.zig` calls them; the
+//!     digit grammar `expected_status` and `--expect-status` share is `config.parseExpectStatus`
+//!     for the same reason.
+//!   - `case.zig` — the saved case on both sides: `writeCase`, `prefixHash`, `jsonCommand`, and
+//!     `ReplayCase`. This file decides when a case is written and what a replayed one may
+//!     declare.
 //!
-//! Still here, in the order the series plans to move them: the CLI parse loop, which writes
-//! report state between its refusals in an order #352's tests pin, and the saved-case format
-//! (`ReplayCase`, `writeCase`), which reads `Args` and the JSON primitives; and then `main()`'s
-//! nine phases as functions. Also here by decision, not by omission: `splitArgs`,
-//! `commandArgv` and the `resolve*` family, which the freeze audit's rung 1 reads out of this
-//! file (`spike/freeze-audit/surface-drift.sh`); the apparatus check; the fs_usage observer's
-//! start; the demo; and `preflightReport`. `spike/check-main-shape.sh` holds the count of
-//! top-level functions and module-level variables in this file to a ceiling that only comes
-//! down.
+//! Still here, and last in the series: `main()`'s nine phases, to become functions. Also here
+//! by decision, not by omission: the apparatus check, the fs_usage observer's start, the demo,
+//! `preflightReport`, and the three surface-1 functions above. `spike/check-main-shape.sh`
+//! holds the count of top-level functions and module-level variables in this file to a
+//! ceiling that only comes down.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -66,6 +74,8 @@ const capture = @import("capture.zig");
 const files = @import("files.zig");
 const report = @import("report.zig");
 const refuse = @import("refuse.zig");
+const cli = @import("cli.zig");
+const case = @import("case.zig");
 // Aliased rather than spelled `defang.` at each site, so the call sites read as they did
 // when the bodies lived here (#572): the report-side callers outnumber the boundary's, and
 // a move that renames every one of them is a move that cannot be read as a move.
@@ -116,23 +126,8 @@ const trace_budget_limit: usize = if (engine_build_options.trace_budget_override
 else
     engine_build_options.trace_budget_override;
 
-/// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
-/// same number, and they had already drifted: the package said 0.1.0 while `--help` said
-/// 0.1.0-dev. A test below holds them together.
-pub const version = "1.3.0";
-
 /// How the loader is told to inject the shim. Same idea, different spelling.
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
-
-/// `--apparatus` is repeatable and the flag parser owns no allocator; a define with more
-/// devices than this belongs in a toml. The entries live here and `Args.apparatus` is a
-/// slice of them, the same slice type the toml's key yields.
-const max_apparatus = 32;
-var apparatus_flag_buf: [max_apparatus][]const u8 = undefined;
-
-/// `--scratch` is repeatable for the same reason, with the same ceiling (ADR 0043).
-const max_scratch = 32;
-var scratch_flag_buf: [max_scratch][]const u8 = undefined;
 
 /// Every variable the engine sets for a child it spawns (the pairs handed to `runChild*`
 /// at the recording, the worlds and the baseline). `config.engineOwnedEnv` refuses these
@@ -144,125 +139,6 @@ const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, cont
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
 }
-
-const Args = struct {
-    state: ?[]const u8 = null,
-    // The three commands carry either spelling (config.Command): the flags always
-    // bind the string form; the argv form arrives only through a sideeye.toml or a
-    // case_version 3 case file (ADR 0019).
-    setup: ?config.Command = null,
-    operation: ?config.Command = null,
-    shim: ?[]const u8 = null,
-    work: []const u8 = "/tmp/sideeye-work",
-    oracle: ?[]const u8 = null,
-    /// macOS: use `fs_usage` as the completeness oracle for the recording run.
-    ///
-    /// A flag with no value, unlike `--oracle`: there is one `fs_usage` and it is at a
-    /// fixed path, so a path parameter would be a knob whose only correct setting is
-    /// the default. It is not a spelling of `--oracle` either — that one names a
-    /// program to wrap the target with, and this one starts an observer beside it
-    /// (`src/fsusage.zig`), so the two cannot be reduced to one parameter without the
-    /// value silently meaning two different things.
-    oracle_fs_usage: bool = false,
-    /// Whether this run named a completeness oracle at all — the one question six
-    /// sites used to ask by spelling the disjunction themselves.
-    ///
-    /// Derived once, immediately after the parser has ruled the two flags mutually
-    /// exclusive, so no reader has to re-establish that they cannot both be set. The
-    /// review that found `requireCompleteness` still reading `args.oracle != null` —
-    /// a comparison that ran, agreed, and left the PASS gate demanding
-    /// `--allow-unverified` — found a defect this shape produces: a second backend
-    /// arrives and every site that asked the old question keeps answering it.
-    has_oracle: bool = false,
-    check: ?config.Command = null,
-    allow_unverified: bool = false,
-    /// Which observation path counts the operations (contract v14). The default is
-    /// the only one that existed through v13, so an invocation that never names this
-    /// flag behaves exactly as it did.
-    observe: contract.ObserveMode = .wrappers,
-    fresh_state: bool = false,
-    /// Preflight only (#199): observe the operation a second time from the restored
-    /// pre-state and compare the two post-snapshots. Opt-in, because it doubles the
-    /// wall time and adds the inter-run gap — a caller who did not ask for a second
-    /// observation keeps the single-run answer this command has always given.
-    ///
-    /// What it can conclude is bounded by the Snapshot model, not by the word
-    /// "deterministic": `Entry` carries `rel`, `kind` and `content`, so modes,
-    /// ownership, timestamps, inode identity, a symlink's target and everything
-    /// outside the declared root are all outside the comparison. `engine.restore`
-    /// rebuilds the pre-state at fixed modes, so run B does not even start from a
-    /// byte-identical directory — it starts from the same *snapshot*. The help text
-    /// states both limits rather than leaving them to be discovered.
-    twice: bool = false,
-    /// The per-world wall-clock budget in seconds (#263). Null — the default — means
-    /// no budget anywhere: the flag is opt-in, and turning it on is the operator's
-    /// explicit choice, never a shipped default that could move a verdict.
-    world_timeout_s: ?u32 = null,
-    /// Replay only (#266): the directory the case's state must resolve strictly
-    /// inside. The MCP server passes its destruction range here; the case path being
-    /// vetted says nothing about where the case's OWN define points the deletion.
-    state_under: ?[]const u8 = null,
-    json: ?[]const u8 = null,
-    config: ?[]const u8 = null,
-    marker: ?[]const u8 = null,
-    /// The exit status that means the operation completed (ADR 0014). Null means
-    /// "not declared", which behaves as 0 — kept apart from an explicit 0 so the
-    /// preflight hint and the saved case can carry exactly what the caller said.
-    expect_status: ?u8 = null,
-    /// Where the define's commands run. It arrives from a toml or a saved case and has
-    /// no flag: a caller at a terminal can `cd`, and the caller that cannot — the MCP
-    /// server's, handed a config path and starting the engine itself — has no other way
-    /// to say it. Absolute by the time anything reads it.
-    cwd: ?[]const u8 = null,
-    /// The define's apparatus entries, as spelled (ADR 0041): the toml key's list, or the
-    /// repeated `--apparatus` flags collected in `apparatus_flag_buf`. Empty when nothing
-    /// was declared, which is what every define written before the key existed says.
-    apparatus: []const []const u8 = &.{},
-    /// The define's scratch paths (ADR 0043), normalised: the toml key's list, the
-    /// repeated `--scratch` flags collected in `scratch_flag_buf`, or a version-5 case's
-    /// declaration. Empty when nothing was declared. Every path here, and everything
-    /// beneath it, is judged by neither built-in invariant.
-    scratch: []const []const u8 = &.{},
-};
-
-/// A saved counterexample (ADR 0009): the resolved define it was found against, the
-/// crash point, and the landing context that decides whether a later replay still
-/// addresses the same operation. Parsed strictly — an unknown field is a case from a
-/// future schema, not something to skip.
-const ReplayCase = struct {
-    schema: []const u8,
-    case_version: u32,
-    sideeye_version: []const u8,
-    contract_version: u32,
-    define: struct {
-        state: []const u8,
-        setup: ?config.Command = null,
-        operation: config.Command,
-        check: ?config.Command = null,
-        marker: ?[]const u8 = null,
-        // Absent in a case_version 1 file; absent means "exit 0 was the contract",
-        // which is exactly what every v1 case was recorded under (ADR 0014).
-        expected_status: ?u8 = null,
-        /// Present exactly when the case is version 4, the way the argv form is present
-        /// exactly in a version 3 or later file: the version moves because the field
-        /// arrived, so a define that declared no cwd still saves as the version its other
-        /// fields ask for. Always the resolved spelling.
-        cwd: ?[]const u8 = null,
-        /// Present exactly when the case is version 5 (ADR 0043), non-empty there. A
-        /// version-5 file spells `cwd` too, as null when none was declared; that key's
-        /// presence is checked on a second, untyped parse, since this one cannot tell
-        /// an absent optional from a null.
-        scratch: ?[]const []const u8 = null,
-    },
-    k: u32,
-    ops_total: u32,
-    prefix_hash: []const u8,
-    after_class: []const u8,
-    after_path: []const u8,
-    before_class: []const u8,
-    before_path: []const u8,
-    violation: []const u8,
-};
 
 /// What the report says so far.
 ///
@@ -283,7 +159,6 @@ const ReplayCase = struct {
 /// answering what it answered at process start. `startup_ppid` is captured at the top of
 /// `main`, before anything else runs — parentage only changes when the parent dies, so
 /// the comparison needs no pid handed in from outside and nothing that could go stale.
-var stop_when_orphaned: bool = false;
 var startup_ppid: c_int = 0;
 /// Undo the two mkdirs setup resolution needs (state, then work), so a refusal
 /// leaves the filesystem as it found it. Every vet between those mkdirs and the
@@ -292,198 +167,6 @@ var startup_ppid: c_int = 0;
 fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: bool, state_z: [*:0]const u8) void {
     if (work_created) _ = posix.rmdir(work_z);
     if (state_created) _ = posix.rmdir(state_z);
-}
-
-/// The help text, as a format string with two holes (version, contract version). A
-/// constant rather than a literal inside `usage()` so a test can read it: every `--flag`
-/// a `NextStep` sentence names has to exist here (#274), and a sentence that named a flag
-/// this binary does not accept would be advice nobody can follow.
-const usage_fmt =
-    \\sideeye {s} (trace contract v{d})
-    \\
-    \\usage:
-    \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls] [--work <dir>] [--twice]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye mcp
-    \\  sideeye help
-    \\  sideeye version
-    \\
-    \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
-    \\and explores it, printing the same FAIL report a real finding produces. The
-    \\expected exit code is 1 — the planted bug found — so the demo doubles as a
-    \\smoke test of this binary and its shim.
-    \\
-    \\preflight answers "does the recording phase accept this target?" before a
-    \\define exists: it runs the operation under observation and either accepts
-    \\the recording (exit 0) or refuses with the same named detector a real run
-    \\would use (exit 2). With --twice it observes a second run and compares the
-    \\two, adding one outcome: the runs left different state (exit 1, and no
-    \\verdict — see --twice below). What only a real exploration can check — kill
-    \\landing, world-side process boundaries, baseline behavior, checker
-    \\falsification — is listed as not checked, never silently claimed.
-    \\
-    \\replay re-runs one saved counterexample: the same pipeline as explore — the
-    \\oracle comparison, the structural detectors, checker falsification, landing
-    \\evidence — restricted to the case's crash point plus the baseline (ADR 0009).
-    \\When the recording no longer matches the case's landing context, the answer
-    \\is "case no longer applies" (exit 2), never a verdict about a shifted point.
-    \\
-    \\  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
-    \\               mutually exclusive with --state/--setup/--operation/--check.
-    \\               Relative paths in the file resolve against its own directory
-    \\  --state      directory whose contents define the target's state
-    \\  --cwd        directory the define's commands run in (default: this process's).
-    \\               The engine's own cwd does not move: --work, --json and --state
-    \\               are still read against it
-    \\  --apparatus  a device the operation's environment must carry, kind:value, repeatable:
-    \\               env:NAME, env:NAME=VALUE, preload:LIB (a line of /etc/ld.so.preload),
-    \\               pythonpath:FILE, note:TEXT. Checked after setup, before anything is
-    \\               recorded; a missing one is a SETUP ERROR naming it. The report carries
-    \\               the list as declared (docs/apparatus.md). The engine applies nothing
-    \\  --scratch    a path under --state the built-in invariants leave alone, repeatable:
-    \\               the path itself and everything beneath it, judged in no world — not
-    \\               its bytes, not its presence. The report carries the declaration and
-    \\               counts what it matched; the saved case carries it too (ADR 0043)
-    \\  stdin        not a flag: every command sideeye runs (setup, operation, checker)
-    \\               starts with its standard input at end-of-file, on the CLI and MCP
-    \\               paths alike. A target that reads stdin sees EOF, never the
-    \\               terminal or pipe sideeye itself was started from
-    \\  --setup      command that produces the initial state (run once)
-    \\  --operation  command to explore; killed before each operation that can change state
-    \\  --expect-status  the exit status that means the operation completed (0..255,
-    \\               default 0). Governs the recording run and the un-killed baseline
-    \\               world alike; killed worlds still require the kill signal itself
-    \\  --shim       path to libsideeye_shim.so; when omitted it is looked for
-    \\               beside this binary (its sibling, then ../lib — the tarball
-    \\               and zig-out layouts). Absence is a loud error naming both
-    \\               places it looks, and so is a candidate the search will not
-    \\               attribute: a symlink, or one owned by neither you, nor
-    \\               root, nor the owner of this binary. A path given here is
-    \\               used as named and not checked
-    \\  --work       scratch directory for traces (default /tmp/sideeye-work)
-    \\  --oracle     path to strace; the recording run is compared against it
-    \\  --oracle-fs-usage
-    \\               macOS: compare the recording run against fs_usage instead. Needs
-    \\               root, so sudo must already hold credentials (`sudo -v` first, in
-    \\               this terminal — the cache is per-terminal); the run refuses
-    \\               rather than prompting. Narrower than strace by two measured
-    \\               limits: fs_usage prints only a rename's old path, and it cuts
-    \\               long pathnames from the left, so a rename it cannot match and a
-    \\               state directory deep enough to be cut are both refusals rather
-    \\               than agreements. Everything it cannot resolve refuses
-    \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
-    \\  --marker     success marker: a byte string the operation prints on stdout when
-    \\               it has committed. In worlds where it appeared before the kill,
-    \\               the post-success invariant is enforced: the new state must
-    \\               survive (ADR 0008)
-    \\  --json       write the machine-readable report to this path
-    \\  --fresh-state
-    \\               (replay only) empty and recreate the case's state directory
-    \\               before setup runs — for callers that cannot hand over a
-    \\               pristine directory themselves. The MCP server passes it on
-    \\               every replay: it lives for the whole client session, and the
-    \\               second replay used to die in the leftovers of the first
-    \\  --state-under
-    \\               (replay only) the directory the case's state must resolve
-    \\               strictly inside; anything else is refused before setup runs.
-    \\               The case file names its own state directory, and this flag is
-    \\               how a caller that only vetted the case's PATH bounds where the
-    \\               case may point the deletion. The MCP server passes its
-    \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
-    \\               replay
-    \\  --observe wrappers|syscalls
-    \\               where operations are counted. Default `wrappers`: the
-    \\               interposed libc entry points, with buffered stdio observed at
-    \\               flush granularity (ADR 0005). `syscalls` (Linux) counts at the
-    \\               kernel boundary instead, through a seccomp filter and a SIGSYS
-    \\               handler in the target's own process, which is the only way to
-    \\               see an operation libc issues from inside itself — an `fwrite`
-    \\               past the buffer — or one that never reaches libc at all: a raw
-    \\               `syscall(SYS_write, ...)`, or a runtime like Go's that issues
-    \\               every file call directly. Its trap set is every operation that
-    \\               can be a crash point: open, write, rename, unlink, fsync,
-    \\               truncate, mkdir, rmdir, link, symlink. Two stay outside —
-    \\               `copy_file_range` and `pwritev2` take six arguments, leaving the
-    \\               filter no register for its re-issue marker. An oracle watches
-    \\               this mode's own run, as it does every other mode's: a trapped
-    \\               call reaches strace twice, once refused and once re-issued, and
-    \\               the refused entry is retracted on the SIGSYS that refused it. So
-    \\               the claim is `oracle_verified`, and the report's oracle line says
-    \\               how the capture was read.
-    \\               **Do not use it on a target that execs an image the shim cannot be
-    \\               loaded into.** A filter is inherited across exec and cannot be
-    \\               replaced, while exec resets the SIGSYS handler that makes it
-    \\               survivable, so a statically linked helper dies at its first
-    \\               state-changing call (measured: exit 0 under wrappers, killed by
-    \\               SIGSYS under this). A child the shim IS loaded into is unaffected.
-    \\               In this mode the shim also keeps SIGSYS deliverable, interposing
-    \\               sigaction/signal/sigprocmask/pthread_sigmask so a target cannot
-    \\               take the handler away; one that reaches those as raw syscalls
-    \\               still dies
-    \\  --allow-unverified
-    \\               accept PASS with no completeness check. On macOS this is the
-    \\               answer when no privilege is available: SIP leaves DTrace's
-    \\               syscall provider with no probes even as root (#181), and the
-    \\               one candidate measured oracle-shaped, fs_usage, requires it —
-    \\               which is what --oracle-fs-usage pays for. The report says which
-    \\               claim was made, and this one is weaker.
-    \\  --stop-when-orphaned
-    \\               stop at the next world boundary if the process that launched
-    \\               this run exits (UNKNOWN, parent_exited). The MCP server passes
-    \\               it on every explore and replay: agent hosts restart MCP servers
-    \\               routinely, and an orphaned exploration otherwise keeps killing
-    \\               processes and rewriting its state directory with nobody left to
-    \\               report to. A run that hangs before a boundary is out of reach.
-    \\  --world-timeout <s>
-    \\               wall-clock budget per explored world, in seconds (1..86400,
-    \\               off by default). A world's operation still running when the
-    \\               budget expires is sent SIGKILL and refused UNKNOWN
-    \\               child_timed_out, with the budget in the message. Worlds only: a
-    \\               recording run, setup command or checker that hangs still hangs —
-    \\               this flag is not a promise of a hang-free run. Setting it also
-    \\               resets SIGCHLD to its default disposition for the whole run.
-    \\               Not settable over MCP today.
-    \\  --twice
-    \\               (preflight only) observe the operation a SECOND time from the
-    \\               restored pre-state, at least two seconds after the first start,
-    \\               and compare the two post-states. Byte repeatability is a
-    \\               property of two runs, so one observation structurally cannot
-    \\               see it. Equal: exit 0. Different: the differing paths are named
-    \\               and the command exits 1 — not a FAIL verdict, which preflight
-    \\               never produces, but the negative answer to the question --twice
-    \\               asked. A second run that ends abnormally refuses by name
-    \\               instead, the way the first one would.
-    \\               What this does NOT establish: that the target is
-    \\               deterministic. The comparison covers file bytes, entry kinds
-    \\               and symlink targets under --state; modes, ownership,
-    \\               timestamps, inode identity, a symlink's destination and
-    \\               everything outside --state are not compared, the pre-state
-    \\               run B starts from is rebuilt rather than byte-identical, and
-    \\               two runs are not all runs. The two-second gap is what
-    \\               epoch-second stamping needs to move — not a measured
-    \\               sufficiency threshold for nondeterminism in general.
-    \\               It also REWRITES --state: the directory is restored from the
-    \\               pre-run snapshot before the second run, so the first run's
-    \\               output is gone and file modes come back as 0644/0755. A
-    \\               preflight without this flag leaves the directory as the run
-    \\               left it.
-    \\
-    \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
-    \\            (preflight produces no verdict: it exits 0 when it accepts, 1 when
-    \\             --twice found a split, 2 when a detector refused, 3 on setup)
-    \\
-    \\--operation must exit its declared success status when it is not being killed
-    \\(--expect-status, default 0). The crash points are read off the recording run,
-    \\so a target that fails partway through would be explored against a sequence it
-    \\never performs; v0.1 reports UNKNOWN rather than guess.
-    \\
-;
-
-fn usage() void {
-    say(usage_fmt, .{ version, contract.contract_version });
 }
 
 /// How much fs_usage capture the engine will hold.
@@ -784,7 +467,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             _ = posix.write(2, msg.ptr, msg.len);
             std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
         }
-        usage();
+        cli.usage();
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -797,7 +480,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             _ = posix.write(2, msg.ptr, msg.len);
             std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
         }
-        say("sideeye {s} (trace contract v{d})\n", .{ version, contract.contract_version });
+        say("sideeye {s} (trace contract v{d})\n", .{ cli.version, contract.contract_version });
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -837,7 +520,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             std.mem.eql(u8, argv[1], "explore") or
             std.mem.eql(u8, argv[1], "replay")))
     {
-        usage();
+        cli.usage();
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
@@ -849,176 +532,17 @@ pub fn main(init: std.process.Init.Minimal) !void {
         runDemo(gpa, arena_state.allocator(), argv[2..]);
     }
 
-    const Mode = enum { explore, replay, preflight };
-    var mode: Mode = .explore;
-    var case_arg: ?[]const u8 = null;
-    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "explore")) {
-        mode = .explore;
-    } else if (argv.len >= 2 and std.mem.eql(u8, argv[1], "preflight")) {
-        mode = .preflight;
-    } else if (argv.len >= 3 and std.mem.eql(u8, argv[1], "replay") and argv[2].len > 0 and argv[2][0] != '-') {
-        mode = .replay;
-        case_arg = argv[2];
-    } else {
-        usage();
-        std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
-    }
-
-    var args: Args = .{};
     // Before the loop, so that a parse error occurring *after* `--json` was read still
     // reaches the report rather than leaving whatever was there before.
     refuse.json_arena = arena_state.allocator();
-    var i: usize = if (mode == .replay) 3 else 2;
-    while (i < argv.len) {
-        // Flags without a value are handled first; everything else consumes a pair.
-        if (std.mem.eql(u8, argv[i], "--allow-unverified")) {
-            args.allow_unverified = true;
-            i += 1;
-            continue;
-        }
-        if (std.mem.eql(u8, argv[i], "--oracle-fs-usage")) {
-            // Parsed on every platform; refused on Linux further down, after the state
-            // path has been resolved. spike/acceptance.sh's CLI self-description check
-            // requires every flag the parser knows to be accepted by some synopsis line
-            // on the machine running the check, and it decides "accepted" by whether the
-            // flag changes the base command's first line of output — so a parse-time
-            // refusal on Linux read as a flag no mode accepts (CI, #406, twice).
-            args.oracle_fs_usage = true;
-            // Said the moment the flag is read, so an exit anywhere after this line —
-            // a later parse error included — reports the oracle as named (#352).
-            report.noteOracle(.{ .named = .fs_usage });
-            i += 1;
-            continue;
-        }
-        if (std.mem.eql(u8, argv[i], "--fresh-state")) {
-            if (mode != .replay) setupError(.define_invalid, "--fresh-state applies to replay only (explore's state may be legitimately pre-populated)");
-            args.fresh_state = true;
-            i += 1;
-            continue;
-        }
-        if (std.mem.eql(u8, argv[i], "--stop-when-orphaned")) {
-            // #269. A flag and not an environment variable, for reasons measured and
-            // recorded in ADR 0010 (argv is per-invocation and is not inherited).
-            if (mode == .preflight) setupError(.define_invalid, "preflight explores no worlds; --stop-when-orphaned belongs to explore and replay");
-            stop_when_orphaned = true;
-            i += 1;
-            continue;
-        }
-        if (std.mem.eql(u8, argv[i], "--twice")) {
-            // #199. The refusal runs the other way from the flags above: this one is
-            // preflight's alone, because explore and replay already observe the
-            // operation a second time — the un-killed baseline world is that run, and
-            // `baseline_run_failed` is what they say when the re-run disagrees. What
-            // preflight lacks is any second observation at all.
-            if (mode != .preflight) setupError(.define_invalid, "--twice belongs to preflight; explore and replay already re-run the operation in the un-killed baseline world, and a divergent re-run refuses there: as baseline_run_failed when it does not end the way the recording did, as baseline_violates_invariant when its bytes differ");
-            args.twice = true;
-            i += 1;
-            continue;
-        }
-        if (i + 1 >= argv.len) setupError(.define_invalid, "an option is missing its value");
-        const v = argv[i + 1];
-        if (std.mem.eql(u8, argv[i], "--observe")) {
-            args.observe = contract.ObserveMode.parse(v) orelse
-                setupError(.define_invalid, "--observe takes `wrappers` (the default) or `syscalls`");
-        } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
-            args.oracle = v;
-            // As for --oracle-fs-usage above: named from this line on (#352).
-            report.noteOracle(.{ .named = .strace });
-        } else if (std.mem.eql(u8, argv[i], "--check")) {
-            args.check = .{ .str = v };
-            report.checker_note = report.checkerNoteFor(.named);
-        } else if (std.mem.eql(u8, argv[i], "--marker")) {
-            args.marker = v;
-            report.l1_note = report.l1NoteFor(.named);
-        }
-        // Taken as spelled, unlike the toml's, which resolves against the file's own
-        // directory: a flag is typed at a cwd, so a relative one already means what the
-        // caller meant. It is absolutized with the rest of them further down.
-        else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--scratch")) appendScratchFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--expect-status")) {
-            args.expect_status = parseExpectStatus(v, "--expect-status must be an integer in 0..255");
-            // Mirrored immediately: a refusal between here and the canonical binding
-            // below must not report the declaration as 0 (R1 finding).
-            report.expected_status_val = args.expect_status.?;
-        } else if (std.mem.eql(u8, argv[i], "--world-timeout")) {
-            // #263. Worlds only — the recording run, setup and checkers have no
-            // budget, and the help text says so: the flag must not read as a promise
-            // of a hang-free run.
-            if (mode == .preflight) setupError(.define_invalid, "preflight explores no worlds; --world-timeout belongs to explore and replay");
-            args.world_timeout_s = parseWorldTimeout(v);
-            // The budget's kill-safety and its bounded teardown both stand on
-            // unreaped children staying zombies, so SIGCHLD goes to its default
-            // disposition here — once, for the whole run, before any fork. An
-            // inherited SIG_IGN survives exec and would let the kernel auto-reap;
-            // resetting per-world instead would hand the first world a different
-            // signal environment than every later one, and leave a window between
-            // its fork and the reset. Every child of the run — recording, worlds,
-            // checkers — now inherits the same default. Idempotent, so a repeated
-            // flag is harmless. Documented in the flag's help text.
-            _ = posix.signal(posix.SIGCHLD, posix.SIG_DFL);
-        } else if (std.mem.eql(u8, argv[i], "--state-under")) {
-            // #266. Replay only: an explore's config is the trust boundary and its
-            // state is part of what the operator vets (#96); accepting the flag there
-            // would be a second confinement feature nobody asked for, and preflight
-            // destroys nothing.
-            if (mode != .replay) setupError(.define_invalid, "--state-under applies to replay only: a config's state is part of what the operator vets, and preflight never destroys");
-            // A confinement flag must not be last-wins: two spellings in one argv is
-            // a caller bug, and silently taking the second would let a widened range
-            // ride behind a narrow-looking one.
-            if (args.state_under != null) setupError(.define_invalid, "--state-under was given twice; refusing rather than letting the second spelling win");
-            args.state_under = v;
-        } else if (std.mem.eql(u8, argv[i], "--config")) args.config = v else if (std.mem.eql(u8, argv[i], "--json")) {
-            // Rejected before the removeFile below: a rejection that had already deleted
-            // the caller's previous report would be a refusal with a side effect.
-            if (mode == .preflight) setupError(.define_invalid, "preflight has no machine-readable form; sideeye explore --config answers strictly more, and --json lives there");
-            args.json = v;
-            refuse.json_path = v;
-            // Any document at this path describes some earlier run. Removing it now means
-            // an exit that never reaches a writer leaves *no* report rather than a stale
-            // one: absence is unambiguous, a previous verdict is not.
-            removeFile(v);
-        } else setupError(.define_invalid, "unknown option");
-        i += 2;
-    }
-
-    // preflight answers one question — "does the recording phase accept this target?" —
-    // before a define exists. The define-shaped flags are refused by name rather than
-    // ignored: an accepted-but-inert flag would be a declared intention that silently
-    // never fires, the exact shape the config parser refuses too (ADR 0007).
-    // Two observers cannot both be the completeness oracle: they produce different
-    // accounts of the same run, and a caller who named both has not said which one the
-    // verdict rests on. Refused by name rather than resolved by precedence — the
-    // accepted-but-inert shape this parser refuses everywhere else (ADR 0007).
-    if (args.oracle != null and args.oracle_fs_usage)
-        setupError(.define_invalid, "--oracle and --oracle-fs-usage both name a completeness oracle; pass one");
-    args.has_oracle = args.oracle != null or args.oracle_fs_usage;
-    // Only now can "no --oracle given" be said: the whole argv has been read and no flag
-    // named one. Before this line the account says nothing was established (#352).
-    if (!args.has_oracle) report.noteOracle(.none);
-    // The flags are the only source of a checker and a marker unless a replayed case or a
-    // toml follows; those two blocks settle their own accounts once they have read theirs
-    // (#352). Settled here and not at the marker vet: `--state is required` and its
-    // siblings refuse between the two, and a flags-only run refused there with nothing
-    // declared has read every source it will ever have.
-    if (mode != .replay and args.config == null) report.settleDeclared(args.check != null, args.marker != null);
-    // Named, not yet read. The account distinguishes the two: an oracle whose capture
-    // never parsed establishes nothing about other processes, and a run refused before
-    // the comparison must not report as though it had one.
-    if (args.oracle_fs_usage)
-        boundary.boundary_ev.witness = .{ .unread = .fs_usage }
-    else if (args.oracle != null)
-        boundary.boundary_ev.witness = .{ .unread = .strace };
-
-    if (mode == .preflight) {
-        if (args.oracle_fs_usage) setupError(.define_invalid, "--oracle-fs-usage belongs to explore and replay; preflight asks whether the recording phase accepts this target, and answers that without a second witness");
-        if (args.check != null) setupError(.define_invalid, "preflight runs before an invariant exists; --check belongs to explore, which also falsifies it before trusting it");
-        if (args.marker != null) setupError(.define_invalid, "--marker belongs to explore; preflight makes no claim a marker could strengthen");
-        if (args.config != null) setupError(.define_invalid, "preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more");
-        if (args.allow_unverified) setupError(.define_invalid, "preflight never claims PASS, so there is nothing --allow-unverified could weaken");
-    }
+    const argv_parsed = cli.parse(argv);
+    const mode = argv_parsed.mode;
+    const case_arg = argv_parsed.case_arg;
+    var args = argv_parsed.args;
 
     // A replay's define comes from the case file itself: the counterexample's
     // identity includes what was run, not just where it was killed (ADR 0009).
-    var replay_case: ?ReplayCase = null;
+    var replay_case: ?case.ReplayCase = null;
     var only_k: ?u32 = null;
     if (mode == .replay) {
         if (args.state != null or args.setup != null or args.operation != null or
@@ -1030,7 +554,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             .environment,
             std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
         );
-        const parsed = std.json.parseFromSlice(ReplayCase, rarena, ctext, .{}) catch
+        const parsed = std.json.parseFromSlice(case.ReplayCase, rarena, ctext, .{}) catch
             setupError(.define_invalid, "the case file could not be parsed as a sideeye case");
         const c = parsed.value;
         if (!std.mem.eql(u8, c.schema, "sideeye/case"))
@@ -1223,7 +747,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
                 args.apparatus = d.apparatus orelse &.{};
                 args.scratch = d.scratch orelse &.{};
                 if (d.expected_status) |es| {
-                    args.expect_status = parseExpectStatus(es, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
+                    args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
                     // canonical binding must report the declaration that was read.
                     report.expected_status_val = args.expect_status.?;
@@ -2449,7 +1973,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (rc.k < 1 or rc.k > n)
             unknown(.case_no_longer_applies, "the case's crash point is out of range for this recording", .re_record);
         var hh: [16]u8 = undefined;
-        if (!prefixHash(trace, rc.k, &hh))
+        if (!case.prefixHash(trace, rc.k, &hh))
             unknown(.case_no_longer_applies, "the recording's operation numbering has a gap before the crash point; nothing can vouch that the recorded index still names the same operation", .re_record);
         if (!std.mem.eql(u8, &hh, rc.prefix_hash))
             unknown(.case_no_longer_applies, "the class sequence leading to the crash point changed; killing at the recorded index would address a different operation", .re_record);
@@ -2657,7 +2181,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // boundary **that is reached**. A setup, recording or checker run that hangs
         // never reaches one, and the process-group teardown that would help there runs at
         // the end of a world, not the start.
-        if (stop_when_orphaned and posix.getppid() != startup_ppid)
+        if (args.stop_when_orphaned and posix.getppid() != startup_ppid)
             unknown(.parent_exited, "the process that launched this exploration is gone; stopping at a world boundary rather than continuing to kill processes and rewrite the state directory with nobody to report to", .relaunch);
         engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory");
 
@@ -2831,7 +2355,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         if (children_admitted and k <= n and k > 1) {
             var wh: [16]u8 = undefined;
             var rh: [16]u8 = undefined;
-            const both = prefixHash(wtrace, k - 1, &wh) and prefixHash(trace, k - 1, &rh);
+            const both = case.prefixHash(wtrace, k - 1, &wh) and case.prefixHash(trace, k - 1, &rh);
             if (!both or !std.mem.eql(u8, &wh, &rh))
                 unknown(.kill_did_not_land, "a world died at the operation number it was given, but the operations leading up to it are not the ones the recording numbered: the address names a different operation in this world than in the recording, so nothing died in front of the operation the crash point stands for. An operation whose sequence of state-directory calls varies between runs cannot be explored at a fixed index", .fix_define);
         }
@@ -3072,7 +2596,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             // state directory from any cwd, or the replay silently sets up elsewhere.
             var case_args = args;
             case_args.state = state_abs;
-            break :blk writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else "checker");
+            break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else "checker");
         } else null;
         const case_shown = saved_case orelse (if (mode == .replay) case_arg.? else "(not saved)");
         const replay_cmd = if (saved_case) |sc|
@@ -3105,7 +2629,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
             else if (only_k == null and saved_case != null) blk2: {
                 var case_args = args;
                 case_args.state = state_abs;
-                break :blk2 writeCase(arena, args.work, case_args, fc.k, n, trace, if (fc.violation) |v| @tagName(v) else "checker");
+                break :blk2 case.writeCase(arena, args.work, case_args, fc.k, n, trace, if (fc.violation) |v| @tagName(v) else "checker");
             } else null;
             const ccase = if (same_world) case_shown else (csaved orelse "(not saved)");
             const creplay = if (same_world)
@@ -3240,48 +2764,6 @@ pub fn main(init: std.process.Init.Minimal) !void {
     report.saySingleCrashPointNote(n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
-}
-
-/// Split a command line on whitespace.
-///
-/// The first version of this ran commands through `/bin/sh -c`, which was wrong in a
-/// way worth remembering: the shell forks to start the program, LD_PRELOAD applies to
-/// the shell too, and every single run therefore reported `child_process_detected`.
-/// Using `sh -c "exec …"` only trades the fork for an exec, which the same detector
-/// catches. The target has to be executed directly.
-///
-/// The cost is that arguments cannot contain spaces. v0.1 accepts that limit rather
-/// than growing a quoting parser; a proper argv-taking interface is the real fix.
-/// "0".."255", nothing else. One parser serves the flag and the config key, so the
-/// two spellings of the same declaration cannot drift into accepting different
-/// grammars — the value they produce governs the recording check, the baseline
-/// world, the saved case, and the report alike (ADR 0014).
-/// `--world-timeout` in seconds: 1..86400, digits only (#263). Zero is refused rather
-/// than read as "no budget" — an operator who typed a number meant a bound, and the
-/// spelling for "no bound" is omitting the flag. The ceiling is a day: any larger value
-/// is more plausibly a unit mistake than an intent, and the bound is what keeps the
-/// millisecond conversion trivially inside u64.
-fn parseWorldTimeout(s: []const u8) u32 {
-    const msg = "--world-timeout must be a whole number of seconds, 1..86400";
-    if (s.len == 0 or s.len > 5) setupError(.define_invalid, msg);
-    var v: u32 = 0;
-    for (s) |ch| {
-        if (ch < '0' or ch > '9') setupError(.define_invalid, msg);
-        v = v * 10 + (ch - '0');
-    }
-    if (v == 0 or v > 86400) setupError(.define_invalid, msg);
-    return v;
-}
-
-fn parseExpectStatus(s: []const u8, msg: []const u8) u8 {
-    if (s.len == 0 or s.len > 3) setupError(.define_invalid, msg);
-    var v: u32 = 0;
-    for (s) |ch| {
-        if (ch < '0' or ch > '9') setupError(.define_invalid, msg);
-        v = v * 10 + (ch - '0');
-    }
-    if (v > 255) setupError(.define_invalid, msg);
-    return @intCast(v);
 }
 
 fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
@@ -4055,28 +3537,6 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
     setupError(.environment, "could not self-exec the exploration");
 }
 
-/// `--apparatus ENTRY`: the same grammar the toml key uses, refused with the same words.
-fn appendApparatusFlag(args: *Args, v: []const u8) void {
-    if (config.apparatusFault(v)) |m| setupError(.define_invalid, m);
-    const n = args.apparatus.len;
-    if (n == max_apparatus) setupError(.define_invalid, "--apparatus: more than 32 entries; a define this large belongs in a toml");
-    apparatus_flag_buf[n] = v;
-    args.apparatus = apparatus_flag_buf[0 .. n + 1];
-}
-
-/// `--scratch PATH`: the same grammar the toml key uses, refused with the same words, and
-/// stored normalised the way the parser stores it (ADR 0043).
-fn appendScratchFlag(args: *Args, v: []const u8) void {
-    const norm = switch (config.parseScratchEntry(v)) {
-        .ok => |p| p,
-        .bad => |m| setupError(.define_invalid, m),
-    };
-    const n = args.scratch.len;
-    if (n == max_scratch) setupError(.define_invalid, "--scratch: more than 32 entries; a define this large belongs in a toml");
-    scratch_flag_buf[n] = norm;
-    args.scratch = scratch_flag_buf[0 .. n + 1];
-}
-
 /// ADR 0041. Every entry the engine can check is checked against the environment the
 /// operation will inherit — this process's, which `runChild*` hands down, plus the pairs
 /// the engine adds, whose names the parser refused up front. A missing device is a SETUP
@@ -4191,24 +3651,6 @@ test "namesLib: an LD_PRELOAD value or a preload line, colon- or space-separated
     try std.testing.expect(!namesLib("", "libfaketime"));
 }
 
-/// A define command as a bare JSON value, mirroring `config.Command.jsonParse`:
-/// the string form is one JSON string, the argv form one array of strings. The two
-/// functions are the write and read halves of the same shape — a case written here
-/// parses back through there.
-fn jsonCommand(w: *std.ArrayList(u8), arena: std.mem.Allocator, cmd: config.Command) !void {
-    switch (cmd) {
-        .str => |s| try report.jsonString(w, arena, s),
-        .argv => |a| {
-            try w.append(arena, '[');
-            for (a, 0..) |e, i| {
-                if (i != 0) try w.appendSlice(arena, ", ");
-                try report.jsonString(w, arena, e);
-            }
-            try w.append(arena, ']');
-        },
-    }
-}
-
 /// A relative path in a sideeye.toml means "relative to the toml", not to wherever
 /// the process happens to run (ADR 0007) — the same file has to mean the same thing
 /// from anywhere, or a replayed define quietly points at a different state.
@@ -4288,172 +3730,6 @@ test "toml paths resolve against the toml's directory, commands only when they n
     try std.testing.expectEqualStrings(" ./check.sh", spaced.argv[0]);
 }
 
-/// FNV-1a over the class names of the subject's counted operations 1..k, hex-encoded.
-/// Classes only, deliberately: paths may legitimately differ between runs
-/// (pid-embedded temp names), and the replay treats a path difference as a warning,
-/// never as identity (ADR 0009).
-/// Returns false when any of seq 1..k is missing from the trace: a numbering gap
-/// means the recording itself is not a sequence this hash can vouch for, and hashing
-/// only what happens to be present would let two differently-broken traces agree.
-fn prefixHash(trace: engine.TraceInfo, k: u32, out: *[16]u8) bool {
-    var h: u64 = 0xcbf29ce484222325;
-    var seq: u32 = 1;
-    while (seq <= k) : (seq += 1) {
-        var found = false;
-        for (trace.ops.items) |op| {
-            if (!op.class.isKillPoint()) continue;
-            // Every process's operations, for the reason `logicalAddress` carries (v15):
-            // a number is a position in the run, so a prefix that skipped a child's
-            // operations would hash a sequence the run never had — and would find no
-            // record at all for a number a child holds, reporting the case as no longer
-            // applying when nothing had changed.
-            if (op.seq != seq) continue;
-            for (op.class.name()) |ch| {
-                h ^= ch;
-                h *%= 0x100000001b3;
-            }
-            h ^= 0x1f; // separator, so ["ab","c"] and ["a","bc"] hash apart
-            h *%= 0x100000001b3;
-            found = true;
-            break;
-        }
-        if (!found) return false;
-    }
-    _ = std.fmt.bufPrint(out, "{x:0>16}", .{h}) catch unreachable;
-    return true;
-}
-
-/// Write the counterexample to `<work>/cases/NNNNNN.json` and return its path. The id
-/// is claimed with O_EXCL, so two runs over one work directory cannot silently share a
-/// case file. Returns null when nothing could be written — the FAIL report is the
-/// product and must not die for the sake of its attachment.
-fn writeCase(
-    arena: std.mem.Allocator,
-    work: []const u8,
-    args: Args,
-    k: u32,
-    ops_total: u32,
-    trace: engine.TraceInfo,
-    violation_name: []const u8,
-) ?[]const u8 {
-    var dbuf: [contract.max_path]u8 = undefined;
-    const dz = std.fmt.bufPrintZ(&dbuf, "{s}/cases", .{work}) catch return null;
-    _ = posix.mkdir(dz.ptr, 0o755); // EEXIST is fine; open below decides
-    const addr = trace.logicalAddress(k);
-    var hh: [16]u8 = undefined;
-    if (!prefixHash(trace, k, &hh)) return null;
-
-    var doc: std.ArrayList(u8) = .empty;
-    const w = &doc;
-    var nb: [16]u8 = undefined;
-    // The version and the shape travel together (ADR 0019, the ADR 0014 law): a case
-    // whose define carries the argv form is version 3; one spelled entirely in
-    // strings stays version 2, byte-shaped exactly as every v2-era reader expects.
-    const carries_argv = (args.operation.? == .argv) or
-        (args.setup != null and args.setup.? == .argv) or
-        (args.check != null and args.check.? == .argv);
-    // A declared cwd is part of what the counterexample was found against, so it moves
-    // the version the same way — and it takes precedence over the argv rule because a
-    // version-3 reader would drop the field and replay the commands somewhere else.
-    // A scratch declaration decides verdicts (ADR 0043), so it moves the version to 5, above
-    // cwd for the reason cwd sits above argv: an older reader would drop the field and
-    // judge a different question. A define that declares nothing keeps the case it always got.
-    const case_version: u32 = if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
-    w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
-    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
-    w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
-    report.jsonString(w, arena, version) catch return null;
-    w.appendSlice(arena, ",\n  \"contract_version\": ") catch return null;
-    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}) catch return null) catch return null;
-    w.appendSlice(arena, ",\n  \"define\": {\n    \"state\": ") catch return null;
-    report.jsonString(w, arena, args.state.?) catch return null;
-    if (args.setup) |s| {
-        w.appendSlice(arena, ",\n    \"setup\": ") catch return null;
-        jsonCommand(w, arena, s) catch return null;
-    }
-    w.appendSlice(arena, ",\n    \"operation\": ") catch return null;
-    jsonCommand(w, arena, args.operation.?) catch return null;
-    if (args.check) |c| {
-        w.appendSlice(arena, ",\n    \"check\": ") catch return null;
-        jsonCommand(w, arena, c) catch return null;
-    }
-    if (args.marker) |m| {
-        w.appendSlice(arena, ",\n    \"marker\": ") catch return null;
-        report.jsonString(w, arena, m) catch return null;
-    }
-    // Written only when it was declared, unlike `expected_status` above: an absent cwd
-    // is not a default value the reader has to be told, it is the engine's own cwd — and
-    // writing it anyway would push every case to version 4 and make every v2 and v3
-    // reader refuse files whose defines are unchanged.
-    if (args.cwd) |c| {
-        w.appendSlice(arena, ",\n    \"cwd\": ") catch return null;
-        report.jsonString(w, arena, c) catch return null;
-    } else if (case_version >= 5) {
-        // From version 5 `cwd` is explicit beside `scratch` (ADR 0043): `null` says "none
-        // declared" in the file itself, so a reader can tell it from a key edited out.
-        w.appendSlice(arena, ",\n    \"cwd\": null") catch return null;
-    }
-    if (case_version >= 5) {
-        w.appendSlice(arena, ",\n    \"scratch\": [") catch return null;
-        for (args.scratch, 0..) |s, i| {
-            if (i > 0) w.appendSlice(arena, ", ") catch return null;
-            report.jsonString(w, arena, s) catch return null;
-        }
-        w.append(arena, ']') catch return null;
-    }
-    // Written even at the default (case_version 2): a case is a frozen contract, and
-    // "0 because nothing was declared" and "0 by declaration" must replay identically
-    // years later without consulting anything outside the file.
-    w.appendSlice(arena, ",\n    \"expected_status\": ") catch return null;
-    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{args.expect_status orelse 0}) catch return null) catch return null;
-    w.appendSlice(arena, "\n  },\n  \"k\": ") catch return null;
-    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{k}) catch return null) catch return null;
-    w.appendSlice(arena, ",\n  \"ops_total\": ") catch return null;
-    w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{ops_total}) catch return null) catch return null;
-    w.appendSlice(arena, ",\n  \"prefix_hash\": ") catch return null;
-    report.jsonString(w, arena, &hh) catch return null;
-    w.appendSlice(arena, ",\n  \"after_class\": ") catch return null;
-    report.jsonString(w, arena, if (addr.after) |a| a.class.name() else "(start)") catch return null;
-    w.appendSlice(arena, ",\n  \"after_path\": ") catch return null;
-    report.jsonString(w, arena, if (addr.after) |a| a.path else "") catch return null;
-    w.appendSlice(arena, ",\n  \"before_class\": ") catch return null;
-    report.jsonString(w, arena, if (addr.before) |b| b.class.name() else "(end)") catch return null;
-    w.appendSlice(arena, ",\n  \"before_path\": ") catch return null;
-    report.jsonString(w, arena, if (addr.before) |b| b.path else "") catch return null;
-    w.appendSlice(arena, ",\n  \"violation\": ") catch return null;
-    report.jsonString(w, arena, violation_name) catch return null;
-    w.appendSlice(arena, "\n}\n") catch return null;
-
-    const EEXIST: c_int = 17; // same value on Linux and Darwin
-    var id: u32 = 1;
-    while (id <= 999999) : (id += 1) {
-        var pbuf: [contract.max_path]u8 = undefined;
-        const pz = std.fmt.bufPrintZ(&pbuf, "{s}/cases/{d:0>6}.json", .{ work, id }) catch return null;
-        const fd = posix.open(pz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o644));
-        if (fd < 0) {
-            // Only a taken id is worth trying past. An unwritable directory would
-            // otherwise spin through a million opens on its way to "(not saved)".
-            if (std.c._errno().* == EEXIST) continue;
-            return null;
-        }
-        var off: usize = 0;
-        while (off < doc.items.len) {
-            const wn = posix.write(fd, doc.items[off..].ptr, doc.items.len - off);
-            if (wn <= 0) {
-                // A half-written case must not survive: it would both mislead a later
-                // replay and permanently consume this id.
-                _ = posix.close(fd);
-                _ = posix.unlink(pz.ptr);
-                return null;
-            }
-            off += @intCast(wn);
-        }
-        _ = posix.close(fd);
-        return arena.dupe(u8, std.mem.span(pz.ptr)) catch null;
-    }
-    return null;
-}
-
 /// Two snapshots agree, on the same three fields `diffSnapshots` compares.
 ///
 /// One implementation, not two. This was a length check plus a `find` per entry until
@@ -4467,23 +3743,6 @@ fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
     var one: [1]engine.Difference = undefined;
     return engine.diffSnapshots(a, b, &one).equal();
 }
-
-test "the version in build.zig.zon and the one the CLI prints are the same string" {
-    // Two hand-written copies of one number, and they had already drifted before anyone
-    // looked: the package manifest said 0.1.0 while `--help` said 0.1.0-dev. A release
-    // would have shipped a tag that disagreed with the binary it tagged.
-    const zon = @embedFile("build_zon");
-    const needle = ".version = \"";
-    const start = (std.mem.indexOf(u8, zon, needle) orelse return error.NoVersionField) + needle.len;
-    const end = std.mem.indexOfScalarPos(u8, zon, start, '"') orelse return error.Unterminated;
-    try std.testing.expectEqualStrings(zon[start..end], version);
-}
-
-// Three tests rather than one, because a failing assertion aborts its test and the ones
-// after it never run. Written as a single test, the mutation that breaks the recording
-// override stopped at the first line, and the record of what had been seen red was
-// written as if the whole body had fired — five assertions instead of eight. Split by
-// role, a mutation names which role it broke.
 
 test "the shipped engine options carry the shipped values (#365)" {
     // What a released binary is built with. Until #365 the only machine holding these was
@@ -4531,40 +3790,4 @@ test "no fifth engine build option arrives unchecked (#365)" {
     // this test is what stopped it arriving without the two assertions above.
     const decls = @typeInfo(engine_build_options).@"struct".decls;
     try std.testing.expectEqual(@as(usize, 4), decls.len);
-}
-
-test "every NextStep renders one sentence whose flags the help text accepts (#274)" {
-    // Advice that names a flag this binary does not take is advice nobody can follow —
-    // and a sentence is what the schema promises, so it ends in a full stop. Held here
-    // against `usage_fmt`, the same text `sideeye help` prints, rather than against a
-    // second list of flags that could drift from it.
-    inline for (@typeInfo(contract.NextStep).@"enum".fields) |f| {
-        const member: contract.NextStep = @enumFromInt(f.value);
-        const s = member.render();
-        try std.testing.expect(s.len > 0);
-        try std.testing.expect(s[s.len - 1] == '.');
-        var i: usize = 0;
-        while (std.mem.indexOfPos(u8, s, i, "--")) |at| {
-            var end = at + 2;
-            while (end < s.len and (std.ascii.isAlphabetic(s[end]) or s[end] == '-')) end += 1;
-            const flag = s[at..end];
-            // Every flag a sentence names appears in the help, as a flag (followed by
-            // a space, a newline or a bracket — not as a prefix of a longer flag).
-            var found = false;
-            var k: usize = 0;
-            while (std.mem.indexOfPos(u8, usage_fmt, k, flag)) |hit| {
-                const after = hit + flag.len;
-                if (after >= usage_fmt.len or usage_fmt[after] == ' ' or usage_fmt[after] == '\n' or usage_fmt[after] == ']' or usage_fmt[after] == ',') {
-                    found = true;
-                    break;
-                }
-                k = hit + 1;
-            }
-            if (!found) {
-                std.debug.print("NextStep.{s} names {s}, which the help text does not list\n", .{ f.name, flag });
-                return error.TestUnexpectedResult;
-            }
-            i = end;
-        }
-    }
 }
