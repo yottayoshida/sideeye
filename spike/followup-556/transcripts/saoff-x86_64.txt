@@ -1,0 +1,4 @@
+x86_64
+ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+sizeof(struct sigaction)=152 offsetof(sa_handler)=0 offsetof(sa_mask)=8 sizeof(sa_mask)=128 offsetof(sa_flags)=136 offsetof(sa_restorer)=144
+SIGSYS (31) set in byte 11 of the struct, value 0x40

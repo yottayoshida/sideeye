@@ -1,0 +1,20 @@
+image: sideeye-spike:latest  ldd (Debian GLIBC 2.36-9+deb12u14) 2.36  arch: aarch64  libc: /lib/aarch64-linux-gnu/libc.so.6
+# objdump -T, dynamic symbols by name; sigaction is the control: it must be found
+sigaction                    1
+signal                       1
+sigprocmask                  1
+pthread_sigmask              2
+__sigaction                  1
+sigset                       1
+sighold                      1
+sigignore                    1
+sigpause                     1
+sigblock                     1
+sigsetmask                   1
+bsd_signal                   1
+sysv_signal                  1
+setcontext                   1
+siglongjmp                   1
+posix_spawnattr_setsigmask   1
+pthread_attr_setsigmask_np   1
+epoll_pwait2                 1

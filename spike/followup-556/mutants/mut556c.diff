@@ -1,0 +1,11 @@
+--- <worktree>/shim/src/syscalls.zig	2026-09-13 14:50:51
++++ <scratch>/mut556c/shim/src/syscalls.zig	2026-09-13 14:56:03
+@@ -778,7 +778,7 @@
+ /// `SIGSYS`'s place in the C library's `sigset_t`: one bit per signal, numbered from 1,
+ /// from the low bit of the first word.
+ const sigsys_word: usize = @intCast(@divTrunc(sigsys_no - 1, @bitSizeOf(c_ulong)));
+-const sigsys_bit: c_ulong = @as(c_ulong, 1) << @intCast(@mod(sigsys_no - 1, @bitSizeOf(c_ulong)));
++const sigsys_bit: c_ulong = @as(c_ulong, 1) << @intCast(@mod(sigsys_no, @bitSizeOf(c_ulong)));
+ 
+ /// The request at `act` with `SIGSYS` taken out of its `sa_mask`, or null when the mask
+ /// does not hold it.

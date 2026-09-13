@@ -1,0 +1,36 @@
+# the call-site test and four mutants, built from copies of this tree in <scratch>/t556b; compile lines first, then the three binaries that built, run in sideeye-spike
+## compile base
+## compile mut-guardfirst
+## compile mut-alwayscopy
+## compile mut-untrimmed
+## compile mut-size153
+<scratch>/t556b/mut-size153/shim/src/syscalls.zig:779:9: error: std.c.Sigaction is no longer glibc's measured struct sigaction
+        @compileError("std.c.Sigaction is no longer glibc's measured struct sigaction");
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+aarch64
+ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+######## base
+All 24 tests passed.
+24
+rc=0
+######## mut-guardfirst
+9/24 syscalls.test.sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS...FAIL (TestUnexpectedResult)
+<zig lib>/std/testing.zig:615:14: 0x11ef55f in expect (root)
+<scratch>/t556b/mut-guardfirst/shim/src/syscalls.zig:1361:5: 0x11ef8d7 in test.sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS (root)
+23 passed; 0 skipped; 1 failed.
+23
+rc=1
+######## mut-alwayscopy
+9/24 syscalls.test.sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS...FAIL (TestUnexpectedResult)
+<zig lib>/std/testing.zig:615:14: 0x11ef54f in expect (root)
+<scratch>/t556b/mut-alwayscopy/shim/src/syscalls.zig:1379:5: 0x11effe3 in test.sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS (root)
+23 passed; 0 skipped; 1 failed.
+23
+rc=1
+######## mut-untrimmed
+9/24 syscalls.test.sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS...FAIL (TestUnexpectedResult)
+<zig lib>/std/testing.zig:615:14: 0x11ef54f in expect (root)
+<scratch>/t556b/mut-untrimmed/shim/src/syscalls.zig:1367:5: 0x11efb53 in test.sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS (root)
+23 passed; 0 skipped; 1 failed.
+23
+rc=1

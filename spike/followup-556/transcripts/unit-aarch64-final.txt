@@ -1,0 +1,27 @@
+aarch64  ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+1/24 syscalls.test.the filter traps an unmarked write and allows the handler's re-issue...OK
+2/24 syscalls.test.an open's flags decide whether it is trapped...OK
+3/24 syscalls.test.the trap set's length does not move the jump targets...OK
+4/24 syscalls.test.the built-in program is the one this architecture's set describes...OK
+5/24 syscalls.test.AUDIT_ARCH values match the header's...OK
+6/24 syscalls.test.the trap frame's offsets keep the shape a transcription slip would break...OK
+7/24 syscalls.test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves...OK
+8/24 syscalls.test.a sa_mask without SIGSYS is forwarded as the caller's own...OK
+9/24 syscalls.test.sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS...OK
+10/24 common.test.the write-capability predicate, pinned case by case...OK
+11/24 common.test.the mode-string predicate, pinned case by case...OK
+12/24 common.test.pending bytes are read from a real stream, not assumed...OK
+13/24 common.test.both spellings of the state directory are inside it...OK
+14/24 common.test.a path under the alternative spelling is recorded under the canonical one...OK
+15/24 common.test.with one spelling, canonical is the identity...OK
+16/24 common.test.the shipped shim options carry the shipped value (#365)...OK
+17/24 common.test.no second shim build option arrives unchecked (#365)...OK
+18/24 common.test.the shim's O_NOFOLLOW actually refuses a symlink (#488)...OK
+19/24 common.test.the trace open's kind check refuses a pipe and accepts a regular file (#492)...OK
+20/24 common.test.the run's operation count is read back from the trace, and a torn tail is not a failure (v15)...OK
+21/24 common.test.slots: one per thread id, claimed once, and the reserve past the last...OK
+22/24 common.test.the fork child starts from an empty slot table, however full the parent's was (v16)...OK
+23/24 common.test.mine: the 65th thread takes the reserve, and the notice is in the trace at that moment (v16)...OK
+24/24 common.test.exec carry: builds in the thread's own slot, and not on the reserve or when re-entered (#555)...OK
+All 24 tests passed.
+rc=0

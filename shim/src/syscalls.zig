@@ -71,7 +71,9 @@
 //!
 //! A target that blocks `SIGSYS` re-opens the hole: with the signal blocked the kernel
 //! ends the process rather than queueing it. Measured, and the mitigation is to interpose
-//! the mask-setting calls.
+//! the libc calls that can block it — the mask-setting calls, and `sigaction` for the mask
+//! another signal's handler runs under. What reaches the kernel around libc is not covered;
+//! "keeping the signal deliverable" below names it.
 //!
 //! ## What this mode does not see
 //!
@@ -624,16 +626,33 @@ pub fn install() Install {
 // caller's request, answers success, and declines only the part that would take `SIGSYS`
 // away.
 //
+// A handler for ANOTHER signal is a third way to block it. The kernel adds the handler's
+// `sa_mask` to the blocked set for as long as the handler runs, so a handler installed
+// with every signal in that mask — libuv installs its handlers that way — holds `SIGSYS`
+// blocked while it runs, and a trapped call inside it ends the process (measured
+// 2026-09-13 on main: a `SIGUSR1` handler installed with `sigfillset` died of signal 31 at
+// its first trapped write, and node 20 was refused `recording_run_failed` for a
+// `process.on('SIGUSR2')` handler that wrote a file). So `sigaction` also takes `SIGSYS`
+// out of the `sa_mask` of a request for any other signal, and changes nothing else in it.
+//
 // They are installed in EVERY mode, like `installHandler` and for the same reason: a
 // filter is inherited across `exec` and a process whose own mode is `wrappers` can be
 // standing in front of one. Where no filter exists anywhere they change nothing a target
 // can observe — nothing raises `SIGSYS`, and every query still reports the truth.
 //
-// The residual is a target that reaches `rt_sigaction` or `rt_sigprocmask` without libc;
-// a statically linked Go binary is the case to expect. Interposition cannot see those.
-// The filter could trap `rt_sigaction` — four arguments, so the sentinel's register is
-// free — and that is the step to take if a target needs it; `docs/report-schema.md`
-// discloses the gap meanwhile.
+// The residual is every change to the signal state that does not reach these four symbols
+// while `guard_signal` is set: `rt_sigaction` and `rt_sigprocmask` issued directly (a
+// statically linked Go binary, a Go child between fork and exec), the C library's own
+// internal calls and its other signal functions — glibc's `posix_spawn` child blocks every
+// signal while a file action opens for writing, and dies of signal 31 (measured) — a mask
+// given for the length of one call (`ppoll`, `sigsuspend`), a signal whose handler runs
+// while this file's own handler does, which holds `SIGSYS` blocked, and the processes the
+// flag is not set in: before `common.init` reaches `armGuards`, and a child that kept the
+// shim but lost the state or observe variables. Arming clears nothing already in place,
+// and `install` does not unblock a mask carried across `exec`. Trapping `rt_sigaction` and
+// `rt_sigprocmask` in the filter is the step this comment used to propose; measured, it
+// kills targets that run today, and ADR 0063 records why it was not taken.
+// `docs/report-schema.md` item (4) names the ways known.
 
 /// Whether the four wrappers below actually decline anything, set by `common.init` when
 /// this process's mode is `syscalls` — before the filter goes up, because a trap can
@@ -744,11 +763,55 @@ fn unblockSigsys() void {
     _ = linux.sigprocmask(linux.SIG.UNBLOCK, &set, null);
 }
 
-/// `act` and `oldact` stay opaque: the request is forwarded pointer-for-pointer, so this
-/// wrapper never needs to know what the C library's `struct sigaction` looks like.
+// glibc's `struct sigaction`, MEASURED with `offsetof` and `sigaddset` (2026-09-13, glibc
+// 2.36, `spike/followup-556/probes/saoff.c`), identical on both platforms:
+//
+//   sizeof=152  sa_handler=0  sa_mask=8 (128 bytes)  sa_flags=136
+//   sigaddset(SIGSYS) sets byte 11 of the struct to 0x40
+//
+// The wrapper reads it through std's `c.Sigaction`, so what is pinned here is that std's
+// idea of the struct is still the measured one. A toolchain that moved it stops the build
+// instead of clearing a bit in the wrong place.
+comptime {
+    if (layout != null and (@sizeOf(std.c.Sigaction) != 152 or
+        @offsetOf(std.c.Sigaction, "mask") != 8 or @sizeOf(std.c.sigset_t) != 128 or
+        @offsetOf(std.c.Sigaction, "flags") != 136))
+        @compileError("std.c.Sigaction is no longer glibc's measured struct sigaction");
+}
+
+/// `SIGSYS`'s place in the C library's `sigset_t`: one bit per signal, numbered from 1,
+/// from the low bit of the first word.
+const sigsys_word: usize = @intCast(@divTrunc(sigsys_no - 1, @bitSizeOf(c_ulong)));
+const sigsys_bit: c_ulong = @as(c_ulong, 1) << @intCast(@mod(sigsys_no - 1, @bitSizeOf(c_ulong)));
+
+/// The request at `act` with `SIGSYS` taken out of its `sa_mask`, or null when the mask
+/// does not hold it.
+///
+/// Copied byte for byte rather than cast: the caller's struct has whatever alignment the
+/// caller gave it, and the caller's own struct is never written.
+fn withoutSigsys(act: *const anyopaque) ?std.c.Sigaction {
+    var copy: std.c.Sigaction = undefined;
+    @memcpy(std.mem.asBytes(&copy), @as([*]const u8, @ptrCast(act)));
+    if (copy.mask[sigsys_word] & sigsys_bit == 0) return null;
+    copy.mask[sigsys_word] &= ~sigsys_bit;
+    return copy;
+}
+
+/// A request for `SIGSYS` itself is declined. A request for any other signal whose
+/// `sa_mask` holds `SIGSYS` goes to the library as a copy without that one bit, so the
+/// handler it installs does not block `SIGSYS` while it runs. Every other request is
+/// forwarded pointer-for-pointer.
+///
+/// The copy lives in this frame, never on the heap: `sigaction` may be called from a
+/// signal handler. `oldact` is still the library's answer, so a target that later queries
+/// a handler installed this way reads its mask back without `SIGSYS`.
 pub fn sigaction(signum: c_int, act: ?*const anyopaque, oldact: ?*anyopaque) callconv(.c) c_int {
     const f = nextSymbol(SigactionFn, "sigaction", &real_sigaction) orelse return -1;
-    if (!guard_signal or signum != sigsys_no or act == null) return f(signum, act, oldact);
+    if (!guard_signal or act == null) return f(signum, act, oldact);
+    if (signum != sigsys_no) {
+        const trimmed = withoutSigsys(act.?) orelse return f(signum, act, oldact);
+        return f(signum, &trimmed, oldact);
+    }
     // The query half is answered by the library, so `oldact` describes the handler that
     // is really installed — including the `SA_SIGINFO` flag that says how to call it, for
     // a caller that means to chain. Only the set half is dropped.
@@ -1216,4 +1279,98 @@ test "the trap frame's offsets keep the shape a transcription slip would break" 
         },
         else => unreachable, // `layout` is null for every other architecture
     }
+}
+
+/// glibc's own set functions, so `withoutSigsys` is held against the C library's reading
+/// of a mask rather than against this file's arithmetic.
+const test_libc = struct {
+    extern "c" fn sigfillset(set: ?*std.c.sigset_t) c_int;
+    extern "c" fn sigismember(set: ?*const std.c.sigset_t, signo: c_int) c_int;
+};
+
+test "a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves" {
+    // glibc is the reference because the shim runs on nothing else.
+    if (layout == null or builtin.abi != .gnu) return error.SkipZigTest;
+
+    var act = std.mem.zeroes(std.c.Sigaction);
+    act.handler.sigaction = @ptrFromInt(0x1000);
+    act.flags = 0x0800_0004; // SA_ONSTACK | SA_SIGINFO
+    act.restorer = @ptrFromInt(0x2000);
+    try std.testing.expectEqual(@as(c_int, 0), test_libc.sigfillset(&act.mask));
+    try std.testing.expectEqual(@as(c_int, 1), test_libc.sigismember(&act.mask, sigsys_no));
+
+    const out = withoutSigsys(&act) orelse return error.TestUnexpectedResult;
+
+    // The bit glibc calls SIGSYS is gone — and it is the byte the measurement named.
+    try std.testing.expectEqual(@as(c_int, 0), test_libc.sigismember(&out.mask, sigsys_no));
+    try std.testing.expectEqual(@as(u8, 0x40), std.mem.asBytes(&act)[11] ^ std.mem.asBytes(&out)[11]);
+    // Every other bit of the mask, and the rest of the request, as the caller wrote them.
+    try std.testing.expectEqual(act.mask[0] & ~sigsys_bit, out.mask[0]);
+    try std.testing.expectEqualSlices(c_ulong, act.mask[1..], out.mask[1..]);
+    try std.testing.expectEqual(act.handler.sigaction, out.handler.sigaction);
+    try std.testing.expectEqual(act.flags, out.flags);
+    try std.testing.expectEqual(act.restorer, out.restorer);
+}
+
+test "a sa_mask without SIGSYS is forwarded as the caller's own" {
+    if (layout == null or builtin.abi != .gnu) return error.SkipZigTest;
+
+    // Every bit but SIGSYS's, so a test one bit off in either direction finds one set.
+    var act = std.mem.zeroes(std.c.Sigaction);
+    @memset(&act.mask, std.math.maxInt(c_ulong));
+    act.mask[sigsys_word] &= ~sigsys_bit;
+    try std.testing.expectEqual(@as(c_int, 0), test_libc.sigismember(&act.mask, sigsys_no));
+
+    try std.testing.expect(withoutSigsys(&act) == null);
+}
+
+/// What the stand-in for glibc's `sigaction` below was handed.
+const test_forward = struct {
+    var ptr: ?*const anyopaque = null;
+    var seen: std.c.Sigaction = undefined;
+    fn fake(signum: c_int, act: ?*const anyopaque, oldact: ?*anyopaque) callconv(.c) c_int {
+        _ = signum;
+        _ = oldact;
+        ptr = act;
+        if (act) |a| @memcpy(std.mem.asBytes(&seen), @as([*]const u8, @ptrCast(a)));
+        return 0;
+    }
+};
+
+test "sigaction hands the caller's request on as written unless the guards are up and its sa_mask holds SIGSYS" {
+    if (layout == null or builtin.abi != .gnu) return error.SkipZigTest;
+    // The wrapper itself, not `withoutSigsys`: which pointer reaches the C library is decided
+    // at its branches, and the default mode's promise is one of them.
+    const saved_real = real_sigaction;
+    const saved_guard = guard_signal;
+    defer {
+        real_sigaction = saved_real;
+        guard_signal = saved_guard;
+    }
+    real_sigaction = .{ .found = &test_forward.fake };
+    const usr1: c_int = @intFromEnum(linux.SIG.USR1);
+    const usr2: c_int = @intFromEnum(linux.SIG.USR2);
+
+    var full = std.mem.zeroes(std.c.Sigaction);
+    try std.testing.expectEqual(@as(c_int, 0), test_libc.sigfillset(&full.mask));
+
+    // The default mode: the caller's own pointer, SIGSYS still in the mask.
+    guard_signal = false;
+    try std.testing.expectEqual(@as(c_int, 0), sigaction(usr1, &full, null));
+    try std.testing.expect(test_forward.ptr.? == @as(*const anyopaque, &full));
+    try std.testing.expectEqual(@as(c_int, 1), test_libc.sigismember(&test_forward.seen.mask, sigsys_no));
+
+    // `syscalls` mode, a mask holding SIGSYS: a copy without it, and the caller's struct as it was.
+    guard_signal = true;
+    try std.testing.expectEqual(@as(c_int, 0), sigaction(usr1, &full, null));
+    try std.testing.expect(test_forward.ptr.? != @as(*const anyopaque, &full));
+    try std.testing.expectEqual(@as(c_int, 0), test_libc.sigismember(&test_forward.seen.mask, sigsys_no));
+    try std.testing.expectEqual(@as(c_int, 1), test_libc.sigismember(&test_forward.seen.mask, usr2));
+    try std.testing.expectEqual(@as(c_int, 1), test_libc.sigismember(&full.mask, sigsys_no));
+
+    // `syscalls` mode, a mask without SIGSYS: the caller's own pointer again.
+    var partial = full;
+    partial.mask[sigsys_word] &= ~sigsys_bit;
+    try std.testing.expectEqual(@as(c_int, 0), sigaction(usr1, &partial, null));
+    try std.testing.expect(test_forward.ptr.? == @as(*const anyopaque, &partial));
 }

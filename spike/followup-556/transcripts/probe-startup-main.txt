@@ -1,0 +1,13 @@
+shim sha256: b952c105547c7ef15acb2a9276c9aff360b873e6d3cd67be077e42cb9d632cb9
+==== /bin/true
+   shim handler installed after 0 set-call(s)
+   total rt_sigaction set: 1  rt_sigprocmask block/setmask: 0
+==== sh -c /bin/true (exec chain)
+   shim handler installed after 0 set-call(s)
+   total rt_sigaction set: 6  rt_sigprocmask block/setmask: 2
+==== python3 -c pass
+   shim handler installed after 0 set-call(s)
+   total rt_sigaction set: 5  rt_sigprocmask block/setmask: 2
+==== node -e 0
+   shim handler installed after 0 set-call(s)
+   total rt_sigaction set: 9  rt_sigprocmask block/setmask: 14

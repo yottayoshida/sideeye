@@ -1,0 +1,37 @@
+image libc: ldd (Debian GLIBC 2.36-9+deb12u14) 2.36  python: Python 3.11.2  arch: aarch64
+legs sha256: 0784ae7d0aea612a9cc1c72e90259b9e576505acaa6c4d0aa9117fdb4104fb05  toy-raw sha256: 03605988947ca42b281b4c1013a170e0553373022dc760c45c300a10ad049837
+==================== main   engine: sideeye 1.3.0 (trace contract v16)   shim sha256: fdfe4df477da1e05ab521b910db9b2bf8ce9386dbc01a251159f8f82ee4d63be
+FAIL a handler installed with a full sa_mask was not observed: exit 2 (wanted 0 with
+     three operations; recording_run_failed means the process died of the trap)
+     | UNKNOWN  recording_run_failed
+     |          the operation did not exit normally during the recording run
+     | next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+     | 
+     | atomicity   not classified (the run was refused before L0 classification)
+     | l1          no marker configured
+ok   #556's four Python rows raise FileNotFoundError under --observe syscalls
+fails=1
+==================== fixed   engine: sideeye 1.3.0 (trace contract v16)   shim sha256: c3d161a28aafe710c5ec535c9e56ee89b82073d8c21e8b19f11a91760ac0be02
+ok   a handler whose sa_mask holds SIGSYS writes and is counted under --observe syscalls
+ok   #556's four Python rows raise FileNotFoundError under --observe syscalls
+fails=0
+==================== m1   engine: sideeye 1.3.0 (trace contract v16)   shim sha256: 2940cc135015e3811839835d708664f9ffdb82b8cbacdcfe91951a632db9ae56
+FAIL a handler installed with a full sa_mask was not observed: exit 2 (wanted 0 with
+     three operations; recording_run_failed means the process died of the trap)
+     | UNKNOWN  recording_run_failed
+     |          the operation did not exit normally during the recording run
+     | next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+     | 
+     | atomicity   not classified (the run was refused before L0 classification)
+     | l1          no marker configured
+ok   #556's four Python rows raise FileNotFoundError under --observe syscalls
+fails=1
+==================== m2   engine: sideeye 1.3.0 (trace contract v16)   shim sha256: 30a1cdafb5073bc50cf01c8a3515c15d7d5dfd307e1060bfef0d867d0a0a2c7d
+ok   a handler whose sa_mask holds SIGSYS writes and is counted under --observe syscalls
+FAIL #556's Python rows under --observe syscalls: exit 0, 0 of 4 raised
+     FileNotFoundError (returncode -31 is the child dying of the trap)
+     | abs path, no pipes  -> ran, returncode -31
+     | abs path, pipes     -> ran, returncode -31
+     | PATH name, no pipes -> ran, returncode -31
+     | PATH name, pipes    -> ran, returncode -31
+fails=1
