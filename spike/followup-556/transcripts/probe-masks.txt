@@ -1,0 +1,42 @@
+################ docker seccomp: default
+libc: ldd (Debian GLIBC 2.41-12+deb13u4) 2.41   arch: aarch64
+20    rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+20    rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+20    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=ADDR, parent_t
+20    clone(child_stack=ADDR, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_t
+20    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+21    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+21    rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+21    +++ exited with 0 +++
+20    rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+20    clone3({flags=CLONE_VM|CLONE_VFORK|CLONE_CLEAR_SIGHAND, exit_signal=SIGCHLD, stack=ADDR, stack_size=ADDR}, 88) = -1 ENOSYS (Function not implemented)
+20    clone(child_stack=ADDR, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+22    rt_sigprocmask(SIG_BLOCK, NULL, ~[KILL STOP], 8) = 0
+22    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+22    execve("/bin/true", ["/bin/true"], ADDR /* 5 vars */ <unfinished ...>
+20    <... clone resumed>)              = 22
+20    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+22    <... execve resumed>)             = 0
+22    +++ exited with 0 +++
+20    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=22, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+20    +++ exited with 0 +++
+################ docker seccomp: unconfined
+libc: ldd (Debian GLIBC 2.41-12+deb13u4) 2.41   arch: aarch64
+20    rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+20    rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+20    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=ADDR, parent_t
+20    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+21    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+21    rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+21    +++ exited with 0 +++
+20    rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+20    clone3({flags=CLONE_VM|CLONE_VFORK|CLONE_CLEAR_SIGHAND, exit_signal=SIGCHLD, stack=ADDR, stack_size=ADDR}, 88 <unfinished ...>
+22    rt_sigprocmask(SIG_BLOCK, NULL, ~[KILL STOP], 8) = 0
+22    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+22    execve("/bin/true", ["/bin/true"], ADDR /* 5 vars */ <unfinished ...>
+20    <... clone3 resumed>)             = 22
+22    <... execve resumed>)             = 0
+20    rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+22    +++ exited with 0 +++
+20    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=22, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+20    +++ exited with 0 +++

@@ -8692,6 +8692,76 @@ if [ "$sr_rc" != "0" ]; then
     fails=$((fails + 1))
 fi
 
+# ---- #556: a handler whose sa_mask holds every signal is still counted ----
+# The kernel adds a handler's sa_mask to the blocked set while the handler runs. A handler
+# installed with every signal there — libuv installs its handlers that way — held SIGSYS
+# blocked, and a trapped call inside it ended the process: measured 2026-09-13 on main,
+# signal 31 for a handler shaped like the toy's, and `recording_run_failed` for node 20 with
+# a `process.on('SIGUSR2')` handler that wrote a file. The shim's libc `sigaction` now hands
+# a request for another signal to the library without SIGSYS in its mask.
+#
+# The toy also checks, inside its handler, that SIGUSR2 and SIGTERM are still blocked and
+# exits 3 if not, so a shim that emptied the mask cannot pass for one that took out a bit.
+#
+# Seen red three ways (2026-09-13, `spike/followup-556/`): on main, and with the removal taken
+# out of `withoutSigsys`, `recording_run_failed` with the process dead of the trap; with the
+# whole mask cleared instead of one bit, `recording_run_failed` with the toy's exit 3.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw samask" \
+    --observe syscalls --shim "$SHIM" --work /tmp/acc/work \
+    --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "oracle: agreed on 3 operations"; then
+    echo "ok   a handler whose sa_mask holds SIGSYS writes and is counted under --observe syscalls"
+else
+    echo "FAIL a handler installed with a full sa_mask was not observed: exit $rc (wanted 0 with"
+    echo "     three operations; recording_run_failed means the process died of the trap)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# ---- #556's report: a Python child whose exec fails keeps SIGSYS (#562's fix, pinned) ----
+# The four rows #556 was filed with. CPython's vfork child resets its signal handlers through
+# libc `sigaction` before it execs (`reset_signal_handlers`, `_posixsubprocess.c`), SIGSYS
+# among them, and a failed exec reports back with a trapped `write`. Under --observe syscalls
+# v1.3.0 printed `returncode -31` on all four rows (Python 3.11, glibc 2.36, measured
+# 2026-09-13); the libc `sigaction` guard #562 added makes each of them the
+# `FileNotFoundError` a plain run prints.
+#
+# This pins #562's fix, not #556's change: with the `sa_mask` removal taken out it stays
+# green, and with #562's `SIGSYS` guard taken out it goes red with `returncode -31` on all
+# four rows (2026-09-13, `spike/followup-556/`).
+rm -rf /tmp/acc-py && mkdir -p /tmp/acc-py/state
+cat > /tmp/acc-py/sp.py <<'PY'
+import subprocess, sys
+from subprocess import PIPE, STDOUT
+for tag, args, kw in [
+    ("abs path, no pipes ", ["/nonexistent-tool"], {}),
+    ("abs path, pipes    ", ["/nonexistent-tool"], dict(stdout=PIPE, stderr=STDOUT)),
+    ("PATH name, no pipes", ["nonexistent-tool"], {}),
+    ("PATH name, pipes   ", ["nonexistent-tool"], dict(stdout=PIPE, stderr=STDOUT)),
+]:
+    try:
+        print(tag, "-> ran, returncode", subprocess.run(args, **kw).returncode, file=sys.stderr)
+    except FileNotFoundError:
+        print(tag, "-> FileNotFoundError", file=sys.stderr)
+open(sys.argv[1], "w").write("x\n")
+PY
+o=$("$SIDEEYE" preflight --state /tmp/acc-py/state \
+    --operation "python3 /tmp/acc-py/sp.py /tmp/acc-py/state/o.txt" \
+    --observe syscalls --shim "$SHIM" --work /tmp/acc-py/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+py_fnf=$(echo "$o" | grep -c -- "-> FileNotFoundError")
+if [ "$rc" = "0" ] && [ "$py_fnf" = "4" ]; then
+    echo "ok   #556's four Python rows raise FileNotFoundError under --observe syscalls"
+else
+    echo "FAIL #556's Python rows under --observe syscalls: exit $rc, $py_fnf of 4 raised"
+    echo "     FileNotFoundError (returncode -31 is the child dying of the trap)"
+    echo "$o" | grep -- " -> " | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

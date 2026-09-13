@@ -1,0 +1,11 @@
+--- a/shim/src/syscalls.zig	2026-09-13 16:02:28
++++ b/shim/src/syscalls.zig	2026-09-13 16:02:28
+@@ -773,7 +773,7 @@
+ // idea of the struct is still the measured one. A toolchain that moved it stops the build
+ // instead of clearing a bit in the wrong place.
+ comptime {
+-    if (layout != null and (@sizeOf(std.c.Sigaction) != 152 or
++    if (layout != null and (@sizeOf(std.c.Sigaction) != 153 or
+         @offsetOf(std.c.Sigaction, "mask") != 8 or @sizeOf(std.c.sigset_t) != 128 or
+         @offsetOf(std.c.Sigaction, "flags") != 136))
+         @compileError("std.c.Sigaction is no longer glibc's measured struct sigaction");

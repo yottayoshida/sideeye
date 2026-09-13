@@ -1,0 +1,36 @@
+Unable to find image 'debian:bullseye-slim' locally
+bullseye-slim: Pulling from library/debian
+104799d4ff5b: Pulling fs layer
+f9e623fe44d7: Download complete
+104799d4ff5b: Download complete
+104799d4ff5b: Pull complete
+Digest: sha256:e5b6442dd2e9684cf5e87d8338b5968f3b348636fc0be6d7850a381e3731a2bd
+Status: Downloaded newer image for debian:bullseye-slim
+apt rc=0
+libc: ldd (Debian GLIBC 2.31-13+deb11u14) 2.31   arch: aarch64   openssl: OpenSSL 1.1.1w  11 Sep 2023
+==== /bin/true
+   pid 294 BEFORE: 294   rt_sigaction(SIGRTMIN, {sa_handler=0xffff87ab2b94, sa_mask=[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+   pid 294 BEFORE: 294   rt_sigaction(SIGRT_1, {sa_handler=0xffff87ab2c50, sa_mask=[], sa_flags=SA_RESTART|SA_SIGINFO}, NULL, 8) = 0
+   pid 294: shim handler installed after 2 set-call(s)
+==== sh -c '/bin/true; :' (two images)
+   pid 299 BEFORE: 299   rt_sigaction(SIGRTMIN, {sa_handler=0xffff92624b94, sa_mask=[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+   pid 299 BEFORE: 299   rt_sigaction(SIGRT_1, {sa_handler=0xffff92624c50, sa_mask=[], sa_flags=SA_RESTART|SA_SIGINFO}, NULL, 8) = 0
+   pid 299: shim handler installed after 2 set-call(s)
+   pid 300 BEFORE: 300   rt_sigaction(SIGRTMIN, {sa_handler=0xffff801b6b94, sa_mask=[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+   pid 300 BEFORE: 300   rt_sigaction(SIGRT_1, {sa_handler=0xffff801b6c50, sa_mask=[], sa_flags=SA_RESTART|SA_SIGINFO}, NULL, 8) = 0
+   pid 300: shim handler installed after 2 set-call(s)
+==== openssl version
+   pid 305 BEFORE: 305   rt_sigaction(SIGRTMIN, {sa_handler=0xffffa2fc0b94, sa_mask=[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+   pid 305 BEFORE: 305   rt_sigaction(SIGRT_1, {sa_handler=0xffffa2fc0c50, sa_mask=[], sa_flags=SA_RESTART|SA_SIGINFO}, NULL, 8) = 0
+   pid 305 BEFORE: 305   rt_sigaction(SIGILL, {sa_handler=0xffffa307f4d0, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+   pid 305 BEFORE: 305   rt_sigaction(SIGILL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+   pid 305 BEFORE: 305   rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+   pid 305: shim handler installed after 5 set-call(s)
+libc: ldd (Debian GLIBC 2.41-12+deb13u4) 2.41   arch: aarch64   openssl: OpenSSL 3.5.7 9 Jun 2026 (Library: OpenSSL 3.5.7 9 Jun 2026)
+==== /bin/true
+   pid 16: shim handler installed after 0 set-call(s)
+==== sh -c '/bin/true; :' (two images)
+   pid 21: shim handler installed after 0 set-call(s)
+   pid 22: shim handler installed after 0 set-call(s)
+==== openssl version
+   pid 27: shim handler installed after 0 set-call(s)

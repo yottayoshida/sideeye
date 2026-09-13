@@ -1,0 +1,12 @@
+--- a/shim/src/syscalls.zig	2026-09-13 16:02:28
++++ b/shim/src/syscalls.zig	2026-09-13 16:02:28
+@@ -810,7 +810,8 @@
+     if (!guard_signal or act == null) return f(signum, act, oldact);
+     if (signum != sigsys_no) {
+         const trimmed = withoutSigsys(act.?) orelse return f(signum, act, oldact);
+-        return f(signum, &trimmed, oldact);
++        _ = trimmed;
++        return f(signum, act, oldact);
+     }
+     // The query half is answered by the library, so `oldact` describes the handler that
+     // is really installed — including the `SA_SIGINFO` flag that says how to call it, for

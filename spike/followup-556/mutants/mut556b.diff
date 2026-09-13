@@ -1,0 +1,10 @@
+--- <worktree>/shim/src/syscalls.zig	2026-09-13 14:50:51
++++ <scratch>/mut556b/shim/src/syscalls.zig	2026-09-13 14:54:28
+@@ -811,6 +811,7 @@
+     // The query half is answered by the library, so `oldact` describes the handler that
+     // is really installed — including the `SA_SIGINFO` flag that says how to call it, for
+     // a caller that means to chain. Only the set half is dropped.
++    if (true) return f(signum, act, oldact); // MUTANT M2: the SIGSYS guard (#562) is gone
+     if (oldact) |o| _ = f(signum, null, o);
+     return 0;
+ }

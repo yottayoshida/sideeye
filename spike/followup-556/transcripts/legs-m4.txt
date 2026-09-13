@@ -1,0 +1,20 @@
+######## unit tests, mut556d
+7/8 syscalls.test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves...expected 64, found 127
+FAIL (TestExpectedEqual)
+<zig-lib>/std/testing.zig:118:17: 0x11a3c3b in expectEqualInner__anon_42476 (root)
+<zig-lib>/std/testing.zig:83:5: 0x11a563f in expectEqual (root)
+<scratch>/mut556d/shim/src/syscalls.zig:1302:5: 0x11a56bb in test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves (root)
+7 passed; 0 skipped; 1 failed.
+==================== m4   shim sha256: 8c089c03526cc7beb37c4385f089b7147c273d6be7d4700e407e02fbc2aafe87
+FAIL a handler installed with a full sa_mask was not observed: exit 2 (wanted 0 with
+     three operations; recording_run_failed means the process died of the trap)
+     | UNKNOWN  recording_run_failed
+     |          the operation exited 3 during the recording run where 0 was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)
+     | next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+     | 
+     | atomicity   not classified (the run was refused before L0 classification)
+     | l1          no marker configured
+ok   #556's four Python rows raise FileNotFoundError under --observe syscalls
+fails=1
+---- the toy's own exit under the M4 shim, preloaded directly (no engine)
+toy-raw samask rc=3

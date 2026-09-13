@@ -1,0 +1,15 @@
+######## mut556a
+7/8 syscalls.test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves...FAIL (TestUnexpectedResult)
+<scratch>/mut556a/shim/src/syscalls.zig:1298:44: 0x11a543f in test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves (root)
+7 passed; 0 skipped; 1 failed.
+rc=0
+######## mut556c
+7/8 syscalls.test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves...FAIL (TestUnexpectedResult)
+<scratch>/mut556c/shim/src/syscalls.zig:1298:44: 0x11a54e3 in test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves (root)
+8/8 syscalls.test.a sa_mask without SIGSYS is forwarded as the caller's own...expected 0, found 1
+FAIL (TestExpectedEqual)
+<zig-lib>/std/testing.zig:118:17: 0x11a2923 in expectEqualInner__anon_42301 (root)
+<zig-lib>/std/testing.zig:83:5: 0x11a2a73 in expectEqual (root)
+<scratch>/mut556c/shim/src/syscalls.zig:1318:5: 0x11a2af7 in test.a sa_mask without SIGSYS is forwarded as the caller's own (root)
+6 passed; 0 skipped; 2 failed.
+rc=0

@@ -1,0 +1,15 @@
+Unable to find image 'debian:bullseye-slim' locally
+bullseye-slim: Pulling from library/debian
+4705738e5e04: Pulling fs layer
+4705738e5e04: Download complete
+cb786f734d93: Download complete
+4705738e5e04: Pull complete
+Digest: sha256:e5b6442dd2e9684cf5e87d8338b5968f3b348636fc0be6d7850a381e3731a2bd
+Status: Image is up to date for debian:bullseye-slim
+x86_64
+ldd (Debian GLIBC 2.31-13+deb11u14) 2.31
+6/8 syscalls.test.the trap frame's offsets keep the shape a transcription slip would break...OK
+7/8 syscalls.test.a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves...OK
+8/8 syscalls.test.a sa_mask without SIGSYS is forwarded as the caller's own...OK
+All 8 tests passed.
+rc=0
