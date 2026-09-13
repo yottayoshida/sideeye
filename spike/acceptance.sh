@@ -1373,6 +1373,56 @@ else
     fails=$((fails + 1))
 fi
 
+# Whether the engine contained these runs in a cgroup of their own (contract v17, #559),
+# asserted rather than assumed, because the engine decides it without a word: where its probe
+# fails every run is uncontained, and every leg above and below is just as green. What the
+# host offers is known to whoever set it up, so they say: CI's delegated scope
+# (`spike/in-delegated-cgroup.sh`) runs this suite with SIDEEYE_EXPECT_CONTAINED=1 and CI's
+# plain step with 0. Unset, nothing is asserted — a container on a laptop may or may not
+# delegate, and a guess here would pass for either reason. The evidence is the shim's `cgroup`
+# record (904), which only a contained run's shim writes, and the other side is
+# `sideeye-testnocgroup`, the same tree built never to contain.
+echo ""
+echo "=========== check 2cg: runs are contained exactly where the host says they can be (#559) ==========="
+NOCG=$ROOT/zig-out/bin/sideeye-testnocgroup
+case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+0|1)
+    if [ ! -x "$NOCG" ]; then
+        echo "FAIL no-cgroup apparatus missing: build with zig build -Dtest-no-cgroup (add -Dtarget=... for the container)"
+        fails=$((fails + 1))
+    else
+        for side in shipped compared; do
+            if [ "$side" = shipped ]; then engine=$SIDEEYE; else engine=$NOCG; fi
+            rm -rf /tmp/acc-cg && mkdir -p /tmp/acc-cg/state
+            o=$("$engine" explore --state /tmp/acc-cg/state \
+                --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+                --shim "$SHIM" --work /tmp/acc-cg/work --oracle /usr/bin/strace 2>&1)
+            rc=$?
+            rec=$(count_op_records /tmp/acc-cg/work/trace-record.bin 904)
+            world=$(count_op_records /tmp/acc-cg/work/trace-1.bin 904)
+            if [ "$side" = shipped ]; then s_rc=$rc; s_rec=$rec; s_world=$world; s_out=$o; else n_rc=$rc; n_rec=$rec; n_world=$world; fi
+        done
+        if [ "$SIDEEYE_EXPECT_CONTAINED" = 1 ]; then
+            [ "$s_rec" -ge 1 ] && [ "$s_world" -ge 1 ]
+        else
+            [ "$s_rec" = 0 ] && [ "$s_world" = 0 ]
+        fi
+        shipped_as_said=$?
+        if [ "$s_rc" = 0 ] && [ "$n_rc" = 0 ] && [ "$shipped_as_said" = 0 ] && [ "$n_rec" = 0 ] && [ "$n_world" = 0 ]; then
+            echo "ok   SIDEEYE_EXPECT_CONTAINED=$SIDEEYE_EXPECT_CONTAINED: cgroup records in the recording and world 1 — shipped engine $s_rec and $s_world, no-cgroup engine $n_rec and $n_world"
+        else
+            echo "FAIL SIDEEYE_EXPECT_CONTAINED=$SIDEEYE_EXPECT_CONTAINED, but the cgroup records in the recording and world 1 are shipped engine $s_rec and $s_world (exit $s_rc), no-cgroup engine $n_rec and $n_world (exit $n_rc)"
+            echo "$s_out" | sed 's/^/     | /'
+            fails=$((fails + 1))
+        fi
+    fi
+    ;;
+*)
+    echo "     NOT MEASURED: SIDEEYE_EXPECT_CONTAINED is unset, so whether this host contains runs is not asserted"
+    not_measured=$((not_measured + 1))
+    ;;
+esac
+
 echo ""
 echo "=========== check 2j: the printed reproduce line reproduces ==========="
 # The line was wrong twice, and both times the report looked right. It omitted the state

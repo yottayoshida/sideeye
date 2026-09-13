@@ -163,7 +163,17 @@ const std = @import("std");
 /// `shim/src/common.zig`'s first paragraph gives. Measured motivation: the five targets
 /// of eight behind the thread wall whose one writing thread is the main one
 /// (`docs/target-classes.md`, and `BUILDLOG.md` 2026-09-08).
-pub const contract_version: u32 = 16;
+/// v17 adds the `cgroup` marker (#559). Where the engine gives a run a cgroup v2
+/// of its own, each process the shim loads into says, immediately after `shim_ready`,
+/// whether it is inside that cgroup and — in an explored world — whether it holds the
+/// cgroup's `cgroup.kill`; it says so again at a boundary if it finds itself outside, and
+/// at the crash point if its write to `cgroup.kill` came back instead of ending it. No
+/// existing record changes shape and crash-point numbering is unchanged, but the engine
+/// now reads what the shim says about the cgroup — its watch refuses on `outside`,
+/// `unreadable` and `kill-returned` — and a v16 shim under a v17 engine would
+/// say nothing while the engine contained the run, and the version guard turns that
+/// pairing into `contract_version_mismatch` rather than a run read as uncontained.
+pub const contract_version: u32 = 17;
 
 pub const magic = "SIDEEYE1";
 
@@ -215,6 +225,19 @@ pub const env = struct {
     /// `wrappers`, so a shim carried into a process by an engine that never set it
     /// behaves exactly as v13 did.
     pub const observe = "SIDEEYE_OBSERVE";
+    /// The cgroup the engine gave this spawn (v17, #559), spelled the way `/proc/self/cgroup`
+    /// spells it — the path after `0::`. Empty when the engine could not give it one: every
+    /// run on macOS, and every run whose engine cannot move processes within its own cgroup.
+    pub const run_cgroup = "SIDEEYE_RUN_CGROUP";
+    /// Absolute path of the `cgroup.kill` of the cgroup the run's processes are in, `work` one
+    /// level below the run's (v17). Set on an explored world's spawn only, beside `kill_group`
+    /// and for its reason: a world is the only run that is killed.
+    pub const kill_cgroup = "SIDEEYE_KILL_CGROUP";
+    /// Absolute path of the run's own `cgroup.procs`, one level above `work` (v17), set beside
+    /// `kill_cgroup`. The crash point moves its own process there first, so the cgroup kill
+    /// takes every other process of the run, and then signals its process group, which takes
+    /// the rest — the writer, and whatever left the cgroup without leaving the group.
+    pub const kill_aside = "SIDEEYE_KILL_ASIDE";
 };
 
 /// The exit-code contract from DESIGN.md §13. UNKNOWN is never 0: a caller that
@@ -293,6 +316,30 @@ pub const observe_aux = struct {
     /// This build cannot install one at all — not Linux, or an architecture whose trap
     /// frame layout the shim does not know.
     pub const unsupported = "observe:syscalls-unsupported";
+};
+
+/// What a `cgroup` record's `aux` says (v17, #559). One class with six values rather than
+/// six classes: each is an answer to the same question — where does this process stand
+/// against the run's cgroup, and can it take the cgroup down — and the engine keeps its own
+/// fields for them rather than reading them through `hard_boundary`, which holds only the
+/// first boundary a trace carries.
+pub const cgroup_aux = struct {
+    /// Inside the run's cgroup: the recording run, the baseline world, a preflight run.
+    pub const held = "cgroup:held";
+    /// Inside, and holding the cgroup's `cgroup.kill` for the crash point: a world.
+    pub const held_kill = "cgroup:held-kill";
+    /// Outside the run's cgroup: moved out, or born somewhere else.
+    pub const outside = "cgroup:outside";
+    /// Where this process stands could not be read: `/proc/self/cgroup` would not open, or held
+    /// no cgroup v2 line. Not an acknowledgement, and not a claim that it moved.
+    pub const unreadable = "cgroup:unreadable";
+    /// The crash point's write to `cgroup.kill` returned. A write that lands ends the writer,
+    /// so returning at all is the failure.
+    pub const kill_returned = "cgroup:kill-returned";
+    /// The crash point could not step aside out of the cgroup it was about to kill, so its kill
+    /// was that cgroup's alone and reached no process that left it without leaving the process
+    /// group. Written before the kill, which ends the writer.
+    pub const kill_alone = "cgroup:kill-alone";
 };
 
 pub const unresolved_kind = struct {
@@ -586,6 +633,9 @@ pub const OpClass = enum(u16) {
     /// paths resolve inside the state directory, because the oracle's refusal is
     /// scope-gated too and an out-of-scope swap is none of this tool's business.
     unsupported = 903,
+    /// Where this process stands against the run's cgroup (v17, #559). Written only when the
+    /// engine gave the spawn a cgroup; `aux` is one of `cgroup_aux`.
+    cgroup = 904,
 
     pub fn isKillPoint(self: OpClass) bool {
         return switch (self) {
@@ -603,7 +653,7 @@ pub const OpClass = enum(u16) {
 
     pub fn isMarker(self: OpClass) bool {
         return switch (self) {
-            .shim_ready, .kill_landed, .unresolved, .unsupported => true,
+            .shim_ready, .kill_landed, .unresolved, .unsupported, .cgroup => true,
             else => false,
         };
     }

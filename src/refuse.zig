@@ -559,13 +559,13 @@ const SpawnPhase = enum {
 /// review, not by the compiler.
 pub var run_phase: SpawnPhase = .before_exploration;
 
-pub fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
+pub fn spawnFailure(e: posix.ContainedSpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
     // The SETUP_ERROR class, decided once for the whole error set (#518): every member is
     // the engine needing something of the machine — a fork, memory, a descriptor, a capture,
-    // a wait — so every arm is `environment`, and the switch is exhaustive so a member added
-    // to `SpawnError` has to be given a class here rather than inherit one.
+    // a wait, a cgroup — so every arm is `environment`, and the switch is exhaustive so a
+    // member added to `ContainedSpawnError` has to be given a class here rather than inherit one.
     const reason: contract.SetupErrorReason = switch (e) {
-        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => .environment,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => .environment,
     };
     if (e == error.WaitFailed) {
         const detail = "a child process ran, but its exit status could never be read: the wait was interrupted repeatedly, or failed permanently. Every verdict here rests on how that child ended, so the run refuses instead of deriving one from a status that was never written";
@@ -611,6 +611,14 @@ pub fn spawnFailure(e: posix.SpawnError, phase: SpawnPhase, doing: []const u8) n
     if (e == error.CaptureUnavailable) {
         var buf: [512]u8 = undefined;
         setupError(reason, std.fmt.bufPrint(&buf, "{s}: the command's stdout capture in the work directory could not be opened. The engine refuses a capture path that is a symlink, or that already holds a file or directory the engine did not just create — check --work, and what is at the capture path inside it", .{doing}) catch doing);
+    }
+    // The run's cgroup (contract v17, #559), refused in the parent the way the capture is: the
+    // cgroup or the pipe its child waits on could not be made, or the child — forked, and
+    // waiting without running — could not be moved into it. The environment is what could not be arranged, in either phase, and
+    // nothing of the command ran.
+    if (e == error.CgroupJoinFailed) {
+        var buf: [512]u8 = undefined;
+        setupError(reason, std.fmt.bufPrint(&buf, "{s}: the engine could not arrange the run's cgroup — make it, open the pipe its child waits on, or move the child into it — so nothing of the command ran (a child already forked was killed first). Its own cgroup took a move and a new child cgroup when it was probed, so look at what changed since: permissions or limits on the cgroup, or the descriptors the engine may still open", .{doing}) catch doing);
     }
     // Fork and allocation failures are environment problems in either phase, and the
     // caller's wording already says which step was starting.

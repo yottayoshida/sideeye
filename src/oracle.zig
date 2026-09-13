@@ -787,6 +787,101 @@ fn isReadOnlyOpen(name: []const u8, line: []const u8) bool {
     return true;
 }
 
+/// The cgroup interface files a write moves a process through (`cgroup.procs`,
+/// `cgroup.threads`) or changes a cgroup's kind with (`cgroup.type`: a threaded cgroup refuses
+/// `cgroup.kill`, which takes the kill away without moving anyone).
+const cgroup_move_files = [_][]const u8{ "cgroup.procs", "cgroup.threads", "cgroup.type" };
+
+/// A description of this line when it moves a process between cgroups, or null (contract v17,
+/// #559). An open is one when it names one of `cgroup_move_files` — by its path argument, or
+/// by the path strace annotates the returned descriptor with — and `isReadOnlyOpen`'s
+/// fail-closed reading does not call it read-only. A clone3 is one when it carries
+/// `CLONE_INTO_CGROUP`. Only a call that visibly failed is left out: an unfinished half carries
+/// no result, and a call whose outcome the line does not show is counted.
+///
+/// **It refuses too much in two places, on purpose.** A regular file that happens to be named
+/// `cgroup.procs` and opened for writing reads as a move, since strace does not say which
+/// filesystem a path is on; and the `CLONE_INTO_CGROUP` search runs over the whole first
+/// argument, where the cgroup descriptor's annotation carries a path. Both need a name the
+/// target chose, and both cost a contained run a refusal, never a verdict.
+fn cgroupMove(arena: std.mem.Allocator, name: []const u8, line: []const u8) !?[]const u8 {
+    const result = resultText(line);
+    if (result) |r| {
+        const eq = std.mem.indexOfScalar(u8, r, '=') orelse 0;
+        const value = std.mem.trim(u8, r[eq + 1 ..], " \t");
+        if (value.len > 0 and value[0] == '-') return null;
+    }
+    if (std.mem.eql(u8, name, "clone3")) {
+        const flags = syscallArg(line, 0) orelse return null;
+        if (std.mem.indexOf(u8, flags, "CLONE_INTO_CGROUP") == null) return null;
+        return "a process was created straight into another cgroup (clone3 with CLONE_INTO_CGROUP), where neither the crash-point kill nor the engine's cleanup reaches it";
+    }
+    // `open_by_handle_at` names no path — a handle, relative to a mount's descriptor — so only
+    // the descriptor it returns says what was opened (review, #559 PR A).
+    const by_handle = std.mem.eql(u8, name, "open_by_handle_at");
+    const path_index: ?usize = if (std.mem.eql(u8, name, "open") or std.mem.eql(u8, name, "creat"))
+        0
+    else if (std.mem.eql(u8, name, "openat") or std.mem.eql(u8, name, "openat2"))
+        1
+    else if (by_handle)
+        null
+    else
+        return null;
+    if (by_handle) {
+        // Its flags are the third argument, read the way `isReadOnlyOpen` reads the others':
+        // read-only only when symbolic and free of every write-capable access mode.
+        if (syscallArg(line, 2)) |flags| {
+            if (std.mem.indexOf(u8, flags, "O_") != null and std.mem.indexOf(u8, flags, "O_WRONLY") == null and
+                std.mem.indexOf(u8, flags, "O_RDWR") == null and std.mem.indexOf(u8, flags, "O_ACCMODE") == null) return null;
+        }
+    } else if (isReadOnlyOpen(name, line)) return null;
+    var pbuf: [contract.max_path]u8 = undefined;
+    const named: ?[]const u8 = if (path_index) |i| (if (syscallArg(line, i)) |arg| argPath(arg, &pbuf) else null) else null;
+    const returned: ?[]const u8 = if (result) |r| argAnnotation(r) else null;
+    for (cgroup_move_files) |file| {
+        for ([_]?[]const u8{ named, returned }) |candidate| {
+            const p = candidate orelse continue;
+            const is_file = std.mem.eql(u8, p, file) or
+                (p.len > file.len and std.mem.endsWith(u8, p, file) and p[p.len - file.len - 1] == '/');
+            if (is_file)
+                return try std.fmt.allocPrint(arena, "a process opened {s} for writing ({s}): a write there moves a process between cgroups or changes what the run's cgroup.kill can do, so the kills no longer reach every process of the run", .{ file, name });
+        }
+    }
+    return null;
+}
+
+/// What strace printed after the call's closing parenthesis — ` = 3</path>`, ` = -1 EACCES (…)`
+/// — or null for a line with no closing parenthesis at depth zero, which is an unfinished half.
+/// Found with `syscallArg`'s walk over quotes and brackets, so a path that spells ` = -1`
+/// inside the arguments is not taken for the result.
+fn resultText(raw: []const u8) ?[]const u8 {
+    const line = stripPidPrefix(raw);
+    const open = std.mem.indexOfScalar(u8, line, '(') orelse return null;
+    var i = open + 1;
+    var depth: usize = 0;
+    while (i < line.len) : (i += 1) {
+        switch (line[i]) {
+            '"' => {
+                i += 1;
+                while (i < line.len) : (i += 1) {
+                    if (line[i] == '\\') {
+                        i += 1;
+                        continue;
+                    }
+                    if (line[i] == '"') break;
+                }
+            },
+            '[', '{', '<' => depth += 1,
+            ']', '}', '>' => {
+                if (depth > 0) depth -= 1;
+            },
+            ')' => if (depth == 0) return line[i + 1 ..],
+            else => {},
+        }
+    }
+    return null;
+}
+
 /// The quoted-string content of an argument, with strace's C escapes undone into `out`.
 /// Returns null when the argument is not a quoted string (a descriptor, `NULL`, a flag).
 fn argPath(arg: []const u8, out: []u8) ?[]const u8 {
@@ -995,6 +1090,13 @@ pub const Parsed = struct {
     /// A syscall that stays a hard refusal whoever tolerates what: the subject
     /// replacing its own image, or namespace surgery.
     boundary: ?[]const u8 = null,
+    /// The first move between cgroups this capture shows, from any process, described
+    /// (contract v17, #559): an open for writing of a `cgroup.procs`, `cgroup.threads` or
+    /// `cgroup.type`, or a `clone3` carrying `CLONE_INTO_CGROUP` (`cgroupMove`). Read from every
+    /// capture and decided on by nobody here: only a run the engine contained in a cgroup
+    /// refuses on it, because only there is a process that left its cgroup one the kills no
+    /// longer reach.
+    cgroup_move: ?[]const u8 = null,
     /// Every non-read-only state-directory operation this witness placed, with **where in
     /// the capture** it was seen, in the order the lines came (v15).
     ///
@@ -1206,6 +1308,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             }
             if (!seen) try child_pids.append(arena, pid.?);
         }
+
+        // A move between cgroups (v17, #559), from any process, and here rather than below
+        // because the process-syscall branch `continue`s a clone3 away.
+        if (out.cgroup_move == null) out.cgroup_move = try cgroupMove(arena, name, line);
 
         if (isProcessSyscall(name)) {
             // A second execve by the *subject* is no longer a refusal here (#123,
@@ -3028,4 +3134,52 @@ test "a child's relative path is not resolved against the subject's directory (v
     const r = try parse(arena_state.allocator(), subject_relative, "/tmp/s", "", "/work");
     try std.testing.expect(!r.childTouched());
     try std.testing.expectEqual(@as(usize, 0), r.classes.items.len);
+}
+
+test "a move between cgroups is seen from any process, and a read, a failure or a look-alike name is not one (v17, #559)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const launch = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n";
+    const moves = [_][]const u8{
+        "4242  openat(AT_FDCWD, \"/sys/fs/cgroup/elsewhere/cgroup.procs\", O_WRONLY|O_TRUNC) = 3</sys/fs/cgroup/elsewhere/cgroup.procs>\n",
+        // Named relative to a descriptor: the annotations say where.
+        "42    openat(5</sys/fs/cgroup/elsewhere>, \"cgroup.threads\", O_WRONLY) = 3</sys/fs/cgroup/elsewhere/cgroup.threads>\n",
+        // An unfinished half shows no result, and is counted.
+        "42    openat(AT_FDCWD, \"/sys/fs/cgroup/sideeye-1-ab/cgroup.type\", O_WRONLY <unfinished ...>\n",
+        "4242  clone3({flags=CLONE_INTO_CGROUP, exit_signal=SIGCHLD, stack=NULL, stack_size=0, cgroup=5</sys/fs/cgroup/elsewhere>}, 88) = 4243\n",
+        // A handle names no path; the descriptor it returns does.
+        "42    open_by_handle_at(3</sys/fs/cgroup>, {handle_bytes=8, handle_type=254, f_handle=0x0100000000000000}, O_WRONLY|O_CLOEXEC) = 4</sys/fs/cgroup/elsewhere/cgroup.procs>\n",
+        // A directory named to look like a failure is still a success.
+        "42    openat(AT_FDCWD, \"/sys/fs/cgroup/a = -1 E/cgroup.procs\", O_WRONLY) = 3</sys/fs/cgroup/a = -1 E/cgroup.procs>\n",
+    };
+    for (moves) |m| {
+        const text = try std.mem.concat(a, u8, &.{ launch, m });
+        const p = try parse(a, text, "/tmp/s", "", "/work");
+        if (p.cgroup_move == null) {
+            std.debug.print("not seen as a move: {s}", .{m});
+            return error.TestUnexpectedResult;
+        }
+    }
+    const not_moves = [_][]const u8{
+        // The shim's own standing check.
+        "42    openat(AT_FDCWD, \"/proc/self/cgroup\", O_RDONLY|O_CLOEXEC) = 3</proc/42/cgroup>\n",
+        "42    openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_RDONLY) = 3</sys/fs/cgroup/x/cgroup.procs>\n",
+        "42    openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_WRONLY) = -1 EACCES (Permission denied)\n",
+        "42    openat(AT_FDCWD, \"/tmp/s/not-cgroup.procs\", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/not-cgroup.procs>\n",
+        "4242  clone3({flags=CLONE_VM|CLONE_FS, exit_signal=0}, 88) = 4243\n",
+        "42    open_by_handle_at(3</sys/fs/cgroup>, {handle_bytes=8, handle_type=254, f_handle=0x01}, O_RDONLY) = 4</sys/fs/cgroup/elsewhere/cgroup.procs>\n",
+        "4242  clone3({flags=CLONE_INTO_CGROUP, cgroup=5</sys/fs/cgroup/elsewhere>}, 88) = -1 EPERM (Operation not permitted)\n",
+    };
+    for (not_moves) |m| {
+        const text = try std.mem.concat(a, u8, &.{ launch, m });
+        const p = try parse(a, text, "/tmp/s", "", "/work");
+        if (p.cgroup_move != null) {
+            std.debug.print("taken for a move: {s}", .{m});
+            return error.TestUnexpectedResult;
+        }
+    }
+    // Before the launch the lines are the apparatus's, as for every other reading here.
+    const early = try parse(a, "4242  openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_WRONLY) = 3\n", "/tmp/s", "", "/work");
+    try std.testing.expect(early.cgroup_move == null);
 }

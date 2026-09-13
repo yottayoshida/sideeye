@@ -744,6 +744,14 @@ pub fn decodeStatus(status: c_int) Term {
 /// failure never enters that namespace at all.
 pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed, StdinUnavailable, CaptureUnavailable };
 
+/// `SpawnError` for the two entry points that take a cgroup (contract v17, #559), plus the
+/// one failure only a cgroup can have: the engine made the run's cgroup and could not move
+/// the child into it. A separate set rather than a sixth member of `SpawnError`, for the
+/// reason `runChildCaptureWorld` gives about `TimedOut`: a caller that never passes a cgroup
+/// cannot receive the error by type, and its exhaustive switch does not grow an arm it could
+/// never reach.
+pub const ContainedSpawnError = SpawnError || error{CgroupJoinFailed};
+
 /// A child's stdout capture: where it goes, and what the open that creates it refuses.
 ///
 /// One argument rather than three positional parameters, because #469 was exactly a
@@ -882,6 +890,24 @@ pub fn runChildCapture(
     return runChildImpl(gpa, argv, env_pairs, cap, false, cwd);
 }
 
+/// `runChildCapture` for a run the engine kills as one, contained in `cg` when one is given
+/// (contract v17, #559): the recording run and preflight's second run. A world has
+/// `runChildCaptureWorld`.
+pub fn runChildCaptureContained(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    cap: Capture,
+    cwd: ?[]const u8,
+    cg: ?*CgroupSpawn,
+) ContainedSpawnError!Term {
+    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, null, cwd, cg, RealOps) catch |e| switch (e) {
+        // A null budget never takes the timeout branch, as `runChildImpl` says.
+        error.TimedOut => unreachable,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |narrow| narrow,
+    };
+}
+
 /// `runChildCapture` with a wall-clock budget: the one entry point that can answer
 /// `error.TimedOut`, used by the world loop alone (#263). Everything else keeps the
 /// plain `SpawnError`, so a caller that never passes a budget cannot receive a timeout
@@ -901,6 +927,9 @@ pub fn runChildCapture(
 /// safety and the boundedness of the exited-side reap stand on unreaped children
 /// staying zombies, and an inherited SIG_IGN — which survives exec — would let the
 /// kernel auto-reap them instead.
+///
+/// `cg` is the world's cgroup where the engine contains it (contract v17, #559), null
+/// otherwise; only a contained world can also answer `error.CgroupJoinFailed`.
 pub fn runChildCaptureWorld(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -908,8 +937,9 @@ pub fn runChildCaptureWorld(
     cap: Capture,
     budget_ms: ?u64,
     cwd: ?[]const u8,
-) (SpawnError || error{TimedOut})!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, budget_ms, cwd, RealOps);
+    cg: ?*CgroupSpawn,
+) (ContainedSpawnError || error{TimedOut})!Term {
+    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, budget_ms, cwd, cg, RealOps);
 }
 
 /// Like `runChildCapture`, but the child receives *only* `env_pairs` as its whole
@@ -1245,10 +1275,13 @@ fn runChildImpl(
     minimal_env: bool,
     cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, capture, minimal_env, null, cwd, RealOps) catch |e| switch (e) {
+    return runChildImplWithOps(gpa, argv, env_pairs, capture, minimal_env, null, cwd, null, RealOps) catch |e| switch (e) {
         // A null budget never takes the timeout branch — see the budget block below,
         // which is the only producer of this error and is gated on `budget_ms != null`.
         error.TimedOut => unreachable,
+        // Nor does a null cgroup take the join: the only producer of this error is gated on
+        // `cg != null` (contract v17, #559).
+        error.CgroupJoinFailed => unreachable,
         error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |narrow| narrow,
     };
 }
@@ -1259,7 +1292,339 @@ fn runChildImpl(
 /// microseconds — but the bound that keeps "the budget path never waits without
 /// bound" true when the promise fails: a child pinned in uninterruptible sleep, or
 /// one whose credentials the group signal could not reach.
-const world_kill_grace_ms: u64 = 5000;
+pub const world_kill_grace_ms: u64 = 5000;
+
+/// The longest cgroup path the engine builds (contract v17, #559).
+const max_cgroup_path = 1024;
+
+/// The engine's own cgroup, where a run's cgroups are made (contract v17, #559).
+///
+/// cgroup v2 lets a delegated process move others only within its own subtree (the kernel
+/// documentation's "Delegation Containment"), so a run's cgroup has to be a child of the one
+/// the engine is in. It is offered only when writing the engine's own pid to its own
+/// `cgroup.procs` succeeds — the permission check a real move passes, which `access(W_OK)`
+/// does not see — and a trial child cgroup carries a `cgroup.kill`.
+pub const CgroupHome = struct {
+    /// Filesystem path of the engine's cgroup.
+    dir: [:0]const u8,
+    /// The same cgroup as `/proc/self/cgroup` spells it: the path after `0::`.
+    rel: []const u8,
+};
+
+var cgroup_home_state: enum { unprobed, absent, present } = .unprobed;
+var cgroup_home_dir_buf: [max_cgroup_path]u8 = undefined;
+var cgroup_home_rel_buf: [max_cgroup_path]u8 = undefined;
+var cgroup_home: CgroupHome = undefined;
+
+/// Probed once per engine. Null on macOS, outside a cgroup v2, and wherever the engine cannot
+/// move a process within its own cgroup — every one of which is a run the engine does not
+/// contain, and so exactly the engine it was before contract v17.
+pub fn cgroupHome() ?CgroupHome {
+    switch (cgroup_home_state) {
+        .present => return cgroup_home,
+        .absent => return null,
+        .unprobed => {},
+    }
+    cgroup_home_state = .absent;
+    if (builtin.os.tag != .linux) return null;
+    var mbuf: [16 * 1024]u8 = undefined;
+    const mount = cgroup2Mount(readSmallFile("/proc/self/mountinfo", &mbuf) orelse return null) orelse return null;
+    var cbuf: [4096]u8 = undefined;
+    const rel = cgroup2Path(readSmallFile("/proc/self/cgroup", &cbuf) orelse return null) orelse return null;
+    if (rel.len == 0 or rel.len >= cgroup_home_rel_buf.len) return null;
+    const dir = std.fmt.bufPrintZ(&cgroup_home_dir_buf, "{s}{s}", .{ mount, if (std.mem.eql(u8, rel, "/")) "" else rel }) catch return null;
+    var pid_buf: [16]u8 = undefined;
+    const pid_s = std.fmt.bufPrint(&pid_buf, "{d}", .{getpid()}) catch return null;
+    var procs_buf: [max_cgroup_path + 32]u8 = undefined;
+    const procs = std.fmt.bufPrintZ(&procs_buf, "{s}/cgroup.procs", .{dir}) catch return null;
+    if (!writeSmallFile(procs.ptr, pid_s)) return null;
+    var trial_buf: [max_cgroup_path + 32]u8 = undefined;
+    // A random name, for the reason `CgroupSpawn.init` gives: an engine killed between this
+    // mkdir and the rmdir leaves the directory behind, and a pid-derived name would meet it.
+    var probe_hex: [16]u8 = undefined;
+    const probe_tag = randomHex(&probe_hex) orelse return null;
+    const trial = std.fmt.bufPrintZ(&trial_buf, "{s}/sideeye-probe-{s}", .{ dir, probe_tag }) catch return null;
+    if (mkdir(trial.ptr, 0o755) != 0) return null;
+    defer _ = rmdir(trial.ptr);
+    var kill_buf: [max_cgroup_path + 64]u8 = undefined;
+    const kill_path = std.fmt.bufPrintZ(&kill_buf, "{s}/cgroup.kill", .{trial}) catch return null;
+    if (access(kill_path.ptr, F_OK) != 0) return null;
+    @memcpy(cgroup_home_rel_buf[0..rel.len], rel);
+    cgroup_home = .{ .dir = dir, .rel = cgroup_home_rel_buf[0..rel.len] };
+    cgroup_home_state = .present;
+    return cgroup_home;
+}
+
+/// The cgroup2 mount point in `/proc/self/mountinfo`. A mount whose root is not `/` — a bind
+/// of a subtree — would put the engine's own path somewhere else under it, and a mount point
+/// carrying an escape (`\040`) is not unescaped here; both are not offered, the side that
+/// leaves a run uncontained rather than contained in the wrong place.
+fn cgroup2Mount(mountinfo: []const u8) ?[]const u8 {
+    var lines = std.mem.splitScalar(u8, mountinfo, '\n');
+    while (lines.next()) |line| {
+        const sep = std.mem.indexOf(u8, line, " - ") orelse continue;
+        var tail = std.mem.tokenizeScalar(u8, line[sep + 3 ..], ' ');
+        const fstype = tail.next() orelse continue;
+        if (!std.mem.eql(u8, fstype, "cgroup2")) continue;
+        var fields = std.mem.tokenizeScalar(u8, line[0..sep], ' ');
+        var i: usize = 0;
+        var root: []const u8 = "";
+        var point: []const u8 = "";
+        while (fields.next()) |f| : (i += 1) {
+            if (i == 3) root = f;
+            if (i == 4) {
+                point = f;
+                break;
+            }
+        }
+        if (!std.mem.eql(u8, root, "/") or point.len == 0 or std.mem.indexOfScalar(u8, point, '\\') != null) return null;
+        return point;
+    }
+    return null;
+}
+
+/// The path after `0::` in `/proc/self/cgroup`: this process's cgroup v2.
+fn cgroup2Path(self_cgroup: []const u8) ?[]const u8 {
+    var lines = std.mem.splitScalar(u8, self_cgroup, '\n');
+    while (lines.next()) |line| {
+        if (std.mem.startsWith(u8, line, "0::")) return line[3..];
+    }
+    return null;
+}
+
+fn readSmallFile(path: [*:0]const u8, buf: []u8) ?[]const u8 {
+    const fd = open(path, O_RDONLY | O_CLOEXEC, @as(c_uint, 0));
+    if (fd < 0) return null;
+    defer _ = close(fd);
+    var n: usize = 0;
+    while (n < buf.len) {
+        const r = read(fd, buf[n..].ptr, buf.len - n);
+        if (r < 0) {
+            if (std.c._errno().* == EINTR) continue;
+            return null;
+        }
+        if (r == 0) break;
+        n += @intCast(r);
+    }
+    return buf[0..n];
+}
+
+fn writeSmallFile(path: [*:0]const u8, bytes: []const u8) bool {
+    const fd = open(path, O_WRONLY | O_CLOEXEC, @as(c_uint, 0));
+    if (fd < 0) return false;
+    defer _ = close(fd);
+    return write(fd, bytes.ptr, bytes.len) == @as(isize, @intCast(bytes.len));
+}
+
+/// A contained spawn's cgroup (contract v17, #559). The caller makes one with `init`, puts its
+/// names in the child's environment, passes it to the spawn, and reads what the spawn found.
+pub const CgroupSpawn = struct {
+    /// A world, whose shim is also told where the cgroup's `cgroup.kill` is.
+    world: bool,
+    /// The run's cgroup, R. The run's processes are not put in R itself but in `R/work`, so a
+    /// world's crash point has somewhere inside the run to step aside to: the process that
+    /// kills the world moves itself from `work` up into R, writes `work`'s `cgroup.kill` —
+    /// which then takes every other process of the run and not the writer — and signals its
+    /// own process group, which takes the writer and any process that left the cgroup without
+    /// leaving the group. Together the two reach everything the process group reached before
+    /// contract v17 and everything in the cgroup besides. The engine's own kill is R's, which
+    /// holds both.
+    dir_buf: [max_cgroup_path + 64]u8 = undefined,
+    dir_len: usize = 0,
+    rel_buf: [max_cgroup_path + 64]u8 = undefined,
+    rel_len: usize = 0,
+    /// `R/work`, where the direct child is moved and everything it starts is born.
+    work_buf: [max_cgroup_path + 72]u8 = undefined,
+    work_len: usize = 0,
+    /// `R/work/cgroup.kill`, for a world's crash point.
+    kill_buf: [max_cgroup_path + 96]u8 = undefined,
+    kill_len: usize = 0,
+    /// `R/cgroup.procs`, where a world's crash point steps aside to before it kills.
+    aside_buf: [max_cgroup_path + 80]u8 = undefined,
+    aside_len: usize = 0,
+    /// `work`'s `cgroup.procs`, opened before the fork by `cgroupMake`; -1 otherwise.
+    procs_fd: c_int = -1,
+
+    /// The child was moved into the cgroup before it ran.
+    joined: bool = false,
+    /// The cgroup held no live process after the kill, within `world_kill_grace_ms`.
+    stopped: bool = false,
+    /// Processes still in the cgroup when the direct child had exited on its own, read before
+    /// anything was killed, so a world can ask whether one of them wrote. `lingering_more`
+    /// says there were more than the array holds.
+    lingering: [128]u32 = undefined,
+    lingering_len: usize = 0,
+    lingering_more: bool = false,
+
+    /// Null when the names do not fit or the kernel refused the entropy, which leaves the spawn
+    /// uncontained.
+    ///
+    /// The name carries sixteen hex digits of kernel entropy beside the engine's pid, not a
+    /// counter. A cgroup outlives an engine killed before its cleanup, and an engine in a
+    /// container starts at the same small pid time after time, so a pid-and-counter name is
+    /// exactly the name the next engine would `mkdir` — and a directory already there would
+    /// refuse the spawn as a setup error instead of containing it.
+    pub fn init(home: CgroupHome, world: bool) ?CgroupSpawn {
+        var self: CgroupSpawn = .{ .world = world };
+        var hex: [16]u8 = undefined;
+        const tag = randomHex(&hex) orelse return null;
+        const d = std.fmt.bufPrintZ(&self.dir_buf, "{s}/sideeye-{d}-{s}", .{ home.dir, getpid(), tag }) catch return null;
+        self.dir_len = d.len;
+        const sep: []const u8 = if (std.mem.endsWith(u8, home.rel, "/")) "" else "/";
+        const r = std.fmt.bufPrint(&self.rel_buf, "{s}{s}sideeye-{d}-{s}", .{ home.rel, sep, getpid(), tag }) catch return null;
+        self.rel_len = r.len;
+        const w = std.fmt.bufPrintZ(&self.work_buf, "{s}/work", .{d}) catch return null;
+        self.work_len = w.len;
+        const k = std.fmt.bufPrintZ(&self.kill_buf, "{s}/cgroup.kill", .{w}) catch return null;
+        self.kill_len = k.len;
+        const a = std.fmt.bufPrintZ(&self.aside_buf, "{s}/cgroup.procs", .{d}) catch return null;
+        self.aside_len = a.len;
+        return self;
+    }
+    pub fn dir(self: *const CgroupSpawn) [:0]const u8 {
+        return self.dir_buf[0..self.dir_len :0];
+    }
+    /// For `contract.env.run_cgroup`.
+    pub fn relPath(self: *const CgroupSpawn) []const u8 {
+        return self.rel_buf[0..self.rel_len];
+    }
+    /// For `contract.env.kill_cgroup`: `work`'s `cgroup.kill`.
+    pub fn killPath(self: *const CgroupSpawn) [:0]const u8 {
+        return self.kill_buf[0..self.kill_len :0];
+    }
+    pub fn workDir(self: *const CgroupSpawn) [:0]const u8 {
+        return self.work_buf[0..self.work_len :0];
+    }
+    /// For `contract.env.kill_aside`: R's `cgroup.procs`.
+    pub fn asidePath(self: *const CgroupSpawn) [:0]const u8 {
+        return self.aside_buf[0..self.aside_len :0];
+    }
+    /// Remove `work` and R, innermost first. A cgroup the target made below either is not
+    /// walked: it keeps them in place, empty once the run is stopped.
+    pub fn removeDirs(self: *const CgroupSpawn) void {
+        _ = rmdir(self.workDir().ptr);
+        _ = rmdir(self.dir().ptr);
+    }
+};
+
+/// `ESRCH`, which a read of `/proc/<pid>/stat` answers once the process is gone.
+const ESRCH: c_int = @intFromEnum(std.posix.E.SRCH);
+
+/// A process's state letter from `/proc/<pid>/stat` (Linux): `R`, `S`, `D`, `Z`, `X` and the
+/// rest. Null only when there is no such process. A file that exists and cannot be read or
+/// parsed answers `?`, which a caller asking "is it dead?" must read as no — the survivor
+/// check (contract v17, #559) refuses on it rather than trusting a read it could not make.
+pub fn processState(pid: u32) ?u8 {
+    var pbuf: [32]u8 = undefined;
+    const path = std.fmt.bufPrintZ(&pbuf, "/proc/{d}/stat", .{pid}) catch return '?';
+    const fd = open(path.ptr, O_RDONLY | O_CLOEXEC, @as(c_uint, 0));
+    if (fd < 0) return if (std.c._errno().* == ENOENT) null else '?';
+    defer _ = close(fd);
+    var buf: [1024]u8 = undefined;
+    const got = while (true) {
+        const r = read(fd, &buf, buf.len);
+        if (r < 0 and std.c._errno().* == EINTR) continue;
+        break r;
+    };
+    // A process that exits between the open and the read answers ESRCH here.
+    if (got < 0) return if (std.c._errno().* == ESRCH) null else '?';
+    return statState(buf[0..@intCast(got)]) orelse '?';
+}
+
+/// The state field of a `/proc/<pid>/stat` line: the byte after the `) ` that closes the
+/// command name. The LAST `)`, because the name is the process's own choice and may hold
+/// spaces and parentheses of its own.
+fn statState(stat: []const u8) ?u8 {
+    const paren = std.mem.lastIndexOfScalar(u8, stat, ')') orelse return null;
+    if (paren + 2 >= stat.len or stat[paren + 1] != ' ') return null;
+    return stat[paren + 2];
+}
+
+/// Make the spawn's cgroup and its `work` below it, and open `work`'s `cgroup.procs`, before
+/// the fork (v17, #559).
+fn cgroupMakeReal(cg: *CgroupSpawn) bool {
+    if (mkdir(cg.dir().ptr, 0o755) != 0) return false;
+    if (mkdir(cg.workDir().ptr, 0o755) != 0) {
+        _ = rmdir(cg.dir().ptr);
+        return false;
+    }
+    var buf: [max_cgroup_path + 96]u8 = undefined;
+    const procs = std.fmt.bufPrintZ(&buf, "{s}/cgroup.procs", .{cg.workDir()}) catch {
+        cg.removeDirs();
+        return false;
+    };
+    cg.procs_fd = open(procs.ptr, O_WRONLY | O_CLOEXEC, @as(c_uint, 0));
+    if (cg.procs_fd < 0) {
+        cg.removeDirs();
+        return false;
+    }
+    return true;
+}
+
+/// Move the forked child, which has not run yet, into the spawn's `work` cgroup (v17, #559).
+fn cgroupJoinReal(cg: *CgroupSpawn, pid: c_int) bool {
+    defer {
+        _ = close(cg.procs_fd);
+        cg.procs_fd = -1;
+    }
+    var buf: [16]u8 = undefined;
+    const pid_s = std.fmt.bufPrint(&buf, "{d}", .{pid}) catch return false;
+    return write(cg.procs_fd, pid_s.ptr, pid_s.len) == @as(isize, @intCast(pid_s.len));
+}
+
+/// Stop the spawn's cgroup, wait until it holds no live process, and remove it (v17, #559).
+/// `read_lingering` on the exit where the direct child ended on its own: what is still in the
+/// cgroup then is read before anything is killed. Zombies are not counted as populated
+/// (measured), so an unreaped direct child does not hold this up.
+///
+/// What is read is `work`'s and R's own `cgroup.procs`, not those of cgroups a target made
+/// below them: a writer that moved into one of those is killed with the rest and not named,
+/// which is what an uncontained engine's group kill does with every lingering writer.
+fn cgroupStopReal(cg: *CgroupSpawn, read_lingering: bool) void {
+    if (!cg.joined) return;
+    var events_buf: [max_cgroup_path + 80]u8 = undefined;
+    const events = std.fmt.bufPrintZ(&events_buf, "{s}/cgroup.events", .{cg.dir()}) catch return;
+    var ev_buf: [256]u8 = undefined;
+    if (read_lingering) lingering: {
+        const ev = readSmallFile(events.ptr, &ev_buf) orelse break :lingering;
+        if (std.mem.indexOf(u8, ev, "populated 1") == null) break :lingering;
+        noteLingering(cg, cg.workDir());
+        noteLingering(cg, cg.dir());
+    }
+    var kill_buf: [max_cgroup_path + 80]u8 = undefined;
+    const kill_path = std.fmt.bufPrintZ(&kill_buf, "{s}/cgroup.kill", .{cg.dir()}) catch return;
+    _ = writeSmallFile(kill_path.ptr, "1");
+    const deadline = monotonicMs() + world_kill_grace_ms;
+    while (true) {
+        if (readSmallFile(events.ptr, &ev_buf)) |ev| {
+            if (std.mem.indexOf(u8, ev, "populated 0") != null) {
+                cg.stopped = true;
+                break;
+            }
+        }
+        if (monotonicMs() >= deadline) break;
+        sleepForMs(2);
+    }
+    cg.removeDirs();
+}
+
+/// The pids in one cgroup's `cgroup.procs`, added to `cg.lingering`. A list longer than the
+/// read holds counts as more than the array holds, not as the pids that fitted.
+fn noteLingering(cg: *CgroupSpawn, dir: []const u8) void {
+    var procs_buf: [max_cgroup_path + 96]u8 = undefined;
+    const procs = std.fmt.bufPrintZ(&procs_buf, "{s}/cgroup.procs", .{dir}) catch return;
+    var list_buf: [4096]u8 = undefined;
+    const list = readSmallFile(procs.ptr, &list_buf) orelse return;
+    if (list.len == list_buf.len) cg.lingering_more = true;
+    var it = std.mem.tokenizeScalar(u8, list, '\n');
+    while (it.next()) |t| {
+        const lingering_pid = std.fmt.parseInt(u32, t, 10) catch continue;
+        if (cg.lingering_len < cg.lingering.len) {
+            cg.lingering[cg.lingering_len] = lingering_pid;
+            cg.lingering_len += 1;
+        } else cg.lingering_more = true;
+    }
+}
 
 /// The operations the wait-and-teardown section performs, as a comptime seam (#264
 /// added the wait; #263 widened it to the whole budget vocabulary). Production always
@@ -1308,6 +1673,17 @@ const RealOps = struct {
     fn openCapture(path: [*:0]const u8, flags: c_int) c_int {
         return open(path, flags, @as(c_uint, 0o600));
     }
+    /// The run's cgroup (v17, #559), on the seam so a test can drive every exit of a
+    /// contained spawn on a host with no cgroup v2 to make one in.
+    fn cgroupMake(cg: *CgroupSpawn) bool {
+        return cgroupMakeReal(cg);
+    }
+    fn cgroupJoin(cg: *CgroupSpawn, pid: c_int) bool {
+        return cgroupJoinReal(cg, pid);
+    }
+    fn cgroupStop(cg: *CgroupSpawn, read_lingering: bool) void {
+        cgroupStopReal(cg, read_lingering);
+    }
 };
 
 /// Monotonic milliseconds, on the clock a deadline can trust.
@@ -1346,8 +1722,10 @@ fn runChildImplWithOps(
     minimal_env: bool,
     budget_ms: ?u64,
     cwd: ?[]const u8,
+    /// The run's cgroup (contract v17, #559); null for every spawn that is not a contained run.
+    cg: ?*CgroupSpawn,
     comptime Ops: type,
-) (SpawnError || error{TimedOut})!Term {
+) (ContainedSpawnError || error{TimedOut})!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
@@ -1413,10 +1791,39 @@ fn runChildImplWithOps(
         break :blk fd;
     } else -1;
 
+    // The run's cgroup (v17, #559), made and its `cgroup.procs` opened here, before the fork,
+    // for #469's reason: a failure is a named spawn error on the caller's channel, never a code
+    // in the target's exit-status namespace. The pipe is how the child waits — after it leads
+    // its own group, before it execs — until the parent has moved it: a child that execs first
+    // runs, however briefly, outside the cgroup that is meant to stop it.
+    var join_pipe: [2]c_int = .{ -1, -1 };
+    if (cg) |spawn_cg| {
+        if (!Ops.cgroupMake(spawn_cg)) {
+            _ = close(nfd);
+            if (cfd >= 0) _ = close(cfd);
+            return error.CgroupJoinFailed;
+        }
+        if (pipe(&join_pipe) != 0) {
+            if (spawn_cg.procs_fd >= 0) _ = close(spawn_cg.procs_fd);
+            spawn_cg.procs_fd = -1;
+            spawn_cg.removeDirs();
+            _ = close(nfd);
+            if (cfd >= 0) _ = close(cfd);
+            return error.CgroupJoinFailed;
+        }
+    }
+
     const pid = Ops.forkChild();
     if (pid < 0) {
         _ = close(nfd);
         if (cfd >= 0) _ = close(cfd);
+        if (cg) |spawn_cg| {
+            _ = close(join_pipe[0]);
+            _ = close(join_pipe[1]);
+            if (spawn_cg.procs_fd >= 0) _ = close(spawn_cg.procs_fd);
+            spawn_cg.procs_fd = -1;
+            spawn_cg.removeDirs();
+        }
         return error.ForkFailed;
     }
     if (pid == 0) {
@@ -1425,6 +1832,20 @@ fn runChildImplWithOps(
         // carries: the shim's crash-point kill now addresses the caller's whole group,
         // so a target sharing the engine's group could kill the exploration.
         if (setpgid(0, 0) != 0) childArrangeFailed("setpgid(0, 0)");
+        if (join_pipe[0] >= 0) {
+            // Wait to be moved into the run's cgroup (v17, #559). One byte means the parent
+            // moved it; anything else — the move failed, or the parent is gone — means this
+            // child must not run at all.
+            _ = close(join_pipe[1]);
+            var byte: [1]u8 = undefined;
+            const got = while (true) {
+                const r = read(join_pipe[0], &byte, 1);
+                if (r < 0 and std.c._errno().* == EINTR) continue;
+                break r;
+            };
+            if (got != 1) childArrangeFailed("waiting to be moved into the run's cgroup");
+            _ = close(join_pipe[0]);
+        }
         // stdin first, before any capture: a child that could not be given its stdin
         // must not run at all. The retry bound, the abort, and the fd-0 case are all
         // in `adoptStdin`, shared with the sidecar's fork.
@@ -1500,6 +1921,29 @@ fn runChildImplWithOps(
     // child has exec'd, ESRCH if it has already exited).
     _ = setpgid(pid, pid);
 
+    if (cg) |spawn_cg| {
+        if (!Ops.cgroupJoin(spawn_cg, pid)) {
+            // The child has not run: it is waiting on the pipe. Killed while its pid is pinned
+            // (not yet reaped), reaped, and the cgroup removed, so a failed move leaves nothing
+            // behind and nothing ran outside the cgroup.
+            _ = kill(pid, SIGKILL);
+            _ = close(join_pipe[1]);
+            _ = close(join_pipe[0]);
+            var reaped: c_int = 0;
+            while (waitpid(pid, &reaped, 0) < 0 and std.c._errno().* == EINTR) {}
+            spawn_cg.removeDirs();
+            return error.CgroupJoinFailed;
+        }
+        spawn_cg.joined = true;
+        // The read end stays open in this process until the go-ahead is written. A child that
+        // died before reading it — its own `setpgid` failed, or something outside killed it —
+        // would otherwise leave a pipe with no reader, and the write raises SIGPIPE here
+        // (review, #559 PR A).
+        _ = write(join_pipe[1], "1", 1);
+        _ = close(join_pipe[1]);
+        _ = close(join_pipe[0]);
+    }
+
     // Wait for the child to finish, but leave it reapable so its pid — and therefore the
     // group id about to be signalled — cannot be handed to anything else.
     if (budget_ms) |budget| {
@@ -1559,6 +2003,8 @@ fn runChildImplWithOps(
                 // nothing, and with SIGCHLD at default an exited child is a zombie,
                 // not a recycled pid), so the group signal is safe — the blocking
                 // branch's own argument.
+                // What is still in the run's cgroup is read before anything is killed (v17).
+                if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
                 Ops.killGroup(pid);
                 // The direct reap may block: the child was observed exited and the
                 // default disposition holds it zombie, so the wait returns without
@@ -1581,6 +2027,7 @@ fn runChildImplWithOps(
                 // SIGCHLD disposition holds it zombie once it dies, so the id is
                 // pinned here too.
                 Ops.killGroup(pid);
+                if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
                 // Reap under a grace, not without bound: SIGKILL normally produces a
                 // reapable child in microseconds, and when it cannot — uninterruptible
                 // sleep, or credentials the group signal does not reach — the child is
@@ -1612,6 +2059,8 @@ fn runChildImplWithOps(
                 // attempt, a non-blocking drain, and the same refusal the blocking
                 // branch gives a broken wait. A live child this leaves behind is a
                 // stray; the stray is what the quiescence check is for.
+                // A cgroup names no pid, so it can be killed where the id was never pinned (v17).
+                if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
                 _ = Ops.wait(pid, null, WNOHANG);
                 while (Ops.wait(-pid, null, WNOHANG) > 0) {}
                 return error.WaitFailed;
@@ -1620,9 +2069,11 @@ fn runChildImplWithOps(
     } else {
         var info: [256]u8 align(16) = undefined;
         if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) {
-            // Everything the target left behind, in one signal, while the id is still pinned.
-            _ = kill(-pid, SIGKILL);
-        }
+            if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
+            // Everything the target left behind, in one signal, while the id is still pinned —
+            // through the seam, so a test can see it come after the stop (second review, #559).
+            Ops.killGroup(pid);
+        } else if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
         // If `waitid` failed the id is not pinned, so nothing is signalled: sending SIGKILL to
         // a group that may have been recycled is worse than leaving a stray process. The stray
         // is what the quiescence check is for.
@@ -1702,6 +2153,10 @@ const FakeWait = struct {
         deliver_status = 0;
         fork_calls = 0;
         devnull_fails = false;
+        cgroup_make_calls = 0;
+        cgroup_join_fails = false;
+        cgroup_join_kills_child = false;
+        events_len = 0;
     }
 
     fn forkChild() c_int {
@@ -1745,15 +2200,56 @@ const FakeWait = struct {
     // The rest of the Ops surface, real: these three tests drive the retry decision
     // only, and a null budget never touches the clock or sleep (a fourth test pins that).
     const waitidPoll = RealOps.waitidPoll;
-    const killGroup = RealOps.killGroup;
+    fn killGroup(pid: c_int) void {
+        event('K');
+        RealOps.killGroup(pid);
+    }
     const nowMs = RealOps.nowMs;
     const sleepMs = RealOps.sleepMs;
+
+    // Contained spawns (v17, #559): counted, never real — this host has no cgroup v2 to make
+    // one in. `FakeBudget` shares these, so one reset clears both.
+    var cgroup_make_calls: u32 = 0;
+    var cgroup_join_fails: bool = false;
+    /// The child is killed, and waited for without being reaped, before the move is reported
+    /// done: a child that died before it read its go-ahead.
+    var cgroup_join_kills_child: bool = false;
+    /// The order of the cgroup stops and group kills a spawn made: `L` a stop that read what
+    /// lingered, `S` one that did not, `K` a group kill through the seam.
+    var events: [8]u8 = undefined;
+    var events_len: usize = 0;
+    fn event(e: u8) void {
+        if (events_len < events.len) {
+            events[events_len] = e;
+            events_len += 1;
+        }
+    }
+    fn cgroupMake(cg: *CgroupSpawn) bool {
+        _ = cg;
+        cgroup_make_calls += 1;
+        return true;
+    }
+    fn cgroupJoin(cg: *CgroupSpawn, pid: c_int) bool {
+        _ = cg;
+        if (cgroup_join_kills_child) {
+            _ = kill(pid, SIGKILL);
+            // Until it has exited, not until the signal is sent: a child still alive holds the
+            // pipe's read end, and the write the test is about would have a reader.
+            var info: std.c.siginfo_t = undefined;
+            while (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) < 0 and std.c._errno().* == EINTR) {}
+        }
+        return !cgroup_join_fails;
+    }
+    fn cgroupStop(cg: *CgroupSpawn, read_lingering: bool) void {
+        _ = cg;
+        event(if (read_lingering) 'L' else 'S');
+    }
 };
 
 test "a wait that fails permanently refuses instead of reporting a clean exit" {
     FakeWait.reset();
     FakeWait.permanent = true;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
     // Before #264 this returned `.exited = 0`: `status` keeps the zero it was initialised
     // with, and every explored world is expected to die by signal, so the engine reported
@@ -1770,7 +2266,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
     FakeWait.reset();
     FakeWait.eintr_budget = 3;
     FakeWait.deliver_status = 0x0100; // exit(1)
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
     // The status written by the call that succeeded — not the zero the loop started with.
     try std.testing.expectEqual(Term{ .exited = 1 }, term);
@@ -1781,7 +2277,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
 test "an interruption that never stops is bounded rather than looping forever" {
     FakeWait.reset();
     FakeWait.eintr_budget = std.math.maxInt(u32);
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
     try std.testing.expectError(error.WaitFailed, r);
     // The first call plus the eight retries the bound allows.
@@ -1792,7 +2288,7 @@ test "an interruption that never stops is bounded rather than looping forever" {
 test "a child whose stdin cannot be pointed at /dev/null is refused by name and never forked (#263)" {
     FakeWait.reset();
     FakeWait.devnull_fails = true;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
     try std.testing.expectError(error.StdinUnavailable, r);
     // Refused BEFORE the fork: the parent opens the descriptor, so a child that could
@@ -1812,7 +2308,7 @@ test "every child starts with its stdin at /dev/null, on the plain path with no 
     // plain path (no capture, not minimal_env) is chosen because that is the one the
     // MCP-only redirect never covered: setup and the checker run through it.
     const is_null = [_][]const u8{ "/bin/sh", "-c", "[ /dev/stdin -ef /dev/null ]" };
-    const term = try runChildImplWithOps(std.testing.allocator, &is_null, &.{}, null, false, null, null, FakeWait);
+    const term = try runChildImplWithOps(std.testing.allocator, &is_null, &.{}, null, false, null, null, null, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 }
@@ -1918,7 +2414,7 @@ test "a symlink at the capture path is refused before the fork, and what it poin
     // than an error — and named here so it is not mistaken for a measurement.
     const say = [_][]const u8{ "/bin/sh", "-c", "printf hello" };
     FakeWait.reset();
-    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, FakeWait);
+    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, null, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, ok);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
     var rb: [64]u8 = undefined;
@@ -1930,7 +2426,7 @@ test "a symlink at the capture path is refused before the fork, and what it poin
     try std.testing.expect(symlink(sentinel_z.ptr, cap_z.ptr) == 0);
 
     FakeWait.reset();
-    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, FakeWait);
+    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, null, FakeWait);
     try std.testing.expectError(error.CaptureUnavailable, refused);
     // The half that says the open moved to the parent. Before #469 this path answered
     // `.exited = 126` — a value inside the target's own status namespace — and the fork
@@ -1970,7 +2466,7 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
 
     const say = [_][]const u8{ "/bin/sh", "-c", "printf hello" };
     FakeWait.reset();
-    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, FakeWait);
+    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, null, FakeWait);
     try std.testing.expectError(error.CaptureUnavailable, refused);
     try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
     var rb: [64]u8 = undefined;
@@ -1984,7 +2480,7 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
     // and the `Term` comes from the fake's `deliver_status`; the count of 1 is the
     // measurement that the parent did not refuse before forking.
     FakeWait.reset();
-    const to_null = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = "/dev/null" }, false, null, null, FakeWait);
+    const to_null = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = "/dev/null" }, false, null, null, null, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, to_null);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 
@@ -1992,7 +2488,7 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
     // refusal above is about what was at the path and not about `exclusive` itself.
     _ = unlink(cap_z.ptr);
     FakeWait.reset();
-    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, FakeWait);
+    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, null, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, ok);
     var rb2: [64]u8 = undefined;
     try std.testing.expectEqualStrings("hello", try CaptureFixture.slurp(cap_z.ptr, &rb2));
@@ -2063,6 +2559,7 @@ const FakeBudget = struct {
     }
     fn killGroup(pid: c_int) void {
         kill_calls += 1;
+        FakeWait.event('K');
         // Delegated, so the real forked child's group is genuinely signalled and the
         // real drain below finds only corpses.
         _ = kill(-pid, SIGKILL);
@@ -2076,6 +2573,9 @@ const FakeBudget = struct {
         _ = ms;
         sleep_calls += 1;
     }
+    const cgroupMake = FakeWait.cgroupMake;
+    const cgroupJoin = FakeWait.cgroupJoin;
+    const cgroupStop = FakeWait.cgroupStop;
     // The budget tests drive the deadline logic only; the spawn itself is real.
     const forkChild = RealOps.forkChild;
     const openDevNull = RealOps.openDevNull;
@@ -2109,7 +2609,7 @@ test "a world over budget is sent SIGKILL after a final observation, reaped unde
     FakeBudget.script = &.{ .running, .running };
     FakeBudget.direct_waits = &.{1}; // the grace reap succeeds at once
     FakeBudget.now_step = 100;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -2125,7 +2625,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
     FakeBudget.script = &.{ .running, .running, .exited };
     FakeBudget.deliver_status = 0; // exit(0) once the shared reap runs
     FakeBudget.now_step = 1; // deadline 1000 is never approached
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     // All three polls were consumed: an implementation that treated the first rc==0
@@ -2142,7 +2642,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
 test "a null budget never touches the budget vocabulary: no clock, no sleep, no poll (#263)" {
     FakeBudget.reset();
     FakeBudget.deliver_status = 0;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.clock_calls);
@@ -2156,7 +2656,7 @@ test "a child the final observation sees exited is accepted, not timed out — t
     FakeBudget.script = &.{ .running, .exited };
     FakeBudget.deliver_status = 0;
     FakeBudget.now_step = 100;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -2169,7 +2669,7 @@ test "a poll interruption retries under the same deadline; a permanent poll fail
     FakeBudget.script = &.{ .{ .err = EINTR }, .{ .err = EINTR }, .{ .err = FakeWait.ECHILD } };
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     // ECHILD can mean an inherited SIGCHLD disposition auto-reaped the child, and a
@@ -2190,7 +2690,7 @@ test "an interruption storm cannot poll forever: the ninth consecutive interrupt
     FakeBudget.script = &.{.{ .err = EINTR }};
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     // Nine attempts — the blocking reap's own discipline — then refusal, no kill:
@@ -2208,7 +2708,7 @@ test "a SIGKILL that never lands exhausts the grace, drains without blocking, an
     // the group signal could not reach.
     FakeBudget.direct_waits = &.{ 0, 0, 0, 0, 0, 0, 0, 0 };
     FakeBudget.now_step = 3000;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -2452,4 +2952,142 @@ test "kindAtNoFollow reads the descriptor it is given, not the name alone" {
 
     try std.testing.expectEqual(Kind.file, try kindAtNoFollow(fa, "x"));
     try std.testing.expectEqual(Kind.dir, try kindAtNoFollow(fb2, "x"));
+}
+
+test "a contained spawn's cgroup is stopped on every exit, and read for what lingered only where the child ended on its own (v17, #559)" {
+    const home: CgroupHome = .{ .dir = "/nonexistent-cgroup-home", .rel = "/" };
+    {
+        // The blocking branch: no budget.
+        FakeWait.reset();
+        var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
+        const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, FakeWait);
+        try std.testing.expectEqual(Term{ .exited = 0 }, term);
+        try std.testing.expect(cg.joined);
+        try std.testing.expectEqual(@as(u32, 1), FakeWait.cgroup_make_calls);
+        // The same order as the budget branch below, in the branch the recording run, preflight's
+        // second run and every world without `--world-timeout` take.
+        try std.testing.expectEqualStrings("LK", FakeWait.events[0..FakeWait.events_len]);
+    }
+    {
+        // The budget branch, the child exiting inside it.
+        FakeWait.reset();
+        FakeBudget.reset();
+        FakeBudget.script = &.{.exited};
+        FakeBudget.now_step = 1;
+        var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
+        _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, &cg, FakeBudget);
+        // Read before the kill: the other way round the stop reads an emptied cgroup and
+        // names nothing, and the counts above would not notice.
+        try std.testing.expectEqualStrings("LK", FakeWait.events[0..FakeWait.events_len]);
+    }
+    {
+        // Over budget.
+        FakeWait.reset();
+        FakeBudget.reset();
+        FakeBudget.script = &.{ .running, .running };
+        FakeBudget.direct_waits = &.{1};
+        FakeBudget.now_step = 100;
+        var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
+        try std.testing.expectError(error.TimedOut, runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, &cg, FakeBudget));
+        try std.testing.expectEqualStrings("KS", FakeWait.events[0..FakeWait.events_len]);
+    }
+    {
+        // A wait that broke: nothing pinned, and the cgroup is still stopped.
+        FakeWait.reset();
+        FakeBudget.reset();
+        FakeBudget.script = &.{.{ .err = FakeWait.ECHILD }};
+        var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
+        try std.testing.expectError(error.WaitFailed, runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, &cg, FakeBudget));
+        try std.testing.expectEqualStrings("S", FakeWait.events[0..FakeWait.events_len]);
+    }
+    {
+        // Control: an uncontained spawn touches no cgroup at all.
+        FakeWait.reset();
+        _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
+        try std.testing.expectEqual(@as(u32, 0), FakeWait.cgroup_make_calls);
+        // No stop of either kind: the group kill is all the events hold.
+        try std.testing.expect(std.mem.indexOfAny(u8, FakeWait.events[0..FakeWait.events_len], "LS") == null);
+    }
+}
+
+test "a child whose move into the run's cgroup fails never runs, and the spawn says why (v17, #559)" {
+    const home: CgroupHome = .{ .dir = "/nonexistent-cgroup-home", .rel = "/" };
+    var mbuf: [128]u8 = undefined;
+    const mark = std.fmt.bufPrintZ(&mbuf, "/tmp/sideeye-cgroup-join-{d}", .{getpid()}) catch unreachable;
+    _ = unlink(mark.ptr);
+    var cbuf: [160]u8 = undefined;
+    const cmd = std.fmt.bufPrint(&cbuf, "touch {s}", .{mark}) catch unreachable;
+
+    FakeWait.reset();
+    FakeWait.cgroup_join_fails = true;
+    var refused = CgroupSpawn.init(home, false) orelse return error.TestUnexpectedResult;
+    try std.testing.expectError(error.CgroupJoinFailed, runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", cmd }, &.{}, null, false, null, null, &refused, FakeWait));
+    try std.testing.expect(!refused.joined);
+    try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
+    try std.testing.expect(access(mark.ptr, F_OK) != 0);
+
+    // Control: the same spawn with the move succeeding runs the command, so the absence above
+    // is the refusal's and not a command that could never have left a mark.
+    FakeWait.reset();
+    var joined = CgroupSpawn.init(home, false) orelse return error.TestUnexpectedResult;
+    _ = try runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", cmd }, &.{}, null, false, null, null, &joined, FakeWait);
+    try std.testing.expect(access(mark.ptr, F_OK) == 0);
+    _ = unlink(mark.ptr);
+}
+
+test "the cgroup2 mount and a process's cgroup are read from what the kernel prints (v17, #559)" {
+    const mountinfo =
+        "22 28 0:21 / /proc rw,nosuid shared:12 - proc proc rw\n" ++
+        "30 25 0:26 / /sys/fs/cgroup rw,nosuid,nodev,noexec,relatime shared:9 - cgroup2 cgroup2 rw,nsdelegate\n";
+    try std.testing.expectEqualStrings("/sys/fs/cgroup", cgroup2Mount(mountinfo).?);
+    try std.testing.expect(cgroup2Mount("22 28 0:21 / /proc rw,nosuid shared:12 - proc proc rw\n") == null);
+    // A bind of a subtree is not offered: the engine's own path would land elsewhere under it.
+    try std.testing.expect(cgroup2Mount("30 25 0:26 /user.slice /sys/fs/cgroup rw shared:9 - cgroup2 cgroup2 rw\n") == null);
+    try std.testing.expectEqualStrings("/user.slice/session-2.scope", cgroup2Path("0::/user.slice/session-2.scope\n").?);
+    try std.testing.expect(cgroup2Path("12:memory:/x\n") == null);
+}
+
+test "a spawn's cgroup is named under the engine's, in both spellings (v17, #559)" {
+    const cg = CgroupSpawn.init(.{ .dir = "/sys/fs/cgroup/a", .rel = "/a" }, true) orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.startsWith(u8, cg.dir(), "/sys/fs/cgroup/a/sideeye-"));
+    try std.testing.expect(std.mem.startsWith(u8, cg.relPath(), "/a/sideeye-"));
+    // The run's processes live one level down, and the crash point steps aside to the level
+    // above them before it kills.
+    var buf: [256]u8 = undefined;
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&buf, "{s}/work", .{cg.dir()}), cg.workDir());
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&buf, "{s}/cgroup.kill", .{cg.workDir()}), cg.killPath());
+    try std.testing.expectEqualStrings(try std.fmt.bufPrint(&buf, "{s}/cgroup.procs", .{cg.dir()}), cg.asidePath());
+    // At the root of a cgroup namespace the spelling has one slash, not two.
+    const at_root = CgroupSpawn.init(.{ .dir = "/sys/fs/cgroup", .rel = "/" }, false) orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.startsWith(u8, at_root.relPath(), "/sideeye-"));
+}
+
+test "a process's state is read after the last parenthesis, whatever its name holds (v17, #559)" {
+    try std.testing.expectEqual(@as(?u8, 'S'), statState("123 (bash) S 1 123 123 0 -1"));
+    try std.testing.expectEqual(@as(?u8, 'Z'), statState("7 (a) b) (c) Z 1 7 7"));
+    try std.testing.expectEqual(@as(?u8, null), statState("7 (truncated"));
+    try std.testing.expectEqual(@as(?u8, null), statState("7 (x)"));
+    // Where there is a /proc: this test binary is alive, and a pid that cannot exist is not.
+    if (builtin.os.tag == .linux) {
+        const own = processState(@intCast(getpid())) orelse return error.TestUnexpectedResult;
+        try std.testing.expect(own != 'Z' and own != 'X' and own != '?');
+        try std.testing.expectEqual(@as(?u8, null), processState(std.math.maxInt(u32)));
+    }
+}
+
+test "a child that dies before its go-ahead does not take the engine down with a write to a pipe nobody reads (v17, #559)" {
+    // The parent used to close its read end before writing the byte; with the child already
+    // dead the write had no reader, and SIGPIPE ended this test binary instead of an assertion.
+    FakeWait.reset();
+    FakeWait.cgroup_join_kills_child = true;
+    // At its default, as the engine meets it started from a shell: a disposition inherited from
+    // whatever ran this test binary would make the write fail quietly and the test vacuous.
+    const sigpipe: c_int = 13; // Linux and Darwin alike
+    const previous = signal(sigpipe, SIG_DFL);
+    defer _ = signal(sigpipe, previous);
+    const home: CgroupHome = .{ .dir = "/nonexistent-cgroup-home", .rel = "/" };
+    var cg = CgroupSpawn.init(home, false) orelse return error.TestUnexpectedResult;
+    _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, FakeWait);
+    try std.testing.expect(cg.joined);
+    try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 }
