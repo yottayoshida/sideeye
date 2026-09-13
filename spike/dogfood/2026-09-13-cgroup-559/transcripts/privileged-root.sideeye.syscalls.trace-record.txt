@@ -1,0 +1,88 @@
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+spawn 
+fork 
+thread 
+fork 
+detached 
+fork 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+close /localrun/st/sideeye-syscalls/f.txt
+rename /root/.ansible/tmp/ansible-tmp-1789297999.3076284-130-103785034186488/tmp93cc4xya
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls
+fork 
+exec 
+shim_ready /localrun/st/sideeye-syscalls
+cgroup /localrun/st/sideeye-syscalls

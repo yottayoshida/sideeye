@@ -1084,7 +1084,13 @@ const CgroupStanding = enum { held, outside, unknown };
 fn stepAside() bool {
     if (kill_aside_fd < 0) return false;
     var digits: [12]u8 = undefined;
-    var v: u32 = @bitCast(c.getpid());
+    return shimWrite(kill_aside_fd, decimal(&digits, @bitCast(c.getpid())));
+}
+
+/// `v`'s decimal digits, written at the end of `digits`, without `std.fmt` for `stepAside`'s
+/// reason. Returns the slice holding them.
+fn decimal(digits: *[12]u8, v0: u32) []const u8 {
+    var v = v0;
     var i: usize = digits.len;
     while (true) {
         i -= 1;
@@ -1092,7 +1098,26 @@ fn stepAside() bool {
         v /= 10;
         if (v == 0) break;
     }
-    return shimWrite(kill_aside_fd, digits[i..]);
+    return digits[i..];
+}
+
+/// Whether this process's group leader stands inside the run's cgroup (#559's second review): the
+/// group a crash point's group kill reaches is the run's only then. A leader that is gone, or
+/// whose standing cannot be read, is not. The path is formatted by hand for `stepAside`'s reason.
+fn groupLeaderHeld() bool {
+    const pgid = c.getpgid(0);
+    if (pgid <= 0) return false;
+    const prefix = "/proc/";
+    const suffix = "/cgroup";
+    var digits: [12]u8 = undefined;
+    const d = decimal(&digits, @bitCast(pgid));
+    var path: [32]u8 = undefined;
+    @memcpy(path[0..prefix.len], prefix);
+    @memcpy(path[prefix.len..][0..d.len], d);
+    @memcpy(path[prefix.len + d.len ..][0..suffix.len], suffix);
+    path[prefix.len + d.len + suffix.len] = 0;
+    const p: [*:0]const u8 = @ptrCast(&path);
+    return cgroupStandingAt(p) == .held;
 }
 
 /// A write of the shim's own to a cgroup file, through the path that does not trap on itself
@@ -1115,7 +1140,12 @@ fn shimWrite(fd: c_int, bytes: []const u8) bool {
 /// host and a dozen on a hybrid one, whose `0::` line comes last — so a smaller buffer read
 /// once would have answered `unknown` there, which is recorded `unreadable` and refuses the run.
 fn cgroupStanding() CgroupStanding {
-    const fd = callOpen("/proc/self/cgroup", O_RDONLY | O_CLOEXEC, 0);
+    return cgroupStandingAt("/proc/self/cgroup");
+}
+
+/// `cgroupStanding` of any process, by its `/proc/<pid>/cgroup` path (#559's second review).
+fn cgroupStandingAt(proc_path: [*:0]const u8) CgroupStanding {
+    const fd = callOpen(proc_path, O_RDONLY | O_CLOEXEC, 0);
     if (fd < 0) return .unknown;
     defer _ = callClose(fd);
     var line: CgroupLine = .{ .run = run_cgroup_buf[0..run_cgroup_len] };
@@ -1608,9 +1638,16 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
                 // Said before the kill, which ends this process when it lands: without a step
                 // aside the group kill below never runs (second review, #559 PR A).
                 if (!aside) writeRecord(ts, .cgroup, s, path, contract.cgroup_aux.kill_alone);
+                // The group kill reaches the caller's process group, which is the run's only while
+                // that group's leader stands inside the run's cgroup: a process that joined another
+                // group in the session with `setpgid(0, pgid)` would take that group down with it —
+                // the engine's own, or its caller's (second review, #559). Asked before the cgroup
+                // kill can end the leader. Where it is not the run's, this process dies alone, and
+                // anything of the run left in that group is what the survivor watch is for.
+                const group_held = groupLeaderHeld();
                 const killed = kill_cgroup_fd >= 0 and shimWrite(kill_cgroup_fd, "1");
                 if (aside and killed) {
-                    _ = c.kill(0, SIGKILL);
+                    _ = if (group_held) c.kill(0, SIGKILL) else c.raise(SIGKILL);
                     c._exit(@intFromEnum(contract.ExitCode.setup_error));
                 }
                 writeRecord(ts, .cgroup, s, path, notHeldAux(cgroupStanding()) orelse contract.cgroup_aux.kill_returned);

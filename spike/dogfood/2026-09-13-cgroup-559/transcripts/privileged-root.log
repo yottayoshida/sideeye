@@ -1,0 +1,18 @@
+label=privileged-root uid=0 cgroupfs=rw self=0::/
+ansible [core 2.19.11]
+strace -- version 6.13
+== sideeye: sideeye 1.3.0 (trace contract v17)
+sideeye wrappers: rc=0 in 2s — PASS  2/2 explored worlds satisfied the built-in atomicity invariant, over a single crash point
+    f.txt after: alpha|beta|gamma|
+    recording trace records: cgroup=21 close=1 detached=1 exec=15 fork=25 rename=1 shim_ready=21 spawn=1 thread=1 
+sideeye syscalls: rc=0 in 2s — PASS  2/2 explored worlds satisfied the built-in atomicity invariant, over a single crash point
+    f.txt after: alpha|beta|gamma|
+    recording trace records: cgroup=21 close=1 detached=1 exec=15 fork=26 rename=1 shim_ready=21 spawn=1 thread=1 
+== sideeye-testnocgroup: sideeye 1.3.0 (trace contract v17)
+sideeye-testnocgroup wrappers: rc=2 in 2s — UNKNOWN  child_process_detected
+    f.txt after: alpha|beta|gamma|
+    recording trace records: close=1 detached=1 exec=15 fork=25 rename=1 shim_ready=21 spawn=1 thread=1 
+sideeye-testnocgroup syscalls: rc=2 in 1s — UNKNOWN  child_process_detected
+    f.txt after: alpha|beta|gamma|
+    recording trace records: close=1 detached=1 exec=15 fork=26 rename=1 shim_ready=21 spawn=1 thread=1 
+leftover sideeye cgroups: 0

@@ -118,6 +118,14 @@ The oracle has neither problem: `strace -f` prefixes every line with a pid (meas
 `execve`, with the child's pid visible. It sees children whether or not they load the
 shim.
 
+**Amended 2026-09-13 (contract v17, ADR 0065).** Decision 1's containment is a cgroup as well
+as a process group wherever the engine can make one — a cgroup v2 delegated to it, or root —
+and the refusal table's row "leaving the process group" holds only where it cannot: a run the
+engine held in a cgroup of its own judges a process that called `setsid` or `setpgid` as it
+judges any other child, and a run it did not hold refuses it, saying why. The record is
+unchanged (`.detached`); the engine reads it apart from the hard boundaries now, so a detach
+recorded first no longer hides an image change recorded after it.
+
 **Amended 2026-09-08 (contract v16, ADR 0055).** The refusal table's row "`thread` in the
 subject — operation order stops being deterministic — the core claim" stands for two
 threads that write the judged directory and is withdrawn for one: a single thread's writes

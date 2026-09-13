@@ -1,0 +1,66 @@
+shim_ready /localrun/st/sideeye-wrappers
+spawn 
+thread 
+fork 
+detached 
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+close /localrun/st/sideeye-wrappers/f.txt
+rename /root/.ansible/tmp/ansible-tmp-1789298004.5801213-31-73005415600439/tmpta7zuu76
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-wrappers

@@ -126,8 +126,14 @@ pub const BoundaryEvidence = struct {
     /// and this one — and before this field the third fell into the second, which on a
     /// judged threaded toy printed an image replacement that never happened (measured).
     shim_thread_only: bool = false,
+    /// The subject left its own process group (#559's second half), with no other process. Under
+    /// `--oracle` strace leads the group, so the subject's `setsid` succeeds, and a run the engine
+    /// held judges it. Neither "a process boundary" nor an image change may be said of it.
+    shim_subject_detached: bool = false,
     /// The same for an explored world: its boundary was a thread and nothing else.
     world_thread_only: bool = false,
+    /// The same for an explored world: its only boundary was the subject leaving its group.
+    world_subject_detached: bool = false,
     /// A boundary in an explored world that is **not** the subject replacing its own
     /// image — the world-side counterpart of `shim_process_boundary`, at the same
     /// granularity as `world_boundary` (one bit across every world, not one per world).
@@ -209,6 +215,8 @@ pub fn boundaryAccount() []const u8 {
         "; a process other than the subject operated on the judged directory in an explored world"
     else if (boundary_ev.world_only and world_proc)
         "; a process boundary appeared in an explored world — refused: nothing accounts for what it did"
+    else if (boundary_ev.world_only and boundary_ev.world_subject_detached)
+        "; the subject left its process group in an explored world the recording never did — refused: nothing accounts for what followed"
     else if (boundary_ev.world_only)
         "; the subject replaced its own image in an explored world the recording never did — refused: the chain there is unaccounted for"
     else if (boundary_ev.world_boundary and world_proc)
@@ -218,6 +226,8 @@ pub fn boundaryAccount() []const u8 {
         // does not say "which runs with no oracle" of it: the thread clause after this
         // one says what the threads did.
         "; a thread was created in an explored world"
+    else if (boundary_ev.world_boundary and boundary_ev.world_subject_detached)
+        "; the subject left its process group in an explored world, which runs with no oracle"
     else if (boundary_ev.world_boundary)
         "; the subject replaced its own image in an explored world, which runs with no oracle"
     else
@@ -368,6 +378,8 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
         "the shim recorded a process boundary"
     else if (ev.shim_thread_only)
         "the shim recorded a thread"
+    else if (ev.shim_subject_detached)
+        "the shim recorded the subject leaving its process group"
     else
         "the shim recorded the subject replacing its own image";
     switch (ev.witness) {
@@ -704,16 +716,18 @@ pub fn foreignTouchDetail(arena: std.mem.Allocator, first: ?engine.Op, when: []c
 /// the same overclaim those clauses had stopped making the day before. An unbroken
 /// self-exec chain leaves `hard_boundary` null, so it reaches the second branch rather than
 /// the `.exec` arm, and calling it "a process boundary" would be the overclaim from the
-/// other direction.
-pub fn secondRunLabel(trace: engine.TraceInfo) ?[]const u8 {
+/// other direction. `detach_refused` is whether run B's detach refuses: one run B's own cgroup
+/// held is a boundary like any other and is named as one (#559's second half).
+pub fn secondRunLabel(trace: engine.TraceInfo, detach_refused: bool) ?[]const u8 {
     if (trace.hard_boundary) |b| switch (b) {
         .exec => return "an image replacement",
-        .detached => return "a process leaving the containment group",
         else => {},
     };
+    if (detach_refused) return "a process leaving the containment group";
     if (trace.crossedBoundary()) {
         if (trace.crossedProcessBoundary()) return "a process boundary";
         if (trace.boundary == .thread and trace.exec_continuations == 0) return "a thread";
+        if (trace.subject_detached) return "the subject leaving its process group";
         return "the subject replacing its own image";
     }
     // The inline chain this replaced had a fourth arm here, on `foreign_kill_point`. It was
@@ -1137,6 +1151,7 @@ const boundary_cases = [_]struct {
     // disagreeing. Before 2026-09-07 this state printed "the two accounts disagree",
     // measured on a judged self-exec run; the replacement is disclosed by the clause
     // the account appends, not by the recording sentence.
+    .{ .what = "the subject left its own process group and the strace account was not read", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_subject_detached = true, .witness = .{ .unread = .strace } }, .may_say_single = false, .pins = "the subject leaving its process group" },
     .{ .what = "the subject replaced its own image and strace saw no other process", .ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .exec_continuations = 1, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } } }, .may_say_single = true, .pins = "single process" },
     // The same boundary with nothing that could compare it. All three are reachable:
     // the first is what an oracle-less self-exec run renders before
@@ -1661,7 +1676,7 @@ test "preflight's second run names a thread as a thread, not as an image change 
     var tb = engine.unboundedBudget(std.testing.allocator);
     var threaded = try engine.readTrace(&tb, std.mem.span(fz));
     defer threaded.deinit();
-    try std.testing.expectEqualStrings("a thread", secondRunLabel(threaded).?);
+    try std.testing.expectEqualStrings("a thread", secondRunLabel(threaded, false).?);
 
     var fbuf2: [contract.max_path]u8 = undefined;
     const fz2 = try traceFileForTest("secondrun-fork", &.{
@@ -1673,7 +1688,7 @@ test "preflight's second run names a thread as a thread, not as an image change 
     var tb2 = engine.unboundedBudget(std.testing.allocator);
     var forked = try engine.readTrace(&tb2, std.mem.span(fz2));
     defer forked.deinit();
-    try std.testing.expectEqualStrings("a process boundary", secondRunLabel(forked).?);
+    try std.testing.expectEqualStrings("a process boundary", secondRunLabel(forked, false).?);
 
     // And nothing at all reads as nothing.
     var fbuf3: [contract.max_path]u8 = undefined;
@@ -1685,5 +1700,33 @@ test "preflight's second run names a thread as a thread, not as an image change 
     var tb3 = engine.unboundedBudget(std.testing.allocator);
     var plain = try engine.readTrace(&tb3, std.mem.span(fz3));
     defer plain.deinit();
-    try std.testing.expectEqual(@as(?[]const u8, null), secondRunLabel(plain));
+    try std.testing.expectEqual(@as(?[]const u8, null), secondRunLabel(plain, false));
+}
+
+test "preflight's second run names a detach only where it refuses, and the subject's own as its own (#559)" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try traceFileForTest("secondrun-detach", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .detached, .seq = 0, .pid = 8, .tid = 8, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(fz);
+    var tb = engine.unboundedBudget(std.testing.allocator);
+    var child = try engine.readTrace(&tb, std.mem.span(fz));
+    defer child.deinit();
+    try std.testing.expectEqualStrings("a process leaving the containment group", secondRunLabel(child, true).?);
+    try std.testing.expectEqualStrings("a process boundary", secondRunLabel(child, false).?);
+
+    var fbuf2: [contract.max_path]u8 = undefined;
+    const fz2 = try traceFileForTest("secondrun-own-detach", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .detached, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf2);
+    defer _ = posix.unlink(fz2);
+    var tb2 = engine.unboundedBudget(std.testing.allocator);
+    var own = try engine.readTrace(&tb2, std.mem.span(fz2));
+    defer own.deinit();
+    try std.testing.expectEqualStrings("the subject leaving its process group", secondRunLabel(own, false).?);
 }

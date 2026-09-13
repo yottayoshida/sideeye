@@ -254,7 +254,39 @@
  *                     The child never loads the shim's view of the world it was born
  *                     into (new image), and only an oracle can account for it; refuse.
  *   TOY_DETACH        fork a child that calls setsid, escaping the engine's process
- *                     group, then exits. The engine cannot claim to have stopped it.
+ *                     group, then exits. Refused where the engine did not hold the run in a
+ *                     cgroup of its own; a child like any other where it did (#559).
+ *   TOY_DETACH_WRITE  ansible's shape (#559): a worker calls setsid and waits for a process
+ *                     it starts, which does the whole rotate; the direct child only waits
+ *                     for the worker. Judged where the engine holds the run in a cgroup —
+ *                     toy-bug FAILs and toy-fixed PASSes — and refused where it does not.
+ *   TOY_DETACH_WORLD  TOY_DETACH's child in explored worlds only (SIDEEYE_KILL_AT set): the
+ *                     recording crosses no boundary and every world detaches.
+ *   TOY_DETACH_RUN2   TOY_DETACH's child on preflight's second observed run only, keyed on
+ *                     TOY_RUN2_MARK as TOY_UNLINKED_WRITE_RUN2 is.
+ *   TOY_SPAWN_SETSID  posix_spawn setsid(1) over true with an empty environment: the process
+ *                     that leaves the group never loads the shim, so only the oracle sees it.
+ *
+ * The three below walk out of the run's cgroup, into the engine's own, in an explored world
+ * only: a world runs without an oracle, so the move itself is seen by nothing but the watch
+ * the leg is about, and the recording run is otherwise the same process tree. Each appends a
+ * line to TOY_ESCAPE_WITNESS when the kernel took the move, so a leg can tell a refused
+ * escape from an escape that never happened.
+ *   TOY_ESCAPE_FORK   a worker moves out, then forks and reaps a quiet child before its
+ *                     rotate. The shim asks where a process stands at every boundary, finds
+ *                     the worker outside at that fork, and records it.
+ *   TOY_ESCAPE_LINGER a worker's child leaves the process group, moves out and sleeps past
+ *                     the world while the worker rotates. Neither the crash point's kills
+ *                     nor the cleanup's reach it, so it is alive when the world is over.
+ *   TOY_ESCAPE_PAST   the direct child moves out, then releases a worker that leaves the
+ *                     process group and rotates. When a crash point kills the worker, the
+ *                     direct child — which no kill reached — writes one more file and then
+ *                     kills itself, so the world ends the way a killed world does, holding
+ *                     a record from after its crash point.
+ *   TOY_JOIN_PGID     a worker that, in explored worlds only, joins the process group this
+ *                     variable names — one outside the run, in the same session — and then
+ *                     rotates, so a crash point is reached by a process whose group is not the
+ *                     run's. Appends a line to TOY_ESCAPE_WITNESS when the join took.
  *   TOY_TRACELINK     remove the trace the engine named, put a symlink to this
  *                     variable's value where the name was, then posix_spawn a child
  *                     that loads the shim and opens that name (#488). It plays the
@@ -702,8 +734,32 @@ static void maybe_leave_the_supported_region(void) {
             if (rfd >= 0) close(rfd);
         }
     }
-    /* The escape: a child that leaves the process group the engine relies on. */
-    if (getenv("TOY_DETACH")) {
+    /* The escape: a child that leaves the process group the engine relies on — every run, in
+     * explored worlds only, or on the second observed run only (#559). */
+    const char *toy_kill_at = getenv("SIDEEYE_KILL_AT");
+    int detach_run2 = 0;
+    if (getenv("TOY_DETACH_RUN2")) {
+        const char *mark = getenv("TOY_RUN2_MARK");
+        if (mark && *mark) {
+            if (access(mark, F_OK) == 0) {
+                detach_run2 = 1;
+            } else {
+                int m = open(mark, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (m >= 0) close(m);
+            }
+        }
+    }
+    /* #559: a process that leaves the group without the shim — only the oracle sees it. */
+    if (getenv("TOY_SPAWN_SETSID")) {
+        static char *const av[] = { (char *)"setsid", (char *)TOY_TRUE, NULL };
+        char *const ev[] = { NULL };
+        pid_t sp;
+        if (posix_spawn(&sp, "/usr/bin/setsid", NULL, NULL, av, ev) == 0) {
+            int st;
+            waitpid(sp, &st, 0);
+        }
+    }
+    if (getenv("TOY_DETACH") || detach_run2 || (getenv("TOY_DETACH_WORLD") && toy_kill_at && *toy_kill_at)) {
         pid_t p = fork();
         if (p == 0) {
             setsid();
@@ -1364,6 +1420,50 @@ static int cmd_load_key(void) {
     return 0;
 }
 
+/* The exit status of a child, or 1 when there is none to report. */
+static int reap_status(pid_t p) {
+    if (p < 0) return 1;
+    int st;
+    while (waitpid(p, &st, 0) < 0)
+        if (errno != EINTR) return 1;
+    return WIFEXITED(st) ? WEXITSTATUS(st) : 1;
+}
+
+/* Append one line to TOY_ESCAPE_WITNESS, when it is set: the exit toys' evidence that the kernel
+ * took what they asked for. */
+static void append_witness(const char *line) {
+    const char *w = getenv("TOY_ESCAPE_WITNESS");
+    if (!w || !*w) return;
+    int fd = open(w, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0) return;
+    if (write(fd, line, strlen(line)) < 0) {}
+    close(fd);
+}
+
+/* #559's exit toys: move this process out of the run's cgroup into the engine's own, the
+ * parent of the one SIDEEYE_RUN_CGROUP names (a path under the cgroup v2 mount, which these
+ * legs run with at /sys/fs/cgroup). Only in an explored world. Returns 1 when the kernel took
+ * the move, and says so in TOY_ESCAPE_WITNESS. */
+static int escape_cgroup(void) {
+    const char *k = getenv("SIDEEYE_KILL_AT");
+    const char *run = getenv("SIDEEYE_RUN_CGROUP");
+    if (!k || !*k || !run || !*run) return 0;
+    const char *slash = strrchr(run, '/');
+    if (!slash) return 0;
+    char procs[4200], num[32];
+    snprintf(procs, sizeof procs, "/sys/fs/cgroup%.*s/cgroup.procs", (int)(slash - run), run);
+    int fd = open(procs, O_WRONLY);
+    if (fd < 0) return 0;
+    int n = snprintf(num, sizeof num, "%d", (int)getpid());
+    int moved = write(fd, num, (size_t)n) == n;
+    close(fd);
+    if (!moved) return 0;
+    char line[64];
+    snprintf(line, sizeof line, "moved pid=%d kill_at=%s\n", (int)getpid(), k);
+    append_witness(line);
+    return 1;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "usage: %s init|rotate|rotate-msg|doctor|load-key\n", argv[0]);
@@ -1434,6 +1534,88 @@ int main(int argc, char **argv) {
             _exit(127);
         }
         if (p > 0) { int st; waitpid(p, &st, 0); }
+    }
+    /* #559. The four shapes the header describes, each a whole rotate of its own. */
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_DETACH_WRITE")) {
+        pid_t w = fork();
+        if (w == 0) {
+            if (setsid() < 0) _exit(1);
+            pid_t r = fork();
+            if (r == 0) _exit(cmd_rotate() == 0 ? 0 : 1);
+            _exit(reap_status(r));
+        }
+        return reap_status(w);
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_ESCAPE_FORK")) {
+        pid_t w = fork();
+        if (w == 0) {
+            (void)escape_cgroup();
+            pid_t z = fork();
+            if (z == 0) _exit(0);
+            if (reap_status(z) != 0) _exit(1);
+            _exit(cmd_rotate() == 0 ? 0 : 1);
+        }
+        return reap_status(w);
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_ESCAPE_LINGER")) {
+        pid_t w = fork();
+        if (w == 0) {
+            int fds[2];
+            if (pipe(fds) != 0) _exit(1);
+            pid_t g = fork();
+            if (g == 0) {
+                close(fds[0]);
+                if (setsid() < 0) _exit(1);
+                int moved = escape_cgroup();
+                close(fds[1]);
+                if (moved) sleep(3);
+                _exit(0);
+            }
+            close(fds[1]);
+            char b;
+            while (read(fds[0], &b, 1) < 0 && errno == EINTR) {}
+            close(fds[0]);
+            _exit(cmd_rotate() == 0 ? 0 : 1);
+        }
+        return reap_status(w);
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_ESCAPE_PAST")) {
+        int fds[2];
+        if (pipe(fds) != 0) return 1;
+        pid_t x = fork();
+        if (x == 0) {
+            close(fds[1]);
+            char b;
+            while (read(fds[0], &b, 1) < 0 && errno == EINTR) {}
+            if (setsid() < 0) _exit(1);
+            _exit(cmd_rotate() == 0 ? 0 : 1);
+        }
+        close(fds[0]);
+        int moved = escape_cgroup();
+        close(fds[1]);
+        if (x < 0) return 1;
+        int st;
+        while (waitpid(x, &st, 0) < 0)
+            if (errno != EINTR) return 1;
+        char late[4096];
+        join_path(late, sizeof late, "after-worker.txt");
+        if (write_file(late, "the direct child wrote after its worker\n") != 0) return 1;
+        if (moved && WIFSIGNALED(st)) raise(SIGKILL);
+        return WIFEXITED(st) ? WEXITSTATUS(st) : 1;
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_JOIN_PGID")) {
+        pid_t w = fork();
+        if (w == 0) {
+            const char *k = getenv("SIDEEYE_KILL_AT");
+            const char *g = getenv("TOY_JOIN_PGID");
+            if (k && *k && g && *g && setpgid(0, (pid_t)atoi(g)) == 0) {
+                char line[64];
+                snprintf(line, sizeof line, "joined pid=%d pgid=%s\n", (int)getpid(), g);
+                append_witness(line);
+            }
+            _exit(cmd_rotate() == 0 ? 0 : 1);
+        }
+        return reap_status(w);
     }
     if (strcmp(argv[1], "rotate") == 0) return cmd_rotate();
     if (strcmp(argv[1], "doctor") == 0) return cmd_doctor();

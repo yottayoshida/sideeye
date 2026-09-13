@@ -1,0 +1,66 @@
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+spawn 
+thread 
+fork 
+detached 
+fork 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+close /localrun/st/sideeye-testnocgroup-wrappers/f.txt
+rename /root/.ansible/tmp/ansible-tmp-1789298001.5535517-233-82442256397120/tmplskuyfbn
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers
+fork 
+exec 
+shim_ready /localrun/st/sideeye-testnocgroup-wrappers

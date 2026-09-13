@@ -1642,15 +1642,23 @@ fn phaseStructural(run: *Run) void {
             "an image replacement whose chain of observation broke"
         else
             "an image replacement before the subject announced itself",
-        .detached => "a process leaving the containment group",
         else => null,
     };
+    // A process that left the process group (#559's second half), asked once because the
+    // account here and the refusal below must agree. Where the engine held the run it is a
+    // child like any other, and the account says what it says of one; where it did not, the
+    // account names the refusal by its own name, as it did when this was a hard boundary.
+    const rec_cg: ?*const posix.CgroupSpawn = if (run.rec.cgroup) |*cg| cg else null;
+    const detach_refused = trace.detached != null and !containment.holds(rec_cg, &trace, false);
+    if (boundary.boundary_ev.shim_hard == null and detach_refused)
+        boundary.boundary_ev.shim_hard = "a process leaving the containment group";
     // The thread account (v16): how many the shim saw made, how many wrote, and whether
     // a thread is the only boundary there was.
     boundary.boundary_ev.threads = trace.thread_records;
     boundary.boundary_ev.unrecorded_writer_thread = trace.unrecorded_writer_thread;
     boundary.boundary_ev.writer_threads = trace.subject_writer_tids;
     boundary.boundary_ev.shim_thread_only = trace.boundary == .thread and !trace.crossedProcessBoundary() and trace.exec_continuations == 0;
+    boundary.boundary_ev.shim_subject_detached = trace.subject_detached and !trace.crossedProcessBoundary();
 
     if (trace.truncated)
         unknown(.trace_truncated, "the trace ends mid-record; how many operations there were is unknown", .retry_then_report);
@@ -1673,8 +1681,8 @@ fn phaseStructural(run: *Run) void {
         unknown(.unsupported_syscall_observed, name, .class_wall);
 
     // The boundaries that stay refusals whatever an oracle says. exec replaces the
-    // image the crash points were read from; a process that left the containment group
-    // is one the engine cannot claim to have stopped. Read from `hard_boundary`, not
+    // image the crash points were read from; a process that left the process group is
+    // asked about below it since #559's second half. Read from `hard_boundary`, not
     // `boundary`: the first boundary in the trace can be a tolerable fork written
     // *before* the record that must refuse the run, and the refusal must not lose to it.
     if (trace.hard_boundary) |b| switch (b) {
@@ -1685,9 +1693,12 @@ fn phaseStructural(run: *Run) void {
             unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)", .unwrap_or_class_wall)
         else
             unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .unwrap_or_class_wall),
-        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid); the engine cannot claim to have stopped it", .class_wall),
         else => {},
     };
+    // A process that left the process group (#559's second half): judged where the engine held
+    // the run in a cgroup of its own, refused everywhere else with the reason it was not held.
+    // After the image-change refusal above, which a detach recorded first no longer hides.
+    if (detach_refused) containment.refuseDetach(arena, rec_cg, "");
     // A thread is not among them since v16. What refuses is a SECOND thread of one
     // process writing the judged directory: two threads' writes are ordered by the
     // scheduler, so the sequence they were numbered in is the one this run produced and a
@@ -1905,7 +1916,12 @@ fn phaseOracle(run: *Run) void {
             .lines = parsed.lines_seen,
         } };
         boundary.boundary_ev.oracle_child_touched = parsed.childTouched();
-        boundary.boundary_ev.oracle_boundary = parsed.boundary;
+        // A child's detach is the oracle's boundary in the account only where it refuses: in a
+        // run the engine held it is a child like any other (#559), and naming it here would
+        // hide the sentence the account gives every other child.
+        const rec_cg: ?*const posix.CgroupSpawn = if (run.rec.cgroup) |*cg| cg else null;
+        const detach_refused = parsed.detached != null and !containment.holds(rec_cg, &trace, false);
+        boundary.boundary_ev.oracle_boundary = parsed.boundary orelse if (detach_refused) parsed.detached else null;
 
         // Set before any exit below, like oracle_note: an UNKNOWN raised by this
         // block must still carry what the oracle saw being excluded (#121).
@@ -1953,6 +1969,10 @@ fn phaseOracle(run: *Run) void {
 
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
+        // An unshimmed child leaving the process group, which only the oracle sees (#559's
+        // second half): judged where the run was held in a cgroup, as the shim's own record is.
+        if (detach_refused)
+            containment.refuseDetach(arena, rec_cg, std.fmt.allocPrint(arena, ", seen by the oracle as a child's {s}", .{parsed.detached.?}) catch "");
         oracle_cgroup_move = parsed.cgroup_move;
 
         // The tolerance condition, now decided by both witnesses at once (v15). Either
@@ -2556,6 +2576,8 @@ fn phaseExploration(run: *Run) void {
         // world crossed a process boundary, so the bits cannot contradict each other.
         boundary.boundary_ev.world_thread_only = boundary.boundary_ev.world_thread_only or
             (wtrace.boundary == .thread and !wtrace.crossedProcessBoundary() and wtrace.exec_continuations == 0);
+        boundary.boundary_ev.world_subject_detached = boundary.boundary_ev.world_subject_detached or
+            (wtrace.subject_detached and !wtrace.crossedProcessBoundary());
         boundary.boundary_ev.world_foreign_touch = boundary.boundary_ev.world_foreign_touch or wtrace.foreign_kill_point;
 
         // The second witness again, on every explored world and the baseline. A child's
@@ -2590,10 +2612,15 @@ fn phaseExploration(run: *Run) void {
         if (wtrace.unresolved_refusing != null)
             unknown(.unresolvable_path, boundary.unresolvedDetail(arena, wtrace.unresolved_refusing, " in an explored world", "an operation was observed in an explored world whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
         if (wtrace.hard_boundary) |hb| switch (hb) {
-            .detached => unknown(.child_process_detected, "a process left the containment group in an explored world", .class_wall),
             .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world without an unbroken chain of observation", .class_wall),
             else => {},
         };
+        // And a process that left the process group, held or not by this world's own cgroup
+        // (#559's second half): a world takes branches the recording did not. A world armed to
+        // die can have its kill cut an image off between announcing itself and answering, and
+        // that is the kill, not an escape.
+        if (wtrace.detached != null and !containment.holds(wcg_ptr, &wtrace, k <= n))
+            containment.refuseDetach(arena, wcg_ptr, " in an explored world");
         // The thread rule, asked of this world's own trace (v16): a world takes branches
         // the recording did not, and a second thread writing here is as unordered as one
         // in the recording. Nothing is inherited — the record names its thread.
@@ -2699,6 +2726,8 @@ fn phaseExploration(run: *Run) void {
             boundary.boundary_ev.world_only = true;
             unknown(.boundary_without_oracle, if (wtrace.crossedProcessBoundary())
                 "a process boundary appeared in an explored world that the recording never crossed; explored worlds run without an oracle, so nothing accounts for what the other process did"
+            else if (wtrace.subject_detached)
+                "the subject left its process group in an explored world that the recording never did; explored worlds run without an oracle, so nothing accounts for what followed"
             else
                 "the subject replaced its own image in an explored world that the recording never did; explored worlds run without an oracle, so nothing accounts for the chain across that change", .class_wall);
         }
@@ -3176,7 +3205,7 @@ const Repeat = struct {
 ///
 /// **Not every gate run A passes.** Ten of the fifteen a preflight can reach: exit
 /// status, oversized trace, shim initialisation, truncation, the shim-side foreign
-/// writer, trace-contract version, the hard boundaries (exec / thread / detached), the
+/// writer, trace-contract version, the hard boundaries (exec, and a detach run B's own cgroup did not hold), the
 /// soft boundary without an oracle, quiescence of the state tree, and a state that moved
 /// while nothing was recorded.
 ///
@@ -3310,7 +3339,10 @@ fn observeAgain(
     // is what makes it name run B. (A refusal that exits through `setupError` still prints
     // one line and no account — `restoreFailure` above and the snapshot OOM paths below take
     // that route — so the claim is about this block, not about every exit from here.)
-    boundary.boundary_ev.second_run = boundary.secondRunLabel(trace);
+    // Whether run B's detach refuses, asked once for the label here and the refusal below
+    // (#559's second half): a detach run B's own cgroup held reads as any other boundary.
+    const b_detach_refused = trace.detached != null and !containment.holds(cg_b_ptr, &trace, false);
+    boundary.boundary_ev.second_run = boundary.secondRunLabel(trace, b_detach_refused);
     // The property says "the two runs OBSERVED in this invocation". A run whose shim
     // never initialised was not observed, and reporting it as one half of a comparison
     // would make that word false — the flag exists for targets that take a different
@@ -3354,9 +3386,12 @@ fn observeAgain(
     // reported as "left equal state" (review, P1).
     if (trace.hard_boundary) |b| switch (b) {
         .exec => unknown(.child_process_detected, "the second observed run replaced its own image, so the two runs did not execute the same program to completion and cannot be compared", .class_wall),
-        .detached => unknown(.child_process_detected, "a process left the containment group (setsid/setpgid) during the second observed run; the engine cannot claim to have stopped it, so what touched the state afterwards is unaccounted for", .class_wall),
         else => {},
     };
+    // A process that left the process group during run B, judged where run B's own cgroup held
+    // it, as run A's is (#559's second half).
+    if (b_detach_refused)
+        containment.refuseDetach(arena, cg_b_ptr, " during the second observed run");
     // The thread rule, asked of run B's own trace (v16), as run A asks it of its own.
     if (trace.second_writer_thread) |op|
         unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, " in the second observed run"), .class_wall);
