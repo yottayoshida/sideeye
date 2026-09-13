@@ -303,8 +303,11 @@ into a 2048-byte buffer of its own rather than a FILE's. Neither is the "8192 th
 rest" that the 8999-byte payload in the first table suggested. One crash point per write
 plus the open, on both: 3 and 514. That is the reason the check compares the two members
 rather than pinning a number, and the reason the page no longer says where glibc cuts.
-**x86_64 has not been measured here**; the CI job's run of this script, on the runner's
-glibc 2.39, is that measurement.
+**On x86_64 the measurement is CI's.** The pull request's run of this script (#582, run
+34745467126, runner image `ubuntu-24.04`, Ubuntu glibc 2.39, head `e3379c3`) matched all sixteen
+declarations and judged `dprintf` over 2 crash points and `dprintfbig` over 514 under
+`syscalls`, the oracle agreeing on each — the count glibc 2.41 gave on aarch64; the runner's
+write sizes were not traced (`ci-x86_64-glibc-2.39.txt`, the step's own lines).
 
 Before the change was written, the script with `--observe` added to its explore line and
 nothing else gave these outcomes for the seven members that existed, on main `39da3cf`
