@@ -1,0 +1,25 @@
+# Step 4 of the plan: one strong overlap checked by hand against the raw capture.
+# Capture: one run of 'joplin --profile /w/jp mknote SecondNote' under strace -f -y -ttt -T (kept on the host, not committed; the same seed and command as run.sh).
+# turns.py's strong pairs at 0.5 ms for that capture:
+pair 1: tid 53 fsync(database.sqlite-journal)=ok [1789276398.348236, 1789276398.349913] (1.677 ms) contains tid 55 open(log.txt)=ok [1789276398.348592, 1789276398.348615] (0.023 ms)
+pair 2: tid 53 fsync(database.sqlite-journal)=ok [1789276398.348236, 1789276398.349913] (1.677 ms) contains tid 52 write(log.txt)=ok [1789276398.349226, 1789276398.349265] (0.039 ms)
+pair 3: tid 53 fsync(database.sqlite)=ok [1789276398.352233, 1789276398.352886] (0.653 ms) contains tid 55 open(log.txt)=ok [1789276398.352254, 1789276398.352272] (0.018 ms)
+pair 4: tid 53 fsync(database.sqlite)=ok [1789276398.352233, 1789276398.352886] (0.653 ms) contains tid 52 write(log.txt)=ok [1789276398.352720, 1789276398.352736] (0.016 ms)
+
+# The raw lines of tids 52, 53 and 55 while tid 53 is inside fsync (pair 1 and pair 2):
+53    1789276398.348236 fsync(17</w/jp/database.sqlite-journal> <unfinished ...>
+55    1789276398.348362 <... futex resumed>) = 0 <0.001700>
+55    1789276398.348441 futex(0xffff9d580a88, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+55    1789276398.348506 <... futex resumed>) = 0 <0.000037>
+55    1789276398.348592 openat(AT_FDCWD</w>, "/w/jp/log.txt", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0666) = 19</w/jp/log.txt> <0.000023>
+55    1789276398.348689 write(16<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8 <unfinished ...>
+55    1789276398.348778 <... write resumed>) = 8 <0.000065>
+55    1789276398.348846 futex(0xffff9d580ae0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 127, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+52    1789276398.349020 <... futex resumed>) = 0 <0.001205>
+52    1789276398.349085 futex(0xffff9d580a88, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+52    1789276398.349151 <... futex resumed>) = 0 <0.000037>
+52    1789276398.349226 write(19</w/jp/log.txt>, "2026-09-13 05:13:18: e2ee/utils:"..., 65) = 65 <0.000039>
+52    1789276398.349354 write(16<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8 <unfinished ...>
+52    1789276398.349453 <... write resumed>) = 8 <0.000067>
+52    1789276398.349542 futex(0xffff9d580ae0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 127, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+53    1789276398.349944 <... fsync resumed>) = 0 <0.001677>
