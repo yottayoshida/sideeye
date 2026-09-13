@@ -456,7 +456,7 @@ table:
   is usable by default on macOS (SIP leaves DTrace's syscall provider with
   no probes even as root; the candidate measured oracle-shaped, `fs_usage`,
   is root-gated — #181), and `requireCompleteness`
-  (src/main.zig) guards every path that ends in PASS — so under this page's
+  (src/refuse.zig) guards every path that ends in PASS — so under this page's
   strict protocol every Linux PASS derives to UNKNOWN
   (`completeness_not_verified`) while a FAIL stands on its own evidence.
   The derived rate is printed from that formula by `count.py`, never
@@ -606,7 +606,7 @@ UNKNOWN rate, per-trial: **3/7 (42.9%)**
 
 #### macOS column (derived, not measured)
 
-Formula (mechanism: `requireCompleteness`, src/main.zig — no oracle exists on macOS,
+Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists on macOS,
 so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own
 evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 11/28 (39.3%)
@@ -710,7 +710,7 @@ UNKNOWN rate, per-trial: **2/36 (5.6%)**
 
 #### macOS column (derived, not measured)
 
-Formula (mechanism: `requireCompleteness`, src/main.zig — no oracle exists on macOS,
+Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists on macOS,
 so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own
 evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 13/36 (36.1%)

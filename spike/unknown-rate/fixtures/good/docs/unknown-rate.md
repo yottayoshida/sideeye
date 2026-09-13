@@ -51,7 +51,7 @@ UNKNOWN rate, per-trial: **1/1 (counts only, n<5)**
 
 #### macOS column (derived, not measured)
 
-Formula (mechanism: `requireCompleteness`, src/main.zig — no oracle exists on macOS,
+Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists on macOS,
 so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own
 evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 1/1 (counts only, n<5)
