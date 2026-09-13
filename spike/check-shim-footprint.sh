@@ -17,6 +17,12 @@
 #      measured are toy-stack's: open, write, pwritev2, close, rename, unlink, mkdir, rmdir
 #      and an execve that fails. A call outside that list is held by C, one function at a
 #      time, and by nothing for its whole chain.
+#      Both rows are told they run in a cgroup the process is not in (`SIDEEYE_RUN_CGROUP`,
+#      contract v17, #559), so each boundary a worker thread crosses reads /proc/self/cgroup
+#      and records itself outside it: the deepest path an interposed call has in a contained
+#      run, and one an uncontained measurement never takes. A 4,688-byte frame on it went
+#      unseen by A and was caught by C alone, which is why the rows now require the worker
+#      threads' `cgroup` records beside their other ones.
 #   B  thread-local storage — the PT_TLS segment of the built library.
 #   C  the largest stack frame of any function of the shim's own, from its disassembly —
 #      what A would only see on a CPU and a path it happened to exercise.
@@ -67,7 +73,7 @@ try:
     b = open(sys.argv[1], "rb").read()
 except OSError:
     b = b""
-names = {1: "open", 2: "write", 3: "rename", 4: "unlink", 7: "mkdir", 8: "rmdir", 201: "exec"}
+names = {1: "open", 2: "write", 3: "rename", 4: "unlink", 7: "mkdir", 8: "rmdir", 201: "exec", 904: "cgroup"}
 i, counts, announce = 12, {}, None
 while i + 22 <= len(b):
     op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22 + plen
@@ -84,9 +90,9 @@ stack_case() { # stack_case <mode>
     want_announce=
     if [ "$1" = syscalls ]; then
         want_announce=observe:syscalls
-        o=$(env LD_PRELOAD="$SHIM" SIDEEYE_STATE_DIR="$d" SIDEEYE_TRACE_PATH="$d.bin" SIDEEYE_OBSERVE=syscalls "$TOY" "$d" 2>&1); rc=$?
+        o=$(env LD_PRELOAD="$SHIM" SIDEEYE_STATE_DIR="$d" SIDEEYE_TRACE_PATH="$d.bin" SIDEEYE_RUN_CGROUP=/sideeye-footprint-elsewhere SIDEEYE_OBSERVE=syscalls "$TOY" "$d" 2>&1); rc=$?
     else
-        o=$(env LD_PRELOAD="$SHIM" SIDEEYE_STATE_DIR="$d" SIDEEYE_TRACE_PATH="$d.bin" "$TOY" "$d" 2>&1); rc=$?
+        o=$(env LD_PRELOAD="$SHIM" SIDEEYE_STATE_DIR="$d" SIDEEYE_TRACE_PATH="$d.bin" SIDEEYE_RUN_CGROUP=/sideeye-footprint-elsewhere "$TOY" "$d" 2>&1); rc=$?
     fi
     depth=$(val "$o" depth)
     sig=$(val "$o" sigframe)
@@ -98,7 +104,7 @@ stack_case() { # stack_case <mode>
     facts=$(trace_facts "$d.bin")
     announce=$(printf '%s\n' "$facts" | sed -n 's/^announce=//p')
     short=
-    for name in open write rename unlink mkdir rmdir exec; do
+    for name in open write rename unlink mkdir rmdir exec cgroup; do
         n=$(val "$facts" "$name")
         [ "${n:-0}" -ge 2 ] || short="$short $name ${n:-0}"
     done

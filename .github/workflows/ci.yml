@@ -142,6 +142,18 @@ jobs:
           test -x zig-out/bin/sideeye-testtracebudget
           test "$sha_before" = "$sha_after"
 
+      # #559's comparison engine, same guard: -Dtest-no-cgroup must ADD an engine that never
+      # contains a run in a cgroup and leave the shipped engine byte-identical. As above, this
+      # sees the flag and not the shipped value; the unit test in src/main.zig that asserts
+      # `no_cgroup` is false is what holds the literal.
+      - name: Build the no-cgroup comparison engine, shipped engine unchanged (#559)
+        run: |
+          sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          zig build -Dtest-no-cgroup
+          sha_after=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          test -x zig-out/bin/sideeye-testnocgroup
+          test "$sha_before" = "$sha_after"
+
       # The ancestor probe (#358) needs its own invocation — folding it into the step
       # above would leave the new option unexercised — and asserts a property rather than
       # a difference. Both options keep their shipped value as a separate literal in
@@ -189,10 +201,26 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
 
+      # Twice, because since contract v17 the engine behaves two ways on Linux (#559) and the
+      # suite is quick. First as the runner's shell starts it, in a cgroup the runner does not
+      # own, where the engine contains nothing: every leg measures the uncontained engine, and
+      # check 2cg asserts that no run was contained.
       - name: Acceptance suite
         run: sh spike/acceptance.sh
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "0"
+
+      # Then in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`), where the
+      # engine contains every observed run: the same legs, measured contained, and check 2cg
+      # asserts from the traces that the shipped engine contained them and
+      # `sideeye-testnocgroup` did not. The wrapper's own probe fails first when the scope was
+      # not delegated; check 2cg is what fails when the engine's probe disagrees with it.
+      - name: Acceptance suite, contained in a delegated cgroup (#559)
+        run: sh spike/in-delegated-cgroup.sh sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "1"
 
       # The libc-internal-call class (#39), one member per run. Its own invocation
       # rather than a check inside the acceptance suite: it drives the shipped engine

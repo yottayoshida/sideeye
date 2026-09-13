@@ -43,7 +43,7 @@ pub fn build(b: *std.Build) void {
     // it is **an edit to the shipped literal below**, not a flipped default here — the
     // default cannot reach a shipped build, exactly as the trace cap's cannot, and this
     // comment claimed otherwise until review measured both: flipping this `orelse` leaves
-    // the shipped binary clean, editing `engineOptions(b, 0, 0, 0, false)` puts the entry in
+    // the shipped binary clean, editing `engineOptions(b, 0, 0, 0, false, false)` puts the entry in
     // it. A sha comparison is blind to that edit because it lands in both arms; a grep
     // of the shipped artifact is not.
     const test_ancestor_probe = b.option(bool, "test-ancestor-probe", "also build sideeye-ancprobe, an engine with a synthetic denied entry under /tmp used only by acceptance (#358)") orelse false;
@@ -60,6 +60,14 @@ pub fn build(b: *std.Build) void {
     // that no fixture aims a planted link at a large file. The shipped value is a literal
     // below rather than this flag's default.
     const test_trace_budget = b.option(bool, "test-trace-budget", "also build sideeye-testtracebudget, an engine with a tiny whole-trace ceiling used only by acceptance (#377)") orelse false;
+
+    // `-Dtest-no-cgroup` ADDITIONALLY builds `sideeye-testnocgroup`, an engine that never
+    // contains a run in a cgroup (contract v17, #559), on a host where the shipped engine does.
+    // It is the comparison a containment leg needs: the same machine and the same delegation,
+    // one engine that uses it beside one that does not, so a leg reading a verdict under
+    // containment can show the refusal that verdict replaced — measured there, not on another
+    // machine. Its shipped value is a literal below, like the others.
+    const test_no_cgroup = b.option(bool, "test-no-cgroup", "also build sideeye-testnocgroup, an engine that never contains a run in a cgroup, used only by acceptance (#559)") orelse false;
     // Not an engine variant: a reader for the shim's trace, used by
     // `spike/fsevents/survey.sh`'s L7a to ask what was recorded ABOUT a path rather than
     // whether the path appears at all (#344). Gated the same way for the same reason —
@@ -74,12 +82,13 @@ pub fn build(b: *std.Build) void {
     // `zig build test` and the new option all stayed green; the sibling variant was not
     // in the measurement. Built here instead, a module cannot be short a field.
     const engineOptions = struct {
-        fn make(bld: *std.Build, trace_cap: usize, trace_cap_world: usize, trace_budget: usize, ancestor_probe: bool) *std.Build.Step.Options {
+        fn make(bld: *std.Build, trace_cap: usize, trace_cap_world: usize, trace_budget: usize, ancestor_probe: bool, no_cgroup: bool) *std.Build.Step.Options {
             const o = bld.addOptions();
             o.addOption(usize, "trace_cap_override", trace_cap);
             o.addOption(usize, "trace_cap_override_world", trace_cap_world);
             o.addOption(usize, "trace_budget_override", trace_budget);
             o.addOption(bool, "ancestor_probe", ancestor_probe);
+            o.addOption(bool, "no_cgroup", no_cgroup);
             return o;
         }
     }.make;
@@ -90,9 +99,10 @@ pub fn build(b: *std.Build) void {
     // edit that leaves `zig build test` green and CI's sha comparison green while the
     // shipped binary carries whatever literal that edit chose — the shape #365 filed, one
     // level further out. Measured before this assertion existed: swapping the engine's
-    // import for `engineOptions(b, 128 * 1024 * 1024, 0, false).createModule()` passed the
-    // whole suite and produced a shipped engine byte-identical to the one an edit to the
-    // literal produces.
+    // import for a freshly made module with a raised trace cap — spelled
+    // `engineOptions(b, 128 * 1024 * 1024, 0, 0, false, false).createModule()` against today's
+    // signature, which has grown two parameters since — passed the whole suite and produced a
+    // shipped engine byte-identical to the one an edit to the literal produces.
     //
     // Checked at configure time, so every `zig build` sees it. `import_table` is a public
     // field of std.Build.Module (std/Build/Module.zig:7); a rename there fails the build
@@ -115,7 +125,7 @@ pub fn build(b: *std.Build) void {
     // sentence never covered is an edit to the literal itself (#365): the sha comparison
     // in CI puts such an edit in both arms and stays green. The unit tests below assert
     // these values, so the literal is held by a check rather than by the sentence.
-    const exe_opts = engineOptions(b, 0, 0, 0, false);
+    const exe_opts = engineOptions(b, 0, 0, 0, false, false);
 
     // ONE module object, handed to both the shipped executable and the unit tests.
     // `createModule` returns a fresh Module on every call, and calling it separately in
@@ -152,7 +162,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(exe);
 
     if (test_ancestor_probe) {
-        const probe_opts = engineOptions(b, 0, 0, 0, true);
+        const probe_opts = engineOptions(b, 0, 0, 0, true, false);
         const exe_probe = b.addExecutable(.{
             .name = "sideeye-ancprobe",
             .root_module = b.createModule(.{
@@ -203,7 +213,7 @@ pub fn build(b: *std.Build) void {
         // This said "the two read sites" until #377 counted them and found three. The
         // third — `preflight --twice`'s second observation — shares `trace_cap` with the
         // recording read, so neither artifact can reach it: run A's read fires first.
-        const cap_opts = engineOptions(b, 64, 0, 0, false);
+        const cap_opts = engineOptions(b, 64, 0, 0, false, false);
         const exe_cap = b.addExecutable(.{
             .name = "sideeye-testtracecap",
             .root_module = b.createModule(.{
@@ -221,7 +231,7 @@ pub fn build(b: *std.Build) void {
         exe_cap.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
         b.installArtifact(exe_cap);
 
-        const world_opts = engineOptions(b, 0, 64, 0, false);
+        const world_opts = engineOptions(b, 0, 64, 0, false, false);
         const exe_cap_world = b.addExecutable(.{
             .name = "sideeye-testtracecap-world",
             .root_module = b.createModule(.{
@@ -245,7 +255,7 @@ pub fn build(b: *std.Build) void {
         // separates this refusal from `trace_too_large`: every trace involved is well
         // under the per-read cap, and what runs out is the sum. The value is read off a
         // measured toy trace rather than guessed — see BUILDLOG for the run.
-        const budget_opts = engineOptions(b, 0, 0, 3 * 1024, false);
+        const budget_opts = engineOptions(b, 0, 0, 3 * 1024, false, false);
         const exe_budget = b.addExecutable(.{
             .name = "sideeye-testtracebudget",
             .root_module = b.createModule(.{
@@ -262,6 +272,26 @@ pub fn build(b: *std.Build) void {
         exe_budget.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
         exe_budget.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
         b.installArtifact(exe_budget);
+    }
+
+    if (test_no_cgroup) {
+        const nocg_opts = engineOptions(b, 0, 0, 0, false, true);
+        const exe_nocg = b.addExecutable(.{
+            .name = "sideeye-testnocgroup",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/main.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .imports = &.{
+                    .{ .name = "contract", .module = contract },
+                    .{ .name = "engine_build_options", .module = nocg_opts.createModule() },
+                },
+            }),
+        });
+        exe_nocg.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
+        exe_nocg.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        b.installArtifact(exe_nocg);
     }
 
     // The shim is only built for targets whose interposition mechanism exists.
@@ -412,6 +442,10 @@ pub fn build(b: *std.Build) void {
         "src/config.zig",
         "src/mcp.zig",
         "src/image.zig",
+        // #559's watch on a contained run. Nothing in main.zig's tests reaches it — only the
+        // phases call it — so without this name its tests were not even compiled: a test made
+        // to fail on purpose stayed green until the second review found the file missing here.
+        "src/containment.zig",
         // The first seam of #572 (ADR 0062) and the leaf it forced. Named for the reason
         // this list exists (above): collection through main.zig happens to reach both today
         // — its tests call `buildJson`, which calls `boundary.boundaryAccount()`, and

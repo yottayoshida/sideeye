@@ -132,6 +132,31 @@ pub const TraceInfo = struct {
     /// Kept separately from `boundary` because "first boundary" can be a tolerable
     /// fork that arrives before the record that must refuse the run.
     hard_boundary: ?contract.OpClass = null,
+    /// `shim_ready` records the run holds — one per image a shim initialised in (v17). The
+    /// denominator for the acknowledgement below: when the engine gave the spawn a cgroup,
+    /// every announcement is followed by a `cgroup` record from the same image.
+    shim_ready_records: u32 = 0,
+    /// `cgroup` records saying the writer is inside the run's cgroup — `cgroup:held` or
+    /// `cgroup:held-kill` (v17, #559). `cgroupAcknowledged` compares this with
+    /// `shim_ready_records`: a v16 shim, or a shim that found no `SIDEEYE_RUN_CGROUP` in its
+    /// environment, leaves it short, and a short count is a run that was not contained.
+    cgroup_held_records: u32 = 0,
+    /// Of those, the ones that also opened the cgroup's `cgroup.kill` — a world's shims (v17).
+    cgroup_kill_records: u32 = 0,
+    /// The first `cgroup:outside` or `cgroup:unreadable` record (v17): a process that found itself outside the run's
+    /// cgroup, kept whole for the refusal's detail. A field of its own rather than a boundary
+    /// class read through `hard_boundary`, which keeps only the first boundary a trace holds —
+    /// a `setsid` recorded before the escape would hide it. A `cgroup` record whose aux this
+    /// engine does not name is read here too: an answer nobody can read is not an
+    /// acknowledgement, and the conservative reading of it is the one that refuses.
+    cgroup_outside: ?Op = null,
+    /// The first `cgroup:kill-returned` record (v17): a crash point's write to `cgroup.kill`
+    /// came back. A write that lands ends the writer, so a record written after it is the
+    /// kill failing.
+    cgroup_kill_returned: ?Op = null,
+    /// The first `cgroup:kill-alone` record (v17): a crash point that could not step aside out of
+    /// the cgroup it was about to kill, so its kill was that cgroup's alone.
+    cgroup_kill_alone: ?Op = null,
     /// `.thread` records the shim wrote — one per successful `pthread_create` in a
     /// shimmed process (v16). For the account only: a thread is not a refusal since
     /// v16, and a raw `clone` leaves no such record, so this is a floor on the number of
@@ -287,6 +312,15 @@ pub const TraceInfo = struct {
 
     pub fn deinit(self: *TraceInfo) void {
         self.arena.deinit();
+    }
+
+    /// Every image that announced itself also said it was inside the run's cgroup (v17,
+    /// #559). Asked of a recording run, never of a world: a world's crash-point kill can
+    /// land on a child between its `shim_ready` and its `cgroup` record, and a count short by
+    /// that race is not a process that escaped. What a world is held to instead is what it
+    /// wrote after the crash point and what outlived the kill.
+    pub fn cgroupAcknowledged(self: *const TraceInfo) bool {
+        return self.shim_ready_records > 0 and self.cgroup_held_records == self.shim_ready_records;
     }
 
     /// Did this run cross a boundary at all — the question the oracle requirement, the
@@ -692,6 +726,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         switch (op.class) {
             .shim_ready => {
                 info.saw_shim_ready = true;
+                info.shim_ready_records += 1;
                 if (info.primary_pid == null) {
                     info.primary_pid = op.pid;
                     info.observe_aux = op.aux;
@@ -744,6 +779,24 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             // say the slice borrowed from the trace buffer).
             .unsupported => {
                 if (info.first_unsupported == null) info.first_unsupported = op.path;
+            },
+            // Where this process stands against the run's cgroup (v17, #559). Counts and the
+            // first record of each failure only: what a contained run is, the engine decides,
+            // and the aux values are named once, in `contract.cgroup_aux`.
+            .cgroup => {
+                if (std.mem.eql(u8, op.aux, contract.cgroup_aux.held)) {
+                    info.cgroup_held_records += 1;
+                } else if (std.mem.eql(u8, op.aux, contract.cgroup_aux.held_kill)) {
+                    info.cgroup_held_records += 1;
+                    info.cgroup_kill_records += 1;
+                } else if (std.mem.eql(u8, op.aux, contract.cgroup_aux.kill_returned)) {
+                    if (info.cgroup_kill_returned == null) info.cgroup_kill_returned = op;
+                } else if (std.mem.eql(u8, op.aux, contract.cgroup_aux.kill_alone)) {
+                    if (info.cgroup_kill_alone == null) info.cgroup_kill_alone = op;
+                } else if (info.cgroup_outside == null) {
+                    // `cgroup:outside`, or a value this engine does not name (see the field).
+                    info.cgroup_outside = op;
+                }
             },
             else => {},
         }
@@ -1019,6 +1072,72 @@ test "the trace read refuses a symlink, and reads the same bytes named directly 
     defer through.deinit();
     try std.testing.expect(!through.saw_header);
     try std.testing.expect(!through.saw_shim_ready);
+}
+
+test "cgroup records count against announcements, and an escape or a returned kill is kept whole (v17, #559)" {
+    // A subject and a child, each announcing and acknowledging — the subject from a world,
+    // so holding `cgroup.kill` — then the child saying at a boundary that it is outside, and
+    // the subject's crash-point write to `cgroup.kill` coming back.
+    var fbuf: [contract.max_path]u8 = undefined;
+    const path = try writeTraceForTest("trace-cgroup-ack", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = contract.cgroup_aux.held_kill },
+        .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+        .{ .op = .cgroup, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = contract.cgroup_aux.held },
+        .{ .op = .write, .seq = 1, .pid = 8, .tid = 8, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .cgroup, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = contract.cgroup_aux.outside },
+        .{ .op = .cgroup, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = contract.cgroup_aux.kill_returned },
+        .{ .op = .cgroup, .seq = 1, .pid = 9, .tid = 9, .path = "/tmp/s/a", .aux = contract.cgroup_aux.kill_alone },
+    }, &fbuf);
+    defer _ = posix.unlink(path);
+
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(path));
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 2), info.shim_ready_records);
+    try std.testing.expectEqual(@as(u32, 2), info.cgroup_held_records);
+    try std.testing.expectEqual(@as(u32, 1), info.cgroup_kill_records);
+    try std.testing.expect(info.cgroupAcknowledged());
+    try std.testing.expectEqual(@as(u32, 8), info.cgroup_outside.?.pid);
+    try std.testing.expectEqual(@as(u32, 7), info.cgroup_kill_returned.?.pid);
+    // Its own field, not taken for an escape: the escape above is still pid 8's.
+    try std.testing.expectEqual(@as(u32, 9), info.cgroup_kill_alone.?.pid);
+    // A marker, never an operation: one write in the run, and the numbers say one.
+    try std.testing.expectEqual(@as(u32, 1), info.kill_point_count);
+    try std.testing.expectEqual(@as(u32, 1), info.kill_records);
+}
+
+test "an announcement without an acknowledgement is an uncontained run, and an aux nobody names is not an answer (v17, #559)" {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const path = try writeTraceForTest("trace-cgroup-short", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = contract.cgroup_aux.held },
+        // A child that announced and never acknowledged: a v16 shim, or one whose
+        // environment had lost `SIDEEYE_RUN_CGROUP`.
+        .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+        .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "cgroup:a-later-value" },
+    }, &fbuf);
+    defer _ = posix.unlink(path);
+
+    var tb_ = unboundedBudget(std.testing.allocator);
+    var info = try readTrace(&tb_, std.mem.span(path));
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 2), info.shim_ready_records);
+    try std.testing.expectEqual(@as(u32, 1), info.cgroup_held_records);
+    try std.testing.expect(!info.cgroupAcknowledged());
+    try std.testing.expectEqualStrings("cgroup:a-later-value", info.cgroup_outside.?.aux);
+    try std.testing.expect(info.cgroup_kill_returned == null);
+    try std.testing.expect(info.cgroup_kill_alone == null);
+
+    // Control: a trace with no announcement acknowledges nothing, however few records it
+    // is short by — zero equals zero, and that must not read as contained.
+    const empty = try writeTraceForTest("trace-cgroup-none", &.{
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(empty);
+    var none = try readTrace(&tb_, std.mem.span(empty));
+    defer none.deinit();
+    try std.testing.expect(!none.cgroupAcknowledged());
 }
 
 test "a subject exec followed by a shim_ready carrying the count is a continuation (#123)" {

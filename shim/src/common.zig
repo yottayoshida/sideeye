@@ -160,6 +160,7 @@ const SIGKILL: c_int = 9;
 // leaking across an exec — and the failure would look like missing records rather than
 // like a bad flag.
 const is_darwin = builtin.os.tag == .macos;
+const O_RDONLY: c_int = 0;
 const O_WRONLY: c_int = 0o1;
 /// Public because `ops.zig` has to decide whether a variadic `mode` argument is even
 /// present before reading it.
@@ -524,6 +525,18 @@ var kill_at: u32 = 0;
 /// Whether the crash-point kill may reach the whole process group (v15). False unless the
 /// engine says so, which it does only where it has made the target a group leader.
 var kill_group: bool = false;
+/// The run's cgroup as `/proc/self/cgroup` spells it (v17, #559): the path after `0::`, or
+/// empty when the engine gave this spawn no cgroup. Copied out of the environment at init,
+/// because the target owns its environment after that and the question is asked again at
+/// every boundary and at the crash point.
+var run_cgroup_buf: [contract.max_path]u8 = undefined;
+var run_cgroup_len: usize = 0;
+/// That cgroup's `cgroup.kill`, opened at init and relocated the way `trace_fd` is (v17);
+/// -1 when this is not a world, when the open failed, or when the target closed it.
+var kill_cgroup_fd: c_int = -1;
+/// The run's own `cgroup.procs`, one level above the cgroup the run's processes are in, opened
+/// at init the same way (v17): where a world's crash point steps aside to before it kills.
+var kill_aside_fd: c_int = -1;
 /// Per-thread state (contract v16).
 ///
 /// Through v15 the five fields below were plain globals, and this module's first
@@ -920,16 +933,7 @@ pub fn init() void {
     // The fallback floor exists because a 256-descriptor rlimit — the macOS default —
     // rejects F_DUPFD at 900; if both floors fail the low number is kept, and a sweep
     // that reaches it still ends in refusal, never in a silent half-account.
-    relocate: {
-        for ([_]c_int{ 900, 200 }) |floor| {
-            const high = c.fcntl(trace_fd, F_DUPFD, floor);
-            if (high < 0) continue;
-            _ = c.fcntl(high, F_SETFD, FD_CLOEXEC);
-            _ = callClose(trace_fd);
-            trace_fd = high;
-            break :relocate;
-        }
-    }
+    trace_fd = relocateHigh(trace_fd);
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
     // Only a run the engine put in its own process group may take the group down; see
@@ -989,6 +993,10 @@ pub fn init() void {
         _ = writeAll(head[0..n]);
     }
 
+    // The run's cgroup (v17, #559), before the announcement because nothing in it writes a
+    // record.
+    takeRunCgroup();
+
     // **These two statements must stay adjacent, and the engine depends on it.** Once
     // `active` is set this image can write records; `src/engine/trace.zig`'s exec rule
     // reads "a record with no announcement in front of it was written by the image that
@@ -1004,6 +1012,202 @@ pub fn init() void {
     // shim_ready from the same pid to carry the count the chain left off at — the
     // one piece of evidence a broken chain cannot fake.
     writeRecord(ts, .shim_ready, ts.seq, stateDir(), observe_note);
+    // And where this image stands against the run's cgroup, immediately after the
+    // announcement (v17).
+    announceCgroup(ts);
+}
+
+/// The run's cgroup, copied out of the environment while it is still the engine's (v17,
+/// #559), and a world's `cgroup.kill` opened now: at the crash point this may be the SIGSYS
+/// handler, where a write-capable open would trap on itself.
+///
+/// A function of its own rather than lines in `init`, and so is `announceCgroup`: `init`'s
+/// frame is held to 1 KiB with the rest of the shim's (`spike/check-shim-footprint.sh`, the
+/// README's stack bound from #555), and the locals these need took it over — 1,072 bytes on
+/// aarch64 Debug, measured, against 896 for the largest frame before.
+fn takeRunCgroup() void {
+    const rc = c.getenv(contract.env.run_cgroup) orelse return;
+    const name = std.mem.span(rc);
+    if (name.len == 0 or name.len > run_cgroup_buf.len) return;
+    @memcpy(run_cgroup_buf[0..name.len], name);
+    run_cgroup_len = name.len;
+    // Empty is how the engine says "no crash-point kill here" — the recording run — pinned
+    // rather than unset so an operator's shell cannot supply one.
+    const kp = c.getenv(contract.env.kill_cgroup) orelse return;
+    if (kp[0] == 0) return;
+    const kfd = callOpen(kp, O_WRONLY | O_CLOEXEC, 0);
+    if (kfd >= 0) kill_cgroup_fd = relocateHigh(kfd);
+    const ap = c.getenv(contract.env.kill_aside) orelse return;
+    if (ap[0] == 0) return;
+    const afd = callOpen(ap, O_WRONLY | O_CLOEXEC, 0);
+    if (afd >= 0) kill_aside_fd = relocateHigh(afd);
+}
+
+/// Where this image stands against the run's cgroup, as a `cgroup` record (v17, #559). A
+/// standing that cannot be read says `unreadable`: a missing or unreadable answer is not an
+/// acknowledgement.
+fn announceCgroup(ts: *ThreadState) void {
+    if (run_cgroup_len == 0) return;
+    writeRecord(ts, .cgroup, 0, stateDir(), notHeldAux(cgroupStanding()) orelse
+        if (kill_cgroup_fd >= 0) contract.cgroup_aux.held_kill else contract.cgroup_aux.held);
+}
+
+/// The `aux` a process that is not inside the run's cgroup records, or null when it is.
+fn notHeldAux(standing: CgroupStanding) ?[]const u8 {
+    return switch (standing) {
+        .held => null,
+        .outside => contract.cgroup_aux.outside,
+        .unknown => contract.cgroup_aux.unreadable,
+    };
+}
+
+/// Move a descriptor the shim holds above the range daemonize loops sweep — the reason is
+/// the paragraph at `trace_fd`'s relocation in `init` — keeping the low number when both
+/// floors fail. Returns the number the caller holds from here on.
+fn relocateHigh(fd: c_int) c_int {
+    for ([_]c_int{ 900, 200 }) |floor| {
+        const high = c.fcntl(fd, F_DUPFD, floor);
+        if (high < 0) continue;
+        _ = c.fcntl(high, F_SETFD, FD_CLOEXEC);
+        _ = callClose(fd);
+        return high;
+    }
+    return fd;
+}
+
+const CgroupStanding = enum { held, outside, unknown };
+
+/// Move this process from the run's `work` cgroup up into the run's own (v17, #559), so the
+/// crash point's `cgroup.kill` does not end it before its group kill. False when there is
+/// nowhere to move to or the kernel refused. The pid is written without `std.fmt`: this can
+/// run in the SIGSYS handler, on the stack the README bounds (#555).
+fn stepAside() bool {
+    if (kill_aside_fd < 0) return false;
+    var digits: [12]u8 = undefined;
+    var v: u32 = @bitCast(c.getpid());
+    var i: usize = digits.len;
+    while (true) {
+        i -= 1;
+        digits[i] = '0' + @as(u8, @intCast(v % 10));
+        v /= 10;
+        if (v == 0) break;
+    }
+    return shimWrite(kill_aside_fd, digits[i..]);
+}
+
+/// A write of the shim's own to a cgroup file, through the path that does not trap on itself
+/// under `--observe syscalls`. True when every byte was taken.
+fn shimWrite(fd: c_int, bytes: []const u8) bool {
+    const n = if (syscalls.armed) syscalls.traceWrite(fd, bytes.ptr, bytes.len) else callWrite(fd, bytes.ptr, bytes.len);
+    return n == @as(isize, @intCast(bytes.len));
+}
+
+/// Whether this process is inside the run's cgroup (v17, #559): its `/proc/self/cgroup` line
+/// `0::<path>` names the run's cgroup or one below it. Within rather than equal, because a
+/// target may make cgroups under the one it was given, and an engine it runs makes its own.
+/// The real `open`, libc's `read` (the shim does not interpose it), no allocation: safe in
+/// the SIGSYS handler, where a read-only open is outside the trap set.
+///
+/// **Read a small window at a time, never the file in one buffer.** This runs inside an
+/// interposed call and in the SIGSYS handler, where the README bounds the shim's stack
+/// (#555) and `spike/check-shim-footprint.sh` holds each function to 1 KiB; the first version
+/// held a path-sized buffer and measured 4,688 bytes. The file is one line on a cgroup v2
+/// host and a dozen on a hybrid one, whose `0::` line comes last — so a smaller buffer read
+/// once would have answered `unknown` there, which is recorded `unreadable` and refuses the run.
+fn cgroupStanding() CgroupStanding {
+    const fd = callOpen("/proc/self/cgroup", O_RDONLY | O_CLOEXEC, 0);
+    if (fd < 0) return .unknown;
+    defer _ = callClose(fd);
+    var line: CgroupLine = .{ .run = run_cgroup_buf[0..run_cgroup_len] };
+    var window: [128]u8 = undefined;
+    while (true) {
+        const r = std.c.read(fd, &window, window.len);
+        if (r < 0) {
+            if (std.c._errno().* == @intFromEnum(std.posix.E.INTR)) continue;
+            return .unknown;
+        }
+        if (r == 0) break;
+        for (window[0..@intCast(r)]) |b| {
+            if (line.feed(b)) |answer| return answer;
+        }
+    }
+    return line.finish();
+}
+
+/// One `/proc/self/cgroup` line at a time, fed a byte at a time, answering at the end of the
+/// first `0::` line whether its path is the run's cgroup or below it.
+const CgroupLine = struct {
+    run: []const u8,
+    /// Bytes of the current line seen so far.
+    col: usize = 0,
+    /// The current line still opens `0::`.
+    v2: bool = true,
+    /// Bytes of the path after `0::`.
+    path_len: usize = 0,
+    /// The path still agrees with `run`: equal to it so far, and past its end only across a
+    /// `/`, so a sibling whose name the run's is a prefix of is beside it and not inside it.
+    within: bool = true,
+
+    fn feed(self: *CgroupLine, b: u8) ?CgroupStanding {
+        if (b == '\n') return self.endLine();
+        defer self.col += 1;
+        if (self.col < 3) {
+            if (b != "0::"[self.col]) self.v2 = false;
+            return null;
+        }
+        if (!self.v2) return null;
+        const i = self.path_len;
+        self.path_len += 1;
+        if (i < self.run.len) {
+            if (b != self.run[i]) self.within = false;
+        } else if (i == self.run.len and self.run.len > 0) {
+            if (self.run[self.run.len - 1] != '/' and b != '/') self.within = false;
+        }
+        return null;
+    }
+
+    fn endLine(self: *CgroupLine) ?CgroupStanding {
+        const answer: ?CgroupStanding = if (self.v2 and self.col >= 3)
+            (if (self.run.len > 0 and self.within and self.path_len >= self.run.len) .held else .outside)
+        else
+            null;
+        self.* = .{ .run = self.run };
+        return answer;
+    }
+
+    /// The file ended; a last line with no newline still counts.
+    fn finish(self: *CgroupLine) CgroupStanding {
+        return self.endLine() orelse .unknown;
+    }
+};
+
+fn standingOf(text: []const u8, run: []const u8) CgroupStanding {
+    var line: CgroupLine = .{ .run = run };
+    for (text) |b| {
+        if (line.feed(b)) |answer| return answer;
+    }
+    return line.finish();
+}
+
+test "a process is within the run's cgroup at it or below it, never beside it, wherever its line sits (v17, #559)" {
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab/inner\n", "/sideeye-1-ab"));
+    // A sibling whose name the run's is a prefix of is beside it, not inside it.
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-abc\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/any/thing\n", "/"));
+    // No run cgroup is nothing to be within.
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-ab\n", ""));
+    // A hybrid host lists its v1 hierarchies first; the answer is the `0::` line's, and a
+    // v1 line that mentions the run's path is not it.
+    const hybrid = "12:memory:/sideeye-1-ab\n11:pids:/user.slice\n10:devices:/user.slice\n9:blkio:/user.slice\n" ++
+        "8:cpu,cpuacct:/user.slice\n1:name=systemd:/user.slice/user-1000.slice/session-2.scope\n0::/sideeye-1-ab/w\n";
+    try std.testing.expectEqual(CgroupStanding.held, standingOf(hybrid, "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("12:memory:/sideeye-1-ab\n0::/user.slice\n", "/sideeye-1-ab"));
+    // The last line needs no newline; a file with no `0::` line at all has no answer.
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.unknown, standingOf("12:memory:/x\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.unknown, standingOf("10::/sideeye-1-ab\n", "/sideeye-1-ab"));
 }
 
 pub fn stateDir() []const u8 {
@@ -1095,6 +1299,18 @@ fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u3
 /// the target now owns. Called from every wrapper that retires a descriptor —
 /// close, fclose, freopen — before the real call retires it.
 pub fn noteTraceClose(fd: c_int) void {
+    // The cgroup's `cgroup.kill` is held the same way (v17, #559). A target that closes it
+    // leaves the crash point nothing to write, which the crash point records as the kill
+    // failing rather than falling back to the group kill.
+    if (fd >= 0 and fd == kill_cgroup_fd) {
+        kill_cgroup_fd = -1;
+        return;
+    }
+    // And the step-aside descriptor: without it the crash point's kill is the cgroup's alone.
+    if (fd >= 0 and fd == kill_aside_fd) {
+        kill_aside_fd = -1;
+        return;
+    }
     if (!active or fd < 0 or fd != trace_fd) return;
     // The path is empty on purpose: nothing was named here. Before #485 the reason
     // rode in the path field as "trace:closed-by-target", which the engine would
@@ -1372,6 +1588,34 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
             // The group where the engine arranged one, this process alone otherwise —
             // which is what an operator typing the report's `reproduce` line gets, and
             // what every run got before v15.
+            // A contained world (v17, #559) is killed twice over, so it loses nothing an
+            // uncontained world's group kill took. This process first steps aside, from the
+            // run's `work` cgroup up into the run's own; then `work`'s `cgroup.kill` takes every
+            // other process of the run however it left the process group; then the group kill
+            // takes this process and every process that left the cgroup without leaving the
+            // group. The first version wrote `cgroup.kill` alone, which ends the writer too, so
+            // nothing could follow it — and a process that had moved to another cgroup but stayed
+            // in the group outlived the crash point until the engine's cleanup (review, #559 PR
+            // A). Where the step aside fails — a target that changed its uid, a descriptor it
+            // closed — the kill is the cgroup's alone, and a `cgroup:kill-alone` record says so
+            // first, so the engine refuses the world rather than trust a kill it knows was short.
+            //
+            // A kill that did not happen — the write failed, or there was nothing to write it to
+            // — is recorded before exiting and never covered by the group kill: the record says
+            // whether this process was outside the cgroup, could not tell, or the write failed.
+            if (kill_group and run_cgroup_len > 0) {
+                const aside = stepAside();
+                // Said before the kill, which ends this process when it lands: without a step
+                // aside the group kill below never runs (second review, #559 PR A).
+                if (!aside) writeRecord(ts, .cgroup, s, path, contract.cgroup_aux.kill_alone);
+                const killed = kill_cgroup_fd >= 0 and shimWrite(kill_cgroup_fd, "1");
+                if (aside and killed) {
+                    _ = c.kill(0, SIGKILL);
+                    c._exit(@intFromEnum(contract.ExitCode.setup_error));
+                }
+                writeRecord(ts, .cgroup, s, path, notHeldAux(cgroupStanding()) orelse contract.cgroup_aux.kill_returned);
+                c._exit(@intFromEnum(contract.ExitCode.setup_error));
+            }
             _ = if (kill_group) c.kill(0, SIGKILL) else c.raise(SIGKILL);
             // SIGKILL cannot be caught or ignored, so this is unreachable. If it is ever
             // reached, the run is not what it claims to be — refuse to continue quietly.
@@ -2267,6 +2511,10 @@ pub fn noteBoundary(op: contract.OpClass) void {
     ts.busy = true;
     defer ts.busy = false;
     writeRecord(ts, op, 0, "", "");
+    // A boundary is where a process can have moved (v17, #559): asked again here, and said
+    // whenever the answer is not `held`.
+    if (run_cgroup_len > 0) if (notHeldAux(cgroupStanding())) |aux|
+        writeRecord(ts, .cgroup, 0, stateDir(), aux);
 }
 
 // ---------------------------------------------------------------------------------

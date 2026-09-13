@@ -56,6 +56,10 @@
 //!   - `case.zig` — the saved case on both sides: `writeCase`, `prefixHash`, `jsonCommand`, and
 //!     `ReplayCase`. This file decides when a case is written and what a replayed one may
 //!     declare.
+//!   - `containment.zig` — the watch on a run contained in a cgroup of its own (contract v17,
+//!     #559): the spawn's cgroup, the names its shim is told, and the checks a contained run
+//!     meets after every refusal it already had. This file makes the cgroup, hands it to the
+//!     spawn, and calls the checks where they belong.
 //!
 //! Still here — twenty-two functions, each called from `main()`, from a phase, or from
 //! another of these (`isHex16` from its own test alone), named by what it is for: surface 1, which the freeze audit's rung 1 reads out of this file
@@ -92,6 +96,7 @@ const report = @import("report.zig");
 const refuse = @import("refuse.zig");
 const cli = @import("cli.zig");
 const case = @import("case.zig");
+const containment = @import("containment.zig");
 // Aliased rather than spelled `defang.` at each site, so the call sites read as they did
 // when the bodies lived here (#572): the report-side callers outnumber the boundary's, and
 // a move that renames every one of them is a move that cannot be read as a move.
@@ -150,7 +155,7 @@ const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "
 /// as apparatus, and a test below holds the two lists together: a pair added to the
 /// children without being refused here would be a device the parent has and the child
 /// does not — the silent-different-run the refusal exists to stop.
-const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.observe, contract.env.kill_group, preload_var };
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
@@ -350,6 +355,10 @@ fn runOperationObserved(
     /// spawned as `wrappers` so that no write is trapped while strace is attached, and
     /// the recording run is spawned as `syscalls` with no oracle. See the call site.
     observe: contract.ObserveMode,
+    /// The run's cgroup (contract v17, #559), or null for a run the engine does not contain.
+    /// Both branches carry it, the oracle's too: strace is the direct child there, and the
+    /// cgroup holds it and every process it follows.
+    cg: ?*posix.CgroupSpawn,
 ) posix.Term {
     if (oracle_path) |strace_path| {
         // Environment goes to the target via strace's -E, not through our own
@@ -375,6 +384,11 @@ fn runOperationObserved(
             // become the first image's numbering base (R1; parseU32("") is 0).
             .{ contract.env.seq_base, "" },
             .{ contract.env.observe, observe.name() },
+            // Pinned empty when there is no cgroup, for the reason `seq_base` is above (v17).
+            // The kill path is a world's alone, and pinned empty here for the same reason.
+            .{ contract.env.run_cgroup, containment.runName(cg) },
+            .{ contract.env.kill_cgroup, "" },
+            .{ contract.env.kill_aside, "" },
             .{ preload_var, shim },
         };
         for (pairs) |kv| {
@@ -383,9 +397,9 @@ fn runOperationObserved(
             list.append(arena, joined) catch setupError(.environment, "out of memory");
         }
         for (op_argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
-        return posix.runChildCapture(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
+        return posix.runChildCaptureContained(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
     }
-    return posix.runChildCapture(gpa, op_argv, &.{
+    return posix.runChildCaptureContained(gpa, op_argv, &.{
         .{ "TOY_STATE", state_abs },
         .{ contract.env.state_dir, state_abs },
         .{ contract.env.state_dir_alt, state_alt },
@@ -393,8 +407,12 @@ fn runOperationObserved(
         // Pinned empty: see the oracle-path pairs above.
         .{ contract.env.seq_base, "" },
         .{ contract.env.observe, observe.name() },
+        // Pinned empty where there is nothing to name: see the oracle-path pairs above.
+        .{ contract.env.run_cgroup, containment.runName(cg) },
+        .{ contract.env.kill_cgroup, "" },
+        .{ contract.env.kill_aside, "" },
         .{ preload_var, shim },
-    }, recordingCapture(stdout_path), cwd) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+    }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 }
 
 /// The capture an observed run writes its evidence to, on both of the two branches
@@ -449,6 +467,8 @@ const Run = struct {
         trace: engine.TraceInfo,
         final: engine.Snapshot,
         l0_plan: engine.L0Plan,
+        /// The recording run's cgroup (contract v17, #559); null when the run was not contained.
+        cgroup: ?posix.CgroupSpawn,
         rec_trace_buf: [contract.max_path]u8,
         oracle_out_buf: [contract.max_path]u8,
         rec_stdout_buf: [contract.max_path]u8,
@@ -1411,6 +1431,11 @@ fn phaseRecording(run: *Run) void {
         fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
     }
 
+    // The recording run's cgroup (contract v17, #559), made before the mark for the reason the
+    // image reading above gives: nothing whose cost this engine does not bound sits between the
+    // mark and the spawn. The probe behind it runs once per engine.
+    run.rec.cgroup = containment.spawn(false);
+
     // Before the spawn, where the comment on this mark says it belongs, so `--twice`
     // measures the interval between the two runs it compares. Its placement used to carry
     // more than that: it sat AFTER a leading oracle-only run whose own duration would
@@ -1433,6 +1458,7 @@ fn phaseRecording(run: *Run) void {
         rec_stdout,
         args.cwd,
         args.observe,
+        if (run.rec.cgroup) |*cg| cg else null,
     );
 
     if (fsu_pid) |pid| {
@@ -1807,6 +1833,10 @@ fn phaseOracle(run: *Run) void {
     const trace = run.rec.trace;
     const final = run.rec.final;
 
+    // The oracle's half of the watch on a contained run (v17, #559), carried out of the block
+    // below to where the rest of the watch is asked, at the end of this phase.
+    var oracle_cgroup_move: ?[]const u8 = null;
+
     // ---- oracle comparison ---------------------------------------------------------
     // The wording matters: a PASS carrying this line is making a weaker claim than one
     // that says the two views agreed, and a reader should be able to see which is which
@@ -1921,6 +1951,7 @@ fn phaseOracle(run: *Run) void {
 
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
+        oracle_cgroup_move = parsed.cgroup_move;
 
         // The tolerance condition, now decided by both witnesses at once (v15). Either
         // one seeing a writing child brings the question up; the answer needs the two of
@@ -2166,6 +2197,16 @@ fn phaseOracle(run: *Run) void {
         const before_path = if (addr.before) |b| b.path else "";
         if (!std.mem.eql(u8, after_path, rc.after_path) or !std.mem.eql(u8, before_path, rc.before_path))
             say("note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds\n", .{});
+    }
+
+    // The watch on a contained recording run (contract v17, #559), after every refusal this
+    // run already had, so none of them changes name: a process the oracle saw move between
+    // cgroups or be created into one, then the cgroup's own account — it stopped, no shim
+    // reported itself outside it, no writer was cut short, nothing the trace names outlived
+    // it. A run that was not contained is asked none of this.
+    if (run.rec.cgroup) |*cg| {
+        if (oracle_cgroup_move) |what| unknown(.child_process_detected, what, .class_wall);
+        containment.afterRun(arena, cg, &trace, "", true);
     }
 
     run.n = n;
@@ -2428,6 +2469,10 @@ fn phaseExploration(run: *Run) void {
         removeFile(world_trace);
         removeFile(world_stdout);
 
+        // This world's cgroup (contract v17, #559), a fresh one per world: the last world's was
+        // stopped and removed before its spawn returned.
+        var wcg = containment.spawn(true);
+        const wcg_ptr: ?*posix.CgroupSpawn = if (wcg) |*c| c else null;
         const term = posix.runChildCaptureWorld(gpa, op_argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
@@ -2445,12 +2490,18 @@ fn phaseExploration(run: *Run) void {
             // index into the sequence the recording produced, and a world counting
             // through the other path would number differently and stop somewhere else.
             .{ contract.env.observe, args.observe.name() },
+            // The world's cgroup and its `cgroup.kill`, which the shim writes at the crash point
+            // in place of signalling the group (v17). Pinned empty when this world is not
+            // contained, for the reason on the recording pairs.
+            .{ contract.env.run_cgroup, containment.runName(wcg_ptr) },
+            .{ contract.env.kill_cgroup, containment.killName(wcg_ptr) },
+            .{ contract.env.kill_aside, containment.asideName(wcg_ptr) },
             .{ preload_var, shim },
             // `exclusive` for the reason on `recordingCapture`, and free for the same
             // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
             // of this loop, so a re-run over one work directory never meets its own
             // leftover here.
-        }, .{ .path = world_stdout, .exclusive = true }, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null, args.cwd) catch |e| switch (e) {
+        }, .{ .path = world_stdout, .exclusive = true }, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null, args.cwd, wcg_ptr) catch |e| switch (e) {
             // Received here, at the one site that passes a budget, so the refusal can
             // name the limit that fired — the rule #323 and #351 shipped under:
             // a failure with a limit reports the limit, because the operator can move
@@ -2471,7 +2522,7 @@ fn phaseExploration(run: *Run) void {
                 ) catch unreachable;
                 unknown(.child_timed_out, detail, .raise_world_timeout);
             },
-            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |se| spawnFailure(se, .exploring, "could not run --operation"),
+            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
 
         var wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
@@ -2595,6 +2646,11 @@ fn phaseExploration(run: *Run) void {
             if (!both or !std.mem.eql(u8, &wh, &rh))
                 unknown(.kill_did_not_land, "a world died at the operation number it was given, but the operations leading up to it are not the ones the recording numbered: the address names a different operation in this world than in the recording, so nothing died in front of the operation the crash point stands for. An operation whose sequence of state-directory calls varies between runs cannot be explored at a fixed index", .fix_define);
         }
+        // A contained world's shim that could not kill it exits and says why (v17, #559) — the
+        // one watch that answers ahead of an existing refusal, because this refusal would
+        // otherwise file an environment's failure as sideeye's defect.
+        if (wcg_ptr != null and k <= n and !term.isSignal(posix.SIGKILL))
+            containment.killCameBack(arena, &wtrace, k);
         if (k <= n and !term.isSignal(posix.SIGKILL))
             unknown(.kill_did_not_land, "a world that should have been killed exited on its own", .sideeye_defect);
         // The baseline world is not killed, so nothing above inspects it — which is
@@ -2741,6 +2797,15 @@ fn phaseExploration(run: *Run) void {
             else
                 "the checker rejected the state the operation leaves on its own; check the operation and the checker against each other first";
             unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "{s}: {s}", .{ report.baseline_refusal_lead, what }) catch what, step);
+        }
+
+        // The watch on a contained world (contract v17, #559), after every refusal this world
+        // already had, so none of them changes name. What was still in the cgroup when the
+        // direct child exited counts only in the baseline: a killed world's crash point is what
+        // ended it. And nothing ran at or past the crash point.
+        if (wcg_ptr) |cg| {
+            containment.afterRun(arena, cg, &wtrace, " in an explored world", k > n);
+            if (k <= n) containment.pastCrashPoint(arena, &wtrace, k);
         }
 
         if (l0 != null or l2_failed or l1 != null) {
@@ -3200,7 +3265,11 @@ fn observeAgain(
     removeFile(oracle_out_b);
 
     const started = posix.monotonicMs();
-    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, attached, oracle_out_b, trace_b, stdout_b, cwd, observe);
+    // Run B's own cgroup (v17, #559). The probe behind it is answered once per engine, so run B
+    // is contained where run A was.
+    var cg_b = containment.spawn(false);
+    const cg_b_ptr: ?*posix.CgroupSpawn = if (cg_b) |*c| c else null;
+    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, attached, oracle_out_b, trace_b, stdout_b, cwd, observe, cg_b_ptr);
 
     // The same question the recording run's own status check asks, and the same reason
     // it matters: a second run that failed says nothing about repeatability, and
@@ -3342,6 +3411,11 @@ fn observeAgain(
     // wholesale reuse the exclusion was about.
     if (!snapshotsEqual(initial, second) and trace.mutation_count == 0)
         unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed", .class_wall);
+
+    // The watch on run B (v17, #559), after every refusal run B already had, as run A's is. The
+    // oracle's half is not asked: run B's capture is written and not parsed, which the report's
+    // `scope` line already says.
+    if (cg_b_ptr) |cg| containment.afterRun(arena, cg, &trace, " in the second observed run", true);
 
     const diffs = arena.alloc(engine.Difference, repeat_diff_slots) catch setupError(.environment, "out of memory");
     // A declared scratch path is left out of the comparison (ADR 0043), the way the
@@ -4037,6 +4111,9 @@ test "the shipped engine options carry the shipped values (#365)" {
     // run comes near either value.
     try std.testing.expectEqual(@as(usize, 0), engine_build_options.trace_budget_override);
     try std.testing.expect(!engine_build_options.ancestor_probe);
+    // A shipped engine that never contained a run would be the comparison engine under the
+    // shipped name (#559): every containment leg would compare it with itself and stay green.
+    try std.testing.expect(!engine_build_options.no_cgroup);
 }
 
 test "the shipped trace caps fall back to the engine's constant (#365)" {
@@ -4051,15 +4128,16 @@ test "the shipped trace caps fall back to the engine's constant (#365)" {
     try std.testing.expectEqual(engine.max_trace_bytes_total, trace_budget_limit);
 }
 
-test "no fifth engine build option arrives unchecked (#365)" {
-    // The ratchet. Asserting four values says nothing about a FIFTH option arriving, and
+test "no sixth engine build option arrives unchecked (#365)" {
+    // The ratchet. Asserting five values says nothing about a SIXTH option arriving, and
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
     // here until someone writes its line. Same instrument as the RestoreError arity pin
     // above and the OpClass enumeration in contract.zig.
     //
     // It fired for real on 2026-08-30: #377's `trace_budget_override` was the fourth, and
-    // this test is what stopped it arriving without the two assertions above.
+    // this test is what stopped it arriving without the two assertions above. #559's
+    // `no_cgroup` was the fifth.
     const decls = @typeInfo(engine_build_options).@"struct".decls;
-    try std.testing.expectEqual(@as(usize, 4), decls.len);
+    try std.testing.expectEqual(@as(usize, 5), decls.len);
 }
