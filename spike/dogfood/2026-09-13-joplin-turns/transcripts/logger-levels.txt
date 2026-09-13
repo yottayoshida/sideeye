@@ -1,0 +1,8 @@
+logger-levels.sh sha256: 0d117df914734a5ff72d51260b80727a916d25867e13b166e4fb358992ba4702
+joplin: joplin@3.7.1  node: v20.19.2
+--log-level (not given): joplin rc=0  log.txt bytes before=9836 after=12401
+--log-level none: joplin rc=0  log.txt bytes before=11302 after=13865
+--log-level error: joplin rc=0  log.txt bytes before=11097 after=11097
+--log-level warn: joplin rc=0  log.txt bytes before=10981 after=10981
+--log-level info: joplin rc=0  log.txt bytes before=11047 after=14200
+--log-level debug: joplin rc=0  log.txt bytes before=10740 after=13519

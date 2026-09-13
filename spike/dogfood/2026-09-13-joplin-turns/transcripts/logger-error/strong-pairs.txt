@@ -1,0 +1,23 @@
+cap-01.txt: 0 pair(s)
+cap-02.txt: 0 pair(s)
+cap-03.txt: 0 pair(s)
+cap-04.txt: 0 pair(s)
+cap-05.txt: 0 pair(s)
+cap-06.txt: 0 pair(s)
+cap-07.txt: 0 pair(s)
+cap-08.txt: 0 pair(s)
+cap-09.txt: 0 pair(s)
+cap-10.txt: 0 pair(s)
+cap-11.txt: 0 pair(s)
+cap-12.txt: 0 pair(s)
+cap-13.txt: 0 pair(s)
+cap-14.txt: 0 pair(s)
+cap-15.txt: 0 pair(s)
+cap-16.txt: 0 pair(s)
+cap-17.txt: 0 pair(s)
+cap-18.txt: 0 pair(s)
+cap-19.txt: 0 pair(s)
+cap-20.txt: 0 pair(s)
+total: 0 pair(s) at 0.5 ms
+containing: {}
+contained: {}

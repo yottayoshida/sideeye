@@ -1,0 +1,26 @@
+joplin: joplin@3.7.1
+## joplin help all: lines naming log, level, verbose, quiet or debug
+    -v, --verbose  Displays the complete information about note.
+    -v, --verbose         Also displays unset and hidden config variables.
+    -v, --verbose              More verbose output for the `target-status` 
+    --quiet       Log less information to the console. More verbose logs will 
+                  still be available through log-clipper.txt.
+## joplin config -v: 156 lines; those naming log, level or debug:
+(none)
+## the installed code
+-- /usr/local/lib/node_modules/joplin/node_modules/@joplin/lib/utils/processStartFlags.js
+76:        if (arg === '--log-level') {
+78:                throw new JoplinError_1.default((0, locale_1._)('Usage: %s', '--log-level <none|error|warn|info|debug>'), 'flagError');
+79:            matched.logLevel = Logger_1.default.levelStringToId(nextArg);
+193:        if (!matched.logLevel)
+194:            matched.logLevel = Logger_1.default.LEVEL_INFO;
+-- /usr/local/lib/node_modules/joplin/node_modules/@joplin/lib/BaseApplication.js
+727:        const extraFlags = await this.readFlagsFromFile(`${profileDir}/flags.txt`);
+731:            globalLogger.addTarget(Logger_1.TargetType.File, { path: `${profileDir}/log.txt` });
+735:            globalLogger.setLevel(initArgs.logLevel);
+-- /usr/local/lib/node_modules/joplin/node_modules/@joplin/utils/dist/Logger.js
+220:            if (this.targetLevel(target) < level)
+315:    static levelStringToId(s) {
+346:Logger.LEVEL_NONE = LogLevel.None;
+347:Logger.LEVEL_ERROR = LogLevel.Error;
+349:Logger.LEVEL_INFO = LogLevel.Info;

@@ -1,0 +1,8 @@
+runs: 20 given, 20 valid; kill-point calls not read over all of them: 0 unparsed, 0 unplaced
+all   (m) 1 multiset(s)  (o) at most 1 order(s) within one, 1 in all  (g) 4 grouping(s)  (b) strong in 0/20 runs, pairs {'0.25ms': 0, '0.5ms': 0, '1ms': 0}  weak pairs 0  op counts [(26, 20)]  threads [(4, 20)]
+log   (m) 1 multiset(s)  (o) at most 1 order(s) within one, 1 in all  (g) 1 grouping(s)  (b) strong in 0/20 runs, pairs {'0.25ms': 0, '0.5ms': 0, '1ms': 0}  weak pairs 0  op counts [(0, 20)]  threads [(0, 20)]
+rest  (m) 1 multiset(s)  (o) at most 1 order(s) within one, 1 in all  (g) 4 grouping(s)  (b) strong in 0/20 runs, pairs {'0.25ms': 0, '0.5ms': 0, '1ms': 0}  weak pairs 0  op counts [(26, 20)]  threads [(4, 20)]
+rest  (c) turns 120, after the previous thread exited 0; writers exited before REST's last operation 0
+io_uring lines: {'io_uring_setup=EPERM': 60}
+branch: T1' (ALL: no strong overlap in any run) -> back to the plan
+branch: T2 (REST: same operations, same order, no strong overlap)

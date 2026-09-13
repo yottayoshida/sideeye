@@ -1,0 +1,38 @@
+== the cases, as built
+ok   A: the split rmdir, the failed mkdir and the two write-capable opens, in order, and nothing else
+ok   A: the open of log.txt is LOG and the other three are REST
+ok   A: a run with no journal write is not valid
+ok   B: exactly one strong overlap at 0.5 ms, in ALL
+ok   B: a pair across LOG and REST is not counted inside either set
+ok   B: the 0.1 ms containment is strong at no threshold of 0.25 ms or more
+ok   B: a run with a journal write and joplin rc 0 is valid
+ok   C: the same operations on swapped threads are one order
+ok   D: two turns in REST, one of them after the previous thread exited
+ok   E: an exit strace split still ends its thread before the next turn
+ok   E: an unsplit fsync's own duration makes it contain another thread's write
+ok   F: a rename onto log.txt is LOG
+ok   F: a child process's write is not the subject's
+ok   G: a call not read and a call not placed are counted, and make the run invalid
+ok   B: a run whose joplin exited non-zero is not valid
+
+== each mutation must break at least one case
+ok   no join of unfinished/resumed: breaks 4 — first: A: the split rmdir, the failed mkdir and the two write-capable opens, in order, and nothing else
+ok   intersection instead of containment: breaks 2 — first: B: exactly one strong overlap at 0.5 ms, in ALL
+ok   no duration condition: breaks 1 — first: B: exactly one strong overlap at 0.5 ms, in ALL
+ok   orders compared with thread names: breaks 2 — first: A: the split rmdir, the failed mkdir and the two write-capable opens, in order, and nothing else
+ok   AT_REMOVEDIR not read: breaks 1 — first: A: the split rmdir, the failed mkdir and the two write-capable opens, in order, and nothing else
+ok   failed attempts dropped: breaks 2 — first: A: the split rmdir, the failed mkdir and the two write-capable opens, in order, and nothing else
+ok   a split exit not read: breaks 1 — first: E: an exit strace split still ends its thread before the next turn
+ok   an unsplit call's -T duration ignored: breaks 1 — first: E: an unsplit fsync's own duration makes it contain another thread's write
+ok   LOG read from the first path only: breaks 2 — first: F: a rename onto log.txt is LOG
+ok   other processes' calls kept: breaks 1 — first: F: a child process's write is not the subject's
+ok   joplin's exit status ignored: breaks 1 — first: B: a run whose joplin exited non-zero is not valid
+ok   calls not read or placed ignored: breaks 1 — first: G: a call not read and a call not placed are counted, and make the run invalid
+
+== the branch, on synthetic run readings
+ok   a strong overlap in ALL and REST recurring the same way is T1 and T2
+ok   REST in two orders is T2'
+ok   no strong overlap anywhere is T1'
+ok   a strong overlap inside REST is T2'
+
+== selftest failures: 0
