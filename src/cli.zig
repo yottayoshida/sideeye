@@ -212,11 +212,13 @@ const usage_fmt =
     \\               macOS: compare the recording run against fs_usage instead. Needs
     \\               root, so sudo must already hold credentials (`sudo -v` first, in
     \\               this terminal — the cache is per-terminal); the run refuses
-    \\               rather than prompting. Narrower than strace by two measured
-    \\               limits: fs_usage prints only a rename's old path, and it cuts
-    \\               long pathnames from the left, so a rename it cannot match and a
-    \\               state directory deep enough to be cut are both refusals rather
-    \\               than agreements. Everything it cannot resolve refuses
+    \\               rather than prompting. Narrower than strace: fs_usage prints
+    \\               only a rename's old path and cuts long pathnames from the left,
+    \\               so a rename it cannot match and a state directory deep enough to
+    \\               be cut are both refusals rather than agreements; and it cannot
+    \\               account for other processes, so a child, or the target
+    \\               replacing its own image, is UNKNOWN under it.
+    \\               Everything it cannot resolve refuses
     \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
     \\  --marker     success marker: a byte string the operation prints on stdout when
     \\               it has committed. In worlds where it appeared before the kill,

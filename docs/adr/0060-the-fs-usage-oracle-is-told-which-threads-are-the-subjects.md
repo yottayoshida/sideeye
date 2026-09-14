@@ -173,6 +173,12 @@ away. The paragraph was written from memory of a page that was open in the same 
   thread the shim recorded — the main thread or a worker — is explored and judged. That is
   the property this decision buys, and `spike/fsusage/acceptance-local.sh` pins it against a
   real `fs_usage`, with a second writing thread as the control that must still refuse.
+
+  **Amended 2026-09-14 (#571): not a run that replaces its own image.** "Single-process" in
+  the sentence above means a run with no child and no image change of its own. A self-exec is
+  refused under this oracle before decision 1's list is ever asked; how, and why a macOS target
+  writing on both sides of its own `exec` is refused earlier still, is ADR 0018's amendment of
+  the same date.
 - **A writer the shim never recorded is still refused**, and this decision widens the path
   it takes to get there. A thread reached through a raw `clone`, or one writing through raw
   syscalls, is not in the list; it used to meet the early refusal and now meets
