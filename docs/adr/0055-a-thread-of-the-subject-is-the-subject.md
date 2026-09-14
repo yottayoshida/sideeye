@@ -187,3 +187,8 @@ judged toy before this decision gave the recording and world clauses a third sha
 - ADR 0002's row for threads is amended to point here. #202's ruling is narrowed, not
   overturned: the determinism contract is intact — one writer, one order — and what was
   deep was the construction.
+- **Added 2026-09-14 (#569).** On macOS a crash point reached on a thread other than the one
+  a process-directed signal is delivered to did not kill the world: the group kill returned
+  to that thread and it ran on to the shim's `_exit`. A writing worker is exactly the shape
+  decision 4 admits, so it refused `kill_did_not_land` at a measured rate. The kill's
+  sequence and the reason for it are in ADR 0053's decision 2 amendment of that date.

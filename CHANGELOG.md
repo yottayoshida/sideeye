@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A crash point reached on a thread other than the main one kills the world on macOS** (#569; ADR 0053 decision 2 amended). The shim's group kill is directed at the process, and macOS delivers a process-directed signal to another thread, so a writing worker — a pthread, or a GCD block — had `kill` return to it and ran on to the shim's `_exit`: the world ended with a status rather than the signal and the run refused `kill_did_not_land` (12 runs in 12 for a pthread worker and for a GCD worker at nine crash points, on an arm64 Mac). The kill is now followed by `raise(SIGKILL)` and a wait under a second before that `_exit`. Linux was not affected: the thread that issues the kill does not return from it there, which #569's own text had inferred otherwise. `spike/thread-kill-lands.sh` holds the three shapes on CI's macOS, and check 6 of `spike/fsusage/acceptance-local.sh` requires the verdict it used to let `kill_did_not_land` stand in for.
+
 ## [1.4.0] - 2026-09-13
 
 ### Added

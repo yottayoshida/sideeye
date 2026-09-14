@@ -294,8 +294,8 @@ echo "  predicate: oracle_verified true AND the account says one thread of the s
 echo "             wrote, on a target whose state-directory writes ALL come from a"
 echo "             thread other than the one this oracle identifies the subject by"
 echo "             (whoever opened the trace write-capably)"
-echo "  verdict:   asked for, not required — #569 takes it from this shape at a measured"
-echo "             rate. Any refusal other than kill_did_not_land fails the check"
+echo "  verdict:   required, exit 0. Until #569 this shape refused kill_did_not_land at a"
+echo "             measured rate and the leg tolerated that one reason by name"
 echo "  control:   a second writing thread of the same process still refuses"
 echo "             multiple_threads_detected — the v16 rule, decided from the trace"
 cat > "$WORK/worker_toy.c" <<'EOF'
@@ -372,21 +372,14 @@ echo "  exit=$rc6 oracle_verified=$c6_ver verdict=$(field c6 verdict) reason=$c6
 # run would refuse child_touched_state_dir or oracle_saw_nothing instead.
 [ "$c6_ver" = "True" ] || { sed -n '1,12p' "$WORK/c6.txt"; fail "check 6: oracle_verified is not true — the worker's writes were not read as the subject's"; }
 case "$c6_proc" in *"1 thread id(s) of the subject's own process wrote"*) ;; *) fail "check 6: the account does not say one thread of the subject wrote: $c6_proc" ;; esac
-# The verdict, which this leg asks for and does not require, because #569 can take it away
-# from a target of exactly this shape. Measured before this exception was written: the same
-# operations from a worker thread refuse kill_did_not_land 9 times in 12 at nine crash
-# points and 1 in 12 at two, while the identical program without the thread refuses 0 in 12
-# at either count. It is older than this change (2 in 9 on b175d4b) and independent of this
-# oracle (the measurements used none). Tolerated BY NAME: any other refusal fails, so this
-# does not become a leg that passes on anything.
-if [ "$rc6" = "0" ]; then
-    echo "  the run reached a verdict"
-elif [ "$rc6" = "2" ] && [ "$c6_reason" = "kill_did_not_land" ]; then
-    echo "  NOTE: verified, then refused kill_did_not_land (#569) — the attribution this leg tests held; the kill did not land"
-else
-    sed -n '1,12p' "$WORK/c6.txt"
-    fail "check 6: exit $rc6 reason=$c6_reason — expected a verdict, or kill_did_not_land (#569) and nothing else"
-fi
+# The verdict, required since #569. Until then this leg tolerated kill_did_not_land by name:
+# the shim's group kill, fired from the worker that reached the crash point, was taken by
+# another thread on macOS and the worker ran on to the `_exit` behind it. This toy's two crash
+# points met that about 1 run in 12, so this assertion guards against the defect coming back
+# rather than showing the fix — spike/thread-kill-lands.sh, with nine crash points and three
+# shapes, is the leg that turned red without the fix.
+[ "$rc6" = "0" ] || { sed -n '1,12p' "$WORK/c6.txt"; fail "check 6: exit $rc6 reason=$c6_reason — expected a verdict"; }
+echo "  the run reached a verdict"
 rc6ctl=$(run c6ctl twowriters_toy --oracle-fs-usage)
 echo "  control exit=$rc6ctl reason=$(field c6ctl unknown_reason)"
 [ "$rc6ctl" = "2" ] || { sed -n '1,12p' "$WORK/c6ctl.txt"; fail "check 6 control: expected exit 2 — two writing threads must still refuse"; }

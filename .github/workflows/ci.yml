@@ -1140,6 +1140,13 @@ jobs:
         # the source under test.
         run: bash spike/fsusage/acceptance-local.sh
 
+      - name: A crash point reached on a worker thread kills the world — pthread, GCD, and the no-thread control (#569)
+        # Twelve explorations of each toy at nine crash points, every one required to PASS.
+        # Before #569 this script's pthread toy refused kill_did_not_land 11 runs in 12 and its
+        # GCD toy 12 in 12 on an arm64 Mac; the red was seen there, not on this runner, and the
+        # script says so. No root and no oracle. The script builds into an empty prefix of its own.
+        run: bash spike/thread-kill-lands.sh 12
+
 
   # The timewarrior finding lives here as a replayed regression, not a recipe (#82):
   # every push to main and every pull request re-proves the FAIL/PASS pair across the fix — record the counterexample
