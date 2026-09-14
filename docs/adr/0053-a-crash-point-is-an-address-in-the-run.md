@@ -93,6 +93,22 @@ kill alone does not reach a process that left the group, and the cgroup kill alo
 writer before its group kill. A crash point that cannot step aside says so in the trace, and the
 world is refused. Where there is no cgroup, the kill is the group's, as this decision says.
 
+**Amended 2026-09-14 (#569).** The kill is followed, at both sites, by `raise(SIGKILL)` and a wait
+of nine 100 ms sleeps before the `_exit` that was there already. `kill(0, …)` is directed at the
+process group, and on macOS a process-directed signal is delivered to the first thread in the list
+that is not a workqueue thread; a crash point reached on any other thread had `kill` return to it,
+and it ran on to that `_exit` — written on the reading that SIGKILL cannot be caught, which holds
+for the process and not for the thread that asked. A writing worker, the shape ADR 0055 admits,
+refused `kill_did_not_land` at a measured rate. `raise` ends a pthread caller in place; on a GCD
+workqueue thread it falls back to a process-directed kill and returns, and the wait keeps that
+caller from reaching `_exit` while the thread that took the signal ends the process. The wait is
+under a second, the smallest `--world-timeout`; since that deadline counts from before the spawn, a
+world that reached its crash point late can still meet it, which changes only the reason given
+where the kill has already failed. Not measured: a process whose only threads are several parked
+workqueue threads. On Linux the caller does not return from `kill(0)`, and none of this is reached. The measurements are in `BUILDLOG.md` of the
+date. What this amendment says is that the process that reached the crash point ends by the signal;
+it says nothing new about how the signal reaches the rest of the group.
+
 ### 3. Two conditions decide whether a run with a writing child may be judged
 
 Asked on the recording run, where both witnesses are in hand, and inherited by the explored

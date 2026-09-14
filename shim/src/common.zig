@@ -80,6 +80,9 @@ pub const c = struct {
     /// that spawned it would carry on to the next command.
     pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
+    /// The wait behind a crash point's kill (#569), and nothing else. Not interposed on
+    /// either platform, and under `--observe syscalls` the sleep is not a trapped call.
+    pub extern "c" fn usleep(usec: c_uint) c_int;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
     /// Reads the trace back to find the run's highest operation number (v15). Not
     /// interposed — the shim wraps mutations, not reads — so this extern reaches libc
@@ -1549,6 +1552,44 @@ fn refreshCount(ts: *ThreadState) bool {
     return true;
 }
 
+/// The crash point's kill, at both of `observe`'s kill sites: the process group where `group`
+/// says the engine arranged one, and then — for every caller, since #569 — what keeps the
+/// thread that issued it from running on into anything of its own.
+///
+/// `kill(0, …)` is directed at a process group, and XNU delivers a process-directed signal to
+/// the first thread in the list that is not a workqueue thread (`get_signalthread`). When the
+/// crash point is reached on any other thread, `kill` returns to it. The `_exit` below used to
+/// follow directly, on the reading that SIGKILL cannot be caught — true of the process, not of
+/// the thread that asked — and a worker writing the state directory reached it before the
+/// thread that took the signal had ended the process: from a pthread worker, 263 of 2,000
+/// such kills ended by the signal in a C driver on macOS 15.3.1 (BUILDLOG, 2026-09-14).
+///
+/// `raise` is directed at the calling thread when that is a pthread, so the caller dies in
+/// place. On a GCD workqueue thread `pthread_kill` answers `ENOTSUP` and Libc's `raise` falls
+/// back to `kill(getpid())`, which returns again; the wait is for that caller, and ends when
+/// the thread that took the signal ends the process. It is kept under a second, the smallest
+/// `--world-timeout`, because a world still alive at its deadline refuses `child_timed_out`
+/// before its landing is judged, which would tell the operator to raise a timeout about a kill
+/// that never arrived. That does not keep the two apart: the deadline counts from before the
+/// spawn, so a world that reached its crash point with less than the wait left meets it anyway —
+/// only where the kill has already failed, and only in the reason given. On a GCD caller this
+/// wait is entered at every crash point; until the process ends, a handler the target installed
+/// can run on this thread, a signal delivered to it cuts a sleep short — the wait counts sleeps,
+/// not time, so a target that signals this thread often shortens the whole of it — and `usleep`
+/// is a cancellation point. Not measured: a process whose only threads are several parked workqueue
+/// threads, where the one chosen to take the signal need not be the caller.
+///
+/// On Linux the caller does not return from `kill(0)`, and nothing here after it runs —
+/// except in a pid namespace's init, which discards a SIGKILL it sends itself. Where nothing
+/// ends the process within the wait, the `_exit` stays, and the world is refused as one that
+/// exited on its own, which is then what it is.
+fn killAtCrashPoint(group: bool) noreturn {
+    if (group) _ = c.kill(0, SIGKILL);
+    _ = c.raise(SIGKILL);
+    for (0..9) |_| _ = c.usleep(100_000);
+    c._exit(@intFromEnum(contract.ExitCode.setup_error));
+}
+
 /// The single place where an operation becomes a counted event, and the single place
 /// where the process dies.
 fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void {
@@ -1646,17 +1687,11 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
                 // anything of the run left in that group is what the survivor watch is for.
                 const group_held = groupLeaderHeld();
                 const killed = kill_cgroup_fd >= 0 and shimWrite(kill_cgroup_fd, "1");
-                if (aside and killed) {
-                    _ = if (group_held) c.kill(0, SIGKILL) else c.raise(SIGKILL);
-                    c._exit(@intFromEnum(contract.ExitCode.setup_error));
-                }
+                if (aside and killed) killAtCrashPoint(group_held);
                 writeRecord(ts, .cgroup, s, path, notHeldAux(cgroupStanding()) orelse contract.cgroup_aux.kill_returned);
                 c._exit(@intFromEnum(contract.ExitCode.setup_error));
             }
-            _ = if (kill_group) c.kill(0, SIGKILL) else c.raise(SIGKILL);
-            // SIGKILL cannot be caught or ignored, so this is unreachable. If it is ever
-            // reached, the run is not what it claims to be — refuse to continue quietly.
-            c._exit(@intFromEnum(contract.ExitCode.setup_error));
+            killAtCrashPoint(kill_group);
         }
     } else if (op == .close) {
         // Recorded so the oracle can match it, but never a crash point: SIGKILL closes
