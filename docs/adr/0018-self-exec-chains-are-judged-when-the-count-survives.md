@@ -265,3 +265,27 @@ fixes: the account said "chain unbroken" over a run whose chain had broken, and 
 a disagreement between witnesses on a run where the shim claimed no second process. The
 second is a `docs/report-schema.md` promise about the `processes` field, which is why it is
 here rather than filed.
+
+**Amended 2026-09-14 (#571): the macOS bullet in Consequences is true of protected binaries
+only, and macOS does not judge a self-exec chain.** "macOS is unchanged: SIP strips
+`DYLD_INSERT_LIBRARIES` from protected binaries, the far side of such an exec is never
+observed, and the broken chain refuses" describes an Apple platform binary. A target that
+re-executes its own image — one its user built, not hardened — through the interposed `execv`
+keeps the shim across the `exec`, and the chain holds; an `exec` of an Apple binary or a hardened
+image, or through the uninterposed `execl` family, is still the broken chain this page describes.
+Measured on main `48438c8` (macOS 15.3.1, arm64) with two single-threaded toys that `execv`
+themselves: the one that writes only after the `execv` refuses `boundary_without_oracle` six runs
+in six — three with no oracle, three under `--allow-unverified` — which is layer 1 of the
+2026-09-07 amendment above. Under `--oracle-fs-usage` neither toy was run (it needs root); that a
+boundary is refused there too is read from `src/main.zig`'s `phaseStructural`, not measured. The
+one that writes on both sides refuses
+`multiple_threads_detected` six in six, before that question is reached: the thread that
+survives an `exec` on Darwin reports a new id from `pthread_threadid_np` — a new id after every
+`exec`, from the main thread and from a worker, measured in a C driver — and the thread rule,
+which keeps one writer per pid, counts the two sides as two threads. On Linux the main thread's
+id survives its `exec`, and the chain is judged under `--oracle` as this page decided. Judging
+the chain on macOS would take the fs_usage boundary lifted for an image change, the subject told
+apart when the new image reopens the trace (it is opened `O_CLOEXEC`, and that reader names the
+subject by the thread that opened it), and a thread's identity carried across the `exec`. It was
+not built, by owner ruling; `DESIGN.md` §9, `docs/cli.md`, `--help` and the README's limits say macOS
+does not judge it, and the two refusals' own sentences were left as they are.

@@ -82,7 +82,7 @@ Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2), wit
 - **State in one directory**, declared with `--state` or the toml.
 - **A clean run exits its declared success status** (default 0).
 - **Byte-repeatable writes.** A second clean run must leave the same bytes under `--state`; `preflight --twice` measures this.
-- **Other processes take turns with the state.** Forked helpers are judged under an oracle, provided no two processes' writes interleave and every writing child is reaped. One leaving its process group is judged only on Linux, where the engine can make cgroups. Without an oracle, any process boundary is UNKNOWN.
+- **Other processes take turns with the state.** Forked helpers are judged under an oracle, provided no two processes' writes interleave and every writing child is reaped. One leaving its process group is judged only on Linux, where the engine can make cgroups. A process boundary or a self-`exec` needs Linux's `--oracle`, or is UNKNOWN.
 
 ## Driving it from an agent
 
