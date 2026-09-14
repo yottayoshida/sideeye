@@ -31,7 +31,7 @@ rehearsal green is required before a Seal A PR and after any tool change).
 
 Not tooling, but read beside `upstream-report-status.sh` and
 `upstream-reports.tsv`: `upstream-report-template.md` is the shape a filed
-report takes, indexed to the three worked examples it was drawn from.
+report takes, indexed to the four worked examples it was drawn from.
 
 ## Closed campaign records — sealed; do not move, do not add files
 
