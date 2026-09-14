@@ -1,7 +1,7 @@
 # Filing a finding upstream — the shape
 
-Fifteen reports have gone out from this project (`upstream-reports.tsv`;
-fourteen standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
+Sixteen reports have gone out from this project (`upstream-reports.tsv`;
+fifteen standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
 the worked examples this page was drawn from, and
 `ImageMagick/ImageMagick#8939` is the canonical instance — the owner's
 instruction on 2026-09-06 is that later reports go the same way. This page is
@@ -204,12 +204,36 @@ worse than the finding.
 
 Whether the shape works. Ten standing reports, measured 2026-09-06 with
 `upstream-report-status.sh`: seven at zero comments, three with any reply at all.
-#8939 is the only Up-front-shaped one, and it drew a maintainer reproduction and
+Of those three, #8939 is the only Up-front-shaped one, and it drew a maintainer reproduction and
 a patch commitment within fourteen hours — on a report that told them closing it
 was fine. That is n=1 against a variable this page does not control: rule 11 in
 `cohort4/SCOUT-BRIEF.md` exists because projects differ in responsiveness, and
 nothing here separates the shape from the project. Four reports filed on
 2026-09-06 are not in that count — they were too new to have drawn anything.
+
+**Measured again on 2026-09-14**, with `upstream-report-status.sh` and every
+thread read: fifteen standing reports, six at zero comments and nine with a
+reply. Of the nine that carry this page's Disclosure — the four worked
+examples, the four filed the same week and `oxipng/oxipng#873` — six drew a
+reply. `#8939` was patched; the third patch closed both items when it was
+measured on 2026-09-06 at `960adadd` (`dogfood/2026-09-06-imagemagick-patch3/`),
+and `mogrify.c` has changed since without being measured again.
+`libjpeg-turbo#914` was labelled `enhancement` and left open for now, to be
+considered if more project funding emerges. Four were closed by their
+maintainers with no change: `qpdf#1773` with a `wontfix` label, `fonttools#4170`
+and `oxipng#873` as not planned, and `pyupgrade#1101`, which was also locked as
+spam. `Exiv2#9482`, `trash-cli#414` and `beancount#1051` have no reply. Of the
+six standing reports without the Disclosure, `himalaya#738` was fixed upstream,
+`calcurse#529` drew the owner's agreement that it should be fixed, `topydo#341`
+was labelled `bug` with no comment, `poetry#11019` was closed by this project
+once the write turned out to be tomlkit's, and `timewarrior#778` and `stow#139`
+have no reply. Comments on three reports speak to how they were produced:
+`poetry#11019`'s ("your AI"), `libjpeg-turbo#914`'s (an "AI-generated novel",
+and later automated tools as a burden on that project), and `pyupgrade#1101`'s,
+which called the report spam; that report's link to this project now reads
+`<<spam>>`. The last two carry element (d); `poetry#11019` does not. No outcome
+in either group holds more than four reports, and nothing in them separates the
+shape from the project.
 
 **And a fast reply is not the same as a good outcome.** The reply arrived **51
 seconds** after the commit it announced (`1a0d1b71` at 2026-09-05T18:38:12Z, the
@@ -233,4 +257,6 @@ on the ledger the whole time, falsified both. Four worked examples are a better
 instrument than a bad abstraction of them.
 
 Delete element (d) of Disclosure — not the page — if a maintainer ever takes it
-up. Nobody has.
+up. As of 2026-09-14 no comment has asked for the reports to stop in those
+words; the nearest, on the two reports that carry element (d), are named under
+*What this page cannot tell you*.
