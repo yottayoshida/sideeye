@@ -4,10 +4,12 @@
 # rather than passing: a no-op edit must not read as 'nothing detected it'.
 # Read as: a mutation that kills more than its own channel means the cases are not independent.
 #
-# Re-measured in full on 2026-09-15 (#512, #513, and both reviews' fixes), /usr/bin/sed on
-# macOS, every set predicted before the run. mcp-prefix-loose as first committed came back
-# BROKEN (an unescaped `[`); the row below is the escaped program. The unmutated selftest:
-# 41 cases, rc 0.
+# Re-measured in full on 2026-09-15 on the final judge for #510 (after both of its reviews),
+# /usr/bin/sed on macOS, every set predicted before the run (the rows above relative-off were first
+# measured that morning, for #512 and #513). mcp-prefix-loose as first committed came back BROKEN
+# (an unescaped `[`); the row below is the escaped program. relative-off and cd-off each kill a
+# mount case beside the path cases: the mount check resolves its source with the same function.
+# The unmutated selftest: 83 cases, rc 0.
 
 name-unsealed-blind	rc=1	killed: name-unsealed
 name-mcp-blind	rc=1	killed: mcp-allowed name-mcp-foreign name-mcp-nested
@@ -15,12 +17,12 @@ off-allowlist-blind	rc=1	killed: name-off-allowlist
 mcp-prefix-loose	rc=1	killed: name-mcp-nested
 mcp-allow-broken	rc=1	killed: mcp-allowed
 network-blind	rc=1	killed: net-bare net-git net-pkg net-url
-path-blind	rc=1	killed: path-dotclaude path-repo path-tilde
+path-blind	rc=1	killed: path-dotclaude
 docker-blind	rc=1	killed: docker-nonet
-mount-blind	rc=1	killed: docker-mount
+mount-blind	rc=1	killed: docker-mount docker-mount-relative
 unauditable-off	rc=1	killed: unauditable
 restore-silent	rc=1	killed: restore-fail
-always-clean	rc=1	killed: docker-mount docker-nonet name-mcp-foreign name-mcp-nested name-unsealed net-bare net-git net-pkg net-url path-dotclaude path-repo path-tilde
+always-clean	rc=1	killed: docker-mount docker-mount-relative docker-nonet name-mcp-foreign name-mcp-nested name-unsealed net-bare net-git net-pkg net-url path-alias path-ancestor-alias path-ancestor-grep path-cd-maybe path-cd-then-read path-cd-walk path-command-spelling path-config-absent path-config-realpath path-dotclaude path-du path-eval-cd path-find-exec path-find-options path-glob path-glob-pattern path-grep-given path-home-var path-host-link-dotdot path-line-continuation path-ln path-ln-into-dir path-ls-recursive path-nested-ancestor path-pushd path-pwd-var path-quoted-paren path-read-relative path-relative path-repo path-rg-files path-shell-string path-subshell-cd path-tilde path-tilde-cd path-wrapped-command
 case-deleted	rc=1	killed: COUNT
 record-sha-blind	rc=1	killed: record-sha
 record-torn-blind	rc=1	killed: record-torn
@@ -37,3 +39,55 @@ history-off	rc=1	killed: restore-rerun
 extra-descend-off	rc=1	killed: restore-locked-extra
 stage-unlock-first-off	rc=1	killed: restore-repo-kept
 finalize-union-off	rc=1	killed: finalize-verified
+relative-off	rc=1	killed: docker-mount-relative path-alias path-ancestor-grep path-cd-maybe path-cd-then-read path-cd-walk path-command-spelling path-config-absent path-config-realpath path-du path-eval-cd path-find-exec path-find-options path-glob path-glob-pattern path-grep-given path-home-var path-line-continuation path-ln path-ln-into-dir path-ls-recursive path-nested-ancestor path-pushd path-quoted-paren path-read-relative path-relative path-rg-files path-shell-string path-subshell-cd path-tilde-cd path-wrapped-command
+cd-off	rc=1	killed: docker-mount-ambiguous path-ancestor-ambiguous path-cd-then-read path-cd-walk path-config-absent path-config-realpath path-eval-cd path-home-var path-pushd path-quoted-paren path-shell-string path-subshell-cd path-tilde-cd path-wrapped-command
+tilde-off	rc=1	killed: path-pushd path-tilde-cd
+home-pwd-off	rc=1	killed: path-config-absent path-home-var path-pwd-var
+ln-off	rc=1	killed: path-command-spelling path-line-continuation path-ln
+identity-off	rc=1	killed: path-alias path-sibling
+string-compare-off	rc=1	killed: path-config-absent path-config-realpath
+ancestor-off	rc=1	killed: path-ancestor-alias path-ancestor-grep path-cd-then-read path-du path-find-options path-grep-given path-ls-recursive path-nested-ancestor path-rg-files
+ancestor-any	rc=1	killed: path-ancestor-ambiguous
+glob-off	rc=1	killed: path-glob
+carry-held	rc=1	killed: path-ancestor-maybe path-many-cd
+text-boundary-off	rc=1	killed: path-sibling
+mount-old-rule	rc=1	killed: docker-mount-relative
+mount-any	rc=1	killed: docker-mount-ambiguous
+mount-unresolved-off	rc=1	killed: docker-mount-ambiguous
+basename-off	rc=1	killed: path-command-spelling path-find-options
+env-prefix-off	rc=1	killed: path-command-spelling
+find-options-off	rc=1	killed: path-find-options
+shell-string-off	rc=1	killed: path-find-exec path-nested-ancestor path-shell-string path-wrapped-command
+subshell-restore-off	rc=1	killed: path-subshell-cd
+held-off	rc=1	killed: path-cd-maybe
+pushd-off	rc=1	killed: path-pushd
+tool-path-off	rc=1	killed: path-read-relative
+glob-pattern-off	rc=1	killed: path-glob-pattern
+brace-var-off	rc=1	killed: path-pwd-var
+ancestor-identity-off	rc=1	killed: path-ancestor-alias
+host-link-off	rc=1	killed: path-config-realpath path-host-link-dotdot
+pattern-drop-off	rc=1	killed: path-grep-pattern
+regexp-value-off	rc=1	killed: path-grep-pattern
+fastpath-links	rc=1	killed: path-command-spelling path-line-continuation path-ln
+fastpath-dotdot	rc=1	killed: path-config-realpath path-host-link-dotdot
+may-leave-off-by-one	rc=1	killed: path-alias
+may-leave-links-off	rc=1	killed: path-command-spelling path-line-continuation path-ln
+wrapper-value-off	rc=1	killed: path-wrapped-command
+wrapper-operands-off	rc=1	killed: path-wrapped-command
+eval-carry-off	rc=1	killed: path-eval-cd
+find-exec-off	rc=1	killed: path-find-exec
+paren-restore-back	rc=1	killed: path-quoted-paren
+bsnl-off	rc=1	killed: path-line-continuation
+and-narrow-off	rc=1	killed: path-cd-then-read
+maybe-off	rc=1	killed: path-ancestor-maybe
+nested-votes-own	rc=1	killed: path-nested-ancestor
+grep-given-off	rc=1	killed: path-grep-given
+rg-files-off	rc=1	killed: path-rg-files
+find-HP-off	rc=1	killed: path-find-options
+du-off	rc=1	killed: path-du
+ls-recursive-off	rc=1	killed: path-ls-recursive
+grep-reader-off	rc=1	killed: path-cd-then-read path-grep-given path-nested-ancestor path-rg-files
+spellings-realpath-off	rc=1	killed: path-config-realpath
+popd-off	rc=1	killed: path-pushd
+tilde-guard-off	rc=1	killed: path-bad-tilde
+ln-into-dir-off	rc=1	killed: path-ln-into-dir

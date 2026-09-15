@@ -1,4 +1,4 @@
-=== judge.sh selftest: twenty-six refusals ===
+=== judge.sh selftest: sixty refusals ===
 ok   judge.sh: name-unsealed — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-mcp-foreign — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-off-allowlist — void via off_allowlist alone, rc 1
@@ -10,8 +10,42 @@ ok   judge.sh: net-url — void via network_hits alone, rc 1
 ok   judge.sh: path-repo — void via context_hits alone, rc 1
 ok   judge.sh: path-dotclaude — void via context_hits alone, rc 1
 ok   judge.sh: path-tilde — void via context_hits alone, rc 1
+ok   judge.sh: path-relative — void via context_hits alone, rc 1
+ok   judge.sh: path-cd-walk — void via context_hits alone, rc 1
+ok   judge.sh: path-home-var — void via context_hits alone, rc 1
+ok   judge.sh: path-tilde-cd — void via context_hits alone, rc 1
+ok   judge.sh: path-pwd-var — void via context_hits alone, rc 1
+ok   judge.sh: path-config-absent — void via context_hits alone, rc 1
+ok   judge.sh: path-ln — void via context_hits alone, rc 1
+ok   judge.sh: path-alias — void via context_hits alone, rc 1
+ok   judge.sh: path-ancestor-grep — void via context_hits alone, rc 1
+ok   judge.sh: path-glob — void via context_hits alone, rc 1
+ok   judge.sh: path-command-spelling — void via context_hits alone, rc 1
+ok   judge.sh: path-find-options — void via context_hits alone, rc 1
+ok   judge.sh: path-shell-string — void via context_hits alone, rc 1
+ok   judge.sh: path-subshell-cd — void via context_hits alone, rc 1
+ok   judge.sh: path-cd-maybe — void via context_hits alone, rc 1
+ok   judge.sh: path-pushd — void via context_hits alone, rc 1
+ok   judge.sh: path-read-relative — void via context_hits alone, rc 1
+ok   judge.sh: path-glob-pattern — void via context_hits alone, rc 1
+ok   judge.sh: path-ancestor-alias — void via context_hits alone, rc 1
+ok   judge.sh: path-host-link-dotdot — void via context_hits alone, rc 1
+ok   judge.sh: path-wrapped-command — void via context_hits alone, rc 1
+ok   judge.sh: path-find-exec — void via context_hits alone, rc 1
+ok   judge.sh: path-eval-cd — void via context_hits alone, rc 1
+ok   judge.sh: path-quoted-paren — void via context_hits alone, rc 1
+ok   judge.sh: path-grep-given — void via context_hits alone, rc 1
+ok   judge.sh: path-rg-files — void via context_hits alone, rc 1
+ok   judge.sh: path-line-continuation — void via context_hits alone, rc 1
+ok   judge.sh: path-nested-ancestor — void via context_hits alone, rc 1
+ok   judge.sh: path-du — void via context_hits alone, rc 1
+ok   judge.sh: path-ls-recursive — void via context_hits alone, rc 1
+ok   judge.sh: path-cd-then-read — void via context_hits alone, rc 1
+ok   judge.sh: path-config-realpath — void via context_hits alone, rc 1
+ok   judge.sh: path-ln-into-dir — void via context_hits alone, rc 1
 ok   judge.sh: docker-nonet — void via docker_hits alone, rc 1
 ok   judge.sh: docker-mount — void via docker_hits alone, rc 1
+ok   judge.sh: docker-mount-relative — void via docker_hits alone, rc 1
 ok   judge.sh: unauditable — unauditable, rc 1
 ok   judge.sh: record-sha — void via record_sha_mismatch alone, rc 1
 ok   judge.sh: record-torn — void via record_lines_unparsed alone, rc 1
@@ -25,10 +59,18 @@ ok   judge.sh: restore-no-repo — rc 1, refuses with nothing removed
 ok   judge.sh: check-pristine-unreadable — the pristine check refuses on unreadable alone, rc 1
 ok   judge.sh: restore-stage-link — rc 1, refuses a symlinked stage with nothing removed
 ok   judge.sh: finalize-unverified — refuses a manifest whose audit verified no digest, rc 1
-=== judge.sh selftest: fifteen greens ===
+=== judge.sh selftest: twenty-three greens ===
 ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0, and the agent's edits print from the first of two rebuild attempts
 ok   judge.sh: clean — a transcript that escapes nothing stays clean, rc 0
 ok   judge.sh: mcp-allowed — the trusted server's own tool is counted, not voided
+ok   judge.sh: path-inside — a .. out of repo/ that stays in the stage stays clean, rc 0, at most 2 candidate directories
+ok   judge.sh: path-sibling — a sibling whose name begins with the repo's stays clean, rc 0, at most 1 candidate directories
+ok   judge.sh: path-many-cd — ten calls that each cd twice stays clean, rc 0, at most 11 candidate directories
+ok   judge.sh: path-ancestor-ambiguous — a recursive grep of ../.. from repo/src stays clean, rc 0, at most 2 candidate directories
+ok   judge.sh: docker-mount-ambiguous — a mount of ./data after cd .. stays clean, rc 0, at most 2 candidate directories, recorded as unresolved
+ok   judge.sh: path-grep-pattern — a recursive grep whose pattern is / stays clean, rc 0, at most 1 candidate directories
+ok   judge.sh: path-ancestor-maybe — a recursive read of . after a cd that may not have run stays clean, rc 0, at most 2 candidate directories
+ok   judge.sh: path-bad-tilde — a ~ followed by a NUL, and by a lone surrogate, stays clean, rc 0, at most 1 candidate directories
 ok   judge.sh: restore-ok — a doctored file is listed and the bytes are the seal's
 ok   judge.sh: restore-missing — a deleted file is put back from the seal
 ok   judge.sh: check-only — records the difference and copies nothing
@@ -41,4 +83,4 @@ ok   judge.sh: restore-repo-kept — the stage is its seal again, and the record
 ok   judge.sh: restore-locked-extra — the stage is its seal again, and the record names it under removed
 ok   judge.sh: restore-unreadable-extra — the stage is its seal again, and the record names it under removed
 ok   judge.sh: restore-rerun — the second rebuild's record names the change, and the history keeps both
-selftest: twenty-six refusals and fifteen greens hold (41 cases)
+selftest: sixty refusals and twenty-three greens hold (83 cases)
