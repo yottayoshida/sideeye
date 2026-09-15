@@ -3,20 +3,37 @@
 # Programs in MUTATIONS.md. A copy that cmp finds identical is reported BROKEN
 # rather than passing: a no-op edit must not read as 'nothing detected it'.
 # Read as: a mutation that kills more than its own channel means the cases are not independent.
+#
+# Re-measured in full on 2026-09-15 (#512, #513, and both reviews' fixes), /usr/bin/sed on
+# macOS, every set predicted before the run. mcp-prefix-loose as first committed came back
+# BROKEN (an unescaped `[`); the row below is the escaped program. The unmutated selftest:
+# 41 cases, rc 0.
 
-name-unsealed-blind	rc=1	killed: name-unsealed 
-name-mcp-blind	rc=1	killed: name-mcp-foreign name-mcp-nested mcp-allowed 
-off-allowlist-blind	rc=1	killed: name-off-allowlist 
-mcp-prefix-loose	rc=1	killed: name-mcp-nested 
-mcp-allow-broken	rc=1	killed: mcp-allowed 
-network-blind	rc=1	killed: net-bare net-git net-pkg net-url 
-path-blind	rc=1	killed: path-repo path-dotclaude path-tilde 
-docker-blind	rc=1	killed: docker-nonet 
-mount-blind	rc=1	killed: docker-mount 
-unauditable-off	rc=1	killed: unauditable 
-restore-silent	rc=1	killed: restore-fail 
-always-clean	rc=1	killed: name-unsealed name-mcp-foreign name-off-allowlist name-mcp-nested net-bare net-git net-pkg net-url path-repo path-dotclaude path-tilde docker-nonet docker-mount 
-case-deleted	rc=1	killed: COUNT 
-record-sha-blind	rc=1	killed: record-sha 
-record-torn-blind	rc=1	killed: record-torn 
-finalize-blind	rc=1	killed: finalize-unverified 
+name-unsealed-blind	rc=1	killed: name-unsealed
+name-mcp-blind	rc=1	killed: mcp-allowed name-mcp-foreign name-mcp-nested
+off-allowlist-blind	rc=1	killed: name-off-allowlist
+mcp-prefix-loose	rc=1	killed: name-mcp-nested
+mcp-allow-broken	rc=1	killed: mcp-allowed
+network-blind	rc=1	killed: net-bare net-git net-pkg net-url
+path-blind	rc=1	killed: path-dotclaude path-repo path-tilde
+docker-blind	rc=1	killed: docker-nonet
+mount-blind	rc=1	killed: docker-mount
+unauditable-off	rc=1	killed: unauditable
+restore-silent	rc=1	killed: restore-fail
+always-clean	rc=1	killed: docker-mount docker-nonet name-mcp-foreign name-mcp-nested name-unsealed net-bare net-git net-pkg net-url path-dotclaude path-repo path-tilde
+case-deleted	rc=1	killed: COUNT
+record-sha-blind	rc=1	killed: record-sha
+record-torn-blind	rc=1	killed: record-torn
+finalize-blind	rc=1	killed: finalize-unverified
+mode-compare-blind	rc=1	killed: check-pristine-mode restore-mode
+not-regular-blind	rc=1	killed: check-pristine-link restore-dirlink restore-symlink
+delete-blind	rc=1	killed: restore-dirlink restore-extra restore-locked-extra restore-rerun restore-symlink restore-unreadable-extra
+pristine-off	rc=1	killed: check-pristine-extra check-pristine-link check-pristine-missing check-pristine-mode check-pristine-modified check-pristine-unreadable
+repo-guard-off	rc=1	killed: restore-no-repo
+unlock-off	rc=1	killed: restore-locked-extra restore-unreadable-extra
+unreadable-blind	rc=1	killed: check-pristine-unreadable
+stage-link-guard-off	rc=1	killed: restore-stage-link
+history-off	rc=1	killed: restore-rerun
+extra-descend-off	rc=1	killed: restore-locked-extra
+stage-unlock-first-off	rc=1	killed: restore-repo-kept
+finalize-union-off	rc=1	killed: finalize-verified

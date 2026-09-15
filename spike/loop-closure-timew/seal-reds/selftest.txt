@@ -1,4 +1,4 @@
-=== judge.sh selftest: eighteen refusals ===
+=== judge.sh selftest: twenty-six refusals ===
 ok   judge.sh: name-unsealed — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-mcp-foreign — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-off-allowlist — void via off_allowlist alone, rc 1
@@ -16,12 +16,29 @@ ok   judge.sh: unauditable — unauditable, rc 1
 ok   judge.sh: record-sha — void via record_sha_mismatch alone, rc 1
 ok   judge.sh: record-torn — void via record_lines_unparsed alone, rc 1
 ok   judge.sh: restore-fail — rc 1, refuses rather than trusting its own copy
+ok   judge.sh: check-pristine-extra — the pristine check refuses on extra alone, rc 1
+ok   judge.sh: check-pristine-mode — the pristine check refuses on mode_changed alone, rc 1
+ok   judge.sh: check-pristine-link — the pristine check refuses on not_regular alone, rc 1
+ok   judge.sh: check-pristine-modified — the pristine check refuses on modified alone, rc 1
+ok   judge.sh: check-pristine-missing — the pristine check refuses on missing alone, rc 1
+ok   judge.sh: restore-no-repo — rc 1, refuses with nothing removed
+ok   judge.sh: check-pristine-unreadable — the pristine check refuses on unreadable alone, rc 1
+ok   judge.sh: restore-stage-link — rc 1, refuses a symlinked stage with nothing removed
 ok   judge.sh: finalize-unverified — refuses a manifest whose audit verified no digest, rc 1
-=== judge.sh selftest: six greens ===
-ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0
+=== judge.sh selftest: fifteen greens ===
+ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0, and the agent's edits print from the first of two rebuild attempts
 ok   judge.sh: clean — a transcript that escapes nothing stays clean, rc 0
 ok   judge.sh: mcp-allowed — the trusted server's own tool is counted, not voided
 ok   judge.sh: restore-ok — a doctored file is listed and the bytes are the seal's
 ok   judge.sh: restore-missing — a deleted file is put back from the seal
 ok   judge.sh: check-only — records the difference and copies nothing
-selftest: eighteen refusals and six greens hold (24 cases)
+ok   judge.sh: check-pristine-clean — a stage that is its seal passes the pristine check, rc 0
+ok   judge.sh: restore-extra — the stage is its seal again, and the record names it under removed
+ok   judge.sh: restore-mode — the stage is its seal again, and the record names it under mode_changed
+ok   judge.sh: restore-symlink — the stage is its seal again, and the record names it under not_regular
+ok   judge.sh: restore-dirlink — the stage is its seal again, and the record names it under not_regular
+ok   judge.sh: restore-repo-kept — the stage is its seal again, and the record names it under modified
+ok   judge.sh: restore-locked-extra — the stage is its seal again, and the record names it under removed
+ok   judge.sh: restore-unreadable-extra — the stage is its seal again, and the record names it under removed
+ok   judge.sh: restore-rerun — the second rebuild's record names the change, and the history keeps both
+selftest: twenty-six refusals and fifteen greens hold (41 cases)

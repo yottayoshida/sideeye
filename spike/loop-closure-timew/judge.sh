@@ -20,8 +20,12 @@
 # claimed here.
 #
 #   judge.sh eval --root <root> --mode neg|pos|run
-#       Verify the stage against the sealed manifest, RESTORE every non-repo file
-#       from the seal (recording what differed), rebuild timewarrior from the
+#       Verify the stage against the sealed manifest. For --mode run, record what
+#       differs and REBUILD everything outside repo/ from the seal — afterwards it is
+#       the seal's files, with the seal's bytes and owner bits, as regular files, and
+#       nothing else, or the command refuses (#512, #513). The two controls are only
+#       verified, never rebuilt, and refuse unless the stage already is the seal.
+#       Then rebuild timewarrior from the
 #       stage's repo/ tree only, and measure three things in one --network none
 #       container: the functional (non-degeneracy) gate, then the replay of the
 #       sealed case with a fresh state. Emits <mode>-verdict.json; for the two
@@ -36,9 +40,10 @@
 #       The secondary observations DESIGN §17 cites beside the three gates (#64): a
 #       full exploration of the tree under the sealed define (every crash world, not
 #       only the one the case names) and the four upstream C++ suites run 1 counted
-#       (UPSTREAM_SUITES below). Verifies the stage against the seal WITHOUT restoring
-#       — restoring is eval's job, and eval's first restore is the only record of what
-#       the agent changed outside repo/ — then rebuilds from repo/ as eval does and
+#       (UPSTREAM_SUITES below). Verifies the stage is the seal WITHOUT rebuilding it
+#       — rebuilding is eval --mode run's job, and its first rebuild is the only record
+#       of what the agent changed outside repo/ — and refuses in every mode when anything
+#       differs, then rebuilds from repo/ as eval does and
 #       measures both in one --network none container. Emits <mode>-secondary.json.
 #       The two controls carry expectations and exit nonzero when they do not hold;
 #       --mode run refuses until both controls have held on this stage. Evidence, not
@@ -61,7 +66,7 @@
 #       not the author's diligence.
 #
 #   judge.sh selftest
-#       Drive every branch the VOID CLASSIFICATION and the SEAL RESTORE refuse
+#       Drive the branches the VOID CLASSIFICATION and the SEAL RESTORE refuse
 #       on, with synthetic roots and transcripts built in a work directory —
 #       the red proof for the two mechanisms that had never been seen refusing
 #       anything (#63). Takes no --root and writes nothing into this repository.
@@ -75,19 +80,31 @@
 #       and it is driven below (#515; the older wording here listed it among the
 #       undrivable ones, which was wrong and left the new gate unmeasured).
 #       restore_and_diff's own argument check is unreachable for a different reason:
-#       every caller passes a literal.
+#       every caller passes a literal. Four of the rebuild's refusals are not driven either:
+#       a stage that cannot be stat'ed at all, a removal that still fails once the directories
+#       are open (a file flagged immutable), a copy from the seal that fails, and more than one
+#       top-level entry being repo/. Nor are two paths of the pristine check: a sealed file
+#       the record cannot read, and the refusal's --mode run wording.
 #
-#       Eighteen refusals. The fifteen that void assert that the ONE field their
+#       Twenty-six refusals. The fifteen that void assert that the ONE field their
 #       channel owns is the non-empty one, so a case that voided for another reason
-#       is not a red for the branch it claims; the other two are judged on their own
+#       is not a red for the branch it claims; the other eleven are judged on their own
 #       terms (a transcript with no tool calls writes three keys and exits before a
-#       verdict exists, and a seal that fails its own hash check never reaches the
-#       classifier). Plus six greens: a clean transcript stays clean, the trusted
-#       mcp server's own tool is counted rather than voided, a
-#       doctored file comes back from the seal, a DELETED one is put back too (a
-#       different path through the restore), a verified digest lets a manifest
-#       close, and the `check` action records
-#       without copying. Per-branch and not per-field: the network regex alone
+#       verdict exists, a seal that fails its own hash check never reaches the
+#       classifier, finalize refuses a manifest whose audit verified no digest, six
+#       stages the pristine check refuses on one key each — added, mode, symlink,
+#       content, deleted, and a directory nobody can list — and two the rebuild refuses
+#       before removing anything: no repo/, and a stage that is a symlink). Plus fifteen
+#       greens: a clean transcript stays clean, the trusted mcp server's own tool is
+#       counted rather than voided, a doctored file comes back from the seal, a DELETED
+#       one is put back too (a different path through the restore), a verified digest
+#       lets a manifest close, the `check` action records without copying, a pristine
+#       stage passes the pristine check, and the rebuild removes an added file, a
+#       read-only directory and a file inside a closed one (naming it), restores the
+#       owner's x bit, turns a symlink and a symlinked directory back into the seal's
+#       regular files without writing through either, leaves repo/ alone, and on a
+#       second run records its own change while the history keeps the first.
+#       Per-branch and not per-field: the network regex alone
 #       has four alternations, and one `curl` would otherwise stand in for all of
 #       them. By NAME four branches are driven: a listed name, a foreign mcp
 #       server, a tool in neither set (#511), and the trusted prefix worn by a
@@ -146,20 +163,34 @@ stamp() { # $1 = label; writes $RESULTS/<label>-started, the floor for this run'
     date -u +%FT%TZ > "$RESULTS/$1-started"
 }
 
-restore_and_diff() { # $1 = mode, $2 = restore|check; writes $RESULTS/<mode>-stage-diff.json
-                     # (restore) or $RESULTS/<mode>-stage-check.json (check)
-    # `check` compares and records but never copies: the secondary observation uses it, because
-    # the first restore of a stage is the only record of what the agent changed outside repo/,
-    # and that record belongs to eval (#64). Its record has its own name and no `restored`
-    # field, so nothing reading *-stage-diff.json can mistake it for a restore that found nothing.
+restore_and_diff() { # $1 = mode, $2 = restore|check, $3 = pristine (optional); writes
+                     # $RESULTS/<mode>-stage-diff.json (restore) or $RESULTS/<mode>-stage-check.json (check)
+    # `check` compares and records but never changes the stage: the controls and the secondary
+    # observation use it, and with `pristine` it refuses when anything differs. Its record has its
+    # own name and no `restored` field, so nothing reading *-stage-diff.json can mistake it for a
+    # restore that found nothing (#64).
+    #
+    # `restore` is `eval --mode run`'s alone (#512, #513), and it does not patch the stage file by
+    # file. A patch has to know every way a file can differ — content, mode, a symlink swapped in,
+    # a symlinked directory above it, a file added beside it — and the old one knew only content:
+    # it left what the agent added, missed a mode change, and wrote THROUGH a symlink into
+    # whatever it pointed at. This one opens the stage's directories, records, keeps repo/, removes
+    # everything else, copies the seal back, and records again; anything the second record still
+    # finds is a refusal. The record is written before anything is removed. <mode>-stage-diff.json
+    # is this rebuild's, and every rebuild's is appended to <mode>-stage-diffs.jsonl, so a stage
+    # rebuilt before the agent ran does not put that empty record in front of the agent's.
     out="$RESULTS/$1-stage-diff.json"
     [ "$2" = check ] && out="$RESULTS/$1-stage-check.json"
-    python3 - "$STAGE" "$SEAL" "$out" "$2" <<'PY'
-import hashlib, json, os, shutil, sys
+    python3 - "$STAGE" "$SEAL" "$out" "$2" "${3:-}" "$1" <<'PY'
+import hashlib, json, os, shutil, stat, sys
 
-stage, seal, out_path, action = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+stage, seal, out_path, action, require, mode = sys.argv[1:7]
 if action not in ("restore", "check"):
     sys.exit("restore_and_diff: action must be restore or check, got %r" % action)
+if require not in ("", "pristine"):
+    sys.exit("restore_and_diff: the third argument must be pristine or absent, got %r" % require)
+
+KEYS = ("modified", "missing", "mode_changed", "not_regular", "unreadable", "extra")
 
 def sha256(path):
     h = hashlib.sha256()
@@ -177,42 +208,224 @@ with open(os.path.join(seal, "manifest.sha256")) as f:
         digest, rel = line.split(None, 1)
         manifest[rel.lstrip("*")] = digest  # shasum may mark binary mode with *
 
-modified, missing, restored = [], [], []
-for rel, digest in sorted(manifest.items()):
-    cur = os.path.join(stage, rel)
-    pristine = os.path.join(seal, "files", rel)
-    if not os.path.exists(cur):
-        missing.append(rel)
-    elif sha256(cur) != digest:
-        modified.append(rel)
+# The directories the seal's files live in, so a directory the seal does not account for can be
+# told from one it does. Manifest keys look like ./define/check.sh.
+wanted_dirs = set()
+for rel in manifest:
+    d = os.path.dirname(rel)
+    while d not in ("", "."):
+        wanted_dirs.add(d)
+        d = os.path.dirname(d)
+
+def repo_stat():
+    # repo/ is the agent's work product and is never touched. It is found by identity, not by
+    # name: on a case-insensitive disk `mv repo Repo` leaves a top-level entry that is not spelled
+    # "repo" and is still the directory the container copies.
+    try:
+        return os.lstat(os.path.join(stage, "repo"))
+    except OSError:
+        return None
+
+def is_repo(path, rst):
+    try:
+        return rst is not None and os.path.samestat(os.lstat(path), rst)
+    except OSError:
+        return False
+
+def record():
+    rst = repo_stat()
+    d = {k: [] for k in KEYS}
+    for rel, digest in sorted(manifest.items()):
+        # Component by component from the stage down, with lstat: a symlink anywhere on the way
+        # makes it a different file from the seal's, whatever its bytes read as. Not realpath,
+        # which would resolve the stage's own ancestors too (macOS: /var -> /private/var).
+        cur, kind, st = stage, None, None
+        parts = [p for p in rel.split("/") if p not in ("", ".")]
+        for i, part in enumerate(parts):
+            cur = os.path.join(cur, part)
+            try:
+                st = os.lstat(cur)
+            except FileNotFoundError:
+                kind = "missing"
+                break
+            except OSError:
+                kind = "unreadable"
+                break
+            want_type = stat.S_ISREG if i == len(parts) - 1 else stat.S_ISDIR
+            if stat.S_ISLNK(st.st_mode) or not want_type(st.st_mode):
+                kind = "not_regular"
+                break
+        if kind:
+            d[kind].append(rel)
+            continue
+        try:
+            if sha256(cur) != digest:
+                d["modified"].append(rel)
+        except OSError:
+            # Not "modified": nothing was compared. A file the record cannot read is its own kind.
+            d["unreadable"].append(rel)
+        # The owner's bits only. tar applies the umask when the seal is extracted, so the group and
+        # other bits of a file the container wrote can differ between an untouched stage and its
+        # seal; the owner's bits survived every umask this was measured under, and the engine,
+        # root in the container, runs a script while any x bit is set.
+        want = stat.S_IMODE(os.lstat(os.path.join(seal, "files", rel)).st_mode) & 0o700
+        if (stat.S_IMODE(st.st_mode) & 0o700) != want:
+            d["mode_changed"].append(rel)
+    def note_unreadable(err):
+        # Without this os.walk skips a directory it cannot list, and a directory nobody can read
+        # would look like one with nothing in it.
+        rel = os.path.relpath(getattr(err, "filename", None) or stage, stage)
+        d["unreadable"].append("./" if rel == "." else os.path.join(".", rel) + "/")
+    for dirpath, dirnames, filenames in os.walk(stage, onerror=note_unreadable):
+        keep = []
+        for name in dirnames:
+            full = os.path.join(dirpath, name)
+            rel = os.path.join(".", os.path.relpath(full, stage))
+            if dirpath == stage and is_repo(full, rst):
+                continue
+            if os.path.islink(full):
+                # Listed here and never descended. One standing where the seal wants a directory
+                # is already a not_regular for every file under it.
+                if rel not in wanted_dirs:
+                    d["extra"].append(rel)
+            elif rel in wanted_dirs:
+                keep.append(name)
+            else:
+                # Recorded, and walked: the files inside are what the agent added, by name.
+                d["extra"].append(rel + "/")
+                keep.append(name)
+        dirnames[:] = keep
+        for name in filenames:
+            full = os.path.join(dirpath, name)
+            rel = os.path.join(".", os.path.relpath(full, stage))
+            if dirpath == stage and is_repo(full, rst):
+                continue
+            if rel not in manifest:
+                d["extra"].append(rel)
+    d["extra"].sort()
+    d["unreadable"].sort()
+    return d
+
+def differs(d):
+    return [k for k in KEYS if d[k]]
+
+def write(d, path):
+    json.dump(d, open(path, "w"), indent=1)
+    print(json.dumps(d))
+
+def unlock(path):
+    # A directory the agent made unreadable or read-only, or flagged immutable, would hide files
+    # from the record or stop the removal halfway, leaving a stage that is neither the agent's nor
+    # the seal's. Directories only: a file's own bits are part of what the record compares.
+    try:
+        st = os.lstat(path)
+    except OSError:
+        return
+    lchflags = getattr(os, "lchflags", None)
+    if lchflags is not None and getattr(st, "st_flags", 0):
+        try:
+            lchflags(path, 0)
+        except OSError:
+            pass
+    if stat.S_ISDIR(st.st_mode):
+        try:
+            os.chmod(path, stat.S_IMODE(st.st_mode) | stat.S_IRWXU)
+        except OSError:
+            pass
+
+def remove_tree(path):
+    # By hand rather than shutil.rmtree: its error hook is handed os.open or os.scandir as often
+    # as os.unlink, and cannot retry those. lstat throughout, so a link is removed, never followed.
+    if stat.S_ISDIR(os.lstat(path).st_mode):
+        for child in os.listdir(path):
+            remove_tree(os.path.join(path, child))
+        os.rmdir(path)
     else:
-        continue
-    if action == "check":
-        continue
-    # Restore from the seal, then re-verify: a restore that silently failed would
-    # let a doctored checker decide the verdict.
-    os.makedirs(os.path.dirname(cur), exist_ok=True)
-    shutil.copy2(pristine, cur)
-    if sha256(cur) != digest:
-        sys.exit("restore failed for %s: hash still differs from the seal" % rel)
-    restored.append(rel)
+        os.unlink(path)
 
-extra = []
-for dirpath, dirnames, filenames in os.walk(stage):
-    rel_dir = os.path.relpath(dirpath, stage)
-    if rel_dir == "repo" or rel_dir.startswith("repo" + os.sep):
-        dirnames[:] = []
-        continue
-    for name in filenames:
-        rel = os.path.join(".", os.path.relpath(os.path.join(dirpath, name), stage))
-        if rel not in manifest:
-            extra.append(rel)
-
-diff = {"modified": modified, "missing": missing, "extra": sorted(extra)}
 if action == "restore":
-    diff["restored"] = restored
-json.dump(diff, open(out_path, "w"), indent=1)
-print(json.dumps(diff))
+    # The stage itself must be a directory and not a link to one: the removal below would empty
+    # whatever a link pointed at.
+    try:
+        stage_st = os.lstat(stage)
+    except OSError as e:
+        sys.exit("restore failed for ./: the stage cannot be read (%s), and nothing was removed" % e)
+    if not stat.S_ISDIR(stage_st.st_mode):
+        sys.exit("restore failed for ./: the stage is not a directory (a symlink to one is not "
+                 "accepted), and nothing was removed")
+    # Open every directory before the record is taken, so what the agent put in one it closed is
+    # named in the record rather than removed unseen. repo/ is not the rebuild's and is left alone —
+    # which needs repo/ found first, and a stage whose own x bit is gone hides it, so the stage is
+    # opened before repo/ is looked up.
+    unlock(stage)
+    rst = repo_stat()
+    def open_dirs(path):
+        unlock(path)
+        for child in os.listdir(path):
+            full = os.path.join(path, child)
+            if path == stage and is_repo(full, rst):
+                continue
+            if stat.S_ISDIR(os.lstat(full).st_mode):
+                open_dirs(full)
+    try:
+        open_dirs(stage)
+    except (OSError, RecursionError):
+        pass  # anything still closed is recorded as unreadable, and the re-verify refuses it
+
+first = record()
+
+if action == "check":
+    write(first, out_path)
+    if require == "pristine" and differs(first):
+        how = ("run judge.sh eval --mode run first, which rebuilds it from the seal" if mode == "run"
+               else "a control runs only on the stage stage.sh made; stage it again")
+        sys.exit("the stage differs from the seal (%s) — %s" % (
+            "; ".join("%s %r" % (k, first[k]) for k in differs(first)), how))
+    sys.exit(0)
+
+first["restored"] = sorted(set(first["modified"] + first["missing"] + first["mode_changed"]
+                               + first["not_regular"] + first["unreadable"]))
+first["removed"] = list(first["extra"])
+# <mode>-stage-diff.json is this rebuild's record, and every rebuild's is appended to
+# <mode>-stage-diffs.jsonl and never rewritten: a stage rebuilt before the agent ran must not keep
+# that empty record in front of the one the agent's changes are in, and a rebuild after the agent
+# must not erase the one that saw them. Both are written before anything is removed.
+with open(out_path[:-len(".json")] + "s.jsonl", "a") as history:
+    history.write(json.dumps(first) + "\n")
+write(first, out_path)
+
+# Exactly one top-level entry that is the repo/ directory (rst, taken before the directories were
+# opened, which changes no inode). None — it is missing, or it is not a directory — or more than
+# one, and nothing is removed.
+tops = [n for n in os.listdir(stage)
+        if rst is not None and stat.S_ISDIR(rst.st_mode) and is_repo(os.path.join(stage, n), rst)]
+if len(tops) != 1:
+    sys.exit("restore failed for ./repo: the stage has no single repo/ directory to keep (%d found), "
+             "and nothing was removed" % len(tops))
+
+for name in sorted(os.listdir(stage)):
+    full = os.path.join(stage, name)
+    if is_repo(full, rst):
+        continue
+    try:
+        remove_tree(full)
+    except (OSError, RecursionError) as e:
+        sys.exit("restore failed for ./%s: could not remove it (%s)" % (name, e))
+
+for rel in sorted(manifest):
+    dst = os.path.join(stage, rel)
+    try:
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copy2(os.path.join(seal, "files", rel), dst)
+    except OSError as e:
+        sys.exit("restore failed for %s: could not copy it from the seal (%s)" % (rel, e))
+
+# Re-verify: a restore that silently failed would let a doctored checker decide the verdict.
+after = record()
+if differs(after):
+    bad = sorted(set(sum((after[k] for k in differs(after)), [])))
+    sys.exit("restore failed for %s: the stage still differs from the seal after the rebuild (%r)"
+             % (bad[0], after))
 PY
 }
 
@@ -226,15 +439,14 @@ cmd_eval() {
         [ -f "$PATCH" ] || { echo "known patch not found: $PATCH" >&2; exit 1; }
     fi
 
-    echo "=== $MODE: verify against the seal, restore what differs ==="
-    restore_and_diff "$MODE" restore
-    if [ "$MODE" != "run" ]; then
-        python3 -c '
-import json, sys
-d = json.load(open(sys.argv[1]))
-if d["modified"] or d["missing"] or d["extra"]:
-    sys.exit("controls must run on a pristine stage; found %r" % d)
-' "$RESULTS/$MODE-stage-diff.json"
+    if [ "$MODE" = "run" ]; then
+        echo "=== run: record what the agent changed outside repo/, rebuild it from the seal ==="
+        restore_and_diff "$MODE" restore
+    else
+        # A control is never rebuilt (#512): rebuilding and then refusing passed on the second
+        # attempt, and would remove what contrast-mcp.sh places for the agent to start from.
+        echo "=== $MODE: verify the stage is the seal (a control never rebuilds it) ==="
+        restore_and_diff "$MODE" check pristine
     fi
 
     echo "=== $MODE: rebuild from repo/ only; functional gate; replay the sealed case ==="
@@ -310,7 +522,9 @@ rrc = read("replay-rc")
 verdict = {
     "mode": mode,
     "container_rc": container_rc,
-    "stage_diff": json.load(open(os.path.join(results, "%s-stage-diff.json" % mode))),
+    # A run's record is its rebuild's; a control is only checked, never rebuilt.
+    "stage_diff": json.load(open(os.path.join(
+        results, "%s-stage-%s.json" % (mode, "diff" if mode == "run" else "check")))),
     # Differs from replay.gate == "build_failed" in one corner only: the build
     # finished but sideeye wrote no JSON. Kept to name that corner.
     "build_ok": rrc is not None,
@@ -395,16 +609,10 @@ for p in sys.argv[2:]:
 ' "$SEAL/protocol.json" "$RESULTS/neg-secondary.json" "$RESULTS/pos-secondary.json"
     fi
 
-    echo "=== $MODE: verify against the seal (read only; eval restores, this never does) ==="
-    restore_and_diff "$MODE" check
-    python3 -c '
-import json, sys
-d = json.load(open(sys.argv[1])); mode = sys.argv[2]
-if d["modified"] or d["missing"]:
-    sys.exit("the stage differs from the seal (%r); run judge.sh eval --mode %s first — it restores, and records what the agent changed" % (d, mode))
-if mode != "run" and d["extra"]:
-    sys.exit("controls must run on a pristine stage; found extra files %r" % d["extra"])
-' "$RESULTS/$MODE-stage-check.json" "$MODE"
+    echo "=== $MODE: verify the stage is the seal (read only; eval --mode run rebuilds, this never does) ==="
+    # Every mode refuses anything that differs, extra files included (#512): after eval's rebuild
+    # nothing the seal lacks is left, so extra files here were put there after eval.
+    restore_and_diff "$MODE" check pristine
 
     echo "=== $MODE: rebuild from repo/ only; full explore under the sealed define; upstream suites ==="
     OPERATION=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["operation"])' "$SEAL/protocol.json")
@@ -888,7 +1096,22 @@ print("loop_closed: %s" % closed)
 print("  replay gate: %s" % manifest["run"]["replay"].get("gate"))
 print("  func gate:   %s" % manifest["run"]["func"].get("gate"))
 print("  audit:       %s" % manifest["audit"]["verdict"])
-print("  agent edits outside repo/: %s" % (manifest["run"]["stage_diff"]["restored"] or "none"))
+# Across every rebuild attempt on this stage, not the last one's record alone: `eval --mode run`
+# run again after the agent (a container that failed, say) rebuilds a stage that is already the
+# seal, and that record is empty. The verdict carries the last record; the history has them all.
+sd = manifest["run"]["stage_diff"]
+history = os.path.join(results, "run-stage-diffs.jsonl")
+attempts = ([json.loads(line) for line in open(history) if line.strip()]
+            if os.path.exists(history) else [])
+def across(key):
+    return sorted(set(sd.get(key) or []).union(*(r.get(key) or [] for r in attempts)))
+print("  agent edits outside repo/: %s" % (across("restored") or "none"))
+# Not only the agent's: the harness leaves files there too (./bin/timew in the mcp variant,
+# ./replay-latest.json from the replay button), and the rebuild removes them all alike.
+print("  removed from outside repo/: %s" % (across("removed") or "none"))
+if len(attempts) > 1:
+    print("  rebuild attempts on this stage: %d — the lists above are across all of them, and the run "
+          "verdict carries the last (run-stage-diffs.jsonl)" % len(attempts))
 sec = manifest["run"].get("secondary")
 print("  secondary:   %s" % ("full explore %s, upstream %s (evidence, not a gate)"
       % (sec["full_explore"].get("gate"), sec["upstream"].get("gate")) if sec
@@ -899,13 +1122,16 @@ PY
 cmd_selftest() { # the red proof for what this judge refuses on (#63)
     work=$(mktemp -d "${TMPDIR:-/tmp}/judge-selftest-XXXXXX") ||
         { echo "BROKEN selftest: no work directory"; exit 2; }
-    trap 'rm -rf "$work" 2>/dev/null || true' EXIT
+    # u+rwx first: cases below leave read-only and unreadable directories behind (a pristine check
+    # never opens them, and a failing rebuild may not). Both commands carry `|| true`: under `set -e`
+    # a failing command inside this trap ends the script with its status, after every case passed.
+    trap 'chmod -R u+rwx "$work" 2>/dev/null || true; rm -rf "$work" 2>/dev/null || true' EXIT
     fails=0
     # Counted, not just summed: the closing line used to be a constant, so deleting a
     # case left the suite green with the same wording. The tally below demands the exact
     # number of cases, which makes a silently shortened list a failure.
     passes=0
-    WANT_CASES=24
+    WANT_CASES=41
 
     # The path channel matches $SIDEEYE_REPO as a SUBSTRING of any tool input, so the
     # synthetic repo must not be an ancestor of the synthetic roots: a stage path under it
@@ -971,7 +1197,7 @@ PY
         then passes=$((passes + 1)); else fails=$((fails + 1)); fi
     }
 
-    echo "=== judge.sh selftest: eighteen refusals ==="
+    echo "=== judge.sh selftest: twenty-six refusals ==="
 
     # by NAME (2): the eleven listed tools, and any mcp__ server that is not the allowed one
     tx_tool name-unsealed WebFetch url "https://example.invalid"
@@ -1038,8 +1264,13 @@ PY
     RECORD_SHA=""
 
     seal_root() { # $1 = root dir; builds seal/files + manifest from one pristine file
-        mkdir -p "$1/stage/define" "$1/seal/files/define"
+        mkdir -p "$1/stage/define" "$1/seal/files/define" "$1/stage/repo"
         printf 'pristine\n' > "$1/seal/files/define/check.sh"
+        # 755, as stage.sh makes the declaration scripts, so a mode change has a bit to lose.
+        chmod 755 "$1/seal/files/define/check.sh"
+        # The agent's work product, which a rebuild keeps. Without one the rebuild refuses before
+        # it starts (#512), and every restore case below would pass or fail on that instead.
+        printf 'agent work\n' > "$1/stage/repo/work.txt"
         printf '%s  ./define/check.sh\n' "$(file_sha256 "$1/seal/files/define/check.sh")" \
             > "$1/seal/manifest.sha256"
     }
@@ -1057,7 +1288,9 @@ PY
     if [ "$rrc" -eq 0 ]; then
         echo "FAIL judge.sh: restore-fail — reported success with a seal that does not match its manifest"
         fails=$((fails + 1))
-    elif grep -q "restore failed for" "$RESULTS/stdout.txt"; then
+    # The file's name, not just the prefix: the rebuild also refuses "for ./repo" before it starts,
+    # and a refusal for that reason is not the re-verify this case is about.
+    elif grep -q "restore failed for ./define/check.sh" "$RESULTS/stdout.txt"; then
         echo "ok   judge.sh: restore-fail — rc $rrc, refuses rather than trusting its own copy"
         passes=$((passes + 1))
     else
@@ -1071,12 +1304,119 @@ PY
     # the header used to list it among the undrivable preconditions, which is why this went
     # unmeasured when it shipped. One synthetic root serves both this refusal and the green
     # below; only the audit's `record_sha` differs between them.
+    # A stage that IS its seal, for the cases below that change exactly one thing. cp -p keeps
+    # the owner bits the comparison reads.
+    sealed_stage() { # $1 = root dir
+        seal_root "$1"
+        cp -p "$1/seal/files/define/check.sh" "$1/stage/define/check.sh"
+    }
+
+    # by the pristine check (6): one kind of difference each (#512, #513). Each asserts that the
+    # ONE key its kind owns is the non-empty one, as the void cases do per field, so a stage that
+    # refused for another difference is not a red for the kind it is named after.
+    pristine_refusal() { # $1 = case, $2 = the one key that must be non-empty
+        STAGE="$work/root-$1/stage"; SEAL="$work/root-$1/seal"
+        RESULTS="$work/out/$1"; mkdir -p "$RESULTS"
+        prc=0
+        restore_and_diff "$1" check pristine > "$RESULTS/stdout.txt" 2>&1 || prc=$?
+        if python3 - "$RESULTS/$1-stage-check.json" "$1" "$2" "$prc" "$RESULTS/stdout.txt" <<'PY'
+import json, sys
+path, name, want, rc, out = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), sys.argv[5]
+KEYS = ("modified", "missing", "mode_changed", "not_regular", "unreadable", "extra")
+try:
+    d = json.load(open(path))
+except (OSError, ValueError) as e:
+    sys.exit("FAIL judge.sh: %s — no readable stage record (%s)" % (name, e))
+if rc == 0 or "the stage differs from the seal" not in open(out).read():
+    sys.exit("FAIL judge.sh: %s — rc %d, wanted a refusal naming the difference:\n%s"
+             % (name, rc, open(out).read()))
+hot = [k for k in KEYS if d.get(k)]
+if hot != [want]:
+    sys.exit("FAIL judge.sh: %s — non-empty keys %r, wanted exactly ['%s']" % (name, hot, want))
+print("ok   judge.sh: %s — the pristine check refuses on %s alone, rc %d" % (name, want, rc))
+PY
+        then passes=$((passes + 1)); else fails=$((fails + 1)); fi
+    }
+
+    sealed_stage "$work/root-check-pristine-extra"
+    printf 'added\n' > "$work/root-check-pristine-extra/stage/notes.txt"
+    pristine_refusal check-pristine-extra extra
+
+    sealed_stage "$work/root-check-pristine-mode"
+    chmod 644 "$work/root-check-pristine-mode/stage/define/check.sh"
+    pristine_refusal check-pristine-mode mode_changed
+
+    # A link to a file with the seal's own bytes and mode: nothing but the link differs, so this
+    # refuses on not_regular or not at all.
+    sealed_stage "$work/root-check-pristine-link"
+    mkdir -p "$work/outside-check-pristine-link"
+    cp -p "$work/root-check-pristine-link/seal/files/define/check.sh" "$work/outside-check-pristine-link/check.sh"
+    rm "$work/root-check-pristine-link/stage/define/check.sh"
+    ln -s "$work/outside-check-pristine-link/check.sh" "$work/root-check-pristine-link/stage/define/check.sh"
+    pristine_refusal check-pristine-link not_regular
+
+    sealed_stage "$work/root-check-pristine-modified"
+    printf 'doctored\n' > "$work/root-check-pristine-modified/stage/define/check.sh"
+    pristine_refusal check-pristine-modified modified
+
+    sealed_stage "$work/root-check-pristine-missing"
+    rm "$work/root-check-pristine-missing/stage/define/check.sh"
+    pristine_refusal check-pristine-missing missing
+
+    # The rebuild refuses a stage with no repo/ BEFORE it removes anything: the stage it found,
+    # added file included, must still be there.
+    nr="$work/root-restore-no-repo"; sealed_stage "$nr"
+    # File, then directory: no recursive rm, which a host guard may intercept and leave in place.
+    rm "$nr/stage/repo/work.txt" && rmdir "$nr/stage/repo"
+    printf 'added\n' > "$nr/stage/notes.txt"
+    STAGE="$nr/stage"; SEAL="$nr/seal"
+    RESULTS="$work/out/restore-no-repo"; mkdir -p "$RESULTS"
+    nrc=0
+    restore_and_diff restore-no-repo restore > "$RESULTS/stdout.txt" 2>&1 || nrc=$?
+    if [ "$nrc" != 0 ] && grep -q "restore failed for ./repo" "$RESULTS/stdout.txt" \
+            && [ -f "$nr/stage/notes.txt" ] && [ -f "$nr/stage/define/check.sh" ]; then
+        echo "ok   judge.sh: restore-no-repo — rc $nrc, refuses with nothing removed"
+        passes=$((passes + 1))
+    else
+        echo "FAIL judge.sh: restore-no-repo — rc $nrc, wanted a refusal naming ./repo with the stage left as it was:"
+        cat "$RESULTS/stdout.txt"
+        fails=$((fails + 1))
+    fi
+
+    # A directory the agent closed: nothing in it can be listed, so what it added there has to be a
+    # difference rather than a place where nothing was found. As root the bits are ignored and the
+    # added file is simply seen, so the key it refuses on there is extra.
+    sealed_stage "$work/root-check-pristine-unreadable"
+    printf 'added\n' > "$work/root-check-pristine-unreadable/stage/define/evil.sh"
+    chmod 100 "$work/root-check-pristine-unreadable/stage/define"
+    if [ "$(id -u)" = 0 ]; then unread_key=extra; else unread_key=unreadable; fi
+    pristine_refusal check-pristine-unreadable "$unread_key"
+
+    # The rebuild refuses a stage that is a symlink, before it removes anything: the removal would
+    # otherwise empty the directory the link points at.
+    sl="$work/root-restore-stage-link"; sealed_stage "$sl"
+    mv "$sl/stage" "$sl/stage-real"
+    ln -s "$sl/stage-real" "$sl/stage"
+    STAGE="$sl/stage"; SEAL="$sl/seal"
+    RESULTS="$work/out/restore-stage-link"; mkdir -p "$RESULTS"
+    slrc=0
+    restore_and_diff restore-stage-link restore > "$RESULTS/stdout.txt" 2>&1 || slrc=$?
+    if [ "$slrc" != 0 ] && grep -q "restore failed for ./: the stage is not a directory" "$RESULTS/stdout.txt" \
+            && [ -f "$sl/stage-real/define/check.sh" ] && [ -f "$sl/stage-real/repo/work.txt" ]; then
+        echo "ok   judge.sh: restore-stage-link — rc $slrc, refuses a symlinked stage with nothing removed"
+        passes=$((passes + 1))
+    else
+        echo "FAIL judge.sh: restore-stage-link — rc $slrc, wanted a refusal naming the stage with what it points at left as it was:"
+        cat "$RESULTS/stdout.txt"
+        fails=$((fails + 1))
+    fi
+
     fin_root() { # $1 = case, $2 = record_sha value; builds a root whose manifest is complete
         froot="$work/fin-$1"; mkdir -p "$froot/seal"
         RESULTS="$work/out/fin-$1"; mkdir -p "$RESULTS"
-        python3 - "$froot" "$RESULTS" "$2" <<'PY'
+        python3 - "$froot" "$RESULTS" "$2" "$1" <<'PY'
 import json, os, sys
-root, res, sha = sys.argv[1], sys.argv[2], sys.argv[3]
+root, res, sha, case = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 # Only what finalize reads: the protocol it carries into the manifest, the two controls it
 # checks `expectation_met` on, the run's three required fields in the shapes it reads them
 # (`replay` and `func` are objects it asks for a `gate`; `stage_diff` it prints from), the
@@ -1096,6 +1436,12 @@ docs = {
 }
 for name, doc in docs.items():
     json.dump(doc, open(os.path.join(res, name + ".json"), "w"))
+if case == "verified":
+    # Two rebuild attempts: the agent's changes in the first, and an empty re-run after it, which
+    # is what the verdict above carries. finalize must print the first attempt's lists.
+    with open(os.path.join(res, "run-stage-diffs.jsonl"), "w") as h:
+        h.write(json.dumps({"restored": ["./define/check.sh"], "removed": ["./notes.txt"]}) + "\n")
+        h.write(json.dumps({"restored": [], "removed": []}) + "\n")
 PY
         ROOT="$froot"; SEAL="$froot/seal"
     }
@@ -1115,18 +1461,21 @@ PY
         fails=$((fails + 1))
     fi
 
-    echo "=== judge.sh selftest: six greens ==="
+    echo "=== judge.sh selftest: fifteen greens ==="
 
     # The control for the gate above: with the digest verified, the same manifest closes.
     # Without this, "incomplete record" could be finalize's only answer.
     fin_root verified "verified"
     frc=0
     cmd_finalize > "$RESULTS/stdout.txt" 2>&1 || frc=$?
-    if [ "$frc" = "0" ] && python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("loop_closed") is True else 1)' "$RESULTS/manifest.json" 2>/dev/null; then
-        echo "ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0"
+    if [ "$frc" = "0" ] && python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("loop_closed") is True else 1)' "$RESULTS/manifest.json" 2>/dev/null \
+            && grep -q -F "agent edits outside repo/: ['./define/check.sh']" "$RESULTS/stdout.txt" \
+            && grep -q -F "removed from outside repo/: ['./notes.txt']" "$RESULTS/stdout.txt" \
+            && grep -q -F "rebuild attempts on this stage: 2" "$RESULTS/stdout.txt"; then
+        echo "ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0, and the agent's edits print from the first of two rebuild attempts"
         passes=$((passes + 1))
     else
-        echo "FAIL judge.sh: finalize-verified — rc $frc, wanted 0 and loop_closed true:"
+        echo "FAIL judge.sh: finalize-verified — rc $frc, wanted 0, loop_closed true, and the first attempt's edits printed:"
         cat "$RESULTS/stdout.txt"
         fails=$((fails + 1))
     fi
@@ -1233,6 +1582,169 @@ print("ok   judge.sh: check-only — records the difference and copies nothing")
 PY
     then passes=$((passes + 1)); else fails=$((fails + 1)); fi
 
+    # The control for the six pristine refusals: without it, refusing could be the pristine
+    # check's only answer and every one of them would still pass.
+    pc="$work/root-check-pristine-clean"; sealed_stage "$pc"
+    STAGE="$pc/stage"; SEAL="$pc/seal"
+    RESULTS="$work/out/check-pristine-clean"; mkdir -p "$RESULTS"
+    pcrc=0
+    restore_and_diff check-pristine-clean check pristine > "$RESULTS/stdout.txt" 2>&1 || pcrc=$?
+    if [ "$pcrc" = 0 ] && python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1]))
+sys.exit(1 if any(d.get(k) for k in ("modified", "missing", "mode_changed", "not_regular", "unreadable", "extra")) else 0)
+' "$RESULTS/check-pristine-clean-stage-check.json"; then
+        echo "ok   judge.sh: check-pristine-clean — a stage that is its seal passes the pristine check, rc 0"
+        passes=$((passes + 1))
+    else
+        echo "FAIL judge.sh: check-pristine-clean — rc $pcrc, wanted 0 with every key empty:"
+        cat "$RESULTS/stdout.txt"
+        fails=$((fails + 1))
+    fi
+
+    # The rebuild (#512, #513). Each case changes one thing on a stage that is its seal, runs the
+    # restore, and asserts the DISK before the record: a record saying "rebuilt" is a different
+    # claim from the stage being the seal again. rc is taken with `||`, so one failing rebuild
+    # is a FAIL line here rather than the end of the selftest.
+    green_case() { # $1 = case
+        STAGE="$work/root-$1/stage"; SEAL="$work/root-$1/seal"
+        RESULTS="$work/out/$1"; mkdir -p "$RESULTS"
+        brc=0
+        restore_and_diff "$1" restore > "$RESULTS/stdout.txt" 2>&1 || brc=$?
+        if python3 - "$1" "$work" "$brc" <<'PY'
+import json, os, stat, sys
+name, work, rc = sys.argv[1], sys.argv[2], int(sys.argv[3])
+stage = os.path.join(work, "root-" + name, "stage")
+out = os.path.join(work, "out", name)
+check = os.path.join(stage, "define", "check.sh")
+def fail(msg):
+    sys.exit("FAIL judge.sh: %s — %s" % (name, msg))
+if rc != 0:
+    fail("rc %d, wanted 0:\n%s" % (rc, open(os.path.join(out, "stdout.txt")).read()))
+st = os.lstat(check)
+if not stat.S_ISREG(st.st_mode) or open(check).read() != "pristine\n":
+    fail("define/check.sh is not the seal's regular file afterwards")
+if stat.S_IMODE(st.st_mode) & 0o700 != 0o700:
+    fail("define/check.sh does not carry the seal's owner bits: %o" % stat.S_IMODE(st.st_mode))
+outside = os.path.join(work, "outside-" + name, "check.sh")
+if name == "restore-extra":
+    for p in ("notes.txt", "define/helper.sh"):
+        if os.path.lexists(os.path.join(stage, p)):
+            fail("%s is still there" % p)
+    want = ("removed", ["./define/helper.sh", "./notes.txt"])
+elif name == "restore-mode":
+    want = ("mode_changed", ["./define/check.sh"])
+elif name in ("restore-symlink", "restore-dirlink"):
+    if open(outside).read() != "outside\n":
+        fail("the file the link pointed at was written through: %r" % open(outside).read())
+    if name == "restore-dirlink" and os.path.islink(os.path.join(stage, "define")):
+        fail("define/ is still a symlink")
+    want = ("not_regular", ["./define/check.sh"])
+elif name == "restore-repo-kept":
+    if open(os.path.join(stage, "repo", "work.txt")).read() != "agent work\n":
+        fail("repo/work.txt is not what the agent left")
+    sub_mode = stat.S_IMODE(os.lstat(os.path.join(stage, "repo", "sub")).st_mode)
+    if sub_mode != 0o500:
+        fail("repo/sub's mode is %o, not 500: the rebuild opened a directory inside repo/" % sub_mode)
+    want = ("modified", ["./define/check.sh"])
+elif name == "restore-locked-extra":
+    if os.path.lexists(os.path.join(stage, "locked")):
+        fail("the read-only directory is still there")
+    want = ("removed", ["./locked/", "./locked/f"])
+elif name == "restore-unreadable-extra":
+    if os.path.lexists(os.path.join(stage, "define", "evil.sh")):
+        fail("the file inside the closed directory is still there")
+    want = ("removed", ["./define/evil.sh"])
+else:
+    fail("no assertions written for this case")
+d = json.load(open(os.path.join(out, name + "-stage-diff.json")))
+if d.get(want[0]) != want[1]:
+    fail("record %s is %r, wanted %r" % (want[0], d.get(want[0]), want[1]))
+print("ok   judge.sh: %s — the stage is its seal again, and the record names it under %s" % (name, want[0]))
+PY
+        then passes=$((passes + 1)); else fails=$((fails + 1)); fi
+    }
+
+    sealed_stage "$work/root-restore-extra"
+    printf 'added\n' > "$work/root-restore-extra/stage/notes.txt"
+    printf 'added\n' > "$work/root-restore-extra/stage/define/helper.sh"
+    green_case restore-extra
+
+    # Every x bit off: the engine, root in the container, would refuse to run it.
+    sealed_stage "$work/root-restore-mode"
+    chmod 644 "$work/root-restore-mode/stage/define/check.sh"
+    green_case restore-mode
+
+    # Links to bytes that DIFFER from the seal's: the old restore hashed through the link, found a
+    # difference, and copied the seal's bytes through it into the file outside the stage.
+    sealed_stage "$work/root-restore-symlink"
+    mkdir -p "$work/outside-restore-symlink"
+    printf 'outside\n' > "$work/outside-restore-symlink/check.sh"
+    rm "$work/root-restore-symlink/stage/define/check.sh"
+    ln -s "$work/outside-restore-symlink/check.sh" "$work/root-restore-symlink/stage/define/check.sh"
+    green_case restore-symlink
+
+    sealed_stage "$work/root-restore-dirlink"
+    mkdir -p "$work/outside-restore-dirlink"
+    printf 'outside\n' > "$work/outside-restore-dirlink/check.sh"
+    rm "$work/root-restore-dirlink/stage/define/check.sh" && rmdir "$work/root-restore-dirlink/stage/define"
+    ln -s "$work/outside-restore-dirlink" "$work/root-restore-dirlink/stage/define"
+    green_case restore-dirlink
+
+    # On a stage whose own x bit the agent took away, with a read-only directory inside repo/: the
+    # rebuild has to open the stage before it can find repo/, and must then leave repo/ as it was.
+    sealed_stage "$work/root-restore-repo-kept"
+    printf 'doctored\n' > "$work/root-restore-repo-kept/stage/define/check.sh"
+    mkdir "$work/root-restore-repo-kept/stage/repo/sub"
+    chmod 500 "$work/root-restore-repo-kept/stage/repo/sub"
+    chmod 600 "$work/root-restore-repo-kept/stage"
+    green_case restore-repo-kept
+
+    # Read-only as a user, which is how CI runs this; as root the bits are ignored and the case
+    # only shows that the removal does not stop.
+    sealed_stage "$work/root-restore-locked-extra"
+    mkdir -p "$work/root-restore-locked-extra/stage/locked"
+    printf 'added\n' > "$work/root-restore-locked-extra/stage/locked/f"
+    chmod 555 "$work/root-restore-locked-extra/stage/locked"
+    green_case restore-locked-extra
+
+    # A directory the agent closed, holding a file it added: the rebuild opens directories before
+    # it records, so the file is named in the record before it is removed.
+    sealed_stage "$work/root-restore-unreadable-extra"
+    printf 'added\n' > "$work/root-restore-unreadable-extra/stage/define/evil.sh"
+    chmod 100 "$work/root-restore-unreadable-extra/stage/define"
+    green_case restore-unreadable-extra
+
+    # Rebuilt twice: once on a stage nobody touched, as a measurement without an agent does, then
+    # after a change. The record this rebuild writes names the change, and the first, empty record
+    # is kept in the history rather than standing in front of it.
+    rr2="$work/root-restore-rerun"; sealed_stage "$rr2"
+    STAGE="$rr2/stage"; SEAL="$rr2/seal"
+    RESULTS="$work/out/restore-rerun"; mkdir -p "$RESULTS"
+    rr1rc=0
+    restore_and_diff restore-rerun restore > "$RESULTS/stdout-1.txt" 2>&1 || rr1rc=$?
+    printf 'doctored\n' > "$rr2/stage/define/check.sh"
+    printf 'added\n' > "$rr2/stage/notes.txt"
+    rr2rc=0
+    restore_and_diff restore-rerun restore > "$RESULTS/stdout.txt" 2>&1 || rr2rc=$?
+    if python3 - "$RESULTS" "$rr1rc" "$rr2rc" <<'PY'
+import json, os, sys
+out, rc1, rc2 = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+KEYS = ("modified", "missing", "mode_changed", "not_regular", "unreadable", "extra")
+def fail(msg):
+    sys.exit("FAIL judge.sh: restore-rerun — %s" % msg)
+if rc1 or rc2:
+    fail("rc %d then %d, wanted 0 and 0" % (rc1, rc2))
+d = json.load(open(os.path.join(out, "restore-rerun-stage-diff.json")))
+if d.get("modified") != ["./define/check.sh"] or d.get("removed") != ["./notes.txt"]:
+    fail("this rebuild's record does not name the change: %r" % d)
+lines = [json.loads(l) for l in open(os.path.join(out, "restore-rerun-stage-diffs.jsonl")) if l.strip()]
+if len(lines) != 2 or any(lines[0].get(k) for k in KEYS) or lines[1].get("modified") != ["./define/check.sh"]:
+    fail("the history holds %r, wanted two records, the first empty and the second naming the change" % lines)
+print("ok   judge.sh: restore-rerun — the second rebuild's record names the change, and the history keeps both")
+PY
+    then passes=$((passes + 1)); else fails=$((fails + 1)); fi
+
     if [ "$fails" -gt 0 ]; then
         echo "selftest: $fails case(s) failed" >&2
         exit 1
@@ -1243,7 +1755,7 @@ PY
         echo "selftest: ran $passes case(s), expected $WANT_CASES — the case list changed" >&2
         exit 1
     fi
-    echo "selftest: eighteen refusals and six greens hold ($passes cases)"
+    echo "selftest: twenty-six refusals and fifteen greens hold ($passes cases)"
 }
 
 case "$CMD" in

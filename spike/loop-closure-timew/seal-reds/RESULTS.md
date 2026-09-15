@@ -19,7 +19,7 @@ can check later. The fields the claims below use are committed here.
 `judge.sh selftest` — a subcommand, not a new script, because `restore_and_diff` is a
 function inside `judge.sh` and only a caller in the same shell can reach it.
 
-**Eighteen refusals, counted per predicate branch rather than per output field.** The
+**Twenty-six refusals, counted per predicate branch rather than per output field.** The
 distinction is not bookkeeping: `network_hits` is one field but four alternations, and a
 single `curl` case would have stood in for `git clone`, `pip install` and a bare URL
 without ever running them.
@@ -44,16 +44,29 @@ without ever running them.
 | 16 | by RECORD | `record-torn` | a line the reader cannot parse, with the digest correct (#515) |
 | 17 | restore | `restore-fail` | a seal whose own copy does not match its manifest |
 | 18 | finalize | `finalize-unverified` | a manifest whose audit verified no digest (#515) |
+| 19 | pristine | `check-pristine-extra` | a file the seal does not hold (#512) |
+| 20 | pristine | `check-pristine-mode` | every x bit taken off a sealed script (#513) |
+| 21 | pristine | `check-pristine-link` | a sealed file replaced by a symlink to its own bytes (#513) |
+| 22 | pristine | `check-pristine-modified` | a sealed file's content changed |
+| 23 | pristine | `check-pristine-missing` | a sealed file deleted |
+| 24 | rebuild | `restore-no-repo` | a stage with no `repo/`, refused before anything is removed (#512) |
+| 25 | pristine | `check-pristine-unreadable` | a file added inside a directory nobody can list (`chmod 100`) |
+| 26 | rebuild | `restore-stage-link` | a stage that is a symlink, refused before anything is removed |
 
 Each of the fifteen voiding cases asserts that the **one** void field its channel owns is
 the non-empty one.
 A case that voided through another channel proves that channel, not the branch it is named
-for. Three cases are judged on their own terms rather than by that assertion: `unauditable`
+for. Eleven cases are judged on their own terms rather than by that assertion: `unauditable`
 (the no-tool-calls path writes a few keys and exits), `restore-fail` (it never reaches the
-audit) and `finalize-unverified` (a different subcommand, judged on its message).
+audit), `finalize-unverified` (a different subcommand, judged on its message), the six
+pristine refusals (each asserts instead that the ONE stage-record key its kind of difference
+owns is the non-empty one, the same discipline one level down; `check-pristine-unreadable`'s
+key is `extra` when run as root, where the closed directory can be listed), and
+`restore-no-repo` and `restore-stage-link` (judged on their messages and on the stage, or what
+it points at, being left exactly as it was).
 
-**Six greens**, without which "void" could be the classifier's only answer and all
-eighteen reds above would still pass:
+**Fifteen greens**, without which "void" — or "refuse" — could be the only answer and all
+twenty-six reds above would still pass:
 
 - `clean` — a transcript that escapes nothing: `verdict: clean`, rc 0, every void field empty.
 - `mcp-allowed` — the trusted server's *own* tool (`mcp__sideeye__sideeye_replay_case`) is
@@ -67,15 +80,37 @@ eighteen reds above would still pass:
   was unexercised while only the modified case ran.
 - `check-only` — the `check` action records the difference, writes no `restored` field, and
   leaves the doctored bytes in place.
+- `check-pristine-clean` — a stage that is its seal passes `check pristine` with rc 0 and
+  every key empty: the control for the six pristine refusals.
+- `restore-extra`, `restore-locked-extra` — a file the agent added, and a read-only directory
+  holding one, are gone after the rebuild and named in `removed` (#512).
+- `restore-mode` — a sealed script with every x bit taken off carries the seal's owner bits
+  again (#513).
+- `restore-symlink`, `restore-dirlink` — a symlink standing in for a sealed file, and one
+  standing in for its directory, both pointing at bytes that DIFFER from the seal's, are
+  replaced by the seal's regular files, and the files they pointed at outside the stage are
+  unchanged (#513). The old restore failed both: the second one wrote the seal's bytes into
+  the file outside.
+- `restore-repo-kept` — `repo/` comes through the rebuild byte for byte.
+- `restore-unreadable-extra` — a file added inside a directory the agent closed (`chmod 100`)
+  is named in `removed` before it is removed: the rebuild opens directories before it records.
+- `restore-rerun` — rebuilt once on an untouched stage and again after a change, the second
+  record names the change and `restore-rerun-stage-diffs.jsonl` keeps both, the first empty;
+  an earlier empty record never stands in front of the one with the change in it.
+
+Each rebuild case asserts the disk before the record, and takes the rebuild's exit code with
+`||`, so one failing rebuild is a FAIL line rather than the end of the selftest.
 
 Raw output: `selftest.txt`.
 
-## Seen red sixteen times, and the attribution is the result
+## Seen red twenty-eight times, and the attribution is the result
 
-`mutations.txt` (programs in `MUTATIONS.md`). **Sixteen mutations, sixteen exact sets** — fifteen of
-the judge, one of the case list itself. No
-mutation killed a case outside its own channel; none of the eighteen refusals survived the
-mutation aimed at it.
+`mutations.txt` (programs in `MUTATIONS.md`). **Twenty-eight mutations, twenty-eight exact sets** —
+twenty-seven of the judge, one of the case list itself — re-measured in full on 2026-09-15 when
+#512 and #513 replaced the restore, against predictions written before the run. No mutation
+killed a case outside its own channel; none of the twenty-six refusals survived the mutation
+aimed at it. That re-run also found one committed program (`mcp-prefix-loose`) that changed
+nothing as written; `MUTATIONS.md` records it and its correction.
 
 Two results carry more than the count:
 
@@ -83,35 +118,42 @@ Two results carry more than the count:
   out-of-stage mount source sets `escaped` through a separate statement — it takes
   `mount-blind` to kill that one. Counted per field, docker would have had one case, and
   one of these two branches would never have been exercised.
-- **`always-clean` kills twelve of the eighteen, and the survivors say why.** Re-measured
-  on 2026-09-09 with the program in `MUTATIONS.md` against the current judge: twelve killed,
+- **`always-clean` kills twelve, and the survivors say why.** Re-measured
+  on 2026-09-09 with the program in `MUTATIONS.md` against the current judge, and again on
+  2026-09-15 with the same twelve (the rebuild and pristine cases never reach the audit): twelve killed,
   and `unauditable`, `name-off-allowlist`, `record-sha`, `record-torn`, `restore-fail` and
   `finalize-unverified` standing. `unauditable` and the two record cases write their verdict and exit before the
   assembled `verdict` variable exists; `name-off-allowlist` survives because the program
   empties four lists and `off_allowlist` is not one of them, so the verdict is void again by
-  the next statement; `restore-fail` never reaches the audit. The row in `mutations.txt` for
-  this mutation was written by the original runner and lists thirteen including
-  `name-off-allowlist`; this re-run does not reproduce that, and the disagreement is left
-  standing rather than overwritten — two measurements of the same program, and no reason to
-  prefer the one taken by hand.
+  the next statement; `restore-fail` never reaches the audit. The row the original runner
+  wrote into `mutations.txt` listed thirteen including `name-off-allowlist`; neither re-run
+  reproduced it, and when `mutations.txt` was rewritten from the 2026-09-15 run that row
+  became twelve. The thirteen is kept here, as the record of a measurement nothing has
+  reproduced.
 
 ## What this does not claim
 
 The declared void condition reads "enforced per escape channel, against EVERY tool call".
-**Two of the six gaps this record first listed are closed here** (#511, #514 — each one or
-two lines, and each with a red of its own above). **Three remain, plus the header sentence
-that is false of the judge's own inputs.** Those four are filed rather than folded into the
-claim, so the promise above stays true as written:
+**Four of the six gaps this record first listed are closed** — #511 and #514 here (each one
+or two lines, and each with a red of its own above), and #512 and #513 on 2026-09-15, by
+rebuilding the stage from the seal instead of restoring it file by file. **One remains, plus
+the header sentence that is false of the judge's own inputs.** Those two are filed rather than
+folded into the claim, so the promise above stays true as written:
 
 - **by PATH** matches the repo as an absolute-path substring. A relative walk out of the
   stage, a symlink, or an unexpanded `$HOME` is not seen. (`/.claude/` does catch
   `./.claude/x`, so it is not "relative spellings escape" in general.) → **#510**
-- **the restore leaves what the agent added.** Files in `extra` are recorded and never
-  removed, and the guard that refuses on `extra` sits inside `if [ "$MODE" != "run" ]` —
-  the one mode that measures an agent's tree. → **#512**
-- **the restore compares content only.** A permission change is invisible to it (and the
+- **the restore leaves what the agent added.** Files in `extra` were recorded and never
+  removed, and the guard that refuses on `extra` sat inside `if [ "$MODE" != "run" ]` —
+  the one mode that measures an agent's tree. → **#512, closed 2026-09-15**: `eval --mode
+  run` now removes everything outside `repo/` the seal does not hold and rebuilds from the
+  seal, and `secondary` and both controls refuse extra files in every mode.
+- **the restore compares content only.** A permission change was invisible to it (and the
   engine spawns declaration scripts through their own exec bit), and a symlink swapped in
-  for a regular file has `shutil.copy2` write *through* the link. → **#513**
+  for a regular file had `shutil.copy2` write *through* the link. → **#513, closed
+  2026-09-15**: the record and the pristine check compare the owner's bits and refuse a
+  symlink anywhere on a sealed file's path, and the rebuild removes a link rather than
+  writing through it.
 - **the header sentence** — "nothing the agent can edit is trusted" — is not true of the
   judge's *inputs*: `run-agent.sh` writes the transcript and the control verdicts into
   `spike/runs/` on the host, and the agent holds `Bash` and `Write`. The header now says
@@ -125,6 +167,12 @@ list and pass. The drift between the judge's set and the launchers' is `#65`'s s
 is out of scope here; the promise is worded as the membership branch for that reason.
 
 ## The end-to-end half: a doctored checker does not decide the verdict
+
+**Measured on 2026-09-06, with the restore as it was before #512 and #513** — a content-hash
+comparison, file by file. The rebuild that replaced it has not been run on a real stage: its
+measurements are the selftest above and a dry run of `eval` and `secondary` on a synthetic
+root with a stub `docker` (`BUILDLOG.md`, 2026-09-15). The stage-diff keys below are the old
+record's four.
 
 `#63`'s second item asked for this on a real stage, and the previous attempt at it was cut
 short. A stage was rebuilt for it: `zig build -Dtarget=aarch64-linux-gnu`, then `stage.sh`
