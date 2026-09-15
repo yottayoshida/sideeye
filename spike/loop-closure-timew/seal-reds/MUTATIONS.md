@@ -21,9 +21,9 @@ green.
 | `mcp-prefix-loose` | `s\|                and "__" not in name\[len(allow_prefix):]:\|                and True:\|` | the #514 fix: the trusted prefix names one segment (the `[` escaped since 2026-09-15; see below) |
 | `mcp-allow-broken` | `s\|        if allow_prefix and name.startswith(allow_prefix) \\\|        if False and allow_prefix and name.startswith(allow_prefix) \\\|` | the granting side — kills the green, not a red |
 | `network-blind` | `s\|^NETWORK = re.compile($\|NETWORK = re.compile(r"(?!x)x") or re.compile(\|` | the whole network regex |
-| `path-blind` | `s\|    if repo in text or "/.claude/" in text or "~/.claude" in text:\|    if False:\|` | all three path markers |
+| `path-blind` | `s\|    if REPO_TEXT\.search(text) or "/\.claude/" in text or "~/\.claude" in text:\|    if False:\|` | the three path markers as text (rewritten for #510, when `path-repo` and `path-tilde` began to resolve as well) |
 | `docker-blind` | `s\|            escaped = "--network none" not in cmd\|            escaped = False\|` | the missing-`--network none` test |
-| `mount-blind` | `s\|                if src.startswith("/") and not src.startswith(stage):\|                if False:\|` | the out-of-stage mount-source test |
+| `mount-blind` | `s\|                elif all(p is not None and not under_stage(p) for p in landed):\|                elif False:\|` | the out-of-stage mount-source test (rewritten for #510, which resolves the source) |
 | `unauditable-off` | `s\|    sys.exit("audit: the transcript holds no tool calls — nothing-to-see is not clean")\|    pass\|` | the no-tool-calls refusal |
 | `restore-silent` | `s\|^if differs(after):$\|if False:\|` | the re-verify after the rebuild (#512, #513; until 2026-09-15 the program targeted the old restore's post-copy hash check, which went with it) |
 | `always-clean` | `s\|^verdict = "clean"$\|verdict = "clean"\nnetwork_hits = context_hits = docker_hits = unsealed_hits = []\|` | the verdict itself |
@@ -43,14 +43,83 @@ green.
 | `extra-descend-off` | five `-e` arguments: `/Recorded, and walked/{`, `n`, `n`, `s\|keep.append(name)\|pass\|`, `}` | walking into a directory the seal does not hold, so the files in it are named (the line is one of two identical ones, so the program finds it from the comment above it) |
 | `stage-unlock-first-off` | `/^    unlock(stage)$/d` | opening the stage before `repo/` is looked up, so a stage without its x bit still has its `repo/` found (second review) |
 | `finalize-union-off` | `s\|    return sorted(set(sd.get(key) or \[\]).union(\*(r.get(key) or \[\] for r in attempts)))\|    return sorted(set(sd.get(key) or []))\|` | finalize's lists across every rebuild attempt, not the last attempt's alone (second review) |
+| `relative-off` | `s\|        path = cwd + "/" + word\|        return None\|` | resolving a relative word at all (#510) |
+| `cd-off` | `s\|cwd, prev = new, cwd\|pass\|` | following `cd`, `pushd` and `popd` (#510) |
+| `tilde-off` | `s\|        word = home + word\[1:\]\|        pass\|` | expanding `~` (#510) |
+| `home-pwd-off` | `s\|^    return HOME_PWD\.sub(.*$\|    return word\|` | expanding `$HOME` and `$PWD` (#510) |
+| `ln-off` | `s\|links\[link\] = dest\|pass\|` | the record's `ln -s` names (#510) |
+| `identity-off` | `s\|    return by_identity(p)\|    return any(p.startswith(t) for t in TARGETS)\|` | comparing by identity, put back to an unbounded prefix (#510) |
+| `string-compare-off` | `s\|    if any(p == t or p\.startswith(t + "/") for t in SPELLINGS):\|    if False:\|` | the bounded string comparison, the only way to meet a config dir that does not exist (#510) |
+| `ancestor-off` | `s\|            for vs in votes\.values() if all(v for v, _ in vs)\]\|            for vs in votes.values() if False]\|` | the recursive read of an ancestor (#510) |
+| `ancestor-any` | `s\|if all(v for v, _ in vs)\]\|if any(v for v, _ in vs)]\|` | that read voided from one candidate rather than all — against the owner's ruling (#510) |
+| `glob-off` | `s\|            globbed\[p\] = list(itertools\.islice(glob\.iglob(p), 256)) or \[p\]\|            globbed[p] = [p]\|` | expanding a glob outside the stage (#510) |
+| `carry-held` | `s\|finals\.append((cwd, prev))\|finals.extend((d, prev) for d in held)\|` | carrying only where each candidate ended, so the candidates grow by one a call (#510) |
+| `text-boundary-off` | `s\|    if REPO_TEXT\.search(text) or\|    if repo in text or\|` | the name boundary on the repo's path as text (#510) |
+| `mount-old-rule` | `s\|                elif all(p is not None and not under_stage(p) for p in landed):\|                elif src.startswith("/") and not src.startswith(stage):\|` | resolving a mount source, put back to the absolute-only test (#510's same class) |
+| `mount-any` | `s\|                elif all(p is not None and not under_stage(p) for p in landed):\|                elif any(p is not None and not under_stage(p) for p in landed):\|` | a mount voided when only some candidates put it outside the stage |
+| `mount-unresolved-off` | `s\|                elif any(p is None or not under_stage(p) for p in landed):\|                elif False:\|` | recording a mount the candidates disagree on |
+| `basename-off` | `s\|word0 = os\.path\.basename(args\[0\]) if args else ""\|word0 = args[0] if args else ""\|` | a command word by its base name (#510, first review) |
+| `env-prefix-off` | `s\|{"env": ("uCSP", 0), \|{\|` | `env` as a wrapper before the command word (#510, first review; rewritten after the second) |
+| `find-options-off` | `s\|            rest = rest\[2:\] if rest\[0\] == "-D" else rest\[1:\]\|            break\|` | find's options before its paths (#510, first review; rewritten after the second) |
+| `shell-string-off` | `s\|        if nested < 4 and word0 in SHELLS and flag is not None:\|        if False:\|` | following a string handed to `sh -c` or `bash -c` (#510, first review; rewritten after the second) |
+| `subshell-restore-off` | `s\|            cwd, prev, maybe = saved\.pop()\|            saved.pop()\|` | undoing a subshell's `cd` at its closing parenthesis (#510, first review; rewritten after the second) |
+| `held-off` | `s\|for d in held:\|for d in [cwd]:\|` | resolving a word against every directory held in the call, which covers a `cd` that may not run (#510, first review) |
+| `pushd-off` | `s\|        if word0 in ("cd", "pushd", "popd"):\|        if word0 == "cd":\|` | `pushd` and `popd` (#510, first review) |
+| `tool-path-off` | `s\|                hit = lands_in_target(inp\[key\], cwd)\|                hit = None\|` | the path keys of a call that is not Bash (#510, first review) |
+| `glob-pattern-off` | `s\|        if name == "Glob" and isinstance(inp\.get("pattern"), str) and inp\["pattern"\] and base:\|        if False:\|` | a Glob's pattern (#510, first review) |
+| `brace-var-off` | `s#\\{(HOME\|PWD)\\}\|#\\{(NOPE)\\}\|#` | the `${…}` spelling of the two variables (#510, first review) |
+| `ancestor-identity-off` | `s\|    return p in ancestor_strs or ident(p) in ancestor_ids\|    return p in ancestor_strs\|` | an ancestor met under another name (#510, first review) |
+| `host-link-off` | `s\|            if not under_stage(prefix) and os\.path\.islink(prefix):\|            if False:\|` | a `..` after a symlink outside the stage (#510, first review) |
+| `pattern-drop-off` | `s\|            ops = ops\[1:\]\|            pass\|` | grep's pattern not taken for a place it reads (#510, first review) |
+| `regexp-value-off` | `s\|                    skip = i == len(a) - 2\|                    skip = False\|` | the value of a short option (`-e /`, `-A 2`) not taken for a place (#510, first review; rewritten after the second) |
+| `fastpath-links` | `s\|        if not any(lexical == k or lexical\.startswith(k + "/") for k in links):\|        if True:\|` | the lexical shortcut, passed over for a path that runs through an `ln -s` name (#510, first review — speed; rewritten after the second) |
+| `fastpath-dotdot` | `s\|    if "\.\." not in path\.split("/"):\|    if True:\|` | the same shortcut, taken only for a word with no `..` (#510, first review — speed; rewritten after the second) |
+| `may-leave-off-by-one` | `s\|    if climb > depth:\|    if climb > depth + 1:\|` | skipping a directory inside the stage deeper than a word climbs, at its exact bound (#510, first review — speed; rewritten after the second) |
+| `may-leave-links-off` | `s\|    return any(k == top or k\.startswith(top + "/") for k in links)\|    return False\|` | an `ln -s` name under the highest directory a word reaches, which keeps the skip from applying (#510, second review — speed) |
+| `wrapper-value-off` | `s\|            if len(opt) == 2 and opt\[1\] in valued and args:\|            if False:\|` | a wrapper option's value given as the next word (`sudo -u nobody`) (#510, second review) |
+| `wrapper-operands-off` | `s\|        del args\[:operands\]\|        pass\|` | the operands before the command a wrapper runs (`timeout 10`) (#510, second review) |
+| `eval-carry-off` | `s\|            cwd, prev = follow(" ".join(args)\|            follow(" ".join(args)\|` | eval's `cd` staying in the shell (#510, second review) |
+| `find-exec-off` | `s\|                if a in ("-exec", "-execdir", "-ok", "-okdir"):\|                if False:\|` | following the command find's `-exec` runs (#510, second review) |
+| `paren-restore-back` | `s\|^    return cwd, prev$\|    if saved:\n        cwd, prev, maybe = saved[0]\n    return cwd, prev\|` | the end-of-command restore of an unmatched parenthesis, put back (#510, second review) |
+| `bsnl-off` | `/continues the line$/d` | a backslash-newline continuing the line (#510, second review) |
+| `and-narrow-off` | `s\|        if last is not None and "&&" in sep:\|        if False:\|` | `cd x && …` running in x alone (#510, second review) |
+| `maybe-off` | `s\|            seen = \[ancestor_vote(op, d) for d in maybe\]\|            seen = [ancestor_vote(op, cwd)]\|` | a recursive read judged from every place a `cd` that may not have run could have left the command (#510, second review) |
+| `nested-votes-own` | `s\|follow(args\[flag + 1\], cwd, prev, held, votes,\|follow(args[flag + 1], cwd, prev, held, {},\|` | a nested command's recursive reads counted with the call's own (#510, second review) |
+| `grep-given-off` | `s\|                    given = given or a\[1 + i\] in "ef"\|                    pass\|` | `-e` or `-f` with its value attached marking the pattern as given (#510, second review) |
+| `rg-files-off` | `s\|ops, given, skip = \[\], name == "rg" and "--files" in args, False\|ops, given, skip = [], False, False\|` | rg's `--files`, which takes no pattern (#510, second review) |
+| `find-HP-off` | `s\|("-H", "-L", "-P", "-D")\|("-L", "-D")\|` | find's `-H` and `-P` (#510, second review) |
+| `du-off` | `s\|    if name in ("tree", "du"):\|    if False:\|` | `tree` and `du` as recursive readers (#510, second review) |
+| `ls-recursive-off` | `s\|        return (ops or \["\."]) if ("R" in flags or "--recursive" in args) else None\|        return None\|` | `ls -R` as a recursive reader (#510, second review) |
+| `grep-reader-off` | `s\|    if name in ("grep", "egrep", "fgrep", "rg"):\|    if False:\|` | grep and rg as recursive readers in a Bash command (#510, second review) |
+| `spellings-realpath-off` | `s\|SPELLINGS = sorted({s for t in TARGETS for s in (t, os\.path\.realpath(t))})\|SPELLINGS = sorted(TARGETS)\|` | a target's resolved spelling in the string comparison (#510, second review) |
+| `popd-off` | `s\|            if word0 == "popd" or ops\[:1\] == \["-"]:\|            if False:\|` | `popd` and `cd -` (#510, second review) |
+| `tilde-guard-off` | `s\|pass  # no user can be called that\|raise  # no user can be called that\|` | a `~` name no user can have, left as written rather than stopping the audit (#510, second review) |
+| `ln-into-dir-off` | `s\|                if made in (".", "..") or made\.endswith("/"):\|                if False:\|` | a link named `.`, `..` or with a trailing `/`, made inside that directory (#510, found while measuring the speed) |
 
 ## What the attribution says
 
-**Twenty-eight mutations, twenty-eight exact sets** — twenty-seven of the judge, one of the
-selftest's own case list — measured on 2026-09-15 against the judge with #512 and #513 in it,
-and again after each diff review's fixes added rows (four, then two), and every killed set is the
-one written into the runner before it ran. No mutation killed a case outside its own channel, and none of the
-twenty-six refusals survived the mutation aimed at it.
+**Eighty mutations; seventy-nine killed exactly the set written into the runner before it ran, and
+one killed a case more** — seventy-nine of the judge, one of the selftest's own case list. The
+twenty-eight rows above `relative-off` were measured on 2026-09-15 against the judge with #512 and
+#513 in it, and again after each diff review's fixes added rows (four, then two); all eighty were
+measured again that evening against the final judge for #510. The one that differed is
+`carry-held`: besides `path-many-cd` it killed `path-ancestor-maybe`, and not on a verdict. That
+green, like every path green, holds `cwd_candidates_max` to the calls plus one, and its single call
+holds a `cd`, so carrying every directory the call held gives three candidates against a bound of
+two; the prediction had counted only the green built for that bound. `relative-off` and `cd-off`
+kill a mount case each beside the path cases, because the mount check resolves its source with the
+same function; no other mutation killed a case outside its own channel, and every one of the sixty
+refusals is killed by at least one.
+
+**The fifty-two rows for #510, and three things they say.** Fifteen came with the change,
+seventeen with its first review's fixes, nineteen with its second review's, and one with the speed
+check that followed. `path-blind` kills `path-dotclaude` alone now: `path-repo`
+and `path-tilde` void through the resolution as well as the text, so only a home that is not the
+audit's own is left for the text test. The three rows marked "speed" are each the nearest wrong
+form of a shortcut that, when right, changes no verdict and so cannot be seen by one: a lexical
+shortcut that ignores an `ln -s` name, one that ignores a `..`, and a skip one directory too far
+— which is why `path-alias` reaches its symlink with a single `..`. And one spelling is not
+driven: `~user` expands to that user's home on the host, which the selftest does not read.
 
 **One row in this table did not do what it said.** `mcp-prefix-loose` as first committed
 changed nothing: `name[len(allow_prefix):]` is a bracket expression to `sed` — one character
@@ -106,8 +175,9 @@ Two more rows are worth reading twice:
   current judge, that mutation kills twelve and the standing cases are `unauditable`,
   `name-off-allowlist`, `record-sha`, `record-torn` and `restore-fail`. The row the original
   runner committed to `mutations.txt` listed thirteen, `name-off-allowlist` among them; the
-  2026-09-15 run killed twelve again, and `mutations.txt` was rewritten from that run, so the
-  thirteen survives only here and in `RESULTS.md`, as a measurement neither re-run reproduced. Each record
+  2026-09-15 morning run killed twelve again, and `mutations.txt` was rewritten from that run;
+  the run on the final judge for #510 kills forty-six, the twelve and the thirty-four refusals
+  #510 added, so the thirteen survives only here and in `RESULTS.md`, as a measurement no re-run reproduced. Each record
   case has its own mutation above, and each killed exactly its own case and nothing else.
   `record-torn-blind` was rewritten four times, and every failure was one class: a program
   that does not match the file it mutates comes back identical and reads as "nothing
