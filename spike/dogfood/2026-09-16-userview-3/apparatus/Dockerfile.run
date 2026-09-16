@@ -1,0 +1,8 @@
+# ラウンド1の再測定用。screen 用に faketime（時刻で揺れる対象を固定する）を足した。
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates procps faketime libfaketime
+RUN for p in codespell vim zstd rubocop zoxide; do \
+      apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p"; \
+    done | tee /tmp/apt-summary.txt
+WORKDIR /work

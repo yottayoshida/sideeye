@@ -49,3 +49,5 @@ beancount/beancount	1051	standing	bean-format
 asottile/pyupgrade	1101	standing	pyupgrade
 libjpeg-turbo/libjpeg-turbo	914	standing	jpegtran
 oxipng/oxipng	873	standing	oxipng 10.2.1
+codespell-project/codespell	4025	standing	codespell 2.4.1
+rubocop/rubocop	15720	standing	rubocop 1.39.0

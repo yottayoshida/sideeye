@@ -1,0 +1,45 @@
+OK ninja-build
+OK ccache
+OK pandoc
+OK meson
+OK rust-coreutils
+OK gcc
+ninja        /usr/bin/ninja
+ccache       /usr/bin/ccache
+pandoc       /usr/bin/pandoc
+meson        /usr/bin/meson
+coreutils    /usr/bin/coreutils
+uu-cp        -
+coreutils
+=== 候補スクリーニング ===
+ninja        thread=0    clone=3    rc=0  
+ccache       thread=0    clone=10   rc=0  
+pandoc       thread=5    clone=5    rc=0  
+meson        thread=0    clone=21   rc=1  
+    失敗: The Meson build system Version: 1.7.0 Source dir: /work/d/ms/src 
+uucp         thread=0    clone=0    rc=0  
+
+--- 書き込み後 ---
+/work/d/nj:
+total 24
+drwxr-xr-x 2 root root 4096 Sep 16 01:08 .
+drwxr-xr-x 7 root root 4096 Sep 16 01:08 ..
+-rw-r--r-- 1 root root   65 Sep 16 01:08 .ninja_log
+-rw-r--r-- 1 root root   57 Sep 16 01:08 build.ninja
+-rw-r--r-- 1 root root   13 Sep 16 01:08 in.txt
+-rw-r--r-- 1 root root   13 Sep 16 01:08 out.txt
+
+/work/d/pd:
+total 12
+drwxr-xr-x 2 root root 4096 Sep 16 01:08 .
+drwxr-xr-x 7 root root 4096 Sep 16 01:08 ..
+-rw-r--r-- 1 root root   57 Sep 16 01:08 out.html
+
+/work/d/uu:
+total 16
+drwxr-xr-x 2 root root 4096 Sep 16 01:08 .
+drwxr-xr-x 7 root root 4096 Sep 16 01:08 ..
+-rw-r--r-- 1 root root   14 Sep 16 01:08 dst.txt
+/usr/bin/ninja:     ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamica
+/usr/bin/pandoc:    ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically 
+/usr/bin/coreutils: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamica

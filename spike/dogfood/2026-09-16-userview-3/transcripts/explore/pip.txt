@@ -1,0 +1,21 @@
+WARNING: Target directory /localrun/st/pi/pip-25.1.1.dist-info already exists. Specify --upgrade to force replacement.
+WARNING: Target directory /localrun/st/pi/pip already exists. Specify --upgrade to force replacement.
+WARNING: Target directory /localrun/st/pi/bin already exists. Specify --upgrade to force replacement.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+falsify: setuptools が import できなくなった: NameError: name 'sideeye' is not defined
+WARNING: Target directory /localrun/st/pi/pip-25.1.1.dist-info already exists. Specify --upgrade to force replacement.
+WARNING: Target directory /localrun/st/pi/pip already exists. Specify --upgrade to force replacement.
+WARNING: Target directory /localrun/st/pi/bin already exists. Specify --upgrade to force replacement.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+PASS  2/2 explored worlds satisfied the built-in atomicity invariant, over a single crash point
+      explored 2 worlds (crash points 1 + 1 baseline)
+      expected status: 0
+      atomicity: 1089 path(s) judged pre-or-post
+      oracle: agreed on 1 operations (18205 syscall lines examined, 6 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: 2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+      not tested: power loss, torn writes, concurrent processes
+      if the define expected more, check that the target's store resolves inside the state directory

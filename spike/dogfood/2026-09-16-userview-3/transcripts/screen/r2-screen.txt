@@ -1,0 +1,41 @@
+OK fish
+OK python3-pip
+OK rrdtool
+OK neomutt
+OK composer
+OK php-cli
+OK pre-commit
+pip-25.1.1-py3-none-any.whl
+setuptools-78.1.1-py3-none-any.whl
+rrd created
+--- 素材 ---
+total 24
+drwxr-xr-x 4 root root 4096 Sep 16 00:54 .
+drwxr-xr-x 1 root root 4096 Sep 16 00:54 ..
+-rw-r--r-- 1 root root  115 Sep 16 00:54 box
+drwxr-xr-x 2 root root 4096 Sep 16 00:54 fhome
+drwxr-xr-x 3 root root 4096 Sep 16 00:54 php
+-rw-r--r-- 1 root root 1384 Sep 16 00:54 t.rrd
+
+=== 候補スクリーニング（実操作で測る）===
+fish         dynamic  thread=2    clone=2    rc=0    ELF 64-bit LSB pie executable, ARM aarch64, v
+pip          script   thread=0    clone=2    rc=1    Python script, ASCII text executable
+    失敗: WARNING: Requirement '/usr/share/python-wheels/wheel-*.whl' looks like a filename, but the file does not exist ERROR: Invalid wheel filename (wrong number of parts): 'whe
+rrdtool      dynamic  thread=0    clone=0    rc=0    ELF 64-bit LSB pie executable, ARM aarch64, v
+neomutt      dynamic  thread=2    clone=14   rc=1    ELF 64-bit LSB pie executable, ARM aarch64, v
+    失敗: No recipients specified 
+composer     script   thread=0    clone=20   rc=0    PHP script, ASCII text executable
+
+--- 書き込み後 ---
+total 24
+drwxr-xr-x 4 root root 4096 Sep 16 00:54 .
+drwxr-xr-x 1 root root 4096 Sep 16 00:54 ..
+-rw-r--r-- 1 root root  115 Sep 16 00:54 box
+drwxr-xr-x 6 root root 4096 Sep 16 00:54 fhome
+drwxr-xr-x 4 root root 4096 Sep 16 00:54 php
+-rw-r--r-- 1 root root 1384 Sep 16 00:54 t.rrd
+total 20
+drwxr-xr-x 4 root root 4096 Sep 16 00:54 .
+drwxr-xr-x 4 root root 4096 Sep 16 00:54 ..
+-rw-r--r-- 1 root root   62 Sep 16 00:54 composer.json
+drwxr-xr-x 2 root root 4096 Sep 16 00:54 src

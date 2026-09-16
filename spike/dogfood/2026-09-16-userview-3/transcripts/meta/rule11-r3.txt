@@ -1,0 +1,25 @@
+=== logrotate/logrotate ===
+  #718 2026-07-23 by WayneSallee: 0 comments  <- no response
+  #717 2026-07-01 by basezen: 0 comments  <- no response
+  #713 2026-06-25 by xdmitry: 0 comments  <- no response
+  #705 2026-05-07 by MillaFleurs: 1 comments, all from the reporter  <- no response
+
+=== pypa/pipx ===
+  #2030 2026-09-07 by simonw: first reply from gaborbernat after 8.4d [SLOW]  https://pypa.github.io/pipx/ is a 404 now
+  #2021 2026-08-29 by iam-kira: 0 comments  <- no response
+  #2015 2026-08-28 by lovettsendit: 0 comments  <- no response
+  #2014 2026-08-28 by garar: 1 comments, all from the reporter  <- no response
+
+=== pypa/virtualenv ===
+
+=== sharkdp/bat ===
+  #4007 2026-09-12 by Arya-Programmer: first reply from vi after 2.2d [OK]  Option to lay out Markdown tables with aligned colum
+  #4005 2026-09-11 by Dince-afk: 0 comments  <- no response
+  #4004 2026-09-11 by aris-mav: 0 comments  <- no response
+
+=== sphinx-doc/sphinx ===
+  #14680 2026-09-13 by Darlokt: 0 comments  <- no response
+  #14678 2026-09-13 by Darlokt: 0 comments  <- no response
+  #14675 2026-09-13 by Darlokt: 0 comments  <- no response
+  #14664 2026-09-01 by katerynaKhar: first reply from shashb27 after 0.7d [OK]  Damaged format placeholders in the el and fa catalog
+

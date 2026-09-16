@@ -1,0 +1,27 @@
+falsify: sideeye-corruption-probe
+falsify: autoload から Probe\A / Probe\B が読めない（rc=255）: 
+autoload から Probe\A / Probe\B が読めない（rc=255）: 
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 4
+            after  open(/localrun/st/co/vendor/composer/autoload_classmap.php)
+            before write(/localrun/st/co/vendor/composer/autoload_classmap.php)
+path        vendor/composer/autoload_classmap.php
+observed    holding neither the old nor the new content
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   14 path(s) judged pre-or-post
+oracle      agreed on 4 operations (5558 syscall lines examined, 723 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+l1          no marker configured
+case        /localrun/wk/ex-composer3/cases/000001.json
+replay      sideeye replay /localrun/wk/ex-composer3/cases/000001.json --shim /se/libsideeye_shim.so
+checker red crash point 4 of 4 (built-in atomicity, and the checker)
+            case   /localrun/wk/ex-composer3/cases/000002.json
+            replay sideeye replay /localrun/wk/ex-composer3/cases/000002.json --shim /se/libsideeye_shim.so
+processes   10 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/co SIDEEYE_TRACE_PATH=/localrun/wk/ex-composer3/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

@@ -1,0 +1,29 @@
+=== ninja-build/ninja ===
+  #2834 2026-09-15 by jcelerier: first reply from moritzx22 after 0.7d [OK]  Crash when running ninja on my build in archlinux
+  #2829 2026-08-23 by garyo: first reply from jhasse after 13.6d [SLOW]  For your amusement: a proof-of-concept build of ninj
+  #2827 2026-08-18 by JamesWidman: 1 comments, all from the reporter  <- no response
+  #2820 2026-08-07 by barushserotrees-maker: 0 comments  <- no response
+
+=== ccache/ccache ===
+  #1812 2026-09-15 by intelfx: first reply from jrosdahl after 0.0d [OK]  copy_file_range() support is never-used by construct
+  #1811 2026-09-15 by srihari-vistrian: 0 comments  <- no response
+  #1809 2026-09-13 by ytimenkov: first reply from jrosdahl after 0.3d [OK]  Incorrect location of IPA clones file
+  #1808 2026-09-10 by amyspark: 0 comments  <- no response
+
+=== jgm/pandoc ===
+  #11871 2026-09-14 by sghng: 1 comments, all from the reporter  <- no response
+  #11869 2026-09-13 by szarka: 1 comments, all from the reporter  <- no response
+  #11868 2026-09-13 by jdossgollin: 1 comments, all from the reporter  <- no response
+  #11867 2026-09-12 by sghng: first reply from jgm after 0.0d [OK]  Docx writer: table cell paragraphs get different sty
+
+=== mesonbuild/meson ===
+  #16212 2026-09-12 by mkoeppe: first reply from rgommers after 0.2d [OK]  Add CODE_OF_CONDUCT.md
+  #16205 2026-09-10 by dnicolodi: first reply from rgommers after 1.0d [OK]  Deprecate passing an argument to `import('python').f
+  #16203 2026-09-10 by amitayas: first reply from bonzini after 0.7d [OK]  [Regression] clang-cl sanity check fails on master d
+  #16199 2026-09-09 by kiefernforst: first reply from bonzini after 0.1d [OK]  gegl build: Error "path must not be in the build tre
+
+=== sharkdp/hyperfine ===
+  #920 2026-08-14 by nikolauspschuetz: 0 comments  <- no response
+  #915 2026-08-04 by carfeii: 0 comments  <- no response
+  #898 2026-05-27 by qti3e: first reply from schultz-dev0 after 8.4d [SLOW]  Feature request: warn when wall time significantly e
+

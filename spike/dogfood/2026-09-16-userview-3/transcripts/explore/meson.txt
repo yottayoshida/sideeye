@@ -1,0 +1,14 @@
+falsify: meson が build ディレクトリを読めない: Traceback (most recent call last):   File "/usr/lib/python3/dist-packages/mesonbuild/mesonmain.py", line 193, in run 
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left meson-logs/meson-log.txt holding neither the old nor the new content
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   30 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   14 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
