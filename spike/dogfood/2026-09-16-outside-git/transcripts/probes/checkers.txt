@@ -1,0 +1,38 @@
+== aws  setup rc=0
+  after setup:     check rc=0 
+  operation rc=0 (230 bytes in credentials)
+  after operation: check rc=0 
+  the check left credentials unchanged
+  credentials emptied:   check rc=1 default profile's access key is "" (0 bytes in credentials): 
+== hatch  setup rc=0
+  after setup:     check rc=0 
+  operation rc=0 (565 bytes in config.toml)
+  after operation: check rc=0 
+  the check left config.toml unchanged
+  config.toml emptied:   check rc=1 config.toml lost its content: keys []
+== nvim  setup rc=0
+  after setup:     check rc=0 
+  operation rc=0 (160 bytes in main.shada)
+  after operation: check rc=0 
+  the check left main.shada unchanged
+  main.shada emptied:   check rc=1 register a is lost (0 bytes in main.shada): 
+== jbang  setup rc=0
+  after setup:     check rc=0 
+  operation rc=0 (45 bytes in jbang.properties)
+  after operation: check rc=0 
+  the check left jbang.properties unchanged
+  jbang.properties emptied:   check rc=1 config get first.key returned "" (0 bytes): [jbang] No configuration option found with that name: first.key
+== pyenv  setup rc=0
+  after setup:     check rc=0 
+  operation rc=0 (7 bytes in version)
+  after operation: check rc=0 
+  the check left version unchanged
+  version emptied:   check rc=1 pyenv version-name is "system" (0 bytes in version): 
+== hatch's default [terminal.styles] (the operation must change a value; the first probe set info to bold, the default)
+33:[terminal.styles]
+34-info = "bold"
+35-success = "bold cyan"
+36-error = "bold red"
+37-warning = "bold yellow"
+38-waiting = "bold magenta"
+39-debug = "bold"

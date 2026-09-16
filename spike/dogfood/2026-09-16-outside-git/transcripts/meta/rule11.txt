@@ -1,0 +1,38 @@
+=== aws/aws-cli ===
+  #10621 2026-09-08 by ajoshi01ai: 0 comments  <- no response
+  #10620 2026-09-08 by rajuT1: 0 comments  <- no response
+  #10614 2026-09-02 by nkorada21: first reply from laviRZ after 0.7d [OK]  Windows 11: AWS CLI fails to start because Smart App
+  #10613 2026-09-01 by gmcnickle: first reply from RyanFitzSimmonsAK after 1.1d [OK]  aws login refresh fails after ~10 minutes with Creat
+
+=== pypa/hatch ===
+  #2413 2026-09-02 by valentinoli: first reply from cjames23 after 3.6d [OK]  Field `lock-filename` does not support context forma
+  #2406 2026-08-29 by janluke: 1 comments, all from the reporter  <- no response
+  #2402 2026-08-20 by valentinoli: 0 comments  <- no response
+  #2393 2026-08-17 by mochaaP: 0 comments  <- no response
+
+=== neovim/neovim ===
+
+=== jbangdev/jbang ===
+  #2651 2026-08-26 by quintesse: first reply from maxandersen after 1.1d [OK]  Make installing different distro JDKs easier
+  #2649 2026-08-25 by jmini: first reply from maxandersen after 1.9d [OK]  bug: `jbang --native` silently drops -D properties a
+  #2642 2026-08-22 by jmini: 1 comments, all from the reporter  <- no response
+  #2639 2026-08-18 by wfouche: 0 comments  <- no response
+
+=== bitwarden/clients ===
+
+=== Unitech/pm2 ===
+  #6150 2026-09-05 by hyunbinseo: 0 comments  <- no response
+  #6148 2026-09-01 by PixelQuasar: 0 comments  <- no response
+  #6142 2026-08-06 by GIDustin: first reply from Unitech after 18.5d [SLOW]  Windows: `pm2 restart` starts fork-mode application 
+  #6141 2026-08-04 by titanism: 1 comments, all from the reporter  <- no response
+
+=== angular/angular-cli ===
+  #34044 2026-09-08 by roman-garcia: 0 comments  <- no response
+  #34039 2026-09-08 by thaoula: 0 comments  <- no response
+
+=== pyenv/pyenv ===
+  #3531 2026-09-02 by NMarkgraf: 0 comments  <- no response
+  #3523 2026-08-25 by danigm: 1 comments, all from the reporter  <- no response
+  #3513 2026-08-06 by alexmojaki: 0 comments  <- no response
+  #3501 2026-07-28 by nstuardod: first reply from native-api after 0.4d [OK]  Python 3.6 + macOS + MacPorts + OpenSSL 1.1 & 3.x = 
+

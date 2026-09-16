@@ -1,0 +1,1 @@
+[jbang] Option 'second.key' set to 'second-value' in /localrun/st/strace/jbang-java/jbang.properties

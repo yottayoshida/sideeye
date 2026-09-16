@@ -1,0 +1,13 @@
+UNKNOWN  state_changed_without_ops
+         the state directory changed while zero mutating operations were recorded: operations were missed
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   6 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; the subject's image replaced 4 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

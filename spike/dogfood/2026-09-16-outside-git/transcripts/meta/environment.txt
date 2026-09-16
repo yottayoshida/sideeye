@@ -1,0 +1,25 @@
+sideeye-v1.4.0-aarch64-linux.tar.gz
+  published: sha256:709057371894565cbfc368cd2cc3402282f65f453520acb5cb4e9a2fb5b08820
+  local:     sha256:709057371894565cbfc368cd2cc3402282f65f453520acb5cb4e9a2fb5b08820
+jbang-0.141.0.zip
+  published: sha256:be34e7416227dac8b98c79e07d80488d73b3e131272a616e0754a7d496133fc0
+  local:     sha256:be34e7416227dac8b98c79e07d80488d73b3e131272a616e0754a7d496133fc0
+pyenv-2.8.5.tar.gz (GitHub source archive, no published digest)
+  local:     sha256:1824f1d86ce1d722f092a2d5f9a1c916cfb76b58b8fdbb2a43be2f6d32de9a28; tag v2.8.5 -> c293de3650a2d08ea36c5f6f0d55c5a3841b0c72
+nvim-linux-arm64.tar.gz (neovim v0.12.5, added after the first review)
+  published: sha256:1aa5ca085249580ae0f91eb14f27ec0919773ff2d99a163d03f3d6c21ac29725
+  local:     sha256:1aa5ca085249580ae0f91eb14f27ec0919773ff2d99a163d03f3d6c21ac29725
+main build: 047592d, zig build -Doptimize=ReleaseSafe -Dtarget=aarch64-linux-gnu.2.28
+--- container (the neovim 0.12.5 image, built on the run's image)
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+aws-cli/2.23.6 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+Hatch, version 1.18.0
+NVIM v0.10.4
+openjdk version "21.0.12.1" 2026-08-18
+0.141.0
+v20.19.2
+2026.8.0
+pyenv 2.8.5
+NVIM v0.12.5
+Linux 6.12.76-linuxkit aarch64

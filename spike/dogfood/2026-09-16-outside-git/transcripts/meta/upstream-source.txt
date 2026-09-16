@@ -1,0 +1,53 @@
+== neovim v0.10.4: src/nvim/shada.c — the flush at the end of shada_write (absent before v0.11.0), then in shada_write_file the rename and the close
+2925:shada_write_exit:
+3061:  const ShaDaWriteResult sw_ret = shada_write(&sd_writer, (nomerge ? NULL : &sd_reader));
+3101:      if (vim_rename(tempname, fname) == -1) {
+3106:        os_remove(tempname);
+3124:  close_file(&sd_writer);
+   (0 packer_flush(&packer) call(s) in this file)
+== neovim v0.10.4: src/nvim/fileio.c, vim_rename — the target removed before the rename
+2695:   os_remove(to);
+2698:   if (os_rename(from, to) == OK) {
+== neovim v0.11.0: src/nvim/shada.c — the flush at the end of shada_write (absent before v0.11.0), then in shada_write_file the rename and the close
+2670:shada_write_exit:
+2681:  packer.packer_flush(&packer);
+2810:  const ShaDaWriteResult sw_ret = shada_write(&sd_writer, (nomerge ? NULL : &sd_reader));
+2852:      if (vim_rename(tempname, fname) == -1) {
+2857:        os_remove(tempname);
+2875:  close_file(&sd_writer);
+   (1 packer_flush(&packer) call(s) in this file)
+== neovim v0.11.0: src/nvim/fileio.c, vim_rename — the target removed before the rename
+2692:   os_remove(to);
+2695:   if (os_rename(from, to) == OK) {
+== neovim v0.12.5: src/nvim/shada.c — the flush at the end of shada_write (absent before v0.11.0), then in shada_write_file the rename and the close
+2673:shada_write_exit:
+2686:  packer.packer_flush(&packer);
+2815:  const ShaDaWriteResult sw_ret = shada_write(&sd_writer, (nomerge ? NULL : &sd_reader));
+2857:      if (vim_rename(tempname, fname) == -1) {
+2862:        os_remove(tempname);
+2880:  close_file(&sd_writer);
+   (1 packer_flush(&packer) call(s) in this file)
+== neovim v0.12.5: src/nvim/fileio.c, vim_rename — the target removed before the rename
+2731:   os_remove(to);
+2734:   if (os_rename(from, to) == OK) {
+== neovim master: src/nvim/shada.c — the flush at the end of shada_write (absent before v0.11.0), then in shada_write_file the rename and the close
+2675:shada_write_exit:
+2688:  packer.packer_flush(&packer);
+2817:  const ShaDaWriteResult sw_ret = shada_write(&sd_writer, (nomerge ? NULL : &sd_reader));
+2859:      if (vim_rename(tempname, fname) == -1) {
+2864:        os_remove(tempname);
+2882:  close_file(&sd_writer);
+   (1 packer_flush(&packer) call(s) in this file)
+== neovim master: src/nvim/fileio.c, vim_rename — the target removed before the rename
+2766:   os_remove(to);
+2769:   if (os_rename(from, to) == OK) {
+== neovim latest release: v0.12.5 2026-08-23
+== aws-cli 2.23.6: awscli/customizations/configure/writer.py — the rewrite of an existing file
+65:            with open(config_filename, 'w') as f:
+66:                f.write(''.join(contents))
+100:            f.write(''.join(contents))
+== aws-cli v2: awscli/customizations/configure/writer.py — the rewrite of an existing file
+114:            with open(config_filename, 'w') as f:
+115:                f.write(''.join(contents))
+152:            f.write(''.join(contents))
+== aws-cli: latest tag 2.36.46

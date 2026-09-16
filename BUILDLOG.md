@@ -371,6 +371,180 @@ the page whose placement reason zstd's first-table row contradicts. The simplify
 moved one thing: a row's cohort directories are read once, when the table is read, rather than
 again for every exclusion; the twelve rewrites were run again on that form and came out the same.
 
+## 2026-09-16 (fifth) — five more, weighted to data a user keeps outside version control: the screen
+
+**Why this slate.** The crossed-walls run earlier today reached three more instances of the
+truncating rewrite, and none was reported: a Markdown file and a Java source are almost always in
+git, and this class, reported against tools that rewrite sources, has been closed as spam and as the
+caller's risk. The owner's call for the next five was to look where a crash loses something version
+control does not hold — a credentials file, editor history, a vault cache, user configuration —
+preferring the classes the day's walls opened (Node writing synchronously, the JVM, the syscall
+observer, a cgroup for detached processes). The run lives in `spike/dogfood/2026-09-16-outside-git/`.
+
+**Candidates, and the three that went on the rules before any measurement.** aws-cli
+(`aws configure set` on `credentials`), hatch (`hatch config set`), neovim (the shada file), jbang
+(`jbang config set`), the Bitwarden CLI (`bw config server` on `data.json`), and pyenv (`pyenv
+global`) as a spare. Out: GnuPG, the one candidate that would have exercised the cgroup (`gpg
+--import` starts keyboxd or the agent detached) — its GitHub mirror has 977 stars and issues turned
+off (rules 1 and 11); pm2, the other daemon — every one of its 62 commits in six months is one
+author's (rule 3); Angular CLI's global config — it refuses Node 20.19.2, the version Debian trixie
+ships. None of the six appears in an earlier dogfood selection, `docs/target-classes.md`, cohort 4's
+rejections or the B-group exclusions.
+
+**Built twice again**: the released v1.4.0 (digest matched) and main `047592d`, which differs from
+the crossed-walls run's `d5911cd` by that run's record only.
+
+**The first screen pass had two define faults, and one of them looked like a hang in Sideeye.**
+hatch's setup ran `hatch config restore` against a path that did not exist yet, which it refuses.
+neovim's `preflight` sat for ten minutes with no output until it was stopped: `/proc/<pid>/cmdline`
+showed nvim holding `"call`, `histadd(\"cmd\",` and `"qa!"` as separate arguments, waiting in
+`epoll_wait`. `docs/cli.md` says command strings are split on spaces with no quoting, and the
+define quoted its `-c` commands; the strace half of the screen ran the same string under `sh -c`,
+which honoured the quotes, so the two instruments were not measuring the same argv. The screen now
+splits the operation the way the engine does for both halves, passes neovim's commands as a script
+file, and runs every `preflight` under `timeout 600`.
+
+**The screen, and the slate.** Six candidates, strace plus `preflight` under both builds and both
+modes (`transcripts/screen/pass1/`, `pass2/`):
+- **accepted in both modes and both builds**: aws-cli (one writer, `credentials`), hatch, neovim;
+  jbang too, but only with the JVM named directly (`java -jar jbang.jar config set`) — through its
+  bash launcher, which runs java as a child inside `$(...)`, the java child's non-main thread writes
+  and the run refuses `child_touched_state_dir`;
+- **accepted under `--observe syscalls` only**: pyenv, whose bash child writes `version`
+  (`state_changed_without_ops` under `wrappers`);
+- **refused**: the Bitwarden CLI, `multiple_threads_detected` in both builds — `data.json.lock` is
+  made and removed by threads other than the main one, Node's asynchronous API again, and #539 finds
+  no creation or join between them.
+
+The slate is aws-cli, hatch, neovim, jbang and pyenv. Read operation by operation from the
+captures: aws-cli opens `credentials` `O_TRUNC` and writes the whole file once, both profiles in
+it; hatch writes a `mkstemp` file, `fsync`s it and renames it; **neovim unlinks `main.shada`,
+renames its temporary over it, and only then writes the 160 bytes and `fsync`s** — the order a
+buffered writer gives when the rename comes before the flush; jbang opens `jbang.properties`
+`O_TRUNC`; pyenv's child truncates `version`, reopens it for append and writes.
+
+**Two checker faults caught before any exploration** (`apparatus/probe-checkers.sh`, every checker
+run on the setup's state, the completed operation's state and the state file emptied). neovim's
+checker read nothing with `-i NONE` and `:rshada!`, so it failed on correct states; it reads through
+`-i` now and clears `'shada'` before quitting, and the probe shows the file unchanged after a check.
+And hatch's operation set `terminal.styles.info` to `bold`, which is the default: the file was
+rewritten and no value changed. The operation sets `italic`.
+
+**The run, against the predictions.** aws-cli FAIL 4/4, hatch PASS 4/4, jbang FAIL 4/4, pyenv FAIL
+3/3 under `syscalls`, and main answering what v1.4.0 answered — as predicted. **neovim was the miss:
+UNKNOWN `baseline_violates_invariant` in all five runs.** The windows it predicted were there — the
+explored worlds printed `main.shada is gone (main.shada.tmp.a )` and `register a is lost (0 bytes in
+main.shada)` before the baseline refused — but the uncrashed re-run does not reproduce the file's
+bytes. `apparatus/probe-shada.sh` measured why before anything was declared: every byte that differs
+between two runs from the same state lies in a msgpack timestamp or the header's pid. The second
+define declares `main.shada` scratch and gives the claim to the checker, and was predicted before it
+ran: FAIL 5/5, 6 of 13 worlds, earliest crash point 3 of 12, after the unlink and before the rename.
+
+**What neovim does, read in its source after the measurement.** `shada_write_file` fills a buffered
+writer, calls `vim_rename`, and flushes in `close_file` afterwards; `vim_rename` calls
+`os_remove(to)` before `os_rename`. Both at `v0.10.4` and on `master`. The source predicted a second
+shape the define could not show: a shada file larger than the 4 KiB buffer should be *cut* rather
+than emptied, because most of it is flushed before the rename. `apparatus/probe-shada-large.sh`
+measured it on a 25,715-byte file: limits from 4,096 to 25,088 bytes stop nvim before the rename
+(the original intact, `main.shada.tmp.a` left behind); at 25,600 the file is left at 25,600 bytes and
+the next start says `E576: … last entry specified that it occupies 57 bytes, but file ended earlier`.
+The first limits I tried were all in the first range; the tail is under 700 bytes of that file.
+
+**All four FAILs reproduce with `ulimit -f 0` and no crash**: `credentials` 231 bytes to 0,
+`main.shada` 136 to 0, `jbang.properties` 21 to 0, `version` 7 to 0 and `pyenv version-name` saying
+`system`. The searches found no report of the aws-cli or the neovim mechanism; both projects accept
+AI-assisted submissions under stated conditions. Whether to report is the owner's call.
+
+**The probe credentials were replaced before the first push, in every commit of this run.** aws-cli's
+setup wrote two profiles with fabricated keys, and the fabrications had the shape of real ones — an
+`AKIA` prefix with sixteen capitals and digits, and a 40-character secret beside it — which GitHub's
+push protection on a public repository and every external secret scanner would read as an AWS key
+pair. Owner's call: rebuild the three unpushed commits rather than push and mark a false positive.
+`apparatus/redact-probe-credentials.py` replaces each of the five strings with one of the same length
+that matches neither pattern (`FAKE-ID-DEFAULT-0001`, `fake-secret-work-for-probe-only-00000000`, …),
+plus the two-letter prefix strace kept of the key, so every byte count the transcripts record stays
+true. The three commits were rebuilt in order with their original messages and author and committer
+dates, and checked file by file: every file that differs from its original differs only by the
+substitution (reversing it gives the original bytes), no file was added or removed, and no
+key-shaped string is left in the tree. The transcripts in those commits are the runs as they happened
+with the strings substituted, not new runs. **Then the aws-cli part was run again with the replaced
+strings** (`transcripts/rerun-after-redaction/`): the screen accepted it with 2 operations in all four
+columns, all five explorations FAIL at crash point 2 of 2, the checker probe shows 230 bytes after the
+operation, and `ulimit -f 0` takes `credentials` from 231 bytes to 0 with status 120 — the numbers the
+pages already quote.
+
+**The first review of the record found neovim's upstream claim half false, and the run went back
+to measure the latest release.** The pages said the `v0.10.4` order — the file removed before the
+rename, the contents written after it — was "at the same places on `master`". `upstream-source.sh`
+grepped four fixed lines of `shada_write_file` and could not see that `v0.11.0` added
+`packer.packer_flush(&packer)` at the end of `shada_write`, before the rename; the reviewer read it.
+The script now prints that flush for `v0.10.4` (none), `v0.11.0`, `v0.12.5` and `master` (one each).
+Predictions for the `v0.12.5` release were committed, then `nvim-v2.sh` measured it: the capture
+writes all 170 bytes into `main.shada.tmp.a` before the unlink and the rename; the scratch define
+fails **2 of 13 worlds** instead of 6, both between the unlink and the rename; `ulimit` never loses the
+file. `probe-shada-after.sh` then made that one remaining world by hand and started nvim twice: both
+versions start empty, print nothing, write a new `main.shada` without the old history, and leave the
+complete temporary unread. Every prediction for this part hit.
+
+**The rest of what that review found, and what changed.** The run's premise falsifier fired and
+`RESULTS.md` said it had not: neovim's `baseline_violates_invariant` is a wall no `preflight` can show.
+The neovim checker had been falsified on its register predicate only, did not ask nvim when the file
+was absent, and would have passed a file nvim reports as `E576`; checker v2 fails on every one of those,
+each shown on both binaries, and re-measured 0.10.4 gave the same 6 of 13. `probe-checkers.sh` tried
+three states per checker; `probe-checker-predicates.sh` breaks each predicate alone (aws-cli's
+`default` secret turns out not to be checked, and the page says so). `probe-shada.sh` located one pair
+of runs and knew only uint32 timestamps; 0.12.5 writes a uint64 and `probe-shada-after.sh` locates
+both pairs on both versions. The page listed four closed `E576` issues as if they were all there were;
+twelve neovim issues were read in full, none names the removal before the rename, and leftover
+`main.shada.tmp.*` files are reported in two open ones. pyenv's FAIL has the oracle agreeing on none of
+the subject's operations, now said. In this entry's paragraphs above: the replaced secrets were 41, 40
+and 39 characters, not "a 40-character secret"; Angular CLI was not removed "before any measurement" —
+its refusal of Node 20.19.2 is the first screen's output; the nvim process readings (`ps`,
+`/proc/<pid>/cmdline`) were taken by hand and not kept; and the re-run after the substitution re-ran
+every checker probe and every `ulimit` probe too, where neovim's setup file came out at 138 bytes
+against 136 in the first run.
+
+**The second review found the fix itself wrong in places, and one of them was the claim an upstream
+report would lead with.** The pages said both versions "leave the complete temporary unread". That
+world had been built by hand, with the complete file as the temporary, for both binaries; in 0.10.4
+the temporary is still empty at the rename. `apparatus/probe-shada-window.sh` now enters the window for
+real — strace injects `SIGKILL` at nvim's first `renameat` — and records what it leaves: 0.12.5
+`main.shada.tmp.a` of 168 bytes, 0.10.4 `main.shada.tmp.a` of 0 bytes, no `main.shada` in either. The
+pages also said the next session "prints nothing" with no output kept; the probe now keeps stdout,
+stderr and nvim's own `:messages`, and all three are empty in both versions over two headless sessions
+(an interactive session was not measured). The issue script had printed at most 8 matching lines per
+issue while the pages said the issues were read in full; it now prints every matching line and adds
+neovim/neovim#11955, and none of the thirteen names the removal before the rename — #8587's long thread
+traces its leftover temporaries to a different crash. Smaller ones, all corrected: `RESULTS.md` called
+0.11's change "closed two windows, leaves the third" under headings that count two and one; a range
+("limits up to 27,136 bytes") claimed from six points; hatch's parse predicate was never shown
+rejecting alone; the Bitwarden row compared strace's non-main threads with the shim's count that
+includes the main one; the neovim 0.12.5 digest had no record (`environment.txt` has it now); the
+neovim row carried a fifth cell; and this entry's post-run paragraph still says "larger than the 4 KiB
+buffer" and "limits from 4,096 to 25,088 bytes stop nvim" — the buffer size was never measured, and the
+limits were nine separate points.
+
+**Two reports filed, on the owner's call after the pull request was open: aws/aws-cli#10648 and
+neovim/neovim#41940.** Asked whether either was worth filing, the answer turned on what the crash loses:
+aws-cli empties every profile's keys, and a secret access key cannot be fetched again; neovim loses
+history and registers with nothing said, and leaves the complete file where nvim never reads it.
+jbang's and pyenv's configuration is one command to re-create, and those two were not filed. Both
+projects' `CONTRIBUTING.md` were read first, after cargo's report was closed on its LLM policy the same
+day: aws-cli asks for a statement that the text was generated by AI tools and reviewed by a named
+person, and the report carries it; neovim's "AI-assisted work" section asks for review and no
+verbosity, which cut the draft to 201 words. Each report's reproduction was run as written, with no
+Sideeye, before it was posted (`apparatus/report-repro.sh`): aws-cli 166 bytes to 0 on the official
+v2 build 2.36.46 and on Debian's 2.23.6, by `ulimit -f 0` and by a strace-injected kill; neovim 0.12.5
+left only `main.shada.tmp.a` and started the next session with `histnr("cmd")` at `-1`. **The first
+run of that script proved nothing for neovim**: strace's syscall regex was written `/^rename/`, strace
+rejected it, and nvim never ran under it — the output looked like a result until it was read line by
+line. The owner approved each text verbatim before its `gh issue create`; each body was read back from
+its tracker afterwards and equals the committed file below its title line. Recorded in
+`spike/upstream-reports.tsv` with markers on both rows. Two cells in this run's pages still said
+"twelve" neovim issues where the second review's fix made it thirteen (`RESULTS.md`'s table and
+`RUNS.md`), corrected in the same edit. The issue-length medians the drafts were held to (447 and 122
+words) were read in the session and not kept as a transcript.
+
 ## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
 
 **What was asked.** A dogfood run of five, weighted to targets that are measurable now because a

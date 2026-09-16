@@ -1,0 +1,27 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+nvim-scratch.140.wrappers.1      rc=1  FAIL 6 of 13 explored worlds violated an invariant
+    invariant the checker (L2)
+    earliest crash point 3 of 12
+    path (named by the checker, not by path)
+    observed the checker exited non-zero after restart
+nvim-scratch.140.wrappers.2      rc=1  FAIL 6 of 13 explored worlds violated an invariant
+    invariant the checker (L2)
+    earliest crash point 3 of 12
+    path (named by the checker, not by path)
+    observed the checker exited non-zero after restart
+nvim-scratch.140.wrappers.3      rc=1  FAIL 6 of 13 explored worlds violated an invariant
+    invariant the checker (L2)
+    earliest crash point 3 of 12
+    path (named by the checker, not by path)
+    observed the checker exited non-zero after restart
+nvim-scratch.140.syscalls.1      rc=1  FAIL 6 of 13 explored worlds violated an invariant
+    invariant the checker (L2)
+    earliest crash point 3 of 12
+    path (named by the checker, not by path)
+    observed the checker exited non-zero after restart
+nvim-scratch.main.wrappers.1     rc=1  FAIL 6 of 13 explored worlds violated an invariant
+    invariant the checker (L2)
+    earliest crash point 3 of 12
+    path (named by the checker, not by path)
+    observed the checker exited non-zero after restart

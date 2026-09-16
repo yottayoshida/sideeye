@@ -1,0 +1,159 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+NVIM v0.10.4
+NVIM v0.12.5
+
+==================== 1. checker v2, falsified per predicate ====================
+  nvim     after setup (expect 0)                       check rc=0 
+  nvim     after the operation (expect 0)               check rc=0 
+  nvim      the check left main.shada unchanged
+  nvim     main.shada emptied (expect 1)                check rc=1 register a is lost (main.shada 0 bytes)
+  nvim     main.shada absent, complete tmp.a (expect 1) check rc=1 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim     main.shada cut by 20 bytes (expect 1)        check rc=1 nvim reports E576: Error while reading ShaDa file: expected positive integer at position 115, but got n (main.shada 116 
+  nvim     history only, no register (expect 1)         check rc=1 register a is lost (main.shada 105 bytes)
+  nvim     register only, no history (expect 1)         check rc=1 the 'echo first' history entry is lost (main.shada 115 bytes)
+  nvim012  after setup (expect 0)                       check rc=0 
+  nvim012  after the operation (expect 0)               check rc=0 
+  nvim012      the check left main.shada unchanged
+  nvim012  main.shada emptied (expect 1)                check rc=1 register a is lost (main.shada 0 bytes)
+  nvim012  main.shada absent, complete tmp.a (expect 1) check rc=1 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012  main.shada cut by 20 bytes (expect 1)        check rc=1 nvim reports E576: Error while reading ShaDa file: last entry specified that it occupies 8 bytes, but f (main.shada 123 
+  nvim012  history only, no register (expect 1)         check rc=1 register a is lost (main.shada 108 bytes)
+  nvim012  register only, no history (expect 1)         check rc=1 the 'echo first' history entry is lost (main.shada 118 bytes)
+
+==================== 2. the strace order of the operation ====================
+-- nvim: every open for writing, write, fsync, unlink, rename and close on main.shada*
+296:248   close(13</localrun/st/strace-nvim/main.shada>) = 0
+321:248   openat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada.tmp.a", O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 15</localrun/st/strace-nvim/main.shada.tmp.a>
+331:248   close(14</localrun/st/strace-nvim/main.shada>) = 0
+338:248   unlinkat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada", 0) = 0
+339:248   renameat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada.tmp.a", AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada") = 0
+340:248   unlinkat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada.tmp.a", 0) = -1 ENOENT (No such file or directory)
+341:248   write(15</localrun/st/strace-nvim/main.shada>, "\1\316j\252\200jH\205\251generator\304\4nvim\247version"..., 159) = 159
+342:248   fsync(15</localrun/st/strace-nvim/main.shada>) = 0
+343:248   close(15</localrun/st/strace-nvim/main.shada>) = 0
+347:248   openat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada.tmp.a", O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 15</localrun/st/strace-nvim/main.shada.tmp.a>
+351:248   close(14</localrun/st/strace-nvim/main.shada>) = 0
+358:248   unlinkat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada", 0) = 0
+359:248   renameat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada.tmp.a", AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada") = 0
+360:248   unlinkat(AT_FDCWD</localrun/st/strace-nvim>, "/localrun/st/strace-nvim/main.shada.tmp.a", 0) = -1 ENOENT (No such file or directory)
+361:248   write(15</localrun/st/strace-nvim/main.shada>, "\1\316j\252\200jH\205\251generator\304\4nvim\247version"..., 159) = 159
+362:248   fsync(15</localrun/st/strace-nvim/main.shada>) = 0
+363:248   close(15</localrun/st/strace-nvim/main.shada>) = 0
+-- nvim012: every open for writing, write, fsync, unlink, rename and close on main.shada*
+227:258   close(13</localrun/st/strace-nvim012/main.shada>) = 0
+252:258   openat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada.tmp.a", O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 15</localrun/st/strace-nvim012/main.shada.
+262:258   write(15</localrun/st/strace-nvim012/main.shada.tmp.a>, "\1\317\0\0\0\0j\252\200jI\205\251generator\304\4nvim\247ver"..., 170) = 170
+263:258   close(14</localrun/st/strace-nvim012/main.shada>) = 0
+270:258   unlinkat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada", 0) = 0
+271:258   renameat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada.tmp.a", AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada") = 0
+272:258   unlinkat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada.tmp.a", 0) = -1 ENOENT (No such file or directory)
+273:258   fsync(15</localrun/st/strace-nvim012/main.shada>) = 0
+274:258   close(15</localrun/st/strace-nvim012/main.shada>) = 0
+278:258   openat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada.tmp.a", O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 15</localrun/st/strace-nvim012/main.shada.
+288:258   write(15</localrun/st/strace-nvim012/main.shada.tmp.a>, "\1\317\0\0\0\0j\252\200jI\205\251generator\304\4nvim\247ver"..., 170) = 170
+289:258   close(14</localrun/st/strace-nvim012/main.shada>) = 0
+296:258   unlinkat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada", 0) = 0
+297:258   renameat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada.tmp.a", AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada") = 0
+298:258   unlinkat(AT_FDCWD</localrun/st/strace-nvim012>, "/localrun/st/strace-nvim012/main.shada.tmp.a", 0) = -1 ENOENT (No such file or directory)
+299:258   fsync(15</localrun/st/strace-nvim012/main.shada>) = 0
+300:258   close(15</localrun/st/strace-nvim012/main.shada>) = 0
+
+==================== 3. preflight, v0.12.5 ====================
+  140  wrappers rc=0  PREFLIGHT recording accepted — 12 state-changing operation(s) observed
+  140  syscalls rc=0  PREFLIGHT recording accepted — 12 state-changing operation(s) observed
+  main wrappers rc=0  PREFLIGHT recording accepted — 12 state-changing operation(s) observed
+  main syscalls rc=0  PREFLIGHT recording accepted — 12 state-changing operation(s) observed
+
+==================== 4. explorations ====================
+  nvim012.plain.140.wrappers.1       rc=2  UNKNOWN baseline_violates_invariant
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012.plain.140.wrappers.2       rc=2  UNKNOWN baseline_violates_invariant
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012.plain.140.wrappers.3       rc=2  UNKNOWN baseline_violates_invariant
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012.scratch.140.wrappers.1     rc=1  FAIL 2 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 4 of 12
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012.scratch.140.wrappers.2     rc=1  FAIL 2 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 4 of 12
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012.scratch.140.wrappers.3     rc=1  FAIL 2 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 4 of 12
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012.scratch.140.syscalls.1     rc=1  FAIL 2 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 4 of 12
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim012.scratch.main.wrappers.1    rc=1  FAIL 2 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 4 of 12
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim.scratch.140.wrappers.1        rc=1  FAIL 6 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 3 of 12
+      checker:       4 register a is lost (main.shada 0 bytes)
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim.scratch.140.wrappers.2        rc=1  FAIL 6 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 3 of 12
+      checker:       4 register a is lost (main.shada 0 bytes)
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim.scratch.140.wrappers.3        rc=1  FAIL 6 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 3 of 12
+      checker:       4 register a is lost (main.shada 0 bytes)
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim.scratch.140.syscalls.1        rc=1  FAIL 6 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 3 of 12
+      checker:       4 register a is lost (main.shada 0 bytes)
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+  nvim.scratch.main.wrappers.1       rc=1  FAIL 6 of 13 explored worlds violated an invariant
+      invariant the checker (L2)
+      earliest crash point 3 of 12
+      checker:       4 register a is lost (main.shada 0 bytes)
+      checker:       2 register a is lost (main.shada absent; files: main.shada.tmp.a )
+
+==================== 5. without Sideeye: ulimit ====================
+File size limit exceeded
+  nvim small file, ulimit -f 0: rc=153, main.shada 138 -> 0 bytes; files: main.shada 
+  nvim large file: 25717 bytes; limits from 512 bytes below the file size to 512 bytes above it, and a coarse sweep below
+File size limit exceeded
+    limit   4096: rc=153 main.shada  25717 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit   8192: rc=153 main.shada  25717 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  16384: rc=153 main.shada  25717 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  24576: rc=153 main.shada  25717 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  25088: rc=153 main.shada  25717 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  25600: rc=153 main.shada  25600 bytes, files: main.shada                       next read: register "first register", 398 history lines; E576: Error while reading ShaDa file: last entry specified that it occupies 57 b
+    limit  26112: rc=0   main.shada  25739 bytes, files: main.shada                       next read: register "first register", 401 history lines; 
+File size limit exceeded
+  nvim012 small file, ulimit -f 0: rc=153, main.shada 144 -> 144 bytes; files: main.shada main.shada.tmp.a 
+  nvim012 large file: 27319 bytes; limits from 512 bytes below the file size to 512 bytes above it, and a coarse sweep below
+File size limit exceeded
+    limit   4096: rc=153 main.shada  27319 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit   8192: rc=153 main.shada  27319 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  16384: rc=153 main.shada  27319 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  26112: rc=153 main.shada  27319 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  26624: rc=153 main.shada  27319 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+File size limit exceeded
+    limit  27136: rc=153 main.shada  27319 bytes, files: main.shada main.shada.tmp.a      next read: register "first register", 400 history lines; 
+    limit  27648: rc=0   main.shada  27345 bytes, files: main.shada                       next read: register "first register", 401 history lines; 
+
+==================== 6. what differs between two clean runs ====================
+  nvim r1 vs r2, one second apart: sizes 160/160, differing offsets [5, 63, 143], every one inside a timestamp or the pid: True
+  nvim r2 vs r3, back to back: sizes 160/160, differing offsets [63], every one inside a timestamp or the pid: True
+  nvim012 r1 vs r2, one second apart: sizes 170/170, differing offsets [9, 67, 153], every one inside a timestamp or the pid: False
+  nvim012 r2 vs r3, back to back: sizes 170/170, differing offsets [67], every one inside a timestamp or the pid: True

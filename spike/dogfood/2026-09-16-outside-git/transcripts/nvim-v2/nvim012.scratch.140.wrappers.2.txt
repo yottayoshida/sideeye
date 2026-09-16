@@ -1,0 +1,24 @@
+falsify: nvim reports E576: Error while reading ShaDa file: last entry specified that it occupies 100 bytes, but (main.shada 25 bytes)
+register a is lost (main.shada absent; files: main.shada.tmp.a )
+register a is lost (main.shada absent; files: main.shada.tmp.a )
+FAIL  2 of 13 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 4 of 12
+            after  unlink(/localrun/st/nvim012.scratch.140.wrappers.2/main.shada)
+            before rename(/localrun/st/nvim012.scratch.140.wrappers.2/main.shada.tmp.a)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+explored    13 worlds (crash points 12 + 1 baseline)
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: main.shada)
+oracle      agreed on 12 operations (323 syscall lines examined, 72 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 13 world(s)
+l1          no marker configured
+case        /localrun/wk/nvim012.scratch.140.wrappers.2/cases/000001.json
+replay      sideeye replay /localrun/wk/nvim012.scratch.140.wrappers.2/cases/000001.json --shim /se140/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/nvim012.scratch.140.wrappers.2 SIDEEYE_TRACE_PATH=/localrun/wk/nvim012.scratch.140.wrappers.2/trace-repro.bin LD_PRELOAD=/se140/libsideeye_shim.so SIDEEYE_KILL_AT=4 SIDEEYE_SEQ_BASE= <operation>

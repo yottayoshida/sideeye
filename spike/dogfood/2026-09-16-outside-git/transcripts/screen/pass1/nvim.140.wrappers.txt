@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted — 12 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 12 operations (371 syscall lines examined, 73 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/140-wrappers/nvim --setup "/localrun/ap/setup-nvim.sh" --operation "nvim --headless -n -u NONE -i /localrun/st/140-wrappers/nvim/main.shada -S /localrun/aux/nvim-op.vim" \
+               --check <your-invariant.sh> --shim /se140/libsideeye_shim.so --oracle /usr/bin/strace

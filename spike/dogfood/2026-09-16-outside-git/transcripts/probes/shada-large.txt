@@ -1,0 +1,25 @@
+setup: main.shada 25715 bytes
+File size limit exceeded
+limit  4096 bytes: op rc=153, main.shada 25715 bytes, files: main.shada main.shada.tmp.a 
+    next nvim reads: register a "first register", 400 history entries; says: 
+File size limit exceeded
+limit 20480 bytes: op rc=153, main.shada 25715 bytes, files: main.shada main.shada.tmp.a 
+    next nvim reads: register a "first register", 400 history entries; says: 
+File size limit exceeded
+limit 21504 bytes: op rc=153, main.shada 25715 bytes, files: main.shada main.shada.tmp.a 
+    next nvim reads: register a "first register", 400 history entries; says: 
+File size limit exceeded
+limit 22528 bytes: op rc=153, main.shada 25715 bytes, files: main.shada main.shada.tmp.a 
+    next nvim reads: register a "first register", 400 history entries; says: 
+File size limit exceeded
+limit 23552 bytes: op rc=153, main.shada 25715 bytes, files: main.shada main.shada.tmp.a 
+    next nvim reads: register a "first register", 400 history entries; says: 
+File size limit exceeded
+limit 24576 bytes: op rc=153, main.shada 25715 bytes, files: main.shada main.shada.tmp.a 
+    next nvim reads: register a "first register", 400 history entries; says: 
+File size limit exceeded
+limit 25088 bytes: op rc=153, main.shada 25715 bytes, files: main.shada main.shada.tmp.a 
+    next nvim reads: register a "first register", 400 history entries; says: 
+File size limit exceeded
+limit 25600 bytes: op rc=153, main.shada 25600 bytes, files: main.shada 
+    next nvim reads: register a "first register", 398 history entries; says: E576: Error while reading ShaDa file: last entry specified that it occupies 57 bytes, but file ended earlier

@@ -1,0 +1,27 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+  aws-cli/2.23.6 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+  Hatch, version 1.18.0
+  NVIM v0.10.4
+  0.141.0
+  Could not find dir, "/localrun/aux/home/.config/Bitwarden CLI"; creating it instead.
+  Could not find data file, "/localrun/aux/home/.config/Bitwarden CLI/data.json"; creating it instead.
+  2026.8.0
+  pyenv 2.8.5
+
+==================== aws ====================
+  operation: env AWS_CONFIG_FILE=/localrun/st/strace/aws/config AWS_SHARED_CREDENTIALS_FILE=/localrun/st/strace/aws/credentials aws configure set aws_secret_access_key fake-secret-rotated-for-probe-only-0000 --profile work
+  operation rc=0  (23322 strace lines); files: ./config ./credentials 
+  strace: 1 thread(s) created, 16 process(es) created, execve {'tr': 3, 'cut': 2, 'env': 1, 'aws': 1, 'lsb_release': 1, 'getopt': 1, 'uname': 1}
+  strace: setsid/setpgid none
+  strace: process 106 aws (the subject) — 1 tid(s) wrote the state
+    tid 106: 4 op(s): open(null), open(credentials), write(credentials)
+  140  wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's image replaced 1 
+  140  syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's image replaced 1 
+  main wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) r
+  main syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) r
+

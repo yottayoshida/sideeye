@@ -1,7 +1,7 @@
 # Filing a finding upstream — the shape
 
-Nineteen reports have gone out from this project (`upstream-reports.tsv`;
-eighteen standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
+Twenty-one reports have gone out from this project (`upstream-reports.tsv`;
+twenty standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
 the worked examples this page was drawn from, and
 `ImageMagick/ImageMagick#8939` is the canonical instance — the owner's
 instruction on 2026-09-06 is that later reports go the same way. This page is
@@ -50,7 +50,11 @@ statement, not a courtesy.
    own words or not to file; nothing below applies. The path such a policy leaves a
    non-native speaker is the one rust-lang's names: the owner writes the original in their
    own language, the translation is disclosed as machine translation, and the original is
-   posted beside it — the agent may translate, not compose.
+   posted beside it — the agent may translate, not compose. Where the policy allows
+   AI-assisted reports on conditions, the conditions are met in the text and the policy's
+   location is recorded with the report: `aws/aws-cli#10648` carries the statement aws-cli's
+   `CONTRIBUTING.md` asks for, and `neovim/neovim#41940` was cut to neovim's "remove
+   verbosity" (`dogfood/2026-09-16-outside-git/RESULTS.md`).
 1. **Freshness against more than this repository.** `git grep` here returned
    nothing for qpdf and the finding was written up as fresh; the owner had filed
    `qpdf#1773` the previous day from a separate measurement, and the tool is in
