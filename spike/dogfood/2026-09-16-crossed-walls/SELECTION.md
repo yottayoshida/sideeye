@@ -43,12 +43,12 @@ here, and it was screened in 2026-09-06 for the language record rather than as a
 `transcripts/meta/rule11.txt`. Commits are on the default branch since 2026-03-16; `100` is
 the API's page limit, a floor.
 
-**What was read before the slate and what is recorded here are not the same pass.** The metadata
-and rule-11 readings the slate was chosen on were printed to the terminal; the only one committed
-before the run, `repos-2.txt` in the predictions commit, held a `gh` usage error beside the
-author counts for TypeScript, google-java-format and xz. Both files here were taken again after
-the run by the two scripts named above, and **xz's rule-11 reading was taken for the first time
-then** — it was not a selection input.
+**What was read before the slate and what is recorded here are not the same pass.** The
+predictions commit holds two of these readings: `rule11.txt`, for every candidate in the table
+but xz, and `repos-2.txt`, a `gh` usage error beside the author counts for TypeScript,
+google-java-format and xz; the rest of the metadata was printed to the terminal and not kept.
+Both files here were taken again after the run by the two scripts named above, and **xz's
+rule-11 reading was taken for the first time then** — it was not a selection input.
 
 | Candidate | ★ | Commits (6 mo) | Authors | Rule 11 (reports ≥ 7 days old, not by the repo's own people) | Taken |
 |---|---|---|---|---|---|
@@ -94,11 +94,12 @@ under both builds and both observation modes. Transcripts: `transcripts/screen/`
 | npm 9.2.0 `pkg set` | 10 / 1 | 2 tids write `package.json`* | `multiple_threads_detected` | same | same | same |
 | git 2.47.3 commit that triggers automatic maintenance (pass 2) | 1 / 12, one `setsid` | several `git` processes write `.git`* (the maintenance child's repack among them) | `child_touched_state_dir` | same | same | same |
 
-\* `screen-strace.py` matches a line when the state directory's path appears anywhere in it, so a
-relative open whose directory descriptor names the state is counted as a write there — npm's
-debug log and update-notifier stamp, git's `open("/dev/null")`, and google-java-format's
-`unlinkat` of `/tmp/hsperfdata_root/47`, which is why its row says one tid writes `A.java` and
-the script counted two. The engine's own reading
+\* `screen-strace.py` matches a line when the state directory's path appears anywhere in it, and
+`strace -y` decorates `AT_FDCWD` with the working directory, which the screens set to the state
+directory — so a call naming a path elsewhere is counted as a write there: npm's debug log and
+update-notifier stamp, git's `open("/dev/null")`, and google-java-format's `unlinkat` of
+`/tmp/hsperfdata_root/47`, which is why its row says one tid writes `A.java` and the script
+counted two. The engine's own reading
 in the same row is the one the refusal was drawn from.
 
 What the screen produced that reading would not have:

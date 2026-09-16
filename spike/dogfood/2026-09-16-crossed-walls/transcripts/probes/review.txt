@@ -22,11 +22,11 @@
       tid 57: 3 op(s): open(f.bin.lz4), write(f.bin.lz4), unlinkat(f.bin)
       tid 60: 4 op(s): write(f.bin.lz4)
 == 2. ninja 1.12.1, killed for real between cp's truncating open and its copy
-Killed
   the killed build: rc=137 (137 = SIGKILL); its output:
+Killed
   out.txt 0 bytes, in.txt 22 bytes, .ninja_log lines 2
   | ninja: Entering directory `/localrun/review/ninja-kill'
-  | ninja explain: recorded mtime of out.txt older than most recent input in.txt (1789549117199697010 vs 1789549117201697010)
+  | ninja explain: recorded mtime of out.txt older than most recent input in.txt (1789549902094562012 vs 1789549902095562012)
   | [1/1] cp in.txt out.txt
   out.txt 22 bytes, in.txt 22 bytes, .ninja_log lines 3
   RESULT 2: rebuilt, out.txt == in.txt
@@ -46,7 +46,8 @@ after re-running ninja, out.txt (0 bytes) differs from in.txt
   f.bin gone, the complete f.bin.xz                          rc=0 (expected 0) 
   f.bin gone, a partial f.bin.xz                             rc=1 (expected 1) f.bin is gone and f.bin.xz does not decompress (56432 bytes): xz: /localrun/review/xz/f.bin.xz: Unexpected end of input
   f.bin gone, an empty f.bin.xz                              rc=1 (expected 1) f.bin is gone and f.bin.xz does not decompress (0 bytes): xz: /localrun/review/xz/f.bin.xz: File format not recognized
+  f.bin gone, an f.bin.xz of other content                   rc=1 (expected 1) f.bin is gone and f.bin.xz decompresses to something else
   neither                                                    rc=1 (expected 1) neither f.bin nor f.bin.xz is present
-  what a plain re-run does beside a partial f.bin.xz:
+  what a re-run of the define's command (without -q, to see the message) does beside a partial f.bin.xz:
   | xz: /localrun/review/xz/f.bin.xz: File exists
-  xz rc=1; f.bin present, f.bin.xz 56432 bytes
+  xz rc=1; f.bin present, identical to the original; f.bin.xz 56432 bytes

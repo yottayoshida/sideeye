@@ -21,7 +21,7 @@ answered in all five: none of them depended on #539.
 ## Bun 1.4.2 — FAIL, the truncating rewrite, and already known
 
 **Crash point 10 of 10, 3 of 3 runs, the same world under main.** Between the `open` and the
-`write` of `package.json`: the file is empty, and the checker — adapted from cohort 2's, keeping its parse leg and its re-run leg and dropping the installed `package.json` comparison, the tarball precondition and the `timeout` — fails on its first leg,
+`write` of `package.json`: the file is empty, and the checker — adapted from cohort 2's, keeping its parse leg and its re-run leg and dropping the installed `package.json` comparison, the tarball precondition, the `timeout`, and the re-run's own HOME, BUN_INSTALL_CACHE_DIR and TMPDIR (it inherits the driver's) — fails on its first leg,
 `package.json does not parse — a torn manifest survived the crash`
 (`transcripts/explore/bun.140.syscalls.*.txt`).
 
@@ -124,7 +124,8 @@ CONTRIBUTING file at `CONTRIBUTING.md`, `.github/` or `docs/`. **Rule 3 is weak*
 **Crash point 2 of 2, 4 of 4, the same under main.** `A.java lost "public class A" (0 bytes)`.
 The capture: `openat(…/A.java, O_WRONLY|O_CREAT|O_TRUNC, 0666)` then one 274-byte write, from
 one of the JVM's 18 threads — the only one that writes the state (strace ties one more tid to
-the directory, an `unlinkat` of `/tmp/hsperfdata_root/47` issued relative to it).
+the directory: an `unlinkat` of the absolute path `/tmp/hsperfdata_root/47`, which `strace -y` prints
+beside the working directory the screen set to the state directory).
 
 **Without Sideeye**: `ulimit -f 0` (with `-XX:-UsePerfData`, so the JVM writes no hsperfdata
 file first) prints `A.java: could not write file: File too large` and leaves `A.java` at **0
@@ -149,10 +150,11 @@ judge — the verdict line's *"satisfied the built-in atomicity invariant"* is t
 set. The checker accepts `f.bin` intact, or `f.bin` gone and an `f.bin.xz` that decompresses to
 it. Only its first branch was falsified before the runs, and in the explorations the second ran
 only in the baseline world, so every branch was falsified afterwards (`probe-review.sh` part 4):
-a torn `f.bin`, a truncated and an empty `f.bin.xz` with `f.bin` gone, and neither file, all
-rejected; the complete `.xz`, and a partial one beside an intact `f.bin`, accepted. That last is
-accepted by design, and it has a cost the checker does not see: re-running the same command
-beside it fails, `f.bin.xz: File exists`, status 1, the original intact. The contrast is lz4,
+a torn `f.bin`; with `f.bin` gone, a truncated, an empty, and a complete `f.bin.xz` of other
+content; and neither file — all rejected; the complete `.xz`, and a partial one beside an intact
+`f.bin`, accepted. That last is accepted by design, and it has a cost the checker does not see:
+re-running the define's command (without `-q`, to see the message) beside it fails, `f.bin.xz:
+File exists`, status 1, with `f.bin` still identical to the original. The contrast is lz4,
 with the same pool and a worker that writes (`SELECTION.md`).
 
 ## The predictions, scored
@@ -203,8 +205,11 @@ or retaken, and corrected on every page:
 - lz4's thread count: the pages said four at 5,750,000 bytes, counted by a command whose output
   was not kept; the screen's own transcript and `probe-review.sh` say three. The size at which
   workers start had no transcript at all.
-- The novelty pass read the first 8 results of each query while four queries had more (21, 42,
-  42, 9); `novelty.sh` prints every result now. The Bun upstream details were written from pull
+- The novelty pass read the first 8 results of each query while eight queries had more — Bun's
+  four (493, 1,552, 365, 38) and 21, 42, 42 and 9 for markdownlint-cli, markdownlint-cli2 and
+  google-java-format. `novelty.sh` prints up to 100 now: every result for those three
+  repositories and for Bun's two narrow queries, and the first 100 of Bun's three broad ones —
+  where the claim is the pull requests found, not an absence. The Bun upstream details were written from pull
   requests read in the session and not recorded; `upstream-bun.sh` records them.
 - *"a full disk (`ENOSPC`)"* was written with only `EFBIG` measured, and is withdrawn.
 - ninja's second-define PASS was scored as a prediction hit and stated without the caveat that it

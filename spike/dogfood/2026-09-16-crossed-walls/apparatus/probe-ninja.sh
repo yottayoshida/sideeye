@@ -6,6 +6,9 @@
 #   Part 1 builds that state with `: >` (truncation, fresh mtime, no ninja involved).
 #   Part 2 makes it the way a crash would: ninja runs the edge under a cp that is SIGKILLed
 #   (with ninja itself) the moment it has opened out.txt, via a wrapper on PATH.
+#   (It did not: the stand-in's `kill -KILL 0` reaches its own process group, ninja gives
+#   each command a group of its own, and ninja exited 1 after a failed edge. probe-review.sh
+#   part 2 kills ninja for real.)
 set -u
 show() { printf '  out.txt %s bytes, in.txt %s bytes; ' "$(wc -c < "$1/out.txt")" "$(wc -c < "$1/in.txt")"; tail -n +2 "$1/.ninja_log" | wc -l | sed 's/^ */.ninja_log entries: /'; }
 setup() {

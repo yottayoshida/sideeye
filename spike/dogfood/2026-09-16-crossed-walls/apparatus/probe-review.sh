@@ -88,8 +88,9 @@ head -c 1000 /localrun/aux/xz.orig > $SD/f.bin;                       case_ "f.b
 rm -f $SD/f.bin; cp $X/full.xz $SD/f.bin.xz;                          case_ "f.bin gone, the complete f.bin.xz" 0
 head -c $half $X/full.xz > $SD/f.bin.xz;                             case_ "f.bin gone, a partial f.bin.xz" 1
 : > $SD/f.bin.xz;                                                      case_ "f.bin gone, an empty f.bin.xz" 1
+head -c 1000 /localrun/aux/xz.orig | xz -q -c > $SD/f.bin.xz;         case_ "f.bin gone, an f.bin.xz of other content" 1
 rm -f $SD/f.bin.xz;                                                    case_ "neither" 1
-echo "  what a plain re-run does beside a partial f.bin.xz:"
+echo "  what a re-run of the define's command (without -q, to see the message) does beside a partial f.bin.xz:"
 cp /localrun/aux/xz.orig $SD/f.bin; head -c $half $X/full.xz > $SD/f.bin.xz
 xz -T2 --block-size=1MiB $SD/f.bin > $X/rerun.out 2>&1; rc=$?
-sed 's/^/  | /' $X/rerun.out; echo "  xz rc=$rc; f.bin $( [ -f $SD/f.bin ] && echo present || echo absent), f.bin.xz $(wc -c < $SD/f.bin.xz) bytes"
+sed 's/^/  | /' $X/rerun.out; echo "  xz rc=$rc; f.bin $( [ -f $SD/f.bin ] && echo present || echo absent), $(cmp -s $SD/f.bin /localrun/aux/xz.orig && echo identical to the original || echo NOT identical to the original); f.bin.xz $(wc -c < $SD/f.bin.xz) bytes"

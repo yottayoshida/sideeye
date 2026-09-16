@@ -99,17 +99,21 @@ and six unsupported, and the paragraphs above carry some of them as written.** T
 paragraphs are left as they were committed; what they got wrong is here. *lz4 starts four
 threads at 5,750,000 bytes*: three — the screen's own transcript said so, and "four" came from a
 count whose output was not kept; *3,450,000 start none* had no transcript until
-`apparatus/probe-review.sh` measured it. *git-annex dropped for threads*: it was screened for the
+`apparatus/probe-review.sh` measured it, and *only above 4 MiB* is a threshold nobody searched for. *git-annex dropped for threads*: it was screened for the
 language record. *4 operations under `wrappers`* in ninja's first pass: the recording was refused
-at operation 3, and the 4 was strace's count of ninja's own writes. *One human committer besides a
+at operation 3, and the 4 was strace's count of ninja's own state operations (two opens, a write,
+an unlink). *One human committer besides a
 bot*: DavidAnson 10 and Eljees 1. After the run, three more: `probe-ninja.sh`'s "killed" build was
 not killed — the stand-in `cp` signalled only its own process group and ninja exited 1 — and a real
 `pkill -KILL -x ninja` (status 137) gives the same rebuild; ninja's second-define PASS cannot fail on
 the rebuild, because restore gives every world a newer `in.txt`, so the probe is the evidence and
 the pages say so; and xz's PASS is the checker's alone (the built-in invariant judged no path), so
 every branch of that checker was falsified afterwards. *A full disk does the same* was written
-with only `EFBIG` measured and is withdrawn. The novelty pass had read 8 results a query; every
-result is read now, and nothing changed. Inside the re-measurement I made one more: the first
+with only `EFBIG` measured and is withdrawn. The novelty pass had read 8 results a query; it reads
+up to 100 now — every result for markdownlint-cli, markdownlint-cli2 and google-java-format — and
+nothing changed. And the reversal paragraph's *not the file's*: ninja compares the output's own
+mtime first, and the log's record for it second; the truncation made the first newer, and the
+second is what rebuilds it. Inside the re-measurement I made one more: the first
 "partial" `f.bin.xz` was `head -c 200000` of a 112,864-byte stream, the whole file, so the checker
 looked as if it accepted a partial stream — halved, it rejects it.
 

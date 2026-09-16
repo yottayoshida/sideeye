@@ -3,12 +3,13 @@
 #
 #   ninja   the 2026-09-16 define rebuilds only when in.txt is newer than out.txt, and its
 #           setup rewrites in.txt in the same clock tick as the build before it, so whether
-#           the operation has work depends on the tick (the first pass: 4 operations under
-#           `--observe wrappers`, 0 under `syscalls`, same image). out.txt is now dated
+#           the operation has work depends on the tick (the first pass: the `--observe wrappers`
+#           recording refused at operation 3, the `syscalls` one observed 0, same image). out.txt is now dated
 #           2026-01-01 after the first build, so the operation always has work.
-#   lz4     lz4 1.10 starts its worker threads only above 4 MiB (measured: 3,450,000 bytes
-#           start none under -T2, 5,750,000 start four), so the first pass's 1.1 MiB file
-#           measured a single-threaded lz4. 5,750,000 bytes here.
+#   lz4     lz4 1.10 starts no worker threads for a small file (measured by hand before this
+#           pass, with a count whose output was not kept: 3,450,000 bytes start none under -T2,
+#           5,750,000 start "four" — three by this pass's own transcript and by probe-review.sh),
+#           so the first pass's 1.1 MiB file measured a single-threaded lz4. 5,750,000 bytes here.
 #   git     a commit that triggers automatic maintenance, which git runs detached (it leaves
 #           its session: the #559 shape). Three packs against gc.autoPackLimit=2.
 #
