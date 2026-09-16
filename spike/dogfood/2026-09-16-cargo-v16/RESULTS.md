@@ -132,6 +132,12 @@ it"* (A) and *"the trap counts `renameat`, so the run reaches a verdict"* (B).
   answered; Sideeye's world is the *empty* half. Upstream `master` (`f325466`, 2026-09-16) carries the
   same `set_len(0)` / `write_all` block in `src/ops/lockfile.rs`, read before filing. The
   `class-exclusions.tsv` question is #598.
+  **Closed the same hour, not planned, on policy rather than on the finding**: cargo follows
+  rust-lang's LLM-usage policy (`forge.rust-lang.org/policies/llm-usage.html`), under which an issue
+  body originally created by an LLM is banned unless clearly quoted and marked as such, and the
+  maintainer read this one as LLM-written (it was, with the disclosure in a `<details>` block rather
+  than as a marked quotation). The finding was not addressed. Not re-filed by this record; whether the
+  owner files it in their own words is the owner's.
 
 Raw output: `transcripts/` — `A.1.txt` `A.2.txt` `A.3.txt` and their `.json`, `B.1.txt` `B.2.txt`
 `B.3.txt` and their `.json`, `preflight-twice.wrappers.txt`, `preflight-twice.syscalls.txt`,

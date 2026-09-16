@@ -156,6 +156,19 @@ not "every later command". The toy-walls bullet had lifted mlr to cargo's level 
 mlr was judged once in six. And `RUNS.md` had no row for `2026-09-11-syscall-trap-542b`, the run
 this page now cites as cargo's precedent — added, dated.
 
+**The report was closed within the hour, and not on the finding.** rust-lang/cargo#17481 was closed
+`not planned` at 03:59Z by a Cargo team member: cargo follows rust-lang's LLM-usage policy, which
+bans an issue body originally created by an LLM from a personal account unless the LLM text is clearly
+quoted and marked, and this one was written by the agent with its disclosure in a `<details>` block —
+read as LLM-written, which it was. Nineteen reports have gone out; this is the first refused on who
+wrote it rather than on what it says, and the template's pre-filing list had no item for it, because no
+tracker before this one had such a rule. It has one now (item 0: read the project's contribution policy
+for LLM rules before anything else is done). The finding stands as measured; the row and the record
+say the report was closed and why; nothing is re-filed by the agent (owner's call, the same day). The
+policy's own path for a non-native speaker — the owner writes the original, the agent translates and
+discloses the translation, original posted beside it — is in the template now, and the record keeps
+the data in a form that can be read into such an original.
+
 ## 2026-09-16 — The launcher keeps the judge's digests in its own memory, and the judge runs from bytes the launcher verified (#515, #592)
 
 **Where this starts.** ADR 0058 closed half of #515 and named the other half: the record still lives
