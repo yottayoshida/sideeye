@@ -22,13 +22,14 @@ Linux in Docker (Debian trixie, aarch64), as root in a `--privileged` container,
 the container's own filesystem (#528).
 
 **Added after the first review**: neovim's latest release, v0.12.5 (`apparatus/Dockerfile.nvim012`,
-the release tarball's digest matched), beside Debian's 0.10.4 — the review read in neovim's source that
+the release tarball's digest matched the published one, `transcripts/meta/environment.txt`), beside
+Debian's 0.10.4 — the review read in neovim's source that
 0.11 and later write the shada file differently (`RESULTS.md`).
 
 **The aws-cli credentials in the scripts and transcripts are substitutes** for the fabricated
 AWS-shaped keys the run used, replaced in every commit before the first push (`BUILDLOG.md`).
 
-## Candidates, and what the rules removed before any measurement
+## Candidates, and what removed three of them
 
 `apparatus/repo-meta.sh` → `transcripts/meta/repos.txt`, `apparatus/rule11-github.py` →
 `transcripts/meta/rule11.txt`. None of the candidates appears in an earlier dogfood selection,
@@ -45,7 +46,7 @@ AWS-shaped keys the run used, replaced in every commit before the first push (`B
 | pyenv (`pyenv global`) | `version` | 45,104 | 100 | 1 of 4 | ✅ (the spare) |
 | GnuPG (`gpg --import`) | the keyring | **977** (a GitHub mirror, issues off) | — | unmeasurable | ❌ **rules 1, 11** — the one candidate that would have exercised the cgroup: gpg starts keyboxd or the agent detached |
 | pm2 (`pm2 save`) | the process dump | 43,291 | 62, **all one author's** | — | ❌ **rule 3** |
-| Angular CLI (`ng config -g`) | `~/.angular-config.json` | 27,023 | 100 | — | ❌ — refuses Node 20.19.2, the version Debian trixie ships ("requires a minimum Node.js version of v22.22.3") |
+| Angular CLI (`ng config -g`) | `~/.angular-config.json` | 27,023 | 100 | — | ❌ — not on the rules: the first screen measured that it refuses Node 20.19.2, the version Debian trixie ships ("requires a minimum Node.js version of v22.22.3", `transcripts/screen/pass1-faulted/screen-summary.txt`) |
 
 ## The measured screen, before the slate
 

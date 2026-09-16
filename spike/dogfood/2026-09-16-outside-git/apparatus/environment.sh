@@ -7,6 +7,7 @@ if [ "${1:-}" = --container ]; then
   /se140/sideeye version; /semain/bin/sideeye version
   aws --version; hatch --version; nvim --version | head -1; java -version 2>&1 | head -1
   java -jar /opt/jbang-0.141.0/bin/jbang.jar version 2>&1 | tail -1; node --version; bw --version 2>/dev/null | tail -1; pyenv --version
+  command -v nvim012 > /dev/null && nvim012 --version | head -1
   uname -srm; exit 0
 fi
 dir=$1
@@ -18,4 +19,7 @@ echo "  published: $(gh release view v0.141.0 -R jbangdev/jbang --json assets --
 echo "  local:     sha256:$(shasum -a 256 "$dir/ctx/jbang-0.141.0.zip" | cut -d' ' -f1)"
 echo "pyenv-2.8.5.tar.gz (GitHub source archive, no published digest)"
 echo "  local:     sha256:$(shasum -a 256 "$dir/ctx/pyenv-2.8.5.tar.gz" | cut -d' ' -f1); tag v2.8.5 -> $(gh api repos/pyenv/pyenv/git/ref/tags/v2.8.5 --jq .object.sha)"
+echo "nvim-linux-arm64.tar.gz (neovim v0.12.5, added after the first review)"
+echo "  published: $(gh release view v0.12.5 -R neovim/neovim --json assets --jq '.assets[] | select(.name=="nvim-linux-arm64.tar.gz") | .digest')"
+echo "  local:     sha256:$(shasum -a 256 "$dir/ctx-nvim/nvim-linux-arm64.tar.gz" | cut -d' ' -f1)"
 echo "main build: 047592d, zig build -Doptimize=ReleaseSafe -Dtarget=aarch64-linux-gnu.2.28"

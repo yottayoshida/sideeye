@@ -135,6 +135,26 @@ its refusal of Node 20.19.2 is the first screen's output; the nvim process readi
 every checker probe and every `ulimit` probe too, where neovim's setup file came out at 138 bytes
 against 136 in the first run.
 
+**The second review found the fix itself wrong in places, and one of them was the claim an upstream
+report would lead with.** The pages said both versions "leave the complete temporary unread". That
+world had been built by hand, with the complete file as the temporary, for both binaries; in 0.10.4
+the temporary is still empty at the rename. `apparatus/probe-shada-window.sh` now enters the window for
+real — strace injects `SIGKILL` at nvim's first `renameat` — and records what it leaves: 0.12.5
+`main.shada.tmp.a` of 168 bytes, 0.10.4 `main.shada.tmp.a` of 0 bytes, no `main.shada` in either. The
+pages also said the next session "prints nothing" with no output kept; the probe now keeps stdout,
+stderr and nvim's own `:messages`, and all three are empty in both versions over two headless sessions
+(an interactive session was not measured). The issue script had printed at most 8 matching lines per
+issue while the pages said the issues were read in full; it now prints every matching line and adds
+neovim/neovim#11955, and none of the thirteen names the removal before the rename — #8587's long thread
+traces its leftover temporaries to a different crash. Smaller ones, all corrected: `RESULTS.md` called
+0.11's change "closed two windows, leaves the third" under headings that count two and one; a range
+("limits up to 27,136 bytes") claimed from six points; hatch's parse predicate was never shown
+rejecting alone; the Bitwarden row compared strace's non-main threads with the shim's count that
+includes the main one; the neovim 0.12.5 digest had no record (`environment.txt` has it now); the
+neovim row carried a fifth cell; and this entry's post-run paragraph still says "larger than the 4 KiB
+buffer" and "limits from 4,096 to 25,088 bytes stop nvim" — the buffer size was never measured, and the
+limits were nine separate points.
+
 ## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
 
 **What was asked.** A dogfood run of five, weighted to targets that are measurable now because a

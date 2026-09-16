@@ -1,24 +1,27 @@
 == neovim/neovim#6875 [open] 2017-06-10 34 comment(s): E576: Error while reading ShaDa file: there is an item at position 270498 that must not be there: Missing itemsare for internal uses only
-   72:So I removed `/Users/kevin/.local/share/nvim/shada/main.shada`. It works well. It's weird, anyway, I can use neovim again.
+        469 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 12
    171:- main.shada.tmp.a
    173:- main.shada.tmp.b
-   177:I removed all of them and neovim recreated main.shada on first launch. The error disappeared after this.
-   191:For anyone coming across this thread who removed `~/.local/share/nvim/shada` and still got this error message, I found that I also had shada files in `~/.local/state/nvim/shada`. Removing those fi
-   192:Still having this issue despite removing ~/.local/share/nvim/shada ,   and placing 
-   231:> For anyone coming across this thread who removed `~/.local/share/nvim/shada` and still got this error message, I found that I also had shada files in `~/.local/state/nvim/shada`. Removing those 
    242:> * main.shada.tmp.a
+   244:> * main.shada.tmp.b
 == neovim/neovim#11876 [open] 2020-02-15 5 comment(s): Concurrent startup/exit corrupts shada on windows
-   23:Neovim eventually corrupts the shada file. I can only reproduce this by running the Firenvim testsuite (which starts and kills lots of neovim process very quickly) on a Windows VM (which is pretty 
+         60 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 1
+   23:Neovim eventually corrupts the shada file. I can only reproduce this by running the Firenvim testsuite (which starts and kills lots of neovim process very quickly) on a Windows VM (which is pretty slow). I know reprod
+== neovim/neovim#11955 [open] 2020-02-27 0 comment(s): shada write error does not show up necessarily / should re-use temp files
+         43 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 3
+   5:> E138: All /home/user/.local/share/nvim/shada/main.shada.tmp.X files exist, cannot write ShaDa file!
+   15:-rw------- 1 user user 1.5K Jul 20  2017 /home/user/.local/share/nvim/shada/main.shada.tmp.a
+   19:-rw------- 1 user user    0 Feb 25 18:58 /home/user/.local/share/nvim/shada/main.shada.tmp.z
 == neovim/neovim#29186 [closed] 2024-06-04 12 comment(s): ShaDa file corruption on nightly
-   3:Neovim Nightly seems to randomly corrupt the ShaDa File. See the attachment for the corrupted file (remove the .txt extension)
-   53:~~for me, removing `AppData/Local/nvim-data/shada` folder resolved the problem~~
-   71:Sorry I don't, I wiped everything in nvim-data multiple time to isolate the issue and don't have it since I'm using nightly. I had the bug since I updated to 0.10 but just got the habit to remove t
+         71 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 3
 == neovim/neovim#10461 [closed] 2019-07-09 2 comment(s): Nvim don't merge file history properly if multiple instances get killed immediately
+         71 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 3
    37:killall nvim
    57:Every opened files get updated in the `v:oldfiles` list, that is, when multiple instances are killed immediately nvim will merge the file history.
    63:I use nvim for software development and often work on multiple projects. Each project is in its own terminal. And I usually poweroff my computer directly.
 == neovim/neovim#8587 [open] 2018-06-18 56 comment(s): Windows: "E138: main.shada.tmp.X files exist, cannot write ShaDa" on close
-   76:This is the expected behaviour if you somehow generated all temporary files. You should’ve had a bunch of errors explaining why those temporary files could not be renamed to replace the `main.shada
+        830 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 74
+   76:This is the expected behaviour if you somehow generated all temporary files. You should’ve had a bunch of errors explaining why those temporary files could not be renamed to replace the `main.shada` file before having
    78:Related #11955. Temporary fix is to manually delete `N` oldest and empty files in `/home/user/.local/share/nvim/shada`.
    83:`.local/share/nvim/shada/main.shada.tmp.X files exist, cannot write ShaDa file!`
    140:-rw------- 1 1000 1000  14K Jun 25  2023 main.shada.tmp.a
@@ -26,34 +29,91 @@
    144:-rw------- 1 1000 1000  13K Jun 26  2023 main.shada.tmp.c
    146:-rw------- 1 1000 1000  13K Jun 26  2023 main.shada.tmp.d
    148:-rw------- 1 1000 1000  13K Jun 27  2023 main.shada.tmp.e
+   150:-rw------- 1 1000 1000  13K Jun 27  2023 main.shada.tmp.f
+   152:-rw------- 1 1000 1000  13K Jun 27  2023 main.shada.tmp.g
+   154:-rw------- 1 1000 1000  33K Jan  9 02:23 main.shada.tmp.h
+   156:-rw------- 1 1000 1000  52K Jan 26 09:41 main.shada.tmp.i
+   158:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.j
+   160:-rw------- 1 1000 1000  52K Jan 26 09:41 main.shada.tmp.k
+   162:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.l
+   164:-rw------- 1 1000 1000  52K Jan 26 09:41 main.shada.tmp.m
+   166:-rw------- 1 1000 1000  52K Jan 26 09:41 main.shada.tmp.n
+   168:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.o
+   170:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.p
+   172:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.q
+   174:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.r
+   176:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.s
+   178:-rw------- 1 1000 1000    0 Jan 28 21:52 main.shada.tmp.t
+   180:-rw------- 1 1000 1000  52K Jan 26 09:41 main.shada.tmp.u
+   182:-rw------- 1 1000 1000  52K Jan 26 09:41 main.shada.tmp.v
+   184:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.w
+   186:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.x
+   188:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.y
+   190:-rw------- 1 1000 1000 9.1K Jan 26 09:41 main.shada.tmp.z
+   235:`E138: main.shada.tmp.X files exist, cannot write ShaDa file!" on close`
+   267:- Remove all _main.shada.tmp.X_ files.
+   271:- Remove the original _main.shada_ and rename the _main.shada-copy_ back to _main.shada_
+   391:            vim.print("Successfully deleted all temporary shada files")
+   397:    { desc = "Clears all the .tmp shada files" }
+   410:- https://powershell.one/tricks/filesystem/filesystemwatcher
+   506:    os.execute('del /Q "C:\\Users\\user\\AppData\\Local\\nvim-data\\shada\\main.shada.tmp.*"')
+   511:**Are these `main.shada.tmp` files saved to be deleted?** Thanks.
+   530:Good news so far! I did a lot of stuff yesterday that would typically create a bunch of the temporary shada files, but after installing the nightly updates with the #30872 PR, I have zero temp shada files! Just the m
+   531:@justinmk I don't know if I ever asked this but what is the role of the `main.shada.tmp.X` temp files? Are they supposed to get "merged" back into the `main.shada` file at some point? Or are they just there so neovim
+   534:> what is the role of the `main.shada.tmp.X` temp files?
+   551:Often times it seems that the "forward slashes" paths get in there when using things like `oldfiles` and lsp goto defs / refs etc. to open files (like with Telescope). Also when using different LSP file renaming plug
+   562:cc @folke as I am curious if you have heard similar things reported from lazyvim and your recent snacks.nvim, especially with your lazy utils for lsp and snacks `rename()` / `on_rename_file()` etc. (I see you do quit
+   574:@justinmk any ideas why the cause of the windows tmp shada issue or "crash" (as others have described it) would seem to happen actually because of forward slashes in the shada local mark data for a currently listed b
+   577:From what I can tell, it seems as if somewhere in the shada file "process" (saving, merging, whatever) it is actually expecting double backslashes for Windows paths instead of forward slashes. At least for some piece
+   586:Over the past 2 days I have had absolutely zero nvim crashes on close (leaving terminal painted as last nvim screen on exit) and zero temp shada creations! To put into perspective, I would say I would typically have 
+   588:This seems to be the main culprit of the windows shada tmp file and "crashing" issues based on my findings!
+   591:@justinmk do you know the best way to try and get debug logs to provide when reproducing the crash / tmp shada on exit? I want to provide logs to hopefully help the team identify the exact culprit :) thanks! 😊 
+   596:@justinmk ok I managed to build from source a debug build and recorded a regular successful shada update and nvim exit, and comparatively a repro of the shada tmp file (crash) issue on exit! I also confirmed further 
+   606:Then on exit, when shada closes and tries to save, the crash happens (sometimes have to re-open and close again to get the crash). Below are the details!
+   608:### Screenshot 1: Debug logs for successful nvim exit (Left) vs shada "crash" issue (Right)
+   612:- Red outline box 2 shows five additional lines on Left (successful log) that never occur in Right log (crash)
+   613:- Additionally in Red outline box 2, this is where the debug crash dialog pops up in Windows (see screenshot 2 below)
+   614:- You will notice there is 1 additional line in the Right log, just before the crash, referencing `log_notify`. This is a line the Left log does not have and I am assuming may be the debug crash dialog pop up.
+   617:    - Crash (right side) log: [nvim-debug-shada-crash-1.log](https://github.com/user-attachments/files/18018181/nvim-debug-shada-crash-1.log)
+   621:### Screenshot 2: Debug "crash" popup when exiting vim with `:qa` and `shada` causing crash (and a `main.shada.tmp.X` file is created)
+   630:FYI this (Label 1 in screenshot) was the result of my autocmd described above, forcing to load the `foo.lua` file buffer with absolute path forward slashes and the resulting entries in the `shada` file which causes t
+   645:So what is the situation here? I don't quite follow. Simply put, what should I do to prevent these crashes? I have a `BufWinEnter` autocmd, is what I am doing here correct?
+   663:> So what is the situation here? I don't quite follow. Simply put, what should I do to prevent these crashes? I have a `BufWinEnter` autocmd, is what I am doing here correct?
+   715:While trying to write a new config from scratch I got the crash to happen consistently, got a debug build going to check the logs and haven't noticed anything of note that GitMurf hasn't mentioned [here](https://gith
+   722:I made a debug build of Neovim 0.10.3, and used the debugger to break on the crash. This is what happens AFAIK:
+   724:tldr: When writing shada, buffer local file marks from an old shada file is added to a FileMarks hashmap. When adding a hashmap entry, the entire hashmap is rehashed. In the rehash function, it expects the hashmap to
+   728:Crash happens [here](https://github.com/neovim/neovim/blob/a4f575abd85e734340ee303daace1a63e5ca9782/src/nvim/map_key_impl.c.h#L62) at `abort`: 
+   748:Also @GitMurf https://github.com/neovim/neovim/issues/8587#issuecomment-2519283531 Are you sure this crash happens because of the slash issue? If you can verify, that would be helpful.
+   762:When new hashmap items are added, `void KEY_NAME()` is called. This function rehashes the entire hashmap. It expects the passed hashmap pointers from index `0` to index `h.n_keys` to be set to 0. This is what the che
+   764:For some reason, when I break with the debugger when the crash happens, the values are NOT zeroed out.
+   772:> Also @GitMurf #8587 (comment) Are you sure this crash happens because of the slash issue? If you can verify, that would be helpful.
+   774:Not sure how to answer this question. I documented the autocmd I created to open as absolute paths with forward slashes which causes the crash. When I do not do that it does not crash. Also please see my many other c
+   779:I am getting similar behavior as the Windows shada issues above except for it completely freezes/"crashes" my terminal on exit, unlike the shada issue above where it creates tmp shada file and keeps my terminal "pain
+   781:I cannot do much deeper debugging at this point (super busy with work and have tried preliminary debugging to no success)... but wanted to document here and see if any other users have noticed an increase in this beh
+   797:To add to my more detailed description above (https://github.com/neovim/neovim/issues/8587#issuecomment-2701340959), it seems that it does not necessarily "fully" freeze/crash every time on exit, but depending on the
+   822:            vim.notify('Could not delete empty temporary ShaDa files.', vim.log.levels.ERROR)
 == neovim/neovim#23345 [closed] 2023-04-27 9 comment(s): Error while reading ShaDa file: expected positive integer at position 3173 
-   52:try removing this folder: `~/.local/state/nvim/shada`
-   58:Which is why I have the following questions; how to debug this issue? Do I need to execute neovim with an strace-equivalent on windows? My suspicion is that Neovim does not wait for the ShaDa-file 
+        241 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 4
+   58:Which is why I have the following questions; how to debug this issue? Do I need to execute neovim with an strace-equivalent on windows? My suspicion is that Neovim does not wait for the ShaDa-file is not completely wr
    237:E136: Did not rename /Users/aaron/.local/state/nvim/shada/main.shada.tmp.z because /Users/aaron/.local/state/nvim/shada/main.shada does not look like a ShaDa file
    238:E136: Do not forget to remove /Users/aaron/.local/state/nvim/shada/main.shada.tmp.z or rename it manually to /Users/aaron/.local/state/nvim/shada/main.shada.
 == neovim/neovim#3469 [closed] 2015-10-17 11 comment(s): E576: Failed to parse ShaDa file: extra bytes in msgpack string at position 3
-   22:I experienced this as well. I removed `~/.viminfo` - which felt like a hack... but it worked.
-   26:@myitcv @KKPMW You must _not_ have `n~/.viminfo` in `&shada` option (`&viminfo` option is now an alias to `&shada`). If something else you need to remove the file pointed by the option. Format has 
-   40:@myitcv thanks for pointing out .viminfo. my nvimrc actually stored those files somewhere internally I tracked them down, removed them and now it seems to be working without a fuss.
-   42:@ZyX-I Thanks for pointing that out. After removing all the old .viminfo files - should I also change the option `viminfo` to something else ? Will this:
-   50:@KKPMW After you remove old file any location will work (as long as its path is not greater then MAXPATHL), including `~/.viminfo`. But it is misleading to call shada file `*viminfo`, and specifica
-   52:Changing option name to `&shada` is not needed right now, but I plan to make it be removed in some far future.
-   60:Removing `~/.local/share/nvim/shada/main.shada` worked for me.
+         62 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 9
    61:`mv ~/.vim/viminfo.tmp.f  ~/.vim/viminfo` worked for me.
 == neovim/neovim#3736 [closed] 2015-11-24 11 comment(s): E576: Failed to parse ShaDa file: extra bytes in msgpack string at position 3
-   3:Are you trying to have viminfo file shared with Vim? In any case you need to remove your viminfo file to make this disappear, or make `&shada` option point to another location (I guess it contains s
+         81 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 5
    5:@ZyX-I  so i have to remove my viminfo and viminfo.tmp and replace it with :  shada/main.shada
-   8:@7belrhalmia You need to _either_ remove or replace. By “replacing” I mean configuring neovim to use another location. Also directory is no longer `.nvim`, neovim is following XDG spec.
-   10:You don’t need to remove anything if neovim will be using different location. But if you want to keep the location you will have to remove the file due to changes in the format.
    14:@ZyX-I  i have removit this to file from ~/.config/nvim/   so iremovit viminfo and viminfo.tmp and i still got the same error
 == neovim/neovim#4108 [closed] 2016-01-27 36 comment(s): E576: Failed to parse ShaDa file: incomplete msgpack string at position 85
-   182:@jamessan as another reference point, on Ubuntu, removing the system-wide `libmsgpack*` allows 4f4b8ea4489b445d0f9e0b8e1b9885555d0d861f to build and run just fine... Which is I guess unsurprising 
-   220:Desired=Unknown/Install/Remove/Purge/Hold
+        265 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 2
 == neovim/neovim#4169 [closed] 2016-02-04 3 comment(s): E576: Failed to parse ShaDa file: incomplete msgpack string at position 95
+         19 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 2
    7:E136: Did not rename /home/.local/share/nvim/shada/main.shada.tmp.b because /home/.local/share/nvim/shada/main.shada does not looks like a ShaDa file
    8:E136: Do not forget to remove /home/.local/share/nvim/shada/main.shada.tmp.b or rename it manually to /home/.local/share/nvim/shada/main.shada.
 == neovim/neovim#6652 [closed] 2017-05-02 4 comment(s): viminfo file causes "E576: Failed to parse ShaDa file"
-   17:When opening `nvim`, it will create a `viminfo` file; but it will keep saying that the file is broken. When closing all vim instances, manually removing all `viminfo` and `viminfo.tmp.*` files and 
+         85 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 1
+   17:When opening `nvim`, it will create a `viminfo` file; but it will keep saying that the file is broken. When closing all vim instances, manually removing all `viminfo` and `viminfo.tmp.*` files and starting nvim again,
 == neovim/neovim#8064 [closed] 2018-02-24 5 comment(s): Failed to parse ShaDa file
+        106 lines of body and comments; lines naming rename, unlink, remove, a temporary, crash, kill, power or atomic: 2
    41:E136: Did not rename /home/MY_USER_NAME/.local/share/nvim/shada/main.shada.tmp.j because /home/MY_USER_NAME/.local/share/nvim/shada/main.shada does not looks like a ShaDa file
    43:E136: Do not forget to remove /home/MY_USER_NAME/.local/share/nvim/shada/main.shada.tmp.j or rena

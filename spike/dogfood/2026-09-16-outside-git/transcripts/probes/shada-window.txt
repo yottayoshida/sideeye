@@ -1,0 +1,32 @@
+== nvim (NVIM v0.10.4)
+  setup: main.shada(136 bytes) 
+  the operation, SIGKILLed at its first renameat: rc=137
+    strace: 19    write(6, "*", 1)                  = 1
+    strace: 19    unlinkat(AT_FDCWD, "/tmp/win-nvim/main.shada", 0) = 0
+    strace: 19    renameat(AT_FDCWD, "/tmp/win-nvim/main.shada.tmp.a", AT_FDCWD, "/tmp/win-nvim/main.shada") = ?
+    strace: 19    +++ killed by SIGKILL +++
+  the world it left: main.shada.tmp.a(0 bytes) 
+  session 1: rc=0, stdout+stderr 0 bytes; afterwards: main.shada(84) main.shada.tmp.a(0) 
+    | register a: 
+    | 'history' option is zero
+    | -- :messages --
+  session 2: rc=0, stdout+stderr 0 bytes; afterwards: main.shada(84) main.shada.tmp.a(0) 
+    | register a: 
+    |       #  cmd history
+    | -- :messages --
+== nvim012 (NVIM v0.12.5)
+  setup: main.shada(142 bytes) 
+  the operation, SIGKILLed at its first renameat: rc=137
+    strace: 53    write(15, "\1\317\0\0\0\0j\252\203\313G\205\251generator\304\4nvim\247ver"..., 168) = 168
+    strace: 53    unlinkat(AT_FDCWD, "/tmp/win-nvim012/main.shada", 0) = 0
+    strace: 53    renameat(AT_FDCWD, "/tmp/win-nvim012/main.shada.tmp.a", AT_FDCWD, "/tmp/win-nvim012/main.shada") = ?
+    strace: 53    +++ killed by SIGKILL +++
+  the world it left: main.shada.tmp.a(168 bytes) 
+  session 1: rc=0, stdout+stderr 0 bytes; afterwards: main.shada(82) main.shada.tmp.a(168) 
+    | register a: 
+    | 'history' option is zero
+    | -- :messages --
+  session 2: rc=0, stdout+stderr 0 bytes; afterwards: main.shada(82) main.shada.tmp.a(168) 
+    | register a: 
+    |       #  cmd history
+    | -- :messages --

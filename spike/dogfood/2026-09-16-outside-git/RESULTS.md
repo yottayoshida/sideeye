@@ -11,8 +11,8 @@ exploration in `PREDICTIONS.md`.
 **The aws-cli probe credentials in every committed script and transcript are substitutes.** The run
 used fabricated keys shaped like real AWS keys; before the first push they were replaced with strings
 of the same length that no scanner reads as keys, in every commit, and the aws-cli part was run again
-with the replacements (`BUILDLOG.md`, `apparatus/redact-probe-credentials.py`,
-`transcripts/rerun-after-redaction/`).
+with the replacements, together with every checker probe and every `ulimit` probe (`BUILDLOG.md`,
+`apparatus/redact-probe-credentials.py`, `transcripts/rerun-after-redaction/`).
 
 | Target | Mode(s) | v1.4.0 | main `047592d` | Predicted | Upstream |
 |---|---|---|---|---|---|
@@ -60,9 +60,10 @@ neither the old nor the new one, and a changed `default` access key are each rej
 **6/6 worlds over 5 crash points, 4 of 4 runs and 1 under main.** A temporary file is created
 `O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW`, written, `fsync`ed and renamed over `config.toml`
 (`open-flags.txt`). The checker — `hatch config show`, the file parsed, the setting the old value or
-the new one — passed in every world; each of its predicates rejects a state that breaks it alone
-(`checker-predicates.txt`: a third value, an unparsable file — which `hatch config show` itself
-refuses — and a removed top-level key). The contrast inside this run is aws-cli: both are Python tools
+the new one — passed in every world. Its value predicate rejects a third value and its content
+predicate a removed top-level key, each broken alone (`checker-predicates.txt`); an unparsable file is
+refused by `hatch config show` before the parse predicate runs, so that predicate was never shown
+rejecting on its own. The contrast inside this run is aws-cli: both are Python tools
 writing a user's configuration, and one goes through a temporary file.
 
 ## neovim — the shada file is removed before the rename, in every version measured
@@ -106,7 +107,7 @@ at 25,600 bytes, which the next nvim reports as `E576: Error while reading ShaDa
 specified that it occupies 57 bytes, but file ended earlier` while still reading register `a` and 398
 history entries. These are `ulimit` measurements; no crash of a large file was explored.
 
-### 0.11 and later: one window, and the loss is silent
+### 0.11 and later: one window, and nothing says it happened
 
 **The source.** From `v0.11.0`, `shada_write` ends with `packer.packer_flush(&packer)` at
 `shada_write_exit:` — every byte reaches the temporary before `shada_write_file` renames it — and
@@ -121,15 +122,22 @@ bytes into `main.shada.tmp.a`, then unlinks `main.shada` and renames the tempora
 explorations are UNKNOWN `baseline_violates_invariant`. With `main.shada` scratch and checker v2,
 **FAIL 4 of 4 runs and 1/1 under main, 2 of 13 worlds, earliest crash point 4 of 12**: both failing
 worlds are the kill between the unlink and the rename — `register a is lost (main.shada absent; files:
-main.shada.tmp.a )`. The other windows are gone: `ulimit -f 0` leaves `main.shada` intact at 144 bytes
-with `main.shada.tmp.a` beside it, and limits up to 27,136 bytes on a 27,319-byte file never cut
-`main.shada`.
+main.shada.tmp.a )`. The window after the rename is gone: `ulimit -f 0` leaves `main.shada` intact at 144
+bytes with `main.shada.tmp.a` beside it, and on a 27,319-byte file the six limits measured — 4,096,
+8,192, 16,384, 26,112, 26,624 and 27,136 bytes — each stop nvim before the rename with the original
+intact, while 27,648 lets the rewrite finish.
 
-**What the user sees after that window** (`probe-shada-after.sh` part B, both binaries): the world made
-by hand — `main.shada` removed, the complete new file as `main.shada.tmp.a`. The next nvim starts with
-an empty register and no history and prints nothing; on quitting it writes a new `main.shada` of 82
-bytes (0.12.5) or 84 bytes (0.10.4) holding none of it, and the complete `main.shada.tmp.a` is still
-there after a second session, never read.
+**What the window leaves, and what the next session does** (`apparatus/probe-shada-window.sh`,
+`transcripts/probes/shada-window.txt`, both binaries): strace injects `SIGKILL` at nvim's first
+`renameat`, after the unlink. **0.12.5 leaves `main.shada.tmp.a` of 168 bytes — the complete new file
+— and no `main.shada`. 0.10.4 leaves `main.shada.tmp.a` of 0 bytes and no `main.shada`**: its
+temporary is still empty at the rename, so nothing of the history or registers is left anywhere. In
+both, the next two headless sessions start with an empty register and no command-line history
+(`:history cmd` lists no entry), print nothing (0 bytes on stdout and stderr) and have an empty
+`:messages`; the first writes a new `main.shada` of 82 bytes (0.12.5) or 84 bytes (0.10.4), and the
+temporary is still there, unread, after the second. An interactive session was not measured.
+`probe-shada-after.sh` part B had built the world by hand with the complete file as the temporary for
+both versions — true of 0.12.5 only — and kept no session output.
 
 ### Checker v2
 
@@ -143,15 +151,20 @@ a register and no history.
 
 ### Upstream
 
-`apparatus/upstream-neovim-issues.sh` read twelve neovim issues in full, body and comments, chosen by
-title from the novelty search's results — `E576`, `E138`, a failure to parse the ShaDa file,
-corruption, and history lost when instances are killed (`transcripts/meta/upstream-neovim-issues.txt`);
-other titles in those results, such as neovim/neovim#6957 *"Broken shada files can cause assertion
-error"*, were not read. **None names the removal before the rename.** Four
-report what this window leaves or what could reach it: leftover `main.shada.tmp.*` files
-(neovim/neovim#8587, open, `E138`; neovim/neovim#6875, open; neovim/neovim#23345, closed) and
-corruption when processes are killed quickly (neovim/neovim#11876, open, Windows). Whether any of them
-came from this window is not known.
+`apparatus/upstream-neovim-issues.sh` fetched thirteen neovim issues — body and every comment — chosen
+by title from the novelty search's results (`E576`, `E138`, a failure to parse the ShaDa file,
+corruption, history lost when instances are killed) plus neovim/neovim#11955, which neovim/neovim#8587 cites; it
+prints each one's size and every line that names a rename, an unlink, a temporary, a crash or a kill
+(`transcripts/meta/upstream-neovim-issues.txt`). Other titles in those results, such as
+neovim/neovim#6957 *"Broken shada files can cause assertion error"*, were not fetched. **None of the
+thirteen names the removal before the rename.** What they do report is what this window leaves
+behind: `main.shada.tmp.*` files that stay — neovim/neovim#8587 (open, `E138`), neovim/neovim#11955
+(open, some of them empty), neovim/neovim#6875 (open), and the `E136: … Do not forget to remove
+…main.shada.tmp.X` lines in neovim/neovim#23345, neovim/neovim#4169 and neovim/neovim#8064 — and
+corruption when processes are killed quickly (neovim/neovim#11876, open, Windows). The long thread of
+neovim/neovim#8587 traces its temporaries to nvim aborting inside the shada write on exit (a hashmap
+rehash), a different crash that leaves the same file. Whether any report came from this window is not
+known.
 
 ## jbang — FAIL, the truncating rewrite
 
@@ -191,8 +204,8 @@ and 0.10.4 with checker v2 fails the same 6 of 13.
   profile's keys in one file, rewritten whole; neovim's history and registers exist only in the shada
   file.
 - **A temporary file and a rename are not enough when the target is removed first.** neovim 0.11 moved
-  the flush before the rename and closed two windows; the removal before the rename leaves the third,
-  and a crash there is silent.
+  the flush before the rename and closed the window after it; the removal before the rename remains,
+  and after a crash there the next session starts empty without a word.
 - **A tool's launcher can be the wall.** jbang through its script refuses; through its jar it is judged.
 - **A format that stamps time and pid needs its claim in the checker**, and then the checker needs
   each predicate falsified — the first neovim checker would have passed a cut file.
@@ -214,6 +227,6 @@ and 0.10.4 with checker v2 fails the same 6 of 13.
 
 Not decided by this run. The two with state a user has no other copy of are aws-cli (credentials) and
 neovim (shada: in the latest release, a crash between the removal and the rename starts the next
-session empty and leaves the complete file unread). Both projects accept AI-assisted submissions:
+session empty and leaves the complete file unread in `main.shada.tmp.a`). Both projects accept AI-assisted submissions:
 aws-cli's CONTRIBUTING.md asks for human review and a statement like *"generated by AI tools, and
 reviewed by <person>"*; neovim's asks that the person review the output and remove verbosity.
