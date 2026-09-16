@@ -1,0 +1,40 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "frozen",
+  "contract_version": 17,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "oracle_verified": true,
+  "crash_points": 2,
+  "explored": 3,
+  "violations": 1,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 2,
+    "invariant": "built-in atomicity, and the checker",
+    "after": {"op": "open", "path": "/localrun/st/markdownlint.140.wrappers.3/README.md"},
+    "before": {"op": "write", "path": "/localrun/st/markdownlint.140.wrappers.3/README.md"},
+    "subject": "README.md",
+    "observed": "holding neither the old nor the new content"
+  },
+  "checker_earliest": {
+    "crash_point": 2,
+    "invariant": "built-in atomicity, and the checker",
+    "after": {"op": "open", "path": "/localrun/st/markdownlint.140.wrappers.3/README.md"},
+    "before": {"op": "write", "path": "/localrun/st/markdownlint.140.wrappers.3/README.md"},
+    "subject": "README.md",
+    "observed": "holding neither the old nor the new content",
+    "case": "/localrun/wk/markdownlint.140.wrappers.3/cases/000001.json",
+    "replay": "sideeye replay /localrun/wk/markdownlint.140.wrappers.3/cases/000001.json --shim /se140/libsideeye_shim.so"
+  },
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/localrun/wk/markdownlint.140.wrappers.3/cases/000001.json",
+  "replay": "sideeye replay /localrun/wk/markdownlint.140.wrappers.3/cases/000001.json --shim /se140/libsideeye_shim.so",
+  "oracle": "agreed on 2 operations (5911 syscall lines examined, 1369 in scope of the judged state), witness strace",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 3 world(s)",
+  "processes": "single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's image replaced 1 time(s), chain unbroken (#123)",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

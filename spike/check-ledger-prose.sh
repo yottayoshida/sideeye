@@ -9,7 +9,8 @@
 # describe a set that moves whenever a cohort closes: how many defines were sorted, how
 # many entered the corpus, how many each of the two other ledgers holds, and their sum.
 # The ledgers themselves cannot drift from the repository (count.py's check_ledgers holds
-# union, disjointness and successor existence). What can drift is the pages' description
+# union, disjointness, successor existence and each class exclusion's row in
+# docs/target-classes.md). What can drift is the pages' description
 # of them, and the direction is the bad one: a reader asking whether the corpus is
 # complete reads the prose, not the TSVs.
 #

@@ -1,0 +1,16 @@
+1.12.1
+== part 1: out.txt truncated by hand
+  out.txt 0 bytes, in.txt 22 bytes; .ninja_log entries: 1
+  | ninja: Entering directory `/localrun/p1'
+  | ninja explain: recorded mtime of out.txt older than most recent input in.txt (1789547748343637009 vs 1789547748345637009)
+  | [1/1] cp in.txt out.txt
+  out.txt 22 bytes, in.txt 22 bytes; .ninja_log entries: 2
+  RESULT part 1: rebuilt, out.txt == in.txt
+== part 2: the build killed between cp's truncating open and its write
+  killed build rc=1
+  out.txt 0 bytes, in.txt 22 bytes; .ninja_log entries: 1
+  | ninja: Entering directory `/localrun/p2'
+  | ninja explain: recorded mtime of out.txt older than most recent input in.txt (1789547748351637009 vs 1789547748352637009)
+  | [1/1] cp in.txt out.txt
+  out.txt 22 bytes, in.txt 22 bytes; .ninja_log entries: 2
+  RESULT part 2: rebuilt, out.txt == in.txt

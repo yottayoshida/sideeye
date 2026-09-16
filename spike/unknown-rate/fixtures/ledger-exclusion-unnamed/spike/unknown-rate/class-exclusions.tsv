@@ -1,0 +1,2 @@
+# Class-excluded defines for this fixture. No row of the page cites fx's directory; the quoted class is a real refusal-table Class cell, so a check that compared the string alone would pass; fx's directory appears only inside an HTML comment, which no reader sees.
+spike/cohort2/fx/ops	Other refusal class	fixture reason

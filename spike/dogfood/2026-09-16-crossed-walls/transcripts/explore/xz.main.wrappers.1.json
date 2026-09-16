@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "frozen",
+  "contract_version": 18,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "oracle_verified": true,
+  "crash_points": 18,
+  "explored": 19,
+  "violations": 0,
+  "expected_status": 0,
+  "l0": "0 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "oracle": "agreed on 18 operations (962 syscall lines examined, 771 in scope of the judged state), witness strace",
+  "metadata_writes": "3 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1, fchmod x1, utimensat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "falsified before the run (corrupted state -> check failed); ran in 19 world(s)",
+  "processes": "single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

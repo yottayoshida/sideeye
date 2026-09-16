@@ -2,7 +2,7 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-09-16 (fifth) — a refusal the default mode could not see past names the mode that can, and the paths the reviews found from that advice to a broken PASS are closed with it
+## 2026-09-16 (eighth) — a refusal the default mode could not see past names the mode that can, and the paths the reviews found from that advice to a broken PASS are closed with it
 
 **What #599 asked.** Under `--observe wrappers`, `oracle_missed_operation` sent the reader to the
 class wall, and a zstd run was read as the stdio wall until it was re-measured under
@@ -113,6 +113,270 @@ documents began with `ls docs/adr | grep -c '^0069-'` joined by `&&`; with no su
 printed 0 and exited 1, and every command after it in the chain was skipped. The ADR checks that ran
 next said ok — over 67 files, a tree without the change. The count moving to 68 on the second attempt
 is what showed the first wrote nothing.
+
+## 2026-09-16 (sixth) — class-exclusions.tsv states the criterion its rows meet, and count.py holds each row to its target's own refusal row (#598)
+
+**What #598 said, and what the owner chose after reading further.** The ledger's header gave its
+reason for keeping a cohort define out of the A-group corpus as "its class has no recorded verdict
+at all". cargo's refusal-table row has recorded a FAIL under `--observe syscalls` since this morning
+(#538), and nothing read the reason, so the check stayed green. The issue offered two ways out:
+move cargo's defines into the corpus and sweep a new generation, or rewrite the header to the
+criterion the ledger actually applies. The owner first chose the first. Reading the ledgers before
+drafting turned up four things that changed it, put back to the owner before any plan was written:
+Bun's row — the same ledger, `spike/cohort2/bun/ops` — also records a FAIL as of #604, merged hours
+earlier; cargo's two defines are two revisions of one question, so `supersession.tsv`'s own rule
+would send r1 there rather than into the corpus; `docs/target-classes.md` defines supported as "the
+rows of the first table … whatever verdicts their stories contain", and that is what cargo was left
+under on 09-16; and the sweep runs committed defines in the default mode, where both would refuse,
+so the published rate would rise by two refusals that say nothing new. The owner chose the
+rewrite: no corpus change, no sweep, no published figure moves.
+
+**The criterion is ADR 0025's, and the header is what was wrong.** ADR 0025 already reads "the
+target's class is not a supported class … each quoting the `docs/target-classes.md` refusal-table
+row it rests on", and `docs/unknown-rate.md` already says `class-exclusions.tsv` holds targets whose
+class "the first table of `docs/target-classes.md` does not list". Only the ledger's header, and
+two sentences about `pass` that said the same thing in other words, used the verdict reading.
+
+**The check ties the define to a row, not a string to a table.** The first draft compared the
+quoted class against the page's Class cells. The plan's first review broke it: any define, a
+supported target's included, could be parked under a refusal table's class and stay green — the
+shape `count.py` already refuses for `supersession.tsv` in its own words, "a place to park
+anything". The rows name their records, so the define is tied to the rows citing its cohort
+directory. The second review broke the next version: the targets that have crossed into the
+first table so far (virtualenv, zstd, ansible-core) did it by gaining a new row that cites a
+later record — dogfood runs for two, `spike/followup-item4/NOTES.md` for zstd — and keeping the
+refusal row, and cargo's verdict is a dogfood record too, so a
+first-table row naming no cohort directory would have left the exclusion green. The tool's first
+word is the second key; on the page that day it found exactly those three and none of the excluded
+targets (the first diff review widened the key, below, and the shared words became four). What neither key sees is written in the function: a first-table row spelling the tool
+with a different first word.
+
+**Seen red twice on the live tree before the ledger was touched, in the order predicted.** With
+the check added and nothing else, `count.py check` stopped at `docs/target-classes.md:58`: a blank
+line inside the first table. GitHub ends a table at a blank line; fetched through the API at
+`047592d`, the page rendered 3 tables and 58 `<tr>`, where its Class rows number 79 — the 14 first-
+table rows after line 58 (codespell onward) and the 10 refusal rows after line 92 were loose text
+with pipes in them. So the reader's first table and the file's were not the same table, and the
+check refuses the split rather than reading past it. With the two blank lines removed, it stopped
+where #598 predicted the ledger was stale: `spike/cohort2/bun/ops quotes the class 'Multi-threaded
+runtimes', and the row that names it says line 81: 'Multi-threaded runtimes, **and behind the
+thread wall, raw syscalls**'`. The header says that column is quoted verbatim; Bun's row had been
+reworded under it.
+
+**The header also said something false about revisions.** "No later revision exists that reaches
+a verdict" was the reason these rows are not in `supersession.tsv`; cargo's r2 define is exactly
+what `spike/dogfood/2026-09-16-cargo-v16/` ran to its FAIL. The reason that still holds is the
+other one: a supersession row needs its successor measured in the corpus, and nothing in this file
+is. Rewritten to say that. watson was the header's example of the criterion cutting both ways, and
+under the table criterion it would cut the wrong way — watson appears only in a refusal row — so it
+is named as ADR 0025's disclosed disagreement, never a cohort define, rather than as an example.
+
+**Eight fixtures, one per guard, and each guard rewritten to `False` in turn** against all eight,
+`good` and the live tree: every rewrite changed its own fixture and nothing else — five turn green
+(stale quote, supported by directory, supported by tool, empty first table, split table) and three
+change the kind of red (unnamed then fails the quote comparison, the absent page raises
+`FileNotFoundError`, the renamed heading lands on the empty-table refusal). The plan had named the
+empty-first-table guard as one with no fixture; a page with the heading over no rows is a two-line
+fixture, so it has one. The unnamed fixture quotes a real refusal-table Class cell on purpose, and
+the directory-supported one keeps the quote and the refusal row in agreement, so a string-only
+check passes both — the shape the first review broke.
+
+**The acceptance comment's counts were already stale, and are dated rather than overwritten.** It
+said `count.py` "holds 78 `if` guards" and "every one of its 71 `die()` calls sits inside an `if`",
+present tense, from the 2026-09-01 sweep. Walking the parse tree on `main` today: 75 `die()` calls.
+Replacing the numbers would have had the 09-01 sweep's "36 undetected" speak for guards it never
+saw, so the sentences are in the past tense with their date, and today's count stands beside them:
+83 calls on this branch, none outside an `if`, still no `assert` and no `raise`.
+
+**The same criterion in other words, looked for by pairing words rather than by one phrase.** A
+grep for "recorded verdict" missed `docs/target-classes.md`'s opening line — "supported means a
+class listed here as reaching verdicts" — which the plan's first review found. The scan that
+closes the plan split `docs/`, `spike/unknown-rate/` (fixtures and artifacts aside), `README.md`,
+`PRD.md` and `DESIGN.md` into sentences and read every one carrying both "support" and "verdict":
+136 files, 18 sentences — counted as `git ls-files` over those paths restricted to `.md`, `.tsv`,
+`.py`, `.sh` and `.txt`, with a sentence ending at `.`, `;` or `:` before a capital, a backtick, an
+asterisk, a parenthesis or a quote. The diff review's own split (no extension filter, a plainer
+sentence rule) got 138 and 16; the counts move with the method, and the finding did not. After the rewrite, one still uses a verdict as the mark of support —
+`spike/unknown-rate/select-b.sh`'s comment that Rust, Go, Node and shell "are not classes with
+recorded verdicts" — and it stays: it is the frozen predicate that selected g1's B-group, true on
+2026-08-16. The `pass` row in `docs/target-classes.md` no longer argues from a count of verdicts
+(the same row says both its targets reach one); it points to the page's own definition, and the
+five-trial rule it had folded in is a separate sentence, because that rule is about printing a rate,
+not about support.
+
+**Measured before review.** `count.py check` on the live tree: "4 class exclusions matched to
+refusal-table rows"; `good`: 0. Acceptance checks 11 and 12 sliced out and run in `sideeye-spike`:
+"every slashed backtick reference in the listed pages resolves", "gate red on all 51 tampered
+fixtures" (43 on `main`). `spike/check-ledger-prose.sh`: 13 figures, unchanged, because no row moved.
+
+**The first diff review found three places the rewrite was still not true, and one of them was a
+cell GitHub does not show.** (1) The header I wrote said cargo and Bun stay in the refusal table
+"because the verdict is reached in one observation mode" — and zstd sits in the first table on a
+verdict reached under `--observe syscalls` only. The because-clause imported a reason the page's
+own first table refutes, the same shape #598 was about, so the header now says only where the rows
+are and that nothing in the first table reaches them. The two refusal rows that carry that reason
+(Bun's and cargo's, from #604 and #538) are outside this change and are left, recorded in the PR.
+(2) An unescaped `|` inside a code span splits a table cell on GitHub, and cells past the header's
+count are dropped: Bun's row carried `O_WRONLY|O_CREAT|O_TRUNC` and lost its `Recorded in` cell —
+the one cell citing `spike/cohort2/bun/`, which is what tied its exclusion to the row. rrdtool's
+row carries `PROT_WRITE|MAP_SHARED`; on `main` it sat after the blank line at 92 and was loose text
+anyway, and removing that line brought it into the table with the same loss (the second diff
+review's correction of how I first wrote this). So the check had been green on a link no reader is shown,
+the thing the blank-line refusal exists to prevent. The reader now splits cells the way GitHub
+does, refuses a row wider than its header, and was seen red on the live page at line 81 before
+both pipes were escaped. (3) The pages state the criterion per class ("targets whose class the
+first table does not list"), the check held it per target: a first-table row for mlr under cargo's
+Class cell — exactly how ansible-core crossed, under its own — left the check green. The quoted
+class being a first-table Class cell is now refused too. With the reviewer's narrower point taken
+as well (the tool key now includes the define's own directory name, and every comma-separated tool
+in a Tool cell), three crossings built on the real page in a scratch root — an mlr verdict row
+under cargo's class, a `jj 0.44.0` row under another class, a Bun row under a new class citing its
+dogfood record — each refuse, and the unmodified page gives 4. Two fixtures more
+(`ledger-exclusion-class-supported`, `ledger-exclusion-excess-cells`), ten in all; each of the ten
+guards rewritten to `False` changes its own fixture and nothing else, seven to green and three to a
+different red. `count.py` walks to 85 `die()` calls, none outside an `if`, no `assert`, no `raise`. Acceptance checks 11 and 12, sliced out and run in `sideeye-spike` again: "gate red on all 53 tampered
+fixtures", the live tree "4 class exclusions matched to refusal-table rows".
+
+Not taken: a non-Class table header inside the same section, or a heading or list line inside a
+Class table, would also end the table on GitHub, and the reader does not refuse those. The
+docstring says a Class table runs from its header to the next `## `, which is what it reads, and
+the page has no such shape today.
+
+**The second diff review found no break in the fixes and five loose ends, three taken.** The tool
+key, split on commas, now shares four words between the two tables rather than three: borg joins,
+from the `git, Borg` scratch-file row, which is a precision limit and not a crossing — borg is a
+corpus target and in no exclusion. rrdtool was misdescribed above and in the first CHANGELOG draft,
+now corrected. And two ways a reader-invisible reference could still tie a define were closed in a
+few lines: a cohort path inside an HTML comment no longer ties anything, and the Tool word is read
+past emphasis, code and link markup and past a tab or a no-break space (`[Bun](…) 1.4.2` read as
+`[bun](…)` before, and matched nothing). Both are pinned on existing fixtures — unnamed's only fx
+path now sits in a comment, supported-by-tool spells its tool as a link — and reverting either
+reader turns exactly that fixture green: twelve rewrites, each changing its own fixture and nothing
+else. Left as recorded: a heading or list line inside a Class table, and the two refusal rows on
+the page whose placement reason zstd's first-table row contradicts. The simplify pass after it
+moved one thing: a row's cohort directories are read once, when the table is read, rather than
+again for every exclusion; the twelve rewrites were run again on that form and came out the same.
+
+## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
+
+**What was asked.** A dogfood run of five, weighted to targets that are measurable now because a
+wall moved — not only targets an earlier record refused, but targets an earlier selection left
+out, and classes a selection would leave out. The run lives in
+`spike/dogfood/2026-09-16-crossed-walls/`.
+
+**Where the candidates came from.** Refused and not re-met since their wall moved: Bun (the
+ledger's own row says its `--observe syscalls` reading predates #542's second change), zstd and
+ninja (2026-09-16). Left out before any run: cohort 4 excluded 128 repositories by language alone
+(`spike/cohort4/CANDIDATES-REJECTED.md` — Go, TypeScript, JavaScript, Shell, PHP, Java among
+them), and yadm by a child-process forecast; the 2026-09-06 screens dropped zstd, sqlfluff, libvips
+and git-annex for threads. Every one of those threads-only drops has been measured since except
+git-annex, so the class is where the unmeasured reach is: Node, the JVM, thread pools.
+
+**Built twice.** The released v1.4.0 tarball (digest matched against the release), and main
+`d5911cd` cross-built with the release's own target (`aarch64-linux-gnu.2.28`, ReleaseSafe),
+because #539's contract v18 is merged and unreleased and a run weighted to moved walls has to
+see the one that moved last. Every screen line says which build answered.
+
+**The screen, three passes, before the slate.** strace (which tids of which process wrote,
+`setsid`/`setpgid`) plus `preflight` under both builds and both modes, in a `--privileged`
+container so the engine can make cgroups:
+
+- **Crossed**: Bun (`--observe syscalls`, 10 operations, both builds); ninja (`syscalls`, 7
+  operations with the `cp` child's addressed); markdownlint-cli (both modes — Node's
+  `writeFileSync` on the main thread); google-java-format (both modes, 18 threads and one writer);
+  xz `-T2` (both modes, two worker threads and the main thread the only writer).
+- **Not crossed, and the reason is v18's own sentence**: zstd and lz4 — a worker writes the
+  blocks and the main thread writes too, and no creation or join the shim recorded orders them
+  (lz4 starts its workers only above 4 MiB: 3,450,000 bytes start none, 5,750,000 start four; the
+  first pass measured a single-threaded lz4 without knowing it). prettier, svgo and `npm pkg set`
+  — Node's asynchronous file calls run on libuv's pool, two pool threads write, the joplin shape.
+  A git commit that triggers automatic maintenance refuses `child_touched_state_dir` before any
+  `setsid` question is asked.
+- **Out on the rules**: yadm and pigz have no commit on their default branch in six months (rule
+  2); `typescript@latest` on npm is 7.0.2, the Go port, so `tsc` is no longer a Node target.
+
+**Two apparatus faults the screen caught in itself.** The 2026-09-16 ninja define rewrites
+`in.txt` in the same clock tick as the build before it, so whether the operation has work at all
+depends on the tick: the first pass recorded 4 operations under `wrappers` and 0 under `syscalls`
+from one image — `recording accepted, but nothing to explore`, which reads as a Sideeye gap and
+was the define. `out.txt` is dated 2026-01-01 now. And `rule11-github.py` as copied counted a
+core maintainer's own two-day-old issues as "no response"; the copy here skips issues younger
+than seven days and issues filed by the repository's owners, members and collaborators.
+
+**Rule 3 is weak for two of the five and they are measured anyway.** xz (Larhzu 94 of the last
+100 commits) and markdownlint-cli (one human committer besides a bot) have one sustained
+contributor. The question this run asks is reach, the way 2026-09-11 re-met targets without
+re-selecting them; the weakness is recorded against any upstream report instead.
+
+**The predictions**, in `PREDICTIONS.md` and committed with this paragraph before
+`apparatus/explore.sh` ran: Bun PASS (60%), ninja PASS (70%), markdownlint-cli FAIL — the
+truncating open with the original nowhere (85%), google-java-format FAIL, the same window (80%),
+xz PASS (85%), and main answering what v1.4.0 answers for all five (85%).
+
+**The run, against the predictions.** Three of five verdicts as predicted, and main answering
+what v1.4.0 answered for all five. markdownlint-cli FAIL 4/4 and google-java-format FAIL 4/4,
+both crash point 2 of 2, both a zero-byte file between `O_WRONLY|O_CREAT|O_TRUNC` and the write;
+xz PASS 4/4, 19/19 worlds. **Bun was a miss: FAIL 3/3**, crash point 10 of 10, an empty
+`package.json`. I had read the screen capture's `O_RDWR` open at line 182 as the rewrite; the
+rewrite is the truncating open at line 759, the same window as the other two. **ninja was a
+miss of a different kind: FAIL 3/3 on the built-in invariant over `out.txt`** — its `cp` child's
+truncating open, before the write — while the checker passed in every world.
+
+**The ninja reversal, measured before it was written.** My reading after the FAIL was that an
+empty `out.txt` with a fresh mtime would look up to date and survive the next build — a real
+defect. `apparatus/probe-ninja.sh` measured it without Sideeye, by hand-truncating and by killing
+the build after the truncating open: both times the next `ninja` printed `recorded mtime of
+out.txt older than most recent input in.txt` and rebuilt it. ninja compares against the mtime its
+log recorded, not the file's. So the second define declares `out.txt` scratch and puts the claim
+in the checker (re-run ninja, `out.txt` equals `in.txt`): PASS 3/3. The first define's FAIL is
+the git `COMMIT_EDITMSG` class.
+
+**Two of the FAILs do not need a crash.** `ulimit -f 0` alone leaves markdownlint-cli's
+`README.md` at 0 bytes (`EFBIG` thrown from `writeFileSync`, exit 4) and google-java-format's
+`A.java` at 0 bytes (*"could not write file: File too large"*): the write fails, the tool reports
+it and exits, and the truncation already happened. For Bun, `ulimit -f` at 1–8 blocks leaves a
+6,070-byte manifest at exactly the limit.
+
+**Bun is already known upstream.** oven-sh/bun#39689 (open since 2026-08-19) converts the
+`package.json` writer to a temporary file and a rename, and #39666 names the zero-byte manifest
+as what an interrupted rewrite leaves. Nothing was found for markdownlint-cli or
+google-java-format; whether to report them is the owner's call, not this run's. **The call
+(2026-09-16): not reported**, and revisited if codespell#4025 or rubocop#15720 is fixed upstream.
+The owner asked first whether they were worth an issue at all; the answer given was that they are
+worth little — a Markdown file or a Java source is almost always under version control, the window
+is one write wide, pyupgrade's report of the same class was closed as spam and fonttools' as the
+caller's risk, and two more of the class on the day codespell and rubocop were filed would read as
+a batch. `RESULTS.md` records the reasons and the condition.
+
+**What the record nearly got wrong.** The first draft of `RESULTS.md` called Bun "the first Zig
+target judged" and counted the truncating rewrite in ten languages. Bun 1.4 is Rust — its own row
+on `docs/target-classes.md` says so, and #39689 edits `src/sys/file.rs` — so it is nine. And the
+first novelty pass returned nothing for every query, which was `gh search issues` sending a
+spaced argument as a quoted phrase; the same words through the search API returned 1,552 results
+for Bun, and #39689 among them.
+
+**The first review of the record (a fresh reader, no session context) found two statements false
+and six unsupported, and the paragraphs above carry some of them as written.** The pre-run
+paragraphs are left as they were committed; what they got wrong is here. *lz4 starts four
+threads at 5,750,000 bytes*: three — the screen's own transcript said so, and "four" came from a
+count whose output was not kept; *3,450,000 start none* had no transcript until
+`apparatus/probe-review.sh` measured it, and *only above 4 MiB* is a threshold nobody searched for. *git-annex dropped for threads*: it was screened for the
+language record. *4 operations under `wrappers`* in ninja's first pass: the recording was refused
+at operation 3, and the 4 was strace's count of ninja's own state operations (two opens, a write,
+an unlink). *One human committer besides a
+bot*: DavidAnson 10 and Eljees 1. After the run, three more: `probe-ninja.sh`'s "killed" build was
+not killed — the stand-in `cp` signalled only its own process group and ninja exited 1 — and a real
+`pkill -KILL -x ninja` (status 137) gives the same rebuild; ninja's second-define PASS cannot fail on
+the rebuild, because restore gives every world a newer `in.txt`, so the probe is the evidence and
+the pages say so; and xz's PASS is the checker's alone (the built-in invariant judged no path), so
+every branch of that checker was falsified afterwards. *A full disk does the same* was written
+with only `EFBIG` measured and is withdrawn. The novelty pass had read 8 results a query; it reads
+up to 100 now — every result for markdownlint-cli, markdownlint-cli2 and google-java-format — and
+nothing changed. And the reversal paragraph's *not the file's*: ninja compares the output's own
+mtime first, and the log's record for it second; the truncation made the first newer, and the
+second is what rebuilds it. Inside the re-measurement I made one more: the first
+"partial" `f.bin.xz` was `head -c 200000` of a 112,864-byte stream, the whole file, so the checker
+looked as if it accepted a partial stream — halved, it rejects it.
 
 ## 2026-09-16 (third) — a second writing thread is judged when a creation or a join the shim recorded orders it (#539, contract v18)
 

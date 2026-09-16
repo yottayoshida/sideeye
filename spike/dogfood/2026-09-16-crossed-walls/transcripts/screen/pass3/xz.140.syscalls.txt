@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted — 18 state-changing operation(s) observed
+
+atomicity    0 path(s) judged pre-or-post
+oracle       agreed on 18 operations (995 syscall lines examined, 771 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+processes    single process in the recording; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/140-syscalls/xz --setup "/localrun/ap/setup-xz.sh" --operation "xz -q -T2 --block-size=1MiB /localrun/st/140-syscalls/xz/f.bin" \
+               --check <your-invariant.sh> --shim /se140/libsideeye_shim.so --oracle /usr/bin/strace
