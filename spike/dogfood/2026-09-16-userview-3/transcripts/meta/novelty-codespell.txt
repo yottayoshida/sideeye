@@ -1,0 +1,366 @@
+== novelty pre-scan: codespell-project/codespell
+== date: 2026-09-16T00:50:59Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          20 hit(s) (all listed)
+      #3687 open 2025-04-11 BUG: pre-commit hook gets invoked after file deletion and crashes if excluded file does not exist
+      #3901 open 2026-03-26 Allow comments and empty lines in dictionary
+      #3915 open 2026-04-14 Allow comment in dictionary
+      #3519 open 2024-08-18 Chardet error should be caught and rethrown with helpful error message to user saying which file the problem occurred in
+      #3419 open 2024-05-05 Python API support
+      #3969 closed 2026-07-08 `--toml` crashes with `AttributeError: 'list' object has no attribute 'items'` on a `pyproject.toml` with an array-of-tables directly under `[tool]` (e.g. `[[tool.dynamic-metadata]]`)
+      #3689 closed 2025-04-13 Crash upon invoking latest dev/HEAD
+      #2727 closed 2023-02-06 Multiple dictionaries (add default one) for `dictionary` config setting
+      #2545 merged 2022-10-20 Read config file without interpolation
+      #2159 merged 2021-11-16 Handle bad globs passed to if --skip/-S
+      #2145 closed 2021-11-11 bad character range in a file skip glob
+      #2523 merged 2022-10-12 MAINT: Use pyproject and setuptools_scm
+      #2142 closed 2021-11-11 How can I skip globbing of filenames in skip? How can I skip files with [ ] characters in its name? 
+      #322 closed 2018-01-30 crash
+      #604 closed 2018-07-30 crash running codespell --help 
+      #1088 closed 2019-04-19 Blank lines in dictionary aren't flagged by check-dictionary, cause crash
+      #1516 closed 2020-05-22 dictionary_rare missing
+      #1371 merged 2019-12-09 Add several spelling corrections
+      #1290 merged 2019-10-13 Add variation on the typo 'chrash'
+      #1089 merged 2019-04-19 Fix Blank lines in dictionary aren't flagged by check-dictionary, cause crash #1088
+  corrupt        2 hit(s) (all listed)
+      #3687 open 2025-04-11 BUG: pre-commit hook gets invoked after file deletion and crashes if excluded file does not exist
+      #2138 open 2021-11-06 Jupyter notebook filter to only spell check inside cell inputs
+  corruption     0 hit(s)
+  truncated      15 hit(s) (all listed)
+      #3983 merged 2026-07-21 Bump actions/setup-python from 6 to 7
+      #3953 merged 2026-06-08 Bump codecov/codecov-action from 6 to 7
+      #3961 merged 2026-06-19 Bump actions/checkout from 6 to 7
+      #3902 merged 2026-03-27 Bump codecov/codecov-action from 5 to 6
+      #3833 merged 2025-11-21 Bump actions/checkout from 5 to 6
+      #3793 merged 2025-10-27 Bump actions/upload-artifact from 4 to 5
+      #3754 merged 2025-08-06 Bump actions/download-artifact from 4 to 5
+      #3757 merged 2025-08-12 Bump actions/checkout from 4 to 5
+      #3767 merged 2025-09-05 Bump actions/setup-python from 5 to 6
+      #3579 merged 2024-11-15 Bump codecov/codecov-action from 4 to 5
+      #3348 merged 2024-02-01 Bump codecov/codecov-action from 3 to 4
+      #3240 merged 2023-12-07 Bump actions/setup-python from 4 to 5
+      #3066 merged 2023-09-05 Bump actions/checkout from 3 to 4
+      #3078 merged 2023-09-15 Bump codecov/codecov-action from 3 to 4
+      #2653 merged 2022-12-23 Add fixes from travis (Closes #1312)
+  truncate       16 hit(s) (all listed)
+      #3983 merged 2026-07-21 Bump actions/setup-python from 6 to 7
+      #3953 merged 2026-06-08 Bump codecov/codecov-action from 6 to 7
+      #3961 merged 2026-06-19 Bump actions/checkout from 6 to 7
+      #3902 merged 2026-03-27 Bump codecov/codecov-action from 5 to 6
+      #3833 merged 2025-11-21 Bump actions/checkout from 5 to 6
+      #3793 merged 2025-10-27 Bump actions/upload-artifact from 4 to 5
+      #3754 merged 2025-08-06 Bump actions/download-artifact from 4 to 5
+      #3757 merged 2025-08-12 Bump actions/checkout from 4 to 5
+      #3767 merged 2025-09-05 Bump actions/setup-python from 5 to 6
+      #3579 merged 2024-11-15 Bump codecov/codecov-action from 4 to 5
+      #3348 merged 2024-02-01 Bump codecov/codecov-action from 3 to 4
+      #3240 merged 2023-12-07 Bump actions/setup-python from 4 to 5
+      #3066 merged 2023-09-05 Bump actions/checkout from 3 to 4
+      #3078 merged 2023-09-15 Bump codecov/codecov-action from 3 to 4
+      #2653 merged 2022-12-23 Add fixes from travis (Closes #1312)
+      #615 merged 2018-08-11 Add trucnate->truncate and friends
+  empty          54 hit(s) (all listed)
+      #3901 open 2026-03-26 Allow comments and empty lines in dictionary
+      #3915 open 2026-04-14 Allow comment in dictionary
+      #3892 open 2026-03-10 Make --ignore-multiline-regex example non-greedy
+      #3258 open 2023-12-20 RFC: improve diagnostic formatting
+      #3119 open 2023-10-04 man-page is incorrectly formatted by GNU help2man
+      #3651 open 2025-02-24 Disable automatic fixes for words in the rare dictionary
+      #3208 open 2023-11-11 Config file undocumented?
+      #1917 open 2021-05-10 Script to auto generate en-GB_to_en-US & en-US_to_en-GB dictionaries using SCOWL VarCon
+      #410 open 2018-03-22 "to and fro" is correct
+      #3419 open 2024-05-05 Python API support
+      #1601 open 2020-07-24 Does codespell support skipping the presence of a word in a specific file, but still search for it elsewhere?
+      #3722 merged 2025-06-19 Speed up spellchecking by ignoring whitespace-only lines
+      #3300 closed 2024-01-21 Feature: Ignore files not under version control
+      #3579 merged 2024-11-15 Bump codecov/codecov-action from 4 to 5
+      #3400 merged 2024-04-10 Handle multiline options
+      #3307 merged 2024-01-24 Makes config for "count" more clear as a boolean
+      #2767 merged 2023-03-03 Options that expect a file, should accept lists of files too
+      #2400 merged 2022-07-11 Implement inline ignores
+      #3348 merged 2024-02-01 Bump codecov/codecov-action from 3 to 4
+      #2968 closed 2023-07-25 TST: Check pre-commit
+  atomic         4 hit(s) (all listed)
+      #3196 open 2023-11-02 "Interaction" with pre-commit: ideally should skip the skipped files.
+      #2998 merged 2023-08-02 Add suffixes to typos from "at" to "ay"
+      #2510 closed 2022-10-03 Suggestion to remove `ore->or`
+      #1676 closed 2020-09-03 Add atmoically->atomically to dictionary
+  atomically     1 hit(s) (all listed)
+      #1676 closed 2020-09-03 Add atmoically->atomically to dictionary
+  interrupted    5 hit(s) (all listed)
+      #3977 closed 2026-07-16 'dependency' not found in `markers` configuration option
+      #3749 closed 2025-08-02 pytest-dependency
+      #3771 closed 2025-09-16 Support for Oxford English
+      #2938 closed 2023-07-11 Keep the tab open
+      #3237 merged 2023-11-30 Materials science related corrections
+  interrupt      8 hit(s) (all listed)
+      #3977 closed 2026-07-16 'dependency' not found in `markers` configuration option
+      #3749 closed 2025-08-02 pytest-dependency
+      #3771 closed 2025-09-16 Support for Oxford English
+      #2938 closed 2023-07-11 Keep the tab open
+      #3237 merged 2023-11-30 Materials science related corrections
+      #2301 closed 2022-03-02 Remove ` interruptable->interruptible`
+      #2305 closed 2022-03-03 Remove interruptable->interruptible + uninterruptable->uninterruptible
+      #521 merged 2018-05-22 Remove of interruptable->interruptible
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #3511 merged 2024-08-08 Handle CTRL+C by showing a better message
+  ctrl-c         3 hit(s) (all listed)
+      #3511 merged 2024-08-08 Handle CTRL+C by showing a better message
+      #3218 merged 2023-11-14 don't show stacktrace from KeyboardInterrupt #3217
+      #2609 closed 2022-11-18 Don't count form feed character (`\f` or `^L`) as newline, optionally
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2183 open 2021-11-29 Generate typos
+      #726 open 2018-10-28 Add a --no-context option when parsing stdin
+      #1140 open 2019-05-28 Validate typos in the dictionary against a dictionary of valid words
+      #555 merged 2018-06-23 Removed misformed->malformed
+      #829 merged 2019-02-10 Add surgestion(s)->suggestion(s)
+      #3348 merged 2024-02-01 Bump codecov/codecov-action from 3 to 4
+      #174 closed 2017-10-27 C escapes
+      #2149 closed 2021-11-12 remove "on-path attacker" as replacement for "man-in-the-middle" (the proposed term is unusual replacement for a standard term that is entirely fine)
+      #384 merged 2018-03-05 Improve grammar in description of "-i"
+      #383 merged 2018-03-05 .travis.yml: Check that the dictionary is sorted
+      #1074 merged 2019-04-11 Add spelling fixes, primarily triple letters when double is correct, recuse->recurse and hmdi->hdmi  
+      #2227 closed 2022-01-05 Add many tests for `--skip`
+      #2078 merged 2021-09-23 Simpler regex and consistent use in tests
+      #1924 closed 2021-05-28 Collaborators?
+      #808 closed 2019-01-16 README: refines -S flag entry + add note about not using '/'
+      #78 merged 2016-06-10 Use HTTPS for Wikipedia URL
+      #72 merged 2016-06-06 Remove duplicates from the dictionary
+      #89 merged 2016-08-18 FIX: Rename executable
+      #95 merged 2017-01-02 Add new --regex option to set regular expression used to find words
+      #93 closed 2016-10-19 Add some new entries to the dictionary
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #2785 merged 2023-03-10 Fix AssertionError when opening with chardet
+      #2523 merged 2022-10-12 MAINT: Use pyproject and setuptools_scm
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3981 open 2026-07-17 Report real line numbers after an --ignore-multiline-regex region
+      #2800 open 2023-03-16 Catch exceptions related to implicit config files
+      #1887 open 2021-03-14 Setting to skip files that aren't tracked by git
+      #3044 open 2023-08-22 Provide an option for spellchecking patches
+      #726 open 2018-10-28 Add a --no-context option when parsing stdin
+      #651 open 2018-09-09 codespell falsely reports it fixed an entry
+      #2183 open 2021-11-29 Generate typos
+      #555 merged 2018-06-23 Removed misformed->malformed
+      #829 merged 2019-02-10 Add surgestion(s)->suggestion(s)
+      #2834 merged 2023-04-21 Fix new ruff errors reported by CI
+      #174 closed 2017-10-27 C escapes
+      #384 merged 2018-03-05 Improve grammar in description of "-i"
+      #2720 merged 2023-01-25 Toml python3.11
+      #2690 closed 2022-12-30 "sharable" false positive?
+      #383 merged 2018-03-05 .travis.yml: Check that the dictionary is sorted
+      #2567 closed 2022-10-30 `make check` doesn't work on vanilla Ubuntu 22.04
+      #1074 merged 2019-04-11 Add spelling fixes, primarily triple letters when double is correct, recuse->recurse and hmdi->hdmi  
+      #2385 merged 2022-06-30 Add several spelling corrections
+      #1420 merged 2020-02-05 Partial dictionary update taken from issue #1358
+      #808 closed 2019-01-16 README: refines -S flag entry + add note about not using '/'
+  incomplete     3 hit(s) (all listed)
+      #2533 open 2022-10-17 Weird egg-info file version in 2.2.2
+      #2130 merged 2021-10-29 Add several spelling corrections
+      #45 merged 2015-09-10 using correct prerequisite and fixing incomplete SORT_ARGS
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #3862 merged 2026-01-18 `recorev -> recover`
+  recovery       1 hit(s) (all listed)
+      #3862 merged 2026-01-18 `recorev -> recover`
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #2767 merged 2023-03-03 Options that expect a file, should accept lists of files too
+  half-written   2 hit(s) (all listed)
+      #2058 open 2021-09-10 Fix --skip matching
+      #3145 closed 2023-10-14 Word splitting sometimes fails with accents
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          5 hit(s) (all listed)
+      #2157 open 2021-11-16 Set exit status if a file does not exist
+      #2523 merged 2022-10-12 MAINT: Use pyproject and setuptools_scm
+      #2227 closed 2022-01-05 Add many tests for `--skip`
+      #810 merged 2019-01-17 Typos from VisualSharp Microsoft
+      #1592 merged 2020-07-08 Add --ignore-regex
+  erasing        1 hit(s) (all listed)
+      #2523 merged 2022-10-12 MAINT: Use pyproject and setuptools_scm
+  erased         3 hit(s) (all listed)
+      #2157 open 2021-11-16 Set exit status if a file does not exist
+      #2227 closed 2022-01-05 Add many tests for `--skip`
+      #810 merged 2019-01-17 Typos from VisualSharp Microsoft
+  destroy        2 hit(s) (all listed)
+      #2410 merged 2022-07-20 Add several spelling corrections
+      #2481 merged 2022-08-25 Add several spelling corrections
+  destroys       1 hit(s) (all listed)
+      #2481 merged 2022-08-25 Add several spelling corrections
+  overwrite      35 hit(s) (all listed)
+      #1111 open 2019-05-08 Make target 'trim-dictionary' could clobber a pre-existing .bak file
+      #712 open 2018-10-16 Readd(ed) corrects to itself
+      #1711 open 2020-10-23 Valid corrections that aren't in aspell/mainstream dictionaries
+      #3953 merged 2026-06-08 Bump codecov/codecov-action from 6 to 7
+      #3983 merged 2026-07-21 Bump actions/setup-python from 6 to 7
+      #3921 merged 2026-04-20 Bump autofix-ci/action from 1.3.3 to 1.3.4
+      #3902 merged 2026-03-27 Bump codecov/codecov-action from 5 to 6
+      #3961 merged 2026-06-19 Bump actions/checkout from 6 to 7
+      #3881 merged 2026-02-27 Bump actions/upload-artifact from 6 to 7
+      #3870 merged 2026-02-03 Bump autofix-ci/action from 1.3.2 to 1.3.3
+      #3880 merged 2026-02-27 Bump actions/download-artifact from 7 to 8
+      #3846 merged 2025-12-15 Bump actions/upload-artifact from 5 to 6
+      #3847 merged 2025-12-15 Bump actions/download-artifact from 6 to 7
+      #3792 merged 2025-10-27 Bump actions/download-artifact from 5 to 6
+      #3833 merged 2025-11-21 Bump actions/checkout from 5 to 6
+      #3793 merged 2025-10-27 Bump actions/upload-artifact from 4 to 5
+      #3754 merged 2025-08-06 Bump actions/download-artifact from 4 to 5
+      #3767 merged 2025-09-05 Bump actions/setup-python from 5 to 6
+      #3757 merged 2025-08-12 Bump actions/checkout from 4 to 5
+      #2727 closed 2023-02-06 Multiple dictionaries (add default one) for `dictionary` config setting
+  clobber        2 hit(s) (all listed)
+      #1111 open 2019-05-08 Make target 'trim-dictionary' could clobber a pre-existing .bak file
+      #1074 merged 2019-04-11 Add spelling fixes, primarily triple letters when double is correct, recuse->recurse and hmdi->hdmi  
+  blank          19 hit(s) (all listed)
+      #2617 open 2022-11-20 Skip comments and blanks in dictionary files
+      #3246 open 2023-12-11 [wishlist]: Add a way to enter an alternative word in "Choose an option (blank for none):"
+      #3965 open 2026-06-28 No error when beginning with '
+      #3091 open 2023-09-23 allow user to customize start number when picking from misspellings interactively
+      #1111 open 2019-05-08 Make target 'trim-dictionary' could clobber a pre-existing .bak file
+      #3492 open 2024-07-21 README: '--quiet-level' is mentioned but not explained
+      #3990 merged 2026-08-07 Interactive mode: an answer applies to one occurrence, not the whole run
+      #3915 open 2026-04-14 Allow comment in dictionary
+      #1435 open 2020-03-04 Add support for other languages
+      #3476 merged 2024-06-27 Add --ignore-multiline-regex option.
+      #3475 closed 2024-06-27 Add --ignore-multiline-regex option.
+      #3341 closed 2024-01-30 The value of "--interactive"  is not restricted
+      #3245 closed 2023-12-11 [wishlist]: Add a way to enter an alternative word in "Choose an option (blank for none):
+      #27 closed 2015-03-11 pep8 warnings
+      #1088 closed 2019-04-19 Blank lines in dictionary aren't flagged by check-dictionary, cause crash
+      #1136 closed 2019-05-26 Switch Codecov to the status API rather than comments
+      #92 merged 2016-10-17 Enhance --dictionary option to allow multiple dictionaries
+      #1089 merged 2019-04-19 Fix Blank lines in dictionary aren't flagged by check-dictionary, cause crash #1088
+      #1592 merged 2020-07-08 Add --ignore-regex
+  unreadable     6 hit(s) (all listed)
+      #2673 open 2022-12-27 Exits with an exception on unreadable TOML file
+      #2157 open 2021-11-16 Set exit status if a file does not exist
+      #3017 open 2023-08-09 Pre-commit keeps doing whitespace changes
+      #3216 closed 2023-11-14 .codespellrc file doesn't work
+      #2196 merged 2021-12-11 Fix uncaught exception on unreadable files
+      #2189 closed 2021-12-06 codespell fails with uncaught exception on unreadable files
+  garbage        4 hit(s) (all listed)
+      #3143 closed 2023-10-14 Create classes.py
+      #3134 closed 2023-10-11 python heap sort added
+      #1839 merged 2020-12-28 Add misspellings for certificate, garbage, integrate, policy, subsequent and view
+      #440 merged 2018-04-06 Add gargage->garbage
+  mangled        1 hit(s) (all listed)
+      #3531 closed 2024-09-01 Typos found in pandas
+  contents       32 hit(s) (all listed)
+      #4002 open 2026-08-25 Check hidden files named explicitly on the command line
+      #3971 open 2026-07-13 Add --min-word-length option to ignore short words
+      #2977 open 2023-07-27 Add an option to only check filenames/ignore content
+      #2243 open 2022-01-16 [feature] ignore URL encode
+      #2026 open 2021-07-29 Dictionary missing term when cased correctly
+      #3981 open 2026-07-17 Report real line numbers after an --ignore-multiline-regex region
+      #3160 open 2023-10-18 Add common repetitions
+      #3209 open 2023-11-11 Feature Request: More context for config file errors
+      #2491 open 2022-09-04 Creating specific ignore lists for specific files?
+      #1435 open 2020-03-04 Add support for other languages
+      #3017 open 2023-08-09 Pre-commit keeps doing whitespace changes
+      #2058 open 2021-09-10 Fix --skip matching
+      #1601 open 2020-07-24 Does codespell support skipping the presence of a word in a specific file, but still search for it elsewhere?
+      #3911 merged 2026-04-12 fix(packaging): prevent unwanted files and tests from being installed
+      #3210 closed 2023-11-11 Bug(doc): Case-sensitivity of ignored words
+      #3674 closed 2025-03-23 Inline ignore comment ignored
+      #3631 merged 2025-02-03 Revert adding `lien` to the rare dictionary 
+      #3436 closed 2024-05-26 I need to ignore "image/png"  the contents of the ipynb(python) file / .pre-commit-config.yaml
+      #3434 merged 2024-05-25 Refactor: Move some code to new files for reuse
+      #3359 closed 2024-02-16 Redundant sort test
+  in-place       84 hit(s) (all listed)
+      #1607 open 2020-07-28 Add renaming advice based on Twitter engineering guidelines
+      #3017 open 2023-08-09 Pre-commit keeps doing whitespace changes
+      #3980 open 2026-07-17 Keep --ignore-regex from shifting match offsets
+      #1111 open 2019-05-08 Make target 'trim-dictionary' could clobber a pre-existing .bak file
+      #1897 open 2021-03-23 Inspect only git tracked files when run under git repos
+      #1390 open 2019-12-18 Rouge  ==> Rogue and -L error.
+      #1361 open 2019-12-05 Make it easier to submit dictionary entries
+      #2138 open 2021-11-06 Jupyter notebook filter to only spell check inside cell inputs
+      #2157 open 2021-11-16 Set exit status if a file does not exist
+      #1468 open 2020-04-05 Consider ways to automate en_US->en_GB dictionary corrections
+      #2273 open 2022-02-10 Wrong replacement of "complies" (v. comply) with "compiles" (v. compile)
+      #2058 open 2021-09-10 Fix --skip matching
+      #3990 merged 2026-08-07 Interactive mode: an answer applies to one occurrence, not the whole run
+      #1601 open 2020-07-24 Does codespell support skipping the presence of a word in a specific file, but still search for it elsewhere?
+      #3637 closed 2025-02-07 In-line ignoring of the following line
+      #1212 closed 2019-08-02 Support inline ignores
+      #3721 merged 2025-06-19 Speed up `codespell:ignore` check by skipping the regex in most cases
+      #1657 closed 2020-08-29 Added checking on two word sequences in addition to word by word
+      #1838 closed 2020-12-28 Add a couple of spelling corrections
+      #1764 closed 2020-11-20 Move 'commitish->committish' to code dictionary
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  7 hit(s) (all listed)
+      #3981 open 2026-07-17 Report real line numbers after an --ignore-multiline-regex region
+      #726 open 2018-10-28 Add a --no-context option when parsing stdin
+      #174 closed 2017-10-27 C escapes
+      #808 closed 2019-01-16 README: refines -S flag entry + add note about not using '/'
+      #1085 closed 2019-04-16 Typos from WordPress history
+      #765 merged 2018-11-23 Typos from LibreOffice Nov. 2018
+      #564 merged 2018-07-10 Typos from web
+  crash+safe     0 hit(s)
+  atomic+write   1 hit(s) (all listed)
+      #3196 open 2023-11-02 "Interaction" with pre-commit: ideally should skip the skipped files.
+  lock+file      13 hit(s) (all listed)
+      #3196 open 2023-11-02 "Interaction" with pre-commit: ideally should skip the skipped files.
+      #1390 open 2019-12-18 Rouge  ==> Rogue and -L error.
+      #2375 open 2022-06-23 Bug?  `ignore-words-list` seems to have no effect
+      #1915 open 2021-05-08 Behavior of --skip with folder names
+      #3261 open 2023-12-23 Enhancement: --jobs to process files in parallel
+      #3969 closed 2026-07-08 `--toml` crashes with `AttributeError: 'list' object has no attribute 'items'` on a `pyproject.toml` with an array-of-tables directly under `[tool]` (e.g. `[[tool.dynamic-metadata]]`)
+      #3847 merged 2025-12-15 Bump actions/download-artifact from 6 to 7
+      #3846 merged 2025-12-15 Bump actions/upload-artifact from 5 to 6
+      #3216 closed 2023-11-14 .codespellrc file doesn't work
+      #3110 closed 2023-10-02 `pre-commit` not respecting `--skip` for directory
+      #2625 merged 2022-11-27 Switch from pytest tmpdir to tmp_path in tests
+      #1159 closed 2019-06-14 Stopped working with pre-commit
+      #1624 merged 2020-08-11 Fix mistakes
+  write+failure  12 hit(s) (all listed)
+      #3978 open 2026-07-16 Fix --write-changes silently not fixing a trailing-apostrophe typo
+      #3981 open 2026-07-17 Report real line numbers after an --ignore-multiline-regex region
+      #3980 open 2026-07-17 Keep --ignore-regex from shifting match offsets
+      #3994 merged 2026-08-14 Do not report a fix that --ignore-regex made impossible
+      #3305 open 2024-01-23 Detection of string delimiters
+      #3983 merged 2026-07-21 Bump actions/setup-python from 6 to 7
+      #1657 closed 2020-08-29 Added checking on two word sequences in addition to word by word
+      #1656 merged 2020-08-28 Add support for ignoring spelling mistakes in URIs specifically.
+      #2771 merged 2023-03-06 ENH: Color matching wrong word in the interactive session
+      #2497 merged 2022-09-11 Include chardet in dev dependencies
+      #2547 closed 2022-10-20 Broken package name (since commit [754b9a52f7bb83d8d356050a14caebc6fbaccc85])
+      #564 merged 2018-07-10 Typos from web
+  file+contents  26 hit(s) (all listed)
+      #4002 open 2026-08-25 Check hidden files named explicitly on the command line
+      #3971 open 2026-07-13 Add --min-word-length option to ignore short words
+      #2026 open 2021-07-29 Dictionary missing term when cased correctly
+      #3981 open 2026-07-17 Report real line numbers after an --ignore-multiline-regex region
+      #3209 open 2023-11-11 Feature Request: More context for config file errors
+      #3160 open 2023-10-18 Add common repetitions
+      #2491 open 2022-09-04 Creating specific ignore lists for specific files?
+      #1435 open 2020-03-04 Add support for other languages
+      #3017 open 2023-08-09 Pre-commit keeps doing whitespace changes
+      #1601 open 2020-07-24 Does codespell support skipping the presence of a word in a specific file, but still search for it elsewhere?
+      #2058 open 2021-09-10 Fix --skip matching
+      #3911 merged 2026-04-12 fix(packaging): prevent unwanted files and tests from being installed
+      #3674 closed 2025-03-23 Inline ignore comment ignored
+      #3436 closed 2024-05-26 I need to ignore "image/png"  the contents of the ipynb(python) file / .pre-commit-config.yaml
+      #3359 closed 2024-02-16 Redundant sort test
+      #3434 merged 2024-05-25 Refactor: Move some code to new files for reuse
+      #3290 closed 2024-01-14 Ignore line endings for testing --exclude-file contents
+      #1888 closed 2021-03-14 Add a way to ignore line endings when matching lines from `--exclude-file`
+      #3145 closed 2023-10-14 Word splitting sometimes fails with accents
+      #3227 closed 2023-11-18 False positive with accented last name
+
+== 51 terms run; 37 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

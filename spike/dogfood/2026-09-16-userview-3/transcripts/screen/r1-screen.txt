@@ -1,0 +1,33 @@
+OK codespell
+OK vim
+OK zstd
+OK rubocop
+OK zoxide
+--- 素材 ---
+total 224
+drwxr-xr-x 3 root root   4096 Sep 16 00:44 .
+drwxr-xr-x 1 root root   4096 Sep 16 00:44 ..
+-rw-r--r-- 1 root root     16 Sep 16 00:44 a.rb
+-rw-r--r-- 1 root root     61 Sep 16 00:44 a.txt
+-rw-r--r-- 1 root root     19 Sep 16 00:44 b.txt
+-rw-r--r-- 1 root root 200000 Sep 16 00:44 f.bin
+-rw-r--r-- 1 root root     15 Sep 16 00:44 v.txt
+drwxr-xr-x 3 root root   4096 Sep 16 00:44 zhome
+
+=== 候補スクリーニング（実操作で測る）===
+codespell    script   thread=0    clone=0    rc=0    Python script, ASCII text executable
+vim          dynamic  thread=0    clone=0    rc=0    ELF 64-bit LSB pie executable, ARM aarch64, v
+zstd         dynamic  thread=3    clone=3    rc=0    ELF 64-bit LSB pie executable, ARM aarch64, v
+rubocop      script   thread=2    clone=2    rc=0    Ruby script, ASCII text executable
+zoxide       dynamic  thread=0    clone=0    rc=0    ELF 64-bit LSB pie executable, ARM aarch64, v
+
+--- 書き込み後 ---
+total 224
+drwxr-xr-x 3 root root   4096 Sep 16 00:44 .
+drwxr-xr-x 1 root root   4096 Sep 16 00:44 ..
+-rw-r--r-- 1 root root     14 Sep 16 00:44 a.rb
+-rw-r--r-- 1 root root     61 Sep 16 00:44 a.txt
+-rw-r--r-- 1 root root     19 Sep 16 00:44 b.txt
+-rw-r--r-- 1 root root 200019 Sep 16 00:44 f.bin.zst
+-rw-r--r-- 1 root root     15 Sep 16 00:44 v.txt
+drwxr-xr-x 3 root root   4096 Sep 16 00:44 zhome

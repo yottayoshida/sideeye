@@ -1,0 +1,14 @@
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+falsify: setuptools が import できなくなった: NameError: name 'sideeye' is not defined
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+PASS  5/5 explored worlds satisfied the built-in atomicity invariant
+      explored 5 worlds (crash points 4 + 1 baseline)
+      expected status: 0
+      atomicity: 593 path(s) judged pre-or-post; 493 path(s) attributed to a directory a recorded rename moved in from outside the judged root, and not individually accounted for — that source subtree was never snapshotted, so what arrived with the move and what an unrecorded writer added afterwards cannot be told apart
+      oracle: agreed on 4 operations (15900 syscall lines examined, 12 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: 2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+      not tested: power loss, torn writes, concurrent processes

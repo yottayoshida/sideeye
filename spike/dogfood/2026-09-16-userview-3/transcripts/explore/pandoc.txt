@@ -1,0 +1,23 @@
+falsify: out.html が前の出力でも新しい出力でもない（25 bytes: sideeye-corruption-probe ）
+out.html が空になった（前の出力も消えた）
+FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 3 of 3
+            after  truncate(/localrun/st/pd/out.html)
+            before write(/localrun/st/pd/out.html)
+path        out.html
+observed    holding neither the old nor the new content
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (267 syscall lines examined, 12 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+l1          no marker configured
+case        /localrun/wk/ex-pandoc/cases/000001.json
+replay      sideeye replay /localrun/wk/ex-pandoc/cases/000001.json --shim /se/libsideeye_shim.so
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 4 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/pd SIDEEYE_TRACE_PATH=/localrun/wk/ex-pandoc/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>

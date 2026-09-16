@@ -1,0 +1,24 @@
+falsify: dst.txt が元の中身でも新しい中身でもない（25 bytes: sideeye-corruption-probe ）
+dst.txt が空になった（元の中身が消えた）
+dst.txt が空になった（元の中身が消えた）
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 4
+            after  open(/localrun/st/uu/dst.txt)
+            before open(/localrun/st/uu/dst.txt)
+path        dst.txt
+observed    holding neither the old nor the new content
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 4 operations (183 syscall lines examined, 64 in scope of the judged state), witness strace
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1, fchmodat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+l1          no marker configured
+case        /localrun/wk/ex-uucp/cases/000001.json
+replay      sideeye replay /localrun/wk/ex-uucp/cases/000001.json --shim /se/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/uu SIDEEYE_TRACE_PATH=/localrun/wk/ex-uucp/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

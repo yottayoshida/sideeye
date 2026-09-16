@@ -1,0 +1,71 @@
+=== versions ===
+2.4.1
+1.39.0
+ruby 3.3.8
+Python 3.13.5
+Debian GNU/Linux 13 (trixie)
+aarch64
+codespell 2.4.1-1
+rubocop 1.39.0+dfsg-1
+
+=== codespell: strace の書き込み経路 ===
+24    write(2, "FIXED: /localrun/ev/cs/a.txt\n", 29) = 29
+24    openat(AT_FDCWD, "/localrun/ev/cs/a.txt", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3
+24    write(2, "FIXED: /localrun/ev/cs/b.txt\n", 29) = 29
+24    openat(AT_FDCWD, "/localrun/ev/cs/b.txt", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3
+--- 実行後 ---
+ 93 /localrun/ev/cs/a.txt
+ 65 /localrun/ev/cs/b.txt
+158 total
+
+=== codespell: crash point 2 で止めたときの状態 ===
+-rw-r--r-- 1 root root 93 Sep 16 01:28 a.txt
+-rw-r--r-- 1 root root 64 Sep 16 01:28 b.txt
+kill 後の exit=137
+-rw-r--r-- 1 root root  0 Sep 16 01:28 a.txt
+-rw-r--r-- 1 root root 64 Sep 16 01:28 b.txt
+a.txt の中身: []
+
+=== rubocop: strace の書き込み経路 ===
+43    openat(AT_FDCWD, "/usr/lib/ruby/vendor_ruby/rubygems/vendor/molinillo/lib/molinillo/gem_metadata.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+43    openat(AT_FDCWD, "/usr/lib/ruby/vendor_ruby/rubygems/vendor/molinillo/lib/molinillo/gem_metadata.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+43    openat(AT_FDCWD, "/usr/share/rubygems-integration/all/gems/regexp_parser-2.6.1/lib/regexp_parser/syntax/token/meta.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+43    openat(AT_FDCWD, "/usr/share/rubygems-integration/all/gems/regexp_parser-2.6.1/lib/regexp_parser/syntax/token/meta.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+43    openat(AT_FDCWD, "/usr/share/rubygems-integration/all/gems/parser-3.3.4.2/lib/parser/meta.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+43    openat(AT_FDCWD, "/usr/share/rubygems-integration/all/gems/parser-3.3.4.2/lib/parser/meta.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+43    openat(AT_FDCWD, "/usr/share/rubygems-integration/all/gems/rubocop-1.39.0/lib/rubocop/cop/mixin/trailing_comma.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+43    openat(AT_FDCWD, "/usr/share/rubygems-integration/all/gems/rubocop-1.39.0/lib/rubocop/cop/mixin/trailing_comma.rb", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 5
+--- 実行後 ---
+70 /localrun/ev/rb/a.rb
+
+=== rubocop: crash point 2 で止めたときの状態 ===
+-rw-r--r-- 1 root root 76 Sep 16 01:28 a.rb
+kill 後の exit=137
+-rw-r--r-- 1 root root 0 Sep 16 01:28 a.rb
+a.rb の中身: []
+=== rubocop: a.rb に対する書き込み経路だけ ===
+12    openat(AT_FDCWD, "/localrun/ev/rb2/a.rb", O_RDONLY|O_CLOEXEC) = 5
+12    openat(AT_FDCWD, "/localrun/ev/rb2/a.rb", O_RDONLY|O_CLOEXEC) = 5
+12    openat(AT_FDCWD, "/localrun/ev/rb2/a.rb", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+12    openat(AT_FDCWD, "/localrun/ev/rb2/a.rb", O_RDONLY|O_CLOEXEC) = 5
+--- 実行後 ---
+70 /localrun/ev/rb2/a.rb
+# MARKER-A
+def greet(name)
+  puts("hello #{name}")
+end
+greet("world")
+=== codespell: ulimit -f 0 ===
+前: 93 bytes
+FIXED: /localrun/ev3/a.txt
+OSError: [Errno 27] File too large
+
+後: 0 bytes
+
+=== rubocop: ulimit -f 0 ===
+前: 76 bytes
+File size limit exceeded
+後: 0 bytes
+
+=== codespell: 読み取り専用ディレクトリではなく、書き込み中の SIGKILL（sideeye 無し・手で）===
+前: 93 bytes

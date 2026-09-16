@@ -1,0 +1,16 @@
+falsify: batcat がテーマ一覧を出せない: [31m[bat error][0m: Error while parsing metadata.yaml file: invalid type: string "sideeye-corruption-probe", expected struct AssetsMetadata
+batcat がテーマ一覧を出せない: [31m[bat error][0m: The binary caches for the user-customized syntaxes and themes in '/localrun/st/bt2' are not compatible with this version of bat (0.25.0). To solve this, either rebuild the cache (bat cache --build) or remove the custom syntaxes/themes (bat cache --clear).
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left metadata.yaml holding neither the old nor the new content
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+apparatus   env:FAKETIME=@2024-01-01 00:00:00, preload:libfaketime
+
+atomicity   3 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

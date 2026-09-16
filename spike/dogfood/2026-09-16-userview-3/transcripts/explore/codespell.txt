@@ -1,0 +1,43 @@
+FIXED: /localrun/st/cs/a.txt
+FIXED: /localrun/st/cs/b.txt
+FIXED: /localrun/st/cs/c.txt
+falsify: a.txt から MARKER-A が消えた（25 bytes）
+FIXED: /localrun/st/cs/a.txt
+FIXED: /localrun/st/cs/a.txt
+a.txt が空になった
+FIXED: /localrun/st/cs/a.txt
+FIXED: /localrun/st/cs/b.txt
+FIXED: /localrun/st/cs/a.txt
+FIXED: /localrun/st/cs/b.txt
+b.txt が空になった
+FIXED: /localrun/st/cs/a.txt
+FIXED: /localrun/st/cs/b.txt
+FIXED: /localrun/st/cs/c.txt
+FIXED: /localrun/st/cs/a.txt
+FIXED: /localrun/st/cs/b.txt
+FIXED: /localrun/st/cs/c.txt
+c.txt が空になった
+FIXED: /localrun/st/cs/a.txt
+FIXED: /localrun/st/cs/b.txt
+FIXED: /localrun/st/cs/c.txt
+FAIL  3 of 7 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 6
+            after  open(/localrun/st/cs/a.txt)
+            before write(/localrun/st/cs/a.txt)
+path        a.txt
+observed    holding neither the old nor the new content
+explored    7 worlds (crash points 6 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 6 operations (1287 syscall lines examined, 93 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 7 world(s)
+l1          no marker configured
+case        /localrun/wk/ex-codespell/cases/000001.json
+replay      sideeye replay /localrun/wk/ex-codespell/cases/000001.json --shim /se/libsideeye_shim.so
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/cs SIDEEYE_TRACE_PATH=/localrun/wk/ex-codespell/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

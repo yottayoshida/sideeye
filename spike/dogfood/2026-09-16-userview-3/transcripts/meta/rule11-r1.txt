@@ -1,0 +1,56 @@
+=== codespell-project/codespell ===
+  #4005 2026-08-27 by nmoreaud: 0 comments  <- no response
+  #4003 2026-08-25 by polluks: first reply from DimitriPapadopoulos after 1.8d [OK]  False positive? servent
+
+=== rubocop/rubocop ===
+
+=== vim/vim ===
+  #21318 2026-09-15 by h-east: first reply from chrisbra after 0.3d [OK]  Concerns regarding undisclosed AI usage and redundan
+  #21315 2026-09-15 by gnarendran: first reply from zeertzjq after 0.0d [OK]  more-prompt pager swallows empty newlines when scrol
+
+=== uncrustify/uncrustify ===
+  #4782 2026-09-03 by levicki: 2 comments, all from the reporter  <- no response
+  #4780 2026-09-02 by levicki: 0 comments  <- no response
+  #4777 2026-09-02 by levicki: 1 comments, all from the reporter  <- no response
+  #4775 2026-08-29 by martindiv: 0 comments  <- no response
+
+=== crate-ci/typos ===
+  #1610 2026-08-28 by epage: first reply from doonv after 1.2d [OK]  Non-critical corrections - September 2026 Edition
+  #1607 2026-08-26 by chirizxc: first reply from epage after 0.0d [OK]  fix typo detection false positive for asend (python)
+  #1606 2026-08-25 by libvoid: first reply from epage after 0.0d [OK]  False Positive: HashiCorp
+  #1600 2026-08-13 by bitbloxhub: first reply from epage after 0.0d [OK]  False positive: FODs (Fixed-output derivations)
+
+=== JohnnyMorganz/StyLua ===
+  #1155 2026-09-12 by yoyo999888: 0 comments  <- no response
+  #1154 2026-09-10 by dgxo: 0 comments  <- no response
+  #1153 2026-09-10 by yoyo999888: 0 comments  <- no response
+  #1151 2026-09-06 by zeerd: 0 comments  <- no response
+
+=== PHP-CS-Fixer/PHP-CS-Fixer ===
+  #9838 2026-09-11 by fzlzjerry: 0 comments  <- no response
+  #9829 2026-09-07 by keradus: 0 comments  <- no response
+  #9827 2026-09-06 by Rsa97: 0 comments  <- no response
+
+=== anordal/shellharden ===
+  #69 2026-07-26 by alexander-turner: first reply from anordal after 18.6d [SLOW]  `--transform` emits `"${var[@]}"` for variables assi
+  #68 2026-07-01 by Pierre-Gronau-ndaal: 1 comments, all from the reporter  <- no response
+  #67 2026-05-05 by iroha924: first reply from anordal after 1.0d [OK]  Parser: "Unexpected end of file" when `case` is used
+  #61 2025-02-24 by Holzhaus: first reply from anordal after 0.5d [OK]  pre-commit support
+
+=== djlint/djLint ===
+  #2508 2026-09-12 by pygarap: 0 comments  <- no response
+
+=== facebook/zstd ===
+  #4785 2026-09-11 by Marcelo-Otowicz: 0 comments  <- no response
+  #4779 2026-09-10 by bbingoCN: first reply from KSAGlory after 1.4d [OK]  ZSTD_compressSequencesAndLiterals() does not enforce
+  #4777 2026-09-10 by dajiaohuang: 0 comments  <- no response
+  #4776 2026-09-10 by ChaseKnowlden: 0 comments  <- no response
+
+=== kovidgoyal/calibre ===
+
+=== ajeetdsouza/zoxide ===
+  #1298 2026-09-04 by mojotx: 0 comments  <- no response
+  #1297 2026-09-02 by stderr-to-devnull: 0 comments  <- no response
+  #1295 2026-08-30 by Skogix: 0 comments  <- no response
+  #1283 2026-08-16 by Uhm-why: first reply from ajeetdsouza after 5.6d [OK]  Bincode is Unmaintained - RUSTSEC-2025-0141
+

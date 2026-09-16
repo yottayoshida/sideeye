@@ -1,0 +1,48 @@
+=== fish-shell/fish-shell ===
+  #13003 2026-09-15 by drsybren: 0 comments  <- no response
+  #13002 2026-09-15 by the-isz: 0 comments  <- no response
+  #13000 2026-09-14 by midnightveil: first reply from krobelus after 0.2d [OK]  fish upgraded to version prompt when homedir is nfs 
+  #12998 2026-09-12 by lgarron: 1 comments, all from the reporter  <- no response
+
+=== pypa/pip ===
+  #14315 2026-09-15 by yonnnxr: first reply from pfmoore after 0.0d [OK]  Link hashes are parsed from the query string, not on
+  #14309 2026-09-12 by rickymatoiky3620-tech: first reply from notatallshaw after 0.0d [OK]  https://github.com/pypa/pip/issues/new/choose
+  #14307 2026-09-11 by stefan6419846: first reply from pfmoore after 0.0d [OK]  SBOM location is not compliant to PEP 770
+  #14300 2026-09-06 by JiarongGuo: first reply from 2ykwang after 0.1d [OK]  Error when Getting requirements to build wheel
+
+=== pre-commit/pre-commit ===
+  #3753 2026-09-07 by PierrunoYT: first reply from asottile after 0.0d [OK]  Black hook environment setup blocked by hatch-vcs do
+  #3749 2026-08-26 by Oisin-M: first reply from asottile after 0.0d [OK]  Minimum versions are very outdated
+  #3746 2026-08-16 by bitterepic: 0 comments  <- no response
+  #3744 2026-08-14 by lothar-bmw: first reply from asottile after 0.2d [OK]  Support enterprise/air-gapped environments for the `
+
+=== oetiker/rrdtool-1.x ===
+  #1381 2026-08-30 by benedri: 0 comments  <- no response
+  #1376 2026-07-22 by just-doit: 0 comments  <- no response
+  #1360 2026-07-14 by somethingwithproof: 0 comments  <- no response
+  #1358 2026-07-01 by z1atk0: first reply from fabianwenk after 5.3d [OK]  Upgrading from rrdtool-1.9.0 to rrdtool-1.10 breaks 
+
+=== neomutt/neomutt ===
+  #5033 2026-09-09 by doronbehar: first reply from gahr after 0.1d [OK]  The default `date_format` is ignoring the locale by 
+  #5029 2026-09-03 by chrisdebian: 0 comments  <- no response
+  #5026 2026-08-26 by tkasci: 1 comments, all from the reporter  <- no response
+  #5024 2026-08-23 by WinnerWind: 1 comments, all from the reporter  <- no response
+
+=== composer/composer ===
+  #13065 2026-09-10 by MatthewNellson: 0 comments  <- no response
+  #13055 2026-08-31 by webmake: first reply from stof after 0.0d [OK]  codeload 400
+  #13052 2026-08-27 by fisharebest: 0 comments  <- no response
+  #13047 2026-08-26 by hostep: first reply from Amoifr after 0.0d [OK]  Merge conflict marker in composer.lock causes autolo
+
+=== aria2/aria2 ===
+  #2398 2026-09-07 by Un1q32: 0 comments  <- no response
+  #2397 2026-09-06 by BLucky-gh: 0 comments  <- no response
+  #2395 2026-08-29 by ElenaKay: 0 comments  <- no response
+  #2394 2026-08-28 by ElenaKay: first reply from Tudsday after 0.4d [OK]  [Enhancement] JSON output from `aria2c -S`
+
+=== libvips/libvips ===
+  #5195 2026-08-25 by zfLQ2qx2: first reply from kleisauke after 8.7d [SLOW]  fail_on is ignored by thumbnail_buffer and thumbnail
+  #5194 2026-08-25 by zfLQ2qx2: first reply from kleisauke after 0.1d [OK]  vips_cache_drop_all() destroys the cache table, so e
+  #5189 2026-08-19 by jeremy: 0 comments  <- no response
+  #5187 2026-08-16 by 1820893135-pixel: first reply from kleisauke after 0.4d [OK]  misaligned float load (UB) in vips_avg_scan() when l
+

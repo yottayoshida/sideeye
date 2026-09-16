@@ -1,0 +1,8 @@
+# ラウンド4の実行用。
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates procps faketime libfaketime
+RUN for p in ninja-build ccache pandoc meson rust-coreutils gcc libc6-dev; do \
+      apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p"; \
+    done | tee /tmp/apt-summary.txt
+WORKDIR /work

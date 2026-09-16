@@ -1,0 +1,650 @@
+== novelty pre-scan: rubocop/rubocop
+== date: 2026-09-16T01:12:52Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15692 merged 2026-09-11 Fix Layout/RedundantLineBreak crash on nested multiline assignments
+      #15584 merged 2026-08-20 Fix cop crashes on binary string literals
+      #15672 closed 2026-09-08 Crash with rubocop:push/rubocop:pop around 2 method definitions
+      #15640 merged 2026-08-30 Fix an infinite loop error for `Layout/FirstArrayElementIndentation`
+      #15602 merged 2026-08-25 Fix Layout/IndentationWidth error on under-indented code with tabs
+      #15598 merged 2026-08-24 Fix an infinite loop error for `Lint/AssignmentInCondition`
+      #15379 merged 2026-06-28 Fix a crash for `Style/TrailingUnderscoreVariable`
+      #15597 merged 2026-08-24 Fix an infinite loop error for `Layout/EmptyLinesAfterModuleInclusion`
+      #15599 merged 2026-08-24 Fix an infinite loop error for `Layout/CommentIndentation`
+      #15635 merged 2026-08-30 Fix relative redirects for RemoteConfig
+      #15413 merged 2026-06-29 Fix a crash for `Gemspec/DevelopmentDependencies` when `AllowedGems` is nil
+      #15704 merged 2026-09-12 Fix a race condition in the `Runner` SIGINT spec
+      #15414 merged 2026-06-29 Fix a crash for `Naming/InclusiveLanguage` with nil or empty `FlaggedTerms`
+      #15404 merged 2026-06-29 Fix a crash for `Metrics/MethodLength` with an anonymous `define_method`
+      #15330 merged 2026-06-25 Fix a crash for `Style/EmptyStringInsideInterpolation` with a modifier conditional
+      #15569 merged 2026-08-14 Fix an error for LSP `workspace/executeCommand` without arguments
+      #15469 merged 2026-07-15 Fix a `RangeError` for `Style/RedundantFormat`
+      #15405 merged 2026-06-29 Fix a crash for `Security/IoMethods` with a non-string-literal argument
+      #15565 merged 2026-08-12 Add `RequiredBlankLines` option to `Layout/EmptyLineAfterMagicComment`
+      #15351 merged 2026-06-26 Fix a crash for Style/OpenStructUse with a bare OpenStruct root node
+  corrupt        34 hit(s) (all listed)
+      #15656 open 2026-09-02 Fix Layout/LineLength breaking lines after nested heredoc arguments
+      #15653 merged 2026-09-02 Require a justification for our own cop directives
+      #15402 merged 2026-06-29 Fix an infinite loop for `Layout/LineLength` with `SplitStrings`
+      #15376 merged 2026-06-28 Fix a false positive for `Style/Semicolon` with a semicolon inside a string literal
+      #15407 merged 2026-06-29 Fix an infinite loop for `Gemspec/RequireMFA` with multiple specifications
+      #15452 merged 2026-07-13 Fix a false positive for Layout/HashAlignment with table style and a multiline key
+      #15572 merged 2026-08-16 Fix frozen registry pollution from lazily loaded plugin cops
+      #15217 merged 2026-06-04 Fix incorrect autocorrect for redundant cop directive cops with prefix names
+      #15274 merged 2026-06-11 Fix autocorrects that mangle comments in two Style cops
+      #15152 closed 2026-05-04 Fix whitespace handling in `Layout/ClassStructure` autocorrect
+      #14817 closed 2026-01-29 Infinite loop with Layout/FirstArgumentIndentation and Layout/LineLength causes massive whitespace corruption
+      #14431 merged 2025-08-11 support LSP TextDocumentSyncKind.Incremental
+      #11832 closed 2023-05-01 Support free-spacing mode `Regexp` in `Naming/InclusiveLanguage`
+      #13578 closed 2024-12-12 `Layout/LineContinuationSpacing` erroneously identifies and corrupts line continuations in `Regexp` literals
+      #12571 closed 2023-12-25 Naming/BlockForwarding with anonymous block parameter (Ruby 3.3.0)
+      #10263 closed 2021-11-23 configuration in child directory can corrupt configuration in parent directory
+      #10953 merged 2022-08-24 [Fix #10919] Fix a huge performance regression between 1.32.0 and 1.33.0
+      #1358 merged 2014-09-30 Force single-job bundle install
+      #2023 closed 2015-07-08 Corrupted 'rescue' keyword becomes 'rescu e', trailing 's' separated from method name.
+      #1404 closed 2014-10-22 Auto Correct corrupted Gemfile.lock
+  corruption     8 hit(s) (all listed)
+      #15656 open 2026-09-02 Fix Layout/LineLength breaking lines after nested heredoc arguments
+      #15452 merged 2026-07-13 Fix a false positive for Layout/HashAlignment with table style and a multiline key
+      #14817 closed 2026-01-29 Infinite loop with Layout/FirstArgumentIndentation and Layout/LineLength causes massive whitespace corruption
+      #13578 closed 2024-12-12 `Layout/LineContinuationSpacing` erroneously identifies and corrupts line continuations in `Regexp` literals
+      #6083 merged 2018-07-07 [Fix 6071] Fix MethodCallWithArgsParentheses when args are method calls
+      #5232 closed 2017-12-12 AutoCorrect parsing error and file corruption
+      #6934 closed 2019-04-15 Extraneous space characters inserted with alignment of equal signs turned on, with an if-block
+      #8091 closed 2020-06-02 Is it time to change the name?
+  truncated      22 hit(s) (all listed)
+      #15213 merged 2026-06-03 Generate cleaner changelog entry filenames
+      #12729 closed 2024-02-29 Fix auto-generation of outstanding issues to respect XDG configuration
+      #14806 closed 2026-01-27 Fix Style/NegativeArrayIndex with refined substrings
+      #15314 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #14679 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #14438 merged 2025-08-11 Bump actions/checkout from 4 to 5
+      #14515 merged 2025-09-08 Bump actions/stale from 9 to 10
+      #13336 closed 2024-10-15 Style/SafeNavigationConsistency's fix breaks code
+      #13160 merged 2024-08-26 Bump paambaati/codeclimate-action from 8 to 9
+      #13000 merged 2024-06-17 Bump paambaati/codeclimate-action from 6 to 8
+      #12189 merged 2023-09-04 Bump actions/checkout from 3 to 4
+      #11435 merged 2023-01-12 Increase generated changelog entry's length
+      #10960 closed 2022-08-24 Naming/MethodParameterName AllowedNames support for `as`
+      #11217 merged 2022-11-30 Bump actions/setup-python from 2 to 4
+      #10320 closed 2021-12-26 Style/FileWrite autocorrect truncates heredocs
+      #10317 closed 2021-12-25 Fix Style/MethodCallWithArgsParentheses inconsistency with hash punning
+      #7839 closed 2020-04-01 Style/Alias: prefer_alias has no effect
+      #4392 closed 2017-05-19 Style/Next truncates previous line when indenting is off
+      #5281 closed 2017-12-19 --auto-gen-config can fail with "Error: empty section found in .rubocop_todo.yml"
+      #7571 closed 2019-12-16 0.76 -> 0.77 has issue with regex escape in YAML
+  truncate       34 hit(s) (all listed)
+      #15213 merged 2026-06-03 Generate cleaner changelog entry filenames
+      #14768 closed 2026-01-02 feat: Semantic Version comparison cop
+      #14861 closed 2026-02-08 `Style/IfUnlessModifier` fails when inspecting ternary expression
+      #14855 closed 2026-02-08 `Style/IfUnlessModifier` crashes while inspecting file
+      #12729 closed 2024-02-29 Fix auto-generation of outstanding issues to respect XDG configuration
+      #14806 closed 2026-01-27 Fix Style/NegativeArrayIndex with refined substrings
+      #15314 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #14679 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #14438 merged 2025-08-11 Bump actions/checkout from 4 to 5
+      #14515 merged 2025-09-08 Bump actions/stale from 9 to 10
+      #13595 closed 2024-12-16 new cop: Single Line Complexity
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #13482 closed 2024-11-21 New cop to detect usage of File.open with empty block
+      #13336 closed 2024-10-15 Style/SafeNavigationConsistency's fix breaks code
+      #14288 merged 2025-06-14 Add new cop `Style/CollectionQuerying`
+      #13160 merged 2024-08-26 Bump paambaati/codeclimate-action from 8 to 9
+      #13000 merged 2024-06-17 Bump paambaati/codeclimate-action from 6 to 8
+      #12189 merged 2023-09-04 Bump actions/checkout from 3 to 4
+      #11435 merged 2023-01-12 Increase generated changelog entry's length
+      #10960 closed 2022-08-24 Naming/MethodParameterName AllowedNames support for `as`
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15580 open 2026-08-19 [Fix #15067] Fix an incorrect autocorrect for Style/CollectionQuerying
+      #9365 open 2021-01-11 Layout/EmptyLinesAroundArguments has a bad default: makes documentation worse
+      #15701 open 2026-09-12 Report unrecognized cop names from --show-cops and --show-docs-url
+      #15076 open 2026-04-01 [Style/CollectionQuerying] Preserve semantics for count without block
+      #9992 open 2021-08-09 Non-declaration between declarations should stop equal sign alignment enforcement
+      #15620 open 2026-08-28 Index Ruby core and stdlib RBS signatures
+      #15067 open 2026-03-27 Incorrect advice for changing the code when `Style/CollectionQuerying` occurs
+      #8396 open 2020-07-24 Revisit Style/EmptyCaseCondition?
+      #15114 open 2026-04-17 [Fix #13755] Let auto_gen_config run in parallel
+      #15697 merged 2026-09-12 Fix an incorrect autocorrect for `Layout/EmptyLinesAroundBlockBody` cop
+      #15665 merged 2026-09-05 Fix Style/EmptyMethod loop with Style/SingleLineMethods
+      #13060 open 2024-07-24 Style/RedundantConditional should cover cases where only true is returned
+      #15507 closed 2026-07-25 Naming/VariableNumber reports an offense for an empty symbol
+      #7077 open 2019-05-23 Cop naming guidelines
+      #15619 merged 2026-08-28 Fix Layout/LineLength SplitStrings loop on trailing-space split point
+      #15597 merged 2026-08-24 Fix an infinite loop error for `Layout/EmptyLinesAfterModuleInclusion`
+      #15266 open 2026-06-10 [Fix #7662] Add new `Lint/DeprecatedMethods` cop
+      #15608 merged 2026-08-26 [Fix #15607] Recognize `warn_indent` as a magic comment
+      #15599 merged 2026-08-24 Fix an infinite loop error for `Layout/CommentIndentation`
+      #14993 open 2026-03-05 Add new `Style/WithIndexOffset` cop
+  atomic         17 hit(s) (all listed)
+      #14001 merged 2025-03-18 [Fix #12360] Add new `Naming/PredicateMethod` cop to check that predicate methods end with `?` and non-predicate methods do not
+      #13582 merged 2024-12-13 Fix `Lint/NonAtomicFileOperation` cop error on non-constant receiver
+      #13558 merged 2024-12-08 Fix `Lint/NonAtomicFileOperation` cop error in case of implicit receiver
+      #13325 merged 2024-10-11 Fix the autocorrect of non_atomic_file_operation
+      #13589 merged 2024-12-14 Fix `Lint/NonAtomicFileOperation` cop to detect offenses with FQ constants
+      #10696 merged 2022-06-06 Add new `Lint/NonAtomicFileOperation` cop
+      #10781 merged 2022-07-03 Fix a suggestions for safer conversions for `Lint/NonAtomicFileOperation`
+      #10813 closed 2022-07-13 False positive of `NonAtomicFileOperation` for `FileUtils.rm_r`
+      #10818 merged 2022-07-14 [Fix rubocop#10813] Fix recursive deletion to suppression in `Lint/NonAtomicFileOperation`
+      #10936 closed 2022-08-19 An error occurred while Lint/NonAtomicFileOperation cop was inspecting
+      #10715 merged 2022-06-15 Add Layout/LineContinuationLeadingSpace cop
+      #2676 closed 2016-01-19 Performance/RedundantMerge for many values
+      #8470 closed 2020-08-06 Style/StringConcatenation: flexibility settings
+      #3398 merged 2016-08-10 Disable autocorrect for unsafe rules by default
+      #4186 closed 2017-03-27 [Fix #3318] WIP: Look for Ruby version in parent folders
+      #2153 merged 2015-08-16 [Fix #1924] Use a cache to speed things up
+      #6686 closed 2019-01-18 Extract NodePattern to a separated gem
+  atomically     2 hit(s) (all listed)
+      #4186 closed 2017-03-27 [Fix #3318] WIP: Look for Ruby version in parent folders
+      #6686 closed 2019-01-18 Extract NodePattern to a separated gem
+  interrupted    5 hit(s) (all listed)
+      #14616 merged 2025-10-21 Run `references:verify` task before version bump
+      #222 closed 2013-05-30 Feature: Formatter
+      #6436 merged 2018-10-31 Fix exit status when rubocop is interrupted
+      #88 merged 2013-04-23 Abort gracefully when interrupted with Ctrl-C
+      #900 merged 2014-03-17 add option to show cops disabed by inline comments
+  interrupt      28 hit(s) (all listed)
+      #15702 merged 2026-09-12 Fix an error when interrupting RuboCop with `Ctrl-C`
+      #15704 merged 2026-09-12 Fix a race condition in the `Runner` SIGINT spec
+      #15460 closed 2026-07-14 Segmentation fault in/near yaml_duplication_checker.rb
+      #14616 merged 2025-10-21 Run `references:verify` task before version bump
+      #7501 closed 2019-11-12 Feature: Have `Lint/RescueException` allow `rescue Exception` if exception is re-raised
+      #12886 merged 2024-05-06 Suppress `Interrupt` exception for LSP
+      #11034 closed 2022-10-01 `--stderr` cause hang after `--start-server`
+      #10406 merged 2022-02-09 Fix a false positive for `Lint/InheritException`
+      #1563 closed 2015-01-12 Endless loop when a class has an attribute called `private`
+      #908 closed 2014-03-19 Rubocop fights with it self regarding TrailingComma vs SpaceInsideBrackets [Lock-up]
+      #173 closed 2013-05-15 allow alias in specific cases
+      #222 closed 2013-05-30 Feature: Formatter
+      #1901 closed 2015-05-16 rubocop -a infinite colons on an empty comment annotation
+      #4387 closed 2017-05-19 No idea how to override excludes from inherited yaml
+      #6811 closed 2019-03-05 UnneededDisable: Weird false positives
+      #9145 closed 2020-12-02 SuggestExtensions cop not working on JRuby
+      #9059 closed 2020-11-16 False positive of UnmodifiedReduceAccumulator for `self`
+      #3161 merged 2016-05-24 New cop Lint/ShadowedException
+      #5808 closed 2018-04-22 Restore previous interrupt handler after run
+      #7567 merged 2019-12-12 [Fix #5979] Introduce cops with special status
+  sigkill        1 hit(s) (all listed)
+      #15685 open 2026-09-10 Add a stall watchdog to the parallel spec runner
+  sigint         2 hit(s) (all listed)
+      #15704 merged 2026-09-12 Fix a race condition in the `Runner` SIGINT spec
+      #7501 closed 2019-11-12 Feature: Have `Lint/RescueException` allow `rescue Exception` if exception is re-raised
+  ctrl-c         14 hit(s) (all listed)
+      #15702 merged 2026-09-12 Fix an error when interrupting RuboCop with `Ctrl-C`
+      #15460 closed 2026-07-14 Segmentation fault in/near yaml_duplication_checker.rb
+      #13337 closed 2024-10-15 Style/RedundantLineContinuation: false positive
+      #12662 closed 2024-01-30 False positive on Style/HashTransformValues
+      #908 closed 2014-03-19 Rubocop fights with it self regarding TrailingComma vs SpaceInsideBrackets [Lock-up]
+      #3778 closed 2016-12-09 Very Very slowly when parse FactoryGirl factories.rb
+      #5808 closed 2018-04-22 Restore previous interrupt handler after run
+      #6537 merged 2018-11-30 Minor refactor of Ctrl-C handling
+      #6436 merged 2018-10-31 Fix exit status when rubocop is interrupted
+      #6452 closed 2018-11-06 Remove forceful exit
+      #6461 merged 2018-11-08 Improve Ctrl-C handling
+      #88 merged 2013-04-23 Abort gracefully when interrupted with Ctrl-C
+      #121 merged 2013-05-04 Fix random failure spec
+      #237 merged 2013-06-05 Syntax check by parser
+  power          30 hit(s) (all listed)
+      #15491 merged 2026-07-17 Add new Lint/NameTypo cop
+      #7077 open 2019-05-23 Cop naming guidelines
+      #15173 merged 2026-05-18 Add optional Rubydex integration
+      #15110 merged 2026-04-15 Implement true runner parallelism
+      #14538 closed 2025-09-18 Add FloatPrecision cop
+      #13074 merged 2024-07-29 Add new `Lint/UselessNumericOperation` cop
+      #13339 closed 2024-10-15 spec/rubocop/server/rubocop_server_spec.rb:225 failing
+      #10562 closed 2022-04-21 [Fix #10472] Add `AllowPercentArray` option to `Layout/MultilineArrayLineBreaks`
+      #1291 closed 2014-08-21 Consider using AST extension gem
+      #494 closed 2013-09-18 "Method has too many lines" check not smart enough
+      #496 closed 2013-09-19 nil-reference exception in AlignHash
+      #1151 closed 2014-06-15 Redesign of the configuration system
+      #4532 closed 2017-06-18 Help the parser project find more maintainers
+      #3300 closed 2016-07-08 Replacement of %q when escape characters are present can break code
+      #3272 closed 2016-07-01 Performance/StringReplacement autocorrect breaks /\R/
+      #4026 closed 2017-02-08 Style/SpaceAroundOperators doesn't recognize ** power operator
+      #7640 closed 2020-01-08 Disabling required extension doesn't work from child config
+      #7223 closed 2019-07-19 A proper home page and a better documentation portal
+      #7736 closed 2020-02-20 Suggest case/when if an if/elsif/else can be easily translated
+      #7746 closed 2020-02-22 More cops with parsing Regexp literals
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           27 hit(s) (all listed)
+      #15114 open 2026-04-17 [Fix #13755] Let auto_gen_config run in parallel
+      #15570 open 2026-08-14 Glob Exclude entries in .rubocop_todo.yml are silently skipped by --report-unused-todo-entries
+      #15628 merged 2026-08-30 Add `--diff` to preview autocorrection without writing files
+      #15521 merged 2026-08-03 Language server usability and performance improvements
+      #15430 merged 2026-07-03 Speed up the investigation hot path
+      #15222 merged 2026-06-04 Fix two `Lint/ScriptPermission` bugs (config autocorrect, virtual-source crash)
+      #14797 closed 2026-01-23 Command line option “--cache false” should prevent writing/creating cache directory
+      #8748 open 2020-09-19 Prefer `require_relative`
+      #13045 closed 2024-07-15 Feature request: Ability to correct global offenses
+      #15007 merged 2026-03-11 [Fix #13755] Run --auto-gen-config in parallel
+      #14954 merged 2026-02-25 [Fix #14583] Aggregate template fragment autocorrections per iteration
+      #15036 closed 2026-03-19 Could not run rubocop on android termux.
+      #14732 closed 2025-12-20 Would a performance oriented refactoring be welcome?
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #13453 closed 2024-11-13 Style/AccessModifierDeclarations does not recognize AllowModifiersOnAttrs/Symbols
+      #13157 merged 2024-08-23 Resolve ruby-head uri deprecation warning
+      #7405 closed 2019-10-04 support deny/allow listing specific offenses for autocorrect
+      #11992 closed 2023-06-28 Undefined method `log` for RuboCop::Lsp::Server
+      #2047 closed 2015-07-17 Rubocop --auto-correct is very slow 
+      #1555 closed 2015-01-07 minor: remove spec files from gem
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15586 open 2026-08-20 Fix Style/InverseMethods class hierarchy guard for non-literal operands
+      #15577 open 2026-08-18 Style/InverseMethods: class-hierarchy guard misses comparisons whose operands are not literal constants
+      #15481 merged 2026-07-16 Build the project index over the whole project
+      #11451 open 2023-01-13 Rubocop inspects files using cops that it shouldn't use
+      #15513 merged 2026-07-29 Improve `Style/DisableCopsWithinSourceCodeDirective` performance with memoized Set lookups
+      #15144 closed 2026-05-02 Style/SoleNestedConditional raises an error when autocorrecting nested conditionals with comments
+      #14828 merged 2026-02-02 Allowlist `infinite?` for some cops
+      #14803 merged 2026-01-27 Fix an error for `Layout/IndentationWidth` cop
+      #14870 merged 2026-02-11 [Fix #14816] Use toplevel cache configs for remote configuration files
+      #14680 merged 2025-11-24 Handle all `OptionParser` errors when running `rubocop` with input that causes an error
+      #12280 closed 2023-10-13 option --disable-pending-cops is activated with as little as --disable-p
+      #15043 closed 2026-03-21 An error occurred while Lint/UselessDefaultValueArgument
+      #14804 closed 2026-01-27 An error occurred while Layout/IndentationWidth cop was inspecting <file>
+      #9202 closed 2020-12-10 Error when inspecting file and folder with different config .rubocop.yml
+      #14843 closed 2026-02-06 Layout/MultilineMethodCallIndentation: 'method_on_receiver_last_line?': undefined method 'line' for nil (NoMethodError)
+      #14719 merged 2025-12-18 Fix crash when Layout/LineLength is disabled
+      #13117 merged 2024-08-14 Add partial autocorrect support for `Lint/LiteralAsCondition`
+      #14528 closed 2025-09-17 An error occurred while Style/RedundantFormat cop was inspecting
+      #14273 closed 2025-06-10 Lint/EmptyInterpolation crash with boolean value
+      #14475 closed 2025-08-25 VSCode LSP formatter crashes
+  incomplete     34 hit(s) (all listed)
+      #10475 open 2022-03-24 Style/DoubleNegation: EnforcedStyle: disallow_in_conditionals
+      #15506 merged 2026-07-23 Fix flaky `--auto-gen-config` specs by isolating the cache root
+      #15328 merged 2026-06-25 Fix an incorrect autocorrect for `Style/HashConversion` with a splat argument
+      #15509 closed 2026-07-26 Cop for all imminent deprecates, obsoletes and discourages
+      #15252 closed 2026-06-06 Lint/NumberConversion autocorrect breaks nil-safe behavior of safe navigation
+      #15098 closed 2026-04-10 Show Git version
+      #14829 closed 2026-02-02 Style/EmptyClassDefinition default and Lint/EmptyClass in conflict
+      #14808 merged 2026-01-27 Add new `Style/SelectByKind` cop
+      #14100 closed 2025-04-17 undefined method '[]' for nil with (incomplete) case statement
+      #14344 closed 2025-07-07 Unsafe autocorrection with Style/SingleLineMethods for a single line condition
+      #14223 merged 2025-06-01 Add new `Gemspec/AttributeAssignment` cop
+      #13819 merged 2025-02-11 [Fix #13818] Fix false positives for `Lint/Void`
+      #13837 merged 2025-02-14 Make plugin load error messages more user-friendly
+      #13735 merged 2025-01-21  [Fix #13323] Add new `Lint/ArrayLiteralInRegexp` cop 
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #12079 closed 2023-07-30 `Style/MixinGrouping` error for bare `extend`
+      #9397 merged 2021-01-21 Add documentation for Layout/MultilineAssignmentLayout `SupportedTypes`
+      #1647 closed 2015-02-10 Style/StyleAroundBlockParameters failing
+      #3020 closed 2016-04-08 --show-cops does not show custom cops
+      #3485 closed 2016-09-10 Rubocop crashes on ternary with empty else when in auto-correct mode
+  dataloss       0 hit(s)
+  recover        17 hit(s) (all listed)
+      #10449 closed 2022-03-10 Layout/ClassStructure autofix results in incorrect order, refuses to move a constant
+      #14508 merged 2025-09-05 Gracefully handle invalid configs during LSP addon startup
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #11136 merged 2022-11-01 Fix `table missing leading separator; recovering automatically`
+      #11135 merged 2022-10-31 Use broken vertical bar as adoc table separator
+      #11057 merged 2022-10-09 Make `Lint/RedundantRequireStatement` aware of `pp`, `ruby2_keywords`, and `fiber`
+      #11153 closed 2022-11-04 online doc: the rendering of the tables is broken
+      #10750 merged 2022-06-27 Recover 7x slow running `rubocop`
+      #10662 merged 2022-05-23 Recover Ruby 2.1 code analysis using `TargetRubyVersion: 2.1`
+      #10668 merged 2022-05-25 Recover Ruby 2.0 code analysis using `TargetRubyVersion: 2.0`
+      #10644 merged 2022-05-17 Recover Ruby 2.2 code analysis using `TargetRubyVersion: 2.2`
+      #10640 merged 2022-05-16 Recover Ruby 2.3 code analysis using `TargetRubyVersion: 2.3`
+      #10632 merged 2022-05-13 [Fix #10258] Recover Ruby 2.4 code analysis using `TargetRubyVersion: 2.4`
+      #10633 closed 2022-05-13 Autocorrect halts on duplicated attr_reader attribute for `Style/AccessorGrouping` policy
+      #9808 merged 2021-05-17 Workaround for mingw build error
+      #125 closed 2013-05-06 TrivialAccessors Cop Error
+      #5631 closed 2018-03-05 Rubocop -a `undefined_method range between` regression in 0.53.0
+  recovery       6 hit(s) (all listed)
+      #15062 merged 2026-03-26 Fix zero-length diagnostic range for syntax errors at EOF
+      #14448 merged 2025-08-14 Register array intersection size checks as offenses under `Style/ArrayIntersect`
+      #14429 closed 2025-08-07 Add new cop `Style/RedundantRaiseArgument`
+      #14011 closed 2025-03-20 Github crashes loading our CHANGELOG due to length/size
+      #14288 merged 2025-06-14 Add new cop `Style/CollectionQuerying`
+      #237 merged 2013-06-05 Syntax check by parser
+  rollback       8 hit(s) (all listed)
+      #14429 closed 2025-08-07 Add new cop `Style/RedundantRaiseArgument`
+      #13445 closed 2024-11-11 Rubocop server crashing when it attempts to restart
+      #12571 closed 2023-12-25 Naming/BlockForwarding with anonymous block parameter (Ruby 3.3.0)
+      #5949 closed 2018-06-05  Lint/EnsureReturn cop - why ensure must not return
+      #11296 closed 2022-12-16 Lint/UnreachableCode does not handle ActiveRecord::Rollback exceptions correctly
+      #7886 closed 2020-04-17 Conflict between Lint/RedundantCopDisableDirective and Lint/SuppressedException
+      #2408 merged 2015-11-09 [Fix #2407] Use Etc.getpwuid.name to retrieve user login
+      #2414 closed 2015-11-10 Call :expression on node instead of :keyword loc
+  resume         7 hit(s) (all listed)
+      #14814 merged 2026-01-28 Fix push/pop directives to properly handle nested scopes and state re…
+      #13183 closed 2024-09-02 Introduce `InternalAffairs/MissingExpectCorrection`
+      #11311 closed 2022-12-21 Style/FrozenStringLiteralComment docs and default
+      #12033 closed 2023-07-06 [Fix #10081] Fix Cop::Cop monkey patch on CopHelper
+      #6436 merged 2018-10-31 Fix exit status when rubocop is interrupted
+      #7919 closed 2020-04-29 [Fix #7855] show pending cops warnings in case passing configurationfile with -c option
+      #6034 closed 2018-06-21 WIP: Extend Cop metadata #5978
+  half-written   9 hit(s) (all listed)
+      #13128 closed 2024-08-16 [Documentation] FAQ, in particular a "usage FAQ" and rubocop-quickref
+      #11432 merged 2023-01-12 Add new `Style/InvertibleUnlessCondition` cop
+      #1468 closed 2014-11-27 Cops should be limitable to match RuboCop release tags.
+      #4082 closed 2017-03-01 Auto-correct empty class definitions
+      #6492 closed 2018-11-16 rubocop -a is slow
+      #7266 closed 2019-08-06 Style/PercentLiteralDelimiters doesn't detect `%{}`
+      #5522 merged 2018-01-28 [#5376] Add EmptyLineAfterGuardClause cop
+      #8071 closed 2020-05-31 Introduce rubocop:set/rubocop:reset directives
+      #5557 merged 2018-02-08 [Fix #5406] Add new `Layout/ClosingHeredocIndentation` cop.
+  wipe           7 hit(s) (all listed)
+      #15506 merged 2026-07-23 Fix flaky `--auto-gen-config` specs by isolating the cache root
+      #47 closed 2013-04-12 Landing page.
+      #3939 closed 2017-01-19 Receiving "Lint/Eval has the wrong namespace - should be Security" when rubocop is run
+      #3510 closed 2016-09-19 Style/SafeNavigation cop crashes when auto correct
+      #4459 closed 2017-06-02 How to Ignore Code at all costs
+      #8465 closed 2020-08-06 A unique combination of flags leads to an error
+      #6600 closed 2018-12-23 [Fix #3904] Build config & sync cop descriptions
+  wipes          0 hit(s)
+  erase          5 hit(s) (all listed)
+      #14755 open 2025-12-26 Add option to ignore cops for RedundantCopDisableDirective
+      #15114 open 2026-04-17 [Fix #13755] Let auto_gen_config run in parallel
+      #8091 closed 2020-06-02 Is it time to change the name?
+      #2153 merged 2015-08-16 [Fix #1924] Use a cache to speed things up
+      #900 merged 2014-03-17 add option to show cops disabed by inline comments
+  erasing        1 hit(s) (all listed)
+      #14755 open 2025-12-26 Add option to ignore cops for RedundantCopDisableDirective
+  erased         1 hit(s) (all listed)
+      #2153 merged 2015-08-16 [Fix #1924] Use a cache to speed things up
+  destroy        73 hit(s) (all listed)
+      #10472 open 2022-03-24 Add configuration options to `Layout/MultilineArrayLineBreaks`
+      #11375 open 2023-01-02 Layout/HashAlignment: allow grouping (i.e. separation by blank lines)
+      #15546 merged 2026-08-07 Don't autocorrect away directives for unknown cops
+      #10449 closed 2022-03-10 Layout/ClassStructure autofix results in incorrect order, refuses to move a constant
+      #15443 merged 2026-07-11 [Fix #15441] Add new `AllowYARDCommentBlockSeparator` option to `Layout/LeadingCommentSpace`
+      #9242 closed 2020-12-16 New cop for alignment of arguments on repeated, consecutive method calls
+      #12392 closed 2023-11-15 Cop idea: avoid numbered variables unless needed
+      #14288 merged 2025-06-14 Add new cop `Style/CollectionQuerying`
+      #7968 closed 2020-05-13 Allow cops to share context between files
+      #13091 closed 2024-08-05 Rubocop ignores Exclude in inherited configuration file.
+      #9505 closed 2021-02-10 Ability to disable cop for next line
+      #13339 closed 2024-10-15 spec/rubocop/server/rubocop_server_spec.rb:225 failing
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #12962 closed 2024-06-04 Auto-correction of Style/SymbolProc introduces ArgumentError: no receiver given
+      #12275 closed 2023-10-13 Exception in Style/RedundantDoubleSplatHashBraces
+      #10982 merged 2022-08-30 Do not omit parentheses for calls in assignments in conditional branches
+      #10280 closed 2021-12-02 Style/SymbolProc ignores comments
+      #10919 closed 2022-08-12 Huge performance regression between 1.32.0 and 1.34.1
+      #10593 merged 2022-04-30 [Fix #10325] Enhance `Style/RedundantCondition` for the case that variable assignments in each branch
+      #10564 merged 2022-04-22 [Fix #10563] Fix `Style/BlockDelimiters` unexpectedly deletes block
+  destroys       6 hit(s) (all listed)
+      #15546 merged 2026-08-07 Don't autocorrect away directives for unknown cops
+      #15443 merged 2026-07-11 [Fix #15441] Add new `AllowYARDCommentBlockSeparator` option to `Layout/LeadingCommentSpace`
+      #10280 closed 2021-12-02 Style/SymbolProc ignores comments
+      #554 closed 2013-10-09 WordArray should allow multi-line arrays of words
+      #2404 closed 2015-11-08 Comments removed by Style/Next auto-correct
+      #2401 merged 2015-11-06 Style/Next can autocorrect
+  overwrite      87 hit(s) (all listed)
+      #5866 open 2018-05-09 Should Lint/ShadowingOuterLocalVariable ignore when assigning with #tap?
+      #14583 closed 2025-10-05 Template files are not correctly autocorrected
+      #9983 closed 2021-08-05 Defining cops' `include`/`exclude` overwrites department configuration (and there's no way to merge them)
+      #14954 merged 2026-02-25 [Fix #14583] Aggregate template fragment autocorrections per iteration
+      #14987 merged 2026-03-04 Complete ERB/Haml autocorrection in a single run
+      #15314 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #14507 merged 2025-09-04 Fix the built-in Ruby LSP add-on not restarting when config files change
+      #7083 closed 2019-05-25 Caching Cannot Be Configured Globally
+      #14679 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #7810 closed 2020-03-22 New cop: Detect unexpected overriding of Kernel methods
+      #14429 closed 2025-08-07 Add new cop `Style/RedundantRaiseArgument`
+      #13884 closed 2025-02-21 Warn if `Reference` config is a `String`
+      #14407 merged 2025-07-31 Register offense for parentheses around method calls with blocks in `Style/RedundantParentheses`
+      #13870 closed 2025-02-19 Flaky specs in `style/class_check_spec.rb` and `version_spec.rb`
+      #14515 merged 2025-09-08 Bump actions/stale from 9 to 10
+      #13702 merged 2025-01-14 Add new `Lint/RedundantTypeConversion` cop
+      #13269 merged 2024-09-28 Refactor `style/select_by_regexp_spec` to prevent overwriting `ruby_version` within contexts
+      #13748 merged 2025-01-24 Add missing ExpectOffense include
+      #13892 merged 2025-02-22 Allow merging of configured arrays and non-arrays
+      #14438 merged 2025-08-11 Bump actions/checkout from 4 to 5
+  clobber        99 hit(s) (all listed)
+      #15677 merged 2026-09-09 Fix an error for `Style/EndlessMethod` cop
+      #15714 merged 2026-09-14 Fix an error for `Style/YodaCondition` cop
+      #15674 merged 2026-09-08 Fix an error for `Style/FloatDivision` cop
+      #15694 merged 2026-09-11 Fix an error for `Style/HashSyntax` cop
+      #15616 merged 2026-08-28 Consolidate cop directive checking and enable it by default
+      #15623 merged 2026-08-29 Fix an error for `Layout/HashAlignment` when the first pair of a hash omits its value
+      #15642 merged 2026-08-31 Fix an error for `Style/HashSyntax` cop
+      #15625 merged 2026-08-30 Fix an error for `Style/AccessModifierDeclarations` cop with duplciated access modifiers
+      #15613 merged 2026-08-27 Fix an error for `Layout/HashAlignment` cop
+      #15624 merged 2026-08-29 Fix an error for `Style/HashLookupMethod` cop when the key is itself a lookup
+      #15361 merged 2026-06-27 [Fix #15360] Fix an incorrect autocorrect for `Style/ArgumentsForwarding` and `Style/MethodDefParentheses`
+      #15146 merged 2026-05-02 [Fix #15144] Fix an error for `Style/SoleNestedConditional`
+      #14927 merged 2026-02-20 [Fix #14874] Fix a clobbering error in `Lint/UselessAssignment`
+      #15144 closed 2026-05-02 Style/SoleNestedConditional raises an error when autocorrecting nested conditionals with comments
+      #14864 merged 2026-02-09 [Fix #14854] Fix a clobbering error in `Style/BlockDelimiters`
+      #9561 closed 2021-03-07 Layout/ClassStructure changes visibility of some methods
+      #14649 merged 2025-11-09 Fix an error for `Lint/LiteralAsCondition` cop
+      #14631 merged 2025-10-27 Fix an error for `Style/SoleNestedConditional`
+      #14298 closed 2025-06-18 Autocorrect clobbering with nested if/unless/if and `Style/SoleNestedConditional`
+      #14373 merged 2025-07-19 Fix an error for `Style/ParallelAssignment`
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11375 open 2023-01-02 Layout/HashAlignment: allow grouping (i.e. separation by blank lines)
+      #11342 open 2022-12-27 Is Security/JSONLoad really addressing a threat?
+      #9992 open 2021-08-09 Non-declaration between declarations should stop equal sign alignment enforcement
+      #7077 open 2019-05-23 Cop naming guidelines
+      #14005 open 2025-03-19 Introduce the concept of "presets" (groups of cops organized by some criteria) to simplify the overall experience
+      #15565 merged 2026-08-12 Add `RequiredBlankLines` option to `Layout/EmptyLineAfterMagicComment`
+      #15697 merged 2026-09-12 Fix an incorrect autocorrect for `Layout/EmptyLinesAroundBlockBody` cop
+      #15111 closed 2026-04-15 Add configuration for number of blank lines for Layout/EmptyLineAfterMagicComment
+      #15387 merged 2026-06-29 Fix spurious blank line in `Style/KeywordParametersOrder` autocorrect
+      #15114 open 2026-04-17 [Fix #13755] Let auto_gen_config run in parallel
+      #15557 merged 2026-08-10 Add `disable-next` directives scoped to the following statement
+      #15555 merged 2026-08-08 [Fix #15554] Make `AllowForAlignment` stop at block boundaries
+      #15400 merged 2026-06-29 Fix an incorrect autocorrect for `Layout/EmptyLineBetweenDefs`
+      #15519 merged 2026-08-03 [Fix #15501] Improve `Style/RedundantLineContinuation` performance on adjacent string literals
+      #15471 merged 2026-07-15 Reimplement `Style/RedundantLineContinuation` on a reparse check
+      #15567 merged 2026-08-13 [Fix #9963] Fix false negatives for Layout/ExtraSpacing
+      #15152 closed 2026-05-04 Fix whitespace handling in `Layout/ClassStructure` autocorrect
+      #15589 closed 2026-08-20 --mcp and --lsp are silently ignored when RuboCop server mode is running
+      #8003 closed 2020-05-21 cop_helpers should be deprecated
+      #15054 closed 2026-03-24 Layout/MultilineMethodCallIndentation false positive for method chains
+  unreadable     13 hit(s) (all listed)
+      #14747 closed 2025-12-24 `Layout/IndentationWidth` regression in v1.82.1: block indentation should not depend on method chain receiver length
+      #14169 closed 2025-05-09 Apply the `RESTRICT_ON_SEND` feature to `on_block` callbacks
+      #13595 closed 2024-12-16 new cop: Single Line Complexity
+      #12943 merged 2024-05-29 Move `ascii_spec`, `internal_investigation` to GitHub actions
+      #10708 closed 2022-06-09 Style/GuardClause causes excessively long lines
+      #66 closed 2013-04-18 Version 0.5.0 fails to run
+      #4247 closed 2017-04-05 Ability to specify files/directories to look at and ignore everything else
+      #4431 closed 2017-05-26 MultilineMethodCallIndentation inconsistently applied
+      #4482 closed 2017-06-08 Style/StringLiteralsInInterpolation probably shouldn’t trigger inside a heredoc
+      #7724 closed 2020-02-18 Metrics/MethodLength should ignore/configure configuration lists
+      #2207 merged 2015-09-03 Substitute slow regex for something faster
+      #7249 merged 2019-08-01 Deprecate the SafeMode module
+      #67 merged 2013-04-18 Don't fail when unable to parse a file
+  garbage        16 hit(s) (all listed)
+      #14620 closed 2025-10-22 Add UnreliableSubclasses cop
+      #14481 closed 2025-08-27 Lint/UselessSetterCall + at_exit = False Positive
+      #14050 closed 2025-03-28 `--disable-uncorrectable` for `%w` array literals adds `# rubocop:todo Lint/UselessConstantScoping` to the array
+      #13577 merged 2024-12-12 [Fix #13557] Fix false positives for `Lint/NumericOperationWithConstantResult`
+      #1947 closed 2015-06-04 Rubocop telling me I have to be less performant
+      #1428 closed 2014-11-04 Severe: Rubocop silently accepts complete garbage as configuration
+      #3437 closed 2016-08-23 Cop idea: number conversion
+      #3580 closed 2016-10-07 Lint/UnneededDisable reports a warning if `rubocop:disable all` is used inside a block with already disabled cop
+      #6817 closed 2019-03-06 RuboCop::Cop::Lint::UnusedConstant
+      #2702 merged 2016-01-22 [Fix #2701] Consider loops as branching points
+      #2712 merged 2016-01-24 The sky loves a good joke
+      #2675 closed 2016-01-19 How about exclude .git/ diretory by default?
+      #5382 merged 2018-01-03 improve speed of RuboCop::Cop::SpaceInsideReferenceBrackets
+      #5363 merged 2017-12-30 improve speed of RuboCop::Cop::Util#tokens
+      #5137 merged 2017-11-26 improve speed of RuboCop::PathUtil#smart_path
+      #5120 closed 2017-11-24 improve speed of RuboCop::PathUtil#smart_path
+  mangled        9 hit(s) (all listed)
+      #11225 open 2022-12-02 Style/FormatStringToken false positive and unsafe autofix
+      #11342 open 2022-12-27 Is Security/JSONLoad really addressing a threat?
+      #15712 merged 2026-09-14 Fix Style/MissingElse loop with Style/GuardClause
+      #15212 merged 2026-06-03 Rename a mangled changelog entry filename
+      #15566 merged 2026-08-13 [Fix #10449] Fix `Layout/ClassStructure` wrong reordering
+      #15213 merged 2026-06-03 Generate cleaner changelog entry filenames
+      #14949 merged 2026-02-25 [Fix #14835] Extend Lint/AmbiguousBlockAssociation for do...end block misassociation
+      #14072 closed 2025-04-05 Bad autocorrect in `Layout/HashAlignment` when multiple styles are allowed
+      #3673 closed 2016-10-24 RedundantSelf regression
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15067 open 2026-03-27 Incorrect advice for changing the code when `Style/CollectionQuerying` occurs
+      #15672 closed 2026-09-08 Crash with rubocop:push/rubocop:pop around 2 method definitions
+      #15373 merged 2026-06-28 Fix an incorrect autocorrect for `Style/RedundantRegexpEscape` with interpolation sigils
+      #14797 closed 2026-01-23 Command line option “--cache false” should prevent writing/creating cache directory
+      #14739 closed 2025-12-22 Make reporting issues easier
+      #15250 closed 2026-06-06 Lint/LiteralInInterpolation has incorrect autocorrects for embedded quotes and escaped interpolation text
+      #15166 merged 2026-05-13 Add `Recursive` option to `Style/MutableConstant`
+      #8349 closed 2020-07-15 Rubocop removes rubocop:disable comments when auto-formatting with ALE
+      #15040 closed 2026-03-19 Style/ModuleMemberExistenceCheck Autocorrection Potentially Unsafe for const_defined?
+      #15035 closed 2026-03-19 Style/ModuleMemberExistenceCheck Autocorrection Potentially Unsafe for include?
+      #14912 merged 2026-02-17 Add AGENTS.md and CLAUDE.md for AI-assisted contributions
+      #14999 closed 2026-03-08 Allow disabling `Lint/Syntax` for files/methods that are not strictly Ruby
+      #14816 closed 2026-01-29 Remote configuration files are being written (in non-dotfile-form) to root of project
+      #9132 closed 2020-12-01 Rubocop shadowing Exclude config from subdirectory .rubocop.yml files when using --force-exclusion
+      #11462 closed 2023-01-16 Over indentation when autocorrecting `Layout/FirstHashElementLineBreak`
+      #14569 closed 2025-09-28 `Style/MethodCallWithArgsParentheses` fails to detect violations in test blocks using `test "name" do` syntax
+      #10386 closed 2022-01-30 Lint/NonLocalExitFromIterator false positive
+      #14446 merged 2025-08-14 Mention RuboCop::Cop::Base#external_dependency_checksum in docs
+      #11831 closed 2023-04-30 `Naming/InclusiveLanguage`'s `AllowedRegex` does not support free-spacing/extended mode Regexp
+      #14086 closed 2025-04-09 [FIX 14011] Improve Github render speed reliability for `CHANGELOG` files
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15633 open 2026-08-30 Fix alignment cop loops with Layout/IndentationStyle tabs
+      #15605 open 2026-08-25 [Fix #15131] Prefer direct bitwise predicate autocorrection
+      #14740 open 2025-12-23 Require reflection for disabling cops
+      #14723 open 2025-12-19 [Fix #8402] Add new `Style/EachWith` cop
+      #15578 open 2026-08-18 Add autocorrection to Lint/CopDirectiveSyntax
+      #15131 open 2026-04-26 Classic Sunday: Don't suggest intermediate fix that prompts another fix
+      #10367 open 2022-01-19 Proposal: New cop for line breaks in long arrays
+      #8230 open 2020-07-02 Unprocessable file silent errors causing problems
+      #14591 open 2025-10-08 Write up useless / ambiguous flow control in lambdas
+      #6805 open 2019-03-03 Nightly regression test
+      #8290 open 2020-07-09 Auto ignore offenses with corrections over the size limit
+      #15683 merged 2026-09-10 Prefer bracketed arrays under Preview
+      #15654 merged 2026-09-02 Treat directives trailing comment text as real directives again
+      #15624 merged 2026-08-29 Fix an error for `Style/HashLookupMethod` cop when the key is itself a lookup
+      #15670 merged 2026-09-07 Fix an infinite loop for `Style/NumericLiteralPrefix` with signed literals
+      #15714 merged 2026-09-14 Fix an error for `Style/YodaCondition` cop
+      #11342 open 2022-12-27 Is Security/JSONLoad really addressing a threat?
+      #15660 merged 2026-09-03 Let cops carry their next-major defaults in a Preview section
+      #12282 open 2023-10-14 Do not accept abbreviated options for cli
+      #11011 open 2022-09-23 Be able to  run rubocop in a "nested project" without picking up config in parent directories.
+  unclean        0 hit(s)
+  shutdown       6 hit(s) (all listed)
+      #11984 closed 2023-06-26 Rubocop server auto-shutdown if idle
+      #14381 merged 2025-07-23 Offend `Array#any?` and `Array#none?` blocks in `Style/ArrayIntersect`
+      #11926 merged 2023-06-04 Support built-in LSP server
+      #10936 closed 2022-08-19 An error occurred while Lint/NonAtomicFileOperation cop was inspecting
+      #10715 merged 2022-06-15 Add Layout/LineContinuationLeadingSpace cop
+      #2242 closed 2015-09-13 Style/ExtraSpacing: Cannot win if I do, cannot win if I don't :-)
+  reboot         2 hit(s) (all listed)
+      #10715 merged 2022-06-15 Add Layout/LineContinuationLeadingSpace cop
+      #4336 closed 2017-05-01 Insecure use of /tmp
+  disk+full      4 hit(s) (all listed)
+      #15114 open 2026-04-17 [Fix #13755] Let auto_gen_config run in parallel
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #7405 closed 2019-10-04 support deny/allow listing specific offenses for autocorrect
+      #1555 closed 2015-01-07 minor: remove spec files from gem
+  data+loss      3 hit(s) (all listed)
+      #11225 open 2022-12-02 Style/FormatStringToken false positive and unsafe autofix
+      #14481 closed 2025-08-27 Lint/UselessSetterCall + at_exit = False Positive
+      #8544 closed 2020-08-15 Preferring ActiveRecord#discard over #destroy/delete
+  partial+write  15 hit(s) (all listed)
+      #11451 open 2023-01-13 Rubocop inspects files using cops that it shouldn't use
+      #14528 closed 2025-09-17 An error occurred while Style/RedundantFormat cop was inspecting
+      #14587 closed 2025-10-06 An error occurred while Lint/SelfAssignment cop was inspecting
+      #14139 closed 2025-04-29 [Bug] Style/TrailingCommaInArguments crash when parsing square bracket initialization
+      #13158 closed 2024-08-23 CodeLength undefined method `to_sym' for false
+      #13023 closed 2024-06-28 Style/SymbolProc crashes on a single file
+      #11730 closed 2023-03-23 It appears Layout/HashAlignment don't like anonymous arguments
+      #10506 closed 2022-04-06 `Style/RaiseArgs` vs receiverless `new`
+      #10375 closed 2022-01-25 Autocorrect nested UnlessElse causing "Parser::Source::TreeRewriter detected clobbering"
+      #10415 closed 2022-02-14 An error occurred while Lint/UselessTimes cop was inspecting ...
+      #9353 closed 2021-01-08 Cop idea: `string_literal.to_sym`
+      #5281 closed 2017-12-19 --auto-gen-config can fail with "Error: empty section found in .rubocop_todo.yml"
+      #5537 closed 2018-02-01 Partial autocorrection for Metrics/LineLength
+      #8424 closed 2020-07-31 Failure in Lint/IneffectiveAccessModifier
+      #2498 merged 2015-12-12 A big step forward for performance linting
+  crash+safe     28 hit(s) (all listed)
+      #15363 open 2026-06-28 Tuning RuboCop's defaults from real-world usage data (RuboCop 2 discussion)
+      #15305 merged 2026-06-18 [#9571] Fix a crash for `Layout/ClassStructure` with a single safe-navigation body
+      #15351 merged 2026-06-26 Fix a crash for Style/OpenStructUse with a bare OpenStruct root node
+      #15272 merged 2026-06-11 Fix false positives and a crash in several Style cops
+      #15254 closed 2026-06-06 Infinite loop detected
+      #15262 merged 2026-06-10 [Fix #15260] Fix an error for `Style/FileWrite`
+      #14861 closed 2026-02-08 `Style/IfUnlessModifier` fails when inspecting ternary expression
+      #14477 closed 2025-08-25 Style/SafeNavigation crash on non-safenavigation code
+      #14233 closed 2025-06-04 `Style/SafeNavigation` crashes with 1.76.0
+      #14265 closed 2025-06-10 Style/SafeNavigation Crashes when truthy branch of ternary is a chained call in 1.76.0
+      #14127 closed 2025-04-26 Style/SafeNavigation crashes
+      #14243 closed 2025-06-04 Style/SafeNavigation crashes
+      #13952 merged 2025-03-05 [Fix #12049] Add new `Style/HashFetchChain` cop to detect method chains that can be replaced with a single call to `dig`
+      #10696 merged 2022-06-06 Add new `Lint/NonAtomicFileOperation` cop
+      #5581 closed 2018-02-20 Rubocop Style/RedundantSelf changes the semantics of inherited private class method calls when autocorrecting
+      #4706 closed 2017-09-06 Spurious "zero? instead of" suggestion when comparing string "index('--') == 0"
+      #7670 closed 2020-01-24 infinite loop when using --disable-uncorrectable when offense in HEREDOC
+      #42 closed 2013-04-11 Received malformed format string ArgumentError from rubocop
+      #3292 closed 2016-07-06 Performance/PushSplat autocorrect can lead to runtime error
+      #3510 closed 2016-09-19 Style/SafeNavigation cop crashes when auto correct
+  atomic+write   2 hit(s) (all listed)
+      #14001 merged 2025-03-18 [Fix #12360] Add new `Naming/PredicateMethod` cop to check that predicate methods end with `?` and non-predicate methods do not
+      #10715 merged 2022-06-15 Add Layout/LineContinuationLeadingSpace cop
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15706 merged 2026-09-12 Fix a flaky teardown race with git background maintenance
+      #15568 merged 2026-08-14 Fix `Lint/NameTypo` false positives in reopened gem namespaces
+      #10449 closed 2022-03-10 Layout/ClassStructure autofix results in incorrect order, refuses to move a constant
+      #10046 closed 2021-08-26 `Lint/UselessMethodDefinition` unaware of differing method arity between parent and child when using `super`
+      #15452 merged 2026-07-13 Fix a false positive for Layout/HashAlignment with table style and a multiline key
+      #15050 merged 2026-03-23 [Fix #15042] Add `DisallowedCops` option to `Style/DisableCopsWithinSourceCodeDirective`
+      #15153 merged 2026-05-07 Partially revert auto-gen-config in parallel
+      #14942 merged 2026-02-23 Add new `Style/FileOpen` cop
+      #9247 closed 2020-12-17 Cop to check for .gitignore'd files
+      #14856 closed 2026-02-08 Infinite loop caused by `Layout/ArgumentAlignment`, `Layout/FirstArgumentIndentation`, `Layout/LineLength` cops
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #14587 closed 2025-10-06 An error occurred while Lint/SelfAssignment cop was inspecting
+      #14429 closed 2025-08-07 Add new cop `Style/RedundantRaiseArgument`
+      #12878 closed 2024-05-01 False Positive for `Lint/ImplicitStringConcatenation` with prism
+      #14233 closed 2025-06-04 `Style/SafeNavigation` crashes with 1.76.0
+      #13982 closed 2025-03-13 An error occurred while Capybara/RSpec/PredicateMatcher cop was inspecting
+      #14139 closed 2025-04-29 [Bug] Style/TrailingCommaInArguments crash when parsing square bracket initialization
+      #14155 closed 2025-05-06 Rubocop not running on local environment
+      #14041 closed 2025-03-26 `Cache.restart_key` fails to parse ERB tags (i.e. `<%= ...`) in `.rubocop.yml`
+      #13729 merged 2025-01-20 Update `Style/RedundantCondition` cop to detect conditional expressions where the true branch is `true` and suggest replacing them with a logical OR
+  write+failure  40 hit(s) (all listed)
+      #15685 open 2026-09-10 Add a stall watchdog to the parallel spec runner
+      #15704 merged 2026-09-12 Fix a race condition in the `Runner` SIGINT spec
+      #15430 merged 2026-07-03 Speed up the investigation hot path
+      #12269 closed 2023-10-12 Lint/UselessAssignment vs postfix if
+      #14505 closed 2025-09-03 Add new cop Layout/HashValueIndentation
+      #12186 merged 2023-09-03 Add new `requires_gem` API for declaring which gems a Cop needs
+      #13339 closed 2024-10-15 spec/rubocop/server/rubocop_server_spec.rb:225 failing
+      #11479 closed 2023-01-21 Numblock is not parsed as such in an extension spec as we imply Ruby 2.6 and force to add `:ruby27` metadata
+      #10992 merged 2022-09-05 Fix server cache pollution between tests 
+      #10903 merged 2022-08-10 Single file skip parallel
+      #10715 merged 2022-06-15 Add Layout/LineContinuationLeadingSpace cop
+      #6568 merged 2018-12-11 New cop Lint/SafeNavigationWithEmpty
+      #3341 closed 2016-07-26 Style/NumericPredicate cop corrects code incorrectly (nothing to do with nils)
+      #8127 closed 2020-06-09 Old specs need love
+      #9281 merged 2020-12-22 Add new cop `Style/EndlessMethod`.
+      #1314 closed 2014-08-29 New SymbolProc cop breaks RuboCop when inspecting previously-approved code.
+      #1184 closed 2014-06-30 Interesting interaction with RSpec `let` inside a block
+      #1555 closed 2015-01-07 minor: remove spec files from gem
+      #393 closed 2013-07-25 BlockAlignment on chaining methods
+      #4459 closed 2017-06-02 How to Ignore Code at all costs
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15067 open 2026-03-27 Incorrect advice for changing the code when `Style/CollectionQuerying` occurs
+      #15672 closed 2026-09-08 Crash with rubocop:push/rubocop:pop around 2 method definitions
+      #14739 closed 2025-12-22 Make reporting issues easier
+      #14797 closed 2026-01-23 Command line option “--cache false” should prevent writing/creating cache directory
+      #15250 closed 2026-06-06 Lint/LiteralInInterpolation has incorrect autocorrects for embedded quotes and escaped interpolation text
+      #8349 closed 2020-07-15 Rubocop removes rubocop:disable comments when auto-formatting with ALE
+      #15166 merged 2026-05-13 Add `Recursive` option to `Style/MutableConstant`
+      #15040 closed 2026-03-19 Style/ModuleMemberExistenceCheck Autocorrection Potentially Unsafe for const_defined?
+      #15035 closed 2026-03-19 Style/ModuleMemberExistenceCheck Autocorrection Potentially Unsafe for include?
+      #14999 closed 2026-03-08 Allow disabling `Lint/Syntax` for files/methods that are not strictly Ruby
+      #14816 closed 2026-01-29 Remote configuration files are being written (in non-dotfile-form) to root of project
+      #9132 closed 2020-12-01 Rubocop shadowing Exclude config from subdirectory .rubocop.yml files when using --force-exclusion
+      #11462 closed 2023-01-16 Over indentation when autocorrecting `Layout/FirstHashElementLineBreak`
+      #10386 closed 2022-01-30 Lint/NonLocalExitFromIterator false positive
+      #14446 merged 2025-08-14 Mention RuboCop::Cop::Base#external_dependency_checksum in docs
+      #11831 closed 2023-04-30 `Naming/InclusiveLanguage`'s `AllowedRegex` does not support free-spacing/extended mode Regexp
+      #14541 closed 2025-09-19 Specifying parser engine in inherited file breaks with gemspec present
+      #14086 closed 2025-04-09 [FIX 14011] Improve Github render speed reliability for `CHANGELOG` files
+      #11664 closed 2023-03-05 Using a formatter or memory profile stops cache/parallelization from being used
+      #14173 merged 2025-05-12 Fix an error for `Style/StringConcatenation`
+
+== 51 terms run; 46 returned hits, 8 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

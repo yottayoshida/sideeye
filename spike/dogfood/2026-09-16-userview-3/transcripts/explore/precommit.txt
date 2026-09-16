@@ -1,0 +1,22 @@
+falsify: 前からあった hook が本体にも .legacy にも無い（本体 25 / 退避 25）
+FAIL  2 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 4
+            after  rename(/localrun/st/pc/.git/hooks/pre-commit)
+            before open(/localrun/st/pc/.git/hooks/pre-commit)
+path        .git/hooks/pre-commit
+observed    present before and after the operation, but gone from the crashed state
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   31 path(s) judged pre-or-post
+oracle      agreed on 4 operations (4966 syscall lines examined, 1380 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
+l1          no marker configured
+case        /localrun/wk/ex-precommit/cases/000001.json
+replay      sideeye replay /localrun/wk/ex-precommit/cases/000001.json --shim /se/libsideeye_shim.so
+processes   4 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/pc SIDEEYE_TRACE_PATH=/localrun/wk/ex-precommit/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
