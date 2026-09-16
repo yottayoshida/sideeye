@@ -17,6 +17,60 @@ Development journal, newest first. Decisions are recorded when they are made —
 **What the ordering rule caught, and what it did not.** `typos` was dropped before any image build: the only Linux aarch64 artifact it publishes is statically linked, so `file` on the unpacked binary settled it. meson was nearly dropped for the opposite reason — its first screen failed because the *image* gave it `ccache cc` and then a `gcc` without `libc6-dev`, not because of anything meson does. A screen failure has to be attributed to the image or to the target before the candidate is dropped; the rule as written is about forecasts versus measurements and does not say this, and it is left as it is.
 
 **Rule 11 is what actually thins the slate.** Of the candidates that cleared stars, activity and contributors, six were dropped for maintainer responsiveness alone (uncrustify, StyLua, PHP-CS-Fixer, logrotate, pipx, and calibre for having no GitHub tracker to measure). Rules 1–3 dropped nine. The bar that costs the most candidates is the one about the people on the other end.
+## 2026-09-16 (second) — cargo, re-met with the shipped v1.4.0 in both observation modes: the predictions, written before the run (#538)
+
+**Where this starts.** `docs/target-classes.md`'s cargo row quotes the 2026-08-22 cohort-3 run —
+contract v14 or earlier, a trap set of four write syscalls — and then says, in the same row, that
+the trap set has held `renameat` since #542's second change and that cargo was not re-measured
+under it. The page promises "every row backed by a run … Nothing here is a projection"; that
+sentence is a projection. #538 asks for the run. Two contract changes sit between the row and
+today: v16 (ADR 0055, one writing thread per process is judged; ADR 0053, a reaped child is
+judged) and ADR 0059 (every kill point trapped under `--observe syscalls`); v1.4.0 ships v17
+(ADR 0065, cgroup containment where the engine can make one — not in a default container, where a
+run is what it was under v16).
+
+**Apparatus.** The shipped tarball, `sideeye-v1.4.0-aarch64-linux.tar.gz`, sha256
+`709057371894565cbfc368cd2cc3402282f65f453520acb5cb4e9a2fb5b08820` matching the digest GitHub
+publishes for the asset, mounted read-only — not a build. A run-specific image,
+`rust:1.97.1-slim-bookworm` plus strace, python3 and procps (cohort 3 measured cargo 1.98.0; the
+row will say which cargo this is). Cohort 3 r2's define, paths moved under `/localrun`, the
+RUSTC stand-in generated from the image's own `rustc -vV` and used only where the plan says.
+`--oracle /usr/bin/strace` throughout. `preflight --twice` before each configuration; an exit 1
+there is the answer to the question `--twice` asks, recorded, and does not stop the run.
+
+**Predictions, in this paragraph before any run, so that the record can say which held.**
+
+- **A** (plain cargo, `--observe wrappers`, three runs): `oracle_missed_operation` — the oracle
+  sees the manifest's `renameat` and the shim has no record of it, as r2 measured with the
+  stand-in in place. The first wall of the row, `child_process_detected` on the `rustc -vV`
+  child, does not appear: the child writes nothing to the state directory and is reaped before
+  cargo writes, and its internal thread is not a boundary since v16. If `child_process_detected`
+  does appear, the first wall was gone on paper only, and that is the record.
+- **B** (plain cargo, `--observe syscalls`, three runs): the trap counts `renameat`, so the run
+  reaches a verdict. Then: `Cargo.toml` goes through temp-file-plus-rename and survives every
+  world; `Cargo.lock` is rewritten in place (r2's "Observations recorded, not reported"), so a
+  world killed inside that write leaves a lock `cargo metadata` cannot parse — **FAIL** is the
+  likelier verdict, PASS means the lock rewrite is atomic after all. The one open way not to
+  reach a verdict: the seccomp filter is inherited across exec, and glibc's `posix_spawn` runs
+  file actions with every signal blocked, so a child whose file action opens for writing dies of
+  signal 31 (ADR 0063 decision 3). Rust's `Command::output()` nulls stdin, which on the
+  `posix_spawn` path is an `addopen` of `/dev/null` with `O_RDWR` — an open whose flags the trap
+  reads as writing (ADR 0059 decision 2). If cargo reaches `rustc -vV` that way, B ends in
+  `recording_run_failed`; middling odds. The #556 shape (a failed `PATH` exec under `SIGSYS`) is
+  closed by ADR 0063 and should not appear.
+- **C** (stand-in, wrappers) runs only if A's three `unknown_reason`s are not all
+  `oracle_missed_operation`; predicted, if it runs, to reproduce r2.
+- **D** (stand-in, syscalls) runs only if any of B's three runs is UNKNOWN; predicted, if it
+  runs, to match B.
+
+**What moves if B reaches a verdict.** The row would gain a verdict row beside the wall row —
+one per verdict, one per wall, as ansible has — not move. `spike/unknown-rate/class-exclusions.tsv`
+keeps cargo's two cohort-3 defines out of the corpus because, its header says, their class "has
+no recorded verdict at all"; that sentence is already false (mlr, the same class string, was
+judged on 2026-09-11), and moving the defines into the corpus would change the A-group's
+denominator and the published rate, which takes a new generation. Filed as a question to the
+owner rather than done here.
+
 ## 2026-09-16 — The launcher keeps the judge's digests in its own memory, and the judge runs from bytes the launcher verified (#515, #592)
 
 **Where this starts.** ADR 0058 closed half of #515 and named the other half: the record still lives
