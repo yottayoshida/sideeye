@@ -2,6 +2,118 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-16 (eighth) — a refusal the default mode could not see past names the mode that can, and the paths the reviews found from that advice to a broken PASS are closed with it
+
+**What #599 asked.** Under `--observe wrappers`, `oracle_missed_operation` sent the reader to the
+class wall, and a zstd run was read as the stdio wall until it was re-measured under
+`--observe syscalls`. The issue offered two directions and no stake in either: name that mode when the
+diverging operation's thread was never recorded writing and more threads were created than wrote, or
+leave the step and add the distinction to the message.
+
+**Measured before designing, because #539 had just changed how threads are judged.** On `d5911cd`
+(contract v18), the issue's define — 400 KB of repeating text through `zstd -q --rm` — still refuses
+`oracle_missed_operation` under wrappers and `multiple_threads_detected` under syscalls. And the
+zstd define `spike/followup-item4` recorded under ADR 0055 — 300 KB of `/dev/urandom` — refuses the
+same way under wrappers and is **PASS 9/9** under syscalls today, the oracle agreeing on eight
+operations. **Both carry the thread account "2 thread(s) created, and 1 thread id(s) … wrote".** The
+issue's count condition is true for both, so it would have named a second writing thread for a target
+whose writer is single and which that mode judges. That is what took the first direction off the table.
+
+**The first draft's framing was wrong, and review said so.** It said the wrappers mode misses two
+kinds of write — stdio's inside and another thread's. A second thread's write through the PLT is
+recorded with its thread id under wrappers and stops at `main.zig`'s `second_writer_thread` check
+before the oracle comparison is reached. Both zstd runs miss the same thing: a write issued from
+inside `fwrite`. What differs is what the syscall mode finds behind it, and nothing the wrappers
+observation holds says which. The step names the observation that can tell; it does not guess.
+
+**Generalising the advice widened who it reaches, and the design had to catch up twice.** The first
+review found that an unconditional "use --observe syscalls" sends targets DESIGN says must not use it:
+a child that execs an image the shim cannot be loaded into dies at its first state-changing call, and
+so does a `posix_spawn` child whose file action opens for writing — before it execs. No field of the
+account says a run has such a child (`parsed.children` counts children that were fine,
+`shim_boundary` is set by a thread, `children_admitted` only by children that wrote), so the caution
+rides in the sentence every time, naming the README's section and the schema's section instead of
+paraphrasing them — each paraphrase drafted was narrower than the list. The second review found that
+the sentence's closing clause, "a refusal under that mode names what it still cannot see", was false:
+the schema says of what that mode kills, "None of this has a refusal of its own". It is gone.
+
+**The second review then found the path this change would open.** Follow the advice; the mode kills a
+child; the parent exits with a status nobody declared; `recording_run_failed` says "a different success
+convention is declared with --expect-status" with `fix_define`; the reader changes `--expect-status`,
+and a broken run is judged. Today that reader stops at the wall. Asked whether a caution in the first
+report could pre-empt it, the reviewer answered no — a caller that branches on `next_step` reads each
+report on its own. So a run under `--observe syscalls` that fails its recording takes
+`syscalls_may_have_killed` instead: compare with the default mode before changing the define. The plan
+named the recording run's two branches; writing it found the same two in `preflight --twice`'s second
+observed run, and they take it too.
+
+**Measured, and seen red.** In the acceptance image: the wrappers stdio toy's step names the mode, and a
+`/bin/sh` wrapper that runs the static toy under `--observe syscalls` ends with exit 159 — 128 plus
+`SIGSYS` — refused `recording_run_failed`, the detail still carrying the `--expect-status` suggestion
+and the step now answering it. The new acceptance lines, sliced out of the suite and run against four
+builds: unmutated, six ok; the call site put back to the class wall, both stdio legs fail; the chooser
+always answering the class wall, both fail; the recording site put back to `fix_define`, the killed-child
+leg fails. The chooser mutation first read as a failed build — `return .class_wall;` leaves both
+parameters unused, which Zig refuses to compile — and was re-run in a form that keeps them, so the
+"red" is a red rather than a build error. The source was restored after each and the diff's
+fingerprint compared before and after.
+
+**The diff review then corrected the fix, three times over.** The syscall step's sentence said "a
+process was killed by the mode" — a cause, in a sentence this ADR says promises none, and false for a
+setuid helper that loses privileges to the `PR_SET_NO_NEW_PRIVS` the mode sets. It says "may" now.
+The second step pointed at the schema's section "says how", and that section does not describe the
+most common kill — a child that execs an image the shim is not loaded into — which is exactly what the
+new acceptance leg reproduces; it names the README entry that does. And a third site shared the path:
+a helper the mode kills before it prints the success marker, behind a parent that ignores it, lands in
+`marker_never_observed`, whose sentence says to check the marker string. That site takes the step now,
+with its own leg. Two of my own extensions went the other way. I had applied the step to
+`preflight --twice`'s second run on the reasoning "same refusal name, same shape"; there the same mode
+has already completed a declared recording, so changing `--expect-status` would fail the first run and
+the evidence points at repeatability — reverted. Scanning every `fix_define` site for more, the empty
+state in `checker_not_falsified` looked like a hit until the code showed it counts the state *before*
+the operation runs. **Same name is not same shape: what has already been established on the way to the
+site is.** Last, asking the kernel whether it offers the trap put a `seccomp(2)` call on the default
+mode's refusal path, a syscall that mode had never made; the choice is by operating system now.
+
+**The second diff review found one more path and one false sentence of mine.** The baseline
+world's checker: the falsification probe only ever shows the checker a corrupted state, so the first
+clean post-operation state it judges is the baseline's, and a killed child's missing work is red
+there with `fix_define` — "check the operation and the checker against each other". Loosening the
+checker judges the broken run. I had left the baseline out with the reason "the same mode already
+completed a declared, marked recording", which holds for the baseline's exit and its marker layer —
+`judgeL1` compares against the recording's own final state, so a gap present in both runs is green —
+and not for the checker, which judges from outside. The checker layer takes the step now; the marker
+layer does not. The step's sentence says "a run" rather than "a recording" and asks for the checker
+to be run by hand, because an explore under the default mode refuses before its checker runs. No leg
+drives that site — it needs a toy this suite does not have — so a grep holds that the engine still
+asks the chooser there, #544's second opinion, with its deletion condition written beside it. The
+false sentence was the one I added to the schema's MCP paragraph, "One step names a flag this server
+does not pass": `raise_world_timeout` and `pass_oracle` do too.
+
+**Measured after both diff reviews.** The new acceptance lines, sliced out and run against the build:
+unmutated, eight ok and nothing failing; the marker leg's expected child status moved from 159 to
+158, only that leg fails; a quoted phrase shifted by one character, only the document check fails;
+the baseline's checker site put back to `fix_define`, only the call-site grep fails. After the first
+diff review the same slice had shown the killed-child expectation (`exited 159` → `158`) and the
+marker site each failing their own leg. The first run of the eight-leg slice failed two legs with no
+mutation at all — the step sentence had been reworded and the two legs still grepped the old phrase —
+and the unmutated control is what kept those two reds from being read as the mutations working.
+The marker leg's wrapper now records its child's status and the leg asserts 159 — `|| true` had
+swallowed any failure. The documents the steps quote are compared as the steps quote them, with
+backticks and bold removed: the first version compared the raw Markdown, so rewording a step's
+quotation failed nothing. Full acceptance on this branch: 384 ok and the same 5 failures as `main`
+has on this host, each a leg that cannot measure as root.
+
+What still stands, said rather than implied: a define with neither checker nor marker can be judged
+without a killed child's work, as `docs/report-schema.md` says of this mode; no step is raised there
+to change, and it was not measured.
+
+**A write that did not happen, caught by counting.** The command that wrote the ADR and the three
+documents began with `ls docs/adr | grep -c '^0069-'` joined by `&&`; with no such file, `grep -c`
+printed 0 and exited 1, and every command after it in the chain was skipped. The ADR checks that ran
+next said ok — over 67 files, a tree without the change. The count moving to 68 on the second attempt
+is what showed the first wrote nothing.
+
 ## 2026-09-16 (seventh) — the eval container's outputs arrive sealed, and two reviews took four designs off the table before any code
 
 **What was open.** ADR 0066 closed #515's launcher half and named one residual out loud: inside

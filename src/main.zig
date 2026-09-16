@@ -1508,8 +1508,8 @@ fn phaseRecording(run: *Run) void {
         .exited => |code| if (code == 126 and code != expect_status)
             unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
         else if (code != expect_status)
-            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", .fix_define),
-        else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run", .fix_define),
+            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", boundary.fixDefineUnder(args.observe)),
+        else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run", boundary.fixDefineUnder(args.observe)),
     }
 
     // A marker the clean run cannot produce would make every post-success obligation
@@ -1525,7 +1525,7 @@ fn phaseRecording(run: *Run) void {
     if (args.marker != null) {
         if (!rec_capture.marker_seen) {
             report.l1_note = "marker configured; never observed, even in the recording run";
-            unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", .fix_define);
+            unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", boundary.fixDefineUnder(args.observe));
         }
         report.l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
@@ -2049,7 +2049,7 @@ fn phaseOracle(run: *Run) void {
                 shim_ops.items,
                 parsed.lines.items,
                 parsed.names.items,
-            ), .class_wall),
+            ), boundary.missedOperationNext(args.observe, builtin.os.tag == .linux)),
             .phantom => |p| unknown(.oracle_saw_phantom, report.divergenceDetail(
                 arena,
                 std.fmt.allocPrint(arena, "the shim recorded an operation the oracle did not see{s}", .{mode_hint}) catch
@@ -2833,7 +2833,13 @@ fn phaseExploration(run: *Run) void {
         // and stay `fix_define`. Bytes first, then the marker, then the checker; the
         // layers that also failed ride along as a clause.
         if (k > n and (l0 != null or l1 != null or l2_failed)) {
-            const step: contract.NextStep = if (l0 != null) .class_wall else .fix_define;
+            // The checker layer alone follows the observation mode (#599, ADR 0069); the marker
+            // layer does not. L1 compares this world with the recording's own final state, so a
+            // process the syscall mode killed in both runs leaves the same gap in both and L1 is
+            // green; it is red only when two runs of one mode disagree. The checker judges the
+            // state from outside, so the same gap in both runs is red at the first clean state it
+            // ever sees — this one: the falsification probe only ever shows it a corrupted state.
+            const step: contract.NextStep = if (l0 != null) .class_wall else if (l1 != null) .fix_define else boundary.fixDefineUnder(args.observe);
             const what: []const u8 = if (l0) |v|
                 std.fmt.allocPrint(arena, "{s}{s}", .{ report.baselineObserved(arena, v), report.baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
             else if (l1) |v|
