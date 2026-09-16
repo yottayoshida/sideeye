@@ -114,6 +114,13 @@ pub const BoundaryEvidence = struct {
     /// a refusal naming two threads of a child, and the clause says "of the subject's own
     /// process" now so the two do not read as a contradiction.
     writer_threads: u32 = 0,
+    /// The thread order the writes were judged in (v18, ADR 0067): how many times the write
+    /// passed between threads of one process in causal order, and how many joins and
+    /// detaches the shim recorded. Printed with the count above so a reader of "2 thread
+    /// id(s) wrote" sees what made that a judged run rather than a refused one.
+    thread_turns: u32 = 0,
+    thread_joins: u32 = 0,
+    thread_detaches: u32 = 0,
     /// A thread whose creation the shim never recorded wrote the judged directory (#543;
     /// `TraceInfo.unrecorded_writer_thread` says how it is decided). Mutually exclusive
     /// with `threads > 0` by construction — the trace asks the question only when it holds
@@ -263,9 +270,9 @@ pub fn boundaryAccount() []const u8 {
     // to prevent. Appended through this one variable rather than at a return site: the
     // three returns below all interpolate `{threads}`, and a clause added at one of them
     // would vanish on the other two. That has happened here before, to the world clause.
-    var thread_buf: [200]u8 = undefined;
+    var thread_buf: [360]u8 = undefined;
     const threads: []const u8 = if (boundary_ev.threads > 0)
-        std.fmt.bufPrint(&thread_buf, "; the shim recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
+        std.fmt.bufPrint(&thread_buf, "; the shim recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory; {d} hand-over(s) between threads in causal order, {d} join(s) and {d} detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads, boundary_ev.thread_turns, boundary_ev.thread_joins, boundary_ev.thread_detaches }) catch
             "; the shim recorded threads created (v16)"
     else if (boundary_ev.unrecorded_writer_thread)
         "; a thread the shim never recorded creating wrote the judged directory, so its count of threads is a floor and no witness is held against it (v16, #543)"
@@ -297,7 +304,7 @@ pub fn boundaryAccount() []const u8 {
     // combination measured was **626 of 1024 bytes** (2026-09-07, over `boundary_cases`
     // crossed with both chain states, both continuation states and every `second_run`
     // value; it read 494 before that day's wordings), and v16 widened the buffer to 1280
-    // for a thread clause of at most 178 bytes (the literal and two u32 values; review
+    // for a thread clause of at most 178 bytes (the literal and two u32 values — v18's clause is longer, at most 332 bytes with five u32 values at ten digits each, and 626 - 178 + 332 leaves the buffer more than a third empty; review
     // counted it), which keeps at least the margin the measurement had; the crossing itself was not re-run — but "unreachable" is not a
     // lifetime. #543 gave that clause a second shape, a fixed literal **measured at 152
     // bytes**, which is under the 178 the bound was set from, so the bound does not move.
@@ -744,16 +751,24 @@ pub fn secondRunLabel(trace: engine.TraceInfo, detach_refused: bool) ?[]const u8
 /// write before the main thread, and a sentence naming only "the second" named the main
 /// thread's open, which is the one the operator did not need pointing to. `where` is the
 /// run it happened in, the way `unresolvedDetail` takes it.
-pub fn threadDetail(arena: std.mem.Allocator, first: ?engine.Op, second: engine.Op, where: []const u8) []const u8 {
-    const fallback = "two threads of one process wrote in the judged directory; two threads writing are ordered by the scheduler, so no crash-point address in this run can be trusted";
+pub fn threadDetail(arena: std.mem.Allocator, first: ?engine.Op, second: engine.Op, first_detached: bool, where: []const u8) []const u8 {
+    const fallback = "two threads of one process wrote in the judged directory with no creation or join the shim recorded ordering them, so no crash-point address in this run can be trusted";
     const first_clause = if (first) |f|
         std.fmt.allocPrint(arena, "tid {d} performed {s}({s}) and ", .{ f.tid, f.class.name(), f.path }) catch return fallback
     else
         "";
+    // Which edge was missing (v18): the writer named first held the write, and nothing the
+    // shim recorded — no creation by it after that write, no join of it by the other, no
+    // chain of those — puts the second's write after it. A detached first writer is the
+    // case where the join could never have come, and the sentence says so.
+    const detached_clause: []const u8 = if (first_detached and first != null)
+        std.fmt.allocPrint(arena, "; tid {d} was detached, so no join could order it", .{first.?.tid}) catch return fallback
+    else
+        "";
     const composed = std.fmt.allocPrint(
         arena,
-        "two threads of process {d} wrote in the judged directory{s}: {s}tid {d} performed {s}({s}). Two threads' writes are ordered by the scheduler, so the sequence they were numbered in is the one this run happened to produce and a crash point would not name the same operation on the next. A run whose state-directory writes come from one thread of each process is judged, however many threads it created",
-        .{ second.pid, where, first_clause, second.tid, second.class.name(), second.path },
+        "two threads of process {d} wrote in the judged directory{s}: {s}tid {d} performed {s}({s}). No thread creation or join the shim recorded orders the first of those before the second{s}, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)",
+        .{ second.pid, where, first_clause, second.tid, second.class.name(), second.path, detached_clause },
     ) catch return fallback;
     return sanitizeForReport(arena, composed) catch fallback;
 }

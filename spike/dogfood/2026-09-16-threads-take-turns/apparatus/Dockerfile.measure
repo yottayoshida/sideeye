@@ -1,0 +1,5 @@
+# The v18 measurement box for #539: beets and virtualenv (the two targets measured under the
+# LD_PRELOAD probe) plus strace for --oracle, plus python3 to read the reports. Sideeye is
+# cross-built on the host and mounted at /se.
+FROM sideeye-probe:venv-join
+RUN apt-get update && apt-get install -y --no-install-recommends strace && strace -V | head -1

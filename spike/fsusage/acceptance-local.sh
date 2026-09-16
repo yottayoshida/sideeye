@@ -297,7 +297,9 @@ echo "             (whoever opened the trace write-capably)"
 echo "  verdict:   required, exit 0. Until #569 this shape refused kill_did_not_land at a"
 echo "             measured rate and the leg tolerated that one reason by name"
 echo "  control:   a second writing thread of the same process still refuses"
-echo "             multiple_threads_detected — the v16 rule, decided from the trace"
+echo "             multiple_threads_detected — the main thread writes after creating the"
+echo "             worker and before joining it, so no creation or join the shim recorded"
+echo "             orders the two writes (v18, ADR 0067), decided from the trace"
 cat > "$WORK/worker_toy.c" <<'EOF'
 /* Every state-directory write happens on a worker thread; the main thread only starts and
  * joins it. The main thread is the one that opened the trace, which is how src/fsusage.zig
@@ -326,8 +328,10 @@ int main(void) {
 }
 EOF
 cat > "$WORK/twowriters_toy.c" <<'EOF'
-/* The control. Identical but for one line: the main thread writes as well, so the process
- * has two writing threads and the v16 rule refuses.
+/* The control. Identical but for one line: the main thread writes as well — after creating
+ * the worker and before joining it, so nothing the shim recorded orders the two writes and
+ * the thread rule refuses (v16 refused on the count; v18 refuses on the missing edge, and
+ * this line's position between the create and the join is what keeps it refused).
  *
  * What this does NOT do is discriminate #544: the refusal comes from `second_writer_thread`
  * in the shim's trace, several statements before the oracle block that change lives in, so

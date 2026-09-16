@@ -227,8 +227,41 @@
  *                  what makes the overlap certain rather than lucky: the worker is
  *                  started before the first state operation and stopped after the last
  *   TOY_THREAD_WRITES  if set, a second thread writes one file in the state directory
- *                  and is joined, so the process's state writes come from two threads —
- *                  the shape v16 refuses, naming the second thread's first operation
+ *                  and is joined before the main thread writes: two writing threads in one
+ *                  order. v16 refused it on the count; v18 judges it, the join being the
+ *                  edge (ADR 0067)
+ *   TOY_THREAD_TURNS  the main thread writes, then a worker writes and is joined, then the
+ *                  main thread writes again — virtualenv's shape. Judged under v18: the
+ *                  creation orders the first write, the join the last
+ *   TOY_THREAD_SIBLINGS  two workers each write a file of their own and are joined only
+ *                  afterwards — beets' shape. Refused: no creation or join orders one
+ *                  sibling's write before the other's
+ *   TOY_THREAD_RACE  a worker writes; the main thread writes BEFORE joining it. Refused:
+ *                  the main thread's write is after the creation and before the join
+ *   TOY_THREAD_DETACH  a worker writes and is detached, never joined; the main thread waits
+ *                  for the write on a flag and writes. Refused, and the refusal says the
+ *                  worker was detached
+ *   TOY_THREAD_REUSE  a thread that writes nothing is created and joined, then a writing
+ *                  one is created and joined — glibc hands the second the first's
+ *                  pthread_t. Judged; a join resolved after it returns would name the wrong
+ *                  thread here
+ *   TOY_THREAD_WRONG_JOIN  worker A writes and is joined; worker B is created and writes;
+ *                  the main thread writes; only then is B joined. Refused: the join of A
+ *                  orders nothing about B. An engine that admits the next writer on "a
+ *                  join happened" passes this and is wrong
+ *   TOY_THREAD_GRANDCHILD  a worker creates a grandchild that writes, joins it and writes;
+ *                  the main thread joins the worker and writes. Judged through the chain
+ *   TOY_THREAD_MANY  seventy threads that write nothing and enter none of the shim's
+ *                  wrappers, created and joined in turn, then the rotate. Judged: the start
+ *                  record a thread writes since v18 claims no slot — what claims one is a
+ *                  thread's first interposed call, as before, so a pool whose workers do
+ *                  enter the shim is still refused at the sixty-fifth (DESIGN §9)
+ *   TOY_THREAD_EXIT  a worker writes and leaves through pthread_exit, is joined, then the
+ *                  main thread writes. Judged — and the unwinding pthread_exit does passes
+ *                  through the shim's trampoline frame, which is what this shape measures
+ *   TOY_THREAD_CANCEL  a worker writes, signals, then blocks in a cancellation point; the
+ *                  main thread cancels it, joins it, and writes. Judged; the forced unwind
+ *                  of a cancellation passes through the trampoline frame too
  *   TOY_THREAD_ONLY_WORKER  if set, the whole rotate runs on a second thread while the
  *                  main thread only waits: one writing thread, and not the main one
  *   TOY_FORK_LATE  if set, fork a child that outlives the parent and writes into the
@@ -416,6 +449,55 @@ static void *writing_thread(void *arg) {
     return NULL;
 }
 
+/* v18's shapes (ADR 0067). Each worker writes a file of its own so a refusal can name
+ * which thread's operation it is about, and the flag-signalling ones let the main thread
+ * wait for a write without a join — the whole point of the detach and wrong-join shapes. */
+static void *writing_thread_named(const char *name) {
+    char p[4096];
+    join_path(p, sizeof p, name);
+    write_file(p, "a thread wrote this\n");
+    return NULL;
+}
+static void *writing_thread_a(void *arg) { (void)arg; return writing_thread_named("from-thread-a.txt"); }
+static void *writing_thread_b(void *arg) { (void)arg; return writing_thread_named("from-thread-b.txt"); }
+static volatile int signalled_write_done = 0;
+static void *writing_thread_signalling(void *arg) {
+    (void)arg;
+    writing_thread_named("from-thread.txt");
+    signalled_write_done = 1;
+    return NULL;
+}
+static void *writing_thread_b_signalling(void *arg) {
+    (void)arg;
+    writing_thread_named("from-thread-b.txt");
+    signalled_write_done = 1;
+    return NULL;
+}
+/* TOY_THREAD_EXIT's worker: writes, then leaves through pthread_exit rather than a return. */
+static void *writing_thread_exiting(void *arg) {
+    (void)arg;
+    writing_thread_named("from-thread.txt");
+    pthread_exit(NULL);
+}
+/* TOY_THREAD_CANCEL's worker: writes, signals, then blocks in a cancellation point until the
+ * main thread cancels it. `pause` is one; `usleep` in a loop would be too, but pause needs no
+ * clock and cannot return on its own except through a signal. */
+static void *writing_thread_cancellable(void *arg) {
+    (void)arg;
+    writing_thread_named("from-thread.txt");
+    signalled_write_done = 1;
+    for (;;) pause();
+    return NULL;
+}
+/* TOY_THREAD_GRANDCHILD's worker: creates the grandchild, joins it, then writes itself. */
+static void *grandchild_thread(void *arg) { (void)arg; return writing_thread_named("from-grandchild.txt"); }
+static void *worker_with_grandchild(void *arg) {
+    (void)arg;
+    pthread_t g;
+    if (pthread_create(&g, NULL, grandchild_thread, NULL) == 0) pthread_join(g, NULL);
+    return writing_thread_named("from-worker.txt");
+}
+
 /* TOY_THREAD_ONLY_WORKER's worker: the whole rotate, from a thread that is not the main
  * one, while the main thread only waits. The judged run then has exactly one writing
  * thread and it is not the process's main thread — the shape the oracle's reader had
@@ -484,6 +566,77 @@ static void maybe_leave_the_supported_region(void) {
     if (getenv("TOY_THREAD_WRITES")) {
         pthread_t t;
         if (pthread_create(&t, NULL, writing_thread, NULL) == 0) pthread_join(t, NULL);
+    }
+    /* v18 (ADR 0067): the thread order's shapes. See the header for what each pins. */
+    if (getenv("TOY_THREAD_TURNS")) {
+        char pre[4096];
+        join_path(pre, sizeof pre, "pre-thread.txt");
+        write_file(pre, "the main thread wrote this before creating the worker\n");
+        pthread_t t;
+        if (pthread_create(&t, NULL, writing_thread, NULL) == 0) pthread_join(t, NULL);
+    }
+    if (getenv("TOY_THREAD_SIBLINGS")) {
+        pthread_t a, b;
+        int ok_a = pthread_create(&a, NULL, writing_thread_a, NULL) == 0;
+        int ok_b = pthread_create(&b, NULL, writing_thread_b, NULL) == 0;
+        if (ok_a) pthread_join(a, NULL);
+        if (ok_b) pthread_join(b, NULL);
+    }
+    if (getenv("TOY_THREAD_RACE")) {
+        pthread_t t;
+        int ok = pthread_create(&t, NULL, writing_thread, NULL) == 0;
+        char mine[4096];
+        join_path(mine, sizeof mine, "also-main.txt");
+        write_file(mine, "the main thread wrote this before the join\n");
+        if (ok) pthread_join(t, NULL);
+    }
+    if (getenv("TOY_THREAD_DETACH")) {
+        pthread_t t;
+        signalled_write_done = 0;
+        if (pthread_create(&t, NULL, writing_thread_signalling, NULL) == 0) {
+            pthread_detach(t);
+            while (!signalled_write_done) usleep(1000);
+        }
+    }
+    if (getenv("TOY_THREAD_REUSE")) {
+        pthread_t t;
+        if (pthread_create(&t, NULL, noop_thread, NULL) == 0) pthread_join(t, NULL);
+        if (pthread_create(&t, NULL, writing_thread, NULL) == 0) pthread_join(t, NULL);
+    }
+    if (getenv("TOY_THREAD_WRONG_JOIN")) {
+        pthread_t a, b;
+        if (pthread_create(&a, NULL, writing_thread_a, NULL) == 0) pthread_join(a, NULL);
+        signalled_write_done = 0;
+        int ok_b = pthread_create(&b, NULL, writing_thread_b_signalling, NULL) == 0;
+        if (ok_b) while (!signalled_write_done) usleep(1000);
+        char mine[4096];
+        join_path(mine, sizeof mine, "also-main.txt");
+        write_file(mine, "the main thread wrote this having joined A and not B\n");
+        if (ok_b) pthread_join(b, NULL);
+    }
+    if (getenv("TOY_THREAD_GRANDCHILD")) {
+        pthread_t w;
+        if (pthread_create(&w, NULL, worker_with_grandchild, NULL) == 0) pthread_join(w, NULL);
+    }
+    if (getenv("TOY_THREAD_MANY")) {
+        int i;
+        for (i = 0; i < 70; i++) {
+            pthread_t t;
+            if (pthread_create(&t, NULL, noop_thread, NULL) == 0) pthread_join(t, NULL);
+        }
+    }
+    if (getenv("TOY_THREAD_EXIT")) {
+        pthread_t t;
+        if (pthread_create(&t, NULL, writing_thread_exiting, NULL) == 0) pthread_join(t, NULL);
+    }
+    if (getenv("TOY_THREAD_CANCEL")) {
+        pthread_t t;
+        signalled_write_done = 0;
+        if (pthread_create(&t, NULL, writing_thread_cancellable, NULL) == 0) {
+            while (!signalled_write_done) usleep(1000);
+            pthread_cancel(t);
+            pthread_join(t, NULL);
+        }
     }
     /* Deliberately not waited for. The child sleeps past anything the parent will do,
      * so its write lands only if the engine let it survive. */

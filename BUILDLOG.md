@@ -2,6 +2,125 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-16 (third) — a second writing thread is judged when a creation or a join the shim recorded orders it (#539, contract v18)
+
+**What was measured before anything was designed.** ADR 0055 left "threads that take turns" as a
+second stage, keyed on a join the shim can see. Two targets behind the thread wall were measured
+without Sideeye, under an `LD_PRELOAD` library that logs `pthread_create` (with the new thread's
+id through a trampoline), `pthread_join`, `pthread_detach` and every open of the state directory,
+three runs each (`spike/dogfood/2026-09-16-threads-take-turns/apparatus/joinlog.c`). CPython 3.13
+joins with a real `pthread_join` — 3.12 detached every thread and waited on a lock — so Python
+targets are in reach on Debian trixie. **beets 2.1.0** (`import`): the main thread opens
+`library.db`, creates three workers, two of them write the database and its journal in turn (the main
+thread's own open of the database comes first, so three thread ids write), and the main thread
+joins all three afterwards and writes nothing more; the two writers are siblings
+with no join and no creation between them — the order comes from the pipeline's queue, which is
+#580's territory, closed. **virtualenv 20.31.2**: the main thread writes 23 records, creates a
+thread and joins it at once (it writes nothing), creates a second that installs pip (499 records,
+the main thread silent throughout), joins it, then writes the six activation files and `pyvenv.cfg` again. That
+order is fixed by a creation and a join. A rule that reads joins alone admits neither; one that reads
+creations and joins admits virtualenv. The owner chose the latter, over "join only" and over
+closing the issue on the measurement. The issue's own target stays refused, and the refusal will
+say why.
+
+**Two things glibc does that the design has to survive.** It reuses a joined thread's
+`pthread_t` for the next `pthread_create` — virtualenv's silent thread and its pip thread carry
+the same value — so a join resolved *after* it returns can name a thread that is alive. And the
+`.thread` record a creator writes is dropped silently when the shim is re-entered (`busy`), so
+nothing that pairs a child with its creator may depend on that record being there. Both came out
+of the plan's reviews, not of the first draft, and both are in ADR 0067.
+
+**What the container found that nothing else could.** The unit tests hold the reader's order on
+fourteen shapes and the macOS dry run judged and refused the toy's shapes as designed — and
+the Linux acceptance, under `--oracle strace`, refused every run that created a thread with
+`oracle_missed_operation` at operation 1: the oracle comparator skipped markers and boundaries
+and took the new `thread_started` record for a file operation the oracle had not seen. No
+oracle runs in the unit tests, and none runs on macOS, so the two places the code was first
+exercised were the two that cannot see the comparator. One predicate (`isThreadSync`) in the
+comparator's skip, and the same in the snapshot reconciler, whose walk reads `aux` as a path.
+The `#377` shared-ceiling test moved from 48 to 64 KiB by its own arithmetic: the 100-record
+fixture costs the budget 51,318 bytes with the per-process thread lists in the arena, against
+44,688 under v16. The `measure.py` selftest's `record-stream` case failed in the same
+container (three lines where four were expected) with no change under `spike/loop-closure-timew/`
+in this branch; CI's runner, where that case has passed since #596, is what measures it.
+
+**The predictions, written before the v18 run (06:28Z, `apparatus/run-v18.sh`, the branch build,
+both observation modes).** virtualenv 20.31.2: not refused `multiple_threads_detected` in
+either mode — the recording's account says two thread ids of the subject wrote with a
+hand-over between them — and the explore reaches a verdict. Which verdict is not predicted; the
+checker asks that the first environment still runs, and nothing measured says whether a crash
+inside the second one's creation can break the first. The order of pip's four console scripts
+varied between the probe runs (two orders in three); the prediction is that this does not
+refuse the run — the class sequence is the same and the addresses are positions — and if it
+does, the reason is the record's to name. beets 2.1.0: refused `multiple_threads_detected` in
+both modes, three of three, the sentence naming two worker threads' opens of `library.db` and
+no creation or join between them; the main thread's own open of the database comes first and
+is the creator of both, so it is not the pair the sentence names. Three explores per mode for
+beets, one per mode for virtualenv plus `preflight --twice` — the first attempt at three ran
+its preflight (1,381 kill points, accepted, two thread ids, two runs equal) and was stopped at
+the estimate of an hour per explore.
+
+**What the run said (`spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md`).** virtualenv:
+`PASS 1382/1382` in both observation modes, `oracle_verified`, the account counting two writing
+thread ids, two hand-overs and two joins, and `preflight --twice` accepted in both modes with
+the same account — the first target judged with two writing threads. beets: refused
+`multiple_threads_detected` three of three in both modes, the sentence naming the first
+worker's last operation (its `unlink` of the journal) and the second's first (its `open` of the
+database) and saying no recorded creation or join orders them; six sentences identical once
+ids and paths are masked. Every prediction held; two were loose. "Two worker threads' opens"
+was written where the sentence names the writer's *last* operation, as decision 4 says it
+does. And the hour-per-explore estimate that cut virtualenv to one explore per mode was wrong
+by a factor of eight — the explore took about seven minutes — so the record carries one explore
+per mode and says why rather than being re-run to the plan's three. The reader's
+exec-continuation fix (below) landed after the run; neither target replaces its own image, so
+it does not reach these transcripts, and the record says so.
+
+**The diff's first review took a real hole and three loose sentences.** The hole: on an image
+change the reader reset the process's order and dropped the announcement's own tick, so the
+surviving thread's count trailed the shim's by one for the rest of the run, and a child
+created after that thread's write was rebuilt at the write and judged in order with a write it
+raced — the shape ADR 0067 refuses in its Alternatives, opened by this change on one path.
+Counted after the reset now, with a unit test in the review's own shape. The sentences: the
+ADR and DESIGN §9 said a pool of more than sixty-four threads is judged and refused
+respectively, and both were missing the condition — a slot is claimed by a thread's first
+interposed call, not by its start, so a pool whose workers enter the shim refuses at the
+sixty-fifth as before and one whose workers never do is judged; `docs/target-classes.md`
+carried v16's "four toy shapes" sentence two lines under v18's; and the second `#377` ceiling
+test still said 48 KiB where one trace no longer fit, green for the wrong reason. The review's
+other question — whether `pthread_exit` and a cancellation unwind through the trampoline's
+frame — was a comment and not a measurement until `TOY_THREAD_EXIT` and `TOY_THREAD_CANCEL`
+ran on the Linux acceptance: judged, eight crash points each.
+
+**The second review, and one more thing the container measured.** The reviewer measured the
+first version of the exec-count test green with the fix removed — the slip landed on a record
+that was not a kill point — and supplied the shape whose verdict it turns, which is the test
+now. It counted the toy shapes at fourteen where the pages said sixteen, found v16's "a second
+writing thread is refused" still standing in the `--oracle-fs-usage` paragraphs of DESIGN §9
+and `docs/target-classes.md`, and read the probe's transcripts against the record: eight
+numbers were wrong (a `pwrite64` count, the second worker's, six activation files not seven,
+four console scripts not three, a rotation not a swap, lines against operations, two files
+left out of a list) and are recomputed from the logs. Its opening claim that the repository
+had vanished was its own environment — retracted by the reviewer, and `git status` answered
+here throughout. Then the reader's reset for a re-announcing process was widened to any pid
+and the container's trace-budget leg went red: dropping and remaking a process's entry on
+its *first* announcement cost the arena enough to push the apparatus's 3 KiB ceiling on the
+recording read. The reset is asked only of a process the reader already knows. The same
+review's last pass found the account calling a thread "one the shim never recorded creating"
+on a run whose every `.thread` record was dropped but whose starts were read — a sentence
+v16 never reached, since it refused that run on the count; the start record counts as a
+recorded creation now, with a unit test.
+
+**CI's macOS job found the one witness nobody here can run.** The `fs_usage` acceptance's
+check 7 — a `pthread_create`d worker writing through raw syscalls, refused as a thread the
+shim never saw write — came back `oracle_saw_nothing`: the worker's first act under v18 is its
+own `thread_started` record, a `write` on the trace descriptor, and `fs_usage` prints a write
+without a path, so a thread the reader had not placed in the subject's process resolved it
+against nothing and called the capture a hole. Under v16 that worker wrote nothing to the trace
+and the question never arose. The reader is handed the threads the shim saw start, for the
+descriptor namespace only — the thread is still another party's to that witness, its raw
+write still refuses as before — with a unit test in the capture's shape and its control
+(without the list, the hole). `fs_usage` needs root and this machine's, so CI measures it.
+
 ## 2026-09-16 (second) — twenty targets in four slates, and the two counterexamples whose tools have no out-of-place path
 
 **What this run is.** A dogfood run under `spike/dogfood/README.md`: not a cohort, nothing sealed, no blindness claimed. Four slates of five, chosen by `spike/cohort4/SCOUT-BRIEF.md`'s rules 1–17, measured with the released v1.4.0 tarball rather than a build. Record: `spike/dogfood/2026-09-16-userview-3/`.

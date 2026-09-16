@@ -76,7 +76,7 @@ Sideeye refuses to trust a checker it has not seen fail: before exploring, it co
 
 Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2), with the refusing detector named and a `next_step` saying what to do. Each limit's reason: [DESIGN.md](DESIGN.md#known-constraints-declared-not-hidden).
 
-- **Dynamically linked**, reaching its files through libc. Static linking and hardened runtimes are refused. Threads are judged while one thread of each process writes the state. `--observe syscalls` (Linux) also counts the operations that bypass libc — a Go runtime's, above all.
+- **Dynamically linked**, reaching its files through libc. Static linking and hardened runtimes are refused. Threads are judged where a creation or a join the shim saw orders their writes. `--observe syscalls` (Linux) also counts the operations that bypass libc — a Go runtime's, above all.
 - **Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset dies at its first state-changing call** — an `exec`'d image the shim cannot be loaded into, a `posix_spawn` child, a target that takes `SIGSYS` away. A target that dies is refused; a child that dies changes what the target does — check it before reaching for the flag.
 - **The shim's footprint on a target thread is bounded**: under 1 KiB of thread-local storage, at most 5 KiB of stack per interposed call (measured on Linux).
 - **State in one directory**, declared with `--state` or the toml.

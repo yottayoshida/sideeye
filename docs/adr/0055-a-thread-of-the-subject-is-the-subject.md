@@ -98,6 +98,12 @@ fourth wall in the Context.
 
 ### 4. One writing thread per process is judged; a second refuses, and both are named
 
+**Amended 2026-09-16 by ADR 0067 (#539, contract v18): the count is no longer the rule.** A
+second writing thread is judged when a creation or a join the shim recorded orders its
+write after the current writer's last, and refused otherwise; the refusal still names both
+threads and both operations, and says which edge was missing. The paragraph below is kept
+as the decision stood.
+
 `engine.trace` keeps the first thread to write a kill-point record in each process. A
 record from that process under another thread id sets `second_writer_thread`, and the
 first writer's record beside it. The three sites that refused `.thread` as a hard boundary
@@ -163,7 +169,10 @@ judged toy before this decision gave the recording and world clauses a third sha
   Two writing threads race for a number in `refreshCount`, and the refusal that follows
   (`sequence_numbering_broken`) says the wrong thing about why. "Threads that take
   turns" — the analogue of ADR 0053's reaped child — needs a join the shim can see, and a
-  raw `clone`'s join is not one. Left as a second stage, if a target asks for it.
+  raw `clone`'s join is not one. Left as a second stage, if a target asks for it. **Taken
+  2026-09-16 (ADR 0067, #539)**: virtualenv asked for it — measured, its writes are ordered by
+  a creation and a join — and the join the shim sees is `pthread_join`, with the creation as
+  the other edge.
 
 ## Consequences
 

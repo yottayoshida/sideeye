@@ -1,0 +1,7 @@
+Python 3.13.5
+virtualenv 20.31.2 from /usr/lib/python3/dist-packages/virtualenv/__init__.py
+beets version 2.1.0
+Python version 3.13.5
+no plugins loaded
+strace -- version 6.13
+aarch64

@@ -300,6 +300,14 @@ pub const ExecveFn = *const fn ([*:0]const u8, [*]const ?[*:0]const u8, [*]const
 pub const ExecvpFn = *const fn ([*:0]const u8, [*]const ?[*:0]const u8) callconv(.c) c_int;
 pub const PosixSpawnFn = *const fn (?*anyopaque, [*:0]const u8, ?*const anyopaque, ?*const anyopaque, [*]const ?[*:0]const u8, [*]const ?[*:0]const u8) callconv(.c) c_int;
 pub const PthreadCreateFn = *const fn (*anyopaque, ?*const anyopaque, *const anyopaque, ?*anyopaque) callconv(.c) c_int;
+/// `pthread_t` by value (v18). An unsigned long on glibc and a pointer on Darwin — both a
+/// register-sized integer at the ABI, which is all these wrappers need of it: the value is
+/// a key into `joinable`, compared for equality and never dereferenced. POSIX names
+/// `pthread_equal` as the comparison; on both libcs the shim runs under it is the integer's.
+pub const PthreadJoinFn = *const fn (usize, ?*?*anyopaque) callconv(.c) c_int;
+pub const PthreadDetachFn = *const fn (usize) callconv(.c) c_int;
+/// A thread's start routine, as `pthread_create` takes it.
+pub const RoutineFn = *const fn (?*anyopaque) callconv(.c) ?*anyopaque;
 pub const SetsidFn = *const fn () callconv(.c) c_int;
 pub const SetpgidFn = *const fn (c_int, c_int) callconv(.c) c_int;
 
@@ -501,6 +509,8 @@ pub var real: struct {
     posix_spawn: ?PosixSpawnFn = null,
     posix_spawnp: ?PosixSpawnFn = null,
     pthread_create: ?PthreadCreateFn = null,
+    pthread_join: ?PthreadJoinFn = null,
+    pthread_detach: ?PthreadDetachFn = null,
     setsid: ?SetsidFn = null,
     setpgid: ?SetpgidFn = null,
     fopen: ?FopenFn = null,
@@ -588,6 +598,20 @@ const ThreadState = struct {
     /// How far into the trace `seq` has been read. Only complete records advance it, so a
     /// record still being written is read again next time rather than skipped.
     count_scanned: u64 = 0,
+    /// Records this thread has written through this slot (v18) — every class `writeRecord`
+    /// writes, counted only when the write went out. A thread this one creates carries the
+    /// value as of the `pthread_create` call in its `thread_started` record, and the engine
+    /// rebuilds this thread's clock at that point from it (ADR 0067). The engine counts the
+    /// same records on its side; the one record written outside `writeRecord`, the slot
+    /// exhaustion notice, is counted there and not here, which leaves the engine's count
+    /// ahead by one on that thread and every edge drawn from it short — the safe side.
+    /// Reset in the fork child with the rest of the slot: a child that inherited its
+    /// parent's count would tell the engine a creation happened later than it did.
+    written: u32 = 0,
+    /// Successful `pthread_create` calls from this thread (v18). The k-th creation is what
+    /// a join names the created thread by — `(creator, k)` — because the created thread's
+    /// id is not known to the creator and its `pthread_t` is reused after a join.
+    creates: u32 = 0,
     /// Where `refreshCount` decodes. Static rather than a stack array because this runs
     /// from arbitrary interposed calls and, under `--observe syscalls`, from inside the
     /// SIGSYS handler — 8 KB of stack is not a thing to spend there.
@@ -712,13 +736,230 @@ pub fn resetSlotsInChild() void {
         s.busy = false;
         s.seq = 0;
         s.count_scanned = 0;
+        s.written = 0;
+        s.creates = 0;
     }
     reserve.tid = 0;
     reserve.busy = false;
     reserve.seq = 0;
     reserve.count_scanned = 0;
+    reserve.written = 0;
+    reserve.creates = 0;
     exhaustion_announced = false;
+    // The thread tables (v18): the child has one thread, and it is none of the ones the
+    // parent was about to start or could still join. A pending start left `taken` here
+    // would leak an entry for the child's whole life; a joinable entry would let a join in
+    // the child name a thread of the parent.
+    for (&pending_starts) |*e| e.* = .{};
+    for (&joinable) |*e| e.* = .{};
 }
+// --- the thread tables (v18, ADR 0067) ---------------------------------------------------
+//
+// Two static tables, sized like the slot table and, like it, zero-initialised into `.bss`.
+//
+// `pending_starts` carries a start routine and its argument from `pthread_create` to the
+// trampoline the new thread runs first, together with what the new thread's first record
+// must say: who created it, how many records that creator had written, and which of the
+// creator's creations it is. An entry is claimed by compare-and-swap, returned by the new
+// thread as soon as it has copied the entry out, and returned by the creator when
+// `pthread_create` fails — a table that only the child returns fills up under repeated
+// `EAGAIN` (review). A thread cancelled asynchronously between its creation and its first
+// instruction returns nothing; one of sixty-four entries leaks, and when all have leaked
+// the creator installs no trampoline, the thread writes no `thread_started`, and the
+// engine — which then knows no creator for it — draws no edge to or from its writes. The
+// refusing side.
+//
+// `joinable` maps a live thread's `pthread_t` to the `(creator, ordinal)` pair its
+// `thread_started` record carries. **The creator fills it**, right after `pthread_create`
+// returns with the value in hand: filled by the new thread it was a race — a creator that
+// joins at once looked the value up before the child had run, found nothing, and the join
+// recorded `?` on a run that was in order (review). **A joiner reads it before the real
+// join**, while the thread is still joinable and the value therefore still its own: read
+// after the join returns, the same `pthread_t` can already be the next thread's — glibc
+// reuses it at once, measured on virtualenv, whose silent thread and whose pip thread carry
+// one value. An entry with the same value is overwritten on insert, because the value's
+// previous holder is finished; a full table drops the insert and the later join records
+// `?`. A `pthread_t` another thread received through shared memory and joined before its
+// creator reached the insert is a window this design leaves open: it resolves to `?` and
+// the run is refused, not misjudged.
+
+const PendingStart = struct {
+    taken: bool = false,
+    routine: ?RoutineFn = null,
+    arg: ?*anyopaque = null,
+    creator: u64 = 0,
+    written: u32 = 0,
+    ordinal: u32 = 0,
+};
+var pending_starts: [max_threads]PendingStart = [_]PendingStart{.{}} ** max_threads;
+
+const Joinable = struct {
+    /// The key. 0 is free; `joinable_claiming` marks an entry whose payload is being
+    /// written, so a concurrent insert moves on and a concurrent lookup does not match it.
+    pthread: usize = 0,
+    creator: u64 = 0,
+    ordinal: u32 = 0,
+};
+const joinable_claiming: usize = 1;
+var joinable: [max_threads]Joinable = [_]Joinable{.{}} ** max_threads;
+
+fn claimPendingStart() ?*PendingStart {
+    for (&pending_starts) |*e| {
+        if (@cmpxchgStrong(bool, &e.taken, false, true, .acq_rel, .acquire) == null) return e;
+    }
+    return null;
+}
+
+/// Claim the entry whose key is `expected` by taking it down to the sentinel, write the
+/// payload, publish the value. Two creators racing for one free entry would otherwise both
+/// write their payload and the first to publish would publish the other's; and a joiner
+/// holding a reused value through shared memory, looking it up while the new holder's
+/// creator overwrites the stale entry, reads no match rather than a pair half old and half
+/// new — either would name a creation that never happened (review, twice).
+fn joinableClaim(e: *Joinable, expected: usize, pthread: usize, creator: u64, ordinal: u32) bool {
+    if (@cmpxchgStrong(usize, &e.pthread, expected, joinable_claiming, .acq_rel, .acquire) != null) return false;
+    e.creator = creator;
+    e.ordinal = ordinal;
+    @atomicStore(usize, &e.pthread, pthread, .release);
+    return true;
+}
+
+fn joinableInsert(pthread: usize, creator: u64, ordinal: u32) void {
+    if (pthread == 0 or pthread == joinable_claiming) return;
+    // The value's previous holder is finished: overwrite its entry rather than add a second.
+    for (&joinable) |*e| {
+        if (joinableClaim(e, pthread, pthread, creator, ordinal)) return;
+    }
+    for (&joinable) |*e| {
+        if (joinableClaim(e, 0, pthread, creator, ordinal)) return;
+    }
+}
+
+/// Resolve and remove: the caller is about to join or detach this thread, after which the
+/// value may belong to another.
+fn joinableTake(pthread: usize) ?contract.thread_aux.Joined {
+    if (pthread == 0 or pthread == joinable_claiming) return null;
+    for (&joinable) |*e| {
+        if (@atomicLoad(usize, &e.pthread, .acquire) == pthread) {
+            const found: contract.thread_aux.Joined = .{ .creator = e.creator, .ordinal = e.ordinal };
+            @atomicStore(usize, &e.pthread, 0, .release);
+            return found;
+        }
+    }
+    return null;
+}
+
+/// The new thread's first instructions. Copies the entry out and returns it, writes the
+/// `thread_started` record, then runs the routine the target asked for — whose return value
+/// is this function's, so `pthread_join` hands the target what its routine returned;
+/// `pthread_exit` unwinds through here as it would through the routine itself.
+fn trampoline(p: ?*anyopaque) callconv(.c) ?*anyopaque {
+    const e: *PendingStart = @ptrCast(@alignCast(p.?));
+    const routine = e.routine.?;
+    const arg = e.arg;
+    const creator = e.creator;
+    const written = e.written;
+    const ordinal = e.ordinal;
+    @atomicStore(bool, &e.taken, false, .release);
+    noteThreadStarted(creator, written, ordinal);
+    return routine(arg);
+}
+
+/// Written from the new thread's own stack, not through a slot: the record has no path and a
+/// short `aux`, so a buffer the size of the slot-exhaustion notice's carries it, and being
+/// started claims no slot — a thread's first interposed call does, as before. Sixty-four slots
+/// are the whole run's, and a pool whose workers never enter a wrapper is judged today however
+/// many it creates and must stay judged (review).
+fn noteThreadStarted(creator: u64, written: u32, ordinal: u32) void {
+    if (!active) return;
+    var aux_buf: [contract.thread_aux.max_len]u8 = undefined;
+    const aux = contract.thread_aux.started(&aux_buf, creator, written, ordinal) catch return;
+    var rec: [128]u8 = undefined;
+    const n = contract.encodeRecord(&rec, .{
+        .op = .thread_started,
+        .seq = 0,
+        .pid = @bitCast(c.getpid()),
+        .tid = currentTid(),
+        .path = "",
+        .aux = aux,
+    }) catch return;
+    _ = writeAll(rec[0..n]);
+}
+
+/// A join or a detach, recorded from the calling thread's slot with the pair `joinableTake`
+/// resolved before the real call, or `?`.
+fn noteThreadSync(op: contract.OpClass, who: ?contract.thread_aux.Joined) void {
+    if (!active) return;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
+    var aux_buf: [contract.thread_aux.max_len]u8 = undefined;
+    const aux: []const u8 = if (who) |w|
+        (contract.thread_aux.joined(&aux_buf, w.creator, w.ordinal) catch contract.thread_aux.unknown)
+    else
+        contract.thread_aux.unknown;
+    writeRecord(ts, op, 0, "", aux);
+}
+
+/// `pthread_create` (v18). Installs the trampoline where an entry is free, records the
+/// creation as before, and fills `joinable` for the join that may follow. The `.thread`
+/// record is still the creator's and still written through `noteBoundary`, which drops it
+/// when the shim is re-entered; nothing that pairs the child with this creation depends on
+/// it — the child's own record carries the pairing.
+pub fn createThread(thread: *anyopaque, attr: ?*const anyopaque, start_routine: *const anyopaque, arg: ?*anyopaque) c_int {
+    if (!active) return callPthreadCreate(thread, attr, start_routine, arg);
+    const ts = mine();
+    const ordinal = ts.creates + 1;
+    const entry = claimPendingStart();
+    var rc: c_int = undefined;
+    if (entry) |e| {
+        e.routine = @ptrCast(@alignCast(start_routine));
+        e.arg = arg;
+        e.creator = currentTid();
+        e.written = ts.written;
+        e.ordinal = ordinal;
+        rc = callPthreadCreate(thread, attr, @ptrCast(&trampoline), @ptrCast(e));
+        if (rc != 0) @atomicStore(bool, &e.taken, false, .release);
+    } else {
+        rc = callPthreadCreate(thread, attr, start_routine, arg);
+    }
+    if (rc == 0) {
+        ts.creates = ordinal;
+        if (entry != null) {
+            const handle: *const usize = @ptrCast(@alignCast(thread));
+            joinableInsert(handle.*, currentTid(), ordinal);
+        }
+        noteBoundary(.thread);
+    }
+    return rc;
+}
+
+/// `pthread_join` (v18): the target is resolved before the call and recorded after it
+/// succeeded. A failed join puts the entry back — the thread is still joinable.
+pub fn joinThread(thread: usize, retval: ?*?*anyopaque) c_int {
+    const who = joinableTake(thread);
+    return settleSync(.thread_join, thread, who, callPthreadJoin(thread, retval));
+}
+
+/// After the real join or detach: record it where it succeeded, put the entry back where it
+/// failed — the thread is still joinable then.
+fn settleSync(op: contract.OpClass, thread: usize, who: ?contract.thread_aux.Joined, rc: c_int) c_int {
+    if (rc == 0) {
+        noteThreadSync(op, who);
+    } else if (who) |w| {
+        joinableInsert(thread, w.creator, w.ordinal);
+    }
+    return rc;
+}
+
+/// `pthread_detach` (v18): the same shape. After a detach the thread cannot be joined, so
+/// its entry goes whether or not the value is reused.
+pub fn detachThread(thread: usize) c_int {
+    const who = joinableTake(thread);
+    return settleSync(.thread_detach, thread, who, callPthreadDetach(thread));
+}
+
 /// The pid this shim instance initialised in. Read by `execCarryAllowed` — only the
 /// subject carries its operation count across an image change (#123).
 ///
@@ -780,6 +1021,8 @@ fn resolveAll() void {
     real.posix_spawn = lookup(PosixSpawnFn, "posix_spawn");
     real.posix_spawnp = lookup(PosixSpawnFn, "posix_spawnp");
     real.pthread_create = lookup(PthreadCreateFn, "pthread_create");
+    real.pthread_join = lookup(PthreadJoinFn, "pthread_join");
+    real.pthread_detach = lookup(PthreadDetachFn, "pthread_detach");
     real.setsid = lookup(SetsidFn, "setsid");
     real.setpgid = lookup(SetpgidFn, "setpgid");
     real.fopen = lookup(FopenFn, "fopen");
@@ -1305,10 +1548,10 @@ fn writeAll(bytes: []const u8) bool {
 /// overflow rather than here, so it is in the trace whether or not anything is recorded
 /// afterwards.
 fn writeRecord(ts: *ThreadState, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
-    encodeAndWrite(&ts.record_buf, op, s, path, aux);
+    if (encodeAndWrite(&ts.record_buf, op, s, path, aux)) ts.written += 1;
 }
 
-fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
+fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) bool {
     const rec: contract.Record = .{
         .op = op,
         .seq = s,
@@ -1317,8 +1560,8 @@ fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u3
         .path = path,
         .aux = aux,
     };
-    const n = contract.encodeRecord(buf, rec) catch return;
-    _ = writeAll(buf[0..n]);
+    const n = contract.encodeRecord(buf, rec) catch return false;
+    return writeAll(buf[0..n]);
 }
 
 /// The target is closing the shim's own trace descriptor.
@@ -2473,6 +2716,21 @@ pub inline fn callPthreadCreate(t: *anyopaque, at: ?*const anyopaque, s: *const 
     const f = real.pthread_create orelse return -1;
     return f(t, at, s, arg);
 }
+// `pthread_join` and `pthread_detach` return an errno value, not -1 with errno set, so a
+// symbol the table could not resolve is looked up once more and, failing that, answered
+// `EINVAL` — a value the target's own error handling knows. Interposing these two adds a
+// way for a target's joins to fail that v17 did not have; this is what bounds it (review).
+const EINVAL_value: c_int = 22;
+pub inline fn callPthreadJoin(t: usize, r: ?*?*anyopaque) c_int {
+    if (is_darwin) return darwin.pthread_join(t, r);
+    const f = real.pthread_join orelse lookup(PthreadJoinFn, "pthread_join") orelse return EINVAL_value;
+    return f(t, r);
+}
+pub inline fn callPthreadDetach(t: usize) c_int {
+    if (is_darwin) return darwin.pthread_detach(t);
+    const f = real.pthread_detach orelse lookup(PthreadDetachFn, "pthread_detach") orelse return EINVAL_value;
+    return f(t);
+}
 pub inline fn callSetsid() c_int {
     if (is_darwin) return darwin.setsid();
     const f = real.setsid orelse return -1;
@@ -3061,4 +3319,104 @@ test "exec carry: builds in the thread's own slot, and not on the reserve or whe
     reserve.exec_env[0] = null;
     try std.testing.expectEqual(@as(c_int, -1), callExecveSeqCarry(nowhere, &argv, &env));
     try std.testing.expect(reserve.exec_env[0] == null);
+}
+
+fn clearThreadTablesForTest() void {
+    for (&joinable) |*e| e.* = .{};
+    for (&pending_starts) |*e| e.* = .{};
+}
+
+test "the joinable table: the creator inserts, the joiner takes once, a reused value is overwritten, a full table drops (v18)" {
+    clearThreadTablesForTest();
+    defer clearThreadTablesForTest();
+    joinableInsert(0x1000, 7, 1);
+    joinableInsert(0x2000, 7, 2);
+    const a = joinableTake(0x1000) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 7), a.creator);
+    try std.testing.expectEqual(@as(u32, 1), a.ordinal);
+    // Taken once, gone: the value may be another thread's from here on.
+    try std.testing.expect(joinableTake(0x1000) == null);
+    // glibc hands a joined thread's value to the next creation. The later pair is what a
+    // join must resolve to, so the insert overwrites the entry rather than adding a second.
+    joinableInsert(0x2000, 9, 3);
+    const b = joinableTake(0x2000) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 9), b.creator);
+    try std.testing.expectEqual(@as(u32, 3), b.ordinal);
+    try std.testing.expect(joinableTake(0x2000) == null);
+    // Neither 0 nor the claiming sentinel is ever a key.
+    joinableInsert(0, 7, 4);
+    joinableInsert(joinable_claiming, 7, 5);
+    try std.testing.expect(joinableTake(0) == null);
+    try std.testing.expect(joinableTake(joinable_claiming) == null);
+    for (&joinable) |*e| try std.testing.expectEqual(@as(usize, 0), e.pthread);
+    // Full: sixty-four distinct values fill it, the sixty-fifth is dropped and resolves to
+    // nothing (the join then records `?`), and the sixty-four still resolve.
+    var i: usize = 0;
+    while (i < max_threads) : (i += 1) joinableInsert(0x10000 + i * 16, 1, @intCast(i + 1));
+    joinableInsert(0xFFFF0, 1, 99);
+    try std.testing.expect(joinableTake(0xFFFF0) == null);
+    try std.testing.expectEqual(@as(u32, 1), (joinableTake(0x10000) orelse return error.TestUnexpectedResult).ordinal);
+    try std.testing.expectEqual(@as(u32, 64), (joinableTake(0x10000 + 63 * 16) orelse return error.TestUnexpectedResult).ordinal);
+}
+
+test "pending starts: sixty-four claims, the sixty-fifth refused, a release makes room again (v18)" {
+    clearThreadTablesForTest();
+    defer clearThreadTablesForTest();
+    var claimed: [max_threads]*PendingStart = undefined;
+    for (&claimed) |*slot| slot.* = claimPendingStart() orelse return error.TestUnexpectedResult;
+    try std.testing.expect(claimPendingStart() == null);
+    // What the trampoline and a failed `pthread_create` both do: give the entry back.
+    @atomicStore(bool, &claimed[3].taken, false, .release);
+    try std.testing.expectEqual(claimed[3], claimPendingStart() orelse return error.TestUnexpectedResult);
+}
+
+test "writeRecord counts the records that went out, and the fork child's slots and tables start from zero (v18)" {
+    // A pid-unique path, as the other trace tests in this file: `zig build test` runs
+    // several binaries at once and a fixed name would be shared between them.
+    var bb: [128]u8 = undefined;
+    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-written-{d}", .{c.getpid()}) catch unreachable;
+    _ = std.c.mkdir(base.ptr, 0o755);
+    var fb: [160]u8 = undefined;
+    const file_z = std.fmt.bufPrintZ(&fb, "{s}/trace.bin", .{base}) catch unreachable;
+    defer {
+        _ = std.c.unlink(file_z.ptr);
+        _ = std.c.rmdir(base.ptr);
+    }
+    const flags: std.posix.O = @bitCast(O_RDWR | O_CREAT | O_TRUNC | O_APPEND);
+    const fd = std.c.open(file_z.ptr, flags, @as(c_uint, 0o644));
+    try std.testing.expect(fd >= 0);
+    defer _ = std.c.close(fd);
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    trace_fd = fd;
+    clearThreadTablesForTest();
+    defer clearThreadTablesForTest();
+
+    var ts: ThreadState = .{};
+    ts.tid = 424242;
+    writeRecord(&ts, .close, 0, "/tmp/x", "");
+    writeRecord(&ts, .thread_join, 0, "", "7 1");
+    try std.testing.expectEqual(@as(u32, 2), ts.written);
+    // A record that could not go out is not a record the engine will count.
+    trace_fd = -1;
+    writeRecord(&ts, .close, 0, "/tmp/x", "");
+    try std.testing.expectEqual(@as(u32, 2), ts.written);
+
+    // The fork child. A count inherited from the parent would date the child's own
+    // creations later than they were (review, R2 C1); a pending start or a joinable entry
+    // inherited would name threads the child does not have.
+    slots[0].written = 5;
+    slots[0].creates = 2;
+    reserve.written = 3;
+    reserve.creates = 1;
+    joinableInsert(0x3000, 1, 1);
+    const pending = claimPendingStart() orelse return error.TestUnexpectedResult;
+    try std.testing.expect(pending.taken);
+    resetSlotsInChild();
+    try std.testing.expectEqual(@as(u32, 0), slots[0].written);
+    try std.testing.expectEqual(@as(u32, 0), slots[0].creates);
+    try std.testing.expectEqual(@as(u32, 0), reserve.written);
+    try std.testing.expectEqual(@as(u32, 0), reserve.creates);
+    try std.testing.expect(joinableTake(0x3000) == null);
+    for (&pending_starts) |*e| try std.testing.expect(!e.taken);
 }

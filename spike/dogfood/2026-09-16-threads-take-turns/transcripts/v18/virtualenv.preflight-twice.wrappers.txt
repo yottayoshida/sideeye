@@ -1,0 +1,18 @@
+PREFLIGHT  recording accepted — 1381 state-changing operation(s) observed
+
+atomicity    514 path(s) judged pre-or-post
+oracle       agreed on 1381 operations (23161 syscall lines examined, 5988 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 2 thread(s) created, and 2 thread id(s) of the subject's own process wrote the judged directory; 2 hand-over(s) between threads in causal order, 2 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2133 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /localrun/st/wrappers/virtualenv/pf --setup "/localrun/ap/setup-virtualenv.sh" --operation "virtualenv -q --no-download /localrun/st/wrappers/virtualenv/pf/v2" \
+               --check <your-invariant.sh> --shim /se/lib/libsideeye_shim.so --oracle /usr/bin/strace

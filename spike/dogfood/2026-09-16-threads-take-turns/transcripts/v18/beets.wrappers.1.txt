@@ -1,0 +1,14 @@
+/localrun/st/wrappers/beets/1/in2
+UNKNOWN  multiple_threads_detected
+         two threads of process 6962 wrote in the judged directory: tid 6964 performed unlink(/localrun/st/wrappers/beets/1/lib/library.db-journal) and tid 6965 performed open(/localrun/st/wrappers/beets/1/lib/library.db). No thread creation or join the shim recorded orders the first of those before the second, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   4 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   the shim recorded a thread; the strace account was not read; the shim recorded 3 thread(s) created, and 3 thread id(s) of the subject's own process wrote the judged directory; 1 hand-over(s) between threads in causal order, 3 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

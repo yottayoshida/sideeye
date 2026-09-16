@@ -130,6 +130,8 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     entry(&ops.posix_spawn, libc.posix_spawn),
     entry(&ops.posix_spawnp, libc.posix_spawnp),
     entry(&ops.pthread_create, libc.pthread_create),
+    entry(&ops.pthread_join, libc.pthread_join),
+    entry(&ops.pthread_detach, libc.pthread_detach),
     entry(&ops.setsid, libc.setsid),
     entry(&ops.setpgid, libc.setpgid),
 };

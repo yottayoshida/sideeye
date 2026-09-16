@@ -173,7 +173,7 @@ const std = @import("std");
 /// `unreadable` and `kill-returned` — and a v16 shim under a v17 engine would
 /// say nothing while the engine contained the run, and the version guard turns that
 /// pairing into `contract_version_mismatch` rather than a run read as uncontained.
-pub const contract_version: u32 = 17;
+pub const contract_version: u32 = 18;
 
 pub const magic = "SIDEEYE1";
 
@@ -325,6 +325,88 @@ pub const observe_aux = struct {
 /// against the run's cgroup, and can it take the cgroup down — and the engine keeps its own
 /// fields for them rather than reading them through `hard_boundary`, which holds only the
 /// first boundary a trace carries.
+/// The `aux` field of the thread-synchronisation records (v18, ADR 0067), spelled once
+/// for both writers. Decimal fields separated by single spaces; the engine parses with
+/// `parseStarted` / `parseJoined`, and anything that does not parse is treated as
+/// `unknown` — no edge is drawn from it.
+pub const thread_aux = struct {
+    /// A join or detach whose target the shim could not name: the thread was created
+    /// before the shim was in the image, through a raw `clone`, or after the pending-start
+    /// table was full. The engine draws no edge from it.
+    pub const unknown = "?";
+
+    pub const Started = struct { creator: u64, written: u32, ordinal: u32 };
+    pub const Joined = struct { creator: u64, ordinal: u32 };
+
+    /// Widest spelling: a u64, two u32s and two spaces.
+    pub const max_len = 20 + 1 + 10 + 1 + 10;
+
+    /// `thread_started`: the creating thread's id, how many records it had written
+    /// through its slot when it called `pthread_create`, and which of its creations this
+    /// was (1-based).
+    pub fn started(buf: []u8, creator: u64, written: u32, ordinal: u32) EncodeError![]const u8 {
+        return std.fmt.bufPrint(buf, "{d} {d} {d}", .{ creator, written, ordinal }) catch return error.BufferTooSmall;
+    }
+
+    /// `thread_join` / `thread_detach`: the collected thread, named as its creator's k-th
+    /// creation — the pair its own `thread_started` record carries.
+    pub fn joined(buf: []u8, creator: u64, ordinal: u32) EncodeError![]const u8 {
+        return std.fmt.bufPrint(buf, "{d} {d}", .{ creator, ordinal }) catch return error.BufferTooSmall;
+    }
+
+    pub fn parseStarted(aux: []const u8) ?Started {
+        var it = std.mem.splitScalar(u8, aux, ' ');
+        const a = it.next() orelse return null;
+        const b = it.next() orelse return null;
+        const c = it.next() orelse return null;
+        if (it.next() != null) return null;
+        return .{
+            .creator = std.fmt.parseUnsigned(u64, a, 10) catch return null,
+            .written = std.fmt.parseUnsigned(u32, b, 10) catch return null,
+            .ordinal = std.fmt.parseUnsigned(u32, c, 10) catch return null,
+        };
+    }
+
+    pub fn parseJoined(aux: []const u8) ?Joined {
+        var it = std.mem.splitScalar(u8, aux, ' ');
+        const a = it.next() orelse return null;
+        const b = it.next() orelse return null;
+        if (it.next() != null) return null;
+        return .{
+            .creator = std.fmt.parseUnsigned(u64, a, 10) catch return null,
+            .ordinal = std.fmt.parseUnsigned(u32, b, 10) catch return null,
+        };
+    }
+};
+
+test "thread_aux round-trips both spellings, and refuses the unknown mark and every other shape" {
+    const t = std.testing;
+    var buf: [thread_aux.max_len]u8 = undefined;
+    const s1 = try thread_aux.started(&buf, 364, 23, 2);
+    try t.expectEqualStrings("364 23 2", s1);
+    const p1 = thread_aux.parseStarted(s1).?;
+    try t.expectEqual(@as(u64, 364), p1.creator);
+    try t.expectEqual(@as(u32, 23), p1.written);
+    try t.expectEqual(@as(u32, 2), p1.ordinal);
+    const s2 = try thread_aux.joined(&buf, 18446744073709551615, 4294967295);
+    try t.expectEqualStrings("18446744073709551615 4294967295", s2);
+    const p2 = thread_aux.parseJoined(s2).?;
+    try t.expectEqual(@as(u64, 18446744073709551615), p2.creator);
+    try t.expectEqual(@as(u32, 4294967295), p2.ordinal);
+    // The widest spelling fits the declared bound exactly.
+    var wide: [thread_aux.max_len]u8 = undefined;
+    _ = try thread_aux.started(&wide, 18446744073709551615, 4294967295, 4294967295);
+    // The unknown mark, an empty field, a wrong arity and a non-number all parse to nothing.
+    try t.expectEqual(@as(?thread_aux.Started, null), thread_aux.parseStarted(thread_aux.unknown));
+    try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined(thread_aux.unknown));
+    try t.expectEqual(@as(?thread_aux.Started, null), thread_aux.parseStarted("364 23"));
+    try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined("364 23 2"));
+    try t.expectEqual(@as(?thread_aux.Started, null), thread_aux.parseStarted("364 x 2"));
+    try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined(""));
+    // A started spelling is not a joined one: three fields do not parse as two.
+    try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined(s1));
+}
+
 pub const cgroup_aux = struct {
     /// Inside the run's cgroup: the recording run, the baseline world, a preflight run.
     pub const held = "cgroup:held";
@@ -611,6 +693,24 @@ pub const OpClass = enum(u16) {
     /// own (#559) and refuses it everywhere else.
     detached = 204,
 
+    // --- thread synchronisation (v18, ADR 0067) ---
+    //
+    // Recorded so the engine can order the writes of two threads of one process by what
+    // the target's thread API did. A thread's first record names the thread that created
+    // it, how many records that creator had written through its own slot when it called
+    // `pthread_create`, and which of that creator's creations this was
+    // (`thread_started`; `aux` is `thread_aux.started`). A join names the thread it
+    // collected by that same (creator, ordinal) pair (`thread_join`), and a detach is
+    // recorded because it is the call that says a join will never come (`thread_detach`).
+    // None of the three is a boundary — no new process, no new image — nor a kill point,
+    // nor a marker the shim writes about itself: they are the target's own calls, seen.
+    // `thread_started` is written by the new thread before its start routine runs, from a
+    // stack buffer and without claiming a per-thread slot, so a thread that never touches
+    // the state costs the slot table nothing (ADR 0067).
+    thread_started = 205,
+    thread_join = 206,
+    thread_detach = 207,
+
     // --- markers written by the shim itself, never by the target ---
     /// Written once when the shim finishes initialising. Its *absence* is how the
     /// engine learns the shim never loaded at all (static linking, hardened runtime,
@@ -654,6 +754,16 @@ pub const OpClass = enum(u16) {
         };
     }
 
+    /// The thread-synchronisation records (v18): a thread's start naming its creator, a
+    /// join, a detach. Not boundaries — `isBoundary` is what `needsOracle`, the quiescence
+    /// sampling and the account key on, and a join creates nothing — and not markers.
+    pub fn isThreadSync(self: OpClass) bool {
+        return switch (self) {
+            .thread_started, .thread_join, .thread_detach => true,
+            else => false,
+        };
+    }
+
     pub fn isMarker(self: OpClass) bool {
         return switch (self) {
             .shim_ready, .kill_landed, .unresolved, .unsupported, .cgroup => true,
@@ -679,11 +789,13 @@ pub const OpClass = enum(u16) {
     /// invariant below pins that), so a future state-changing class refuses here without
     /// anyone remembering to add it. Boundary and marker classes stay refusing because
     /// nothing measured says they can arrive on this path at all; letting them through
-    /// would be exempting a shape no measurement covers. Today the three together are
-    /// equal to `!= .close` — every other class is a kill point, a boundary or a
-    /// marker — and that equality is asserted in the test below so a drift is loud.
+    /// would be exempting a shape no measurement covers. Today the four together are
+    /// equal to `!= .close` — every other class is a kill point, a boundary, a
+    /// marker or a thread-synchronisation record — and that equality is asserted in the test below so a drift is loud.
+    /// The thread-synchronisation records (v18) join the refusing side for the boundary
+    /// classes' reason: they carry no path, so nothing measured says one can arrive here.
     pub fn unplaceableRefuses(self: OpClass) bool {
-        return self.isKillPoint() or self.isBoundary() or self.isMarker();
+        return self.isKillPoint() or self.isBoundary() or self.isMarker() or self.isThreadSync();
     }
 
     /// Operations that can change what is left on disk.
@@ -1726,6 +1838,7 @@ test "op categories are disjoint and cover every value" {
         if (op.isKillPoint()) categories += 1;
         if (op.isBoundary()) categories += 1;
         if (op.isMarker()) categories += 1;
+        if (op.isThreadSync()) categories += 1;
         if (op == .close) categories += 1; // the lifecycle category has exactly one member
         try std.testing.expectEqual(@as(usize, 1), categories);
     }
