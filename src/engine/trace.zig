@@ -204,6 +204,10 @@ pub const TraceInfo = struct {
     /// Compare against `initial_writer_tid` instead, the way `unrecorded_writer_thread`
     /// does.
     subject_writer_tid_list: std.ArrayList(u64) = .empty,
+    /// Thread ids whose `thread_started` record carries the subject's pid (v18): the threads
+    /// the subject created and that ran the shim's trampoline, writers or not. Handed to the
+    /// macOS oracle's reader for its descriptor namespace and nothing else (`fsusage.read`).
+    subject_started_tid_list: std.ArrayList(u64) = .empty,
     /// The thread that wrote the first `shim_ready` — the subject's initial thread, since
     /// the shim initialises on whichever thread reaches it first and that is the one the
     /// process started with. Null only when no announcement was read, which refuses the
@@ -1024,6 +1028,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         switch (op.class) {
             .thread_started => {
                 info.thread_start_records += 1;
+                if (info.primary_pid != null and op.pid == info.primary_pid.?) try info.subject_started_tid_list.append(arena, op.tid);
                 if (contract.thread_aux.parseStarted(op.aux)) |st| {
                     if (!try order.started(arena, op.pid, op.tid, st)) info.thread_unpaired_starts += 1;
                 } else {

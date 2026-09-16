@@ -192,7 +192,14 @@ floor" clause (#543) is reserved for a run holding neither (review).
   other. Each unseen join leaves two threads unordered and the run refused.
 - A thread the shim never saw created (a raw `clone`, #543) has no creator to inherit an order
   from: its writes are unordered with every other thread's and a second writer refuses, as
-  under v16. The account's "a thread the shim never recorded creating wrote" clause still
+  under v16. The fs_usage reader is handed the threads the shim saw start, for its
+  descriptor namespace and nothing else: a started thread's first act is its own start
+  record, a `write` on the trace descriptor that `fs_usage` prints without a path, and a
+  thread the reader did not place in the subject's process resolved it against nothing and
+  refused the run as a hole (`oracle_saw_nothing`) — the macOS acceptance's check 7, a
+  `pthread_create`d worker writing through raw syscalls, measured it on the first push. Such a
+  thread is still not the subject to that witness; its raw writes stay another party's and
+  refuse `multiple_threads_detected` as they did. The account's "a thread the shim never recorded creating wrote" clause still
   rises only when the trace holds no `.thread` record at all; a run that holds one and also a
   raw-clone writer says two thread ids wrote and no hand-over, and the refusal names the pair.
   Saying "unrecorded" there too would need the reader to know which starts it lacks, which is

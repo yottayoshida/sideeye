@@ -110,6 +110,17 @@ on a run whose every `.thread` record was dropped but whose starts were read —
 v16 never reached, since it refused that run on the count; the start record counts as a
 recorded creation now, with a unit test.
 
+**CI's macOS job found the one witness nobody here can run.** The `fs_usage` acceptance's
+check 7 — a `pthread_create`d worker writing through raw syscalls, refused as a thread the
+shim never saw write — came back `oracle_saw_nothing`: the worker's first act under v18 is its
+own `thread_started` record, a `write` on the trace descriptor, and `fs_usage` prints a write
+without a path, so a thread the reader had not placed in the subject's process resolved it
+against nothing and called the capture a hole. Under v16 that worker wrote nothing to the trace
+and the question never arose. The reader is handed the threads the shim saw start, for the
+descriptor namespace only — the thread is still another party's to that witness, its raw
+write still refuses as before — with a unit test in the capture's shape and its control
+(without the list, the hole). `fs_usage` needs root and this machine's, so CI measures it.
+
 ## 2026-09-16 (second) — twenty targets in four slates, and the two counterexamples whose tools have no out-of-place path
 
 **What this run is.** A dogfood run under `spike/dogfood/README.md`: not a cohort, nothing sealed, no blindness claimed. Four slates of five, chosen by `spike/cohort4/SCOUT-BRIEF.md`'s rules 1–17, measured with the released v1.4.0 tarball rather than a build. Record: `spike/dogfood/2026-09-16-userview-3/`.

@@ -1897,7 +1897,7 @@ fn phaseOracle(run: *Run) void {
         const oracle_cwd = args.cwd orelse
             if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
         const parsed = if (args.oracle_fs_usage) blk: {
-            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd, trace.subject_writer_tid_list.items) catch setupError(.environment, "out of memory");
+            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd, trace.subject_writer_tid_list.items, trace.subject_started_tid_list.items) catch setupError(.environment, "out of memory");
             // A capture with a hole in it is not an account to compare against. Each
             // of these says the witness itself is unreadable, which is a different
             // statement from "the two witnesses disagreed" — and only the second one
