@@ -52,3 +52,5 @@ oxipng/oxipng	873	standing	oxipng 10.2.1
 codespell-project/codespell	4025	standing	codespell 2.4.1
 rubocop/rubocop	15720	standing	rubocop 1.39.0
 rust-lang/cargo	17481	standing	cargo 1.97.1
+aws/aws-cli	10648	standing	aws-cli 2.23.6
+neovim/neovim	41940	standing	neovim 0.10.4 and 0.12.5 (`:wshada`)

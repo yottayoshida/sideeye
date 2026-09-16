@@ -1,0 +1,69 @@
+## neovim/neovim [vim_rename] total 8
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #12152 [closed] 2020-04-18 Asynchronous writes
+  #6297 [closed] 2017-03-16 macros all-caps refactor
+  #4939 [closed] 2016-06-19 fix os_file_exists or vim_rename
+  #4973 [closed] 2016-06-27 [RFC] Fix os_file_exists to not approve directories
+  #4042 [closed] 2016-01-18 ‘O_NOFOLLOW’ undeclared (first use in this function)
+  #447 [closed] 2014-04-01 [RDY] libuv - porting mch_rename
+  #963 [closed] 2014-07-17 Errors while closing file
+## neovim/neovim [os_remove rename] total 3
+  #2646 [closed] 2015-05-14 windows save issue
+  #2506 [closed] 2015-04-25 [RFC] Replace viminfo with ShaDa files
+  #491 [closed] 2014-04-08 [RDY] Port vim_mkdir, mch_rmdir and mch_remove to libuv
+## neovim/neovim [shada atomic] total 8
+  #1180 [open] 2014-09-15 enhanced session/shada; shared (p2p) state
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #8813 [closed] 2018-08-04 teardown: race between options setup and exit_event
+  #31631 [closed] 2024-12-19 feat(treesitter): async parsing
+  #14169 [closed] 2021-03-20 [Edited Readme]: Build fails without sudo
+  #10951 [closed] 2019-09-05 test/shada_spec: avoid exit_event race
+  #10946 [closed] 2019-09-04 vim-patch:8.1.1498,8.1.1501: b:changedtick
+  #5277 [closed] 2016-08-31 Errors with HOME=/dev/null and `-i /dev/null`
+## neovim/neovim [shada durability] total 0
+## neovim/neovim [shada power] total 2
+  #32949 [closed] 2025-03-18 AI primitive: produce a well-formatted "digest" including the project tree
+  #4855 [closed] 2016-05-31 Reading the shada file sometimes takes a ridiculously long time
+## aws/aws-cli [configure set temporary file] total 60
+  #4676 [open] 2019-11-18 [V2] Save temporary credentials in .aws/credentials for v1 compatibility
+  #8187 [open] 2023-09-20 Output of `configure export-credentials --format env` ends with `\r`
+  #6475 [open] 2021-10-13 Support for AWS STS AssumeRole is required in the aws-cli docker image
+  #9021 [open] 2022-11-28 STS duration seconds ENVIRONMENT Variable
+  #819 [open] 2014-06-18 Check if profile exists command
+  #3875 [open] 2019-01-20 Should be able to assume a role using AWS_PROFILE and 'credential_source=Environment'
+  #8880 [open] 2024-08-23 ec2 instance connect fails sporadically on WebSocket (NO_PROXY=1 does not help)
+  #2060 [open] 2016-07-11 Bad error message if instance profile assume role policy is wrong
+  #5636 [open] 2020-10-14 Docker login fails returning "The stub received bad data" on Windows when using awscli v2. 
+  #4079 [open] 2019-04-16 EKS update-config overwrites user details when using multiple roles against the same cluster
+  #7949 [open] 2023-06-05 1.27.146: pytest is failing in many units because it uses hardcoded `python` or `python.exe` python executable name
+  #5208 [closed] 2020-05-16 Failure installing for specific user on macOS
+  #5109 [closed] 2020-04-03 credential_process doesn't work for federated roles
+  #10031 [closed] 2026-01-29 v2.33.9: Permission denied on ~/.aws/config when running as non-root user after initialization
+  #9996 [closed] 2026-01-16 Add fish shell format for export-credentials
+  #7681 [closed] 2023-02-20 Commands all output `usage: col [-bfhpx] [-l nline]`
+  #9479 [closed] 2025-05-06 Error message for `aws s3 ls` refers to wrong endpoint.
+  #9590 [closed] 2025-07-10 added support for AWS temp creds being set with AWS configure, added aws MFA-login
+  #9809 [closed] 2025-10-22 aws config sso failed with SSL validation failed
+  #9496 [closed] 2025-05-15 [v2] Web-based help 
+## aws/aws-cli [credentials atomic write] total 0
+## aws/aws-cli [credentials file zero bytes] total 3
+  #9632 [open] 2025-07-31 JSONFileCache.__setitem__ not multi-process safe.
+  #4099 [closed] 2019-04-24 `aws cloudformation package` fails with awscli version 1.16.144
+  #115 [closed] 2013-05-09 successful put-object resulting in Zero byte object sizes
+## aws/aws-cli [ConfigFileWriter] total 16
+  #10588 [open] 2026-08-20 Fix UnboundLocalError in ConfigFileWriter._update_subattributes for empty nested sections
+  #10587 [open] 2026-08-20 aws configure set: UnboundLocalError (crash) when updating an empty nested config section
+  #10598 [open] 2026-08-23 Fix UnboundLocalError in nested config updates
+  #10348 [open] 2026-05-24 aws configure set s3.* can raise UnboundLocalError when updating nested config blocks
+  #10349 [open] 2026-05-24 Fix nested configure set subattribute updates
+  #10555 [open] 2026-08-14 Fix UnboundLocalError in aws configure set for nested values
+  #10554 [open] 2026-08-14 aws configure set: UnboundLocalError when nested key is followed by a comment, blank line, or end of file
+  #10338 [closed] 2026-05-21 Warn on credentials file permissions
+  #10337 [closed] 2026-05-21 Warn on credentials file permissions
+  #10336 [closed] 2026-05-21 Warn on credentials file permissions
+  #10335 [closed] 2026-05-21 Warn on credentials file permissions
+  #10341 [closed] 2026-05-22 [v2] Warn on credentials file permissions
+  #10334 [closed] 2026-05-21 [v2] Warn on credentials file permissions
+  #5239 [closed] 2020-05-28 [v2] aws configure corrupts configuration if value contains square brackets
+  #2972 [closed] 2017-11-20  Use the session profile to write when running aws configure 
+  #1797 [closed] 2016-02-15 Break the configure model into several distinct files.

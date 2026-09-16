@@ -1,0 +1,55 @@
+######## aws-cli
+== aws-cli/2.36.46 Python/3.14.6 Linux/6.12.76-linuxkit exe/aarch64.debian.13
+$ wc -c credentials
+166 credentials
+$ (ulimit -f 0; aws configure set aws_secret_access_key example-secret-3 --profile work); echo "exit $?"
+
+aws: [ERROR]: [Errno 27] File too large
+exit 255
+$ wc -c credentials
+0 credentials
+$ strace -f -o /dev/null -P credentials -e inject=write:signal=KILL:when=1 aws configure set aws_secret_access_key example-secret-3 --profile work; echo "exit $?"
+strace: Requested path "credentials" resolved into "/tmp/tmp.wRex9dvV1X/credentials"
+Killed
+exit 137
+$ wc -c credentials
+0 credentials
+$ aws configure get aws_access_key_id --profile default; echo "exit $?"
+exit 1
+== aws-cli/2.23.6 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+$ wc -c credentials
+166 credentials
+$ (ulimit -f 0; aws configure set aws_secret_access_key example-secret-3 --profile work); echo "exit $?"
+
+[Errno 27] File too large
+exit 255
+$ wc -c credentials
+0 credentials
+$ strace -f -o /dev/null -P credentials -e inject=write:signal=KILL:when=1 aws configure set aws_secret_access_key example-secret-3 --profile work; echo "exit $?"
+strace: Requested path "credentials" resolved into "/tmp/tmp.KpD33kzuDv/credentials"
+Killed
+exit 137
+$ wc -c credentials
+0 credentials
+$ aws configure get aws_access_key_id --profile default; echo "exit $?"
+exit 1
+
+######## neovim
+== NVIM v0.12.5
+$ printf 'call histadd("cmd", "echo first")\nwshada!\nqa!\n' > first.vim
+$ printf 'call histadd("cmd", "echo second")\nwshada\nqa!\n' > second.vim
+$ nvim --headless -n -u NONE -i main.shada -S first.vim
+$ strace -f -o /dev/null -e inject=/^rename:signal=KILL:when=1 \
+$   nvim --headless -n -u NONE -i main.shada -S second.vim
+$ ls -l main.shada*
+$ nvim --headless -n -u NONE -i main.shada \
+$   +'call writefile([string(histnr("cmd"))], "/dev/stdout")' +'qa!'
+--- output
+Killed
+-rw------- 1 root root 134 <date> main.shada.tmp.a
+-1
+--- the same, without the kill (the control)
+$ \
+$   nvim --headless -n -u NONE -i main.shada -S second.vim
+-rw------- 1 root root 134 <date> main.shada
+2
