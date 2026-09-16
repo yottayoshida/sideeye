@@ -1206,12 +1206,64 @@ fn buildJson(
 }
 
 /// On stderr, not stdout: the text report is the process's output, and a diagnostic
-/// mixed into it would be read as part of the verdict.
+/// mixed into it would be read as part of the verdict. Ends with the seal token in its
+/// `none` form (see `sealToken`): a run that asked for `--json` gets exactly one token
+/// whether or not the file landed.
 fn jsonFailed(detail: []const u8) void {
     const prefix = "sideeye: the JSON report was not written: ";
     _ = posix.write(2, prefix.ptr, prefix.len);
     _ = posix.write(2, detail.ptr, detail.len);
     _ = posix.write(2, "\n", 1);
+    recordSeal(null);
+}
+
+/// The seal on the JSON report (#597): `sideeye: json sha256=<64 hex>;` when the file is in
+/// place, `sideeye: json sha256=none;` when it is not, each followed by one newline. The
+/// digest is of exactly the bytes written, taken from the buffer that was written rather
+/// than from the file, so a reader that receives the report through a directory the judged
+/// program can also write -- the loop-closure judge's container is one -- can tell the file
+/// it opens from one written after. Emitted in ONE write: on a pipe, a write of at most
+/// PIPE_BUF bytes is not interleaved with another writer's, so the token arrives whole even
+/// beside a program flooding the same descriptor. Not anchored to a line start on purpose,
+/// and the reader must not anchor either: a flooder can take the line start away, but it
+/// cannot remove the token, so a reader that counts occurrences anywhere sees the real one
+/// and any forgery both. Always exactly one per run that named `--json`, so that "no token"
+/// cannot be arranged by making the write fail and "one token" is never a forgery alone.
+/// Not part of the report schema: it is a line on stderr, and the freeze does not cover
+/// stderr's prose (docs/contract-freeze.md).
+/// Recorded by `writeJsonReport` / `jsonFailed`, emitted by `emitSeal` at the exit. Deferred
+/// rather than printed on the spot because the two refusal paths (`refuse.unknown`,
+/// `refuse.setupError`) write the JSON BEFORE their text, and a token printed there would become
+/// the first line of a run's output. The acceptance suite's CLI self-description check reads that
+/// first line, and it went red when the token was printed in place — a reader that takes the first
+/// line of merged output is exactly what this project's own tooling turned out to be.
+const seal_prefix = "sideeye: json sha256=";
+pub const seal_len = seal_prefix.len + 64 + ";\n".len;
+var seal_pending: ?[32]u8 = null;
+var seal_recorded = false;
+var seal_emitted = false;
+
+pub fn sealToken(buf: *[seal_len]u8, digest: ?[32]u8) []const u8 {
+    if (digest) |d| {
+        return std.fmt.bufPrint(buf, seal_prefix ++ "{x};\n", .{d}) catch unreachable;
+    }
+    return std.fmt.bufPrint(buf, seal_prefix ++ "none;\n", .{}) catch unreachable;
+}
+
+fn recordSeal(digest: ?[32]u8) void {
+    seal_pending = digest;
+    seal_recorded = true;
+}
+
+/// Write the token, once, for a run that named `--json`. Called immediately before every exit
+/// that can follow a report; a path that never reaches one leaves no token, which the readers of
+/// this token treat as a refusal — the safe direction.
+pub fn emitSeal() void {
+    if (!seal_recorded or seal_emitted) return;
+    seal_emitted = true;
+    var buf: [seal_len]u8 = undefined;
+    const tok = sealToken(&buf, seal_pending);
+    _ = posix.write(2, tok.ptr, tok.len);
 }
 
 /// Written whole or not at all.
@@ -1262,6 +1314,38 @@ pub fn writeJsonReport(
         _ = posix.unlink(tz.ptr);
         return jsonFailed("the finished document could not be moved into place");
     }
+
+    // The seal, over the bytes that were written -- `doc`, not a re-read of the file, which
+    // by now is in a directory somebody else may write (#597).
+    var digest: [32]u8 = undefined;
+    std.crypto.hash.sha2.Sha256.hash(doc, &digest, .{});
+    recordSeal(digest);
+}
+
+test "the seal token is one fixed-length line under PIPE_BUF, in both forms, over the known vector (#597)" {
+    var buf: [seal_len]u8 = undefined;
+    var d: [32]u8 = undefined;
+    std.crypto.hash.sha2.Sha256.hash("abc", &d, .{});
+    const sealed = sealToken(&buf, d);
+    try std.testing.expectEqualStrings(
+        "sideeye: json sha256=ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad;\n",
+        sealed,
+    );
+    try std.testing.expectEqual(seal_len, sealed.len);
+    // The exact width, not only a bound: the ADR and the buildlog quote this number, and a bound
+    // lets them drift (found in review, where they said 88).
+    try std.testing.expectEqual(@as(usize, 87), seal_len);
+    // PIPE_BUF is 4096 on Linux and 512 on macOS; the token has to fit the smaller one for the
+    // single write to be indivisible on either.
+    try std.testing.expect(seal_len <= 512);
+    var buf2: [seal_len]u8 = undefined;
+    const none = sealToken(&buf2, null);
+    try std.testing.expectEqualStrings("sideeye: json sha256=none;\n", none);
+    // Both forms share the prefix a reader counts, and neither contains it twice.
+    try std.testing.expectEqual(@as(usize, 1), std.mem.count(u8, sealed, seal_prefix));
+    try std.testing.expectEqual(@as(usize, 1), std.mem.count(u8, none, seal_prefix));
+    // The diagnostic that precedes the `none` form shares no prefix with the token.
+    try std.testing.expect(std.mem.indexOf(u8, "sideeye: the JSON report was not written: ", seal_prefix) == null);
 }
 
 /// Name the point where the two accounts split: the divergence index (1-based), the
