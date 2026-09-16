@@ -114,6 +114,120 @@ printed 0 and exited 1, and every command after it in the chain was skipped. The
 next said ok — over 67 files, a tree without the change. The count moving to 68 on the second attempt
 is what showed the first wrote nothing.
 
+## 2026-09-16 (seventh) — the eval container's outputs arrive sealed, and two reviews took four designs off the table before any code
+
+**What was open.** ADR 0066 closed #515's launcher half and named one residual out loud: inside
+`judge.sh eval`'s container the agent-built `timew` runs under the sealed `sideeye` as the same uid,
+and `sideeye` writes its replay JSON into the one directory that binary can write. The judge read
+that file — and the rc, the functional status and the export beside it — after the container exited.
+A `timew` that leaves a child behind can rewrite all four for as long as the container lives. That
+is #597, and this entry is the work that closes it.
+
+**The design, and the thing that took three drafts to state correctly.** The first draft had the
+shell take a `sha256sum` of the report right after `sideeye` exits. The first review killed it: a
+child in a loop is the last writer whenever the reader arrives, so the digest certifies the forgery.
+The same review then proposed killing every other process first and hashing after — and withdrew it
+when asked, because shortening a window does nothing against an attacker who only has to be *last*,
+not *fast*. That is the same sentence twice, and it is the sentence the final design is built on:
+**the digest has to be taken by the writer, at the moment of writing.** `writeJsonReport` now
+computes the SHA-256 of the buffer it wrote and prints `sideeye: json sha256=<hex>;` to stderr in a
+single `write()`; `jsonFailed` prints the `none` form, so a run that named `--json` always produces
+exactly one token. That last part is not symmetry for its own sake — the second review found that
+"no token" is arrangeable on demand (plant a directory at `<path>.tmp` and the open fails), and a
+forger's single token would then be the only one.
+
+**Two more designs died in review, both for the same reason: something the subject can reach stood
+between the writer and the reader.** `timew export | tee f | sha256sum` — `tee` and `sha256sum` live
+on the container's writable root filesystem, and the agent's `CMakeLists.txt` runs as root during
+configure. The export is received by the shell (`fexport=$(...)`) and printed with builtins instead.
+And the judge counting the token only at a line start: a subject that writes newline-less bytes ahead
+of the real token takes its line start away, so the anchored reader sees exactly one token — the
+forgery. Counted anywhere, hiding leaves the real one at 1 and adding a forgery makes 2, and both
+directions are refusals.
+
+**Measured, because "one write" and "indivisible" are not the same claim.** Docker multiplexes a
+container's stdout and stderr as separate frames and the CLI writes both into one file, so a token
+that straddles a frame boundary can have a frame of the *other* stream land inside it. Under a
+stderr flood, 10,000 tokens on stdout: **9,997 arrived intact without `exec 2>&1`, 10,000 with it**.
+And on the pipe itself, `strace` in the judge's own image: dash's `printf` emits the export block in
+one `write` up to 8 KiB and three at 64 KiB — but `PIPE_BUF` here is **4096**, so only a block under
+that is indivisible. The seal token is 87 bytes and stays under it; a large export does not, and what
+holds that case is the markers appearing exactly once and the body parsing as JSON.
+
+**The reds, and the two that were not reds the first time.** A toy `timew` whose child rewrites the
+report: `seal_mismatch` (sideeye sealed `16b85e…`, the file read `ef553f…`). A toy that floods the
+stream and emits one forged token from a fresh line: `seal_ambiguous` — and on that same stream, the
+line-anchored reading finds exactly one token, the forgery, **and the file at read time hashes to
+exactly it**. That is the hole the review found, demonstrated on a real run rather than argued.
+Getting there took three attempts: the first forging toy never emitted its token (its child died
+after ~0.15 s, before a one-second delay elapsed), and the second emitted the token but no longer
+held the file, because writing 1 KiB to the container's stream costs ~17 ms per pass. Splitting the
+work across two children did both. **A toy that fails to mount the attack is not evidence the attack
+fails** — the roles just have to be in different processes.
+
+**A gate that could never have been satisfied.** The plan said to compare the case byte-for-byte
+across the re-stage and stop if it moved. It moved — and it always would have: a case embeds
+`define.setup` as an absolute path, so two stage roots can never produce identical bytes. The
+baseline on disk was also from `v1.0.0` / trace contract 13, four minor versions back, and reading
+that difference as "this change moved the case" is exactly the mistake of measuring the new build
+alone. Measured properly instead: `origin/main`'s binary built in a second worktree and staged, then
+compared field-wise against this branch's — **the only difference is the embedded stage root**.
+`k`, `ops_total`, `prefix_hash`, the before/after classes and paths, `violation`, `contract_version`
+and `sideeye_version` all match, and `protocol.json` matches on every field including `image_id`.
+
+**What is still outside, and said rather than implied.** The measurement container's *root
+filesystem*: the subject is uid 0 on a writable rootfs, so after it first runs, `/usr/bin/strace`
+(the oracle), the `sh` the checker runs under, `libc`, and with `libc` every dynamically linked
+binary exec'd afterwards — the sealed `sideeye` included — are its to replace. The seal says the file
+the judge opens is the one `sideeye` wrote; it does not say `sideeye` ran on a pristine image. The
+obvious fix, a second container with `--read-only`, is not in this change because `--tmpfs /tmp`
+moves `/tmp/loop-state` onto another filesystem, and `stage.sh` says of that directory that "its
+syscall semantics must not ride a virtiofs mount" — the filesystem is the measurement's ground.
+That is its own issue. Also outside: `cmd_secondary`'s container outputs (evidence, not a gate), and
+the truth of the export's contents, which is the non-degeneracy gate's limit and not the seal's.
+
+**Then the suite itself found what the review had only predicted.** The first review's P2-4 noted
+that a token printed inside `writeJsonReport` lands *before* the text on the two refusal paths,
+which write the JSON first — and judged it a documentation nuance after checking four of the 98
+places `spike/acceptance.sh` passes `--json`. Running the whole suite found the fifth: the CLI
+self-description check reads the first line of each flag probe, and for `--json` that line had
+become the seal. **A regression this change introduced, found by running rather than by reading.**
+The fix is a split — `writeJsonReport` and `jsonFailed` *record* the digest, and `report.emitSeal()`
+writes it once, immediately before each of the five exits that can follow a report. The token is now
+the last thing sideeye writes on every path, which is a stronger sentence than the one the docs had
+been given, and `writeJsonReport` did not move: moving it would have changed which values the JSON
+is built from, and the problem was only the order on stderr. Measured after: the SETUP ERROR path's
+first line is its headline again, the token is the final line, exactly one of it; acceptance went
+from 39 failures to 38, the one that disappeared being the check this broke, with none appearing.
+
+**And the remaining failures were not ours, which took three runs to be able to say.** Acceptance
+on this host fails 38 with the repository's `zig-out` as it was; rebuilding every auxiliary target
+for the container's architecture takes it to 32, and building the toy targets takes it to **5** —
+all five of them the suite telling us it cannot measure as root (`RLIMIT_NPROC is ignored for root;
+this suite has to run unprivileged for this leg`, and four permission-dependent legs). The first
+attempt at a control was worse than useless: acceptance run in a bare `origin/main` worktree failed
+264, because it had none of those builds. **Comparing against a control that is missing the
+preconditions measures the preconditions.**
+
+**The second review then found six more, and two of its fixes were wrong on the first try.**
+Capping the report file while reading the stream — the larger, more exposed side — unbounded;
+`not_json` implemented and listed in the ADR but missing from the CHANGELOG and the judge's header;
+a comment still explaining an mtime floor that the change had deleted, beside a `stamp` call nothing
+reads any more; `<mode>-container.err` created as the only place a docker failure leaves its reason
+and then left out of the launcher's digests. All fixed. Writing the fixes, the new `not_json`
+selftest case truncated the stream and took the rc token with it, and requiring the two `.err` files
+broke `measure.py`'s own fixture — both caught by running the suites rather than by reading them.
+
+**A third reading, and the two things it caught were both sentences about code rather than code.**
+The CHANGELOG and ADR 0068 both said the seal "also appears on the MCP server's stderr, once per
+tool call, since the server passes `--json` and inherits stderr". It does not: `posix.zig`'s
+minimal-env path does `dup2(1, 2)` and says why — a config's operation must not reach the MCP
+transport — so the token goes into that call's capture file, and the tool's text block is built
+from the report, not the capture. Two documents asserted the one thing the code is written to
+prevent. The other was arithmetic: `21 + 64 + 2` is 87, and the same two documents said 88 while
+the test only held the token under 512. The test pins the width now, because a bound is what let
+the prose drift.
+
 ## 2026-09-16 (sixth) — class-exclusions.tsv states the criterion its rows meet, and count.py holds each row to its target's own refusal row (#598)
 
 **What #598 said, and what the owner chose after reading further.** The ledger's header gave its

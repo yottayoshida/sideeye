@@ -188,7 +188,7 @@ characters `\n` on one line of the copy — a syntax error every audit case fail
 written with one backslash now (`MUTATIONS.md`), and it carries the by-hand run. Two rows kill a case in a second channel,
 and for one reason: `relative-off` and `cd-off` break the resolution the mount check shares with
 the path channel, so each kills a mount case beside the path cases. No other mutation killed a
-case outside its own channel, and every one of the sixty-four refusals is killed by at least one
+case outside its own channel, and every one of the seventy refusals is killed by at least one
 — `path-repo` and `path-tilde` by `always-clean` alone now, since they void through the
 resolution as well as the text. The morning's run also found one committed program
 (`mcp-prefix-loose`) that changed nothing as written; `MUTATIONS.md` records it and its correction.

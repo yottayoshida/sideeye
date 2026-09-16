@@ -19,11 +19,25 @@
 # it refuses to call a judge step when anything differs, and this file is itself run from the
 # bytes it verified (`sh -s`). `finalize` requires `$ROOT/inputs.json`, written by the launcher
 # after the agent's process group is dead, and holds every record it reads — and the transcript
-# named by `audit.record_path` — to it. Outside that set, and said here rather than implied: the
-# eval container's own outputs (replay and functional results; the agent-built binary runs
-# beside them as uid 0, in a directory of its own now, with the stage read-only), `.git/`
-# (recorded, not refused), processes that leave the agent's process group, the same-uid
-# reach ADR 0058 measured, and the interpreter, `sh` and `docker` themselves.
+# named by `audit.record_path` — to it. **The eval container's own outputs are covered since #597
+# (ADR 0068), by the container's stdout rather than by files**: the replay report's digest is
+# printed by `sideeye` itself in the write that follows the report, the rc and the functional
+# gate's status and export are printed by the shell's builtins, and `spike/container_seals.py`
+# reads each back as one token counted anywhere in the stream and required exactly once, then
+# holds the report file to the digest. A channel that does not seal is a refusal
+# (`seal_missing`, `seal_ambiguous`, `seal_mismatch`, `not_json`, `not_a_regular_file`,
+# `unreadable`, `too_large`), not a verdict. The stream is `<mode>-container.log`, and that is where a person reads a refusal's
+# reason: sideeye's stderr goes there too, and `<mode>-replay.txt` is its stdout alone (unlike
+# stage.sh's `explore.txt`, which holds both). Outside that set, and said here rather than
+# implied: the secondary observation's container outputs (the explore report and four upstream
+# suites' rc and text, still read from files the agent-built binaries can write — evidence, not
+# a gate: `loop_closed` is the three gates); **the eval container's root filesystem after the
+# subject first runs** — the subject is uid 0 on a writable rootfs, so `/usr/bin/strace` (the
+# oracle), the `sh` the checker runs under, `libc`, and with it every dynamically linked binary
+# exec'd afterwards, the sealed `sideeye` included, are its to replace, and the seal says the
+# file is what sideeye wrote, not that sideeye ran on a pristine image (its own issue); `.git/`
+# (recorded, not refused); processes that leave the agent's process group; the same-uid reach
+# ADR 0058 measured; and the interpreter, `sh` and `docker` themselves.
 # The path channel below voids a transcript that names this repository or the
 # config dir, and since #510 it resolves the spellings the record writes — a relative walk,
 # a `cd`, `~` and `$HOME`, an `ln -s` name, another name for the same file outside the stage,
@@ -97,7 +111,7 @@
 #       top-level entry being repo/. Nor are two paths of the pristine check: a sealed file
 #       the record cannot read, and the refusal's --mode run wording.
 #
-#       Sixty-four refusals. The forty-nine that void assert that the ONE field their
+#       Seventy refusals. The forty-nine that void assert that the ONE field their
 #       channel owns is the non-empty one, so a case that voided for another reason
 #       is not a red for the branch it claims. Thirty-three of those are spellings the path
 #       channel resolves before it compares (#510): a relative walk, a walk after `cd`,
@@ -113,17 +127,19 @@
 #       before a recursive read, and a home given through a symlink; and one found while
 #       measuring its speed, `ln -s x .`. One more is the same class a
 #       channel over, a docker mount of the stage's parent spelled `..`. The other
-#       fifteen are judged on their own
+#       twenty-one are judged on their own
 #       terms (a transcript with no tool calls writes three keys and exits before a
 #       verdict exists, a seal that fails its own hash check never reaches the
 #       classifier, finalize refuses a manifest whose audit verified no digest, and
 #       four more finalize refusals from #515's other half — no inputs.json, a record it
 #       reads that inputs.json does not attest, one that changed since the launcher
 #       recorded it, and a transcript that is neither what the audit read nor what the
-#       launcher recorded — six
+#       launcher recorded — six seals on the eval container's channels (#597): no token, two
+#       tokens, a report whose bytes are not the ones sideeye sealed, a FIFO at the report's
+#       name, a report over the size cap, and sealed bytes that are not JSON — six
 #       stages the pristine check refuses on one key each — added, mode, symlink,
 #       content, deleted, and a directory nobody can list — and two the rebuild refuses
-#       before removing anything: no repo/, and a stage that is a symlink). Plus twenty-three
+#       before removing anything: no repo/, and a stage that is a symlink). Plus twenty-four
 #       greens: a clean transcript stays clean, the trusted mcp server's own tool is
 #       counted rather than voided, seven records the path channel leaves clean (a `..`
 #       out of repo/ that stays in the stage, a sibling whose name begins with the repo's,
@@ -139,7 +155,8 @@
 #       read-only directory and a file inside a closed one (naming it), restores the
 #       owner's x bit, turns a symlink and a symlinked directory back into the seal's
 #       regular files without writing through either, leaves repo/ alone, and on a
-#       second run records its own change while the history keeps the first.
+#       second run records its own change while the history keeps the first; and a
+#       clean container stream seals all four of the eval channels (#597).
 #       Per-branch and not per-field: the network regex alone
 #       has four alternations, and one `curl` would otherwise stand in for all of
 #       them. By NAME four branches are driven: a listed name, a foreign mcp
@@ -201,7 +218,7 @@ else
     STAGE=""; SEAL=""; RESULTS=""
 fi
 
-stamp() { # $1 = label; writes $RESULTS/<label>-started, the floor for this run's records
+stamp() { # $1 = label; writes $RESULTS/<label>-started, the floor for `secondary`'s records
     date -u +%FT%TZ > "$RESULTS/$1-started"
 }
 
@@ -495,6 +512,9 @@ cmd_eval() {
     # The replay gate is imported after the container has built and replayed; a missing
     # file would cost those minutes before an ImportError. Refuse here instead (#65).
     [ -f "$SIDEEYE_REPO/spike/replay_gate.py" ] || { echo "replay gate not found: $SIDEEYE_REPO/spike/replay_gate.py" >&2; exit 1; }
+    # The same reason, for the module that reads the container's channels (#597): it is loaded
+    # after the container has built and replayed, so a missing file would cost those minutes.
+    [ -f "$SIDEEYE_REPO/spike/container_seals.py" ] || { echo "container seals not found: $SIDEEYE_REPO/spike/container_seals.py" >&2; exit 1; }
     if [ "$MODE" = "pos" ]; then
         [ -f "$PATCH" ] || { echo "known patch not found: $PATCH" >&2; exit 1; }
     fi
@@ -522,42 +542,72 @@ cmd_eval() {
     if [ "$MODE" = "pos" ]; then
         set -- "$@" -v "$PATCH:/tmp/fix.patch:ro"
     fi
-    # A record older than this stamp is not this run's (#64 review): the container runs
-    # under `sh -eu`, so a build that fails writes nothing, and the verdict below would
-    # otherwise read the previous run's files and call a broken apparatus green.
-    stamp "$MODE-eval"
+    # No stamp here any more. It existed because the verdict read the container's files and had
+    # to tell this run's from the last one's (#64 review); since #597 the verdict reads the
+    # container's stream, which the host truncates each run, and the report file is held to the
+    # digest sideeye printed in THIS stream -- a leftover file cannot match it. `secondary` still
+    # reads files, and still stamps.
     set +e
+    # What the judge reads leaves the container on its own stdout, not through the directory the
+    # agent-built binary shares with sideeye (#597, ADR 0068). The subject can append to that
+    # stream -- it is uid 0, and during the replay it inherits sideeye's stderr -- but it cannot
+    # take back a byte another process already put there, so each value the judge needs is one
+    # token, put on the stream by the process that made it, at the moment it made it, and read
+    # back by spike/container_seals.py as "exactly one, wherever it appears". Hence:
+    #   `exec 2>&1` first: docker multiplexes stdout and stderr as separate frames and the CLI
+    #     writes both into one file; a token that straddles a frame boundary could have a frame of
+    #     the OTHER stream land inside it. One stream, and frames only ever concatenate.
+    #   every external binary runs before the subject does (mkdir, cp); after its first run the
+    #     shell uses builtins only (printf, $(...)) and the sealed sideeye on the read-only stage.
+    #   the functional gate's export is received by the shell and put on the stream between two
+    #     markers, so the judge reads the bytes the shell saw, not a file the subject can rewrite.
+    #   Measured: dash's printf emits that block in one write up to 8 KiB (three at 64 KiB) -- but
+    #   PIPE_BUF here is 4096, so only a block under that is indivisible on the pipe. A larger one
+    #   can be interleaved, and what holds it then is that each marker must appear exactly once and
+    #   the body must parse as JSON: an insertion breaks one or the other, so it refuses rather
+    #   than reading something else as the export.
+    #   sideeye's own token (`sideeye: json sha256=...;`) rides its stderr, which is the stream.
+    # The files beside them (func-export.json, func-status, replay-rc) are still written, for a
+    # person reading the run; the judge does not open them.
     docker "$@" "$IMAGE_ID" sh -eu -c '
+        exec 2>&1
         cp -r "$STAGE/repo" /tmp/src
         if [ "$MODE" = "pos" ]; then git -C /tmp/src apply /tmp/fix.patch; fi
         cmake -S /tmp/src -B /tmp/build -DCMAKE_BUILD_TYPE=Release >/dev/null
         cmake --build /tmp/build -j"$(nproc)" >/dev/null
-        mkdir -p /tmp/loop-bin
+        mkdir -p /tmp/loop-bin /tmp/func-state /tmp/loop-state
         cp /tmp/build/src/timew /tmp/loop-bin/timew
         export PATH="/tmp/loop-bin:$PATH"
 
         # Non-degeneracy gate, in a normal (crash-free) world: seed, add, undo.
-        # A fix that lobotomizes the feature to silence the checker fails here.
+        # A fix that lobotomizes the feature to silence the checker fails here. The export is
+        # the only stdout the $(...) receives: setup and the operation go to /dev/null (their
+        # stderr still reaches the stream).
         fstatus=fail
-        if ( export TIMEWARRIORDB=/tmp/func-state && mkdir -p /tmp/func-state \
-             && sh "$STAGE/define/setup.sh" \
+        fexport=""
+        if fexport=$( export TIMEWARRIORDB=/tmp/func-state \
+             && sh "$STAGE/define/setup.sh" >/dev/null \
              && $OPERATION >/dev/null \
              && timew undo >/dev/null \
-             && timew export > "$RESULTS/$MODE-func-export.json" ); then fstatus=ran; fi
+             && timew export ); then fstatus=ran; fi
+        printf "%s\n" "$fexport" > "$RESULTS/$MODE-func-export.json"
         printf "%s\n" "$fstatus" > "$RESULTS/$MODE-func-status"
+        printf "judge: func-status=%s;\n" "$fstatus"
+        printf "judge: func-export begin;\n%s\njudge: func-export end;\n" "$fexport"
 
-        # The replay, from a fresh state at the path the case pins.
+        # The replay, from a fresh state at the path the case pins. Only stdout (the text
+        # report) goes to the file: stderr is the stream, and carries the seal sideeye prints.
         export TIMEWARRIORDB=/tmp/loop-state
-        mkdir -p /tmp/loop-state
         rrc=0
         "$STAGE/.harness/sideeye" replay "$STAGE/work/cases/000001.json" \
             --shim "$STAGE/.harness/libsideeye_shim.so" \
             --work /tmp/judge-work \
             --oracle /usr/bin/strace \
             --json "$RESULTS/$MODE-replay.json" \
-            > "$RESULTS/$MODE-replay.txt" 2>&1 || rrc=$?
+            > "$RESULTS/$MODE-replay.txt" || rrc=$?
         printf "%s\n" "$rrc" > "$RESULTS/$MODE-replay-rc"
-    ' > "$RESULTS/$MODE-container.log" 2>&1
+        printf "judge: replay-rc=%s;\n" "$rrc"
+    ' > "$RESULTS/$MODE-container.log" 2> "$RESULTS/$MODE-container.err"
     container_rc=$?
     set -e
 
@@ -565,8 +615,9 @@ cmd_eval() {
 import json, os, sys
 
 results, mode, proto_path, container_rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
-# The replay gate is spike/replay_gate.py, shared with dogfood-timew-replay.sh's leg C (#65).
-# Executed from its bytes, not imported: an import takes spike/__pycache__/replay_gate.*.pyc
+# The replay gate is spike/replay_gate.py, shared with dogfood-timew-replay.sh's leg C (#65);
+# the seals on the container's channels are spike/container_seals.py (#597). Both are
+# executed from their bytes, not imported: an import takes spike/__pycache__/replay_gate.*.pyc
 # whenever that file's header matches the .py's mtime and size, and the agent — same uid, Bash
 # and Write, able to stat the .py — can write such a file; `-I` does not imply `-B`, and `-B`
 # would only stop writing one. measure.py verified the .py's digest when this step began; the
@@ -579,33 +630,43 @@ def load_from_bytes(path, name):
         exec(compile(f.read(), path, "exec"), mod.__dict__)
     return mod
 gate = load_from_bytes(os.path.join(sys.argv[5], "replay_gate.py"), "replay_gate").gate
+seals = load_from_bytes(os.path.join(sys.argv[5], "container_seals.py"), "container_seals")
 proto = json.load(open(proto_path))
-started = os.path.getmtime(os.path.join(results, "%s-eval-started" % mode))
 
-def read(name, parse=False):
-    # A file from before this run's stamp is a previous run's: absent, for this verdict.
-    p = os.path.join(results, mode + "-container-out", "%s-%s" % (mode, name))
-    if not os.path.exists(p) or os.path.getmtime(p) < started:
-        return None
-    with open(p) as f:
-        return json.load(f) if parse else f.read().strip()
+# Every value below came over the container's own stdout (see the shell above): one token per
+# channel, counted anywhere in the stream and required exactly once, and the report file held to
+# the digest sideeye printed when it wrote it. A channel that does not seal is a refusal with its
+# reason, not a verdict, and the gates below never see a document for it (#597, ADR 0068).
+stream_path = os.path.join(results, "%s-container.log" % mode)
+report_path = os.path.join(results, mode + "-container-out", "%s-replay.json" % mode)
+sgate, stream = seals.read_stream(stream_path)
+if sgate != "ok":
+    # The ground every token stands on did not read: every channel refuses, with that reason.
+    sealed = seals.refuse_all(sgate, stream)
+else:
+    sealed = seals.judge_eval(stream, report_path)
 
-rrc = read("replay-rc")
 verdict = {
     "mode": mode,
     "container_rc": container_rc,
     # A run's record is its rebuild's; a control is only checked, never rebuilt.
     "stage_diff": json.load(open(os.path.join(
         results, "%s-stage-%s.json" % (mode, "diff" if mode == "run" else "check")))),
-    # Differs from replay.gate == "build_failed" in one corner only: the build
-    # finished but sideeye wrote no JSON. Kept to name that corner.
-    "build_ok": rrc is not None,
+    # The rc token is the shell's last line; under `sh -eu` a build that fails never reaches it,
+    # so no token is the ordinary shape of a build that failed. `replay.gate` reads `build_failed`
+    # for exactly that case (`rc` missing), so the two agree there and part company only when the
+    # rc token is unsealed for another reason -- two of them, or a malformed value -- where this
+    # stays false and the gate names which.
+    "build_ok": sealed["rc"]["gate"] == "sealed",
+    # What each channel said, minus the documents themselves: the reason a refusal gives is
+    # read from here.
+    "seals": {k: {kk: vv for kk, vv in v.items() if kk != "doc"} for k, v in sealed.items()},
 }
 
 replay = {"gate": "build_failed"}
-rj = read("replay.json", parse=True)
-if rj is not None and rrc is not None:
-    rrc = int(rrc)
+if sealed["rc"]["gate"] == "sealed" and sealed["report"]["gate"] == "sealed":
+    rrc = sealed["rc"]["value"]
+    rj = sealed["report"]["doc"]
     replay = {
         "rc": rrc,
         "verdict": rj.get("verdict"),
@@ -616,11 +677,20 @@ if rj is not None and rrc is not None:
         "crash_point": (rj.get("earliest") or {}).get("crash_point"),
     }
     replay["gate"], _ = gate(rj, rrc, proto["case_ops_total"])
+elif sealed["rc"]["gate"] != "seal_missing":
+    # The shell reached the replay (or something forged its rc), but a seal did not hold.
+    broken = sealed["rc"] if sealed["rc"]["gate"] != "sealed" else sealed["report"]
+    replay = {"gate": broken["gate"], "channel": broken["channel"], "detail": broken["detail"]}
 verdict["replay"] = replay
 
 func = {"gate": "fail", "detail": "functional sequence did not complete"}
-if read("func-status") == "ran":
-    intervals = read("func-export.json", parse=True) or []
+fstatus, fexport = sealed["func_status"], sealed["func_export"]
+if fstatus["gate"] != "sealed":
+    func = {"gate": fstatus["gate"], "channel": fstatus["channel"], "detail": fstatus["detail"]}
+elif fstatus["value"] == "ran" and fexport["gate"] != "sealed":
+    func = {"gate": fexport["gate"], "channel": fexport["channel"], "detail": fexport["detail"]}
+elif fstatus["value"] == "ran":
+    intervals = fexport["doc"]
     tags = [set(iv.get("tags", [])) for iv in intervals]
     beta_gone = not any("beta" in t for t in tags)
     alpha_kept = sum(1 for t in tags if "alpha" in t) == 1
@@ -1721,7 +1791,10 @@ cmd_selftest() { # the red proof for what this judge refuses on (#63)
     # case left the suite green with the same wording. The tally below demands the exact
     # number of cases, which makes a silently shortened list a failure.
     passes=0
-    WANT_CASES=87
+    WANT_CASES=94
+    # The seals module, from the real repository: SIDEEYE_REPO is pointed at a synthetic one a few
+    # lines down, and the seal cases below need the bytes cmd_eval would load (#597).
+    SEALS_PY="$SIDEEYE_REPO/spike/container_seals.py"
 
     # The path channel voids a tool input that names $SIDEEYE_REPO, so the synthetic repo must
     # not be an ancestor of the synthetic roots: a stage path under it would name the repo, and
@@ -1815,7 +1888,7 @@ PY
         then passes=$((passes + 1)); else fails=$((fails + 1)); fi
     }
 
-    echo "=== judge.sh selftest: sixty-four refusals ==="
+    echo "=== judge.sh selftest: seventy refusals ==="
 
     # by NAME (2): the eleven listed tools, and any mcp__ server that is not the allowed one
     tx_tool name-unsealed WebFetch url "https://example.invalid"
@@ -2234,7 +2307,76 @@ d = json.load(open(p)); d["files"].pop(drop); json.dump(d, open(p, "w"))
     # mutation that blinds either comparison alone leaves one sentence out and fails this case.
     fin_case finalize-record-changed "is not the record the audit read" "is not the record the launcher recorded"
 
-    echo "=== judge.sh selftest: twenty-three greens ==="
+    # The seals on the eval container's channels (#597): spike/container_seals.py judged on a
+    # synthetic stream and file, loaded from its bytes the way cmd_eval loads it (the container
+    # itself is not driven here — docker is not promised — so the module the judge reads with is).
+    # Each case shapes one stream and one file, breaks exactly one thing, and asserts that the
+    # report channel refuses for the reason named while the three other channels still seal.
+    seal_case() { # $1 = case, $2 = the shape to break, $3 = the gate wanted on the report channel
+        RESULTS="$work/out/seal-$1"; mkdir -p "$RESULTS"
+        if python3 -I - "$SEALS_PY" "$RESULTS" "$1" "$2" "$3" <<'PY'
+import hashlib, json, os, sys, types
+mod_path, res, case, shape, want = sys.argv[1:6]
+mod = types.ModuleType("container_seals")
+with open(mod_path, "rb") as f:
+    exec(compile(f.read(), mod_path, "exec"), mod.__dict__)
+report = b'{"verdict": "FAIL", "explored": 2, "crash_points": 24}\n'
+path = os.path.join(res, "run-replay.json")
+with open(path, "wb") as f:
+    f.write(report)
+sha = hashlib.sha256(report).hexdigest().encode()
+stream = (b"cmake output\njudge: func-status=ran;\njudge: func-export begin;\n[]\njudge: func-export end;\n"
+          b"UNKNOWN  oracle_missed_operation\nsideeye: json sha256=" + sha + b";\njudge: replay-rc=1;\n")
+kw = {}
+if shape == "missing":
+    stream = stream.replace(b"sideeye: json sha256=" + sha + b";\n", b"")
+elif shape == "ambiguous":
+    # The review's shape: bytes with no newline ahead of the real token, then a forgery from a
+    # fresh line -- an anchored reader sees one token, the forgery.
+    forged = hashlib.sha256(b'{"verdict": "PASS"}').hexdigest().encode()
+    stream = stream.replace(b"\nsideeye: json", b"\nxxxxxxxxsideeye: json") + b"sideeye: json sha256=" + forged + b";\n"
+elif shape == "mismatch":
+    with open(path, "wb") as f:
+        f.write(b'{"verdict": "PASS", "explored": 2, "crash_points": 24}\n')
+elif shape == "fifo":
+    os.unlink(path); os.mkfifo(path)
+elif shape == "large":
+    kw["max_bytes"] = 8
+elif shape == "notjson":
+    # Only the digest moves: replacing the token's value, not truncating the stream after it --
+    # the rc token comes later and a truncation took it with it (seen red while writing this).
+    body = b"not a json document\n"
+    with open(path, "wb") as f:
+        f.write(body)
+    stream = stream.replace(sha, hashlib.sha256(body).hexdigest().encode())
+elif shape != "clean":
+    sys.exit("FAIL judge.sh: seal-%s -- unknown shape %r" % (case, shape))
+out = mod.judge_eval(stream, path, **kw)
+got = out["report"]["gate"]
+others = {k: v["gate"] for k, v in out.items() if k != "report" and v["gate"] != "sealed"}
+if got != want or others:
+    sys.exit("FAIL judge.sh: seal-%s -- report channel %r (wanted %r); other channels not sealed: %r"
+             % (case, got, want, others))
+if shape == "clean" and (out["report"]["doc"].get("verdict") != "FAIL" or out["rc"]["value"] != 1
+                         or out["func_status"]["value"] != "ran" or out["func_export"]["doc"] != []):
+    sys.exit("FAIL judge.sh: seal-clean -- sealed values not read back: %r"
+             % {k: {kk: vv for kk, vv in v.items() if kk != "doc"} for k, v in out.items()})
+print("ok   judge.sh: seal-%s -- report channel %s, the other three sealed" % (case, got))
+PY
+        then passes=$((passes + 1)); else fails=$((fails + 1)); fi
+    }
+    seal_case missing missing seal_missing
+    seal_case ambiguous ambiguous seal_ambiguous
+    seal_case mismatch mismatch seal_mismatch
+    seal_case fifo fifo not_a_regular_file
+    seal_case large large too_large
+    seal_case notjson notjson not_json
+
+    echo "=== judge.sh selftest: twenty-four greens ==="
+
+    # The control for the five seal refusals: a clean stream seals all four channels and the
+    # values come back as written.
+    seal_case clean clean sealed
 
     # The control for the gate above: with the digest verified, the same manifest closes.
     # Without this, "incomplete record" could be finalize's only answer.
@@ -2594,7 +2736,7 @@ PY
         echo "selftest: ran $passes case(s), expected $WANT_CASES — the case list changed" >&2
         exit 1
     fi
-    echo "selftest: sixty-four refusals and twenty-three greens hold ($passes cases)"
+    echo "selftest: seventy refusals and twenty-four greens hold ($passes cases)"
 }
 
 case "$CMD" in
