@@ -1,0 +1,139 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+bun.140.syscalls.1                 rc=1    0s  Resolving dependencies
+checker(bun-add): package.json does not parse — a torn manifest survived the crash
+earliest    crash point 10 of 10
+explored    11 worlds (crash points 10 + 1 baseline)
+oracle      agreed on 10 operations (507 syscall lines examined, 95 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ra
+checker     falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+ninja.140.syscalls.1               rc=1    0s  falsify: ninja cannot read the build directory: ninja: Entering directory `/localrun/st/ninja.140.syscalls.1' ninja: error: build.ninja:1: expected '=', got new
+earliest    crash point 3 of 7
+explored    8 worlds (crash points 7 + 1 baseline)
+oracle      agreed on 4 operations (403 syscall lines examined, 45 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that
+markdownlint.140.wrappers.1        rc=1    2s  falsify: README.md lost "Title" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (5784 syscall lines examined, 1369 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per pr
+gjf.140.wrappers.1                 rc=1    2s  falsify: A.java lost "public class A" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (2934 syscall lines examined, 149 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+xz.140.wrappers.1                  rc=0    5s  falsify: f.bin is present but differs (25 bytes, original 5750000)
+    explored 19 worlds (crash points 18 + 1 baseline)
+    oracle: agreed on 18 operations (959 syscall lines examined, 771 in scope of the judged state), witness strace
+    checker: falsified before the run (corrupted state -> check failed); ran in 19 world(s)
+    processes: single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+bun.140.syscalls.2                 rc=1    0s  Resolving dependencies
+checker(bun-add): package.json does not parse — a torn manifest survived the crash
+earliest    crash point 10 of 10
+explored    11 worlds (crash points 10 + 1 baseline)
+oracle      agreed on 10 operations (525 syscall lines examined, 95 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ra
+checker     falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+ninja.140.syscalls.2               rc=1    0s  falsify: ninja cannot read the build directory: ninja: Entering directory `/localrun/st/ninja.140.syscalls.2' ninja: error: build.ninja:1: expected '=', got new
+earliest    crash point 3 of 7
+explored    8 worlds (crash points 7 + 1 baseline)
+oracle      agreed on 4 operations (405 syscall lines examined, 45 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that
+markdownlint.140.wrappers.2        rc=1    2s  falsify: README.md lost "Title" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (5823 syscall lines examined, 1369 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per pr
+gjf.140.wrappers.2                 rc=1    2s  falsify: A.java lost "public class A" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (2941 syscall lines examined, 149 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+xz.140.wrappers.2                  rc=0    5s  falsify: f.bin is present but differs (25 bytes, original 5750000)
+    explored 19 worlds (crash points 18 + 1 baseline)
+    oracle: agreed on 18 operations (957 syscall lines examined, 771 in scope of the judged state), witness strace
+    checker: falsified before the run (corrupted state -> check failed); ran in 19 world(s)
+    processes: single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+bun.140.syscalls.3                 rc=1    0s  Resolving dependencies
+checker(bun-add): package.json does not parse — a torn manifest survived the crash
+earliest    crash point 10 of 10
+explored    11 worlds (crash points 10 + 1 baseline)
+oracle      agreed on 10 operations (516 syscall lines examined, 94 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ra
+checker     falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+ninja.140.syscalls.3               rc=1    0s  falsify: ninja cannot read the build directory: ninja: Entering directory `/localrun/st/ninja.140.syscalls.3' ninja: error: build.ninja:1: expected '=', got new
+earliest    crash point 3 of 7
+explored    8 worlds (crash points 7 + 1 baseline)
+oracle      agreed on 4 operations (406 syscall lines examined, 45 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that
+markdownlint.140.wrappers.3        rc=1    2s  falsify: README.md lost "Title" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (5911 syscall lines examined, 1369 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per pr
+gjf.140.wrappers.3                 rc=1    1s  falsify: A.java lost "public class A" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (2943 syscall lines examined, 149 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+xz.140.wrappers.3                  rc=0    5s  falsify: f.bin is present but differs (25 bytes, original 5750000)
+    explored 19 worlds (crash points 18 + 1 baseline)
+    oracle: agreed on 18 operations (959 syscall lines examined, 771 in scope of the judged state), witness strace
+    checker: falsified before the run (corrupted state -> check failed); ran in 19 world(s)
+    processes: single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+markdownlint.140.syscalls.1        rc=1    2s  falsify: README.md lost "Title" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (6247 syscall lines examined, 1369 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that 
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per pr
+gjf.140.syscalls.1                 rc=1    2s  falsify: A.java lost "public class A" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (2984 syscall lines examined, 149 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that r
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+xz.140.syscalls.1                  rc=0    5s  falsify: f.bin is present but differs (25 bytes, original 5750000)
+    explored 19 worlds (crash points 18 + 1 baseline)
+    oracle: agreed on 18 operations (995 syscall lines examined, 771 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that r
+    checker: falsified before the run (corrupted state -> check failed); ran in 19 world(s)
+    processes: single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+bun.main.syscalls.1                rc=1    0s  Resolving dependencies
+checker(bun-add): package.json does not parse — a torn manifest survived the crash
+earliest    crash point 10 of 10
+explored    11 worlds (crash points 10 + 1 baseline)
+oracle      agreed on 10 operations (528 syscall lines examined, 94 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ra
+checker     falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s)
+ninja.main.syscalls.1              rc=1    0s  falsify: ninja cannot read the build directory: ninja: Entering directory `/localrun/st/ninja.main.syscalls.1' ninja: error: build.ninja:1: expected '=', got ne
+earliest    crash point 3 of 7
+explored    8 worlds (crash points 7 + 1 baseline)
+oracle      agreed on 4 operations (406 syscall lines examined, 45 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that
+markdownlint.main.wrappers.1       rc=1    2s  falsify: README.md lost "Title" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (5887 syscall lines examined, 1369 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) 
+gjf.main.wrappers.1                rc=1    1s  falsify: A.java lost "public class A" (25 bytes)
+earliest    crash point 2 of 2
+explored    3 worlds (crash points 2 + 1 baseline)
+oracle      agreed on 2 operations (2984 syscall lines examined, 149 in scope of the judged state), witness strace
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s
+xz.main.wrappers.1                 rc=0    5s  falsify: f.bin is present but differs (25 bytes, original 5750000)
+    explored 19 worlds (crash points 18 + 1 baseline)
+    oracle: agreed on 18 operations (962 syscall lines examined, 771 in scope of the judged state), witness strace
+    checker: falsified before the run (corrupted state -> check failed); ran in 19 world(s)
+    processes: single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join

@@ -1,0 +1,23 @@
+== markdownlint-cli 0.49.1, ulimit -f 0
+  before: 61 bytes
+Error: EFBIG: file too large, write
+    at Object.writeFileSync (node:fs:2380:20)
+    at lintAndPrint (file:///usr/local/lib/node_modules/markdownlint-cli/markdownlint.js:327:14)
+    at file:///usr/local/lib/node_modules/markdownlint-cli/markdownlint.js:339:5
+    at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -27,
+  code: 'EFBIG',
+  syscall: 'write'
+}
+  rc=4  after: 0 bytes
+== google-java-format 1.36.1, ulimit -f 0 (-XX:-UsePerfData: no hsperfdata file)
+  before: 225 bytes
+  | /localrun/probe/gjf/A.java: could not write file: File too large
+  after: 0 bytes
+== bun 1.4.2 add, package.json larger than every other file the operation writes
+  ulimit -f 1 (512 bytes): rc=1  package.json 6070 -> 512 bytes; bun.lock 390; node_modules/probe-dep present
+  ulimit -f 2 (1024 bytes): rc=1  package.json 6070 -> 1024 bytes; bun.lock 390; node_modules/probe-dep present
+  ulimit -f 4 (2048 bytes): rc=1  package.json 6070 -> 2048 bytes; bun.lock 390; node_modules/probe-dep present
+  ulimit -f 8 (4096 bytes): rc=1  package.json 6070 -> 4096 bytes; bun.lock 390; node_modules/probe-dep present

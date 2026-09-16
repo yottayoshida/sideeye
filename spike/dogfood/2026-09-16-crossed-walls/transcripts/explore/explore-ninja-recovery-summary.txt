@@ -1,0 +1,4 @@
+sideeye 1.4.0 (trace contract v17)
+ninja-recovery.140.syscalls.1 rc=0  PASS  8/8 explored worlds satisfied the built-in atomicity invariant
+ninja-recovery.140.syscalls.2 rc=0  PASS  8/8 explored worlds satisfied the built-in atomicity invariant
+ninja-recovery.140.syscalls.3 rc=0  PASS  8/8 explored worlds satisfied the built-in atomicity invariant

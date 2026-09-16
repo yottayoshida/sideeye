@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted, but nothing to explore — 0 state-changing operations observed
+
+atomicity    4 path(s) judged pre-or-post
+oracle       agreed on 0 operations (126 syscall lines examined, 26 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/140-syscalls/ninja --setup "/localrun/ap/setup-ninja.sh" --operation "ninja -C /localrun/st/140-syscalls/ninja" \
+               --check <your-invariant.sh> --shim /se140/libsideeye_shim.so --oracle /usr/bin/strace

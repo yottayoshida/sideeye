@@ -1,0 +1,38 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+  openjdk version "21.0.12.1" 2026-08-18
+  xz (XZ Utils) 5.8.1
+
+==================== gjf ====================
+  operation: java --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED -jar /opt/gjf/gjf.jar --replace /localrun/st/strace/gjf/A.java
+  operation rc=0  (11831 strace lines)
+  strace: 18 thread(s) created, 1 process(es) created, execve {'sh': 1, 'java': 1}
+  strace: setsid/setpgid none
+  strace: process 47 java — 2 tid(s) wrote the state
+    tid 48: 4 op(s): open(coredump_filter), open(A.java), write(A.java)
+    tid 55: 1 op(s): unlinkat(47)
+  140  wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+  140  syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+  main wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+  main syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+==================== xz ====================
+  operation: xz -q -T2 --block-size=1MiB /localrun/st/strace/xz/f.bin
+  operation rc=0  (1045 strace lines)
+  strace: 2 thread(s) created, 1 process(es) created, execve {'sh': 1, 'xz': 1}
+  strace: setsid/setpgid none
+  strace: process 223 xz — 1 tid(s) wrote the state
+    tid 223: 18 op(s): open(f.bin.xz), write(f.bin.xz), fsync(f.bin.xz), fsync(xz), unlinkat(f.bin)
+  140  wrappers rc=0  PREFLIGHT recording accepted — 18 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+  140  syscalls rc=0  PREFLIGHT recording accepted — 18 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+  main wrappers rc=0  PREFLIGHT recording accepted — 18 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+  main syscalls rc=0  PREFLIGHT recording accepted — 18 state-changing operation(s) observed
+processes    single process in the recording; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
