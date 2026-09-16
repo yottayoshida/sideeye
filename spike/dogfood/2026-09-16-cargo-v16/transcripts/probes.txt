@@ -1,0 +1,28 @@
+=== 1. which processes cargo add execs: strace -f -e trace=execve ===
+cargo add rc=0
+execve lines: 3
+  26    execve("/usr/local/cargo/bin/cargo", ["cargo", "add", "--offline", "--manifest-path", "/localrun/probe/state/Cargo.toml", "--path", "/localrun/probe/dep
+  26    execve("/usr/local/rustup/toolchains/1.97.1-aarch64-unknown-linux-gnu/bin/cargo", ["/usr/local/rustup/toolchains/1.9"..., "add", "--offline", "--manifes
+  35    execve("/usr/local/rustup/toolchains/1.97.1-aarch64-unknown-linux-gnu/bin/rustc", ["/usr/local/rustup/toolchains/1.9"..., "-vV"], 0xaaab05f94460 /* 15 v
+
+=== 2. an empty Cargo.lock, the state the explored world leaves, under cargo's own reader ===
+complete lock: 228 bytes
+emptied: 0 bytes
+cargo metadata rc=0 stderr_lines=2
+  stderr:      Locking 1 package to latest compatible version
+  stderr:       Adding depcrate v0.1.0 (/localrun/probe/depcrate)
+after metadata: 228 bytes; identical to the complete lock: yes
+
+=== 3. a torn Cargo.lock without any tool: 19 path dependencies, then cargo add under ulimit -f 2 (1024-byte cap) ===
+before: Cargo.lock 1212 bytes, Cargo.toml 626 bytes
+cargo add rc=153
+        Adding dep20 (local) to dependencies
+  File size limit exceeded
+after: Cargo.lock 1024 bytes, Cargo.toml 675 bytes, dep20 in the manifest: 1
+last line of the torn lock: ]|name = "dep3"|version = "0.1.0"||[[package]]|name = "dep4"
+
+=== 4. what the commands after a torn lock do ===
+cargo metadata --offline --format-version 1: rc=101 — error: failed to parse lock file at: /localrun/torn/state/Cargo.lock
+cargo build --offline: rc=101 — error: failed to parse lock file at: /localrun/torn/state/Cargo.lock
+cargo tree --offline: rc=101 — error: failed to parse lock file at: /localrun/torn/state/Cargo.lock
+Cargo.lock still: 1024 bytes

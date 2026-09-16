@@ -1,0 +1,39 @@
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/localrun/B/2/depcrate)
+falsify: checker(cargo-add): leg V: cargo metadata exited 101 (124 = timeout): error: key with no value, expected `=`
+falsify:  --> ../localrun/B/2/state/Cargo.toml:1:25
+falsify:   |
+falsify: 1 | sideeye-corruption-probe
+falsify:   |                         ^
+      Adding depcrate (local) to dependencies
+      Adding depcrate (local) to dependencies
+      Adding depcrate (local) to dependencies
+      Adding depcrate (local) to dependencies
+      Adding depcrate (local) to dependencies
+      Adding depcrate (local) to dependencies
+      Adding depcrate (local) to dependencies
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/localrun/B/2/depcrate)
+FAIL  1 of 8 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 6 of 7
+            after  truncate(/localrun/B/2/state/Cargo.lock)
+            before write(/localrun/B/2/state/Cargo.lock)
+path        Cargo.lock
+observed    present, but its recorded history is no longer a prefix of its content
+explored    8 worlds (crash points 7 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): Cargo.lock, Cargo.toml
+oracle      agreed on 7 operations (1108 syscall lines examined, 98 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+l1          no marker configured
+case        /localrun/B/2/wk/cases/000001.json
+replay      sideeye replay /localrun/B/2/wk/cases/000001.json --shim /se/libsideeye_shim.so
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/B/2/state SIDEEYE_TRACE_PATH=/localrun/B/2/wk/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=6 SIDEEYE_SEQ_BASE= <operation>
