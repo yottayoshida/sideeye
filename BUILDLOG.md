@@ -17,6 +17,158 @@ Development journal, newest first. Decisions are recorded when they are made —
 **What the ordering rule caught, and what it did not.** `typos` was dropped before any image build: the only Linux aarch64 artifact it publishes is statically linked, so `file` on the unpacked binary settled it. meson was nearly dropped for the opposite reason — its first screen failed because the *image* gave it `ccache cc` and then a `gcc` without `libc6-dev`, not because of anything meson does. A screen failure has to be attributed to the image or to the target before the candidate is dropped; the rule as written is about forecasts versus measurements and does not say this, and it is left as it is.
 
 **Rule 11 is what actually thins the slate.** Of the candidates that cleared stars, activity and contributors, six were dropped for maintainer responsiveness alone (uncrustify, StyLua, PHP-CS-Fixer, logrotate, pipx, and calibre for having no GitHub tracker to measure). Rules 1–3 dropped nine. The bar that costs the most candidates is the one about the people on the other end.
+## 2026-09-16 (second) — cargo, re-met with the shipped v1.4.0 in both observation modes: the predictions, written before the run (#538)
+
+**Where this starts.** `docs/target-classes.md`'s cargo row quotes the 2026-08-22 cohort-3 run —
+contract v14 or earlier, a trap set of four write syscalls — and then says, in the same row, that
+the trap set has held `renameat` since #542's second change and that cargo was not re-measured
+under it. The page promises "every row backed by a run … Nothing here is a projection"; that
+sentence is a projection. #538 asks for the run. Two contract changes sit between the row and
+today: v16 (ADR 0055, one writing thread per process is judged; ADR 0053, a reaped child is
+judged) and ADR 0059 (every kill point trapped under `--observe syscalls`); v1.4.0 ships v17
+(ADR 0065, cgroup containment where the engine can make one — not in a default container, where a
+run is what it was under v16).
+
+**Apparatus.** The shipped tarball, `sideeye-v1.4.0-aarch64-linux.tar.gz`, sha256
+`709057371894565cbfc368cd2cc3402282f65f453520acb5cb4e9a2fb5b08820` matching the digest GitHub
+publishes for the asset, mounted read-only — not a build. A run-specific image,
+`rust:1.97.1-slim-bookworm` plus strace, python3 and procps (cohort 3 measured cargo 1.98.0; the
+row will say which cargo this is). Cohort 3 r2's define, paths moved under `/localrun`, the
+RUSTC stand-in generated from the image's own `rustc -vV` and used only where the plan says.
+`--oracle /usr/bin/strace` throughout. `preflight --twice` before each configuration; an exit 1
+there is the answer to the question `--twice` asks, recorded, and does not stop the run.
+
+**Predictions, in this paragraph before any run, so that the record can say which held.**
+
+- **A** (plain cargo, `--observe wrappers`, three runs): `oracle_missed_operation` — the oracle
+  sees the manifest's `renameat` and the shim has no record of it, as r2 measured with the
+  stand-in in place. The first wall of the row, `child_process_detected` on the `rustc -vV`
+  child, does not appear: the child writes nothing to the state directory and is reaped before
+  cargo writes, and its internal thread is not a boundary since v16. If `child_process_detected`
+  does appear, the first wall was gone on paper only, and that is the record.
+- **B** (plain cargo, `--observe syscalls`, three runs): the trap counts `renameat`, so the run
+  reaches a verdict. Then: `Cargo.toml` goes through temp-file-plus-rename and survives every
+  world; `Cargo.lock` is rewritten in place (r2's "Observations recorded, not reported"), so a
+  world killed inside that write leaves a lock `cargo metadata` cannot parse — **FAIL** is the
+  likelier verdict, PASS means the lock rewrite is atomic after all. The one open way not to
+  reach a verdict: the seccomp filter is inherited across exec, and glibc's `posix_spawn` runs
+  file actions with every signal blocked, so a child whose file action opens for writing dies of
+  signal 31 (ADR 0063 decision 3). Rust's `Command::output()` nulls stdin, which on the
+  `posix_spawn` path is an `addopen` of `/dev/null` with `O_RDWR` — an open whose flags the trap
+  reads as writing (ADR 0059 decision 2). If cargo reaches `rustc -vV` that way, B ends in
+  `recording_run_failed`; middling odds. The #556 shape (a failed `PATH` exec under `SIGSYS`) is
+  closed by ADR 0063 and should not appear.
+- **C** (stand-in, wrappers) runs only if A's three `unknown_reason`s are not all
+  `oracle_missed_operation`; predicted, if it runs, to reproduce r2.
+- **D** (stand-in, syscalls) runs only if any of B's three runs is UNKNOWN; predicted, if it
+  runs, to match B.
+
+**What moves if B reaches a verdict.** The row would gain a verdict row beside the wall row —
+one per verdict, one per wall, as ansible has — not move. `spike/unknown-rate/class-exclusions.tsv`
+keeps cargo's two cohort-3 defines out of the corpus because, its header says, their class "has
+no recorded verdict at all"; that sentence is already false (mlr, the same class string, was
+judged on 2026-09-11), and moving the defines into the corpus would change the A-group's
+denominator and the published rate, which takes a new generation. Filed as a question to the
+owner rather than done here.
+
+**Measured, the same day, after the paragraph above was committed** (`spike/dogfood/2026-09-16-cargo-v16/`;
+image `rust:1.97.1-slim-bookworm` + strace, cargo 1.97.1; `sideeye 1.4.0 (trace contract v17)`;
+`cgroup: not writable (default container)`).
+
+- **A held.** Three of three: `UNKNOWN  oracle_missed_operation`, `divergence  renameat`, at operation
+  3 — the manifest's `Cargo.tomlXXXXXX → Cargo.toml`. And the first wall is gone in fact, not on
+  paper: "2 other process(es) observed; none touched the state directory … the shim recorded 9
+  thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory". Plain
+  cargo reaches r2's wall without r2's stand-in, so C had nothing to compare and did not run.
+  `preflight --twice` under wrappers refuses the same way at preflight.
+- **B: the verdict held, the mechanism did not.** Three of three: `FAIL  1 of 8 explored worlds
+  violated an invariant`, `earliest crash point 6 of 7, after truncate(Cargo.lock) before
+  write(Cargo.lock)`, `observed present, but its recorded history is no longer a prefix of its
+  content` — the built-in L0 atomicity invariant on the lockfile's in-place rewrite. The prediction
+  had the declared checker's leg V failing on a torn lock. It did not: `cargo metadata` regenerates
+  an empty `Cargo.lock` silently, exactly r2's "an absent lockfile is silently regenerated", so the
+  checker passed in the very world L0 caught. Right file, right operation, wrong judge. What that
+  reader does with the empty file was measured afterwards, not assumed (below). `preflight --twice` under
+  syscalls: `recording accepted — 7 state-changing operation(s) observed`, two runs equal. D did
+  not run.
+- **The open way not to reach a verdict did not appear.** `rustc -vV` ran under the inherited
+  filter and the recording was accepted every time; nothing died of signal 31. Whether cargo's
+  spawn path avoids a writing `addopen` or never takes `posix_spawn` was not measured — only that
+  the shape ADR 0063 leaves open did not bite here.
+
+**What moved on the page.** cargo's row in the refusal table carries both modes — the wall under
+`wrappers`, the FAIL under `syscalls` — the form mlr, metaflac and mutool already have; a first-table
+row was written first and taken out again (below).
+The Bun row, the mechanism-(1) bullet, the toy-walls bullet and the Rust story point at the run.
+`class-exclusions.tsv`'s two cargo rows carry a dated note in their reason column: their exclusion
+rests on a sentence that is false for cargo now and was already false for mlr; moving them is a
+generation's work and is a question to the owner, not done here. Reporting the empty-lock window
+upstream is the owner's call too.
+
+**Both calls made the same afternoon.** The ledger question is **#598** (`Filed-under: broken-promise`:
+the exclusion rule is false for mlr and cargo and nothing reads it). The report is
+**rust-lang/cargo#17481**, its text kept as `report-cargo.md` in the run. Before it went out, two
+things the template asks for: upstream `master` (`f325466`) was read — `write_pkg_lockfile` in
+`src/ops/lockfile.rs` still does `set_len(0)` then `write_all`, while `Cargo.toml` goes through
+`paths::write_atomic` — and the window was reproduced without Sideeye. `ulimit -f 0` was the wrong
+knob: it killed `cargo add` at the manifest's temporary, before the lockfile, and the atomic path
+left `Cargo.toml` untouched (a clean negative). `ulimit -f 2` with 19 path dependencies, so that
+only the lockfile crosses 1024 bytes: `cargo add` dies of `SIGXFSZ` after the manifest is
+rewritten, `Cargo.lock` is cut at 1024 bytes inside an entry, and `cargo metadata` fails to parse
+it — every command after, until someone deletes the file. That is the torn half of the question
+cohort 3 left "asked, not answered"; the explored world is the empty half. The opening paragraph
+of the report says where the lock is committed nothing is lost, because it is true and the
+template says to write the recovery first.
+
+**The diff's reviewer took three sentences off the page and one off the report.** The first version
+gave cargo a row in the first table, beside the wall row, on ansible's pattern. The reviewer read
+the siblings: mlr, metaflac/fontforge and mutool all reach verdicts under `--observe syscalls` and
+all sit in the refusal table with the verdict in their prose, and the page says in its own words
+that a refusal table's stories may hold verdicts without making a supported class; a first-table
+row would also have falsified two sentences of `docs/unknown-rate.md` this change never touched.
+The owner chose the mlr form. Second: "what is lost is the pinned resolution" was never measured,
+and in this define — one local path dependency, offline — it is false: emptying `Cargo.lock` by
+hand and running `cargo metadata` rewrites it to the same 228 bytes (`transcripts/probes.txt`).
+Third: "cargo regenerates it without a word" was false too — it prints `Locking 1 package to
+latest compatible version`, its ordinary line, and nothing about the file having been empty. That
+sentence had gone out in rust-lang/cargo#17481; the owner had it corrected there the same hour.
+Fourth: "the two other processes (`rustc -vV` and what it spawns) … were reaped" was the
+prediction paragraph's assumption carried into the results; `strace -f -e trace=execve` shows one
+`execve` of `rustc -vV` and the rustup proxy replacing its own image, and the second process the
+oracle counted was not identified. Also from that review: two backticked paths with braces and a
+glob in the Recorded-in column, which acceptance check 11 would have extracted as paths and failed
+on; the driver's stdout (`run.log`) and the probes now committed beside the transcripts; and the
+toy-walls bullet had called cargo the first real target through the toy's door when mlr went
+through it five days earlier.
+
+**The second reviewer found the same over-claim still standing in the one place the first fix had
+not reached — the report itself.** "Where the lock was not committed the pinned resolution is gone"
+had stayed in rust-lang/cargo#17481's first paragraph beside a `Not claimed` that said the
+regenerated lock is byte-identical; and the fix for "without a word" had written "printing only its
+usual `Locking` line" when the reader prints two lines (`Locking …`, `Adding …`). Both edited on the
+tracker; `report-cargo.md` is the text as it stands. The same review found the torn-lock numbers
+(1212, 1024, exit 153, exit 101) living in prose with no transcript behind them, and the first
+probes file carrying a `cargo update` part whose reading did not follow from its output. The probes
+are a script now (`apparatus/probes.sh`), `transcripts/probes.txt` is its output, the `cargo update`
+part is gone, and part 4 runs three commands over the torn lock rather than one — `metadata`,
+`build`, `tree`, each `failed to parse lock file` — so the row says "the next commands tried" and
+not "every later command". The toy-walls bullet had lifted mlr to cargo's level ("each judged");
+mlr was judged once in six. And `RUNS.md` had no row for `2026-09-11-syscall-trap-542b`, the run
+this page now cites as cargo's precedent — added, dated.
+
+**The report was closed within the hour, and not on the finding.** rust-lang/cargo#17481 was closed
+`not planned` at 03:59Z by a Cargo team member: cargo follows rust-lang's LLM-usage policy, which
+bans an issue body originally created by an LLM from a personal account unless the LLM text is clearly
+quoted and marked, and this one was written by the agent with its disclosure in a `<details>` block —
+read as LLM-written, which it was. Nineteen reports have gone out; this is the first refused on who
+wrote it rather than on what it says, and the template's pre-filing list had no item for it, because no
+tracker before this one had such a rule. It has one now (item 0: read the project's contribution policy
+for LLM rules before anything else is done). The finding stands as measured; the row and the record
+say the report was closed and why; nothing is re-filed by the agent (owner's call, the same day). The
+policy's own path for a non-native speaker — the owner writes the original, the agent translates and
+discloses the translation, original posted beside it — is in the template now, and the record keeps
+the data in a form that can be read into such an original.
+
 ## 2026-09-16 — The launcher keeps the judge's digests in its own memory, and the judge runs from bytes the launcher verified (#515, #592)
 
 **Where this starts.** ADR 0058 closed half of #515 and named the other half: the record still lives

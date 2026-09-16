@@ -1,0 +1,8 @@
+sideeye 1.4.0 (trace contract v17)
+cargo 1.97.1 (c980f4866 2026-06-30)
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+strace -- version 6.1
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+aarch64
+cgroup: not writable (default container)

@@ -1,7 +1,7 @@
 # Filing a finding upstream — the shape
 
-Sixteen reports have gone out from this project (`upstream-reports.tsv`;
-fifteen standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
+Nineteen reports have gone out from this project (`upstream-reports.tsv`;
+eighteen standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
 the worked examples this page was drawn from, and
 `ImageMagick/ImageMagick#8939` is the canonical instance — the owner's
 instruction on 2026-09-06 is that later reports go the same way. This page is
@@ -40,6 +40,17 @@ statement, not a courtesy.
 
 ## Before any text is written
 
+0. **Read the project's contribution policy for rules on LLM-written text, before
+   the finding is even weighed.** rust-lang's policy
+   (`forge.rust-lang.org/policies/llm-usage.html`, adopted by cargo) bans an issue body
+   originally created by an LLM from a personal account unless it is clearly quoted and
+   marked; `rust-lang/cargo#17481` (2026-09-16) was closed `not planned` on that within
+   the hour, with the finding unread. A disclosure section is not the marking such a
+   policy asks for. Where the policy bans it, the report is the owner's to write in their
+   own words or not to file; nothing below applies. The path such a policy leaves a
+   non-native speaker is the one rust-lang's names: the owner writes the original in their
+   own language, the translation is disclosed as machine translation, and the original is
+   posted beside it — the agent may translate, not compose.
 1. **Freshness against more than this repository.** `git grep` here returned
    nothing for qpdf and the finding was written up as fresh; the owner had filed
    `qpdf#1773` the previous day from a separate measurement, and the tool is in

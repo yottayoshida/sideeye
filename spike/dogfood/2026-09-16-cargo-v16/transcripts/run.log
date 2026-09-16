@@ -1,0 +1,96 @@
+sideeye 1.4.0 (trace contract v17)
+cargo 1.97.1 (c980f4866 2026-06-30)
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+strace -- version 6.1
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+aarch64
+cgroup: not writable (default container)
+==================== preflight --twice / wrappers ====================
+raw rc=2   (0=accepted 2=refused; an exit 1 is --twice's own answer and does not stop the run)
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/localrun/twice-A/depcrate)
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 53    renameat(AT_FDCWD</w>, "/localrun/twice-A/state/Cargo.tomlFdP4Wl", AT_FDCWD</w>, "/localrun/twice-A/state/Cargo.toml") = 0; the shim recorded: open("/localrun/twice-A/state/C
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+divergence  renameat
+
+atomicity   2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): Cargo.lock, Cargo.toml
+l1          no marker configured
+case        (none)
+expected    exit 0
+
+==================== A run 1 / wrappers / standin=0 ====================
+op: cargo add --offline --manifest-path /localrun/A/1/state/Cargo.toml --path /localrun/A/1/depcrate
+raw rc=2   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+UNKNOWN  oracle_missed_operation
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's
+A.1 UNKNOWN oracle_missed_operation explored=0 crash_points=0
+
+==================== A run 2 / wrappers / standin=0 ====================
+op: cargo add --offline --manifest-path /localrun/A/2/state/Cargo.toml --path /localrun/A/2/depcrate
+raw rc=2   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+UNKNOWN  oracle_missed_operation
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's
+A.2 UNKNOWN oracle_missed_operation explored=0 crash_points=0
+
+==================== A run 3 / wrappers / standin=0 ====================
+op: cargo add --offline --manifest-path /localrun/A/3/state/Cargo.toml --path /localrun/A/3/depcrate
+raw rc=2   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+UNKNOWN  oracle_missed_operation
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's
+A.3 UNKNOWN oracle_missed_operation explored=0 crash_points=0
+
+==================== preflight --twice / syscalls ====================
+raw rc=0   (0=accepted 2=refused; an exit 1 is --twice's own answer and does not stop the run)
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/localrun/twice-B/depcrate)
+      Adding depcrate (local) to dependencies
+     Locking 1 package to latest compatible version
+      Adding depcrate v0.1.0 (/localrun/twice-B/depcrate)
+PREFLIGHT  recording accepted — 7 state-changing operation(s) observed
+
+atomicity    2 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): Cargo.lock, Cargo.toml
+oracle       agreed on 7 operations (1107 syscall lines examined, 98 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when
+processes    2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 9 thread(s) created, and 1 thread
+
+
+==================== B run 1 / syscalls / standin=0 ====================
+op: cargo add --offline --manifest-path /localrun/B/1/state/Cargo.toml --path /localrun/B/1/depcrate
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+FAIL  1 of 8 explored worlds violated an invariant
+earliest    crash point 6 of 7
+explored    8 worlds (crash points 7 + 1 baseline)
+oracle      agreed on 7 operations (1114 syscall lines examined, 98 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when 
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the
+B.1 FAIL  explored=8 crash_points=7
+
+==================== B run 2 / syscalls / standin=0 ====================
+op: cargo add --offline --manifest-path /localrun/B/2/state/Cargo.toml --path /localrun/B/2/depcrate
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+FAIL  1 of 8 explored worlds violated an invariant
+earliest    crash point 6 of 7
+explored    8 worlds (crash points 7 + 1 baseline)
+oracle      agreed on 7 operations (1108 syscall lines examined, 98 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when 
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the
+B.2 FAIL  explored=8 crash_points=7
+
+==================== B run 3 / syscalls / standin=0 ====================
+op: cargo add --offline --manifest-path /localrun/B/3/state/Cargo.toml --path /localrun/B/3/depcrate
+raw rc=1   (0=PASS 1=FAIL 2=UNKNOWN 3=setup error)
+FAIL  1 of 8 explored worlds violated an invariant
+earliest    crash point 6 of 7
+explored    8 worlds (crash points 7 + 1 baseline)
+oracle      agreed on 7 operations (1117 syscall lines examined, 98 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when 
+checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the
+B.3 FAIL  explored=8 crash_points=7
+
+C not run: A read oracle_missed_operation in all three runs, r2's wall, nothing to compare
+D not run: B reached a verdict in all three runs, nothing to compare
+==================== done ====================
+run rc=0
