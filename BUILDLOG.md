@@ -86,6 +86,24 @@ The first limits I tried were all in the first range; the tail is under 700 byte
 `system`. The searches found no report of the aws-cli or the neovim mechanism; both projects accept
 AI-assisted submissions under stated conditions. Whether to report is the owner's call.
 
+**The probe credentials were replaced before the first push, in every commit of this run.** aws-cli's
+setup wrote two profiles with fabricated keys, and the fabrications had the shape of real ones — an
+`AKIA` prefix with sixteen capitals and digits, and a 40-character secret beside it — which GitHub's
+push protection on a public repository and every external secret scanner would read as an AWS key
+pair. Owner's call: rebuild the three unpushed commits rather than push and mark a false positive.
+`apparatus/redact-probe-credentials.py` replaces each of the five strings with one of the same length
+that matches neither pattern (`FAKE-ID-DEFAULT-0001`, `fake-secret-work-for-probe-only-00000000`, …),
+plus the two-letter prefix strace kept of the key, so every byte count the transcripts record stays
+true. The three commits were rebuilt in order with their original messages and author and committer
+dates, and checked file by file: every file that differs from its original differs only by the
+substitution (reversing it gives the original bytes), no file was added or removed, and no
+key-shaped string is left in the tree. The transcripts in those commits are the runs as they happened
+with the strings substituted, not new runs. **Then the aws-cli part was run again with the replaced
+strings** (`transcripts/rerun-after-redaction/`): the screen accepted it with 2 operations in all four
+columns, all five explorations FAIL at crash point 2 of 2, the checker probe shows 230 bytes after the
+operation, and `ulimit -f 0` takes `credentials` from 231 bytes to 0 with status 120 — the numbers the
+pages already quote.
+
 ## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
 
 **What was asked.** A dogfood run of five, weighted to targets that are measurable now because a

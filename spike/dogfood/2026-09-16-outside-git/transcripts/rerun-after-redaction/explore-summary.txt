@@ -1,0 +1,22 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+aws.140.wrappers.1             rc=1    4s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+aws.140.wrappers.2             rc=1    3s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+aws.140.wrappers.3             rc=1    3s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+aws.140.syscalls.1             rc=1    3s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+aws.main.wrappers.1            rc=1    3s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content

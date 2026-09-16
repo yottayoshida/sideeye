@@ -1,0 +1,14 @@
+== aws-cli aws-cli/2.23.6, ulimit -f 0
+  before: credentials 231 bytes
+  rc=120  after: credentials 0 bytes
+== neovim NVIM v0.10.4, ulimit -f 0
+  before: main.shada 138 bytes
+File size limit exceeded
+  rc=153  after: main.shada — main.shada 0 bytes
+== jbang 0.141.0 config set (the JVM named directly, -XX:-UsePerfData), ulimit -f 0
+  before: jbang.properties 21 bytes
+  rc=1  after: jbang.properties 0 bytes
+== pyenv 2.8.5 global, ulimit -f 0
+  before: version 7 bytes
+File size limit exceeded
+  rc=153  after: version 0 bytes; pyenv version-name: system
