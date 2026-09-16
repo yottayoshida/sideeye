@@ -1,0 +1,14 @@
+New setting:
+falsify: hatch config show failed: 25)
+New setting:
+PASS  6/6 explored worlds satisfied the built-in atomicity invariant
+      explored 6 worlds (crash points 5 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 5 operations (3882 syscall lines examined, 1277 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 6 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the subject's image replaced 1 time(s), chain unbroken (#123)
+      not tested: power loss, torn writes, concurrent processes

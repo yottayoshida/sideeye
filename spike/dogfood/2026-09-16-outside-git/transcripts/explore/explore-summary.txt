@@ -1,0 +1,68 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+aws.140.wrappers.1             rc=1    4s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+hatch.140.wrappers.1           rc=0    1s  PASS 6/6 explored worlds satisfied the built-in atomicity invariant
+nvim.140.wrappers.1            rc=2    0s  UNKNOWN baseline_violates_invariant
+jbang.140.wrappers.1           rc=1    1s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path jbang.properties
+    observed present, but its recorded history is no longer a prefix of its content
+pyenv.140.syscalls.1           rc=1    1s  FAIL 2 of 4 explored worlds violated an invariant
+    earliest crash point 2 of 3
+    path version
+    observed holding neither the old nor the new content
+aws.140.wrappers.2             rc=1    4s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+hatch.140.wrappers.2           rc=0    1s  PASS 6/6 explored worlds satisfied the built-in atomicity invariant
+nvim.140.wrappers.2            rc=2    0s  UNKNOWN baseline_violates_invariant
+jbang.140.wrappers.2           rc=1    1s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path jbang.properties
+    observed present, but its recorded history is no longer a prefix of its content
+pyenv.140.syscalls.2           rc=1    1s  FAIL 2 of 4 explored worlds violated an invariant
+    earliest crash point 2 of 3
+    path version
+    observed holding neither the old nor the new content
+aws.140.wrappers.3             rc=1    3s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+hatch.140.wrappers.3           rc=0    2s  PASS 6/6 explored worlds satisfied the built-in atomicity invariant
+nvim.140.wrappers.3            rc=2    0s  UNKNOWN baseline_violates_invariant
+jbang.140.wrappers.3           rc=1    1s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path jbang.properties
+    observed present, but its recorded history is no longer a prefix of its content
+pyenv.140.syscalls.3           rc=1    0s  FAIL 2 of 4 explored worlds violated an invariant
+    earliest crash point 2 of 3
+    path version
+    observed holding neither the old nor the new content
+aws.140.syscalls.1             rc=1    4s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+hatch.140.syscalls.1           rc=0    1s  PASS 6/6 explored worlds satisfied the built-in atomicity invariant
+nvim.140.syscalls.1            rc=2    0s  UNKNOWN baseline_violates_invariant
+jbang.140.syscalls.1           rc=1    2s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path jbang.properties
+    observed present, but its recorded history is no longer a prefix of its content
+aws.main.wrappers.1            rc=1    3s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path credentials
+    observed holding neither the old nor the new content
+hatch.main.wrappers.1          rc=0    1s  PASS 6/6 explored worlds satisfied the built-in atomicity invariant
+nvim.main.wrappers.1           rc=2    0s  UNKNOWN baseline_violates_invariant
+jbang.main.wrappers.1          rc=1    2s  FAIL 1 of 3 explored worlds violated an invariant
+    earliest crash point 2 of 2
+    path jbang.properties
+    observed present, but its recorded history is no longer a prefix of its content
+pyenv.main.syscalls.1          rc=1    0s  FAIL 2 of 4 explored worlds violated an invariant
+    earliest crash point 2 of 3
+    path version
+    observed holding neither the old nor the new content

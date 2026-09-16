@@ -15,3 +15,16 @@ The mechanism column is read from the screens' strace captures, operation by ope
 
 What would falsify the run's premise rather than one row: any of the five refused at exploration
 on a wall its screen did not show.
+
+## Added after the first exploration: neovim's second define
+
+Written after neovim's three `wrappers` explorations and one `syscalls` exploration returned
+`UNKNOWN baseline_violates_invariant`, and before the second define ran. `apparatus/probe-shada.sh`
+measured why the uncrashed re-run differs: every differing byte between two runs of the same
+operation from the same state lies inside a msgpack timestamp or the header's `pid`
+(`transcripts/probes/shada.txt`). The second define declares `main.shada` scratch (ADR 0043) and
+leaves the claim to the checker, which reads the history entry and register the setup stored.
+
+| Target | Build, mode | Expected | Mechanism | Confidence |
+|---|---|---|---|---|
+| neovim 0.10.4, `:wshada`, `--scratch main.shada` | v1.4.0, wrappers x3, syscalls x1; main wrappers x1 | **FAIL**, on the checker | the worlds the first define explored already printed the checker's failures before the baseline refused the run: *"main.shada is gone (main.shada.tmp.a )"* and *"register a is lost (0 bytes in main.shada)"* — the kills after the unlink and after the rename | 85% |

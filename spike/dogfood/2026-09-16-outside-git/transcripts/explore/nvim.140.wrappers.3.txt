@@ -1,0 +1,20 @@
+falsify: register a is lost (25 bytes in main.shada): E576: Error while reading ShaDa file: last entry specified that it occupies 100 bytes, but file ended earlier
+main.shada is gone (main.shada.tmp.a )
+register a is lost (0 bytes in main.shada): 
+register a is lost (0 bytes in main.shada): 
+main.shada is gone (main.shada.tmp.a )
+register a is lost (0 bytes in main.shada): 
+register a is lost (0 bytes in main.shada): 
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left main.shada holding neither the old nor the new content
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
