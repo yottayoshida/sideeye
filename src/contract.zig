@@ -1281,6 +1281,44 @@ pub const NextStep = enum {
     quiesce,
     /// The process that launched the exploration went away.
     relaunch,
+    /// `oracle_missed_operation` under `--observe wrappers` on Linux (#599, ADR 0069). The oracle
+    /// saw an operation that did not pass through the interposed libc entry points — a write libc
+    /// issues from inside itself above all (ADR 0005's far side) — and `--observe syscalls` counts
+    /// most operations at the kernel boundary, those included; not all (a raw `copy_file_range` or
+    /// `pwritev2`, a syscall ABI the filter cannot read, an image the shim is not in). What that mode then shows is
+    /// the target's business, and the sentence promises neither a verdict nor a cause: the same
+    /// wrappers refusal, with the same thread account, was measured PASS under that mode for one
+    /// zstd input and `multiple_threads_detected` for another.
+    ///
+    /// **The caution rides in the same sentence, unconditionally.** That mode changes what some
+    /// targets do — a child that execs an image the shim is not loaded into, a `posix_spawn`
+    /// child whose file action opens for writing, a target that takes `SIGSYS` away — and no
+    /// field of the account says which of those a run has: a `posix_spawn` child dies before it
+    /// execs, so nothing about images catches it. A step that added the caution only when it
+    /// could tell would drop it exactly where it matters (review). The sentence names where the
+    /// list lives rather than paraphrasing it, because every paraphrase tried was narrower than
+    /// the list and read as "the shim is loaded into mine, so this is not about me".
+    ///
+    /// "explore or preflight" because the oracle comparison runs in both. The sentence does not say
+    /// what a failure under that mode means beyond "may": a process killed, or a helper that lost
+    /// privileges to the `PR_SET_NO_NEW_PRIVS` the mode sets, or a target that does not repeat,
+    /// all end the same way (review).
+    observe_syscalls,
+    /// A run's failures under `--observe syscalls` that a process the mode killed produces, where
+    /// the site would otherwise say `fix_define` (#599, ADR 0069): the recording run's undeclared
+    /// status, its signal and its missing success marker, and the baseline world's checker
+    /// rejecting the state. A child that exec'd an image the shim is not loaded into dies at its
+    /// first state-changing call; each site's own sentence then points at the define — declare a
+    /// different success convention, check the marker string, check the operation and the checker
+    /// against each other — and a reader sent here by `observe_syscalls` who followed it would have
+    /// a broken run judged. Not `preflight --twice`'s second run, the baseline's exit, or the
+    /// baseline's marker layer: each compares against a recording the same mode already completed,
+    /// so a kill that happened in both runs does not reach them, and what does is repeatability.
+    /// The comparison it asks for is by hand where the default mode stops early: an explore under
+    /// that mode refuses `oracle_missed_operation` before the checker runs, so the checker is run on
+    /// the state it leaves. It does not branch on whether the subject died of `SIGSYS`: that one is
+    /// detectable, a child's death is not, and one sentence covers both.
+    syscalls_may_have_killed,
     /// Nothing the operator changes fixes this; it is Sideeye's.
     sideeye_defect,
 
@@ -1303,6 +1341,8 @@ pub const NextStep = enum {
             .narrow_state => "Point --state at a smaller or shallower directory, or reduce what the operation writes there and how deep it nests; the ceiling the detail names is fixed in this build.",
             .quiesce => "Wait for whatever the target left running to finish, or stop it, so the state directory holds still; then re-run.",
             .relaunch => "Start the exploration from a process that stays alive for its whole duration; the one that launched this run has exited.",
+            .observe_syscalls => "Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.",
+            .syscalls_may_have_killed => "Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.",
             .sideeye_defect => "Nothing in the define fixes this: it is a defect in Sideeye. File it with the report attached.",
         };
     }

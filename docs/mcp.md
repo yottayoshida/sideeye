@@ -41,6 +41,8 @@ Everything the server reads from its environment:
 | `SIDEEYE_MCP_ORACLE` | no | The second witness. Without one a would-be PASS refuses as `completeness_not_verified`; a FAIL stands on its own evidence either way. |
 | `SIDEEYE_MCP_CHILD_ENV` | no | Comma-separated names of variables to pass through to the target. Nothing else reaches it (ADR 0011). |
 
+Every tool runs under the default observation mode: the server passes no `--observe`, and a `sideeye.toml` has no key for it. A refusal whose `next_step` names `--observe syscalls` — `oracle_missed_operation` under the default mode (#599, ADR 0069) — is therefore advice for the command line; through this server the refusal is where the run ends.
+
 One value is yours to supply, and it is written as `/path/to/…`. Nothing else has to be set:
 
 ```sh

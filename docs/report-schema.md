@@ -228,6 +228,32 @@ observed run, and it keeps the shim step whatever the image says: the first
 run's marker already answered every signing and linkage question about that
 file, so its absence the second time is not about the image.
 
+`oracle_missed_operation` chooses its `next_step` from the observation mode
+(#599, ADR 0069). Under `--observe wrappers` on Linux it is `observe_syscalls`:
+the oracle saw an operation that did not pass through the interposed libc entry
+points, and that mode counts most operations at the kernel boundary, those
+included. The sentence promises neither a verdict nor a cause — the same
+refusal, with the same thread account, was measured PASS under that mode for one
+zstd input and `multiple_threads_detected` for another — and before the flag is
+reached for it names the README entry under 'What the target has to be' that
+begins 'Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset',
+and this page's 'What `--observe syscalls` does not see': that mode changes what
+some targets do. Under `--observe syscalls`, or off Linux, the step is the class
+wall; a Linux kernel without the trap answers the flag with
+`platform_unsupported`. The failures a process that mode killed produces follow
+the mode as well: where they would take `fix_define` — the recording run's exit
+status nobody declared, its signal, its success marker that never appeared, and
+the baseline world's checker rejecting the state — a run under `--observe
+syscalls` takes `syscalls_may_have_killed`, because following the site's own
+sentence (declare a different success convention, check the marker string, check
+the operation and the checker against each other) would have a broken run
+judged. The branches that exit 126 keep `environment`. `preflight --twice`'s
+second run, the baseline's exit and the baseline's marker layer keep
+`fix_define`: each compares against a recording the same mode already completed,
+so a kill that happened in both runs does not reach it. The checker is the
+exception because it judges the state from outside rather than against the
+recording, and the baseline is the first clean state it sees.
+
 When the shim's trace is the witness, `child_touched_state_dir`'s `message`
 names the foreign process's pid and the first state-directory operation it
 performed — its class and its path, both ends for a two-path operation (#484): `a process
@@ -272,6 +298,8 @@ the tool result's `structuredContent`, minified. `isError` is derived from
 `verdict`: a real verdict (PASS/FAIL) is `isError: false`; every refusal
 (UNKNOWN, SETUP_ERROR) is `isError: true` — retry after doing what `next_step`
 says and fixing what the `message` names, don't parse the error text (ADR 0010).
+`observe_syscalls` (#599) names `--observe syscalls`, which this server does not
+pass, so its advice is for the command line (`docs/mcp.md`).
 A SETUP_ERROR says which class it is in `setup_error_reason` (#518), and a
 failing setup's status in `setup_exit_code` / `setup_signal`; branch on those,
 never on the sentence. The text block's first line carries the class the way it
