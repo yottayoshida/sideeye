@@ -1,0 +1,3 @@
+# The probe box for virtualenv: the beets box plus python3-virtualenv.
+FROM sideeye-probe:beets-join
+RUN apt-get update && apt-get install -y --no-install-recommends python3-virtualenv && virtualenv --version

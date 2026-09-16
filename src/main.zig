@@ -1654,9 +1654,14 @@ fn phaseStructural(run: *Run) void {
         boundary.boundary_ev.shim_hard = "a process leaving the containment group";
     // The thread account (v16): how many the shim saw made, how many wrote, and whether
     // a thread is the only boundary there was.
-    boundary.boundary_ev.threads = trace.thread_records;
+    // The larger of the two counts (v18): a creator's `.thread` is dropped when the shim is
+    // re-entered, the child's own start is not, and either is the shim having seen it.
+    boundary.boundary_ev.threads = @max(trace.thread_records, trace.thread_start_records);
     boundary.boundary_ev.unrecorded_writer_thread = trace.unrecorded_writer_thread;
     boundary.boundary_ev.writer_threads = trace.subject_writer_tids;
+    boundary.boundary_ev.thread_turns = trace.thread_turns;
+    boundary.boundary_ev.thread_joins = trace.thread_joins;
+    boundary.boundary_ev.thread_detaches = trace.thread_detaches;
     boundary.boundary_ev.shim_thread_only = trace.boundary == .thread and !trace.crossedProcessBoundary() and trace.exec_continuations == 0;
     boundary.boundary_ev.shim_subject_detached = trace.subject_detached and !trace.crossedProcessBoundary();
 
@@ -1699,16 +1704,18 @@ fn phaseStructural(run: *Run) void {
     // the run in a cgroup of its own, refused everywhere else with the reason it was not held.
     // After the image-change refusal above, which a detach recorded first no longer hides.
     if (detach_refused) containment.refuseDetach(arena, rec_cg, "");
-    // A thread is not among them since v16. What refuses is a SECOND thread of one
-    // process writing the judged directory: two threads' writes are ordered by the
-    // scheduler, so the sequence they were numbered in is the one this run produced and a
-    // crash point would not name the same operation next time, while one thread's writes
-    // are in program order however many threads there are. Decided from the trace — every
-    // record names its thread — so the world loop and preflight's second run ask the same
-    // question of their own traces below. In front of the numbering check on purpose:
-    // the same race trips that one too, and this is the refusal that says why.
+    // A thread is not among them since v16. What refuses is a thread of one process
+    // writing the judged directory OUT OF ORDER (v18, ADR 0067): its write is ordered after
+    // the process's current writer's last by nothing the shim recorded — no creation, no
+    // join — so the sequence they were numbered in is the one this run produced and a
+    // crash point would not name the same operation next time. Writes a recorded creation
+    // or join orders, from however many threads, are in one order and judged. Decided from
+    // the trace — every record names its thread, and the start and join records name the
+    // edges — so the world loop and preflight's second run ask the same question of their
+    // own traces below. In front of the numbering check on purpose: the same race trips
+    // that one too, and this is the refusal that says why.
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, ""), .class_wall);
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), .class_wall);
 
     // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid count
     // would otherwise read as one process while the crash points span more than one
@@ -2007,7 +2014,12 @@ fn phaseOracle(run: *Run) void {
         // account holds at the divergence instead of only that one exists (#41).
         var shim_ops: std.ArrayList(engine.Op) = .empty;
         for (trace.ops.items) |op| {
-            if (op.class.isMarker() or op.class.isBoundary()) continue;
+            // Nor the thread-synchronisation records (v18): a start, a join or a detach
+            // is no file operation for the oracle to have seen. Left in, every run that
+            // created a thread refused `oracle_missed_operation` at operation 1 — caught
+            // by the container acceptance, invisible to the unit tests (no oracle) and to
+            // the macOS dry run (no oracle there either).
+            if (op.class.isMarker() or op.class.isBoundary() or op.class.isThreadSync()) continue;
             // close stays in the trace but leaves the comparison (ADR 0003): the oracle
             // sees descriptors the shim never saw born, and pairing closes across the
             // two views has no honest fixpoint.
@@ -2625,7 +2637,7 @@ fn phaseExploration(run: *Run) void {
         // the recording did not, and a second thread writing here is as unordered as one
         // in the recording. Nothing is inherited — the record names its thread.
         if (wtrace.second_writer_thread) |op|
-            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, " in an explored world"), .class_wall);
+            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), .class_wall);
         // Run-wide since v15, like the recording run's copy. The world-side order needs
         // no change: the child-touch refusal above already answers first here.
         if (wtrace.kill_records != wtrace.kill_point_count)
@@ -3394,7 +3406,7 @@ fn observeAgain(
         containment.refuseDetach(arena, cg_b_ptr, " during the second observed run");
     // The thread rule, asked of run B's own trace (v16), as run A asks it of its own.
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, " in the second observed run"), .class_wall);
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), .class_wall);
     // A soft boundary in run B and not run A is still a boundary: the shim only sees
     // what loads it, and "was not seen" must not read as "did nothing" here either.
     //

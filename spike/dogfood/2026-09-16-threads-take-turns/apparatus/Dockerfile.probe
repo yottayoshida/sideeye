@@ -1,0 +1,6 @@
+# The probe box for beets (#539's pre-design measurement, 2026-09-16): beets and the lame
+# encoder its seed needs, nothing of Sideeye's. Debian trixie ships Python 3.13, whose
+# `Thread.join()` is a real `pthread_join`.
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends beets lame python3 ca-certificates && python3 --version && beet version
+WORKDIR /w

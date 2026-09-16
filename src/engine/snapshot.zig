@@ -436,7 +436,8 @@ pub fn reconcile(
         var named = false;
         var by_prefix = false;
         for (ops) |op| {
-            if (op.class.isMarker()) continue;
+            // A marker's or a thread-synchronisation record's `aux` is not a path (v18).
+            if (op.class.isMarker() or op.class.isThreadSync()) continue;
             const ends = [2][]const u8{ op.path, op.aux };
             for (ends) |p| {
                 if (p.len == 0) continue;

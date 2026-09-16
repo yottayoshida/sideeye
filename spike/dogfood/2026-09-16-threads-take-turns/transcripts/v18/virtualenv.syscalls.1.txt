@@ -1,0 +1,12 @@
+falsify: v1/bin/python is missing or not executable
+PASS  1382/1382 explored worlds satisfied the built-in atomicity invariant
+      explored 1382 worlds (crash points 1381 + 1 baseline)
+      expected status: 0
+      atomicity: 514 path(s) judged pre-or-post
+      oracle: agreed on 1381 operations (25941 syscall lines examined, 5988 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+      metadata: 440 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x440. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: falsified before the run (corrupted state -> check failed); ran in 1382 world(s)
+      l1: no marker configured
+      case: (none)
+      processes: single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 2 thread id(s) of the subject's own process wrote the judged directory; 2 hand-over(s) between threads in causal order, 2 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+      not tested: power loss, torn writes, concurrent processes

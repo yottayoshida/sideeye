@@ -215,41 +215,88 @@ else
     fails=$((fails + 1))
 fi
 
-# Threads (contract v16). Four shapes of one binary, and an engine that decides by
-# anything other than which threads WROTE cannot pass all four: a refuse-on-any-thread
-# engine fails the first, a tolerate-every-thread engine fails the second, a shim whose
-# re-entrancy guard is process-wide fails the third's oracle agreement, and an oracle
-# reader that takes a thread's lines for a child's fails the fourth.
+# Threads (contract v16, reshaped by v18 — ADR 0067). The shapes below pin the thread order:
+# a run is judged when every two state-directory writes of one process are ordered by a
+# thread creation or a join the shim recorded, and refused when any two are not. An engine
+# that refuses on the writer count fails WRITES, TURNS, REUSE and GRANDCHILD; one that
+# admits every thread fails SIBLINGS, RACE and DETACH; one that passes the write to whoever
+# writes next after any join fails WRONG_JOIN; a shim whose start records claim a slot
+# fails MANY; and the JSON shapes further down pin the oracle's agreement and the non-main
+# writer as v16 did. Each judged shape's crash-point count is the toy's five plus three per
+# writing worker (open, write, fsync of its file) plus the main thread's extra opens.
 TOY_THREAD=1 export TOY_THREAD
 run_case "a thread that never writes is judged (v16)" "$OUT/toy-bug" 1 "crash point 5 of 5"
 unset TOY_THREAD
+# v16's refusal shape, judged since v18: the worker's three operations and the main
+# thread's five are eight crash points in one order, the join between them.
 TOY_THREAD_WRITES=1 export TOY_THREAD_WRITES
-run_case "a second writing thread is UNKNOWN (v16)" "$OUT/toy-bug" 2 "multiple_threads_detected"
-run_case "  ...and the refusal names the worker's operation" "$OUT/toy-bug" 2 "from-thread.txt"
-run_case "  ...and both thread ids" "$OUT/toy-bug" 2 "two threads of process "
-# Both, because which one the trace saw first is the scheduler's: on this toy the worker
-# writes before the main thread, so a refusal naming only "the second" named the main
-# thread's own open — the one operation the operator did not need pointing to.
-run_case "  ...each with what it did" "$OUT/toy-bug" 2 " performed open("
-# Both operations by name, not one: a refusal that names the worker's file and the
-# sentence's shape could still have dropped the main thread's — review read the leg
-# above as pinning one `performed open(` where the sentence has two.
-run_case "  ...the main thread's too" "$OUT/toy-bug" 2 "key.json.tmp"
+run_case "a worker that writes and is joined before the main thread writes is judged (v18)" "$OUT/toy-bug" 1 "crash point 8 of 8"
 unset TOY_THREAD_WRITES
+TOY_THREAD_TURNS=1 export TOY_THREAD_TURNS
+run_case "the main thread writes, a worker writes and is joined, the main thread writes: judged (v18)" "$OUT/toy-bug" 1 "crash point 11 of 11"
+unset TOY_THREAD_TURNS
+TOY_THREAD_REUSE=1 export TOY_THREAD_REUSE
+run_case "a silent thread joined, then a writing one joined, one pthread_t for both: judged (v18)" "$OUT/toy-bug" 1 "crash point 8 of 8"
+unset TOY_THREAD_REUSE
+TOY_THREAD_GRANDCHILD=1 export TOY_THREAD_GRANDCHILD
+run_case "a grandchild's write, joined by the worker, joined by the main thread: judged (v18)" "$OUT/toy-bug" 1 "crash point 11 of 11"
+unset TOY_THREAD_GRANDCHILD
+# The trampoline sits between the thread's entry and its routine; a `pthread_exit` and a
+# cancellation both unwind through that frame. Measured here, not asserted from a comment
+# (review): a frame the unwinder cannot pass ends the process, not the thread.
+TOY_THREAD_EXIT=1 export TOY_THREAD_EXIT
+run_case "a worker that writes and leaves through pthread_exit, joined: judged (v18)" "$OUT/toy-bug" 1 "crash point 8 of 8"
+unset TOY_THREAD_EXIT
+TOY_THREAD_CANCEL=1 export TOY_THREAD_CANCEL
+run_case "a worker that writes and is cancelled in pause, joined: judged (v18)" "$OUT/toy-bug" 1 "crash point 8 of 8"
+unset TOY_THREAD_CANCEL
+# The refusals, and what each sentence has to name. SIBLINGS carries the v16 pins — both
+# thread ids, both operations by name — that hung on TOY_THREAD_WRITES until v18 judged it.
+TOY_THREAD_SIBLINGS=1 export TOY_THREAD_SIBLINGS
+run_case "two workers created by one thread both write: UNKNOWN (v18)" "$OUT/toy-bug" 2 "multiple_threads_detected"
+run_case "  ...and the refusal names the first sibling's file" "$OUT/toy-bug" 2 "from-thread-a.txt"
+run_case "  ...and the second's" "$OUT/toy-bug" 2 "from-thread-b.txt"
+run_case "  ...and both thread ids" "$OUT/toy-bug" 2 "two threads of process "
+run_case "  ...each with what it did" "$OUT/toy-bug" 2 " performed open("
+run_case "  ...and which edge was missing" "$OUT/toy-bug" 2 "No thread creation or join the shim recorded orders"
+unset TOY_THREAD_SIBLINGS
+# Which of the two the sentence names first is the scheduler's choice here (the worker
+# and the main thread race), so the pins are the two files and the reason, not their order.
+TOY_THREAD_RACE=1 export TOY_THREAD_RACE
+run_case "the main thread writes before joining the worker that wrote: UNKNOWN (v18)" "$OUT/toy-bug" 2 "multiple_threads_detected"
+run_case "  ...naming the main thread's own write" "$OUT/toy-bug" 2 "also-main.txt"
+run_case "  ...and the worker's" "$OUT/toy-bug" 2 "from-thread.txt"
+unset TOY_THREAD_RACE
+TOY_THREAD_DETACH=1 export TOY_THREAD_DETACH
+run_case "a detached worker wrote, then the main thread: UNKNOWN (v18)" "$OUT/toy-bug" 2 "multiple_threads_detected"
+run_case "  ...and the refusal says the worker was detached" "$OUT/toy-bug" 2 "was detached, so no join could order it"
+unset TOY_THREAD_DETACH
+# The control for the join edge: A is joined, B is not, and B's write is what the main
+# thread's is unordered against. B writes before the main thread does (a flag, not a join),
+# so the sentence names B's file first and the main thread's second, every run.
+TOY_THREAD_WRONG_JOIN=1 export TOY_THREAD_WRONG_JOIN
+run_case "worker A joined, worker B not: the main thread's write is UNKNOWN (v18)" "$OUT/toy-bug" 2 "multiple_threads_detected"
+run_case "  ...naming B's file" "$OUT/toy-bug" 2 "from-thread-b.txt"
+run_case "  ...and the main thread's" "$OUT/toy-bug" 2 "also-main.txt"
+unset TOY_THREAD_WRONG_JOIN
 # The two shapes that need the oracle's agreement to mean anything, so they are read
 # from the JSON rather than the headline: BUSY is the process-wide `busy` race (commit 1
 # of v16 — the v15 shim drops two of seven records under it), ONLY_WORKER is the oracle
 # reading a non-main thread's lines as the subject's (commit 3 — the v15 reader refused
 # it `oracle_missed_operation`).
-thread_json_case() { # thread_json_case <label> <envvar>
+thread_json_case() { # thread_json_case <label> <envvar> [<crash points> [<processes substring>]]
+    want_cp=${3:-5}
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$(env "$2=1" "$SIDEEYE" explore --state /tmp/acc/state \
         --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
         --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/t.json 2>&1)
     rc=$?
     verdict=$(python3 -c "import json;d=json.load(open('/tmp/acc/t.json'));print(d.get('verdict'), d.get('oracle_verified'), d.get('crash_points'))" 2>/dev/null)
-    if [ "$rc" = "1" ] && [ "$verdict" = "FAIL True 5" ]; then
-        echo "ok   $1 (exit 1, oracle agreed over 5 crash points)"
+    # The fourth argument, when given, has to appear in the account (v18): the two-writer
+    # shape below pins that the thread rule was exercised — hand-overs counted — and not
+    # skipped, which a bare "FAIL" over the right number of crash points could not tell.
+    if [ "$rc" = "1" ] && [ "$verdict" = "FAIL True $want_cp" ] && { [ -z "${4:-}" ] || python3 -c "import json,sys; sys.exit(0 if sys.argv[1] in json.load(open('/tmp/acc/t.json')).get('processes','') else 1)" "$4" 2>/dev/null; }; then
+        echo "ok   $1 (exit 1, oracle agreed over $want_cp crash points)"
     else
         echo "FAIL $1: exit $rc, verdict/oracle/crash_points = $verdict"
         echo "$o" | sed 's/^/     | /' | head -4
@@ -257,6 +304,12 @@ thread_json_case() { # thread_json_case <label> <envvar>
     fi
 }
 thread_json_case "a worker thread busy outside the state directory does not cost a record (v16)" TOY_THREAD_BUSY
+# A judged two-writer run's account counts the hand-overs and joins the order rests on (v18),
+# and a run of seventy threads that never enter a wrapper is judged with the slot table
+# untouched — the start record is written from the new thread's stack, not from a slot; a
+# slot is still claimed by a thread's first interposed call, as before (ADR 0067).
+thread_json_case "the account of a judged two-writer run counts its hand-overs and joins (v18)" TOY_THREAD_TURNS 11 "2 thread id(s) of the subject's own process wrote the judged directory; 2 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded"
+thread_json_case "seventy threads that never enter the shim cost the slot table nothing (v18)" TOY_THREAD_MANY 5 "70 thread(s) created, and 1 thread id(s) of the subject"
 thread_json_case "a run whose one writing thread is not the main thread is judged (v16)" TOY_THREAD_ONLY_WORKER
 # And the account says what a judged threaded run was, so "single process" cannot be
 # read as "single-threaded".

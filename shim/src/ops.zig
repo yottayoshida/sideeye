@@ -954,9 +954,26 @@ pub fn pthread_create(
     start_routine: *const anyopaque,
     arg: ?*anyopaque,
 ) callconv(.c) c_int {
-    const rc = common.callPthreadCreate(thread, attr, start_routine, arg);
-    if (rc == 0) common.noteBoundary(.thread);
-    return rc;
+    // The creation is recorded as before; since v18 the new thread also runs a trampoline
+    // that writes its own first record naming this creator, and the handle is kept for
+    // the join that may follow (`common.createThread`, ADR 0067).
+    return common.createThread(thread, attr, start_routine, arg);
+}
+
+// --- thread synchronisation (v18) -----------------------------------------------------
+//
+// A join is the one call that orders a thread's writes before the caller's later ones, and
+// a creation the one that orders the caller's earlier writes before the new thread's. The
+// engine draws its order from these records and the `thread_started` the trampoline writes;
+// a detach is recorded because it says the join will never come. `pthread_t` is passed by
+// value as the integer it is on both libcs (`common.PthreadJoinFn`).
+
+pub fn pthread_join(thread: usize, retval: ?*?*anyopaque) callconv(.c) c_int {
+    return common.joinThread(thread, retval);
+}
+
+pub fn pthread_detach(thread: usize) callconv(.c) c_int {
+    return common.detachThread(thread);
 }
 
 // --- containment escapes -----------------------------------------------------------

@@ -1,0 +1,2 @@
+virtualenv 20.31.2 from /usr/lib/python3/dist-packages/virtualenv/__init__.py
+Python 3.13.5

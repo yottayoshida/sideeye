@@ -180,6 +180,13 @@ pub const TraceInfo = struct {
     /// v16, and a raw `clone` leaves no such record, so this is a floor on the number of
     /// threads and never the number.
     thread_records: u32 = 0,
+    /// `thread_started` records (v18): one per thread that ran the shim's trampoline. A
+    /// creation the shim recorded either way — the creator's `.thread` is dropped when the
+    /// shim is re-entered, the child's start is not — so "the shim never recorded this
+    /// thread's creation" is asked of both counts, and the account's thread count is the
+    /// larger of the two (review: with every `.thread` dropped, the account called a thread
+    /// whose start it had read one the shim never saw).
+    thread_start_records: u32 = 0,
     /// Distinct thread ids that wrote a kill-point record under the subject's pid (v16).
     /// One is the judged case; the account prints the number either way.
     subject_writer_tids: u32 = 0,
@@ -217,20 +224,42 @@ pub const TraceInfo = struct {
     /// `.thread` record and no kill point, so the trace holds nothing to key on at all.
     /// That limit is stated in `docs/report-schema.md` rather than papered over.
     unrecorded_writer_thread: bool = false,
-    /// The first kill-point record from a SECOND thread of one process (v16): `pid` says
-    /// which process, `tid` which thread, `class` and `path` what it did — the refusal
-    /// names all four, and the thread that wrote first is named beside them. Null while
-    /// every process's state-directory writes came from one thread of it. Asked of every
-    /// process, not only the subject: a child whose two threads write is as unordered as
-    /// a subject whose two do. This is the whole of the thread rule — one writing thread
-    /// per process — and it is answered from the trace alone, so a world and preflight's
+    /// The first kill-point record of one process that no creation or join the shim
+    /// recorded orders after the last kill-point record of that process's current writer
+    /// (v16, reshaped by v18): `pid` says which process, `tid` which thread, `class` and
+    /// `path` what it did — the refusal names all four, and the writer's record is named
+    /// beside them. Null while every process's state-directory writes fall in one causal
+    /// order — one thread's, or several threads' handed over by a join or a creation
+    /// (ADR 0067). Asked of every process, not only the subject: a child whose two threads
+    /// write unordered is as unordered as a subject whose two do. This is the whole of the
+    /// thread rule and it is answered from the trace alone, so a world and preflight's
     /// second run decide it for themselves rather than inherit the recording's answer.
     second_writer_thread: ?Op = null,
-    /// The first kill-point record of the thread that wrote before `second_writer_thread`
-    /// did, in the same process (v16). Set exactly when that is; the refusal names both,
-    /// because which of the two is "the second" is the scheduler's choice on that run and
-    /// the operator's own code has both of them.
+    /// The last kill-point record of the thread that held the write before
+    /// `second_writer_thread` came, in the same process (v18: the current writer's last
+    /// write — the record the offending one is not ordered after — where v16 named the
+    /// process's first writer's first). Set exactly when that is; the refusal names both,
+    /// because which of the two the trace saw first is the scheduler's choice on that run
+    /// and the operator's own code has both of them.
     first_writer_thread: ?Op = null,
+    /// The thread `first_writer_thread` names was detached (v18), so no join could have
+    /// ordered its writes before anyone's. Said in the refusal.
+    first_writer_thread_detached: bool = false,
+    /// How many times the write passed from one thread of a process to another in causal
+    /// order (v18): a kill point by a thread other than the current writer that a recorded
+    /// creation or join orders after the writer's last. Summed over processes; the account
+    /// prints it.
+    thread_turns: u32 = 0,
+    /// `thread_join` records that named a thread this reader knew (v18), and those that did
+    /// not — a `?`, or a pair no `thread_started` carried. Summed over processes.
+    thread_joins: u32 = 0,
+    thread_joins_unresolved: u32 = 0,
+    /// `thread_detach` records (v18).
+    thread_detaches: u32 = 0,
+    /// `thread_started` records whose creator this reader could not place (v18): an id it
+    /// never saw, or a record count the creator had not reached. No edge is drawn to such a
+    /// thread; its writes are ordered with nobody's.
+    thread_unpaired_starts: u32 = 0,
     truncated: bool = false,
     /// The subject: whoever wrote the first `shim_ready`. The trace file is created by
     /// the first process to initialise, which is the process the engine launched —
@@ -600,6 +629,241 @@ pub fn unboundedBudget(child: Allocator) TraceBudget {
     return .{ .child = child, .limit = std.math.maxInt(usize) };
 }
 
+/// The causal order of one run's threads, per process, from what the shim recorded (v18,
+/// ADR 0067). Vector clocks: each thread of a process holds a vector over that process's
+/// threads, indexed by the order this reader first saw them. Every record a thread writes
+/// advances its own component; a `thread_started` record sets the new thread's vector to
+/// its creator's as it stood when `pthread_create` was called; a `thread_join` record
+/// merges the collected thread's final vector into the joiner's. A kill point by a thread
+/// other than the process's current writer is in order when its vector's component for the
+/// writer has reached the writer's own count at its last kill point — that write
+/// happened-before this one — and the write passes to it; otherwise the two are ordered by
+/// nothing the shim saw, and the run is refused.
+///
+/// **Where the creator stood is rebuilt from a count, not read from a record.** The shim's
+/// `.thread` record is dropped when the shim is re-entered, and the new thread's start can
+/// reach the trace before or after it; so the child carries how many records its creator
+/// had written through its slot at the call, and this reader keeps, per thread, the vector
+/// as it stood after each record that gave it another thread's component (its own start,
+/// each join) together with the count after that record. The creator's vector at count `n`
+/// is the latest such snapshot at or below `n`, with the creator's own component set to
+/// `n`. The count is the one *after* the record on purpose: taken before it, a join at
+/// count 3 would be filed under 2 and a child created at 2 would inherit what the join
+/// brought in (review, R2 C3). The creator's records up to `n` all precede the child's
+/// start in the trace — they were written before `pthread_create` was called — so the
+/// snapshot the child needs is always there when its start is read; a count the creator has
+/// not reached, or a creator never seen, leaves the child with no creator and no edge.
+///
+/// **A vector is assigned at a start, not merged.** Linux recycles thread ids; a start on
+/// an id this reader already holds is a new thread, kept as a new entry so that a join
+/// naming the earlier one by its (creator, ordinal) pair merges the earlier one's final
+/// vector and nothing the new one wrote (review, R2 M5). The entry's count continues from
+/// the old one's, because the shim's slot — found by id — does too.
+const ThreadOrder = struct {
+    const Snap = struct { count: u32, clock: []u32 };
+    const Thread = struct {
+        tid: u64,
+        idx: u32,
+        alive: bool = true,
+        clock: std.ArrayList(u32) = .empty,
+        count: u32 = 0,
+        snaps: std.ArrayList(Snap) = .empty,
+        last_kp: ?u32 = null,
+        last_kp_op: ?Op = null,
+        detached: bool = false,
+        start: ?contract.thread_aux.Joined = null,
+    };
+    const Proc = struct {
+        pid: u32,
+        threads: std.ArrayList(Thread) = .empty,
+        writer: ?u32 = null,
+        /// Detaches recorded before the detached thread's own start reached the trace: the
+        /// creator detaches right after `pthread_create` returns, and the new thread writes
+        /// its start when it first runs, so the two records can arrive in either order
+        /// (measured on the detach toy on macOS: the detach came first and the refusal did
+        /// not say "detached"). Matched when the start arrives.
+        detached_pairs: std.ArrayList(contract.thread_aux.Joined) = .empty,
+    };
+    const KillPointVerdict = union(enum) {
+        first,
+        same,
+        turned,
+        unordered: struct { writer_last: Op, writer_detached: bool },
+    };
+
+    procs: std.ArrayList(Proc) = .empty,
+
+    fn proc(self: *ThreadOrder, arena: Allocator, pid: u32) !*Proc {
+        for (self.procs.items) |*p| {
+            if (p.pid == pid) return p;
+        }
+        try self.procs.append(arena, .{ .pid = pid });
+        return &self.procs.items[self.procs.items.len - 1];
+    }
+
+    /// The live entry for this id, if any: a dead entry (an incarnation the kernel's id
+    /// recycling ended, `newIncarnation`) is kept for joins that still name it and never
+    /// matched by id.
+    fn live(p: *Proc, tid: u64) ?*Thread {
+        for (p.threads.items) |*t| {
+            if (t.tid == tid and t.alive) return t;
+        }
+        return null;
+    }
+
+    fn appendThread(arena: Allocator, p: *Proc, tid: u64, count: u32) !*Thread {
+        try p.threads.append(arena, .{ .tid = tid, .idx = @intCast(p.threads.items.len), .count = count });
+        return &p.threads.items[p.threads.items.len - 1];
+    }
+
+    /// The live entry for this id, made if none.
+    fn thread(arena: Allocator, p: *Proc, tid: u64) !*Thread {
+        return live(p, tid) orelse appendThread(arena, p, tid, 0);
+    }
+
+    fn component(clock: []const u32, idx: u32) u32 {
+        return if (idx < clock.len) clock[idx] else 0;
+    }
+
+    fn setComponent(arena: Allocator, clock: *std.ArrayList(u32), idx: u32, value: u32) !void {
+        while (clock.items.len <= idx) try clock.append(arena, 0);
+        clock.items[idx] = value;
+    }
+
+    fn tick(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64) !void {
+        const p = try self.proc(arena, pid);
+        const t = try thread(arena, p, tid);
+        t.count += 1;
+        try setComponent(arena, &t.clock, t.idx, t.count);
+    }
+
+    fn snapshot(arena: Allocator, t: *Thread) !void {
+        try t.snaps.append(arena, .{ .count = t.count, .clock = try arena.dupe(u32, t.clock.items) });
+    }
+
+    /// The creator's vector as it stood when it had written `n` records, or null when
+    /// this reader cannot place it.
+    fn creatorAt(arena: Allocator, p: *Proc, creator: u64, n: u32) !?std.ArrayList(u32) {
+        // The live entry for the creator's id: a creation is an act of a running thread.
+        const ct = live(p, creator) orelse return null;
+        if (ct.count < n) return null;
+        var base: []const u32 = &.{};
+        for (ct.snaps.items) |sn| {
+            if (sn.count <= n) base = sn.clock;
+        }
+        var clock: std.ArrayList(u32) = .empty;
+        try clock.appendSlice(arena, base);
+        try setComponent(arena, &clock, ct.idx, n);
+        return clock;
+    }
+
+    /// A `thread_started` record. Returns false when the creator could not be placed.
+    fn started(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64, st: contract.thread_aux.Started) !bool {
+        const p = try self.proc(arena, pid);
+        const t = try newIncarnation(arena, p, tid);
+        t.start = .{ .creator = st.creator, .ordinal = st.ordinal };
+        for (p.detached_pairs.items) |d| {
+            if (d.creator == st.creator and d.ordinal == st.ordinal) t.detached = true;
+        }
+        const own = t.count;
+        const placed = try creatorAt(arena, p, st.creator, st.written);
+        if (placed) |clock| {
+            t.clock = clock;
+            try setComponent(arena, &t.clock, t.idx, own);
+        }
+        try snapshot(arena, t);
+        return placed != null;
+    }
+
+    fn startedUnknown(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64) !void {
+        const p = try self.proc(arena, pid);
+        _ = try newIncarnation(arena, p, tid);
+    }
+
+    /// The entry a start belongs to: a fresh one when the id is already held by a thread
+    /// this reader has seen (an id recycled by the kernel), otherwise the id's entry. The
+    /// old entry is kept, dead, for the join that may still name it; the new one's count
+    /// continues from the old one's.
+    fn newIncarnation(arena: Allocator, p: *Proc, tid: u64) !*Thread {
+        const old = live(p, tid) orelse return appendThread(arena, p, tid, 0);
+        if (old.count == 0 and old.start == null) return old;
+        old.alive = false;
+        const fresh = try appendThread(arena, p, tid, old.count);
+        try setComponent(arena, &fresh.clock, fresh.idx, fresh.count);
+        return fresh;
+    }
+
+    fn byStart(p: *Proc, j: contract.thread_aux.Joined) ?*Thread {
+        var found: ?*Thread = null;
+        for (p.threads.items) |*t| {
+            if (t.start) |st| {
+                if (st.creator == j.creator and st.ordinal == j.ordinal) found = t;
+            }
+        }
+        return found;
+    }
+
+    /// A `thread_join` record by `tid`. Returns false when the collected thread is not one
+    /// this reader knows by its start.
+    fn joined(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64, j: contract.thread_aux.Joined) !bool {
+        const p = try self.proc(arena, pid);
+        const target = byStart(p, j) orelse return false;
+        const t = try thread(arena, p, tid);
+        for (target.clock.items, 0..) |v, i| {
+            if (v > component(t.clock.items, @intCast(i))) try setComponent(arena, &t.clock, @intCast(i), v);
+        }
+        try snapshot(arena, t);
+        return true;
+    }
+
+    fn detached(self: *ThreadOrder, arena: Allocator, pid: u32, j: contract.thread_aux.Joined) !void {
+        const p = try self.proc(arena, pid);
+        if (byStart(p, j)) |t| {
+            t.detached = true;
+        } else {
+            try p.detached_pairs.append(arena, j);
+        }
+    }
+
+    fn killPoint(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64, op: Op) !KillPointVerdict {
+        const p = try self.proc(arena, pid);
+        const t = try thread(arena, p, tid);
+        defer {
+            t.last_kp = t.count;
+            t.last_kp_op = op;
+        }
+        const w_idx = p.writer orelse {
+            p.writer = t.idx;
+            return .first;
+        };
+        if (w_idx == t.idx) return .same;
+        const w = &p.threads.items[w_idx];
+        const ordered = component(t.clock.items, w.idx) >= (w.last_kp orelse 0);
+        if (ordered) {
+            p.writer = t.idx;
+            return .turned;
+        }
+        return .{ .unordered = .{ .writer_last = w.last_kp_op orelse op, .writer_detached = w.detached } };
+    }
+
+    fn knows(self: *const ThreadOrder, pid: u32) bool {
+        for (self.procs.items) |*p| {
+            if (p.pid == pid) return true;
+        }
+        return false;
+    }
+
+    /// A new image announced itself: the process's threads, counts and writer start over.
+    fn reset(self: *ThreadOrder, pid: u32) void {
+        for (self.procs.items, 0..) |*p, i| {
+            if (p.pid == pid) {
+                _ = self.procs.swapRemove(i);
+                return;
+            }
+        }
+    }
+};
+
 pub fn readTrace(budget: *TraceBudget, path: []const u8) TraceReadError!TraceInfo {
     return readTraceCapped(budget, path, max_trace_bytes);
 }
@@ -727,13 +991,14 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // Processes whose announcement no `cgroup` record has answered yet (v17).
     var awaiting_answer: std.ArrayList(u32) = .empty;
 
-    // The first thread to write a kill-point record in each process (v16). A second
-    // thread of the same process writing is the refusal; the list is what tells a second
-    // thread from the first. Arena-backed like everything else this reader keeps.
-    const WriterTid = struct { pid: u32, tid: u64, op: Op };
-    var writer_tids: std.ArrayList(WriterTid) = .empty;
-    // Every distinct thread id that wrote under the subject's pid, for the account's
-    // count; `writer_tids` above keeps the first per process only.
+    // The causal order of each process's threads (v18, ADR 0067), from the creations and
+    // joins the shim recorded. Replaces v16's "first writer per process": the question is
+    // no longer whether a second thread wrote but whether its write is ordered after the
+    // current writer's last. Arena-backed like everything else this reader keeps.
+    var order: ThreadOrder = .{};
+    // Every distinct thread id that wrote under the subject's pid: the account's count, and
+    // the list handed over as `subject_writer_tid_list` (#544), which is where the macOS
+    // oracle's reader gets its map — the oracle's own `subject_tids` is built elsewhere.
     var subject_tids: std.ArrayList(u64) = .empty;
 
     while (off < bytes.len) {
@@ -750,10 +1015,51 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             .path = try arena.dupe(u8, dec.rec.path),
             .aux = try arena.dupe(u8, dec.rec.aux),
         };
+        // Every record advances its thread's clock and count (v18) — except a thread's own
+        // start, which the shim writes from a stack buffer outside the slot whose count the
+        // creator reports, so the two sides count the same records. Whether an announcement
+        // is a process's first is read before the tick, which would make the process known.
+        const announced_again = op.class == .shim_ready and order.knows(op.pid);
+        if (op.class != .thread_started) try order.tick(arena, op.pid, op.tid);
         switch (op.class) {
+            .thread_started => {
+                info.thread_start_records += 1;
+                if (contract.thread_aux.parseStarted(op.aux)) |st| {
+                    if (!try order.started(arena, op.pid, op.tid, st)) info.thread_unpaired_starts += 1;
+                } else {
+                    try order.startedUnknown(arena, op.pid, op.tid);
+                    info.thread_unpaired_starts += 1;
+                }
+            },
+            .thread_join => {
+                if (contract.thread_aux.parseJoined(op.aux)) |j| {
+                    if (try order.joined(arena, op.pid, op.tid, j)) info.thread_joins += 1 else info.thread_joins_unresolved += 1;
+                } else info.thread_joins_unresolved += 1;
+            },
+            .thread_detach => {
+                info.thread_detaches += 1;
+                if (contract.thread_aux.parseJoined(op.aux)) |j| try order.detached(arena, op.pid, j);
+            },
             .shim_ready => {
                 info.saw_shim_ready = true;
                 info.shim_ready_records += 1;
+                // An announcement is an image's first record — the constructor runs once per
+                // image — so for a process this reader already holds it is a new image (the
+                // subject's continuation or broken chain, decided below, or a forked child that
+                // exec'd into a shimmed image): the shim's slot table and its counts started
+                // over, so the order this reader keeps for that process starts over too (v18).
+                // The announcement itself is counted by the shim — `init` writes it through
+                // the slot — so it is counted again here, after the reset took the tick above
+                // with everything else. Left uncounted, the surviving thread's count trailed
+                // the shim's by one for the rest of the run and a child created after a write
+                // inherited that write (review, P0). A process announcing itself for the first
+                // time is left as the tick above made it: dropping and remaking its entry cost
+                // the arena enough to push the trace-budget apparatus's 3 KiB ceiling on the
+                // recording read (the container acceptance measured it).
+                if (announced_again) {
+                    order.reset(op.pid);
+                    try order.tick(arena, op.pid, op.tid);
+                }
                 if (std.mem.indexOfScalar(u32, awaiting_answer.items, op.pid) != null)
                     info.cgroup_unanswered_live += 1
                 else
@@ -857,39 +1163,31 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             info.kill_point_count = @max(info.kill_point_count, op.seq);
             info.kill_records += 1;
             if (op.class.isMutation()) info.mutation_count += 1;
-            // Which thread of which process (v16). The first writer of a process is
-            // remembered; a record from that process under another thread id is the
-            // second writer, and the first such record is what the refusal names.
-            var first: ?WriterTid = null;
-            for (writer_tids.items) |w| {
-                if (w.pid == op.pid) {
-                    first = w;
-                    break;
-                }
-            }
-            if (first) |w| {
-                if (w.tid != op.tid) {
+            // Which thread of which process, and whether this write is in order (v16, v18).
+            // The process's current writer keeps the write until another thread's kill point
+            // is ordered after its last one by a creation or a join the shim recorded; a kill
+            // point that is not is the refusal, and the first such record is what it names,
+            // beside the writer's last.
+            switch (try order.killPoint(arena, op.pid, op.tid, op)) {
+                .first, .same => {},
+                .turned => info.thread_turns += 1,
+                .unordered => |u| {
                     if (info.second_writer_thread == null) {
                         info.second_writer_thread = op;
-                        info.first_writer_thread = w.op;
+                        info.first_writer_thread = u.writer_last;
+                        info.first_writer_thread_detached = u.writer_detached;
                     }
-                    // Distinct, not "two or more": the account prints this number, and a
-                    // subject writing from three threads is three. The first version
-                    // saturated at 2 — review read the field's doc against it.
-                    if (is_primary) {
-                        var seen = false;
-                        for (subject_tids.items) |t| {
-                            if (t == op.tid) seen = true;
-                        }
-                        if (!seen) {
-                            try subject_tids.append(arena, op.tid);
-                            info.subject_writer_tids = @intCast(subject_tids.items.len);
-                        }
-                    }
+                },
+            }
+            // Distinct, not "two or more": the account prints this number, and a subject
+            // writing from three threads is three. The first version saturated at 2 —
+            // review read the field's doc against it.
+            if (is_primary) {
+                var seen = false;
+                for (subject_tids.items) |t| {
+                    if (t == op.tid) seen = true;
                 }
-            } else {
-                try writer_tids.append(arena, .{ .pid = op.pid, .tid = op.tid, .op = op });
-                if (is_primary) {
+                if (!seen) {
                     try subject_tids.append(arena, op.tid);
                     info.subject_writer_tids = @intCast(subject_tids.items.len);
                 }
@@ -991,7 +1289,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // because `writer_tids` keys on the pid alone and has no notion of an image change.
     // On Linux the guard costs nothing: the thread that survives an exec becomes the
     // thread-group leader, `gettid()` returns the pid, and both sides carry the same id.
-    if (info.thread_records == 0 and info.exec_continuations == 0) {
+    if (info.thread_records == 0 and info.thread_start_records == 0 and info.exec_continuations == 0) {
         if (info.initial_writer_tid) |main_tid| {
             for (subject_tids.items) |t| {
                 if (t != main_tid) {
@@ -1740,7 +2038,7 @@ test "the whole-trace ceiling is shared: a second live trace is refused on the s
     const a = try budgetFixture("budget-sum-a", 100, gpa, &fbuf_a);
     const b = try budgetFixture("budget-sum-b", 100, gpa, &fbuf_b);
 
-    // 48 KiB admits one of these traces and not two. **Neither trace is too large by
+    // 64 KiB admits one of these traces and not two (48 KiB did until v18). **Neither trace is too large by
     // itself** — that is the whole distinction between this and `trace_too_large`, and
     // the reason the two carry different `unknown_reason` values. The limit was 32 KiB
     // through v15, when one trace cost the budget 22,580 bytes; v16's eight-byte `tid`
@@ -1748,8 +2046,11 @@ test "the whole-trace ceiling is shared: a second live trace is refused on the s
     // refused before the second could be — measured as `first.refused=26398, ops=0`,
     // with the test still red for the right reason. The cost is printed by the MEASURE
     // test below; the arithmetic here is "one fits, two do not", not a fixed number
-    // (one of these costs 44,688 bytes under v16, measured the day the limit moved).
-    var budget: TraceBudget = .{ .child = gpa, .limit = 48 * 1024 };
+    // (one of these costs 44,688 bytes under v16, measured the day the limit moved, and
+    // 51,318 under v18, when the thread order's per-process lists joined the arena and
+    // pushed the same trace over 48 KiB — so the limit moved again, to 64 KiB, which
+    // admits one and not two by the same arithmetic).
+    var budget: TraceBudget = .{ .child = gpa, .limit = 64 * 1024 };
     var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
     var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
     try std.testing.expect(refused.budget_refused != null);
@@ -1781,10 +2082,13 @@ test "a read that allocates nothing does not inherit the previous refusal (#377)
     // `open`, before the arena takes a byte, and returns the empty TraceInfo that means
     // "the shim never ran". Without the reset it would carry the previous read's refusal
     // and be reported as a ceiling that never stopped it.
-    // Same limit as the test above, for the same reason: one of these fits, two do not.
-    var budget: TraceBudget = .{ .child = gpa, .limit = 48 * 1024 };
+    // Same limit as the test above, for the same reason: one of these fits, two do not
+    // (64 KiB since v18, when one came to cost 51,318 bytes; at 48 KiB the first read was
+    // refused too and the assertions below held for the wrong reason — review).
+    var budget: TraceBudget = .{ .child = gpa, .limit = 64 * 1024 };
     var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
     defer first.deinit();
+    try std.testing.expect(first.budget_refused == null);
     var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
     try std.testing.expect(refused.budget_refused != null);
     refused.deinit();
@@ -2311,4 +2615,408 @@ test "the subject leaving its own process group is not a second process, and a c
     defer other.deinit();
     try std.testing.expect(!other.subject_detached);
     try std.testing.expect(other.process_boundary);
+}
+
+// --- the thread order (v18, ADR 0067) -----------------------------------------------------
+//
+// Every shape below is one process (pid 7) whose main thread is tid 7. The `aux` of a
+// `thread_started` record is "<creator> <records the creator had written> <ordinal>", and a
+// join names its target by "<creator> <ordinal>". The creator's record count is what the
+// shim's slot would hold at the `pthread_create` call: `shim_ready` is the first record it
+// writes, so a create right after it carries 1, and the `.thread` record the creator writes
+// afterwards is not in that count.
+
+const R = contract.Record;
+fn rd(tid: u64, op: contract.OpClass, seq: u32, path: []const u8, aux: []const u8) R {
+    return .{ .op = op, .seq = seq, .pid = 7, .tid = tid, .path = path, .aux = aux };
+}
+/// The budget is the caller's: the returned `TraceInfo`'s arena frees through it on
+/// `deinit`, so it has to outlive the info — a budget local to this helper would be a
+/// dangling pointer by then (measured: an integer overflow in `TraceBudget.free`).
+fn readShape(tag: []const u8, records: []const R, budget: *TraceBudget) !TraceInfo {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest(tag, records, &fbuf);
+    return try readTrace(budget, std.mem.span(fz));
+}
+
+test "a worker that writes and is joined before the main thread writes is one order: judged, one hand-over (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-writes", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .open, 1, "/tmp/s/b", ""),
+        rd(9, .write, 2, "/tmp/s/b", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+        rd(7, .open, 3, "/tmp/s/a", ""),
+        rd(7, .write, 4, "/tmp/s/a", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_turns);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_joins);
+    try std.testing.expectEqual(@as(u32, 0), info.thread_joins_unresolved);
+    try std.testing.expectEqual(@as(u32, 2), info.subject_writer_tids);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_records);
+}
+
+test "the main thread writes, creates a worker that writes, joins it and writes again: judged, two hand-overs (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    // virtualenv's shape. The creation orders the main thread's first writes before the
+    // worker's, the join orders the worker's before the main thread's last.
+    var info = try readShape("v18-turns", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .open, 1, "/tmp/s/a", ""),
+        rd(7, .write, 2, "/tmp/s/a", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 3 1"),
+        rd(9, .open, 3, "/tmp/s/b", ""),
+        rd(9, .write, 4, "/tmp/s/b", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+        rd(7, .open, 5, "/tmp/s/c", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 2), info.thread_turns);
+}
+
+test "two workers created by the same thread that both write are siblings: refused, and the refusal names both (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    // beets' shape. Neither worker created or joined the other.
+    var info = try readShape("v18-siblings", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(7, .thread, 0, "", ""),
+        rd(10, .thread_started, 0, "", "7 2 2"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+        rd(10, .open, 2, "/tmp/s/b", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+        rd(7, .thread_join, 0, "", "7 2"),
+        rd(7, .open, 3, "/tmp/s/c", ""),
+    }, &tb);
+    defer info.deinit();
+    const second = info.second_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 10), second.tid);
+    try std.testing.expectEqualStrings("/tmp/s/b", second.path);
+    const first = info.first_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 9), first.tid);
+    try std.testing.expectEqualStrings("/tmp/s/a", first.path);
+    try std.testing.expect(!info.first_writer_thread_detached);
+}
+
+test "the main thread writes before joining the worker that wrote: refused (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-race", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+        rd(7, .open, 2, "/tmp/s/b", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+    }, &tb);
+    defer info.deinit();
+    const second = info.second_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 7), second.tid);
+    try std.testing.expectEqualStrings("/tmp/s/b", second.path);
+    try std.testing.expectEqual(@as(u64, 9), (info.first_writer_thread orelse return error.TestUnexpectedResult).tid);
+}
+
+test "a detached worker that wrote, then the main thread writes: refused, and the refusal knows the detach (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-detach", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(7, .thread_detach, 0, "", "7 1"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+        rd(7, .open, 2, "/tmp/s/b", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expect(info.second_writer_thread != null);
+    try std.testing.expect(info.first_writer_thread_detached);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_detaches);
+}
+
+test "a detach recorded before the detached thread's start still marks it: the refusal knows the detach either way (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-detach-first", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(7, .thread_detach, 0, "", "7 1"),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+        rd(7, .open, 2, "/tmp/s/b", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expect(info.second_writer_thread != null);
+    try std.testing.expect(info.first_writer_thread_detached);
+}
+
+test "a grandchild that writes, joined by the worker, joined by the main thread: judged through the chain (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-grandchild", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .thread, 0, "", ""),
+        rd(10, .thread_started, 0, "", "9 0 1"),
+        rd(10, .open, 1, "/tmp/s/s", ""),
+        rd(9, .thread_join, 0, "", "9 1"),
+        rd(9, .open, 2, "/tmp/s/w", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+        rd(7, .open, 3, "/tmp/s/m", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 2), info.thread_turns);
+    try std.testing.expectEqual(@as(u32, 2), info.thread_joins);
+}
+
+test "the child's clock is the creator's at the creation, not at the child's start: a write after the creation is not inherited (v18, R2 M7)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    // The main thread writes, creates, writes again, and only then does the worker's start
+    // record reach the trace. The worker's clock must hold the first write and not the
+    // second; a reader that took the creator's clock "now" would order the second before
+    // the worker's write and judge a run whose two writes are concurrent.
+    var racy = try readShape("v18-late-start", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .open, 1, "/tmp/s/a", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(7, .open, 2, "/tmp/s/b", ""),
+        rd(9, .thread_started, 0, "", "7 2 1"),
+        rd(9, .open, 3, "/tmp/s/c", ""),
+    }, &tb);
+    defer racy.deinit();
+    const second = racy.second_writer_thread orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, 9), second.tid);
+    try std.testing.expectEqualStrings("/tmp/s/b", (racy.first_writer_thread orelse return error.TestUnexpectedResult).path);
+    // The control: no write between the creation and the worker's, and the same late
+    // start record is in order.
+    var ordered = try readShape("v18-late-start-ok", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .open, 1, "/tmp/s/a", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 2 1"),
+        rd(9, .open, 2, "/tmp/s/c", ""),
+    }, &tb);
+    defer ordered.deinit();
+    try std.testing.expectEqual(@as(?Op, null), ordered.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 1), ordered.thread_turns);
+}
+
+test "a snapshot is filed under the count after its record: a creation before a join does not inherit the join (v18, R2 C3)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    // tid 9 writes. The main thread creates tid 10 (its third record was the `.thread`; the
+    // call carried 3), then joins tid 9. tid 10's start arrives after the join. Its clock is
+    // the main thread's at count 3 — before the join — so tid 10 and tid 9 are concurrent
+    // and tid 10's write refuses. Filed under the count before the record, the join's
+    // snapshot would carry count 3 and tid 10 would inherit tid 9's write.
+    var before = try readShape("v18-snap-before-join", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .open, 1, "/tmp/s/x", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+        rd(10, .thread_started, 0, "", "7 3 2"),
+        rd(10, .open, 2, "/tmp/s/y", ""),
+    }, &tb);
+    defer before.deinit();
+    try std.testing.expectEqual(@as(u64, 10), (before.second_writer_thread orelse return error.TestUnexpectedResult).tid);
+    // The control: created after the join (the call carried 4), tid 10 inherits it.
+    var after = try readShape("v18-snap-after-join", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .open, 1, "/tmp/s/x", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+        rd(7, .thread, 0, "", ""),
+        rd(10, .thread_started, 0, "", "7 4 2"),
+        rd(10, .open, 2, "/tmp/s/y", ""),
+    }, &tb);
+    defer after.deinit();
+    try std.testing.expectEqual(@as(?Op, null), after.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 1), after.thread_turns);
+}
+
+test "a start whose creator is unknown, or whose count the creator never reached, gives no edge (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var unknown_creator = try readShape("v18-unknown-creator", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(9, .thread_started, 0, "", "55 0 1"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+        rd(7, .thread_join, 0, "", "55 1"),
+        rd(7, .open, 2, "/tmp/s/b", ""),
+    }, &tb);
+    defer unknown_creator.deinit();
+    try std.testing.expectEqual(@as(u32, 1), unknown_creator.thread_unpaired_starts);
+    // The join names the pair the start carried, so it resolves — and tid 9's clock, having
+    // no creator, still orders tid 9's own write before the joiner's.
+    try std.testing.expectEqual(@as(u32, 1), unknown_creator.thread_joins);
+    try std.testing.expectEqual(@as(?Op, null), unknown_creator.second_writer_thread);
+    var ahead = try readShape("v18-count-ahead", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .open, 1, "/tmp/s/a", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 99 1"),
+        rd(9, .open, 2, "/tmp/s/b", ""),
+    }, &tb);
+    defer ahead.deinit();
+    try std.testing.expectEqual(@as(u32, 1), ahead.thread_unpaired_starts);
+    try std.testing.expect(ahead.second_writer_thread != null);
+    var malformed = try readShape("v18-malformed-start", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(9, .thread_started, 0, "", "not a pair"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+    }, &tb);
+    defer malformed.deinit();
+    try std.testing.expectEqual(@as(u32, 1), malformed.thread_unpaired_starts);
+}
+
+test "a join the shim could not name draws no edge (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-join-unknown", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+        rd(7, .thread_join, 0, "", contract.thread_aux.unknown),
+        rd(7, .open, 2, "/tmp/s/b", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 1), info.thread_joins_unresolved);
+    try std.testing.expectEqual(@as(u32, 0), info.thread_joins);
+    try std.testing.expectEqual(@as(u64, 7), (info.second_writer_thread orelse return error.TestUnexpectedResult).tid);
+}
+
+test "a thread id the kernel recycled is a new thread: a join of the earlier one carries nothing the later one wrote (v18, R2 M5)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    // tid 9 is created, writes nothing, exits unjoined; the kernel hands 9 to the next
+    // creation, which writes. The main thread joins the FIRST 9 by its pair and writes: that
+    // join must not order the second 9's write before the main thread's.
+    var reused = try readShape("v18-tid-reuse", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 2 2"),
+        rd(9, .open, 1, "/tmp/s/b", ""),
+        rd(7, .thread_join, 0, "", "7 1"),
+        rd(7, .open, 2, "/tmp/s/c", ""),
+    }, &tb);
+    defer reused.deinit();
+    try std.testing.expectEqual(@as(u64, 7), (reused.second_writer_thread orelse return error.TestUnexpectedResult).tid);
+    try std.testing.expectEqual(@as(u32, 1), reused.thread_joins);
+    // The control: joining the second 9 orders its write.
+    var joined_second = try readShape("v18-tid-reuse-ok", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 2 2"),
+        rd(9, .open, 1, "/tmp/s/b", ""),
+        rd(7, .thread_join, 0, "", "7 2"),
+        rd(7, .open, 2, "/tmp/s/c", ""),
+    }, &tb);
+    defer joined_second.deinit();
+    try std.testing.expectEqual(@as(?Op, null), joined_second.second_writer_thread);
+}
+
+test "an image change starts the order over: the thread that survives it writes as the first writer (v18)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-exec-reset", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .thread, 0, "", ""),
+        rd(9, .thread_started, 0, "", "7 1 1"),
+        rd(9, .open, 1, "/tmp/s/a", ""),
+        rd(7, .exec, 0, "", ""),
+        rd(7, .shim_ready, 1, "/tmp/s", ""),
+        rd(7, .open, 2, "/tmp/s/b", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 1), info.exec_continuations);
+    try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
+}
+
+test "after an image change the surviving thread's count matches the shim's, so a child created after its write does not inherit the write (v18, review P0)" {
+    // The new image's `shim_ready` is the shim's first record through the surviving thread's
+    // slot (written = 1). The reader resets the process's order on it, and must count it —
+    // uncounted, the reader's count trailed by one, a creation reported at 2 was rebuilt at
+    // the reader's second record, which was the write made AFTER the creation, and the
+    // child's write was judged in order with a write it raced. The `.thread` record is left
+    // out here on purpose — the shim drops it when re-entered (ADR 0067 decision 3), and with
+    // it in, the one-record slip lands on a record that is not a kill point and the verdict
+    // does not turn: the second reviewer measured the first version of this test green with
+    // the fix removed.
+    var tb = unboundedBudget(std.testing.allocator);
+    var racy = try readShape("v18-exec-count", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .exec, 0, "", ""),
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .open, 1, "/tmp/s/a", ""),
+        rd(7, .write, 2, "/tmp/s/a", ""),
+        rd(9, .thread_started, 0, "", "7 2 1"),
+        rd(9, .open, 3, "/tmp/s/b", ""),
+    }, &tb);
+    defer racy.deinit();
+    try std.testing.expectEqual(@as(u32, 1), racy.exec_continuations);
+    try std.testing.expectEqual(@as(u64, 9), (racy.second_writer_thread orelse return error.TestUnexpectedResult).tid);
+    // The control: created after the write (the call carried 3: announcement, open, write).
+    // This arm is what catches counting the announcement twice.
+    var ordered = try readShape("v18-exec-count-ok", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .exec, 0, "", ""),
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .open, 1, "/tmp/s/a", ""),
+        rd(7, .write, 2, "/tmp/s/a", ""),
+        rd(9, .thread_started, 0, "", "7 3 1"),
+        rd(9, .open, 3, "/tmp/s/b", ""),
+    }, &tb);
+    defer ordered.deinit();
+    try std.testing.expectEqual(@as(?Op, null), ordered.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 1), ordered.thread_turns);
+}
+
+test "a start record is a recorded creation: with every `.thread` dropped, the account does not call the thread unrecorded (v18, review)" {
+    // The creator's `.thread` is dropped when the shim is re-entered; the child's start is
+    // written from its own stack and is not. A run whose only creation records are starts
+    // is not one whose threads the shim never saw — and its writer, ordered by the
+    // creation, is judged, not counted as a floor.
+    var tb = unboundedBudget(std.testing.allocator);
+    var info = try readShape("v18-start-only", &.{
+        rd(7, .shim_ready, 0, "/tmp/s", ""),
+        rd(7, .open, 1, "/tmp/s/a", ""),
+        rd(9, .thread_started, 0, "", "7 2 1"),
+        rd(9, .open, 2, "/tmp/s/b", ""),
+    }, &tb);
+    defer info.deinit();
+    try std.testing.expectEqual(@as(u32, 0), info.thread_records);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_start_records);
+    try std.testing.expect(!info.unrecorded_writer_thread);
+    try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_turns);
+}
+
+test "more threads than the shim has slots for do not break the reader (v18, R2 M4)" {
+    var tb = unboundedBudget(std.testing.allocator);
+    var records: [3 + 70 + 1]R = undefined;
+    records[0] = rd(7, .shim_ready, 0, "/tmp/s", "");
+    records[1] = rd(7, .thread, 0, "", "");
+    records[2] = rd(7, .open, 1, "/tmp/s/a", "");
+    var i: usize = 0;
+    var auxes: [70][24]u8 = undefined;
+    while (i < 70) : (i += 1) {
+        // Created after the main thread's three records (its announcement, one `.thread`
+        // for the first creation, its write), so each child's clock holds that write.
+        const aux = std.fmt.bufPrint(&auxes[i], "7 3 {d}", .{i + 1}) catch unreachable;
+        records[3 + i] = rd(100 + @as(u64, i), .thread_started, 0, "", aux);
+    }
+    records[73] = rd(169, .open, 2, "/tmp/s/z", "");
+    var info = try readShape("v18-many", &records, &tb);
+    defer info.deinit();
+    // The last thread's write is ordered after the main thread's by its creation.
+    try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 1), info.thread_turns);
+    try std.testing.expectEqual(@as(u32, 0), info.thread_unpaired_starts);
 }
