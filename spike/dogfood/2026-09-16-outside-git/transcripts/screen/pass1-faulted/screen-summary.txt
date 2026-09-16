@@ -1,0 +1,47 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+  aws-cli/2.23.6 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+  Hatch, version 1.18.0
+  NVIM v0.10.4
+  0.141.0
+  Could not find dir, "/localrun/aux/home/.config/Bitwarden CLI"; creating it instead.
+  Could not find data file, "/localrun/aux/home/.config/Bitwarden CLI/data.json"; creating it instead.
+  2026.8.0
+  The Angular CLI requires a minimum Node.js version of v22.22.3 or v24.15.0 or v26.0.0.
+  pyenv 2.8.5
+
+==================== aws ====================
+  operation: env AWS_CONFIG_FILE=/localrun/st/strace/aws/config AWS_SHARED_CREDENTIALS_FILE=/localrun/st/strace/aws/credentials aws configure set aws_secret_access_key fake-secret-rotated-for-probe-only-0000 --profile work
+  operation rc=0  (23393 strace lines); files: ./config ./credentials 
+  strace: 1 thread(s) created, 17 process(es) created, execve {'tr': 3, 'cut': 2, 'sh': 1, 'env': 1, 'aws': 1, 'lsb_release': 1, 'getopt': 1, 'uname': 1}
+  strace: setsid/setpgid none
+  strace: process 114 aws — 1 tid(s) wrote the state
+    tid 114: 4 op(s): open(null), open(credentials), write(credentials)
+  140  wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's image replaced 1 
+  140  syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's image replaced 1 
+  main wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) r
+  main syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) r
+
+==================== hatch ====================
+  setup rc=1 (see hatch.setup.txt)
+  operation: env HATCH_CONFIG=/localrun/st/strace/hatch/config.toml hatch config set terminal.styles.info bold
+  operation rc=1  (2814 strace lines); files: 
+  strace: 0 thread(s) created, 1 process(es) created, execve {'sh': 1, 'env': 1, 'hatch': 1}
+  strace: setsid/setpgid none
+  strace: nothing written under the state directory
+  140  wrappers rc=3  SETUP ERROR --setup exited 1; its last output line was: The selected config file `/localrun/st/140-wrappers/hatch/config.toml` does not exist. (all of
+  140  syscalls rc=3  SETUP ERROR --setup exited 1; its last output line was: The selected config file `/localrun/st/140-syscalls/hatch/config.toml` does not exist. (all of
+  main wrappers rc=3  SETUP ERROR --setup exited 1; its last output line was: The selected config file `/localrun/st/main-wrappers/hatch/config.toml` does not exist. (all o
+  main syscalls rc=3  SETUP ERROR --setup exited 1; its last output line was: The selected config file `/localrun/st/main-syscalls/hatch/config.toml` does not exist. (all o
+
+==================== nvim ====================
+  operation: nvim --headless -n -u NONE -i /localrun/st/strace/nvim/main.shada -c "call histadd(\"cmd\", \"echo second\")" -c wshada -c "qa!"
+  operation rc=0  (477 strace lines); files: ./main.shada 
+  strace: 0 thread(s) created, 1 process(es) created, execve {'sh': 1, 'nvim': 1}
+  strace: setsid/setpgid none
+  strace: process 359 nvim — 1 tid(s) wrote the state
+    tid 359: 15 op(s): open(log), mkdirat(DDj0sZ), open(main.shada.tmp.a), unlinkat(main.shada), renameat(main.shada.tmp.a,main.shada), write(main.shada) …

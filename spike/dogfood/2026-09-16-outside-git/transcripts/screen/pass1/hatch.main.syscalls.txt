@@ -1,0 +1,12 @@
+New setting:
+PREFLIGHT  recording accepted — 5 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 5 operations (3899 syscall lines examined, 1278 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+processes    single process; the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/main-syscalls/hatch --setup "/localrun/ap/setup-hatch.sh" --operation "env HATCH_CONFIG=/localrun/st/main-syscalls/hatch/config.toml hatch config set terminal.styles.info bold" \
+               --check <your-invariant.sh> --shim /semain/lib/libsideeye_shim.so --oracle /usr/bin/strace

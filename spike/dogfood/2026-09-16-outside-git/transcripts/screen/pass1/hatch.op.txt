@@ -1,0 +1,3 @@
+New setting:
+[terminal.styles]
+info = "bold"

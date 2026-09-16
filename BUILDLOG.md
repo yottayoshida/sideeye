@@ -2,6 +2,65 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-16 (fifth) — five more, weighted to data a user keeps outside version control: the screen
+
+**Why this slate.** The crossed-walls run earlier today reached three more instances of the
+truncating rewrite, and none was reported: a Markdown file and a Java source are almost always in
+git, and this class, reported against tools that rewrite sources, has been closed as spam and as the
+caller's risk. The owner's call for the next five was to look where a crash loses something version
+control does not hold — a credentials file, editor history, a vault cache, user configuration —
+preferring the classes the day's walls opened (Node writing synchronously, the JVM, the syscall
+observer, a cgroup for detached processes). The run lives in `spike/dogfood/2026-09-16-outside-git/`.
+
+**Candidates, and the three that went on the rules before any measurement.** aws-cli
+(`aws configure set` on `credentials`), hatch (`hatch config set`), neovim (the shada file), jbang
+(`jbang config set`), the Bitwarden CLI (`bw config server` on `data.json`), and pyenv (`pyenv
+global`) as a spare. Out: GnuPG, the one candidate that would have exercised the cgroup (`gpg
+--import` starts keyboxd or the agent detached) — its GitHub mirror has 977 stars and issues turned
+off (rules 1 and 11); pm2, the other daemon — every one of its 62 commits in six months is one
+author's (rule 3); Angular CLI's global config — it refuses Node 20.19.2, the version Debian trixie
+ships. None of the six appears in an earlier dogfood selection, `docs/target-classes.md`, cohort 4's
+rejections or the B-group exclusions.
+
+**Built twice again**: the released v1.4.0 (digest matched) and main `047592d`, which differs from
+the crossed-walls run's `d5911cd` by that run's record only.
+
+**The first screen pass had two define faults, and one of them looked like a hang in Sideeye.**
+hatch's setup ran `hatch config restore` against a path that did not exist yet, which it refuses.
+neovim's `preflight` sat for ten minutes with no output until it was stopped: `/proc/<pid>/cmdline`
+showed nvim holding `"call`, `histadd(\"cmd\",` and `"qa!"` as separate arguments, waiting in
+`epoll_wait`. `docs/cli.md` says command strings are split on spaces with no quoting, and the
+define quoted its `-c` commands; the strace half of the screen ran the same string under `sh -c`,
+which honoured the quotes, so the two instruments were not measuring the same argv. The screen now
+splits the operation the way the engine does for both halves, passes neovim's commands as a script
+file, and runs every `preflight` under `timeout 600`.
+
+**The screen, and the slate.** Six candidates, strace plus `preflight` under both builds and both
+modes (`transcripts/screen/pass1/`, `pass2/`):
+- **accepted in both modes and both builds**: aws-cli (one writer, `credentials`), hatch, neovim;
+  jbang too, but only with the JVM named directly (`java -jar jbang.jar config set`) — through its
+  bash launcher, which runs java as a child inside `$(...)`, the java child's non-main thread writes
+  and the run refuses `child_touched_state_dir`;
+- **accepted under `--observe syscalls` only**: pyenv, whose bash child writes `version`
+  (`state_changed_without_ops` under `wrappers`);
+- **refused**: the Bitwarden CLI, `multiple_threads_detected` in both builds — `data.json.lock` is
+  made and removed by threads other than the main one, Node's asynchronous API again, and #539 finds
+  no creation or join between them.
+
+The slate is aws-cli, hatch, neovim, jbang and pyenv. Read operation by operation from the
+captures: aws-cli opens `credentials` `O_TRUNC` and writes the whole file once, both profiles in
+it; hatch writes a `mkstemp` file, `fsync`s it and renames it; **neovim unlinks `main.shada`,
+renames its temporary over it, and only then writes the 160 bytes and `fsync`s** — the order a
+buffered writer gives when the rename comes before the flush; jbang opens `jbang.properties`
+`O_TRUNC`; pyenv's child truncates `version`, reopens it for append and writes.
+
+**Two checker faults caught before any exploration** (`apparatus/probe-checkers.sh`, every checker
+run on the setup's state, the completed operation's state and the state file emptied). neovim's
+checker read nothing with `-i NONE` and `:rshada!`, so it failed on correct states; it reads through
+`-i` now and clears `'shada'` before quitting, and the probe shows the file unchanged after a check.
+And hatch's operation set `terminal.styles.info` to `bold`, which is the default: the file was
+rewritten and no value changed. The operation sets `italic`.
+
 ## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
 
 **What was asked.** A dogfood run of five, weighted to targets that are measurable now because a
