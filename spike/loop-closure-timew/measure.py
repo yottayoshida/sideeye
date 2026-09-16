@@ -66,7 +66,13 @@ STEP_OUTPUT = {"audit": "audit.json", "eval": "run-verdict.json",
 # Further files a step leaves that a later step reads, recorded when present: eval's rebuild
 # writes the stage-diff record and appends to the rebuild history, and finalize reads the history
 # for its printout across attempts (found in review).
+# eval's verdict now rests on the container's own stdout, read back as sealed tokens (#597); the
+# stream is recorded beside the verdict so finalize holds the ground the verdict stood on.
 STEP_EXTRA = {"eval": ["run-stage-diff.json", "run-stage-diffs.jsonl"]}
+# Not "recorded when present" like the rest: eval's verdict is read out of this stream, and the run
+# whose binary is the agent's is the one that would benefit from the file being gone. A step that
+# does not leave them is refused rather than attested for what it did leave (found in review).
+STEP_EXTRA_REQUIRED = {"eval": ["run-container.log", "run-container.err"]}
 CHUNK = 65536
 
 
@@ -326,7 +332,8 @@ class Ctx:
     # itself — a doctored judge skips its own checks.
     def code_paths(self):
         return [self.judge, os.path.join(self.repo, "spike", "replay_gate.py"),
-                os.path.join(self.repo, "spike", "suite_summary.py")]
+                os.path.join(self.repo, "spike", "suite_summary.py"),
+                os.path.join(self.repo, "spike", "container_seals.py")]
 
     def has_secondary_controls(self):
         return os.path.isfile(self.res("neg-secondary.json")) and os.path.isfile(self.res("pos-secondary.json"))
@@ -352,7 +359,11 @@ def pre_run_inputs(ctx, prompt):
     if not proto.get("image_id"):
         raise Refusal("protocol.json names no image_id — stage again with the current stage.sh, "
                       "which records the image the judge must run (#592)")
-    data = [manifest, protocol, ctx.res("neg-verdict.json"), ctx.res("pos-verdict.json")]
+    # The two control verdicts, and the streams they were read from (#597): a control's verdict is
+    # a pre-run input, so the ground it stood on is one too.
+    data = [manifest, protocol, ctx.res("neg-verdict.json"), ctx.res("pos-verdict.json"),
+            ctx.res("neg-container.log"), ctx.res("pos-container.log"),
+            ctx.res("neg-container.err"), ctx.res("pos-container.err")]
     for opt in ("neg-secondary.json", "pos-secondary.json"):
         if os.path.isfile(ctx.res(opt)):
             data.append(ctx.res(opt))
@@ -441,6 +452,12 @@ def record_output(ctx, inputs, step):
     inputs["files"][os.path.abspath(p)] = sha256_file(p)
     inputs["steps"][step]["output"] = os.path.abspath(p)
     extras = []
+    for name in STEP_EXTRA_REQUIRED.get(step, []):
+        q = ctx.res(name)
+        if not os.path.isfile(q):
+            raise Refusal("%s left no %s, which its verdict was read from" % (step, q))
+        inputs["files"][os.path.abspath(q)] = sha256_file(q)
+        extras.append(os.path.abspath(q))
     for name in STEP_EXTRA.get(step, []):
         q = ctx.res(name)
         if os.path.isfile(q):
@@ -697,7 +714,11 @@ echo "$sub" >> "$RESULTS/judge-calls"
 case "$sub" in
     audit) printf '{"verdict": "clean", "record_sha": "verified"}\n' > "$RESULTS/audit.json" ;;
     eval) printf '{"replay": {"gate": "pass"}, "func": {"gate": "pass"}}\n' > "$RESULTS/run-verdict.json"
-          printf '{"restored": [], "removed": []}\n' >> "$RESULTS/run-stage-diffs.jsonl" ;;
+          printf '{"restored": [], "removed": []}\n' >> "$RESULTS/run-stage-diffs.jsonl"
+          # The container's stream and the host's capture of docker's own stderr: the real eval
+          # always leaves both, and record_output requires them (#597).
+          printf 'judge: replay-rc=0;\n' > "$RESULTS/run-container.log"
+          : > "$RESULTS/run-container.err" ;;
     secondary) printf '{"full_explore": {"gate": "pass"}}\n' > "$RESULTS/run-secondary.json" ;;
     finalize) printf '{"loop_closed": true}\n' > "$RESULTS/manifest.json"; echo "loop_closed: True" ;;
 esac
@@ -876,8 +897,16 @@ def selftest():
         _write(os.path.join(seal, "protocol.json"), json.dumps({"pin": "0" * 40, "image": "x", "image_id": "sha256:" + "0" * 64}))
         _write(os.path.join(results, "neg-verdict.json"), '{"expectation_met": true}\n')
         _write(os.path.join(results, "pos-verdict.json"), '{"expectation_met": true}\n')
+        _write(os.path.join(results, "neg-container.log"), "judge: replay-rc=1;\n")
+        _write(os.path.join(results, "pos-container.log"), "judge: replay-rc=0;\n")
+        # The host's own capture of docker's stderr: written on every eval, empty when docker had
+        # nothing to say, and required rather than optional -- it is the only place a failure to
+        # start the container leaves its reason (found in review).
+        _write(os.path.join(results, "neg-container.err"), "")
+        _write(os.path.join(results, "pos-container.err"), "")
         _write(os.path.join(repo, "spike", "replay_gate.py"), "# gate\n")
         _write(os.path.join(repo, "spike", "suite_summary.py"), "# summary\n")
+        _write(os.path.join(repo, "spike", "container_seals.py"), "# seals\n")
         judge = os.path.join(repo, "spike", "loop-closure-timew", "judge.sh")
         _write(judge, STUB_JUDGE, 0o755)
         prompt = os.path.join(repo, "prompt.md")

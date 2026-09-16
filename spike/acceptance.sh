@@ -6238,7 +6238,7 @@ done
 echo "=========== check 11f: the loop-closure judge is seen refusing (#63) ==========="
 # The judge declares a void condition "enforced per escape channel, against EVERY tool
 # call" and a restore that must not fail silently -- and until this check neither had ever
-# been observed refusing anything. `judge.sh selftest` drives sixty-four refusals with
+# been observed refusing anything. `judge.sh selftest` drives seventy refusals with
 # synthetic roots and transcripts (four by name, four by network alternation, three path
 # markers, thirty-three spellings of the repo or the config dir that the path channel resolves (#510),
 # three docker — one a relative mount source outside the stage — the transcript with no
@@ -6248,7 +6248,7 @@ echo "=========== check 11f: the loop-closure judge is seen refusing (#63) =====
 # #515's other half — no inputs.json, a record inputs.json does not attest, one that changed
 # since the launcher recorded it, a transcript that is neither what the audit read nor what
 # the launcher recorded — six stages the pristine check
-# refuses and two the rebuild refuses) plus twenty-three greens: a clean transcript stays clean, the trusted mcp
+# refuses and two the rebuild refuses, and six seals on the eval container's channels) plus twenty-four greens: a clean transcript stays clean, the trusted mcp
 # server's own tool is counted rather than voided, seven records the path channel leaves clean
 # (a `..` that stays in the stage, a sibling named like the repo, ten `cd`s whose candidate
 # directories grow by one per call, an ancestor grep that reads the stage, a grep whose pattern
@@ -6280,14 +6280,14 @@ echo "=========== check 11f: the loop-closure judge is seen refusing (#63) =====
 # seal-reds/mutations.txt), and the
 # verdict forced to clean (forty-six of them; not unauditable or the two record cases, which
 # exit earlier, not name-off-allowlist, whose field that program does not empty, and not
-# the fourteen cases that never reach the audit: restore-fail, the five finalize refusals, the six
+# the twenty cases that never reach the audit: restore-fail, the five finalize refusals, the six seal refusals (#597), the six
 # pristine refusals and the two rebuild refusals).
 # Through a pipe into `sh -s`, not as a file: that is how measure.py runs the judge — from the
 # bytes it verified, on stdin — and until this leg only the measurement itself took that path
 # (#515's other half). A pipe, not `< file`: a redirected file is seekable and the stdin-eating
 # accident has different conditions there. SIDEEYE_REPO is given because `$0` is `sh` inside.
 if cat "$ROOT/spike/loop-closure-timew/judge.sh" | SIDEEYE_REPO="$ROOT" sh -s -- selftest > /tmp/acc-judge-selftest.txt 2>&1; then
-    echo "ok   judge.sh selftest: sixty-four refusals and twenty-three greens, through sh -s"
+    echo "ok   judge.sh selftest: seventy refusals and twenty-four greens, through sh -s"
 else
     echo "FAIL judge.sh selftest (rc=$?): a channel stopped refusing, or a red moved"
     # Every failing line, not a tail: a green run is already twenty-odd lines, so `tail -20` would
@@ -6316,6 +6316,22 @@ if python3 -I "$ROOT/spike/loop-closure-timew/measure.py" --selftest > /tmp/acc-
 else
     echo "FAIL measure.py selftest: a channel stopped refusing, or a red moved"
     grep -E '^(FAIL|skip|measure.py selftest:)' /tmp/acc-measure-selftest.txt | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo "=========== check 11h: the seals on the eval container's channels are one text, and its CLI agrees with it (#597) ==========="
+# spike/container_seals.py is what the loop-closure judge reads the eval container's outputs
+# with: sideeye's own digest of the report, and the shell's rc, functional status and export, each
+# one token on the container's stdout, counted anywhere in the stream and required exactly once,
+# the report file then held to the digest. Its --selftest runs a clean stream and every refusal
+# (no token, a forgery beside the real one with the real one's line start taken away, the file
+# rewritten after the seal, a FIFO, a symlink, a directory, an oversized file, unparsable bytes)
+# and holds the CLI to judge_eval(). Run on its own, as 11c and 11d are: when judge.sh's selftest
+# fails for another reason, this line still says whether the seals hold.
+if python3 "$ROOT/spike/container_seals.py" --selftest; then
+    echo "ok   container_seals.py: every channel seals on a clean stream, every refusal refuses, and the CLI agrees"
+else
+    echo "     container_seals.py's selftest failed (rc=$?): a refusal stopped refusing, or the CLI disagrees"
     fails=$((fails + 1))
 fi
 

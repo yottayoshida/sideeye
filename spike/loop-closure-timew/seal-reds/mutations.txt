@@ -103,3 +103,14 @@ inputs-unattested-off	rc=1	killed: finalize-unattested
 inputs-changed-off	rc=1	killed: finalize-changed
 record-audit-rehash-off	rc=1	killed: finalize-record-changed
 record-launcher-rehash-off	rc=1	killed: finalize-record-changed
+#
+# Mutations of spike/container_seals.py (#597), measured 2026-09-16 on the judge as committed,
+# /usr/bin/sed on macOS, each set predicted before the run (one case per program):
+seal-count-blind	rc=1	killed: seal-ambiguous
+seal-missing-blind	rc=1	killed: seal-missing (traceback: the copy indexes a token that is not there)
+seal-mismatch-blind	rc=1	killed: seal-mismatch
+not-regular-blind	rc=1	killed: seal-fifo
+too-large-loose	rc=1	killed: seal-large
+seal-anchored	rc=1	killed: seal-ambiguous
+not-json-blind	rc=1	killed: seal-notjson
+seal-none-blind	rc=0	killed: none (no `none` case in the judge's selftest; the module's own --selftest goes red)
