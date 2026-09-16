@@ -1,0 +1,2 @@
+# Class-excluded defines for this fixture. A refusal row carries an unescaped | inside a code span, so GitHub drops its cells past the header's; the other row and the quote still agree.
+spike/cohort2/fx/ops	Fixture refusal class	fixture reason

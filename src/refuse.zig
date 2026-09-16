@@ -430,6 +430,7 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
         \\caller has to decide deliberately what to do with it.
         \\
     , .{ report.l0_note, report.l1_note, report.case_note, report.expected_status_val, boundary.boundaryAccount(), report.notTestedText() });
+    report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
@@ -501,6 +502,7 @@ pub fn setupError(reason: contract.SetupErrorReason, detail: []const u8) noretur
     if (json_path) |jp| if (json_arena) |ja|
         report.writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, reason, detail, null);
     say("SETUP ERROR  {s}\n", .{detail});
+    report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
 }
 

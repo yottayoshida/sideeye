@@ -227,3 +227,22 @@ Two more rows are worth reading twice:
   rather than a channel failure. The number is not quoted here: it moves whenever a case is
   added, and a figure kept in prose beside the thing it counts is how this file went stale
   in the first place.
+
+## Mutations of `spike/container_seals.py` (#597)
+
+The seals on the eval container's channels live in a second file the judge executes from its
+bytes, so these programs are applied to a copy of `spike/container_seals.py` and the copy is
+placed where a selftest run finds it (`SIDEEYE_REPO=<dir holding only spike/container_seals.py>`,
+the judge's own selftest then loads it as `cmd_eval` would). Each is meant to kill exactly one
+`seal-*` case; the module's own `--selftest` goes red under every one of them as well.
+
+| label | sed program | branch it blinds |
+|---|---|---|
+| `seal-count-blind` | `s\|    if n > 1:\|    if False:\|` | more than one token — a forgery beside the real one |
+| `seal-missing-blind` | `s\|    if n == 0:\|    if n == 0 and False:\|` | no token at all — the copy then indexes a token that is not there, so the kill is a traceback rather than a wrong gate; there is no one-line edit that makes "missing" read as sealed, since there is no digest to compare |
+| `seal-mismatch-blind` | `s\|    if got != want:\|    if False:\|` | the file's bytes against sideeye's digest |
+| `not-regular-blind` | `s\|        if not stat.S_ISREG(st.st_mode):\|        if False:\|` | a FIFO / link / directory at the report's name — the copy reads EOF from the writerless FIFO and refuses as `seal_mismatch`, the wrong reason |
+| `too-large-loose` | `s\|> max_bytes:\|> 10 ** 12:\|` | the size cap, both the `fstat` check and the one while reading (one program, because blinding either alone leaves the other to refuse) |
+| `not-json-blind` | `s\|        return {"gate": "not_json", "channel": "report", "detail": "sealed bytes do not parse: %s" % e}\|        return {"gate": "sealed", "channel": "report", "sha256": want, "doc": {}}\|` | sealed bytes that do not parse — the copy calls them a sealed empty document |
+| `seal-none-blind` | `s\|    if value == b"none":\|    if False:\|` | sideeye's own "the report was not written" token. **Kills no `seal-*` case**: the judge's selftest has no `none` case, and the module's `--selftest` is what goes red. Recorded rather than hidden — the judge sees this branch only through `acceptance.sh`'s check 11h |
+| `seal-anchored` | `s\|    n = log.count(prefix)\|    n = sum(1 for l in log.split(b"\\n") if l.startswith(prefix))\|` | the rule itself: puts the line-anchored count back, so the hidden-then-forged stream reads as one token — the review's hole (R1 C1), killed by `seal-ambiguous` alone |

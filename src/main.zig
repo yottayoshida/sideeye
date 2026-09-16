@@ -2329,6 +2329,7 @@ fn phasePreflight(run: *Run) void {
         , .{ report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.l1_note, report.case_note, report.notTestedText() });
         report.sayApparatus(arena, "      apparatus: {s}\n");
         if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
+        report.emitSeal();
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 }
@@ -3121,6 +3122,7 @@ fn phaseReport(run: *Run) void {
             .observed = what,
             .invariant = invariant,
         }, checker_detail, null, null, null, null);
+        report.emitSeal();
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
 
@@ -3143,6 +3145,7 @@ fn phaseReport(run: *Run) void {
     report.sayApparatus(arena, "      apparatus: {s}\n");
     report.saySingleCrashPointNote(n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
+    report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 

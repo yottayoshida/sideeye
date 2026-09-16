@@ -2,6 +2,263 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-16 (seventh) — the eval container's outputs arrive sealed, and two reviews took four designs off the table before any code
+
+**What was open.** ADR 0066 closed #515's launcher half and named one residual out loud: inside
+`judge.sh eval`'s container the agent-built `timew` runs under the sealed `sideeye` as the same uid,
+and `sideeye` writes its replay JSON into the one directory that binary can write. The judge read
+that file — and the rc, the functional status and the export beside it — after the container exited.
+A `timew` that leaves a child behind can rewrite all four for as long as the container lives. That
+is #597, and this entry is the work that closes it.
+
+**The design, and the thing that took three drafts to state correctly.** The first draft had the
+shell take a `sha256sum` of the report right after `sideeye` exits. The first review killed it: a
+child in a loop is the last writer whenever the reader arrives, so the digest certifies the forgery.
+The same review then proposed killing every other process first and hashing after — and withdrew it
+when asked, because shortening a window does nothing against an attacker who only has to be *last*,
+not *fast*. That is the same sentence twice, and it is the sentence the final design is built on:
+**the digest has to be taken by the writer, at the moment of writing.** `writeJsonReport` now
+computes the SHA-256 of the buffer it wrote and prints `sideeye: json sha256=<hex>;` to stderr in a
+single `write()`; `jsonFailed` prints the `none` form, so a run that named `--json` always produces
+exactly one token. That last part is not symmetry for its own sake — the second review found that
+"no token" is arrangeable on demand (plant a directory at `<path>.tmp` and the open fails), and a
+forger's single token would then be the only one.
+
+**Two more designs died in review, both for the same reason: something the subject can reach stood
+between the writer and the reader.** `timew export | tee f | sha256sum` — `tee` and `sha256sum` live
+on the container's writable root filesystem, and the agent's `CMakeLists.txt` runs as root during
+configure. The export is received by the shell (`fexport=$(...)`) and printed with builtins instead.
+And the judge counting the token only at a line start: a subject that writes newline-less bytes ahead
+of the real token takes its line start away, so the anchored reader sees exactly one token — the
+forgery. Counted anywhere, hiding leaves the real one at 1 and adding a forgery makes 2, and both
+directions are refusals.
+
+**Measured, because "one write" and "indivisible" are not the same claim.** Docker multiplexes a
+container's stdout and stderr as separate frames and the CLI writes both into one file, so a token
+that straddles a frame boundary can have a frame of the *other* stream land inside it. Under a
+stderr flood, 10,000 tokens on stdout: **9,997 arrived intact without `exec 2>&1`, 10,000 with it**.
+And on the pipe itself, `strace` in the judge's own image: dash's `printf` emits the export block in
+one `write` up to 8 KiB and three at 64 KiB — but `PIPE_BUF` here is **4096**, so only a block under
+that is indivisible. The seal token is 87 bytes and stays under it; a large export does not, and what
+holds that case is the markers appearing exactly once and the body parsing as JSON.
+
+**The reds, and the two that were not reds the first time.** A toy `timew` whose child rewrites the
+report: `seal_mismatch` (sideeye sealed `16b85e…`, the file read `ef553f…`). A toy that floods the
+stream and emits one forged token from a fresh line: `seal_ambiguous` — and on that same stream, the
+line-anchored reading finds exactly one token, the forgery, **and the file at read time hashes to
+exactly it**. That is the hole the review found, demonstrated on a real run rather than argued.
+Getting there took three attempts: the first forging toy never emitted its token (its child died
+after ~0.15 s, before a one-second delay elapsed), and the second emitted the token but no longer
+held the file, because writing 1 KiB to the container's stream costs ~17 ms per pass. Splitting the
+work across two children did both. **A toy that fails to mount the attack is not evidence the attack
+fails** — the roles just have to be in different processes.
+
+**A gate that could never have been satisfied.** The plan said to compare the case byte-for-byte
+across the re-stage and stop if it moved. It moved — and it always would have: a case embeds
+`define.setup` as an absolute path, so two stage roots can never produce identical bytes. The
+baseline on disk was also from `v1.0.0` / trace contract 13, four minor versions back, and reading
+that difference as "this change moved the case" is exactly the mistake of measuring the new build
+alone. Measured properly instead: `origin/main`'s binary built in a second worktree and staged, then
+compared field-wise against this branch's — **the only difference is the embedded stage root**.
+`k`, `ops_total`, `prefix_hash`, the before/after classes and paths, `violation`, `contract_version`
+and `sideeye_version` all match, and `protocol.json` matches on every field including `image_id`.
+
+**What is still outside, and said rather than implied.** The measurement container's *root
+filesystem*: the subject is uid 0 on a writable rootfs, so after it first runs, `/usr/bin/strace`
+(the oracle), the `sh` the checker runs under, `libc`, and with `libc` every dynamically linked
+binary exec'd afterwards — the sealed `sideeye` included — are its to replace. The seal says the file
+the judge opens is the one `sideeye` wrote; it does not say `sideeye` ran on a pristine image. The
+obvious fix, a second container with `--read-only`, is not in this change because `--tmpfs /tmp`
+moves `/tmp/loop-state` onto another filesystem, and `stage.sh` says of that directory that "its
+syscall semantics must not ride a virtiofs mount" — the filesystem is the measurement's ground.
+That is its own issue. Also outside: `cmd_secondary`'s container outputs (evidence, not a gate), and
+the truth of the export's contents, which is the non-degeneracy gate's limit and not the seal's.
+
+**Then the suite itself found what the review had only predicted.** The first review's P2-4 noted
+that a token printed inside `writeJsonReport` lands *before* the text on the two refusal paths,
+which write the JSON first — and judged it a documentation nuance after checking four of the 98
+places `spike/acceptance.sh` passes `--json`. Running the whole suite found the fifth: the CLI
+self-description check reads the first line of each flag probe, and for `--json` that line had
+become the seal. **A regression this change introduced, found by running rather than by reading.**
+The fix is a split — `writeJsonReport` and `jsonFailed` *record* the digest, and `report.emitSeal()`
+writes it once, immediately before each of the five exits that can follow a report. The token is now
+the last thing sideeye writes on every path, which is a stronger sentence than the one the docs had
+been given, and `writeJsonReport` did not move: moving it would have changed which values the JSON
+is built from, and the problem was only the order on stderr. Measured after: the SETUP ERROR path's
+first line is its headline again, the token is the final line, exactly one of it; acceptance went
+from 39 failures to 38, the one that disappeared being the check this broke, with none appearing.
+
+**And the remaining failures were not ours, which took three runs to be able to say.** Acceptance
+on this host fails 38 with the repository's `zig-out` as it was; rebuilding every auxiliary target
+for the container's architecture takes it to 32, and building the toy targets takes it to **5** —
+all five of them the suite telling us it cannot measure as root (`RLIMIT_NPROC is ignored for root;
+this suite has to run unprivileged for this leg`, and four permission-dependent legs). The first
+attempt at a control was worse than useless: acceptance run in a bare `origin/main` worktree failed
+264, because it had none of those builds. **Comparing against a control that is missing the
+preconditions measures the preconditions.**
+
+**The second review then found six more, and two of its fixes were wrong on the first try.**
+Capping the report file while reading the stream — the larger, more exposed side — unbounded;
+`not_json` implemented and listed in the ADR but missing from the CHANGELOG and the judge's header;
+a comment still explaining an mtime floor that the change had deleted, beside a `stamp` call nothing
+reads any more; `<mode>-container.err` created as the only place a docker failure leaves its reason
+and then left out of the launcher's digests. All fixed. Writing the fixes, the new `not_json`
+selftest case truncated the stream and took the rc token with it, and requiring the two `.err` files
+broke `measure.py`'s own fixture — both caught by running the suites rather than by reading them.
+
+**A third reading, and the two things it caught were both sentences about code rather than code.**
+The CHANGELOG and ADR 0068 both said the seal "also appears on the MCP server's stderr, once per
+tool call, since the server passes `--json` and inherits stderr". It does not: `posix.zig`'s
+minimal-env path does `dup2(1, 2)` and says why — a config's operation must not reach the MCP
+transport — so the token goes into that call's capture file, and the tool's text block is built
+from the report, not the capture. Two documents asserted the one thing the code is written to
+prevent. The other was arithmetic: `21 + 64 + 2` is 87, and the same two documents said 88 while
+the test only held the token under 512. The test pins the width now, because a bound is what let
+the prose drift.
+
+## 2026-09-16 (sixth) — class-exclusions.tsv states the criterion its rows meet, and count.py holds each row to its target's own refusal row (#598)
+
+**What #598 said, and what the owner chose after reading further.** The ledger's header gave its
+reason for keeping a cohort define out of the A-group corpus as "its class has no recorded verdict
+at all". cargo's refusal-table row has recorded a FAIL under `--observe syscalls` since this morning
+(#538), and nothing read the reason, so the check stayed green. The issue offered two ways out:
+move cargo's defines into the corpus and sweep a new generation, or rewrite the header to the
+criterion the ledger actually applies. The owner first chose the first. Reading the ledgers before
+drafting turned up four things that changed it, put back to the owner before any plan was written:
+Bun's row — the same ledger, `spike/cohort2/bun/ops` — also records a FAIL as of #604, merged hours
+earlier; cargo's two defines are two revisions of one question, so `supersession.tsv`'s own rule
+would send r1 there rather than into the corpus; `docs/target-classes.md` defines supported as "the
+rows of the first table … whatever verdicts their stories contain", and that is what cargo was left
+under on 09-16; and the sweep runs committed defines in the default mode, where both would refuse,
+so the published rate would rise by two refusals that say nothing new. The owner chose the
+rewrite: no corpus change, no sweep, no published figure moves.
+
+**The criterion is ADR 0025's, and the header is what was wrong.** ADR 0025 already reads "the
+target's class is not a supported class … each quoting the `docs/target-classes.md` refusal-table
+row it rests on", and `docs/unknown-rate.md` already says `class-exclusions.tsv` holds targets whose
+class "the first table of `docs/target-classes.md` does not list". Only the ledger's header, and
+two sentences about `pass` that said the same thing in other words, used the verdict reading.
+
+**The check ties the define to a row, not a string to a table.** The first draft compared the
+quoted class against the page's Class cells. The plan's first review broke it: any define, a
+supported target's included, could be parked under a refusal table's class and stay green — the
+shape `count.py` already refuses for `supersession.tsv` in its own words, "a place to park
+anything". The rows name their records, so the define is tied to the rows citing its cohort
+directory. The second review broke the next version: the targets that have crossed into the
+first table so far (virtualenv, zstd, ansible-core) did it by gaining a new row that cites a
+later record — dogfood runs for two, `spike/followup-item4/NOTES.md` for zstd — and keeping the
+refusal row, and cargo's verdict is a dogfood record too, so a
+first-table row naming no cohort directory would have left the exclusion green. The tool's first
+word is the second key; on the page that day it found exactly those three and none of the excluded
+targets (the first diff review widened the key, below, and the shared words became four). What neither key sees is written in the function: a first-table row spelling the tool
+with a different first word.
+
+**Seen red twice on the live tree before the ledger was touched, in the order predicted.** With
+the check added and nothing else, `count.py check` stopped at `docs/target-classes.md:58`: a blank
+line inside the first table. GitHub ends a table at a blank line; fetched through the API at
+`047592d`, the page rendered 3 tables and 58 `<tr>`, where its Class rows number 79 — the 14 first-
+table rows after line 58 (codespell onward) and the 10 refusal rows after line 92 were loose text
+with pipes in them. So the reader's first table and the file's were not the same table, and the
+check refuses the split rather than reading past it. With the two blank lines removed, it stopped
+where #598 predicted the ledger was stale: `spike/cohort2/bun/ops quotes the class 'Multi-threaded
+runtimes', and the row that names it says line 81: 'Multi-threaded runtimes, **and behind the
+thread wall, raw syscalls**'`. The header says that column is quoted verbatim; Bun's row had been
+reworded under it.
+
+**The header also said something false about revisions.** "No later revision exists that reaches
+a verdict" was the reason these rows are not in `supersession.tsv`; cargo's r2 define is exactly
+what `spike/dogfood/2026-09-16-cargo-v16/` ran to its FAIL. The reason that still holds is the
+other one: a supersession row needs its successor measured in the corpus, and nothing in this file
+is. Rewritten to say that. watson was the header's example of the criterion cutting both ways, and
+under the table criterion it would cut the wrong way — watson appears only in a refusal row — so it
+is named as ADR 0025's disclosed disagreement, never a cohort define, rather than as an example.
+
+**Eight fixtures, one per guard, and each guard rewritten to `False` in turn** against all eight,
+`good` and the live tree: every rewrite changed its own fixture and nothing else — five turn green
+(stale quote, supported by directory, supported by tool, empty first table, split table) and three
+change the kind of red (unnamed then fails the quote comparison, the absent page raises
+`FileNotFoundError`, the renamed heading lands on the empty-table refusal). The plan had named the
+empty-first-table guard as one with no fixture; a page with the heading over no rows is a two-line
+fixture, so it has one. The unnamed fixture quotes a real refusal-table Class cell on purpose, and
+the directory-supported one keeps the quote and the refusal row in agreement, so a string-only
+check passes both — the shape the first review broke.
+
+**The acceptance comment's counts were already stale, and are dated rather than overwritten.** It
+said `count.py` "holds 78 `if` guards" and "every one of its 71 `die()` calls sits inside an `if`",
+present tense, from the 2026-09-01 sweep. Walking the parse tree on `main` today: 75 `die()` calls.
+Replacing the numbers would have had the 09-01 sweep's "36 undetected" speak for guards it never
+saw, so the sentences are in the past tense with their date, and today's count stands beside them:
+83 calls on this branch, none outside an `if`, still no `assert` and no `raise`.
+
+**The same criterion in other words, looked for by pairing words rather than by one phrase.** A
+grep for "recorded verdict" missed `docs/target-classes.md`'s opening line — "supported means a
+class listed here as reaching verdicts" — which the plan's first review found. The scan that
+closes the plan split `docs/`, `spike/unknown-rate/` (fixtures and artifacts aside), `README.md`,
+`PRD.md` and `DESIGN.md` into sentences and read every one carrying both "support" and "verdict":
+136 files, 18 sentences — counted as `git ls-files` over those paths restricted to `.md`, `.tsv`,
+`.py`, `.sh` and `.txt`, with a sentence ending at `.`, `;` or `:` before a capital, a backtick, an
+asterisk, a parenthesis or a quote. The diff review's own split (no extension filter, a plainer
+sentence rule) got 138 and 16; the counts move with the method, and the finding did not. After the rewrite, one still uses a verdict as the mark of support —
+`spike/unknown-rate/select-b.sh`'s comment that Rust, Go, Node and shell "are not classes with
+recorded verdicts" — and it stays: it is the frozen predicate that selected g1's B-group, true on
+2026-08-16. The `pass` row in `docs/target-classes.md` no longer argues from a count of verdicts
+(the same row says both its targets reach one); it points to the page's own definition, and the
+five-trial rule it had folded in is a separate sentence, because that rule is about printing a rate,
+not about support.
+
+**Measured before review.** `count.py check` on the live tree: "4 class exclusions matched to
+refusal-table rows"; `good`: 0. Acceptance checks 11 and 12 sliced out and run in `sideeye-spike`:
+"every slashed backtick reference in the listed pages resolves", "gate red on all 51 tampered
+fixtures" (43 on `main`). `spike/check-ledger-prose.sh`: 13 figures, unchanged, because no row moved.
+
+**The first diff review found three places the rewrite was still not true, and one of them was a
+cell GitHub does not show.** (1) The header I wrote said cargo and Bun stay in the refusal table
+"because the verdict is reached in one observation mode" — and zstd sits in the first table on a
+verdict reached under `--observe syscalls` only. The because-clause imported a reason the page's
+own first table refutes, the same shape #598 was about, so the header now says only where the rows
+are and that nothing in the first table reaches them. The two refusal rows that carry that reason
+(Bun's and cargo's, from #604 and #538) are outside this change and are left, recorded in the PR.
+(2) An unescaped `|` inside a code span splits a table cell on GitHub, and cells past the header's
+count are dropped: Bun's row carried `O_WRONLY|O_CREAT|O_TRUNC` and lost its `Recorded in` cell —
+the one cell citing `spike/cohort2/bun/`, which is what tied its exclusion to the row. rrdtool's
+row carries `PROT_WRITE|MAP_SHARED`; on `main` it sat after the blank line at 92 and was loose text
+anyway, and removing that line brought it into the table with the same loss (the second diff
+review's correction of how I first wrote this). So the check had been green on a link no reader is shown,
+the thing the blank-line refusal exists to prevent. The reader now splits cells the way GitHub
+does, refuses a row wider than its header, and was seen red on the live page at line 81 before
+both pipes were escaped. (3) The pages state the criterion per class ("targets whose class the
+first table does not list"), the check held it per target: a first-table row for mlr under cargo's
+Class cell — exactly how ansible-core crossed, under its own — left the check green. The quoted
+class being a first-table Class cell is now refused too. With the reviewer's narrower point taken
+as well (the tool key now includes the define's own directory name, and every comma-separated tool
+in a Tool cell), three crossings built on the real page in a scratch root — an mlr verdict row
+under cargo's class, a `jj 0.44.0` row under another class, a Bun row under a new class citing its
+dogfood record — each refuse, and the unmodified page gives 4. Two fixtures more
+(`ledger-exclusion-class-supported`, `ledger-exclusion-excess-cells`), ten in all; each of the ten
+guards rewritten to `False` changes its own fixture and nothing else, seven to green and three to a
+different red. `count.py` walks to 85 `die()` calls, none outside an `if`, no `assert`, no `raise`. Acceptance checks 11 and 12, sliced out and run in `sideeye-spike` again: "gate red on all 53 tampered
+fixtures", the live tree "4 class exclusions matched to refusal-table rows".
+
+Not taken: a non-Class table header inside the same section, or a heading or list line inside a
+Class table, would also end the table on GitHub, and the reader does not refuse those. The
+docstring says a Class table runs from its header to the next `## `, which is what it reads, and
+the page has no such shape today.
+
+**The second diff review found no break in the fixes and five loose ends, three taken.** The tool
+key, split on commas, now shares four words between the two tables rather than three: borg joins,
+from the `git, Borg` scratch-file row, which is a precision limit and not a crossing — borg is a
+corpus target and in no exclusion. rrdtool was misdescribed above and in the first CHANGELOG draft,
+now corrected. And two ways a reader-invisible reference could still tie a define were closed in a
+few lines: a cohort path inside an HTML comment no longer ties anything, and the Tool word is read
+past emphasis, code and link markup and past a tab or a no-break space (`[Bun](…) 1.4.2` read as
+`[bun](…)` before, and matched nothing). Both are pinned on existing fixtures — unnamed's only fx
+path now sits in a comment, supported-by-tool spells its tool as a link — and reverting either
+reader turns exactly that fixture green: twelve rewrites, each changing its own fixture and nothing
+else. Left as recorded: a heading or list line inside a Class table, and the two refusal rows on
+the page whose placement reason zstd's first-table row contradicts. The simplify pass after it
+moved one thing: a row's cohort directories are read once, when the table is read, rather than
+again for every exclusion; the twelve rewrites were run again on that form and came out the same.
+
 ## 2026-09-16 (fifth) — five more, weighted to data a user keeps outside version control: the screen
 
 **Why this slate.** The crossed-walls run earlier today reached three more instances of the

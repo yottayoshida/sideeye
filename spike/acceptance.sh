@@ -6238,7 +6238,7 @@ done
 echo "=========== check 11f: the loop-closure judge is seen refusing (#63) ==========="
 # The judge declares a void condition "enforced per escape channel, against EVERY tool
 # call" and a restore that must not fail silently -- and until this check neither had ever
-# been observed refusing anything. `judge.sh selftest` drives sixty-four refusals with
+# been observed refusing anything. `judge.sh selftest` drives seventy refusals with
 # synthetic roots and transcripts (four by name, four by network alternation, three path
 # markers, thirty-three spellings of the repo or the config dir that the path channel resolves (#510),
 # three docker — one a relative mount source outside the stage — the transcript with no
@@ -6248,7 +6248,7 @@ echo "=========== check 11f: the loop-closure judge is seen refusing (#63) =====
 # #515's other half — no inputs.json, a record inputs.json does not attest, one that changed
 # since the launcher recorded it, a transcript that is neither what the audit read nor what
 # the launcher recorded — six stages the pristine check
-# refuses and two the rebuild refuses) plus twenty-three greens: a clean transcript stays clean, the trusted mcp
+# refuses and two the rebuild refuses, and six seals on the eval container's channels) plus twenty-four greens: a clean transcript stays clean, the trusted mcp
 # server's own tool is counted rather than voided, seven records the path channel leaves clean
 # (a `..` that stays in the stage, a sibling named like the repo, ten `cd`s whose candidate
 # directories grow by one per call, an ancestor grep that reads the stage, a grep whose pattern
@@ -6280,14 +6280,14 @@ echo "=========== check 11f: the loop-closure judge is seen refusing (#63) =====
 # seal-reds/mutations.txt), and the
 # verdict forced to clean (forty-six of them; not unauditable or the two record cases, which
 # exit earlier, not name-off-allowlist, whose field that program does not empty, and not
-# the fourteen cases that never reach the audit: restore-fail, the five finalize refusals, the six
+# the twenty cases that never reach the audit: restore-fail, the five finalize refusals, the six seal refusals (#597), the six
 # pristine refusals and the two rebuild refusals).
 # Through a pipe into `sh -s`, not as a file: that is how measure.py runs the judge — from the
 # bytes it verified, on stdin — and until this leg only the measurement itself took that path
 # (#515's other half). A pipe, not `< file`: a redirected file is seekable and the stdin-eating
 # accident has different conditions there. SIDEEYE_REPO is given because `$0` is `sh` inside.
 if cat "$ROOT/spike/loop-closure-timew/judge.sh" | SIDEEYE_REPO="$ROOT" sh -s -- selftest > /tmp/acc-judge-selftest.txt 2>&1; then
-    echo "ok   judge.sh selftest: sixty-four refusals and twenty-three greens, through sh -s"
+    echo "ok   judge.sh selftest: seventy refusals and twenty-four greens, through sh -s"
 else
     echo "FAIL judge.sh selftest (rc=$?): a channel stopped refusing, or a red moved"
     # Every failing line, not a tail: a green run is already twenty-odd lines, so `tail -20` would
@@ -6319,6 +6319,22 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 11h: the seals on the eval container's channels are one text, and its CLI agrees with it (#597) ==========="
+# spike/container_seals.py is what the loop-closure judge reads the eval container's outputs
+# with: sideeye's own digest of the report, and the shell's rc, functional status and export, each
+# one token on the container's stdout, counted anywhere in the stream and required exactly once,
+# the report file then held to the digest. Its --selftest runs a clean stream and every refusal
+# (no token, a forgery beside the real one with the real one's line start taken away, the file
+# rewritten after the seal, a FIFO, a symlink, a directory, an oversized file, unparsable bytes)
+# and holds the CLI to judge_eval(). Run on its own, as 11c and 11d are: when judge.sh's selftest
+# fails for another reason, this line still says whether the seals hold.
+if python3 "$ROOT/spike/container_seals.py" --selftest; then
+    echo "ok   container_seals.py: every channel seals on a clean stream, every refusal refuses, and the CLI agrees"
+else
+    echo "     container_seals.py's selftest failed (rc=$?): a refusal stopped refusing, or the CLI disagrees"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
 # Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
 # recomputation from corpus.tsv + the committed sweep artifacts (count.py check also
@@ -6329,10 +6345,10 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # The gate's own predicates are proven falsifiable on committed fixtures every run —
 # a fixture for each predicate this check NAMES, not only the two accidents that
 # motivated the gate. **Not a fixture per predicate** — that reading was here until
-# #341 and it was false: `count.py` holds 78 `if` guards that reach a `die()`, and a
-# sweep on 2026-09-01 that rewrote each of their tests to `False` in turn and re-ran
-# every input this check feeds found **36 whose removal changes nothing here**. They
-# cluster in `check` (15) and in the readers' shape checks — `read_generations` (3),
+# #341 and it was false: on 2026-09-01 `count.py` held 78 `if` guards that reached a
+# `die()`, and a sweep that day that rewrote each of their tests to `False` in turn and
+# re-ran every input this check fed found **36 whose removal changed nothing here**. They
+# clustered in `check` (15) and in the readers' shape checks — `read_generations` (3),
 # `check_attribution` (3), `load_reports` (2), `split_revision` (2), `check_ledgers` (2),
 # and one each in `read_corpus`, `_reject_duplicate_ids`, `read_manifest`,
 # `enum_from_schema_doc`, `digest_for`, `read_ledger`, `parse_section`,
@@ -6344,15 +6360,18 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # **How that 36 was counted, and why two earlier counts came out lower.** The candidates
 # are every `if` whose body reaches a `die()`, found by walking the parse tree rather
 # than by reading nearby lines; each test was rewritten to `False` in a copy and the
-# whole of this check re-run — the live root, `good`, `setup-error-present`, and all 37
-# tampered fixtures against their expected messages. A predicate is undetected when all
-# 40 verdicts are unchanged. The two earlier passes found candidates by text proximity —
+# whole of this check re-run — the live root, `good`, `setup-error-present`, and the 37
+# tampered fixtures committed then, against their expected messages. A predicate was
+# undetected when all 40 verdicts were unchanged. The two earlier passes found candidates by text proximity —
 # a `die` within three lines of its `if` — and got 32, then 33 once the sites that
 # heuristic had skipped were swept by hand; the published block's duplicate-slice
 # refusal, whose `if` is separated from its `die` by a comment block, is the one it
-# could not see. **The figure is complete for this file**: `count.py` contains no
-# `assert` and no `raise`, and every one of its 71 `die()` calls sits inside an `if`, so
-# there is no fourth way to guard one and nothing falls outside the candidate set.
+# could not see. **The figure was complete for the file as it stood that day**: `count.py`
+# contained no `assert` and no `raise`, and every one of its 71 `die()` calls sat inside
+# an `if`, so there was no fourth way to guard one and nothing fell outside the candidate
+# set. The sweep has not been re-run since, so the 36 says nothing about guards added
+# after it. Measured again on 2026-09-16 for #598, by walking the parse tree: 85 `die()`
+# calls, none outside an `if`, still no `assert` and no `raise` — 75 before #598's ten.
 #
 # The fixtures this check does name:
 # fixtures/good must pass; tampered-verdict (report verdict flipped, docs stale),
@@ -6410,7 +6429,33 @@ echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84)
 # commit no longer reachable), but count.py calls neither git nor subprocess today,
 # and bringing a git dependency into a tool that runs in the sweep container is its
 # own decision.
-# The first of those seven was itself red for the wrong reason when it was written —
+# #598 adds ten, for the class-exclusions.tsv criterion — each row rests on its
+# target's own row in docs/target-classes.md, and nothing in the first table reaches
+# the target — and for the page shape that criterion is read from.
+# ledger-exclusion-unnamed (no row cites the define's cohort directory outside an HTML
+# comment, where no reader sees it; the quote is a real refusal-table Class cell, so
+# comparing the string alone would pass it),
+# ledger-exclusion-stale-quote (the row that cites it was reworded under the quote —
+# Bun's row on 2026-09-16), ledger-exclusion-supported (a first-table row cites the
+# directory), ledger-exclusion-supported-by-tool (a first-table row names the same tool
+# and cites no directory — how virtualenv, zstd and ansible-core crossed — spelled as a
+# link, which the word reader has to see through),
+# ledger-exclusion-class-supported (the quoted class is a first-table Class cell on
+# another tool's row — ansible-core crossed under its own Class cell, and mlr shares
+# cargo's), ledger-exclusion-no-classes-page (the page is absent),
+# ledger-exclusion-first-table-gone (its heading renamed), ledger-exclusion-first-table-
+# empty (the heading stands over no rows), ledger-exclusion-split-table (a blank line
+# inside a Class table, where GitHub ends it) and ledger-exclusion-excess-cells (a row
+# with more cells than its header — an unescaped `|` in a code span, which GitHub
+# splits on and whose extra cells it drops; Bun's row lost its Recorded in cell that
+# way). Each guard was rewritten to `False` in turn and the live root, `good` and all
+# ten re-run: every rewrite changed its own fixture and nothing else — green for seven,
+# and for unnamed, no-classes-page and first-table-gone the kind of red, the unnamed row
+# then failing the quote comparison, the absent page a traceback, the missing heading
+# the empty-table refusal. Two readers were reverted the same way: without removing
+# comments before reading directories, unnamed turns green; with the Tool cell's first
+# word taken by splitting on a space, supported-by-tool does.
+# The first of #239's seven was itself red for the wrong reason when it was written —
 # count.py read its reports before checking its status, so it died on a missing file
 # — which is what this loop's message-matching exists to catch. **Predicates with no
 # fixture, named so nobody reads this list as complete.** From #239: the generation
@@ -6486,6 +6531,16 @@ for pair in \
     "ledger-overlap:must be disjoint" \
     "ledger-successor:which is not a corpus define" \
     "ledger-unrelated-successor:which is a different target" \
+    "ledger-exclusion-unnamed:names no row outside the first table" \
+    "ledger-exclusion-stale-quote:quote the Class cell verbatim" \
+    "ledger-exclusion-supported:a first-table row, names its directory" \
+    "ledger-exclusion-supported-by-tool:name the same tool" \
+    "ledger-exclusion-class-supported:which is also a Class cell of the first table" \
+    "ledger-exclusion-no-classes-page:docs/target-classes.md is missing" \
+    "ledger-exclusion-first-table-gone:'## Measured, with verdicts' headings, not 1" \
+    "ledger-exclusion-first-table-empty:has no Class rows under" \
+    "ledger-exclusion-split-table:a blank line splits the Class table" \
+    "ledger-exclusion-excess-cells:cells where its table's header has" \
     "outcome-new-this-sweep:declaring an already-triaged tool untriaged" \
     "attribution-slice-denominator:a row reaches its slice exactly once" \
     "attribution-slice-numerator:in the published rows" \
