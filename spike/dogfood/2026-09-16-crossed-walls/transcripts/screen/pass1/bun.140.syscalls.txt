@@ -1,0 +1,14 @@
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+PREFLIGHT  recording accepted — 10 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 10 operations (517 syscall lines examined, 94 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+processes    single process in the recording; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/140-syscalls/bun --setup "/localrun/ap/setup-bun.sh" --operation "bun add --cwd /localrun/st/140-syscalls/bun /localrun/aux/bun/dep-1.0.0.tgz" \
+               --check <your-invariant.sh> --shim /se140/libsideeye_shim.so --oracle /usr/bin/strace

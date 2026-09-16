@@ -1,0 +1,2 @@
+ninja: Entering directory `/localrun/st/strace/ninja'
+[1/1] cp in.txt out.txt

@@ -1,0 +1,128 @@
+## oven-sh/bun  [package.json truncated]
+  total 493
+  #36387 [open] 2026-07-29 install: fix false "Workspace name already exists" on truncated-hash collisions
+  #41724 [open] 2026-09-06 install: name the tarball cache folder by a truncated sha256 of the URL
+  #36386 [open] 2026-07-29 bun install: false "Workspace name already exists" — duplicate check compares u32-truncated name hashes, not names
+  #36965 [open] 2026-08-05 bun create: preserve package.json indentation from the template
+  #39666 [open] 2026-08-19 install: reject an empty root package.json instead of deleting the lockfile
+  #41741 [open] 2026-09-06 init: report a scaffold file that cannot be written and exit 1
+  #42839 [open] 2026-09-16 resolver: slice a package.json dependency version with the buffer it was parsed in
+  #38781 [open] 2026-08-15 install: skip workspace members whose package.json has no name
+## oven-sh/bun  [package.json empty]
+  total 1552
+  #42274 [open] 2026-09-11 completions: fix --cwd support, Bash 3.2 compatibility, and optimize package.json parsing
+  #4823 [open] 2023-09-10 SyntaxError parsing package.json
+  #39666 [open] 2026-08-19 install: reject an empty root package.json instead of deleting the lockfile
+  #41883 [open] 2026-09-08 bundler: an empty data file is {} under "type": "module", and an empty .json is a build error
+  #41807 [open] 2026-09-07 init: refuse to overwrite a package.json that does not parse
+  #41291 [open] 2026-09-03 fix(pack): Now dedups paths in package.json bin field
+  #41866 [open] 2026-09-07 install: read trustedDependencies from the root package.json only
+  #41453 [open] 2026-09-05 install: replace an empty directory in an isolated link slot with the link
+## oven-sh/bun  [package.json atomic]
+  total 365
+  #39701 [open] 2026-08-20 Atomic writes: convert bun init and test a write that fails
+  #41736 [open] 2026-09-06 sys: replace the destination atomically in the cross-device move fallback
+  #39666 [open] 2026-08-19 install: reject an empty root package.json instead of deleting the lockfile
+  #41741 [open] 2026-09-06 init: report a scaffold file that cannot be written and exit 1
+  #39689 [open] 2026-08-19 Make concurrent bun test and bun install processes safe on shared files
+  #41808 [open] 2026-09-07 install: honor umask when writing bun.lock, bun.lockb and yarn.lock
+  #36670 [open] 2026-08-01 install: re-download cache entries that lost their package.json
+  #35595 [open] 2026-07-25 resolver: read every default main-field name when parsing package.json
+## oven-sh/bun  [package.json ENOSPC]
+  total 38
+  #41741 [open] 2026-09-06 init: report a scaffold file that cannot be written and exit 1
+  #41736 [open] 2026-09-06 sys: replace the destination atomically in the cross-device move fallback
+  #41764 [open] 2026-09-06 install: reject workspace members outside the workspace root
+  #39701 [open] 2026-08-20 Atomic writes: convert bun init and test a write that fails
+  #38783 [open] 2026-08-15 install: link packages into a staging directory and rename them into place
+  #41466 [open] 2026-09-06 bun test: exit 1 when the JUnit report cannot be written, create its parent directory
+  #36659 [open] 2026-08-01 install: schedule the tarball download when auto-install resolves from a disk-cached .npm manifest
+  #39689 [open] 2026-08-19 Make concurrent bun test and bun install processes safe on shared files
+## oven-sh/bun  [write_file_atomically]
+  total 2
+  #39701 [open] 2026-08-20 Atomic writes: convert bun init and test a write that fails
+  #39689 [open] 2026-08-19 Make concurrent bun test and bun install processes safe on shared files
+## igorshubovych/markdownlint-cli  [fix empty]
+  total 21
+  #415 [open] 2023-07-31 add `--verbose` flag
+  #660 [closed] 2026-08-31 Bump js-yaml from 5.3.0 to 5.4.1
+  #662 [closed] 2026-09-13 Bump js-yaml
+  #649 [closed] 2026-08-07 Say what happened when the given files match nothing
+  #648 [closed] 2026-08-03 Bump brace-expansion from 5.0.8 to 5.0.9
+  #632 [closed] 2026-06-22 Bump js-yaml from 4.2.0 to 5.0.0
+  #574 [closed] 2025-11-17 Bump smol-toml from 1.4.2 to 1.5.2
+  #573 [closed] 2025-11-14 Bump js-yaml from 4.1.0 to 4.1.1
+## igorshubovych/markdownlint-cli  [fix truncated]
+  total 42
+  #634 [closed] 2026-06-22 Bump xo from 2.0.2 to 3.0.2
+  #632 [closed] 2026-06-22 Bump js-yaml from 4.2.0 to 5.0.0
+  #641 [closed] 2026-07-14 Bump actions/setup-node from 6 to 7
+  #631 [closed] 2026-06-22 Bump actions/checkout from 6 to 7
+  #628 [closed] 2026-06-03 Bump commander from 14.0.3 to 15.0.0
+  #613 [closed] 2026-03-16 Bump xo from 1.2.3 to 2.0.2
+  #598 [closed] 2026-02-16 Bump minimatch from 10.1.2 to 10.2.0
+  #609 [closed] 2026-03-09 Bump docker/setup-buildx-action from 3 to 4
+## igorshubovych/markdownlint-cli  [fix atomic]
+  total 0
+## igorshubovych/markdownlint-cli  [fix EFBIG]
+  total 0
+## igorshubovych/markdownlint-cli  [fix ENOSPC]
+  total 0
+## igorshubovych/markdownlint-cli  [writeFileSync]
+  total 2
+  #554 [closed] 2025-07-11 feat: add support for --stdin with --fix option
+  #155 [closed] 2021-01-10 Add End of File Newline to program.output
+## igorshubovych/markdownlint-cli  [fix file lost]
+  total 1
+  #646 [closed] 2026-08-03 Bump markdown-it from 14.3.0 to 15.0.0
+## DavidAnson/markdownlint-cli2  [fix empty]
+  total 42
+  #926 [closed] 2026-09-07 Bump js-yaml from 5.4.0 to 5.4.1
+  #927 [closed] 2026-09-08 Bump eslint-plugin-unicorn from 73.0.0 to 74.0.0
+  #924 [closed] 2026-09-04 Bump js-yaml from 5.3.0 to 5.4.0
+  #899 [closed] 2026-08-04 Bump @playwright/test from 1.61.1 to 1.62.0
+  #820 [closed] 2026-06-02 Bump eslint-plugin-jsdoc from 63.0.0 to 63.0.1
+  #867 [closed] 2026-07-13 Bump eslint-plugin-unicorn from 69.0.0 to 70.0.0
+  #881 [closed] 2026-07-23 Bump docker/login-action from 4 to 4.4.0
+  #841 [closed] 2026-06-23 Bump js-yaml from 4.2.0 to 5.1.0
+## DavidAnson/markdownlint-cli2  [fix atomic]
+  total 2
+  #422 [closed] 2024-09-24 Bump eslint from 9.11.0 to 9.11.1
+  #423 [closed] 2024-09-24 Bump @eslint/js from 9.11.0 to 9.11.1
+## DavidAnson/markdownlint-cli2  [writeFileSync atomic]
+  total 0
+## DavidAnson/markdownlint-cli2  [fix ENOSPC]
+  total 0
+## google/google-java-format  [replace empty]
+  total 9
+  #562 [open] 2021-02-05 Running with --replace does not converge
+  #1453 [closed] 2026-09-10 Use inherited EMPTY_RANGE in JavaOutput to eliminate Formatter dependency.
+  #1411 [closed] 2026-07-10 Fix `NullPointerException` when `visitListItem` encounters a non-paragraph first child.
+  #137 [open] 2017-03-14 support `// format:off` comments
+  #1452 [open] 2026-09-10 Bump the dependencies group across 1 directory with 11 updates
+  #776 [closed] 2022-04-21 Bump maven-javadoc-plugin from 3.3.1 to 3.4.0
+  #360 [closed] 2019-04-04 Inconsistent annotation formatting
+  #33 [closed] 2016-03-25 Windows support
+## google/google-java-format  [replace atomic]
+  total 0
+## google/google-java-format  [replace truncated]
+  total 8
+  #1452 [open] 2026-09-10 Bump the dependencies group across 1 directory with 11 updates
+  #1433 [closed] 2026-08-01 Bump the github-actions group across 1 directory with 2 updates
+  #1427 [closed] 2026-07-30 Bump the dependencies group across 1 directory with 28 updates
+  #1425 [closed] 2026-07-30 Bump the dependencies group across 1 directory with 29 updates
+  #1401 [closed] 2026-06-26 Bump the dependencies group across 1 directory with 28 updates
+  #1400 [closed] 2026-06-26 Bump the github-actions group with 4 updates
+  #776 [closed] 2022-04-21 Bump maven-javadoc-plugin from 3.3.1 to 3.4.0
+  #753 [closed] 2022-03-01 Bump tycho-version from 2.6.0 to 2.7.0
+## google/google-java-format  [replace disk full]
+  total 0
+## google/google-java-format  [replace file lost]
+  total 4
+  #1452 [open] 2026-09-10 Bump the dependencies group across 1 directory with 11 updates
+  #1425 [closed] 2026-07-30 Bump the dependencies group across 1 directory with 29 updates
+  #1427 [closed] 2026-07-30 Bump the dependencies group across 1 directory with 28 updates
+  #1401 [closed] 2026-06-26 Bump the dependencies group across 1 directory with 28 updates
+## google/google-java-format  [replace zero]
+  total 1
+  #753 [closed] 2022-03-01 Bump tycho-version from 2.6.0 to 2.7.0

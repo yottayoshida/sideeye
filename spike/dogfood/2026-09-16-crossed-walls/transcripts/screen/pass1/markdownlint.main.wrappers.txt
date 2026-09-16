@@ -1,0 +1,11 @@
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (5801 syscall lines examined, 1370 in scope of the judged state), witness strace
+processes    single process in the recording; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+next         sideeye explore --state /localrun/st/main-wrappers/markdownlint --setup "/localrun/ap/setup-markdownlint.sh" --operation "markdownlint --fix /localrun/st/main-wrappers/markdownlint/README.md" \
+               --check <your-invariant.sh> --shim /semain/lib/libsideeye_shim.so --oracle /usr/bin/strace

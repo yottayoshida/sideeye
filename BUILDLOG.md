@@ -58,6 +58,42 @@ re-selecting them; the weakness is recorded against any upstream report instead.
 truncating open with the original nowhere (85%), google-java-format FAIL, the same window (80%),
 xz PASS (85%), and main answering what v1.4.0 answers for all five (85%).
 
+**The run, against the predictions.** Three of five verdicts as predicted, and main answering
+what v1.4.0 answered for all five. markdownlint-cli FAIL 4/4 and google-java-format FAIL 4/4,
+both crash point 2 of 2, both a zero-byte file between `O_WRONLY|O_CREAT|O_TRUNC` and the write;
+xz PASS 4/4, 19/19 worlds. **Bun was a miss: FAIL 3/3**, crash point 10 of 10, an empty
+`package.json`. I had read the screen capture's `O_RDWR` open at line 182 as the rewrite; the
+rewrite is the truncating open at line 759, the same window as the other two. **ninja was a
+miss of a different kind: FAIL 3/3 on the built-in invariant over `out.txt`** — its `cp` child's
+truncating open, before the write — while the checker passed in every world.
+
+**The ninja reversal, measured before it was written.** My reading after the FAIL was that an
+empty `out.txt` with a fresh mtime would look up to date and survive the next build — a real
+defect. `apparatus/probe-ninja.sh` measured it without Sideeye, by hand-truncating and by killing
+the build after the truncating open: both times the next `ninja` printed `recorded mtime of
+out.txt older than most recent input in.txt` and rebuilt it. ninja compares against the mtime its
+log recorded, not the file's. So the second define declares `out.txt` scratch and puts the claim
+in the checker (re-run ninja, `out.txt` equals `in.txt`): PASS 3/3. The first define's FAIL is
+the git `COMMIT_EDITMSG` class.
+
+**Two of the FAILs do not need a crash.** `ulimit -f 0` alone leaves markdownlint-cli's
+`README.md` at 0 bytes (`EFBIG` thrown from `writeFileSync`, exit 4) and google-java-format's
+`A.java` at 0 bytes (*"could not write file: File too large"*): the write fails, the tool reports
+it and exits, and the truncation already happened. For Bun, `ulimit -f` at 1–8 blocks leaves a
+6,070-byte manifest at exactly the limit.
+
+**Bun is already known upstream.** oven-sh/bun#39689 (open since 2026-08-19) converts the
+`package.json` writer to a temporary file and a rename, and #39666 names the zero-byte manifest
+as what an interrupted rewrite leaves. Nothing was found for markdownlint-cli or
+google-java-format; whether to report them is the owner's call, not this run's.
+
+**What the record nearly got wrong.** The first draft of `RESULTS.md` called Bun "the first Zig
+target judged" and counted the truncating rewrite in ten languages. Bun 1.4 is Rust — its own row
+on `docs/target-classes.md` says so, and #39689 edits `src/sys/file.rs` — so it is nine. And the
+first novelty pass returned nothing for every query, which was `gh search issues` sending a
+spaced argument as a quoted phrase; the same words through the search API returned 1,552 results
+for Bun, and #39689 among them.
+
 ## 2026-09-16 (third) — a second writing thread is judged when a creation or a join the shim recorded orders it (#539, contract v18)
 
 **What was measured before anything was designed.** ADR 0055 left "threads that take turns" as a

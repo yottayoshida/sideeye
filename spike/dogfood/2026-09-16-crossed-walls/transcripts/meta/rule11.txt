@@ -1,5 +1,3 @@
-/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-dogfood-0916b/spike/dogfood/2026-09-16-crossed-walls/apparatus/rule11-github.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-  NOW = datetime.datetime.utcnow()
 === prettier/prettier ===
 
 === svg/svgo ===
@@ -31,4 +29,10 @@
   #1439 2026-08-06 by PaulNgo-BlueOC: first reply from Amlan2000 after 8.9d [SLOW]  IndexOutOfBoundsException - Wrong formatted content 
   #1436 2026-08-04 by zhumin8: first reply from shrey070998 after 1.6d [OK]  unused import removal leaves extra blank line betwee
   #1428 2026-07-30 by algonell: first reply from bvo42 after 25.0d [SLOW]  Possible issue with Eclipse plugin
+
+=== tukaani-project/xz ===
+  #237 2026-07-22 by EugZol: first reply from Larhzu after 0.2d [OK]  UB in `rc_to_local`/`rc_from_local` when `next_in = 
+  #234 2026-07-11 by danielrobbins: first reply from Larhzu after 9.1d [SLOW]  Respect cgroup v2 memory limits on Linux
+  #233 2026-07-01 by AdrianBunk: first reply from Larhzu after 0.0d [OK]  CVE-2026-34743 testcase does not fail without the fi
+  #219 2026-04-01 by vtorri: first reply from Larhzu after 2.2d [OK]  cmake: does not try to detect clock_gettime() is vis
 

@@ -1,0 +1,14 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 95    write(3</localrun/st/main-wrappers/ninja/.ninja_log>, "2\t23\t1789547342572416002\tout.txt"..., 50) = 50; the shim recorded: unlink("/localrun/st/main-wrappers/ninja/.ninja_lock")
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+divergence  write
+
+atomicity   3 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): .ninja_log
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
