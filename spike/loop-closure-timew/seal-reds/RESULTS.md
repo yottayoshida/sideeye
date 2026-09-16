@@ -19,7 +19,7 @@ can check later. The fields the claims below use are committed here.
 `judge.sh selftest` — a subcommand, not a new script, because `restore_and_diff` is a
 function inside `judge.sh` and only a caller in the same shell can reach it.
 
-**Sixty refusals, counted per predicate branch rather than per output field.** The
+**Sixty-four refusals, counted per predicate branch rather than per output field.** The
 distinction is not bookkeeping: `network_hits` is one field but four alternations, and a
 single `curl` case would have stood in for `git clone`, `pip install` and a bare URL
 without ever running them.
@@ -86,15 +86,21 @@ without ever running them.
 | 58 | by PATH, resolved | `path-cd-then-read` | `cd ../.. && grep -rn X .` |
 | 59 | by PATH, resolved | `path-config-realpath` | a home given through a symlink, reached past another symlink's `..` |
 | 60 | by PATH, resolved | `path-ln-into-dir` | `ln -s build/x . && cat ../../<repo>/BUILDLOG.md` (found while measuring the speed) |
+| 61 | finalize | `finalize-no-inputs` | no `$ROOT/inputs.json` — a finalize with no launcher behind it (#515's other half, ADR 0066) |
+| 62 | finalize | `finalize-unattested` | a record finalize reads (`pos-verdict.json`) with no entry in inputs.json |
+| 63 | finalize | `finalize-changed` | a record that changed since the launcher recorded it (`pos-verdict.json`, one byte appended) |
+| 64 | finalize | `finalize-record-changed` | the transcript grew after the audit: it is neither what the audit read nor what the launcher recorded, and the case asserts both sentences |
 
 Each of the forty-nine voiding cases asserts that the **one** void field its channel owns is
 the non-empty one. The thirty-three resolved-path cases carry none of the three strings the text test
 matches, and `main`'s judge audited every one of them `clean` before the change (BUILDLOG,
 2026-09-15, second entry).
 A case that voided through another channel proves that channel, not the branch it is named
-for. Eleven cases are judged on their own terms rather than by that assertion: `unauditable`
+for. Fifteen cases are judged on their own terms rather than by that assertion: `unauditable`
 (the no-tool-calls path writes a few keys and exits), `restore-fail` (it never reaches the
-audit), `finalize-unverified` (a different subcommand, judged on its message), the six
+audit), `finalize-unverified` and the four finalize refusals of #515's other half (a different
+subcommand, each judged on the sentence that names what it refused — the exit code alone would
+not do, since the judge before the change also exited nonzero there, on an unknown argument), the six
 pristine refusals (each asserts instead that the ONE stage-record key its kind of difference
 owns is the non-empty one, the same discipline one level down; `check-pristine-unreadable`'s
 key is `extra` when run as root, where the closed directory can be listed), and
@@ -102,7 +108,7 @@ key is `extra` when run as root, where the closed directory can be listed), and
 it points at, being left exactly as it was).
 
 **Twenty-three greens**, without which "void" — or "refuse" — could be the only answer and all
-sixty reds above would still pass:
+sixty-four reds above would still pass:
 
 - `clean` — a transcript that escapes nothing: `verdict: clean`, rc 0, every void field empty.
 - `mcp-allowed` — the trusted server's *own* tool (`mcp__sideeye__sideeye_replay_case`) is
@@ -152,23 +158,37 @@ sixty reds above would still pass:
 - `restore-rerun` — rebuilt once on an untouched stage and again after a change, the second
   record names the change and `restore-rerun-stage-diffs.jsonl` keeps both, the first empty;
   an earlier empty record never stands in front of the one with the change in it.
+- `finalize-verified` — the control for the finalize refusals: an audit that verified its digest,
+  a transcript that hashes to `record_sha_value`, and a `$ROOT/inputs.json` attesting every
+  record finalize reads let the manifest close with rc 0, `loop_closed: true`, and the digest
+  list carried in `inputs` (#515; ADR 0058 and 0066). It was in the count and not in this list
+  until 2026-09-16.
 
 Each rebuild case asserts the disk before the record, and takes the rebuild's exit code with
 `||`, so one failing rebuild is a FAIL line rather than the end of the selftest.
 
 Raw output: `selftest.txt`.
 
-## Seen red eighty times, and the attribution is the result
+## Seen red eighty-five times, and the attribution is the result
 
-`mutations.txt` (programs in `MUTATIONS.md`). **Eighty mutations** — seventy-nine of the judge,
-one of the case list itself — re-measured in full on 2026-09-15 on the final judge for #510,
-against predictions written before the run (the rows for #512 and #513 were first measured that
-morning, when they replaced the restore). **Seventy-nine killed exactly the predicted set; one,
-`carry-held`, killed one case more** — `path-ancestor-maybe`, on the candidate bound that green
-asserts rather than on its verdict (`MUTATIONS.md` says why). Two rows kill a case in a second channel,
+`mutations.txt` (programs in `MUTATIONS.md`). **Eighty-five mutations** — eighty-four of the judge,
+one of the case list itself — re-measured in full on 2026-09-16 on the judge for #515's other
+half, against the attribution recorded on 2026-09-15 for the eighty that existed then and the
+prediction written for the five new ones (`inputs-absent-off`, `inputs-unattested-off`,
+`inputs-changed-off`, `record-audit-rehash-off`, `record-launcher-rehash-off`: each kills its own
+finalize case alone, the last two the same case, which asserts both of their sentences).
+**Eighty-four killed exactly the recorded or predicted set; one, `carry-held`, killed one case
+more** — `path-ancestor-maybe`, on the candidate bound that green asserts rather than on its
+verdict (`MUTATIONS.md` says why) — as on 2026-09-15. One row needed a second measurement:
+read from the table's source by a script, `record-torn-blind` came back killing every audit
+case, twice; applied by hand from the rendered table it killed `record-torn` alone, as
+recorded. The cause was the table, not the judge: that row's source carried two backslashes
+before the `n` where its neighbour carries one, and `sed` given the source text left the
+characters `\n` on one line of the copy — a syntax error every audit case fails on. The row is
+written with one backslash now (`MUTATIONS.md`), and it carries the by-hand run. Two rows kill a case in a second channel,
 and for one reason: `relative-off` and `cd-off` break the resolution the mount check shares with
 the path channel, so each kills a mount case beside the path cases. No other mutation killed a
-case outside its own channel, and every one of the sixty refusals is killed by at least one
+case outside its own channel, and every one of the sixty-four refusals is killed by at least one
 — `path-repo` and `path-tilde` by `always-clean` alone now, since they void through the
 resolution as well as the text. The morning's run also found one committed program
 (`mcp-prefix-loose`) that changed nothing as written; `MUTATIONS.md` records it and its correction.

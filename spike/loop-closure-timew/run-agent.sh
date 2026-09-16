@@ -22,6 +22,17 @@
 #
 # Refuses to run until both controls hold, and refuses to run twice: one stage,
 # one measurement. A second attempt needs a fresh stage.
+#
+# This file is the pre-run half only. Everything from the agent's start to the manifest is
+# measure.py's (#515's other half, ADR 0066): it takes the digests of the seal, the controls
+# and the judge's scripts before the agent, records the transcript through its own handle
+# while hashing the stream, snapshots repo/ when the agent exits, and calls judge.sh from the
+# bytes it verified. The reason is that sh reads a script as it runs — the lines of this file
+# after the agent's start would be an ordinary file for the agent to rewrite for as long as it
+# is alive — so this script ends in `exec` and nothing of it survives into the run. That
+# sentence is about the measured agent. The canary below is a claude call too, made before the
+# `exec` with this script's remaining lines still unread; it is the launcher's own one-line
+# prompt with no task in it, which is a mitigation and not a structure, and is said so here.
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -35,7 +46,7 @@ command -v claude >/dev/null || { echo "claude CLI not found" >&2; exit 1; }
 [ -d "$STAGE" ] || { echo "no stage at $STAGE" >&2; exit 1; }
 
 # Both controls must have held. The apparatus is proven before the agent runs.
-python3 -c '
+python3 -I -c '
 import json, sys
 for p in sys.argv[1:]:
     if json.load(open(p)).get("expectation_met") is not True:
@@ -57,7 +68,7 @@ for p in sys.argv[1:]:
 # `protocol.json` sits BESIDE the seal, not in it: the manifest is built from `$STAGE`
 # and this file lives in `$SEAL`, so it is neither hashed nor restored. Saying "from
 # the seal" would be false, and this gate's one input deserves the accurate word.
-pin=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["pin"])' "$ROOT/seal/protocol.json") ||
+pin=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["pin"])' "$ROOT/seal/protocol.json") ||
     { echo "could not read the pin from protocol.json beside the seal" >&2; exit 1; }
 # Three-valued, like the script it calls: 1 is "the statement is false", 2 is "the
 # check could not make it".
@@ -87,18 +98,24 @@ case "${2:-}" in
 esac
 
 CLI_VERSION=$(claude --version 2>&1 | head -1)
+MEASURE="$SCRIPT_DIR/measure.py"
+[ -f "$MEASURE" ] || { echo "measure.py not found beside this script" >&2; exit 1; }
 
-# Canary: safe mode must authenticate before the real run burns the stage.
-canary_out=$( cd "$STAGE" && claude --safe-mode -p "Reply with exactly: ok" < /dev/null 2>"$RESULTS/canary-stderr.log" ) \
-    || { echo "canary failed — safe mode did not authenticate; see $RESULTS/canary-stderr.log" >&2; exit 1; }
-case "$canary_out" in
-    *ok*) echo "canary: safe mode authenticates" ;;
-    *) echo "canary returned unexpected output: $canary_out" >&2; exit 1 ;;
+# Canary: safe mode must authenticate before the real run burns the stage — and through the
+# same spawn path the agent will take (its own session, no controlling terminal, stdout
+# recorded by measure.py), so a CLI that will not run that way is found here, not on the stage.
+# The recorder's one JSON line is the canary's exit code; its stdout is the file.
+record_rc() { printf '%s' "$1" | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["rc"])'; }
+canary=$(python3 -I "$MEASURE" run --out "$RESULTS/canary-out.txt" --err "$RESULTS/canary-stderr.log" \
+    --cwd "$STAGE" --roots "$ROOT" "$RESULTS" -- claude --safe-mode -p "Reply with exactly: ok") \
+    || { echo "canary failed — the recorder did not return; see $RESULTS/canary-stderr.log" >&2; exit 1; }
+[ "$(record_rc "$canary")" = 0 ] || { echo "canary failed — safe mode did not authenticate (rc $(record_rc "$canary")); see $RESULTS/canary-stderr.log" >&2; exit 1; }
+case "$(cat "$RESULTS/canary-out.txt")" in
+    *ok*) echo "canary: safe mode authenticates, through the recorder" ;;
+    *) echo "canary returned unexpected output: $(cat "$RESULTS/canary-out.txt")" >&2; exit 1 ;;
 esac
-printf '%s\n' "$canary_out" > "$RESULTS/canary-out.txt"
 
 PROMPT="$SCRIPT_DIR/prompt.md"
-PROMPT_SHA=$(shasum -a 256 "$PROMPT" | cut -d' ' -f1)
 # NOTE: judge.sh's audit keeps its own copies of these sets (ALLOWED/UNSEALED)
 # on purpose — the judge trusts nothing this script writes. Change both or the
 # audit's classification silently drifts.
@@ -124,70 +141,18 @@ ALLOWED="Bash,Read,Edit,Write,Glob,Grep"
 # spike/loop-closure-timew/seal-reds/.
 DISALLOWED="WebFetch,WebSearch,Task,Agent,Workflow,SendMessage,PushNotification,RemoteTrigger,ScheduleWakeup,CronCreate,CronDelete"
 
-echo "=== the run: one agent, the sealed stage, the transcript records everything ==="
-agent_rc=0
-( cd "$STAGE" && claude --safe-mode -p "$(cat "$PROMPT")" \
+echo "=== the run: one agent, the sealed stage; measure.py records it, then judges it ==="
+# `exec`, and nothing after it: sh reads a script as it runs, so any line below this one would
+# be an ordinary file the agent could rewrite while it is alive, and it would run as the agent
+# wrote it (#515's other half; ADR 0066). measure.py takes the pre-run digests, runs the agent
+# with its stdout recorded through its own handle, writes agent-meta.json and $ROOT/inputs.json,
+# and calls judge.sh audit -> eval -> [secondary] -> finalize, verifying before each step. If a
+# step fails (a container, say), `measure.py resume --root ROOT --repo REPO` continues from
+# inputs.json; nothing is typed in by hand.
+exec python3 -I "$MEASURE" judge --root "$ROOT" --repo "$SIDEEYE_REPO" --variant cli --prompt "$PROMPT" \
+    --meta "cli_version=$CLI_VERSION" --meta "allowed_tools=$ALLOWED" \
+    --meta "disallowed_tools=$DISALLOWED" --meta safe_mode=true \
+    -- claude --safe-mode -p "$(cat "$PROMPT")" \
     --allowedTools "$ALLOWED" \
     --disallowedTools "$DISALLOWED" \
-    --output-format stream-json --verbose \
-    < /dev/null \
-    > "$RESULTS/transcript.jsonl" 2> "$RESULTS/agent-stderr.log" ) || agent_rc=$?
-echo "agent exited: $agent_rc"
-
-python3 - "$RESULTS/transcript.jsonl" "$RESULTS/agent-meta.json" \
-    "$CLI_VERSION" "$ALLOWED" "$PROMPT_SHA" "$agent_rc" "$DISALLOWED" <<'PY'
-import json, sys
-
-transcript, out, cli_version, allowed, prompt_sha, agent_rc, disallowed = sys.argv[1:8]
-model, model_usage, result = None, None, {}
-with open(transcript) as f:
-    for line in f:
-        try:
-            ev = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if not isinstance(ev, dict):
-            continue
-        if model is None and ev.get("model"):
-            model = ev["model"]  # the init event: the model the run was asked to use
-        if isinstance(ev.get("modelUsage"), dict):
-            model_usage = sorted(ev["modelUsage"])  # the result event: every model that billed
-        if ev.get("type") == "result":
-            result = ev
-meta = {
-    "model": model,
-    "models_billed": model_usage,
-    "cli_version": cli_version,
-    "allowed_tools": allowed,
-    "disallowed_tools": disallowed,
-    "prompt_sha256": prompt_sha,
-    "agent_rc": int(agent_rc),
-    "safe_mode": True,
-    # The headline numbers, into an artifact — the run dir is gitignored and a
-    # hand-read result event is not a record.
-    "num_turns": result.get("num_turns"),
-    "duration_ms": result.get("duration_ms"),
-    "total_cost_usd": result.get("total_cost_usd"),
-}
-json.dump(meta, open(out, "w"), indent=1)
-print("agent-meta: model=%s cli=%s" % (model, cli_version))
-if not model:
-    sys.exit("no model id found in the transcript — record it by hand before finalize")
-PY
-
-echo ""
-# `--record-sha` (#515): the audit reports whether the record it read is the record that
-# was made, and `finalize` refuses a manifest whose audit verified no digest. This
-# launcher does not yet compute the digest as it records — that is #515's other half —
-# so the operator supplies one here, and its value is only as good as this file was.
-echo "next: judge.sh audit --root $ROOT --transcript $RESULTS/transcript.jsonl \\"
-if [ -f "$RESULTS/transcript.jsonl" ]; then
-    echo "        --record-sha $(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$RESULTS/transcript.jsonl")"
-else
-    # No transcript, no digest: printing an empty --record-sha would read as one that
-    # was supplied, and the substitution would put a traceback in the operator's way.
-    echo "        (no transcript at $RESULTS/transcript.jsonl — nothing to digest)"
-fi
-echo "      judge.sh eval  --root $ROOT --mode run"
-echo "      judge.sh secondary --root $ROOT --mode run   (evidence: after eval, which restores; this only verifies)"
-echo "      judge.sh finalize --root $ROOT"
+    --output-format stream-json --verbose

@@ -11,11 +11,20 @@
 # did not verify a digest at all — a positive mark, because the absence of a warning is
 # what a process left behind can arrange.
 #
-# **It still does not cover where those inputs live.** run-agent.sh writes the transcript
-# and the control verdicts into spike/runs/ on the host, the agent holds Bash and Write,
-# and the digest is supplied by the caller — so a caller under the agent's influence hands
-# over a digest of whatever it likes; that is #515's remaining work, filed rather than
-# claimed here. The path channel below voids a transcript that names this repository or the
+# **Where those inputs live is covered since #515's other half (ADR 0066), by the launcher, not
+# by this file.** Every input a verdict rests on — what existed before the agent (the seal's
+# manifest and protocol, the control verdicts, the judge's own scripts, the prompt; the image by
+# id), the record as it streamed, the agent's repo/ working tree right after its exit, and each
+# judge output as it landed — is digested by `measure.py` into its own memory and held there;
+# it refuses to call a judge step when anything differs, and this file is itself run from the
+# bytes it verified (`sh -s`). `finalize` requires `$ROOT/inputs.json`, written by the launcher
+# after the agent's process group is dead, and holds every record it reads — and the transcript
+# named by `audit.record_path` — to it. Outside that set, and said here rather than implied: the
+# eval container's own outputs (replay and functional results; the agent-built binary runs
+# beside them as uid 0, in a directory of its own now, with the stage read-only), `.git/`
+# (recorded, not refused), processes that leave the agent's process group, the same-uid
+# reach ADR 0058 measured, and the interpreter, `sh` and `docker` themselves.
+# The path channel below voids a transcript that names this repository or the
 # config dir, and since #510 it resolves the spellings the record writes — a relative walk,
 # a `cd`, `~` and `$HOME`, an `ln -s` name, another name for the same file outside the stage,
 # a glob — before it compares. Only the record's text is read that way: a path a command
@@ -88,7 +97,7 @@
 #       top-level entry being repo/. Nor are two paths of the pristine check: a sealed file
 #       the record cannot read, and the refusal's --mode run wording.
 #
-#       Sixty refusals. The forty-nine that void assert that the ONE field their
+#       Sixty-four refusals. The forty-nine that void assert that the ONE field their
 #       channel owns is the non-empty one, so a case that voided for another reason
 #       is not a red for the branch it claims. Thirty-three of those are spellings the path
 #       channel resolves before it compares (#510): a relative walk, a walk after `cd`,
@@ -104,10 +113,14 @@
 #       before a recursive read, and a home given through a symlink; and one found while
 #       measuring its speed, `ln -s x .`. One more is the same class a
 #       channel over, a docker mount of the stage's parent spelled `..`. The other
-#       eleven are judged on their own
+#       fifteen are judged on their own
 #       terms (a transcript with no tool calls writes three keys and exits before a
 #       verdict exists, a seal that fails its own hash check never reaches the
-#       classifier, finalize refuses a manifest whose audit verified no digest, six
+#       classifier, finalize refuses a manifest whose audit verified no digest, and
+#       four more finalize refusals from #515's other half — no inputs.json, a record it
+#       reads that inputs.json does not attest, one that changed since the launcher
+#       recorded it, and a transcript that is neither what the audit read nor what the
+#       launcher recorded — six
 #       stages the pristine check refuses on one key each — added, mode, symlink,
 #       content, deleted, and a directory nobody can list — and two the rebuild refuses
 #       before removing anything: no repo/, and a stage that is a symlink). Plus twenty-three
@@ -141,7 +154,9 @@ SIDEEYE_REPO=${SIDEEYE_REPO:-$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)}
 # An environment variable, like SIDEEYE_REPO, rather than an option: the common parser below
 # would let `eval` and `secondary` accept one silently. The selftest assigns its own.
 AUDIT_HOME=${AUDIT_HOME:-$HOME}
-IMAGE=${IMAGE:-sideeye-loop-timew:latest}
+# The image is no longer named here (it was `sideeye-loop-timew:latest`, overridable by IMAGE):
+# a tag is a name anyone with docker can move, and the agent has docker. stage.sh records the
+# image's id in protocol.json at seal time and the containers below run that id (#592).
 PATCH="$SIDEEYE_REPO/spike/timew-undo-ordering.patch"
 # The upstream suites the secondary observation runs: the four C++ test executables run 1
 # counted (BUILDLOG 2026-08-13; the bash launcher test/AtomicFile.t also ran there, errored
@@ -190,6 +205,24 @@ stamp() { # $1 = label; writes $RESULTS/<label>-started, the floor for this run'
     date -u +%FT%TZ > "$RESULTS/$1-started"
 }
 
+image_id() { # the image the seal names, by id — a tag can be retagged by anyone with docker (#592)
+    python3 -I -c '
+import json, sys
+i = json.load(open(sys.argv[1])).get("image_id")
+if not i:
+    sys.exit("protocol.json names no image_id — stage again with the current stage.sh (#592)")
+print(i)' "$SEAL/protocol.json"
+}
+
+container_out() { # $1 = mode; the ONE directory the container may write, fresh for this run
+    # The container runs the agent-built binary as uid 0 with this directory read-write and the
+    # stage read-only. Until #515's other half it had the whole results directory — beside
+    # audit.json, the control verdicts, the transcript — so the tree it could rewrite was the
+    # tree finalize reads. Its own outputs are the residual named in ADR 0066.
+    mkdir -p "$RESULTS/$1-container-out"
+    printf '%s\n' "$RESULTS/$1-container-out"
+}
+
 restore_and_diff() { # $1 = mode, $2 = restore|check, $3 = pristine (optional); writes
                      # $RESULTS/<mode>-stage-diff.json (restore) or $RESULTS/<mode>-stage-check.json (check)
     # `check` compares and records but never changes the stage: the controls and the secondary
@@ -208,7 +241,7 @@ restore_and_diff() { # $1 = mode, $2 = restore|check, $3 = pristine (optional); 
     # rebuilt before the agent ran does not put that empty record in front of the agent's.
     out="$RESULTS/$1-stage-diff.json"
     [ "$2" = check ] && out="$RESULTS/$1-stage-check.json"
-    python3 - "$STAGE" "$SEAL" "$out" "$2" "${3:-}" "$1" <<'PY'
+    python3 -I - "$STAGE" "$SEAL" "$out" "$2" "${3:-}" "$1" <<'PY'
 import hashlib, json, os, shutil, stat, sys
 
 stage, seal, out_path, action, require, mode = sys.argv[1:7]
@@ -479,10 +512,12 @@ cmd_eval() {
     echo "=== $MODE: rebuild from repo/ only; functional gate; replay the sealed case ==="
     # The operation comes from the seal, not a second hand-written copy: the
     # functional gate must drive the same command the case records.
-    OPERATION=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["operation"])' "$SEAL/protocol.json")
+    OPERATION=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["operation"])' "$SEAL/protocol.json")
+    IMAGE_ID=$(image_id)
+    COUT=$(container_out "$MODE")
     set -- run --rm --network none \
-        -v "$STAGE:$STAGE" -v "$RESULTS:$RESULTS" \
-        -e STAGE="$STAGE" -e RESULTS="$RESULTS" -e MODE="$MODE" \
+        -v "$STAGE:$STAGE:ro" -v "$COUT:$COUT" \
+        -e STAGE="$STAGE" -e RESULTS="$COUT" -e MODE="$MODE" \
         -e OPERATION="$OPERATION"
     if [ "$MODE" = "pos" ]; then
         set -- "$@" -v "$PATCH:/tmp/fix.patch:ro"
@@ -492,7 +527,7 @@ cmd_eval() {
     # otherwise read the previous run's files and call a broken apparatus green.
     stamp "$MODE-eval"
     set +e
-    docker "$@" "$IMAGE" sh -eu -c '
+    docker "$@" "$IMAGE_ID" sh -eu -c '
         cp -r "$STAGE/repo" /tmp/src
         if [ "$MODE" = "pos" ]; then git -C /tmp/src apply /tmp/fix.patch; fi
         cmake -S /tmp/src -B /tmp/build -DCMAKE_BUILD_TYPE=Release >/dev/null
@@ -526,20 +561,30 @@ cmd_eval() {
     container_rc=$?
     set -e
 
-    python3 - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" "$SIDEEYE_REPO/spike" <<'PY'
+    python3 -I - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" "$SIDEEYE_REPO/spike" <<'PY'
 import json, os, sys
 
 results, mode, proto_path, container_rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
-# The replay gate is spike/replay_gate.py, shared with dogfood-timew-replay.sh's leg C
-# (#65). stdin-fed python has '' as sys.path[0], so the directory is passed in.
-sys.path.insert(0, sys.argv[5])
-from replay_gate import gate
+# The replay gate is spike/replay_gate.py, shared with dogfood-timew-replay.sh's leg C (#65).
+# Executed from its bytes, not imported: an import takes spike/__pycache__/replay_gate.*.pyc
+# whenever that file's header matches the .py's mtime and size, and the agent — same uid, Bash
+# and Write, able to stat the .py — can write such a file; `-I` does not imply `-B`, and `-B`
+# would only stop writing one. measure.py verified the .py's digest when this step began; the
+# file is read from disk here, after the container, and that window is a named residual of
+# ADR 0066 — what this removes is the cache, not the window (#515's other half; found in review).
+def load_from_bytes(path, name):
+    import types
+    mod = types.ModuleType(name)
+    with open(path, "rb") as f:
+        exec(compile(f.read(), path, "exec"), mod.__dict__)
+    return mod
+gate = load_from_bytes(os.path.join(sys.argv[5], "replay_gate.py"), "replay_gate").gate
 proto = json.load(open(proto_path))
 started = os.path.getmtime(os.path.join(results, "%s-eval-started" % mode))
 
 def read(name, parse=False):
     # A file from before this run's stamp is a previous run's: absent, for this verdict.
-    p = os.path.join(results, "%s-%s" % (mode, name))
+    p = os.path.join(results, mode + "-container-out", "%s-%s" % (mode, name))
     if not os.path.exists(p) or os.path.getmtime(p) < started:
         return None
     with open(p) as f:
@@ -619,7 +664,7 @@ cmd_secondary() {
         # Controls first, before anything touches the stage or a container: the run's
         # numbers are not read until the unpatched tree has failed and the known patch has
         # passed through this same subcommand (the mirror of run-agent.sh's gate on eval).
-        python3 -c '
+        python3 -I -c '
 import json, sys
 proto = json.load(open(sys.argv[1]))
 for p in sys.argv[2:]:
@@ -642,17 +687,19 @@ for p in sys.argv[2:]:
     restore_and_diff "$MODE" check pristine
 
     echo "=== $MODE: rebuild from repo/ only; full explore under the sealed define; upstream suites ==="
-    OPERATION=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["operation"])' "$SEAL/protocol.json")
+    OPERATION=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["operation"])' "$SEAL/protocol.json")
+    IMAGE_ID=$(image_id)
+    COUT=$(container_out "$MODE")
     set -- run --rm --network none \
-        -v "$STAGE:$STAGE" -v "$RESULTS:$RESULTS" \
-        -e STAGE="$STAGE" -e RESULTS="$RESULTS" -e MODE="$MODE" \
+        -v "$STAGE:$STAGE:ro" -v "$COUT:$COUT" \
+        -e STAGE="$STAGE" -e RESULTS="$COUT" -e MODE="$MODE" \
         -e OPERATION="$OPERATION" -e UPSTREAM_SUITES="$UPSTREAM_SUITES"
     if [ "$MODE" = "pos" ]; then
         set -- "$@" -v "$PATCH:/tmp/fix.patch:ro"
     fi
     stamp "$MODE-secondary"
     set +e
-    docker "$@" "$IMAGE" sh -eu -c '
+    docker "$@" "$IMAGE_ID" sh -eu -c '
         cp -r "$STAGE/repo" /tmp/src
         if [ "$MODE" = "pos" ]; then git -C /tmp/src apply /tmp/fix.patch; fi
         cmake -S /tmp/src -B /tmp/build -DCMAKE_BUILD_TYPE=Release >/dev/null
@@ -694,13 +741,20 @@ for p in sys.argv[2:]:
     container_rc=$?
     set -e
 
-    python3 - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" "$SIDEEYE_REPO/spike" "$UPSTREAM_SUITES" <<'PY'
+    python3 -I - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" "$SIDEEYE_REPO/spike" "$UPSTREAM_SUITES" <<'PY'
 import json, os, sys
 
 results, mode, proto_path, container_rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
-sys.path.insert(0, sys.argv[5])
-from replay_gate import gate
-import suite_summary
+# From bytes, not imported — the same reason as in eval: a .pyc the agent planted would win an
+# import. Both modules import only the standard library.
+def load_from_bytes(path, name):
+    import types
+    mod = types.ModuleType(name)
+    with open(path, "rb") as f:
+        exec(compile(f.read(), path, "exec"), mod.__dict__)
+    return mod
+gate = load_from_bytes(os.path.join(sys.argv[5], "replay_gate.py"), "replay_gate").gate
+suite_summary = load_from_bytes(os.path.join(sys.argv[5], "suite_summary.py"), "suite_summary")
 suites = sys.argv[6].split()
 proto = json.load(open(proto_path))
 started = os.path.getmtime(os.path.join(results, "%s-secondary-started" % mode))
@@ -709,7 +763,7 @@ def read(name, parse=False):
     # A file from before this run's stamp is a previous run's: absent, for this verdict.
     # A file this run wrote but did not finish (a report cut off mid-write) is absent too,
     # not a traceback: the verdict then says no_report or build_failed, which is the truth.
-    p = os.path.join(results, "%s-%s" % (mode, name))
+    p = os.path.join(results, mode + "-container-out", "%s-%s" % (mode, name))
     if not os.path.exists(p) or os.path.getmtime(p) < started:
         return None
     with open(p) as f:
@@ -809,7 +863,7 @@ PY
 cmd_audit() {
     [ -n "$TRANSCRIPT" ] || usage
     [ -f "$TRANSCRIPT" ] || { echo "transcript not found: $TRANSCRIPT" >&2; exit 1; }
-    python3 - "$TRANSCRIPT" "$RESULTS/audit.json" "$STAGE" "$SIDEEYE_REPO" "$ALLOW_MCP" "$RECORD_SHA" "$AUDIT_HOME" <<'PY'
+    python3 -I - "$TRANSCRIPT" "$RESULTS/audit.json" "$STAGE" "$SIDEEYE_REPO" "$ALLOW_MCP" "$RECORD_SHA" "$AUDIT_HOME" <<'PY'
 import glob, hashlib, itertools, json, os, re, shlex, sys
 
 transcript, out_path, stage, repo = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
@@ -1351,6 +1405,7 @@ if sha_mismatch or lines_unparsed:
         "bash_calls": sum(1 for c in tool_calls if c["name"] == "Bash"),
         "record_sha": sha_state,
         "record_sha_value": got_sha,
+        "record_path": os.path.abspath(transcript),
         "record_sha_mismatch": sha_mismatch,
         "record_lines_unparsed": lines_unparsed,
         "record_lines_unparsed_total": lines_unparsed_total,
@@ -1374,7 +1429,8 @@ if sha_mismatch or lines_unparsed:
 
 if not tool_calls:
     json.dump({"verdict": "unauditable", "tool_calls": 0, "record_sha": sha_state,
-               "record_sha_value": got_sha}, open(out_path, "w"), indent=1)
+               "record_sha_value": got_sha, "record_path": os.path.abspath(transcript)},
+              open(out_path, "w"), indent=1)
     sys.exit("audit: the transcript holds no tool calls — nothing-to-see is not clean")
 
 network_hits, context_hits, docker_hits, unsealed_hits = [], [], [], []
@@ -1474,6 +1530,9 @@ audit = {
     # take "verified" on faith. The word alone was what the neighbouring gates do not do —
     # `expectation_met` is bound to the run by an mtime floor and to the seal by a pin.
     "record_sha_value": got_sha,
+    # Where the record was read from, so `finalize` can hash that file again and hold it to
+    # `record_sha_value` and to the launcher's digest (#515's other half; measure.py).
+    "record_path": os.path.abspath(transcript),
     "record_sha_mismatch": [],
     "record_lines_unparsed": [],
     "record_lines_unparsed_total": 0,
@@ -1486,19 +1545,31 @@ PY
 }
 
 cmd_finalize() {
-    python3 - "$RESULTS" "$SEAL/protocol.json" "$ROOT" <<'PY'
-import json, os, sys
+    python3 -I - "$RESULTS" "$SEAL/protocol.json" "$ROOT" <<'PY'
+import hashlib, json, os, sys
 
 results, proto_path, root = sys.argv[1], sys.argv[2], sys.argv[3]
+# Every file this manifest is assembled from, so each can be held to the launcher's digest
+# below (#515's other half). Appended where the file is opened, not listed by hand beside it.
+read_paths = []
+
+def sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 def need(name):
     p = os.path.join(results, name)
     if not os.path.exists(p):
         sys.exit("finalize: missing required record %s — the manifest cannot be assembled" % name)
+    read_paths.append(p)
     return json.load(open(p))
 
 if not os.path.exists(proto_path):
     sys.exit("finalize: missing %s — stage.sh writes it at seal time" % proto_path)
+read_paths.append(proto_path)
 manifest = {
     "protocol": json.load(open(proto_path)),
     "controls": {"neg": need("neg-verdict.json"), "pos": need("pos-verdict.json")},
@@ -1510,6 +1581,7 @@ manifest = {
 # not one of them (#64): carried when present, named as absent when not, never required.
 secondary_path = os.path.join(results, "run-secondary.json")
 if os.path.exists(secondary_path):
+    read_paths.append(secondary_path)
     manifest["run"]["secondary"] = json.load(open(secondary_path))
 # An mcp-variant root (it carries mcp.json) has a third control: the channel
 # itself. Its absence — or a contrast that did not hold — is an incomplete record.
@@ -1555,6 +1627,51 @@ if manifest["audit"].get("record_sha") != "verified":
 for field in ("replay", "func", "stage_diff"):
     if field not in manifest["run"]:
         missing.append("run.%s" % field)
+# The launcher's digests (#515's other half, ADR 0066). `measure.py judge` writes
+# $ROOT/inputs.json after the agent's process group is dead — beside the seal, outside the
+# results directory the container mounts — with the digest of every input it took: the seal and
+# the controls before the agent, the record as it streamed, each judge output as it landed. A
+# manifest is assembled only from files that match it. The file's PRESENCE is required, so that
+# the ordinary hand-run finalize, with no launcher behind it, stops rather than assembling a
+# manifest nobody vouched for. It is a discipline, not a proof: $ROOT is the agent's to write, so
+# an agent could leave an inputs.json of its own and a finalize typed by hand against it would
+# pass — the promise (ADR 0066) is about the path measure.py takes, which writes this file after
+# the agent's group is dead, replacing whatever is there, and is the only caller of finalize.
+# Each check is its own line so that `seal-reds/MUTATIONS.md` can blind one at a time.
+inputs_path = os.path.join(root, "inputs.json")
+# The rebuild history is read below, for the printout across attempts; it is a record this
+# command reads, so it is held to the launcher's digest like the rest (found in review).
+history = os.path.join(results, "run-stage-diffs.jsonl")
+if os.path.exists(history):
+    read_paths.append(history)
+inputs = None
+if not os.path.exists(inputs_path):
+    missing.append("inputs.json absent — measure.py writes it after the agent; a finalize with no launcher behind it has nothing to hold the records to")
+else:
+    inputs = json.load(open(inputs_path))
+    recorded = inputs.get("files") or {}
+    for p in read_paths:
+        want = recorded.get(os.path.abspath(p))
+        if want is None:
+            missing.append("%s is not attested in inputs.json" % os.path.basename(p))
+        elif sha256(p) != want:
+            missing.append("%s changed since the launcher recorded it" % os.path.basename(p))
+    # The record itself, hashed now, against the audit's word AND the launcher's digest — the
+    # stronger form ADR 0058 named and did not do, because it needed the record's path in the
+    # audit and a digest whose provenance is not the caller's. Both exist now.
+    record_path = manifest["audit"].get("record_path")
+    launcher_record = (inputs.get("record") or {}).get("sha256")
+    if not record_path or not os.path.isfile(record_path):
+        missing.append("audit.record_path names no readable record (%r)" % record_path)
+    else:
+        record_now = sha256(record_path)
+        if record_now != manifest["audit"].get("record_sha_value"):
+            missing.append("the record at %s is not the record the audit read" % record_path)
+        if record_now != launcher_record:
+            missing.append("the record at %s is not the record the launcher recorded" % record_path)
+# Carried whole, not summarised into a flag: ADR 0058 already declined a bare "verified" that
+# anyone can write. The list of paths and digests is re-checkable; a boolean is not.
+manifest["inputs"] = inputs
 if missing:
     sys.exit("finalize: incomplete record: %s" % "; ".join(missing))
 
@@ -1604,7 +1721,7 @@ cmd_selftest() { # the red proof for what this judge refuses on (#63)
     # case left the suite green with the same wording. The tally below demands the exact
     # number of cases, which makes a silently shortened list a failure.
     passes=0
-    WANT_CASES=83
+    WANT_CASES=87
 
     # The path channel voids a tool input that names $SIDEEYE_REPO, so the synthetic repo must
     # not be an ancestor of the synthetic roots: a stage path under it would name the repo, and
@@ -1637,13 +1754,13 @@ cmd_selftest() { # the red proof for what this judge refuses on (#63)
     RECORD_SHA=""
 
     tx_tool() { # $1 = case, $2 = tool name, $3 = input key, $4 = input value
-        python3 -c 'import json,sys; print(json.dumps({"type":"assistant","message":{"content":[{"type":"tool_use","name":sys.argv[1],"input":{sys.argv[2]:sys.argv[3]}}]}}))' \
+        python3 -I -c 'import json,sys; print(json.dumps({"type":"assistant","message":{"content":[{"type":"tool_use","name":sys.argv[1],"input":{sys.argv[2]:sys.argv[3]}}]}}))' \
             "$2" "$3" "$4" > "$work/tx-$1.jsonl"
     }
     tx_bash() { tx_tool "$1" Bash command "$2"; }
     tx_calls() { # $1 = case; then tool, input key, input value for each call, in order
         tcase=$1; shift
-        python3 -c '
+        python3 -I -c '
 import json, sys
 a = sys.argv[1:]
 for i in range(0, len(a), 3):
@@ -1655,7 +1772,7 @@ for i in range(0, len(a), 3):
     # python rather than shasum: the acceptance container is not promised a perl. One
     # definition, because the digest of a file is one question and this suite asks it twice
     # (a seal's manifest, and the record digest a case hands to `audit`).
-    file_sha256() { python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$1"; }
+    file_sha256() { python3 -I -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$1"; }
 
     # cmd_audit reads $TRANSCRIPT/$RESULTS/$STAGE/$SIDEEYE_REPO/$ALLOW_MCP out of the shell
     # it shares with this function, and exits nonzero on void. `|| arc=$?` rather than a
@@ -1667,7 +1784,7 @@ for i in range(0, len(a), 3):
         TRANSCRIPT="$work/tx-$1.jsonl"
         arc=0
         cmd_audit > "$RESULTS/stdout.txt" 2>&1 || arc=$?
-        if python3 - "$RESULTS/audit.json" "$1" "$2" "$arc" <<'PY'
+        if python3 -I - "$RESULTS/audit.json" "$1" "$2" "$arc" <<'PY'
 import json, sys
 path, name, want, rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
 VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits",
@@ -1698,7 +1815,7 @@ PY
         then passes=$((passes + 1)); else fails=$((fails + 1)); fi
     }
 
-    echo "=== judge.sh selftest: sixty refusals ==="
+    echo "=== judge.sh selftest: sixty-four refusals ==="
 
     # by NAME (2): the eleven listed tools, and any mcp__ server that is not the allowed one
     tx_tool name-unsealed WebFetch url "https://example.invalid"
@@ -1919,7 +2036,7 @@ PY
         RESULTS="$work/out/$1"; mkdir -p "$RESULTS"
         prc=0
         restore_and_diff "$1" check pristine > "$RESULTS/stdout.txt" 2>&1 || prc=$?
-        if python3 - "$RESULTS/$1-stage-check.json" "$1" "$2" "$prc" "$RESULTS/stdout.txt" <<'PY'
+        if python3 -I - "$RESULTS/$1-stage-check.json" "$1" "$2" "$prc" "$RESULTS/stdout.txt" <<'PY'
 import json, sys
 path, name, want, rc, out = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), sys.argv[5]
 KEYS = ("modified", "missing", "mode_changed", "not_regular", "unreadable", "extra")
@@ -2014,15 +2131,22 @@ PY
     fin_root() { # $1 = case, $2 = record_sha value; builds a root whose manifest is complete
         froot="$work/fin-$1"; mkdir -p "$froot/seal"
         RESULTS="$work/out/fin-$1"; mkdir -p "$RESULTS"
-        python3 - "$froot" "$RESULTS" "$2" "$1" <<'PY'
-import json, os, sys
+        python3 -I - "$froot" "$RESULTS" "$2" "$1" <<'PY'
+import hashlib, json, os, sys
 root, res, sha, case = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 # Only what finalize reads: the protocol it carries into the manifest, the two controls it
 # checks `expectation_met` on, the run's three required fields in the shapes it reads them
 # (`replay` and `func` are objects it asks for a `gate`; `stage_diff` it prints from), the
-# agent-meta fields it requires, and an audit that is clean but for the digest under test.
-json.dump({"pin": "0" * 40, "case_ops_total": 1, "case_k": 0},
-          open(os.path.join(root, "seal", "protocol.json"), "w"))
+# agent-meta fields it requires, an audit that is clean but for the digest under test, the
+# record that audit names, and the launcher's inputs.json attesting every one of them (#515's
+# other half) — complete and consistent, so that each case below breaks exactly one thing.
+proto = os.path.join(root, "seal", "protocol.json")
+json.dump({"pin": "0" * 40, "case_ops_total": 1, "case_k": 0}, open(proto, "w"))
+record = os.path.join(res, "transcript.jsonl")
+with open(record, "w") as h:
+    h.write(json.dumps({"type": "assistant", "message": {"content": [
+        {"type": "tool_use", "name": "Bash", "input": {"command": "ls"}}]}}) + "\n")
+record_sha = hashlib.sha256(open(record, "rb").read()).hexdigest()
 docs = {
     "neg-verdict": {"expectation_met": True},
     "pos-verdict": {"expectation_met": True},
@@ -2030,18 +2154,26 @@ docs = {
                     "stage_diff": {"restored": [], "differed": []}},
     "agent-meta": {"variant": "cli", "model": "m", "cli_version": "v", "prompt_sha256": "p"},
     "audit": {"verdict": "clean", "tool_calls": 1, "bash_calls": 1,
-              "record_sha": sha, "network_hits": [], "context_hits": [], "docker_hits": [],
+              "record_sha": sha, "record_sha_value": record_sha, "record_path": record,
+              "network_hits": [], "context_hits": [], "docker_hits": [],
               "unsealed_tool_hits": [], "off_allowlist": [], "unresolved_mounts": [],
               "allowed_mcp_calls": 0, "record_sha_mismatch": [], "record_lines_unparsed": []},
 }
 for name, doc in docs.items():
     json.dump(doc, open(os.path.join(res, name + ".json"), "w"))
+attested = [proto] + [os.path.join(res, n + ".json") for n in docs]
 if case == "verified":
     # Two rebuild attempts: the agent's changes in the first, and an empty re-run after it, which
-    # is what the verdict above carries. finalize must print the first attempt's lists.
-    with open(os.path.join(res, "run-stage-diffs.jsonl"), "w") as h:
+    # is what the verdict above carries. finalize must print the first attempt's lists — and it
+    # reads this file, so the launcher's inputs.json attests it like every other record.
+    history = os.path.join(res, "run-stage-diffs.jsonl")
+    with open(history, "w") as h:
         h.write(json.dumps({"restored": ["./define/check.sh"], "removed": ["./notes.txt"]}) + "\n")
         h.write(json.dumps({"restored": [], "removed": []}) + "\n")
+    attested.append(history)
+files = {os.path.abspath(p): hashlib.sha256(open(p, "rb").read()).hexdigest() for p in attested}
+json.dump({"version": 1, "files": files, "record": {"path": record, "sha256": record_sha}},
+          open(os.path.join(root, "inputs.json"), "w"), indent=1)
 PY
         ROOT="$froot"; SEAL="$froot/seal"
     }
@@ -2061,6 +2193,47 @@ PY
         fails=$((fails + 1))
     fi
 
+    # #515's other half (ADR 0066): finalize holds every record it reads to the launcher's
+    # inputs.json, and the record itself to both the audit's digest and the launcher's. Each case
+    # starts from the complete, consistent root fin_root builds and breaks ONE thing; the
+    # assertion is on the sentence that names it, not on the exit code alone — the judge before
+    # this change also exited nonzero here, on an unknown argument.
+    fin_case() { # $1 = case, then the sentences the refusal must carry
+        fcase=$1; shift
+        frc=0
+        cmd_finalize > "$RESULTS/stdout.txt" 2>&1 || frc=$?
+        fmiss=""
+        for want in "$@"; do
+            grep -q -F -- "$want" "$RESULTS/stdout.txt" || fmiss="$fmiss [$want]"
+        done
+        if [ "$frc" != "0" ] && [ -z "$fmiss" ]; then
+            echo "ok   judge.sh: $fcase — refuses, naming:$(printf ' [%s]' "$@"), rc $frc"
+            passes=$((passes + 1))
+        else
+            echo "FAIL judge.sh: $fcase — rc $frc, wanted nonzero; sentences not found:$fmiss"
+            cat "$RESULTS/stdout.txt"
+            fails=$((fails + 1))
+        fi
+    }
+    fin_root no-inputs "verified"
+    rm "$ROOT/inputs.json"
+    fin_case finalize-no-inputs "inputs.json absent"
+    fin_root unattested "verified"
+    python3 -I -c '
+import json, os, sys
+p, drop = sys.argv[1], os.path.abspath(sys.argv[2])
+d = json.load(open(p)); d["files"].pop(drop); json.dump(d, open(p, "w"))
+' "$ROOT/inputs.json" "$RESULTS/pos-verdict.json"
+    fin_case finalize-unattested "pos-verdict.json is not attested in inputs.json"
+    fin_root changed "verified"
+    printf ' \n' >> "$RESULTS/pos-verdict.json"   # still JSON, not the bytes the launcher hashed
+    fin_case finalize-changed "pos-verdict.json changed since the launcher recorded it"
+    fin_root record "verified"
+    printf '{}\n' >> "$RESULTS/transcript.jsonl"
+    # Both sentences: the record disagrees with the audit's digest AND with the launcher's. A
+    # mutation that blinds either comparison alone leaves one sentence out and fails this case.
+    fin_case finalize-record-changed "is not the record the audit read" "is not the record the launcher recorded"
+
     echo "=== judge.sh selftest: twenty-three greens ==="
 
     # The control for the gate above: with the digest verified, the same manifest closes.
@@ -2068,14 +2241,14 @@ PY
     fin_root verified "verified"
     frc=0
     cmd_finalize > "$RESULTS/stdout.txt" 2>&1 || frc=$?
-    if [ "$frc" = "0" ] && python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("loop_closed") is True else 1)' "$RESULTS/manifest.json" 2>/dev/null \
+    if [ "$frc" = "0" ] && python3 -I -c 'import json,sys; m = json.load(open(sys.argv[1])); sys.exit(0 if m.get("loop_closed") is True and isinstance(m.get("inputs"), dict) and m["inputs"].get("files") else 1)' "$RESULTS/manifest.json" 2>/dev/null \
             && grep -q -F "agent edits outside repo/: ['./define/check.sh']" "$RESULTS/stdout.txt" \
             && grep -q -F "removed from outside repo/: ['./notes.txt']" "$RESULTS/stdout.txt" \
             && grep -q -F "rebuild attempts on this stage: 2" "$RESULTS/stdout.txt"; then
-        echo "ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0, and the agent's edits print from the first of two rebuild attempts"
+        echo "ok   judge.sh: finalize-verified — a verified digest and a matching inputs.json let the manifest close, rc 0, the manifest carries the digests, and the agent's edits print from the first of two rebuild attempts"
         passes=$((passes + 1))
     else
-        echo "FAIL judge.sh: finalize-verified — rc $frc, wanted 0, loop_closed true, and the first attempt's edits printed:"
+        echo "FAIL judge.sh: finalize-verified — rc $frc, wanted 0, loop_closed true, inputs carried, and the first attempt's edits printed:"
         cat "$RESULTS/stdout.txt"
         fails=$((fails + 1))
     fi
@@ -2088,7 +2261,7 @@ PY
     TRANSCRIPT="$work/tx-clean.jsonl"
     crc=0
     cmd_audit > "$RESULTS/stdout.txt" 2>&1 || crc=$?
-    if python3 - "$RESULTS/audit.json" "$crc" <<'PY'
+    if python3 -I - "$RESULTS/audit.json" "$crc" <<'PY'
 import json, sys
 a = json.load(open(sys.argv[1])); rc = int(sys.argv[2])
 VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits",
@@ -2112,7 +2285,7 @@ PY
     mrc=0
     cmd_audit > "$RESULTS/stdout.txt" 2>&1 || mrc=$?
     ALLOW_MCP=""
-    if python3 - "$RESULTS/audit.json" "$mrc" <<'PY'
+    if python3 -I - "$RESULTS/audit.json" "$mrc" <<'PY'
 import json, sys
 a = json.load(open(sys.argv[1])); rc = int(sys.argv[2])
 VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits",
@@ -2138,7 +2311,7 @@ PY
         TRANSCRIPT="$work/tx-$1.jsonl"
         pgrc=0
         cmd_audit > "$RESULTS/stdout.txt" 2>&1 || pgrc=$?
-        if python3 - "$RESULTS/audit.json" "$1" "$2" "$pgrc" "${3:-}" <<'PY'
+        if python3 -I - "$RESULTS/audit.json" "$1" "$2" "$pgrc" "${3:-}" <<'PY'
 import json, sys
 path, name, what, rc, unresolved = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), sys.argv[5]
 VOID = ("network_hits", "context_hits", "docker_hits", "unsealed_tool_hits",
@@ -2190,7 +2363,7 @@ PY
     path_green path-ancestor-maybe "a recursive read of . after a cd that may not have run"
     # A `~` followed by a NUL, and by a lone surrogate: no user has either name, and the audit has
     # to reach a verdict rather than stop on the error the lookup raises.
-    python3 -c 'import json; print(json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {"command": "cat ~a\u0000b/x ~\ud800/x"}}]}}))' \
+    python3 -I -c 'import json; print(json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {"command": "cat ~a\u0000b/x ~\ud800/x"}}]}}))' \
         > "$work/tx-path-bad-tilde.jsonl"
     path_green path-bad-tilde "a ~ followed by a NUL, and by a lone surrogate,"
 
@@ -2200,7 +2373,7 @@ PY
     printf 'doctored\n' > "$rr/stage/define/check.sh"
     RESULTS="$work/out/restore-ok"; mkdir -p "$RESULTS"
     restore_and_diff restore-ok restore > /dev/null
-    if python3 - "$RESULTS/restore-ok-stage-diff.json" "$rr/stage/define/check.sh" <<'PY'
+    if python3 -I - "$RESULTS/restore-ok-stage-diff.json" "$rr/stage/define/check.sh" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1])); body = open(sys.argv[2]).read()
 if d.get("modified") != ["./define/check.sh"] or d.get("restored") != ["./define/check.sh"]:
@@ -2219,7 +2392,7 @@ PY
     rm -f "$rr/stage/define/check.sh"
     RESULTS="$work/out/restore-missing"; mkdir -p "$RESULTS"
     restore_and_diff restore-missing restore > /dev/null
-    if python3 - "$RESULTS/restore-missing-stage-diff.json" "$rr/stage/define/check.sh" <<'PY'
+    if python3 -I - "$RESULTS/restore-missing-stage-diff.json" "$rr/stage/define/check.sh" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1])); body = open(sys.argv[2]).read()
 if d.get("missing") != ["./define/check.sh"] or d.get("restored") != ["./define/check.sh"]:
@@ -2235,7 +2408,7 @@ PY
     printf 'doctored\n' > "$rr/stage/define/check.sh"
     RESULTS="$work/out/check-only"; mkdir -p "$RESULTS"
     restore_and_diff check-only check > /dev/null
-    if python3 - "$RESULTS/check-only-stage-check.json" "$rr/stage/define/check.sh" <<'PY'
+    if python3 -I - "$RESULTS/check-only-stage-check.json" "$rr/stage/define/check.sh" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1])); body = open(sys.argv[2]).read()
 if "restored" in d:
@@ -2255,7 +2428,7 @@ PY
     RESULTS="$work/out/check-pristine-clean"; mkdir -p "$RESULTS"
     pcrc=0
     restore_and_diff check-pristine-clean check pristine > "$RESULTS/stdout.txt" 2>&1 || pcrc=$?
-    if [ "$pcrc" = 0 ] && python3 -c '
+    if [ "$pcrc" = 0 ] && python3 -I -c '
 import json, sys
 d = json.load(open(sys.argv[1]))
 sys.exit(1 if any(d.get(k) for k in ("modified", "missing", "mode_changed", "not_regular", "unreadable", "extra")) else 0)
@@ -2277,7 +2450,7 @@ sys.exit(1 if any(d.get(k) for k in ("modified", "missing", "mode_changed", "not
         RESULTS="$work/out/$1"; mkdir -p "$RESULTS"
         brc=0
         restore_and_diff "$1" restore > "$RESULTS/stdout.txt" 2>&1 || brc=$?
-        if python3 - "$1" "$work" "$brc" <<'PY'
+        if python3 -I - "$1" "$work" "$brc" <<'PY'
 import json, os, stat, sys
 name, work, rc = sys.argv[1], sys.argv[2], int(sys.argv[3])
 stage = os.path.join(work, "root-" + name, "stage")
@@ -2393,7 +2566,7 @@ PY
     printf 'added\n' > "$rr2/stage/notes.txt"
     rr2rc=0
     restore_and_diff restore-rerun restore > "$RESULTS/stdout.txt" 2>&1 || rr2rc=$?
-    if python3 - "$RESULTS" "$rr1rc" "$rr2rc" <<'PY'
+    if python3 -I - "$RESULTS" "$rr1rc" "$rr2rc" <<'PY'
 import json, os, sys
 out, rc1, rc2 = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 KEYS = ("modified", "missing", "mode_changed", "not_regular", "unreadable", "extra")
@@ -2421,7 +2594,7 @@ PY
         echo "selftest: ran $passes case(s), expected $WANT_CASES — the case list changed" >&2
         exit 1
     fi
-    echo "selftest: sixty refusals and twenty-three greens hold ($passes cases)"
+    echo "selftest: sixty-four refusals and twenty-three greens hold ($passes cases)"
 }
 
 case "$CMD" in
