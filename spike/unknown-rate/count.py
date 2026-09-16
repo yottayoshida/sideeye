@@ -69,6 +69,14 @@ COHORT_PREFIX = "spike/cohort"
 # "foo" revision 0, either of which satisfies the supersession predicate for
 # a pair that is not a revision chain at all.
 REVISION_RE = re.compile(r"^(?P<base>[A-Za-z0-9][A-Za-z0-9._-]*?)(?:-r(?P<rev>[2-9][0-9]*))?$")
+# The page class-exclusions.tsv rests on, and the heading its supported classes sit under.
+CLASSES_DOC = "docs/target-classes.md"
+FIRST_TABLE_HEADING = "## Measured, with verdicts"
+# A Tool cell part's first word: leading whitespace (NBSP included) and emphasis, code and link
+# openers skipped, then a word that starts with a letter — a version number is not a tool.
+TOOL_WORD_RE = re.compile(r"[\s*`\[]*([A-Za-z][A-Za-z0-9._+-]*)")
+# A cohort target directory cited inside a table row, followed by at least one more path part.
+ROW_COHORT_DIR_RE = re.compile(r"spike/(cohort[0-9A-Za-z_-]*)/([^/\s`|]+)/")
 
 def die(msg):
     print(f"count.py: {msg}", file=sys.stderr)
@@ -837,11 +845,175 @@ def cohort_ledger_sets(root, corpus):
         {r["predecessor"] for r in sup},
         {r["define"] for r in exc},
         sup,
+        exc,
     )
 
+def table_cells(line):
+    """A table row's cells, split on the pipes GitHub splits on: every `|` not escaped as `\\|`,
+    code spans included — the `|` in `O_WRONLY|O_CREAT` ends a cell there too."""
+    parts = re.split(r"(?<!\\)\|", line.strip())[1:]
+    if parts and not parts[-1].strip():
+        parts = parts[:-1]
+    return [c.strip() for c in parts]
+
+def read_class_tables(root):
+    """The rows of docs/target-classes.md's Class tables, first table marked (#598).
+
+    That page defines "supported" by position: "supported classes are exactly the rows of
+    the first table below". A table here is one whose header row starts with a `Class`
+    cell, and it runs from that header to the next `## ` heading. Two things GitHub does to
+    such a table are refused rather than read past, because either leaves the table this
+    reads different from the one a reader is shown. A blank line inside that span, before a
+    further row, ends the table there: measured on 2026-09-16, two such lines left 24 rows
+    rendered as loose text. And a row with more cells than its header loses the extra ones:
+    an unescaped `|`, inside a code span or not, splits a cell, and on the same day one row
+    had been losing its `Recorded in` cell that way, Bun's — the cell that ties Bun's exclusion
+    to its row — and removing the blank lines brought a second such row, rrdtool's, into the
+    table. The directory references a row cites are read off the whole line, which is sound
+    only because no cell is dropped and `row_targets` removes comments first.
+    """
+    path = root / CLASSES_DOC
+    if not path.is_file():
+        die(f"{CLASSES_DOC} is missing — class-exclusions.tsv has rows, and the page that "
+            f"defines which classes are supported is what they rest on")
+    lines = path.read_text().splitlines()
+    headings = sum(1 for line in lines if line == FIRST_TABLE_HEADING)
+    if headings != 1:
+        die(f"{CLASSES_DOC} carries {headings} '{FIRST_TABLE_HEADING}' headings, not 1 — the "
+            f"first table is found by that heading, and without it every class would read "
+            f"as unsupported")
+    rows, section, width, blank = [], None, None, None
+    for n, line in enumerate(lines, 1):
+        if line.startswith("## "):
+            section, width, blank = line, None, None
+            continue
+        if line.startswith("|"):
+            cells = table_cells(line)
+            if cells and cells[0] == "Class":
+                width, blank = len(cells), None
+                continue
+            if width is None or set(line) <= set("|-: "):
+                continue
+            if blank is not None:
+                die(f"{CLASSES_DOC}:{blank}: a blank line splits the Class table under "
+                    f"'{section}' — GitHub ends the table there, so the row at line {n} and "
+                    f"those after it are not in the table a reader sees")
+            if len(cells) > width:
+                die(f"{CLASSES_DOC}:{n}: the row has {len(cells)} cells where its table's header "
+                    f"has {width} — an unescaped | splits a cell, and GitHub drops the cells past "
+                    f"the header's; escape it as \\|")
+            rows.append({"line": n, "first": section == FIRST_TABLE_HEADING,
+                         "cls": cells[0], "tool": cells[1] if len(cells) > 1 else "",
+                         "targets": row_targets(line)})
+        elif width is not None and not line.strip():
+            blank = n
+    if not any(r["first"] for r in rows):
+        die(f"{CLASSES_DOC} has no Class rows under '{FIRST_TABLE_HEADING}' — an empty "
+            f"first table agrees with every exclusion, which is what a broken reader produces")
+    return rows
+
+def row_targets(text):
+    """The cohort targets a table row names by directory, as (cohort, base target).
+
+    The same (cohort, base) `split_revision` gives a define, read off references such as
+    `spike/cohort2/hg-r4/RUNLOG.md`. A directory `REVISION_RE` does not accept is skipped
+    rather than refused: rows cite files at any depth, and this reads names, not paths. HTML
+    comments are removed first: a path inside one ties nothing, because no reader sees it.
+    """
+    out = set()
+    for m in ROW_COHORT_DIR_RE.finditer(re.sub(r"<!--.*?-->", "", text)):
+        dm = REVISION_RE.match(m.group(2))
+        if dm:
+            out.add((m.group(1), dm.group("base")))
+    return out
+
+def tool_words(cell):
+    """The tools a Tool cell names, one lower-cased first word per comma-separated part that
+    starts with a letter once emphasis, code and link markup is skipped: `git, Borg` -> git,
+    borg; `Bun 1.4.0, 1.4.2` -> bun; `[Bun](…) 1.4.2` and `**Bun**` -> bun."""
+    out = set()
+    for part in cell.split(","):
+        m = TOOL_WORD_RE.match(part)
+        if m:
+            out.add(m.group(1).lower())
+    return out
+
+def check_class_exclusions(root, exc):
+    """Each class-exclusions.tsv row rests on its target's own refusal-table row (#598).
+
+    The file's criterion is the one ADR 0025 and docs/target-classes.md state: the target's
+    class is not supported, which that page defines as not being a row of its first table,
+    whatever verdicts a refusal row records. A quoted class string alone does not hold that
+    — any define, a supported target's included, could be parked here under a refusal
+    table's class, the shape the supersession check above refuses for its own file. So the
+    define is tied to rows by the cohort directory the row cites, and held from both sides.
+
+    Nothing in the first table may reach the target, by any of three keys:
+    - a first-table row citing its cohort directory;
+    - a first-table row naming the same tool — a word from the Tool cell of the row the
+      define is tied to, or the define's own directory name. Targets have crossed into the
+      first table by gaining a new row that cites a later record and keeping the refusal
+      row (virtualenv and ansible-core cite dogfood runs, zstd a follow-up), and that new
+      row cites no cohort directory;
+    - the quoted class being a Class cell of the first table as well, which is how a class
+      becomes supported without this target moving: ansible-core crossed under its own
+      Class cell, and mlr shares cargo's.
+    What none of them sees: a first-table row naming the tool by a word neither the tied
+    row nor the directory uses.
+
+    And something outside the first table must: a row citing the define's directory,
+    carrying the quoted Class cell verbatim.
+
+    Not held: whether the refusal row is right about the target. Returns the rows checked.
+    """
+    if not exc:
+        return 0
+    rows = read_class_tables(root)
+    first_tools = {}
+    for r in rows:
+        if r["first"]:
+            for word in tool_words(r["tool"]):
+                first_tools.setdefault(word, r)
+    first_classes = {r["cls"]: r for r in rows if r["first"]}
+    for x in exc:
+        cohort, base, _rev = split_revision(x["define"])
+        named = [r for r in rows if (cohort, base) in r["targets"]]
+        in_first = [r["line"] for r in named if r["first"]]
+        if in_first:
+            die(f"class-exclusions.tsv: {x['define']} is excluded as unsupported, but "
+                f"{CLASSES_DOC}:{in_first[0]}, a first-table row, names its directory — its "
+                f"class is supported, so the define belongs in corpus.tsv or supersession.tsv")
+        linked = [r for r in named if not r["first"]]
+        keys = {base.lower()}
+        for r in linked:
+            keys |= tool_words(r["tool"])
+        crossed = sorted(keys & set(first_tools))
+        if crossed:
+            f = first_tools[crossed[0]]
+            die(f"class-exclusions.tsv: {x['define']} is excluded as unsupported, but the "
+                f"first-table row {CLASSES_DOC}:{f['line']} and this target name the same tool "
+                f"({crossed[0]!r}) — the target has crossed into the first table, so its class "
+                f"is supported")
+        if x["row"] in first_classes:
+            die(f"class-exclusions.tsv: {x['define']} quotes the class {x['row']!r}, which is "
+                f"also a Class cell of the first table ({CLASSES_DOC}:"
+                f"{first_classes[x['row']]['line']}) — that class is supported, so the define "
+                f"belongs in corpus.tsv or supersession.tsv")
+        if not linked:
+            die(f"class-exclusions.tsv: {x['define']} names no row outside the first table "
+                f"of {CLASSES_DOC} — no refusal row cites spike/{cohort}/{base} or a "
+                f"revision of it, so the row this exclusion rests on cannot be found")
+        if not any(r["cls"] == x["row"] for r in linked):
+            found = "; ".join(f"line {r['line']}: {r['cls']!r}" for r in linked)
+            die(f"class-exclusions.tsv: {x['define']} quotes the class {x['row']!r}, and the "
+                f"row that names it says {found} — quote the Class cell verbatim")
+    return len(exc)
+
 def check_ledgers(root, corpus):
-    """The three cohort ledgers partition the committed cohort defines."""
-    in_corpus, in_sup, in_exc, sup = cohort_ledger_sets(root, corpus)
+    """The three cohort ledgers partition the committed cohort defines, a supersession row
+    names a later revision of its own target that is measured, and a class exclusion rests
+    on its target's own refusal-table row. Returns the class-exclusion rows checked."""
+    in_corpus, in_sup, in_exc, sup, exc = cohort_ledger_sets(root, corpus)
 
     for a, b, na, nb in ((in_corpus, in_sup, "corpus.tsv", "supersession.tsv"),
                          (in_corpus, in_exc, "corpus.tsv", "class-exclusions.tsv"),
@@ -881,6 +1053,8 @@ def check_ledgers(root, corpus):
                 f"{r['successor']} (revision {sr}), which is not later — a define is not "
                 f"superseded by one that came before it")
 
+    return check_class_exclusions(root, exc)
+
 def ledger_sizes(root):
     """The counts the pages state in prose, from the sets `check_ledgers` compares.
 
@@ -895,7 +1069,7 @@ def ledger_sizes(root):
     `remaining` is the sum the page states rather than a sixth set: the two ledgers are
     already checked disjoint by `check_ledgers`, so their sizes add.
     """
-    in_corpus, in_sup, in_exc, _sup = cohort_ledger_sets(root, read_corpus(root))
+    in_corpus, in_sup, in_exc, _sup, _exc = cohort_ledger_sets(root, read_corpus(root))
     on_disk = cohort_defines_on_disk(root)
     print(f"sorted={len(on_disk)} corpus={len(in_corpus)} superseded={len(in_sup)} "
           f"excluded={len(in_exc)} remaining={len(in_sup) + len(in_exc)}")
@@ -956,7 +1130,7 @@ def check(root):
     if derived != bt:
         die("b-targets.txt is not the first-N derivation of b-candidates.txt minus b-exclusions.txt")
 
-    check_ledgers(root, corpus)
+    n_class = check_ledgers(root, corpus)
     check_dispositions(root, corpus, outcome)
 
     # Every corpus row must be inside some generation's expected set. A row
@@ -1148,7 +1322,8 @@ def check(root):
         # zero on every run that reaches this line, which is the opposite of the
         # reason the main success line carries one.
         print(f"count.py check: pre-data state — placeholder asserted, corpus parsed "
-              f"({len(corpus)} rows, {len(generations)} generations)")
+              f"({len(corpus)} rows, {len(generations)} generations); {n_class} class exclusions "
+              f"matched to refusal-table rows")
         return
 
     if MARK_BEGIN not in docs or MARK_END not in docs:
@@ -1230,7 +1405,8 @@ def check(root):
           f"{n_detail} published rows against {n_slice} slices and {n_outcome} outcome rows "
           f"across {n_sec} sections{weaker}; {waived} SETUP_ERROR rows against "
           f"{len(exclusions)} waivers; {manifest_images} manifest images covered by "
-          f"{apparatus_images} apparatus image lines read")
+          f"{apparatus_images} apparatus image lines read; {n_class} class exclusions matched "
+          f"to refusal-table rows")
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check", "ledger-sizes"):

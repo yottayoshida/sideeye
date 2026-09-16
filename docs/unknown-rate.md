@@ -241,7 +241,12 @@ threshold set from it would be satisfied by construction. So:
   committed cohort defines on disk and holds them disjoint, so a define
   cannot be dropped by being left out of all three, and each file's own
   criterion is checked rather than trusted — a supersession row must name a
-  successor that exists in the corpus.
+  successor that exists in the corpus, and a class-exclusions row must rest
+  on its target's own row of `docs/target-classes.md`: a row outside the
+  first table that cites the define's cohort directory and carries the
+  quoted class, with nothing in the first table reaching it — no row there
+  citing that directory or naming the same tool, and the quoted class not a
+  Class cell there as well (#598).
 - **Declared apparatus is marked, not judged** (`flags` in `corpus.tsv`):
   `apparatus_declared` records that a define carries apparatus beyond its
   toml, and `apparatus_superseded` that an engine change has overtaken it,
@@ -313,7 +318,10 @@ supported classes; the inclusion also postdates the sweep it affects, which
 makes it a post-hoc one. It stands, disclosed on both pages rather than
 settled on one (#239, ADR 0025). **pass** runs as the control trial, outside
 every denominator: its behavioral class (shell CLI over helper processes)
-has no recorded verdict, so it is not a supported class.
+is a refusal-table row of `docs/target-classes.md`, not a first-table row,
+so it is not a supported class. When g1 ran, that class had no verdict at
+all; its row now records one for both targets it names, pass and lbdb, and
+the class stays where it is (#598).
 
 ### Exclusions (every one named, with the reason)
 
