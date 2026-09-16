@@ -6185,13 +6185,16 @@ done
 echo "=========== check 11f: the loop-closure judge is seen refusing (#63) ==========="
 # The judge declares a void condition "enforced per escape channel, against EVERY tool
 # call" and a restore that must not fail silently -- and until this check neither had ever
-# been observed refusing anything. `judge.sh selftest` drives sixty refusals with
+# been observed refusing anything. `judge.sh selftest` drives sixty-four refusals with
 # synthetic roots and transcripts (four by name, four by network alternation, three path
 # markers, thirty-three spellings of the repo or the config dir that the path channel resolves (#510),
 # three docker — one a relative mount source outside the stage — the transcript with no
 # tool calls, and a seal that does not match
 # its manifest, a record that disagrees with its digest, a record holding a line the reader
-# cannot parse, a manifest whose audit verified no digest, six stages the pristine check
+# cannot parse, a manifest whose audit verified no digest, four more finalize refusals from
+# #515's other half — no inputs.json, a record inputs.json does not attest, one that changed
+# since the launcher recorded it, a transcript that is neither what the audit read nor what
+# the launcher recorded — six stages the pristine check
 # refuses and two the rebuild refuses) plus twenty-three greens: a clean transcript stays clean, the trusted mcp
 # server's own tool is counted rather than voided, seven records the path channel leaves clean
 # (a `..` that stays in the stage, a sibling named like the repo, ten `cd`s whose candidate
@@ -6224,10 +6227,14 @@ echo "=========== check 11f: the loop-closure judge is seen refusing (#63) =====
 # seal-reds/mutations.txt), and the
 # verdict forced to clean (forty-six of them; not unauditable or the two record cases, which
 # exit earlier, not name-off-allowlist, whose field that program does not empty, and not
-# the ten cases that never reach the audit: restore-fail, finalize-unverified, the six
+# the fourteen cases that never reach the audit: restore-fail, the five finalize refusals, the six
 # pristine refusals and the two rebuild refusals).
-if sh "$ROOT/spike/loop-closure-timew/judge.sh" selftest > /tmp/acc-judge-selftest.txt 2>&1; then
-    echo "ok   judge.sh selftest: sixty refusals and twenty-three greens"
+# Through a pipe into `sh -s`, not as a file: that is how measure.py runs the judge — from the
+# bytes it verified, on stdin — and until this leg only the measurement itself took that path
+# (#515's other half). A pipe, not `< file`: a redirected file is seekable and the stdin-eating
+# accident has different conditions there. SIDEEYE_REPO is given because `$0` is `sh` inside.
+if cat "$ROOT/spike/loop-closure-timew/judge.sh" | SIDEEYE_REPO="$ROOT" sh -s -- selftest > /tmp/acc-judge-selftest.txt 2>&1; then
+    echo "ok   judge.sh selftest: sixty-four refusals and twenty-three greens, through sh -s"
 else
     echo "FAIL judge.sh selftest (rc=$?): a channel stopped refusing, or a red moved"
     # Every failing line, not a tail: a green run is already twenty-odd lines, so `tail -20` would
@@ -6237,6 +6244,25 @@ else
     # missing work directory reports itself, and the second is what a green-side
     # restore_and_diff prints when it dies under set -e. Neither starts with FAIL.
     grep -E '^(FAIL|BROKEN|selftest:)|restore failed for' /tmp/acc-judge-selftest.txt | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo "=========== check 11g: the launcher refuses to judge what it did not record (#515) ==========="
+# #515's other half (ADR 0066): the digests a verdict rests on live in measure.py's memory,
+# taken before the thing they guard is exposed, and the judge is called only when everything
+# a step reads still matches. Its selftest drives one case per refusal channel — the record's
+# digest is the stream's and not the file's (a by-name append during the run makes the two
+# differ; the old `> file` shape loses the record to the same subject, measured beside it), a
+# doctored seal manifest, a changed judge.sh, a repo/ that moved after the run, a rewritten
+# audit.json and an unattested record each stop the judge before it is called and by name, a
+# process left in the agent's group is listed, killed and not waited for, and `resume` redoes a
+# step from the recorded digests. The live-container case skips where docker or a small image
+# is not at hand — this container has neither — and the closing line says so.
+if python3 -I "$ROOT/spike/loop-closure-timew/measure.py" --selftest > /tmp/acc-measure-selftest.txt 2>&1; then
+    echo "ok   measure.py selftest: $(grep '^measure.py selftest:' /tmp/acc-measure-selftest.txt | sed 's/^measure.py selftest: //')"
+else
+    echo "FAIL measure.py selftest: a channel stopped refusing, or a red moved"
+    grep -E '^(FAIL|skip|measure.py selftest:)' /tmp/acc-measure-selftest.txt | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
 

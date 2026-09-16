@@ -26,7 +26,7 @@ mkdir -p "$RESULTS"
 
 # The image sits two positions before the "mcp" subcommand in the generated
 # args — located by anchor, not by tail offset, so config edits fail loudly.
-IMAGE=$(python3 -c 'import json,sys;a=json.load(open(sys.argv[1]))["mcpServers"]["sideeye"]["args"];print(a[a.index("mcp")-2])' "$MCPJSON")
+IMAGE=$(python3 -I -c 'import json,sys;a=json.load(open(sys.argv[1]))["mcpServers"]["sideeye"]["args"];print(a[a.index("mcp")-2])' "$MCPJSON")
 CASE="$STAGE/work/cases/000001.json"
 
 build_into_bin() { # $1 = plain|patch
@@ -44,7 +44,7 @@ build_into_bin() { # $1 = plain|patch
 # Drive the exact server command the client will start, sending N identical replay
 # calls in one server session. Prints one "verdict explored crash_point" line each.
 replay_calls() { # $1 = how many
-    python3 - "$MCPJSON" "$CASE" "$1" <<'PY'
+    python3 -I - "$MCPJSON" "$CASE" "$1" <<'PY'
 import json, subprocess, sys
 
 cfg = json.load(open(sys.argv[1]))["mcpServers"]["sideeye"]
@@ -67,7 +67,7 @@ for line in out.decode().splitlines():
 PY
 }
 
-CASE_K=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["case_k"])' "$SEAL/protocol.json")
+CASE_K=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["case_k"])' "$SEAL/protocol.json")
 
 echo "=== contrast-mcp: unpatched tree -> FAIL at k=$CASE_K, twice in one session ==="
 build_into_bin plain
@@ -82,7 +82,7 @@ printf '%s\n' "$pos_out"
 echo "=== contrast-mcp: reinstall the unpatched binary (the agent's starting world) ==="
 build_into_bin plain
 
-NEG_OUT="$neg_out" POS_OUT="$pos_out" CASE_K="$CASE_K" OUT="$RESULTS/mcp-contrast.json" python3 <<'PY'
+NEG_OUT="$neg_out" POS_OUT="$pos_out" CASE_K="$CASE_K" OUT="$RESULTS/mcp-contrast.json" python3 -I <<'PY'
 import json, os, sys
 
 neg = [l.split() for l in os.environ["NEG_OUT"].splitlines() if l.strip()]

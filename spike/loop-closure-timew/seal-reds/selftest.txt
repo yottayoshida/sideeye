@@ -1,4 +1,4 @@
-=== judge.sh selftest: sixty refusals ===
+=== judge.sh selftest: sixty-four refusals ===
 ok   judge.sh: name-unsealed — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-mcp-foreign — void via unsealed_tool_hits alone, rc 1
 ok   judge.sh: name-off-allowlist — void via off_allowlist alone, rc 1
@@ -59,8 +59,12 @@ ok   judge.sh: restore-no-repo — rc 1, refuses with nothing removed
 ok   judge.sh: check-pristine-unreadable — the pristine check refuses on unreadable alone, rc 1
 ok   judge.sh: restore-stage-link — rc 1, refuses a symlinked stage with nothing removed
 ok   judge.sh: finalize-unverified — refuses a manifest whose audit verified no digest, rc 1
+ok   judge.sh: finalize-no-inputs — refuses, naming: [inputs.json absent], rc 1
+ok   judge.sh: finalize-unattested — refuses, naming: [pos-verdict.json is not attested in inputs.json], rc 1
+ok   judge.sh: finalize-changed — refuses, naming: [pos-verdict.json changed since the launcher recorded it], rc 1
+ok   judge.sh: finalize-record-changed — refuses, naming: [is not the record the audit read] [is not the record the launcher recorded], rc 1
 === judge.sh selftest: twenty-three greens ===
-ok   judge.sh: finalize-verified — a verified digest lets the manifest close, rc 0, and the agent's edits print from the first of two rebuild attempts
+ok   judge.sh: finalize-verified — a verified digest and a matching inputs.json let the manifest close, rc 0, the manifest carries the digests, and the agent's edits print from the first of two rebuild attempts
 ok   judge.sh: clean — a transcript that escapes nothing stays clean, rc 0
 ok   judge.sh: mcp-allowed — the trusted server's own tool is counted, not voided
 ok   judge.sh: path-inside — a .. out of repo/ that stays in the stage stays clean, rc 0, at most 2 candidate directories
@@ -83,4 +87,4 @@ ok   judge.sh: restore-repo-kept — the stage is its seal again, and the record
 ok   judge.sh: restore-locked-extra — the stage is its seal again, and the record names it under removed
 ok   judge.sh: restore-unreadable-extra — the stage is its seal again, and the record names it under removed
 ok   judge.sh: restore-rerun — the second rebuild's record names the change, and the history keeps both
-selftest: sixty refusals and twenty-three greens hold (83 cases)
+selftest: sixty-four refusals and twenty-three greens hold (87 cases)

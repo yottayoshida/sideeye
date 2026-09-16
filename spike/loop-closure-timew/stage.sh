@@ -90,11 +90,16 @@ SIDEEYE_BIN="$SIDEEYE_REPO/zig-out/bin/sideeye"
 SHIM_LIB="$SIDEEYE_REPO/zig-out/lib/libsideeye_shim.so"
 for f in "$SIDEEYE_BIN" "$SHIM_LIB"; do
     [ -f "$f" ] || { echo "$f not found; build first: zig build -Dtarget=aarch64-linux-gnu" >&2; exit 1; }
-    python3 -c 'import sys; sys.exit(0 if open(sys.argv[1],"rb").read(4)==b"\x7fELF" else 1)' "$f" \
+    python3 -I -c 'import sys; sys.exit(0 if open(sys.argv[1],"rb").read(4)==b"\x7fELF" else 1)' "$f" \
         || { echo "$f is not a Linux ELF; rebuild: zig build -Dtarget=aarch64-linux-gnu" >&2; exit 1; }
 done
 
 docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" "$SCRIPT_DIR"
+# The judge runs the image by this id, never by the tag (#592): the agent has docker through the
+# stage's own button and could move the tag. protocol.json carries the id, and the launcher's
+# digest of protocol.json pins it from before the agent runs.
+IMAGE_ID=$(docker image inspect -f '{{.Id}}' "$IMAGE")
+case "$IMAGE_ID" in sha256:*) ;; *) echo "docker image inspect gave no id for $IMAGE: $IMAGE_ID" >&2; exit 1 ;; esac
 
 mkdir -p "$STAGE/.harness" "$STAGE/define" "$SEAL/files" "$RESULTS"
 cp "$SIDEEYE_BIN" "$STAGE/.harness/sideeye"
@@ -219,7 +224,7 @@ set -e
 
 CASE="$STAGE/work/cases/000001.json"
 # Explicit checks, not assert (assert vanishes under PYTHONOPTIMIZE).
-if python3 -c '
+if python3 -I -c '
 import json, sys
 r = json.load(open(sys.argv[1])); c = json.load(open(sys.argv[2]))
 if r["verdict"] != "FAIL": sys.exit("verdict: %s" % r["verdict"])
@@ -235,8 +240,8 @@ else
     sed 's/^/     | /' "$RESULTS/explore.txt" | tail -12 >&2
     exit 1
 fi
-K=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["k"])' "$CASE")
-OPS=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["ops_total"])' "$CASE")
+K=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["k"])' "$CASE")
+OPS=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["ops_total"])' "$CASE")
 echo "case: k=$K of $OPS operations"
 
 # The exploration's console output and working artifacts stay out of the agent's
@@ -251,7 +256,7 @@ if [ "$VARIANT" = "mcp" ]; then
     sed -e "s|@STAGE@|$STAGE|g" -e "s|@IMAGE@|$IMAGE|g" "$SCRIPT_DIR/build.sh.in" > "$BUTTON"
     # The client-side server config lives at the ROOT, outside the stage: the agent
     # never needs to read it, and it is not part of the sealed input set.
-    python3 - "$STAGE" "$IMAGE" "$ROOT/mcp.json" <<'PY'
+    python3 -I - "$STAGE" "$IMAGE" "$ROOT/mcp.json" <<'PY'
 import json, sys
 stage, image, out = sys.argv[1], sys.argv[2], sys.argv[3]
 cfg = {"mcpServers": {"sideeye": {"command": "docker", "args": [
@@ -288,19 +293,22 @@ if grep -qiE 'undo|rename|order' "$BUTTON"; then
 fi
 
 # The protocol facts finalize will cite, kept beside the seal (not agent-visible,
-# not secret — the seal holds only copies of what the stage already shows).
+# not secret — the seal holds only copies of what the stage already shows). It is not in
+# the manifest below, which hashes the stage's files; what pins it is the launcher, which
+# takes its digest before the agent runs (measure.py, #515's other half) and refuses to
+# judge if it changed.
 # `history` is here so a run's own record says which shape of stage produced it. The
 # #62 witness run — the one whose `git branch -a` motivated the narrowing — was
 # recorded before this existed, and without the key a run from either side of the
 # change reads identically. The apparatus alters what the agent works in, so results
-# across it are not obviously commensurable.
-python3 -c '
+# across it are not obviously commensurable. `image_id` is the image the judge runs (#592).
+python3 -I -c '
 import json, sys
-json.dump({"pin": sys.argv[1], "image": sys.argv[2], "case_k": int(sys.argv[3]),
+json.dump({"pin": sys.argv[1], "image": sys.argv[2], "image_id": sys.argv[7], "case_k": int(sys.argv[3]),
            "case_ops_total": int(sys.argv[4]), "operation": sys.argv[6],
            "history": "narrowed-to-pin"},
           open(sys.argv[5], "w"), indent=1)
-' "$PIN" "$IMAGE" "$K" "$OPS" "$SEAL/protocol.json" "$OPERATION"
+' "$PIN" "$IMAGE" "$K" "$OPS" "$SEAL/protocol.json" "$OPERATION" "$IMAGE_ID"
 
 (cd "$STAGE" && find . -type f ! -path "./repo/*" | LC_ALL=C sort) > "$SEAL/filelist"
 (cd "$STAGE" && tar cf - -T "$SEAL/filelist") | (cd "$SEAL/files" && tar xf -)

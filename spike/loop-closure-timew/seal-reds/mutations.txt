@@ -9,8 +9,15 @@
 # measured that morning, for #512 and #513). mcp-prefix-loose as first committed came back BROKEN
 # (an unescaped `[`); the row below is the escaped program. relative-off and cd-off each kill a
 # mount case beside the path cases: the mount check resolves its source with the same function.
-# The unmutated selftest: 83 cases, rc 0.
-
+# The unmutated selftest then: 83 cases, rc 0.
+#
+# Re-measured in full on 2026-09-16 on the judge for #515's other half (ADR 0066), /usr/bin/sed on
+# macOS: the eighty rows above unchanged, and the five rows at the end new, each killing its own
+# finalize case alone (the two record-rehash rows the same case, which asserts both sentences).
+# record-torn-blind was read from MUTATIONS.md's source by a script and came back killing every
+# audit case, twice; the row's source held a doubled backslash, the copy had the two characters
+# `\n` on one line, and the row applied by hand as rendered kills record-torn alone — MUTATIONS.md
+# says so and the row is written with one backslash now. The unmutated selftest: 87 cases, rc 0.
 name-unsealed-blind	rc=1	killed: name-unsealed
 name-mcp-blind	rc=1	killed: mcp-allowed name-mcp-foreign name-mcp-nested
 off-allowlist-blind	rc=1	killed: name-off-allowlist
@@ -91,3 +98,8 @@ spellings-realpath-off	rc=1	killed: path-config-realpath
 popd-off	rc=1	killed: path-pushd
 tilde-guard-off	rc=1	killed: path-bad-tilde
 ln-into-dir-off	rc=1	killed: path-ln-into-dir
+inputs-absent-off	rc=1	killed: finalize-no-inputs
+inputs-unattested-off	rc=1	killed: finalize-unattested
+inputs-changed-off	rc=1	killed: finalize-changed
+record-audit-rehash-off	rc=1	killed: finalize-record-changed
+record-launcher-rehash-off	rc=1	killed: finalize-record-changed
