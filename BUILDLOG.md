@@ -2,7 +2,7 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-09-16 — twenty targets in four slates, and the two counterexamples whose tools have no out-of-place path
+## 2026-09-16 (second) — twenty targets in four slates, and the two counterexamples whose tools have no out-of-place path
 
 **What this run is.** A dogfood run under `spike/dogfood/README.md`: not a cohort, nothing sealed, no blindness claimed. Four slates of five, chosen by `spike/cohort4/SCOUT-BRIEF.md`'s rules 1–17, measured with the released v1.4.0 tarball rather than a build. Record: `spike/dogfood/2026-09-16-userview-3/`.
 
@@ -17,6 +17,111 @@ Development journal, newest first. Decisions are recorded when they are made —
 **What the ordering rule caught, and what it did not.** `typos` was dropped before any image build: the only Linux aarch64 artifact it publishes is statically linked, so `file` on the unpacked binary settled it. meson was nearly dropped for the opposite reason — its first screen failed because the *image* gave it `ccache cc` and then a `gcc` without `libc6-dev`, not because of anything meson does. A screen failure has to be attributed to the image or to the target before the candidate is dropped; the rule as written is about forecasts versus measurements and does not say this, and it is left as it is.
 
 **Rule 11 is what actually thins the slate.** Of the candidates that cleared stars, activity and contributors, six were dropped for maintainer responsiveness alone (uncrustify, StyLua, PHP-CS-Fixer, logrotate, pipx, and calibre for having no GitHub tracker to measure). Rules 1–3 dropped nine. The bar that costs the most candidates is the one about the people on the other end.
+## 2026-09-16 — The launcher keeps the judge's digests in its own memory, and the judge runs from bytes the launcher verified (#515, #592)
+
+**Where this starts.** ADR 0058 closed half of #515 and named the other half: the record still lives
+where the agent can write, and the digest `audit` verifies is supplied by whoever calls it — both
+launchers print it in a `next:` line, computed from the file after the run, so it is only as good as
+the file was. #592 filed the same shape for the seal: `$ROOT/seal` is the stage's sibling, the agent
+runs as the same user with `Bash` and `Write`, and a doctored `manifest.sha256` is restored as the
+sealed one. The owner ruled on 2026-09-16 that the seal's manifest joins the same digest set, so this
+change closes both.
+
+**Decided by review before any code, twice.** The first draft put the digest-taking and the judge
+calls at the end of `run-agent.sh`. A fresh reviewer pointed out that `sh` reads a script as it
+runs: for the tens of minutes the agent is alive, the launcher's unread second half is an ordinary
+file the agent can write, and so is `judge.sh` for the minutes its `docker build` runs. Digests held
+in shell variables would have been checked by code the agent wrote. So the post-run half moves to
+python (`measure.py`, compiled whole before it runs), the shell launcher hands over with `exec` so
+nothing of it survives into the agent's run, and `judge.sh` is fed to `sh -s` on stdin from the bytes
+the launcher just verified — the bytes that run are the bytes that were checked. The second reviewer
+found that a `resume` taking digests from the operator's paste would reopen exactly the hole the
+change closes (the digest's provenance would be the caller's again), and that `eval`'s container runs
+the agent-built `timew` as uid 0 with the whole results directory mounted read-write — beside
+`audit.json`, the control verdicts and the transcript. The digests are written to `$ROOT/inputs.json`
+after the agent's process group is dead, where neither the container (it mounts the stage and a
+results subdirectory, not the root) nor the agent reaches, and `finalize` requires that file and
+checks every record it reads against it. The container's mounts narrowed to the stage read-only and
+one fresh subdirectory for its own outputs.
+
+**What is deliberately not a gate.** Processes left in the agent's group and containers left
+mounting the stage are recorded and killed, not refused on: what they could have touched is what the
+digests cover, and a false positive would end a stage and a model call that cannot be repeated. The
+gate on the agent's work product is a snapshot of `repo/`'s working tree taken right after the kill,
+`.git/` excluded — one `git status` rewrites the index, and a reviewer measured that against the same
+false-positive cost. `.git/` is recorded beside it.
+
+**Measured while building it.** (1) The recorder's first selftest failed its own check for a
+reason worth keeping: the file was written through a buffered handle, so a by-name append the
+subject made mid-run landed first and the recorder's late flush overwrote it — the file agreed
+with the stream's digest by accident. Unbuffered now; the file never lags the stream. (2) The
+same selftest waited thirty seconds for a `sleep 30 &` the subject left behind, because the
+sleep had inherited the record's pipe and the recorder was waiting for EOF. It now reads until
+the subject has exited and the pipe has been quiet for a second, kills the group, and drains
+what is left — the leftover was listed and dead in 1.0 s. (3) `claude --safe-mode -p "Reply
+with exactly: ok"` through `measure.py run` — its own session, no controlling terminal, stdout a
+pipe — answered `ok`, rc 0, three bytes, no process and no container left behind. That was the
+plan's top risk. (4) The judge's selftest holds through `cat judge.sh | sh -s -- selftest`
+(87 cases, the same as from the file); nothing in the script reads stdin but the heredocs, which
+`sh` serves from the script text. (5) The controls under the narrowed container: `stage.sh` on
+a fresh root (`spike/runs/loop-ro-102407`, the image built from scratch in this checkout),
+then `eval --mode neg` and `--mode pos` with the stage mounted read-only, the container writing
+only into `<mode>-container-out/`, and the image run by the id `protocol.json` records: neg
+`fail_reproduced` / func pass / expectation met, pos `pass` / func pass / expectation met, five
+files in each container directory and the stage check empty before both. Nothing in the
+container needed to write the stage.
+
+**Two reviewers of the plan, and what each removed** — recorded here because the plan file is
+not in this repository. R1: the shell launcher's unread half (above); the hand re-run of `eval`
+that the digests-in-memory design would have made impossible after a failed container (hence
+`resume`); the word "every" in the property, which the container's own outputs falsified; the
+mcp server container outliving a group kill; `python3 -` putting the working directory on
+`sys.path` (`-I` everywhere now); a check that could not tell stream hashing from file hashing
+(the by-name append). R2: `resume` taking its digests from the operator's paste — the caller's
+provenance again — which became `$ROOT/inputs.json`; the eval container's read-write mount of
+the whole results directory as uid 0 running the agent's binary; `.git/` in the repo/ gate;
+`sh -s` never exercised outside the measurement (acceptance now pipes the selftest through it);
+a "verified" flag in the manifest where ADR 0058 had already declined one; `docker ps --filter
+volume=` matching the container-side path rather than the host source.
+
+**The diff's first reviewer found the promise false for two of the three scripts it named.**
+`eval` and `secondary` reached `replay_gate.py` and `suite_summary.py` through
+`sys.path.insert` and `import`. CPython serves an import from `spike/__pycache__/<module>.cpython-3XX.pyc`
+whenever that file's header carries the `.py`'s mtime and size — both readable by the agent,
+which has the same uid, `Bash` and `Write` — so a planted `.pyc` would have run in place of the
+`.py` measure.py had just verified, and `gate()`'s return is `run-verdict.json`'s `replay.gate`,
+which decides `loop_closed`. `-I` does not imply `-B`, and `-B` only stops writing a cache, not
+reading one. Both modules are now executed from their bytes (`compile` + `exec` into a fresh
+module; they import only the standard library), the same shape as feeding `judge.sh` to `sh -s`.
+Measured, not argued: a `replay_gate.cpython-314.pyc` compiled from a copy whose `gate()` returns
+`pass`, its header patched to the real `.py`'s mtime and size, planted in `spike/__pycache__/`.
+The judge before this fix, run on the staged controls with that file in place: `neg:
+replay=pass func=pass expectation_met=False` — the planted code decided the verdict. The judge
+with the fix, same stage, same file: `neg: replay=fail_reproduced func=pass expectation_met=True`,
+and pos `pass`. The planted file was removed afterwards.
+
+**The second reviewer confirmed the first's items closed and found the sentence this change
+had over-claimed.** "A `finalize` run by hand does not reach `loop_closed`" was false: `$ROOT`
+is the agent's to write, so an agent can leave an `inputs.json` of its own, and a `finalize`
+typed by hand against it passes every check — the same shape as the bare "verified" ADR 0058
+declined. The requirement on the file is the launcher's discipline, not a proof a launcher was
+there; what holds the promise is that `measure.py` writes the file after the agent's group is
+dead, replacing whatever is there, and is the only caller of `finalize`. The ADR and the
+judge's comment say that now. The same review found the canaries stopping containers that
+mount the repository — other work's containers over this checkout, before the run began — so
+the roots a container is matched against are the stage's root and the results directory only,
+the scripts being the digests' to refuse on; a comment claiming the two modules run from "the
+bytes that were checked", when they are read from disk after the container (the window is a
+named residual; what the change removes is the cache); a stale case count in `mutations.txt`'s
+header; and the interrupted-run refusal and `resume`'s automatic start being untested — both
+have a case now, the first by a timer sending this process SIGINT while a stub agent sleeps.
+The same review found a tmpfs mount's empty `Source` matching every root (so a container with
+nothing to do with the run would have been stopped — the stand-in docker in the selftest now
+carries one), `run-stage-diffs.jsonl` read by `finalize` and by nobody's digest (it is
+attested now, on both sides), the canaries running before the `exec` with the launcher's lines
+still unread (said so in the header and the ADR rather than claimed away), and an interrupted
+run being judged for minutes in a container (it is recorded and not judged; `resume` judges it
+on request).
 
 ## 2026-09-15 (second) — the judge's path channel resolves the spellings a transcript writes before it compares, and names the ones it cannot (#510)
 

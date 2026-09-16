@@ -90,7 +90,8 @@ manifest refuses to be assembled without that report.**
   audit.record_sha=not supplied`. Both launchers now print the digest in the `next:` line
   they hand the operator, computed from the file after the run; that value is only as good
   as the file was, which is the honest state of this half and the reason the other one
-  exists. A run recorded before this change has no digest at all, and inventing one now
+  exists. (Until 2026-09-16: since ADR 0066 there is no `next:` line — `measure.py` hashes the
+  stream as it records it and passes the digest to `audit` from its own memory.) A run recorded before this change has no digest at all, and inventing one now
   would be the claim this decision exists to refuse.
 - **This closes half of #515, and the issue stays open.** What remains: the record still
   lives where the agent can write, and the digest is supplied by the caller, so a caller
@@ -99,6 +100,10 @@ manifest refuses to be assembled without that report.**
   memory, the leftover-process observation, and the launcher calling the audit itself — is
   the other half. Named here rather than left implicit, so this ADR cannot be read as
   "#515 is done".
+  **Completed 2026-09-16 by ADR 0066** (`spike/loop-closure-timew/measure.py`): all four
+  items, with two changes review forced on the way — the post-run half is python entered by
+  `exec`, because `sh` reads a script as it runs; and the leftover observation records and
+  kills rather than refusing. #515 is closed there, and #592 with it.
 - Also not covered, and named for the same reason: `judge.sh` itself, `spike/replay_gate.py`,
   `check-history.sh` and the container inputs are as writable as the record was. They belong
   to the launcher-side digest set when it exists.

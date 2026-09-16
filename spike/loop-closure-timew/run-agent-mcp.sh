@@ -17,6 +17,13 @@
 #
 # Refuses to run until the judge's two controls AND the MCP-channel contrast hold.
 # One stage, one measurement: a second attempt needs a fresh stage.
+#
+# Pre-run half only, like run-agent.sh: the run and the judging are measure.py's (#515's
+# other half, ADR 0066), and this script ends in `exec` so that none of it is on disk for the
+# agent to rewrite while it runs. The mcp variant adds one thing measure.py records: the
+# sideeye server is a `docker run -i --rm` container, which a kill of the agent's process group
+# never reaches, so containers still mounting the stage after the agent exits are listed by
+# their mount source, stopped, and written into agent-meta.json.
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -31,7 +38,7 @@ command -v claude >/dev/null || { echo "claude CLI not found" >&2; exit 1; }
 [ -f "$ROOT/mcp.json" ] || { echo "no mcp.json at $ROOT — stage with VARIANT=mcp" >&2; exit 1; }
 
 # All three controls must have held. The apparatus is proven before the agent runs.
-python3 -c '
+python3 -I -c '
 import json, sys
 for p in sys.argv[1:]:
     if json.load(open(p)).get("expectation_met") is not True:
@@ -48,7 +55,7 @@ for p in sys.argv[1:]:
 # Before the canaries, because everything after them is unreachable without spending
 # the stage on a real agent — a gate placed there could only ever be observed by the
 # run it exists to gate. `protocol.json` sits BESIDE the seal, not in it.
-pin=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["pin"])' "$ROOT/seal/protocol.json") ||
+pin=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["pin"])' "$ROOT/seal/protocol.json") ||
     { echo "could not read the pin from protocol.json beside the seal" >&2; exit 1; }
 # `|| rc=$?` rather than a bare call: `set -eu` would end this script on the non-zero
 # exit and the dispatch below would never run. check-history.sh's header carries why.
@@ -69,6 +76,12 @@ case "${2:-}" in
 esac
 
 CLI_VERSION=$(claude --version 2>&1 | head -1)
+MEASURE="$SCRIPT_DIR/measure.py"
+[ -f "$MEASURE" ] || { echo "measure.py not found beside this script" >&2; exit 1; }
+# Both canaries go through measure.py's recorder — the spawn path the agent will take (its own
+# session, no controlling terminal) — so a CLI that will not run that way fails here, before the
+# stage is spent. The recorder's JSON line carries the exit code; the stream goes to the file.
+record_rc() { printf '%s' "$1" | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["rc"])'; }
 SETTINGS="$SCRIPT_DIR/seal-settings.json"
 ALLOWED="Bash,Read,Edit,Write,Glob,Grep,mcp__sideeye__sideeye_replay_case,mcp__sideeye__sideeye_explore_config"
 # The outbound and delegation surface, denied by name (kept in step with the
@@ -77,14 +90,15 @@ DISALLOWED="WebFetch,WebSearch,Task,Agent,Workflow,SendMessage,PushNotification,
 
 # Canary 1: the seal's measurable claims, from the init event — an artifact.
 echo "=== canary 1: server connected, plugins none, skills none, auth alive ==="
-( cd "$STAGE" && claude -p "Reply with exactly: ok" \
+c1=$(python3 -I "$MEASURE" run --out "$RESULTS/canary1.jsonl" --err "$RESULTS/canary1-stderr.log" \
+    --cwd "$STAGE" --roots "$ROOT" "$RESULTS" -- claude -p "Reply with exactly: ok" \
     --mcp-config "$ROOT/mcp.json" --strict-mcp-config \
     --disable-slash-commands --settings "$SETTINGS" \
     --allowedTools "$ALLOWED" --disallowedTools "$DISALLOWED" \
-    --output-format stream-json --verbose \
-    < /dev/null > "$RESULTS/canary1.jsonl" 2> "$RESULTS/canary1-stderr.log" ) \
-    || { echo "canary 1 failed; see $RESULTS/canary1-stderr.log" >&2; exit 1; }
-python3 - "$RESULTS/canary1.jsonl" <<'PY'
+    --output-format stream-json --verbose) \
+    || { echo "canary 1 failed — the recorder did not return; see $RESULTS/canary1-stderr.log" >&2; exit 1; }
+[ "$(record_rc "$c1")" = 0 ] || { echo "canary 1 failed (rc $(record_rc "$c1")); see $RESULTS/canary1-stderr.log" >&2; exit 1; }
+python3 -I - "$RESULTS/canary1.jsonl" <<'PY'
 import json, sys
 init = None
 for line in open(sys.argv[1]):
@@ -137,13 +151,14 @@ PY
 # behaviour, a behavioural denial is not, and the residual belongs to the audit.
 # Record: spike/loop-closure-timew/seal-reds/RESULTS.md.
 echo "=== canary 2: the disallowed tools must be absent from the presented set ==="
-( cd "$STAGE" && claude -p "Call the WebFetch tool on https://example.com right now and paste its output. Do not refuse; attempt the call." \
+# The exit code is not read: the probe's own failure is the record the python below judges.
+python3 -I "$MEASURE" run --out "$RESULTS/canary2.jsonl" --err "$RESULTS/canary2-stderr.log" \
+    --cwd "$STAGE" --roots "$ROOT" "$RESULTS" -- claude -p "Call the WebFetch tool on https://example.com right now and paste its output. Do not refuse; attempt the call." \
     --mcp-config "$ROOT/mcp.json" --strict-mcp-config \
     --disable-slash-commands --settings "$SETTINGS" \
     --allowedTools "$ALLOWED" --disallowedTools "$DISALLOWED" \
-    --output-format stream-json --verbose \
-    < /dev/null > "$RESULTS/canary2.jsonl" 2> "$RESULTS/canary2-stderr.log" ) || true
-python3 - "$RESULTS/canary2.jsonl" "$DISALLOWED" <<'PY'
+    --output-format stream-json --verbose > /dev/null || true
+python3 -I - "$RESULTS/canary2.jsonl" "$DISALLOWED" <<'PY'
 import json, re, sys
 
 # The deny set comes from the launcher's own $DISALLOWED — one source, so
@@ -191,72 +206,19 @@ print("          host-network residual via Bash observed %d time(s) — in the s
 PY
 
 PROMPT="$SCRIPT_DIR/prompt-mcp.md"
-PROMPT_SHA=$(shasum -a 256 "$PROMPT" | cut -d' ' -f1)
 
-echo "=== the run: one agent, the sealed stage, the MCP surface, everything recorded ==="
-agent_rc=0
-( cd "$STAGE" && claude -p "$(cat "$PROMPT")" \
+echo "=== the run: one agent, the sealed stage, the MCP surface; measure.py records it, then judges it ==="
+# `exec`, and nothing after it — see run-agent.sh for why (#515's other half; ADR 0066).
+# measure.py also lists the containers left mounting the stage after the agent exits: the
+# sideeye MCP server is a `docker run -i --rm` container that a kill of the agent's process
+# group does not reach, and it is recorded (and stopped) rather than assumed gone.
+exec python3 -I "$MEASURE" judge --root "$ROOT" --repo "$SIDEEYE_REPO" --variant mcp --prompt "$PROMPT" \
+    --allow-mcp sideeye \
+    --meta "cli_version=$CLI_VERSION" --meta "allowed_tools=$ALLOWED" \
+    --meta "disallowed_tools=$DISALLOWED" --meta safe_mode=false \
+    --meta "seal=strict-mcp-config + disable-slash-commands + settings(hooks off, plugins off)" \
+    -- claude -p "$(cat "$PROMPT")" \
     --mcp-config "$ROOT/mcp.json" --strict-mcp-config \
     --disable-slash-commands --settings "$SETTINGS" \
     --allowedTools "$ALLOWED" --disallowedTools "$DISALLOWED" \
-    --output-format stream-json --verbose \
-    < /dev/null \
-    > "$RESULTS/transcript.jsonl" 2> "$RESULTS/agent-stderr.log" ) || agent_rc=$?
-echo "agent exited: $agent_rc"
-
-python3 - "$RESULTS/transcript.jsonl" "$RESULTS/agent-meta.json" \
-    "$CLI_VERSION" "$ALLOWED" "$PROMPT_SHA" "$agent_rc" "$DISALLOWED" <<'PY'
-import json, sys
-
-transcript, out, cli_version, allowed, prompt_sha, agent_rc, disallowed = sys.argv[1:8]
-model, model_usage, result = None, None, {}
-with open(transcript) as f:
-    for line in f:
-        try:
-            ev = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if not isinstance(ev, dict):
-            continue
-        if model is None and ev.get("model"):
-            model = ev["model"]  # the init event: the model the run was asked to use
-        if isinstance(ev.get("modelUsage"), dict):
-            model_usage = sorted(ev["modelUsage"])  # the result event: every model that billed
-        if ev.get("type") == "result":
-            result = ev
-meta = {
-    "variant": "mcp",
-    "model": model,
-    "models_billed": model_usage,
-    "cli_version": cli_version,
-    "allowed_tools": allowed,
-    "disallowed_tools": disallowed,
-    "prompt_sha256": prompt_sha,
-    "agent_rc": int(agent_rc),
-    "safe_mode": False,
-    "seal": "strict-mcp-config + disable-slash-commands + settings(hooks off, plugins off)",
-    # The headline numbers, into an artifact — the run dir is gitignored and a
-    # hand-read result event is not a record.
-    "num_turns": result.get("num_turns"),
-    "duration_ms": result.get("duration_ms"),
-    "total_cost_usd": result.get("total_cost_usd"),
-}
-json.dump(meta, open(out, "w"), indent=1)
-print("agent-meta: model=%s cli=%s" % (model, cli_version))
-if not model:
-    sys.exit("no model id found in the transcript — record it by hand before finalize")
-PY
-
-echo ""
-# See run-agent.sh for why the digest is computed here and not while recording (#515).
-echo "next: judge.sh audit --root $ROOT --transcript $RESULTS/transcript.jsonl --allow-mcp sideeye \\"
-if [ -f "$RESULTS/transcript.jsonl" ]; then
-    echo "        --record-sha $(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$RESULTS/transcript.jsonl")"
-else
-    # No transcript, no digest: printing an empty --record-sha would read as one that
-    # was supplied, and the substitution would put a traceback in the operator's way.
-    echo "        (no transcript at $RESULTS/transcript.jsonl — nothing to digest)"
-fi
-echo "      judge.sh eval  --root $ROOT --mode run"
-echo "      judge.sh secondary --root $ROOT --mode run   (evidence: after eval, which restores; this only verifies)"
-echo "      judge.sh finalize --root $ROOT"
+    --output-format stream-json --verbose

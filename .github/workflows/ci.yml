@@ -281,18 +281,29 @@ jobs:
       # check that against, because the runs wrote to spike/runs/, which .gitignore calls
       # throwaway. A verdict nobody can re-read is indistinguishable from a classifier that
       # cannot say anything but clean. The selftest
-      # drives sixty refusals from synthetic roots and transcripts. The forty-nine that void
+      # drives sixty-four refusals from synthetic roots and transcripts. The forty-nine that void
       # each assert that the one field their channel owns is the non-empty one — thirty-three of them are
       # spellings of the repo or the config dir that the path channel resolves before it compares,
-      # and one a relative docker mount source outside the stage (#510); the other eleven
+      # and one a relative docker mount source outside the stage (#510); the other fifteen
       # (no tool calls, a seal failing its own hash check, a manifest whose audit verified no
-      # digest, six stages the pristine check refuses, and two the rebuild refuses — no repo/,
+      # digest, four finalize refusals from #515's other half — no inputs.json, an unattested
+      # record, a changed record, a transcript neither the audit nor the launcher recorded —
+      # six stages the pristine check refuses, and two the rebuild refuses — no repo/,
       # a symlinked stage) never reach that classification. Twenty-three greens beside them, including
       # the granting side of --allow-mcp, a rebuild that writes through no symlink, seven records
       # the path channel must leave clean, and a mount recorded as unresolved. It needs no
       # container and no stage: sh and python3 only.
       - name: The loop-closure judge goes red on every channel it declares
         run: sh spike/loop-closure-timew/judge.sh selftest
+
+      # The launcher's memory (#515's other half, ADR 0066): the record's digest is over the
+      # stream, not the file; a doctored seal manifest, a changed judge.sh, a repo/ that moved
+      # after the run, a rewritten audit.json and an unattested record each stop the judge
+      # before it is called, by name; a process left in the agent's group is listed, killed,
+      # and not waited for. Sixteen cases; the live-container case skips, and says so, where
+      # docker or a small image is not at hand. sh and python3 only.
+      - name: The launcher refuses to judge what it did not record
+        run: python3 -I spike/loop-closure-timew/measure.py --selftest
 
       # The positive control under the cohort-4 himalaya record is what licenses reading
       # runs 2-6 there, and until now nothing ran it: PRD.md said so in as many words

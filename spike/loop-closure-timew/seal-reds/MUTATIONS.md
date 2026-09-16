@@ -29,8 +29,13 @@ green.
 | `always-clean` | `s\|^verdict = "clean"$\|verdict = "clean"\nnetwork_hits = context_hits = docker_hits = unsealed_hits = []\|` | the verdict itself |
 | `case-deleted` | `/    audit_case net-url network_hits/d` | not a branch — the case list itself |
 | `record-sha-blind` | `s\|    if want_sha == got_sha:\|    if True:\|` | the digest comparison (#515) |
-| `record-torn-blind` | `s\|^        except (UnicodeDecodeError, json.JSONDecodeError) as e:$\|        except (UnicodeDecodeError, json.JSONDecodeError) as e:\\n            continue\|` | the unreadable-line count (#515) — restores the `continue` this change removed |
+| `record-torn-blind` | `s\|^        except (UnicodeDecodeError, json.JSONDecodeError) as e:$\|        except (UnicodeDecodeError, json.JSONDecodeError) as e:\n            continue\|` | the unreadable-line count (#515) — restores the `continue` this change removed |
 | `finalize-blind` | `s\|if manifest\["audit"\].get("record_sha") != "verified":\|if False:\|` | finalize's demand for a verified digest (#515) |
+| `inputs-absent-off` | `s\|^if not os.path.exists(inputs_path):$\|if False:\|` | finalize's demand for the launcher's inputs.json (#515's other half, ADR 0066) — the copy then opens a file that is not there, and the refusal stops naming `inputs.json absent` |
+| `inputs-unattested-off` | `s\|^        if want is None:$\|        if False:\|` | a record finalize reads that inputs.json does not attest — the copy falls through to the digest comparison and says "changed" instead |
+| `inputs-changed-off` | `s\|^        elif sha256(p) != want:$\|        elif False:\|` | a record that changed since the launcher recorded it |
+| `record-audit-rehash-off` | `s\|^        if record_now != manifest\["audit"\].get("record_sha_value"):$\|        if False:\|` | the transcript hashed now against the audit's own digest — `finalize-record-changed` asserts both sentences, so blinding this one alone fails it |
+| `record-launcher-rehash-off` | `s\|^        if record_now != launcher_record:$\|        if False:\|` | the transcript hashed now against the launcher's digest — the other sentence of the same case |
 | `mode-compare-blind` | `s\|        if (stat.S_IMODE(st.st_mode) & 0o700) != want:\|        if False:\|` | the owner-bits comparison (#513) |
 | `not-regular-blind` | `s\|            if stat.S_ISLNK(st.st_mode) or not want_type(st.st_mode):\|            if False:\|` | a symlink, or anything not a regular file, on a sealed file's path (#513) |
 | `delete-blind` | `s\|        remove_tree(full)\|        pass\|` | the rebuild's removal of everything outside `repo/` (#512) |
@@ -97,6 +102,25 @@ green.
 | `ln-into-dir-off` | `s\|                if made in (".", "..") or made\.endswith("/"):\|                if False:\|` | a link named `.`, `..` or with a trailing `/`, made inside that directory (#510, found while measuring the speed) |
 
 ## What the attribution says
+
+**2026-09-16, #515's other half: eighty-five mutations, eighty-four killing exactly the recorded
+or predicted set and `carry-held` its one case more, as before.** The five new rows blind
+`finalize`'s five new lines one at a time — the demand for `inputs.json`, the unattested-record
+branch, the changed-record branch, and the two comparisons of the transcript hashed now (to the
+audit's digest, to the launcher's) — and each kills its own case alone; the two record
+comparisons kill the same case, `finalize-record-changed`, which asserts both sentences so that
+neither survives on its own. `inputs-unattested-off` is worth a sentence: with its `if` blinded
+the copy falls through to the digest comparison against `None`, so the case is refused for the
+wrong reason ("changed") and fails on the sentence it asserts — the assertion is on the reason,
+not on the exit. The eighty-five were run by a script that read this table, four at a time,
+and one row came back wrong that way twice: `record-torn-blind` was reported killing every
+audit case. Applied by hand from the rendered table it killed `record-torn` alone, and the
+difference was this file: the row's source held `\\n` — two backslashes — where `always-clean`'s
+holds one, so a runner feeding the source text to `sed` put the two characters `\n` into the
+copy on one line and every audit failed on a syntax error. The row is written with one
+backslash now, like its neighbour, and `mutations.txt` carries the by-hand run. A table meant
+to be applied as written has to be written as it is applied. `extra-descend-off` (five `-e`
+arguments) was applied by hand too, the runner reading the table as one program per row.
 
 **Eighty mutations; seventy-nine killed exactly the set written into the runner before it ran, and
 one killed a case more** — seventy-nine of the judge, one of the selftest's own case list. The
