@@ -2,6 +2,149 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-16 (sixth) — class-exclusions.tsv states the criterion its rows meet, and count.py holds each row to its target's own refusal row (#598)
+
+**What #598 said, and what the owner chose after reading further.** The ledger's header gave its
+reason for keeping a cohort define out of the A-group corpus as "its class has no recorded verdict
+at all". cargo's refusal-table row has recorded a FAIL under `--observe syscalls` since this morning
+(#538), and nothing read the reason, so the check stayed green. The issue offered two ways out:
+move cargo's defines into the corpus and sweep a new generation, or rewrite the header to the
+criterion the ledger actually applies. The owner first chose the first. Reading the ledgers before
+drafting turned up four things that changed it, put back to the owner before any plan was written:
+Bun's row — the same ledger, `spike/cohort2/bun/ops` — also records a FAIL as of #604, merged hours
+earlier; cargo's two defines are two revisions of one question, so `supersession.tsv`'s own rule
+would send r1 there rather than into the corpus; `docs/target-classes.md` defines supported as "the
+rows of the first table … whatever verdicts their stories contain", and that is what cargo was left
+under on 09-16; and the sweep runs committed defines in the default mode, where both would refuse,
+so the published rate would rise by two refusals that say nothing new. The owner chose the
+rewrite: no corpus change, no sweep, no published figure moves.
+
+**The criterion is ADR 0025's, and the header is what was wrong.** ADR 0025 already reads "the
+target's class is not a supported class … each quoting the `docs/target-classes.md` refusal-table
+row it rests on", and `docs/unknown-rate.md` already says `class-exclusions.tsv` holds targets whose
+class "the first table of `docs/target-classes.md` does not list". Only the ledger's header, and
+two sentences about `pass` that said the same thing in other words, used the verdict reading.
+
+**The check ties the define to a row, not a string to a table.** The first draft compared the
+quoted class against the page's Class cells. The plan's first review broke it: any define, a
+supported target's included, could be parked under a refusal table's class and stay green — the
+shape `count.py` already refuses for `supersession.tsv` in its own words, "a place to park
+anything". The rows name their records, so the define is tied to the rows citing its cohort
+directory. The second review broke the next version: the targets that have crossed into the
+first table so far (virtualenv, zstd, ansible-core) did it by gaining a new row that cites a
+later record — dogfood runs for two, `spike/followup-item4/NOTES.md` for zstd — and keeping the
+refusal row, and cargo's verdict is a dogfood record too, so a
+first-table row naming no cohort directory would have left the exclusion green. The tool's first
+word is the second key; on the page that day it found exactly those three and none of the excluded
+targets (the first diff review widened the key, below, and the shared words became four). What neither key sees is written in the function: a first-table row spelling the tool
+with a different first word.
+
+**Seen red twice on the live tree before the ledger was touched, in the order predicted.** With
+the check added and nothing else, `count.py check` stopped at `docs/target-classes.md:58`: a blank
+line inside the first table. GitHub ends a table at a blank line; fetched through the API at
+`047592d`, the page rendered 3 tables and 58 `<tr>`, where its Class rows number 79 — the 14 first-
+table rows after line 58 (codespell onward) and the 10 refusal rows after line 92 were loose text
+with pipes in them. So the reader's first table and the file's were not the same table, and the
+check refuses the split rather than reading past it. With the two blank lines removed, it stopped
+where #598 predicted the ledger was stale: `spike/cohort2/bun/ops quotes the class 'Multi-threaded
+runtimes', and the row that names it says line 81: 'Multi-threaded runtimes, **and behind the
+thread wall, raw syscalls**'`. The header says that column is quoted verbatim; Bun's row had been
+reworded under it.
+
+**The header also said something false about revisions.** "No later revision exists that reaches
+a verdict" was the reason these rows are not in `supersession.tsv`; cargo's r2 define is exactly
+what `spike/dogfood/2026-09-16-cargo-v16/` ran to its FAIL. The reason that still holds is the
+other one: a supersession row needs its successor measured in the corpus, and nothing in this file
+is. Rewritten to say that. watson was the header's example of the criterion cutting both ways, and
+under the table criterion it would cut the wrong way — watson appears only in a refusal row — so it
+is named as ADR 0025's disclosed disagreement, never a cohort define, rather than as an example.
+
+**Eight fixtures, one per guard, and each guard rewritten to `False` in turn** against all eight,
+`good` and the live tree: every rewrite changed its own fixture and nothing else — five turn green
+(stale quote, supported by directory, supported by tool, empty first table, split table) and three
+change the kind of red (unnamed then fails the quote comparison, the absent page raises
+`FileNotFoundError`, the renamed heading lands on the empty-table refusal). The plan had named the
+empty-first-table guard as one with no fixture; a page with the heading over no rows is a two-line
+fixture, so it has one. The unnamed fixture quotes a real refusal-table Class cell on purpose, and
+the directory-supported one keeps the quote and the refusal row in agreement, so a string-only
+check passes both — the shape the first review broke.
+
+**The acceptance comment's counts were already stale, and are dated rather than overwritten.** It
+said `count.py` "holds 78 `if` guards" and "every one of its 71 `die()` calls sits inside an `if`",
+present tense, from the 2026-09-01 sweep. Walking the parse tree on `main` today: 75 `die()` calls.
+Replacing the numbers would have had the 09-01 sweep's "36 undetected" speak for guards it never
+saw, so the sentences are in the past tense with their date, and today's count stands beside them:
+83 calls on this branch, none outside an `if`, still no `assert` and no `raise`.
+
+**The same criterion in other words, looked for by pairing words rather than by one phrase.** A
+grep for "recorded verdict" missed `docs/target-classes.md`'s opening line — "supported means a
+class listed here as reaching verdicts" — which the plan's first review found. The scan that
+closes the plan split `docs/`, `spike/unknown-rate/` (fixtures and artifacts aside), `README.md`,
+`PRD.md` and `DESIGN.md` into sentences and read every one carrying both "support" and "verdict":
+136 files, 18 sentences — counted as `git ls-files` over those paths restricted to `.md`, `.tsv`,
+`.py`, `.sh` and `.txt`, with a sentence ending at `.`, `;` or `:` before a capital, a backtick, an
+asterisk, a parenthesis or a quote. The diff review's own split (no extension filter, a plainer
+sentence rule) got 138 and 16; the counts move with the method, and the finding did not. After the rewrite, one still uses a verdict as the mark of support —
+`spike/unknown-rate/select-b.sh`'s comment that Rust, Go, Node and shell "are not classes with
+recorded verdicts" — and it stays: it is the frozen predicate that selected g1's B-group, true on
+2026-08-16. The `pass` row in `docs/target-classes.md` no longer argues from a count of verdicts
+(the same row says both its targets reach one); it points to the page's own definition, and the
+five-trial rule it had folded in is a separate sentence, because that rule is about printing a rate,
+not about support.
+
+**Measured before review.** `count.py check` on the live tree: "4 class exclusions matched to
+refusal-table rows"; `good`: 0. Acceptance checks 11 and 12 sliced out and run in `sideeye-spike`:
+"every slashed backtick reference in the listed pages resolves", "gate red on all 51 tampered
+fixtures" (43 on `main`). `spike/check-ledger-prose.sh`: 13 figures, unchanged, because no row moved.
+
+**The first diff review found three places the rewrite was still not true, and one of them was a
+cell GitHub does not show.** (1) The header I wrote said cargo and Bun stay in the refusal table
+"because the verdict is reached in one observation mode" — and zstd sits in the first table on a
+verdict reached under `--observe syscalls` only. The because-clause imported a reason the page's
+own first table refutes, the same shape #598 was about, so the header now says only where the rows
+are and that nothing in the first table reaches them. The two refusal rows that carry that reason
+(Bun's and cargo's, from #604 and #538) are outside this change and are left, recorded in the PR.
+(2) An unescaped `|` inside a code span splits a table cell on GitHub, and cells past the header's
+count are dropped: Bun's row carried `O_WRONLY|O_CREAT|O_TRUNC` and lost its `Recorded in` cell —
+the one cell citing `spike/cohort2/bun/`, which is what tied its exclusion to the row. rrdtool's
+row carries `PROT_WRITE|MAP_SHARED`; on `main` it sat after the blank line at 92 and was loose text
+anyway, and removing that line brought it into the table with the same loss (the second diff
+review's correction of how I first wrote this). So the check had been green on a link no reader is shown,
+the thing the blank-line refusal exists to prevent. The reader now splits cells the way GitHub
+does, refuses a row wider than its header, and was seen red on the live page at line 81 before
+both pipes were escaped. (3) The pages state the criterion per class ("targets whose class the
+first table does not list"), the check held it per target: a first-table row for mlr under cargo's
+Class cell — exactly how ansible-core crossed, under its own — left the check green. The quoted
+class being a first-table Class cell is now refused too. With the reviewer's narrower point taken
+as well (the tool key now includes the define's own directory name, and every comma-separated tool
+in a Tool cell), three crossings built on the real page in a scratch root — an mlr verdict row
+under cargo's class, a `jj 0.44.0` row under another class, a Bun row under a new class citing its
+dogfood record — each refuse, and the unmodified page gives 4. Two fixtures more
+(`ledger-exclusion-class-supported`, `ledger-exclusion-excess-cells`), ten in all; each of the ten
+guards rewritten to `False` changes its own fixture and nothing else, seven to green and three to a
+different red. `count.py` walks to 85 `die()` calls, none outside an `if`, no `assert`, no `raise`. Acceptance checks 11 and 12, sliced out and run in `sideeye-spike` again: "gate red on all 53 tampered
+fixtures", the live tree "4 class exclusions matched to refusal-table rows".
+
+Not taken: a non-Class table header inside the same section, or a heading or list line inside a
+Class table, would also end the table on GitHub, and the reader does not refuse those. The
+docstring says a Class table runs from its header to the next `## `, which is what it reads, and
+the page has no such shape today.
+
+**The second diff review found no break in the fixes and five loose ends, three taken.** The tool
+key, split on commas, now shares four words between the two tables rather than three: borg joins,
+from the `git, Borg` scratch-file row, which is a precision limit and not a crossing — borg is a
+corpus target and in no exclusion. rrdtool was misdescribed above and in the first CHANGELOG draft,
+now corrected. And two ways a reader-invisible reference could still tie a define were closed in a
+few lines: a cohort path inside an HTML comment no longer ties anything, and the Tool word is read
+past emphasis, code and link markup and past a tab or a no-break space (`[Bun](…) 1.4.2` read as
+`[bun](…)` before, and matched nothing). Both are pinned on existing fixtures — unnamed's only fx
+path now sits in a comment, supported-by-tool spells its tool as a link — and reverting either
+reader turns exactly that fixture green: twelve rewrites, each changing its own fixture and nothing
+else. Left as recorded: a heading or list line inside a Class table, and the two refusal rows on
+the page whose placement reason zstd's first-table row contradicts. The simplify pass after it
+moved one thing: a row's cohort directories are read once, when the table is read, rather than
+again for every exclusion; the twelve rewrites were run again on that form and came out the same.
+
 ## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
 
 **What was asked.** A dogfood run of five, weighted to targets that are measurable now because a
