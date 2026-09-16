@@ -222,7 +222,20 @@ or retaken, and corrected on every page:
 
 ## Upstream
 
-Not decided by this run. Candidates, if the owner's call is yes: markdownlint-cli and
-google-java-format — no report in the searched results, a reproduction with nothing installed
-(`ulimit -f 0`), and no AI or LLM policy found for either; markdownlint-cli with rule 3 weak.
-Bun is known and has a fix open.
+**Nothing is reported** (owner's call, 2026-09-16). Bun is known and has a fix open. For
+markdownlint-cli and google-java-format — no report in the searched results, a reproduction with
+nothing installed (`ulimit -f 0`), no AI or LLM policy found — the call rests on what is lost and
+on how this class has been received:
+
+- What is lost is a Markdown file or a Java source, which is almost always under version control,
+  and only in the window between the truncating `open` and one write of a few kilobytes.
+- Reports of this class to tools that rewrite sources were closed: pyupgrade#1101 as *"useless
+  spam"*, fonttools#4170 as *"the caller's risk"* (`spike/upstream-report-template.md`, and the
+  2026-09-16 userview entry in `BUILDLOG.md`). The report that was taken up, ImageMagick's,
+  lost images, which version control usually does not hold.
+- codespell#4025 and rubocop#15720, filed the same day on the axis that *the flag exists to
+  rewrite the original*, have no reaction yet, and two more of the same class on the same day
+  would read as a batch.
+
+**Revisit when codespell#4025 or rubocop#15720 is fixed upstream** — that would mean the axis
+holds for tools whose data is usually in version control, and these two sit on it.

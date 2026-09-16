@@ -85,7 +85,13 @@ it and exits, and the truncation already happened. For Bun, `ulimit -f` at 1–8
 **Bun is already known upstream.** oven-sh/bun#39689 (open since 2026-08-19) converts the
 `package.json` writer to a temporary file and a rename, and #39666 names the zero-byte manifest
 as what an interrupted rewrite leaves. Nothing was found for markdownlint-cli or
-google-java-format; whether to report them is the owner's call, not this run's.
+google-java-format; whether to report them is the owner's call, not this run's. **The call
+(2026-09-16): not reported**, and revisited if codespell#4025 or rubocop#15720 is fixed upstream.
+The owner asked first whether they were worth an issue at all; the answer given was that they are
+worth little — a Markdown file or a Java source is almost always under version control, the window
+is one write wide, pyupgrade's report of the same class was closed as spam and fonttools' as the
+caller's risk, and two more of the class on the day codespell and rubocop were filed would read as
+a batch. `RESULTS.md` records the reasons and the condition.
 
 **What the record nearly got wrong.** The first draft of `RESULTS.md` called Bun "the first Zig
 target judged" and counted the truncating rewrite in ten languages. Bun 1.4 is Rust — its own row
