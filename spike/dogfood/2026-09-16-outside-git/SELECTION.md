@@ -21,6 +21,13 @@ detached processes.
 Linux in Docker (Debian trixie, aarch64), as root in a `--privileged` container, state and work on
 the container's own filesystem (#528).
 
+**Added after the first review**: neovim's latest release, v0.12.5 (`apparatus/Dockerfile.nvim012`,
+the release tarball's digest matched), beside Debian's 0.10.4 — the review read in neovim's source that
+0.11 and later write the shada file differently (`RESULTS.md`).
+
+**The aws-cli credentials in the scripts and transcripts are substitutes** for the fabricated
+AWS-shaped keys the run used, replaced in every commit before the first push (`BUILDLOG.md`).
+
 ## Candidates, and what the rules removed before any measurement
 
 `apparatus/repo-meta.sh` → `transcripts/meta/repos.txt`, `apparatus/rule11-github.py` →

@@ -1,0 +1,18 @@
+== check-aws.sh
+  the completed operation                                    rc=0 (expected 0) 
+  work profile's access key changed                          rc=1 (expected 1) work profile's access key is "FAKE-ID-WORK-9999999"
+  work profile's secret neither old nor new                  rc=1 (expected 1) work profile's secret is neither the old nor the new one: "neither-old-nor-new"
+  default profile's access key changed                       rc=1 (expected 1) default profile's access key is "FAKE-ID-DEFAULT-9999" (230 bytes in credentials): 
+  default profile's secret changed (not a predicate)         rc=0 (expected 0: not checked) 
+== check-hatch.sh
+  the completed operation                                    rc=0 (expected 0) 
+  terminal.styles.info neither bold nor italic               rc=1 (expected 1) terminal.styles.info is 'underline'
+  config.toml does not parse                                 rc=1 (expected 1) hatch config show failed: TOMLDecodeError: Cannot declare ('dirs',) twice (at line 42, column 6)
+  the top-level mode key removed                             rc=1 (expected 1) config.toml lost its content: keys ['dirs', 'project', 'projects', 'publish', 'shell', 'template', 'terminal']
+== check-jbang.sh
+  the completed operation                                    rc=0 (expected 0) 
+  first.key holds another value                              rc=1 (expected 1) config get first.key returned "other-value" (45 bytes): 
+== check-pyenv.sh
+  the completed operation                                    rc=0 (expected 0) 
+  version names a version that is not installed              rc=1 (expected 1) pyenv version-name is "" (6 bytes in version): pyenv: version `3.9.1' is not installed (set by /localrun/pp/p1
+  version removed                                            rc=1 (expected 1) /localrun/ap/check-pyenv.sh: 5: cannot open /localrun/pp/p2/version: No such file

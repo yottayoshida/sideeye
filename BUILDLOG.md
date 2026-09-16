@@ -104,6 +104,37 @@ columns, all five explorations FAIL at crash point 2 of 2, the checker probe sho
 operation, and `ulimit -f 0` takes `credentials` from 231 bytes to 0 with status 120 — the numbers the
 pages already quote.
 
+**The first review of the record found neovim's upstream claim half false, and the run went back
+to measure the latest release.** The pages said the `v0.10.4` order — the file removed before the
+rename, the contents written after it — was "at the same places on `master`". `upstream-source.sh`
+grepped four fixed lines of `shada_write_file` and could not see that `v0.11.0` added
+`packer.packer_flush(&packer)` at the end of `shada_write`, before the rename; the reviewer read it.
+The script now prints that flush for `v0.10.4` (none), `v0.11.0`, `v0.12.5` and `master` (one each).
+Predictions for the `v0.12.5` release were committed, then `nvim-v2.sh` measured it: the capture
+writes all 170 bytes into `main.shada.tmp.a` before the unlink and the rename; the scratch define
+fails **2 of 13 worlds** instead of 6, both between the unlink and the rename; `ulimit` never loses the
+file. `probe-shada-after.sh` then made that one remaining world by hand and started nvim twice: both
+versions start empty, print nothing, write a new `main.shada` without the old history, and leave the
+complete temporary unread. Every prediction for this part hit.
+
+**The rest of what that review found, and what changed.** The run's premise falsifier fired and
+`RESULTS.md` said it had not: neovim's `baseline_violates_invariant` is a wall no `preflight` can show.
+The neovim checker had been falsified on its register predicate only, did not ask nvim when the file
+was absent, and would have passed a file nvim reports as `E576`; checker v2 fails on every one of those,
+each shown on both binaries, and re-measured 0.10.4 gave the same 6 of 13. `probe-checkers.sh` tried
+three states per checker; `probe-checker-predicates.sh` breaks each predicate alone (aws-cli's
+`default` secret turns out not to be checked, and the page says so). `probe-shada.sh` located one pair
+of runs and knew only uint32 timestamps; 0.12.5 writes a uint64 and `probe-shada-after.sh` locates
+both pairs on both versions. The page listed four closed `E576` issues as if they were all there were;
+twelve neovim issues were read in full, none names the removal before the rename, and leftover
+`main.shada.tmp.*` files are reported in two open ones. pyenv's FAIL has the oracle agreeing on none of
+the subject's operations, now said. In this entry's paragraphs above: the replaced secrets were 41, 40
+and 39 characters, not "a 40-character secret"; Angular CLI was not removed "before any measurement" —
+its refusal of Node 20.19.2 is the first screen's output; the nvim process readings (`ps`,
+`/proc/<pid>/cmdline`) were taken by hand and not kept; and the re-run after the substitution re-ran
+every checker probe and every `ulimit` probe too, where neovim's setup file came out at 138 bytes
+against 136 in the first run.
+
 ## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
 
 **What was asked.** A dogfood run of five, weighted to targets that are measurable now because a

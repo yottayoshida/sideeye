@@ -1,21 +1,34 @@
 # 2026-09-16 — outside git: results
 
 Five targets whose state lives outside version control (`SELECTION.md`), explored with the released
-v1.4.0 and once more each with main `047592d` (contract v18, not a release). As root in a
-`--privileged` container on Linux aarch64, state on the container's filesystem. Drivers
-`apparatus/explore.sh` and `apparatus/explore-nvim-scratch.sh`; transcripts and JSON reports in
-`transcripts/explore/`; predictions committed before each exploration in `PREDICTIONS.md`.
+v1.4.0 and once more each with main `047592d` (contract v18, not a release), and neovim again after
+the first review of this record — Debian's 0.10.4 with a second checker, and the latest release,
+0.12.5. As root in a `--privileged` container on Linux aarch64, state on the container's filesystem.
+Drivers `apparatus/explore.sh`, `explore-nvim-scratch.sh` and `nvim-v2.sh`; transcripts and JSON
+reports in `transcripts/explore/` and `transcripts/nvim-v2/`; predictions committed before each
+exploration in `PREDICTIONS.md`.
+
+**The aws-cli probe credentials in every committed script and transcript are substitutes.** The run
+used fabricated keys shaped like real AWS keys; before the first push they were replaced with strings
+of the same length that no scanner reads as keys, in every commit, and the aws-cli part was run again
+with the replacements (`BUILDLOG.md`, `apparatus/redact-probe-credentials.py`,
+`transcripts/rerun-after-redaction/`).
 
 | Target | Mode(s) | v1.4.0 | main `047592d` | Predicted | Upstream |
 |---|---|---|---|---|---|
-| aws-cli 2.23.6 `configure set` | wrappers ×3, syscalls ×1 | **FAIL** 4/4 — `credentials` empty, both profiles' keys gone | FAIL 1/1 | FAIL — hit | no report in the searched results; the same code on `v2` |
+| aws-cli 2.23.6 `configure set` | wrappers ×3, syscalls ×1 | **FAIL** 4/4 — `credentials` empty, both profiles' keys gone | FAIL 1/1 | FAIL — hit | no report in the searched titles; the same code on `v2` |
 | hatch 1.18.0 `config set` | wrappers ×3, syscalls ×1 | **PASS** 4/4, 6/6 worlds over 5 crash points | PASS 1/1 | PASS — hit | — |
-| neovim 0.10.4 `:wshada` | wrappers ×3, syscalls ×1 | first define **UNKNOWN** 4/4 `baseline_violates_invariant`; with `main.shada` scratch, **FAIL** 4/4 on the checker, 6 of 13 worlds | UNKNOWN 1/1; FAIL 1/1 | FAIL — the first define missed (no verdict); the second, predicted after, hit | no report of this mechanism in the searched results; the same order on `master` |
-| jbang 0.141.0 `config set` | wrappers ×3, syscalls ×1 | **FAIL** 4/4 — `jbang.properties` empty | FAIL 1/1 | FAIL — hit | none in the searched results |
-| pyenv 2.8.5 `global` | syscalls ×3 | **FAIL** 3/3 — `version` empty, pyenv falls back to `system` | FAIL 1/1 | FAIL — hit | none in the searched results |
+| neovim 0.10.4 `:wshada` | wrappers ×3, syscalls ×1 | first define **UNKNOWN** 4/4 `baseline_violates_invariant`; with `main.shada` scratch **FAIL** 4/4 on the checker, 6 of 13 worlds, with either checker | UNKNOWN 1/1; FAIL 1/1 (each checker) | first define a miss; the scratch define, predicted after, hit | see below |
+| neovim 0.12.5 (latest release) `:wshada` | wrappers ×3 (no scratch); wrappers ×3, syscalls ×1 (scratch) | **UNKNOWN** 3/3 without scratch; **FAIL** 4/4 with it, **2 of 13 worlds** | FAIL 1/1 | hit (predicted after the review) | none of twelve issues read names the mechanism |
+| jbang 0.141.0 `config set` | wrappers ×3, syscalls ×1 | **FAIL** 4/4 — `jbang.properties` empty | FAIL 1/1 | FAIL — hit | none in the searched titles |
+| pyenv 2.8.5 `global` | syscalls ×3 | **FAIL** 3/3 — `version` empty, pyenv falls back to `system` | FAIL 1/1 | FAIL — hit | none in the searched titles |
 
-main gave the same answer as v1.4.0 for every define. None of the five was refused at exploration
-on a wall its screen had not shown.
+main gave the same answer as v1.4.0 for every define. **One refusal came from a wall the screen could
+not show**: neovim's `baseline_violates_invariant`. A `preflight` runs no uncrashed re-run — its
+report says `not checked  kill landing, world-side process boundaries, baseline behavior, checker
+falsification` (`transcripts/screen/pass1/nvim.140.wrappers.txt`) — so the falsifier
+`PREDICTIONS.md` named for the run's premise did fire, for neovim, and the scratch define is how the
+run went on past it.
 
 ## aws-cli — FAIL: one failed write empties every profile's credentials
 
@@ -24,115 +37,183 @@ on a wall its screen had not shown.
 `default profile's access key is "" (0 bytes in credentials)`. The edited profile was `work`; the
 `default` profile's keys are lost with it, because the whole file is rewritten.
 
-The screen's capture: `openat(credentials, O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666)` and one
-230-byte `write` (`transcripts/probes/open-flags.txt`, cut from the uncommitted capture by
-`apparatus/excerpts.sh`; every strace line this page quotes is there). The source says the same:
-`awscli/customizations/configure/writer.py` rewrites an existing file with
-`with open(config_filename, 'w') as f: f.write(''.join(contents))` — lines 65–66 at tag `2.23.6`
-and lines 114–115 on the `v2` branch (`apparatus/upstream-source.sh`,
-`transcripts/meta/upstream-source.txt`; the newest tag was `2.36.46`).
+The capture: `openat(credentials, O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666)` and one 230-byte
+`write` (`transcripts/probes/open-flags.txt`, cut from the uncommitted capture by
+`apparatus/excerpts.sh`). The source: `awscli/customizations/configure/writer.py` rewrites an existing
+file with `with open(config_filename, 'w') as f: f.write(''.join(contents))` — lines 65–66 at tag
+`2.23.6`, lines 114–115 on the `v2` branch (`transcripts/meta/upstream-source.txt`; the newest tag
+was `2.36.46`, not measured).
 
 **Without Sideeye and without a crash** (`apparatus/probe-ulimit.sh`, `transcripts/probes/ulimit.txt`):
-`ulimit -f 0` and the same command leave `credentials` at **0 bytes** (231 before), exit status 120.
-Measured only as `EFBIG` under a file-size limit; a full disk was not measured.
+the probe's own fixture — both profiles' keys in `credentials`, a `config` holding only `[default]` —
+and `aws configure set aws_secret_access_key rotated --profile work` under `ulimit -f 0` leave
+`credentials` at **0 bytes** (231 before), exit status 120. Measured only as `EFBIG` under a file-size
+limit; a full disk was not measured.
+
+The checker's predicates, each broken on its own (`apparatus/probe-checker-predicates.sh`,
+`transcripts/probes/checker-predicates.txt`): a changed `work` access key, a `work` secret that is
+neither the old nor the new one, and a changed `default` access key are each rejected; the
+`default` profile's **secret is not checked**.
 
 ## hatch — PASS
 
 **6/6 worlds over 5 crash points, 4 of 4 runs and 1 under main.** A temporary file is created
-`O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW`, written, `fsync`ed and renamed over `config.toml`. The checker —
-`hatch config show`, the file parsed, the setting the old value or the new one — passed in every
-world. The contrast inside this run is aws-cli: both are Python tools writing a user's
-configuration, and one of them goes through a temporary file.
+`O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW`, written, `fsync`ed and renamed over `config.toml`
+(`open-flags.txt`). The checker — `hatch config show`, the file parsed, the setting the old value or
+the new one — passed in every world; each of its predicates rejects a state that breaks it alone
+(`checker-predicates.txt`: a third value, an unparsable file — which `hatch config show` itself
+refuses — and a removed top-level key). The contrast inside this run is aws-cli: both are Python tools
+writing a user's configuration, and one goes through a temporary file.
 
-## neovim — FAIL on the checker: the shada file is removed before the rename, and written after it
+## neovim — the shada file is removed before the rename, in every version measured
 
-**The first define refused, and the refusal is the shada format.** 4 of 4 runs (and 1 under main)
-returned `UNKNOWN baseline_violates_invariant`: the uncrashed re-run left `main.shada` *"holding
-neither the old nor the new content"*. `apparatus/probe-shada.sh` ran the same operation from the
-same state three times: back to back the copies differ in 1 byte, one second apart in 3, and every
-differing byte is inside a msgpack timestamp or the header's `pid` (`transcripts/probes/shada.txt`).
-The worlds that first define explored had already printed the checker's failures —
-`main.shada is gone (main.shada.tmp.a )` and `register a is lost (0 bytes in main.shada)` — before
-the baseline refused the run.
+### Why the first define has no verdict
 
-**The second define declares `main.shada` scratch** (ADR 0043) and leaves the claim to the checker,
-which reads back the command-line history entry and register `a` the setup stored, through nvim
-itself. **FAIL 4 of 4 runs, 6 of 13 worlds, earliest crash point 3 of 12, and 1/1 under main**
-(`transcripts/explore/nvim-scratch.*`). The earliest failing world is *after* `unlink(main.shada)`
-and *before* `rename(main.shada.tmp.a)`: `main.shada is gone`. The others are after the rename and
-before the write: `register a is lost (0 bytes in main.shada)`. The operation writes the file
-twice (`:wshada` and again on quitting), so each window appears twice.
+4 of 4 runs of the first define, and 1 under main, returned `UNKNOWN baseline_violates_invariant`:
+the uncrashed re-run left `main.shada` *"holding neither the old nor the new content"*. The shada
+format stamps time and process id. `apparatus/probe-shada-after.sh` part A ran the define's operation
+three times from one state it built the define's way, on both binaries, and located every differing
+byte in both pairs — back to back and one second apart: each is inside a msgpack timestamp (a uint32
+in 0.10.4, a uint64 in 0.12.5) or the header's `pid` (`transcripts/probes/shada-after.txt`). The
+earlier `probe-shada.sh` located only one pair and knew only the uint32 encoding; `nvim-v2.sh` part 6,
+with the same limitation, printed `False` for 0.12.5's one-second pair. The worlds the first define
+explored had already printed the checker's failures before the baseline refused. The scratch define
+declares `main.shada` scratch (ADR 0043) and gives the claim to the checker.
 
-**The order, in the capture and in the source.** nvim 0.10.4 opens `main.shada.tmp.a`
-`O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW`, unlinks `main.shada`, renames the temporary over it, and only
-then issues the 160-byte `write` and the `fsync` on the same descriptor. In `src/nvim/shada.c`,
-`shada_write_file` fills a buffered writer, calls `vim_rename(tempname, fname)`, and flushes in
-`close_file(&sd_writer)` afterwards; `vim_rename` in `src/nvim/fileio.c` calls `os_remove(to)`
-before `os_rename(from, to)`. Both are at the same places on `master` as at `v0.10.4`
-(`transcripts/meta/upstream-source.txt`; the latest release is `v0.12.5`, which was not measured).
+### 0.10.4: two windows
 
-**A shada file of ordinary size is cut, not emptied** (`apparatus/probe-shada-large.sh`,
-`transcripts/probes/shada-large.txt`). With 400 history entries the file is 25,715 bytes, and the
-writer flushes its 4 KiB buffer to the temporary file as it fills, so most of the file is written
-before the rename. A file-size limit of 4,096 to 25,088 bytes stops nvim before the rename: the
-original survives and `main.shada.tmp.a` is left beside it. At **25,600 bytes** only the tail after
-the rename fails: `main.shada` is left at 25,600 bytes, and the next nvim reports
-**`E576: Error while reading ShaDa file: last entry specified that it occupies 57 bytes, but file
-ended earlier`** and reads 398 history entries. `E576` appears in earlier neovim issues —
-neovim/neovim#23345, neovim/neovim#29186, neovim/neovim#3469, neovim/neovim#4108, all closed —
-whose causes this run did not read; whether any came from this window is not known.
+**FAIL 4 of 4 runs, 6 of 13 worlds, earliest crash point 3 of 12, and 1/1 under main**, first with the
+checker `explore.sh` defines (`transcripts/explore/nvim-scratch.*`), and again, the same 6 of 13,
+with checker v2 (`transcripts/nvim-v2/nvim.scratch.*`). Four worlds leave `main.shada` at 0 bytes and
+two leave it absent with `main.shada.tmp.a` beside it. The operation writes the file twice
+(`:wshada`, and again on quitting), so each window appears twice.
 
-**Without Sideeye**, the small file of the define: `ulimit -f 0` kills nvim with `SIGXFSZ` (status
-153) and leaves `main.shada` at **0 bytes** (136 before) (`transcripts/probes/ulimit.txt`).
+The order, in the capture (`nvim-v2.sh` part 2, `transcripts/nvim-v2/nvim-v2-summary.txt`): open
+`main.shada.tmp.a` `O_EXCL`, `unlink(main.shada)`, `rename(main.shada.tmp.a, main.shada)`, and only
+then the 159-byte `write` and the `fsync`. In the source at `v0.10.4`, `shada_write_file` calls
+`vim_rename(tempname, fname)` — which calls `os_remove(to)` before `os_rename(from, to)` in
+`src/nvim/fileio.c` — and the buffered contents are written in `close_file(&sd_writer)` afterwards;
+`shada_write` has no flush of its own at that version (`transcripts/meta/upstream-source.txt`: 0
+`packer_flush(&packer)` calls).
+
+**Without Sideeye, under a file-size limit** (`transcripts/probes/ulimit.txt`, `shada-large.txt`,
+`nvim-v2-summary.txt` part 5): `ulimit -f 0` leaves the define's small file at 0 bytes (136 and 138
+bytes before, in two runs). A 400-entry file of 25,715 or 25,717 bytes is mostly written into the
+temporary before the rename: limits of 4,096, 8,192, 16,384, 20,480, 21,504, 22,528, 23,552, 24,576
+and 25,088 bytes stop nvim before the rename, leaving the original intact and `main.shada.tmp.a`
+beside it; **25,600 bytes** fails only what is written after the rename, and leaves `main.shada` cut
+at 25,600 bytes, which the next nvim reports as `E576: Error while reading ShaDa file: last entry
+specified that it occupies 57 bytes, but file ended earlier` while still reading register `a` and 398
+history entries. These are `ulimit` measurements; no crash of a large file was explored.
+
+### 0.11 and later: one window, and the loss is silent
+
+**The source.** From `v0.11.0`, `shada_write` ends with `packer.packer_flush(&packer)` at
+`shada_write_exit:` — every byte reaches the temporary before `shada_write_file` renames it — and
+`vim_rename` still calls `os_remove(to)` first; the same at `v0.12.5` and on `master`
+(`upstream-source.txt`). The first version of this page said the `v0.10.4` order held on `master`;
+that was read from four fixed lines that could not show the added flush, and the first review of this
+record found it.
+
+**Measured on the v0.12.5 release** (`nvim-v2.sh`, `transcripts/nvim-v2/`): the capture writes 170
+bytes into `main.shada.tmp.a`, then unlinks `main.shada` and renames the temporary, then `fsync`s.
+`preflight` is accepted with 12 operations in both modes and both builds. Without scratch, 3 of 3
+explorations are UNKNOWN `baseline_violates_invariant`. With `main.shada` scratch and checker v2,
+**FAIL 4 of 4 runs and 1/1 under main, 2 of 13 worlds, earliest crash point 4 of 12**: both failing
+worlds are the kill between the unlink and the rename — `register a is lost (main.shada absent; files:
+main.shada.tmp.a )`. The other windows are gone: `ulimit -f 0` leaves `main.shada` intact at 144 bytes
+with `main.shada.tmp.a` beside it, and limits up to 27,136 bytes on a 27,319-byte file never cut
+`main.shada`.
+
+**What the user sees after that window** (`probe-shada-after.sh` part B, both binaries): the world made
+by hand — `main.shada` removed, the complete new file as `main.shada.tmp.a`. The next nvim starts with
+an empty register and no history and prints nothing; on quitting it writes a new `main.shada` of 82
+bytes (0.12.5) or 84 bytes (0.10.4) holding none of it, and the complete `main.shada.tmp.a` is still
+there after a second session, never read.
+
+### Checker v2
+
+The first checker was shown rejecting only its register predicate, did not ask nvim when
+`main.shada` was absent, and would pass a file nvim reports as `E576` (the first review). Checker v2
+asks nvim in every case and fails on an `E57x` message, a missing register or a missing history
+entry. `nvim-v2.sh` part 1 falsified each predicate on both binaries: it passes the setup's and the
+operation's states and leaves the file unchanged, and rejects an emptied file, an absent file with a
+complete temporary, a file cut by 20 bytes (`E576`), a file with history and no register, and one with
+a register and no history.
+
+### Upstream
+
+`apparatus/upstream-neovim-issues.sh` read twelve neovim issues in full, body and comments, chosen by
+title from the novelty search's results — `E576`, `E138`, a failure to parse the ShaDa file,
+corruption, and history lost when instances are killed (`transcripts/meta/upstream-neovim-issues.txt`);
+other titles in those results, such as neovim/neovim#6957 *"Broken shada files can cause assertion
+error"*, were not read. **None names the removal before the rename.** Four
+report what this window leaves or what could reach it: leftover `main.shada.tmp.*` files
+(neovim/neovim#8587, open, `E138`; neovim/neovim#6875, open; neovim/neovim#23345, closed) and
+corruption when processes are killed quickly (neovim/neovim#11876, open, Windows). Whether any of them
+came from this window is not known.
 
 ## jbang — FAIL, the truncating rewrite
 
 **Crash point 2 of 2, 4 of 4, the same under main.** `openat(jbang.properties,
-O_WRONLY|O_CREAT|O_TRUNC)` and one 45-byte `write`; the checker, `jbang config get first.key`
-through the jar, returns nothing: `No configuration option found with that name: first.key`.
-`ulimit -f 0` leaves the file at 0 bytes (21 before). Measured through the jar, which is what the
-`jbang` script runs; the script itself is refused `child_touched_state_dir` (`SELECTION.md`).
+O_WRONLY|O_CREAT|O_TRUNC)` and one 45-byte `write`; the checker, `jbang config get first.key` through
+the jar, returns nothing: `No configuration option found with that name: first.key`. It also rejects
+`first.key` holding another value (`checker-predicates.txt`). `ulimit -f 0` leaves the file at 0 bytes
+(21 before). Measured through the jar, which is what the `jbang` script runs; the script itself is
+refused `child_touched_state_dir` (`SELECTION.md`).
 
 ## pyenv — FAIL, under the syscall observer only
 
 **3 of 3 runs under `--observe syscalls`, 2 of 4 worlds, earliest crash point 2 of 3, and 1/1 under
 main.** A bash child opens `version` `O_WRONLY|O_CREAT|O_TRUNC`, then again `O_APPEND` and writes
-`3.12.4`; killed between the two opens, `version` is empty and `pyenv version-name` answers
-`system`. `ulimit -f 0` gives the same (7 bytes to 0). Under `--observe wrappers` the recording is
-refused `state_changed_without_ops`, in both builds.
+`3.12.4`; killed between the two opens, `version` is empty and `pyenv version-name` answers `system`.
+**The oracle compared none of the subject's own operations**: `oracle_verified` is false and
+`oracle_verified_subject_only` true, `agreed on 0 operations` — every write is the child's, so no crash
+point in this verdict was compared by the second witness. `ulimit -f 0` gives the same loss without Sideeye (7 bytes to
+0). Under `--observe wrappers` the recording is refused `state_changed_without_ops`, in both builds.
+The checker also rejects a `version` naming a version that is not installed, and a removed `version`
+(`checker-predicates.txt`).
 
 ## The predictions, scored
 
-Four of five as predicted for the first define of each (aws-cli, hatch, jbang, pyenv), and main's
-agreement with v1.4.0. The miss is neovim: the prediction named the right windows and the verdict
-it expected never came, because the shada format is not byte-repeatable across two clean runs. The
-second define was predicted after that and before it ran, and hit; it is scored separately.
+For the first define of each target: aws-cli, hatch, jbang and pyenv as predicted, and main's
+agreement with v1.4.0. neovim's first define missed — the windows were there and the verdict never
+came, because the format is not byte-repeatable. The scratch define was predicted after that and hit,
+but the prediction quoted checker failures the first define had already printed, so it is weak
+evidence. The review's predictions (`PREDICTIONS.md`, last section) all hit: checker v2 rejected
+every state it was given, 0.12.5 writes the temporary whole before the rename, its first define is
+UNKNOWN, its scratch define fails only in the unlink-to-rename worlds, `ulimit` never loses its data,
+and 0.10.4 with checker v2 fails the same 6 of 13.
 
 ## What this run settled beyond its targets
 
-- **Outside git, the same shapes lose data a user has no copy of.** aws-cli's `credentials` holds
-  every profile's keys in one file, rewritten whole; neovim's history and registers exist only in
-  the shada file.
-- **A rename is not enough when the write comes after it.** neovim uses a temporary file, and the
-  crash windows are still there — one because the target is removed first, one because the buffer
-  is flushed after the rename.
-- **A tool's launcher can be the wall.** jbang through its script refuses; through its jar it is
-  judged.
-- **A format that stamps time and pid needs its claim in the checker.** neovim reached a verdict
-  only with the file declared scratch; the checker's reading of history and registers carried it.
+- **Outside git, the same shapes lose data a user has no copy of.** aws-cli's `credentials` holds every
+  profile's keys in one file, rewritten whole; neovim's history and registers exist only in the shada
+  file.
+- **A temporary file and a rename are not enough when the target is removed first.** neovim 0.11 moved
+  the flush before the rename and closed two windows; the removal before the rename leaves the third,
+  and a crash there is silent.
+- **A tool's launcher can be the wall.** jbang through its script refuses; through its jar it is judged.
+- **A format that stamps time and pid needs its claim in the checker**, and then the checker needs
+  each predicate falsified — the first neovim checker would have passed a cut file.
 
 ## Apparatus faults found during the run
 
 - The screen's quoting mismatch and neovim's ten-minute wait, hatch's setup, neovim's first checker
-  and hatch's no-op operation (`SELECTION.md`). The first version of `probe-checkers.sh`'s output,
-  which showed neovim's checker failing on correct states, was overwritten by the second run.
-- `probe-shada-large.sh`'s first limits (4,096 to 20,480 bytes) all stopped the rewrite before the
-  rename; the limits that reach the tail were found in a second pass.
+  and hatch's no-op operation (`SELECTION.md`). The first output of `probe-checkers.sh`, which showed
+  neovim's first checker failing on correct states, was overwritten by the second run.
+- Fabricated credentials shaped like real AWS keys; replaced in every commit before the first push.
+- Found by the first review: `upstream-source.sh` grepped fixed lines and missed the v0.11 flush;
+  `probe-shada.sh` knew one timestamp encoding and located one pair; checker v1 was falsified on one
+  predicate; `probe-checkers.sh` tried three states per checker; this page called neovim's `E576`
+  issues "all closed" from a hand-picked four.
+- `probe-shada-large.sh`'s first limits all stopped the rewrite before the rename; the limit that reaches
+  the tail was found in a second pass.
 
 ## Upstream
 
-Not decided by this run. The two with state a user has no other copy of are aws-cli (credentials)
-and neovim (shada). Both projects accept AI-assisted submissions: aws-cli's CONTRIBUTING.md asks for
-human review and a statement like *"generated by AI tools, and reviewed by <person>"*; neovim's asks
-that the person review the output and remove verbosity. Neither search turned up a report of these
-mechanisms (`apparatus/novelty.sh`, `transcripts/meta/novelty.txt`).
+Not decided by this run. The two with state a user has no other copy of are aws-cli (credentials) and
+neovim (shada: in the latest release, a crash between the removal and the rename starts the next
+session empty and leaves the complete file unread). Both projects accept AI-assisted submissions:
+aws-cli's CONTRIBUTING.md asks for human review and a statement like *"generated by AI tools, and
+reviewed by <person>"*; neovim's asks that the person review the output and remove verbosity.

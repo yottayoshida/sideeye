@@ -1,0 +1,59 @@
+== neovim/neovim#6875 [open] 2017-06-10 34 comment(s): E576: Error while reading ShaDa file: there is an item at position 270498 that must not be there: Missing itemsare for internal uses only
+   72:So I removed `/Users/kevin/.local/share/nvim/shada/main.shada`. It works well. It's weird, anyway, I can use neovim again.
+   171:- main.shada.tmp.a
+   173:- main.shada.tmp.b
+   177:I removed all of them and neovim recreated main.shada on first launch. The error disappeared after this.
+   191:For anyone coming across this thread who removed `~/.local/share/nvim/shada` and still got this error message, I found that I also had shada files in `~/.local/state/nvim/shada`. Removing those fi
+   192:Still having this issue despite removing ~/.local/share/nvim/shada ,   and placing 
+   231:> For anyone coming across this thread who removed `~/.local/share/nvim/shada` and still got this error message, I found that I also had shada files in `~/.local/state/nvim/shada`. Removing those 
+   242:> * main.shada.tmp.a
+== neovim/neovim#11876 [open] 2020-02-15 5 comment(s): Concurrent startup/exit corrupts shada on windows
+   23:Neovim eventually corrupts the shada file. I can only reproduce this by running the Firenvim testsuite (which starts and kills lots of neovim process very quickly) on a Windows VM (which is pretty 
+== neovim/neovim#29186 [closed] 2024-06-04 12 comment(s): ShaDa file corruption on nightly
+   3:Neovim Nightly seems to randomly corrupt the ShaDa File. See the attachment for the corrupted file (remove the .txt extension)
+   53:~~for me, removing `AppData/Local/nvim-data/shada` folder resolved the problem~~
+   71:Sorry I don't, I wiped everything in nvim-data multiple time to isolate the issue and don't have it since I'm using nightly. I had the bug since I updated to 0.10 but just got the habit to remove t
+== neovim/neovim#10461 [closed] 2019-07-09 2 comment(s): Nvim don't merge file history properly if multiple instances get killed immediately
+   37:killall nvim
+   57:Every opened files get updated in the `v:oldfiles` list, that is, when multiple instances are killed immediately nvim will merge the file history.
+   63:I use nvim for software development and often work on multiple projects. Each project is in its own terminal. And I usually poweroff my computer directly.
+== neovim/neovim#8587 [open] 2018-06-18 56 comment(s): Windows: "E138: main.shada.tmp.X files exist, cannot write ShaDa" on close
+   76:This is the expected behaviour if you somehow generated all temporary files. You should’ve had a bunch of errors explaining why those temporary files could not be renamed to replace the `main.shada
+   78:Related #11955. Temporary fix is to manually delete `N` oldest and empty files in `/home/user/.local/share/nvim/shada`.
+   83:`.local/share/nvim/shada/main.shada.tmp.X files exist, cannot write ShaDa file!`
+   140:-rw------- 1 1000 1000  14K Jun 25  2023 main.shada.tmp.a
+   142:-rw------- 1 1000 1000  13K Jun 26  2023 main.shada.tmp.b
+   144:-rw------- 1 1000 1000  13K Jun 26  2023 main.shada.tmp.c
+   146:-rw------- 1 1000 1000  13K Jun 26  2023 main.shada.tmp.d
+   148:-rw------- 1 1000 1000  13K Jun 27  2023 main.shada.tmp.e
+== neovim/neovim#23345 [closed] 2023-04-27 9 comment(s): Error while reading ShaDa file: expected positive integer at position 3173 
+   52:try removing this folder: `~/.local/state/nvim/shada`
+   58:Which is why I have the following questions; how to debug this issue? Do I need to execute neovim with an strace-equivalent on windows? My suspicion is that Neovim does not wait for the ShaDa-file 
+   237:E136: Did not rename /Users/aaron/.local/state/nvim/shada/main.shada.tmp.z because /Users/aaron/.local/state/nvim/shada/main.shada does not look like a ShaDa file
+   238:E136: Do not forget to remove /Users/aaron/.local/state/nvim/shada/main.shada.tmp.z or rename it manually to /Users/aaron/.local/state/nvim/shada/main.shada.
+== neovim/neovim#3469 [closed] 2015-10-17 11 comment(s): E576: Failed to parse ShaDa file: extra bytes in msgpack string at position 3
+   22:I experienced this as well. I removed `~/.viminfo` - which felt like a hack... but it worked.
+   26:@myitcv @KKPMW You must _not_ have `n~/.viminfo` in `&shada` option (`&viminfo` option is now an alias to `&shada`). If something else you need to remove the file pointed by the option. Format has 
+   40:@myitcv thanks for pointing out .viminfo. my nvimrc actually stored those files somewhere internally I tracked them down, removed them and now it seems to be working without a fuss.
+   42:@ZyX-I Thanks for pointing that out. After removing all the old .viminfo files - should I also change the option `viminfo` to something else ? Will this:
+   50:@KKPMW After you remove old file any location will work (as long as its path is not greater then MAXPATHL), including `~/.viminfo`. But it is misleading to call shada file `*viminfo`, and specifica
+   52:Changing option name to `&shada` is not needed right now, but I plan to make it be removed in some far future.
+   60:Removing `~/.local/share/nvim/shada/main.shada` worked for me.
+   61:`mv ~/.vim/viminfo.tmp.f  ~/.vim/viminfo` worked for me.
+== neovim/neovim#3736 [closed] 2015-11-24 11 comment(s): E576: Failed to parse ShaDa file: extra bytes in msgpack string at position 3
+   3:Are you trying to have viminfo file shared with Vim? In any case you need to remove your viminfo file to make this disappear, or make `&shada` option point to another location (I guess it contains s
+   5:@ZyX-I  so i have to remove my viminfo and viminfo.tmp and replace it with :  shada/main.shada
+   8:@7belrhalmia You need to _either_ remove or replace. By “replacing” I mean configuring neovim to use another location. Also directory is no longer `.nvim`, neovim is following XDG spec.
+   10:You don’t need to remove anything if neovim will be using different location. But if you want to keep the location you will have to remove the file due to changes in the format.
+   14:@ZyX-I  i have removit this to file from ~/.config/nvim/   so iremovit viminfo and viminfo.tmp and i still got the same error
+== neovim/neovim#4108 [closed] 2016-01-27 36 comment(s): E576: Failed to parse ShaDa file: incomplete msgpack string at position 85
+   182:@jamessan as another reference point, on Ubuntu, removing the system-wide `libmsgpack*` allows 4f4b8ea4489b445d0f9e0b8e1b9885555d0d861f to build and run just fine... Which is I guess unsurprising 
+   220:Desired=Unknown/Install/Remove/Purge/Hold
+== neovim/neovim#4169 [closed] 2016-02-04 3 comment(s): E576: Failed to parse ShaDa file: incomplete msgpack string at position 95
+   7:E136: Did not rename /home/.local/share/nvim/shada/main.shada.tmp.b because /home/.local/share/nvim/shada/main.shada does not looks like a ShaDa file
+   8:E136: Do not forget to remove /home/.local/share/nvim/shada/main.shada.tmp.b or rename it manually to /home/.local/share/nvim/shada/main.shada.
+== neovim/neovim#6652 [closed] 2017-05-02 4 comment(s): viminfo file causes "E576: Failed to parse ShaDa file"
+   17:When opening `nvim`, it will create a `viminfo` file; but it will keep saying that the file is broken. When closing all vim instances, manually removing all `viminfo` and `viminfo.tmp.*` files and 
+== neovim/neovim#8064 [closed] 2018-02-24 5 comment(s): Failed to parse ShaDa file
+   41:E136: Did not rename /home/MY_USER_NAME/.local/share/nvim/shada/main.shada.tmp.j because /home/MY_USER_NAME/.local/share/nvim/shada/main.shada does not looks like a ShaDa file
+   43:E136: Do not forget to remove /home/MY_USER_NAME/.local/share/nvim/shada/main.shada.tmp.j or rena

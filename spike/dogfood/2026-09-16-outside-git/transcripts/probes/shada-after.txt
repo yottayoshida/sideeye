@@ -1,0 +1,14 @@
+== A. nvim
+  r1 vs r2, one second apart: sizes 158/158, differing offsets [5, 61, 141] -> ['uint32 timestamp', 'header pid', 'uint32 timestamp']
+  r2 vs r3, back to back: sizes 158/158, differing offsets [61] -> ['header pid']
+== B. nvim: killed between the unlink and the rename, then two ordinary sessions
+  the world: main.shada.tmp.a (main.shada.tmp.a 158 bytes, the complete new file)
+  session 1: rc=0; it read register "", history: 0 entries; afterwards: main.shada(84) main.shada.tmp.a(158) ; says: 
+  session 2: rc=0; it read register "", history: 0 entries; afterwards: main.shada(84) main.shada.tmp.a(158) ; says: 
+== A. nvim012
+  r1 vs r2, one second apart: sizes 168/168, differing offsets [9, 65, 151] -> ['uint64 timestamp', 'header pid', 'uint64 timestamp']
+  r2 vs r3, back to back: sizes 168/168, differing offsets [65] -> ['header pid']
+== B. nvim012: killed between the unlink and the rename, then two ordinary sessions
+  the world: main.shada.tmp.a (main.shada.tmp.a 168 bytes, the complete new file)
+  session 1: rc=0; it read register "", history: 0 entries; afterwards: main.shada(82) main.shada.tmp.a(168) ; says: 
+  session 2: rc=0; it read register "", history: 0 entries; afterwards: main.shada(82) main.shada.tmp.a(168) ; says: 
