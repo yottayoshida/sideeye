@@ -1,0 +1,638 @@
+## aws/aws-cli  [credentials file empty]
+  total 68
+  #5528 [open] 2020-09-08 Empty cli cache file breaks aws cli
+  #2565 [open] 2017-04-25 AWS CLI exits successfully when unable to read from credentials file using `aws configuration get`
+  #10507 [open] 2026-07-23 aws sso login --use-device-code fails with dual-stack IAM Identity Center unless AWS_USE_DUALSTACK_ENDPOINT=true
+  #8190 [open] 2023-09-21 aws s3 cp --recursive copies single file as a directory with the same name
+  #6130 [open] 2021-04-28 Error raised when aws-cli is unable to connect to metadata API is vague
+  #3163 [open] 2018-02-22 `aws s3 rm` should use batch deletes
+  #7794 [open] 2023-03-30 EKS kubeconfig profile setting doesn't work when using environment varialbles for authentication
+  #8435 [open] 2023-12-22 'aws s3 sync' is broken in version 2.14 and above on P5.48xlarge instances AWS_ERROR_S3_INVALID_RESPONSE_STATUS
+  #7949 [open] 2023-06-05 1.27.146: pytest is failing in many units because it uses hardcoded `python` or `python.exe` python executable name
+  #10603 [closed] 2026-08-26 Fix s3 sync filters with absolute path patterns
+  #3102 [open] 2018-01-22 Parsed global parameters doesn't get passed to external aliases
+  #3553 [closed] 2018-09-09 An official Docker Image with the AWS CLI for use in CI/CD scenarios
+  #6476 [closed] 2021-10-13 Deprecate Kubernetes client API version v1alpha1
+  #9479 [closed] 2025-05-06 Error message for `aws s3 ls` refers to wrong endpoint.
+  #9075 [closed] 2024-11-14 fatal error: [Errno 13] Permission denied: '/.aws' when using Environment credentials source
+  #9682 [closed] 2025-08-27 Request signing drops `range` header, causing `SignatureDoesNotMatch` error.
+  #6920 [closed] 2022-05-04 aws eks update-kubeconfig invalid apiVersion
+  #9118 [closed] 2024-12-03 AWS CLI: describe-import-snapshot-tasks returns snapshotId attribute while it's in progress
+  #8342 [closed] 2023-11-20 V2 support for Python 3.12
+  #2929 [closed] 2017-10-29 aws s3 cp without recursive can produce a useless error message
+  #1957 [closed] 2016-05-05 aws <command> help command fails without less installed
+  #8234 [closed] 2023-10-10 aws rds generate-db-auth-token generating invalid token when using .aws/credentials to authenticate
+  #8009 [closed] 2023-06-28 Error in get-apis command
+  #7228 [closed] 2022-08-29 `aws s3 sync` downloading unchanged files.
+  #8124 [closed] 2023-08-22 AppRunner list-services returns only 2 services
+  #6500 [closed] 2021-10-25 AWS CLI slow startup
+  #3450 [closed] 2018-07-13 aws acm list-certificates not listing imported certificates?
+  #5380 [closed] 2020-07-15 'ecs describe-task-sets' fails when optional param 'task-sets' is not specified
+  #7399 [closed] 2022-11-02 Add support for per sub-command aliases
+  #7660 [closed] 2023-02-13 Bump pyinstaller from 5.7.0 to 5.8.0
+  #7674 [closed] 2023-02-16 name filter doesnt work with wildcards for describe-images
+  #6452 [closed] 2021-10-05  aws workdocs describe-notification-subscriptions doesn't report even when there are notifications enabled
+  #4375 [closed] 2019-08-05 S3 multipart upload fails when input file stream is empty
+  #6485 [closed] 2021-10-15 Cognito-idp calls are forcefully routed through IPv6
+  #7347 [closed] 2022-10-18 AWS CLI wellarchitected list-lens-review-improvements miss ImprovementPlans in response 
+  #6726 [closed] 2022-02-16 [v2] Add protocol support for lists in headers
+  #6470 [closed] 2021-10-12 ecs run-task often times out or fails when task is defined with s3 environment files
+  #4324 [closed] 2019-07-17 AWS Cognitor Pool Trigger is not saved properly
+  #6392 [closed] 2021-09-10 TagList not showing in results for RDS describe_db_instances
+  #6424 [closed] 2021-09-25 aws ecr batch-delete-image returns failure but 0 return code
+  #5406 [closed] 2020-07-24 elbv2: condition QueryStringConfig doesn't work
+  #6216 [closed] 2021-06-10 ValidationError when calling the CreateChangeSet operation on a deleted resource with deploy
+  #6185 [closed] 2021-05-24 aws greengrassv2 get-deployment should return "Failed" deployment status
+  #5908 [closed] 2021-02-02 aws s3 sync doesn't sync all folders inside a bucket
+  #5924 [closed] 2021-02-08 RegisterTaskDefinition operation no longer accepts task-definitions without an `image`
+  #3624 [closed] 2018-10-03 allow source_profile entries to make use of the credential_process function
+  #1778 [closed] 2016-02-08 Can't install / configure aws cli
+  #6194 [closed] 2021-05-27 describe-subnets XML response not parsed on CLI version: aws-cli/2.2.5 Python/3.8.8 Linux/5.4.0-1047-azure exe/x86_64.ubuntu.20
+  #3304 [closed] 2018-05-03 Client is not using AWS_PROFILE correctly
+  #3123 [closed] 2018-02-02 Flag --no-fail-on-empty-changeset does not work
+  #5186 [closed] 2020-05-08 [v2] EKS nodegroups are not listed / available
+  #5628 [closed] 2020-10-12 UnauthorizedOperation on ec2 describe instances
+  #5463 [closed] 2020-08-10 aws cognito-idp admin-list-devices returns empty set
+  #2279 [closed] 2016-11-10 aws-cli fails to acquire session token before issuing sts:AssumeRole call
+  #4957 [closed] 2020-02-13 Variable AWS_CONFIG_FILE ignored in V2
+  #5028 [closed] 2020-03-03 aws configure with --profile option credentials location
+  #915 [closed] 2014-09-19 Unable to locate credentials
+  #2939 [closed] 2017-11-02 Problems with aws cli.....
+  #4043 [closed] 2019-04-03 aws deploy --no-fail-on-empty-changeset  not working
+  #1872 [closed] 2016-03-23 Authentication errors when using aws cli, but not s3cmd
+  #3298 [closed] 2018-05-01 Inconsistent list-deployments behaviour
+  #553 [closed] 2013-12-13 `aws s3 rm` errors out on buckets with versioning enabled
+  #3434 [closed] 2018-07-09 "'vpc-peering-connection' is not a recognized EC2ResourceType id "
+  #2031 [closed] 2016-06-20 Error parsing parameter '--multipart-upload': Expected: '=', received: '' for input:
+  #1604 [closed] 2015-10-29 Credential-less cross-acount profile switching
+  #1605 [closed] 2015-10-29 #1595 was fixed but it exposed another problem with put-integration
+  #1612 [closed] 2015-11-02 Assume role with profile throws KeyError: 'aws_access_key_id'
+  #1423 [closed] 2015-07-14 aws dynamodb - Query result returned incorrectly when "paging" through keys
+## aws/aws-cli  [credentials file truncated]
+  total 20
+  #10411 [closed] 2026-06-14 Bump aws-actions/configure-aws-credentials from 6.1.0 to 6.2.0
+  #10219 [closed] 2026-04-12 Bump aws-actions/configure-aws-credentials from 6.0.0 to 6.1.0
+  #10447 [closed] 2026-06-28 Bump actions/checkout from 6.0.0 to 7.0.0
+  #10448 [closed] 2026-06-28 Bump actions/checkout from 6.0.1 to 7.0.0
+  #9682 [closed] 2025-08-27 Request signing drops `range` header, causing `SignatureDoesNotMatch` error.
+  #9871 [closed] 2025-11-23 Bump actions/checkout from 5.0.0 to 6.0.0
+  #6920 [closed] 2022-05-04 aws eks update-kubeconfig invalid apiVersion
+  #8124 [closed] 2023-08-22 AppRunner list-services returns only 2 services
+  #7660 [closed] 2023-02-13 Bump pyinstaller from 5.7.0 to 5.8.0
+  #5592 [closed] 2020-09-30 ERROR: Is not authorized to perform: <ACTION> on resource: * with an explicit deny
+  #7646 [closed] 2023-02-08 Update cryptography requirement from <38.0.5,>=3.3.2 to >=3.3.2,<39.0.2
+  #7559 [closed] 2023-01-02 Update cryptography requirement from <38.0.5,>=3.3.2 to >=3.3.2,<39.0.1
+  #6470 [closed] 2021-10-12 ecs run-task often times out or fails when task is defined with s3 environment files
+  #6666 [closed] 2022-01-20 s3api list-parts --starting-token does not accept input from CLI
+  #3079 [closed] 2018-01-10 download-db-log-file-portion with starting token of 0 not working as documented
+  #5406 [closed] 2020-07-24 elbv2: condition QueryStringConfig doesn't work
+  #2268 [closed] 2016-10-30 Example for downloading full RDS log doesn't actually work
+  #6332 [closed] 2021-08-13 Error "'ascii' codec can't encode character '\xfc' in position 11: ordinal not in range(128)" when trying to get an item from DynamoDB containing UTF-8 characters
+  #2298 [closed] 2016-11-28 Error parsing parameter '--logins': Expected: '=', received: '/'
+  #2756 [closed] 2017-08-10 aws athena get-query-results  NextToken is not provided
+## aws/aws-cli  [credentials file wiped]
+  total 2
+  #3163 [open] 2018-02-22 `aws s3 rm` should use batch deletes
+  #3720 [closed] 2018-11-12 [CLIv2] Add CSV profile import to the configure command
+## aws/aws-cli  [credentials file deleted]
+  total 30
+  #4835 [open] 2020-01-11 GitHub Action for aws-cli
+  #3163 [open] 2018-02-22 `aws s3 rm` should use batch deletes
+  #7949 [open] 2023-06-05 1.27.146: pytest is failing in many units because it uses hardcoded `python` or `python.exe` python executable name
+  #9909 [closed] 2025-12-10 Add full dependency preflight check for "aws iam delete-user"
+  #7681 [closed] 2023-02-20 Commands all output `usage: col [-bfhpx] [-l nline]`
+  #6920 [closed] 2022-05-04 aws eks update-kubeconfig invalid apiVersion
+  #8124 [closed] 2023-08-22 AppRunner list-services returns only 2 services
+  #7870 [closed] 2023-05-03 Newly created access key throws ExpiredToken
+  #7399 [closed] 2022-11-02 Add support for per sub-command aliases
+  #7515 [closed] 2022-12-12 aws s3api delete-object incorrectly reporting Access Denied
+  #602 [closed] 2014-01-22 SignatureDoesNotMatch error
+  #1494 [closed] 2015-09-09 aws ecs wait tasks-running not working
+  #6216 [closed] 2021-06-10 ValidationError when calling the CreateChangeSet operation on a deleted resource with deploy
+  #6255 [closed] 2021-07-01 `aws acm list-certificates` shows certificates in the wrong state
+  #6172 [closed] 2021-05-15 create-replace-root-volume-task ignores termination protection settings
+  #6116 [closed] 2021-04-22 GetHIT says hit does not exist
+  #6035 [closed] 2021-03-23 delete-item on powershell raises an Invalid JSON error regarding double quoted property name
+  #5736 [closed] 2020-11-19 SignatureDoesNotMatch error report
+  #4035 [closed] 2019-03-31 syncing many large files between s3 buckets occasionally results in a copy failed due to a CompleteMultipartUpload operation: Access Denied
+  #3129 [closed] 2018-02-06 InvalidAccessKeyId using instance profile role
+  #3159 [closed] 2018-02-21 aws s3 cp command will stop further execution in batch
+  #1315 [closed] 2015-05-03 aws opsworks update-app --environment deletes all the existing environment variables for an app
+  #3552 [closed] 2018-09-09 `aws organizations [cmd]` fails in latest build
+  #2372 [closed] 2017-01-09 ImportError on any CLI command on Windows
+  #2893 [closed] 2017-10-13 Weird zip behavior during "aws deploy push"
+  #1366 [closed] 2015-06-03 describe-spot-price-history --cli-input-json
+  #940 [closed] 2014-10-08 Deleting an S3 object fails for now reason
+  #468 [closed] 2013-11-05 Add detailed error message on local file encoding errors
+  #616 [closed] 2014-01-28 "unknown" error message accessing S3 object
+  #627 [closed] 2014-02-03 commands require sudo privilege
+## aws/aws-cli  [configure set credentials lost]
+  total 6
+  #4676 [open] 2019-11-18 [V2] Save temporary credentials in .aws/credentials for v1 compatibility
+  #5636 [open] 2020-10-14 Docker login fails returning "The stub received bad data" on Windows when using awscli v2. 
+  #3102 [open] 2018-01-22 Parsed global parameters doesn't get passed to external aliases
+  #5783 [open] 2020-12-04 aws lambda invoke does not complete
+  #7228 [closed] 2022-08-29 `aws s3 sync` downloading unchanged files.
+  #5163 [closed] 2020-04-28 ECR deployment auth issues from Docker 
+## aws/aws-cli  [credentials file corrupted]
+  total 7
+  #9632 [open] 2025-07-31 JSONFileCache.__setitem__ not multi-process safe.
+  #5528 [open] 2020-09-08 Empty cli cache file breaks aws cli
+  #3984 [closed] 2019-03-05 Error: Random number return 
+  #3119 [closed] 2018-02-01 `codec can't decode byte` issues on all s3 commands
+  #3267 [closed] 2018-04-16 Add newline to config when adding a new section
+  #1024 [closed] 2014-11-23 s3 cp fails for object encrypted with KMS when using signature s3v4
+  #616 [closed] 2014-01-28 "unknown" error message accessing S3 object
+## aws/aws-cli  [configure set disk full]
+  total 9
+  #10258 [open] 2026-04-28 Allow opt-in SSO token revoke when exchanging credentials with `aws configure export-credentials`
+  #10427 [closed] 2026-06-19 [v2] Implement macOS/Linux install script
+  #5208 [closed] 2020-05-16 Failure installing for specific user on macOS
+  #1775 [closed] 2016-02-05 aws s3 cp hangs on download more than 500MB on content
+  #5876 [closed] 2021-01-19 s3 cp "Cannot allocate memory" error
+  #4366 [closed] 2019-07-31 Support base64-encoded parameters for binary types
+  #1437 [closed] 2015-08-03 Unicode characters in s3 command: 'ascii' codec can't encode characters in position 32-33: ordinal not in range(128)
+  #4982 [closed] 2020-02-19 [v2] credentials supplied by aws sso login do not conform to AWS standards
+  #6185 [closed] 2021-05-24 aws greengrassv2 get-deployment should return "Failed" deployment status
+## aws/aws-cli  [credentials atomic]
+  total 0
+## neovim/neovim  [shada empty]
+  total 84
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #8587 [open] 2018-06-18 Windows: "E138: main.shada.tmp.X files exist, cannot write ShaDa" on close
+  #41662 [closed] 2026-09-03 fix(editor): shada "force" load clears v:oldfiles
+  #34621 [open] 2025-06-23 `:rshada` does not correctly merge `v:oldfiles`
+  #6875 [open] 2017-06-10 E576: Error while reading ShaDa file: there is an item at position 270498 that must not be there: Missing itemsare for internal uses only
+  #8610 [open] 2018-06-21 Project concept
+  #9001 [open] 2018-09-15 provider/node.vim hang on exit
+  #41577 [closed] 2026-08-31 fix(buffer): keep trailing slash significant in URI names
+  #39239 [open] 2026-04-20 `:restart!` uses Nvim's current directory instead of shell's
+  #40601 [closed] 2026-07-05 fix(shada): persist cleared registers
+  #21009 [closed] 2022-11-09 shada: cannot clear search register
+  #40097 [open] 2026-06-03 feat(terminal): save state file with `:write`
+  #39116 [closed] 2026-04-16 feat(lua): add standalone vim.wait
+  #39851 [closed] 2026-05-18 nvim_buf_get_lines() returns nil for valid but unloaded buffers after 0aa7d2f4
+  #4444 [closed] 2016-03-12 shada: can't clear register after recording in it
+  #32590 [closed] 2025-02-23 Windows: fnamemodify() mixing slashes and backslashes
+  #17142 [closed] 2022-01-19 scrolling in true xterm ($XTERM_VERSION is defined) has visual glitches in all vertically adjacent buffers
+  #11046 [closed] 2019-09-17 checkhealth: reports (non)-error with shada file location
+  #37220 [closed] 2026-01-03 doc: numbered list items are incorrect in HTML documentation
+  #33542 [closed] 2025-04-19 Shada saving improvements
+  #35269 [closed] 2025-08-09 `echo foo bar | xargs nvim` does not open foo unless it is nonempty
+  #33511 [closed] 2025-04-17 Bug or incorrect documentation of `shada-'`
+  #31890 [closed] 2025-01-06 shada: don't store jumplist
+  #32538 [closed] 2025-02-20 fix: make r/wshada work correct w/ shadafile=NONE
+  #18706 [closed] 2022-05-22 feat(lua)!: execute Lua with "nvim -l"
+  #31631 [closed] 2024-12-19 feat(treesitter): async parsing
+  #23350 [closed] 2023-04-27 feat(runtime): offer to show news.txt diff on startup
+  #30282 [closed] 2024-09-06 build fails, "Failed to --listen: no such file or directory" when XDG_RUNTIME_DIR does not exist
+  #30679 [closed] 2024-10-05 Fix deps build for newer ARM64 MSVC
+  #28171 [closed] 2024-04-04 refactor: remove fn_bool
+  #12075 [closed] 2020-04-01 hang on exit when systemd automount cannot mount network drive 
+  #4295 [closed] 2016-02-19 shada: "delmark" is not persisted in shada
+  #24383 [closed] 2023-07-18 textwidth regression
+  #15533 [closed] 2021-08-31 Slow startup on macOS when loading plugins
+  #22539 [closed] 2023-03-05 build: remove workaround for incorrectly packaged libluv
+  #21369 [closed] 2022-12-10 feat(option): add new option disable load all built in plugins
+  #14090 [closed] 2021-03-10 Following HEAD: breaking changes on master
+  #15211 [closed] 2021-07-28 Port VimL's Blob type - vim-patch:8.1.{0735,0736,0738,0741,0742,0755,0756,0757,0765,0793,0797,0798,0802,1022,1023,1671},8.2.{0121,0184,0404,0521,0829,1473,1866,2712}
+  #6297 [closed] 2017-03-16 macros all-caps refactor
+  #13758 [closed] 2021-01-14 logs: make XDG_CACHE_HOME/nvim if it doesn't exist
+  #10461 [closed] 2019-07-09 Nvim don't merge file history properly if multiple instances get killed immediately
+  #3470 [closed] 2015-10-17 XDG base directory specification support
+  #10978 [closed] 2019-09-09 third-party: update libuv to v1.32.0
+  #8614 [closed] 2018-06-21 Empty $HOME results in `./~` being used instead
+  #14169 [closed] 2021-03-20 [Edited Readme]: Build fails without sudo
+  #12641 [closed] 2020-07-15 Autoload directory in Windows 10
+  #4420 [closed] 2016-03-06 Ctrl-o jumped back into terminal and fired termopen command
+  #9585 [closed] 2019-02-07 nvim.exe on Windows 10.1809 as git editor creates folder "~"with shada after git-commit
+  #12387 [closed] 2020-05-27 Crash: Assertion failed
+  #5031 [closed] 2016-07-10 [RFC] - Extended Marks
+  #9907 [closed] 2019-04-15 vim-patch:8.0.0716: "--clean", 'shadafile'
+  #8405 [closed] 2018-05-18 [RFC] win: build: make ci/build.ps1 work without Appveyor
+  #8378 [closed] 2018-05-12 [RFC] test: win: enable  remaining functional tests
+  #4877 [closed] 2016-06-05 extend :checkhealth to migrate vimrc
+  #7783 [closed] 2017-12-29 doc
+  #4615 [closed] 2016-04-20 Fix edge cases for NULL typval_T Lists
+  #5908 [closed] 2017-01-07 shada: Also save numbered marks in a ShaDa file
+  #6272 [closed] 2017-03-14 [RDY] stdpath() (#5297)
+  #7677 [closed] 2017-12-02 shada error: invalid line number after `nvim -u NORC +term`
+  #999 [closed] 2014-07-27 Improve multiple neovim instances support (viminfo)
+  #7343 [closed] 2017-10-01 [RFC] win: defaults: 'shellcmdflag', 'shellxquote'
+  #7561 [closed] 2017-11-14 os_open: return UV_EINVAL on NULL filename arg
+  #7708 [closed] 2017-12-10 [RFC] Hide list implementation
+  #7107 [closed] 2017-08-02 [RDY] vim-patch:8.0.0133
+  #4932 [closed] 2016-06-17 Neovim Universal Healthcare
+  #5482 [closed] 2016-10-14 ftplugin/shada.vim: Error writing shada file
+  #5548 [closed] 2016-10-30 crash on exit 
+  #5595 [closed] 2016-11-11 tsan: Compile with -fPIE and updated clang
+  #5277 [closed] 2016-08-31 Errors with HOME=/dev/null and `-i /dev/null`
+  #5228 [closed] 2016-08-16 [RFC] api: handle null string in buffer_add_highlight
+  #5049 [closed] 2016-07-12 [WIP] vim-patch:7.4.1494
+  #4596 [closed] 2016-04-18 NULL lists are represented as NIL
+  #5050 [closed] 2016-07-12 [RDY] rplugin manifest should live at XDG-style path
+  #3229 [closed] 2015-08-24 [RDY]Implement tab-local working directory feature.
+  #4108 [closed] 2016-01-27 E576: Failed to parse ShaDa file: incomplete msgpack string at position 85
+  #3562 [closed] 2015-10-30 [RFC] write .nvimlog to $XDG_DATA_HOME/nvimlog
+  #3967 [closed] 2016-01-09 Change return type to bool in fileio.c (adoption of PR 3698)
+  #3541 [closed] 2015-10-28 Occasionally freezes on exit
+  #3417 [closed] 2015-10-03 Add support for marshalling JSON
+  #2506 [closed] 2015-04-25 [RFC] Replace viminfo with ShaDa files
+  #78 [closed] 2014-02-23 Support XDG directory specification
+  #2650 [closed] 2015-05-14 [RDY] Data structure improvements
+  #3181 [closed] 2015-08-16 [RFC] terminal: Fix program's name not always displayed
+  #3178 [closed] 2015-08-15 [WIP][RFC] Feature-request for `:tcd`
+## neovim/neovim  [shada truncated]
+  total 8
+  #41683 [closed] 2026-09-04 fix(msgpack): out-of-bounds read on a truncated string
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #40460 [closed] 2026-06-27 "slug" shortname utility for arbitrary filesystem paths
+  #15211 [closed] 2021-07-28 Port VimL's Blob type - vim-patch:8.1.{0735,0736,0738,0741,0742,0755,0756,0757,0765,0793,0797,0798,0802,1022,1023,1671},8.2.{0121,0184,0404,0521,0829,1473,1866,2712}
+  #12387 [closed] 2020-05-27 Crash: Assertion failed
+  #5621 [closed] 2016-11-16 [RFC] vim-patch:7.4.1975,7.4.1976,7.4.1977,7.4.1978,7.4.1979,7.4.1986,7.4.2029,7.4.2224,8.0.0219
+  #6648 [closed] 2017-05-02 Crash after :h
+  #6427 [closed] 2017-04-02 eval: Make writefile() able to disable fsync()
+## neovim/neovim  [shada lost]
+  total 31
+  #33314 [open] 2025-04-04 `nvim_buf_delete` is confusing, no lua equivalent of `:bdelete`
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #6875 [open] 2017-06-10 E576: Error while reading ShaDa file: there is an item at position 270498 that must not be there: Missing itemsare for internal uses only
+  #40097 [open] 2026-06-03 feat(terminal): save state file with `:write`
+  #31506 [open] 2024-12-08 `executable()` is slow on WSL
+  #4444 [closed] 2016-03-12 shada: can't clear register after recording in it
+  #35795 [closed] 2025-09-16 fix(shada): preserve marks after delete across sessions
+  #34625 [closed] 2025-06-23 Undercurl not working with system terminfo but works with user terminfo on WSL (xterm-256color)
+  #31631 [closed] 2024-12-19 feat(treesitter): async parsing
+  #15583 [closed] 2021-09-06 defaults: move session persistent data to $XDG_STATE_HOME
+  #14090 [closed] 2021-03-10 Following HEAD: breaking changes on master
+  #17497 [closed] 2022-02-22 refactor(shada): remove most goto
+  #17506 [closed] 2022-02-23 shada.c has a memory leak
+  #2676 [closed] 2015-05-16 defaults, part 1
+  #6284 [closed] 2017-03-15 jumplist placement
+  #13706 [closed] 2021-01-07 Store logs in XDG_CACHE_DIR rather than XDG_DATA_HOME
+  #5031 [closed] 2016-07-10 [RFC] - Extended Marks
+  #6619 [closed] 2017-04-29 [RFC]  Floating windows in TUI and Remote UI
+  #8378 [closed] 2018-05-12 [RFC] test: win: enable  remaining functional tests
+  #4796 [closed] 2016-05-20 Occasional segment fault
+  #6272 [closed] 2017-03-14 [RDY] stdpath() (#5297)
+  #999 [closed] 2014-07-27 Improve multiple neovim instances support (viminfo)
+  #7210 [closed] 2017-08-24 marks are lost after neovim is quit
+  #7343 [closed] 2017-10-01 [RFC] win: defaults: 'shellcmdflag', 'shellxquote'
+  #7708 [closed] 2017-12-10 [RFC] Hide list implementation
+  #5548 [closed] 2016-10-30 crash on exit 
+  #3364 [closed] 2015-09-19 Crash when disk full
+  #3229 [closed] 2015-08-24 [RDY]Implement tab-local working directory feature.
+  #2506 [closed] 2015-04-25 [RFC] Replace viminfo with ShaDa files
+  #2868 [closed] 2015-06-20 [RDY] options: set 'history' to 10000 (the max) by default.
+  #3150 [closed] 2015-08-09 Invalid reads in regexp handling code
+## neovim/neovim  [shada corrupted]
+  total 8
+  #11876 [open] 2020-02-15 Concurrent startup/exit corrupts shada on windows
+  #41683 [closed] 2026-09-04 fix(msgpack): out-of-bounds read on a truncated string
+  #6875 [open] 2017-06-10 E576: Error while reading ShaDa file: there is an item at position 270498 that must not be there: Missing itemsare for internal uses only
+  #32538 [closed] 2025-02-20 fix: make r/wshada work correct w/ shadafile=NONE
+  #23345 [closed] 2023-04-27 Error while reading ShaDa file: expected positive integer at position 3173 
+  #29186 [closed] 2024-06-04 ShaDa file corruption on nightly
+  #10945 [closed] 2019-09-04 shada: random highlighting at startup
+  #6958 [closed] 2017-07-04 [RFC] shada: Make sure that code does not attempt to read too long items
+## neovim/neovim  [shada tmp]
+  total 107
+  #8587 [open] 2018-06-18 Windows: "E138: main.shada.tmp.X files exist, cannot write ShaDa" on close
+  #11955 [open] 2020-02-27 shada write error does not show up necessarily / should re-use temp files
+  #12298 [open] 2020-05-12 shada: ignore files based on suffix (or pattern/regex)
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #30175 [open] 2024-08-29 Windows: crash on exit, leaving the editor screen on the terminal
+  #6875 [open] 2017-06-10 E576: Error while reading ShaDa file: there is an item at position 270498 that must not be there: Missing itemsare for internal uses only
+  #36112 [open] 2025-10-10 refactor: path.c cleanup
+  #5078 [open] 2016-07-17 rshada|wshada merges jumplists
+  #40097 [open] 2026-06-03 feat(terminal): save state file with `:write`
+  #40013 [closed] 2026-05-26 fix(shada): prevent case-duplicate oldfiles
+  #39851 [closed] 2026-05-18 nvim_buf_get_lines() returns nil for valid but unloaded buffers after 0aa7d2f4
+  #38210 [closed] 2026-03-09 shada: cursor position ('") not restored on file reopen (regression in 0.11)
+  #38940 [closed] 2026-04-10 `:restart` (no bang) restores session + window layout
+  #37631 [closed] 2026-01-30 feat(defaults): exclude temp directories from shada oldfiles
+  #21637 [closed] 2023-01-03 defaults: skip common junk in 'shada' oldfiles
+  #35846 [closed] 2025-09-20 crash on exit in shada_write_file
+  #11046 [closed] 2019-09-17 checkhealth: reports (non)-error with shada file location
+  #37220 [closed] 2026-01-03 doc: numbered list items are incorrect in HTML documentation
+  #31165 [closed] 2024-11-11 vim.loader: `.cache/nvim/luac/` contains 250k files when using AppImage
+  #8813 [closed] 2018-08-04 teardown: race between options setup and exit_event
+  #18433 [closed] 2022-05-05 shada should not save 'nobuflisted' files
+  #34440 [closed] 2025-06-11 shada: heap-use-after-free
+  #33019 [closed] 2025-03-21 Windows Terminal "crash" (hang/freeze) on exit after using Neovim for a few minutes
+  #21056 [closed] 2022-11-14 assert(to_scroll >= 0) in msg_scroll_flush sometimes fails (especially with noice.nvim)
+  #32106 [closed] 2025-01-19 Expose an option to configure LSP client log location 
+  #23345 [closed] 2023-04-27 Error while reading ShaDa file: expected positive integer at position 3173 
+  #30872 [closed] 2024-10-20 fix(exit): close memfiles after processing events
+  #29186 [closed] 2024-06-04 ShaDa file corruption on nightly
+  #30679 [closed] 2024-10-05 Fix deps build for newer ARM64 MSVC
+  #30282 [closed] 2024-09-06 build fails, "Failed to --listen: no such file or directory" when XDG_RUNTIME_DIR does not exist
+  #9912 [closed] 2019-04-16 E886: System error while opening ShaDa file for writing: no such file or directory
+  #4848 [closed] 2016-05-31 Effects of histdel() does not persist
+  #24963 [closed] 2023-08-31 shada: "delmarks!" is not persisted in shada
+  #12475 [closed] 2020-06-12 Permission errors when running as root and sharing $HOME with regular user
+  #25031 [closed] 2023-09-06 Potential performance regression in neovim 0.10.x 
+  #21082 [closed] 2022-11-16 when using shada, Neovim slow to exit and makes a large amount of irrelevant IO calls before exiting
+  #15583 [closed] 2021-09-06 defaults: move session persistent data to $XDG_STATE_HOME
+  #14090 [closed] 2021-03-10 Following HEAD: breaking changes on master
+  #19753 [closed] 2022-08-13 Build error: Failed downloading https://luarocks.org/mpack-1.0.8-0.rockspec
+  #19208 [closed] 2022-07-02 [Build] Undefined symbols for architecture x86_64 ( _luv_set_thread )
+  #15340 [closed] 2021-08-11 docs: provide minimal init.lua and recommend it
+  #14915 [closed] 2021-06-26 fix(treesitter): set match limit for query cursors
+  #15082 [closed] 2021-07-14 [Question] Startup Time after fresh installation. 
+  #3470 [closed] 2015-10-17 XDG base directory specification support
+  #10461 [closed] 2019-07-09 Nvim don't merge file history properly if multiple instances get killed immediately
+  #14923 [closed] 2021-06-29 brew install --HEAD neovim fails: Undefined symbols for architecture x86_64
+  #13869 [closed] 2021-02-03 autoload provider python, clipboard slow down neovim startup time
+  #3472 [closed] 2015-10-18 mark 0 is not remembered when exiting Nvim
+  #13531 [closed] 2020-12-14 `brew install --HEAD` failing with errors
+  #6966 [closed] 2017-07-05 Shada slow down?
+  #6652 [closed] 2017-05-02 viminfo file causes "E576: Failed to parse ShaDa file"
+  #11497 [closed] 2019-12-02 crash on exit with shada='100,:0 
+  #4551 [closed] 2016-04-09 Permissions issue related to ShaDa file after installing from ppa
+  #4700 [closed] 2016-05-03 [RDY] Keep unnamed register on restart
+  #14169 [closed] 2021-03-20 [Edited Readme]: Build fails without sudo
+  #5348 [closed] 2016-09-16 Vimdiff broken
+  #8828 [closed] 2018-08-08 Extremly slow startup on 1st launch and then gets better on subsequent launches
+  #5109 [closed] 2016-07-24 Neovim stopped working with Vundle plugin
+  #13254 [closed] 2020-11-08 sourcing ftplugin/man.vim becomes extremely slow when opening large log file
+  #7376 [closed] 2017-10-11 nvim process doesn't exit after quitting
+  #3469 [closed] 2015-10-17 E576: Failed to parse ShaDa file: extra bytes in msgpack string at position 3
+  #10945 [closed] 2019-09-04 shada: random highlighting at startup
+  #10951 [closed] 2019-09-05 test/shada_spec: avoid exit_event race
+  #10701 [closed] 2019-08-05 test: Eliminate plugin/helpers.lua
+  #10672 [closed] 2019-08-02 [WIP]vim-patch:8.1.1790
+  #10130 [closed] 2019-06-06 Fix for modeline vulnerability is incomplete
+  #11125 [closed] 2019-09-30 Cannot install HEAD in MacOS 10.14.6
+  #10946 [closed] 2019-09-04 vim-patch:8.1.1498,8.1.1501: b:changedtick
+  #9872 [closed] 2019-04-09 leak sanitizer report
+  #8388 [closed] 2018-05-14 Standard (built-in) plugin list is inaccurate
+  #4796 [closed] 2016-05-20 Occasional segment fault
+  #8144 [closed] 2018-03-17 `packages` & source order 
+  #7237 [closed] 2017-09-04 Slow startup with clipboard.vim + xsel
+  #2219 [closed] 2015-03-22 Slow startup time (and also switch between buffer)
+  #5908 [closed] 2017-01-07 shada: Also save numbered marks in a ShaDa file
+  #4615 [closed] 2016-04-20 Fix edge cases for NULL typval_T Lists
+  #8064 [closed] 2018-02-24 Failed to parse ShaDa file
+  #4360 [closed] 2016-02-27 ShaDa: marks for recent cursor positions not set
+  #7412 [closed] 2017-10-19 [WIP] Enable more tests in Windows
+  #999 [closed] 2014-07-27 Improve multiple neovim instances support (viminfo)
+  #3736 [closed] 2015-11-24 E576: Failed to parse ShaDa file: extra bytes in msgpack string at position 3
+  #5589 [closed] 2016-11-11 inccommand in line substitution highlights all matches in the file
+  #7542 [closed] 2017-11-11 Unicode test failure on neovim-0.2.1/OpenBSD
+  #7287 [closed] 2017-09-18 [RFC] Fix relative paths on Windows (#7117)
+  #7523 [closed] 2017-11-09 gen_api_ui_events.lua: can't serialize object
+  #7186 [closed] 2017-08-18 Hard slowdown when using vim-airline and tpope's vim-fugitive
+  #5621 [closed] 2016-11-16 [RFC] vim-patch:7.4.1975,7.4.1976,7.4.1977,7.4.1978,7.4.1979,7.4.1986,7.4.2029,7.4.2224,8.0.0219
+  #6239 [closed] 2017-03-09 Startup time increase significantly with function call style change in autocmd
+  #4865 [closed] 2016-06-01 [RDY] Use buffered reading/writing for ShaDa files
+  #3914 [closed] 2015-12-30 change numerical options types to NumOpt (alias intmax_t)
+  #5548 [closed] 2016-10-30 crash on exit 
+  #5529 [closed] 2016-10-25 [RFC] Port partial patches from vim
+  #5277 [closed] 2016-08-31 Errors with HOME=/dev/null and `-i /dev/null`
+  #4905 [closed] 2016-06-10 Automatic history merge between multiple instances
+  #5050 [closed] 2016-07-12 [RDY] rplugin manifest should live at XDG-style path
+  #3364 [closed] 2015-09-19 Crash when disk full
+  #4980 [closed] 2016-06-28 [RFC] Add support for legacy `:ruby` commands
+  #4169 [closed] 2016-02-04 E576: Failed to parse ShaDa file: incomplete msgpack string at position 95
+  #3941 [closed] 2016-01-04 Shada: Wrong permissions?
+  #3541 [closed] 2015-10-28 Occasionally freezes on exit
+## neovim/neovim  [E138]
+  total 2
+  #8587 [open] 2018-06-18 Windows: "E138: main.shada.tmp.X files exist, cannot write ShaDa" on close
+  #11955 [open] 2020-02-27 shada write error does not show up necessarily / should re-use temp files
+## neovim/neovim  [shada rename]
+  total 51
+  #8587 [open] 2018-06-18 Windows: "E138: main.shada.tmp.X files exist, cannot write ShaDa" on close
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #36112 [open] 2025-10-10 refactor: path.c cleanup
+  #3764 [open] 2015-11-29 quickfix: Relative/absolute filenames mess
+  #40552 [closed] 2026-07-02 feat(editor): ensure directory bufname ends w/ slash sep
+  #40097 [open] 2026-06-03 feat(terminal): save state file with `:write`
+  #18433 [closed] 2022-05-05 shada should not save 'nobuflisted' files
+  #34894 [closed] 2025-07-12 vim-patch:8.1.{770,857,914,977,1004,1526,1551,1565,1584,1629,1641,1703,1728,1730,1736,1802,1853,1891,2127,2200},8.2.3922,9.0.{546,928},9.1.1382
+  #32001 [closed] 2025-01-14 refactor: use `nvim.foo.bar` format for namespace/augroup names
+  #23345 [closed] 2023-04-27 Error while reading ShaDa file: expected positive integer at position 3173 
+  #18706 [closed] 2022-05-22 feat(lua)!: execute Lua with "nvim -l"
+  #31821 [closed] 2025-01-01 perf(treesitter): don't fetch parser for each fold line
+  #31631 [closed] 2024-12-19 feat(treesitter): async parsing
+  #30679 [closed] 2024-10-05 Fix deps build for newer ARM64 MSVC
+  #12475 [closed] 2020-06-12 Permission errors when running as root and sharing $HOME with regular user
+  #5028 [closed] 2016-07-09 change "nvim" to "ni" everywhere
+  #15583 [closed] 2021-09-06 defaults: move session persistent data to $XDG_STATE_HOME
+  #14090 [closed] 2021-03-10 Following HEAD: breaking changes on master
+  #19753 [closed] 2022-08-13 Build error: Failed downloading https://luarocks.org/mpack-1.0.8-0.rockspec
+  #15211 [closed] 2021-07-28 Port VimL's Blob type - vim-patch:8.1.{0735,0736,0738,0741,0742,0755,0756,0757,0765,0793,0797,0798,0802,1022,1023,1671},8.2.{0121,0184,0404,0521,0829,1473,1866,2712}
+  #15831 [closed] 2021-09-28 feat(marks): marks keep "view" info and restore it on jump
+  #6297 [closed] 2017-03-16 macros all-caps refactor
+  #8828 [closed] 2018-08-08 Extremly slow startup on 1st launch and then gets better on subsequent launches
+  #10945 [closed] 2019-09-04 shada: random highlighting at startup
+  #10430 [closed] 2019-07-05 [RDY] More Context
+  #5031 [closed] 2016-07-10 [RFC] - Extended Marks
+  #1202 [closed] 2014-09-19 :checkhealth : config/sanity checks
+  #10407 [closed] 2019-07-03 Cannot link to private copy of luv.so
+  #6369 [closed] 2017-03-26 [RFC] Jumplist placement (jumporder)
+  #9425 [closed] 2019-01-01 build: enable -Wshadow
+  #8064 [closed] 2018-02-24 Failed to parse ShaDa file
+  #4615 [closed] 2016-04-20 Fix edge cases for NULL typval_T Lists
+  #6272 [closed] 2017-03-14 [RDY] stdpath() (#5297)
+  #2219 [closed] 2015-03-22 Slow startup time (and also switch between buffer)
+  #999 [closed] 2014-07-27 Improve multiple neovim instances support (viminfo)
+  #5500 [closed] 2016-10-18 [RDY] vim-patch: 7.4.2212, 7.4.2237, 7.4.2309, 7.4.2312
+  #5285 [closed] 2016-09-02 Error when building in-source with CMake
+  #5005 [closed] 2016-07-04 [RFC] vim-patch:7.4.1147
+  #5050 [closed] 2016-07-12 [RDY] rplugin manifest should live at XDG-style path
+  #4169 [closed] 2016-02-04 E576: Failed to parse ShaDa file: incomplete msgpack string at position 95
+  #3229 [closed] 2015-08-24 [RDY]Implement tab-local working directory feature.
+  #4885 [closed] 2016-06-06 [RFC] Add script for Python diagnostic information
+  #3722 [closed] 2015-11-23 shada: Continue dumping when variables failed to dump
+  #3417 [closed] 2015-10-03 Add support for marshalling JSON
+  #4042 [closed] 2016-01-18 ‘O_NOFOLLOW’ undeclared (first use in this function)
+  #2506 [closed] 2015-04-25 [RFC] Replace viminfo with ShaDa files
+  #78 [closed] 2014-02-23 Support XDG directory specification
+  #1250 [closed] 2014-09-27 Type schema of api-info should use String instead of Binary
+  #3198 [closed] 2015-08-19 [WIP] XDG support
+  #2650 [closed] 2015-05-14 [RDY] Data structure improvements
+  #3178 [closed] 2015-08-15 [WIP][RFC] Feature-request for `:tcd`
+## neovim/neovim  [shada crash]
+  total 50
+  #4547 [open] 2016-04-08 Empty undo file after system crash
+  #8587 [open] 2018-06-18 Windows: "E138: main.shada.tmp.X files exist, cannot write ShaDa" on close
+  #1180 [open] 2014-09-15 enhanced session/shada; shared (p2p) state
+  #30175 [open] 2024-08-29 Windows: crash on exit, leaving the editor screen on the terminal
+  #1866 [open] 2015-01-22 Dockerfile
+  #39851 [closed] 2026-05-18 nvim_buf_get_lines() returns nil for valid but unloaded buffers after 0aa7d2f4
+  #35846 [closed] 2025-09-20 crash on exit in shada_write_file
+  #37220 [closed] 2026-01-03 doc: numbered list items are incorrect in HTML documentation
+  #31165 [closed] 2024-11-11 vim.loader: `.cache/nvim/luac/` contains 250k files when using AppImage
+  #34440 [closed] 2025-06-11 shada: heap-use-after-free
+  #34894 [closed] 2025-07-12 vim-patch:8.1.{770,857,914,977,1004,1526,1551,1565,1584,1629,1641,1703,1728,1730,1736,1802,1853,1891,2127,2200},8.2.3922,9.0.{546,928},9.1.1382
+  #27046 [closed] 2024-01-16 Assertion `buf->b_signcols.count[width - 1] >= 0` failed
+  #33019 [closed] 2025-03-21 Windows Terminal "crash" (hang/freeze) on exit after using Neovim for a few minutes
+  #32538 [closed] 2025-02-20 fix: make r/wshada work correct w/ shadafile=NONE
+  #21056 [closed] 2022-11-14 assert(to_scroll >= 0) in msg_scroll_flush sometimes fails (especially with noice.nvim)
+  #31631 [closed] 2024-12-19 feat(treesitter): async parsing
+  #8304 [closed] 2018-04-20 disable 'fsync' by default, but force fsync() in more situations
+  #9943 [closed] 2019-04-27 [WIP] Multiprocessing Feature
+  #3470 [closed] 2015-10-17 XDG base directory specification support
+  #12937 [closed] 2020-09-19 Fix pty support for "env" in jobstart/termopen
+  #11497 [closed] 2019-12-02 crash on exit with shada='100,:0 
+  #12387 [closed] 2020-05-27 Crash: Assertion failed
+  #9585 [closed] 2019-02-07 nvim.exe on Windows 10.1809 as git editor creates folder "~"with shada after git-commit
+  #10945 [closed] 2019-09-04 shada: random highlighting at startup
+  #5031 [closed] 2016-07-10 [RFC] - Extended Marks
+  #9872 [closed] 2019-04-09 leak sanitizer report
+  #6619 [closed] 2017-04-29 [RFC]  Floating windows in TUI and Remote UI
+  #8378 [closed] 2018-05-12 [RFC] test: win: enable  remaining functional tests
+  #4796 [closed] 2016-05-20 Occasional segment fault
+  #4615 [closed] 2016-04-20 Fix edge cases for NULL typval_T Lists
+  #5908 [closed] 2017-01-07 shada: Also save numbered marks in a ShaDa file
+  #6272 [closed] 2017-03-14 [RDY] stdpath() (#5297)
+  #999 [closed] 2014-07-27 Improve multiple neovim instances support (viminfo)
+  #7505 [closed] 2017-11-08 NVIM v0.2.1
+  #6972 [closed] 2017-07-06 Neovim :reg often crashes
+  #6957 [closed] 2017-07-04 Broken shada files can cause assertion error
+  #6648 [closed] 2017-05-02 Crash after :h
+  #6646 [closed] 2017-05-02 Windows: fails to start
+  #5548 [closed] 2016-10-30 crash on exit 
+  #6308 [closed] 2017-03-17 Segfault with SessionLoadPost au that wipes buffers
+  #4865 [closed] 2016-06-01 [RDY] Use buffered reading/writing for ShaDa files
+  #6017 [closed] 2017-01-26 xstrlcat: Match vim_strcat more closely.
+  #5296 [closed] 2016-09-05 shada: close_sd_reader: Check for NULL
+  #5595 [closed] 2016-11-11 tsan: Compile with -fPIE and updated clang
+  #5500 [closed] 2016-10-18 [RDY] vim-patch: 7.4.2212, 7.4.2237, 7.4.2309, 7.4.2312
+  #5228 [closed] 2016-08-16 [RFC] api: handle null string in buffer_add_highlight
+  #4596 [closed] 2016-04-18 NULL lists are represented as NIL
+  #3364 [closed] 2015-09-19 Crash when disk full
+  #3229 [closed] 2015-08-24 [RDY]Implement tab-local working directory feature.
+  #2506 [closed] 2015-04-25 [RFC] Replace viminfo with ShaDa files
+## neovim/neovim  [shada disk full]
+  total 8
+  #34204 [open] 2025-05-27 Sessions: replace :mksession with Lua impl
+  #31631 [closed] 2024-12-19 feat(treesitter): async parsing
+  #15533 [closed] 2021-08-31 Slow startup on macOS when loading plugins
+  #6272 [closed] 2017-03-14 [RDY] stdpath() (#5297)
+  #999 [closed] 2014-07-27 Improve multiple neovim instances support (viminfo)
+  #4865 [closed] 2016-06-01 [RDY] Use buffered reading/writing for ShaDa files
+  #3364 [closed] 2015-09-19 Crash when disk full
+  #78 [closed] 2014-02-23 Support XDG directory specification
+## jbangdev/jbang  [jbang.properties empty]
+  total 2
+  #1042 [closed] 2021-10-13 feat: jbang direct edit
+  #604 [closed] 2020-12-16 Jbang config
+## jbangdev/jbang  [config set empty]
+  total 17
+  #1185 [open] 2022-01-08 find consistent way to allow setting things like deps without having to  set run.deps, edit.deps, etc.
+  #2467 [open] 2026-05-18 feat: support native-aware wrapper install/update flows
+  #2519 [closed] 2026-06-08 build: upgrade to aesh 3.13 and fix primitive option types (#2504, #2…
+  #2565 [closed] 2026-06-26 feat: add .netrc support and GITLAB_TOKEN for authenticated HTTP access
+  #2521 [closed] 2026-06-08 refactor: simplify CLI post-parsing with aesh 3.13 features
+  #2520 [closed] 2026-06-08 PoC: "smart" module-path resolution
+  #2453 [closed] 2026-04-28 feat: replace picocli with aesh for CLI parsing
+  #2298 [closed] 2025-11-16 fix(deps): update all non-major dependencies
+  #1763 [closed] 2024-03-09 fix(deps): update gradle - autoclosed
+  #1968 [closed] 2025-03-23 fix: move to use junit+allure over karate
+  #2137 [closed] 2025-08-04 JBang CLI hangs on SUSE Linux Enterprise Server15 SP6
+  #1604 [closed] 2023-03-31 refactor: Put MIMA in action
+  #1500 [closed] 2022-10-31 feat: Enabled the usage of existing JDK installations
+  #604 [closed] 2020-12-16 Jbang config
+  #429 [closed] 2020-10-12 Quarkus generated classes written in / - read-only file system issue
+  #670 [closed] 2021-01-15 chore(deps): bump qute-core from 1.10.5.Final to 1.11.0.Final
+  #73 [closed] 2020-03-04 Support for "aliases"
+## jbangdev/jbang  [properties truncated]
+  total 13
+  #836 [closed] 2021-04-15 chore(deps): bump qute-core from 1.12.2.Final to 1.13.2.Final
+  #868 [closed] 2021-05-13 chore(deps): bump qute-core from 1.12.2.Final to 1.13.4.Final
+  #891 [closed] 2021-05-27 chore(deps): bump qute-core from 1.12.2.Final to 1.13.5.Final
+  #808 [closed] 2021-03-25 chore(deps): bump qute-core from 1.12.2.Final to 1.13.0.Final
+  #845 [closed] 2021-04-29 chore(deps): bump qute-core from 1.12.2.Final to 1.13.3.Final
+  #719 [closed] 2021-02-10 chore(deps): bump qute-core from 1.10.5.Final to 1.11.2.Final
+  #763 [closed] 2021-03-04 chore(deps): bump qute-core from 1.10.5.Final to 1.12.1.Final
+  #670 [closed] 2021-01-15 chore(deps): bump qute-core from 1.10.5.Final to 1.11.0.Final
+  #688 [closed] 2021-01-28 chore(deps): bump qute-core from 1.10.5.Final to 1.11.1.Final
+  #566 [closed] 2020-12-01 chore(deps): bump qute-core from 1.9.0.Final to 1.10.2.Final
+  #493 [closed] 2020-11-09 chore(deps): bump qute-core from 1.9.0.Final to 1.9.2.Final
+  #446 [closed] 2020-10-15 chore(deps): bump qute-core from 1.8.3.Final to 1.9.0.Final
+  #359 [closed] 2020-09-24 chore(deps): bump qute-core from 1.7.0.Final to 1.8.1.Final
+## pyenv/pyenv  [version file empty]
+  total 54
+  #3506 [open] 2026-08-03 versions: fix --executables portability regression
+  #3537 [open] 2026-09-07 pyenv-exec: add option to modify python runtime for the called execut…
+  #3523 [closed] 2026-08-25 test versions.bats fails in openSUSE because of "find_local_version_file" is called with empty string
+  #3515 [closed] 2026-08-08 version-file: Fix infinite loop for a relative path argument
+  #2339 [open] 2022-04-25 Patch `ctypes` `find_library` function search path
+  #3524 [closed] 2026-08-25 tests: Fix "cd: null directory" in OpenSUSE
+  #3522 [closed] 2026-08-23 CI: test on all runners when the build logic changes
+  #3514 [closed] 2026-08-06 CI: Add macos_26_intel
+  #3475 [closed] 2026-06-11 Fix #3474: CI: add_version enhancements
+  #3511 [closed] 2026-08-05 pyenv-binary: check FreeBSD system libraries
+  #3488 [closed] 2026-07-03 pyenv-binary: add the `generate-installer` subcommand
+  #2918 [closed] 2024-02-29 pyenv init slows down the shell startup a bunch (by about ~100 ms!)
+  #3335 [closed] 2025-09-26 Cannot install any python2 versions at all on fedora 42: "error: cannot use keyword ‘false’ as enumeration constant"
+  #3411 [closed] 2026-03-01 versions: fast path for --bare --skip-aliases
+  #3274 [closed] 2025-06-13 Build fails with old python-build version and x86_64 linker error on Apple Silicon (arm64) Mac
+  #2461 [closed] 2022-09-14 Cannot install python 3.6.9 on mac m1.
+  #3264 [closed] 2025-05-30 Python 3.10.17 installation fails with SIGSEGV during ensurepip bootstrap on macOS 15.5
+  #106 [closed] 2014-01-27 pyenv not playing nice with brew "config". [$5]
+  #2680 [closed] 2023-04-14 Use installed version from .python-version even if not all versions are installed?
+  #3105 [closed] 2024-11-11 Homebrew Python linked to Pyenv with `brew pyenv-sync` is ignored when running `python3`
+  #3091 [closed] 2024-10-13 Fail to install Python 3.13.0: "ld: library 'System' not found"
+  #2964 [closed] 2024-05-16 python3.12.3 install in linuxmint failed: "error: ‘I_PUSH’ undeclared"
+  #1753 [closed] 2020-12-09 `pyenv install ...` not putting files in `~/.pyenv/bin`
+  #2946 [closed] 2024-04-24 Custom manual installation within a dedicated 'build' directory, in a proot-distro alias of Debian chroot, in a Termux host environment: require `make install` instructions, post-successful BAT test, and successful custom make 
+  #858 [closed] 2017-03-10 No such file or directory: $(pyenv root)/bin
+  #2943 [closed] 2024-04-11 Build failed at interpreteridobject.c:109:40 (macOS / arm64 / clang)
+  #2923 [closed] 2024-03-07 pyenv fails to install Python 3.12.1/3.12.2 on Raspberry Pi Zero 2W running Bullseye Lite 64-Bit
+  #2794 [closed] 2023-09-18 RuntimeError: tk.h version (8.5) doesn't match libtk.a version (8.6) python 2.7.18
+  #1608 [closed] 2020-05-07 shims directory is empty on Kubuntu 20.04
+  #2533 [closed] 2022-11-21 `pyenv` not auto-resolve `3.10`
+  #1643 [closed] 2020-06-26 Unable to build Python on macOS Big Sur with Xcode 12 beta
+  #1425 [closed] 2019-10-16 Outdated tips for macOS 10.15 or later
+  #2034 [closed] 2021-08-19 Pyenv rehash conda.bash change #2027 for bash4 breaks when using bash3.2 (which is osx default)
+  #2207 [closed] 2022-01-04 Latest version of pyenv on Linux fails to build _ctypes for python 3.7.12
+  #2251 [closed] 2022-02-16 pyenv ssl error
+  #1446 [closed] 2019-11-02 pyenv don't switch between python versions on macos
+  #1949 [closed] 2021-05-26 Can't add install any Python after upgrade to 2.0: "error: expected expression"
+  #1185 [closed] 2018-07-12 [WIP/RFC]: use separate shim paths per version
+  #2100 [closed] 2021-10-07 Can't install Python on MacOS 11.6: configure:4121: error: cannot run C compiled programs.
+  #1298 [closed] 2019-03-07 generate-posix-vars failed when installing 2.7.10 on Ubuntu 18.10
+  #479 [closed] 2015-11-12 python shim switches versions depending on python's command line argument
+  #1383 [closed] 2019-08-22 Long paths break pyenv shebangs
+  #987 [closed] 2017-09-21 prevent changing PATH in pyenv shims
+  #531 [closed] 2016-01-23 pip 8.x breaks python 3.2 compatibility [$30 awarded]
+  #1008 [closed] 2017-10-08 python2.7.8 not working, but python3.6.2 is
+  #902 [closed] 2017-04-30 sha256sum in openwrt adds space at the end
+  #737 [closed] 2016-10-15 Pypy3.5-c-jit-latest nightly builds (please review)
+  #738 [closed] 2016-10-15 Invalid syntax for unicode
+  #727 [closed] 2016-10-06 BUILD FAIL on Alpine Linux (new: started in last week, was building previously)
+  #35 [closed] 2013-07-20 Permission denied
+  #551 [closed] 2016-03-02 Is there any way to cache the installed python version for multi-user environment?
+  #475 [closed] 2015-11-08 Duplicated system versions
+  #185 [closed] 2014-06-04 Trouble Switching Python Versions
+  #365 [closed] 2015-04-22 building in an encrypted .encryptfs hits the filename character limit and breaks the build
+## pyenv/pyenv  [global empty]
+  total 17
+  #3537 [open] 2026-09-07 pyenv-exec: add option to modify python runtime for the called execut…
+  #2204 [open] 2022-01-02 pythons built with pyenv's python-build leak CFLAGS/LDFLAGS into user packages via sysconfig
+  #106 [closed] 2014-01-27 pyenv not playing nice with brew "config". [$5]
+  #3105 [closed] 2024-11-11 Homebrew Python linked to Pyenv with `brew pyenv-sync` is ignored when running `python3`
+  #2946 [closed] 2024-04-24 Custom manual installation within a dedicated 'build' directory, in a proot-distro alias of Debian chroot, in a Termux host environment: require `make install` instructions, post-successful BAT test, and successful custom make 
+  #2794 [closed] 2023-09-18 RuntimeError: tk.h version (8.5) doesn't match libtk.a version (8.6) python 2.7.18
+  #1643 [closed] 2020-06-26 Unable to build Python on macOS Big Sur with Xcode 12 beta
+  #2354 [closed] 2022-05-06 pyenv 2.3.0 (or latest master) init on Linux/Fedora 35 hanging/spawning many bash subprocesses when connecting via ssh
+  #2207 [closed] 2022-01-04 Latest version of pyenv on Linux fails to build _ctypes for python 3.7.12
+  #1185 [closed] 2018-07-12 [WIP/RFC]: use separate shim paths per version
+  #1446 [closed] 2019-11-02 pyenv don't switch between python versions on macos
+  #479 [closed] 2015-11-12 python shim switches versions depending on python's command line argument
+  #987 [closed] 2017-09-21 prevent changing PATH in pyenv shims
+  #1008 [closed] 2017-10-08 python2.7.8 not working, but python3.6.2 is
+  #475 [closed] 2015-11-08 Duplicated system versions
+  #185 [closed] 2014-06-04 Trouble Switching Python Versions
+  #365 [closed] 2015-04-22 building in an encrypted .encryptfs hits the filename character limit and breaks the build
+## pyenv/pyenv  [version file truncated]
+  total 5
+  #3486 [closed] 2026-07-01 Bump actions/checkout from 6 to 7 in the github-actions group
+  #3360 [closed] 2025-12-01 CI: Bump actions/checkout from 5 to 6 in the github-actions group
+  #1889 [closed] 2021-05-01 Error 139 When Installing Python 3.6 on Fedora 34
+  #2415 [closed] 2022-07-20 BUILD FAILED (OS X 12.4 using python-build 20180424): "/usr/local/include/stdbool.h:4:10: error: #include nested too deeply"
+  #1948 [closed] 2021-05-26 Pyenv 2.0 stops working after an upgrade to macOS Big Sur 11.4

@@ -1,0 +1,26 @@
+== neovim v0.10.4: src/nvim/shada.c, shada_write_file — the write, the rename, the close
+3061:  const ShaDaWriteResult sw_ret = shada_write(&sd_writer, (nomerge ? NULL : &sd_reader));
+3101:      if (vim_rename(tempname, fname) == -1) {
+3106:        os_remove(tempname);
+3124:  close_file(&sd_writer);
+== neovim v0.10.4: src/nvim/fileio.c, vim_rename — the target removed before the rename
+2695:   os_remove(to);
+2698:   if (os_rename(from, to) == OK) {
+== neovim master: src/nvim/shada.c, shada_write_file — the write, the rename, the close
+2817:  const ShaDaWriteResult sw_ret = shada_write(&sd_writer, (nomerge ? NULL : &sd_reader));
+2859:      if (vim_rename(tempname, fname) == -1) {
+2864:        os_remove(tempname);
+2882:  close_file(&sd_writer);
+== neovim master: src/nvim/fileio.c, vim_rename — the target removed before the rename
+2766:   os_remove(to);
+2769:   if (os_rename(from, to) == OK) {
+== neovim latest release: v0.12.5 2026-08-23
+== aws-cli 2.23.6: awscli/customizations/configure/writer.py — the rewrite of an existing file
+65:            with open(config_filename, 'w') as f:
+66:                f.write(''.join(contents))
+100:            f.write(''.join(contents))
+== aws-cli v2: awscli/customizations/configure/writer.py — the rewrite of an existing file
+114:            with open(config_filename, 'w') as f:
+115:                f.write(''.join(contents))
+152:            f.write(''.join(contents))
+== aws-cli: latest tag 2.36.46

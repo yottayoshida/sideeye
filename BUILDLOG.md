@@ -61,6 +61,31 @@ checker read nothing with `-i NONE` and `:rshada!`, so it failed on correct stat
 And hatch's operation set `terminal.styles.info` to `bold`, which is the default: the file was
 rewritten and no value changed. The operation sets `italic`.
 
+**The run, against the predictions.** aws-cli FAIL 4/4, hatch PASS 4/4, jbang FAIL 4/4, pyenv FAIL
+3/3 under `syscalls`, and main answering what v1.4.0 answered — as predicted. **neovim was the miss:
+UNKNOWN `baseline_violates_invariant` in all five runs.** The windows it predicted were there — the
+explored worlds printed `main.shada is gone (main.shada.tmp.a )` and `register a is lost (0 bytes in
+main.shada)` before the baseline refused — but the uncrashed re-run does not reproduce the file's
+bytes. `apparatus/probe-shada.sh` measured why before anything was declared: every byte that differs
+between two runs from the same state lies in a msgpack timestamp or the header's pid. The second
+define declares `main.shada` scratch and gives the claim to the checker, and was predicted before it
+ran: FAIL 5/5, 6 of 13 worlds, earliest crash point 3 of 12, after the unlink and before the rename.
+
+**What neovim does, read in its source after the measurement.** `shada_write_file` fills a buffered
+writer, calls `vim_rename`, and flushes in `close_file` afterwards; `vim_rename` calls
+`os_remove(to)` before `os_rename`. Both at `v0.10.4` and on `master`. The source predicted a second
+shape the define could not show: a shada file larger than the 4 KiB buffer should be *cut* rather
+than emptied, because most of it is flushed before the rename. `apparatus/probe-shada-large.sh`
+measured it on a 25,715-byte file: limits from 4,096 to 25,088 bytes stop nvim before the rename
+(the original intact, `main.shada.tmp.a` left behind); at 25,600 the file is left at 25,600 bytes and
+the next start says `E576: … last entry specified that it occupies 57 bytes, but file ended earlier`.
+The first limits I tried were all in the first range; the tail is under 700 bytes of that file.
+
+**All four FAILs reproduce with `ulimit -f 0` and no crash**: `credentials` 231 bytes to 0,
+`main.shada` 136 to 0, `jbang.properties` 21 to 0, `version` 7 to 0 and `pyenv version-name` saying
+`system`. The searches found no report of the aws-cli or the neovim mechanism; both projects accept
+AI-assisted submissions under stated conditions. Whether to report is the owner's call.
+
 ## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
 
 **What was asked.** A dogfood run of five, weighted to targets that are measurable now because a
