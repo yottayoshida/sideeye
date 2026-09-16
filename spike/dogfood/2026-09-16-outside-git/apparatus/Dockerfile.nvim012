@@ -1,0 +1,8 @@
+# neovim's latest release beside Debian's 0.10.4, for the review's finding that 0.11 and later flush
+# the whole shada file before the rename. Built on this run's image; the release tarball was
+# downloaded on the host and its digest matched the one the release publishes.
+FROM sideeye-dogfood:2026-09-16-outside
+COPY nvim-linux-arm64.tar.gz /tmp/
+RUN mkdir -p /opt && tar -xzf /tmp/nvim-linux-arm64.tar.gz -C /opt \
+ && ln -s /opt/nvim-linux-arm64/bin/nvim /usr/local/bin/nvim012 \
+ && nvim012 --version | head -1 && file -L /usr/local/bin/nvim012 | cut -c1-160
