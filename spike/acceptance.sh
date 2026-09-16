@@ -2289,10 +2289,24 @@ for pair in "TOY_STDIO_BIG:a buffer overflow inside fprintf" "TOY_STDIO_NOCLOSE:
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$(env "$var=1" "$SIDEEYE" explore --state /tmp/acc/state \
         --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/w.json 2>&1)
     rc=$?
     if [ "$rc" = "2" ] && echo "$o" | grep -q "oracle_missed_operation"; then
         echo "ok   $desc still refuses (outside the modelled boundary)"
+        # #599: the refusal's step names the mode the leg below judges the same toy under. The
+        # only check that reads the step off a real run — the chooser's unit test stays green with
+        # the call site left at the class wall. Seen red that way, and with the chooser returning
+        # the class wall. `grep -F --` because the needle starts with two dashes.
+        wstep=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("next_step",""))' /tmp/acc/w.json 2>/dev/null)
+        if [ -z "$wstep" ]; then
+            echo "FAIL $var: the refusal's report carries no next_step — nothing was measured"
+            fails=$((fails + 1))
+        elif printf '%s\n' "$wstep" | grep -qF -- '--observe syscalls'; then
+            echo "ok   $desc: the step names --observe syscalls, the mode the next leg judges it under (#599)"
+        else
+            echo "FAIL $var: the step does not name --observe syscalls: $wstep"
+            fails=$((fails + 1))
+        fi
     else
         echo "FAIL $var: exit $rc (wanted UNKNOWN oracle_missed_operation)"
         echo "$o" | sed 's/^/     | /' | head -6
@@ -2420,6 +2434,108 @@ if [ "$raw_fails" = "0" ]; then
     echo "     ($got_ops operations, both accounts agreeing) and none under --observe wrappers"
 else
     fails=$((fails + raw_fails))
+fi
+
+# ---- #599: under --observe syscalls a child the mode kills ends the recording undeclared ----
+# Where the advice the stdio legs above check can lead. A /bin/sh wrapper (the shim is loaded
+# into it) runs the static toy, which inherits the seccomp filter without the handler — `exec`
+# resets the handler, not the filter — and dies at its first state-changing call: DESIGN's
+# measured case. The recording run ends with a status nobody declared, and the recording site's
+# own sentence says a different success convention is declared with --expect-status. A reader
+# who follows that gets a broken run judged, so the step must send them to the default mode
+# first. Seen red with the call site put back to fix_define.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf '#!/bin/sh\n"$@"\n' > /tmp/acc/kill-wrap.sh && chmod 755 /tmp/acc/kill-wrap.sh
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "/tmp/acc/kill-wrap.sh $OUT/toy-static rotate" \
+    --observe syscalls --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/kill.json 2>&1)
+rc=$?
+kreason=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("unknown_reason",""))' /tmp/acc/kill.json 2>/dev/null)
+kstep=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("next_step",""))' /tmp/acc/kill.json 2>/dev/null)
+kmsg=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("message",""))' /tmp/acc/kill.json 2>/dev/null)
+# The kill itself, not only the refusal it lands in: 159 is 128 + SIGSYS through `sh`. Without it
+# a recording that failed under this mode for any other reason would pass this leg (review).
+if [ "$rc" != "2" ] || [ "$kreason" != "recording_run_failed" ] || ! printf '%s\n' "$kmsg" | grep -qF 'exited 159'; then
+    echo "FAIL a child the syscall mode kills: exit $rc, reason '$kreason', message '$kmsg' (wanted 2, recording_run_failed, exited 159) — the leg measured something else"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+elif printf '%s\n' "$kstep" | grep -qF -- 'before changing the define'; then
+    echo "ok   a child the syscall mode kills: the step compares with the default mode before the define is changed (#599)"
+else
+    echo "FAIL a child the syscall mode kills: the step would send the reader to change the define: $kstep"
+    fails=$((fails + 1))
+fi
+
+# The same kill behind a parent that ignores its child's failure and exits as declared: the
+# static toy's TOY_MARKER prints COMMITTED only after its state writes, so the mode kills it
+# before the marker, and the recording refuses `marker_never_observed` — whose own sentence says
+# to check the marker string. Removing --marker on that advice would judge a run with the
+# helper's work missing, so the step must be the syscall one here too. Seen red with that call
+# site put back to fix_define.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+# The wrapper records the child's status before exiting 0: `|| true` alone would swallow any
+# failure, and the leg must see the kill (159 = 128 + SIGSYS) rather than assume it (review).
+printf '#!/bin/sh\n"$@"\necho $? > /tmp/acc/child-rc\nexit 0\n' > /tmp/acc/kill-wrap-ok.sh && chmod 755 /tmp/acc/kill-wrap-ok.sh
+o=$(TOY_MARKER=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "/tmp/acc/kill-wrap-ok.sh $OUT/toy-static rotate" \
+    --marker COMMITTED --observe syscalls --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/killm.json 2>&1)
+rc=$?
+mreason=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("unknown_reason",""))' /tmp/acc/killm.json 2>/dev/null)
+mstep=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("next_step",""))' /tmp/acc/killm.json 2>/dev/null)
+mchild=$(cat /tmp/acc/child-rc 2>/dev/null)
+if [ "$rc" != "2" ] || [ "$mreason" != "marker_never_observed" ] || [ "$mchild" != "159" ]; then
+    echo "FAIL a marker the syscall mode's kill suppresses: exit $rc, reason '$mreason', child status '$mchild' (wanted 2, marker_never_observed, 159) — the leg measured something else"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+elif printf '%s\n' "$mstep" | grep -qF -- 'before changing the define'; then
+    echo "ok   a marker the syscall mode's kill suppresses: the step compares with the default mode before --marker is touched (#599)"
+else
+    echo "FAIL a marker the syscall mode's kill suppresses: the step would send the reader to the marker string: $mstep"
+    fails=$((fails + 1))
+fi
+
+# The two #599 steps name where the mode's hazards are written instead of paraphrasing them, so
+# the places they name have to exist. README's section and its --observe syscalls entry, and the
+# report schema's section: a prose edit that renames any of them fails here, under a line about
+# the documents, rather than leaving a step that points at nothing.
+# Spelled as the step sentences spell them — no backticks, no bold — and compared against the
+# documents with those removed, which is how a reader meets them rendered. Comparing against the
+# raw Markdown held the documents but not the sentences: rewording a step's quotation changed
+# nothing here (review).
+ns599_readme_section="What the target has to be"
+ns599_readme_entry="Under --observe syscalls, a process whose SIGSYS is blocked or reset"
+ns599_schema_section="What --observe syscalls does not see"
+ns599_readme=$(tr -d '`*' < "$ROOT/README.md")
+ns599_schema=$(tr -d '`*' < "$ROOT/docs/report-schema.md")
+ns599_steps=$(tr -d '`*' < "$ROOT/src/contract.zig")
+ns599_bad=""
+for q in "$ns599_readme_section" "$ns599_readme_entry"; do
+    printf '%s\n' "$ns599_readme" | grep -qF -- "$q" || ns599_bad="$ns599_bad [README: $q]"
+    printf '%s\n' "$ns599_steps" | grep -qF -- "$q" || ns599_bad="$ns599_bad [steps: $q]"
+done
+printf '%s\n' "$ns599_schema" | grep -qF -- "$ns599_schema_section" || ns599_bad="$ns599_bad [schema: $ns599_schema_section]"
+printf '%s\n' "$ns599_steps" | grep -qF -- "$ns599_schema_section" || ns599_bad="$ns599_bad [steps: $ns599_schema_section]"
+if [ -z "$ns599_bad" ]; then
+    echo "ok   the places the #599 steps name exist, as the steps quote them: README's section and syscall entry, the schema's section"
+else
+    echo "FAIL a place a #599 step names and the step's quotation of it disagree:$ns599_bad"
+    fails=$((fails + 1))
+fi
+
+# The baseline's checker layer takes the syscall step too, and no leg here drives it end to end:
+# that needs a child the mode kills before its first state operation, behind a parent that exits
+# as declared, with a checker that sees the missing work — a toy this suite does not have. The
+# cheap second opinion #544 uses for its own extracted rule: not whether the rule is right (the
+# unit test says that), but whether the engine still asks it at that site.
+# Delete this when a leg drives baseline_violates_invariant's checker layer under --observe syscalls.
+ns599_baseline=$(grep -cF 'else if (l1 != null) .fix_define else boundary.fixDefineUnder(args.observe);' "$ROOT/src/main.zig")
+if [ "$ns599_baseline" = "1" ]; then
+    echo "ok   the baseline's checker layer still asks fixDefineUnder (#599)"
+else
+    echo "FAIL src/main.zig asks fixDefineUnder at the baseline's checker layer $ns599_baseline time(s), want 1"
+    fails=$((fails + 1))
 fi
 
 # ---- #542: a target that blocks SIGSYS is still observed ----

@@ -939,6 +939,29 @@ pub fn noShimNext() contract.NextStep {
     return noShimNextFor(rec_image);
 }
 
+/// The step for `oracle_missed_operation` (#599, ADR 0069): `--observe syscalls` where that mode
+/// exists and is not already the one in use, the class wall otherwise. Under that mode an
+/// operation the oracle saw and the shim did not is a real wall — the two calls its filter cannot
+/// mark, an ABI it cannot read — and off Linux the flag answers `platform_unsupported`. The caller
+/// passes whether this is Linux, not whether the kernel offers the trap: asking the kernel is a
+/// `seccomp(2)` call, which the default mode had never issued, on a refusal path, and an outer
+/// filter that kills on `seccomp` would end the engine before the report was written (review). A
+/// Linux kernel without the trap answers the flag with `platform_unsupported`, which says so.
+pub fn missedOperationNext(observe: contract.ObserveMode, on_linux: bool) contract.NextStep {
+    return if (observe == .wrappers and on_linux) .observe_syscalls else .class_wall;
+}
+
+/// The step for a failure a process the syscall mode killed produces, where the site would say
+/// `fix_define` (#599, ADR 0069): the recording run's undeclared exit status, its signal, its
+/// missing success marker, and the baseline world's checker rejecting the state. Under
+/// `--observe syscalls` the define-pointing advice at those sites would get a broken run judged.
+/// Not the 126 branches (`environment`, the engine's fork stub), nor `preflight --twice`'s second
+/// run, the baseline's exit or the baseline's marker layer: each compares against a recording the
+/// same mode already completed, so a kill present in both runs does not reach it.
+pub fn fixDefineUnder(observe: contract.ObserveMode) contract.NextStep {
+    return if (observe == .syscalls) .syscalls_may_have_killed else .fix_define;
+}
+
 /// The observation-to-step table above, taking its observation as an argument rather than
 /// reading the global — so every arm can be pinned in a test without a recording behind it.
 fn noShimNextFor(observed: ?image.Observation) contract.NextStep {
@@ -1288,6 +1311,20 @@ test "noShimNextFor: the step each image observation takes (#481)" {
 
     // No observation at all — the run stopped before the image was read.
     try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(null));
+}
+
+test "missedOperationNext names the syscall mode only on Linux and only where it is not in use (#599)" {
+    try std.testing.expectEqual(contract.NextStep.observe_syscalls, missedOperationNext(.wrappers, true));
+    // Already in that mode: what it could not see is the wall.
+    try std.testing.expectEqual(contract.NextStep.class_wall, missedOperationNext(.syscalls, true));
+    // Off Linux there is no such mode to name.
+    try std.testing.expectEqual(contract.NextStep.class_wall, missedOperationNext(.wrappers, false));
+    try std.testing.expectEqual(contract.NextStep.class_wall, missedOperationNext(.syscalls, false));
+}
+
+test "fixDefineUnder keeps fix_define except under the syscall mode (#599)" {
+    try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, fixDefineUnder(.syscalls));
+    try std.testing.expectEqual(contract.NextStep.fix_define, fixDefineUnder(.wrappers));
 }
 
 test "the image-replacement disclosure survives every evidence state (#123)" {
