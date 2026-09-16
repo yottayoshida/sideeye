@@ -1,0 +1,147 @@
+sideeye 1.4.0 (trace contract v17)
+sideeye 1.4.0 (trace contract v18)
+OK zstd
+OK pigz
+OK lz4
+OK ninja-build
+OK git
+OK yadm
+OK git-annex
+OK nodejs
+OK npm
+  1.4.2
+  v20.19.2
+  3.9.7
+  4.1.0
+  0.49.1
+  9.2.0
+  *** Zstandard CLI (64-bit) v1.5.7, by Yann Collet ***
+  *** lz4 v1.10.0 64-bit multithread, by Yann Collet ***
+  1.12.1
+  aarch64
+
+==================== bun ====================
+  operation: bun add --cwd /localrun/st/strace/bun /localrun/aux/bun/dep-1.0.0.tgz
+  operation rc=0  (774 strace lines)
+  strace: 6 thread(s) created, 1 process(es) created, execve {'sh': 1, 'bun': 1}
+  strace: setsid/setpgid none
+  strace: process 88 bun — 1 tid(s) wrote the state
+    tid 88: 8 op(s): open(package.json), mkdirat(node_modules), mkdirat(probe-dep), open(.lock-6c1151f2333938e9.tmp), write(.lock-6c1151f2333938e9.tmp), renameat(.lock-6c1151f2333938e9.tmp,bun.lock) …
+  140  wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 113   openat(AT_FDCWD</localrun/st/140-wrappers/bun>, "/localrun/st/140-wrappers/bun/package.json", O_RDWR|O_LARGEFILE|O_
+  140  syscalls rc=0  PREFLIGHT recording accepted — 10 state-changing operation(s) observed
+  main wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 171   openat(AT_FDCWD</localrun/st/main-wrappers/bun>, "/localrun/st/main-wrappers/bun/package.json", O_RDWR|O_LARGEFILE|
+  main syscalls rc=0  PREFLIGHT recording accepted — 10 state-changing operation(s) observed
+
+==================== zstd ====================
+  operation: zstd -q --rm /localrun/st/strace/zstd/f.bin
+  operation rc=0  (440 strace lines)
+  strace: 4 thread(s) created, 1 process(es) created, execve {'sh': 1, 'zstd': 1}
+  strace: setsid/setpgid none
+  strace: process 224 zstd — 2 tid(s) wrote the state
+    tid 224: 3 op(s): open(f.bin.zst), write(f.bin.zst), unlinkat(f.bin)
+    tid 225: 1 op(s): write(f.bin.zst)
+  140  wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 243   write(4</localrun/st/140-wrappers/zstd/f.bin.zst>, ">\20\202BU]\230\233\307\32\362\276\0t\252D\5\234!\300\246J\0000
+  140  syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 266 wrote in the judged directory: tid 266 performed open(/localrun/st/140-syscalls/zstd/f.bin.zst) and tid 267 performed write(/localrun/st/140-syscalls/zstd/f.bin.zst). Two threads' writes are ordered by the
+  main wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 289   write(4</localrun/st/main-wrappers/zstd/f.bin.zst>, ">\20\202BU]\230\233\307\32\362\276\0t\252D\5\234!\300\246J\000
+  main syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 312 wrote in the judged directory: tid 312 performed open(/localrun/st/main-syscalls/zstd/f.bin.zst) and tid 313 performed write(/localrun/st/main-syscalls/zstd/f.bin.zst). No thread creation or join the shim 
+
+==================== lz4 ====================
+  operation: lz4 -q -B4 -T2 --rm /localrun/st/strace/lz4/f.bin
+  operation rc=0  (146 strace lines)
+  strace: 0 thread(s) created, 1 process(es) created, execve {'sh': 1, 'lz4': 1}
+  strace: setsid/setpgid none
+  strace: process 334 lz4 — 1 tid(s) wrote the state
+    tid 334: 4 op(s): open(f.bin.lz4), write(f.bin.lz4), unlinkat(f.bin)
+  140  wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 349   write(4</localrun/st/140-wrappers/lz4/f.bin.lz4>, "\17\360U\2\379\360U\2\379\360U\2/96\230\10\2\17\360U\2\379\360U\
+  140  syscalls rc=0  PREFLIGHT recording accepted — 4 state-changing operation(s) observed
+  main wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 387   write(4</localrun/st/main-wrappers/lz4/f.bin.lz4>, "\17\360U\2\379\360U\2\379\360U\2/96\230\10\2\17\360U\2\379\360U
+  main syscalls rc=0  PREFLIGHT recording accepted — 4 state-changing operation(s) observed
+
+==================== ninja ====================
+  operation: ninja -C /localrun/st/strace/ninja
+  operation rc=0  (396 strace lines)
+  strace: 0 thread(s) created, 3 process(es) created, execve {'sh': 2, 'ninja': 1, 'cp': 1}
+  strace: setsid/setpgid {'setpgid': 1}
+  strace: process 425 ninja — 1 tid(s) wrote the state
+    tid 425: 4 op(s): open(.ninja_lock), open(.ninja_log), write(.ninja_log), unlinkat(.ninja_lock)
+  strace: process 427 cp — 1 tid(s) wrote the state
+    tid 427: 1 op(s): open(out.txt)
+  140  wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 443   write(3</localrun/st/140-wrappers/ninja/.ninja_log>, "2\t26\t1789547215276837013\tout.txt"..., 50) = 50; the shim r
+  140  syscalls rc=0  PREFLIGHT recording accepted, but nothing to explore — 0 state-changing operations observed
+  main wrappers rc=2  UNKNOWN oracle_missed_operation
+        the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 485   write(3</localrun/st/main-wrappers/ninja/.ninja_log>, "2\t26\t1789547215378837013\tout.txt"..., 50) = 50; the shim 
+  main syscalls rc=0  PREFLIGHT recording accepted, but nothing to explore — 0 state-changing operations observed
+
+==================== prettier ====================
+  operation: prettier --write /localrun/st/strace/prettier/a.js
+  operation rc=0  (4862 strace lines)
+  strace: 10 thread(s) created, 1 process(es) created, execve {'sh': 1, 'prettier': 1, 'node': 1}
+  strace: setsid/setpgid none
+  strace: process 523 node — 2 tid(s) wrote the state
+    tid 530: 1 op(s): open(a.js)
+    tid 533: 1 op(s): write(a.js)
+  140  wrappers rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 546 wrote in the judged directory: tid 556 performed open(/localrun/st/140-wrappers/prettier/a.js) and tid 553 performed write(/localrun/st/140-wrappers/prettier/a.js). Two threads' writes are ordered by the s
+  140  syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 573 wrote in the judged directory: tid 581 performed open(/localrun/st/140-syscalls/prettier/a.js) and tid 580 performed write(/localrun/st/140-syscalls/prettier/a.js). Two threads' writes are ordered by the s
+  main wrappers rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 600 wrote in the judged directory: tid 607 performed open(/localrun/st/main-wrappers/prettier/a.js) and tid 608 performed write(/localrun/st/main-wrappers/prettier/a.js). No thread creation or join the shim re
+  main syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 627 wrote in the judged directory: tid 636 performed open(/localrun/st/main-syscalls/prettier/a.js) and tid 637 performed write(/localrun/st/main-syscalls/prettier/a.js). No thread creation or join the shim re
+
+==================== svgo ====================
+  operation: svgo -q /localrun/st/strace/svgo/a.svg
+  operation rc=0  (24805 strace lines)
+  strace: 10 thread(s) created, 1 process(es) created, execve {'sh': 1, 'svgo': 1, 'node': 1}
+  strace: setsid/setpgid none
+  strace: process 654 node — 2 tid(s) wrote the state
+    tid 664: 1 op(s): open(a.svg)
+    tid 663: 1 op(s): write(a.svg)
+  140  wrappers rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 678 wrote in the judged directory: tid 685 performed mkdir(/localrun/st/140-wrappers/svgo) and tid 688 performed open(/localrun/st/140-wrappers/svgo/a.svg). Two threads' writes are ordered by the scheduler, so
+  140  syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 706 wrote in the judged directory: tid 714 performed mkdir(/localrun/st/140-syscalls/svgo) and tid 716 performed open(/localrun/st/140-syscalls/svgo/a.svg). Two threads' writes are ordered by the scheduler, so
+  main wrappers rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 734 wrote in the judged directory: tid 743 performed mkdir(/localrun/st/main-wrappers/svgo) and tid 744 performed open(/localrun/st/main-wrappers/svgo/a.svg). No thread creation or join the shim recorded order
+  main syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 762 wrote in the judged directory: tid 769 performed mkdir(/localrun/st/main-syscalls/svgo) and tid 772 performed open(/localrun/st/main-syscalls/svgo/a.svg). No thread creation or join the shim recorded order
+
+==================== markdownlint ====================
+  operation: markdownlint --fix /localrun/st/strace/markdownlint/README.md
+  operation rc=0  (14940 strace lines)
+  strace: 10 thread(s) created, 1 process(es) created, execve {'sh': 1, 'markdownlint': 1, 'node': 1}
+  strace: setsid/setpgid none
+  strace: process 788 node — 1 tid(s) wrote the state
+    tid 788: 2 op(s): open(README.md), write(README.md)
+  140  wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+  140  syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+  main wrappers rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+  main syscalls rc=0  PREFLIGHT recording accepted — 2 state-changing operation(s) observed
+
+==================== npm ====================
+  operation: npm pkg set description=second --prefix /localrun/st/strace/npm
+  operation rc=0  (10441 strace lines)
+  strace: 10 thread(s) created, 1 process(es) created, execve {'sh': 1, 'npm': 1, 'node': 1}
+  strace: setsid/setpgid none
+  strace: process 918 node — 3 tid(s) wrote the state
+    tid 918: 1 op(s): open(2026-09-16T08_27_06_149Z-debug-0.log)
+    tid 927: 2 op(s): open(_update-notifier-last-checked), write(package.json)
+    tid 928: 1 op(s): open(package.json)
+  140  wrappers rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 941 wrote in the judged directory: tid 948 performed open(/localrun/st/140-wrappers/npm/package.json) and tid 949 performed write(/localrun/st/140-wrappers/npm/package.json). Two threads' writes are ordered by
+  140  syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 968 wrote in the judged directory: tid 976 performed open(/localrun/st/140-syscalls/npm/package.json) and tid 975 performed write(/localrun/st/140-syscalls/npm/package.json). Two threads' writes are ordered by
+  main wrappers rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 995 wrote in the judged directory: tid 1005 performed open(/localrun/st/main-wrappers/npm/package.json) and tid 1003 performed write(/localrun/st/main-wrappers/npm/package.json). No thread creation or join the
+  main syscalls rc=2  UNKNOWN multiple_threads_detected
+        two threads of process 1022 wrote in the judged directory: tid 1029 performed open(/localrun/st/main-syscalls/npm/package.json) and tid 1032 performed write(/localrun/st/main-syscalls/npm/package.json). No thread creation or join th
+

@@ -1,0 +1,23 @@
+# 2026-09-16 crossed-walls: targets an earlier record refused, screened out, or excluded by a
+# wall forecast, where a later change moved that wall. Sideeye is not in the image: the
+# released v1.4.0 tarball and a cross-build of main d5911cd are mounted at /se140 and /semain.
+# apt lists are not cleaned (omamori blocks the rm -rf string on the host side).
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 ca-certificates unzip procps
+# Each target alone, so a missing package prints MISSING rather than failing the build.
+RUN for p in zstd pigz lz4 ninja-build git yadm git-annex nodejs npm; do \
+      apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p"; \
+    done | tee /tmp/apt-summary.txt
+# Node tools: the class cohort 4 excluded by language alone. The container's TLS goes through
+# an intercepting proxy, so strict-ssl is off for the install (the 2026-09-11 joplin recipe).
+RUN npm config set registry https://registry.npmjs.org/ \
+ && npm config set strict-ssl false \
+ && npm install -g prettier svgo markdownlint-cli > /tmp/npm-install.log 2>&1; \
+    tail -3 /tmp/npm-install.log
+# Bun's release binary, downloaded and digest-checked on the host (SHASUMS256.txt).
+COPY bun /usr/local/bin/bun
+RUN bun --version && node --version && prettier --version && svgo --version \
+ && markdownlint --version && zstd --version && pigz --version && lz4 --version \
+ && ninja --version && yadm version | head -1 && git annex version | head -1
+WORKDIR /w

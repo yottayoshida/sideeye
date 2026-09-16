@@ -1,0 +1,34 @@
+/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-dogfood-0916b/spike/dogfood/2026-09-16-crossed-walls/apparatus/rule11-github.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  NOW = datetime.datetime.utcnow()
+=== prettier/prettier ===
+
+=== svg/svgo ===
+  #2240 2026-08-10 by victorvianna: 0 comments  <- no response
+  #2239 2026-08-10 by victorvianna: 0 comments  <- no response
+
+=== lz4/lz4 ===
+  #1796 2026-09-04 by netherlord9000: 0 comments  <- no response
+  #1794 2026-08-22 by MrSVCD: first reply from mwgamera after 1.1d [OK]  Block format confusing for beginner.
+  #1793 2026-08-18 by HT-7: 0 comments  <- no response
+  #1792 2026-08-17 by wittkung: 0 comments  <- no response
+
+=== npm/cli ===
+  #9957 2026-09-09 by jedwards1211: 1 comments, all from the reporter  <- no response
+  #9955 2026-09-07 by arthurianresolve: 0 comments  <- no response
+  #9951 2026-09-04 by konard: 1 comments, all from the reporter  <- no response
+  #9950 2026-09-04 by maigovannon: first reply from brooksg-assetwatch after 0.0d [OK]  [BUG] NPM Audit is experiencing elevated latency
+
+=== igorshubovych/markdownlint-cli ===
+  #658 2026-08-30 by zephyrus901: first reply from DavidAnson after 0.4d [OK]  0.47.0+ segfault on any table; markdownlint-cli2 on 
+  #657 2026-08-27 by agvxov: first reply from DavidAnson after 0.3d [OK]  Feature request: validate local/relative links
+  #654 2026-08-15 by HaleTom: 1 comments, all from the reporter  <- no response
+  #653 2026-08-15 by HaleTom: 0 comments  <- no response
+
+=== microsoft/TypeScript ===
+
+=== google/google-java-format ===
+  #1450 2026-09-06 by helmize1978: 0 comments  <- no response
+  #1439 2026-08-06 by PaulNgo-BlueOC: first reply from Amlan2000 after 8.9d [SLOW]  IndexOutOfBoundsException - Wrong formatted content 
+  #1436 2026-08-04 by zhumin8: first reply from shrey070998 after 1.6d [OK]  unused import removal leaves extra blank line betwee
+  #1428 2026-07-30 by algonell: first reply from bvo42 after 25.0d [SLOW]  Possible issue with Eclipse plugin
+

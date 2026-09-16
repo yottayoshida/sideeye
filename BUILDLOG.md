@@ -2,6 +2,62 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-16 (fourth) — five targets past the walls that turned them away, or their class, before anyone measured them: the screen and the predictions
+
+**What was asked.** A dogfood run of five, weighted to targets that are measurable now because a
+wall moved — not only targets an earlier record refused, but targets an earlier selection left
+out, and classes a selection would leave out. The run lives in
+`spike/dogfood/2026-09-16-crossed-walls/`.
+
+**Where the candidates came from.** Refused and not re-met since their wall moved: Bun (the
+ledger's own row says its `--observe syscalls` reading predates #542's second change), zstd and
+ninja (2026-09-16). Left out before any run: cohort 4 excluded 128 repositories by language alone
+(`spike/cohort4/CANDIDATES-REJECTED.md` — Go, TypeScript, JavaScript, Shell, PHP, Java among
+them), and yadm by a child-process forecast; the 2026-09-06 screens dropped zstd, sqlfluff, libvips
+and git-annex for threads. Every one of those threads-only drops has been measured since except
+git-annex, so the class is where the unmeasured reach is: Node, the JVM, thread pools.
+
+**Built twice.** The released v1.4.0 tarball (digest matched against the release), and main
+`d5911cd` cross-built with the release's own target (`aarch64-linux-gnu.2.28`, ReleaseSafe),
+because #539's contract v18 is merged and unreleased and a run weighted to moved walls has to
+see the one that moved last. Every screen line says which build answered.
+
+**The screen, three passes, before the slate.** strace (which tids of which process wrote,
+`setsid`/`setpgid`) plus `preflight` under both builds and both modes, in a `--privileged`
+container so the engine can make cgroups:
+
+- **Crossed**: Bun (`--observe syscalls`, 10 operations, both builds); ninja (`syscalls`, 7
+  operations with the `cp` child's addressed); markdownlint-cli (both modes — Node's
+  `writeFileSync` on the main thread); google-java-format (both modes, 18 threads and one writer);
+  xz `-T2` (both modes, two worker threads and the main thread the only writer).
+- **Not crossed, and the reason is v18's own sentence**: zstd and lz4 — a worker writes the
+  blocks and the main thread writes too, and no creation or join the shim recorded orders them
+  (lz4 starts its workers only above 4 MiB: 3,450,000 bytes start none, 5,750,000 start four; the
+  first pass measured a single-threaded lz4 without knowing it). prettier, svgo and `npm pkg set`
+  — Node's asynchronous file calls run on libuv's pool, two pool threads write, the joplin shape.
+  A git commit that triggers automatic maintenance refuses `child_touched_state_dir` before any
+  `setsid` question is asked.
+- **Out on the rules**: yadm and pigz have no commit on their default branch in six months (rule
+  2); `typescript@latest` on npm is 7.0.2, the Go port, so `tsc` is no longer a Node target.
+
+**Two apparatus faults the screen caught in itself.** The 2026-09-16 ninja define rewrites
+`in.txt` in the same clock tick as the build before it, so whether the operation has work at all
+depends on the tick: the first pass recorded 4 operations under `wrappers` and 0 under `syscalls`
+from one image — `recording accepted, but nothing to explore`, which reads as a Sideeye gap and
+was the define. `out.txt` is dated 2026-01-01 now. And `rule11-github.py` as copied counted a
+core maintainer's own two-day-old issues as "no response"; the copy here skips issues younger
+than seven days and issues filed by the repository's owners, members and collaborators.
+
+**Rule 3 is weak for two of the five and they are measured anyway.** xz (Larhzu 94 of the last
+100 commits) and markdownlint-cli (one human committer besides a bot) have one sustained
+contributor. The question this run asks is reach, the way 2026-09-11 re-met targets without
+re-selecting them; the weakness is recorded against any upstream report instead.
+
+**The predictions**, in `PREDICTIONS.md` and committed with this paragraph before
+`apparatus/explore.sh` ran: Bun PASS (60%), ninja PASS (70%), markdownlint-cli FAIL — the
+truncating open with the original nowhere (85%), google-java-format FAIL, the same window (80%),
+xz PASS (85%), and main answering what v1.4.0 answers for all five (85%).
+
 ## 2026-09-16 (third) — a second writing thread is judged when a creation or a join the shim recorded orders it (#539, contract v18)
 
 **What was measured before anything was designed.** ADR 0055 left "threads that take turns" as a
