@@ -1,0 +1,10 @@
+prettier/prettier | 52333★ JavaScript default=main archived=false pushed=2026-09-16 | 100 commits; Kjubikstronk=3 Yahiro025=1 cellison-figma=1 cudoment=1 fisker=26 giaBaoJS=2 jxddk=1 kovsu=7 lazerg=2 lllleolin-max=1 renovate[bot]=47 santhiprakash=2 scs0209=1 shinji00222=1 splincode=3 vzer200=1
+svg/svgo | 22674★ JavaScript default=main archived=false pushed=2026-08-27 | 38 commits; Cherry=1 KTibow=2 SethFalco=12 TrySound=20 dependabot[bot]=1 ludofischer=1 mozzie=1
+igorshubovych/markdownlint-cli | 1096★ JavaScript default=master archived=false pushed=2026-09-14 | 55 commits; DavidAnson=10 Eljees=1 dependabot[bot]=44
+npm/cli | 10117★ JavaScript default=latest archived=false pushed=2026-09-10 | 100 commits; Fnine59=1 Hashim1999164=1 JamieMagee=5 Michael Smith=18 MikeMcC399=1 arjun-vegeta=2 dale-lakes=1 danielroe=1 github-actions[bot]=6 james-pre=1 joelverhagen=1 lazerg=2 manzoorwanijk=35 martinrrm=9 oldium=1 reggi=10 rijildaniel=1 u2mejc=1 ubeddulla=1 ychampion=1 yunseo-kim=1
+madler/pigz | 2968★ C default=master archived=false pushed=2025-08-16 | 0 commits; 
+lz4/lz4 | 12069★ C default=dev archived=false pushed=2026-07-01 | 32 commits; Cyan4973=22 Nicoshev=7 dependabot[bot]=3
+yadm-dev/yadm | 6424★ Python default=develop archived=false pushed=2026-04-13 | 0 commits; 
+microsoft/TypeScript | 111067★ Go default=main archived=false pushed=2026-09-15 | 100 commits; Andarist=5 Copilot=9 DanielRosenwasser=1 Dansyuqri=1 RyanCavanaugh=2 a-tarasyuk=2 ahejlsberg=2 andrewbranch=12 auvred=4 camc314=1 dependabot[bot]=5 ekalinin=1 erantianantha=1 gabritto=2 graphemecluster=1 jakebailey=28 johnfav03=2 loulanyue=1 luo2430=1 mohit-nayak=1 mrazauskas=5 oMatheusmol=1 weswigham=11 youngspe=1
+google/google-java-format | 6192★ Java default=master archived=false pushed=2026-09-10 | 80 commits; cpovirk=14 cushon=3 dependabot[bot]=4 eamonnmcmanus=46 java-team-github-bot=3 kluever=7 mkurz=1 plumpy=2
+tukaani-project/xz | 1653★ C default=master archived=false pushed=2026-09-09 | 100 commits; Larhzu=94 Trithem90=1 carrerasdarren-cell=2 rootvector2=2 xordanblu=1

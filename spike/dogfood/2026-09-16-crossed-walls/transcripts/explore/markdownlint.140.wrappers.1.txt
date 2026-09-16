@@ -1,0 +1,23 @@
+falsify: README.md lost "Title" (25 bytes)
+README.md lost "Title" (0 bytes)
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/localrun/st/markdownlint.140.wrappers.1/README.md)
+            before write(/localrun/st/markdownlint.140.wrappers.1/README.md)
+path        README.md
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (5784 syscall lines examined, 1369 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /localrun/wk/markdownlint.140.wrappers.1/cases/000001.json
+replay      sideeye replay /localrun/wk/markdownlint.140.wrappers.1/cases/000001.json --shim /se140/libsideeye_shim.so
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (v16: one per process is judged, two refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/localrun/st/markdownlint.140.wrappers.1 SIDEEYE_TRACE_PATH=/localrun/wk/markdownlint.140.wrappers.1/trace-repro.bin LD_PRELOAD=/se140/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>

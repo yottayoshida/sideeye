@@ -1,0 +1,38 @@
+=== prettier/prettier ===
+
+=== svg/svgo ===
+  #2240 2026-08-10 by victorvianna: 0 comments  <- no response
+  #2239 2026-08-10 by victorvianna: 0 comments  <- no response
+
+=== lz4/lz4 ===
+  #1796 2026-09-04 by netherlord9000: 0 comments  <- no response
+  #1794 2026-08-22 by MrSVCD: first reply from mwgamera after 1.1d [OK]  Block format confusing for beginner.
+  #1793 2026-08-18 by HT-7: 0 comments  <- no response
+  #1792 2026-08-17 by wittkung: 0 comments  <- no response
+
+=== npm/cli ===
+  #9957 2026-09-09 by jedwards1211: 1 comments, all from the reporter  <- no response
+  #9955 2026-09-07 by arthurianresolve: 0 comments  <- no response
+  #9951 2026-09-04 by konard: 1 comments, all from the reporter  <- no response
+  #9950 2026-09-04 by maigovannon: first reply from brooksg-assetwatch after 0.0d [OK]  [BUG] NPM Audit is experiencing elevated latency
+
+=== igorshubovych/markdownlint-cli ===
+  #658 2026-08-30 by zephyrus901: first reply from DavidAnson after 0.4d [OK]  0.47.0+ segfault on any table; markdownlint-cli2 on 
+  #657 2026-08-27 by agvxov: first reply from DavidAnson after 0.3d [OK]  Feature request: validate local/relative links
+  #654 2026-08-15 by HaleTom: 1 comments, all from the reporter  <- no response
+  #653 2026-08-15 by HaleTom: 0 comments  <- no response
+
+=== microsoft/TypeScript ===
+
+=== google/google-java-format ===
+  #1450 2026-09-06 by helmize1978: 0 comments  <- no response
+  #1439 2026-08-06 by PaulNgo-BlueOC: first reply from Amlan2000 after 8.9d [SLOW]  IndexOutOfBoundsException - Wrong formatted content 
+  #1436 2026-08-04 by zhumin8: first reply from shrey070998 after 1.6d [OK]  unused import removal leaves extra blank line betwee
+  #1428 2026-07-30 by algonell: first reply from bvo42 after 25.0d [SLOW]  Possible issue with Eclipse plugin
+
+=== tukaani-project/xz ===
+  #237 2026-07-22 by EugZol: first reply from Larhzu after 0.2d [OK]  UB in `rc_to_local`/`rc_from_local` when `next_in = 
+  #234 2026-07-11 by danielrobbins: first reply from Larhzu after 9.1d [SLOW]  Respect cgroup v2 memory limits on Linux
+  #233 2026-07-01 by AdrianBunk: first reply from Larhzu after 0.0d [OK]  CVE-2026-34743 testcase does not fail without the fi
+  #219 2026-04-01 by vtorri: first reply from Larhzu after 2.2d [OK]  cmake: does not try to detect clock_gettime() is vis
+
