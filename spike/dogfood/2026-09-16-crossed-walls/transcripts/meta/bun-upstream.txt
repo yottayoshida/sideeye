@@ -1,0 +1,42 @@
+== #39689 Make concurrent bun test and bun install processes safe on shared files
+  state=open merged=false author=robobun association=COLLABORATOR created=2026-08-19 base=main
+  body:3:- `bun add` and `bun remove` started together both rewrite package.json and bun.lock. The last writer drops the other edit. Both exit 0.
+  body:7:- `File::write_file_atomically` (`src/sys/file.rs`) writes a temporary file and renames it over the target, and gives the new file the mode and owner of the old one. Where the directory takes no temporary file or no rename, it writes in place, as before. The `.snap`, inline snapshot and package.json writers use it.
+  body:14:- `init` locates the project root before a command reads any file it edits, so `init` takes the lock. `lock_project` drops the package.json files read on the way up once it holds the lock.
+  body:23:Tests that fail on the baked bun: the two held tests in `concurrent-processes.test.ts` (a `bun remove`, which is also the project's first install, held in its postinstall script, a `bun add` arriving; on the baked bun the add goes through at once and the remove then writes its copy over it, so `is-number` is missing from package.json, both in the root and in a workspace package), usually the tw
+  body:25:package.json writers converted: `write_target` (add, update, link, install pkg, audit fix, -g), `update_package_json_and_install_with_manager_with_updates` (remove, patch, patch --commit), `bun pm trust` (which now also reads package.json by path after locking), `bun pm pkg`, `bun pm version`, `bun update -i`, pnpm migration (`migrate_pnpm_lockfile` lost its unused `dir` parameter), bunx's `{}`
+  body:27:Which commands lock: Install, Add, Remove, Update (including `-i`), Link, Patch, PatchCommit, Dedupe, Prune through `Subcommand::always_edits_project` in `init`, unless `--dry-run`; `bun audit fix`, `bun pm trust` and `bun pm migrate` lock after `init`. `lock_project` clears `workspace_package_json_cache` once it holds the lock, so every one of these commands re-reads the package.json files tha
+  body:29:`write_file_atomically` resolves the path with `realpath` first so a symlinked package.json (a global package.json kept in dotfiles, for example) is replaced at its target, and opens the existing file for writing before it writes anything, which keeps `test/cli/install/bun-add-filter.test.ts` ("an unwritable target is reported by name") passing and gives the mode and owner to copy. The owner ma
+  body:31:`root_package_json_file` is removed from `PackageManager`: `bun pm trust` was its only reader. `init` still opens the file during the walk up, as the check that it can be written to, and closes it right after (the Windows rewind of that file, which served the `pm trust` read, is gone too). `ROOT_PACKAGE_JSON_PATH` is built from `top_level_dir` and `package.json` (the shape #39361 uses, for its 
+  body:33:Related open PRs. #39403 folds the open install PRs into one branch and touches 15 of the 20 source files changed here; of the changes folded there, #37851 carries the same `sys::flock` as this branch and #39361 builds `ROOT_PACKAGE_JSON_PATH` the same way (those hunks resolve to either side), and #38745 also removes `root_package_json_file`, so it overlaps with this branch in `init` and in `pm
+== #39666 install: reject an empty root package.json instead of deleting the lockfile
+  state=open merged=false author=robobun association=COLLABORATOR created=2026-08-19 base=main
+  body:2:- With a 0-byte root `package.json`, `bun install` and `bun update` print `No packages! Deleted empty lockfile`, delete `bun.lock` and exit 0. A 0-byte `package.json` is what an interrupted in-place rewrite leaves behind, so a truncated manifest also cost the lockfile.
+  body:3:- Cause: the package.json parser (`src/parsers/json.rs`) returns `{}` for empty input, and the install takes that as a manifest with no dependencies. A missing `package.json` already fails. A whitespace-only one already fails to parse.
+  body:6:- `exit_on_empty_package_json()` (`install_with_manager.rs`) prints `error: failed to parse '<dir>/package.json': file is empty` and a note that says to restore the file or write `{}` to it, then exits 1.
+  body:9:- The check is on the file contents. A `package.json` that says `{}` behaves as before. A 0-byte workspace member already fails on its missing name before anything is installed, on both paths. A test pins that. The parser still returns `{}` for empty files: `import "./package.json"`, `node_modules` packages with an empty `package.json`, `bun pm pkg set` and `bun init` depend on that, and the las
+  body:10:- Verified: `test/cli/install/bun-install.test.ts`, describe `root package.json that cannot be read or parsed`: `bun install`, `bun update` and `bun update dep`, each with and without a lockfile. All six fail on 1.4 canary. Also the rest of that describe and `pnpm-migration.test.ts`.
+  body:13:- `bun install` parses the root `package.json`, diffs it against the root stored in `bun.lock` and saves the result. `save_lockfile` deletes the lockfile when the result has no packages. That is right for a manifest with no dependencies and wrong for a manifest that is not there.
+  body:14:- The fixture `migration/pnpm/version-number-dot/package.json` used an empty file to mean "no dependencies". It now says `{}`. That test is about the `lockfileVersion` warning.
+  body:15:- npm and pnpm also refuse an empty `package.json`. The writers that can leave the file empty are made atomic in #39689.
+== #39701 Atomic writes: convert bun init and test a write that fails
+  state=open merged=false author=robobun association=COLLABORATOR created=2026-08-20 base=farm/a015ad16/concurrent-on-disk-state
+  body:1:Stacked on #39689, which adds `File::write_file_atomically` and converts the package.json and snapshot writers. This PR holds what that branch leaves out: one more writer, and tests in which the write itself fails.
+  body:4:- `bun init` on a project with a `package.json` writes the new text over the old bytes and truncates afterwards (`init_command.rs`, `'write_package_json`). A write that stops early leaves the start of the new file in front of the rest of the old one: `package.json failed to write due to error EFBIG`, file changed.
+  body:8:- `bun init` writes `package.json` with `write_file_atomically`, after it closes the handle it read the file with. The Windows-only save and restore of that handle's position around the read is deleted: it only served the write through the same handle.
+  body:14:- `write_file_atomically` in #39689 returns the write error without trying the in-place fallback, so these tests hold with its fallback in place.
+  body:15:- `bun create` still writes in place. It rewrites the package.json it has just copied.
+  body:19:The first version of this PR also made `write_file_atomically` keep the owner of the old file. #39689 took that change (35bb9d3), together with a fix for its two-writer test, so this PR was rebuilt on top of it as one commit without the `file.rs` part. The review notes on the earlier commits (drained pipes, one-line comments, the deleted Windows seek pair, the `--parallel` exclusion) are all fo
+== #39689 changed files naming package.json or the atomic helper
+  src/install/PackageManager/add_remove_with_filter.rs (+2/-2)
+  src/install/PackageManager/updatePackageJSONAndInstall.rs (+2/-9)
+  src/install/pnpm.rs (+4/-6)
+  src/runtime/cli/bunx_command.rs (+12/-11)
+  src/runtime/cli/pm_pkg_command.rs (+1/-1)
+  src/runtime/cli/pm_trusted_command.rs (+12/-16)
+  src/runtime/cli/pm_version_command.rs (+2/-2)
+  src/runtime/cli/update_interactive_command.rs (+1/-3)
+  src/runtime/test_runner/snapshot.rs (+166/-159)
+  src/sys/file.rs (+79/-0)
+== latest release
+  bun-v1.4.2 published 2026-09-05

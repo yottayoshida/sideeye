@@ -1,0 +1,52 @@
+== 1. lz4 *** lz4 v1.10.0 64-bit multithread, by Yann Collet ***
+  3450000 bytes, lz4 -T2:
+    strace: 0 thread(s) created, 0 process(es) created, execve {'lz4': 1}
+    strace: setsid/setpgid none
+    strace: process 21 lz4 (the subject) — 1 tid(s) wrote the state
+      tid 21: 4 op(s): open(f.bin.lz4), write(f.bin.lz4), unlinkat(f.bin)
+  3450000 bytes, lz4 -T2 -B4:
+    strace: 0 thread(s) created, 0 process(es) created, execve {'lz4': 1}
+    strace: setsid/setpgid none
+    strace: process 32 lz4 (the subject) — 1 tid(s) wrote the state
+      tid 32: 4 op(s): open(f.bin.lz4), write(f.bin.lz4), unlinkat(f.bin)
+  5750000 bytes, lz4 -T2:
+    strace: 3 thread(s) created, 0 process(es) created, execve {'lz4': 1}
+    strace: setsid/setpgid none
+    strace: process 43 lz4 (the subject) — 2 tid(s) wrote the state
+      tid 43: 3 op(s): open(f.bin.lz4), write(f.bin.lz4), unlinkat(f.bin)
+      tid 46: 4 op(s): write(f.bin.lz4)
+  5750000 bytes, lz4 -T2 -B4:
+    strace: 3 thread(s) created, 0 process(es) created, execve {'lz4': 1}
+    strace: setsid/setpgid none
+    strace: process 57 lz4 (the subject) — 2 tid(s) wrote the state
+      tid 57: 3 op(s): open(f.bin.lz4), write(f.bin.lz4), unlinkat(f.bin)
+      tid 60: 4 op(s): write(f.bin.lz4)
+== 2. ninja 1.12.1, killed for real between cp's truncating open and its copy
+Killed
+  the killed build: rc=137 (137 = SIGKILL); its output:
+  out.txt 0 bytes, in.txt 22 bytes, .ninja_log lines 2
+  | ninja: Entering directory `/localrun/review/ninja-kill'
+  | ninja explain: recorded mtime of out.txt older than most recent input in.txt (1789549117199697010 vs 1789549117201697010)
+  | [1/1] cp in.txt out.txt
+  out.txt 22 bytes, in.txt 22 bytes, .ninja_log lines 3
+  RESULT 2: rebuilt, out.txt == in.txt
+== 3. check-ninja-recovery.sh's rebuild leg, on a state ninja does not rebuild
+  cut check-ninja-recovery.sh from explore-ninja-recovery.sh: 9 lines
+  out.txt 0 bytes, in.txt 22 bytes, .ninja_log lines 3
+  | ninja -n: ninja: Entering directory `/localrun/review/ninja-stale'
+  | ninja -n: ninja: no work to do.
+after re-running ninja, out.txt (0 bytes) differs from in.txt
+  checker rc=1 (must be 1)
+== 4. check-xz.sh, every branch
+  cut check-xz.sh from explore.sh: 15 lines
+  f.bin intact, no f.bin.xz                                  rc=0 (expected 0) 
+  the complete .xz is 112864 bytes; a partial one is its first 56432
+  f.bin intact, a partial f.bin.xz beside it                 rc=0 (expected 0) 
+  f.bin torn (1000 bytes)                                    rc=1 (expected 1) f.bin is present but differs (1000 bytes, original 5750000)
+  f.bin gone, the complete f.bin.xz                          rc=0 (expected 0) 
+  f.bin gone, a partial f.bin.xz                             rc=1 (expected 1) f.bin is gone and f.bin.xz does not decompress (56432 bytes): xz: /localrun/review/xz/f.bin.xz: Unexpected end of input
+  f.bin gone, an empty f.bin.xz                              rc=1 (expected 1) f.bin is gone and f.bin.xz does not decompress (0 bytes): xz: /localrun/review/xz/f.bin.xz: File format not recognized
+  neither                                                    rc=1 (expected 1) neither f.bin nor f.bin.xz is present
+  what a plain re-run does beside a partial f.bin.xz:
+  | xz: /localrun/review/xz/f.bin.xz: File exists
+  xz rc=1; f.bin present, f.bin.xz 56432 bytes

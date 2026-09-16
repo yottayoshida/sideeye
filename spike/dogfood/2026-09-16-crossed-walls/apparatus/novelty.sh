@@ -3,8 +3,10 @@
 # tried first and returned nothing for every query: one argument holding a space is sent as a
 # quoted phrase (checked: the same words through `gh api search/issues` return 1,552 for Bun).
 # The search API allows 30 requests a minute; the first pass hit that at the 16th, so every
-# query waits 2.5 s.
-q() { printf '## %s  [%s]\n' "$1" "$2"; gh api -X GET search/issues -f q="repo:$1 $2" -f per_page=8 \
+# query waits 2.5 s. Each query prints every result the API returns, up to 100: the first
+# recorded pass printed 8 and four queries had more (21, 42, 42, 9), which the review of this
+# record caught.
+q() { printf '## %s  [%s]\n' "$1" "$2"; gh api -X GET search/issues -f q="repo:$1 $2" -f per_page=100 \
   --jq '"  total \(.total_count)", (.items[] | "  #\(.number) [\(.state)] \(.created_at[:10]) \(.title)")'; sleep 2.5; }
 for t in "package.json truncated" "package.json empty" "package.json atomic" "package.json ENOSPC" "write_file_atomically"; do q oven-sh/bun "$t"; done
 for t in "fix empty" "fix truncated" "fix atomic" "fix EFBIG" "fix ENOSPC" "writeFileSync" "fix file lost"; do q igorshubovych/markdownlint-cli "$t"; done

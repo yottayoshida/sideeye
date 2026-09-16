@@ -1,5 +1,5 @@
 ## oven-sh/bun  [package.json truncated]
-  total 493
+  total 492
   #36387 [open] 2026-07-29 install: fix false "Workspace name already exists" on truncated-hash collisions
   #41724 [open] 2026-09-06 install: name the tarball cache folder by a truncated sha256 of the URL
   #36386 [open] 2026-07-29 bun install: false "Workspace name already exists" — duplicate check compares u32-truncated name hashes, not names
@@ -8,6 +8,98 @@
   #41741 [open] 2026-09-06 init: report a scaffold file that cannot be written and exit 1
   #42839 [open] 2026-09-16 resolver: slice a package.json dependency version with the buffer it was parsed in
   #38781 [open] 2026-08-15 install: skip workspace members whose package.json has no name
+  #42551 [open] 2026-09-13 sliceAnsi: keep the truncated string within the range when a wide cluster straddles the ellipsis cut
+  #38775 [open] 2026-08-15 install: keep the pnpm block in package.json when migrating from pnpm
+  #41933 [open] 2026-09-08 install: make `bun pm untrusted`, `trust`, and `ls --trusted` read trustedDependencies from package.json
+  #35902 [open] 2026-07-26 resolver: gate pkg/package.json behind the exports map (Node parity)
+  #36928 [open] 2026-08-05 resolver: reuse interned package.json/tsconfig parses across dir-cache busts
+  #35586 [open] 2026-07-25 install: preserve package.json key order when bun remove empties a dependency group
+  #40940 [open] 2026-08-30 Decide a file's module type with one rule on every load path
+  #36670 [open] 2026-08-01 install: re-download cache entries that lost their package.json
+  #41931 [open] 2026-09-08 install: fail --frozen-lockfile when bun install would rewrite bun.lock for a package.json edit
+  #36633 [open] 2026-08-01 resolver: keep auto-install bound to the installed package root across nested package.json
+  #38783 [open] 2026-08-15 install: link packages into a staging directory and rename them into place
+  #41598 [open] 2026-09-06 Run bun create hooks through the shell and stop on failure
+  #40729 [open] 2026-08-28 install: fail when "overrides" or "resolutions" is not an object
+  #41743 [open] 2026-09-06 js_printer: write null for non-finite numbers in JSON output
+  #38869 [open] 2026-08-15 install: load root and workspace dependencies from bun.lock the way package.json parses them
+  #36594 [open] 2026-08-01 install: resolve workspace: deps on the root package
+  #41329 [open] 2026-09-04 node:http2: apply INITIAL_WINDOW_SIZE changes to open streams
+  #42459 [open] 2026-09-12 bun pm version: read the prerelease number as a u64, reject a version npm calls invalid
+  #41845 [open] 2026-09-07 install: run a blocked dependency's lifecycle scripts under the isolated linker once it becomes trusted
+  #39011 [open] 2026-08-15 install: drop the query string and fragment from a tarball URL's extraction folder name
+  #37922 [open] 2026-08-12 bun why: print a package's dependents once, mark repeats as *deduped
+  #32741 [open] 2026-06-26 Security: Fixed-seed non-cryptographic hashes (Wyhash11 / std.hash.Wyhash) are algebraically collidable, enabling trustedDependencies RCE, scoped-registry token leak, and cache poisoning
+  #40110 [open] 2026-08-22 install: warn when a patchedDependencies entry no longer applies, and fail --frozen-lockfile
+  #40826 [open] 2026-08-28 json: parse numbers in a plain .json file like JSON.parse
+  #41301 [open] 2026-09-03 sql(postgres): bind an untyped sql.array without a cast
+  #38785 [open] 2026-08-15 audit fix: report and rewrite the overrides rule that holds a vulnerable version
+  #39613 [open] 2026-08-19 vscode: launch Run File and Debug File in multi-root windows and in windows without a folder
+  #36622 [open] 2026-08-01 pm: let `bun pm -g bin` / `bun pm ls -g` work before any global install
+  #42458 [open] 2026-09-12 semver: reject a major, minor or patch number above u64::MAX
+  #34327 [open] 2026-07-16 install: honor bun.lockb trustedDependencies sentinel in `bun pm untrusted`/`trust`
+  #40452 [open] 2026-08-25 test(install): pin stderr and the whole lockfile state in bun-update-lockfile-sync.test.ts
+  #36704 [open] 2026-08-01 install: don't fail --production on a missing workspace: devDependency
+  #37245 [open] 2026-08-09 install: fix duplicate bun.lock keys when a file: dependency shares a workspace member's name
+  #40087 [open] 2026-08-22 test(install): run bun-patch.test.ts against the local registry and tighten its assertions
+  #41232 [closed] 2026-09-03 resolver: read package.json "type" from the nearest package.json, named or not
+  #39886 [open] 2026-08-21 install: stop a colliding npm alias from absorbing a peer's resolved package
+  #41342 [open] 2026-09-04 bun create: run git before the template's tasks and install
+  #38558 [open] 2026-08-14 install: stop panicking when a progress bar name is longer than its buffer
+  #20567 [open] 2025-06-22 `bun run dev` is failing in Docker container but works locally
+  #37947 [open] 2026-08-12 node:module: implement findPackageJSON
+  #42230 [open] 2026-09-10 bun-types test: check against the newest @types/node release, not the `latest` dist-tag
+  #39358 [open] 2026-08-16 pm licenses: escape control characters in text output (adds bun_core::fmt::escape_control_chars)
+  #41183 [open] 2026-09-02 resolver: compare browser map keys with forward slashes on every platform
+  #35710 [open] 2026-07-25 cli: forward .env to `bun run <script>` / bunx subprocesses
+  #40279 [open] 2026-08-24 Resolver: re-check what a failed lookup did not find, then drop only the stale directories before retrying
+  #40538 [open] 2026-08-26 test(install): run bun-install-patch.test.ts against the local registry and tighten its assertions
+  #40032 [open] 2026-08-22 install: keep versions already pinned in the lockfile installable under minimum-release-age
+  #42275 [open] 2026-09-11 completions: optimize parsing, add --cwd support, and fix bash 3.2 compatibility
+  #41647 [open] 2026-09-06 install: do not panic in bun outdated on a lockfile with no packages
+  #42451 [open] 2026-09-12 react-compiler: do not compile a member update whose object or key has side effects
+  #41524 [open] 2026-09-06 node-fallbacks: bundle the polyfills for the browser target
+  #41966 [open] 2026-09-08 worker: resolve a relative specifier from the cwd at construction
+  #40011 [open] 2026-08-21 install: return immediately when nothing that determines node_modules has changed
+  #35070 [open] 2026-07-22 json: reject JS-only numeric literals (0x/0b/0o, legacy octal, underscores)
+  #28531 [open] 2026-03-25 Enable auto-install for bun build and Bun.build()
+  #39443 [open] 2026-08-17 install: trust npm: aliased packages by the same name in bun pm trust, the installer and bun.lock
+  #41959 [open] 2026-09-08 bundler: honor `with { type: "css" }` as a CSS module script in browser builds
+  #42422 [open] 2026-09-12 install: let --concurrent-scripts override bunfig concurrentScripts
+  #40832 [open] 2026-08-28 bundler: make the "browser" field behave like esbuild
+  #41720 [open] 2026-09-06 install: add `bun update --depth 0` to keep transitive dependencies locked
+  #40057 [open] 2026-08-22 install: migrate Yarn Berry (v2+) yarn.lock to bun.lock
+  #34810 [open] 2026-07-20 cli: pair `getcompletes z` descriptions with the right script
+  #40713 [open] 2026-08-28 output: keep a bare `>` in pretty templates instead of dropping it
+  #36277 [open] 2026-07-29 vscode: support "console": "integratedTerminal" / "externalTerminal" in launch config
+  #37616 [open] 2026-08-11 install: pass caller buffers to Repository::try_ssh/try_https
+  #41997 [open] 2026-09-08 require(esm): do not run an import() started by the required module inside the require()
+  #36542 [open] 2026-07-31 install: bound tar-header preallocation and remove temp dir on failed extraction
+  #38763 [open] 2026-08-15 install: print the update row for catalog entries moved by bun update
+  #41953 [open] 2026-09-08 bundler: keep exports.default as the default import of a bun: module in CommonJS output
+  #41529 [open] 2026-09-06 Add React development fields to Bun.markdown.react elements
+  #40072 [open] 2026-08-22 node-fallbacks: fix the util polyfill and lint the polyfills for undeclared names
+  #41208 [open] 2026-09-02 bun-types: declare memoryPressure in ProcessEventMap, not as Process overloads
+  #30340 [open] 2026-05-06 Add install.blockExoticSubdeps to reject non-registry transitive deps
+  #42538 [open] 2026-09-13 Check both directions in expect().toContainAllValues()
+  #38253 [open] 2026-08-13 Decode text and md imports as UTF-8 instead of passing raw file bytes to the printer
+  #39608 [open] 2026-08-19 bun-types: fix the eight open types issues
+  #33979 [open] 2026-07-11 install: don't leak package extraction temp directories into $TMPDIR
+  #36671 [open] 2026-08-01 install: fall back to highest version when dist-tags.latest does not resolve
+  #41503 [open] 2026-09-06 install: verify the gzip trailer of package tarballs
+  #35106 [open] 2026-07-22 install: make `bun pm untrusted`/`trust` see packages under the isolated linker
+  #42145 [open] 2026-09-09 WebAssembly: reject ill-typed unreachable code (WebKit bump for oven-sh/WebKit#611)
+  #39626 [open] 2026-08-19 resolver: report candidate paths that do not fit a path buffer as not found instead of aborting
+  #38476 [open] 2026-08-14 test(init): initialize each react template once and skip the npm bun package's postinstall
+  #34982 [open] 2026-07-21 cli: apply --extension-order to ESM imports; split --main-fields/--extension-order on commas
+  #4207 [open] 2023-08-18 Support Redwood (Vite framework)
+  #39790 [open] 2026-08-20 install: refetch the manifest once when a cached copy lacks a requested version
+  #33106 [open] 2026-06-29 install: only constrain transitive file: targets of remote packages
+  #37605 [open] 2026-08-11 bun_core: fix clippy on the Windows and FreeBSD targets and lint them in CI
+  #37244 [open] 2026-08-09 install: make yarn.lock migration linear in lock size
+  #42566 [open] 2026-09-13 bun:test: make this.utils and this.equals plain functions, port Jest's matcherHint
+  #29794 [open] 2026-04-27 install: prune stale workspace node_modules in hoisted installs
+  #41163 [open] 2026-09-02 bake: report a disabled framework specifier instead of panicking
 ## oven-sh/bun  [package.json empty]
   total 1552
   #42274 [open] 2026-09-11 completions: fix --cwd support, Bash 3.2 compatibility, and optimize package.json parsing
@@ -18,6 +110,98 @@
   #41291 [open] 2026-09-03 fix(pack): Now dedups paths in package.json bin field
   #41866 [open] 2026-09-07 install: read trustedDependencies from the root package.json only
   #41453 [open] 2026-09-05 install: replace an empty directory in an isolated link slot with the link
+  #35586 [open] 2026-07-25 install: preserve package.json key order when bun remove empties a dependency group
+  #38151 [open] 2026-08-13 install: allow bun info and pm view without a package.json
+  #36694 [open] 2026-08-01 install: don't create package.json for `bun add --dry-run` in an empty directory
+  #41664 [open] 2026-09-06 Treat any truthy package.json "private" value as private in bun publish
+  #42839 [open] 2026-09-16 resolver: slice a package.json dependency version with the buffer it was parsed in
+  #41653 [open] 2026-09-06 install: fail to resolve an empty workspace: spec instead of linking the root
+  #38781 [open] 2026-08-15 install: skip workspace members whose package.json has no name
+  #38633 [open] 2026-08-14 install: reject tarball, folder and git packages whose package.json name is invalid
+  #33883 [open] 2026-07-10 resolver: record enclosing package.json regardless of "name" field
+  #41700 [open] 2026-09-06 bun run: print the package.json parse error instead of "Script not found"
+  #36965 [open] 2026-08-05 bun create: preserve package.json indentation from the template
+  #41735 [open] 2026-09-06 install: reject an empty or scope-only package name before it reaches the registry
+  #40663 [open] 2026-08-27 install: keep the copyfile fallback of a folder dependency from emptying its source
+  #38775 [open] 2026-08-15 install: keep the pnpm block in package.json when migrating from pnpm
+  #38681 [open] 2026-08-14 install: name folder, tarball and git packages without a package.json name after their source
+  #41741 [open] 2026-09-06 init: report a scaffold file that cannot be written and exit 1
+  #35902 [open] 2026-07-26 resolver: gate pkg/package.json behind the exports map (Node parity)
+  #41406 [open] 2026-09-04 oven.bun-vscode crashes extension host when opening non-project directories
+  #41647 [open] 2026-09-06 install: do not panic in bun outdated on a lockfile with no packages
+  #42052 [open] 2026-09-08 pm view: npm view parity for field paths, multiple fields, --json errors, and version order
+  #41759 [open] 2026-09-06 install: do not take the root of an install from a package.json another user owns
+  #36670 [open] 2026-08-01 install: re-download cache entries that lost their package.json
+  #38918 [open] 2026-08-15 Report package.json sync in the bun update summary instead of (no changes)
+  #38791 [open] 2026-08-15 install: migrate pnpm importer rows in the shape package.json parsing produces
+  #38784 [open] 2026-08-15 pack/publish: stop panicking on package.json bin and files entries longer than the path buffer
+  #36594 [open] 2026-08-01 install: resolve workspace: deps on the root package
+  #38022 [open] 2026-08-13 run: exit 1 and report it when the system shell for a package.json script fails to spawn
+  #20673 [open] 2025-06-26 `bun info / pm view` requires a package.json
+  #36633 [open] 2026-08-01 resolver: keep auto-install bound to the installed package root across nested package.json
+  #38198 [open] 2026-08-13 resolver: make auto-install use the version range from the project's package.json
+  #35903 [open] 2026-07-26 resolver: reject multi-star exports pattern keys and empty '*' captures
+  #41931 [open] 2026-09-08 install: fail --frozen-lockfile when bun install would rewrite bun.lock for a package.json edit
+  #41933 [open] 2026-09-08 install: make `bun pm untrusted`, `trust`, and `ls --trusted` read trustedDependencies from package.json
+  #39982 [open] 2026-08-21 ci: pass --manifest-path to cargo dylint so a broken manifest fails the mordant job
+  #42275 [open] 2026-09-11 completions: optimize parsing, add --cwd support, and fix bash 3.2 compatibility
+  #36566 [open] 2026-07-31 resolver: apply package.json exports to packages found via NODE_PATH
+  #38101 [open] 2026-08-13 run --filter/--parallel: set npm_package_* and npm_lifecycle_* per script
+  #40053 [open] 2026-08-22 install: support `packageExtensions` (yarn/pnpm compatibility)
+  #41686 [open] 2026-09-06 pm: honor --dry-run on cache rm, migrate, pkg and trust, and --ignore-scripts on trust
+  #36928 [open] 2026-08-05 resolver: reuse interned package.json/tsconfig parses across dir-cache busts
+  #41870 [open] 2026-09-08 cli: do not resolve relative entry points or package.json scripts against the executable's directory when the cwd was deleted
+  #38754 [open] 2026-08-15 install: import pnpm-workspace.yaml even without a migratable pnpm-lock.yaml
+  #38720 [open] 2026-08-14 pack: ignore bin paths that name no file, strip the trailing slash from directories.bin
+  #35595 [open] 2026-07-25 resolver: read every default main-field name when parsing package.json
+  #42559 [open] 2026-09-13 bun:test: toBeEmptyObject rejects a function and an array
+  #38813 [open] 2026-08-15 pack/publish: resolve workspace: and catalog: specs from the package.json files, not bun.lock
+  #39096 [open] 2026-08-15 bunx: resolve directories.bin relative to the package
+  #40832 [open] 2026-08-28 bundler: make the "browser" field behave like esbuild
+  #5392 [open] 2023-09-14 bun install with no package.json dependencies or devDependencies will create an empty node_modules folder
+  #36622 [open] 2026-08-01 pm: let `bun pm -g bin` / `bun pm ls -g` work before any global install
+  #38405 [open] 2026-08-14 resolver: ignore differently-cased package.json and tsconfig.json on case-sensitive filesystems
+  #41797 [open] 2026-09-07 resolver: skip tsconfig auto-discovery in a world-writable sticky directory
+  #38745 [open] 2026-08-14 install: only open package.json for writing in the commands that rewrite it
+  #38788 [open] 2026-08-15 pack: publish workspace: aliases as npm: aliases
+  #12114 [open] 2024-06-24 On --update-snapshots, snapshot file remains empty in afterAll()
+  #27709 [open] 2026-03-03 sideEffects field breaks bundler tree-shaking in Bun 1.3.10
+  #34327 [open] 2026-07-16 install: honor bun.lockb trustedDependencies sentinel in `bun pm untrusted`/`trust`
+  #17715 [open] 2025-02-26 Bun removes dependencies when removing duplicate package.json entries
+  #40057 [open] 2026-08-22 install: migrate Yarn Berry (v2+) yarn.lock to bun.lock
+  #41598 [open] 2026-09-06 Run bun create hooks through the shell and stop on failure
+  #40538 [open] 2026-08-26 test(install): run bun-install-patch.test.ts against the local registry and tighten its assertions
+  #37947 [open] 2026-08-12 node:module: implement findPackageJSON
+  #38893 [open] 2026-08-15 install: say --ignore-scripts also skips trusted dependencies' scripts in --help
+  #32177 [open] 2026-06-12 Apply implicit strict mode to files forced to ESM by .mjs or package.json type module
+  #42884 [open] 2026-09-16 install: keep a bundled file: dependency bundled when installing from bun.lock
+  #38915 [open] 2026-08-15 install: describe the real --save default in bun link and bun unlink --help
+  #41690 [open] 2026-09-06 pm: honour --dry-run in link, unlink, pm version, pm cache rm, pm trust, pm pkg, and pm migrate
+  #41863 [open] 2026-09-07 pm pkg set --json: parse values as strict JSON and error like npm
+  #40448 [open] 2026-08-25 test/bundler: serve the itBundled install option from test/node_modules
+  #42077 [open] 2026-09-08 bun test retains one open directory fd per walked directory (part 2 of #32067)
+  #20720 [open] 2025-06-30 `bun publish` requires write access to `package.json`, `npm publish` does not
+  #42400 [open] 2026-09-12 pm diff: compare a folder's workspace: and catalog: versions as pack publishes them
+  #40452 [open] 2026-08-25 test(install): pin stderr and the whole lockfile state in bun-update-lockfile-sync.test.ts
+  #38511 [open] 2026-08-14 install: remove the node_modules links of a renamed or removed workspace
+  #38780 [open] 2026-08-15 install: migrate pnpm onlyBuiltDependencies and report blocked scripts under the isolated linker
+  #38804 [open] 2026-08-15 install: write a migrated lockfile and its package.json edits only when the command saves a lockfile
+  #41531 [open] 2026-09-06 pack: match **/a/b ignore patterns at any depth and trim trailing spaces
+  #36623 [open] 2026-08-01 install: resolve relative folder positionals against cwd for `bun install -g .`
+  #26970 [open] 2026-02-12 `bun install` errors on missing literal workspace paths but ignores empty globs
+  #42458 [open] 2026-09-12 semver: reject a major, minor or patch number above u64::MAX
+  #10386 [open] 2024-04-20 bun --filter '**' dev only starts first server
+  #36690 [open] 2026-08-01 install: set npm_package_name/version/json for dependency lifecycle scripts
+  #42541 [open] 2026-09-13 bun:test: stop toBeEmpty() from passing for undefined, null, numbers, functions and Dates
+  #38866 [open] 2026-08-15 install: keep the workspace: spelling given to bun add <member>@workspace:<range>
+  #41754 [open] 2026-09-06 pm version: detect a git repository when .git is a file
+  #38382 [open] 2026-08-14 docs: use a Docker cache mount for bun install in the Docker guide
+  #40940 [open] 2026-08-30 Decide a file's module type with one rule on every load path
+  #30659 [open] 2026-05-14 install: stop `bun add -g` from walking above the global install dir
+  #36284 [open] 2026-07-29 install: move existing dependency when `bun add` is given an explicit group flag
+  #9838 [open] 2024-04-02 [Nest.js Reflector] Bun resolve dependencies problem
+  #39734 [open] 2026-08-20 Read whole files only when they are regular files
+  #42459 [open] 2026-09-12 bun pm version: read the prerelease number as a u64, reject a version npm calls invalid
 ## oven-sh/bun  [package.json atomic]
   total 365
   #39701 [open] 2026-08-20 Atomic writes: convert bun init and test a write that fails
@@ -28,6 +212,98 @@
   #41808 [open] 2026-09-07 install: honor umask when writing bun.lock, bun.lockb and yarn.lock
   #36670 [open] 2026-08-01 install: re-download cache entries that lost their package.json
   #35595 [open] 2026-07-25 resolver: read every default main-field name when parsing package.json
+  #41845 [open] 2026-09-07 install: run a blocked dependency's lifecycle scripts under the isolated linker once it becomes trusted
+  #39746 [open] 2026-08-20 test(install): compare stderr exactly and check every package.json and bun.lock row in bun-add-filter.test.ts
+  #31154 [open] 2026-05-21 install: make `--cwd` chdir idempotent across re-parses
+  #38779 [open] 2026-08-15 install: reinstall node_modules when switching between the isolated and hoisted linkers
+  #39571 [open] 2026-08-18 watcher: keep no descriptor for a watched file outside kqueue
+  #28531 [open] 2026-03-25 Enable auto-install for bun build and Bun.build()
+  #38783 [open] 2026-08-15 install: link packages into a staging directory and rename them into place
+  #41478 [open] 2026-09-06 run: act on SIGINT, SIGTERM and SIGHUP at once in --filter and --parallel/--sequential
+  #41853 [open] 2026-09-07 fix(windows): keep Bun runtime aliases stable across upgrades
+  #33884 [open] 2026-07-10 install: never delete a concurrently published cache entry on Windows
+  #36229 [open] 2026-07-28 install: fix ENOENT race on shared cache when RENAME_EXCHANGE is unsupported (NFS)
+  #38744 [open] 2026-08-14 install: honor BUN_CONFIG_MAX_HTTP_REQUESTS
+  #38103 [open] 2026-08-13 bundler: copy file/wasm/napi/sqlite assets byte-for-byte when they start with a BOM
+  #42145 [open] 2026-09-09 WebAssembly: reject ill-typed unreachable code (WebKit bump for oven-sh/WebKit#611)
+  #21597 [open] 2025-08-04 Next js Build failed
+  #39403 [open] 2026-08-17 install: fold the open bun install / pm / pack+publish PRs into one branch (171 PRs)
+  #12918 [open] 2024-07-29 `signal-exit` package misbehaves with Bun (node compatibility)
+  #40011 [open] 2026-08-21 install: return immediately when nothing that determines node_modules has changed
+  #28062 [open] 2026-03-13 Windows: parallel bun install --no-cache with shared BUN_INSTALL_CACHE_DIR can fail with ENOENT opening cache/package/version dir
+  #33979 [open] 2026-07-11 install: don't leak package extraction temp directories into $TMPDIR
+  #35542 [open] 2026-07-25 install: accept -E/--exact for bun update
+  #9547 [open] 2024-03-21 Bun doesnt pick changes in monorepos packages
+  #35596 [open] 2026-07-25 watcher(windows): watch workspace packages outside the project root
+  #33022 [open] 2026-06-28 Add SIMD JSON parser and on-demand cursor for npm manifest parsing
+  #41293 [open] 2026-09-03 Add bun login and bun logout
+  #40277 [open] 2026-08-24 Fix $ORIGIN RPATH lookups for native addons under auto-install
+  #36102 [open] 2026-07-27 Resolve bare undici to the installed package, keep the shim as fallback
+  #37142 [open] 2026-08-07 install: reuse lockfile-resolved git/github/tarball packages when re-resolving
+  #5841 [open] 2023-09-21 --watch and --hot doesn't work when using Bun in certain network environments
+  #41921 [open] 2026-09-08 install: forward SIGINT/SIGTERM/SIGHUP to running lifecycle scripts and wait for them
+  #37740 [open] 2026-08-12 bundler: run a Bun.build on the bundle thread through the task pointer, not a build-long &mut self
+  #32392 [open] 2026-06-16 resolver: resolve the entry point by stat instead of reading its directory
+  #32022 [open] 2026-06-09 Deduplicate package manager and CLI command helpers
+  #41289 [open] 2026-09-03 Native `bun login` / `bun logout`
+  #30917 [open] 2026-05-17 feat: add initial HarmonyOS (OHOS) support
+  #33084 [closed] 2026-06-29 Re-resolve through updated package.json files under --hot
+  #36351 [open] 2026-07-29 create: stop deleting the destination directory for local templates
+  #40372 [open] 2026-08-24 One working directory: bun_core::cwd, read once, followed by chdir
+  #39816 [closed] 2026-08-20 install: read patchedDependencies from the root package.json only
+  #14234 [open] 2024-09-28 error: UV_ENOENT when using webtorrent
+  #36159 [open] 2026-07-28 install: stop running the JS event loop inside the auto-install resolver wait
+  #38702 [open] 2026-08-14 install: stop leaking the displaced cache folder when a tarball is re-extracted
+  #29726 [open] 2026-04-25 install: honor process umask when creating directories
+  #34562 [open] 2026-07-18 resolver: substitute tsconfig paths '*' textually instead of path-joining
+  #41466 [open] 2026-09-06 bun test: exit 1 when the JUnit report cannot be written, create its parent directory
+  #33029 [open] 2026-06-29 install(windows): fall back to FileRenameInformation on non-NTFS volumes
+  #35065 [open] 2026-07-22 build: unify webcore/streams, add C++ build profiling (bun run build:analyze)
+  #40604 [open] 2026-08-27 Terminal: open the pty with plain libc, drop libutil
+  #38759 [open] 2026-08-15 install: say --network-concurrency defaults to 64 in help and docs
+  #29496 [open] 2026-04-19 install: parallelize hoisted package linking on fresh node_modules
+  #38365 [open] 2026-08-14 Remove get_fd_path: derive paths from cwd and what was opened, not from fds
+  #37400 [open] 2026-08-11 install: fail the package install when a walker entry does not fit its path buffer or its directory cannot be created
+  #38011 [open] 2026-08-13 resolver: keep sibling entries whose names differ only in case
+  #36831 [open] 2026-08-03 napi: keep dispatching threadsafe function calls when a callback blocks in a nested event loop
+  #40368 [open] 2026-08-24 Bun.build: add cssTarget option to set CSS browser targets
+  #37145 [closed] 2026-08-07 install: re-clone git dependency cache folders left incomplete by a killed install
+  #38741 [open] 2026-08-14 install: stamp lockfileVersion 1 on new bun.lock files
+  #40328 [open] 2026-08-24 Read NODE_OPTIONS and apply the flags Bun implements
+  #41385 [open] 2026-09-04 Remove dead code from bun_core, the JSC bindings, the debugger, and 24 other crates
+  #35403 [open] 2026-07-24 Add --permission: flag surface, process.permission, node:fs + net enforcement (10 upstream tests)
+  #30340 [open] 2026-05-06 Add install.blockExoticSubdeps to reject non-registry transitive deps
+  #29794 [open] 2026-04-27 install: prune stale workspace node_modules in hoisted installs
+  #36672 [open] 2026-08-01 install: honor --env-file / --no-env-file and NODE_ENV for .env loading
+  #42665 [closed] 2026-09-14 bundler: every pool thread tears its worker down when a build ends; fix two CI test deadlocks
+  #29581 [open] 2026-04-22 node:module: avoid ThrowScope in builtinModules/globalPaths callbacks
+  #35105 [open] 2026-07-22 install: refuse untrusted extraction cache and make --force re-verify
+  #35571 [open] 2026-07-25 install: hoist workspace members in path order, not package-name order
+  #42551 [open] 2026-09-13 sliceAnsi: keep the truncated string within the range when a wide cluster straddles the ellipsis cut
+  #38580 [closed] 2026-08-14 test(install): don't require the refetched manifest to be cached before install exits
+  #36260 [closed] 2026-07-28 pack/publish: warn and continue when the lockfile is unreadable
+  #29509 [open] 2026-04-20 install: add `bun pm fetch`
+  #40242 [open] 2026-08-23 cli: remove unsafe from bun run / bun test / --filter and the other CLI commands
+  #38930 [closed] 2026-08-15 build, ci: rustc annotation bodies, full CI target list, string-map autofix, arm64 rust CPU baseline
+  #35567 [open] 2026-07-25 internal/primordials: Node.js parity, generated and engine-backed
+  #36251 [closed] 2026-07-28 resolver, watcher: stop leaking file descriptors on every --hot reload
+  #40436 [closed] 2026-08-25 Never hand one StringImpl to two threads' atom tables (object URLs, BroadcastChannel, --compile workers)
+  #29867 [open] 2026-04-28 test(Bun.serve): regression test for per-SNI HttpRouter leak + drop stale LSAN suppression
+  #38269 [closed] 2026-08-13 install: stage git cache folders, require completion markers on hit, fix bun patch for non-npm deps and isolated hang
+  #39034 [closed] 2026-08-15 bun-audit.test.ts: install each project once and run the report cases concurrently
+  #36954 [closed] 2026-08-05 bun create: print the git timing line after postinstall, not from the worker thread
+  #36955 [closed] 2026-08-05 ai slop
+  #24394 [closed] 2025-11-05 Segmentation Fault when running K7 TotalSecurity AV on Windows
+  #34983 [open] 2026-07-21 cli: make -c/--config require a path; stop treating the config path as a package to install
+  #32327 [closed] 2026-06-15 shell(rm): don't abort sibling arguments when a parent rmdir fails
+  #42699 [open] 2026-09-14 Bump WebKit (oven-sh/WebKit#655 preview): worker.terminate() during a long BigInt division no longer aborts the process
+  #35131 [closed] 2026-07-22 test: discover `node --test` default filename patterns
+  #37274 [closed] 2026-08-09 resolver: lock DirEntry map probes against the in-place stale-generation rewrite
+  #38699 [closed] 2026-08-14 bench: homepage benchmark harness + express/websocket/postgres bench fixes
+  #32395 [closed] 2026-06-16 Bun build on canary version drops "panic: called `Option::unwrap()` on a `None` value"
+  #36814 [closed] 2026-08-03 bun test: --timings for duration-balanced --shard/--parallel, docs for --parallel & --isolate
+  #33302 [closed] 2026-07-03 build: sort startup-hot functions to the front of .text on linux (-9 MB RSS)
+  #36291 [closed] 2026-07-29 cli(--filter): reap descendant tree on Windows via kill-on-close Job Object
 ## oven-sh/bun  [package.json ENOSPC]
   total 38
   #41741 [open] 2026-09-06 init: report a scaffold file that cannot be written and exit 1
@@ -38,6 +314,36 @@
   #41466 [open] 2026-09-06 bun test: exit 1 when the JUnit report cannot be written, create its parent directory
   #36659 [open] 2026-08-01 install: schedule the tarball download when auto-install resolves from a disk-cached .npm manifest
   #39689 [open] 2026-08-19 Make concurrent bun test and bun install processes safe on shared files
+  #38721 [open] 2026-08-14 pack: build the tarball in memory and write it out only once it is complete
+  #37757 [closed] 2026-08-12 install: link over an empty directory left at node_modules/<pkg> with the isolated linker
+  #38807 [closed] 2026-08-15 output: report a failed write to stdout instead of claiming success
+  #33979 [open] 2026-07-11 install: don't leak package extraction temp directories into $TMPDIR
+  #29512 [open] 2026-04-20 Add `bun pm sbom` command
+  #36140 [closed] 2026-07-27 net/resolver: report EMFILE as EMFILE instead of ECONNREFUSED/MODULE_NOT_FOUND/code-less listen error
+  #36541 [closed] 2026-07-31 install: let libarchive gunzip buffered tarballs instead of inflating into memory
+  #36360 [closed] 2026-07-29 install: honor --recursive/--filter in non-interactive bun update; re-resolve every named-update target
+  #34650 [closed] 2026-07-18 install: re-download tarball when auto-install resolves from the .npm manifest cache
+  #36162 [closed] 2026-07-28 paths: terminate recursive mkdir walk when a confirmed parent still yields ENOENT
+  #31447 [open] 2026-05-26 bunx: store the package cache under the per-user bun cache directory
+  #28601 [closed] 2026-03-27 Implement `bun prune` command for workspace-aware monorepo pruning
+  #35110 [closed] 2026-07-22 install(hoisted): gate workspace .bin links on trust to stop transitive bin shadowing
+  #30875 [closed] 2026-05-16 Fix effectively every native-code memory leak in Bun
+  #28486 [open] 2026-03-23 Incremental build hmr
+  #29489 [closed] 2026-04-19 install: global virtual store for isolated linker (7x faster warm installs)
+  #35005 [open] 2026-07-21 Content-addressed CI machine images from a single spec
+  #39488 [open] 2026-08-18 bake: consolidate the open robobun dev-server, HMR runtime, production build and router fixes
+  #28116 [closed] 2026-03-14 Fix bun install hang with security scanner and many packages
+  #37633 [closed] 2026-08-11 ci: run darwin tests on the test-darwin fleet again, for every PR
+  #32520 [closed] 2026-06-20 build: enable Rust debug-assertions for asan/assertions builds; decouple IS_DEBUG
+  #28438 [closed] 2026-03-22 Add version pinning via bunfig.toml `version` field
+  #34515 [open] 2026-07-17 node:test: `--test` CLI mode, node:test/reporters, standalone execution, and reporter-output parity (+18 tests, test_runner 32%→55%)
+  #29209 [closed] 2026-04-12 [build images] prefetch build deps into CI images
+  #29470 [closed] 2026-04-18 darwin: add universal macOS .pkg installer
+  #31830 [closed] 2026-06-04 fs: port Node.js v26.3.0 fs tests and fix the gaps they surface — cp error semantics, watcher event delivery, watch ignore+AbortSignal, FileHandle pull/writer, glob port, opendir/Dir, mkdtempDisposable, rmdir-recursive end-of-life, mock.fn (+119 tests)
+  #34782 [closed] 2026-07-20 ci: single arm64 debian-13 build host; ThinLTO everywhere; baseline-only x64; rust+link merge; sysroots; WebKit a36c188; rust 2026-07-20
+  #25922 [closed] 2026-01-09 feat(archive): add TypeScript types, docs, and files() benchmark
+  #35246 [closed] 2026-07-23 bun:ffi: use the engine-native FFI when available
+  #29354 [closed] 2026-04-15 bun test: add --isolate and --parallel
 ## oven-sh/bun  [write_file_atomically]
   total 2
   #39701 [open] 2026-08-20 Atomic writes: convert bun init and test a write that fails
@@ -52,6 +358,19 @@
   #632 [closed] 2026-06-22 Bump js-yaml from 4.2.0 to 5.0.0
   #574 [closed] 2025-11-17 Bump smol-toml from 1.4.2 to 1.5.2
   #573 [closed] 2025-11-14 Bump js-yaml from 4.1.0 to 4.1.1
+  #523 [closed] 2025-01-20 Bump glob from 10.4.5 to 11.0.1
+  #532 [closed] 2025-04-28 Bump glob from 10.4.5 to 11.0.2
+  #103 [closed] 2020-06-25 JUnit
+  #500 [closed] 2024-09-24 configuration "line-length": {"tables": false} not respected in 0.42.0
+  #482 [closed] 2024-06-24 Bump jsonc-parser from 3.2.1 to 3.3.0
+  #475 [closed] 2024-05-26 Bump glob from 10.3.15 to 10.4.1
+  #359 [closed] 2023-02-03 Bug in markdownlint when using .markdownlintignore with folder with many lint issues.
+  #341 [closed] 2022-11-21 Bump xo from 0.52.4 to 0.53.1
+  #250 [closed] 2022-01-03 Bump markdownlint-rule-helpers from 0.15.0 to 0.16.0
+  #149 [closed] 2021-01-04 Bump js-yaml from 3.14.1 to 4.0.0
+  #150 [closed] 2021-01-04 Bump xo from 0.36.1 to 0.37.1
+  #130 [closed] 2020-11-16 Bump jsonc-parser from 2.3.1 to 3.0.0
+  #124 [closed] 2020-11-09 Bump jsonc-parser from 2.2.1 to 2.3.1
 ## igorshubovych/markdownlint-cli  [fix truncated]
   total 42
   #634 [closed] 2026-06-22 Bump xo from 2.0.2 to 3.0.2
@@ -62,6 +381,40 @@
   #613 [closed] 2026-03-16 Bump xo from 1.2.3 to 2.0.2
   #598 [closed] 2026-02-16 Bump minimatch from 10.1.2 to 10.2.0
   #609 [closed] 2026-03-09 Bump docker/setup-buildx-action from 3 to 4
+  #571 [closed] 2025-11-03 Bump minimatch from 10.0.3 to 10.1.1
+  #564 [closed] 2025-09-08 Bump actions/setup-node from 4 to 5
+  #543 [closed] 2025-05-26 Bump xo from 0.60.0 to 1.0.0
+  #523 [closed] 2025-01-20 Bump glob from 10.4.5 to 11.0.1
+  #532 [closed] 2025-04-28 Bump glob from 10.4.5 to 11.0.2
+  #495 [closed] 2024-08-31 Bump webpack from 5.91.0 to 5.94.0
+  #482 [closed] 2024-06-24 Bump jsonc-parser from 3.2.1 to 3.3.0
+  #471 [closed] 2024-05-13 Bump execa from 8.0.1 to 9.1.0
+  #477 [closed] 2024-06-10 Bump execa from 9.1.0 to 9.2.0
+  #475 [closed] 2024-05-26 Bump glob from 10.3.15 to 10.4.1
+  #442 [closed] 2023-12-06 Bump ava from 5.3.1 to 6.0.0
+  #436 [closed] 2023-10-23 Bump actions/setup-node from 3 to 4
+  #422 [closed] 2023-09-04 Bump actions/checkout from 3 to 4
+  #428 [closed] 2023-09-16 Bump docker/setup-buildx-action from 2 to 3
+  #381 [closed] 2023-04-03 Bump minimatch from 7.4.3 to 8.0.3
+  #372 [closed] 2023-03-14 Bump webpack from 5.64.1 to 5.76.1
+  #368 [closed] 2023-03-06 Bump minimatch from 7.2.0 to 7.4.2
+  #358 [closed] 2023-01-23 Bump minimatch from 6.0.4 to 6.1.6
+  #366 [closed] 2023-02-20 Bump minimatch from 6.2.0 to 7.0.0
+  #367 [closed] 2023-02-27 Bump minimatch from 7.0.0 to 7.2.0
+  #351 [closed] 2023-01-07 Bump json5 from 1.0.1 to 1.0.2
+  #356 [closed] 2023-01-16 Bump glob from 8.0.3 to 8.1.0
+  #280 [closed] 2022-04-18 Bump glob from 7.2.0 to 8.0.1
+  #284 [closed] 2022-05-09 Bump docker/metadata-action from 3.8.0 to 4.0.1
+  #267 [closed] 2022-02-28 Bump actions/setup-node from 2 to 3
+  #253 [closed] 2022-01-10 Bump ava from 3.15.0 to 4.0.1
+  #256 [closed] 2022-01-31 Bump commander from 8.3.0 to 9.0.0
+  #125 [closed] 2020-11-09 Bump husky from 3.1.0 to 4.3.0
+  #128 [closed] 2020-11-09 Bump execa from 2.1.0 to 4.1.0
+  #130 [closed] 2020-11-16 Bump jsonc-parser from 2.3.1 to 3.0.0
+  #124 [closed] 2020-11-09 Bump jsonc-parser from 2.2.1 to 2.3.1
+  #118 [closed] 2020-11-06 Bump commander from 2.9.0 to 6.2.0
+  #119 [closed] 2020-11-06 Bump ava from 3.8.1 to 3.13.0
+  #11 [closed] 2016-10-06 Fixing truncated error output
 ## igorshubovych/markdownlint-cli  [fix atomic]
   total 0
 ## igorshubovych/markdownlint-cli  [fix EFBIG]
@@ -85,6 +438,40 @@
   #867 [closed] 2026-07-13 Bump eslint-plugin-unicorn from 69.0.0 to 70.0.0
   #881 [closed] 2026-07-23 Bump docker/login-action from 4 to 4.4.0
   #841 [closed] 2026-06-23 Bump js-yaml from 4.2.0 to 5.1.0
+  #839 [closed] 2026-06-22 Bump js-yaml from 4.2.0 to 5.0.0
+  #845 [closed] 2026-06-25 Bump eslint-plugin-unicorn from 68.0.0 to 69.0.0
+  #799 [closed] 2026-03-30 Bump eslint-plugin-unicorn from 63.0.0 to 64.0.0
+  #792 [closed] 2026-03-22 Bump eslint from 10.0.3 to 10.1.0
+  #758 [closed] 2026-02-11 Bump eslint-plugin-unicorn from 62.0.0 to 63.0.0
+  #766 [closed] 2026-02-17 Circular Dependency Breaking Pre-Commit Environment Install
+  #711 [closed] 2025-11-13 Bump js-yaml from 4.1.0 to 4.1.1
+  #643 [closed] 2025-09-05 Bump eslint from 9.34.0 to 9.35.0
+  #642 [closed] 2025-09-05 Bump @eslint/js from 9.34.0 to 9.35.0
+  #704 [closed] 2025-11-03 Bump @eslint/js from 9.38.0 to 9.39.0
+  #703 [closed] 2025-11-03 Bump eslint from 9.38.0 to 9.39.0
+  #668 [closed] 2025-09-23 Bump @playwright/test from 1.55.0 to 1.55.1
+  #700 [closed] 2025-10-27 Bump eslint-plugin-unicorn from 61.0.2 to 62.0.0
+  #678 [closed] 2025-10-06 Bump @playwright/test from 1.55.1 to 1.56.0
+  #694 [closed] 2025-10-20 Bump @stylistic/eslint-plugin from 5.4.0 to 5.5.0
+  #524 [closed] 2025-03-11 Bump eslint-plugin-jsdoc from 50.6.3 to 50.6.6
+  #582 [closed] 2025-06-23 Bump @stylistic/eslint-plugin from 4.4.1 to 5.0.0
+  #537 [closed] 2025-04-21 Bump eslint from 9.24.0 to 9.25.0
+  #538 [closed] 2025-04-21 Bump @eslint/js from 9.24.0 to 9.25.0
+  #501 [closed] 2025-02-10 Bump eslint from 9.19.0 to 9.20.0
+  #543 [closed] 2025-04-28 Bump eslint-plugin-unicorn from 58.0.0 to 59.0.0
+  #504 [closed] 2025-02-10 Bump @eslint/js from 9.19.0 to 9.20.0
+  #420 [closed] 2024-09-23 Bump eslint from 9.10.0 to 9.11.0
+  #356 [closed] 2024-06-24 Bump jsonc-parser from 3.2.1 to 3.3.0
+  #317 [closed] 2024-05-10 Bump eslint-plugin-unicorn from 52.0.0 to 53.0.0
+  #297 [closed] 2024-04-08 Bump eslint from 8.57.0 to 9.0.0
+  #183 [closed] 2023-07-26 Bump eslint-plugin-unicorn from 48.0.0 to 48.0.1
+  #199 [closed] 2023-08-28 Bump eslint from 8.47.0 to 8.48.0
+  #187 [closed] 2023-07-31 Bump eslint from 8.45.0 to 8.46.0
+  #132 [closed] 2023-03-03 Bump eslint-plugin-unicorn from 45.0.2 to 46.0.0
+  #118 [closed] 2023-01-30 Bump eslint from 8.32.0 to 8.33.0
+  #87 [closed] 2022-11-08 Bump eslint from 8.26.0 to 8.27.0
+  #66 [closed] 2022-10-03 Bump yaml from 2.1.1 to 2.1.2
+  #84 [closed] 2022-10-30 Using Multiple Formatters
 ## DavidAnson/markdownlint-cli2  [fix atomic]
   total 2
   #422 [closed] 2024-09-24 Bump eslint from 9.11.0 to 9.11.1
@@ -103,6 +490,7 @@
   #776 [closed] 2022-04-21 Bump maven-javadoc-plugin from 3.3.1 to 3.4.0
   #360 [closed] 2019-04-04 Inconsistent annotation formatting
   #33 [closed] 2016-03-25 Windows support
+  #34 [closed] 2016-03-28 Preserve "fileToFormat" in replace mode.
 ## google/google-java-format  [replace atomic]
   total 0
 ## google/google-java-format  [replace truncated]
