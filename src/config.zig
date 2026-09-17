@@ -1,7 +1,7 @@
 //! sideeye.toml — the Define contract's file form (ADR 0007, ADR 0019).
 //!
-//! The parser accepts a strict subset of TOML on purpose: `[world]` and `[define]`
-//! section headers, `key = "double-quoted string"` pairs, the one-line argv form
+//! The parser accepts a strict subset of TOML on purpose: `[world]`, `[define]` and
+//! `[recovery]` section headers, `key = "double-quoted string"` pairs, the one-line argv form
 //! `key = ["prog", "arg"]` on the three command keys, blank lines and `#`
 //! comments — nothing else. What a config parser accepts is the width of the
 //! contract, so anything unexpected is a named, line-numbered refusal rather than
@@ -76,6 +76,17 @@ pub const Define = struct {
     /// the declaration verbatim. Absent means nothing declared, which is what every
     /// define written before this key existed says by saying nothing.
     scratch: ?[]const []const u8 = null,
+    /// `[recovery] command` (#606, ADR 0072): the target's own recovery, run against a saved
+    /// FAIL world's crash state after the exploration has decided its verdict. The string
+    /// form only — split on spaces, no quoting — so that the replay line, where the same
+    /// command travels as `--recovery`, runs exactly what the explore ran; an argv-form
+    /// element holding a space could not be carried there without changing what it means.
+    /// Relative spellings resolve against the toml's directory, like the checker's.
+    recovery: ?[]const u8 = null,
+    /// `[recovery] check`: judges the state the recovery left. Declared together with
+    /// `command` or not at all — the pair is held in one place, after every source of the
+    /// define has been read (`main.zig`), not here.
+    recovery_check: ?[]const u8 = null,
 };
 
 pub const Fault = struct {
@@ -94,7 +105,7 @@ fn fault(line: usize, what: []const u8) Result {
 }
 
 pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Result {
-    const Section = enum { none, world, define };
+    const Section = enum { none, world, define, recovery };
     var section: Section = .none;
     var state: ?[]const u8 = null;
     var setup: ?Command = null;
@@ -105,6 +116,8 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var cwd: ?[]const u8 = null;
     var apparatus: ?[]const []const u8 = null;
     var scratch: ?[]const []const u8 = null;
+    var recovery: ?[]const u8 = null;
+    var recovery_check: ?[]const u8 = null;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     var line_no: usize = 0;
@@ -121,7 +134,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 section = .define;
                 continue;
             }
-            return fault(line_no, "unknown section: only [world] and [define] exist");
+            if (std.mem.eql(u8, line, "[recovery]")) {
+                section = .recovery;
+                continue;
+            }
+            return fault(line_no, "unknown section: only [world], [define] and [recovery] exist");
         }
         const eq = std.mem.indexOfScalar(u8, line, '=') orelse
             return fault(line_no, "not a key = \"value\" line");
@@ -161,6 +178,17 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 Slot{ .list = .{ .p = &scratch, .key = .scratch } }
             else
                 return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status`, `cwd`, `apparatus` and `scratch` exist"),
+            // Refused by name before the value parse, for the reason the dispatch sits there:
+            // the `.str` slot's own array refusal names the commands in [define] as the keys
+            // that take the argv form, which is the wrong advice here.
+            .recovery => if (is_array)
+                return fault(line_no, "[recovery] takes the string form only: one double-quoted command line, split on spaces, the way `--recovery` spells it on a replay")
+            else if (std.mem.eql(u8, key, "command"))
+                Slot{ .str = &recovery }
+            else if (std.mem.eql(u8, key, "check"))
+                Slot{ .str = &recovery_check }
+            else
+                return fault(line_no, "unknown key in [recovery]: only `command` and `check` exist"),
         };
         switch (slot) {
             .str => |p| {
@@ -227,7 +255,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus, .scratch = scratch } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus, .scratch = scratch, .recovery = recovery, .recovery_check = recovery_check } };
 }
 
 pub const ScratchParse = union(enum) { ok: []const u8, bad: []const u8 };
@@ -486,7 +514,7 @@ test "apparatusFault: the entry grammar, one case per refusal" {
 /// so the config as reviewed and the command as executed would silently differ;
 /// other control bytes are the report-forging class (#26). Escapes are refused
 /// because there is no escape processing to back them (ADR 0007).
-fn badBytes(value: []const u8) ?[]const u8 {
+pub fn badBytes(value: []const u8) ?[]const u8 {
     if (std.mem.indexOfScalar(u8, value, '\\') != null)
         return "escape sequences are not part of the contract; anything a plain string cannot spell belongs in a script file";
     for (value) |ch| if (ch < 0x20 or ch == 0x7f)
@@ -698,6 +726,49 @@ test "setup and check are optional; state and operation are not" {
     try t.expectEqual(@as(usize, 0), no_state.fault.line);
     const no_op = parseFor(as.allocator(), "[world]\nstate = \"s\"\n");
     try t.expectEqualStrings("[define] operation is required", no_op.fault.what);
+}
+
+test "[recovery] parses command and check as strings, stays optional, and refuses the argv form and unknown keys by name" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const r = parseFor(as.allocator(),
+        \\[world]
+        \\state = "s"
+        \\[define]
+        \\operation = "op"
+        \\[recovery]
+        \\command = "ninja -C build"   # the tool's own next start
+        \\check = "./check-recovered.sh"
+    );
+    try t.expectEqualStrings("ninja -C build", r.ok.recovery.?);
+    try t.expectEqualStrings("./check-recovered.sh", r.ok.recovery_check.?);
+
+    // Absent means nothing declared: every define written before the section existed.
+    const absent = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\n");
+    try t.expect(absent.ok.recovery == null and absent.ok.recovery_check == null);
+
+    // One without the other parses here; the pair is held where every source of the define
+    // has been read (a flag can supply the other half on nothing, but a config with one key
+    // must still reach that single check rather than a second copy of it).
+    const half = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\n[recovery]\ncommand = \"x\"\n");
+    try t.expectEqualStrings("x", half.ok.recovery.?);
+    try t.expect(half.ok.recovery_check == null);
+
+    const argv = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\n[recovery]\ncommand = [\"ninja\", \"-C\", \"build\"]\n");
+    try t.expectEqual(@as(usize, 6), argv.fault.line); // the `command = [...]` line itself
+    try t.expect(std.mem.indexOf(u8, argv.fault.what, "string form only") != null);
+
+    const unknown_key = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\n[recovery]\ntimeout = \"5\"\n");
+    try t.expectEqualStrings("unknown key in [recovery]: only `command` and `check` exist", unknown_key.fault.what);
+
+    // The define's own `check` is not the recovery's: a `[recovery]` key does not leak
+    // into `[define]`, and `[define] check` does not satisfy `[recovery] check`.
+    const separate = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[define]\noperation = \"op\"\ncheck = \"c\"\n[recovery]\ncommand = \"r\"\n");
+    try t.expectEqualStrings("c", separate.ok.check.?.str);
+    try t.expect(separate.ok.recovery_check == null);
+
+    const bad_section = parseFor(as.allocator(), "[world]\nstate = \"s\"\n[recover]\n");
+    try t.expectEqualStrings("unknown section: only [world], [define] and [recovery] exist", bad_section.fault.what);
 }
 
 test "expected_status parses as a string value and stays optional" {

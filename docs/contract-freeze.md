@@ -39,6 +39,13 @@ stay the same.
    line-numbered errors; relative paths resolve against the toml's directory
    (ADR 0007). Additive keys remain possible; changing the meaning of an
    accepted spelling does not.
+   **A section added after the tag, 2026-09-17 (#606, ADR 0072):** `[recovery] command`
+   and `check`, under the same allowance — a new section changes the meaning of no
+   accepted spelling, and a define without it reads exactly as before. Both keys take
+   only the string form, because the same two commands travel to a replay as
+   `--recovery` / `--recovery-check`, where no argv form exists; the argv form under
+   `[recovery]` refuses by name. The config's `[world]`/`[define]` refusal message now
+   names three sections, a prose change to an error the freeze does not cover.
 2. **Report schema.** The fields, presence rules and `unknown_reason` closed
    set documented in `docs/report-schema.md`, held to the code by acceptance
    check 4 — `oracle_verified` included (#94). The account fields' prose may
@@ -110,6 +117,23 @@ stay the same.
    one and pins it in the same commit, as `docs/freeze-audit.md` says. Two
    integer fields ride beside it, `setup_exit_code` and `setup_signal`, plain
    additive fields.
+
+   **A third closed set, 2026-09-17 (#606, ADR 0072).** A declared recovery adds
+   the account string `recovery` and, inside each saved exhibit, the object
+   `earliest.recovery` / `checker_earliest.recovery` with `result`, `seconds` and
+   `command_exit` — all new optional fields, present only when a recovery was
+   declared, which the additive allowance covers. `result` is a closed set of three
+   (`pass`, `fail`, `unknown`), closed by name from the release that carries it, by
+   the rule the paragraph above gives for `setup_error_reason`: a member added later
+   is a break that needs its own ruling. It is a third set rather than new
+   `unknown_reason` members because nothing a recovery does can make the run
+   unknown — the verdict is decided before any recovery runs. Held to
+   `contract.RecoveryResult` by `spike/check-report-schema.py` (whose field walk now
+   reaches the third level these objects sit at) and by the acceptance fixture that
+   generates both. The freeze audit has no extraction for it yet; the next sweep
+   adds one. The evidence bundle's `recovery.result` takes the same values in the
+   slot #607 held open, which is a value change inside `evidence_version` 1, not a
+   schema change.
    **Amended 2026-09-08: this promise was broken a third time, deliberately, by
    owner ruling — and this one is a REMOVAL, not an addition.**
    `oracle_verified_across_runs` is gone. It was set under `--observe syscalls`,

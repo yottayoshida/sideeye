@@ -1,0 +1,34 @@
+1.12.1
+sideeye 1.4.0 (trace contract v18)
+c57de41afce4b218402f35b3d7d1cd84c5c1da3179d587d8d5ab6d56b0453ac6  /se606/bin/sideeye
+2af999920f4688c9ac30b0513edc158a0fc0881777179ce4bccb172a145a288a  /se606/lib/libsideeye_shim.so
+ninja.606.syscalls.none rc=1  falsify: ninja cannot read the build directory: ninja: Entering directory `/localrun/st/ninja.606.syscalls.none' ninja: error: build.ninja:1: expected '=', got newline 
+    earliest    crash point 3 of 7
+    explored    8 worlds (crash points 7 + 1 baseline)
+    checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+    json: verdict=FAIL violations=1 earliest=3 None checker_earliest=None None
+    bundle recovery: {'result': 'not_configured'}
+ninja.606.syscalls.recovery.1 rc=1  falsify: ninja cannot read the build directory: ninja: Entering directory `/localrun/st/ninja.606.syscalls.recovery.1' ninja: error: build.ninja:1: expected '=', got newline 
+    recovery falsify: in.txt lost its MARKER
+    recovery baseline: ninja: Entering directory `/localrun/st/ninja.606.syscalls.recovery.1'
+    recovery baseline: [1/1] cp in.txt out.txt
+    recovery: ninja: Entering directory `/localrun/st/ninja.606.syscalls.recovery.1'
+    recovery: [1/1] cp in.txt out.txt
+    earliest    crash point 3 of 7
+    explored    8 worlds (crash points 7 + 1 baseline)
+    checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+    recovery    configured; the recovery checker was trusted after two controls (corrupted state -> recovery check failed; completed state, recovery run on it -> recovery check passed); crash point 3: pass (the recovery checker accepted the recovered state, recovery command exit 0, 0.003s); ran against 1 of 1 failing world(s), the saved ones, in 0.006s; the crash states were rebuilt from snapshots, so contents are as the crash left them and timestamps and permissions are not
+    json: verdict=FAIL violations=1 earliest=3 {'result': 'pass', 'seconds': 0.003, 'command_exit': 0} checker_earliest=None None
+    bundle recovery: {'result': 'pass'}
+ninja.606.syscalls.recovery.2 rc=1  falsify: ninja cannot read the build directory: ninja: Entering directory `/localrun/st/ninja.606.syscalls.recovery.2' ninja: error: build.ninja:1: expected '=', got newline 
+    recovery falsify: in.txt lost its MARKER
+    recovery baseline: ninja: Entering directory `/localrun/st/ninja.606.syscalls.recovery.2'
+    recovery baseline: [1/1] cp in.txt out.txt
+    recovery: ninja: Entering directory `/localrun/st/ninja.606.syscalls.recovery.2'
+    recovery: [1/1] cp in.txt out.txt
+    earliest    crash point 3 of 7
+    explored    8 worlds (crash points 7 + 1 baseline)
+    checker     falsified before the run (corrupted state -> check failed); ran in 8 world(s)
+    recovery    configured; the recovery checker was trusted after two controls (corrupted state -> recovery check failed; completed state, recovery run on it -> recovery check passed); crash point 3: pass (the recovery checker accepted the recovered state, recovery command exit 0, 0.004s); ran against 1 of 1 failing world(s), the saved ones, in 0.008s; the crash states were rebuilt from snapshots, so contents are as the crash left them and timestamps and permissions are not
+    json: verdict=FAIL violations=1 earliest=3 {'result': 'pass', 'seconds': 0.004, 'command_exit': 0} checker_earliest=None None
+    bundle recovery: {'result': 'pass'}

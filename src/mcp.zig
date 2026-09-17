@@ -1250,7 +1250,9 @@ fn summarize(arena: std.mem.Allocator, report_min: []const u8) ?[]const u8 {
         out.appendSlice(arena, ")") catch return null;
     }
     // `message` is the one field here a target influences: `verdict`, `unknown_reason` and
-    // `setup_error_reason` are closed sets, and `case`/`replay` are paths the engine minted. It carries target
+    // `setup_error_reason` are closed sets, and `case`/`replay` are paths the engine minted — `replay`
+    // also carries a config's `[recovery]` strings (#606), which the config reader refuses control
+    // bytes in, so they cannot forge the marked region either. It carries target
     // bytes two ways — an entry name spliced into a refusal, and, through
     // `divergenceDetail`, a raw oracle line, which under `-y` quotes what the target wrote
     // into a state file.

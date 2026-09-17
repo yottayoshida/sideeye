@@ -2,6 +2,235 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-17 — a declared recovery runs after the verdict, against each saved FAIL world's rebuilt crash state, and changes nothing it reports beside
+
+**What #606 asked, and the owner's scope.** A crash-state FAIL cannot tell a tool that repairs its
+own state on the next start from one that deletes the last good copy while "recovering". The
+2026-09-16 ninja run had to answer that with a probe outside Sideeye. The owner's comment on the
+issue set the frame before any design: recovery is strictly downstream of the crash model, never
+part of PASS/FAIL, never a larger crash-point space, preferably a second-stage observation over a
+saved FAIL, and its cost measurable apart from exploration's. Three forks went to the owner:
+*where* it runs (the saved FAIL worlds of an explore, so the evidence bundle #607 left a slot for is
+filled — rather than on replay alone, which writes no bundle); whether replay takes the recovery
+flags (yes, as an exception to ADR 0009, printed on the replay line); and whether timestamps and
+permissions are restored to crash-time values (no; the promise names contents, and the limit is
+written where results are read).
+
+**The first draft ran the recovery inside the world loop, and review took that apart.** The draft
+ran it at the branch that latches each exhibit, in the state directory as the checker had left it.
+Two things were wrong. The checker runs in that directory before the latch and may rewrite it —
+`spike/dogfood-timew.sh`'s checker runs `timew undo` — so the recovery would have met the checker's
+state, not the crash's. And the fresh reviewer's Critical: a recovery's writes outside the state
+directory, and any process it leaves, survive into every later world and the baseline, because the
+next world's `restore(initial)` resets only the tree. A FAIL could come out UNKNOWN from a line that
+never touches the verdict. The recovery now runs after the loop, once the verdict is decided, only
+when there is a FAIL; the latch keeps the exhibit's `crashed` snapshot instead of freeing it, and
+`engine.restore(crashed, state_abs)` rebuilds the crash state in place before the recovery runs.
+
+**The second review found what the move had broken in the checks.** After the loop the state holds
+the baseline's result, and toy-bug's baseline has `key.json` and no `.tmp` — so a recovery that
+"renames `.tmp` back if present" passes whether or not the crash state was rebuilt, and the check
+that was supposed to catch a forgotten restore could not. The recovery used by the checks now
+leaves a mark only when it sees the crash-only shape (`.tmp` present, `key.json` absent), and the
+recovery checker requires the mark. The same review found that the engine's `corruptState` writes
+one string to every file, so a recovery checker of the `cmp out in` shape — the shape a recovery
+check most often has — is never falsified; the recovery gate builds its probe from `final` with
+distinct contents per file and writes it through the public `restore`. It also claimed no shell
+quoting helper exists for the replay line; `shellSingleQuote` does, and the line uses it.
+
+**`src/main.zig` is at its declaration ceiling, and the first wiring broke it.** The replay-line
+flags were first written as a new top-level function; `spike/check-main-shape.sh` holds the file at
+33 functions and that would have been 34. They are a local in `phaseReport`, and the recovery lives
+in `src/recovery.zig`, which imports none of the functions that end the process.
+
+**Measured on this Mac (macOS, `--allow-unverified`), against toy defines, before any fixture was
+written.** toy-bug with a mark-leaving recovery: FAIL at crash point 5, exit 1, `earliest.recovery`
+`pass`, the replay line carrying `--recovery '…' --recovery-check '…'`, the evidence bundle's
+`recovery.result` `pass` with the timestamp caveat. The same with a recovery that deletes the
+`.tmp`: `fail`. toy-fixed: PASS, exit 0, the account `configured; not run (no world was saved as a
+FAIL)`. The printed replay line run verbatim: FAIL reproduced, recovery `pass`. The split-rewrite
+define whose two exhibits are different worlds with different crash states, with a recovery that
+repairs only world 2's shape, predicted before running as earliest `pass` / claim exhibit `fail`:
+exactly that, each bundle holding its own. Against the same define with no recovery (FAIL, exit 1,
+2 violations, exhibits 2 and 4), four misbehaving recoveries left all five of those identical: a
+recovery checker of `/usr/bin/true` (both legs `unknown`: accepted the distinct-junk state), a
+recovery that writes a mark outside the state the world checker reads (`fail`), a command that does
+not exist (`unknown`, exit 127), and a recovery that leaves a `setsid` child appending to the state
+for two seconds (`unknown`: the state still changing after the command ended).
+
+**Three mutants, each seen red.** Without the `restore(crashed)`: the mark-leaving recovery reads
+`fail` where it read `pass`. With the claim exhibit handed the earliest's snapshot: the split define
+reads `pass`/`pass` against the prediction `pass`/`fail`. With the recovery command run at the latch
+inside the loop: the poison-mark define goes from FAIL exit 1 to UNKNOWN exit 2 with 3 violations —
+the review's Critical, reproduced.
+
+**The schema check was extended and seen red twice before it was trusted.**
+`spike/check-report-schema.py` flattened two levels and so never saw `earliest.recovery.seconds`;
+it flattens three now, collapses `checker_earliest.` like `earliest.`, and holds
+`contract.RecoveryResult` to its paragraph. Removing the `seconds` row from `docs/report-schema.md`
+gave `generated but not documented: earliest.recovery.seconds`; removing `unknown` from the
+closed-set paragraph gave `recovery.result drift`.
+
+**The Linux container found what macOS had not, and one of the two was the design.** The first full
+acceptance run in the container ended with ten failures. Eight were apparatus binaries this run
+had not built (`-Dtest-seq-gap` and the rest, built by CI before the suite); built, they pass. The
+other two were this branch's. `check 2sc` greps for `--scratch) are mutually exclusive`, closing
+parenthesis included, and the recovery flags moved `--scratch` off the end of that list — the
+refusal was right and the grep was pinned to the list's last member; it now matches `--scratch`
+followed by a comma or the parenthesis, run against the current message, the old one and a
+message with `--scratch` removed. The second was check 4r's replay leg reading `fail` where macOS
+read `pass`. The leg ran `TOY=… TOY_STATE=… eval "…"`: bash hands those assignments to the command
+eval runs, dash does not, so the recovery checker started without `TOY` and exited non-zero.
+
+**That was a harness bug, and it was also a real hole.** A recovery checker that rejects every
+state — because a variable did not reach it, or a path does not resolve — passed the one control
+the gate had (it rejected the junk probe) and then read every exhibit `fail`: the checker's verdict
+on itself, reported as the tool's recovery failing. The world checker never had this hole, because
+it has two controls, the corrupted state and the baseline world. The recovery gate has both now:
+after the probe, `final` is restored, the recovery runs on it, and the checker must accept what
+that leaves; otherwise every leg is `unknown` and the account names the control. That reverses the
+mark from the second review. `recover-key.sh` left `recovered.mark` only on the crash-only shape and
+its checker required it, so on the completed state the checker could only reject — every leg would
+have been `unknown`. The mark had been the check that the crash state was really rebuilt; that job
+already belonged to the split define, whose two exhibits must read `pass` and `fail`, so the mark
+is gone and the spike checkers judge the state alone. Predicted before each run and measured on this
+Mac with `--allow-unverified`: the current build, eighteen of eighteen assertions, twice; with the accept-side
+control removed, `/bin/false` as the checker reads `fail`/`fail` and the account line is missing —
+the two failures predicted; with only the baseline rebuilt and the exhibit legs not, the split
+define reads `pass`/`pass`, and the key recovery that deletes the `.tmp` and the poison define both
+read `pass` — the split was predicted, the other two were not and follow from the same cause, every
+leg running on the completed state. The second full container run then failed once more, on the
+check that a planted `refuse.*` call is seen: its `sed` anchor was the `restore` line this change
+renamed, so nothing was planted. The anchor follows the line now, and the scan was run against the
+real file (no hit) and a planted copy (one).
+
+**The replay check was weaker than the plan's, and that is now measured.** The plan asked for a
+recovery command of more than one word, so that a replay line which lost its quoting could not
+reproduce; check 4r's command was one path, and an unquoted line would have replayed it
+correctly. It is `recover-key.sh --from-sideeye` now. Predicted and measured on this Mac: the
+current build, all eighteen assertions; with `shellSingleQuote` dropped from the replay line, the
+printed line replays as `SETUP ERROR  unknown option`, exit 3 where 1 was wanted, no JSON — the
+two failures predicted.
+
+**"A report without a recovery is byte-identical" was written before it was measured, and then
+measured.** Base `05170b2` extracted with `git archive` and built beside this branch; toy-bug
+(FAIL) and toy-fixed (PASS) run by each with the same state, work, shim and JSON paths on this
+Mac: the JSON report, the text report, the evidence bundle and the stderr seal line are
+byte-identical, all five pairs. That is two report shapes on one platform, not every shape; the
+claim rests on the fields being emitted only when the account is non-null, and this is the
+measurement that agrees with it.
+
+**ninja, the issue's acceptance 6.** The 2026-09-16 first define (FAIL on `out.txt`) run again in
+the Linux container with `--recovery "ninja -C <state>"` and a checker that judges content
+(MARKER in both files, byte-equal), predicted in the driver's header first. FAIL exit 1, 1 of 8
+worlds, crash point 3 of 7, identical with and without the recovery; both controls held; recovery
+`pass` twice. One parenthesis of the prediction missed: ninja *did* rebuild on the completed state
+(`recovery baseline: [1/1] cp in.txt out.txt`), because restore-time timestamps make every input
+newer than its log record — which is exactly why this `pass` cannot fail, and why the account says
+so. Recorded in `spike/dogfood/2026-09-16-crossed-walls/RESULTS.md`.
+
+**A known local flake, measured again rather than assumed.** The last two of the four container runs
+failed `measure.py`'s `record-stream` selftest. The file is untouched by this branch, and the selftest
+starts no Sideeye; run alone six times in the same image it failed three. It is the flake recorded
+on 2026-09-16 for local containers, green on CI.
+
+**The diff review found two ways the result could be `fail` without the recovery failing.** A
+fresh reviewer, reading only: no P0, two P1, thirteen P2 (the report was cut off after eight of
+them). First P1: a recovery of spaces passes the empty-string check at the flag and the key,
+splits into no words, and the child panics on an empty argv before exec. The gate read the signal
+as a recovery that ran and ended, the checker judged the untouched crash state, and the exhibit
+read `fail` — seen on this Mac before any fix, with the panic's stack trace in the labeled output.
+A command or check of spaces is now refused when the define is read (`--recovery is empty`, as
+`--check` is), and exit 125 — the child's code for a declared cwd it could not enter — joins 126
+and 127 on the `unknown` side for the command, the checker and the probe. Second P1: nothing
+stopped what one leg started from reaching the next. Two snapshots see a writer only while it is
+writing, so a daemon the completed-state control started would still hold its port or lock when
+the next leg's recovery tried to start — a recovery that works, reported `fail`. The plan had
+ruled out containment. **The owner ruled for containment where it exists and a stated limit where
+it does not**: each recovery command and check now runs in a cgroup of its own through the same
+`containment.spawn` a world uses, and a process that outlives the kill is `unknown`. Measured in
+the Linux container with a recovery that refuses to start while the process its pid file names is
+alive and otherwise repairs world 2 and leaves a detached process, predicted first: uncontained
+(uid 1000), `fail`/`fail`, both exhibits' output saying `already running as 43`; contained (root,
+`--privileged`), `pass`/`fail`; the no-cgroup engine in the same container, `fail`/`fail`; and a
+build whose only change hands the recovery legs no cgroup, `fail`/`fail` where `pass`/`fail` was
+wanted. The verdict tuple was the same in all four. On macOS the reach is a limit `docs/cli.md`
+now names, beside its cost on Linux: a check that needs the daemon still running meets a stopped
+one.
+
+**The P2s were true as read and were fixed rather than argued.** `command_exit` was documented as
+absent for a command that never started, and 127 is present; the page says what the code does.
+When the controls did not trust the checker, each exhibit still carried a `recovery` object with
+the controls' time in `seconds`, the account lost its totals, and the evidence bundle said "the
+recovery ran against a crash state" for a recovery that never ran: `seconds` is 0 there, the
+account says `0 of N` and the controls' time, and the caveat is written only where a leg returned
+`pass` or `fail` — both seen red against a build that kept the old time and the old condition
+(`seconds` 0.125, the caveat present). UNKNOWN's text block now carries the recovery line its JSON
+carries, as it does the apparatus line. The `recovery.result` paragraphs had split the
+`setup_error_reason` list from its explanation and were moved below it. "A report without a
+recovery is byte-identical" was narrower than written — two refusal messages name the recovery
+whatever the define declares — and now says what was compared and on what. The MCP page cited
+surface 5 as forbidding a replay parameter it in fact allows as a new optional one. The CHANGELOG's
+UNKNOWN-exit-2 mutant now says it was measured on macOS before the checks took their final form,
+an acceptance comment stated a prediction as a result, and nothing exercised the `--world-timeout`
+path the CHANGELOG names: a recovery that sleeps thirty seconds under `--world-timeout 3` is a leg
+now, `unknown`, the verdict unmoved.
+
+**The rest of the review arrived late and named checks never seen red — and one it had not seen
+coming.** The report's second half listed legs trusted without a red: g-missing, g-linger, c-fixed,
+the no-recovery absence, and the four refusals of (6). It also noted that g-missing's `unknown`
+came from the completed-state control, so no leg reached the exhibit side of exit 127. Reading
+g-linger against the containment just added showed it would have gone red on CI's contained run:
+there the lingering writer is stopped with the command, the state settles, and a recovery that
+repairs nothing is `fail`, not `unknown`. Its expectation now follows `SIDEEYE_EXPECT_CONTAINED`,
+and its child reports its `setsid` over a pipe before the parent exits, closing the race the
+reviewer named. A new leg exits 127 only on world 2's crash shape, so the control passes and only
+the exhibit leg can make it `unknown`. **The first version of that leg exec'd a missing program,
+and the mutant it was built for stayed green on this Mac**: macOS's `sh` exits 126 from a failed
+`exec`, dash exits 127, so the leg took the 126 path the mutant had not touched. It exits 127
+explicitly now. Three mutant builds, each from a copy of the tree and predicted first: one with
+127 read as a finished command, the settle check disabled and the four refusals removed — seven
+failures, exactly those legs; one without the `not run` account — c-fixed alone; one that sets the
+account for every define — the two absence checks alone. The noreturn scan also covers `@panic`
+and `unreachable` now, and says it sees calls by name in the file, not paths through a callee.
+Not fixed, with the reason: a `shellSingleQuote` out of memory in the report phase turns a FAIL
+into a SETUP_ERROR, which the report phase's existing `path too long` refusals already can.
+
+**The second review confirmed both P1s closed and found what the containment itself moved.** A
+different fresh reviewer, checking the first round's findings one by one: both P1 resolved, no new
+P0 or P1, six P2. The module doc said none of the process-ending functions was imported, and the
+file now imports `containment` for `spawn` — whose neighbours `refuseDetach`, `killCameBack` and
+`pastCrashPoint` end the process and were missing from the scan; they are in it, and the doc and
+ADR decision 7 say what is imported for what. Containment moved one outcome: a recovery that hands
+the rest of its repair to a detached process is now stopped mid-repair and judged, where the settle
+check used to call it `unknown`. The result stays as the owner's ruling left it, and the account now
+says how many processes each command left for its cgroup to stop, with the limit on the page. A
+process that outlived its cgroup's kill made its own leg `unknown` but let the claim exhibit's leg
+run beside it; `claimAfter` makes that leg `unknown` too, with a unit test seen red. The CHANGELOG
+said "On Linux" where the engine contains only where it can make a cgroup. g-linger read an unset
+`SIDEEYE_EXPECT_CONTAINED` as uncontained — a false red on a host that contains — and the daemon leg
+reported NOT MEASURED without counting it while the summary line claimed the daemon result anyway:
+both count as not measured when the variable is unset, and the summary names the side measured.
+Not fixed, with reasons: `adoptStdin`'s abort before exec reads as a recovery that ran, because the
+engine treats that `dup2` failure as unreachable and reading every SIGABRT as `unknown` would lose
+recoveries that really crash; and holding the exhibits' snapshots until the loop ends can turn a
+later world's snapshot into UNKNOWN on a machine out of memory, which the page now states.
+
+**One simplify pass, then the final tree measured again.** Two changes applied: the leg carried its
+stopped-process count through a whole dummy `Leg` copied onto every return, now a two-field
+`Stopped`; and `claimAfter` decided by comparing the reason string, which a reworded reason would
+have broken silently, now a `survivor` flag set where the kill is outlived. One not applied: the
+125/126/127 reading sits in three switches, but each says something different and the unit tests
+pin two of them, so a shared table would add more than it removes.
+
+**The final tree, measured.** Linux container, uid 1000, uncontained, every apparatus binary built:
+the whole acceptance suite passes, check 4r on its uncontained side (399 ok, two checks not
+measurable on that host). The same build in a `--privileged` root container, contained: g-linger
+`fail`, the daemon leg `pass`/`fail` with the account naming the stopped process, the no-cgroup
+engine `fail`/`fail`. On this Mac, the extended legs twice, 36 of 36. ninja re-measured on the same
+build (sideeye sha256 `c57de41a…`, recorded in its `stdout.txt`): the same FAIL, crash point and
+`pass`, with nothing left for a cgroup to stop.
+
 ## 2026-09-17 — the exploration-cost question is answered from the record plus a clock, and the worlds that repeat are the ones that did not fail
 
 **What was asked, by someone outside the project.** When Sideeye scales to more targets, how

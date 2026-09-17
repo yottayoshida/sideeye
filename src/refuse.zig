@@ -417,6 +417,7 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     // anchors on (the reason, and the detail beneath it) keep their positions.
     if (report.divergence_syscall.len > 0) say("divergence  {s}\n", .{report.divergence_syscall});
     report.sayApparatus(json_arena orelse std.heap.page_allocator, "apparatus   {s}\n");
+    report.sayRecovery("recovery    {s}\n");
     say(
         \\
         \\atomicity   {s}

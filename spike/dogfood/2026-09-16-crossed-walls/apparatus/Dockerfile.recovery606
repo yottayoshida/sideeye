@@ -1,0 +1,5 @@
+# 2026-09-17, #606: ninja's first define with a declared recovery (explore-ninja-recovery606.sh).
+# The same ninja the 2026-09-16 screen image installed (1.12.1, trixie); Sideeye is mounted, not built in.
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends strace ninja-build python3 procps
+RUN ninja --version && strace -V | head -1

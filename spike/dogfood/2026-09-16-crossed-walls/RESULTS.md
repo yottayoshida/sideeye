@@ -95,6 +95,28 @@ is the probe above, not this define. The first define's FAIL is the class `docs/
 already holds for git's `COMMIT_EDITMSG` and cargo's regenerated lockfile: a file the tool
 itself rebuilds, judged by an invariant that cannot know that.
 
+**2026-09-17: the first define again, with the recovery declared** (#606, ADR 0072;
+`apparatus/explore-ninja-recovery606.sh`, `apparatus/Dockerfile.recovery606`,
+`transcripts/explore-ninja-recovery606/`). Not a release: the `feat/606-recovery-phase` branch
+cross-built for aarch64-linux (it reports itself as 1.4.0; uncommitted when measured, so
+`stdout.txt` names the build by digest, sideeye `c57de41a…`, the tree as proposed for commit), the same ninja 1.12.1 on trixie,
+the same setup and world checker byte for byte, `--observe syscalls`, as root with
+`--privileged`. The recovery is `ninja -C <state>`; its checker judges content, not ninja's
+exit — `in.txt` and `out.txt` both carry the MARKER and are byte-equal. Once without the
+recovery and twice with it: **FAIL exit 1 all three times, 1 of 8 worlds, crash point 3 of 7** —
+the world the 2026-09-16 runs found — and the verdict, violations and crash point identical with
+and without. Both controls held: the junk probe was rejected (`in.txt lost its MARKER`), and
+on the completed state the recovery ran and the checker accepted. **Each exhibit's recovery:
+`pass`, twice**, 0.003 s, the evidence bundle's `recovery.result` `pass`. The prediction, written
+in the driver's header before the first run, was right on every reported value and wrong in one
+parenthesis: it said ninja would have nothing to fix on the completed state. The transcript says
+`recovery baseline: [1/1] cp in.txt out.txt` — ninja copied again on a state whose output was
+already correct, because the rebuilt state's timestamps are restore-time. That line is the
+direct evidence for the limit the account and the bundle state: **this `pass` cannot fail.**
+ninja rebuilds whatever a rebuilt state holds, so the `pass` says the recovery command and the
+checker work together on these states and nothing about ninja's own mtime logic, which is what
+the probe above (`probe-ninja.sh`, `probe-review.sh`) measured without Sideeye.
+
 ## markdownlint-cli 0.49.1 — FAIL, the truncating rewrite
 
 **Crash point 2 of 2, 4 of 4 runs (three `wrappers`, one `syscalls`), the same under main.**

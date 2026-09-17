@@ -4387,6 +4387,21 @@ if ! grep -q '"scratch"' "$SD/scratch.json" 2>/dev/null; then
     echo "FAIL the scratch fixture carries no scratch field, so the schema check below cannot see the row it documents"
     fails=$((fails + 1))
 fi
+# A report for the fields only a declared recovery carries (#606, ADR 0072): the account
+# string, and the recovery object inside BOTH exhibits — TOY_SPLIT_REWRITE's two exhibits are
+# different worlds, and recover-split.sh passes one and fails the other, so `command_exit`,
+# `seconds` and both `result` values appear in one document.
+mkdir -p "$SD/src"
+TOY_SPLIT_REWRITE=1 TOY_STATE=$SD/src "$SIDEEYE" explore --state "$SD/src" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check "$ROOT/spike/check-split.sh" \
+    --recovery "$ROOT/spike/recover-split.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh" \
+    --shim "$SHIM" --work "$SD/wrc" --oracle /usr/bin/strace \
+    --json "$SD/recovery.json" >/dev/null 2>&1
+if [ "$(field "$SD/recovery.json" checker_earliest.recovery.result)" != "fail" ]; then
+    echo "FAIL the recovery fixture does not carry a recovery object in both exhibits, so the schema check below cannot see every row it documents"
+    fails=$((fails + 1))
+fi
 # An eighth report, for the syscall-layer observation path (contract v14, ADR 0052).
 # It carried `oracle_verified_across_runs` until 2026-09-08, when that mode's oracle stopped
 # watching a separate run; what it pins now is that the mode earns the ordinary field and
@@ -4413,7 +4428,7 @@ if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/observe.json" "$SD/children.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -4515,6 +4530,310 @@ if [ "$x_fails" = "0" ]; then
     echo "ok   both exhibits carried, 000001 owned by the earliest, the checker case replays"
 else
     echo "FAIL the second exhibit: $x_fails assertion(s) wrong"
+    fails=$((fails + 1))
+fi
+
+echo ""
+echo "=========== check 4r: a declared recovery reports beside the verdict and changes none of it (#606) ==========="
+# ADR 0072. The promise: declaring a recovery changes no verdict and no exit code, and adds, for
+# each saved FAIL world, what the tool's own recovery did when handed that world's crash state
+# (names, kinds, contents). It is false in four shapes, and each leg below is built to catch one:
+# a recovery that moves the verdict, one handed a state that is not the crash state, one that
+# never ran reported as `fail`, and one whose checker rejects every state reported as `fail`. The legs were first measured on macOS against the same toys and
+# each discriminating one seen red against a mutant — BUILDLOG 2026-09-17.
+RD=/tmp/acc-recovery
+rm -rf "$RD" && mkdir -p "$RD"
+r_fails=0
+r_explore() {
+    r_label=$1; r_toy=$2; shift 2
+    mkdir -p "$RD/$r_label/state"
+    TOY="$OUT/$r_toy" TOY_STATE="$RD/$r_label/state" "$SIDEEYE" explore --state "$RD/$r_label/state" \
+        --setup "$OUT/$r_toy init" --operation "$OUT/$r_toy rotate" \
+        --shim "$SHIM" --work "$RD/$r_label/work" --oracle /usr/bin/strace \
+        --json "$RD/$r_label/r.json" "$@" > "$RD/$r_label/out.txt" 2>&1
+    echo "$?" > "$RD/$r_label/rc"
+}
+r_want() { # r_want <label> <what> <got> <wanted>
+    [ "$3" = "$4" ] || { echo "     $1: $2 was '$3', wanted '$4'"; r_fails=$((r_fails + 1)); }
+}
+
+# (1a) A recovery that finishes the interrupted rename. The verdict is the crash state's, the
+# recovery is `pass`, and the replay line carries both flags, single-quoted. The command is two
+# words, so (1e) replaying the printed line fails loudly if the quoting is lost: the second word
+# would reach replay as a flag of its own.
+r_explore a-fix toy-bug --recovery "$ROOT/spike/recover-key.sh --from-sideeye" --recovery-check "$ROOT/spike/check-recovered-key.sh"
+r_want a-fix exit "$(cat "$RD/a-fix/rc")" 1
+r_want a-fix verdict "$(field "$RD/a-fix/r.json" verdict)" FAIL
+r_want a-fix earliest.recovery.result "$(field "$RD/a-fix/r.json" earliest.recovery.result)" pass
+grep -qF -- "--recovery '$ROOT/spike/recover-key.sh --from-sideeye' --recovery-check '$ROOT/spike/check-recovered-key.sh'" "$RD/a-fix/out.txt" ||
+    { echo "     a-fix: the replay line does not carry the recovery flags, single-quoted"; r_fails=$((r_fails + 1)); }
+grep -q '^recovery    configured; the recovery checker was trusted after two controls' "$RD/a-fix/out.txt" ||
+    { echo "     a-fix: no recovery account line in the text report"; r_fails=$((r_fails + 1)); }
+grep -q '^recovery falsify: ' "$RD/a-fix/out.txt" ||
+    { echo "     a-fix: the falsification probe's output is not labeled"; r_fails=$((r_fails + 1)); }
+r_ev=$(field "$RD/a-fix/r.json" evidence)
+r_want a-fix bundle.recovery.result "$(field "$r_ev" recovery.result)" pass
+grep -q 'The recovery ran against a crash state rebuilt' "$r_ev" ||
+    { echo "     a-fix: the bundle of a judged recovery lacks the restore-time caveat"; r_fails=$((r_fails + 1)); }
+
+# (1b) A recovery that deletes the new key: ran, ended, rejected — `fail`, verdict unchanged.
+cat > "$RD/recover-break.sh" <<'EOF'
+#!/bin/sh
+rm -f "${SIDEEYE_STATE_DIR:?}/key.json.tmp"
+EOF
+chmod 755 "$RD/recover-break.sh"
+r_explore b-break toy-bug --recovery "$RD/recover-break.sh" --recovery-check "$ROOT/spike/check-recovered-key.sh"
+r_want b-break exit "$(cat "$RD/b-break/rc")" 1
+r_want b-break earliest.recovery.result "$(field "$RD/b-break/r.json" earliest.recovery.result)" fail
+
+# (1c) No FAIL, nothing to recover: PASS, exit 0, no exhibit, the account says it did not run.
+r_explore c-fixed toy-fixed --recovery "$ROOT/spike/recover-key.sh" --recovery-check "$ROOT/spike/check-recovered-key.sh"
+r_want c-fixed exit "$(cat "$RD/c-fixed/rc")" 0
+r_want c-fixed recovery "$(field "$RD/c-fixed/r.json" recovery)" "configured; not run (no world was saved as a FAIL)"
+grep -q '"earliest"' "$RD/c-fixed/r.json" && { echo "     c-fixed: a PASS carries an exhibit"; r_fails=$((r_fails + 1)); }
+
+# (1d) Two exhibits in two different worlds with two different crash states. recover-split.sh
+# repairs world 2's shape only, so the prediction — written before the first run — is earliest
+# `pass`, claim exhibit `fail`. One snapshot handed to both legs reads pass/pass (measured
+# against that mutant); swapped would read fail/pass (predicted, not run). Each bundle carries its
+# own exhibit's result.
+TOY_SPLIT_REWRITE=1; export TOY_SPLIT_REWRITE
+r_explore d-split toy-fixed --check "$ROOT/spike/check-split.sh" \
+    --recovery "$ROOT/spike/recover-split.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh"
+unset TOY_SPLIT_REWRITE
+r_want d-split earliest.crash_point "$(field "$RD/d-split/r.json" earliest.crash_point)" 2
+r_want d-split checker_earliest.crash_point "$(field "$RD/d-split/r.json" checker_earliest.crash_point)" 4
+r_want d-split earliest.recovery.result "$(field "$RD/d-split/r.json" earliest.recovery.result)" pass
+r_want d-split checker_earliest.recovery.result "$(field "$RD/d-split/r.json" checker_earliest.recovery.result)" fail
+r_want d-split bundle-1.recovery "$(field "$(field "$RD/d-split/r.json" evidence)" recovery.result)" pass
+r_want d-split bundle-2.recovery "$(field "$(field "$RD/d-split/r.json" checker_earliest.evidence)" recovery.result)" fail
+
+# (1e) The replay line as printed — `sideeye` resolved to the binary under test, plus --work and
+# --json — reproduces the recovery; the same case replayed without the flags carries none.
+r_line=$(sed -n 's/^replay      //p' "$RD/a-fix/out.txt")
+r_case=$(field "$RD/a-fix/r.json" case)
+# Exported, not prefixed: an assignment in front of that builtin reaches the command it runs
+# in bash and not in dash, and the recovery checker reads TOY (seen: `fail` in the container,
+# `pass` on macOS).
+( TOY="$OUT/toy-bug"; TOY_STATE="$RD/a-fix/state"; export TOY TOY_STATE
+  eval "\"\$SIDEEYE\"${r_line#sideeye} --oracle /usr/bin/strace --work \"$RD/a-fix/wr\" --json \"$RD/a-fix/replay.json\"" > "$RD/a-fix/replay.txt" 2>&1 )
+r_want e-replay exit "$?" 1
+r_want e-replay earliest.recovery.result "$(field "$RD/a-fix/replay.json" earliest.recovery.result)" pass
+TOY="$OUT/toy-bug" TOY_STATE="$RD/a-fix/state" "$SIDEEYE" replay "$r_case" --shim "$SHIM" --oracle /usr/bin/strace \
+    --work "$RD/a-fix/wr2" --fresh-state --json "$RD/a-fix/replay-noflags.json" > /dev/null 2>&1
+grep -q '"recovery"' "$RD/a-fix/replay-noflags.json" && { echo "     e-replay: a replay without the flags carries a recovery field"; r_fails=$((r_fails + 1)); }
+r_want e-replay-noflags verdict "$(field "$RD/a-fix/replay-noflags.json" verdict)" FAIL
+
+# (3) Whatever the recovery does, the verdict is the one the define reaches without it. The
+# world checker here also fails if $POISON exists: a recovery run inside the loop that wrote it
+# would reach every later world and the baseline (measured against that mutant: FAIL exit 1
+# became UNKNOWN exit 2). Seven misbehaving recoveries, each compared to the no-recovery run on
+# verdict, exit code, violations and both exhibits' crash points. `reject` is the checker that
+# rejects everything: it passes the corrupted-state control, so only the completed-state control
+# keeps it from reading both exhibits `fail` (measured against that mutant).
+cat > "$RD/world-check.sh" <<EOF
+#!/bin/sh
+[ -e "\${POISON:?}" ] && { echo "a recovery reached this world" >&2; exit 1; }
+exec "$ROOT/spike/check-split.sh"
+EOF
+cat > "$RD/recover-poison.sh" <<'EOF'
+#!/bin/sh
+: > "${POISON:?}"
+EOF
+cat > "$RD/recover-missing-on-crash.sh" <<'EOF'
+#!/bin/sh
+# Exits 127 — what a failed exec leaves — but only on world 2's crash shape (derived.txt empty): on the
+# completed state and on world 4's it does nothing and exits 0. Spelled as an exit rather than an exec
+# of a missing program because the shells disagree on that exec: dash exits 127, macOS's sh 126.
+s=${SIDEEYE_STATE_DIR:?}
+[ -s "$s/derived.txt" ] || exit 127
+exit 0
+EOF
+cat > "$RD/recover-slow.sh" <<'EOF'
+#!/bin/sh
+sleep 30
+EOF
+cat > "$RD/recover-linger.sh" <<'EOF'
+#!/bin/sh
+# A writer that leaves the recovery's process group and keeps appending for three seconds. The
+# parent exits only once the child has left the group, so the group kill at the parent's exit
+# cannot take the child first (review: a race on a loaded host).
+python3 - "$SIDEEYE_STATE_DIR" <<'PY'
+import os, sys, time
+r, w = os.pipe()
+if os.fork() == 0:
+    os.close(r)
+    os.setsid()
+    os.write(w, b"x"); os.close(w)
+    end = time.time() + 3.0
+    with open(os.path.join(sys.argv[1], "busy.txt"), "a") as fh:
+        while time.time() < end:
+            fh.write("x"); fh.flush()
+    os._exit(0)
+os.close(w)
+os.read(r, 1)
+PY
+EOF
+chmod 755 "$RD/world-check.sh" "$RD/recover-poison.sh" "$RD/recover-missing-on-crash.sh" "$RD/recover-slow.sh" "$RD/recover-linger.sh"
+r_tuple() {
+    python3 - "$RD/$1/r.json" "$(cat "$RD/$1/rc")" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d["verdict"], sys.argv[2], d["violations"],
+      (d.get("earliest") or {}).get("crash_point"), (d.get("checker_earliest") or {}).get("crash_point"))
+PY
+}
+TOY_SPLIT_REWRITE=1; export TOY_SPLIT_REWRITE
+for r_case3 in none true reject poison missing crashmissing slow linger; do
+    POISON="$RD/g-$r_case3/poison"; export POISON
+    case "$r_case3" in
+        none)    r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" ;;
+        true)    r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" --recovery "$ROOT/spike/recover-split.sh" --recovery-check /bin/true ;;
+        reject)  r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" --recovery "$ROOT/spike/recover-split.sh" --recovery-check /bin/false ;;
+        poison)  r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" --recovery "$RD/recover-poison.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh" ;;
+        missing) r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" --recovery "$RD/no-such-recovery" --recovery-check "$ROOT/spike/check-recovered-split.sh" ;;
+        crashmissing) r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" --recovery "$RD/recover-missing-on-crash.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh" ;;
+        slow)    r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" --world-timeout 3 --recovery "$RD/recover-slow.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh" ;;
+        linger)  r_explore "g-$r_case3" toy-fixed --check "$RD/world-check.sh" --recovery "$RD/recover-linger.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh" ;;
+    esac
+done
+unset TOY_SPLIT_REWRITE POISON
+r_base=$(r_tuple g-none)
+r_want g-none tuple "$r_base" "FAIL 1 2 2 4"
+for r_case3 in true reject poison missing crashmissing slow linger; do
+    r_want "g-$r_case3" "verdict/exit/violations/exhibits" "$(r_tuple "g-$r_case3")" "$r_base"
+done
+r_want g-true earliest.recovery.result "$(field "$RD/g-true/r.json" earliest.recovery.result)" unknown
+r_want g-reject earliest.recovery.result "$(field "$RD/g-reject/r.json" earliest.recovery.result)" unknown
+r_want g-reject checker_earliest.recovery.result "$(field "$RD/g-reject/r.json" checker_earliest.recovery.result)" unknown
+r_want g-reject earliest.recovery.seconds "$(field "$RD/g-reject/r.json" earliest.recovery.seconds)" 0.0
+grep -q 'The recovery ran against a crash state rebuilt' "$(field "$RD/g-reject/r.json" evidence)" &&
+    { echo "     g-reject: a bundle whose recovery never ran carries the caveat that it ran"; r_fails=$((r_fails + 1)); }
+r_want g-crashmissing "earliest/claim recovery" "$(field "$RD/g-crashmissing/r.json" earliest.recovery.result)/$(field "$RD/g-crashmissing/r.json" checker_earliest.recovery.result)" unknown/fail
+r_want g-slow earliest.recovery.result "$(field "$RD/g-slow/r.json" earliest.recovery.result)" unknown
+case "$(field "$RD/g-slow/r.json" recovery)" in *"did not end within --world-timeout"*) ;;
+    *) echo "     g-slow: the account does not name the timeout"; r_fails=$((r_fails + 1)) ;; esac
+case "$(field "$RD/g-reject/r.json" recovery)" in *"rejected what the recovery left on the completed, uncrashed state"*) ;;
+    *) echo "     g-reject: the account does not name the completed-state control"; r_fails=$((r_fails + 1)) ;; esac
+r_want g-poison earliest.recovery.result "$(field "$RD/g-poison/r.json" earliest.recovery.result)" fail
+r_want g-missing earliest.recovery.result "$(field "$RD/g-missing/r.json" earliest.recovery.result)" unknown
+# Uncontained, the detached writer is still appending when the state is sampled: `unknown`.
+# Contained, its cgroup stopped it when the command exited, the state settles, and the leg is judged —
+# recover-linger.sh repairs nothing, so `fail`.
+case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+    1) r_want g-linger earliest.recovery.result "$(field "$RD/g-linger/r.json" earliest.recovery.result)" fail ;;
+    0) r_want g-linger earliest.recovery.result "$(field "$RD/g-linger/r.json" earliest.recovery.result)" unknown ;;
+    *) echo "     NOT MEASURED: a writer a recovery leaves, contained or not — SIDEEYE_EXPECT_CONTAINED is neither 0 nor 1"
+       not_measured=$((not_measured + 1)) ;;
+esac
+
+# (3c) What one leg starts does not answer for the next, where the engine can make cgroups
+# (review). recover-daemon.sh refuses to start while the process its pid file names is alive, as a
+# server refuses a port or a lock another instance holds; otherwise it repairs world 2's shape as
+# recover-split.sh does and leaves a detached process behind. The completed-state control runs
+# first and starts one. Contained, that process is stopped when the control's command exits, and
+# the exhibits read pass/fail as (1d) does; uncontained, it is still alive, both exhibits' starts
+# are refused, and both read fail — the limit docs/cli.md names, measured rather than assumed.
+cat > "$RD/recover-daemon.sh" <<EOF
+#!/bin/sh
+pidf=\${DAEMON_PID:?}
+if [ -s "\$pidf" ] && kill -0 "\$(cat "\$pidf")" 2>/dev/null; then
+    echo "already running as \$(cat "\$pidf")" >&2
+    exit 3
+fi
+"$ROOT/spike/recover-split.sh" || exit 1
+python3 - "\$pidf" <<'PY'
+import os, sys, time
+child = os.fork()
+if child == 0:
+    os.setsid()
+    grandchild = os.fork()
+    if grandchild == 0:
+        null = os.open(os.devnull, os.O_RDWR)
+        for fd in (0, 1, 2):
+            os.dup2(null, fd)
+        time.sleep(20)
+        os._exit(0)
+    with open(sys.argv[1], "w") as f:
+        f.write(str(grandchild))
+    os._exit(0)
+os.waitpid(child, 0)
+PY
+EOF
+chmod 755 "$RD/recover-daemon.sh"
+r_daemon() {   # r_daemon <label> <engine> <wanted earliest/claim>
+    DAEMON_PID="$RD/$1.pid"; export DAEMON_PID
+    : > "$DAEMON_PID"
+    r_engine_saved=$SIDEEYE; SIDEEYE=$2
+    TOY_SPLIT_REWRITE=1; export TOY_SPLIT_REWRITE
+    r_explore "$1" toy-fixed --check "$ROOT/spike/check-split.sh" \
+        --recovery "$RD/recover-daemon.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh"
+    unset TOY_SPLIT_REWRITE
+    SIDEEYE=$r_engine_saved
+    [ -s "$DAEMON_PID" ] && kill "$(cat "$DAEMON_PID")" 2>/dev/null
+    unset DAEMON_PID
+    r_want "$1" "verdict/exit/violations/exhibits" "$(r_tuple "$1")" "FAIL 1 2 2 4"
+    r_want "$1" "earliest/claim recovery" "$(field "$RD/$1/r.json" earliest.recovery.result)/$(field "$RD/$1/r.json" checker_earliest.recovery.result)" "$3"
+}
+r_daemon_said=""
+case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+    0) r_daemon h-uncontained "$SIDEEYE" fail/fail
+       r_daemon_said="; a daemon one leg leaves reaching the next where no cgroup is made" ;;
+    1) r_daemon h-contained "$SIDEEYE" pass/fail
+       case "$(field "$RD/h-contained/r.json" recovery)" in *"process(es) it left stopped when it exited"*) ;;
+           *) echo "     h-contained: the account does not say the command left a process that was stopped"; r_fails=$((r_fails + 1)) ;; esac
+       r_daemon h-nocgroup "$ROOT/zig-out/bin/sideeye-testnocgroup" fail/fail
+       r_daemon_said="; a daemon one leg leaves stopped where a cgroup is made" ;;
+    *) echo "     NOT MEASURED: a daemon one recovery leg leaves, contained or not — SIDEEYE_EXPECT_CONTAINED is neither 0 nor 1"
+       not_measured=$((not_measured + 1)) ;;
+esac
+
+# (4) A define that declares no recovery carries no recovery field and no recovery line, so a
+# report of such a define reads as it did.
+for r_rep in "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/scratch.json"; do
+    grep -q '"recovery"' "$r_rep" && { echo "     no-recovery: ${r_rep##*/} carries a recovery field"; r_fails=$((r_fails + 1)); }
+done
+grep -q '^recovery' "$RD/g-none/out.txt" && { echo "     no-recovery: the text report carries a recovery line"; r_fails=$((r_fails + 1)); }
+
+# (5) src/recovery.zig runs after the verdict is decided and must never end the process: a call
+# into any of these would turn a recovery failure into a refusal replacing the FAIL. Comment
+# lines are skipped (the file names them to say why). Seen red here, on a copy with one planted.
+# What it sees is a call by name in this file: not one reached through a callee (read by hand at
+# the diff review, the only one is `posix.monotonicMs`'s `unreachable` on a failing clock), and not
+# a child that dies before exec, which is `commandEnd`'s to read.
+r_noreturn='setupError|spawnFailure|unknown\(|snapshotOrRefuse|afterRun|refuseDetach|killCameBack|pastCrashPoint|refuse\.|std\.process\.exit|@panic|unreachable'
+r_scan() { grep -nE "$r_noreturn" "$1" | grep -vE '^[0-9]+:[[:space:]]*//'; }
+r_hits=$(r_scan "$ROOT/src/recovery.zig")
+[ -z "$r_hits" ] || { echo "     noreturn: src/recovery.zig calls a function that ends the process: $r_hits"; r_fails=$((r_fails + 1)); }
+sed 's/^    engine.restore(state, ctx.state_abs) catch$/    refuse.restoreFailure(error.CreateFailed, "planted");\n&/' "$ROOT/src/recovery.zig" > "$RD/recovery-planted.zig"
+[ -n "$(r_scan "$RD/recovery-planted.zig")" ] || { echo "     noreturn: the scan does not see a planted refuse.* call"; r_fails=$((r_fails + 1)); }
+
+# (6) The pair and its boundaries: one flag alone, --config beside the flags, preflight, the
+# argv form under [recovery], and a command or check of spaces are each refused by name.
+mkdir -p "$RD/p"
+r_first() { "$SIDEEYE" "$@" 2>&1 < /dev/null | head -1; }
+r_out=$(r_first explore --state "$RD/p" --operation "$OUT/toy-fixed rotate" --recovery /bin/true)
+case "$r_out" in *"declared as a pair"*) ;; *) echo "     pair: --recovery alone: $r_out"; r_fails=$((r_fails + 1)) ;; esac
+printf '[world]\nstate = "s"\n[define]\noperation = "x"\n' > "$RD/p.toml"
+r_out=$(r_first explore --config "$RD/p.toml" --recovery /bin/true --recovery-check /bin/true)
+case "$r_out" in *"mutually exclusive"*) ;; *) echo "     pair: --config with the flags: $r_out"; r_fails=$((r_fails + 1)) ;; esac
+r_out=$(r_first preflight --state "$RD/p" --operation "$OUT/toy-fixed rotate" --recovery /bin/true --recovery-check /bin/true)
+case "$r_out" in *"belong to explore and replay"*) ;; *) echo "     pair: preflight: $r_out"; r_fails=$((r_fails + 1)) ;; esac
+printf '[world]\nstate = "s"\n[define]\noperation = "x"\n[recovery]\ncommand = ["a", "b"]\ncheck = "c"\n' > "$RD/argv.toml"
+r_out=$(r_first explore --config "$RD/argv.toml")
+case "$r_out" in *"string form only"*) ;; *) echo "     pair: [recovery] argv form: $r_out"; r_fails=$((r_fails + 1)) ;; esac
+# A value of spaces splits into no words; unrefused, the child dies before exec and the gate read
+# it as a recovery that ran and was rejected — `fail` (seen on macOS before the refusal existed).
+r_out=$(r_first explore --state "$RD/p" --operation "$OUT/toy-fixed rotate" --recovery "   " --recovery-check /bin/true)
+case "$r_out" in *"--recovery is empty"*) ;; *) echo "     pair: --recovery of spaces: $r_out"; r_fails=$((r_fails + 1)) ;; esac
+printf '[world]\nstate = "s"\n[define]\noperation = "x"\n[recovery]\ncommand = "/bin/true"\ncheck = "  "\n' > "$RD/blank.toml"
+r_out=$(r_first explore --config "$RD/blank.toml")
+case "$r_out" in *"--recovery-check is empty"*) ;; *) echo "     pair: [recovery] check of spaces: $r_out"; r_fails=$((r_fails + 1)) ;; esac
+
+if [ "$r_fails" = "0" ]; then
+    echo "ok   a declared recovery: pass/fail/not run by shape, per exhibit, replayable as printed; the verdict unmoved by seven misbehaving recoveries${r_daemon_said}; absent when undeclared"
+else
+    echo "FAIL a declared recovery: $r_fails assertion(s) wrong"
     fails=$((fails + 1))
 fi
 
@@ -4788,7 +5107,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch /etc/passw
 o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch 'a/../b' 2>&1); rc=$?
 [ "$rc" = "3" ] && echo "$o" | grep -q 'without `.` or `..` segments' && sc_ok "--scratch refuses a .. segment" || sc_fail "scratch dotdot" "$rc" "$o"
 o=$("$SIDEEYE" explore --config /dev/null --scratch x 2>&1); rc=$?
-[ "$rc" = "3" ] && echo "$o" | grep -q -- "--scratch) are mutually exclusive" && sc_ok "--scratch is exclusive with --config" || sc_fail "scratch config exclusivity" "$rc" "$o"
+[ "$rc" = "3" ] && echo "$o" | grep -q -- "--scratch[,)].*are mutually exclusive" && sc_ok "--scratch is exclusive with --config" || sc_fail "scratch config exclusivity" "$rc" "$o"
 o=$("$SIDEEYE" replay "$sc_case" --scratch x --shim "$SHIM" --work /tmp/acc/work-r4 2>&1); rc=$?
 [ "$rc" = "3" ] && echo "$o" | grep -q -- "--apparatus and --scratch included" && sc_ok "replay refuses --scratch: the case carries the declaration" || sc_fail "scratch replay exclusivity" "$rc" "$o"
 # (e) preflight --twice: the declared path is left out of the comparison and the report says

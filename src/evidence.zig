@@ -117,7 +117,10 @@ pub const Target = struct {
 };
 
 /// The whole bundle, as it is written to disk and as `sideeye evidence` reads it back.
-/// Parsed strictly on the way in: an unknown field is a file from a future schema.
+/// Read leniently: an unknown field is ignored, and only an `evidence_version` above this
+/// binary's is refused (ADR 0071) — the opposite of a case file, whose reader treats an unknown
+/// field as a future schema. The comment that stood here said "parsed strictly", which the
+/// reader stopped doing before #607 merged.
 pub const Evidence = struct {
     schema: []const u8,
     evidence_version: u32,
@@ -324,7 +327,7 @@ fn lastLine(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
 /// The sentences the report already carries about what this run could and could not see.
 /// Copied from the same variables the report reads, never re-derived: two derivations of one
 /// fact drift, and this one would drift towards the flattering side.
-pub fn caveats(arena: std.mem.Allocator, truncated: bool) error{OutOfMemory}![]const []const u8 {
+pub fn caveats(arena: std.mem.Allocator, truncated: bool, recovery_judged: bool) error{OutOfMemory}![]const []const u8 {
     var list: std.ArrayList([]const u8) = .empty;
     const buf = &list;
     if (!report.oracle_verified) try buf.append(
@@ -345,6 +348,13 @@ pub fn caveats(arena: std.mem.Allocator, truncated: bool) error{OutOfMemory}![]c
         arena,
         "More paths differed than this bundle lists individually; the table is the first 256 in path order.",
     );
+    // #606, ADR 0072. Said wherever a recovery ran against this exhibit and was judged, pass or
+    // fail: a pass from a tool that decides by modification time is exactly the result this
+    // limit can manufacture. Not said on `unknown`, which may be a recovery that never ran.
+    if (recovery_judged) try buf.append(
+        arena,
+        "The recovery ran against a crash state rebuilt from its snapshot: the names, kinds and contents the crash left, but restore-time timestamps and fixed permissions, so a recovery that decides by modification time or by permission saw every file as newly written.",
+    );
     return buf.items;
 }
 
@@ -361,6 +371,9 @@ pub const Exhibited = struct {
     replay: []const u8,
     case_path: []const u8,
     draft: Draft,
+    /// What the declared recovery did to this exhibit's crash state (#606); null when no
+    /// recovery was declared, which is what `not_configured` in the file says.
+    recovery: ?contract.RecoveryResult = null,
 };
 
 /// Build a bundle for one exhibit and write it beside `case_file`, returning its path or null.
@@ -379,7 +392,7 @@ pub fn save(
     crash_points_total: u32,
     e: Exhibited,
 ) ?[]const u8 {
-    const cav = caveats(arena, e.draft.consequence_truncated) catch return null;
+    const cav = caveats(arena, e.draft.consequence_truncated, if (e.recovery) |r| r != .unknown else false) catch return null;
     return write(arena, case_file, .{
         .schema = "sideeye/evidence",
         .evidence_version = current_version,
@@ -398,9 +411,10 @@ pub fn save(
         .checker = e.draft.checker,
         .replay = e.replay,
         .case = e.case_path,
-        // #606's slot, held open from the first version so adding a result later is a value
-        // change and not a schema change. A string, not an enum, for the same reason.
-        .recovery = .{ .result = "not_configured" },
+        // The slot #607 held open from the first version, filled by #606 as a value change and
+        // not a schema change: `evidence_version` stays 1. A string in the file, not an enum,
+        // for the same reason — a reader built before #606 reads the new values as text.
+        .recovery = .{ .result = if (e.recovery) |r| r.name() else "not_configured" },
         .caveats = cav,
     });
 }
@@ -698,6 +712,12 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
     try w.appendSlice(arena, "## Recovery\n\n");
     if (std.mem.eql(u8, ev.recovery.result, "not_configured"))
         try w.appendSlice(arena, "Not configured — this run did not measure whether the tool repairs the state on its next start.\n\n")
+    else if (std.mem.eql(u8, ev.recovery.result, "pass"))
+        try w.appendSlice(arena, "**Pass** — the tool's own recovery, run against this crash state, left a state the declared recovery checker accepted. The crash state above is unchanged by this: it is still what the crash left.\n\n")
+    else if (std.mem.eql(u8, ev.recovery.result, "fail"))
+        try w.appendSlice(arena, "**Fail** — the tool's own recovery ran against this crash state and ended, and the declared recovery checker rejected what it left.\n\n")
+    else if (std.mem.eql(u8, ev.recovery.result, "unknown"))
+        try w.appendSlice(arena, "**Unknown** — the run could not establish what the recovery did to this crash state; the report's `recovery` line says why.\n\n")
     else
         try w.print(arena, "{s}\n\n", .{asText(arena, ev.recovery.result)});
 
