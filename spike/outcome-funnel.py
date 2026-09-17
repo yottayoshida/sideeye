@@ -101,7 +101,8 @@ REPORT_RE = re.compile(r"^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#[0-9]+$")
 DATE_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 # A report JSON is recognised by what it carries, never by its extension. Two kinds of
 # .json under spike/dogfood/ are not reports: the strace readings under
-# 2026-09-13-joplin-turns/transcripts/runs/ (no verdict at all) and the case files a
+# 2026-09-13-joplin-turns/transcripts/ (forty of them, twenty in runs/ and twenty in
+# logger-error/, none carrying a verdict) and the case files a
 # replay reads. Deciding by suffix would hold rows to the wrong documents.
 REPORT_KEYS = {"schema", "verdict", "explored", "crash_points"}
 

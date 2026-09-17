@@ -86,8 +86,8 @@ the list is now twenty-nine red legs and one green, one per clause `check` can r
 on, plus the committed tree checked after the list.
 
 **`spike/acceptance.sh` check 11 now asserts its own page list.** The list was one line
-of four quoted paths with a count assertion per page and none on the number of pages, so
-two branches adding a page collide on that line and a resolution that takes one side
+of three quoted paths — four once this page joined them — with a count assertion per
+page and none on the number of pages, so two branches adding a page collide on that line and a resolution that takes one side
 drops the other's page silently — the sweep stays green over what remains. Seen red
 once: with `docs/outcome-funnel.md` removed the block prints "the evidence-first page
 list holds 3 pages, not the 4 this check is written for" and `fails=1`; with four it
