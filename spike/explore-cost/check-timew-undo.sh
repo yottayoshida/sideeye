@@ -4,6 +4,10 @@
 # leg that script explores: after any crash, `timew undo` must run, must add nothing,
 # and may remove either nothing or exactly the interval timewarrior itself reports as
 # most recent -- never an older, committed one.
+#
+# Committed 755, unlike the scripts beside it, because it is a checker the engine execs:
+# measure-targets.sh runs a copy, but a define that names this path directly must find it
+# executable (CLAUDE.md -- a 644 checker green under `sh` failed at campaign 2's first explore).
 set -eu
 before=$(timew export) || exit 1
 timew undo >/dev/null || exit 1

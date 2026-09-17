@@ -4,15 +4,21 @@
 `measure.sh` beside this file measured what one world costs and said plainly that it says
 nothing about a total: "a run costs the per-world figure times crash points plus one, and
 the file count does not predict the multiplier". This reads the multiplier off every report
-this repository has committed, so the distribution comes from the record rather than from
+committed under `spike/dogfood/`, so the distribution comes from the record rather than from
 an impression.
 
     python3 spike/explore-cost/corpus.py            # the tables, to stdout
     python3 spike/explore-cost/corpus.py --tsv OUT  # the per-report rows as TSV
 
-What it reads: every `*.json` under `spike/dogfood/` whose `schema` is `sideeye/report`.
-Nothing else in the tree is a report this engine wrote -- the assisted and blind-hunt
-directories hold saved cases, which carry no counters.
+What it reads: every `*.json` under `spike/dogfood/` whose `schema` is `sideeye/report`, and
+nothing else. That is a choice, not the whole record: the dogfood runs (2026-09-05 onward) are
+the recent real targets the exploration-cost question is about, and the rest of `spike/` holds
+297 more reports -- the unknown-rate sweep, the follow-up and cohort directories, blind-hunt,
+assisted -- many of them byte-identical copies, 52 of the judged ones from before the
+`explored` field existed, and three more targets past 100 crash points (fontforge 184, borg
+118, hg 106). The first draft of this docstring said those directories "carry no counters";
+`spike/assisted/buku/report-remeasure.json` is a FAIL over 21 crash points. The record beside
+this file gives the repository-wide figures it measured for that reason.
 
 Three things this deliberately does not do.
 
@@ -185,7 +191,9 @@ def main():
         # into one question) and right for programs.
         r["name"] = named.get(p) or by_stem.get(sibling_key(p))
         r["program"] = r["name"] or by_stem.get((sibling_key(p)[0], None)) or re.split(r"[.\-]", r["target"])[0]
-        r["target"] = r["name"] or r["target"]
+        # The define stays the file's own stem. Letting the funnel's name replace it merged
+        # defines the funnel names alike: `newsboat3-scratch` and `newsboat3` both became
+        # `newsboat`, `rdiff-backup-regress` and `rdiff-backup` both `rdiff-backup`.
 
     judged = [r for r in rows if r["verdict"] in ("PASS", "FAIL")]
     refused = [r for r in rows if r["verdict"] not in ("PASS", "FAIL")]
@@ -200,6 +208,8 @@ def main():
     for r in explored:
         by_target[r["target"]].append(r)
     unnamed = sorted({r["target"] for r in explored if not r["name"]})
+    # Counted by the name a define carries in its reports: an explore and its re-run in
+    # another directory (`explore/aws` and `rerun-after-redaction/aws`) are one define.
     # Two counts, because one number cannot be both. A key is a define: `nvim` and
     # `nvim-scratch` are two questions about one program. A program is the funnel's name where
     # the funnel named the record or its run -- those names are programs (`mogrify`,
@@ -207,8 +217,8 @@ def main():
     # the two programs printed below as named by stem only when one of them is a program the
     # funnel named under another spelling (`nvim012` is neovim, `rdiff` is rdiff-backup).
     programs = {r["program"] for r in explored}
-    print(f"distinct defines among them: {len(by_target)} "
-          f"({len(by_target) - len(unnamed)} named by spike/outcome-funnel.tsv, {len(unnamed)} by file stem) "
+    print(f"distinct file stems among them: {len(by_target)} "
+          f"({len(by_target) - len(unnamed)} whose records the funnel names, {len(unnamed)} it does not) "
           f"over {len(programs)} distinct programs")
     if unnamed:
         print("   named by stem only (the funnel has no row pointing at these records): " + ", ".join(unnamed))

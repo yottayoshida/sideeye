@@ -4,37 +4,44 @@
 # The report names two crash points at most -- the earliest violating world and the
 # earliest world whose violation includes the checker -- so nothing committed says what the
 # other worlds produced. This re-materialises every world of one define from outside the
-# engine, through the `reproduce` line the FAIL report itself prints, and groups them.
+# engine, with the environment the `reproduce` line a FAIL report prints (the shim inserted,
+# `SIDEEYE_KILL_AT=k`), built from the define `measure-targets.sh` wrote -- so it works for
+# PASS defines too, which print no such line.
 #
 #   sh spike/explore-cost/collapse.sh <rundir>/<target>      # written by measure-targets.sh
 #
-# For k in 1..crash_points it rebuilds the pre-state with the define's `setup`, runs the
-# operation under the shim with `SIDEEYE_KILL_AT=k`, and records three things about the
-# world that leaves: the digest of the whole state tree, the set of paths that differ from
-# the pre-state, and the checker's exit status and first line. The engine is not involved
-# in the judging here; the point is to see the worlds it does not report.
+# For k in 1..crash_points it rebuilds the pre-state by running the define's `setup`, runs
+# the operation killed at k, checks from the trace that the kill landed in front of
+# operation k, and records the digest of the whole state tree, the paths that differ from
+# the pre-state, and the checker's exit status and first line.
 #
-# Two groupings are printed, because "the same outcome" has two defensible readings and
-# they answer different halves of the question:
+# Two groupings are printed, because "the same outcome" has two defensible readings:
 #
-#   strict  -- byte-identical state trees (and the same checker result). Two worlds that
-#              differ by one byte are two outcomes. This is the conservative reading the
-#              measurement is asked for: what cannot be established as equivalent stays
-#              distinct.
-#   coarse  -- the same set of changed paths and the same checker exit and first line. This
-#              is the reading a maintainer-facing consequence would take. It merges worlds
-#              whose file differs only in how far a write got.
+#   strict  -- byte-identical state trees and the same checker exit and first line. What
+#              cannot be established as equivalent stays distinct.
+#   coarse  -- the same set of changed paths and the same checker exit and first line. The
+#              reading a maintainer-facing consequence would take; it merges worlds whose
+#              files differ only in their bytes.
 #
-# The gap between the two counts is the finding, not either number alone.
+# How this differs from the engine, said here so the record can repeat it:
 #
-# What this does not do: it does not judge. A world here has no L0/L1 verdict -- the
-# built-in invariants live in the engine and are not reachable from a shell -- so `checker`
-# is the only invariant column, and a define with no checker is grouped on state alone. It
-# also cannot see a world the engine would have refused.
-# The define's commands are run through `sh -c`, one line each, where the engine splits
-# them on spaces and execs the result (ADR 0019). For the defines measured here the two
-# agree -- none of them carries a quote, a glob or a redirection -- and a define that
-# needed the argv form could not be re-materialised by this harness at all.
+# - The pre-state is rebuilt by running `setup` again, where the engine restores a snapshot
+#   (whose own report line says restore does not reproduce ownership, permissions or
+#   timestamps). Setup is not guaranteed to write the same bytes twice; world 1 -- killed
+#   before any counted operation -- is the check, and its tree equals the pre-state digest
+#   in every define this was run on.
+# - `setup` and `check` run through `sh -c`; the operation is split on spaces and exec'd
+#   directly, as the engine does (ADR 0019). On macOS that difference is not optional:
+#   /bin/sh is a platform binary, so an operation run through it has dyld drop the insert
+#   before the target starts. That was measured here first, as five identical worlds and an
+#   operation that exited 0 because no kill ever landed.
+# - A `reproduce` line re-creates a crash point, not a whole world, when the run awaited a
+#   writing child (the note beside it in `src/main.zig` says so). This inherits that limit.
+# - It does not judge. The built-in invariants live in the engine and are not reachable from
+#   a shell, so a world's L0/L1 verdict is not part of either grouping.
+#
+# A world whose trace does not show the kill landing at k is printed with `landed` set to
+# what the trace showed instead, and is left out of both groupings, with the count said.
 set -u
 [ $# -ge 1 ] || { echo "usage: collapse.sh <rundir>/<target>" >&2; exit 2; }
 D=$1
@@ -67,14 +74,36 @@ shutil.rmtree(target, ignore_errors=True)
 WIPE
 }
 
-OUT=$D/collapse
-wipe "$OUT"
-mkdir -p "$OUT"
-echo "# collapse: $(basename "$D"), $N crash points, $(uname -sm), $(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo untracked)"
-echo "# operation: $OP"
-echo "# checker: ${CHECK:-(none)}"
+# landed <trace> <k> -> "ok", or what the trace showed instead. The trace format is the
+# contract's (`src/contract.zig`, `encodeHeader` / `encodeRecord`): an 8-byte magic and a
+# little-endian u32 version, then records of u16 op, u32 seq, u32 pid, u64 tid, a
+# u32-length path and a u32-length aux. The shim writes a `kill_landed` record (op 901)
+# carrying the number it was killed in front of; the engine refuses a world where that
+# number is not k (`kill_did_not_land`), and so does this.
+landed() {
+    python3 - "$1" "$2" <<'LANDED'
+import struct, sys
+path, k = sys.argv[1], int(sys.argv[2])
+try:
+    b = open(path, "rb").read()
+except OSError:
+    print("no-trace"); sys.exit()
+if len(b) < 12 or b[:8] != b"SIDEEYE1":
+    print("no-header"); sys.exit()
+i, seqs = 12, []
+while i + 22 <= len(b):
+    op, seq, _pid, _tid, plen = struct.unpack_from("<HIIQI", b, i)
+    i += 22 + plen
+    if i + 4 > len(b):
+        break
+    i += 4 + struct.unpack_from("<I", b, i)[0]
+    if op == 901:
+        seqs.append(seq)
+print("ok" if seqs == [k] else ("none" if not seqs else "at-" + "+".join(map(str, seqs))))
+LANDED
+}
 
-digest() {  # digest <dir> -> "<tree digest> <per-path digest lines to file $2>"
+digest() {  # digest <dir> <paths-file> -> tree digest; one "path digest" line per file to <paths-file>
     python3 - "$1" "$2" <<'PY'
 import hashlib, os, sys
 root, out = sys.argv[1], sys.argv[2]
@@ -96,36 +125,39 @@ print(hashlib.sha256("\n".join(lines).encode()).hexdigest()[:16])
 PY
 }
 
+OUT=$D/collapse
+wipe "$OUT"
+mkdir -p "$OUT"
+echo "# collapse: $(basename "$D"), $N crash points, $(uname -sm), $(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo untracked)"
+echo "# operation: $OP"
+echo "# checker: ${CHECK:-(none)}"
+
 # The pre-state: what `setup` leaves, before any operation. Every world is compared with
-# this one, so a "changed path" means changed by the killed operation.
+# this one, so a changed path means changed by the killed operation.
 wipe "$SD"; mkdir -p "$SD"
 sh -c "$SETUP" >"$OUT/setup.txt" 2>&1 || { echo "collapse.sh: setup failed, see $OUT/setup.txt" >&2; exit 2; }
 pre=$(digest "$SD" "$OUT/pre.paths")
 echo "# pre-state digest: $pre"
 echo ""
-printf '%-4s %-4s %-18s %-18s %-8s %s\n' k rc tree changed-paths checker diagnostic
+printf '%-4s %-4s %-6s %-18s %-8s %-28s %s\n' k rc landed tree checker changed diagnostic
 
 k=1
 while [ "$k" -le "$N" ]; do
     wipe "$SD"; mkdir -p "$SD"
     sh -c "$SETUP" >/dev/null 2>&1 || { echo "collapse.sh: setup failed at k=$k" >&2; exit 2; }
-    # The operation is split on spaces and exec'd directly, which is what the engine does
-    # (ADR 0019) and what macOS forces: /bin/sh is a platform binary, so running the
-    # operation through `sh -c` has dyld drop DYLD_INSERT_LIBRARIES before the target
-    # starts -- measured here first, as five identical worlds and an operation that exited
-    # 0 because no kill ever landed.
+    # In a subshell whose own stderr is closed: the operation dies of SIGKILL every time,
+    # which is the point, and the shell would otherwise print `Killed: 9` for each world.
     # shellcheck disable=SC2086
     set -- $OP
-    # In a subshell whose own stderr is closed: the operation dies of SIGKILL every time,
-    # which is the point, and the shell would otherwise print `Killed: 9` for each world
-    # over the table being built.
     ( env "SIDEEYE_STATE_DIR=$SD" "SIDEEYE_TRACE_PATH=$OUT/trace-$k.bin" \
         "$INSERT=$SHIM" "SIDEEYE_KILL_AT=$k" "SIDEEYE_SEQ_BASE=" \
         "$@" >"$OUT/op-$k.txt" 2>&1 ) 2>/dev/null
     rc=$?
+    land=$(landed "$OUT/trace-$k.bin" "$k")
     tree=$(digest "$SD" "$OUT/w$k.paths")
+    # The changed paths by name, each marked + (added), - (removed) or ~ (bytes differ).
     changed=$(python3 - "$OUT/pre.paths" "$OUT/w$k.paths" <<'PY'
-import hashlib, sys
+import sys
 def read(p):
     out = {}
     with open(p, encoding="utf-8") as fh:
@@ -134,9 +166,15 @@ def read(p):
             out[rel] = h
     return out
 a, b = read(sys.argv[1]), read(sys.argv[2])
-names = sorted(set(a) | set(b))
-diff = [n for n in names if a.get(n) != b.get(n)]
-print(hashlib.sha256("\n".join(diff).encode()).hexdigest()[:16] if diff else "(none)")
+marks = []
+for n in sorted(set(a) | set(b)):
+    if n not in a:
+        marks.append("+" + n)
+    elif n not in b:
+        marks.append("-" + n)
+    elif a[n] != b[n]:
+        marks.append("~" + n)
+print(",".join(marks) if marks else "(none)")
 PY
     )
     if [ -n "${CHECK:-}" ]; then
@@ -146,32 +184,35 @@ PY
     else
         crc="-"; msg=""
     fi
-    printf '%-4s %-4s %-18s %-18s %-8s %s\n' "$k" "$rc" "$tree" "$changed" "$crc" "$msg"
-    echo "$k	$rc	$tree	$changed	$crc	$msg" >> "$OUT/rows.tsv"
+    printf '%-4s %-4s %-6s %-18s %-8s %-28s %s\n' "$k" "$rc" "$land" "$tree" "$crc" "$changed" "$msg"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$k" "$rc" "$land" "$tree" "$crc" "$changed" "$msg" >> "$OUT/rows.tsv"
     k=$((k + 1))
 done
 
 echo ""
 python3 - "$OUT/rows.tsv" <<'PY'
 import collections, sys
-rows = []
+rows, unlanded = [], []
 with open(sys.argv[1], encoding="utf-8") as fh:
     for line in fh:
-        k, rc, tree, changed, crc, msg = (line.rstrip("\n").split("\t") + [""])[:6]
-        rows.append((int(k), rc, tree, changed, crc, msg))
+        k, rc, land, tree, crc, changed, msg = (line.rstrip("\n").split("\t") + [""] * 7)[:7]
+        (rows if land == "ok" else unlanded).append((int(k), tree, crc, changed, msg, land))
+print("kill landed at k in %d of %d worlds" % (len(rows), len(rows) + len(unlanded)))
+for k, _t, _c, _ch, _m, land in unlanded:
+    print("   left out of both groupings: k=%d (trace shows %s)" % (k, land))
 strict = collections.OrderedDict()
 coarse = collections.OrderedDict()
-for k, rc, tree, changed, crc, msg in rows:
-    strict.setdefault((tree, crc), []).append(k)
+for k, tree, crc, changed, msg, _land in rows:
+    strict.setdefault((tree, crc, msg), []).append(k)
     coarse.setdefault((changed, crc, msg), []).append(k)
 def show(name, groups):
     print("%s: %d distinct outcome(s) over %d crash points" % (name, len(groups), len(rows)))
     for key, ks in groups.items():
-        span = ",".join(str(k) for k in ks)
-        print("   x%-3d k=%-24s %s" % (len(ks), span, " ".join(x for x in key if x)))
-show("strict (byte-identical tree + checker result)", strict)
+        print("   x%-3d k=%-24s %s" % (len(ks), ",".join(str(k) for k in ks), "  ".join(x for x in key if x)))
+print()
+show("strict (byte-identical tree + checker exit and first line)", strict)
 print()
 show("coarse (same changed paths + checker exit and first line)", coarse)
 PY
 echo ""
-echo "# per-world path digests, engine output and checker output under $OUT/"
+echo "# per-world path digests, traces, engine output and checker output under $OUT/"

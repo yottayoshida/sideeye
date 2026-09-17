@@ -13,65 +13,67 @@ on worlds that end up saying the same thing. The question it answers came from o
 project: *when Sideeye scales to more targets, how redundant and expensive is exhaustive
 crash injection at recorded state-changing operation boundaries?*
 
-**The short answer.** At the scale this project actually runs, exhaustive boundary
-exploration is not a material bottleneck. The median judged run has 5 crash points; a whole
-run of a real target on this laptop takes 0.1 to 5 seconds; the heaviest exploration on
-record — virtualenv, 1,381 crash points — took about seven minutes; and every exploration
-this project has committed adds up to roughly seventeen minutes of engine time. Redundancy is
-measurable and it is not uniform: one of the six defines walked crash point by crash point
-collapses 17 of its 18 worlds onto a single maintainer-facing consequence, and another
-collapses almost none of its 19. The one time on record that exploration cost changed a plan,
-it did so through an estimate the measurement then showed was about eight times too high.
-Nothing here justifies building a pruner; the last section says what would.
+**The short answer, in two halves that rest on different evidence.**
 
-Three things this record does **not** do: it does not propose pruning, it does not change
-exploration semantics, and it does not touch recovery (#606, a second-stage judgement over
-an already materialised crash world — a different question that must not be mixed into an
-exploration-cost figure).
+*Cost:* at the scale this project runs, exhaustive boundary exploration is not a material
+bottleneck. The median judged dogfood run has 5 crash points; a whole run of a real target on
+this laptop takes 0.1 to 5 seconds; the heaviest exploration anyone has timed — virtualenv,
+1,381 crash points — took about seven minutes. The one time on record that exploration cost
+changed a plan, it did so through an estimate about eight times the measured time.
+
+*Redundancy:* within the six defines walked crash point by crash point — C and C++ tools
+with 2 to 19 crash points — it is measurable and not dominant: one collapses 17 of its 18
+worlds onto a single maintainer-facing consequence, another almost none of its 19. Where
+pruning would actually pay, the 100-plus crash-point class, nothing was walked, and **this
+sample cannot say** whether redundancy dominates there.
+
+Nothing here justifies building a pruner; the last section says what would. Three things
+this record does **not** do: propose pruning, change exploration semantics, or touch recovery
+(#606, a second-stage judgement over an already materialised crash world — a different
+question that must not be mixed into an exploration-cost figure).
 
 ## Where the numbers come from
 
 | Source | What it gives | Script / file |
 |---|---|---|
-| Every report this repository has committed under `spike/dogfood/` | crash-point counts, worlds, violations, where the first failing crash point sits | `corpus.py` → `corpus-out.txt` |
-| Two sentences of committed prose that recorded a wall clock | virtualenv's explore time; ansible's | `spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md`, `spike/dogfood/2026-09-13-cgroup-559/RESULTS.md` |
-| Seven runs of six defines, timed on this host | whole-run wall clock and per-world cost | `measure-targets.sh` → `targets-run-{1,2,3}.txt` |
-| Those six defines walked crash point by crash point | how many crash points give the same observable outcome | `collapse.sh` → `collapse-*.txt` |
+| Every report committed under `spike/dogfood/` | crash-point counts, worlds, violations, where the first failing crash point sits | `corpus.py` → `corpus-out.txt` |
+| The rest of `spike/`, counted once for scope | how much of the record the dogfood corpus is | this page, section 1 |
+| Committed prose that recorded a wall clock | one virtualenv explore; ansible's | `spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md`, `spike/dogfood/2026-09-13-cgroup-559/RESULTS.md` |
+| Seven defines timed on this host | whole-run wall clock and per-world cost | `measure-targets.sh` → `targets-run-{1,2,3}.txt` |
+| Six of those walked crash point by crash point | how many crash points give the same observable outcome | `collapse.sh` → `collapse-*.txt` |
 
-The defines measured with a clock are ones this repository already committed elsewhere,
-re-pathed for this host and named in `measure-targets.sh`'s header beside their sources. The
-committed transcripts have this machine's home directory replaced by `~` and the checkout's
-path by `<checkout>`; nothing else in them was edited.
+The defines timed here are ones this repository already committed elsewhere, re-pathed for
+this host and named in `measure-targets.sh`'s header beside their sources. The committed
+transcripts have this machine's home directory replaced by `~` and the checkout's path by
+`<checkout>`; nothing else in them was edited.
 
-**No report carries a wall clock, and neither do the transcripts' structured lines** — the
-first draft of this record went from there to "virtualenv was never timed", which was false:
-the run that produced those reports says in its prose that an explore "took about seven
-minutes". The reports were searched and the prose was not. The two figures prose gives are
-used below and cited where they are.
+**No report carries a wall clock, and no transcript's structured lines do.** The first draft
+of this record went from there to "virtualenv was never timed", which was false: that run's
+prose says an explore "took about seven minutes". The reports were searched and the prose was
+not. The prose figures are used below and cited where they are.
 
 ## Conditions
 
 - Host: macOS 15.3.1, Apple M4, 32 GiB. Engine and shim built from `d2f9e5f`,
-  `sideeye 1.4.0 (trace contract v18)`, Zig 0.16.0. Load average 2.7–3.4 across the runs
-  (`RESULTS.md`'s runs were at 10–14, so the two records' absolute figures are not
-  comparable — the shapes are).
+  `sideeye 1.4.0 (trace contract v18)`, Zig 0.16.0. Load average 2.7–3.4 across the runs.
 - `--observe wrappers` (the default) and `--allow-unverified` on every timed row: there is
-  no strace on macOS, and `--oracle-fs-usage` needs a privilege this measurement will not
-  ask for. The committed runs of the same defines were made in a Linux container **with** an
-  oracle. Their crash-point counts agree with this host's where the corpus has them — xz 18
-  and 18, jpegtran 2 and 2, bsdtar 2 and 2; timewarrior's define lives in
+  no strace on macOS, and `--oracle-fs-usage` needs a privilege this measurement will not ask
+  for. The committed runs of the same defines were made in a Linux container **with** an
+  oracle. Their crash-point counts agree with this host's wherever the dogfood corpus has
+  them — xz 18 and 18, jpegtran 2 and 2, bsdtar 2 and 2; timewarrior's define lives in
   `spike/dogfood-timew.sh` and has no committed report to compare with.
-- Every timed figure is the median of three consecutive runs. Spread (largest over
-  smallest) was 1.0×–1.5×.
+- Every timed figure is the median of three consecutive runs. Per-world spread (largest over
+  smallest, unrounded) was 1.08× to 1.58×; the three runs' engine totals were 11.8, 12.0 and
+  11.0 seconds.
 
 ## 1. The multiplier: crash points per judged run
 
-From 200 committed reports — 126 judged, 74 refused; 123 of the judged explored at least one
-crash point, for **3,843 worlds** in total, over 44 defines and 39 programs. (`corpus.py`
-prints 41 programs: it groups by file name and the funnel's target names, and two of its
-programs are one program spelled twice — `nvim012` is neovim, `rdiff` is rdiff-backup.)
+**The dogfood corpus.** 200 committed reports under `spike/dogfood/` — 126 judged, 74
+refused; 123 of the judged explored at least one crash point, for **3,843 worlds**, over 39
+programs. (`corpus.py` prints 41 programs: two of them are one program spelled twice —
+`nvim012` is neovim, `rdiff` is rdiff-backup.)
 
-| | crash points per judged run |
+| | crash points per judged dogfood run |
 |---|---|
 | min / median / p90 / max | 1 / **5** / 18 / 1,381 |
 | 1 | 4 runs (3%) |
@@ -82,18 +84,26 @@ programs are one program spelled twice — `nvim012` is neovim, `rdiff` is rdiff
 | 100+ | 2 runs (2%) |
 
 `explored == crash_points + 1` in 123 of 123, so nothing in the corpus explored a subset.
+virtualenv's two runs at 1,381 crash points each are 2,764 of the corpus's 3,843 worlds —
+72%. Both PASSed.
 
-**The distribution has one long tail and it is a single target.** virtualenv's two runs are
-1,381 crash points each: 2,764 of the 3,843 worlds this project has ever explored — 72% —
-are those two runs. Both PASSed.
+**The rest of `spike/`, for scope.** The dogfood corpus is the recent real targets
+(2026-09-05 onward), which is what the question is about, and `corpus.py` reads nothing else.
+It is not the whole record. The rest of `spike/` holds 297 more reports — the unknown-rate
+sweep (188), the follow-up directories, blind-hunt, assisted, cohorts 2 and 3 — 52 of the
+judged ones from before the `explored` field existed. Counting every judged report with that
+field, byte-identical copies once, the repository holds 252 explored runs and 5,630 worlds;
+the 100-plus class there is virtualenv (1,381) and three more — fontforge at 184, borg at
+118, hg at 106 — and virtualenv's share is 49%, not 72%. None of this moves the cost
+conclusion: the added tail is 106 to 184 crash points.
 
 ## 2. The product: what a whole run costs
 
 Median of three runs, this host. `engine` is the wall clock around the engine process, so
-`per world` is an upper bound: start-up, `setup`, the recording run and its snapshots are
-in the total and are not worlds.
+`per world` is an upper bound: start-up, `setup`, the recording run and its snapshots are in
+the total and are not worlds.
 
-| target | language | verdict | crash points | worlds | violations | earliest | engine | per world |
+| define | language | verdict | crash points | worlds | violations | earliest | engine | per world |
 |---|---|---|---|---|---|---|---|---|
 | toy-fixed | C | PASS | 4 | 5 | 0 | – | 0.1 s | 0.017 s |
 | toy-bug | C | FAIL | 5 | 6 | 1 | 5 | 0.1 s | 0.014 s |
@@ -103,164 +113,189 @@ in the total and are not worlds.
 | timew (undo contract) | C++ | FAIL | 19 | 20 | 2 | 14 | 2.9 s | 0.145 s |
 | xz | C | PASS | 18 | 19 | 0 | – | 4.9 s | 0.259 s |
 
-Seven runs, 76 worlds, 11.2 seconds of engine time in total.
+Seven defines over five programs, 76 worlds; the medians sum to 11.2 seconds.
 
-Per-world cost varies 18× across these targets (0.014 s to 0.259 s) and the driver is the
-work per world, not the count: xz restores and snapshots a 7 MB tree nineteen times, the toy
-restores two small files. This is the relationship `RESULTS.md` measured against padding
+Per-world cost varies 18× across these defines (0.014 s to 0.259 s) and the driver is the
+work per world, not the count: xz restores and snapshots a 5.75 MB file nineteen times, the
+toy restores two small files. That is the relationship `RESULTS.md` measured against padding
 size, holding on real targets.
 
-**It holds in the tail too.** virtualenv's explore "took about seven minutes" for 1,382
-worlds (`spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md`), about 0.3 s per world —
-just above this host's range, on another host, in a Linux container, under strace, with each
-world building a Python environment. Nothing there departs from per-world cost times worlds.
-The other prose timing, ansible-core at 1 crash point, is "2 seconds or less" per explore
+**It holds in the tail.** One virtualenv explore "took about seven minutes" for 1,382 worlds
+(`spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md`), about 0.3 s per world — on another
+host, in a Linux container, under strace, with each world building a Python environment.
+Nothing there departs from per-world cost times worlds. The other prose figure, ansible-core
+at one crash point, is "2 seconds or less" per explore
 (`spike/dogfood/2026-09-13-cgroup-559/RESULTS.md`).
 
-Read against the corpus: virtualenv's two runs at about seven minutes each, and the other
-1,079 worlds at this host's per-world figures — 0.145 s median, 0.014 s to 0.259 s at the
-extremes — come to **about seventeen minutes** of engine time (fourteen to nineteen) for
-every exploration this project has committed. Five-sixths of that is virtualenv.
+Read against the dogfood corpus: two virtualenv explores at about seven minutes — the prose
+times one; the second is assumed alike — and the other 1,079 worlds at this host's
+no-oracle per-world figures come to **about seventeen minutes** of engine time. That is not a
+bound. Both Linux-under-strace figures on record are at or above this host's highest, so the
+real total is more likely above seventeen than below it; five-sixths of it is virtualenv
+either way.
 
 ## 3. How much of an exploration repeats
 
 The report names at most two crash points — the earliest violating world, and the earliest
 world whose violation includes the checker — so nothing committed says what the other worlds
-produced. `collapse.sh` re-materialises every world of a define from outside the engine,
-through the `reproduce` line a FAIL report itself prints, and groups them two ways:
+produced. `collapse.sh` re-materialises every world of a define from outside the engine and
+groups them two ways:
 
-- **strict** — byte-identical state trees, plus the same checker result. What cannot be
-  established as equivalent stays distinct.
-- **coarse** — the same set of changed paths and the same checker exit and first line. The
+- **strict** — byte-identical state trees, and the same checker exit and first line. What
+  cannot be established as equivalent stays distinct.
+- **coarse** — the same set of changed paths, and the same checker exit and first line. The
   reading a maintainer-facing consequence would take.
 
-| define | crash points | strict outcomes | coarse outcomes | shape |
+**The kill landed in front of operation k in all 50 worlds**, read from each world's trace —
+the check the engine makes before judging a world (`kill_did_not_land`), and one this
+measurement did not make on its first draft. Where a world failed the checker, it is the world
+the engine's own report names: timew worlds 14 and 15 (the report: violations 2, earliest 14),
+jpegtran world 2.
+
+| define | crash points | strict | coarse | shape |
 |---|---|---|---|---|
 | bsdtar | 2 | **1** | **1** | both worlds are the pre-state: nothing reaches `a.tar` before either kill |
-| jpegtran | 2 | 2 | 2 | world 1 unchanged; world 2 the empty file the checker rejects |
-| toy-fixed | 4 | 3 | 2 | worlds 3 and 4 are byte-identical |
+| jpegtran | 2 | 2 | 2 | world 1 unchanged; world 2 the empty `a.jpg` the checker rejects |
+| toy-fixed | 4 | 3 | 2 | worlds 3 and 4 byte-identical |
 | toy-bug | 5 | 4 | 3 | worlds 3 and 4 identical; world 5 the planted loss |
 | timew (undo) | 19 | 15 | 15 | worlds 1–2 unchanged and 16–19 identical; the rest singletons, and the two failing worlds fail *differently* |
-| xz | 18 | **16** | **2** | world 1 unchanged; worlds 2–18 change the same path, and 16–18 are byte-identical |
+| xz | 18 | **16** | **2** | world 1 unchanged; worlds 2–18 add `f.bin.xz`, 16–18 byte-identical |
+
+timewarrior's no-checker define was not walked: its setup, operation and crash points are the
+undo define's, so its trees are the same trees, and both groupings key on the checker only
+where one is declared.
 
 Two findings, and they point opposite ways.
 
-**xz is where pruning would pay.** Seventeen of its eighteen crash points — every world
-after the first — produce the same changed-path set and the same checker result: a partial
-`f.bin.xz` beside the intact `f.bin`. Under the strict reading those seventeen are fifteen
-different states: the last three are byte-identical, and each of the other fourteen holds a
-different amount of compressed output. The gap between fifteen and one *is* the risk in
-pruning: an engine that skipped sixteen of those seventeen worlds would be right here, and
-the judgement that they are "the same" belongs to the checker, not to the engine.
+**xz is where pruning would pay.** `f.bin` is intact in all eighteen worlds. In the seventeen
+after the first, `f.bin.xz` exists beside it — empty at world 2, byte-distinct at worlds 3
+through 15, and at 16 through 18 one byte-identical complete stream (the last world's passes
+`xz -t` and decompresses to the original) — and the checker accepts every one. Seventeen
+crash points, one coarse outcome, fifteen strict states. The gap between fifteen and one *is*
+the risk in pruning: an engine that skipped sixteen of those seventeen worlds would have been
+right here, and the judgement that fifteen different states are "the same" belongs to the
+checker, not to the engine.
 
-**timew is where it would not.** Nineteen crash points, fifteen distinct outcomes under
-either reading, and the two failing worlds carry different diagnostics — world 14 has
-`timew undo` remove the wrong change, world 15 leaves a tag count that undo cannot decrement.
-A pruner that assumed adjacent worlds are alike would have had to explore both anyway.
+**timew is where it would not.** Nineteen crash points, fifteen distinct outcomes under either
+reading, and the two failing worlds carry different diagnostics — world 14 has `timew undo`
+remove the wrong change, world 15 leaves a tag count that undo cannot decrement. A pruner that
+assumed adjacent worlds are alike would have had to explore both anyway.
 
-**One world per run is empty by construction.** In all six defines, the world killed before
-the first state-changing operation leaves the pre-state exactly: the kill lands *before*
-operation 1, so no counted operation has run (ADR 0003). That is 123 of 3,843 worlds in the
-corpus — 3% — and it is the only redundancy in this record that holds for every target
-rather than for a shape.
+**At least one world per run is empty by construction.** In all six defines, the world killed
+before the first state-changing operation leaves the pre-state exactly: the kill lands *before*
+operation 1, so no counted operation has run (ADR 0003). That is 123 of the dogfood corpus's
+3,843 worlds, 3% — a floor, since bsdtar's second world and timew's second are also the
+pre-state — and the only redundancy in this record that holds for every define rather than for
+a shape.
 
 ## 4. Where the first counterexample sits
 
-Over the 87 FAIL runs in the corpus, every one of which names an earliest crash point:
+Over the 87 FAIL runs in the dogfood corpus, every one of which names an earliest crash point:
 
 - As an address: median **2**, max 55.
 - 54 of 87 (62%) fail at crash point 1 or 2.
 - As a fraction of the run the median is 0.88, which is an artefact: 39 of the 123 judged
-  runs have exactly two crash points, where the fraction can only be 0.5 or 1.0. Read it
-  where there is room — **36 of the FAIL runs** have five or more crash points (of 62 judged
-  runs that do), and over those the median earliest is address **3**, fraction 0.37,
-  minimum 0.17.
-- The exceptions are real and they are the long runs: rdiff-backup 55 of 68, newsboat 26 of
-  43, timew 14 of 19 (measured here).
-- 52 of 87 FAIL runs (60%) have exactly one failing crash point; the median FAIL run has one
-  violating world, the largest has 15.
+  runs have exactly two crash points, where the fraction can only be 0.5 or 1.0. Read it where
+  there is room — **36 of the FAIL runs** have five or more crash points (of 62 judged runs
+  that do), and over those the median earliest is address **3**, fraction 0.37.
+- **Twelve of those 36, over five programs, fail past the halfway mark**, and they are not
+  only the long runs: cargo at 6 of 7 (three runs), Bun at 10 of 10 — the last crash point
+  (four runs), qpdf at 7 of 8, newsboat at 26 of 43 (two runs), rdiff-backup at 51 and 55 of
+  68. timew's 14 of 19, measured here, is a thirteenth.
+- 52 of 87 FAIL runs (60%) have exactly one failing crash point; the largest has 15.
 
-A stop-at-first-failure strategy would therefore save most of a FAILing run's worlds — and
-nothing at all on a PASSing one, which is where the worlds actually are: **the 36 PASS runs
-hold 3,100 of the 3,843 worlds and the 87 FAIL runs hold 743**, so the strategy with the
-clearest saving applies to the fifth of the corpus that is already cheap.
+A stop-at-first-failure strategy would therefore save most of a typical FAILing run's worlds,
+less than half on a third of the longer ones, and nothing at all on a PASSing run — which is
+where the worlds are: **the 36 PASS runs hold 3,100 of the 3,843 worlds and the 87 FAIL runs
+hold 743**.
 
 ## The five questions
 
-1. **Distribution of crash-point counts.** Median 5, p90 18, 46% of runs in 2–4. One target
-   at 1,381 holds 72% of all worlds ever explored.
-2. **Wall-clock cost at those counts.** 0.1–5 seconds per whole run on this laptop, 11.2
-   seconds for seven runs; about seven minutes for the 1,381-crash-point run, on record. Per
-   world 0.014–0.259 s here and about 0.3 s there, driven by what a world does, not by how
-   many there are.
-3. **How often crash points collapse.** Shape-dependent and wide: 1 outcome from 2 worlds
-   (bsdtar), 2 from 18 (xz), 15 from 19 (timew). The strict and coarse readings agree on
-   timew and disagree 8× on xz.
-4. **How early the first counterexample is found.** Address 2 (median); address 3 over the
-   FAIL runs with five or more crash points; 62% at crash point 1 or 2. Three measured
-   exceptions past the halfway mark.
-5. **Material bottleneck, or plausible future one?** Not material at the measured scale.
+1. **Distribution of crash-point counts.** Median 5, p90 18, 46% of dogfood runs in 2–4. The
+   100-plus class is virtualenv in the dogfood corpus (72% of its worlds) and four targets
+   across the repository (49%).
+2. **Wall-clock cost at those counts.** 0.1–5 seconds per whole run on this laptop; about
+   seven minutes for the one 1,381-crash-point explore on record. Per world 0.014–0.259 s
+   here, about 0.3 s there, driven by what a world does rather than by how many there are.
+3. **How often crash points collapse.** In the six defines walked, widely and by shape: 1
+   outcome from 2 worlds (bsdtar), 2 from 18 (xz), 15 from 19 (timew). The strict and coarse
+   readings agree on timew and differ 8× on xz. Not measured above 19 crash points.
+4. **How early the first counterexample is found.** Address 2 (median); address 3 over the FAIL
+   runs with five or more crash points; 62% at crash point 1 or 2 — and a third of the FAIL runs
+   with room for it to be late are late, not only the long ones.
+5. **Material bottleneck, or plausible future one?** Cost: not material at the measured scale.
+   Redundancy: measurable and not dominant where walked; undetermined where it would matter.
 
 ## Conclusion
 
 **Exhaustive boundary exploration is not currently a material bottleneck at the measured
-scale, and redundancy is measurable but not dominant.** Both statements are needed: the first
-is about cost — seconds per typical run, seven minutes for the largest on record, about
-seventeen minutes for the project's whole committed history — and the second about waste,
-where one define in six shows heavy collapse and one shows almost none.
+scale.** Seconds per typical run, seven minutes for the largest explore on record, about
+seventeen minutes of engine time for the whole dogfood corpus.
 
-The single case on record where cost changed a plan is worth reading closely, because it is
-the shape a bottleneck would take. The 2026-09-16 virtualenv run planned three explores per
+**Redundancy is measurable but not dominant within the range walked — C and C++ tools of 2 to
+19 crash points — and the sample is insufficient to say whether it dominates in the 100-plus
+class**, which is where pruning would pay and where nothing was walked. Those are two
+statements, not one, because they rest on different samples.
+
+The single case on record where cost changed a plan is worth reading closely, because it is the
+shape a bottleneck would take. The 2026-09-16 virtualenv run planned three explores per
 observation mode; its preflight showed 1,381 kill points, an explore was estimated at an hour,
 and the plan was cut to one per mode. The explore then took about seven minutes, and the run's
-own record says three per mode would have fit. What cost the measurement its repetitions was
-an estimate roughly eight times too high, not the cost itself.
+own record says three per mode would have fit. What cost that measurement its repetitions was
+an estimate about eight times the measured time, not the time itself.
 
 ## What would justify a pruning or prioritisation issue
 
-Not this record. Three measured results would, and the first is the prerequisite:
+Not this record. Two measured results and one agreement would, and the first is the
+prerequisite:
 
-1. **A recorded case where measured exploration wall clock — not an estimate — made a
-   workflow cut what it planned**: a campaign dropping targets or repetitions, the
-   `timew-regression` CI job, a re-record after a contract bump. The only case on record was
-   cut on an estimate the measurement then refuted, so it does not qualify.
+1. **Measured exploration wall clock exceeding a budget the workflow itself states** — a CI
+   job's timeout, a campaign's planned time, a re-record's window after a contract bump — so
+   that what was planned had to be cut. The virtualenv case does not qualify twice over: it was
+   cut on an estimate, and the plan named no budget the measured seven minutes exceeded.
 2. **At that target, a coarse collapse ratio of 5:1 or better**, measured the way section 3
-   measures it. Pruning only pays where many worlds give one consequence; timew's 15 of 19 is
-   the counterexample that says the ratio must be measured per target class rather than
-   assumed.
-3. **A statement of what a pruner may throw away**, checked against the strict/coarse gap.
-   xz's fifteen byte-distinct states behind one coarse outcome are where a pruner would be
-   wrong if it is ever wrong, and the decision that those states are equivalent is the
-   checker's.
+   measures it, landed kills included. Pruning only pays where many worlds give one
+   consequence; timew's 15 of 19 is the counterexample that says the ratio has to be measured
+   per target class rather than assumed.
+3. **An agreed statement of what a pruner may throw away**, checked against the strict/coarse
+   gap. This is not a measurement and the list does not pretend it is one: xz's fifteen strict
+   states behind one coarse outcome are where a pruner would be wrong if it is ever wrong, and
+   the decision that those states are equivalent is the checker's.
 
-The evidence gap this record ran into is itself the obstacle to (1): no report and no
-structured transcript line carries a wall clock, so the one case on record had to be found in
-a sentence of prose, and the estimate that cut that plan had nothing measured to be checked
-against. If a follow-up issue is filed, it should carry those three as its acceptance, and it
-should be filed after (1) is observed, not before.
+What this record kept running into is itself the obstacle to (1): no report and no structured
+transcript line carries a wall clock, so the one case on record had to be found in a sentence
+of prose, and the estimate that cut that plan had nothing measured to be checked against. If a
+follow-up issue is filed, it should carry those three as its acceptance, and it should be filed
+after (1) is observed, not before.
 
 ## What this record does not say
 
-- **The clock and the collapse walk are narrow.** They cover six defines — four real
-  programs (timewarrior, jpegtran, bsdtar, xz) and the repository's own toy twice — all C or
-  C++, on one macOS host, crash-point counts 2 to 19. The brief asked for roughly ten to
-  twenty real targets across languages. That is met by the corpus half — 44 defines over 39
-  programs in Python, Rust, Go, Java, Ruby, PHP, Node, Haskell, C and C++ — for crash-point
-  counts and the first failing crash point, and **not** for wall clock or collapse: the other
-  language families' defines run in Linux containers this campaign did not rebuild, which the
-  brief's budget ruled out. The collapse findings in section 3 are about C and C++ tools
-  between 2 and 19 crash points and nothing wider.
+- **The clock and the collapse walk are narrow.** Seven defines over five programs —
+  timewarrior, jpegtran, bsdtar, xz and the repository's own toy — all C or C++, on one macOS
+  host, crash-point counts 2 to 19. The brief asked for roughly ten to twenty real targets
+  across languages. That is met by the corpus half — 39 programs in Python, Rust, Go, Java,
+  Ruby, PHP, Node, Haskell, C and C++ — for crash-point counts and the first failing crash
+  point, and **not** for wall clock or collapse. The reason is what is installed here: these
+  five run natively on this Mac (Homebrew or the OS), and the other language families' tools
+  exist on this machine only inside the container images their dogfood runs built, which this
+  campaign did not rebuild.
 - Nothing about an idle machine, another filesystem, or Linux, beyond the two prose figures.
-  Every timed row is this laptop's, under the load the header records, with no oracle. An
-  oracle adds a second witness to the recording run and does not change the world count.
-- Nothing about refusals. 74 of the 200 committed reports refused; a refused run may have
-  refused before exploring, and `corpus.py` excludes them from every figure rather than
-  counting them as cheap explorations. The cost of *reaching* exploration — screening,
-  building images, finding a define a target accepts — is not measured here at all.
-- Nothing about recovery. A recovery leg (#606) would run *after* a crash world is judged
-  and would be counted separately; mixing it into these figures would be measuring two things
-  with one clock.
-- `collapse.sh` does not judge. It groups states and checker results; the built-in invariants
-  live in the engine and are not reachable from a shell, so a world's L0/L1 verdict is not
-  part of the grouping. Two worlds grouped together here might still be one violating world
-  and one clean one if the difference is something only L0 reads.
+  An oracle adds a second witness to the recording run and does not change the world count.
+- **The earlier record's figure is not explained.** `RESULTS.md`'s smallest row measured
+  0.17 s per world on the same toy; this record measures 0.017 s. Two things differ and neither
+  was isolated: that row carried 20 padding files and this one carries none, and that host was
+  at a load average of 10 to 14 against 2.7 to 3.4 here.
+- Nothing about refusals. 74 of the 200 dogfood reports refused, and `corpus.py` excludes them
+  rather than counting them as cheap explorations. The cost of *reaching* exploration —
+  screening, building images, finding a define a target accepts — is not measured here; the
+  one committed figure for a whole arc, `spike/assisted/RESULTS.md`'s roughly twenty-five
+  minutes for five targets including the image build, is of a different thing.
+- Nothing about recovery. A recovery leg (#606) would run *after* a crash world is judged and
+  would be counted separately.
+- `collapse.sh` is not the engine, in three ways its header lists: it rebuilds the pre-state by
+  running `setup` again rather than restoring a snapshot (world 1's tree equals the pre-state
+  in all six, so no difference showed); it re-creates a crash point, not a whole world, where a
+  run awaited a writing child; and it does not judge — the built-in invariants live in the
+  engine, so a world's L0/L1 verdict is not part of either grouping, and two worlds grouped
+  together here could still be one violating world and one clean one if the difference is
+  something only L0 reads.

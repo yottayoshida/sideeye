@@ -1,24 +1,26 @@
-# collapse: toy-bug, 5 crash points, Darwin arm64, d2f9e5f
+# collapse: toy-bug, 5 crash points, Darwin arm64, ebee249
 # operation: <checkout>/spike/out/toy-bug rotate
 # checker: (none)
 # pre-state digest: fc06acc1053705c9
 
-k    rc   tree               changed-paths      checker  diagnostic
-1    137  fc06acc1053705c9   (none)             -        
-2    137  cd6202c6ddc79f57   6d2dbacaca6220fa   -        
-3    137  e29cf0e6a327da77   6d2dbacaca6220fa   -        
-4    137  e29cf0e6a327da77   6d2dbacaca6220fa   -        
-5    137  328537f645a71232   76cddc6e3915c8f8   -        
+k    rc   landed tree               checker  changed                      diagnostic
+1    137  ok     fc06acc1053705c9   -        (none)                       
+2    137  ok     cd6202c6ddc79f57   -        +key.json.tmp                
+3    137  ok     e29cf0e6a327da77   -        +key.json.tmp                
+4    137  ok     e29cf0e6a327da77   -        +key.json.tmp                
+5    137  ok     328537f645a71232   -        -key.json,+key.json.tmp      
 
-strict (byte-identical tree + checker result): 4 distinct outcome(s) over 5 crash points
-   x1   k=1                        fc06acc1053705c9 -
-   x1   k=2                        cd6202c6ddc79f57 -
-   x2   k=3,4                      e29cf0e6a327da77 -
-   x1   k=5                        328537f645a71232 -
+kill landed at k in 5 of 5 worlds
+
+strict (byte-identical tree + checker exit and first line): 4 distinct outcome(s) over 5 crash points
+   x1   k=1                        fc06acc1053705c9  -
+   x1   k=2                        cd6202c6ddc79f57  -
+   x2   k=3,4                      e29cf0e6a327da77  -
+   x1   k=5                        328537f645a71232  -
 
 coarse (same changed paths + checker exit and first line): 3 distinct outcome(s) over 5 crash points
-   x1   k=1                        (none) -
-   x3   k=2,3,4                    6d2dbacaca6220fa -
-   x1   k=5                        76cddc6e3915c8f8 -
+   x1   k=1                        (none)  -
+   x3   k=2,3,4                    +key.json.tmp  -
+   x1   k=5                        -key.json,+key.json.tmp  -
 
-# per-world path digests, engine output and checker output under ~/.cctmp/explorecost-Q5xhKd/r5/toy-bug/collapse/
+# per-world path digests, traces, engine output and checker output under ~/.cctmp/explorecost-Q5xhKd/r5/toy-bug/collapse/
