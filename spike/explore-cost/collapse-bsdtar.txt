@@ -1,4 +1,4 @@
-# collapse: bsdtar, 2 crash points, Darwin arm64, ebee249
+# collapse: bsdtar, 2 crash points, Darwin arm64, a0f8b4b
 # operation: /opt/homebrew/opt/libarchive/bin/bsdtar -uf ~/.cctmp/explorecost-Q5xhKd/r5/bsdtar/state/a.tar -C ~/.cctmp/explorecost-Q5xhKd/r5/bsdtar/src f3.txt
 # checker: ~/.cctmp/explorecost-Q5xhKd/r5/bsdtar/check.sh
 # pre-state digest: 569f438ba166aadb

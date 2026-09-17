@@ -1,4 +1,4 @@
-# collapse: jpegtran, 2 crash points, Darwin arm64, ebee249
+# collapse: jpegtran, 2 crash points, Darwin arm64, a0f8b4b
 # operation: jpegtran -copy all -optimize -outfile ~/.cctmp/explorecost-Q5xhKd/r5/jpegtran/state/a.jpg ~/.cctmp/explorecost-Q5xhKd/r5/jpegtran/state/a.jpg
 # checker: ~/.cctmp/explorecost-Q5xhKd/r5/jpegtran/check.sh
 # pre-state digest: a245ec6eb9d00b10

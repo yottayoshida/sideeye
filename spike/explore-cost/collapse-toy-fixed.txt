@@ -1,4 +1,4 @@
-# collapse: toy-fixed, 4 crash points, Darwin arm64, ebee249
+# collapse: toy-fixed, 4 crash points, Darwin arm64, a0f8b4b
 # operation: <checkout>/spike/out/toy-fixed rotate
 # checker: (none)
 # pre-state digest: fc06acc1053705c9

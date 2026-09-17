@@ -1,4 +1,4 @@
-# collapse: xz, 18 crash points, Darwin arm64, ebee249
+# collapse: xz, 18 crash points, Darwin arm64, a0f8b4b
 # operation: xz -q -T2 --block-size=1MiB ~/.cctmp/explorecost-Q5xhKd/r5/xz/state/f.bin
 # checker: ~/.cctmp/explorecost-Q5xhKd/r5/xz/check.sh
 # pre-state digest: c4bc61bf61e70cc9
