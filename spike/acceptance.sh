@@ -5880,7 +5880,31 @@ echo "=========== check 11: the docs pages' repo paths exist (#79/#80) =========
 # Pages that quote ratios or numbers must keep them out of
 # backticks — a backticked "3/7" is extracted as a path here and goes red (#85). Sunset: never fired by the v1.0 freeze -> removal list.
 doc_fails=0
-for page in "$ROOT/docs/target-classes.md" "$ROOT/docs/checker-cookbook.md" "$ROOT/docs/kill-criteria-review.md"; do
+# The list itself is asserted, for the same reason each page's reference count is: the
+# pages live on one line, and a branch that adds a page collides there with any other
+# branch that does. Resolve that conflict by taking one side and the pages the other
+# side added leave the sweep in silence, still green over what remains. A page added
+# here has to move this number too (#605).
+# The list is built once and both read from `$doc_pages`: counted, then swept through a
+# heredoc. Written as two heredocs — one counted, one swept — the assertion guarded the
+# copy nobody walked, which is worse than no assertion: measured under dash, the count
+# said 4 while the sweep covered 3 and doc_fails stayed 0, for exactly the merge this
+# check exists to catch. Not an unquoted variable in `for` (a path with a space is lost
+# and a glob expands) and not a pipeline (`... | while read` counts into a subshell whose
+# total never reaches the caller — the shape upstream-report-status.sh shipped once,
+# exiting 0 over a table of failures).
+doc_pages=$(printf '%s\n' \
+    "$ROOT/docs/target-classes.md" \
+    "$ROOT/docs/checker-cookbook.md" \
+    "$ROOT/docs/kill-criteria-review.md" \
+    "$ROOT/docs/outcome-funnel.md")
+doc_page_count=$(printf '%s\n' "$doc_pages" | grep -c .)
+if [ "$doc_page_count" != "4" ]; then
+    echo "     the evidence-first page list holds $doc_page_count pages, not the 4 this check is written for — a merge that dropped one leaves the sweep green over the rest"
+    doc_fails=$((doc_fails + 1))
+fi
+while IFS= read -r page; do
+    [ -n "$page" ] || continue
     if [ ! -f "$page" ]; then
         echo "     missing page: $page"
         doc_fails=$((doc_fails + 1))
@@ -5903,7 +5927,9 @@ for page in "$ROOT/docs/target-classes.md" "$ROOT/docs/checker-cookbook.md" "$RO
         fi
     done
     set +f
-done
+done <<PAGE_LIST
+$doc_pages
+PAGE_LIST
 if [ "$doc_fails" = "0" ]; then
     echo "ok   every slashed backtick reference in the listed pages resolves in the repo"
 else

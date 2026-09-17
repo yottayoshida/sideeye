@@ -1,0 +1,47 @@
+# Every campaign the outcome funnel counts, one per line (#605).
+#
+# Columns (tab-separated, exactly five, TABS not spaces):
+#
+#   campaign  date  coverage  candidates  evidence
+#
+#   campaign    the label spike/outcome-funnel.tsv groups by. A LABEL, not a path:
+#               two of this project's filings come from a 2026-09-04 measurement that
+#               left no directory behind, and a column that had to be a directory
+#               could not carry them at all.
+#   date        when the campaign ran. For the dogfood runs it is the date in the
+#               directory's name; for the older records it is the day the record was
+#               first committed (`git log --diff-filter=A`), which is the only date
+#               those directories carry. `summary --since` reads this column.
+#   coverage    full         every target this campaign met has a row
+#               filings-only only the targets whose findings were filed upstream.
+#                            The reach counts in `summary` are taken over `full`
+#                            campaigns alone, because a count over a set that was
+#                            never fully entered is not a measurement.
+#   candidates  how many candidates the campaign screened before fixing its slate, as
+#               the campaign's own record states, or - where it kept no such count.
+#               One number rather than a row per candidate: the candidate tables are
+#               structured differently per run and are easy to count two ways (a
+#               straightforward count of 2026-09-16-userview-3's tables gives 63 where
+#               the run's own record says 41, because the rule-10 screen repeats
+#               candidates the slates already list).
+#   evidence    a path in this repository that must exist.
+dogfood/2026-09-05-userview	2026-09-05	full	20	spike/dogfood/2026-09-05-userview/RESULTS.md
+dogfood/2026-09-06-imagemagick-refix	2026-09-06	full	1	spike/dogfood/2026-09-06-imagemagick-refix/RESULTS.md
+dogfood/2026-09-06-imagemagick-patch3	2026-09-06	full	1	spike/dogfood/2026-09-06-imagemagick-patch3/RESULTS.md
+dogfood/2026-09-06-userview-2	2026-09-06	full	54	spike/dogfood/2026-09-06-userview-2/RESULTS.md
+dogfood/2026-09-11-past-walls	2026-09-11	full	7	spike/dogfood/2026-09-11-past-walls/RESULTS.md
+dogfood/2026-09-11-read-only-542	2026-09-11	full	2	spike/dogfood/2026-09-11-read-only-542/RESULTS.md
+dogfood/2026-09-11-syscall-trap-542b	2026-09-11	full	1	spike/dogfood/2026-09-11-syscall-trap-542b/RESULTS.md
+dogfood/2026-09-13-cgroup-559	2026-09-13	full	1	spike/dogfood/2026-09-13-cgroup-559/RESULTS.md
+dogfood/2026-09-13-joplin-turns	2026-09-13	full	1	spike/dogfood/2026-09-13-joplin-turns/RESULTS.md
+dogfood/2026-09-16-cargo-v16	2026-09-16	full	1	spike/dogfood/2026-09-16-cargo-v16/RESULTS.md
+dogfood/2026-09-16-crossed-walls	2026-09-16	full	11	spike/dogfood/2026-09-16-crossed-walls/RESULTS.md
+dogfood/2026-09-16-outside-git	2026-09-16	full	6	spike/dogfood/2026-09-16-outside-git/RESULTS.md
+dogfood/2026-09-16-threads-take-turns	2026-09-16	full	2	spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md
+dogfood/2026-09-16-userview-3	2026-09-16	full	41	spike/dogfood/2026-09-16-userview-3/RESULTS.md
+loop-closure-timew	2026-08-13	filings-only	-	spike/loop-closure-timew/judge.sh
+blind-hunt	2026-08-13	filings-only	-	spike/blind-hunt/ledger.md
+assisted	2026-08-14	filings-only	-	spike/assisted/RESULTS.md
+cohort3	2026-08-22	filings-only	-	spike/cohort3/RESULTS.md
+cohort4	2026-08-22	filings-only	-	spike/cohort4/himalaya-r2/RESULTS.md
+slate/2026-09-04	2026-09-04	filings-only	-	docs/target-classes.md

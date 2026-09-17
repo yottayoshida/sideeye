@@ -2,6 +2,140 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-17 — the outcome funnel is one row per campaign and target, and reading the stages off the reports moved three of them
+
+**What #605 asked.** Reach and verdict quality are measured; what happens after a
+verdict exists is not. A FAIL may be known, recoverable, not worth reporting, reported
+and declined, acknowledged, fixed, or re-measured — and those states lived in four
+records nobody could add up. The next engineering decision depends on the shape of the
+drop-off, so the funnel had to be countable.
+
+**The first draft was wrong, and the way it was wrong decided the design.** Written from
+the run records' prose, it put eleven of the 2026-09-16 run's twenty targets past
+exploration. The reports that run committed say fourteen: bat explored 8 worlds before
+refusing `baseline_violates_invariant`, ccache 55 before `kill_did_not_land`, meson 110
+before the same refusal as bat. Two reviewers were asked to attack the draft and the
+first one found this by opening the thirty-five committed reports — the same way the
+draft could have been written in the first place. So the stages are read from the
+report the row names (`explored`, `crash_points`, `verdict`), not from prose and not
+from the refusal's name: `docs/report-schema.md` holds thirty-four refusal reasons as a
+closed set and says nothing about which phase raises which, so a stage read off a
+refusal name would be a classification this project has not made.
+
+**Three more things the reviews reversed.** (1) "One row per upstream report" makes the
+top of the ladder unreachable — ImageMagick#8939 was filed by the 2026-09-05 run,
+answered on the same issue by the refix run, and re-measured by the patch3 run, and
+that last row is the only `revalidated` this project has. The rule is now that the
+earliest campaign carrying a report at `filed` or beyond is the filing. (2) The first
+stage was going to be called `screened`, then `measured`; `RUNS.md` spells `screened`
+for the candidates a run turns away and `docs/target-classes.md`'s first table spells
+`Measured` for targets that have a verdict, so both read backwards. It is `attempted`.
+(3) Requiring a FAIL all the way up the ladder is wrong: the patch3 re-measurement
+PASSes, and that PASS is what `revalidated` means. The requirement now stops at `filed`.
+
+**What the checker learned while the ledger was being written.** Two rules were written
+from an assumption and corrected against the tree. Deciding whether a piece of evidence
+is a report by its `.json` suffix fails on the forty strace readings under
+`2026-09-13-joplin-turns/`, which carry no `verdict` at all — it is decided by content
+now. And "the record must name its target" fails on every engine refusal transcript:
+`preflight-round1/chezmoi.txt` contains the refusal and nothing else, and the only place
+"chezmoi" appears is the file name the run gave it. The rule accepts either.
+
+**The self-test caught its own bad leg.** The leg for "a written record that never names
+the target" pointed at a report JSON, so the row went down the other branch entirely. It
+failed loudly rather than passing for the wrong reason, which is the whole argument for
+seeing a new check red before trusting it. The same discipline applied to
+`--check-doc`, a separate entrance from the self-test: editing `explored 45` to
+`explored 46` on the page was measured red, and the first message it printed — "the page
+has 1035 bytes, the ledger renders 1035" — was useless, because a one-digit edit leaves
+the lengths equal. It names the first differing line now.
+
+**The review found the promise's own counterexample, and it was in the ledger.** The
+gopass row cited `preflight-round1/gopass.txt` and described `no_shim_marker`; that
+transcript refuses `boundary_without_oracle`, and the run's own `RESULTS.md` sets it
+aside — the first attempt carried the environment through an `sh` wrapper, which is
+dynamic, loaded the shim and exec'd a child. The wall the row describes is in
+`gopass-direct.txt`. Naming the target was not enough to tell the two apart, so the
+checker now reads the refusal a transcript raises and requires the note to name one of
+them. It was calibrated twice against the tree before it was trusted. Anchored to any
+line, it took the joplin block quoted inside the 2026-09-11 `RESULTS.md` as the verdict
+of three other rows citing that page, and the word after "UNKNOWN" in a sentence of this
+file as a fourth; anchored instead to the file's first byte, it skipped `beets.txt` and
+`joplin.txt`, which carry a line of the target's own output above the verdict. It reads
+`.txt` transcripts, every `UNKNOWN <reason>` line in them, and asks the note to name one.
+With that rule the same-class scan over all twenty-one rows whose record is not a report
+left one more: chezmoi cited the PATH-spelled refusal, whose reason its own record calls
+the reading that looks like a wrong diagnosis, while the note gave the static-linkage
+reason from `chezmoi-fullpath.txt`. Both rows now cite the measurement they describe.
+
+**Three claims were stronger than the code.** The page said a row's stage is compared
+against the report; the comparison caps at `judged`, because a report cannot know
+whether its finding was novel or filed — the page and ADR 0070 say so now, and the cap
+is in the "cannot see" list. `acknowledged` was defined as "replied substantively or
+confirmed it", which three declined reports and one open discussion all satisfy while
+sitting at `filed`; it is "confirmed the defect" now, and the page says why a reply is
+not confirmation. And the generated block counted encounters where the page asked about
+reports: mogrify is two rows at `revalidated`, one per re-measurement, so the block
+prints distinct reports beside the row counts — 23 encounters over 21 reports at
+`filed`, 4 over 3 above it. The topydo row's `as_of` was the campaign's date; the ledger
+it names dates the filing a day later.
+
+**The self-test's own sentence was false.** It said every clause, seen red once, over
+twelve legs against roughly twenty-five refusal sites. Rather than weaken the sentence,
+the list is now twenty-nine red legs and one green, one per clause `check` can refuse
+on, plus the committed tree checked after the list.
+
+**`spike/acceptance.sh` check 11 now asserts its own page list.** The list was one line
+of four quoted paths with a count assertion per page and none on the number of pages, so
+two branches adding a page collide on that line and a resolution that takes one side
+drops the other's page silently — the sweep stays green over what remains. Seen red
+once: with `docs/outcome-funnel.md` removed the block prints "the evidence-first page
+list holds 3 pages, not the 4 this check is written for" and `fails=1`; with four it
+prints the ok line and `fails=0`. The list is a heredoc read by `while IFS= read -r`
+rather than an unquoted variable, which would lose a path with a space and expand a
+glob, and not a pipeline, whose subshell is where `upstream-report-status.sh` once lost
+its own failure count.
+
+**The second review found the page-list assertion guarding the copy nobody walked.**
+Written as two heredocs — one counted, one swept — the count said four while the sweep
+covered three and `doc_fails` stayed 0, measured under dash. That is worse than no
+assertion: it is the exact merge this check was added for, passing. The list is built
+once into `doc_pages` now and both the count and the loop read it; dropping a line makes
+the block print "holds 3 pages, not the 4 this check is written for" and `fails=1`,
+where four pages give the ok line and `fails=0`, in `/bin/sh` and in dash.
+
+**"Every clause seen red once" was still false, and the way to find out was to trace.**
+Counting refusal sites by eye gave one answer and running each leg under `sys.settrace`
+gave another: thirty-five sites the checker, the page comparison and the generator can
+raise, thirty-one covered. The four with no leg were both of `summary`'s refusals and
+both of the page reader's — exercised by hand during the dry run and by nothing
+afterwards. They have legs now, and the trace says thirty-five of thirty-five. Two
+sites are reddened by more than one leg on purpose, through different branches of
+`stage_from_report`, which is why a leg asserts the clause's own sentence and not the
+exit code: an extra refusal cannot make a leg pass. Adding those legs cost one more
+mistake worth recording — the new `page=` parameter of the scratch-tree builder was
+called `doc`, which is the name that function already used for the report dictionary,
+so the parameter was overwritten before it was read.
+
+**Four more places said something the records do not.** The `acknowledged` definition
+had been corrected on the page and left alone in the script's own header, which is where
+the page sends the reader for the columns; the page said three declined reports where
+the ledger holds four plus one under discussion; the page's "no figure on this page is
+typed by hand" covered prose the byte comparison does not reach; and ADR 0070 illustrated
+one-row-per-target with oxipng, which has a single row — mogrify is the target with
+three. The ledger carried two of its own: `ansible` and `ansible-core` are the same tool,
+which the generated "69 distinct targets" quietly counted twice (68 now), and the
+joplin-turns note said twenty captures where its record says forty, twenty each way.
+`CLAUDE.md` and `check-adr-numbering.sh` both describe check 11 as sweeping three pages;
+both say four.
+
+**Measured.** 81 rows over 20 campaigns, 68 distinct targets; the 2026-09-16 run reads
+20 attempted, 14 explored, 11 judged (3 PASS, 8 FAIL), 2 filed, which is what its own
+`RESULTS.md` says.
+Deleting one `judged` row moves that count to 10 and FAIL to 7, exactly one each. 60 of
+the 81 rows are held to a committed report; the other 21 name a written record only, and
+the generated block says so rather than letting the reader assume.
+
 ## 2026-09-16 (eighth) — a refusal the default mode could not see past names the mode that can, and the paths the reviews found from that advice to a broken PASS are closed with it
 
 **What #599 asked.** Under `--observe wrappers`, `oracle_missed_operation` sent the reader to the
