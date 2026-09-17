@@ -1297,6 +1297,25 @@ jobs:
   # a collision that reached main, and cannot stop the merge that creates one,
   # because no status check is required on this repository.
 
+  # The funnel from a define to an upstream fix (#605, ADR 0070). Its own job, and its
+  # self-test first, for the reason the checkers beside it give: no toolchain, and a
+  # checker nobody has seen red is a checker whose predicates are untested (#342). The
+  # third step is a separate entrance -- it compares the block in docs/outcome-funnel.md
+  # against a fresh rendering, so a figure edited by one digit on that page is red.
+  outcome-funnel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: The funnel checker can still see its own predicates fail
+        run: python3 spike/outcome-funnel.py --selftest
+
+      - name: Every row holds to the record it names (#605)
+        run: python3 spike/outcome-funnel.py check
+
+      - name: The page's figures are what the ledger renders
+        run: python3 spike/outcome-funnel.py --check-doc
+
   changelog-block:
     runs-on: ubuntu-latest
     steps:

@@ -48,7 +48,7 @@
 #   * whether a renumber is safe to perform. It is the prescribed remedy and it
 #     is not free: paths of the form docs/adr/NNNN-slug.md are hardcoded in
 #     several tracked documents, and only spike/acceptance.sh sweeps any of them
-#     (three pages, for slashed backtick references). Bare `ADR NNNN` prose
+#     (four pages, for slashed backtick references). Bare `ADR NNNN` prose
 #     citations are checked by nothing and break semantically rather than
 #     loudly — after a renumber they point at a different decision. Renumber
 #     before anything cites the path.
