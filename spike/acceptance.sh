@@ -6996,7 +6996,8 @@ acc_flags=$( { parser_literals i
 acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-config|explore --config $acc_nx.toml|--config|--config could not be read
-replay|replay $acc_nx.json||the case file could not be read"
+replay|replay $acc_nx.json||the case file could not be read
+evidence|evidence $acc_nx.json||no evidence file could be read beside that case"
 
 acc_line_for() {
     case "$1" in
@@ -7004,6 +7005,9 @@ acc_line_for() {
         explore-define) printf '%s\n' "$h1" | grep -E '^  sideeye explore --state ' ;;
         explore-config) printf '%s\n' "$h1" | grep -E '^  sideeye explore --config ' ;;
         replay)         printf '%s\n' "$h1" | grep -E '^  sideeye replay ' ;;
+        # Takes an argument, so it belongs here rather than with the argument-free modes
+        # below: its line advertises no flags, and the differential proves it accepts none.
+        evidence)       printf '%s\n' "$h1" | grep -E '^  sideeye evidence ' ;;
     esac
 }
 

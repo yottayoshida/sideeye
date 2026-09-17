@@ -92,6 +92,24 @@ was `findCopy` being called twice on a `yes` row: once to decide and once to nam
 is the only part of `measure` that is not linear in the number of rows, so the second call is
 the one cost a large state tree would feel; the answer is carried now.
 
+**CI's third finding, and the one I had already talked myself out of.** `FAIL CLI
+self-description: 1 problem(s)` — "the synopsis has 9 lines but this check covered 8 — a line
+was added without a base". A new mode word needs a base invocation in check 6's `acc_specs`, or
+it is simply not tested, and the check counts the synopsis's lines against the ones that ran so
+that cannot happen quietly.
+
+I had read check 6 before the first push, seen that `acc_specs` names four bases and none of the
+argument-free modes, and concluded it did not apply to `evidence`. The denominator assertion is
+sixty lines further down, after the `demo` block and the `mcp`/`help`/`version` loop — 4 + 1 + 3
+= 8, which is what "covered 8" meant. **Reading part of a check and deciding it does not apply
+is the same error as running a sweep over part of a tree and calling it exhaustive.** The fix is
+one row in `acc_specs` and one arm in `acc_line_for`; `evidence` takes an argument, so it belongs
+with the four and not with the three.
+
+Simulated locally this time rather than reasoned about: the base fails with the pinned text,
+exactly one synopsis line matches, the line's required flags and the base's named flags are both
+empty, the differential accepts no flag, and declared lines equal covered lines at 9.
+
 **CI's second finding: the bundle could not live in `cases/`.** The macOS job died with
 `KeyError: 'define'` in a step that does `case_file=$(ls "$root"/seed/work/cases/*.json | head -1)`.
 `000001.evidence.json` sorts ahead of `000001.json`, so the reader got a bundle and looked for a
