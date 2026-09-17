@@ -9,7 +9,8 @@ Six claims, each enforced:
   2. every documented field appears in at least one given report — a row that
      nothing generates is a claim nobody measured;
   3. the doc's closed unknown_reason set equals the contract's enum, exactly — and
-     the same for setup_error_reason (#518), the second closed set;
+     the same for setup_error_reason (#518), the second closed set, and for
+     recovery.result (#606), the third;
   4. the contract version the doc names is the one the code speaks;
   5. every prose value the JSON report carries is read from the same place the text
      report reads it, never built again inside the JSON writer (#280);
@@ -27,12 +28,18 @@ import sys
 
 
 def flatten(doc):
+    # Three levels (#606): `earliest.recovery.result` is the first documented field below
+    # the second. Two levels was every field the page held until then, and a third-level
+    # field documented or generated alone would have passed both directions of claims 1-2.
     keys = set()
     for k, v in doc.items():
         keys.add(k)
         if isinstance(v, dict):
-            for k2 in v:
+            for k2, v2 in v.items():
                 keys.add("%s.%s" % (k, k2))
+                if isinstance(v2, dict):
+                    for k3 in v2:
+                        keys.add("%s.%s.%s" % (k, k2, k3))
     return keys
 
 
@@ -53,8 +60,11 @@ def main():
     for r in reports:
         observed |= flatten(r)
     # after/before are documented as one row each ({op, path} described in
-    # prose); their subkeys collapse onto the parent.
-    observed = {k if not re.match(r"earliest\.(after|before)\.", k)
+    # prose); their subkeys collapse onto the parent. For both exhibits: the pattern
+    # matched `earliest.` at the start of the key only, which was enough while nothing
+    # below the second level was generated, and would have read `checker_earliest.after.op`
+    # as an undocumented field the moment the third level was (#606).
+    observed = {k if not re.match(r"(checker_)?earliest\.(after|before)\.", k)
                 else k.rsplit(".", 1)[0] for k in observed}
 
     documented = set(re.findall(r"^\| `([a-z0-9_.]+)`", md, re.M))
@@ -93,6 +103,8 @@ def main():
 
     closed_set("UnknownReason", "unknown_reason")
     closed_set("SetupErrorReason", "setup_error_reason")
+    # The third closed set (#606, ADR 0072), the value both exhibits' recovery objects carry.
+    closed_set("RecoveryResult", "recovery.result")
 
     # Claim 4. This drifted for real — v8 shipped while the page still said "v7
     # today" — and claims 1-3 stayed green because none of them read the version

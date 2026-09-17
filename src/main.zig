@@ -97,6 +97,8 @@ const refuse = @import("refuse.zig");
 const cli = @import("cli.zig");
 const case = @import("case.zig");
 const evidence = @import("evidence.zig");
+// The recovery phase (#606, ADR 0072): run after the exploration, never able to end the process.
+const recovery = @import("recovery.zig");
 const containment = @import("containment.zig");
 // Aliased rather than spelled `defang.` at each site, so the call sites read as they did
 // when the bodies lived here (#572): the report-side callers outnumber the boundary's, and
@@ -872,8 +874,8 @@ fn phaseDefine(run: *Run) void {
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
     if (args.config) |cfg_path| {
-        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0)
-            setupError(.define_invalid, "--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch) are mutually exclusive: the define lives in one place or the other");
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.recovery != null or args.recovery_check != null)
+            setupError(.define_invalid, "--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch, --recovery, --recovery-check) are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         // Bounded, and the only reader that is. The path is operator-named and may
         // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
@@ -911,6 +913,10 @@ fn phaseDefine(run: *Run) void {
                 args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
                 args.apparatus = d.apparatus orelse &.{};
                 args.scratch = d.scratch orelse &.{};
+                // #606: resolved against the toml's directory like the checker, and kept in the
+                // string form the replay line will carry.
+                args.recovery = if (d.recovery) |r| resolveCommand(arena, dir, .{ .str = r }).str else null;
+                args.recovery_check = if (d.recovery_check) |r| resolveCommand(arena, dir, .{ .str = r }).str else null;
                 if (d.expected_status) |es| {
                     args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -1040,6 +1046,30 @@ fn phaseDefine(run: *Run) void {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, the shim and the engine would filter on different spellings of it", .{ textShown(arena_state.allocator(), state), refuse.resolveFailure(arena_state.allocator(), state, why) });
     };
+
+    // A recovery is a pair (#606, ADR 0072), held here and only here: after the case or the
+    // config has been read — so a flag and a toml key cannot each supply half — and after the
+    // mode's own first refusals, so a probe that adds one of the two flags to a failing base
+    // command still meets that command's failure first (the CLI self-description check reads a
+    // refusal raised earlier as a flag the mode does not accept).
+    if ((args.recovery == null) != (args.recovery_check == null)) {
+        if (state_created) _ = posix.rmdir(state_z.ptr);
+        setupError(.define_invalid, "a recovery is declared as a pair: --recovery with --recovery-check, or `command` with `check` under [recovery]; one without the other would run a recovery nothing judges, or judge one nothing ran");
+    }
+    // A value of spaces passes the empty-string check at the flag and the key and splits into
+    // no words, and a child handed no argv dies before exec — which the gate would read as a
+    // recovery that ran and ended, and every exhibit `fail` (review). Refused like `--check`.
+    if (args.recovery) |rc| {
+        const words_cmd = if (commandArgv(arena_state.allocator(), .{ .str = rc })) |w| w.len else |_| 0;
+        const words_chk = if (commandArgv(arena_state.allocator(), .{ .str = args.recovery_check.? })) |w| w.len else |_| 0;
+        if (words_cmd == 0 or words_chk == 0) {
+            if (state_created) _ = posix.rmdir(state_z.ptr);
+            setupError(.define_invalid, if (words_cmd == 0) "--recovery is empty" else "--recovery-check is empty");
+        }
+    }
+    // True of every run that stops before a FAIL is saved, which is where this stays; the
+    // exploration replaces it once a recovery has run.
+    if (args.recovery != null) report.recovery_note = "configured; not run (no world was saved as a FAIL)";
 
     // Still before setup runs, so the refusal is a configuration error and nothing has
     // been touched. See the flag's parse site for why this is not raised there.
@@ -2364,6 +2394,7 @@ fn phasePreflight(run: *Run) void {
             \\
         , .{ report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.l1_note, report.case_note, report.notTestedText() });
         report.sayApparatus(arena, "      apparatus: {s}\n");
+        report.sayRecovery("      recovery: {s}\n");
         if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
         report.emitSeal();
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
@@ -2504,6 +2535,12 @@ fn phaseExploration(run: *Run) void {
     var first_checker_l1 = false;
     var first_checker_path_len: usize = 0;
     var first_failure_ev: ?evidence.Draft = null;
+    // Each exhibit's crash state, kept past its world when a recovery was declared (#606): the
+    // world's own `defer` frees it otherwise, and the recovery after the loop is its only reader.
+    // `first_checker_snap` stays null when the claim exhibit is the earliest's own world — one
+    // world, one snapshot. Not freed: the process ends with the report, as the drafts beside it do.
+    var first_failure_snap: ?engine.Snapshot = null;
+    var first_checker_snap: ?engine.Snapshot = null;
     var first_checker_ev: ?evidence.Draft = null;
     var marker_worlds: u32 = 0;
     var checks_run: u32 = 0;
@@ -2758,7 +2795,10 @@ fn phaseExploration(run: *Run) void {
         };
 
         var crashed = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
-        defer crashed.deinit();
+        // Kept past this world only when it becomes a saved exhibit and a recovery was declared
+        // (#606); the recovery runs after the loop, and this is the only copy of the crash state.
+        var crashed_kept = false;
+        defer if (!crashed_kept) crashed.deinit();
 
         // Same observation as after the recording run: when a boundary was crossed,
         // one sample is a moment and two agreeing samples are a state. Boundary
@@ -2986,6 +3026,10 @@ fn phaseExploration(run: *Run) void {
                     .failed = l2_failed,
                     .output_path = checker_out,
                 }) catch null;
+                if (args.recovery != null) {
+                    first_failure_snap = crashed;
+                    crashed_kept = true;
+                }
             }
             if (l2_failed and first_checker == null) {
                 const v = l0 orelse l1;
@@ -3005,6 +3049,12 @@ fn phaseExploration(run: *Run) void {
                     .failed = l2_failed,
                     .output_path = checker_out,
                 }) catch null;
+                // Kept only when this world was not already kept as the earliest: one snapshot,
+                // one owner, and the recovery runs once for a world that is both exhibits.
+                if (args.recovery != null and !crashed_kept) {
+                    first_checker_snap = crashed;
+                    crashed_kept = true;
+                }
             }
         }
     }
@@ -3035,6 +3085,34 @@ fn phaseExploration(run: *Run) void {
     run.firsts.first_checker_path_len = first_checker_path_len;
     run.firsts.first_failure_ev = first_failure_ev;
     run.firsts.first_checker_ev = first_checker_ev;
+
+    // The recovery phase (#606, ADR 0072), after every world including the baseline: the
+    // verdict is decided and nothing the recovery does can reach a world. `recovery.run` cannot
+    // end the process — a recovery that fails, hangs past the budget or never starts is an
+    // `unknown` result beside the FAIL, never a refusal in its place.
+    if (args.recovery) |rcmd| if (first_failure) |ff| if (first_failure_snap) |fsnap| rec: {
+        const declared: recovery.Declared = .{
+            .command = commandArgv(arena, .{ .str = rcmd }) catch break :rec,
+            .check = commandArgv(arena, .{ .str = args.recovery_check.? }) catch break :rec,
+        };
+        const claim: ?recovery.Exhibit = if (first_checker) |fc|
+            .{ .k = fc.k, .crashed = first_checker_snap orelse fsnap }
+        else
+            null;
+        const outcome = recovery.run(.{
+            .gpa = gpa,
+            .arena = arena,
+            .state_abs = state_abs,
+            .work = args.work,
+            .cwd = args.cwd,
+            .budget_ms = if (args.world_timeout_s) |ws| @as(u64, ws) * 1000 else null,
+            .stop_when_orphaned = args.stop_when_orphaned,
+            .startup_ppid = startup_ppid,
+        }, declared, final, .{ .k = ff.k, .crashed = fsnap }, claim);
+        if (outcome.earliest) |l| report.recovery_earliest = .{ .result = l.result, .ms = l.ms, .command_exit = l.command_exit };
+        if (outcome.checker) |l| report.recovery_checker_earliest = .{ .result = l.result, .ms = l.ms, .command_exit = l.command_exit };
+        report.recovery_note = recovery.note(arena, outcome, report.violations);
+    };
 }
 
 /// Phase 9 of the run: The report, text and JSON, and the exit code.
@@ -3111,8 +3189,16 @@ fn phaseReport(run: *Run) void {
             break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else "checker");
         } else null;
         const case_shown = saved_case orelse (if (mode == .replay) case_arg.? else "(not saved)");
+        // #606: a replay line that dropped the recovery would replay a different run, so the
+        // flags ride on it — each value single-quoted for /bin/sh, the whole escape, since a
+        // recovery command's spaces separate its arguments. A local rather than a helper:
+        // `spike/check-main-shape.sh` holds this file's top-level declarations at its ceiling.
+        const recovery_flags: []const u8 = if (args.recovery) |rc|
+            (std.fmt.allocPrint(arena, " --recovery {s} --recovery-check {s}", .{ shellSingleQuote(arena, rc), shellSingleQuote(arena, args.recovery_check.?) }) catch "")
+        else
+            "";
         const replay_cmd = if (saved_case) |sc|
-            std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}", .{ sc, shim }) catch "-"
+            std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ sc, shim, recovery_flags }) catch "-"
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -3147,6 +3233,7 @@ fn phaseReport(run: *Run) void {
                 .replay = replay_cmd,
                 .case_path = case_shown,
                 .draft = d,
+                .recovery = if (report.recovery_earliest) |r| r.result else null,
             });
         } else null;
         report.evidence_note = saved_evidence orelse "-";
@@ -3178,7 +3265,7 @@ fn phaseReport(run: *Run) void {
             const creplay = if (same_world)
                 replay_cmd
             else if (csaved) |cc|
-                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}", .{ cc, shim }) catch "-"
+                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ cc, shim, recovery_flags }) catch "-"
             else
                 "-";
             // One bundle per case, so the shared-world case reuses the earliest's rather
@@ -3208,6 +3295,7 @@ fn phaseReport(run: *Run) void {
                     .replay = creplay,
                     .case_path = ccase,
                     .draft = d,
+                    .recovery = if (report.recovery_checker_earliest) |r| r.result else null,
                 }) orelse "-";
             } else "-";
             break :blk .{
@@ -3266,6 +3354,7 @@ fn phaseReport(run: *Run) void {
             replay_cmd,                    report.evidence_note,
         });
         report.sayApparatus(arena, "apparatus   {s}\n");
+        report.sayRecovery("recovery    {s}\n");
         // Printed only when the two exhibits are different worlds; when the
         // earliest is itself checker-red — every FAIL this engine produced
         // before poetry — the text above is byte-identical to what it was.
@@ -3337,6 +3426,7 @@ fn phaseReport(run: *Run) void {
         \\
     , .{ report.explored, report.explored, report.singleCrashPointClause(n), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
     report.sayApparatus(arena, "      apparatus: {s}\n");
+    report.sayRecovery("      recovery: {s}\n");
     report.saySingleCrashPointNote(n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();

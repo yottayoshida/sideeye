@@ -286,6 +286,25 @@ pub var apparatus_declared: []const []const u8 = &.{};
 /// carries no field.
 pub var scratch_declared: []const []const u8 = &.{};
 
+/// The recovery account (#606, ADR 0072): what the run did about a declared recovery, as a
+/// sentence. Null until the define was read and found to declare one, so a report from a
+/// define without `[recovery]` — and a refusal raised before the define was read — carries no
+/// recovery field and no recovery line. Two refusal messages name the recovery flags or
+/// section whatever the define declares (`--config` exclusivity, an unknown config section).
+pub var recovery_note: ?[]const u8 = null;
+
+/// One saved exhibit's recovery result, for the JSON exhibit objects.
+pub const RecoveryResultJson = struct {
+    result: contract.RecoveryResult,
+    ms: u64,
+    command_exit: ?u8,
+};
+
+/// Set after the exploration when a recovery ran against the exhibit; null otherwise, which is
+/// every run without a declared recovery and every run with one and no FAIL.
+pub var recovery_earliest: ?RecoveryResultJson = null;
+pub var recovery_checker_earliest: ?RecoveryResultJson = null;
+
 fn apparatusHasUnchecked() bool {
     for (apparatus_declared) |e| if (config.apparatusUnchecked(e)) return true;
     return false;
@@ -828,6 +847,25 @@ pub fn sayApparatus(arena: std.mem.Allocator, comptime fmt: []const u8) void {
     if (apparatus_declared.len > 0) say(fmt, .{apparatusNote(arena)});
 }
 
+/// The text report's recovery line, in the calling block's own style, only when a recovery was
+/// declared, read from the variable the JSON field reads. Printed where the apparatus line is —
+/// the verdict blocks and UNKNOWN's — and, like it, not on SETUP ERROR's text, whose JSON still
+/// carries the field.
+pub fn sayRecovery(comptime fmt: []const u8) void {
+    if (recovery_note) |rn| say(fmt, .{rn});
+}
+
+/// One exhibit's recovery object, inside that exhibit's JSON object. `command_exit` is present
+/// only when the recovery command exited, as `setup_exit_code` is only when the setup did.
+fn jsonRecoveryField(w: *std.ArrayList(u8), arena: std.mem.Allocator, r: RecoveryResultJson) !void {
+    const res = r.result;
+    try w.appendSlice(arena, ",\n    \"recovery\": {\"result\": ");
+    try jsonString(w, arena, res.name());
+    try w.print(arena, ", \"seconds\": {d}.{d:0>3}", .{ r.ms / 1000, r.ms % 1000 });
+    if (r.command_exit) |c| try w.print(arena, ", \"command_exit\": {d}", .{c});
+    try w.appendSlice(arena, "}");
+}
+
 /// The verdict line's clause for a run with exactly one crash point (#487).
 ///
 /// Zero has a verdict line of its own — "the operation performed nothing that can change the
@@ -1157,6 +1195,7 @@ fn buildJson(
         try jsonString(w, arena, d.subject);
         try w.appendSlice(arena, ",\n    \"observed\": ");
         try jsonString(w, arena, d.observed);
+        if (recovery_earliest) |r| try jsonRecoveryField(w, arena, r);
         try w.appendSlice(arena, "\n  }");
     }
 
@@ -1183,6 +1222,7 @@ fn buildJson(
         try jsonString(w, arena, cd.replay);
         try w.appendSlice(arena, ",\n    \"evidence\": ");
         try jsonString(w, arena, cd.evidence);
+        if (recovery_checker_earliest) |r| try jsonRecoveryField(w, arena, r);
         try w.appendSlice(arena, "\n  }");
     }
 
@@ -1204,6 +1244,12 @@ fn buildJson(
     try jsonString(w, arena, metadata_note);
     try w.appendSlice(arena, ",\n  \"checker\": ");
     try jsonString(w, arena, checker_note);
+    // #606, ADR 0072: present only when a recovery was declared, the presence rule `apparatus`
+    // and `scratch` follow.
+    if (recovery_note) |rn| {
+        try w.appendSlice(arena, ",\n  \"recovery\": ");
+        try jsonString(w, arena, rn);
+    }
     try w.appendSlice(arena, ",\n  \"processes\": ");
     try jsonString(w, arena, boundary.boundaryAccount());
     // Additive under the report-schema allowance the freeze keeps open (surface 2). A

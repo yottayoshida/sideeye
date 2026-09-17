@@ -83,6 +83,14 @@ pub const Args = struct {
     /// arrives and every site that asked the old question keeps answering it.
     has_oracle: bool = false,
     check: ?config.Command = null,
+    /// `--recovery` / `[recovery] command` and `--recovery-check` / `[recovery] check` (#606,
+    /// ADR 0072): the target's own recovery and the checker that judges what it left, run
+    /// against each saved FAIL world's crash state after the verdict is decided. String form
+    /// only on both surfaces, so the replay line carries exactly the command the explore ran.
+    /// Declared as a pair or not at all; the pair is held in `phaseDefine`, after the case or
+    /// the config has been read, so a mode's own first refusal still comes first.
+    recovery: ?[]const u8 = null,
+    recovery_check: ?[]const u8 = null,
     allow_unverified: bool = false,
     /// Which observation path counts the operations (contract v14). The default is
     /// the only one that existed through v13, so an invocation that never names this
@@ -147,9 +155,9 @@ const usage_fmt =
     \\usage:
     \\  sideeye demo [--shim <lib>]
     \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls] [--work <dir>] [--twice]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
     \\  sideeye help
@@ -230,6 +238,18 @@ const usage_fmt =
     \\               replacing its own image, is UNKNOWN under it.
     \\               Everything it cannot resolve refuses
     \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
+    \\  --recovery   the target's own recovery (with --recovery-check; the two come together).
+    \\               After the exploration has decided its verdict, each saved FAIL world's
+    \\               crash state — names, kinds and contents, not timestamps or permissions —
+    \\               is rebuilt in --state, this runs, and the recovery checker judges what it
+    \\               left. The result is reported beside the verdict and never changes it
+    \\               or the exit code. An explore's replay line carries both flags, and
+    \\               replay accepts them; with --config they come from [recovery] instead
+    \\  --recovery-check
+    \\               exit 0 = the recovery left a correct state. Trusted only after it
+    \\               rejects a corrupted state and accepts what the recovery leaves on the
+    \\               completed one; a checker that fails either makes every recovery result
+    \\               unknown, not the run
     \\  --marker     success marker: a byte string the operation prints on stdout when
     \\               it has committed. In worlds where it appeared before the kill,
     \\               the post-success invariant is enforced: the new state must
@@ -531,6 +551,13 @@ pub fn parse(argv: []const []const u8) Parsed {
         } else if (std.mem.eql(u8, argv[i], "--marker")) {
             args.marker = v;
             report.l1_note = report.l1NoteFor(.named);
+        } else if (std.mem.eql(u8, argv[i], "--recovery") or std.mem.eql(u8, argv[i], "--recovery-check")) {
+            // The value travels into the replay line this run prints, so it is held to the
+            // byte discipline a toml value is (#26): a control byte could forge that line,
+            // and a backslash would promise an escape nothing processes.
+            if (config.badBytes(v)) |msg| setupError(.define_invalid, msg);
+            if (v.len == 0) setupError(.define_invalid, "a recovery command is empty");
+            if (argv[i].len == "--recovery".len) args.recovery = v else args.recovery_check = v;
         }
         // Taken as spelled, unlike the toml's, which resolves against the file's own
         // directory: a flag is typed at a cwd, so a relative one already means what the
@@ -613,6 +640,7 @@ pub fn parse(argv: []const []const u8) Parsed {
         if (args.oracle_fs_usage) setupError(.define_invalid, "--oracle-fs-usage belongs to explore and replay; preflight asks whether the recording phase accepts this target, and answers that without a second witness");
         if (args.check != null) setupError(.define_invalid, "preflight runs before an invariant exists; --check belongs to explore, which also falsifies it before trusting it");
         if (args.marker != null) setupError(.define_invalid, "--marker belongs to explore; preflight makes no claim a marker could strengthen");
+        if (args.recovery != null or args.recovery_check != null) setupError(.define_invalid, "--recovery and --recovery-check belong to explore and replay; preflight saves no FAIL for a recovery to be run against");
         if (args.config != null) setupError(.define_invalid, "preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more");
         if (args.allow_unverified) setupError(.define_invalid, "preflight never claims PASS, so there is nothing --allow-unverified could weaken");
     }

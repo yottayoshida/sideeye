@@ -1162,6 +1162,33 @@ pub const SetupErrorReason = enum {
     }
 };
 
+/// What a declared recovery did to one saved exhibit's crash state (#606, ADR 0072): the
+/// value of `earliest.recovery.result` and `checker_earliest.recovery.result`, and of the
+/// evidence bundle's `recovery.result`.
+///
+/// **Closed by name from the release that carries it**, the rule `setup_error_reason`
+/// follows (`docs/contract-freeze.md`, surface 2). A third closed set rather than a new
+/// `unknown_reason` member on purpose: nothing about a recovery can make the run itself
+/// unknown — the verdict was decided before any recovery ran — so none of these is a
+/// refusal of the run.
+///
+/// `fail` is spent on one observation only: the recovery command ran and ended, and the
+/// declared recovery checker, run afterwards, rejected the state. Everything the engine
+/// could not establish — the crash state not rebuilt, a command that never started or did
+/// not end inside `--world-timeout`, a state still changing after the command ended, a
+/// recovery checker that accepted a corrupted state — is `unknown`, because reporting
+/// `fail` for a recovery that never ran would be a claim about the tool this run did not
+/// measure.
+pub const RecoveryResult = enum {
+    pass,
+    fail,
+    unknown,
+
+    pub fn name(self: RecoveryResult) []const u8 {
+        return @tagName(self);
+    }
+};
+
 /// What the operator does next about a refusal (#274). Every UNKNOWN carries one — the
 /// report's `next_step` field and the text report's `next` line are the same sentence,
 /// rendered once — and `main.zig`'s `unknown()` takes it as a required argument, so a

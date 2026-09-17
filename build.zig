@@ -472,6 +472,10 @@ pub fn build(b: *std.Build) void {
         // below was: main.zig imports it, and collection through an import is what stopped
         // silently once before. Its tests reach no declaration of main.zig's.
         "src/evidence.zig",
+        // The recovery phase (#606, ADR 0072), named for the same reason: main.zig imports it,
+        // and a file whose tests are collected only through an import runs them nowhere the day
+        // that import moves.
+        "src/recovery.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.
