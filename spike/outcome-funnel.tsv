@@ -1,0 +1,111 @@
+# How far each campaign got with each target (#605). One row per (campaign, target),
+# carrying the FURTHEST stage that campaign reached. The stages, the rules that decide
+# them, and what this record cannot see are on spike/outcome-funnel.py and in
+# docs/outcome-funnel.md; the counts are generated from here and never typed.
+#
+# Columns (tab-separated, exactly nine, TABS not spaces):
+#
+#   campaign target stage verdict stop report evidence as_of note
+#
+#   stage     attempted explored judged novel report_worthy filed acknowledged
+#             fixed revalidated
+#   verdict   pass / fail / unknown (a named refusal) / - . A verdict is PASS or FAIL;
+#             everything else is a refusal, never a silent pass (docs/target-classes.md).
+#   stop      why this encounter stopped where it did, from a closed set. `known` and
+#             `not_worth` are separate because they are different judgements: the
+#             2026-09-16 run did not file pre-commit because no content is lost, which
+#             says nothing about whether the finding was novel.
+#   report    owner/repo#N, and it must be one of this project's own filings in
+#             spike/upstream-reports.tsv. A third party's issue covering the same shape
+#             goes in the note - it is not a report this project made. A row below
+#             `filed` may still carry one: the 2026-09-05 run rediscovered a window
+#             this project had filed the day before.
+#   evidence  a path in this repository. Where it is a report this engine wrote, the
+#             checker holds this row's verdict and stage to what that report says.
+#             Where it is not, the checker holds it to existing and to naming the
+#             target, and `summary` prints how many rows are in each state.
+#   as_of     when the upstream state in `stop` was read. Required from `filed` on:
+#             a tail state with no reading date is indistinguishable from one nobody
+#             re-read, which is the failure spike/upstream-report-status.sh exists to
+#             avoid. That script measures the live state; this column does not.
+dogfood/2026-09-05-userview	mogrify	filed	fail	-	ImageMagick/ImageMagick#8939	spike/dogfood/2026-09-05-userview/transcripts/explore/mogrify.json	2026-09-05	FAIL 6/13: rename aside, then no file at the original name. Filed the same day, written as minor with an invitation to close it
+dogfood/2026-09-05-userview	exiv2	filed	fail	awaiting	Exiv2/exiv2#9482	spike/dogfood/2026-09-05-userview/transcripts/explore/exiv2.json	2026-09-05	FAIL 3/7: a zero-byte image with the original nowhere. No response recorded here since
+dogfood/2026-09-05-userview	qpdf	judged	fail	known	qpdf/qpdf#1773	spike/dogfood/2026-09-05-userview/transcripts/explore/qpdf.json	-	Rediscovery, not a new finding: this project filed the same window on 2026-09-04 from a separate measurement, and the run's freshness check missed it because it read only this repository
+dogfood/2026-09-05-userview	rdiff-backup	judged	fail	known	-	spike/dogfood/2026-09-05-userview/transcripts/explore/rdiff-backup-regress.json	-	FAIL 1/69 with the tool's own regress step ahead of the assert. Not filed: rdiff-backup/rdiff-backup#1084, a third party's, reports the same shape on the same version
+dogfood/2026-09-05-userview	chezmoi	attempted	unknown	wall	-	spike/dogfood/2026-09-05-userview/transcripts/preflight-round1/chezmoi-fullpath.txt	-	no_shim_marker: every Linux artifact the project publishes is static, so there is no build this engine can enter. Measured with the full path - written the way a user writes it, the same refusal says Sideeye did not resolve the binary, which reads as the wrong diagnosis
+dogfood/2026-09-05-userview	gopass	attempted	unknown	wall	-	spike/dogfood/2026-09-05-userview/transcripts/preflight-round1/gopass-direct.txt	-	no_shim_marker, the same static-Go wall as chezmoi. The run's first attempt carried the environment through an `sh` wrapper, which is dynamic and exec'd a child, so that transcript refuses boundary_without_oracle and its own RESULTS.md sets it aside; this is the measurement that reached the wall
+dogfood/2026-09-05-userview	beets	attempted	unknown	wall	-	spike/dogfood/2026-09-05-userview/transcripts/preflight-round1/beets.txt	-	multiple_threads_detected
+dogfood/2026-09-05-userview	joplin	attempted	unknown	wall	-	spike/dogfood/2026-09-05-userview/transcripts/preflight-round1/joplin.txt	-	multiple_threads_detected, the first real Node target to meet the thread wall
+dogfood/2026-09-06-imagemagick-refix	mogrify	revalidated	fail	discussing	ImageMagick/ImageMagick#8939	spike/dogfood/2026-09-06-imagemagick-refix/transcripts/main-original.json	2026-09-06	Re-measured against the merged patch: it narrows the reported window and opens a wider one, losing the original outright. Answered as a comment on the same issue, so no new identifier
+dogfood/2026-09-06-imagemagick-patch3	mogrify	revalidated	pass	-	ImageMagick/ImageMagick#8939	spike/dogfood/2026-09-06-imagemagick-patch3/transcripts/main-original.json	2026-09-06	The third patch closes both items: PASS 4/4 against the patched build where 7.1.1-43 is FAIL 2/5. A new regression (preserve-timestamp silently stops preserving) was found here and not filed - the owner's call was to stop replying on the issue
+dogfood/2026-09-06-userview-2	fonttools	filed	fail	declined	fonttools/fonttools#4170	spike/dogfood/2026-09-06-userview-2/transcripts/explore2/fonttools.json	2026-09-16	Closed upstream: naming the input as the output is read as the caller's risk. State read in the 2026-09-16 run's table of five filings
+dogfood/2026-09-06-userview-2	bean-format	filed	fail	awaiting	beancount/beancount#1051	spike/dogfood/2026-09-06-userview-2/transcripts/explore2/beanfmt.json	2026-09-16	Open, no comment in ten days. State read in the 2026-09-16 run's table
+dogfood/2026-09-06-userview-2	pyupgrade	filed	fail	declined	asottile/pyupgrade#1101	spike/dogfood/2026-09-06-userview-2/transcripts/explore3/pyupgrade.json	2026-09-16	Closed upstream. State read in the 2026-09-16 run's table
+dogfood/2026-09-06-userview-2	jpegtran	filed	fail	discussing	libjpeg-turbo/libjpeg-turbo#914	spike/dogfood/2026-09-06-userview-2/transcripts/explore3/jpegtran.json	2026-09-16	Open, three comments, still under discussion. State read in the 2026-09-16 run's table
+dogfood/2026-09-06-userview-2	mid3v2	judged	pass	-	-	spike/dogfood/2026-09-06-userview-2/transcripts/explore/mid3v2.json	-	PASS 10/10: mutagen rewrites the ID3 region in place with no temporary and no backup, so the file stays readable in every world
+dogfood/2026-09-06-userview-2	bsdtar	judged	pass	-	-	spike/dogfood/2026-09-06-userview-2/transcripts/explore2/bsdtar.json	-	PASS 3/3: appending never re-opens the existing entries
+dogfood/2026-09-06-userview-2	isort	judged	pass	-	-	spike/dogfood/2026-09-06-userview-2/transcripts/explore3/isort.json	-	PASS 7/7: writes a temporary, copies the mode, renames it into place - the contrast that gives the failures their weight
+dogfood/2026-09-06-userview-2	metaflac	attempted	unknown	wall	-	spike/dogfood/2026-09-06-userview-2/transcripts/explore/metaflac.json	-	oracle_missed_operation: a stdio write past ADR 0005's flush boundary
+dogfood/2026-09-06-userview-2	fontforge	attempted	unknown	wall	-	spike/dogfood/2026-09-06-userview-2/transcripts/explore/fontforge.json	-	oracle_missed_operation, the same stdio wall
+dogfood/2026-09-06-userview-2	mutool	attempted	unknown	wall	-	spike/dogfood/2026-09-06-userview-2/transcripts/preflight/mutool.txt	-	unresolvable_path
+dogfood/2026-09-11-past-walls	oxipng	filed	fail	declined	oxipng/oxipng#873	spike/dogfood/2026-09-11-past-walls/transcripts/explore/oxipng.syscalls.json	2026-09-16	Closed upstream: common, unlikely in practice, write somewhere else. State read in the 2026-09-16 run's table
+dogfood/2026-09-11-past-walls	rsync	judged	pass	-	-	spike/dogfood/2026-09-11-past-walls/transcripts/explore/rsync.syscalls.json	-	PASS 7/7, the first dogfood target through contract v15's awaited child
+dogfood/2026-09-11-past-walls	newsboat	judged	pass	-	-	spike/dogfood/2026-09-11-past-walls/transcripts/explore/newsboat3-scratch.syscalls.json	-	PASS 44/44 with the cache judged by SQLite's own recovery. Under the built-in byte comparison the same define is FAIL 15/44 - the buku lesson, a third time
+dogfood/2026-09-11-past-walls	joplin	attempted	unknown	wall	-	spike/dogfood/2026-09-11-past-walls/RESULTS.md	-	multiple_threads_detected, the writer count
+dogfood/2026-09-11-past-walls	Bun	attempted	unknown	wall	-	spike/dogfood/2026-09-11-past-walls/RESULTS.md	-	Past the thread wall and onto raw syscalls
+dogfood/2026-09-11-past-walls	ansible-core	attempted	unknown	wall	-	spike/dogfood/2026-09-11-past-walls/RESULTS.md	-	A process leaves the containment group via setsid
+dogfood/2026-09-11-past-walls	ocrmypdf	attempted	unknown	wall	-	spike/dogfood/2026-09-11-past-walls/RESULTS.md	-	faccessat2 on the state directory
+dogfood/2026-09-11-read-only-542	mlr	attempted	unknown	wall	-	spike/dogfood/2026-09-11-read-only-542/transcripts/mlr.after.1.json	-	oracle_missed_operation 6 of 6: mlr's writes bypass libc, which is what #542's second change went after
+dogfood/2026-09-11-read-only-542	ocrmypdf	explored	unknown	wall	-	spike/dogfood/2026-09-11-read-only-542/transcripts/ocrmypdf.after.syscalls.explore.json	-	baseline_violates_invariant: the output is not byte-repeatable even with SOURCE_DATE_EPOCH pinned. One of its two crash worlds left a.pdf empty - seen, not judged
+dogfood/2026-09-11-syscall-trap-542b	mlr	judged	pass	-	-	spike/dogfood/2026-09-11-syscall-trap-542b/transcripts/mlr.after.syscalls.6.json	-	PASS 1 of 6 runs under --observe syscalls, the first Go target judged. The other five refuse on the writer count
+dogfood/2026-09-13-cgroup-559	ansible-core	judged	pass	-	-	spike/dogfood/2026-09-13-cgroup-559/transcripts/privileged-root.sideeye.syscalls.json	-	PASS 2/2 where the engine can make cgroups. The same define refuses child_process_detected in a default container, with the environment as the step
+dogfood/2026-09-13-joplin-turns	joplin	attempted	unknown	wall	-	spike/dogfood/2026-09-13-joplin-turns/RESULTS.md	-	The refusal stands: multiple_threads_detected, the same two operations named. Forty kept captures -- twenty as joplin runs and twenty with --log-level error -- answered the question the refusal left open without moving the stage
+dogfood/2026-09-16-cargo-v16	cargo	filed	fail	declined	rust-lang/cargo#17481	spike/dogfood/2026-09-16-cargo-v16/transcripts/B.1.json	2026-09-16	FAIL 1/8 under --observe syscalls: an empty Cargo.lock that cargo metadata re-resolves in silence. Closed within the hour under the project's policy on issues drafted by a language model
+dogfood/2026-09-16-crossed-walls	Bun	judged	fail	known	-	spike/dogfood/2026-09-16-crossed-walls/transcripts/explore/bun.140.syscalls.1.json	-	FAIL 3/3 under syscalls, an empty package.json. Known upstream: oven-sh/bun#39689, open
+dogfood/2026-09-16-crossed-walls	ninja	judged	fail	not_worth	-	spike/dogfood/2026-09-16-crossed-walls/transcripts/explore/ninja.140.syscalls.1.json	-	FAIL 3/3 on the built-in invariant over the cp child's out.txt while the checker passed - an output ninja rebuilds
+dogfood/2026-09-16-crossed-walls	markdownlint	judged	fail	not_worth	-	spike/dogfood/2026-09-16-crossed-walls/transcripts/explore/markdownlint.140.wrappers.1.json	-	FAIL 4/4, an empty file, emptied by ulimit -f 0 with no crash at all. Owner's call: sources under version control, and the class was closed as spam or the caller's risk before
+dogfood/2026-09-16-crossed-walls	gjf	judged	fail	not_worth	-	spike/dogfood/2026-09-16-crossed-walls/transcripts/explore/gjf.140.wrappers.1.json	-	google-java-format: FAIL 4/4, the same empty file. Not filed, on the same call as markdownlint-cli
+dogfood/2026-09-16-crossed-walls	xz	judged	pass	-	-	spike/dogfood/2026-09-16-crossed-walls/transcripts/explore/xz.140.wrappers.1.json	-	PASS 4/4 on the checker's invariant, a thread pool that does not reach the wall
+dogfood/2026-09-16-crossed-walls	zstd	attempted	unknown	wall	-	spike/dogfood/2026-09-16-crossed-walls/SELECTION.md	-	multiple_threads_detected under contract v18: a worker writes the blocks and the main thread writes too, with nothing ordering them
+dogfood/2026-09-16-crossed-walls	lz4	attempted	unknown	wall	-	spike/dogfood/2026-09-16-crossed-walls/SELECTION.md	-	multiple_threads_detected, the same shape as zstd
+dogfood/2026-09-16-crossed-walls	prettier	attempted	unknown	wall	-	spike/dogfood/2026-09-16-crossed-walls/SELECTION.md	-	Refused on two writing threads, the joplin shape
+dogfood/2026-09-16-crossed-walls	svgo	attempted	unknown	wall	-	spike/dogfood/2026-09-16-crossed-walls/SELECTION.md	-	Refused on two writing threads, the joplin shape
+dogfood/2026-09-16-crossed-walls	npm pkg set	attempted	unknown	wall	-	spike/dogfood/2026-09-16-crossed-walls/SELECTION.md	-	Refused on two writing threads, the joplin shape
+dogfood/2026-09-16-crossed-walls	git	attempted	unknown	wall	-	spike/dogfood/2026-09-16-crossed-walls/SELECTION.md	-	A commit that starts automatic maintenance: child_touched_state_dir
+dogfood/2026-09-16-outside-git	aws-cli	filed	fail	awaiting	aws/aws-cli#10648	spike/dogfood/2026-09-16-outside-git/transcripts/rerun-after-redaction/aws.140.wrappers.1.json	2026-09-16	FAIL 4/4: the credentials file emptied, every profile's keys gone. ulimit -f 0 alone reproduces it. Filed the same day
+dogfood/2026-09-16-outside-git	neovim	filed	fail	awaiting	neovim/neovim#41940	spike/dogfood/2026-09-16-outside-git/transcripts/nvim-v2/nvim.scratch.140.wrappers.1.json	2026-09-16	FAIL 4/4 on the checker with main.shada declared scratch: the file is removed before the rename. 0.12.5 still carries one window. Filed the same day
+dogfood/2026-09-16-outside-git	hatch	judged	pass	-	-	spike/dogfood/2026-09-16-outside-git/transcripts/explore/hatch.140.wrappers.1.json	-	PASS 4/4
+dogfood/2026-09-16-outside-git	jbang	judged	fail	not_worth	-	spike/dogfood/2026-09-16-outside-git/transcripts/explore/jbang.140.wrappers.1.json	-	FAIL 4/4 through its jar. Not filed: configuration a user re-creates in one command
+dogfood/2026-09-16-outside-git	pyenv	judged	fail	not_worth	-	spike/dogfood/2026-09-16-outside-git/transcripts/explore/pyenv.140.syscalls.1.json	-	FAIL 3/3 under syscalls only, the oracle agreeing on none of the subject's operations. Not filed, on the same call as jbang
+dogfood/2026-09-16-outside-git	Bitwarden	attempted	unknown	wall	-	spike/dogfood/2026-09-16-outside-git/SELECTION.md	-	multiple_threads_detected, the Node asynchronous class
+dogfood/2026-09-16-threads-take-turns	virtualenv	judged	pass	-	-	spike/dogfood/2026-09-16-threads-take-turns/transcripts/v18/virtualenv.syscalls.1.json	-	PASS 1382/1382 in both modes, the first target judged with two writing threads (contract v18, ADR 0067)
+dogfood/2026-09-16-threads-take-turns	beets	attempted	unknown	wall	-	spike/dogfood/2026-09-16-threads-take-turns/transcripts/v18/beets.syscalls.1.json	-	multiple_threads_detected 3/3 in both modes: the two thread ids named are pipeline siblings ordered by a queue the shim does not see
+dogfood/2026-09-16-userview-3	codespell	filed	fail	awaiting	codespell-project/codespell#4025	spike/dogfood/2026-09-16-userview-3/transcripts/explore/codespell.json	2026-09-16	FAIL 3/7, the truncating open. --write-changes is the only way the tool applies a fix, so the answer the declined reports got does not transfer
+dogfood/2026-09-16-userview-3	rubocop	filed	fail	awaiting	rubocop/rubocop#15720	spike/dogfood/2026-09-16-userview-3/transcripts/explore/rubocop.json	2026-09-16	FAIL 2/5, the same window in a fourth language, on a file a developer is editing
+dogfood/2026-09-16-userview-3	composer	judged	fail	known	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/composer3.json	-	FAIL 2/5. Not filed: the same shape this project has filed five times, three of them declined, and composer can be told to write somewhere else
+dogfood/2026-09-16-userview-3	vips	judged	fail	known	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/vips.json	-	FAIL 1/3. Not filed, same call as composer
+dogfood/2026-09-16-userview-3	tesseract	judged	fail	known	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/tesseract2.json	-	FAIL 1/3. Not filed, same call as composer
+dogfood/2026-09-16-userview-3	pandoc	judged	fail	known	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/pandoc.json	-	FAIL 1/4. Not filed, same call as composer
+dogfood/2026-09-16-userview-3	uutils cp	judged	fail	known	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/uucp.json	-	FAIL 2/5. Not filed, same call as composer
+dogfood/2026-09-16-userview-3	pre-commit	judged	fail	no_content_lost	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/precommit.json	-	FAIL 2/5, L0-only: the hook's name is gone between the rename and the replacement, the content is not. The checker passed in those worlds. Not filed for that reason, which is not a judgement about novelty
+dogfood/2026-09-16-userview-3	zoxide	judged	pass	-	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/zoxide2.json	-	PASS 5/5 with a declared apparatus clock. The first define refused baseline_violates_invariant on the access times
+dogfood/2026-09-16-userview-3	pip	judged	pass	-	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/pip2.json	-	PASS 5/5, with 493 paths attributed to a rename from outside the judged root - the one gap this engine declares rather than hides
+dogfood/2026-09-16-userview-3	sphinx	judged	pass	-	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/sphinx.json	-	PASS 2/2 over a single crash point, and the verdict line says so rather than letting 2/2 read like 44/44
+dogfood/2026-09-16-userview-3	bat	explored	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/bat2.json	-	baseline_violates_invariant after exploring 8 worlds: metadata.yaml differs between two clean runs, and a pinned clock does not fix it
+dogfood/2026-09-16-userview-3	meson	explored	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/meson.json	-	baseline_violates_invariant after exploring 110 worlds: meson-logs/meson-log.txt is not byte-repeatable
+dogfood/2026-09-16-userview-3	ccache	explored	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/ccache2.json	-	kill_did_not_land after exploring 55 worlds - the first time this project has met that refusal on a real target
+dogfood/2026-09-16-userview-3	vim	attempted	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/vim2.json	-	unsupported_syscall_observed on getxattr, in both observation modes
+dogfood/2026-09-16-userview-3	zstd	attempted	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/zstd-syscalls.json	-	multiple_threads_detected under syscalls; oracle_missed_operation under wrappers. The second names the cause, the first reads as a shim gap
+dogfood/2026-09-16-userview-3	rrdtool	attempted	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/rrdtool.json	-	unsupported_syscall_observed: an RRD is updated through a shared mapping, and there is no call to interpose
+dogfood/2026-09-16-userview-3	fish	attempted	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/fish4.json	-	unsupported_syscall_observed on inotify_add_watch. The other define found the history file is not written by a non-interactive fish -c at all
+dogfood/2026-09-16-userview-3	virtualenv	attempted	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/virtualenv.json	-	multiple_threads_detected: two threads mkdir inside the judged root. Answered later by contract v18
+dogfood/2026-09-16-userview-3	ninja	attempted	unknown	wall	-	spike/dogfood/2026-09-16-userview-3/transcripts/explore/ninja2.json	-	A process leaves the containment group in a default container; with --privileged, oracle_missed_operation on the .ninja_log write
+loop-closure-timew	timewarrior	revalidated	fail	-	GothenburgBitFactory/timewarrior#778	BUILDLOG.md	2026-08-13	timew undo can destroy committed data across a crash window. Fixed upstream, and the patched build passes 25/25 - the re-measurement is in this repository's journal
+blind-hunt	topydo	filed	fail	awaiting	topydo/topydo#341	spike/blind-hunt/ledger.md	2026-08-14	The recovery misfire reached by post-seal analysis, reported 2026-08-14. The campaign's twelve counterexamples were a separate shape and were not filed: topydo/topydo#318, a third party's, already covers the destruction
+assisted	calcurse	filed	fail	awaiting	lfos/calcurse#529	spike/assisted/calcurse/report-remeasure.json	2026-08-14	FAIL 1/11, replay-confirmed
+assisted	devtodo	filed	fail	withdrawn	alecthomas/devtodo#9	spike/assisted/devtodo/report-remeasure.json	2026-08-14	FAIL 6/8 once ownership writes became recorded-only. Filed and withdrawn the same day on the owner's judgement; the finding is kept on the target table deliberately unreported
+assisted	GNU Stow	filed	fail	awaiting	aspiers/stow#139	spike/assisted/stow/report-remeasure.json	2026-08-14	FAIL 2/5 once symlinks became first-class kill points
+cohort3	poetry	filed	fail	awaiting	python-poetry/poetry#11019	spike/cohort3/poetry/report.json	2026-08-22	The checker-red world behind the frozen claim rule: crash point 4 destroys a user-authored pyproject.toml
+cohort4	himalaya	revalidated	fail	-	pimalaya/himalaya#738	spike/cohort4/himalaya-r2/run1/report.json	2026-08-22	FAIL 1/3, a message file at its final path holding 0 bytes. Fixed and closed by the maintainer the same day; against a build carrying the fix the same case refuses case_no_longer_applies, which is the re-measurement
+slate/2026-09-04	trash-cli	filed	fail	awaiting	andreafrancia/trash-cli#414	docs/target-classes.md	2026-09-04	FAIL 2/7: an entry in the trash's info directory with nothing in files. No content is lost, but the trash directory stays inconsistent. This measurement left no directory of its own - the target table's row is its record
+slate/2026-09-04	qpdf	filed	fail	awaiting	qpdf/qpdf#1773	docs/target-classes.md	2026-09-04	The window the 2026-09-05 run then rediscovered. Measured the day before that run, and like trash-cli it left no directory of its own

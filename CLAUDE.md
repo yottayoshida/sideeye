@@ -59,7 +59,7 @@ The contract:
   a repository setting and a separate call.
   If your number collides, renumber yours — **and do it before anything cites the path**.
   Several tracked documents hardcode `docs/adr/NNNN-slug.md`, and only `spike/acceptance.sh`
-  sweeps any of them (three pages, for slashed backtick references). Bare `ADR NNNN` prose
+  sweeps any of them (four pages, for slashed backtick references). Bare `ADR NNNN` prose
   citations are checked by nothing and break semantically rather than loudly: after a
   renumber they point at a different decision.
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
