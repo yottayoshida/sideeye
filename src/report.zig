@@ -261,7 +261,7 @@ pub var setup_status: ?posix.Term = null;
 pub var replay_note: []const u8 = "-";
 /// The evidence bundle saved beside the earliest exhibit's case (#607, ADR 0071), or
 /// `"-"` when none was written. A path rather than a derivation rule: the name is
-/// `NNNNNN.evidence.json` beside `NNNNNN.json` today, and a consumer that had to know
+/// `<work>/evidence/NNNNNN.json` for the case of that id today, and a consumer that had to know
 /// that would be holding a second copy of a rule only this file should own.
 pub var evidence_note: []const u8 = "-";
 /// Progress, so an UNKNOWN raised mid-exploration reports what had been explored rather

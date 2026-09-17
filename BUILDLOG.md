@@ -92,6 +92,52 @@ was `findCopy` being called twice on a `yes` row: once to decide and once to nam
 is the only part of `measure` that is not linear in the number of rows, so the second call is
 the one cost a large state tree would feel; the answer is carried now.
 
+**CI's second finding: the bundle could not live in `cases/`.** The macOS job died with
+`KeyError: 'define'` in a step that does `case_file=$(ls "$root"/seed/work/cases/*.json | head -1)`.
+`000001.evidence.json` sorts ahead of `000001.json`, so the reader got a bundle and looked for a
+define in it. A grep found three readers of that directory in the repository — `.github/workflows/ci.yml`,
+and two in `spike/acceptance.sh`, one of them `find … -name '*.json' | head -1`.
+
+Correcting the three was the obvious fix and the wrong one: it leaves the trap set for the
+fourth, which nobody has written yet. The bundle is `<work>/evidence/NNNNNN.json` now — same id,
+directory of its own — and every reader of `cases/*.json` is correct again without knowing this
+file exists. Prefer the shape that cannot break over the check that notices.
+
+What that cost: `siblingPath` maps `…/cases/NNNNNN.json` to `…/evidence/NNNNNN.json` and returns
+anything else unchanged, `write` refuses when the rule did not move the path (a hand-written case
+somewhere else has nothing to attach to), and the four documents, the report field's own comment
+and the guard all name the new place. Measured after: `ls cases/*.json | head -1` picks a file
+that has a `define`, and the two directories hold one file each.
+
+**Both CI findings were things no local check could have shown me.** The first needed the
+acceptance suite, which runs only in the Linux container. The second needed a *different*
+repository's habit — a glob written months ago in a workflow file this change never touches.
+Neither review round found either, and neither was going to: R1 and R2 were reading the diff.
+
+**CI reversed the reversal: the world checker's output goes back to the terminal.** The
+`linux` and `macos` jobs went red on `FAIL #134 labeling: gate falsify-lines=1 world
+unlabeled-lines=0`. The check has been there since #133's buku correction and it counts **both**
+sides: the falsification gate's lines must carry `falsify: `, and a failing world's checker
+lines must stay unlabeled — that difference is what stops one being harvested as the other, and
+counting both is what stops a silent checker passing it vacuously.
+
+Dropping the re-emission removed the world side entirely. The reasoning that produced it — that
+#134 records unlabeled checker output as a hazard — had #134 backwards: the hazard was the
+*gate's* output reading as a world's, and labeling the gate was the fix. R1's M5 said the
+falsification probe was the precedent for what to do after capturing, and it was right; the
+reversal four paragraphs up was wrong. The capture is additive now: the file feeds the bundle,
+and the terminal gets exactly the unlabeled lines it always got.
+
+What that withdraws: the CHANGELOG `Changed` entry is gone, because nothing a user sees changed.
+`docs/cli.md`, `docs/evidence.md` and ADR 0071 say "also captured" instead of "instead of the
+terminal". Measured after the fix, mirroring the check's own counting on a local FAIL:
+`gate=1 world=1`.
+
+**Two reversals in one change, both of them mine, and each was caught by something different.**
+The first (stop re-emitting) was caught by a check that has existed for months. The second (the
+`evilname` fixture too weak to turn its own check red) was caught by running the mutation. What
+neither was caught by: writing the reasoning down carefully, which I did both times.
+
 **`/simplify` after the review rounds: two applied, none skipped.** The two `evidence.write`
 call sites in `phaseReport` were near-identical struct literals — eight of the bundle's fields
 do not vary between a run's two exhibits, and both sites spelled all eight. A ninth added to

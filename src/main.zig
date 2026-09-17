@@ -2849,7 +2849,29 @@ fn phaseExploration(run: *Run) void {
             };
             // Set whichever way the child ended: a checker killed by a signal has often
             // written the line that says why, and the capture is what holds it.
-            if (capture_opened) checker_out = co;
+            if (capture_opened) {
+                checker_out = co;
+                // Re-emitted UNLABELED, which is byte-for-byte what a world checker's output
+                // has always looked like on this stream. The capture is additive: the bundle
+                // gets the exhibit's last line, and the terminal keeps what it had.
+                //
+                // An earlier version of this change did not re-emit, on the reasoning that
+                // #134 records unlabeled checker output as a hazard. That misread #134: the
+                // hazard was the *gate's* output being harvested as a world's, and the fix
+                // was labeling the gate — the world side staying unlabeled is what makes the
+                // two tellable apart. `spike/acceptance.sh` counts BOTH sides for exactly
+                // that reason and went red on the version that dropped this (CI, 2026-09-17).
+                if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
+                    var lines = std.mem.splitScalar(u8, text, '\n');
+                    while (lines.next()) |line| {
+                        if (line.len == 0) continue;
+                        say("{s}\n", .{line});
+                    }
+                }
+                // No else-branch saying so, unlike the gate's: a gate that cannot be read
+                // back decides a refusal, and this decides nothing — the exit status is the
+                // verdict's input and the unread line is reported as unknown in the bundle.
+            }
             checks_run += 1;
             l2_failed = switch (ct) {
                 .exited => |code| code != 0,

@@ -20,7 +20,7 @@ line, in the text report and in `--json` alike:
 ```
 case        /tmp/sideeye-work/cases/000001.json
 replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim …
-evidence    /tmp/sideeye-work/cases/000001.evidence.json
+evidence    /tmp/sideeye-work/evidence/000001.json
 ```
 
 ```
@@ -99,8 +99,12 @@ rather than presenting a trimmed list as the whole one.
 
 ## Where the bundle lives, and why not in the case
 
-The bundle is `NNNNNN.evidence.json` beside `NNNNNN.json` in the work directory, and it
-carries its own `evidence_version`. It is deliberately not part of the case file.
+The bundle is `<work>/evidence/NNNNNN.json`, carrying the same id as the case it belongs to
+and its own `evidence_version`. It is deliberately not part of the case file, and deliberately
+not inside `cases/` either: several readers take `cases/*.json` and one of them takes the first
+match, so a bundle sitting there would be handed to something expecting a case. A directory of
+its own makes every reader of that directory correct without any of them knowing this file
+exists.
 
 A case is a *question*: the define, the crash point and the landing context a later replay
 re-asks (ADR 0009). [docs/contract-freeze.md](contract-freeze.md) surface 4 ties a case's version to its shape,
@@ -123,15 +127,12 @@ names the second. When the two exhibits are one world there is one case and one 
 
 ## The checker's output
 
-To quote the checker's last line, Sideeye has to have it. Since this feature the checker's
-output in each explored world is captured to `<work>/checker-output.txt` instead of being
-inherited by the terminal — the same move `--setup`'s capture made in #483, for two reasons
-rather than one: a checker that runs once per crash point printed its diagnosis once per
-crash point into the middle of the run, and #134 records unlabeled checker output reaching
-the transcript as a hazard of its own. What the file holds when the run ends is the **un-killed baseline
-world's** output — the world loop ends with that re-run and the checker runs in it — so it
-is not a crash world's diagnosis. The exhibit's own last line is in the bundle, read in the
-world that produced it, which is the copy worth keeping.
+To quote the checker's last line, Sideeye has to have it. The checker's output in each
+explored world is therefore **also** captured to `<work>/checker-output.txt`, in addition to
+reaching your terminal the way it always has — the lines are re-emitted unlabeled, which is
+what distinguishes them from the falsification gate's, prefixed `falsify:` since #134. The
+file holds whichever world ran last, which is the un-killed baseline; the exhibit's own last
+line is in the bundle, read in the world that produced it, and that is the copy worth keeping.
 
 If the capture cannot be opened, the checker still runs — the verdict rests on its exit
 status, which is unaffected — and the bundle's checker diagnostic is reported as unreadable.

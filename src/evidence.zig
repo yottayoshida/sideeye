@@ -513,16 +513,22 @@ pub fn buildJson(arena: std.mem.Allocator, ev: Evidence) ![]const u8 {
     return doc.items;
 }
 
-/// `<dir>/NNNNNN.json` -> `<dir>/NNNNNN.evidence.json`. A path already in the evidence form
-/// is returned as itself, so `sideeye evidence` takes either name.
+/// `<work>/cases/NNNNNN.json` -> `<work>/evidence/NNNNNN.json`. Any other path is returned as
+/// itself, so `sideeye evidence` takes the case's name or the bundle's.
+///
+/// **A directory of its own, and not `cases/NNNNNN.evidence.json`.** The first version put the
+/// bundle beside its case under the same extension, and CI found what that costs: three places
+/// take `cases/*.json` and one of them is `ls … | head -1`, which sorts `000001.evidence.json`
+/// ahead of `000001.json` and hands a bundle to a reader expecting a case (`KeyError: 'define'`,
+/// macOS, 2026-09-17). Fixing the three globs would have left the trap set for the fourth. A
+/// bundle that cannot match `cases/*.json` at all makes every reader of that directory correct
+/// without any of them knowing this file exists.
 pub fn siblingPath(arena: std.mem.Allocator, case_path: []const u8) error{OutOfMemory}![]const u8 {
-    const suffix = ".evidence.json";
-    if (std.mem.endsWith(u8, case_path, suffix)) return case_path;
-    const stem = if (std.mem.endsWith(u8, case_path, ".json"))
-        case_path[0 .. case_path.len - ".json".len]
-    else
-        case_path;
-    return std.fmt.allocPrint(arena, "{s}{s}", .{ stem, suffix });
+    const slash = std.mem.lastIndexOfScalar(u8, case_path, '/') orelse return case_path;
+    const dir = case_path[0..slash];
+    if (!std.mem.endsWith(u8, dir, "/cases") and !std.mem.eql(u8, dir, "cases")) return case_path;
+    const parent = dir[0 .. dir.len - "cases".len];
+    return std.fmt.allocPrint(arena, "{s}evidence{s}", .{ parent, case_path[slash..] });
 }
 
 /// Write the bundle beside its case and return the path, or null when it could not be
@@ -535,7 +541,14 @@ pub fn siblingPath(arena: std.mem.Allocator, case_path: []const u8) error{OutOfM
 /// — is untouched by whether this succeeds.
 pub fn write(arena: std.mem.Allocator, case_path: []const u8, ev: Evidence) ?[]const u8 {
     const path = siblingPath(arena, case_path) catch return null;
+    // Same directory as the case means the caller handed us a path this rule does not move,
+    // which is a hand-written case rather than one this engine wrote. Nothing to attach to.
+    if (std.mem.eql(u8, path, case_path)) return null;
     const doc = buildJson(arena, ev) catch return null;
+    var dbuf: [contract.max_path]u8 = undefined;
+    const slash = std.mem.lastIndexOfScalar(u8, path, '/').?;
+    const dz = std.fmt.bufPrintZ(&dbuf, "{s}", .{path[0..slash]}) catch return null;
+    _ = posix.mkdir(dz.ptr, 0o755); // EEXIST is fine; the open below decides
     var pbuf: [contract.max_path]u8 = undefined;
     const pz = std.fmt.bufPrintZ(&pbuf, "{s}", .{path}) catch return null;
     _ = posix.unlink(pz.ptr);
@@ -783,15 +796,21 @@ test "the union stops at the caller's buffer rather than past it" {
     try std.testing.expectEqual(@as(usize, 2), unionRels(&a, &.{}, &out));
 }
 
-test "the evidence path is derived from the case's and is idempotent" {
+test "the evidence path leaves the cases directory and the rule is idempotent" {
     const arena = std.testing.allocator;
     const a = try siblingPath(arena, "/w/cases/000001.json");
     defer arena.free(a);
-    try std.testing.expectEqualStrings("/w/cases/000001.evidence.json", a);
-    // Idempotent, so `sideeye evidence` takes either name: applied to its own output the
-    // rule must not produce `000001.evidence.evidence.json`.
+    try std.testing.expectEqualStrings("/w/evidence/000001.json", a);
+    // The property CI bought: a bundle never matches `cases/*.json`, so the three readers of
+    // that directory — and the fourth nobody has written yet — cannot be handed one.
+    try std.testing.expect(std.mem.indexOf(u8, a, "/cases/") == null);
+    // Idempotent, so `sideeye evidence` takes either name.
     const b = try siblingPath(arena, a);
     try std.testing.expectEqualStrings(a, b);
+    // A path this rule does not move is returned unchanged, and `write` treats that as
+    // "nothing to attach to" rather than writing over the caller's own file.
+    const c = try siblingPath(arena, "/w/hand-written.json");
+    try std.testing.expectEqualStrings("/w/hand-written.json", c);
 }
 
 test "a bundle round-trips through its own JSON" {

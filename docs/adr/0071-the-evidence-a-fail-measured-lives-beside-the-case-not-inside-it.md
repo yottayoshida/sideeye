@@ -30,9 +30,24 @@ below it, which is what makes the ladder honest.
 ## Decision
 
 The measurement happens in the world loop, at the branch that latches each exhibit, and its
-result is written to **`<work>/cases/NNNNNN.evidence.json`** — a separate file beside the
-case, carrying its own `evidence_version`, parsed strictly the way `ReplayCase` is. The case
-file is unchanged.
+result is written to **`<work>/evidence/NNNNNN.json`** — a separate file carrying the same id
+as its case and its own `evidence_version`. The case file is unchanged.
+
+A directory of its own rather than a sibling inside `cases/`: three readers in this repository
+take `cases/*.json`, one of them as `ls … | head -1`, and an alphabetically earlier bundle was
+handed to one of them as a case. Correcting the three would have left the trap set for the
+fourth.
+
+**The bundle is read in the opposite direction from a case, deliberately.** `ReplayCase` is
+parsed strictly — its doc says an unknown field is a case from a future schema, not something
+to skip — because a case is a question this engine either can or cannot re-ask. A bundle is a
+record, so it takes the report schema's direction instead (surface 2: a consumer tolerates
+fields it does not know) and refuses only *upward*, on `evidence_version`. Without that, the
+first field added at version 2 would make every version-1 bundle already on disk unreadable by
+a reader that could still read it perfectly well. The cost is named rather than hidden: a
+bundle from a future version is refused before any field is dropped, so the silent-drop case
+is reachable only through a hand-edited or damaged file, and a maintainer reading one would
+see a complete-looking document missing a row.
 
 `sideeye evidence <case.json>` renders that file as Markdown. Its input is the two artifacts
 and nothing else: it starts no process, reads no state directory, and parses none of
@@ -77,12 +92,13 @@ related reason: the machine-readable form is the bundle file itself.
 - A FAIL writes one more small file per saved case. A write failure loses the bundle and
   nothing else: the report says `-` on its `evidence` line, and the verdict, the case and the
   replay command are unaffected.
-- The declared checker's output in each explored world is now captured to
-  `<work>/checker-output.txt` rather than inherited by the terminal, so the exhibit's last
-  line can be quoted. This follows `--setup`'s capture (#483) and removes the unlabeled
-  per-world checker output #134 records as a hazard. A capture that cannot be opened leaves
-  the diagnostic unreadable and does not refuse the run — an attachment must not turn a FAIL
-  into an UNKNOWN.
+- The declared checker's output in each explored world is also captured to
+  `<work>/checker-output.txt`, so the exhibit's last line can be quoted. Nothing leaves the
+  terminal: the lines are re-emitted unlabeled, which is what `spike/acceptance.sh` counts to
+  tell them from the falsification gate's `falsify:`-prefixed ones (#134's property, and the
+  check that caught a first version of this change for dropping the world side). A capture
+  that cannot be opened leaves the diagnostic unreadable and does not refuse the run — an
+  attachment must not turn a FAIL into an UNKNOWN.
 - `evidence_version` can move without touching `case_version`, and #606's recovery result
   has a slot held open from version 1 (`"recovery": {"result": "not_configured"}`, a string
   rather than an enum) so adding it is a value change rather than a schema change.

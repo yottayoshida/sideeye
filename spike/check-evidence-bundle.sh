@@ -102,7 +102,7 @@ run_fixture() { # name, mode, checker, extra-args...
     EV_MODE=$mode "$SIDEEYE" explore --state "$st" --operation "$TOY" \
         --check "$SCRATCH/$checker" --shim "$SHIM" --work "$wk" \
         --json "$SCRATCH/$name.report.json" "$@" > "$SCRATCH/$name.txt" 2>&1 || true
-    BUNDLE="$wk/cases/000001.evidence.json"
+    BUNDLE="$wk/evidence/000001.json"
     CASE="$wk/cases/000001.json"
 }
 
@@ -116,7 +116,7 @@ run_fixture twofile   twofile   check-pair.sh
 run_fixture evilname  evilname  check-evil.sh
 
 for f in truncate backup empty scratch marker twofile evilname; do
-    b="$SCRATCH/$f/work/cases/000001.evidence.json"
+    b="$SCRATCH/$f/work/evidence/000001.json"
     if [ ! -f "$b" ]; then
         bad "fixture $f wrote no bundle; its report says:"
         sed 's/^/       | /' "$SCRATCH/$f.txt" | head -6
@@ -159,7 +159,7 @@ MATRIX = {
 
 seen = []
 for name, rows_wanted in MATRIX.items():
-    b = json.loads((scratch / name / "work" / "cases" / "000001.evidence.json").read_text())
+    b = json.loads((scratch / name / "work" / "evidence" / "000001.json").read_text())
     rows = {r["path"]: r for r in b["consequence"]}
     if len(rows) != len(b["consequence"]):
         problems.append(f"{name}: the consequence table lists a path twice")
@@ -188,7 +188,7 @@ if len(seen) == sum(len(v) for v in MATRIX.values()):
 # Claim 2: every bundle field that names a fact another artifact holds must equal it.
 for name in MATRIX:
     wk = scratch / name / "work"
-    b = json.loads((wk / "cases" / "000001.evidence.json").read_text())
+    b = json.loads((wk / "evidence" / "000001.json").read_text())
     c = json.loads((wk / "cases" / "000001.json").read_text())
     rep = json.loads((scratch / f"{name}.report.json").read_text())
     for field, mine, theirs, whose in [
@@ -211,7 +211,7 @@ for name in MATRIX:
     # The report must name this bundle, so a consumer never has to derive the name.
     if b["exhibit"] != "earliest":
         problems.append(f"{name}: exhibit is {b['exhibit']!r}; these fixtures all save the overall earliest")
-    if rep.get("evidence") != str(wk / "cases" / "000001.evidence.json"):
+    if rep.get("evidence") != str(wk / "evidence" / "000001.json"):
         problems.append(f"{name}: the report's evidence field is {rep.get('evidence')!r}")
     # #606's slot, held open from version 1.
     if b["recovery"]["result"] != "not_configured":
