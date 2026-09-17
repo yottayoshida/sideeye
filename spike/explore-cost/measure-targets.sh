@@ -29,8 +29,9 @@
 # /usr/bin/strace`. There is no strace on macOS and `--oracle-fs-usage` needs a privilege
 # this script will not ask for, so every row here is `--allow-unverified`: the engine does
 # the same work minus the second witness, and the crash-point count can differ from the
-# committed one because the tool is a different build. Both figures are printed, and a row
-# whose count differs is a fact about the two hosts, not an error.
+# committed one because the tool is a different build. This script prints only its own
+# count; the record compares it with the committed one, and a row whose count differs is a
+# fact about the two hosts, not an error.
 #
 # The clock wraps the engine process, as in `measure.sh`, so per-world is an upper bound:
 # start-up, `setup`, the recording run and the snapshots around it are in the total and are

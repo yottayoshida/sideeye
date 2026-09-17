@@ -14,15 +14,16 @@ whether the problem exists at the scale this project runs at.
 measured what one world costs and ended by naming the gap — "Nothing about a total … the file count
 does not predict the multiplier". The multiplier is in the committed record: 200 reports under
 `spike/dogfood/`, 123 of them judged runs that explored something, 3,843 worlds. `corpus.py` reads
-it rather than re-running anything, which is where most of the sample came from — 48 defines over 43
-programs, against a brief asking for 10 to 20.
+it rather than re-running anything. That half covers 44 defines over 39 programs in ten languages, so the
+brief's "10 to 20 real targets across languages" is met there — for crash-point counts and where the first
+failure sits, and not for wall clock or collapse, which reach six defines in C and C++ (below).
 
 **Three things the corpus said that an impression would have got wrong.** The median judged run has
 five crash points, not two, though 2–4 is the largest bucket. The first counterexample's *fraction*
 of the run reads 0.88, which is an artefact of 39 two-crash-point runs where the fraction can only
 be 0.5 or 1.0 — over the 36 runs with five or more crash points the median first failure is at
 address 3. And the tail is one target: virtualenv's two runs at 1,381 crash points are 2,764 of the
-3,843 worlds this project has ever explored, 72%, and neither was ever timed.
+3,843 worlds this project has ever explored, 72%.
 
 **The clock.** Seven runs of six committed defines, re-pathed for this host, median of three:
 0.1–4.9 s per whole run, 11.2 s in total for 76 worlds, per-world 0.014–0.259 s. Per-world cost
@@ -33,7 +34,7 @@ count — the same relationship `RESULTS.md` measured against padding, now on re
 nothing committed says what the other worlds produced. `collapse.sh` re-materialises every world
 from outside the engine through the `reproduce` line the report itself prints, and groups them
 strictly (byte-identical tree) and coarsely (same changed paths, same checker result). The six
-defines disagree sharply: xz collapses 17 of 18 worlds onto one coarse outcome while holding 16
+defines disagree sharply: xz collapses 17 of 18 worlds onto one coarse outcome while those 17 hold 15
 byte-distinct states; timew holds 15 distinct outcomes over 19 crash points and its two failing
 worlds fail for *different* reasons. Redundancy is a property of the target's shape — a stream
 written into one file collapses, a database with an undo log does not — so a pruner keyed on
@@ -52,13 +53,36 @@ the timed set on the first attempt: `/usr/bin/bsdtar` is a platform binary too, 
 `no_shim_marker` until Homebrew's libarchive build was used instead. Both are the macOS limit this
 project already documents, met from a new direction.
 
-**The conclusion, and what would overturn it.** Exhaustive boundary exploration is not a material
-bottleneck at the measured scale, and redundancy is measurable but not dominant. The record names
-three measured results that would justify a pruning issue, the first being a prerequisite: a timed
-run of a 100+ crash-point target showing more than ~10 minutes inside a workflow someone waits for,
-a coarse collapse ratio of 5:1 or better at that size, and a statement of what a pruner may discard
-checked against the strict/coarse gap. No issue was filed, which is what the brief asked for unless
-the measurement showed a concrete problem. It did not.
+**The review reversed the tail, and the conclusion got stronger for it.** The first draft said
+virtualenv — 72% of every world explored — had never been timed, and built its central caveat and its
+first follow-up condition on that: "a timed run of a 100+ crash-point target", a "~10 minutes"
+threshold, and a claim that everything measured sat "two orders of magnitude below" it. The initial
+review found the run's own record saying an explore "took about seven minutes"
+(`spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md`). I had searched the reports for a time
+field and the transcripts for `real`/`elapsed` lines, found neither, and written "never timed" — the
+prose was not searched. Seven minutes over 1,382 worlds is about 0.3 s per world, so the per-world
+model holds in the tail; the corpus's total is about seventeen minutes, not the nine the draft said;
+and the invented ten-minute line fell away. What replaced it is better grounded: the same paragraph
+records that the plan was cut from three explores per mode to one on an *estimate* of an hour, and
+that three would have fit. That is the one case on record where cost shaped a plan, and it was an
+estimate roughly eight times too high. The follow-up condition now asks for a case where *measured*
+cost made a workflow cut what it planned.
+
+The same review caught four more, all fixed: the xz prose said the seventeen collapsing worlds were
+sixteen byte-distinct states "each holding a different number of bytes" when its own transcript shows
+the last three identical (fifteen); "36 runs with five or more crash points" was the FAIL subset of
+62; the measurement script's header promised to print the committed crash-point count beside its own
+and printed one column (the record now compares them — xz, jpegtran and bsdtar agree); and
+`corpus.py` named targets only within one directory, splitting aws-cli and neovim across
+`explore/` and a re-run directory, and matched `rep` but not `rep1`..`rep5`. Its program count is
+still two too high (`nvim012`, `rdiff`), and the record says so rather than hand-mapping them.
+
+**The conclusion.** Exhaustive boundary exploration is not a material bottleneck at the measured
+scale, and redundancy is measurable but not dominant. The record names three measured results that
+would justify a pruning issue — a recorded case where measured wall clock made a workflow cut its
+plan, a coarse collapse ratio of 5:1 or better at that target, and a statement of what a pruner may
+discard checked against the strict/coarse gap. No issue was filed, which is what the brief asked for
+unless the measurement showed a concrete problem. It did not.
 
 ## 2026-09-17 — the evidence a FAIL measured is written beside the case, not into it, and the crashed state is only readable at judgement time
 

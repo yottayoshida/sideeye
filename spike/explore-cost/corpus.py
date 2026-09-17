@@ -22,8 +22,12 @@ run again. The rows are per report; the grouping below is by the file's stem wit
 suffix stripped, printed so a reader can see what was merged, and every aggregate over
 targets says which of the two units it used.
 
-It does not read wall-clock anywhere, because no report carries it and no committed
-transcript recorded it. Time is `measure-targets.sh`'s to measure, not this file's to guess.
+It does not read wall-clock, because no report carries it. Committed prose sometimes does --
+`spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md` says a virtualenv explore "took about
+seven minutes" -- and the first draft of the record beside this file said nothing committed
+had timed virtualenv, having searched the reports and the transcripts' shape and not the
+prose. Prose is not parsed here; time is `measure-targets.sh`'s to measure and the record's
+to cite.
 
 It does not count a refusal's `crash_points` as a cost: a run that refused may have refused
 before exploring, and `explored` says what actually ran. Refusals are reported separately
@@ -45,16 +49,17 @@ REPORT_SCHEMA = "sideeye/report"
 # mode (`nvim-scratch`, `ninja-recovery`) is: those stay apart.
 MODES = ("wrappers", "syscalls")
 # Neither is a different define: `.main` says the run used a build of `main` rather than the
-# release, `.rep` says it is a repetition. A trailing word that is not one of these is left
-# alone -- `nvim-scratch` declares scratch paths and `ninja-recovery` declares a rebuild
-# checker, and those are different questions about one program.
-BUILDS = ("main", "rep")
+# release, `.rep1`..`.rep5` say it is a repetition (the first draft matched `rep` exactly and
+# left `rsync.rep1` and `rsync.rep2` as two defines). A trailing word that is not one of these
+# is left alone -- `nvim-scratch` declares scratch paths and `ninja-recovery` declares a
+# rebuild checker, and those are different questions about one program.
+BUILD_PART = re.compile(r"main|rep\d*")
 
 
 def stem_of(path):
     """The report's target key: file stem, minus a mode infix and a run index."""
     name = os.path.basename(path)[: -len(".json")]
-    parts = [p for p in name.split(".") if p not in MODES and p not in BUILDS]
+    parts = [p for p in name.split(".") if p not in MODES and not BUILD_PART.fullmatch(p)]
     parts = [p for p in parts if not p.isdigit()]
     base = ".".join(parts) if parts else name
     return re.sub(r"\d+$", "", base) or base
@@ -68,8 +73,12 @@ def funnel_names(root):
     slate or the build its run was about. The funnel already carries, per (campaign,
     target), the record the row was taken from, so the naming is taken from there rather
     than invented here. It names one record per campaign and target; the name is carried
-    to that record's siblings -- same directory, same stem after a mode infix and a run
-    index are dropped -- which is how the repeat runs of one define get named.
+    to that record's siblings -- the same dogfood run, the same stem once a mode infix and a
+    run index are dropped and `-` and `.` are read alike -- which is how the repeat runs of
+    one define get named. The first draft carried it only within one directory, and a run
+    that kept its first explores in `explore/` and its re-runs in `rerun-after-redaction/`
+    split aws-cli into `aws` and `aws-cli`; `nvim-scratch` beside `nvim.scratch` split
+    neovim the same way.
     """
     path = os.path.join(root, "spike", "outcome-funnel.tsv")
     named = {}
@@ -83,11 +92,27 @@ def funnel_names(root):
                     named[cols[6]] = cols[1]
     except OSError:
         return {}, {}
-    # (directory, stem) -> name, for carrying to siblings.
+    # (dogfood run, stem) -> name, for carrying to siblings.
     by_stem = {}
+    per_run = defaultdict(set)
     for rec, name in named.items():
-        by_stem[(os.path.dirname(rec), stem_of(rec))] = name
+        key = sibling_key(rec)
+        by_stem[key] = name
+        per_run[key[0]].add(name)
+    # A run the funnel attributes to exactly one target is about that target throughout:
+    # the ImageMagick re-measurements label their reports by build (`deb-original`,
+    # `main-recoverable`) and every one of them is mogrify. Carried under the run alone.
+    for run, names in per_run.items():
+        if len(names) == 1:
+            by_stem[(run, None)] = next(iter(names))
     return named, by_stem
+
+
+def sibling_key(path):
+    """(dogfood run, stem with `-` and `.` read alike) -- what two records of one define share."""
+    parts = path.split(os.sep)
+    run = parts[2] if len(parts) > 2 and parts[:2] == ["spike", "dogfood"] else os.path.dirname(path)
+    return run, stem_of(path).replace("-", ".")
 
 
 def load(root):
@@ -155,7 +180,11 @@ def main():
     named, by_stem = funnel_names(root)
     for r in rows:
         p = r["path"]
-        r["name"] = named.get(p) or by_stem.get((os.path.dirname(p), stem_of(p)))
+        # A define is named from its own record or a sibling's; a program may also be named
+        # from the run, which is too coarse for defines (it would fold mogrify's four builds
+        # into one question) and right for programs.
+        r["name"] = named.get(p) or by_stem.get(sibling_key(p))
+        r["program"] = r["name"] or by_stem.get((sibling_key(p)[0], None)) or re.split(r"[.\-]", r["target"])[0]
         r["target"] = r["name"] or r["target"]
 
     judged = [r for r in rows if r["verdict"] in ("PASS", "FAIL")]
@@ -171,12 +200,13 @@ def main():
     for r in explored:
         by_target[r["target"]].append(r)
     unnamed = sorted({r["target"] for r in explored if not r["name"]})
-    # Two counts, because one number cannot be both. A key is a define -- `nvim` and
-    # `nvim-scratch` are two questions about one program, and the funnel names one record
-    # `aws-cli` where its siblings keep the stem `aws`. The program count folds a key at its
-    # first separator, which merges those pairs and also merges the two nvim defines; the
-    # define count keeps them apart and double-counts the program. The truth is between.
-    programs = {re.split(r"[.\-]", t)[0] for t in by_target}
+    # Two counts, because one number cannot be both. A key is a define: `nvim` and
+    # `nvim-scratch` are two questions about one program. A program is the funnel's name where
+    # the funnel named the record or its run -- those names are programs (`mogrify`,
+    # `aws-cli`, `neovim`) -- and the key's first token where it did not, which still splits
+    # the two programs printed below as named by stem only when one of them is a program the
+    # funnel named under another spelling (`nvim012` is neovim, `rdiff` is rdiff-backup).
+    programs = {r["program"] for r in explored}
     print(f"distinct defines among them: {len(by_target)} "
           f"({len(by_target) - len(unnamed)} named by spike/outcome-funnel.tsv, {len(unnamed)} by file stem) "
           f"over {len(programs)} distinct programs")
@@ -241,7 +271,7 @@ def main():
         if big:
             bf = sorted(e / c for e, c, _ in big)
             qb = quantiles([e for e, _c, _p in big])
-            print(f"   runs with >= 5 crash points: n={len(big)} earliest median={qb['p50']} "
+            print(f"   FAIL runs with >= 5 crash points: n={len(big)} earliest median={qb['p50']} "
                   f"(fraction median={statistics.median(bf):.2f}, min={min(bf):.2f}, max={max(bf):.2f})")
         worst = sorted(pos, key=lambda t: -(t[0] / t[1]))[:5]
         print("   latest by fraction:")
