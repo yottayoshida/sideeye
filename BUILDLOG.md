@@ -2,7 +2,7 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
-## 2026-09-17 — the exploration-cost question is answered from the record plus a clock, and the redundancy it asks about is a property of the target's shape
+## 2026-09-17 — the exploration-cost question is answered from the record plus a clock, and the worlds that repeat are the ones that did not fail
 
 **What was asked, by someone outside the project.** When Sideeye scales to more targets, how
 redundant and expensive is exhaustive crash injection at recorded state-changing operation
@@ -37,10 +37,8 @@ from outside the engine with the environment the report's `reproduce` line uses,
 strictly (byte-identical tree) and coarsely (same changed paths, same checker result). The six
 defines disagree sharply: xz collapses 17 of 18 worlds onto one coarse outcome while those 17 hold 15
 byte-distinct states; timew holds 15 distinct outcomes over 19 crash points and its two failing
-worlds fail for *different* reasons. In those six, redundancy is a property of the target's shape — a
-stream written into one file collapses, a database with an undo log does not — so a pruner keyed on
-"adjacent worlds look alike" would have to be measured per class rather than assumed. Nothing above 19
-crash points was walked.
+worlds fail for *different* reasons. Nothing above 19 crash points was walked. (The timew figure did
+not survive: see "the paragraph that looked like a finding" below.)
 
 **One structural redundancy holds in every define walked.** In all six the world killed before the first
 state-changing operation leaves the pre-state exactly, which follows from what a crash point is
@@ -121,12 +119,35 @@ not 7; the per-world spread is 1.08×–1.58× unrounded. The earlier record's t
 had been put down to load; that row also carried 20 padding files and this one none, and the record
 now says neither difference was isolated.
 
+**The paragraph that looked like a finding was a file name.** After the second review's fixes the
+walk was re-run from the commit holding the script, so the transcripts would name their own
+source. Every count came back the same, but timewarrior's transcript differed in every digest and
+the others only in their header. The reason was in its changed paths: `undo.data.59032-3.tmp`,
+`undo.data.59051-3.tmp` — timewarrior names its temporaries after its process id, every world is a
+new process, and the coarse reading, which compares paths by name, counted each world that left a
+temporary file as a new outcome. Read with the pid hidden, its nineteen crash points are seven
+outcomes, in steps: one temporary file, two, three, the two failures, the finished files. The
+record had said timewarrior was "where pruning would not" pay, set against xz as the case where it
+would; that contrast was mostly the pid. `collapse.sh` now prints a third grouping with pid-shaped
+temporary names read without the pid — narrow on purpose, and the plain coarse count stays the
+conservative one; the engine's own case prefix hash ignores paths for the same stated reason. Neither
+review could have seen it: the committed transcripts carried one run each, and the name only moves
+between runs.
+
+It changed the redundancy half of the conclusion a second time, and more than the reviews did. Over
+the 50 worlds walked, half repeat an outcome by changed paths and two-thirds with the pid hidden —
+not "not dominant". What survived, and is the sharper statement, is where the repeats are: every one
+is a world that did not fail. The four failing worlds are four distinct outcomes, timewarrior's two
+adjacent to each other. The question asked how often crash points collapse onto the same *failure*
+outcome, and in this sample the answer is never.
+
 **The conclusion.** Exhaustive boundary exploration is not a material bottleneck at the measured
-scale. Redundancy is measurable but not dominant within the C and C++ defines of 2 to 19 crash points
-walked, and this sample cannot say whether it dominates in the 100-plus class. Two measured results
-and one agreement would justify a pruning issue: measured wall clock exceeding a budget the workflow
-states, a coarse collapse ratio of 5:1 or better at that target, and an agreed statement of what a
-pruner may discard, checked against the strict/coarse gap. No issue was filed.
+scale. Redundancy is large as a share of the worlds walked — C and C++ defines of 2 to 19 crash
+points — and absent from their failures, and at that scale it costs seconds; this sample cannot say
+what happens in the 100-plus class. Two measured results and one agreement would justify a pruning
+issue: measured wall clock exceeding a budget the workflow states, a coarse collapse ratio of 5:1
+or better at that target read with the pid-hidden grouping beside the plain one, and an agreed
+statement of what a pruner may discard, checked against the strict/coarse gap. No issue was filed.
 
 ## 2026-09-17 — the evidence a FAIL measured is written beside the case, not into it, and the crashed state is only readable at judgement time
 

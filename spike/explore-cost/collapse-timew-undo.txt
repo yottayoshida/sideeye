@@ -1,4 +1,4 @@
-# collapse: timew-undo, 19 crash points, Darwin arm64, a0f8b4b
+# collapse: timew-undo, 19 crash points, Darwin arm64, ad87c90
 # operation: timew track 2020-01-02T10:00 - 2020-01-02T11:00 beta :yes
 # checker: ~/.cctmp/explorecost-Q5xhKd/r5/timew-undo/check.sh
 # pre-state digest: e3867ff82bf919ec
@@ -6,19 +6,19 @@
 k    rc   landed tree               checker  changed                      diagnostic
 1    137  ok     e3867ff82bf919ec   0        (none)                       
 2    137  ok     e3867ff82bf919ec   0        (none)                       
-3    137  ok     5ee108c82ab4f4bd   0        +data/undo.data.59032-3.tmp  
-4    137  ok     9570c96fff17a480   0        +data/undo.data.59051-3.tmp  
-5    137  ok     866bca7afd5c2596   0        +data/undo.data.59070-3.tmp  
-6    137  ok     78bff29a6837c48c   0        +data/undo.data.59089-3.tmp  
-7    137  ok     c602d28a744f48fa   0        +data/undo.data.59108-3.tmp  
-8    137  ok     f959a5319e939f7e   0        +data/2020-01.data.59127-2.tmp,+data/undo.data.59127-3.tmp 
-9    137  ok     54c2e2ca75420239   0        +data/2020-01.data.59146-2.tmp,+data/undo.data.59146-3.tmp 
-10   137  ok     dfafa0bdf19ed1c9   0        +data/2020-01.data.59165-2.tmp,+data/undo.data.59165-3.tmp 
-11   137  ok     ca5f53b63267c60c   0        +data/2020-01.data.59184-2.tmp,+data/tags.data.59184-4.tmp,+data/undo.data.59184-3.tmp 
-12   137  ok     8d8860b4e02d2f69   0        +data/2020-01.data.59204-2.tmp,+data/tags.data.59204-4.tmp,+data/undo.data.59204-3.tmp 
-13   137  ok     3ab30732cc6ea9cd   0        +data/2020-01.data.59223-2.tmp,+data/tags.data.59223-4.tmp,+data/undo.data.59223-3.tmp 
-14   137  ok     68405229165d4c53   1        ~data/2020-01.data,+data/tags.data.59243-4.tmp,+data/undo.data.59243-3.tmp undo removed the wrong change: timew's own export named ('20
-15   137  ok     3ee431f607865c43   1        ~data/2020-01.data,+data/tags.data.59262-4.tmp,~data/undo.data Trying to decrement non-existent tag 'beta'
+3    137  ok     99dc814c5208d5a7   0        +data/undo.data.62250-3.tmp  
+4    137  ok     f219c74c47981cc0   0        +data/undo.data.62272-3.tmp  
+5    137  ok     5b3944c1eca08c7a   0        +data/undo.data.62294-3.tmp  
+6    137  ok     e50ecfff850d5796   0        +data/undo.data.62316-3.tmp  
+7    137  ok     cbe6dde0459c3b57   0        +data/undo.data.62338-3.tmp  
+8    137  ok     e2b80e1695867732   0        +data/2020-01.data.62360-2.tmp,+data/undo.data.62360-3.tmp 
+9    137  ok     9bb05d92ce38406a   0        +data/2020-01.data.62382-2.tmp,+data/undo.data.62382-3.tmp 
+10   137  ok     386be15deebe4986   0        +data/2020-01.data.62404-2.tmp,+data/undo.data.62404-3.tmp 
+11   137  ok     ed673f98a3829319   0        +data/2020-01.data.62426-2.tmp,+data/tags.data.62426-4.tmp,+data/undo.data.62426-3.tmp 
+12   137  ok     d73e1bb11a8b2d1b   0        +data/2020-01.data.62448-2.tmp,+data/tags.data.62448-4.tmp,+data/undo.data.62448-3.tmp 
+13   137  ok     a7f7a0d9a14bc4c8   0        +data/2020-01.data.62470-2.tmp,+data/tags.data.62470-4.tmp,+data/undo.data.62470-3.tmp 
+14   137  ok     6e7419656fdf1a9d   1        ~data/2020-01.data,+data/tags.data.62492-4.tmp,+data/undo.data.62492-3.tmp undo removed the wrong change: timew's own export named ('20
+15   137  ok     9be50a94e38b7848   1        ~data/2020-01.data,+data/tags.data.62514-4.tmp,~data/undo.data Trying to decrement non-existent tag 'beta'
 16   137  ok     5d7fc7b8c7882441   0        ~data/2020-01.data,~data/tags.data,~data/undo.data 
 17   137  ok     5d7fc7b8c7882441   0        ~data/2020-01.data,~data/tags.data,~data/undo.data 
 18   137  ok     5d7fc7b8c7882441   0        ~data/2020-01.data,~data/tags.data,~data/undo.data 
@@ -28,36 +28,45 @@ kill landed at k in 19 of 19 worlds
 
 strict (byte-identical tree + checker exit and first line): 15 distinct outcome(s) over 19 crash points
    x2   k=1,2                      e3867ff82bf919ec  0
-   x1   k=3                        5ee108c82ab4f4bd  0
-   x1   k=4                        9570c96fff17a480  0
-   x1   k=5                        866bca7afd5c2596  0
-   x1   k=6                        78bff29a6837c48c  0
-   x1   k=7                        c602d28a744f48fa  0
-   x1   k=8                        f959a5319e939f7e  0
-   x1   k=9                        54c2e2ca75420239  0
-   x1   k=10                       dfafa0bdf19ed1c9  0
-   x1   k=11                       ca5f53b63267c60c  0
-   x1   k=12                       8d8860b4e02d2f69  0
-   x1   k=13                       3ab30732cc6ea9cd  0
-   x1   k=14                       68405229165d4c53  1  undo removed the wrong change: timew's own export named ('20
-   x1   k=15                       3ee431f607865c43  1  Trying to decrement non-existent tag 'beta'
+   x1   k=3                        99dc814c5208d5a7  0
+   x1   k=4                        f219c74c47981cc0  0
+   x1   k=5                        5b3944c1eca08c7a  0
+   x1   k=6                        e50ecfff850d5796  0
+   x1   k=7                        cbe6dde0459c3b57  0
+   x1   k=8                        e2b80e1695867732  0
+   x1   k=9                        9bb05d92ce38406a  0
+   x1   k=10                       386be15deebe4986  0
+   x1   k=11                       ed673f98a3829319  0
+   x1   k=12                       d73e1bb11a8b2d1b  0
+   x1   k=13                       a7f7a0d9a14bc4c8  0
+   x1   k=14                       6e7419656fdf1a9d  1  undo removed the wrong change: timew's own export named ('20
+   x1   k=15                       9be50a94e38b7848  1  Trying to decrement non-existent tag 'beta'
    x4   k=16,17,18,19              5d7fc7b8c7882441  0
 
 coarse (same changed paths + checker exit and first line): 15 distinct outcome(s) over 19 crash points
    x2   k=1,2                      (none)  0
-   x1   k=3                        +data/undo.data.59032-3.tmp  0
-   x1   k=4                        +data/undo.data.59051-3.tmp  0
-   x1   k=5                        +data/undo.data.59070-3.tmp  0
-   x1   k=6                        +data/undo.data.59089-3.tmp  0
-   x1   k=7                        +data/undo.data.59108-3.tmp  0
-   x1   k=8                        +data/2020-01.data.59127-2.tmp,+data/undo.data.59127-3.tmp  0
-   x1   k=9                        +data/2020-01.data.59146-2.tmp,+data/undo.data.59146-3.tmp  0
-   x1   k=10                       +data/2020-01.data.59165-2.tmp,+data/undo.data.59165-3.tmp  0
-   x1   k=11                       +data/2020-01.data.59184-2.tmp,+data/tags.data.59184-4.tmp,+data/undo.data.59184-3.tmp  0
-   x1   k=12                       +data/2020-01.data.59204-2.tmp,+data/tags.data.59204-4.tmp,+data/undo.data.59204-3.tmp  0
-   x1   k=13                       +data/2020-01.data.59223-2.tmp,+data/tags.data.59223-4.tmp,+data/undo.data.59223-3.tmp  0
-   x1   k=14                       ~data/2020-01.data,+data/tags.data.59243-4.tmp,+data/undo.data.59243-3.tmp  1  undo removed the wrong change: timew's own export named ('20
-   x1   k=15                       ~data/2020-01.data,+data/tags.data.59262-4.tmp,~data/undo.data  1  Trying to decrement non-existent tag 'beta'
+   x1   k=3                        +data/undo.data.62250-3.tmp  0
+   x1   k=4                        +data/undo.data.62272-3.tmp  0
+   x1   k=5                        +data/undo.data.62294-3.tmp  0
+   x1   k=6                        +data/undo.data.62316-3.tmp  0
+   x1   k=7                        +data/undo.data.62338-3.tmp  0
+   x1   k=8                        +data/2020-01.data.62360-2.tmp,+data/undo.data.62360-3.tmp  0
+   x1   k=9                        +data/2020-01.data.62382-2.tmp,+data/undo.data.62382-3.tmp  0
+   x1   k=10                       +data/2020-01.data.62404-2.tmp,+data/undo.data.62404-3.tmp  0
+   x1   k=11                       +data/2020-01.data.62426-2.tmp,+data/tags.data.62426-4.tmp,+data/undo.data.62426-3.tmp  0
+   x1   k=12                       +data/2020-01.data.62448-2.tmp,+data/tags.data.62448-4.tmp,+data/undo.data.62448-3.tmp  0
+   x1   k=13                       +data/2020-01.data.62470-2.tmp,+data/tags.data.62470-4.tmp,+data/undo.data.62470-3.tmp  0
+   x1   k=14                       ~data/2020-01.data,+data/tags.data.62492-4.tmp,+data/undo.data.62492-3.tmp  1  undo removed the wrong change: timew's own export named ('20
+   x1   k=15                       ~data/2020-01.data,+data/tags.data.62514-4.tmp,~data/undo.data  1  Trying to decrement non-existent tag 'beta'
+   x4   k=16,17,18,19              ~data/2020-01.data,~data/tags.data,~data/undo.data  0
+
+coarse, pid-shaped temp names hidden: 7 distinct outcome(s) over 19 crash points
+   x2   k=1,2                      (none)  0
+   x5   k=3,4,5,6,7                +data/undo.data.<pid>-3.tmp  0
+   x3   k=8,9,10                   +data/2020-01.data.<pid>-2.tmp,+data/undo.data.<pid>-3.tmp  0
+   x3   k=11,12,13                 +data/2020-01.data.<pid>-2.tmp,+data/tags.data.<pid>-4.tmp,+data/undo.data.<pid>-3.tmp  0
+   x1   k=14                       ~data/2020-01.data,+data/tags.data.<pid>-4.tmp,+data/undo.data.<pid>-3.tmp  1  undo removed the wrong change: timew's own export named ('20
+   x1   k=15                       ~data/2020-01.data,+data/tags.data.<pid>-4.tmp,~data/undo.data  1  Trying to decrement non-existent tag 'beta'
    x4   k=16,17,18,19              ~data/2020-01.data,~data/tags.data,~data/undo.data  0
 
 # per-world path digests, traces, engine output and checker output under ~/.cctmp/explorecost-Q5xhKd/r5/timew-undo/collapse/

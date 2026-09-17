@@ -1,4 +1,4 @@
-# collapse: toy-bug, 5 crash points, Darwin arm64, a0f8b4b
+# collapse: toy-bug, 5 crash points, Darwin arm64, ad87c90
 # operation: <checkout>/spike/out/toy-bug rotate
 # checker: (none)
 # pre-state digest: fc06acc1053705c9
@@ -19,6 +19,11 @@ strict (byte-identical tree + checker exit and first line): 4 distinct outcome(s
    x1   k=5                        328537f645a71232  -
 
 coarse (same changed paths + checker exit and first line): 3 distinct outcome(s) over 5 crash points
+   x1   k=1                        (none)  -
+   x3   k=2,3,4                    +key.json.tmp  -
+   x1   k=5                        -key.json,+key.json.tmp  -
+
+coarse, pid-shaped temp names hidden: 3 distinct outcome(s) over 5 crash points
    x1   k=1                        (none)  -
    x3   k=2,3,4                    +key.json.tmp  -
    x1   k=5                        -key.json,+key.json.tmp  -

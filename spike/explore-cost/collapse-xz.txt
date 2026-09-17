@@ -1,4 +1,4 @@
-# collapse: xz, 18 crash points, Darwin arm64, a0f8b4b
+# collapse: xz, 18 crash points, Darwin arm64, ad87c90
 # operation: xz -q -T2 --block-size=1MiB ~/.cctmp/explorecost-Q5xhKd/r5/xz/state/f.bin
 # checker: ~/.cctmp/explorecost-Q5xhKd/r5/xz/check.sh
 # pre-state digest: c4bc61bf61e70cc9
@@ -44,6 +44,10 @@ strict (byte-identical tree + checker exit and first line): 16 distinct outcome(
    x3   k=16,17,18                 418cbc3626c38e9a  0
 
 coarse (same changed paths + checker exit and first line): 2 distinct outcome(s) over 18 crash points
+   x1   k=1                        (none)  0
+   x17  k=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 +f.bin.xz  0
+
+coarse, pid-shaped temp names hidden: 2 distinct outcome(s) over 18 crash points
    x1   k=1                        (none)  0
    x17  k=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 +f.bin.xz  0
 

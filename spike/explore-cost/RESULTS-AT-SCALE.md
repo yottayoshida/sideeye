@@ -21,11 +21,14 @@ this laptop takes 0.1 to 5 seconds; the heaviest exploration anyone has timed �
 1,381 crash points — took about seven minutes. The one time on record that exploration cost
 changed a plan, it did so through an estimate about eight times the measured time.
 
-*Redundancy:* within the six defines walked crash point by crash point — C and C++ tools
-with 2 to 19 crash points — it is measurable and not dominant: one collapses 17 of its 18
-worlds onto a single maintainer-facing consequence, another almost none of its 19. Where
-pruning would actually pay, the 100-plus crash-point class, nothing was walked, and **this
-sample cannot say** whether redundancy dominates there.
+*Redundancy:* in the six defines walked crash point by crash point — C and C++ tools with 2 to
+19 crash points, 50 worlds — it is large as a share of worlds and absent from the failures. Read
+by the paths a world changes, half the worlds repeat an outcome already seen (two-thirds once
+temporary names carrying a process id are read alike, which timewarrior's are); read byte for
+byte, 18% do. But **every repeat is a world that did not fail**: the four failing worlds walked are
+four distinct outcomes, none sharing one with another world. At this scale the repeats cost
+seconds. Where pruning would actually pay, the 100-plus crash-point class, nothing was walked, and
+**this sample cannot say** what happens there.
 
 Nothing here justifies building a pruner; the last section says what would. Three things
 this record does **not** do: propose pruning, change exploration semantics, or touch recovery
@@ -152,41 +155,58 @@ measurement did not make on its first draft. Where a world failed the checker, i
 the engine's own report names: timew worlds 14 and 15 (the report: violations 2, earliest 14),
 jpegtran world 2.
 
-| define | crash points | strict | coarse | shape |
-|---|---|---|---|---|
-| bsdtar | 2 | **1** | **1** | both worlds are the pre-state: nothing reaches `a.tar` before either kill |
-| jpegtran | 2 | 2 | 2 | world 1 unchanged; world 2 the empty `a.jpg` the checker rejects |
-| toy-fixed | 4 | 3 | 2 | worlds 3 and 4 byte-identical |
-| toy-bug | 5 | 4 | 3 | worlds 3 and 4 identical; world 5 the planted loss |
-| timew (undo) | 19 | 15 | 15 | worlds 1–2 unchanged and 16–19 identical; the rest singletons, and the two failing worlds fail *differently* |
-| xz | 18 | **16** | **2** | world 1 unchanged; worlds 2–18 add `f.bin.xz`, 16–18 byte-identical |
+A third grouping is printed beside the two, because the second one miscounted a real tool.
+timewarrior names its temporary files after its process id (`undo.data.59032-3.tmp`), every
+world is a new process, and a world that leaves one temporary file therefore changes a path no
+other world changes. The third reading is the coarse one with a pid-shaped temporary name read
+without the pid — the engine does not treat such paths as identity either (`src/case.zig`'s
+prefix hash hashes operation classes, "pid-embedded temp names" its stated reason). Its pattern is
+narrow, and the plain coarse count stays the conservative figure. It was found by re-running the
+walk: timewarrior's was the only transcript whose digests all moved.
+
+| define | crash points | strict | coarse | pid hidden | failing worlds | shape |
+|---|---|---|---|---|---|---|
+| bsdtar | 2 | **1** | **1** | 1 | – | both worlds are the pre-state: nothing reaches `a.tar` before either kill |
+| jpegtran | 2 | 2 | 2 | 2 | 2 (alone) | world 1 unchanged; world 2 the empty `a.jpg` the checker rejects |
+| toy-fixed | 4 | 3 | 2 | 2 | – | worlds 2–4 change the same path; 3 and 4 byte-identical |
+| toy-bug | 5 | 4 | 3 | 3 | 5 (alone) | worlds 2–4 change the same path; world 5 the planted loss |
+| timew (undo) | 19 | 15 | 15 | **7** | 14, 15 (each alone) | in steps: one temporary file (3–7), two (8–10), three (11–13), the two failures, the finished files (16–19) |
+| xz | 18 | **16** | **2** | 2 | – | world 1 unchanged; worlds 2–18 add `f.bin.xz` |
+| **all six** | **50** | **41** | **25** | **17** | 4, each alone | |
+
+(`failing worlds` are the engine's: its report's `earliest` and `violations`. toy-bug has no
+checker, so its failing world is the one the built-in invariant judged — `collapse.sh` cannot
+judge that one itself and shows world 5 as its own outcome by its paths alone.)
 
 timewarrior's no-checker define was not walked: its setup, operation and crash points are the
-undo define's, so its trees are the same trees, and both groupings key on the checker only
+undo define's, so its trees are the same trees, and every grouping keys on the checker only
 where one is declared.
 
-Two findings, and they point opposite ways.
+**How much repeats.** Of 50 worlds, 25 outcomes by changed paths (half the worlds repeat one),
+17 with pid-shaped names hidden (two-thirds), 41 byte for byte (18%). The two defines with more
+than five crash points are where it concentrates: xz 18 worlds to 2 outcomes, timewarrior 19 to 7.
 
-**xz is where pruning would pay.** `f.bin` is intact in all eighteen worlds. In the seventeen
-after the first, `f.bin.xz` exists beside it — empty at world 2, byte-distinct at worlds 3
-through 15, and at 16 through 18 one byte-identical complete stream (the last world's passes
-`xz -t` and decompresses to the original) — and the checker accepts every one. Seventeen
-crash points, one coarse outcome, fifteen strict states. The gap between fifteen and one *is*
-the risk in pruning: an engine that skipped sixteen of those seventeen worlds would have been
-right here, and the judgement that fifteen different states are "the same" belongs to the
-checker, not to the engine.
+**What repeats is never a failure.** The four failing worlds are four distinct outcomes, and
+timewarrior's two are adjacent — world 14 has `timew undo` remove the wrong change, world 15 leaves
+a tag count undo cannot decrement. Every repeated outcome belongs to worlds that did not fail. The
+brief's question is how often crash points collapse onto the same *failure* outcome; in this
+sample, never. And which worlds were repeats, and that they did not fail, is known only after each
+one has run.
 
-**timew is where it would not.** Nineteen crash points, fifteen distinct outcomes under either
-reading, and the two failing worlds carry different diagnostics — world 14 has `timew undo`
-remove the wrong change, world 15 leaves a tag count that undo cannot decrement. A pruner that
-assumed adjacent worlds are alike would have had to explore both anyway.
+**xz shows the gap between the readings.** `f.bin` is intact in all eighteen worlds. In the
+seventeen after the first, `f.bin.xz` exists beside it — empty at world 2, byte-distinct at worlds
+3 through 15, and at 16 through 18 one byte-identical complete stream (the last world's passes
+`xz -t` and decompresses to the original) — and the checker accepts every one. Seventeen worlds,
+one coarse outcome, fifteen strict states: the judgement that fifteen different states are "the
+same" belongs to the checker, not to the engine, and it is where a comparison by paths would be
+wrong if it is ever wrong.
 
 **At least one world per run is empty by construction.** In all six defines, the world killed
 before the first state-changing operation leaves the pre-state exactly: the kill lands *before*
 operation 1, so no counted operation has run (ADR 0003). That is 123 of the dogfood corpus's
-3,843 worlds, 3% — a floor, since bsdtar's second world and timew's second are also the
-pre-state — and the only redundancy in this record that holds for every define rather than for
-a shape.
+3,843 worlds, 3% — a floor, since bsdtar's second world and timewarrior's second are also the
+pre-state — and the only repeat in this record that holds for every define rather than for a
+shape.
 
 ## 4. Where the first counterexample sits
 
@@ -217,14 +237,17 @@ hold 743**.
 2. **Wall-clock cost at those counts.** 0.1–5 seconds per whole run on this laptop; about
    seven minutes for the one 1,381-crash-point explore on record. Per world 0.014–0.259 s
    here, about 0.3 s there, driven by what a world does rather than by how many there are.
-3. **How often crash points collapse.** In the six defines walked, widely and by shape: 1
-   outcome from 2 worlds (bsdtar), 2 from 18 (xz), 15 from 19 (timew). The strict and coarse
-   readings agree on timew and differ 8× on xz. Not measured above 19 crash points.
+3. **How often crash points collapse.** In the six defines walked (50 worlds): half the worlds
+   repeat an outcome by changed paths, two-thirds with pid-named temporaries read alike, 18% byte
+   for byte — concentrated in the two longer defines (xz 18 to 2, timewarrior 19 to 7). Onto the
+   same *failure* outcome: never; the four failing worlds are four outcomes. Not measured above 19
+   crash points.
 4. **How early the first counterexample is found.** Address 2 (median); address 3 over the FAIL
    runs with five or more crash points; 62% at crash point 1 or 2 — and a third of the FAIL runs
    with room for it to be late are late, not only the long ones.
 5. **Material bottleneck, or plausible future one?** Cost: not material at the measured scale.
-   Redundancy: measurable and not dominant where walked; undetermined where it would matter.
+   Redundancy: large as a share of the worlds walked, absent from their failures, seconds of cost;
+   undetermined in the 100-plus class, where it would matter.
 
 ## Conclusion
 
@@ -232,10 +255,12 @@ hold 743**.
 scale.** Seconds per typical run, seven minutes for the largest explore on record, about
 seventeen minutes of engine time for the whole dogfood corpus.
 
-**Redundancy is measurable but not dominant within the range walked — C and C++ tools of 2 to
-19 crash points — and the sample is insufficient to say whether it dominates in the 100-plus
-class**, which is where pruning would pay and where nothing was walked. Those are two
-statements, not one, because they rest on different samples.
+**Redundancy is measurable and large as a share of worlds, but not a cost problem at this scale
+and not a property of the failures.** In the C and C++ defines of 2 to 19 crash points walked,
+half to two-thirds of the worlds repeat an outcome, every repeat is a world that did not fail, and
+the runs that hold the most repeats take three to five seconds. **The sample is insufficient to
+say what happens in the 100-plus class**, which is where pruning would pay and where nothing was
+walked. Those are two statements rather than one because they rest on different samples.
 
 The single case on record where cost changed a plan is worth reading closely, because it is the
 shape a bottleneck would take. The 2026-09-16 virtualenv run planned three explores per
@@ -254,9 +279,10 @@ prerequisite:
    that what was planned had to be cut. The virtualenv case does not qualify twice over: it was
    cut on an estimate, and the plan named no budget the measured seven minutes exceeded.
 2. **At that target, a coarse collapse ratio of 5:1 or better**, measured the way section 3
-   measures it, landed kills included. Pruning only pays where many worlds give one
-   consequence; timew's 15 of 19 is the counterexample that says the ratio has to be measured
-   per target class rather than assumed.
+   measures it — landed kills checked, and with the pid-hidden reading beside the plain one,
+   because timewarrior's 15-of-19 became 7 once its temporary names were read alike. Pruning only
+   pays where many worlds give one consequence, and the ratio has to be measured per target
+   rather than assumed: the two walked here are 9:1 and under 3:1.
 3. **An agreed statement of what a pruner may throw away**, checked against the strict/coarse
    gap. This is not a measurement and the list does not pretend it is one: xz's fifteen strict
    states behind one coarse outcome are where a pruner would be wrong if it is ever wrong, and
@@ -296,6 +322,7 @@ after (1) is observed, not before.
   running `setup` again rather than restoring a snapshot (world 1's tree equals the pre-state
   in all six, so no difference showed); it re-creates a crash point, not a whole world, where a
   run awaited a writing child; and it does not judge — the built-in invariants live in the
-  engine, so a world's L0/L1 verdict is not part of either grouping, and two worlds grouped
+  engine, so a world's L0/L1 verdict is not part of any grouping, and two worlds grouped
   together here could still be one violating world and one clean one if the difference is
-  something only L0 reads.
+  something only L0 reads. The failing worlds named in section 3 are the engine's, from its
+  report, not this script's.

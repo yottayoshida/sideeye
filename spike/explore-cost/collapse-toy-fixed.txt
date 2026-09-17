@@ -1,4 +1,4 @@
-# collapse: toy-fixed, 4 crash points, Darwin arm64, a0f8b4b
+# collapse: toy-fixed, 4 crash points, Darwin arm64, ad87c90
 # operation: <checkout>/spike/out/toy-fixed rotate
 # checker: (none)
 # pre-state digest: fc06acc1053705c9
@@ -17,6 +17,10 @@ strict (byte-identical tree + checker exit and first line): 3 distinct outcome(s
    x2   k=3,4                      e29cf0e6a327da77  -
 
 coarse (same changed paths + checker exit and first line): 2 distinct outcome(s) over 4 crash points
+   x1   k=1                        (none)  -
+   x3   k=2,3,4                    +key.json.tmp  -
+
+coarse, pid-shaped temp names hidden: 2 distinct outcome(s) over 4 crash points
    x1   k=1                        (none)  -
    x3   k=2,3,4                    +key.json.tmp  -
 

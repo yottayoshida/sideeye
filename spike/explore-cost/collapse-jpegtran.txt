@@ -1,4 +1,4 @@
-# collapse: jpegtran, 2 crash points, Darwin arm64, a0f8b4b
+# collapse: jpegtran, 2 crash points, Darwin arm64, ad87c90
 # operation: jpegtran -copy all -optimize -outfile ~/.cctmp/explorecost-Q5xhKd/r5/jpegtran/state/a.jpg ~/.cctmp/explorecost-Q5xhKd/r5/jpegtran/state/a.jpg
 # checker: ~/.cctmp/explorecost-Q5xhKd/r5/jpegtran/check.sh
 # pre-state digest: a245ec6eb9d00b10
@@ -14,6 +14,10 @@ strict (byte-identical tree + checker exit and first line): 2 distinct outcome(s
    x1   k=2                        d20ac04a2e393bb6  1  no pixels come out of a.jpg (       0 bytes)
 
 coarse (same changed paths + checker exit and first line): 2 distinct outcome(s) over 2 crash points
+   x1   k=1                        (none)  0
+   x1   k=2                        ~a.jpg  1  no pixels come out of a.jpg (       0 bytes)
+
+coarse, pid-shaped temp names hidden: 2 distinct outcome(s) over 2 crash points
    x1   k=1                        (none)  0
    x1   k=2                        ~a.jpg  1  no pixels come out of a.jpg (       0 bytes)
 
