@@ -1,0 +1,16 @@
+# explore-cost/targets: Darwin arm64, d2f9e5f, zig 0.16.0, 2026-09-17T02:38Z
+# host: macOS 15.3.1, Apple M4, 32 GiB
+# engine: sideeye 1.4.0 (trace contract v18)  mode: --observe wrappers (the default), --allow-unverified (no oracle on this host)
+# tools: timew 1.10.0, xz 5.8.3, libjpeg-turbo version 3.2.0 (build 20260630), bsdtar 3.8.9 - libarchive 3.8.9 zlib/1.2.12 liblzma/5.8.3 bz2lib/1.0.8 liblz4/1.10.0 libzstd/1.5.7 expat/expat_2.6.3 CommonCrypto/system libb2/system 
+# load at start: load average 2.55 2.83 2.99
+#
+target       language  rc  verdict  cps    worlds viol  earliest engine    per-world
+toy-fixed    c         0   PASS     4      5      0     -        0.1s      0.017s
+toy-bug      c         1   FAIL     5      6      1     5        0.1s      0.014s
+timew-plain  c++       0   PASS     19     20     0     -        1.8s      0.088s
+timew-undo   c++       1   FAIL     19     20     2     14       2.7s      0.136s
+jpegtran     c         1   FAIL     2      3      1     2        0.8s      0.252s
+bsdtar       c         0   PASS     2      3      0     -        0.6s      0.188s
+xz           c         0   PASS     18     19     0     -        4.9s      0.256s
+# load at end: load average 2.61 2.84 2.99
+# reports and engine output under ~/.cctmp/explorecost-Q5xhKd/r6/<target>/

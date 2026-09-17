@@ -1,0 +1,48 @@
+# collapse: xz, 18 crash points, Darwin arm64, d2f9e5f
+# operation: xz -q -T2 --block-size=1MiB ~/.cctmp/explorecost-Q5xhKd/r5/xz/state/f.bin
+# checker: ~/.cctmp/explorecost-Q5xhKd/r5/xz/check.sh
+# pre-state digest: c4bc61bf61e70cc9
+
+k    rc   tree               changed-paths      checker  diagnostic
+1    137  c4bc61bf61e70cc9   (none)             0        
+2    137  ff07764af5f0af64   704010563a96a76e   0        
+3    137  93667543f151fbe0   704010563a96a76e   0        
+4    137  c9dca0dfd8781db2   704010563a96a76e   0        
+5    137  dfbd66d017023fcb   704010563a96a76e   0        
+6    137  10c8e9ed49d45930   704010563a96a76e   0        
+7    137  f3dccdf6dfa1e525   704010563a96a76e   0        
+8    137  58fa1b3e1304a55f   704010563a96a76e   0        
+9    137  d57079c42da1aee3   704010563a96a76e   0        
+10   137  390f9db73da19842   704010563a96a76e   0        
+11   137  933d9fc78c5990ab   704010563a96a76e   0        
+12   137  4deb02627a24c838   704010563a96a76e   0        
+13   137  35e62f311110b185   704010563a96a76e   0        
+14   137  929645d5f477c95c   704010563a96a76e   0        
+15   137  ce7cee0e5e13cad6   704010563a96a76e   0        
+16   137  418cbc3626c38e9a   704010563a96a76e   0        
+17   137  418cbc3626c38e9a   704010563a96a76e   0        
+18   137  418cbc3626c38e9a   704010563a96a76e   0        
+
+strict (byte-identical tree + checker result): 16 distinct outcome(s) over 18 crash points
+   x1   k=1                        c4bc61bf61e70cc9 0
+   x1   k=2                        ff07764af5f0af64 0
+   x1   k=3                        93667543f151fbe0 0
+   x1   k=4                        c9dca0dfd8781db2 0
+   x1   k=5                        dfbd66d017023fcb 0
+   x1   k=6                        10c8e9ed49d45930 0
+   x1   k=7                        f3dccdf6dfa1e525 0
+   x1   k=8                        58fa1b3e1304a55f 0
+   x1   k=9                        d57079c42da1aee3 0
+   x1   k=10                       390f9db73da19842 0
+   x1   k=11                       933d9fc78c5990ab 0
+   x1   k=12                       4deb02627a24c838 0
+   x1   k=13                       35e62f311110b185 0
+   x1   k=14                       929645d5f477c95c 0
+   x1   k=15                       ce7cee0e5e13cad6 0
+   x3   k=16,17,18                 418cbc3626c38e9a 0
+
+coarse (same changed paths + checker exit and first line): 2 distinct outcome(s) over 18 crash points
+   x1   k=1                        (none) 0
+   x17  k=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 704010563a96a76e 0
+
+# per-world path digests, engine output and checker output under ~/.cctmp/explorecost-Q5xhKd/r5/xz/collapse/

@@ -1,0 +1,61 @@
+# collapse: timew-undo, 19 crash points, Darwin arm64, d2f9e5f
+# operation: timew track 2020-01-02T10:00 - 2020-01-02T11:00 beta :yes
+# checker: ~/.cctmp/explorecost-Q5xhKd/r5/timew-undo/check.sh
+# pre-state digest: e3867ff82bf919ec
+
+k    rc   tree               changed-paths      checker  diagnostic
+1    137  e3867ff82bf919ec   (none)             0        
+2    137  e3867ff82bf919ec   (none)             0        
+3    137  5b32bb4acd3acaab   34c3f1c0bc3752f3   0        
+4    137  c1539bd195585a5a   93a1c24423defa22   0        
+5    137  905b49339b812ca2   8c9f68e7ec5dabcc   0        
+6    137  cfdf703a3bf3fba5   f6d9ae77d8e5049b   0        
+7    137  689ccf790272410a   33fe1e0423dc9734   0        
+8    137  2ddc401741dfdbe4   262249ef946d0870   0        
+9    137  3a404da8d50f4680   84ddbf10e6fec619   0        
+10   137  1a03a1664f5221ed   0cd0e879e2785dcb   0        
+11   137  59be51f775a45186   638cdf7acc7498a9   0        
+12   137  5651dbab6934cd6a   8a418d37493e2e92   0        
+13   137  42ca02e22b6a69a5   5a4d43256796cf15   0        
+14   137  870a88121d52debc   b4c678f6b95c776d   1        undo removed the wrong change: timew's own export named ('20
+15   137  a5065d90978fe85e   1423c752c6bfa7ad   1        Trying to decrement non-existent tag 'beta'
+16   137  5d7fc7b8c7882441   1af5c008c3f558cd   0        
+17   137  5d7fc7b8c7882441   1af5c008c3f558cd   0        
+18   137  5d7fc7b8c7882441   1af5c008c3f558cd   0        
+19   137  5d7fc7b8c7882441   1af5c008c3f558cd   0        
+
+strict (byte-identical tree + checker result): 15 distinct outcome(s) over 19 crash points
+   x2   k=1,2                      e3867ff82bf919ec 0
+   x1   k=3                        5b32bb4acd3acaab 0
+   x1   k=4                        c1539bd195585a5a 0
+   x1   k=5                        905b49339b812ca2 0
+   x1   k=6                        cfdf703a3bf3fba5 0
+   x1   k=7                        689ccf790272410a 0
+   x1   k=8                        2ddc401741dfdbe4 0
+   x1   k=9                        3a404da8d50f4680 0
+   x1   k=10                       1a03a1664f5221ed 0
+   x1   k=11                       59be51f775a45186 0
+   x1   k=12                       5651dbab6934cd6a 0
+   x1   k=13                       42ca02e22b6a69a5 0
+   x1   k=14                       870a88121d52debc 1
+   x1   k=15                       a5065d90978fe85e 1
+   x4   k=16,17,18,19              5d7fc7b8c7882441 0
+
+coarse (same changed paths + checker exit and first line): 15 distinct outcome(s) over 19 crash points
+   x2   k=1,2                      (none) 0
+   x1   k=3                        34c3f1c0bc3752f3 0
+   x1   k=4                        93a1c24423defa22 0
+   x1   k=5                        8c9f68e7ec5dabcc 0
+   x1   k=6                        f6d9ae77d8e5049b 0
+   x1   k=7                        33fe1e0423dc9734 0
+   x1   k=8                        262249ef946d0870 0
+   x1   k=9                        84ddbf10e6fec619 0
+   x1   k=10                       0cd0e879e2785dcb 0
+   x1   k=11                       638cdf7acc7498a9 0
+   x1   k=12                       8a418d37493e2e92 0
+   x1   k=13                       5a4d43256796cf15 0
+   x1   k=14                       b4c678f6b95c776d 1 undo removed the wrong change: timew's own export named ('20
+   x1   k=15                       1423c752c6bfa7ad 1 Trying to decrement non-existent tag 'beta'
+   x4   k=16,17,18,19              1af5c008c3f558cd 0
+
+# per-world path digests, engine output and checker output under ~/.cctmp/explorecost-Q5xhKd/r5/timew-undo/collapse/

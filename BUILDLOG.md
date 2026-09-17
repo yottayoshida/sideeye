@@ -2,6 +2,64 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-17 — the exploration-cost question is answered from the record plus a clock, and the redundancy it asks about is a property of the target's shape
+
+**What was asked, by someone outside the project.** When Sideeye scales to more targets, how
+redundant and expensive is exhaustive crash injection at recorded state-changing operation
+boundaries? The brief was explicit about what the answer was not allowed to become: no product
+issue, no pruning design, no change to exploration semantics. One bounded campaign, to find out
+whether the problem exists at the scale this project runs at.
+
+**The half nobody had to measure.** `spike/explore-cost/RESULTS.md` (2026-09-03, ADR 0042) already
+measured what one world costs and ended by naming the gap — "Nothing about a total … the file count
+does not predict the multiplier". The multiplier is in the committed record: 200 reports under
+`spike/dogfood/`, 123 of them judged runs that explored something, 3,843 worlds. `corpus.py` reads
+it rather than re-running anything, which is where most of the sample came from — 48 defines over 43
+programs, against a brief asking for 10 to 20.
+
+**Three things the corpus said that an impression would have got wrong.** The median judged run has
+five crash points, not two, though 2–4 is the largest bucket. The first counterexample's *fraction*
+of the run reads 0.88, which is an artefact of 39 two-crash-point runs where the fraction can only
+be 0.5 or 1.0 — over the 36 runs with five or more crash points the median first failure is at
+address 3. And the tail is one target: virtualenv's two runs at 1,381 crash points are 2,764 of the
+3,843 worlds this project has ever explored, 72%, and neither was ever timed.
+
+**The clock.** Seven runs of six committed defines, re-pathed for this host, median of three:
+0.1–4.9 s per whole run, 11.2 s in total for 76 worlds, per-world 0.014–0.259 s. Per-world cost
+varies 18× and tracks the size of the tree being restored and snapshotted, not the crash-point
+count — the same relationship `RESULTS.md` measured against padding, now on real targets.
+
+**What the redundancy question actually returned.** The report names at most two crash points, so
+nothing committed says what the other worlds produced. `collapse.sh` re-materialises every world
+from outside the engine through the `reproduce` line the report itself prints, and groups them
+strictly (byte-identical tree) and coarsely (same changed paths, same checker result). The six
+defines disagree sharply: xz collapses 17 of 18 worlds onto one coarse outcome while holding 16
+byte-distinct states; timew holds 15 distinct outcomes over 19 crash points and its two failing
+worlds fail for *different* reasons. Redundancy is a property of the target's shape — a stream
+written into one file collapses, a database with an undo log does not — so a pruner keyed on
+"adjacent worlds look alike" would have to be measured per class rather than assumed.
+
+**One structural redundancy holds everywhere.** In all six defines the world killed before the first
+state-changing operation leaves the pre-state exactly, which follows from what a crash point is
+(ADR 0003): 123 of 3,843 worlds, 3%.
+
+**Two measurement errors, both caught by the data rather than by review.** The first run of
+`collapse.sh` reported five identical worlds and an operation that exited 0 — no kill had landed,
+because the harness ran the operation through `sh -c` and /bin/sh is a platform binary, so dyld
+drops `DYLD_INSERT_LIBRARIES` before the target starts. The operation is now split on spaces and
+exec'd directly, which is what the engine does anyway (ADR 0019). The same wall took bsdtar out of
+the timed set on the first attempt: `/usr/bin/bsdtar` is a platform binary too, and the row read
+`no_shim_marker` until Homebrew's libarchive build was used instead. Both are the macOS limit this
+project already documents, met from a new direction.
+
+**The conclusion, and what would overturn it.** Exhaustive boundary exploration is not a material
+bottleneck at the measured scale, and redundancy is measurable but not dominant. The record names
+three measured results that would justify a pruning issue, the first being a prerequisite: a timed
+run of a 100+ crash-point target showing more than ~10 minutes inside a workflow someone waits for,
+a coarse collapse ratio of 5:1 or better at that size, and a statement of what a pruner may discard
+checked against the strict/coarse gap. No issue was filed, which is what the brief asked for unless
+the measurement showed a concrete problem. It did not.
+
 ## 2026-09-17 — the evidence a FAIL measured is written beside the case, not into it, and the crashed state is only readable at judgement time
 
 **What #607 asked.** A saved FAIL is reproducible, but turning it into something an upstream
