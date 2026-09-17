@@ -259,6 +259,11 @@ pub var divergence_syscall: []const u8 = "";
 /// other sites have no status to hand over.
 pub var setup_status: ?posix.Term = null;
 pub var replay_note: []const u8 = "-";
+/// The evidence bundle saved beside the earliest exhibit's case (#607, ADR 0071), or
+/// `"-"` when none was written. A path rather than a derivation rule: the name is
+/// `<work>/evidence/NNNNNN.json` for the case of that id today, and a consumer that had to know
+/// that would be holding a second copy of a rule only this file should own.
+pub var evidence_note: []const u8 = "-";
 /// Progress, so an UNKNOWN raised mid-exploration reports what had been explored rather
 /// than zero. A caller aggregating coverage reads these.
 pub var crash_points: u32 = 0;
@@ -1028,6 +1033,8 @@ pub const CheckerEarliest = struct {
     e: Earliest,
     case: []const u8,
     replay: []const u8,
+    /// This exhibit's own bundle, beside its own case; `"-"` when none was written.
+    evidence: []const u8,
 };
 
 fn buildJson(
@@ -1174,6 +1181,8 @@ fn buildJson(
         try jsonString(w, arena, cd.case);
         try w.appendSlice(arena, ",\n    \"replay\": ");
         try jsonString(w, arena, cd.replay);
+        try w.appendSlice(arena, ",\n    \"evidence\": ");
+        try jsonString(w, arena, cd.evidence);
         try w.appendSlice(arena, "\n  }");
     }
 
@@ -1185,6 +1194,10 @@ fn buildJson(
     try jsonString(w, arena, case_note);
     try w.appendSlice(arena, ",\n  \"replay\": ");
     try jsonString(w, arena, replay_note);
+    // Additive under the report-schema allowance surface 2 keeps open, beside `case` and
+    // `replay` for the same exhibit and for the same reason they are here.
+    try w.appendSlice(arena, ",\n  \"evidence\": ");
+    try jsonString(w, arena, evidence_note);
     try w.appendSlice(arena, ",\n  \"oracle\": ");
     try jsonString(w, arena, oracle_note);
     try w.appendSlice(arena, ",\n  \"metadata_writes\": ");

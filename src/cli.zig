@@ -150,6 +150,7 @@ const usage_fmt =
     \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye replay <case.json> [--shim <lib>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye evidence <case.json>
     \\  sideeye mcp
     \\  sideeye help
     \\  sideeye version
@@ -167,6 +168,15 @@ const usage_fmt =
     \\verdict — see --twice below). What only a real exploration can check — kill
     \\landing, world-side process boundaries, baseline behavior, checker
     \\falsification — is listed as not checked, never silently claimed.
+    \\
+    \\evidence renders the bundle a FAIL saved beside its case: the paths whose
+    \\before, completed and crashed states differ, whether each existed before the
+    \\operation and whether its old bytes survive elsewhere inside the judged state,
+    \\the two operations around the crash point, the checker's result and its last
+    \\output line, and the replay command. Markdown on stdout, for pasting into an
+    \\upstream report. Every field is something the run measured or the word
+    \\`unknown`; nothing is ranked. Takes the case's path or the bundle's own
+    \\(docs/evidence.md).
     \\
     \\replay re-runs one saved counterexample: the same pipeline as explore — the
     \\oracle comparison, the structural detectors, checker falsification, landing

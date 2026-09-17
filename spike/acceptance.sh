@@ -6477,6 +6477,23 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 11i: the evidence bundle says what the run measured (#607) ==========="
+# spike/check-evidence-bundle.sh explores seven fixtures whose impact columns disagree, holds
+# each bundle to the case and the report that describe the same run, requires the rendered
+# document to carry exactly its eight sections — the fixture whose file name holds `\n## ` is
+# why that is an equality and not a contains — and refuses one that ranks what it found. Its
+# own header records which mutation turned which claim red, including the one that found the
+# first hostile-name fixture too weak to turn anything red at all. Run as its own script
+# rather than inline, as 11c/11d/11h are, so it also runs on a developer's machine: the
+# fixtures need a compiled operation and nothing container-specific, and a check first seen
+# red only in CI is a check nobody has seen red.
+if sh "$ROOT/spike/check-evidence-bundle.sh" "$SIDEEYE" "$SHIM" /tmp/acc/evidence "$ROOT"; then
+    :
+else
+    echo "     the evidence bundle drifted from what the run measured (rc=$?)"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 12: the UNKNOWN-rate page equals its recomputation (#84) ==========="
 # Drift gate for docs/unknown-rate.md: the results block must byte-equal a fresh
 # recomputation from corpus.tsv + the committed sweep artifacts (count.py check also
@@ -7005,7 +7022,8 @@ acc_flags=$( { parser_literals i
 acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-config|explore --config $acc_nx.toml|--config|--config could not be read
-replay|replay $acc_nx.json||the case file could not be read"
+replay|replay $acc_nx.json||the case file could not be read
+evidence|evidence $acc_nx.json||no evidence file could be read beside that case"
 
 acc_line_for() {
     case "$1" in
@@ -7013,6 +7031,9 @@ acc_line_for() {
         explore-define) printf '%s\n' "$h1" | grep -E '^  sideeye explore --state ' ;;
         explore-config) printf '%s\n' "$h1" | grep -E '^  sideeye explore --config ' ;;
         replay)         printf '%s\n' "$h1" | grep -E '^  sideeye replay ' ;;
+        # Takes an argument, so it belongs here rather than with the argument-free modes
+        # below: its line advertises no flags, and the differential proves it accepts none.
+        evidence)       printf '%s\n' "$h1" | grep -E '^  sideeye evidence ' ;;
     esac
 }
 

@@ -62,7 +62,11 @@ const setup_capture_cap: usize = 1024 * 1024;
 /// returned because a trailing `echo` is common and an empty quote would read as though
 /// nothing was written — the exact confusion the "wrote nothing" branch exists to keep
 /// honest.
-fn lastNonEmptyLine(text: []const u8) []const u8 {
+/// The last line of a capture that holds anything, trimmed. Two readers now: the setup
+/// capture's three answers below, and the evidence bundle's quoted checker line
+/// (`src/evidence.zig`, #607), which wants exactly this rule — a target that ends its
+/// diagnosis with a blank line still has a last line worth quoting.
+pub fn lastNonEmptyLine(text: []const u8) []const u8 {
     var it = std.mem.splitBackwardsScalar(u8, text, '\n');
     while (it.next()) |raw| {
         const line = std.mem.trim(u8, raw, " \t\r");
@@ -569,6 +573,10 @@ pub const ReadMode = struct {
 /// happens, and a deadline would bound something the run already bounds. The setup capture
 /// (#483) does ask for `require_regular`, because its path is the one an operator can aim
 /// somewhere else with `--work`, and because the answer decides whether a file is deleted.
+/// The evidence bundle's read of the world checker's capture (#607) asks for it too, for the
+/// first half of that reason: the path is under `--work`, and what the engine opens between
+/// its own `O_EXCL` create and this read is a window a live child of the target can reach —
+/// a FIFO there is the #400 shape, and without the flag the open waits in it.
 pub fn readFileAllocCapped(
     arena: std.mem.Allocator,
     path: []const u8,

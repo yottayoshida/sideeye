@@ -2,6 +2,285 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-17 — the evidence a FAIL measured is written beside the case, not into it, and the crashed state is only readable at judgement time
+
+**What #607 asked.** A saved FAIL is reproducible, but turning it into something an upstream
+maintainer can act on is still manual: read the report, find the damaging boundary, compare
+pre/post state, decide whether the old content survives elsewhere, read the checker's output, and
+translate all of it. The 2026-09-16 runs are the reason it matters — seven counterexamples in seven
+languages of one shape, two reports filed. The translation, not the search, was the bottleneck.
+
+**The first thing measured, before any design: where the evidence can be read at all.** The crashed
+snapshot is taken inside the world loop and freed by that iteration's own `defer crashed.deinit()`,
+and the state directory is restored for the next world. So there is no later point — not
+`phaseReport`, not a separate command, not a replay — at which the crashed state still exists to be
+compared against `initial` and `final`. **The measurement has to happen in the world loop, at the
+branch that records the exhibit, or it cannot happen.** Everything else in this change follows from
+that: `src/evidence.zig`'s `measure` runs there and returns a `Draft` whose bytes are duplicated into
+the run arena, because `Difference.rel` and `Entry.content` borrow from snapshots that are about to
+go. That borrow rule is not new here — the `repeat_diff_slots` comment in `main.zig` records the same
+thing being found as a segfault in review, where every run before it had survived only because all of
+its differences happened to be `content_differs`.
+
+**Where the evidence lives: beside the case, not inside it.** Folding these fields into the case file
+would move `case_version` to 6. Every rung of that ladder so far — 3 argv, 4 cwd, 5 scratch — is a
+*define* field, part of the question a replay re-asks, and `docs/contract-freeze.md` surface 4 ties
+the version and the shape together. A case is a frozen contract; an observation is not. Two costs
+decided it: no case this release wrote would replay on any earlier 1.x, and every later evidence
+field would move the version again for every case, including the ones whose defines never changed.
+So `<work>/cases/NNNNNN.evidence.json` carries its own `evidence_version`, and the case is untouched.
+Recorded here rather than only in ADR 0071 because #606 reaches the same fork from the other side.
+
+**What the plan got wrong, found by the review before any code was written.** Three things.
+
+1. The bundle was going to describe the single violating path. It cannot: `engine/judge.zig` drops a
+   scratch-declared pair *before* it enters the `L0Plan` (ADR 0043), so an L0 or L1 violation path is
+   never scratch, and a checker-only FAIL names no path at all. A `path_declared_scratch` column
+   would have had no input that could make it read `yes` — and the issue's own acceptance list asks
+   for exactly that case. The unit is the set of *changed* paths now: the union of
+   `diffSnapshots(initial, crashed)` and `diffSnapshots(final, crashed)`, deliberately **not** the
+   scratch-excluding variant, with each row marked.
+2. `src/main.zig` is at its declaration ceiling — `spike/check-main-shape.sh` reads 33 top-level `fn`
+   against `FN_MAX=33`. The plan had put the new subcommand beside `runDemo`, which is a top-level
+   `fn` of that file, so it would have been the thirty-fourth and CI would have gone red on the first
+   push. The implementation lives in `src/evidence.zig`; `main.zig` gains call sites and no
+   declarations.
+3. The checker capture was going to copy `--setup`'s (#483), which takes the output off the terminal.
+   The right precedent was already in the same file: `phaseChecker`'s falsification probe captures
+   the *same checker command*, reads it back and re-emits each non-empty line prefixed. That is
+   the precedent for how to capture. **It is not what the world loop does** — see the reversal
+   four paragraphs down, which was written after this one and falsifies its last clause. `report.setupOutputDetail` is
+   deliberately not reused — it renders into a file-scope buffer whose safety rests on every caller
+   being on its way to a `noreturn`, which is false inside a loop that runs once per world.
+
+**One thing the plan had right and the review argued against: the subcommand stays.** The reviewer's
+advice, if the change grew too large, was to ship the measurement and drop the renderer, since the
+measurement cannot be added later and the renderer can. The renderer is what acceptance 1 asks for,
+and the ceiling problem that motivated the advice is avoidable by putting the code in its own file.
+Recorded because the advice is good and the reason for declining it is narrow.
+
+**Reversed during implementation: the checker's captured output is not re-emitted.** The
+paragraph above says the falsification probe was the precedent to copy, and it was — for *how*
+to capture. It is not the precedent for what to do afterwards. The probe runs once and prints
+its lines back prefixed `falsify:`; the world checker runs once per crash point, so re-emitting
+would put the same diagnosis on the terminal n+1 times. And the reason `Capture.stderr_too`
+gives for existing is #134: unlabeled checker output reaching the transcript was itself the
+hazard, because it had once been harvested as world evidence. So the capture goes to
+`<work>/checker-output.txt` and stays there, the way `--setup`'s does, and what a FAIL needs
+from it — the exhibit's own last line — is in the bundle. Measured on the demo afterwards: the
+`falsify:` line is still printed and the six worlds' repeats are gone.
+
+**A hole taken deliberately, named here because nothing else will name it.** `docs/evidence.md`
+is not in `spike/acceptance.sh`'s check 11 page list, so **no check verifies the repo paths it
+cites**. The check extracts backticked slash references and asserts a denominator of five per
+page; this page yielded two, and its own comment scopes it to "the evidence-first pages" — the
+three it lists all quote transcripts. Padding a user-facing page with backticked paths to clear
+a denominator would be the check deciding the page's contents. The references were converted to
+markdown links instead, which check 11 does not read at all, so the extraction is now zero
+rather than two. That is the same shape `.gitattributes` takes in ADR 0021 — naming a directory
+in neither place is green — and the same answer: take the hole, and write down that it was taken.
+
+**Two more from the review's tail, both small and both worth the lines.** The bundle's read of
+the checker capture asked for neither `require_regular` nor `bounded`, so it took the blocking
+open — and a FIFO planted at `<work>/checker-output.txt` between the engine's `O_EXCL` create
+and this read would have waited in it, inside a world loop, with nothing to time it out (#400's
+shape). The closest precedent, the setup capture's read, asks for `require_regular`; so does
+this one now, and `readFileAllocCapped`'s own doc counts the third reader instead of saying
+there are two. And `lastLine` had reimplemented `capture.lastNonEmptyLine`, which was already
+there and is now shared rather than copied — the second rung of the ladder, missed. The other
+was `findCopy` being called twice on a `yes` row: once to decide and once to name the path. It
+is the only part of `measure` that is not linear in the number of rows, so the second call is
+the one cost a large state tree would feel; the answer is carried now.
+
+**CI's third finding, and the one I had already talked myself out of.** `FAIL CLI
+self-description: 1 problem(s)` — "the synopsis has 9 lines but this check covered 8 — a line
+was added without a base". A new mode word needs a base invocation in check 6's `acc_specs`, or
+it is simply not tested, and the check counts the synopsis's lines against the ones that ran so
+that cannot happen quietly.
+
+I had read check 6 before the first push, seen that `acc_specs` names four bases and none of the
+argument-free modes, and concluded it did not apply to `evidence`. The denominator assertion is
+sixty lines further down, after the `demo` block and the `mcp`/`help`/`version` loop — 4 + 1 + 3
+= 8, which is what "covered 8" meant. **Reading part of a check and deciding it does not apply
+is the same error as running a sweep over part of a tree and calling it exhaustive.** The fix is
+one row in `acc_specs` and one arm in `acc_line_for`; `evidence` takes an argument, so it belongs
+with the four and not with the three.
+
+Simulated locally this time rather than reasoned about: the base fails with the pinned text,
+exactly one synopsis line matches, the line's required flags and the base's named flags are both
+empty, the differential accepts no flag, and declared lines equal covered lines at 9.
+
+**CI's second finding: the bundle could not live in `cases/`.** The macOS job died with
+`KeyError: 'define'` in a step that does `case_file=$(ls "$root"/seed/work/cases/*.json | head -1)`.
+`000001.evidence.json` sorts ahead of `000001.json`, so the reader got a bundle and looked for a
+define in it. A grep found three readers of that directory in the repository — `.github/workflows/ci.yml`,
+and two in `spike/acceptance.sh`, one of them `find … -name '*.json' | head -1`.
+
+Correcting the three was the obvious fix and the wrong one: it leaves the trap set for the
+fourth, which nobody has written yet. The bundle is `<work>/evidence/NNNNNN.json` now — same id,
+directory of its own — and every reader of `cases/*.json` is correct again without knowing this
+file exists. Prefer the shape that cannot break over the check that notices.
+
+What that cost: `siblingPath` maps `…/cases/NNNNNN.json` to `…/evidence/NNNNNN.json` and returns
+anything else unchanged, `write` refuses when the rule did not move the path (a hand-written case
+somewhere else has nothing to attach to), and the four documents, the report field's own comment
+and the guard all name the new place. Measured after: `ls cases/*.json | head -1` picks a file
+that has a `define`, and the two directories hold one file each.
+
+**Both CI findings were things no local check could have shown me.** The first needed the
+acceptance suite, which runs only in the Linux container. The second needed a *different*
+repository's habit — a glob written months ago in a workflow file this change never touches.
+Neither review round found either, and neither was going to: R1 and R2 were reading the diff.
+
+**CI reversed the reversal: the world checker's output goes back to the terminal.** The
+`linux` and `macos` jobs went red on `FAIL #134 labeling: gate falsify-lines=1 world
+unlabeled-lines=0`. The check has been there since #133's buku correction and it counts **both**
+sides: the falsification gate's lines must carry `falsify: `, and a failing world's checker
+lines must stay unlabeled — that difference is what stops one being harvested as the other, and
+counting both is what stops a silent checker passing it vacuously.
+
+Dropping the re-emission removed the world side entirely. The reasoning that produced it — that
+#134 records unlabeled checker output as a hazard — had #134 backwards: the hazard was the
+*gate's* output reading as a world's, and labeling the gate was the fix. R1's M5 said the
+falsification probe was the precedent for what to do after capturing, and it was right; the
+reversal four paragraphs up was wrong. The capture is additive now: the file feeds the bundle,
+and the terminal gets exactly the unlabeled lines it always got.
+
+What that withdraws: the CHANGELOG `Changed` entry is gone, because nothing a user sees changed.
+`docs/cli.md`, `docs/evidence.md` and ADR 0071 say "also captured" instead of "instead of the
+terminal". Measured after the fix, mirroring the check's own counting on a local FAIL:
+`gate=1 world=1`.
+
+**Two reversals in one change, both of them mine, and each was caught by something different.**
+The first (stop re-emitting) was caught by a check that has existed for months. The second (the
+`evilname` fixture too weak to turn its own check red) was caught by running the mutation. What
+neither was caught by: writing the reasoning down carefully, which I did both times.
+
+**`/simplify` after the review rounds: two applied, none skipped.** The two `evidence.write`
+call sites in `phaseReport` were near-identical struct literals — eight of the bundle's fields
+do not vary between a run's two exhibits, and both sites spelled all eight. A ninth added to
+one of them would have shipped a bundle that carries a field on the earliest exhibit and not on
+the claim exhibit, which is the drift this repository keeps finding as "the same value written
+in two places". `evidence.save` fills the invariant part once and takes an `Exhibited` for the
+rest. It is in `src/evidence.zig` and not `main.zig` partly by layer and partly because
+`main.zig` has no declaration budget left. The other: `caveats` took a caller-supplied
+`*ArrayList` it had no reason to ask for, and builds its own now.
+
+**R2 found that two of the R1 fixes had not landed, and one of them was the P0.** A second
+fresh reviewer, given R1's list and the corrected diff, came back with two still open.
+
+*The defang was not on every string.* `cell()` still wrote a `Snap.kind` raw. The reason it
+was missed is worth keeping: a kind reads like the engine's own vocabulary — `file`,
+`directory`, `symlink` — so it does not look like a target's bytes. It is a `[]const u8`
+parsed out of a file in the work directory, exactly as the path beside it is. The R1 fix's own
+BUILDLOG sentence had claimed "every string", which was false when written.
+
+*`sideeye evidence --help` was fixed in a place it cannot reach.* R1 said the dispatch sits
+ahead of the `<mode> --help` block; the fix added `evidence` to that block's list, which a mode
+consumed by the earlier dispatch never reaches. Running it still read a file called `--help`.
+It is answered inside the dispatch now, and the unreachable list entry is gone rather than left
+as a comment about intent. **Both of these are the shape CLAUDE.md warns about** — a fix that
+is itself untested — and both now have one: a unit test that renders a bundle whose every
+string carries a forged heading (mutation-checked: putting `kind` back raw turns it red), and a
+line in the guard that runs `evidence --help` and requires the banner.
+
+*And a count drifted while the fixture set grew.* Adding `evilname` made it seven fixtures; the
+CHANGELOG still said six. The same number written in two places, one of them updated — which is
+the failure this repository has a name for.
+
+The test for the forged-heading property was itself wrong on the first run. It asserted the
+string `## Forged` was absent, and went red against a correct renderer: `appendSanitized`
+replaces control bytes with `?`, so the text survives as `?## Forged?` inside its cell, which
+is right — those are the target's own bytes and hiding them would hide what was measured. What
+must not survive is the line start. The assertion is `"\n## Forged"` now, and the heading count
+beside it.
+
+**Acceptance 5, against a real target rather than a toy.** The 2026-09-16 crossed-walls record
+commits report JSON and no case files — its `case` field names `/localrun/wk/...`, a path inside
+a throwaway container — so there was nothing saved to render a bundle from, and the issue's
+fifth acceptance needed the target met again. markdownlint-cli 0.45.0, this branch built for
+`aarch64-linux-gnu`, in a `node:22-slim` container with strace: **FAIL at crash point 2 of 2**,
+the same window that record describes — `open` with truncation completed, `write` never ran.
+Two things the first attempt taught. Without `--oracle` the run refuses
+`boundary_without_oracle`: `markdownlint` is a `#!` script that execs node, and the refusal's own
+`next_step` says to pass the oracle, which is what the original record's container had. And the
+`--observe wrappers` default was enough once it did.
+
+The rendered bundle says: `README.md` was 43 bytes before, is 41 after a completed run, and 0
+after the interruption; it existed before; its old bytes are nowhere else inside the judged
+state; the checker's last line is `FAIL: README.md lost its heading`. That is the finding
+without the trace, which is what acceptance 5 asks for. No caveat line appeared, because the
+oracle agreed — which is also the first time the caveats section has been seen empty, and it
+reads correctly ("The run carried no observation caveats").
+
+**The blind review of the diff: two P0s, and one of them was measured.** R1 (a fresh Opus
+subagent, read-only, no conversation history) returned two P0, four P1 and six P2.
+
+*P0-1, confirmed by running it.* Every path-shaped string in a bundle reached stdout through
+`render` with no text-side defang. `src/defang.zig`'s own doc states the rule the code had
+broken — "the JSON side is escaped in `jsonString`; this is the text side's equivalent" — and
+`joinArgv` and `lastLine` in the same new file both follow it. Crafting a bundle whose
+`consequence[].path` held newlines rendered a `## Severity` heading and the word `critical`
+into the document: the promise says a bundle carries no severity rank, and a file name could
+put one there. #26's exposure, reopened on a new surface. The fix defangs every string
+`render` emits, not only the obviously path-shaped ones, and the reason is stronger than
+tidiness: the bundle lives in the work directory, which `docs/cli.md` already says the judged
+program can write. **"Every" was not true when that sentence was first written**: R2 found
+`cell()` still emitting a `Snap.kind` raw, because a kind reads like the engine's own
+vocabulary rather than a string parsed out of the file. It is defanged now, and a unit test
+builds a bundle whose every rendered string carries a forged heading — the assertion being
+structural (no line begins one) rather than textual, since the target's bytes are supposed to
+survive inside their cell.
+
+*P0-2, a language rule rather than an observation.* `co_buf` was declared inside the
+`if (check_argv)` block while `co` escaped into `checker_out` and was read after the block
+closed. The file's own convention is the other way — `world_stdout_buf` sits at loop scope —
+and the reviewer noted, correctly, that **no check in this PR could see it**: the unit tests
+build `checker.diagnostic` by hand and the guard never pins it. Hoisted.
+
+*P1-3.* `render` said "it is the earliest one whose result differed" unconditionally, which is
+false on the second bundle a run can write — the claim exhibit (#231, ADR 0020) is structurally
+later whenever the two exhibits differ, and nothing in the file said which one it was. An
+`exhibit` field exists from version 1 now, because adding it later would have meant a version
+that could not be read back by the release that wrote the files it reads.
+
+*P1-4.* Four documents said the capture file keeps "the last explored world's output". The
+world loop runs `k <= n + 1` and the checker block has no `k <= n` gate, so the last write is
+the **baseline re-run's**. Corrected in all four.
+
+*P1-5.* `evidence_version != current_version` plus a strict parse refuses in both directions:
+the first field added at version 2 would have made every version-1 bundle on disk unreadable.
+Changed to refuse upward only, with `ignore_unknown_fields`. A case refuses an unknown field
+because a case is a frozen question; a bundle is a record, and the report schema's direction —
+a consumer tolerates fields it does not know — is the right one for a record.
+
+*P1-6.* `sideeye evidence --help` fell into the file reader and exited 3, because the dispatch
+sits ahead of the `<mode> --help` block and that block did not list the new mode. Same shape as
+#296, which is the issue that put the block there.
+
+**The guard was green against its own predicate, and that was wrong.** Adding a hostile-name
+fixture was not enough. The first spelling — a file named `ev\nil\033[31m.md` — carries
+newlines and an ESC, and removing the text-side defang left the check **green**: its newlines
+land mid-sentence, and the assertion is about the rendered document's set of `## ` headings.
+A guard built against the accident rather than against its own predicate, which is the first of
+the two axes CLAUDE.md fixes for campaign reviews. The name forges a section now
+(`ev\n## Forged\n\033[31m.md`), and the mutation turns the check red. No severity word in it,
+deliberately: a target's own bytes containing "critical" is not Sideeye ranking anything, and a
+check that confused the two would be measuring the wrong thing.
+
+**A defect the unit tests structurally could not have caught.** `std.mem.trimRight` does not
+exist in Zig 0.16 (it is `trimEnd`), and `zig build test` was green with that line in the file.
+Zig analyses only what is reached: `lastLine` is called from `measure`, which no unit test
+calls, so the whole function went unanalysed. `zig build` found it on the first attempt to link
+a binary. A green test suite is not a claim that the file compiles.
+
+**A check that did not check what it claimed.** The plan's second falsifiable check was "render the
+bundle from a work directory with no text report present" — which only rules out an implementation
+that scrapes Sideeye's own prose out of its terminal output, something no implementation would do.
+An implementation that copied `report.violationObserved()`'s sentence into a measured field at
+measurement time would have passed it while breaking the promise the check exists for. It is replaced
+by cross-artifact agreement — every evidence field that also exists in the case or the report must
+equal it — plus a literal ban on severity words in the rendered bundle.
 ## 2026-09-17 — the outcome funnel is one row per campaign and target, and reading the stages off the reports moved three of them
 
 **What #605 asked.** Reach and verdict quality are measured; what happens after a

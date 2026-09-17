@@ -468,6 +468,10 @@ pub fn build(b: *std.Build) void {
         // the help text only, and nothing left in main.zig reaches them, so without this
         // name they would run nowhere. `src/case.zig` holds no tests and is not named.
         "src/cli.zig",
+        // The evidence bundle (#607, ADR 0071). Named for the reason the shim's Linux root
+        // below was: main.zig imports it, and collection through an import is what stopped
+        // silently once before. Its tests reach no declaration of main.zig's.
+        "src/evidence.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.

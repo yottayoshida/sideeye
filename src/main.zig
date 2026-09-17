@@ -96,6 +96,7 @@ const report = @import("report.zig");
 const refuse = @import("refuse.zig");
 const cli = @import("cli.zig");
 const case = @import("case.zig");
+const evidence = @import("evidence.zig");
 const containment = @import("containment.zig");
 // Aliased rather than spelled `defang.` at each site, so the call sites read as they did
 // when the bodies lived here (#572): the report-side callers outnumber the boundary's, and
@@ -493,6 +494,12 @@ const Run = struct {
         first_checker_l1: bool,
         first_checker_path: [contract.max_path]u8,
         first_checker_path_len: usize,
+        /// What each exhibit's world measured for its evidence bundle (#607), or null when
+        /// nothing could be measured there. Carried on this struct for the same reason the
+        /// paths above are: `phaseExploration` is the only place the crashed state exists,
+        /// and `phaseReport` is where it is written out beside the case.
+        first_failure_ev: ?evidence.Draft,
+        first_checker_ev: ?evidence.Draft,
     };
 
     gpa: std.mem.Allocator,
@@ -592,6 +599,35 @@ pub fn main(init: std.process.Init.Minimal) !void {
         }
         say("sideeye {s} (trace contract v{d})\n", .{ cli.version, contract.contract_version });
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    }
+
+    // `evidence` renders the bundle a FAIL saved beside its case (#607, ADR 0071). Here
+    // rather than in `cli.parse`'s mode dispatch because it shares none of the define
+    // surface: it reads one file and writes one document, and the flag loop below has
+    // nothing it wants. No flags of its own either — the machine-readable form is the
+    // evidence file itself, whose path the report names, so a `--format json` would be a
+    // second way to ask for bytes already on disk.
+    //
+    // The body is `src/evidence.zig`'s. `spike/check-main-shape.sh` holds this file's
+    // declaration count at its ceiling (#572, ADR 0062), and a `runEvidence` beside
+    // `runDemo` would be over it — but the reason to put it there is the one that matters:
+    // the module that owns the behaviour owns the code, which is what that ratchet is for.
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "evidence")) {
+        // Answered HERE, not by the `<mode> --help` block below, because this dispatch sits
+        // in front of it: a mode word consumed here never reaches that block, so adding
+        // `evidence` to its list — which was the first attempt — changed nothing and
+        // `sideeye evidence --help` went on trying to read a file called `--help`. The same
+        // shape as #296, which is the issue that put the block there in the first place.
+        if (argv.len == 3 and (std.mem.eql(u8, argv[2], "--help") or std.mem.eql(u8, argv[2], "-h"))) {
+            cli.usage();
+            std.process.exit(@intFromEnum(contract.ExitCode.pass));
+        }
+        if (argv.len != 3) {
+            const msg = "sideeye evidence takes one argument: the saved case, or the bundle beside it\n";
+            _ = posix.write(2, msg.ptr, msg.len);
+            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        }
+        std.process.exit(evidence.runCommand(gpa, argv[2]));
     }
 
     // `<mode> --help` and `<mode> -h`, answered here rather than in the parse loop.
@@ -2467,9 +2503,16 @@ fn phaseExploration(run: *Run) void {
     var first_checker_l0 = false;
     var first_checker_l1 = false;
     var first_checker_path_len: usize = 0;
+    var first_failure_ev: ?evidence.Draft = null;
+    var first_checker_ev: ?evidence.Draft = null;
     var marker_worlds: u32 = 0;
     var checks_run: u32 = 0;
 
+    // Beside `world_stdout_buf` and not inside the checker block, although only that block
+    // spells it: `co` escapes into `checker_out`, which the exhibit branches read after the
+    // block has closed. A buffer declared inside would have ended its life at the closing
+    // brace and the read would be of a slot the compiler is free to reuse.
+    var checker_out_buf: [contract.max_path]u8 = undefined;
     var world_stdout_buf: [contract.max_path]u8 = undefined;
     const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
 
@@ -2762,11 +2805,73 @@ fn phaseExploration(run: *Run) void {
         // requires: in-memory state hides corruption, so nothing is evaluated inside
         // the lifetime of the process that died.
         var l2_failed = false;
+        // Where this world's checker wrote, so the evidence bundle can quote its last line
+        // (#607). Null when there is no checker, or when the capture could not be opened.
+        //
+        // Captured rather than inherited, which takes the output off the terminal the way
+        // #483 did for `--setup`. Two reasons rather than one: a checker that runs once per
+        // crash point printed its diagnosis n+1 times into the middle of nothing, and #134
+        // records unlabeled checker output reaching the transcript as a hazard in its own
+        // right. What the run says about the checker is the report's `checker` line, and
+        // for a FAIL the exhibit's own last line is now in the bundle.
+        var checker_out: ?[]const u8 = null;
         if (check_argv) |cargv| {
-            const ct = posix.runChild(gpa, cargv, &.{
+            var capture_opened = true;
+            const co = std.fmt.bufPrint(&checker_out_buf, "{s}/checker-output.txt", .{args.work}) catch
+                setupError(.define_invalid, "path too long");
+            // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name
+            // would block the parent's open — the pair `Capture.exclusive` asks for by name.
+            files.removeFile(co);
+            const ct = posix.runChildCapture(gpa, cargv, &.{
                 .{ "TOY_STATE", state_abs },
                 .{ contract.env.state_dir, state_abs },
-            }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
+                // stderr too, for the reason #483 gives on the setup capture: a checker
+                // reports through either stream, and capturing stdout alone would leave the
+                // file empty for the ordinary failure.
+            }, .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
+                // The one failure that is about the capture and not about the child: since
+                // #469 the parent opens the file, so this arrives before any child exists.
+                // The checker still has to run — the verdict rests on its exit status — so
+                // it runs uncaptured and the bundle's diagnostic stays unknown. Refusing
+                // here would turn a FAIL into an UNKNOWN over an attachment.
+                error.CaptureUnavailable => blk_cap: {
+                    // Left null on this path deliberately, rather than relying on the
+                    // removal above to make the read come back empty: "there is no capture"
+                    // and "the capture is empty" are different answers, and only the first
+                    // is true here.
+                    capture_opened = false;
+                    break :blk_cap posix.runChild(gpa, cargv, &.{
+                        .{ "TOY_STATE", state_abs },
+                        .{ contract.env.state_dir, state_abs },
+                    }, args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
+                },
+                else => spawnFailure(e, .exploring, "could not run --check"),
+            };
+            // Set whichever way the child ended: a checker killed by a signal has often
+            // written the line that says why, and the capture is what holds it.
+            if (capture_opened) {
+                checker_out = co;
+                // Re-emitted UNLABELED, which is byte-for-byte what a world checker's output
+                // has always looked like on this stream. The capture is additive: the bundle
+                // gets the exhibit's last line, and the terminal keeps what it had.
+                //
+                // An earlier version of this change did not re-emit, on the reasoning that
+                // #134 records unlabeled checker output as a hazard. That misread #134: the
+                // hazard was the *gate's* output being harvested as a world's, and the fix
+                // was labeling the gate — the world side staying unlabeled is what makes the
+                // two tellable apart. `spike/acceptance.sh` counts BOTH sides for exactly
+                // that reason and went red on the version that dropped this (CI, 2026-09-17).
+                if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
+                    var lines = std.mem.splitScalar(u8, text, '\n');
+                    while (lines.next()) |line| {
+                        if (line.len == 0) continue;
+                        say("{s}\n", .{line});
+                    }
+                }
+                // No else-branch saying so, unlike the gate's: a gate that cannot be read
+                // back decides a refusal, and this decides nothing — the exit status is the
+                // verdict's input and the unread line is reported as unknown in the bundle.
+            }
             checks_run += 1;
             l2_failed = switch (ct) {
                 .exited => |code| code != 0,
@@ -2871,6 +2976,16 @@ fn phaseExploration(run: *Run) void {
                     @memcpy(first_failure_path[0..p.len], p);
                     first_failure_path_len = p.len;
                 }
+                // #607. The only point at which the crashed state still exists: this
+                // iteration's own `defer` frees it and the next world restores the
+                // directory. Everything the bundle says about the three states is read
+                // here, into arena-owned bytes; `phaseReport` adds what is only final after
+                // the loop. Failing to measure loses the bundle, never the verdict.
+                first_failure_ev = evidence.measure(arena, initial, final, crashed, l0_plan, .{
+                    .configured = check_argv != null,
+                    .failed = l2_failed,
+                    .output_path = checker_out,
+                }) catch null;
             }
             if (l2_failed and first_checker == null) {
                 const v = l0 orelse l1;
@@ -2882,6 +2997,14 @@ fn phaseExploration(run: *Run) void {
                     @memcpy(first_checker_path[0..p.len], p);
                     first_checker_path_len = p.len;
                 }
+                // The claim exhibit's own measurement, for the same reason and at the same
+                // point. When the two exhibits are one world this measures it twice; the
+                // second is discarded in `phaseReport`, which writes one file for one case.
+                first_checker_ev = evidence.measure(arena, initial, final, crashed, l0_plan, .{
+                    .configured = check_argv != null,
+                    .failed = l2_failed,
+                    .output_path = checker_out,
+                }) catch null;
             }
         }
     }
@@ -2910,6 +3033,8 @@ fn phaseExploration(run: *Run) void {
     run.firsts.first_checker_l0 = first_checker_l0;
     run.firsts.first_checker_l1 = first_checker_l1;
     run.firsts.first_checker_path_len = first_checker_path_len;
+    run.firsts.first_failure_ev = first_failure_ev;
+    run.firsts.first_checker_ev = first_checker_ev;
 }
 
 /// Phase 9 of the run: The report, text and JSON, and the exit code.
@@ -2994,6 +3119,37 @@ fn phaseReport(run: *Run) void {
             "-";
         report.case_note = case_shown;
         report.replay_note = replay_cmd;
+        // The evidence bundle (#607, ADR 0071), beside the case, built from what the
+        // exhibit's own world measured. Written only where the case was: the name is derived
+        // from the case's id, so a bundle claims no id of its own and the ownership the
+        // report documents — in a fresh work directory `000001` belongs to the overall
+        // earliest — holds however this turns out. A bundle that cannot be written leaves
+        // `-`, never a guess.
+        //
+        // `invariant`, `subject` and `observed` are carried across rather than re-rendered:
+        // one fact with two producers drifts, and an acceptance check holds these three to
+        // the report's own `earliest` by bytes.
+        const saved_evidence: ?[]const u8 = if (saved_case) |sc| ev_blk: {
+            const d = run.firsts.first_failure_ev orelse break :ev_blk null;
+            const op_line = evidence.joinArgv(arena, run.rec.op_argv) catch break :ev_blk null;
+            break :ev_blk evidence.save(arena, sc, op_line, state_abs, n, .{
+                .exhibit = .earliest,
+                .crash_point = f.k,
+                .boundary = .{
+                    .after_op = after,
+                    .after_path = after_path,
+                    .before_op = before,
+                    .before_path = before_path,
+                },
+                .invariant = invariant,
+                .subject = path_shown,
+                .observed = what,
+                .replay = replay_cmd,
+                .case_path = case_shown,
+                .draft = d,
+            });
+        } else null;
+        report.evidence_note = saved_evidence orelse "-";
         // The claim exhibit (#231, ADR 0020). Same world as the earliest: it
         // shares the earliest's case file — no duplicate is written. Different
         // world: its case is written strictly AFTER the earliest's, so in a
@@ -3025,6 +3181,35 @@ fn phaseReport(run: *Run) void {
                 std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}", .{ cc, shim }) catch "-"
             else
                 "-";
+            // One bundle per case, so the shared-world case reuses the earliest's rather
+            // than writing the same measurement to the same name twice.
+            const cevidence: []const u8 = if (same_world)
+                (saved_evidence orelse "-")
+            else if (csaved) |cc| cev_blk: {
+                const d = run.firsts.first_checker_ev orelse break :cev_blk "-";
+                const op_line = evidence.joinArgv(arena, run.rec.op_argv) catch break :cev_blk "-";
+                break :cev_blk evidence.save(arena, cc, op_line, state_abs, n, .{
+                    // Written on its own file only when the two exhibits are different
+                    // worlds; the shared-world case reuses the earliest's bundle above.
+                    .exhibit = .checker,
+                    .crash_point = fc.k,
+                    .boundary = .{
+                        .after_op = if (caddr.after) |a| a.class.name() else "(start)",
+                        .after_path = if (caddr.after) |a| a.path else "",
+                        .before_op = if (caddr.before) |b| b.class.name() else "(end)",
+                        .before_path = if (caddr.before) |b| b.path else "",
+                    },
+                    .invariant = cinvariant,
+                    .subject = if (first_checker_path_len > 0)
+                        first_checker_path[0..first_checker_path_len]
+                    else
+                        "(named by the checker, not by path)",
+                    .observed = report.violationObserved(fc.violation),
+                    .replay = creplay,
+                    .case_path = ccase,
+                    .draft = d,
+                }) orelse "-";
+            } else "-";
             break :blk .{
                 .e = .{
                     .k = fc.k,
@@ -3041,6 +3226,7 @@ fn phaseReport(run: *Run) void {
                 },
                 .case = ccase,
                 .replay = creplay,
+                .evidence = cevidence,
             };
         } else null;
         say(
@@ -3061,6 +3247,7 @@ fn phaseReport(run: *Run) void {
             \\l1          {s}
             \\case        {s}
             \\replay      {s}
+            \\evidence    {s}
             \\
         , .{
             report.violations,             report.explored,
@@ -3076,7 +3263,7 @@ fn phaseReport(run: *Run) void {
             report.l0_note,                report.oracle_note,
             report.metadata_note,          report.checker_note,
             report.l1_note,                case_shown,
-            replay_cmd,
+            replay_cmd,                    report.evidence_note,
         });
         report.sayApparatus(arena, "apparatus   {s}\n");
         // Printed only when the two exhibits are different worlds; when the
@@ -3085,10 +3272,11 @@ fn phaseReport(run: *Run) void {
         if (checker_detail) |cd| {
             if (cd.e.k != f.k) say(
                 \\checker red crash point {d} of {d} ({s})
-                \\            case   {s}
-                \\            replay {s}
+                \\            case     {s}
+                \\            replay   {s}
+                \\            evidence {s}
                 \\
-            , .{ cd.e.k, n, cd.e.invariant, cd.case, cd.replay });
+            , .{ cd.e.k, n, cd.e.invariant, cd.case, cd.replay, cd.evidence });
         }
         // **`SIDEEYE_KILL_GROUP` is deliberately not on this line** (v15). A world gets it
         // because the engine put the target in its own process group first; a shell an
