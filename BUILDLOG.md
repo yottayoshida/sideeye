@@ -2,6 +2,18 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-17 — v1.5.0: the block read against itself, and two sentences later entries had overtaken
+
+Seventeen entries, four days and 72 commits since v1.4.0 (19 on the first parent, 27 merges) when this was read: 10 Added, 2 Changed, 5 Fixed. One contract version in the block — v18 (#539, ADR 0067).
+
+**Why minor.** The owner chose it (2026-09-17). Everything the block adds is additive under `docs/contract-freeze.md`: a command (`sideeye evidence`, ADR 0071), a config section and two flags (`[recovery]`, ADR 0072), optional report fields present only when declared, a stderr line that is not a frozen surface (ADR 0068), and threads judged where they were refused (ADR 0067). No `unknown_reason` member, no exit code and no replay rule changed.
+
+**The reading found two sentences the block had overtaken.** The #607 entry says the evidence bundle's `recovery` "reads `not_configured` with its slot held open" — #606, merged the same day and first in the list, gives that slot a value when a recovery is declared; the sentence now says so, at the same `evidence_version`. The #538 entry says the cargo rows' dated note makes the exclusion header's reason — a class with no verdict — false for cargo; #598 replaced that reason with the criterion the rows meet, and the sentence now points there. The first four Added entries had no blank line between them while the rest did, which renders the list inconsistently; they are separated alike.
+
+**Read and left.** The judge's selftest counts rise across four entries — twenty-six and fifteen (#512, #513), sixty and twenty-three (#510), sixty-four and twenty-three (#515), seventy and twenty-four (#597) — each written as the count its change reached, the last being this release's; acceptance prints seventy and twenty-four. The upstream reports named in the dogfood entries (codespell-project/codespell#4025, rubocop/rubocop#15720, aws/aws-cli#10648, neovim/neovim#41940, rust-lang/cargo#17481, oven-sh/bun#39689) are stated as filed or as closed at the time, not as open now. The crossed-walls entry's ninja PASS "cannot fail on the rebuild, since restore refreshes timestamps" is still true, and #606's re-measurement in the same directory says the same of the recovery's `pass`.
+
+**The version is in the same four files.** `build.zig.zon`, `src/cli.zig`, the README's tarball line, and `docs/cli.md`'s three install and digest lines. The other `1.4.0` hits are records — `docs/target-classes.md`'s "Re-met with the shipped v1.4.0" and Bun 1.4.0, DESIGN and PRD's cohort history — and two `sideeye_version` literals in `src/evidence.zig`'s round-trip test fixtures, which are data a bundle carries, not the binary's version.
+
 ## 2026-09-17 — a declared recovery runs after the verdict, against each saved FAIL world's rebuilt crash state, and changes nothing it reports beside
 
 **What #606 asked, and the owner's scope.** A crash-state FAIL cannot tell a tool that repairs its
