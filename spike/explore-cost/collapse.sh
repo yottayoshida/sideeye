@@ -15,13 +15,22 @@
 # operation k, and records the digest of the whole state tree, the paths that differ from
 # the pre-state, and the checker's exit status and first line.
 #
-# Two groupings are printed, because "the same outcome" has two defensible readings:
+# Three groupings are printed, because "the same outcome" has more than one defensible reading:
 #
 #   strict  -- byte-identical state trees and the same checker exit and first line. What
 #              cannot be established as equivalent stays distinct.
 #   coarse  -- the same set of changed paths and the same checker exit and first line. The
 #              reading a maintainer-facing consequence would take; it merges worlds whose
 #              files differ only in their bytes.
+#   coarse, pid-shaped temp names hidden -- as coarse, with a temporary file's name read
+#              without the process id in it. A tool that names its temporaries after its
+#              pid (timewarrior's `undo.data.59032-3.tmp`) gets a new name in every world,
+#              because every world is a new process, and plain coarse counts each one as its
+#              own outcome. The engine does not treat such paths as identity either -- the
+#              case prefix hash hashes operation classes and not paths, "pid-embedded temp
+#              names" being its stated reason (`src/case.zig`). The pattern is narrow on
+#              purpose, `<name>.<3+ digits>-<digits>.tmp`: a random mkstemp suffix is not
+#              recognised, and the plain coarse count stays the conservative one.
 #
 # How this differs from the engine, said here so the record can repeat it:
 #
@@ -38,10 +47,10 @@
 # - A `reproduce` line re-creates a crash point, not a whole world, when the run awaited a
 #   writing child (the note beside it in `src/main.zig` says so). This inherits that limit.
 # - It does not judge. The built-in invariants live in the engine and are not reachable from
-#   a shell, so a world's L0/L1 verdict is not part of either grouping.
+#   a shell, so a world's L0/L1 verdict is not part of any grouping.
 #
 # A world whose trace does not show the kill landing at k is printed with `landed` set to
-# what the trace showed instead, and is left out of both groupings, with the count said.
+# what the trace showed instead, and is left out of every grouping, with the count said.
 set -u
 [ $# -ge 1 ] || { echo "usage: collapse.sh <rundir>/<target>" >&2; exit 2; }
 D=$1
@@ -177,6 +186,8 @@ for n in sorted(set(a) | set(b)):
 print(",".join(marks) if marks else "(none)")
 PY
     )
+    # The same list with a pid-shaped temporary name read without its pid (see the header).
+    hidden=$(printf '%s' "$changed" | sed -E 's/\.[0-9]{3,}-([0-9]+)\.tmp(,|$)/.<pid>-\1.tmp\2/g')
     if [ -n "${CHECK:-}" ]; then
         sh -c "$CHECK" >"$OUT/check-$k.txt" 2>&1
         crc=$?
@@ -185,7 +196,7 @@ PY
         crc="-"; msg=""
     fi
     printf '%-4s %-4s %-6s %-18s %-8s %-28s %s\n' "$k" "$rc" "$land" "$tree" "$crc" "$changed" "$msg"
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$k" "$rc" "$land" "$tree" "$crc" "$changed" "$msg" >> "$OUT/rows.tsv"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$k" "$rc" "$land" "$tree" "$crc" "$changed" "$msg" "$hidden" >> "$OUT/rows.tsv"
     k=$((k + 1))
 done
 
@@ -195,16 +206,18 @@ import collections, sys
 rows, unlanded = [], []
 with open(sys.argv[1], encoding="utf-8") as fh:
     for line in fh:
-        k, rc, land, tree, crc, changed, msg = (line.rstrip("\n").split("\t") + [""] * 7)[:7]
-        (rows if land == "ok" else unlanded).append((int(k), tree, crc, changed, msg, land))
+        k, rc, land, tree, crc, changed, msg, hidden = (line.rstrip("\n").split("\t") + [""] * 8)[:8]
+        (rows if land == "ok" else unlanded).append((int(k), tree, crc, changed, msg, land, hidden))
 print("kill landed at k in %d of %d worlds" % (len(rows), len(rows) + len(unlanded)))
-for k, _t, _c, _ch, _m, land in unlanded:
-    print("   left out of both groupings: k=%d (trace shows %s)" % (k, land))
+for k, _t, _c, _ch, _m, land, _h in unlanded:
+    print("   left out of every grouping: k=%d (trace shows %s)" % (k, land))
 strict = collections.OrderedDict()
 coarse = collections.OrderedDict()
-for k, tree, crc, changed, msg, _land in rows:
+hidden_pid = collections.OrderedDict()
+for k, tree, crc, changed, msg, _land, hidden in rows:
     strict.setdefault((tree, crc, msg), []).append(k)
     coarse.setdefault((changed, crc, msg), []).append(k)
+    hidden_pid.setdefault((hidden, crc, msg), []).append(k)
 def show(name, groups):
     print("%s: %d distinct outcome(s) over %d crash points" % (name, len(groups), len(rows)))
     for key, ks in groups.items():
@@ -213,6 +226,8 @@ print()
 show("strict (byte-identical tree + checker exit and first line)", strict)
 print()
 show("coarse (same changed paths + checker exit and first line)", coarse)
+print()
+show("coarse, pid-shaped temp names hidden", hidden_pid)
 PY
 echo ""
 echo "# per-world path digests, traces, engine output and checker output under $OUT/"
