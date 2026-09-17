@@ -2,6 +2,153 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-17 — the exploration-cost question is answered from the record plus a clock, and the worlds that repeat are the ones that did not fail
+
+**What was asked, by someone outside the project.** When Sideeye scales to more targets, how
+redundant and expensive is exhaustive crash injection at recorded state-changing operation
+boundaries? The brief was explicit about what the answer was not allowed to become: no product
+issue, no pruning design, no change to exploration semantics. One bounded campaign, to find out
+whether the problem exists at the scale this project runs at.
+
+**The half nobody had to measure.** `spike/explore-cost/RESULTS.md` (2026-09-03, ADR 0042) already
+measured what one world costs and ended by naming the gap — "Nothing about a total … the file count
+does not predict the multiplier". The multiplier is in the committed record: 200 reports under
+`spike/dogfood/`, 123 of them judged runs that explored something, 3,843 worlds. `corpus.py` reads
+it rather than re-running anything. That half covers 39 programs in ten languages, so the brief's "10 to
+20 real targets across languages" is met there — for crash-point counts and where the first failure sits,
+and not for wall clock or collapse, which reach seven defines over five programs in C and C++ (below). It
+is also not the whole record: the rest of `spike/` holds 297 more reports, which the second review found.
+
+**Three things the corpus said that an impression would have got wrong.** The median judged run has
+five crash points, not two, though 2–4 is the largest bucket. The first counterexample's *fraction*
+of the run reads 0.88, which is an artefact of 39 two-crash-point runs where the fraction can only
+be 0.5 or 1.0 — over the 36 FAIL runs with five or more crash points (of 62 judged runs that have
+that many) the median first failure is at address 3. And the dogfood corpus's tail is one target:
+virtualenv's two runs at 1,381 crash points are 2,764 of its 3,843 worlds, 72%.
+
+**The clock.** Seven committed defines over five programs, re-pathed for this host, median of three:
+0.1–4.9 s per whole run, medians summing to 11.2 s for 76 worlds, per-world 0.014–0.259 s. Per-world cost
+varies 18× and tracks the size of the tree being restored and snapshotted, not the crash-point
+count — the same relationship `RESULTS.md` measured against padding, now on real targets.
+
+**What the redundancy question actually returned.** The report names at most two crash points, so
+nothing committed says what the other worlds produced. `collapse.sh` re-materialises every world
+from outside the engine with the environment the report's `reproduce` line uses, and groups them
+strictly (byte-identical tree) and coarsely (same changed paths, same checker result). The six
+defines disagree sharply: xz collapses 17 of 18 worlds onto one coarse outcome while those 17 hold 15
+byte-distinct states; timew holds 15 distinct outcomes over 19 crash points and its two failing
+worlds fail for *different* reasons. Nothing above 19 crash points was walked. (The timew figure did
+not survive: see "the paragraph that looked like a finding" below.)
+
+**One structural redundancy holds in every define walked.** In all six the world killed before the first
+state-changing operation leaves the pre-state exactly, which follows from what a crash point is
+(ADR 0003): 123 of the dogfood corpus's 3,843 worlds, 3% — a floor, since bsdtar's and timew's second
+worlds are the pre-state too.
+
+**Two measurement errors, both caught by the data rather than by review.** The first run of
+`collapse.sh` reported five identical worlds and an operation that exited 0 — no kill had landed,
+because the harness ran the operation through `sh -c` and /bin/sh is a platform binary, so dyld
+drops `DYLD_INSERT_LIBRARIES` before the target starts. The operation is now split on spaces and
+exec'd directly, which is what the engine does anyway (ADR 0019). The same wall took bsdtar out of
+the timed set on the first attempt: `/usr/bin/bsdtar` is a platform binary too, and the row read
+`no_shim_marker` until Homebrew's libarchive build was used instead. Both are the macOS limit this
+project already documents, met from a new direction.
+
+**The review reversed the tail, and the conclusion got stronger for it.** The first draft said
+virtualenv — 72% of the dogfood corpus's worlds — had never been timed, and built its central caveat and its
+first follow-up condition on that: "a timed run of a 100+ crash-point target", a "~10 minutes"
+threshold, and a claim that everything measured sat "two orders of magnitude below" it. The initial
+review found the run's own record saying an explore "took about seven minutes"
+(`spike/dogfood/2026-09-16-threads-take-turns/RESULTS.md`). I had searched the reports for a time
+field and the transcripts for `real`/`elapsed` lines, found neither, and written "never timed" — the
+prose was not searched. Seven minutes over 1,382 worlds is about 0.3 s per world, so the per-world
+model holds in the tail; the corpus's total is about seventeen minutes, not the nine the draft said;
+and the invented ten-minute line fell away. What replaced it is better grounded: the same paragraph
+records that the plan was cut from three explores per mode to one on an *estimate* of an hour, and
+that three would have fit. That is the one case on record where cost shaped a plan, and it was an
+estimate roughly eight times too high. The follow-up condition now asks for a case where *measured*
+cost made a workflow cut what it planned.
+
+The same review caught four more. The xz prose said the seventeen collapsing worlds were
+sixteen byte-distinct states "each holding a different number of bytes" when its own transcript shows
+the last three identical (fifteen); "36 runs with five or more crash points" was the FAIL subset of
+62; the measurement script's header promised to print the committed crash-point count beside its own
+and printed one column (the record now compares them — xz, jpegtran and bsdtar agree); and
+`corpus.py` named targets only within one directory, splitting aws-cli and neovim across
+`explore/` and a re-run directory, and matched `rep` but not `rep1`..`rep5`. Its program count is
+still two too high (`nvim012`, `rdiff`), and the record says so rather than hand-mapping them. The
+first round of fixes called all four "fixed"; the "36 runs" sentence had been corrected in the record
+and left standing in this entry's own third paragraph, and the second review found it here.
+
+**The measurement never checked that its kills landed where it said.** The first review's report
+arrived cut off and its remainder came after the fixes above had gone to the second review. It held
+the finding that mattered most for section 3: `collapse.sh` wrote each world's trace and never read
+it, so a kill that landed one operation early would have produced a plausible table. The engine
+refuses exactly that world (`kill_did_not_land`); the harness now reads the `kill_landed` record and
+leaves a world out of both groupings unless its number is k. Read back over the traces already on
+disk before the script changed: 50 of 50 worlds landed at k, so no committed figure moved. Seen red
+by handing the committed predicate a wrong k (`at-5`), an absent trace (`no-trace`) and a file that
+is not one (`no-header`). The same remainder asked for the changed paths by name — xz's coarse group
+now reads `+f.bin.xz` rather than a digest — and for the checker's first line in the strict key too;
+neither moved a count. It also asked for `check-timew-undo.sh` to be 644 like its neighbours, which
+was declined: it is a checker the engine execs, and this repository commits those 755 because a 644
+checker proven green under `sh` failed with Permission denied at campaign 2's first sealed explore.
+
+**The second review narrowed the record's claims, and one of the two halves of the conclusion with
+them.** Three findings, all confirmed by recounting. The record called the dogfood corpus "every
+report this repository has committed"; the rest of `spike/` holds 297 more, the repository's 100-plus
+class is four targets rather than one (fontforge 184, borg 118, hg 106 besides virtualenv), and
+virtualenv is 49% of it rather than 72%. The docstring that justified reading only `spike/dogfood/`
+said the other directories "carry no counters", which `spike/assisted/buku/report-remeasure.json`, a
+FAIL over 21 crash points, refutes. The record now says the corpus is a choice — the recent real
+targets the question is about — and gives the repository-wide figures beside it. Second, "the
+exceptions are the long runs" was false: twelve of the 36 FAIL runs with five or more crash points,
+over five programs, fail past halfway, and Bun's is its last crash point of ten. Third, and the one
+that changes an answer: "redundancy is measurable but not dominant" had no scope, and the six defines
+walked stop at 19 crash points, where the case for pruning does not live. That half of the conclusion
+now says what was walked and that the sample cannot say what happens in the 100-plus class. The cost
+half stands on all of the evidence, the seven-minute explore included.
+
+Smaller corrections from the same round: the seventeen-minute total is not a bound (the other 1,079
+worlds are estimated at this host's no-oracle rates, which both Linux-under-strace figures on record
+exceed), and only one virtualenv explore is timed in prose; the third follow-up condition is an
+agreement rather than a measurement and now says so, and the first one compares against a budget the
+workflow states rather than being met by any cut; xz's `f.bin.xz` is empty at world 2 and complete
+at 16–18, so "partial beside the intact original" was true of none of the three; the file is 5.75 MB,
+not 7; the per-world spread is 1.08×–1.58× unrounded. The earlier record's ten-times-slower toy figure
+had been put down to load; that row also carried 20 padding files and this one none, and the record
+now says neither difference was isolated.
+
+**The paragraph that looked like a finding was a file name.** After the second review's fixes the
+walk was re-run from the commit holding the script, so the transcripts would name their own
+source. Every count came back the same, but timewarrior's transcript differed in every digest and
+the others only in their header. The reason was in its changed paths: `undo.data.59032-3.tmp`,
+`undo.data.59051-3.tmp` — timewarrior names its temporaries after its process id, every world is a
+new process, and the coarse reading, which compares paths by name, counted each world that left a
+temporary file as a new outcome. Read with the pid hidden, its nineteen crash points are seven
+outcomes, in steps: one temporary file, two, three, the two failures, the finished files. The
+record had said timewarrior was "where pruning would not" pay, set against xz as the case where it
+would; that contrast was mostly the pid. `collapse.sh` now prints a third grouping with pid-shaped
+temporary names read without the pid — narrow on purpose, and the plain coarse count stays the
+conservative one; the engine's own case prefix hash ignores paths for the same stated reason. Neither
+review could have seen it: the committed transcripts carried one run each, and the name only moves
+between runs.
+
+It changed the redundancy half of the conclusion a second time, and more than the reviews did. Over
+the 50 worlds walked, half repeat an outcome by changed paths and two-thirds with the pid hidden —
+not "not dominant". What survived, and is the sharper statement, is where the repeats are: every one
+is a world that did not fail. The four failing worlds are four distinct outcomes, timewarrior's two
+adjacent to each other. The question asked how often crash points collapse onto the same *failure*
+outcome, and in this sample the answer is never.
+
+**The conclusion.** Exhaustive boundary exploration is not a material bottleneck at the measured
+scale. Redundancy is large as a share of the worlds walked — C and C++ defines of 2 to 19 crash
+points — and absent from their failures, and at that scale it costs seconds; this sample cannot say
+what happens in the 100-plus class. Two measured results and one agreement would justify a pruning
+issue: measured wall clock exceeding a budget the workflow states, a coarse collapse ratio of 5:1
+or better at that target read with the pid-hidden grouping beside the plain one, and an agreed
+statement of what a pruner may discard, checked against the strict/coarse gap. No issue was filed.
+
 ## 2026-09-17 — the evidence a FAIL measured is written beside the case, not into it, and the crashed state is only readable at judgement time
 
 **What #607 asked.** A saved FAIL is reproducible, but turning it into something an upstream

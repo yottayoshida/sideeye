@@ -1,0 +1,27 @@
+# collapse: toy-fixed, 4 crash points, Darwin arm64, ad87c90
+# operation: <checkout>/spike/out/toy-fixed rotate
+# checker: (none)
+# pre-state digest: fc06acc1053705c9
+
+k    rc   landed tree               checker  changed                      diagnostic
+1    137  ok     fc06acc1053705c9   -        (none)                       
+2    137  ok     cd6202c6ddc79f57   -        +key.json.tmp                
+3    137  ok     e29cf0e6a327da77   -        +key.json.tmp                
+4    137  ok     e29cf0e6a327da77   -        +key.json.tmp                
+
+kill landed at k in 4 of 4 worlds
+
+strict (byte-identical tree + checker exit and first line): 3 distinct outcome(s) over 4 crash points
+   x1   k=1                        fc06acc1053705c9  -
+   x1   k=2                        cd6202c6ddc79f57  -
+   x2   k=3,4                      e29cf0e6a327da77  -
+
+coarse (same changed paths + checker exit and first line): 2 distinct outcome(s) over 4 crash points
+   x1   k=1                        (none)  -
+   x3   k=2,3,4                    +key.json.tmp  -
+
+coarse, pid-shaped temp names hidden: 2 distinct outcome(s) over 4 crash points
+   x1   k=1                        (none)  -
+   x3   k=2,3,4                    +key.json.tmp  -
+
+# per-world path digests, traces, engine output and checker output under ~/.cctmp/explorecost-Q5xhKd/r5/toy-fixed/collapse/

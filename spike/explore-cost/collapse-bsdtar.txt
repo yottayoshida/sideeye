@@ -1,0 +1,21 @@
+# collapse: bsdtar, 2 crash points, Darwin arm64, ad87c90
+# operation: /opt/homebrew/opt/libarchive/bin/bsdtar -uf ~/.cctmp/explorecost-Q5xhKd/r5/bsdtar/state/a.tar -C ~/.cctmp/explorecost-Q5xhKd/r5/bsdtar/src f3.txt
+# checker: ~/.cctmp/explorecost-Q5xhKd/r5/bsdtar/check.sh
+# pre-state digest: 569f438ba166aadb
+
+k    rc   landed tree               checker  changed                      diagnostic
+1    137  ok     569f438ba166aadb   0        (none)                       
+2    137  ok     569f438ba166aadb   0        (none)                       
+
+kill landed at k in 2 of 2 worlds
+
+strict (byte-identical tree + checker exit and first line): 1 distinct outcome(s) over 2 crash points
+   x2   k=1,2                      569f438ba166aadb  0
+
+coarse (same changed paths + checker exit and first line): 1 distinct outcome(s) over 2 crash points
+   x2   k=1,2                      (none)  0
+
+coarse, pid-shaped temp names hidden: 1 distinct outcome(s) over 2 crash points
+   x2   k=1,2                      (none)  0
+
+# per-world path digests, traces, engine output and checker output under ~/.cctmp/explorecost-Q5xhKd/r5/bsdtar/collapse/
