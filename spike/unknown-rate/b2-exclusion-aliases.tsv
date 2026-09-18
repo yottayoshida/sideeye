@@ -1,0 +1,74 @@
+# How a name in this project's ledgers maps to Debian package names, for the
+# B2 exclusions (#619, ADR 0073). The ledgers spell tools the way their
+# authors did — `GNU Stow`, `mid3v2`, `uutils cp`, `neovim 0.10.4 and 0.12.5
+# (`:wshada`)` — and select-b2.sh excludes by exact package name, so without
+# this table a tool this project has already met could be selected again under
+# the archive's spelling of it.
+#
+# Columns (tab-separated, exactly three):
+#   name      the spelling as it appears in the ledger, verbatim
+#   packages  ;-separated Debian package names, or `-` when the tool has no
+#             Debian package at all (a pip-only tool, a Rust binary the
+#             project fetched from GitHub, a repository name)
+#   source    which ledger spells it this way (for a reader; not checked)
+#
+# count.py b2-selection holds this file two ways: every name in the five
+# machine-readable ledgers (b-targets.txt, b-exclusions.txt, corpus.tsv,
+# spike/outcome-funnel.tsv, spike/upstream-reports.tsv) that is not itself a
+# package in b2-exclusions.txt must have a row here, and every package a row
+# names must be in b2-exclusions.txt. A name that IS a package name needs no
+# row — `qpdf` is `qpdf`.
+#
+# What it cannot hold: the packages column is written from memory of the
+# archive. A package this table does not name for a tool the project met is
+# the gap wall W0 exists for — a selected target that turns out to be one of
+# those becomes a W0 row, and this table is not corrected after the fact.
+topydo	-	b-exclusions.txt, corpus.tsv, outcome-funnel.tsv, upstream-reports.tsv (pip only)
+borg	borgbackup	corpus.tsv (cohort 2)
+hg	mercurial	corpus.tsv (cohort 2)
+watson	-	b-exclusions.txt (pip td-watson)
+omamori	-	b-exclusions.txt (this project's own; not packaged)
+Bitwarden	-	outcome-funnel.tsv (npm-installed CLI)
+Bun	-	outcome-funnel.tsv (fetched from GitHub)
+GNU Stow	stow	outcome-funnel.tsv, upstream-reports.tsv
+ansible-core	ansible-core;ansible	outcome-funnel.tsv
+aws-cli	awscli	outcome-funnel.tsv
+aws-cli 2.23.6	awscli	upstream-reports.tsv
+bean-format	beancount	outcome-funnel.tsv, upstream-reports.tsv
+bsdtar	libarchive-tools	outcome-funnel.tsv
+cargo 1.97.1	cargo	upstream-reports.tsv
+chezmoi	-	outcome-funnel.tsv (fetched from GitHub; not in Debian)
+codespell 2.4.1	codespell	upstream-reports.tsv
+fonttools	fonttools;python3-fonttools	outcome-funnel.tsv, upstream-reports.tsv
+gjf	-	outcome-funnel.tsv (google-java-format, fetched from GitHub)
+gopass	-	outcome-funnel.tsv (fetched from GitHub)
+hatch	hatch;python3-hatch	outcome-funnel.tsv
+himalaya	-	outcome-funnel.tsv, upstream-reports.tsv (cargo-installed)
+jbang	-	outcome-funnel.tsv (fetched from GitHub)
+joplin	-	outcome-funnel.tsv (npm-installed CLI)
+jpegtran	libjpeg-turbo-progs	outcome-funnel.tsv, upstream-reports.tsv
+lz4	lz4;liblz4-tool	outcome-funnel.tsv
+markdownlint	markdownlint-cli;node-markdownlint-cli;node-markdownlint	outcome-funnel.tsv
+metaflac	flac	outcome-funnel.tsv
+mid3v2	python3-mutagen	outcome-funnel.tsv
+mlr	miller	outcome-funnel.tsv
+mogrify	imagemagick;imagemagick-6.q16;imagemagick-7.q16;graphicsmagick-imagemagick-compat	outcome-funnel.tsv, upstream-reports.tsv
+mutool	mupdf-tools	outcome-funnel.tsv
+neovim 0.10.4 and 0.12.5 (`:wshada`)	neovim	upstream-reports.tsv
+ninja	ninja-build	outcome-funnel.tsv
+npm pkg set	npm	outcome-funnel.tsv
+oxipng 10.2.1	oxipng	upstream-reports.tsv
+pip	python3-pip;pip	outcome-funnel.tsv
+poetry	python3-poetry;poetry	outcome-funnel.tsv, upstream-reports.tsv
+prettier	node-prettier;prettier	outcome-funnel.tsv
+pyenv	-	outcome-funnel.tsv (fetched from GitHub)
+rubocop	rubocop;ruby-rubocop	outcome-funnel.tsv
+rubocop 1.39.0	rubocop;ruby-rubocop	upstream-reports.tsv
+sphinx	python3-sphinx;sphinx-common;sphinx	outcome-funnel.tsv
+svgo	node-svgo;svgo	outcome-funnel.tsv
+tesseract	tesseract-ocr	outcome-funnel.tsv
+uutils cp	rust-coreutils;uutils-coreutils	outcome-funnel.tsv
+vim	vim;vim-nox;vim-tiny;vim-gtk3	outcome-funnel.tsv
+vips	libvips-tools	outcome-funnel.tsv
+virtualenv	virtualenv;python3-virtualenv	outcome-funnel.tsv
+xz	xz-utils	outcome-funnel.tsv

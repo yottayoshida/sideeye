@@ -7,6 +7,9 @@ zig-out/
 # built inside it; the same slip `zig-out/` guards against, one directory over.
 zig-out-linux/
 spike/out-linux/
+# The released engine a generation of the #619 sweep runs (spike/unknown-rate/engine-pins.tsv):
+# fetched and unpacked by sweep.sh in the zig-out layout, never committed — the pin is the record.
+spike/unknown-rate/engine/
 
 # Spike artifacts: toys are rebuilt inside the container, runs are throwaway
 spike/out/

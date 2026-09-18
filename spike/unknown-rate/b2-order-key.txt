@@ -1,0 +1,10 @@
+# The key of the B2 order (#619, ADR 0073). select-b2.sh ranks every package the
+# predicate admits by sha256("<package>\t<key>") — a deterministic order that is
+# not the alphabet, because docs/unknown-rate.md records that the alphabetical
+# head of the first pool was heavy in database-server tooling. The key is the
+# commit the v1.5.0 tag points at: fixed before the pool was generated, public,
+# and unrelated to any package name. Choosing it was a human decision; what the
+# key closes is reordering a list after seeing it. count.py b2-selection
+# recomputes the order from this file, so a key changed after the fact changes
+# the derivation the check expects and the committed list goes red.
+4f8a54ec754b591e76132e7a65f6d12c9afe4e32

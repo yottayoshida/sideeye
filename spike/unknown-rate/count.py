@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Recompute the #84 UNKNOWN-rate tables from the committed artifacts.
 
-Three modes:
+Four modes:
 
   count.py emit  [--root DIR]   print the canonical results block (markdown)
   count.py check [--root DIR]   exit non-zero unless the checked-out docs,
@@ -10,6 +10,14 @@ Three modes:
   count.py ledger-sizes [--root DIR]
                                 print the five cohort-ledger counts the pages
                                 state in prose, as one key=value line
+  count.py b2-selection [--selftest] [--root DIR]
+                                exit non-zero unless the committed B2 target
+                                list is the keyed first-N derivation of the
+                                pool minus the exclusions, and every name the
+                                five machine-readable ledgers spell is excluded
+                                directly or through the alias table (#619);
+                                --selftest proves each of the mode's own reds
+                                on a scratch copy
 
 The published numbers in docs/unknown-rate.md are pasted from `emit` and
 held there by `check` (wired into spike/acceptance.sh): the block between
@@ -50,7 +58,7 @@ CORPUS_COLS = ["id", "group", "tool", "cls", "judge", "launcher", "args",
 GEN_COLS = ["id", "date", "dir", "groups", "status"]
 EXCLUSION_COLS = ["id", "reason"]
 GEN_STATUSES = ("complete", "unstarted")
-GROUPS = ("A", "B", "control")
+GROUPS = ("A", "B", "B2", "control")
 OUTCOME_COLS = ["tool", "disposition", "source"]
 # The sweep's own record, one row per trial. `rsha` (#349) is the report's sha256, which
 # binds the file at `rpath` to the sweep that wrote it rather than to a name; a funnel
@@ -478,6 +486,7 @@ GROUP_HEADINGS = (
     ("A", "A-group (the engine's development input — not the threshold basis)"),
     ("control", "Control trials (outside every denominator)"),
     ("B", "B-group (mechanically selected; the threshold basis)"),
+    ("B2", "B2-group (mechanically selected on trixie after v1.5; measured, no threshold)"),
 )
 OUTCOME_HEADING = "Outcome ratio (A-group, per the committed disposition map)"
 DETAIL_WIDE = "| trial | tool | class | judge | verdict | unknown_reason | flags |"
@@ -707,7 +716,11 @@ def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions):
             continue
         L.append("")
         L.append(f"#### {gname}")
-        if group == "B":
+        # Both mechanically selected groups print the funnel table: a wall row
+        # runs no engine and only this shape has a column for it. The wide
+        # table loops over trials alone, so a group sent there loses its walls
+        # in silence (the first draft of #619 sent B2 there).
+        if group in ("B", "B2"):
             L.append("")
             L.append("| target | class | funnel stage | verdict | unknown_reason |")
             L.append("|---|---|---|---|---|")
@@ -770,7 +783,7 @@ def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions):
     L.append("Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists on macOS,")
     L.append("so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own")
     L.append("evidence and is unchanged; a Linux UNKNOWN is not re-derived):")
-    for group in ("A", "B"):
+    for group in ("A", "B", "B2"):
         g = [t for t in trials if t["group"] == group]
         if not g:
             continue
@@ -1408,8 +1421,291 @@ def check(root):
           f"{apparatus_images} apparatus image lines read; {n_class} class exclusions matched "
           f"to refusal-table rows")
 
+# --- The B2 selection chain (#619, ADR 0073) ---------------------------------
+#
+# A mode of its own rather than a branch of `check`, for the reason
+# spike/check-ledger-prose.sh gives for the same shape: `check` runs against
+# every committed fixture tree, whose toy pages carry no B2 files, so a
+# fail-closed reader there would go red on the two fixtures required to pass
+# and take the failure of the rest away from the predicates they exist to
+# prove. The live tree is the only tree with a B2 selection; acceptance runs
+# this mode on it beside `check`, and `--selftest` proves the mode's own reds
+# on a scratch copy the way that script does.
+
+# The five ledgers whose names must be excluded: file, and the tab-separated
+# column the name sits in (None for a one-name-per-line file). corpus.tsv is
+# the A-group and its control (and the B rows again, harmlessly): without it
+# the page's "the A-group and its control" rested on prose — its first review
+# found borg and hg covered by nothing.
+B2_LEDGERS = (
+    ("spike/unknown-rate/b-targets.txt", None),
+    ("spike/unknown-rate/b-exclusions.txt", 0),
+    ("spike/unknown-rate/corpus.tsv", 2),
+    ("spike/outcome-funnel.tsv", 1),
+    ("spike/upstream-reports.tsv", 3),
+)
+B2_FILES = ("b2-candidates.txt", "b2-targets.txt", "b2-exclusions.txt",
+            "b2-exclusion-aliases.tsv", "b2-order-key.txt", "b2-selection-record.txt")
+B2_MIN = 20  # the floor #619 sets; N itself is select-b2.sh's, and the record names it
+
+
+class B2Error(Exception):
+    """A refusal of the B2 selection chain — raised, not printed, so --selftest can read it."""
+
+
+def _b2_lines(root, rel):
+    p = root / rel
+    if not p.exists():
+        raise B2Error(f"{rel} is missing — the B2 selection chain cannot be checked")
+    return [l for l in p.read_text().splitlines() if l and not l.startswith("#")]
+
+
+def b2_order(cands, key):
+    """select-b2.sh's order: sha256("<package>\\t<key>") ascending, the name breaking a tie."""
+    return sorted(cands, key=lambda p: (hashlib.sha256(f"{p}\t{key}".encode()).hexdigest(), p))
+
+
+def b2_selection(root):
+    ur = "spike/unknown-rate/"
+    cands = _b2_lines(root, ur + "b2-candidates.txt")
+    if len(set(cands)) != len(cands):
+        raise B2Error("b2-candidates.txt lists a package twice")
+    # The one figure the page states about the pool, held to the file the way
+    # check-ledger-prose.sh holds the cohort counts: read out of its own
+    # sentence, and an anchor that stops matching is a failure, not a skip.
+    page = root / "docs/unknown-rate.md"
+    if not page.exists():
+        raise B2Error("docs/unknown-rate.md is missing — the pool size it states cannot be checked")
+    stated = re.findall(r"is `b2-candidates\.txt` \((\d+) packages\)", page.read_text())
+    if len(stated) != 1:
+        raise B2Error("docs/unknown-rate.md does not state the B2 pool size exactly once in the "
+                      "sentence this reads (is `b2-candidates.txt` (N packages)) — the anchor moved")
+    if int(stated[0]) != len(cands):
+        raise B2Error(f"docs/unknown-rate.md says the B2 pool has {stated[0]} packages and "
+                      f"b2-candidates.txt lists {len(cands)}")
+    targets = _b2_lines(root, ur + "b2-targets.txt")
+    excl = {}
+    for line in _b2_lines(root, ur + "b2-exclusions.txt"):
+        f = line.split("\t")
+        if len(f) != 2 or not f[0] or not f[1]:
+            raise B2Error(f"b2-exclusions.txt row does not have 2 columns: {line!r}")
+        if f[0] in excl:
+            raise B2Error(f"b2-exclusions.txt lists {f[0]!r} twice")
+        excl[f[0]] = f[1]
+    keys = _b2_lines(root, ur + "b2-order-key.txt")
+    if len(keys) != 1:
+        raise B2Error(f"b2-order-key.txt carries {len(keys)} keys, not one")
+    key = keys[0]
+    record = _b2_lines(root, ur + "b2-selection-record.txt")
+    m = re.match(r"generated: select-b2\.sh \(N=(\d+)\)$", record[0]) if record else None
+    if not m:
+        raise B2Error("b2-selection-record.txt does not open with the `generated:` line that names N")
+    n = int(m.group(1))
+    pool = [int(x) for l in record for x in re.findall(r"^pool after predicate: (\d+) packages$", l)]
+    if len(pool) != 1:
+        raise B2Error("b2-selection-record.txt does not state the pool size once")
+    if pool[0] != len(cands):
+        raise B2Error(f"b2-selection-record.txt says the pool has {pool[0]} packages and "
+                      f"b2-candidates.txt lists {len(cands)}")
+    if n < B2_MIN:
+        raise B2Error(f"N={n} is below the {B2_MIN} candidates #619 asks for")
+    if len(targets) != n:
+        raise B2Error(f"b2-targets.txt lists {len(targets)} names and the record says N={n}")
+    # The derivation itself: first N of the keyed order minus the exclusions.
+    # Without this, editing b2-targets.txt keeps everything else "consistent" —
+    # the same pair-edit the B-group's check in `check` closes.
+    derived = [p for p in b2_order(cands, key) if p not in excl][:n]
+    if derived != targets:
+        raise B2Error("b2-targets.txt is not the keyed first-N derivation of b2-candidates.txt "
+                      "minus b2-exclusions.txt")
+    aliases = {}
+    for line in _b2_lines(root, ur + "b2-exclusion-aliases.tsv"):
+        f = line.split("\t")
+        if len(f) != 3 or not f[0] or not f[1]:
+            raise B2Error(f"b2-exclusion-aliases.tsv row does not have 3 columns: {line!r}")
+        name, pkgs, _source = f
+        if name in aliases:
+            raise B2Error(f"b2-exclusion-aliases.tsv lists {name!r} twice")
+        aliases[name] = [] if pkgs == "-" else pkgs.split(";")
+        for p in aliases[name]:
+            if p not in excl:
+                raise B2Error(f"b2-exclusion-aliases.tsv maps {name!r} to {p!r}, a package "
+                              f"b2-exclusions.txt does not carry")
+    # Coverage: every name the ledgers spell is a package in the exclusions or a
+    # name the alias table resolves (to packages already held above, or to `-`).
+    n_names = 0
+    for rel, col in B2_LEDGERS:
+        for line in _b2_lines(root, rel):
+            f = line.split("\t")
+            if col is not None and len(f) <= col:
+                raise B2Error(f"{rel} row has {len(f)} column(s), fewer than the {col + 1} its "
+                              f"name sits in: {line!r}")
+            name = (line if col is None else f[col]).strip()
+            if not name:
+                continue
+            n_names += 1
+            if name in excl or name in aliases:
+                continue
+            raise B2Error(f"{name!r} ({rel}) is not covered: neither a package in "
+                          f"b2-exclusions.txt nor a name in b2-exclusion-aliases.tsv")
+    print(f"count.py b2-selection: OK — {len(targets)} targets are the keyed first-{n} of "
+          f"{len(cands)} candidates minus {len(excl)} exclusions; {n_names} ledger names "
+          f"covered through {len(aliases)} aliases")
+
+
+def b2_selftest(root):
+    """Every refusal `b2_selection` and `_b2_lines` can raise, seen red once on a
+    scratch copy mutated one way at a time — nineteen raise sites, twenty-two
+    mutations (the derivation is proven twice, by a swap and by a changed key; the
+    short-row refusal once per ledger read past column 0, three times), one green
+    baseline: twenty-three proofs.
+
+    Counted rather than narrated: the number of proofs that ran is asserted at the
+    end, the reason check-ledger-prose.sh gives (its first cut reported fifteen and
+    had run thirteen). The first cut of THIS function proved three predicates and
+    called it "each refusal above"; its review counted the raise sites.
+    """
+    import shutil
+    import tempfile
+    ur = "spike/unknown-rate/"
+    files = [ur + f for f in B2_FILES] + [rel for rel, _ in B2_LEDGERS] + ["docs/unknown-rate.md"]
+    ran = 0
+
+    def fresh():
+        tmp = Path(tempfile.mkdtemp(prefix="b2-selftest-"))
+        for rel in files:
+            dst = tmp / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(root / rel, dst)
+        return tmp
+
+    def expect(label, mutate, want):
+        nonlocal ran
+        tmp = fresh()
+        try:
+            mutate(tmp)
+            try:
+                b2_selection(tmp)
+            except B2Error as e:
+                if want not in str(e):
+                    die(f"selftest {label}: died, but not on its predicate — {e}")
+                ran += 1
+                return
+            die(f"selftest {label}: the mutation passed — the mode is blind to it")
+        finally:
+            shutil.rmtree(tmp)
+
+    tmp = fresh()
+    try:
+        b2_selection(tmp)
+    except B2Error as e:
+        die(f"selftest baseline: the unmutated copy is red — {e}")
+    finally:
+        shutil.rmtree(tmp)
+    ran += 1
+
+    def lines_of(tmp, rel):
+        return (tmp / rel).read_text().splitlines()
+
+    def write(tmp, rel, lines):
+        (tmp / rel).write_text("\n".join(lines) + "\n")
+
+    def append(tmp, rel, line):
+        with (tmp / rel).open("a") as f:
+            f.write(line + "\n")
+
+    def first_data(tmp, rel):
+        return next(l for l in lines_of(tmp, rel) if l and not l.startswith("#"))
+
+    def edit_record(tmp, fn):
+        rel = ur + "b2-selection-record.txt"
+        write(tmp, rel, fn(lines_of(tmp, rel)))
+
+    # One mutation per raise site, in the order the sites are reached.
+    expect("candidate-twice",
+           lambda t: append(t, ur + "b2-candidates.txt", first_data(t, ur + "b2-candidates.txt")),
+           "b2-candidates.txt lists a package twice")
+    expect("page-missing",
+           lambda t: (t / "docs/unknown-rate.md").unlink(),
+           "docs/unknown-rate.md is missing")
+    expect("page-anchor-moved",
+           lambda t: write(t, "docs/unknown-rate.md",
+                           [l.replace("packages)", "package)") for l in lines_of(t, "docs/unknown-rate.md")]),
+           "the anchor moved")
+    expect("page-pool-wrong",
+           lambda t: write(t, "docs/unknown-rate.md",
+                           [re.sub(r"is `b2-candidates\.txt` \(\d+ packages\)", "is `b2-candidates.txt` (1 packages)", l)
+                            for l in lines_of(t, "docs/unknown-rate.md")]),
+           "says the B2 pool has")
+    expect("exclusion-columns",
+           lambda t: append(t, ur + "b2-exclusions.txt", "fx-onecolumn"),
+           "b2-exclusions.txt row does not have 2 columns")
+    expect("exclusion-twice",
+           lambda t: append(t, ur + "b2-exclusions.txt", first_data(t, ur + "b2-exclusions.txt")),
+           "b2-exclusions.txt lists")
+    expect("two-keys",
+           lambda t: append(t, ur + "b2-order-key.txt", "1" * 40),
+           "keys, not one")
+    expect("record-no-generated-line",
+           lambda t: edit_record(t, lambda L: ["planted by b2_selftest"] + L[1:]),
+           "does not open with the `generated:` line")
+    expect("record-no-pool-line",
+           lambda t: edit_record(t, lambda L: [l for l in L if not l.startswith("pool after predicate:")]),
+           "does not state the pool size once")
+    expect("record-pool-wrong",
+           lambda t: edit_record(t, lambda L: [re.sub(r"^pool after predicate: \d+", "pool after predicate: 1", l) for l in L]),
+           "says the pool has")
+    expect("n-below-floor",
+           lambda t: edit_record(t, lambda L: [re.sub(r"\(N=\d+\)", f"(N={B2_MIN - 1})", l) for l in L]),
+           "is below the")
+    expect("targets-short",
+           lambda t: write(t, ur + "b2-targets.txt", lines_of(t, ur + "b2-targets.txt")[1:]),
+           "names and the record says N=")
+
+    def swap(t):
+        L = lines_of(t, ur + "b2-targets.txt")
+        L[0], L[1] = L[1], L[0]
+        write(t, ur + "b2-targets.txt", L)
+
+    expect("swap", swap, "not the keyed first-N derivation")
+    expect("rekey",
+           lambda t: write(t, ur + "b2-order-key.txt", ["0" * 40]),
+           "not the keyed first-N derivation")
+    expect("alias-columns",
+           lambda t: append(t, ur + "b2-exclusion-aliases.tsv", "fx-tool\tfx-package"),
+           "b2-exclusion-aliases.tsv row does not have 3 columns")
+    expect("alias-twice",
+           lambda t: append(t, ur + "b2-exclusion-aliases.tsv", first_data(t, ur + "b2-exclusion-aliases.tsv")),
+           "b2-exclusion-aliases.tsv lists")
+    expect("alias-dangling",
+           lambda t: append(t, ur + "b2-exclusion-aliases.tsv", "fx-tool\tfx-package\tplanted by b2_selftest"),
+           "does not carry")
+    # Once per ledger read by a column past the first, not once for the loop: the
+    # column number is data, and a proof on one ledger says nothing about the
+    # others. A ledger read at column 0 cannot have a row too short for it — a
+    # one-cell line still has a cell 0 — so that refusal is unreachable there and
+    # the mutation would die on coverage instead; it is not planted.
+    for rel, col in B2_LEDGERS:
+        if not col:
+            continue
+        expect(f"ledger-row-short:{rel}",
+               lambda t, rel=rel: append(t, rel, "planted-by-b2-selftest"),
+               "fewer than the")
+    expect("ledger-name-uncovered",
+           lambda t: append(t, "spike/outcome-funnel.tsv",
+                            "\t".join(["selftest", "fx-nowhere", "attempted", "unknown", "wall",
+                                       "-", "spike/selftest", "-", "planted by b2_selftest"])),
+           "is not covered")
+    expect("file-missing",
+           lambda t: (t / ur / "b2-targets.txt").unlink(),
+           "is missing")
+    if ran != 23:
+        die(f"selftest: {ran} proofs ran, 23 expected")
+    print(f"count.py b2-selection --selftest: {ran} ok (baseline green, 22 mutations red on their own predicate)")
+
+
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check", "ledger-sizes"):
+    if len(sys.argv) < 2 or sys.argv[1] not in ("emit", "check", "ledger-sizes", "b2-selection"):
         print(__doc__)
         sys.exit(2)
     if "--root" in sys.argv:
@@ -1420,6 +1716,14 @@ def main():
         sys.stdout.write(emit(root))
     elif sys.argv[1] == "ledger-sizes":
         ledger_sizes(root)
+    elif sys.argv[1] == "b2-selection":
+        if "--selftest" in sys.argv:
+            b2_selftest(root)
+        else:
+            try:
+                b2_selection(root)
+            except B2Error as e:
+                die(str(e))
     else:
         check(root)
 

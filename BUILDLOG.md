@@ -2,6 +2,121 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-18 — B2's list is committed before any candidate meets the engine, and what the predicate, the key and the number were chosen from (#619, first of three)
+
+**What this merge is.** The first of three: the selection protocol, the exclusions, the alias
+table, the engine pin, the rules on `docs/unknown-rate.md`, ADR 0073, and the generated list of
+thirty. No define exists yet and no candidate has been run through Sideeye — that is the point of
+cutting here. The B-group merged its list and its defines together (#142); #619's first acceptance
+condition says the list must be committed before any candidate runs, and writing a define runs
+`preflight` against the candidate, so the list is a merge of its own.
+
+**Measured before choosing the predicate, on trixie 13.7 (arm64 lists, 25,280 tagged packages).**
+The old predicate on the new archive: 52 packages with the old four languages, 58 with the nine the
+first table is now written in. `use::` state-changing tags alone, nine languages: 466; plus the
+file-shaped `works-with::` families: still 466 (every one already carried one); plus
+`interface::commandline`: **289**, and no Rust, because `implemented-in::rust` is not in the
+vocabulary at all (`c` 2,476, `c++` 932, `perl` 821, `python` 523 among `role::program`; `ruby` 41,
+`php` 40, `haskell` 28, `ecmascript` 16). The language split was first written as 166 C, 71 Perl,
+33 C++, 26 Python, 5 Haskell, 4 Ruby, 3 Java, 1 PHP — which sums to 309, not 289, because a package
+carrying two language tags was counted in both; the diff review added it up. Counted again by
+package: 275 carry one first-table language tag (155 C, 58 Perl, 30 C++, 23 Python, 4 Haskell,
+3 Java, 2 Ruby), 12 carry two, one three and one seven; the PHP package is among the multi-tagged.
+The predicate was fixed from those counts and the tags' meanings; no candidate name was looked at
+until the script printed the thirty, and nothing was changed after it did. The first thirty of the
+keyed order are in `b2-targets.txt`; the record carries the hash beside each.
+
+**The order is a keyed hash and the key is the v1.5.0 tag's commit.** The page already records that
+the alphabetical head of the first pool was heavy in database-server tooling (nine of twenty behind
+W2). A seed chosen by hand leaves room to try seeds; a commit id chosen before the pool exists
+leaves the least room, and ADR 0073 says how much is left — choosing the key is a human act. The
+Python side sorts `(hash, name)` and the shell side `LC_ALL=C sort -k1,1 -k2,2`, which agree on
+lowercase hex.
+
+**N is 30**, from the first funnel's 7 of 20 and the wish that one trial not move the rate by a
+seventh. That is an expectation. The reviewer asked for an estimate from the thirty candidates'
+tags before committing; declined — reading the candidates before the list is frozen is the hand the
+protocol keeps out, and the funnel table is where the number is measured.
+
+**The engine is the tarball.** `sideeye-v1.5.0-aarch64-linux.tar.gz` (sha256 `f81c58a3…4815`, the
+digest GitHub publishes) holds `sideeye`, `libsideeye_shim.so` and the two licence files, flat —
+so `sweep.sh` will stage it in the `zig-out` layout before mounting, and the mount point has to
+exist inside the read-only `/work` bind (the same EROFS the sweep already documents for
+`artifacts/`). `engine-pins.tsv` is committed now; the sweep-side reading lands with the defines.
+
+**What the plan's review took off the table before any code.** A fresh reviewer read the plan
+against `count.py`, `sweep.sh`, `bgroup.sh` and the page, and three of its findings changed the
+apparatus design: `emit_generation` prints the funnel table — the only shape with a column for a
+wall — under `group == "B"` alone, so a B2 group sent to the wide table would have lost its thirty
+walls in silence; a per-define `clock.tsv` would have changed the define digest after the sweep,
+because `final` lands after it; and `count.py check` binds a completed generation's manifest argv
+to `launcher args` (line 1231), so a defines-directory argument on the old B rows would have broken
+g1's record. The launcher keeps its name and arguments, derives the defines directory from what
+exists, and `sweep.sh` picks the image by group. Two more moved the rules: a second leg refused
+`syscalls_may_have_killed` is the mode's side effect and the published wall is the first leg's
+(the refusal's own `next_step` asks for the default-mode comparison, which the first leg is); and
+`legs.tsv` carries a sha256 per leg, because without one the "two legs" check would have passed on
+two lines nobody had to earn. And one moved a sentence: the plan had said criterion 4's status
+would not move on B's re-measurement; the page's frozen threshold says a B sweep failing part 1 is
+§18 material, so the page governs and the ruling is the owner's, dated, after the number.
+
+**`count.py b2-selection` is a mode, not a branch of `check`.** `check` runs on 55 committed fixture
+trees whose toy pages carry no B2 files; a fail-closed reader there goes red on the two fixtures
+required to pass and hollows out every other red. The same reason `check-ledger-prose.sh` is
+separate. The mode holds the derivation (first N of the keyed order minus the exclusions, N from
+the record's own line), the alias table (every package it names is excluded) and the coverage
+(every name in `b-targets.txt`, `b-exclusions.txt`, `corpus.tsv`, `spike/outcome-funnel.tsv` and
+`spike/upstream-reports.tsv` is a package in the exclusions or a name in the aliases). Its
+`--selftest` copies the twelve files into a scratch tree and runs twenty-three proofs: the baseline
+green, then one mutation per refusal the mode can raise — nineteen raise sites, the derivation proven
+twice (two names swapped, the key replaced), the short-row refusal once per ledger read past column 0
+(three) — each red on its own message, and the count of proofs asserted. Adding `B2` to `GROUPS` moved the pinned message of the `gen-group-unknown` fixture from
+`A/B/control` to `A/B/B2/control`; the acceptance row moved with it.
+
+**What the diff review found, and what moved.** Five things. The page and `engine-pins.tsv`'s
+header described the second merge's apparatus in the present tense — `legs.tsv`, the two-leg
+launcher, `sweep.sh` reading the pin, `count.py check` refusing without the line, `b2-clock.sh` —
+none of which exists in this checkout; a reader who grepped would have found the page wrong. They
+say "will" now, and the B2 section opens by saying which merge this is. The selftest's docstring
+claimed "each refusal above" while proving three predicates out of fifteen raise sites; it proves
+every one now, counted. `corpus.tsv` was not among the ledgers the coverage check reads, so "the
+A-group and its control" rested on prose — and `borg` and `hg` were covered by nothing (their
+packages `borgbackup` and `mercurial` were excluded, the ledger spellings were not); it is the fifth
+ledger and the alias table maps both. Two packages this project had already met were not excluded:
+`p7zip` (the dogfood selection turned `7zz` away; `7zip` and `p7zip-full` were listed, `p7zip` was
+not — 37th in the keyed order, seven places behind the thirty) and `offlineimap` (cohort 4's
+rejection table; `offlineimap3` was listed). Both are excluded now; neither was in the thirty, so
+`b2-targets.txt` is unchanged and `count.py b2-selection` re-derives the same list. And the language
+split, above. Its tail, which arrived after the second reviewer had been started, carried five
+smaller things and all five are in: `spike/unknown-rate/engine/` was described as ignored by git and
+was not in `.gitignore`; the acceptance leg threw the selftest's output away, so a red would have
+said only that something failed; a ledger row with too few columns raised an `IndexError` rather
+than a refusal naming the file and the line; the page's `289` was held by nothing — the mode now
+reads the sentence that states it and holds it to `b2-candidates.txt`, the anchor's disappearance
+a failure, while the language split is stated on the page as counted once and recomputed by no
+check; and the page's opening still said the measurement lands in two merges, which is true of
+#84's and not of B2's. The selftest went from seventeen proofs to twenty-one with the four new raise
+sites. The second review was told of these after it had started, read the tree again, and confirmed
+all five. It also found that "four machine-readable ledgers" had been left standing in ADR 0073 and
+in `b2-exclusions.txt`'s header after `corpus.tsv` made it five — the body corrected, the count
+beside it not — and that the page still said the mode "holds three things" after the pool-size hold
+made it four; both are corrected. Its last point is for the second merge: the B-group's corpus rows
+are held to `b-targets.txt` by `count.py check`, and the B2 rows will need the same binding to
+`b2-targets.txt` when they are added, or "committed before any of them ran" could be broken in
+silence by a corpus row that names a target the list does not. The short-row proof went from one
+ledger to one per ledger read by column, on the review's point that a column number is data and a
+proof on one file says nothing about the others — and the first cut of that loop planted a short
+row in `b-exclusions.txt` too, which is read at column 0, where no row is too short: the mutation
+died on coverage instead, and the pipe the rc was read through (`| tail -1`) reported `tail`'s zero
+rather than the selftest's one. Read without the pipe, red; the loop skips column 0 now, with the
+reason beside it: twenty-three proofs.
+
+**What is held by nothing.** The `read` rows of `b2-exclusions.txt` come from prose tables (the
+dogfood rejection tables, cohort 4's candidate list) and were typed by hand; the alias table's
+package names are from memory of the archive. A tool the project met under a package name neither
+file carries is wall W0 at authoring, and the page says a W0 row is a defect in the alias table,
+recorded and not corrected after the fact.
+
 ## 2026-09-17 — v1.5.0: the block read against itself, and two sentences later entries had overtaken
 
 Seventeen entries, four days and 72 commits since v1.4.0 (19 on the first parent, 27 merges) when this was read: 10 Added, 2 Changed, 5 Fixed. One contract version in the block — v18 (#539, ADR 0067).
