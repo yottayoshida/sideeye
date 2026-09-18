@@ -1,0 +1,2 @@
+# the FLAC encoder pacpl calls for --to flac (an external program, not a Depends)
+flac

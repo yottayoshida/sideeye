@@ -1,0 +1,2 @@
+# the TrueType font the define seeds from (DejaVu Sans)
+fonts-dejavu-core

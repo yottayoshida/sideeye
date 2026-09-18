@@ -1,0 +1,1 @@
+pacpl --to flac $TOY_STATE/a.wav

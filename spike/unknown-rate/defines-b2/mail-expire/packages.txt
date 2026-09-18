@@ -1,0 +1,2 @@
+# Date::Parse, which mail-expire loads at start and its Depends do not pull in
+libtimedate-perl

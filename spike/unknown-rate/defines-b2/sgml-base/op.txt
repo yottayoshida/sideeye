@@ -1,0 +1,1 @@
+update-catalog --add $TOY_STATE/central.cat $TOY_STATE/ordinary.cat

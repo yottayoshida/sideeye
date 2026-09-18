@@ -1,0 +1,1 @@
+dirconv -r $TOY_STATE

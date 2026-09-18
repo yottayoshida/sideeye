@@ -1,6 +1,6 @@
 # 0073 — B2 is selected by a committed predicate and a keyed order, and measured with the released engine
 
-Status: Accepted (2026-09-18)
+Status: Accepted (2026-09-18; first implementing PR merged as `315f244`, 2026-09-18)
 
 ## Context
 
@@ -55,13 +55,13 @@ afternoon and is not when the selection must be committed days before the sweep 
    replaced, and the table is not corrected after the fact.
 
 6. **The engine is the released `v1.5.0` tarball**, pinned by tag, asset and the digest
-   GitHub publishes in `engine-pins.tsv` (committed with the first merge); `sweep.sh`
-   will fetch and verify it and mount it at `/work/zig-out` in place of a build, and
-   `apparatus.txt` will record the pin beside the two digest lines it already carries
-   (the second merge).
+   GitHub publishes in `engine-pins.tsv` (committed with the first merge);
+   `fetch-engine.sh` fetches and verifies it and `sweep.sh` mounts it at `/work/zig-out`
+   in place of a build, and `apparatus.txt` records the pin beside the two digest lines
+   it already carried (the second merge).
 
-7. **One launcher, same name and arguments, two observation legs.** `bgroup.sh` will
-   gain (the second merge) `preflight --twice`, a second `explore` under
+7. **One launcher, same name and arguments, two observation legs.** `bgroup.sh` gained
+   (the second merge) `preflight --twice`, a second `explore` under
    `--observe syscalls` when the first refuses with a `next_step` that names that mode,
    and `legs.tsv` binding each leg's report by sha256. The verdict is the last leg's; a second leg refused
    `syscalls_may_have_killed` is the mode's side effect, and the wall published is the

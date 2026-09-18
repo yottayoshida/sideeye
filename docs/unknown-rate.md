@@ -123,10 +123,10 @@ threshold set from it would be satisfied by construction. So:
   (no hand-picking; see below). **The threshold is set from B-group data
   only.**
 - **B2-group** — a second never-run set, selected mechanically from Debian 13
-  after v1.5 shipped (#619, ADR 0073; its own subsection below). To be
-  measured in generation g3 on the released v1.5.0 engine, beside a
-  re-measurement of the B-group on the same engine that will be published as a
-  historical comparison and not as fresh evidence. No threshold is set from B2.
+  after v1.5 shipped (#619, ADR 0073; its own subsection below). Measured in
+  generation g3 on the released v1.5.0 engine, beside a re-measurement of the
+  B-group on the same engine that is published as a historical comparison and
+  not as fresh evidence. No threshold is set from B2.
 - A-group, B-group and B2-group are never pooled; no combined headline number
   exists on this page or anywhere else.
 
@@ -282,15 +282,16 @@ threshold set from it would be satisfied by construction. So:
   its selection protocol and its target list merge before any define exists,
   the defines merge before the sweep runs, and the results merge last, so the
   first-parent order shows the names were fixed before anything ran against
-  them. Generation g3 will measure B2 and re-measure B on one engine — the
+  them. Generation g3 measures B2 and re-measures B on one engine — the
   released v1.5.0 build, pinned in `engine-pins.tsv`, not a build of the
-  checkout — and publish the two in separate tables, never pooled: B's g3
-  figures will be a historical comparison against the names g1 measured, B2's
-  the fresh reading. No threshold is set from B2, and none is set before its
+  checkout — and publishes the two in separate tables, never pooled: B's g3
+  figures are a historical comparison against the names g1 measured, B2's the
+  fresh reading. No threshold is set from B2, and none is set before its
   number is published. B's g3 figures are evaluated against the threshold below
   as any B sweep's are, and what that comes to is recorded rather than decided
-  here. The protocol is in the corpus section, under B2; the first of the three
-  merges is the one this page describes as of this revision.
+  here. The protocol is in the corpus section, under B2; the second of the
+  three merges is the one this page describes as of this revision, with g3
+  unstarted.
 
 ## The corpus
 
@@ -438,13 +439,37 @@ engine wrote against targets whose selection was committed before any of them
 was run.** That sentence is the group's promise; what follows is what holds it.
 
 **Where this section stands.** Three merges carry B2, and this revision of the
-page is the first: the protocol, the list, the exclusions and the engine pin
-are committed, and `count.py b2-selection` holds them. The defines, the
-two-leg launcher, `legs.tsv`, the readers of the engine pin in `sweep.sh` and
-`count.py check`, and `b2-clock.sh` land with the second merge; the artifacts
-and the numbers with the third. Until then, the paragraphs below that name
-those pieces say what the second merge is held to, not what the checkout does
-today — the footing the Results section stood on before the first sweep ran.
+page is the second: the protocol, the list, the exclusions and the engine pin
+came with the first (`315f244`), and this one brings the thirty defines under
+`defines-b2/`, the two-leg launcher, `legs.tsv`, the readers of the engine
+pin in `sweep.sh` and `count.py check`, the authoring clock, and the corpus
+rows and the g3 row — unstarted, so the Results section carries g3's
+placeholder. The artifacts and the numbers come with the third merge; until
+it lands, nothing below is a measurement of B2.
+
+**What the thirty are, as authored** (`corpus.tsv`, the `b2-*` rows, in the
+keyed order; every directory under `defines-b2/` carries a `NOTES.md` quoting
+the manual it was decided from). Nineteen reached a define; eleven are walls,
+none of them W0 or W1 — five W2 (a DVD or CD drive, a web server, a Debian
+mirror: dvdbackup, httrack, debmirror, mp3roaster, crip) and six W3 (readers
+that print, packages with no command of their own, an interactive
+configurator: zbar-tools, aggregate, pgdbf, debian-cd, migrationtools,
+emacspeak). Two defines carry the shell's redirects as their documented
+invocation (roffit, zh-autoconvert — their `NOTES.md` say what a verdict is
+then about); one declares a measured exit convention (otf2bdf, `8`); one is
+committed knowing its recording fails (unmass — the binary dies with SIGSEGV
+on every archive built to the formats it documents, on this platform); five
+name in `packages.txt` a package their environment needs and their Depends
+do not pull in (a font, the `paper` command, an encoder, a preprocessor, a
+Perl module), which the sweep image installs. Each define's `preflight
+--twice` under the released engine is recorded in its `NOTES.md`: fourteen
+accepted, five refused — and the refusals are already a reading of the
+funnel, taken before the sweep and not counted as it: a directory the default
+mode does not count (bs1770gain, `unsupported_syscall_observed`), a write
+from inside stdio whose `next_step` names `--observe syscalls` (otf2bdf), a
+recording that fails (unmass), and two Perl scripts whose encoder or
+compressor is a child that writes the state (pacpl, mail-expire,
+`child_touched_state_dir`). The sweep is what turns those into rows.
 
 **Why a second group.** The B-group above was swept on 2026-08-16 by the v0.9.0
 engine (contract v10). Since then the define surface and the engine moved —
@@ -524,57 +549,83 @@ the alias table was short; it is recorded, and the table is not corrected
 after the fact. And, as for the B-group: **this page is the record** that the
 30 names in `b2-targets.txt` were read by this project.
 
-**The run contract**, for every target past the walls, will be
-`launchers/bgroup.sh` — keeping its name and its arguments, so the B rows of
+**The run contract**, for every target past the walls, is
+`launchers/bgroup.sh` — its name and its arguments unchanged, so the B rows of
 `corpus.tsv`, held to their g1 manifest by the argv binding above, do not
-change — with one uniform minimal define under `defines-b2/<t>/`: `setup.sh`;
-the one representative state-changing command from the target's own
-documentation as `op.txt` or, where the space-split contract cannot spell it,
-an `op.sh` naming its program by absolute path (the correction above); an
-optional `env.sh`; and an optional `expect-status.txt` carrying the exit
-convention the target's documentation states (cookietool's refusal was the
-uniform protocol's `0`, not the target's). Judge `l0`, strict oracle. Three
-legs, each recorded: `preflight --twice`, whose answer is the funnel
-instrument and never the verdict; an `explore` under the default observation
-mode; and, only when that explore refuses with a `next_step` naming
-`--observe syscalls`, a second `explore` under that mode. **The verdict is the
-last leg's.** `legs.tsv` beside the reports will name each leg's mode,
-verdict, reason, report path and sha256, and `report.json` — the file the
-manifest binds — will be a copy of the last leg's; `count.py check` will open
-each leg, recompute the digests, and refuse a trial whose second leg exists
-without the first having asked for it, is missing when the first did, or whose
-`report.json` is not the last leg's bytes. When the second leg refuses too,
-the tables will print both reasons; a second leg refused
-`syscalls_may_have_killed` is read as the mode's side effect and not as the
-target's own wall — its wall is the first leg's reason, and the first leg,
-being the default-mode run that refusal's own `next_step` says to compare
-against, is the comparison. No invariant is weakened to reach a verdict. The
-B rows re-measured in g3 will run through the same launcher, so their first
-leg is the g1 protocol plus the `--twice` answer, and any second leg is
+change; the launcher finds the define under `defines-b/` or `defines-b2/` by
+which exists — with one uniform minimal define under `defines-b2/<t>/`:
+`setup.sh`; the one representative state-changing command from the target's
+own documentation as `op.txt` or, where the space-split contract cannot spell
+it, an `op.sh` naming its program by absolute path (the correction above); an
+optional `env.sh`; an optional `expect-status.txt` carrying the target's exit
+convention (cookietool's refusal was the uniform protocol's `0`, not the
+target's — where the manual states none, the measured status and the
+measurement are in the `NOTES.md`); and an optional `packages.txt` naming the
+Debian packages the define's environment needs beyond the target, which
+`b2-preflight.sh` installs while authoring and `Dockerfile.b2` installs for
+the sweep (authoring runs the launcher itself, stopped after its first leg,
+so a define is read while it is written exactly as the sweep will read it).
+Judge `l0`, strict oracle. Three legs, each recorded: `preflight
+--twice`, whose answer is the funnel instrument and never the verdict; an
+`explore` under the default observation mode; and, only when that explore
+refuses with the `next_step` that asks for `--observe syscalls` (matched on
+that step's opening sentence, because the `syscalls_may_have_killed` step
+names the flag too, in a sentence that says the opposite), a second `explore`
+under that mode. **The verdict is the last leg's.** `legs.tsv` beside the
+reports names each leg's mode, verdict, reason, report path and sha256, and
+`report.json` — the file the manifest binds — is a copy of the last leg's;
+`count.py check` opens each leg, recomputes the digests, holds the verdict
+and the reason to the leg's own report, and refuses a trial whose second leg
+exists without the first having asked for it, is missing when the first did,
+or whose `report.json` is not the last leg's bytes — and a B2 trial with no
+`legs.tsv` at all, since the launcher writes one for every trial it runs and a
+verdict without legs behind it did not come through the protocol. The mode
+column is the
+one cell the report cannot confirm — a report has no field for the flag it
+ran under — so it is the launcher's record of which flag it passed. When
+the second leg refuses too, the tables print both reasons; a second leg
+refused `syscalls_may_have_killed` is read as the mode's side effect and not
+as the target's own wall — its wall is the first leg's reason, and the first
+leg, being the default-mode run that refusal's own `next_step` says to
+compare against, is the comparison. No invariant is weakened to reach a
+verdict. The B rows re-measured in g3 run through the same launcher, so their
+first leg is the g1 protocol plus the `--twice` answer, and any second leg is
 recorded the same way.
 
 **The engine is the released build.** `engine-pins.tsv` names, per
-generation, the release tag, the asset and its sha256 as GitHub publishes it —
-committed with this merge, read by nothing until the next. `sweep.sh` will
-fetch the asset, refuse on a digest mismatch, unpack it under
-`spike/unknown-rate/engine/` (ignored by git) in the `zig-out` layout, and
-mount it read-only at `/work/zig-out` in place of a build of the checkout, so
-the banner and the two digest lines in `apparatus.txt` describe the shipped
-binary and a further line records the pin it was checked against; a complete
-generation with a pin whose record lacks that line will be refused.
+generation, the release tag, the asset and its sha256 as GitHub publishes it.
+`fetch-engine.sh`, given the generation, reads that row, fetches the asset
+once, refuses on a digest mismatch, and extracts the engine and the shim
+under `spike/unknown-rate/engine/<asset>/` (ignored by git; keyed by the
+asset, so two assets of one tag never share a directory) in the `zig-out`
+layout; `sweep.sh` mounts that read-only at
+`/work/zig-out` in place of a build of the checkout, so the banner and the two
+digest lines in `apparatus.txt` describe the shipped binary, and a further
+line — `engine: release <tag> <asset> <sha256> …` — records the pin it was
+checked against. `count.py check` refuses a complete generation with a pin
+whose record lacks that line.
 
 **Authoring time is recorded, self-reported.** `spike/unknown-rate/b2-clock.tsv`
-will carry one line per event per target — `setup_started`,
+carries one line per event per target — `setup_started`,
 `first_accepted_recording` (the first `preflight` that exited 0), `final` (the
-define committed, or the wall decided) — appended by `b2-clock.sh` when the
+define committed, or the wall decided) — appended by `b2-clock.sh` (and by
+`b2-author.sh` and `b2-preflight.sh`, which stamp the first two) when the
 author reaches that point. It sits outside the define directories, whose bytes
 the manifest's define digest covers. It is what the author wrote down, and
 nothing checks it against a clock; it is published so that reach and authoring
-friction are not read as one number.
+friction are not read as one number. Two things about how it was written:
+the candidates were probed in batches of up to six at a time, so a target's
+`setup_started` is its batch's, and a target read later in the batch carries
+its wait; and the thirty were authored in one sitting — the file's own
+stamps run from the first `setup_started` to the last `final` in twenty-two
+minutes of wall time — so the minutes are that sitting's, not a per-target
+cost in isolation. (The first draft of this sentence said "about an hour and
+a half", the author's impression of the sitting; the file said otherwise and
+the file is the record.)
 
 **No threshold.** The threshold section below is evaluated on the B-group, and
-g3's B figures will be held to it as any B sweep's are — including the
-sentence that a sweep failing part 1 is DESIGN §18 material. Whether criterion 4's status
+g3's B figures are held to it as any B sweep's are — including the sentence
+that a sweep failing part 1 is DESIGN §18 material. Whether criterion 4's status
 moves on that is the owner's call, made after the number exists and recorded
 in `PRD.md` with the date. B2 gets no threshold on this page, and any threshold
 or widening issue the frozen result suggests is filed from that result, not
@@ -894,6 +945,10 @@ Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists o
 so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own
 evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 13/36 (36.1%)
+
+### Generation g3 — not yet measured (B,B2)
+
+_Not yet measured: the sweep has not run. This line is asserted by count.py check._
 <!-- unknown-rate:results:end -->
 
 **The `ctl-pass-mv` control above predates contract v15, and its reason has moved twice.**

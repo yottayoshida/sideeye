@@ -1,0 +1,1 @@
+otf2bdf -p 12 -o $TOY_STATE/out.bdf $TOY_STATE/font.ttf
