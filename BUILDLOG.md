@@ -79,6 +79,106 @@ The second review found that by reading the expression against Actions' rule and
 `always() && steps.thread-kill-lands.conclusion == 'failure'`, and it is still unfalsified: the
 next occurrence is what shows whether the artifact appears. The path is written twice, in the
 step's `env` and in the upload's `path`, and nothing checks that they agree.
+## 2026-09-18 — g3: B2 measured for the first time, B re-measured beside it, and the walls named (#619, third of three)
+
+**The run.** A clean worktree at the second merge (`0b9e5e6`), `sweep.sh g3`, the released
+v1.5.0 asset fetched by generation and mounted read-only over `/work/zig-out` (the apparatus
+record carries the banner `sideeye 1.5.0 (trace contract v18)`, the two digests, the pin line and
+`head: 0b9e5e6…`); two images built — `sideeye-ur-extra` for the B rows, `sideeye-ur-b2` for B2 —
+and fifty corpus rows: twenty B, thirty B2, twenty-four walls that ran nothing and twenty-six
+trials that did, every one of the twenty-six with a `legs.tsv`. Exit 0, no SETUP_ERROR, and
+`count.py check` after the flip to `complete`: 135 measured across the three generations, docs in
+sync, `1 generation(s) held to a pinned release` — the pin rule's first live firing.
+
+**Written down before the results were read** (`artifacts-g3/expected-before-reading.md`, copied
+into the artifacts unedited from the session's scratch after the run, so the claim can be read
+against the file): fifty
+rows, twenty-four walls, twenty-six `legs.tsv`, the pin line, the B2 preflight answers equal to
+the authoring runs' fourteen and five, unmass UNKNOWN, otf2bdf a second leg, and no number for
+anything else. All of the shape held, and so did the two guesses about a verdict (unmass and
+bs1770gain both UNKNOWN) and the one about a leg — otf2bdf: its first leg refused `oracle_missed_operation` (a 4096-byte `write`
+to `out.bdf` the shim did not carry) with the `next_step` that asks for `--observe syscalls`, and
+its second leg reached PASS over 175 crash points, oracle verified. That is the real engine's
+second leg on a real target, which the second merge's review had to leave to g3. The file is
+committed as it was written, errors included, because editing it after the run would defeat the
+point of committing it: its line "g1 had 1/7 UNKNOWN" for the B-group is wrong (g1's B figure is
+3/7; 1/28 is the A-group's), and one clause about otf2bdf is in Japanese. The shape predictions
+are what the file was for, and those are what the paragraph above holds it to.
+
+**B2: 5/19 UNKNOWN (26.3%), 13 PASS, 1 FAIL, past eleven walls.** The five reasons and what each
+is: `child_touched_state_dir` ×2 — pacpl (`flac` writes the state) and mail-expire (`gzip` does) —
+Perl wrappers whose child writes the judged directory, the class `target-classes.md` records as
+"Shell CLIs over helper processes" with a reach of two of two on `pass mv`; here two of two refuse,
+because the wrapper writes there too. `recording_run_failed` — unmass: outside the engine every archive it is given ends in a
+segmentation fault, exit 139; inside the recording the engine decoded the status as 1, and the
+uniform `0` refused it. The first draft wrote "exits 1 on every archive" — the two runs' numbers
+collapsed into one — and set it beside cookietool as a define-budget case, where the define's own
+NOTES file it as the target's failure on this platform; both corrected from the NOTES. `unsupported_syscall_observed` — bs1770gain's `mkdirat`, a README class wall that
+preflight had already named. `kill_did_not_land` — apt-utils: `apt-ftparchive generate` orders
+its state-directory calls differently between runs, so an index does not name the same operation
+twice; that is the target's nondeterminism, and the message says which declaration it
+contradicts. The FAIL is sgml-base: `update-catalog --add` renames `central.cat` aside and then opens its
+replacement, and a crash between the two (crash point 2 of 3) leaves the catalog absent — L0
+atomicity, a window of absence. The first draft of this paragraph, the page and the CHANGELOG each
+called it the 2026-09-16 dogfood's truncate-then-write window in three different spellings; the
+review read the transcript (`after rename`, `before open`, "gone from the crashed state") and
+none of the three matched it — that window leaves an empty file, and in g3 it is hnb's and
+bogofilter-sqlite's shape, not this one. Preflight `--twice`: 14 accepted, 5 refused, the same five as authoring. Final mode:
+25 default, 1 syscalls. Classes: c-cli 1/11, perl-cli 2/5, cxx-cli 2/2, haskell-cli 0/1.
+
+**B, leg by leg against g1.** Five of seven identical to the crash-point count (2vcard 2,
+bogofilter-bdb 7, bogofilter-sqlite FAIL 25, emboss 2, cookietool refused on exit 10). Two moved,
+both as the 2026-09-07 re-measurement on a rebuilt image had said and now on the pinned release
+under the sweep's own apparatus: hnb `child_process_detected` → **FAIL over 3 crash points**
+(`notes.hnb` holding neither content at crash point 3), lbdb `child_process_detected` →
+`child_touched_state_dir`. Neither define changed — the manifest's define digests are the bytes g1
+hashed. 2/7 against 3/7. No B trial was asked for a second leg.
+
+**The threshold, held to and not decided.** Part 2 reads 28.6% and holds. Part 1 is a filing
+question the first draft got wrong twice: it wrote that lbdb was target-origin "as g1 filed it",
+and g1 filed all three of its UNKNOWNs as define-budget (0/7) — the target-origin reading of lbdb
+is a line drawn here, from the page's own 2026-09-07 sentence about its process structure; and it
+left out that `docs/target-classes.md`'s lbdb row records the same operation reaching PASS under
+`--observe syscalls`, which makes the refusal read as a spelling-and-mode gap — define-budget —
+just as well. So the page now records both: target-origin, 1/7 at the edge with g1's robustness
+note gone (cookietool re-filed makes 2/7 and fails); define-budget, 0/7 with the note standing.
+Neither is drawn for the criterion; `PRD.md` carries a dated line that scores nothing, and the
+call is the owner's. The sweep did not run lbdb (or pacpl, or mail-expire) under the mode that
+class reaches verdicts in, because the run contract takes a second leg only from a `next_step`
+that names the mode and `child_touched_state_dir`'s step does not — the page says so where each
+of the three is described. **No threshold is set from B2**, and the dominant wall is named without a filing:
+W3 (six of thirty, no documented non-interactive writer) in the funnel, `child_touched_state_dir`
+(two of five) among the refusals.
+
+**A count that reads two ways.** B had thirteen walls of twenty; B2 has eleven of thirty. The
+page says why in one sentence — B's predicate aimed at `works-with::pim|db`, the server-backed
+family, and B2's file families did not — and stops there: two predicates, two archives and two
+engines differ between the groups, so the difference is described and not attributed. (The first
+draft of the page's sentence had a colon where this paragraph has "and stops there" — an
+attribution by punctuation; the cleanup pass read it as one, and the page now gives the
+composition and no cause.)
+
+**Review of the diff, round one** (a fresh reviewer; it matched all fifty manifest rows to the two
+tables, every crash-point count and reason to its report, and the B define digests to g1's
+manifest — all agreed). No P0. Three P1, all taken and each recorded above where the paragraph it
+corrected now stands: lbdb's filing (drawn here, not in g1; and the mode that reaches its verdict
+is on record and was not run), unmass's two exit statuses collapsed into one and its
+classification inverted against its own notes, and sgml-base's window described as the wrong
+shape in three spellings. Five P2, all taken: the page's older sentence "what is still not
+re-measured is the sweep itself" was false once g3 had run all seven B trials, and now dates the
+re-measurement; "three of the five" preflight refusals was four; the B2 promise sentence covered
+the whole page while the clock table is self-reported and not from a report, and now scopes
+itself; c2hs's PASS is `oracle_verified_subject_only`, the only one of the thirteen, and the page
+says so where the funnel table's narrow shape cannot; and the pre-registration note is now
+committed beside the artifacts rather than cited from a scratch directory. **Cleanup pass** (four
+read-only reviewers): the figures the page states by hand — the funnel tally, the final-mode
+split, preflight's 14/5 and 5/2, the crash-point counts, the clock medians — are all confirmed
+against the artifacts and all outside the byte-compare; putting them inside it (a preflight
+column, a crash-point column, a clock summary line in `emit`) changes the table shape `check`
+parses and is left for its own change. Applied: the eleven walls are referred to the authored
+list rather than restated, the five identical B rows are one sentence, three restatements are
+gone, and the causal colon above. `count.py check` is 0.10 s with the third generation against
+0.04 s without — sixty milliseconds for fifty-two more digests.
 
 ## 2026-09-18 — the B2 defines and the apparatus that runs them: two legs per trial, the released engine mounted over a build, and the list held to the corpus (#619, second of three)
 

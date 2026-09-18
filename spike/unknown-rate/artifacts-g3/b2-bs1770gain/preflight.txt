@@ -1,0 +1,16 @@
+10%3%6%10%13%16%19%22%26%29%32%35%38%42%45%48%51%54%58%61%64%67%70%74%77%80%83%86%90%93%96%99%   begin remuxing ...
+0%3%6%10%13%16%19%22%26%29%32%35%38%42%45%48%51%54%58%61%64%67%70%74%77%80%83%86%90%93%96%99%   
+UNKNOWN  unsupported_syscall_observed
+         mkdirat
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+preflight exit=2

@@ -1,0 +1,12 @@
+PASS  3/3 explored worlds satisfied the built-in atomicity invariant
+      explored 3 worlds (crash points 2 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 2 operations (1301 syscall lines examined, 20 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: 1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+      not tested: power loss, torn writes, concurrent processes
+sideeye: json sha256=816627d922a4e0d2da5f88b26c09cc6e2c8e4658e64a13663ea59df658363711;

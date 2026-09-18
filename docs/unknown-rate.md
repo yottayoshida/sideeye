@@ -289,9 +289,9 @@ threshold set from it would be satisfied by construction. So:
   fresh reading. No threshold is set from B2, and none is set before its
   number is published. B's g3 figures are evaluated against the threshold below
   as any B sweep's are, and what that comes to is recorded rather than decided
-  here. The protocol is in the corpus section, under B2; the second of the
-  three merges is the one this page describes as of this revision, with g3
-  unstarted.
+  here. The protocol is in the corpus section, under B2; all three merges
+  have landed, and g3's tables are in the Results section with the prose
+  beside the protocol.
 
 ## The corpus
 
@@ -417,9 +417,11 @@ engine and one is refused by the target's process structure, which the sweep's
 single reason could not distinguish. That re-measurement ran under a **rebuilt**
 `sideeye-ur-extra` (image id `9fec97c7`, not the sweep's `df66b6e1`), so it
 speaks for the recipe rather than for the sweep's own apparatus, and the
-transcripts are not committed. **What is still not re-measured is the sweep
-itself**: its figures below are what that engine measured on that image, and
-nothing here re-runs the other five trials. The define the original rule cites
+transcripts are not committed. **The sweep itself was re-measured on
+2026-09-18** — generation g3, the released v1.5.0, all seven trials; the
+leg-by-leg comparison is in the B2 section under *What g3 measured — the
+B-group* — and the g1 figures below remain what that engine measured on that
+image, with g3's standing beside them. The define the original rule cites
 as its evidence is neither of these two — `defines-b/hnb/NOTES.md` names
 2vcard, whose define carries only an `op.txt`, so the rule cannot be re-derived
 from the corpus at all. Both `op.sh` files here are present and unchanged.
@@ -434,18 +436,20 @@ strictly more, and `--json` lives there).
 
 ### B2-group — 30 targets, machine-selected on trixie (#619)
 
-**Every B2 figure on this page is recomputed from reports the released v1.5.0
-engine wrote against targets whose selection was committed before any of them
-was run.** That sentence is the group's promise; what follows is what holds it.
+**Every B2 verdict, rate and slice on this page is recomputed from reports the
+released v1.5.0 engine wrote against targets whose selection was committed
+before any of them was run** — the one B2 table not drawn from reports, the
+authoring clock, says so in its heading. That sentence is the group's promise;
+what follows is what holds it.
 
 **Where this section stands.** Three merges carry B2, and this revision of the
-page is the second: the protocol, the list, the exclusions and the engine pin
-came with the first (`315f244`), and this one brings the thirty defines under
-`defines-b2/`, the two-leg launcher, `legs.tsv`, the readers of the engine
-pin in `sweep.sh` and `count.py check`, the authoring clock, and the corpus
-rows and the g3 row — unstarted, so the Results section carries g3's
-placeholder. The artifacts and the numbers come with the third merge; until
-it lands, nothing below is a measurement of B2.
+page is the third: the protocol, the list, the exclusions and the engine pin
+came with the first (`315f244`); the thirty defines under `defines-b2/`, the
+two-leg launcher, `legs.tsv`, the readers of the engine pin in `sweep.sh` and
+`count.py check`, the authoring clock, and the corpus rows with the second
+(`0b9e5e6`); and this one brings `artifacts-g3/` — the sweep run from a clean
+worktree at that second merge commit, under the released v1.5.0 — the g3
+tables in Results, and the paragraphs headed **What g3 measured** below.
 
 **What the thirty are, as authored** (`corpus.tsv`, the `b2-*` rows, in the
 keyed order; every directory under `defines-b2/` carries a `NOTES.md` quoting
@@ -633,10 +637,119 @@ before it. Rows that reach an explore here do not join `spike/outcome-funnel.tsv
 as the B-group's did not: that record is one row per campaign and target and
 this sweep is not a campaign; folding the two funnels into one is its own change.
 
+**What g3 measured — B2** (`artifacts-g3/`, 2026-09-18, engine v1.5.0 from
+the pinned asset; the tables are in Results). The funnel: thirty candidates,
+eleven walls (the five W2 and six W3 whose grounds are authored above), no W0
+and no W1 — and nineteen explored: **13 PASS, 1 FAIL, 5 UNKNOWN (5/19,
+26.3%)**. The five reasons. `child_touched_state_dir` twice — pacpl and
+mail-expire, Perl scripts whose encoder `flac` and compressor `gzip` are
+children that write the judged state. The refusal's own step says to invoke
+the wrapped command instead, which the run contract does not allow (the
+operation is the documented invocation); and the mode that does see such a
+child's writes, `--observe syscalls`, is on record for this class
+(`docs/target-classes.md`, the lbdb row, with committed artifacts) — but that
+step does not name the mode, and this sweep ran a second leg only where the
+engine's step did, so neither trial met it. `recording_run_failed` once —
+unmass: outside the engine every archive built from its documented formats
+ends in a segmentation fault (exit 139); inside the recording the engine
+decoded the status as 1, and the uniform `0` refused it. Its notes record both
+numbers and file the refusal as the target's own failure on this platform, not
+a define miss. `unsupported_syscall_observed` once — bs1770gain calls
+`mkdirat`, a README class wall. `kill_did_not_land` once — apt-utils:
+`apt-ftparchive generate` orders its state-directory calls differently between
+runs, so a crash point at a fixed index does not name the same operation twice;
+the target's own nondeterminism, and the message names the declaration it
+contradicts. The one FAIL is sgml-base: `update-catalog --add` renames
+`central.cat` aside and then opens its replacement, and a crash between the two
+(crash point 2 of 3) leaves the catalog absent — present before and after the
+operation, gone from the crashed state — the L0 built-in atomicity invariant.
+That is a window of absence, a file moved away before its successor exists,
+and not the truncate-then-write window the 2026-09-16 dogfood records found,
+which leaves the file empty; in g3 that second shape is hnb's and
+bogofilter-sqlite's ("holding neither the old nor the new content").
+**Final-leg mode**: 25 trials ended on the default mode and one on `--observe
+syscalls` — otf2bdf, whose first leg refused `oracle_missed_operation` (the
+oracle saw a 4096-byte `write` to `out.bdf` the shim's account did not carry)
+with the `next_step` that asks for the mode, and whose second leg reached PASS
+over 175 crash points with the oracle verified; `count.py check` holds that
+shape. Of the thirteen PASSes, c2hs's is `oracle_verified_subject_only` — its
+`cpp` child's operations carry crash-point addresses and were explored, but
+the oracle compared only the subject's own — the weakest kind of PASS the tool
+produces, and the funnel table's narrow shape has no column for the flag.
+**Preflight `--twice`**: 14 accepted, 5 refused (bs1770gain, otf2bdf, unmass,
+pacpl, mail-expire) — the same five as the authoring runs; four of the five
+were then refused by the explore for the reason preflight had shown, and
+otf2bdf's second leg turned the fifth into a verdict. **Class slices**: the
+table prints them; c-cli (1/11) and perl-cli (2/5) are the two above the
+five-trial floor. **Authoring time** (self-reported, `b2-clock.tsv`): from
+`setup_started` to the first accepted recording a median of 5 minutes over the
+fourteen that reached one, to `final` a median of 5.5 minutes over all thirty,
+the longest 8 — batch wall time, so the minutes are the sitting's and not a
+per-target cost.
+
+**What g3 measured — the B-group, leg by leg** (a historical comparison against
+the names g1 measured, on the g3 engine and the g3 image; not fresh evidence).
+Every B trial's first leg ran under the default mode and none was asked for a
+second, so each row is one leg against one leg. Five of seven are identical to
+the crash-point count: 2vcard PASS (2), bogofilter-bdb PASS (7),
+bogofilter-sqlite FAIL (25), emboss PASS (2), cookietool UNKNOWN
+`recording_run_failed` (exit 10 against the uniform `0`; `expect-status.txt`
+could declare 10 now, and the B define is left as g1 measured it). Two moved:
+hnb UNKNOWN `child_process_detected` → **FAIL over 3 crash points**
+(`notes.hnb` holding neither the old nor the new content at crash point 3) —
+the verdict the 2026-09-07 re-measurement above reached on a rebuilt image, now
+reached by the sweep itself on the pinned release; and lbdb UNKNOWN
+`child_process_detected` → UNKNOWN `child_touched_state_dir` (its child
+`fetchaddr` writes the judged file through the parent shell's redirected
+stdout and records nothing the shim can number), one wall further out, as that
+re-measurement also said. Under `--observe syscalls` the same lbdb operation
+reaches PASS over 8 crash points (`docs/target-classes.md`, its own row, with
+the artifacts committed under `spike/followup-trapwitness/`); this sweep did
+not run that mode for it, because the run contract takes a second leg only from
+a `next_step` that names the mode and `child_touched_state_dir`'s does not.
+Both moves happened without a define change — the manifest's define digests
+are the bytes g1 hashed — and with the engine (0.13.0 → 1.5.0) and the image
+(`df66b6e1` → `e124ccf0`) both changed, so the movement is located and not
+attributed. B's per-trial rate reads **2/7** on g3 against 3/7 on g1.
+Preflight `--twice`, an instrument g1 did not run: 5 accepted, 2 refused
+(cookietool, lbdb — the same two the explore refuses, for the same reasons).
+
+**The thirteen B walls, one line each** (no engine runs for a wall; these are
+the grounds as recorded in `defines-b/<t>/NOTES.md`, unchanged by g3):
+audiolink, bucardo, check-postgres, goobook and ldap-utils have no local-file
+state (W2); cricket has no local-file state of a drivable kind — a monitoring
+collector for network devices (W2); gammu's
+state is on a phone (W2); hobbit-plugins are plugins for a monitoring server
+(W2); ldap-git-backup's state source is a server (W2); flamerobin is a GUI
+with no non-interactive writer (W3); gnupg-agent is a transitional package
+with no operations of its own (W3); icinga2-ido-mysql and icinga2-ido-pgsql
+do not install without a database server (W1). Thirteen walls of twenty in B
+against eleven of thirty in B2. By composition, nine of B's thirteen are W2
+rows — state on a server, on network devices, or on a phone — and two more do
+not install without a database server; B2's five W2 rows are a DVD or CD drive
+(dvdbackup, mp3roaster, crip), a web server (httrack) and a Debian mirror
+(debmirror). Two predicates, two archives and two engines differ between the
+groups, so the difference is described here and not attributed.
+
+**The dominant remaining wall, named and not filed.** In the funnel it is W3 —
+no documented non-interactive state-changing command — at six of B2's thirty,
+the largest single bucket; nothing in the engine reaches a target that offers
+no such command, and the six are listed above with their grounds. Among the
+engine's refusals it is `child_touched_state_dir`, two of the five — the
+pacpl / mail-expire pair above — the class `docs/target-classes.md` records at
+its "Shell CLIs over helper processes" row, whose measured reach is two
+targets of two with the weakest kind of PASS; here two of two refused, because
+the wrapper and the child write in the same directory rather than the shell
+writing nothing, and the mode that class reaches verdicts in was not asked for
+by the refusal's step. That is the observation; what to do about it is filed
+from the result, if at all, by the owner, and not here.
+
 ## Method
 
-The protocol: one sweep per generation, one engine build (`zig build
--Dtarget=aarch64-linux-gnu` at that sweep's HEAD), fresh containers
+The protocol: one sweep per generation, one engine — a build (`zig build
+-Dtarget=aarch64-linux-gnu` at that sweep's HEAD) for g1 and g2, the released
+asset `engine-pins.tsv` names for g3 (fetched, verified against the published
+digest, mounted read-only; the pin line in `apparatus.txt` records it) — fresh containers
 per trial, driven by `spike/unknown-rate/sweep.sh <generation>` — the repo
 mounted read-only, with only that generation's artifacts tree writable.
 Apparatus identity (engine version + sha256, shim sha256, image ids) goes
@@ -946,9 +1059,199 @@ so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its o
 evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - A-group derived UNKNOWN rate on macOS: 13/36 (36.1%)
 
-### Generation g3 — not yet measured (B,B2)
+### Generation g3 — measured 2026-09-18 (B,B2)
 
-_Not yet measured: the sweep has not run. This line is asserted by count.py check._
+#### B-group (mechanically selected; the threshold basis)
+
+_Re-measured in g3 on this generation's engine — a historical comparison against the names an earlier generation measured, not fresh evidence; the threshold basis is unchanged._
+
+| target | class | funnel stage | verdict | unknown_reason |
+|---|---|---|---|---|
+| audiolink | perl-cli | wall W2 | - | - |
+| bucardo | perl-cli | wall W2 | - | - |
+| check-postgres | perl-cli | wall W2 | - | - |
+| cricket | perl-cli | wall W2 | - | - |
+| flamerobin | cxx-cli | wall W3 | - | - |
+| gammu | c-cli | wall W2 | - | - |
+| gnupg-agent | c-cli | wall W3 | - | - |
+| goobook | python-cli | wall W2 | - | - |
+| hobbit-plugins | perl-cli | wall W2 | - | - |
+| icinga2-ido-mysql | cxx-cli | wall W1 | - | - |
+| icinga2-ido-pgsql | cxx-cli | wall W1 | - | - |
+| ldap-git-backup | perl-cli | wall W2 | - | - |
+| ldap-utils | c-cli | wall W2 | - | - |
+| 2vcard | perl-cli | explored | PASS | - |
+| bogofilter-bdb | c-cli | explored | PASS | - |
+| bogofilter-sqlite | c-cli | explored | FAIL | - |
+| cookietool | c-cli | explored | UNKNOWN | recording_run_failed |
+| emboss | c-cli | explored | PASS | - |
+| hnb | c-cli | explored | FAIL | - |
+| lbdb | perl-cli | explored | UNKNOWN | child_touched_state_dir |
+
+UNKNOWN rate, per-trial: **2/7 (28.6%)**
+
+| slice | UNKNOWN |
+|---|---|
+| tool: 2vcard | 0/1 (counts only, n<5) |
+| tool: bogofilter-bdb | 0/1 (counts only, n<5) |
+| tool: bogofilter-sqlite | 0/1 (counts only, n<5) |
+| tool: cookietool | 1/1 (counts only, n<5) |
+| tool: emboss | 0/1 (counts only, n<5) |
+| tool: hnb | 0/1 (counts only, n<5) |
+| tool: lbdb | 1/1 (counts only, n<5) |
+| class: c-cli | 1/5 (20.0%) |
+| class: perl-cli | 1/2 (counts only, n<5) |
+| judge: l0 | 2/7 (28.6%) |
+
+| unknown_reason | count |
+|---|---|
+| child_touched_state_dir | 1 |
+| recording_run_failed | 1 |
+
+#### B2-group (mechanically selected on trixie after v1.5; measured, no threshold)
+
+| target | class | funnel stage | verdict | unknown_reason |
+|---|---|---|---|---|
+| dvdbackup | c-cli | wall W2 | - | - |
+| httrack | c-cli | wall W2 | - | - |
+| zbar-tools | c-cli | wall W3 | - | - |
+| debmirror | perl-cli | wall W2 | - | - |
+| debian-cd | perl-cli | wall W3 | - | - |
+| aggregate | c-cli | wall W3 | - | - |
+| mp3roaster | perl-cli | wall W2 | - | - |
+| crip | perl-cli | wall W2 | - | - |
+| emacspeak | perl-cli | wall W3 | - | - |
+| migrationtools | perl-cli | wall W3 | - | - |
+| pgdbf | c-cli | wall W3 | - | - |
+| roffit | perl-cli | explored | PASS | - |
+| bs1770gain | c-cli | explored | UNKNOWN | unsupported_syscall_observed |
+| txt2html | perl-cli | explored | PASS | - |
+| otf2bdf | c-cli | explored | PASS | - |
+| psutils | c-cli | explored | PASS | - |
+| unmass | cxx-cli | explored | UNKNOWN | recording_run_failed |
+| tcpslice | c-cli | explored | PASS | - |
+| enscribe | c-cli | explored | PASS | - |
+| clzip | c-cli | explored | PASS | - |
+| giflib-tools | c-cli | explored | PASS | - |
+| pngcrush | c-cli | explored | PASS | - |
+| pacpl | perl-cli | explored | UNKNOWN | child_touched_state_dir |
+| c2hs | haskell-cli | explored | PASS | - |
+| apt-utils | cxx-cli | explored | UNKNOWN | kill_did_not_land |
+| mail-expire | perl-cli | explored | UNKNOWN | child_touched_state_dir |
+| conv-tools | c-cli | explored | PASS | - |
+| sgml-base | perl-cli | explored | FAIL | - |
+| zh-autoconvert | c-cli | explored | PASS | - |
+| icnsutils | c-cli | explored | PASS | - |
+
+UNKNOWN rate, per-trial: **5/19 (26.3%)**
+
+| slice | UNKNOWN |
+|---|---|
+| tool: apt-utils | 1/1 (counts only, n<5) |
+| tool: bs1770gain | 1/1 (counts only, n<5) |
+| tool: c2hs | 0/1 (counts only, n<5) |
+| tool: clzip | 0/1 (counts only, n<5) |
+| tool: conv-tools | 0/1 (counts only, n<5) |
+| tool: enscribe | 0/1 (counts only, n<5) |
+| tool: giflib-tools | 0/1 (counts only, n<5) |
+| tool: icnsutils | 0/1 (counts only, n<5) |
+| tool: mail-expire | 1/1 (counts only, n<5) |
+| tool: otf2bdf | 0/1 (counts only, n<5) |
+| tool: pacpl | 1/1 (counts only, n<5) |
+| tool: pngcrush | 0/1 (counts only, n<5) |
+| tool: psutils | 0/1 (counts only, n<5) |
+| tool: roffit | 0/1 (counts only, n<5) |
+| tool: sgml-base | 0/1 (counts only, n<5) |
+| tool: tcpslice | 0/1 (counts only, n<5) |
+| tool: txt2html | 0/1 (counts only, n<5) |
+| tool: unmass | 1/1 (counts only, n<5) |
+| tool: zh-autoconvert | 0/1 (counts only, n<5) |
+| class: c-cli | 1/11 (9.1%) |
+| class: cxx-cli | 2/2 (counts only, n<5) |
+| class: haskell-cli | 0/1 (counts only, n<5) |
+| class: perl-cli | 2/5 (40.0%) |
+| judge: l0 | 5/19 (26.3%) |
+
+| unknown_reason | count |
+|---|---|
+| child_touched_state_dir | 2 |
+| kill_did_not_land | 1 |
+| recording_run_failed | 1 |
+| unsupported_syscall_observed | 1 |
+
+#### Observation legs (trials whose launcher recorded them; the verdict above is the last leg's)
+
+| target | group | first leg | second leg | final mode |
+|---|---|---|---|---|
+| 2vcard | B | wrappers: PASS | - | wrappers |
+| bogofilter-bdb | B | wrappers: PASS | - | wrappers |
+| bogofilter-sqlite | B | wrappers: FAIL | - | wrappers |
+| cookietool | B | wrappers: UNKNOWN (recording_run_failed) | - | wrappers |
+| emboss | B | wrappers: PASS | - | wrappers |
+| hnb | B | wrappers: FAIL | - | wrappers |
+| lbdb | B | wrappers: UNKNOWN (child_touched_state_dir) | - | wrappers |
+| roffit | B2 | wrappers: PASS | - | wrappers |
+| bs1770gain | B2 | wrappers: UNKNOWN (unsupported_syscall_observed) | - | wrappers |
+| txt2html | B2 | wrappers: PASS | - | wrappers |
+| otf2bdf | B2 | wrappers: UNKNOWN (oracle_missed_operation) | syscalls: PASS | syscalls |
+| psutils | B2 | wrappers: PASS | - | wrappers |
+| unmass | B2 | wrappers: UNKNOWN (recording_run_failed) | - | wrappers |
+| tcpslice | B2 | wrappers: PASS | - | wrappers |
+| enscribe | B2 | wrappers: PASS | - | wrappers |
+| clzip | B2 | wrappers: PASS | - | wrappers |
+| giflib-tools | B2 | wrappers: PASS | - | wrappers |
+| pngcrush | B2 | wrappers: PASS | - | wrappers |
+| pacpl | B2 | wrappers: UNKNOWN (child_touched_state_dir) | - | wrappers |
+| c2hs | B2 | wrappers: PASS | - | wrappers |
+| apt-utils | B2 | wrappers: UNKNOWN (kill_did_not_land) | - | wrappers |
+| mail-expire | B2 | wrappers: UNKNOWN (child_touched_state_dir) | - | wrappers |
+| conv-tools | B2 | wrappers: PASS | - | wrappers |
+| sgml-base | B2 | wrappers: FAIL | - | wrappers |
+| zh-autoconvert | B2 | wrappers: PASS | - | wrappers |
+| icnsutils | B2 | wrappers: PASS | - | wrappers |
+
+#### B2 authoring clock (self-reported; minutes from setup_started)
+
+| target | to first accepted recording | to final |
+|---|---|---|
+| aggregate | - | 3 |
+| apt-utils | 5 | 7 |
+| bs1770gain | - | 8 |
+| c2hs | 5 | 7 |
+| clzip | 3 | 5 |
+| conv-tools | 5 | 6 |
+| crip | - | 3 |
+| debian-cd | - | 5 |
+| debmirror | - | 3 |
+| dvdbackup | - | 4 |
+| emacspeak | - | 3 |
+| enscribe | 3 | 5 |
+| giflib-tools | 5 | 6 |
+| httrack | - | 2 |
+| icnsutils | 5 | 6 |
+| mail-expire | - | 6 |
+| migrationtools | - | 7 |
+| mp3roaster | - | 3 |
+| otf2bdf | - | 5 |
+| pacpl | - | 7 |
+| pgdbf | - | 6 |
+| pngcrush | 5 | 6 |
+| psutils | 5 | 5 |
+| roffit | 4 | 4 |
+| sgml-base | 5 | 6 |
+| tcpslice | 4 | 6 |
+| txt2html | 4 | 4 |
+| unmass | - | 8 |
+| zbar-tools | - | 2 |
+| zh-autoconvert | 5 | 6 |
+
+#### macOS column (derived, not measured)
+
+Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists on macOS,
+so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own
+evidence and is unchanged; a Linux UNKNOWN is not re-derived):
+- B-group derived UNKNOWN rate on macOS: 5/7 (71.4%)
+- B2-group derived UNKNOWN rate on macOS: 18/19 (94.7%)
 <!-- unknown-rate:results:end -->
 
 **The `ctl-pass-mv` control above predates contract v15, and its reason has moved twice.**
@@ -1058,6 +1361,24 @@ owner's recorded call, made with the margins visible. A future sweep
 where target-origin UNKNOWNs dominate fails part 1 whatever the total
 rate does — and per issue #84 step 4, a measured rate failing this
 threshold is DESIGN §18 material; the threshold itself does not move.
+
+**Held to on g3 (2026-09-18), B re-measured on the released v1.5.0.** Part 2
+reads **28.6% (2/7)** and holds. Part 1 turns on how the two UNKNOWNs are
+filed, and g1's filing does not carry over unchanged: g1 filed all three of
+its UNKNOWNs as define-budget (**0/7**) — hnb and lbdb as spellings the
+operation contract could not carry, cookietool as the uniform exit convention.
+On g3 hnb is a verdict; cookietool is the same exit-convention refusal, filed
+here as define-budget as in g1; and lbdb's `child_touched_state_dir` reads two
+ways on this repository's own pages — the target's process structure (this
+page's 2026-09-07 paragraph), or a spelling-and-mode gap, since the same
+operation reaches PASS under `--observe syscalls` (`docs/target-classes.md`,
+the lbdb row). Filed as target-origin, part 1 reads **1/7** and holds at its
+edge, and g1's robustness note ("re-filing cookietool as target-origin still
+satisfies part 1") does not survive: re-filed, it is 2/7 and fails. Filed as
+define-budget, part 1 reads **0/7** and g1's note stands. Both readings are
+drawn after the sweep, as g1's was; this page records the number under each
+and draws neither for the criterion. Whether criterion 4's status moves is the
+owner's call; `PRD.md` carries the dated line.
 
 ## Limitations, out loud
 

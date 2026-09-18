@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 3 operations (229 syscall lines examined, 22 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2003 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /tmp/bgroup-pre/sgml-base/state --setup "/work/spike/unknown-rate/defines-b2/sgml-base/setup.sh" --operation "update-catalog --add /tmp/bgroup-pre/sgml-base/state/central.cat /tmp/bgroup-pre/sgml-base/state/ordinary.cat" \
+               --check <your-invariant.sh> --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
+preflight exit=0
