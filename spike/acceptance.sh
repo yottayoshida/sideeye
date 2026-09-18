@@ -7041,7 +7041,7 @@ for pair in \
     "gen-group-unknown:is not one of A/B/B2/control" \
     "gen-covers-no-group:a row no generation covers" \
     "corpus-since-unknown:is not a generation" \
-    "outcome-map-columns:does not have 3 columns" \
+    "outcome-map-columns:outcome-map.tsv row does not have 3 columns" \
     "outcome-map-duplicate:outcome-map.tsv lists 'toyA' twice" \
     "outcome-map-disposition:is not one of reported-upstream/" \
     "outcome-conservation:carry a disposition the outcome table does not print" \
@@ -7050,7 +7050,30 @@ for pair in \
     "marker-inverted:end marker precedes its begin marker" \
     "marker-predata-second-end:docs/unknown-rate.md carries 3 end markers" \
     "marker-emit-begin:recomputation carries 2 begin markers" \
-    "report-swapped:is not the one the sweep wrote"; do
+    "report-swapped:is not the one the sweep wrote" \
+    "apparatus-engine-pin-missing:engine-pins.tsv pins v0.0.0-fixture but" \
+    "legs-second-leg-unasked:a second leg was recorded without leg 1 asking" \
+    "legs-second-leg-missing:no second leg was recorded" \
+    "legs-final-not-last:is not the last leg's bytes" \
+    "legs-sha-mismatch:hashes differently from legs.tsv" \
+    "b2-corpus-unbound:corpus B2 rows differ from the committed b2-targets.txt" \
+    "legs-columns:legs.tsv row does not have 6 columns" \
+    "legs-report-missing:which is not in artifacts" \
+    "legs-verdict-mismatch:legs.tsv says leg 2 is FAIL and its report says PASS" \
+    "legs-reason-mismatch:reason is oracle_saw_phantom and its report says" \
+    "legs-order:must list leg 1, optionally followed by leg 2" \
+    "legs-mode-order:not wrappers then syscalls" \
+    "legs-report-torn:leg 2: report-syscalls.json is not JSON" \
+    "engine-pins-columns:engine-pins.tsv row does not have 4 columns" \
+    "engine-pins-duplicate:engine-pins.tsv pins generation 'g1' twice" \
+    "clock-columns:b2-clock.tsv row does not have 3 columns" \
+    "b2-targets-missing:b2-targets.txt is missing" \
+    "legs-missing-b2:a B2 trial with no legs.tsv" \
+    "legs-report-schema:leg 1: report-wrappers.json is not a sideeye/report document" \
+    "report-torn:fx-toyA: report.json is not JSON" \
+    "clock-time-unparsable:has a time that is not YYYY-MM-DDTHH:MM:SSZ" \
+    "clock-event-unknown:carries event 'gave_up', not one of" \
+    "clock-duplicate:stamps 'toyE' final twice"; do
     ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     ur_seen="$ur_seen $bad"
@@ -7147,6 +7170,29 @@ if [ "$b2_rc" != 0 ]; then
     echo "     b2-selection --selftest failed: a mutation the mode should refuse passed, or the baseline copy is red"
     printf '%s\n' "$b2_st" | grep -v '^count.py b2-selection: OK' | tail -3 | sed 's/^/       /'
     ur_fails=$((ur_fails + 1))
+fi
+# The second-leg trigger (#619): bgroup.sh runs `--observe syscalls` when leg 1's
+# next_step opens with the `observe_syscalls` step's sentence, and count.py
+# recomputes that decision from the same phrase. Both are copies of a string in
+# src/contract.zig, and the two failure directions are not symmetric: a copy that
+# drifts so the trigger never fires leaves every B2 verdict at the default mode
+# with nothing said, while one that fires unasked is refused by count.py. This
+# holds the three spellings to each other — the phrase count.py declares must be
+# the opening of the `.observe_syscalls` arm and must appear verbatim in the
+# launcher's `case`.
+step=$(sed -n 's/^SYSCALLS_STEP = "\(.*\)"$/\1/p' "$ROOT/spike/unknown-rate/count.py")
+if [ -z "$step" ]; then
+    echo "     count.py declares no SYSCALLS_STEP — the second-leg rule has lost its phrase"
+    ur_fails=$((ur_fails + 1))
+else
+    if ! grep -qF ".observe_syscalls => \"$step" "$ROOT/src/contract.zig"; then
+        echo "     the second-leg trigger phrase is not how src/contract.zig opens the observe_syscalls step: '$step'"
+        ur_fails=$((ur_fails + 1))
+    fi
+    if ! grep -qF "UNKNOWN:*\"$step\"*)" "$ROOT/spike/unknown-rate/launchers/bgroup.sh"; then
+        echo "     bgroup.sh does not trigger its second leg on count.py's SYSCALLS_STEP phrase: '$step'"
+        ur_fails=$((ur_fails + 1))
+    fi
 fi
 if [ "$ur_fails" = "0" ]; then
     echo "ok   unknown-rate page in sync; gate red on all $ur_red tampered fixtures; B2 selection chain holds"

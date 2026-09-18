@@ -1,0 +1,1 @@
+c2hs -o $TOY_STATE/Hello.hs $TOY_STATE/hello.h $TOY_STATE/Hello.chs

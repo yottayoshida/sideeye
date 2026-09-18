@@ -1,0 +1,1 @@
+psnup -2 -p a4 -P a4 $TOY_STATE/in.ps $TOY_STATE/out.ps

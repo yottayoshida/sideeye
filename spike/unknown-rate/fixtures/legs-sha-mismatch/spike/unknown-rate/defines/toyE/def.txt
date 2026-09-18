@@ -1,0 +1,1 @@
+toyE: a B2 fixture define whose first leg refuses and whose second leg passes

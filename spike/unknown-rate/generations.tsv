@@ -32,3 +32,4 @@
 # beside the new ones with both dates, because the movement is the finding.
 g1	2026-08-16	artifacts	A,B,control	complete
 g2	2026-08-26	artifacts-a2	A	complete
+g3	-	artifacts-g3	B,B2	unstarted

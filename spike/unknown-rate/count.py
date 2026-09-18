@@ -47,6 +47,7 @@ import hashlib
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 MARK_BEGIN = "<!-- unknown-rate:results:begin -->"
@@ -59,7 +60,17 @@ GEN_COLS = ["id", "date", "dir", "groups", "status"]
 EXCLUSION_COLS = ["id", "reason"]
 GEN_STATUSES = ("complete", "unstarted")
 GROUPS = ("A", "B", "B2", "control")
+# The mechanically selected groups: the ones with a funnel (a wall row runs no
+# engine) and the ones a re-measurement is labelled on. One name for the pair,
+# because the two rules that mention it must agree on which groups it is.
+MECHANICAL_GROUPS = frozenset(("B", "B2"))
 OUTCOME_COLS = ["tool", "disposition", "source"]
+ENGINE_PIN_COLS = ["generation", "tag", "asset", "sha256"]
+CLOCK_COLS = ["target", "event", "utc"]
+# The events b2-clock.sh writes, in the order authoring reaches them. Held on the
+# reading side as well: the writer refuses a fourth name, but the file is plain
+# text and a hand edit is not a writer.
+CLOCK_EVENTS = ("setup_started", "first_accepted_recording", "final")
 # The sweep's own record, one row per trial. `rsha` (#349) is the report's sha256, which
 # binds the file at `rpath` to the sweep that wrote it rather than to a name; a funnel
 # wall runs no engine and carries `-` there, as it does in `image`, `rpath` and `rc`.
@@ -252,19 +263,152 @@ def load_reports(root, gen_dir, manifest):
         rp = arts / row["rpath"]
         if not rp.exists():
             die(f"report missing for {row['id']} in {gen_dir}: {row['rpath']}")
-        # Read once as bytes: the hash and the parse want the same file, and reading it
-        # twice would put the two a window apart as well as costing a second pass over
-        # every report on every check.
-        raw = rp.read_bytes()
-        doc = json.loads(raw)
-        if doc.get("schema") != "sideeye/report":
-            die(f"{row['id']}: not a sideeye/report document")
+        sha, doc = read_report_doc(rp, f"{row['id']}")
         out[row["id"]] = {
             "verdict": doc["verdict"],
             "reason": doc.get("unknown_reason", ""),
             "crash_points": doc.get("crash_points"),
-            "sha": hashlib.sha256(raw).hexdigest(),
+            "sha": sha,
+            "legs": read_legs(row["id"], row["group"], rp.parent, sha, gen_dir),
         }
+    return out
+
+
+def read_report_doc(path, who):
+    """(sha256, document) of one report file, refused when it is not one.
+
+    Read once as bytes: the hash and the parse want the same file, and reading it
+    twice would put the two a window apart as well as costing a second pass over
+    every report on every check. Shared by the manifest-bound report and the
+    per-leg reports, so a leg is held to the same schema the verdict is.
+    """
+    raw = path.read_bytes()
+    try:
+        doc = json.loads(raw)
+    except ValueError:
+        die(f"{who}: {path.name} is not JSON — a report the engine did not finish "
+            f"writing, or one something else wrote over")
+    if doc.get("schema") != "sideeye/report":
+        die(f"{who}: {path.name} is not a sideeye/report document")
+    return hashlib.sha256(raw).hexdigest(), doc
+
+
+LEG_COLS = ["leg", "mode", "verdict", "reason", "report", "sha"]
+# The opening of the `observe_syscalls` step (src/contract.zig) — the one step that
+# asks for the mode. Matched on this phrase, not on the flag's spelling: the
+# `syscalls_may_have_killed` step names the flag too, in a sentence that says the
+# opposite. bgroup.sh matches the same phrase.
+SYSCALLS_STEP = "Run explore or preflight again with --observe syscalls"
+
+def read_legs(trial_id, group, art, final_sha, gen_dir):
+    """The observation legs a launcher recorded beside a trial's report (#619).
+
+    `legs.tsv` names each leg's mode, verdict, reason, report and sha256. Each
+    leg's report is opened and its digest recomputed — without that, the "two
+    legs" rule below would be satisfied by two lines nobody had to earn, the
+    same hole #349 closed for `rpath`. Then the rule itself: a second leg exists
+    exactly when the first refused with a `next_step` naming `--observe syscalls`,
+    and the report the manifest binds is the last leg's bytes. A trial with no
+    legs.tsv reads as it always did — except a B2 trial, whose launcher always
+    writes one: there the absence is a launcher that did not run its protocol,
+    and a verdict with no legs behind it would otherwise pass untouched.
+    """
+    p = art / "legs.tsv"
+    if not p.exists():
+        if group == "B2":
+            die(f"{trial_id}: a B2 trial with no legs.tsv — bgroup.sh writes one for every "
+                f"trial it runs, so this verdict was not produced by the two-leg protocol")
+        return []
+    legs = []
+    for line in p.read_text().splitlines():
+        if not line or line.startswith("#"):
+            continue
+        f = line.split("\t")
+        if len(f) != len(LEG_COLS):
+            die(f"{trial_id}: legs.tsv row does not have {len(LEG_COLS)} columns: {line!r}")
+        leg = dict(zip(LEG_COLS, f))
+        lp = art / leg["report"]
+        if not lp.exists():
+            die(f"{trial_id}: leg {leg['leg']} names {leg['report']}, which is not in {gen_dir}")
+        lsha, ldoc = read_report_doc(lp, f"{trial_id}: leg {leg['leg']}")
+        if lsha != leg["sha"]:
+            die(f"{trial_id}: leg {leg['leg']}'s report {leg['report']} hashes differently from "
+                f"legs.tsv — not the file the launcher recorded")
+        if ldoc.get("verdict") != leg["verdict"]:
+            die(f"{trial_id}: legs.tsv says leg {leg['leg']} is {leg['verdict']} and its report "
+                f"says {ldoc.get('verdict')}")
+        # The reason column is published (the legs table); hold it to the report
+        # as the verdict is. The mode column has no field in the report to be held
+        # to — it is the launcher's record of which flag it passed — and the page
+        # says so.
+        if (ldoc.get("unknown_reason") or "-") != leg["reason"]:
+            die(f"{trial_id}: legs.tsv says leg {leg['leg']}'s reason is {leg['reason']} and its "
+                f"report says {ldoc.get('unknown_reason') or '-'}")
+        leg["next_step"] = ldoc.get("next_step", "") or ""
+        legs.append(leg)
+    order = [l["leg"] for l in legs]
+    if order not in (["1"], ["1", "2"]):
+        die(f"{trial_id}: legs.tsv must list leg 1, optionally followed by leg 2 — it lists {order}")
+    if legs[0]["mode"] != "wrappers" or (len(legs) == 2 and legs[1]["mode"] != "syscalls"):
+        die(f"{trial_id}: legs.tsv modes are {[l['mode'] for l in legs]}, not wrappers then syscalls")
+    asked = legs[0]["verdict"] == "UNKNOWN" and SYSCALLS_STEP in legs[0]["next_step"]
+    if asked and len(legs) == 1:
+        die(f"{trial_id}: leg 1 refused with a next_step naming --observe syscalls and no second "
+            f"leg was recorded")
+    if not asked and len(legs) == 2:
+        die(f"{trial_id}: a second leg was recorded without leg 1 asking for it (leg 1 is "
+            f"{legs[0]['verdict']} and its next_step does not name --observe syscalls)")
+    if legs[-1]["sha"] != final_sha:
+        die(f"{trial_id}: the report the manifest binds is not the last leg's bytes "
+            f"({legs[-1]['report']})")
+    return legs
+
+
+def read_engine_pins(root):
+    """generation -> (tag, asset, sha256) from engine-pins.tsv; empty when the file is absent."""
+    if not (root / "spike/unknown-rate/engine-pins.tsv").exists():
+        return {}
+    out = {}
+    for r in read_ledger(root, "engine-pins.tsv", ENGINE_PIN_COLS):
+        if r["generation"] in out:
+            die(f"engine-pins.tsv pins generation {r['generation']!r} twice")
+        out[r["generation"]] = (r["tag"], r["asset"], r["sha256"])
+    return out
+
+
+def read_clock(root):
+    """target -> (minutes to first accepted recording, minutes to final) from b2-clock.tsv.
+
+    Self-reported by the author; this only does the arithmetic. A target with no
+    setup_started has no baseline and is left out; an event without its partner
+    prints `-`. The shape is held the way read_outcome_map holds its file: an
+    event outside the three the writer knows, a (target, event) stamped twice,
+    or a time the format does not parse is a refusal, not a row that quietly
+    wins or a traceback.
+    """
+    if not (root / "spike/unknown-rate/b2-clock.tsv").exists():
+        return {}
+    events = {}
+    for r in read_ledger(root, "b2-clock.tsv", CLOCK_COLS):
+        if r["event"] not in CLOCK_EVENTS:
+            die(f"b2-clock.tsv: {r['target']!r} carries event {r['event']!r}, not one of "
+                f"{'/'.join(CLOCK_EVENTS)}")
+        if r["event"] in events.get(r["target"], {}):
+            die(f"b2-clock.tsv stamps {r['target']!r} {r['event']} twice — the once-guard is "
+                f"in b2-clock.sh, and this row did not come through it")
+        try:
+            when = datetime.strptime(r["utc"], "%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            die(f"b2-clock.tsv: {r['target']!r} {r['event']} has a time that is not "
+                f"YYYY-MM-DDTHH:MM:SSZ: {r['utc']!r}")
+        events.setdefault(r["target"], {})[r["event"]] = when
+    out = {}
+    for t, ev in events.items():
+        if "setup_started" not in ev:
+            continue
+        def mins(k):
+            return round((ev[k] - ev["setup_started"]).total_seconds() / 60) if k in ev else None
+        out[t] = (mins("first_accepted_recording"), mins("final"))
     return out
 
 def read_outcome_map(root):
@@ -379,7 +523,9 @@ def read_apparatus(root, gen_dir):
     sweep continues) or at `docker images | grep`, whose empty result writes no
     image lines at all.
 
-    Returns the ids named by image lines, and how many such lines there were. The
+    Returns the ids named by image lines, how many such lines there were, and the
+    lines themselves (so a caller with one more rule — the engine pin — reads the
+    file once, here, rather than a window later). The
     ids come from the image lines only, not from every token in the file: taking
     the whole file lets an id satisfy the rule from anywhere in it, and the page
     promises "a line naming every image the manifest used". Measured before
@@ -413,7 +559,7 @@ def read_apparatus(root, gen_dir):
         if m:
             named.add(m.group(1))
             n_images += 1
-    return named, n_images
+    return named, n_images, lines
 
 
 def excluded_cell(trial_id, exclusions):
@@ -475,7 +621,8 @@ def tabulate(manifest, reports, by_id):
             setup_errors.append(base)
         else:
             trials.append({**base, "v": r["verdict"], "reason": r["reason"],
-                           "cp0": r["verdict"] == "PASS" and r["crash_points"] == 0})
+                           "cp0": r["verdict"] == "PASS" and r["crash_points"] == 0,
+                           "legs": r.get("legs", [])})
     return trials, walls, setup_errors
 
 # The headings emit_generation prints, in its own order. Kept as data beside the
@@ -701,7 +848,8 @@ def check_attribution(tables, published):
     return n_sec, n_detail, n_slice, n_outcome, sorted(set(sum_only))
 
 
-def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions):
+def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions,
+                    remeasured=frozenset(), clock=None):
     L = []
     L.append("")
     L.append(f"### Generation {gen['id']} — measured {gen['date']} ({gen['groups']})")
@@ -716,11 +864,22 @@ def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions):
             continue
         L.append("")
         L.append(f"#### {gname}")
+        # A mechanically selected group an earlier complete generation already
+        # measured is labelled under its heading rather than in it:
+        # `split_published` finds sections by the exact heading, and a prose line
+        # is not a table row (#619). `emit` narrows the set to MECHANICAL_GROUPS —
+        # freshness is what those groups are for; the A-group's re-measurement in
+        # g2 is the page's own subject and carries its prose outside the markers.
+        if group in remeasured:
+            L.append("")
+            L.append(f"_Re-measured in {gen['id']} on this generation's engine — a historical "
+                     f"comparison against the names an earlier generation measured, not fresh "
+                     f"evidence; the threshold basis is unchanged._")
         # Both mechanically selected groups print the funnel table: a wall row
         # runs no engine and only this shape has a column for it. The wide
         # table loops over trials alone, so a group sent there loses its walls
         # in silence (the first draft of #619 sent B2 there).
-        if group in ("B", "B2"):
+        if group in MECHANICAL_GROUPS:
             L.append("")
             L.append("| target | class | funnel stage | verdict | unknown_reason |")
             L.append("|---|---|---|---|---|")
@@ -777,6 +936,35 @@ def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions):
         L.append(f"| UNKNOWN | {sum(1 for t in ga if t['v'] == 'UNKNOWN')} |")
         L.append(f"| PASS | {sum(1 for t in ga if t['v'] == 'PASS')} |")
 
+    # Trials whose launcher recorded observation legs (#619): their own heading,
+    # outside GROUP_HEADINGS, so the attribution check neither reads these rows as
+    # a denominator nor mistakes a cell for a reason count.
+    legged = [t for t in trials if t.get("legs")]
+    if legged:
+        def leg_cell(l):
+            if l is None:
+                return "-"
+            reason = f" ({l['reason']})" if l["verdict"] == "UNKNOWN" and l["reason"] != "-" else ""
+            return f"{l['mode']}: {l['verdict']}{reason}"
+        L.append("")
+        L.append("#### Observation legs (trials whose launcher recorded them; the verdict above is the last leg's)")
+        L.append("")
+        L.append("| target | group | first leg | second leg | final mode |")
+        L.append("|---|---|---|---|---|")
+        for t in legged:
+            l2 = t["legs"][1] if len(t["legs"]) > 1 else None
+            L.append(f"| {t['tool']} | {t['group']} | {leg_cell(t['legs'][0])} | {leg_cell(l2)} | "
+                     f"{t['legs'][-1]['mode']} |")
+    if clock and any(x["group"] == "B2" for x in trials + walls):
+        L.append("")
+        L.append("#### B2 authoring clock (self-reported; minutes from setup_started)")
+        L.append("")
+        L.append("| target | to first accepted recording | to final |")
+        L.append("|---|---|---|")
+        for tool in sorted(clock):
+            a, b = clock[tool]
+            L.append(f"| {tool} | {'-' if a is None else a} | {'-' if b is None else b} |")
+
     L.append("")
     L.append("#### macOS column (derived, not measured)")
     L.append("")
@@ -822,8 +1010,10 @@ def emit(root):
     corpus, generations, tables = generation_tables(root)
     outcome = read_outcome_map(root)
     exclusions = read_exclusions(root)
+    clock = read_clock(root)
     L = [MARK_BEGIN,
          "_Generated by `spike/unknown-rate/count.py emit` — do not edit between the markers._"]
+    seen = set()  # groups a complete generation before this one measured
     for gen, exp, man, trials, walls, setup_errors in tables:
         if man is None:
             L.append("")
@@ -831,7 +1021,10 @@ def emit(root):
             L.append("")
             L.append(PLACEHOLDER)
             continue
-        L.extend(emit_generation(gen, trials, walls, setup_errors, outcome, exclusions))
+        groups = set(gen["groups"].split(","))
+        L.extend(emit_generation(gen, trials, walls, setup_errors, outcome, exclusions,
+                                 remeasured=groups & seen & MECHANICAL_GROUPS, clock=clock))
+        seen |= groups
     L.append(MARK_END)
     out = "\n".join(L) + "\n"
     # Held where the block is built, so both modes get the rule (the same reasoning
@@ -1130,6 +1323,20 @@ def check(root):
     bc = [c["tool"] for c in corpus if c["group"] == "B"]
     if bc != bt:
         die("corpus B rows differ from the committed b-targets.txt selection (order included)")
+    # The same binding for B2 (#619): a corpus row naming a target the committed
+    # list does not would break "committed before any of them ran" in silence.
+    # Only when B2 rows exist — g1 and g2 carried none, and the selection chain
+    # itself is held by `b2-selection` on the live tree.
+    bc2 = [c["tool"] for c in corpus if c["group"] == "B2"]
+    if bc2:
+        if not (root / "spike/unknown-rate/b2-targets.txt").exists():
+            die("corpus carries B2 rows and b2-targets.txt is missing — the rows cannot be held "
+                "to the committed selection")
+        # Read the way `b2-selection` reads it (comment lines dropped), so a header
+        # added to the file fails neither side or both.
+        bt2 = _b2_lines(root, "spike/unknown-rate/b2-targets.txt")
+        if bc2 != bt2:
+            die("corpus B2 rows differ from the committed b2-targets.txt selection (order included)")
     # And the selection itself must still be the mechanical derivation:
     # first N of (candidates minus exclusions). Without this, editing
     # b-targets.txt and the corpus together would keep everything
@@ -1181,6 +1388,8 @@ def check(root):
     # from one that opened nothing. Neither is asserted non-zero: a generation whose
     # trials are all walls names no images, and zero is the honest count.
     apparatus_images, manifest_images = 0, 0
+    pins = read_engine_pins(root)
+    pinned = 0
 
     for gen, exp, manifest, trials, walls, setup_errors in tables:
         gid = gen["id"]
@@ -1197,7 +1406,17 @@ def check(root):
         # generation with no manifest has no images to bind, and an unstarted one has
         # no apparatus to record. Not in `generation_tables` either — that is shared
         # with `emit`, and moving the refusal there would change which surface says no.
-        apparatus, n_img = read_apparatus(root, gen["dir"])
+        apparatus, n_img, alines = read_apparatus(root, gen["dir"])
+        # A generation engine-pins.tsv names a release for must say so in its own
+        # record (#619): the two digest lines describe whatever was mounted, and
+        # only this line says it was the pinned asset, checked against the digest.
+        if gid in pins:
+            tag, asset, psha = pins[gid]
+            want = f"engine: release {tag} {asset} {psha}"
+            if not any(l == want or l.startswith(want + " ") for l in alines):
+                die(f"{gid}: engine-pins.tsv pins {tag} but {gen['dir']}/apparatus.txt carries no "
+                    f"line `{want}` — the record does not say the pinned release ran")
+            pinned += 1
         used = {row["image"] for row in manifest if not row["argv"].startswith("wall:")}
         unlisted = sorted(used - apparatus)
         if unlisted:
@@ -1419,7 +1638,7 @@ def check(root):
           f"across {n_sec} sections{weaker}; {waived} SETUP_ERROR rows against "
           f"{len(exclusions)} waivers; {manifest_images} manifest images covered by "
           f"{apparatus_images} apparatus image lines read; {n_class} class exclusions matched "
-          f"to refusal-table rows")
+          f"to refusal-table rows; {pinned} generation(s) held to a pinned release")
 
 # --- The B2 selection chain (#619, ADR 0073) ---------------------------------
 #
@@ -1540,6 +1759,11 @@ def b2_selection(root):
             if col is not None and len(f) <= col:
                 raise B2Error(f"{rel} row has {len(f)} column(s), fewer than the {col + 1} its "
                               f"name sits in: {line!r}")
+            # corpus.tsv's own B2 rows are the selection, not prior contact:
+            # they name the thirty this check derives, and reading them as a
+            # ledger would demand the list exclude itself.
+            if rel.endswith("corpus.tsv") and len(f) > 1 and f[1] == "B2":
+                continue
             name = (line if col is None else f[col]).strip()
             if not name:
                 continue

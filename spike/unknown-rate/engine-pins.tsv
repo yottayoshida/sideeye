@@ -6,15 +6,16 @@
 #   generation  tag  asset  sha256
 #
 # sha256 is the digest GitHub publishes for the asset, copied here before the
-# sweep. This file is committed with the selection (the first of #619's three
-# merges); the readers land with the defines (the second): sweep.sh will fetch
-# the asset, refuse on a mismatch, unpack it in the zig-out layout under
-# spike/unknown-rate/engine/<tag>/ (ignored by git) and mount that read-only at
-# /work/zig-out, and apparatus.txt will then record the pin it checked against
-# on a line of its own, beside the banner and the two digest lines the
-# container computes from the mounted files; count.py check will refuse a
-# complete generation that has a row here and no such line. Until that merge,
-# nothing reads this file — it is the pin, written before the engine ran.
+# sweep. This file came with the selection (the first of #619's three merges);
+# its readers came with the defines (the second): fetch-engine.sh reads the
+# generation's row, fetches the asset, refuses on a mismatch and unpacks it in
+# the zig-out layout under spike/unknown-rate/engine/<asset>/ (ignored by git;
+# keyed by asset, not tag, so two assets of one tag do not share a directory);
+# sweep.sh mounts that
+# read-only at /work/zig-out, and apparatus.txt records the pin it checked
+# against on a line of its own, beside the banner and the two digest lines the
+# container computes from the mounted files; count.py check refuses a complete
+# generation that has a row here and no such line.
 #
 # The point of a release rather than a HEAD build: the selection is committed
 # before any candidate runs, and main moves several times a day, so "the engine

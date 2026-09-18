@@ -1,0 +1,2 @@
+# the C preprocessor c2hs runs on the header (refuses without it)
+cpp

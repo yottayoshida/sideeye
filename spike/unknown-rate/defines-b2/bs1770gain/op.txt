@@ -1,0 +1,1 @@
+bs1770gain -o $TOY_STATE/out --track-tags $TOY_STATE/a.wav

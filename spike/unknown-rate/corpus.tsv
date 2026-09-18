@@ -97,3 +97,39 @@ b-icinga2-ido-pgsql	B	icinga2-ido-pgsql	cxx-cli	-	-	W1	-	-	spike/unknown-rate/de
 b-lbdb	B	lbdb	perl-cli	l0	bgroup.sh	lbdb	b-lbdb	report.json	spike/unknown-rate/defines-b/lbdb	g1	-
 b-ldap-git-backup	B	ldap-git-backup	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/ldap-git-backup	g1	-
 b-ldap-utils	B	ldap-utils	c-cli	-	-	W2	-	-	spike/unknown-rate/defines-b/ldap-utils	g1	-
+# B2 rows (#619, ADR 0073): the thirty of b2-targets.txt in its keyed order, entering at g3.
+# Class slugs from the archive's implemented-in debtag as for B (haskell-cli="Haskell CLI";
+# a package tagged with several takes the first-table language among them). A wall row
+# carries the wall in args and its grounds in defines-b2/<tool>/NOTES.md; an explored row
+# runs bgroup.sh, which finds defines-b2/<tool>/ by its existence (the B rows keep their
+# argument; count.py check binds the manifest argv to launcher+args).
+b2-dvdbackup	B2	dvdbackup	c-cli	-	-	W2	-	-	spike/unknown-rate/defines-b2/dvdbackup	g3	-
+b2-roffit	B2	roffit	perl-cli	l0	bgroup.sh	roffit	b2-roffit	report.json	spike/unknown-rate/defines-b2/roffit	g3	-
+b2-bs1770gain	B2	bs1770gain	c-cli	l0	bgroup.sh	bs1770gain	b2-bs1770gain	report.json	spike/unknown-rate/defines-b2/bs1770gain	g3	-
+b2-txt2html	B2	txt2html	perl-cli	l0	bgroup.sh	txt2html	b2-txt2html	report.json	spike/unknown-rate/defines-b2/txt2html	g3	-
+b2-httrack	B2	httrack	c-cli	-	-	W2	-	-	spike/unknown-rate/defines-b2/httrack	g3	-
+b2-otf2bdf	B2	otf2bdf	c-cli	l0	bgroup.sh	otf2bdf	b2-otf2bdf	report.json	spike/unknown-rate/defines-b2/otf2bdf	g3	-
+b2-psutils	B2	psutils	c-cli	l0	bgroup.sh	psutils	b2-psutils	report.json	spike/unknown-rate/defines-b2/psutils	g3	-
+b2-zbar-tools	B2	zbar-tools	c-cli	-	-	W3	-	-	spike/unknown-rate/defines-b2/zbar-tools	g3	-
+b2-debmirror	B2	debmirror	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b2/debmirror	g3	-
+b2-unmass	B2	unmass	cxx-cli	l0	bgroup.sh	unmass	b2-unmass	report.json	spike/unknown-rate/defines-b2/unmass	g3	-
+b2-tcpslice	B2	tcpslice	c-cli	l0	bgroup.sh	tcpslice	b2-tcpslice	report.json	spike/unknown-rate/defines-b2/tcpslice	g3	-
+b2-debian-cd	B2	debian-cd	perl-cli	-	-	W3	-	-	spike/unknown-rate/defines-b2/debian-cd	g3	-
+b2-enscribe	B2	enscribe	c-cli	l0	bgroup.sh	enscribe	b2-enscribe	report.json	spike/unknown-rate/defines-b2/enscribe	g3	-
+b2-aggregate	B2	aggregate	c-cli	-	-	W3	-	-	spike/unknown-rate/defines-b2/aggregate	g3	-
+b2-mp3roaster	B2	mp3roaster	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b2/mp3roaster	g3	-
+b2-clzip	B2	clzip	c-cli	l0	bgroup.sh	clzip	b2-clzip	report.json	spike/unknown-rate/defines-b2/clzip	g3	-
+b2-crip	B2	crip	perl-cli	-	-	W2	-	-	spike/unknown-rate/defines-b2/crip	g3	-
+b2-giflib-tools	B2	giflib-tools	c-cli	l0	bgroup.sh	giflib-tools	b2-giflib-tools	report.json	spike/unknown-rate/defines-b2/giflib-tools	g3	-
+b2-emacspeak	B2	emacspeak	perl-cli	-	-	W3	-	-	spike/unknown-rate/defines-b2/emacspeak	g3	-
+b2-pngcrush	B2	pngcrush	c-cli	l0	bgroup.sh	pngcrush	b2-pngcrush	report.json	spike/unknown-rate/defines-b2/pngcrush	g3	-
+b2-migrationtools	B2	migrationtools	perl-cli	-	-	W3	-	-	spike/unknown-rate/defines-b2/migrationtools	g3	-
+b2-pacpl	B2	pacpl	perl-cli	l0	bgroup.sh	pacpl	b2-pacpl	report.json	spike/unknown-rate/defines-b2/pacpl	g3	-
+b2-c2hs	B2	c2hs	haskell-cli	l0	bgroup.sh	c2hs	b2-c2hs	report.json	spike/unknown-rate/defines-b2/c2hs	g3	-
+b2-apt-utils	B2	apt-utils	cxx-cli	l0	bgroup.sh	apt-utils	b2-apt-utils	report.json	spike/unknown-rate/defines-b2/apt-utils	g3	-
+b2-mail-expire	B2	mail-expire	perl-cli	l0	bgroup.sh	mail-expire	b2-mail-expire	report.json	spike/unknown-rate/defines-b2/mail-expire	g3	-
+b2-conv-tools	B2	conv-tools	c-cli	l0	bgroup.sh	conv-tools	b2-conv-tools	report.json	spike/unknown-rate/defines-b2/conv-tools	g3	-
+b2-sgml-base	B2	sgml-base	perl-cli	l0	bgroup.sh	sgml-base	b2-sgml-base	report.json	spike/unknown-rate/defines-b2/sgml-base	g3	-
+b2-zh-autoconvert	B2	zh-autoconvert	c-cli	l0	bgroup.sh	zh-autoconvert	b2-zh-autoconvert	report.json	spike/unknown-rate/defines-b2/zh-autoconvert	g3	-
+b2-icnsutils	B2	icnsutils	c-cli	l0	bgroup.sh	icnsutils	b2-icnsutils	report.json	spike/unknown-rate/defines-b2/icnsutils	g3	-
+b2-pgdbf	B2	pgdbf	c-cli	-	-	W3	-	-	spike/unknown-rate/defines-b2/pgdbf	g3	-

@@ -1,0 +1,60 @@
+# The B2 sweep image (#619): Debian 13 trixie — the archive select-b2.sh drew
+# the candidates from — with the oracle, the launcher's JSON reader, and the
+# B2 targets that reached the define stage. Like the other sweep images it is
+# pinned by BUILD, not by manifest: the base tag and the archive move, so what
+# a sweep ran is recorded in its artifacts/apparatus.txt and manifest, never
+# claimed from this file. The engine is not built here and not installed here:
+# sweep.sh mounts the released build at /work/zig-out (engine-pins.tsv).
+#
+# The apt lists are kept (no `rm -rf /var/lib/apt/lists/*` after the installs
+# below, unlike the other sweep images): the same image serves define
+# authoring, where b2-author.sh and b2-preflight.sh install each candidate at
+# run time to see whether it installs at all (wall W1) before anything else is
+# read, and an image that dropped the lists refuses them with "Unable to
+# locate package".
+FROM debian:trixie-slim
+
+# man-db and bsdextrautils (col) are for authoring: the walls W2 and W3 are
+# quoted from each target's manual, read inside this image by b2-author.sh.
+# The slim image tells dpkg to drop /usr/share/man on every install
+# (/etc/dpkg/dpkg.cfg.d/docker); that exclusion goes first, or the targets
+# installed at run time arrive without the manuals the protocol reads.
+RUN rm -f /etc/dpkg/dpkg.cfg.d/docker
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        strace \
+        python3 \
+        ca-certificates \
+        man-db \
+        bsdextrautils
+
+# The targets that reached the define stage, one line each, added as the
+# defines were written (docs/unknown-rate.md, the B2 subsection), followed
+# by the packages their defines' packages.txt name — each an environment
+# the target needs and its Depends do not pull in, named per define.
+RUN apt-get install -y --no-install-recommends \
+        roffit \
+        bs1770gain \
+        txt2html \
+        otf2bdf \
+        psutils \
+        unmass \
+        tcpslice \
+        enscribe \
+        clzip \
+        giflib-tools \
+        pngcrush \
+        pacpl \
+        c2hs \
+        apt-utils \
+        mail-expire \
+        conv-tools \
+        zh-autoconvert \
+        icnsutils \
+        sgml-base \
+        libpaper-utils \
+        fonts-dejavu-core \
+        flac \
+        cpp \
+        libtimedate-perl
+
+WORKDIR /work

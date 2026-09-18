@@ -2,6 +2,213 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-18 — the B2 defines and the apparatus that runs them: two legs per trial, the released engine mounted over a build, and the list held to the corpus (#619, second of three)
+
+**What this merge is.** The second of three: the launcher that records two observation legs, the
+sweep reading a pinned release instead of building the checkout, `count.py` holding the legs and the
+pin, the authoring clock, the thirty define directories under `defines-b2/` with their funnel walls,
+the corpus rows and the g3 row (unstarted). The numbers are the third merge. Started the same day the
+first merged (`315f244`), because authoring a define runs `preflight` against the candidate and the
+list had to be on `main` first.
+
+**The launcher keeps its name and its arguments.** `count.py check` binds a completed generation's
+manifest argv to `launcher args` (line 1231), so `bgroup.sh <target>` stays as it was measured under
+g1 and the launcher finds the define directory by which of `defines-b/` and `defines-b2/` exists.
+Three legs: `preflight --twice` (recorded, never the verdict), `explore` under the default mode, and
+`explore --observe syscalls` only when the first explore refused with the `next_step` that asks for
+that mode — the sentence `src/contract.zig` writes for `.observe_syscalls`, matched on its opening
+words (the first draft matched on the flag's spelling, which the `syscalls_may_have_killed` step
+also carries; the review paragraph below has the correction).
+`legs.tsv` names each leg's mode, verdict, reason, report and sha256; `report.json` and
+`transcript.txt` are copies of the last leg's, so the manifest's `rpath`/`rsha` binding is unchanged
+and `count.py` reads the legs beside it: each leg's report opened and re-hashed, leg 2 present
+exactly when leg 1 asked for it, the bound report the last leg's bytes. A define may carry
+`expect-status.txt`; the first group's uniform `0` is what refused cookietool.
+
+**The engine is fetched, verified and mounted, not built.** `fetch-engine.sh` reads the pin, downloads
+the asset once, refuses on a digest mismatch, and extracts the two files straight into
+`engine/<asset>/zig-out/{bin,lib}` with `tar --strip-components` — the first draft unpacked into a
+scratch directory and removed it with `rm -rf`, which this workspace's guard refuses on the host, so
+the script died after downloading and nothing was staged; a script that runs on the host does not
+get to remove a tree. `sweep.sh` mounts that directory read-only over `/work/zig-out` and writes
+`engine: release <tag> <asset> <sha256> verified-against github-release-digest` into `apparatus.txt`
+beside the two digest lines; `count.py check` refuses a pinned generation whose record lacks the
+line. The mountpoint has to exist inside the read-only `/work` bind — measured the same way the
+artifacts directory was: the first launcher test failed at container create with EROFS because the
+worktree had no `zig-out/`, and `sweep.sh` creates it (ignored by git, so the tree stays clean).
+Images are built by group now: a generation covering B and B2 builds `sideeye-ur-extra` (bookworm,
+the g1 targets) and `sideeye-ur-b2` (trixie, the B2 targets) and neither the campaign nor the
+assisted image, which the page promised a B-only generation could do and the script did not.
+
+**A label that reached the wrong table.** The re-measured line under a group's heading — "a
+historical comparison … not fresh evidence" — was written for B in g3, and the first cut printed it
+under every group an earlier complete generation had measured, which put it under g2's A-group and
+moved the published block of a generation nobody was re-measuring. It is B and B2 only now; the
+A-group's re-measurement is the page's own subject and carries its prose outside the markers.
+
+**Seen red, six times.** `fixtures/good` gained a B2 trial whose first leg refuses
+`oracle_missed_operation` with the syscalls step and whose second leg passes, a pin for its
+generation, the apparatus line the pin demands, and `b2-targets.txt` its corpus row is held to; six
+fixtures derived from it each die on their own sentence — the apparatus line removed, a second leg
+recorded when leg 1 was PASS, no second leg when leg 1 asked, `report.json` the first leg's bytes,
+a leg's sha256 altered, and a corpus B2 row the target list does not carry.
+
+**The launcher, run for real before any candidate.** 2vcard's g1 define in the trixie image under
+the mounted v1.5.0: `preflight --twice` exit 0, leg 1 PASS 3/3, no second leg (none asked for),
+`report.json` the same bytes as `report-wrappers.json`. Then a throwaway zstd define in a fake
+`/work` tree, for the other branch: leg 1 `oracle_missed_operation` with the step naming the mode,
+leg 2 under `--observe syscalls` PASS 9/9, `report.json` the second leg's bytes, `final=syscalls`.
+Both branches exercised on a real target before the thirty were touched.
+
+**Thirty candidates, authored in one sitting.** `b2-author.sh` per target — the clock's
+`setup_started`, a word-match grep of the tracked tree for the package name, and in a fresh
+container the install, the file list and the first screens of each binary's manual and `--help`
+— then a decision from the manual, a define or a wall, and for a define `b2-preflight.sh`
+(`preflight --twice` under the released engine, the package and its `packages.txt` installed at run
+time). Probes ran in batches of four to six; `preflight`, never `explore`. **Nineteen defines,
+eleven walls: five W2 (dvdbackup, httrack, debmirror, mp3roaster, crip — a drive, a server, a
+mirror), six W3 (zbar-tools, aggregate, pgdbf read and print; debian-cd and migrationtools ship no
+command of their own; emacspeak's one program asks questions), no W0 and no W1.** Of the nineteen,
+`preflight --twice` accepted fourteen and refused five, each refusal recorded in the define's
+`NOTES.md` as a reading of the funnel taken before the sweep: bs1770gain
+`unsupported_syscall_observed` — the tool creates a directory under the state and the default mode
+does not count `mkdirat`, and the refusal's `next_step` sends the reader to the README and DESIGN
+rather than to `--observe syscalls`, so the run contract runs no second leg; otf2bdf
+`oracle_missed_operation` on a 4096-byte write from inside stdio, whose step does name the mode;
+unmass `recording_run_failed` — the arm64 binary dies with SIGSEGV on every archive built to the
+formats its manual lists (a Doom PWAD, the same bytes as an IWAD, a Quake PAK), with and without the
+shim, while inside the engine's recording the decoded status was 1; and pacpl and mail-expire
+`child_touched_state_dir` — Perl scripts whose encoder (`flac`) or compressor (`gzip -9`) is a
+child that writes the state, with a step that says to invoke the wrapped command instead. The
+authoring clock (`b2-clock.tsv`): thirty targets, fourteen with an accepted recording, median
+five minutes from the batch's start to the first accepted recording and five and a half to
+`final`, the longest eight — the batch's wall time, not a per-target cost, and the page says
+so. The whole sitting, first `setup_started` to last `final`, is twenty-two minutes by the
+file's own stamps; the page's first draft called it "about an hour and a half", which was
+the author's impression and not the file, and the diff review caught the difference.
+
+**What the manuals did not say, and the container did.** Five defines needed a package the target's
+Depends do not pull in — `libpaper-utils` (psutils refuses to run without the `paper` command,
+even with both paper sizes on the command line), `fonts-dejavu-core` (a font for otf2bdf to
+convert), `flac` (pacpl reports "converted: 0, failed: 1" and exits 0 without it), `cpp` (c2hs
+refuses: "does not exist (file: `cpp')"), and `libtimedate-perl` (mail-expire cannot start:
+"Can't locate Date/Parse.pm") — five packages for five defines, each named in that define's
+`packages.txt`, and the sweep image installs the union. pngcrush's `-ow` writes its temporary in
+the current directory, which under the engine is the read-only repository mount: the first
+`preflight` was refused `recording_run_failed` for that, and the documented `[tempfile.png]`
+argument puts it in the state. otf2bdf writes the complete font and exits 8, for two fonts and
+with or without `-v`; the manual says nothing about exit status, so the define declares the
+measured 8 and says it was measured. apt-ftparchive's `.deb`, built by `dpkg-deb` in `setup.sh`,
+carried the build's mtimes into `Packages`' checksums; `SOURCE_DATE_EPOCH` and `touch` pin them.
+And a hand-assembled GIF was refused by giflib as "Image is defective" — the LZW stream was
+wrong — so the define seeds the well-known 43-byte 1×1 GIF89a instead; a hand-assembled PWAD,
+PAK, WAV, pcap, PNG, XBM, DBF, mbox, PostScript and BDF-input font were all accepted by their
+tools.
+
+**The slim image hides the manuals.** Debian's slim base tells dpkg to drop `/usr/share/man` on
+every install (`/etc/dpkg/dpkg.cfg.d/docker`), so the first probes came back with `--help` alone
+and `man: not found`; `Dockerfile.b2` removes that exclusion before anything is installed and
+adds `man-db` and `bsdextrautils` (`col`), because the walls W2 and W3 are quoted from the manuals
+and a probe that cannot open them decides from less than the protocol says it reads. The same
+image drops nothing else: its apt lists stay, because `b2-author.sh` and `b2-preflight.sh` install
+the candidate at run time, and the first build of the targets layer removed them the way every
+other Dockerfile here does — `apt-get install` would then have refused every candidate.
+
+**A shell `printf` is not a byte writer.** dirconv's define seeds a file whose name carries a
+Latin-1 byte; `printf "caf\xe9.txt"` in the image's `sh` (dash) wrote the four characters
+`\xe9`, dirconv found nothing to rename, and the trial read as a no-op until the name was written
+with python3. The measured stdout of pgdbf on a 77-byte hand-made dBase table is what its W3 rests
+on beside the manual, which names no output at all.
+
+**Review of the diff, round one** (a fresh reviewer; it ran `check`, the selection chain, the
+selftest and the fixture loop, and read every define). No P0. Four P1, all taken: the page said
+the thirty were authored "in one sitting of about an hour and a half", and `b2-clock.tsv` says
+21.9 minutes from the first `setup_started` to the last `final` — the sentence now quotes the
+file and keeps the wrong draft beside it; the legs table's `reason` cell was printed from
+`legs.tsv` and never held to the report, and `mode` cannot be (a report has no field for the
+flag it ran under) — `read_legs` now holds the reason and the page says the mode column is the
+launcher's record; eight of the new refusals had no fixture to make them fire, and the
+re-measured label and the clock table were rendered by nothing at all. The `good` fixture now
+carries a `b2-clock.tsv` and a second complete generation `g2` that re-measures B, so its page
+prints both, and eleven red fixtures join the six (`legs-columns`, `legs-report-missing`,
+`legs-verdict-mismatch`, `legs-reason-mismatch`, `legs-order`, `legs-mode-order`,
+`legs-report-torn`, `engine-pins-columns`, `engine-pins-duplicate`, `clock-columns`,
+`b2-targets-missing`) — seventy rows over seventy-two directories, every want matched by one
+fixture; one older want ("does not have 3 columns") had to be lengthened because the new clock
+fixture also says it. Seven P2, all taken: `engine-pins.tsv`'s header still said nothing read
+it; "four defines" needing a package were five; the median to `final` was six and is five and a
+half; emacspeak's notes now quote the perl debtag its `perl-cli` class rests on; `sweep.sh`
+captured apparatus from `sideeye-ur-extra` for a generation that built only the control
+images, and now captures from the image the generation built; the engine mount was an
+unquoted `$ENGINE_MOUNT` and is `${ENGINE_VOL:+-v "$ENGINE_VOL"}` (one argument, proven
+with a space in the path under `sh` — and, measured on the way, *not* under zsh, which does
+not word-split it and hands docker `-v /path` as one word); a torn leg report was a traceback
+from `json.loads` and is a refusal with a fixture; and the second-leg trigger matched any
+`next_step` containing `--observe syscalls`, which the `syscalls_may_have_killed` step also
+does in a sentence saying the opposite — both scripts now match the `observe_syscalls` step's
+opening sentence, and both real sentences from `src/contract.zig` were fed through the
+launcher's `case`: the one triggers, the other does not.
+
+**Review of the diff, round two** (another fresh reviewer, the round-one list and the tree after
+its fixes; it ran `check` on the tree and on all seventy-two fixtures, the selection chain, both
+selftests, and counted the defines, the `packages.txt` files and the clock's stamps against the
+prose). No P0, no P1; all twelve round-one items resolved. Five P2, all taken: the CHANGELOG still
+said "six fixtures"; the launcher paragraph above still said the trigger was "matched on the flag's
+spelling" while the review paragraph said the opposite (corrected in place, with the draft kept);
+`read_clock`'s `strptime` was a traceback on a malformed time, the same predicate as the JSON one
+— now a refusal with a fixture, and the reader holds the file's shape the way `read_outcome_map`
+holds its own (an event outside the three, a `(target, event)` stamped twice); the trigger phrase
+lived in two scripts and nothing bound either to `src/contract.zig`, and the two failure
+directions are not symmetric — a copy that drifts so leg 2 never fires leaves every B2 verdict at
+the default mode with nothing said, so `spike/acceptance.sh` now holds count.py's `SYSCALLS_STEP`
+to the opening of the `.observe_syscalls` arm and to the launcher's `case`, seen red on five
+mutations (the phrase drifted, deleted, the contract sentence changed, the launcher back to the
+flag's spelling, the phrase swapped for the `syscalls_may_have_killed` opening); and nothing
+required a B2 trial to carry `legs.tsv` at all — a launcher that failed to write it would have
+handed g3 a verdict with no legs behind it, so a B2 row without one is refused (fixture
+`legs-missing-b2`).
+
+**Cleanup pass** (four read-only reviewers, one angle each — reuse, simplification, efficiency,
+altitude). Applied, eleven: `fetch-engine.sh` reads the pin by generation, once, and prints the
+row back (sweep.sh had looked the file up by generation and then handed the tag to a script that
+looked it up again by tag, first match — two generations pinning one tag's two assets would have
+mounted the first's binary under the second's record), and stages under `engine/<asset>/` for the
+same reason; `b2-preflight.sh` runs the launcher itself with `BGROUP_PREFLIGHT_ONLY` instead of a
+copy of its define reading that had already lost the one-line and digits checks — all nineteen
+defines re-run through the rerouted script give the same fourteen `0` and five `2` the clock's
+stamps record, and the clock did not move (the once-guard now lives in `b2-clock.sh`, so `final`
+is held to it too); the launcher's two explore blocks are one `leg` function over one `run` of the
+engine, the `set --` dance is `${expect:+--expect-status "$expect"}`, the three `printf|cut` reads
+are one `IFS=tab read`; `sweep.sh`'s two `docker run` lines share `in_work`, and `id_img` is set by
+the build that ran rather than by a second `case` mirroring the first; `read_engine_pins` and
+`read_clock` go through `read_ledger` with named columns; `read_apparatus` returns its lines so
+the pin rule reads the file once; one `read_report_doc` serves the manifest-bound report and each
+leg (a torn `report.json` was a traceback and is a refusal with a fixture, and a leg is now held
+to the schema the verdict is); the B2 binding in `check` reads `b2-targets.txt` the way
+`b2-selection` does; the "B and B2" pair is `MECHANICAL_GROUPS` and the re-measured set is
+narrowed at the one call site; the hex check in `fetch-engine.sh` now checks all sixty-four
+characters, and `sha256sum` is required outright as the sibling scripts already require it. Left,
+with a note: a step id in the report so the trigger stops being a sentence (an engine and schema
+change; g3 is pinned to v1.5.0), deriving the image set from the corpus rows rather than from
+group names (about thirty lines in a script whose only test is the sweep — after g3), passing the
+define directory in from the corpus row instead of the two-directory probe, memoising
+`generation_tables` (outside the diff; 1–3 ms per pass at g3's size), and parallelising the
+fixture loop (+0.7 s for seventeen more fixtures). Every check re-run green afterwards: 87 rows,
+76 red fixtures over 78 directories each on its own message, selection chain, both selftests,
+emit byte-equal to the page.
+
+**The rewritten launcher, run.** Leg 1 for real, in the B2 image under the released v1.5.0 on a
+throwaway define mounted over a wall directory: `preflight.txt`, one `legs.tsv` row, `report.json`
+the leg's bytes. Leg 2 for real proved hard to provoke — a static `busybox cp` is refused
+`no_shim_marker` (a class wall, not the syscalls step), `cp` and a `sendfile` copy pass or refuse
+`recording_run_failed`, none of them the `oracle_missed_operation` that asks for the mode — so the
+second leg's mechanics were run under a fake `sideeye` (the `SIDEEYE` variable the launcher already
+honours) whose default mode refuses with the real `observe_syscalls` sentence and whose syscalls
+mode passes: two rows in `legs.tsv`, `final=syscalls`, `report.json`'s digest equal to
+`report-syscalls.json`'s, exit 0; and `BGROUP_PREFLIGHT_ONLY` stops after `preflight.txt` with
+preflight's status. What the fake does not show is the real engine's `--observe syscalls` on a real
+target; that is g3's to show, and `legs-second-leg-*` refuse the shapes it could get wrong.
+
 ## 2026-09-18 — B2's list is committed before any candidate meets the engine, and what the predicate, the key and the number were chosen from (#619, first of three)
 
 **What this merge is.** The first of three: the selection protocol, the exclusions, the alias

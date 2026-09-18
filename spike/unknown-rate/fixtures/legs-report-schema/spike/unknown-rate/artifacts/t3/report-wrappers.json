@@ -1,0 +1,7 @@
+{
+ "schema": "somebody/else",
+ "verdict": "UNKNOWN",
+ "unknown_reason": "oracle_missed_operation",
+ "crash_points": 0,
+ "next_step": "Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary \u2014 fixture copy of the engine's sentence."
+}

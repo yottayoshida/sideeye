@@ -1,0 +1,1 @@
+pngcrush -q -ow $TOY_STATE/a.png $TOY_STATE/pngout.png

@@ -1,0 +1,2 @@
+# the `paper` command psutils refuses to run without (a Recommends the slim image lacks)
+libpaper-utils

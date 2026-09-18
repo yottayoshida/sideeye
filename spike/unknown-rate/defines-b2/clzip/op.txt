@@ -1,0 +1,1 @@
+clzip $TOY_STATE/a.txt

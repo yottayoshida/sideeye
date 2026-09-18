@@ -62,13 +62,62 @@ if [ -n "$(cd "$ROOT" && git status --porcelain)" ]; then
     exit 2
 fi
 
-echo "sweep: building the Linux engine + shim"
-(cd "$ROOT" && zig build -Dtarget=aarch64-linux-gnu) || exit 2
+# The engine: a build of this checkout, or — when engine-pins.tsv names one for
+# this generation (#619, ADR 0073) — the released build, fetched and verified
+# by fetch-engine.sh and mounted read-only over /work/zig-out. The mountpoint
+# has to exist inside the read-only /work bind for docker to mount into it
+# (the same EROFS the artifacts dir below is created for), and zig-out/ is
+# ignored by git so creating it leaves the tree clean.
+ENGINE_VOL=""
+engine_line="engine: build"
+if grep -q "^$gen	" "$here/engine-pins.tsv" 2>/dev/null; then
+    pin=$(sh "$here/fetch-engine.sh" "$gen") || exit 2
+    engdir=$(printf '%s\n' "$pin" | cut -f1)
+    pin_tag=$(printf '%s\n' "$pin" | cut -f2)
+    pin_asset=$(printf '%s\n' "$pin" | cut -f3)
+    pin_sha=$(printf '%s\n' "$pin" | cut -f4)
+    echo "sweep: engine is the released $pin_tag ($pin_asset)"
+    mkdir -p "$ROOT/zig-out" || exit 2
+    ENGINE_VOL="$engdir/zig-out:/work/zig-out:ro"
+    engine_line="engine: release $pin_tag $pin_asset $pin_sha verified-against github-release-digest"
+else
+    echo "sweep: building the Linux engine + shim"
+    (cd "$ROOT" && zig build -Dtarget=aarch64-linux-gnu) || exit 2
+fi
+# Every container of this sweep sees the checkout read-only at /work and, when
+# a release is pinned, the staged engine over /work/zig-out. ENGINE_VOL is the
+# volume spec alone: ${ENGINE_VOL:+-v "$ENGINE_VOL"} passes one quoted argument
+# (a checkout path with a space survives) or nothing at all — under sh; zsh
+# does not word-split that expansion and hands docker `-v /path` as one word.
+in_work() {
+    docker run --rm -v "$ROOT":/work:ro ${ENGINE_VOL:+-v "$ENGINE_VOL"} "$@"
+}
 
+# Only the images this generation's groups reach are built — the same rule the
+# cohort images below already follow, so a generation covering B and B2 alone
+# does not depend on the campaign and assisted images no trial in it uses.
+# `id_img` is whichever of them was built first in this order: the apparatus
+# capture below reads the engine from it, and an image set here is one this
+# generation built.
 echo "sweep: building the images"
-docker build -q -t sideeye-ur-campaign -f "$ROOT/spike/Dockerfile" "$ROOT/spike" || exit 2
-docker build -q -t sideeye-ur-assisted -f "$ROOT/spike/assisted/Dockerfile" "$ROOT/spike/assisted" || exit 2
-docker build -q -t sideeye-ur-extra -f "$here/Dockerfile" "$here" || exit 2
+id_img=""
+case ",$gen_groups," in
+  *,A,*|*,control,*)
+    docker build -q -t sideeye-ur-campaign -f "$ROOT/spike/Dockerfile" "$ROOT/spike" || exit 2
+    docker build -q -t sideeye-ur-assisted -f "$ROOT/spike/assisted/Dockerfile" "$ROOT/spike/assisted" || exit 2
+    id_img=${id_img:-sideeye-ur-assisted} ;;
+esac
+case ",$gen_groups," in
+  *,A,*|*,B,*)
+    docker build -q -t sideeye-ur-extra -f "$here/Dockerfile" "$here" || exit 2
+    id_img=${id_img:-sideeye-ur-extra} ;;
+esac
+case ",$gen_groups," in
+  *,B2,*)
+    docker build -q -t sideeye-ur-b2 -f "$here/Dockerfile.b2" "$here" || exit 2
+    id_img=${id_img:-sideeye-ur-b2} ;;
+esac
+[ -n "$id_img" ] || { echo "sweep: no image built for groups '$gen_groups'" >&2; exit 2; }
 # The cohort images each COPY a tarball or vendored tree out of their own
 # artifacts/ directory, which is gitignored. Each cohort ships the fetcher
 # for its own inputs — run spike/cohort<N>/fetch-artifacts.sh on the HOST
@@ -102,22 +151,33 @@ done
 mkdir -p "$ARTS"
 
 # Apparatus identity, recorded from inside a container (the binary is a
-# Linux cross-build; the host cannot even run it).
-docker run --rm -v "$ROOT":/work:ro sideeye-ur-extra sh -c '
+# Linux cross-build; the host cannot even run it). Captured from `id_img`,
+# an image this generation built; the engine mount is the same for every
+# image, so the banner and digests describe what every trial ran.
+in_work "$id_img" sh -c '
   /work/zig-out/bin/sideeye 2>&1 | head -1
   sha256sum /work/zig-out/bin/sideeye /work/zig-out/lib/libsideeye_shim.so
 ' > "$ARTS/apparatus.txt" 2>&1 || { echo "sweep: engine identity capture failed" >&2; exit 2; }
 grep -q "^sideeye " "$ARTS/apparatus.txt" || {
     echo "sweep: the engine did not print its banner — wrong-platform build?" >&2; exit 2; }
 { echo "head: $(cd "$ROOT" && git rev-parse HEAD)"
+  echo "$engine_line"
   docker images --no-trunc --format '{{.Repository}} {{.ID}}' \
       | grep -E '^sideeye-ur-' ; } >> "$ARTS/apparatus.txt"
 
+# $3 is the corpus group: bgroup.sh serves two groups on two distributions,
+# and the group — not the launcher or its argument, which the frozen B rows
+# keep — says which image.
 image_for() {
     case "$1" in
       campaign.sh) echo sideeye-ur-campaign ;;
       assisted.sh) echo sideeye-ur-assisted ;;
-      watson.sh|dogfood.sh|bgroup.sh) echo sideeye-ur-extra ;;
+      watson.sh|dogfood.sh) echo sideeye-ur-extra ;;
+      bgroup.sh)
+          case "${3:-}" in
+            B2) echo sideeye-ur-b2 ;;
+            *) echo sideeye-ur-extra ;;
+          esac ;;
       # cohort.sh is the one launcher whose image depends on its arguments:
       # its first argument names the cohort, and each cohort pins its own
       # distribution of its own targets. Passing the args in keeps that
@@ -199,21 +259,23 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
             "$id" "$group" "$tool" "$class" "$judge" "$args" "$d" >> "$manifest"
         continue
     fi
-    img=$(image_for "$launcher" "$args") || { echo "sweep: no image for '$launcher $args'" >&2; exit 2; }
+    img=$(image_for "$launcher" "$args" "$group") || { echo "sweep: no image for '$launcher $args' ($group)" >&2; exit 2; }
     imgid=$(docker images --no-trunc --format '{{.ID}}' "$img" | head -1)
     [ -n "$imgid" ] || { echo "sweep: no image id for $img — build failed upstream?" >&2; exit 2; }
-    inv="$launcher $args"
+    # The group is part of the key: B and B2 share a launcher and cannot share a
+    # target name today (b2-exclusions.txt carries every B name), and the key
+    # says so rather than relying on it.
+    inv="$group/$launcher $args"
     case " $ran " in *" $inv "*) already=1 ;; *) already=0 ;; esac
     if [ "$already" = 0 ]; then
         ran="$ran $inv"
-        echo "sweep: $id — $launcher $args"
+        echo "sweep: $id — $launcher $args ($group)"
         # The repo mounts read-only: the trials drive real Debian packages
         # under crash injection as root, and nothing they do may write into
         # the checkout. Only the artifacts tree is writable (R1 measured a
         # launcher-arg bug creating a directory in the repo root — the ro
         # mount turns that whole class into a loud failure).
-        docker run --rm -v "$ROOT":/work:ro \
-            -v "$ARTS":/work/spike/unknown-rate/artifacts \
+        in_work -v "$ARTS":/work/spike/unknown-rate/artifacts \
             "$img" \
             /work/spike/unknown-rate/launchers/"$launcher" $args \
             /work/spike/unknown-rate/artifacts/"$artdir"
