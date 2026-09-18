@@ -906,6 +906,97 @@ if resp["result"]["isError"] is not False:
     sys.exit(resp["result"])
 PY
 
+echo "=========== mcp 19: the observation mode the engine names is one the tool can carry (#617) ==========="
+# The loop this closes: explore -> named refusal -> next_step -> retry -> verdict. The
+# default mode cannot see a write issued inside libc (a buffer overflow inside fprintf),
+# so the oracle sees an operation the shim did not and the run refuses
+# `oracle_missed_operation`, naming `--observe syscalls` in its step (#599, ADR 0069).
+# Before #617 that step was unreachable from here. The two legs below are the same target
+# and the same config, differing only in the parameter, so neither an implementation that
+# ignores it (leg 2 would repeat the refusal) nor one that always sends `syscalls`
+# (leg 1 would reach a verdict) passes both.
+#
+# TOY_STDIO_BIG reaches the child through the documented allowlist (mcp 7's mechanism);
+# the oracle is the file-level SIDEEYE_MCP_ORACLE, without which leg 1 would refuse
+# `completeness_not_verified` instead — a different reason, and the check would be
+# measuring nothing it claims to measure.
+mkdir -p "$WS/obsstate"
+cat > "$WS/observe.toml" <<TOML
+[world]
+state = "./obsstate"
+[define]
+setup     = "$OUT/toy-fixed init"
+operation = "$OUT/toy-fixed rotate"
+TOML
+
+# Reset and call are separate: the invalid-value loop below leaves a sentinel in the
+# state directory between the two, and a reset folded into the call would erase it.
+obs_reset() { rm -rf "$WS/obsstate" && mkdir -p "$WS/obsstate"; }
+obs_call() {  # obs_call <id> <arguments-json>
+    printf '%s' "{\"jsonrpc\":\"2.0\",\"id\":$1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":$2}}" \
+      | TOY_STDIO_BIG=1 SIDEEYE_MCP_CHILD_ENV=TOY_STDIO_BIG "$SIDEEYE" mcp > /tmp/mcp.out 2>/tmp/mcp.err
+}
+
+# Leg 1 — the parameter omitted: the call every client written before #617 makes. It must
+# still refuse, and the refusal must still carry the step that names the mode.
+obs_reset
+obs_call 30 "{\"config_path\":\"$WS/observe.toml\"}"
+python3 - <<'PY' && pass "omitting observe refuses oracle_missed_operation, and the step names --observe syscalls" || fail "the default-mode leg did not refuse the way #599 says it does"
+import json, sys
+d = json.load(open("/tmp/mcp.out"))
+r = d["result"]; sc = r["structuredContent"]
+if sc.get("verdict") != "UNKNOWN":
+    sys.exit("verdict %r, wanted UNKNOWN" % sc.get("verdict"))
+if sc.get("unknown_reason") != "oracle_missed_operation":
+    sys.exit("reason %r, wanted oracle_missed_operation" % sc.get("unknown_reason"))
+if "--observe syscalls" not in (sc.get("next_step") or ""):
+    sys.exit("the step does not name the mode: %r" % sc.get("next_step"))
+if r["isError"] is not True:
+    sys.exit("a refusal must be isError true (ADR 0010)")
+PY
+
+# Leg 2 — the same call with the step followed. PASS alone would be too weak: a PASS for
+# another reason would pass it. The absence of the refusal, and the oracle having verified
+# THIS run, are what say the second observation path did the work (the shape
+# spike/acceptance.sh's own syscalls leg asserts).
+obs_reset
+obs_call 31 "{\"config_path\":\"$WS/observe.toml\",\"observe\":\"syscalls\"}"
+python3 - <<'PY' && pass "observe=syscalls follows the step through the server and reaches the verdict" || fail "the syscalls leg did not reach the verdict the CLI reaches under --observe syscalls"
+import json, sys
+d = json.load(open("/tmp/mcp.out"))
+r = d["result"]; sc = r["structuredContent"]
+if sc.get("verdict") != "PASS":
+    sys.exit("verdict %r, wanted PASS: %s" % (sc.get("verdict"), sc.get("message")))
+if sc.get("unknown_reason") == "oracle_missed_operation":
+    sys.exit("still refused at the libc boundary — the mode did not reach the engine")
+if sc.get("oracle_verified") is not True:
+    sys.exit("oracle_verified %r: the two witnesses are not of this one run" % sc.get("oracle_verified"))
+if r["isError"] is not False:
+    sys.exit("a verdict is isError false (ADR 0010)")
+PY
+
+# A value the CLI would not take is refused HERE, at the protocol edge, and no child runs
+# for it. The two assertions divide the work: the `-32602` catches a server that passes the
+# value on (the CLI would refuse it at argument parsing, so the caller would get a
+# SETUP_ERROR instead of a protocol error), and the sentinel catches a server that falls
+# back to the default and explores — the engine empties and rebuilds the state directory
+# before the operation, so a file still standing in it says setup never ran. (A file count
+# under the work directory would say neither: the server's counter restarts at 1 per
+# process and the capture is unlinked and recreated, so the count is the same either way.
+# Measured while writing this leg.)
+for bad in '"Syscalls"' '"strace"' '42' 'null'; do
+    obs_reset
+    : > "$WS/obsstate/sentinel"
+    obs_call 32 "{\"config_path\":\"$WS/observe.toml\",\"observe\":$bad}"
+    if ! python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));e=d.get("error");sys.exit(0 if e and e.get("code")==-32602 and "observe" in e.get("message","") else 1)'; then
+        fail "observe=$bad was not refused -32602 naming the parameter"
+    elif [ ! -f "$WS/obsstate/sentinel" ]; then
+        fail "observe=$bad: the state directory was rebuilt — a child ran before the value was judged"
+    else
+        pass "observe=$bad is -32602 at the edge, with nothing spawned"
+    fi
+done
+
 echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

@@ -117,7 +117,10 @@ what `--observe syscalls` finds behind it, and nothing the wrappers observation 
   `state_changed_without_ops`, which see a change without its origin, so another process's write
   looks the same; `oracle_saw_phantom`; macOS, which has no such mode.
 - The MCP server passes no `--observe` and a `sideeye.toml` has no key for it, so through the server
-  `observe_syscalls` is advice for the command line (`docs/mcp.md`).
+  `observe_syscalls` is advice for the command line (`docs/mcp.md`). **(The first half is superseded
+  by ADR 0074, 2026-09-18: `sideeye_explore_config` takes an optional `observe`, so an agent can
+  follow this step through the server. The second half still holds — the config format has no key
+  for the mode.)**
 - `--observe syscalls` also sets `PR_SET_NO_NEW_PRIVS`, which a setuid or file-capability helper
   would notice; no document lists it and it was not measured. The sentence is written so it does not
   read as a complete list.

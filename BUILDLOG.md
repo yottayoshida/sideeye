@@ -2,6 +2,114 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-18 — the engine's own next step, made executable from the agent-facing surface (#617)
+
+**What was broken.** Since #599 a run refused `oracle_missed_operation` names `--observe syscalls`
+in its `next_step`: the oracle saw a state-changing operation the shim did not, and the syscall
+boundary is where it would be seen. The MCP surface could not carry that step —
+`sideeye_explore_config` took `{config_path}`, and the server passed no `--observe` — so an agent
+driving Sideeye through Sideeye's own agent-facing interface could receive a correct next step and
+have no way to execute it. The loop broke at the retry, and it broke on the one refusal the engine
+diagnoses precisely.
+
+**The freeze question, answered by the freeze page.** The MCP surface is frozen (v1.0, surface 5:
+the two tool names, their input schemas, the isError rule), and the issue asked for a compatibility
+ruling rather than an incidental flag pass-through. The ruling was already written: the same
+paragraph says **"Additive extension stays open: new tools, new optional parameters."** No optional
+parameter existed on either tool, so this is that allowance's first use rather than a reading
+invented to permit it. ADR 0074 records the reading and the rejected shapes; the freeze page records
+the date and that no `surface-changes.tsv` row belongs to it (that ledger is for breaks).
+
+**What was rejected, and why each one lost.** A key in `sideeye.toml` — the config format is surface
+1, also frozen, and the mode is a property of one invocation rather than of the declaration. A
+server environment variable, which is the shape every other knob here takes (`SIDEEYE_MCP_ORACLE`,
+`_SHIM`, `_WORK`, `_ROOT`, `_STATE_ROOT`, `_CHILD_ENV`) and therefore the one to beat: it cannot do
+this job, because an agent cannot change the environment of a server it is already talking to, and
+following a `next_step` is a mid-session act. Letting the engine refuse a bad value — the set is
+closed and the server knows it, so passing it through means a child runs against the caller's own
+target before the mistake is named. The server following the step by itself — the modes differ in
+what they refuse (`pwritev2` refused rather than counted, two calls left at the libc entry points,
+ADR 0059), so an automatic retry would silently change the terms of the answer.
+
+**The seam, and why there is one.** `runExplore` builds its argv inline and nothing returned it, so
+a unit test could only have covered a helper nobody was proven to call — the plan's first draft
+asked for exactly that and the review said so. What was extracted instead is the decision, not the
+formatting: `observeArg` answers `absent` / `mode` / `invalid`, and the three arms are unit-tested
+against seven spellings a caller might send (including `"Syscalls"`, the CLI flag spelled whole,
+and an explicit JSON `null`, which is a value rather than an omission). The call site is held by
+the acceptance legs, which go through the request path.
+
+**Measured on this Mac, before CI.** The macOS leg was run for real: `observe: "syscalls"` reaches
+the engine and comes back `SETUP_ERROR` / `platform_unsupported` with the message naming the mode —
+the engine's own answer for a filter macOS has no equivalent of. Seen red by mutating the server to
+read the argument and drop it (the shape a pass-through bug takes): the same call then reached
+`UNKNOWN`, and the check failed with "the argument did not reach the engine". **The restore that
+followed is the incident two paragraphs down** — it took the uncommitted implementation with the
+mutation — so the red above was measured on an implementation that then had to be rewritten. The
+green was re-measured on the rewrite; the red was not, and this says so rather than implying a
+tidy sequence.
+
+**What macOS does not show.** On that platform `missedOperationNext` (`src/boundary.zig`) returns
+the class wall, so no refusal there names the mode at all. The macOS leg therefore holds a narrower
+thing than the property: the argument is carried to a named answer rather than dropped. The
+property — refusal without the parameter, verdict with it, same config, same target — is Linux's,
+and lives in `spike/mcp-acceptance.sh` as mcp 19.
+
+**Review of the diff, round one** (a fresh reviewer; it extracted the schema literal and parsed it
+as JSON, counted the argv words on both arms, read the freeze audit's own pins, and searched the
+tree for the claim this change falsifies). No P0. **One P1, and it is the kind this repository
+keeps finding: the sentence that was missing rather than the one that was wrong.** Every other
+surface that offers `--observe syscalls` warns that the mode *changes what the target does* — the
+README's constraint list, `docs/cli.md`, and the engine's own `next_step`, which calls it the one
+limit that acts on the target instead of making Sideeye refuse. The new schema description and the
+new page section carried "Linux only", "counts at the kernel boundary" and "not a promise of a
+verdict", and none of the three says a process can die at its first state-changing call. An agent
+arriving through a refusal still gets the warning from `next_step`; an agent reading `tools/list`
+and choosing the mode itself — the path this change creates — got nothing. Both now say it, and
+the schema says it in the description an agent reads before it picks.
+
+Four P2, all taken: the page claimed sending `observe` to the replay tool "changes nothing:
+unknown keys are ignored", while the same `tools/list` publishes `additionalProperties: false` for
+that tool — the server does ignore it, a validating client will not, and neither is promised, so
+the page and ADR now say unspecified; the invalid-value leg asserted a file count under the work
+directory that **cannot change** (the counter restarts per server process and the capture is
+unlinked and recreated), so the assertion was removed and the sentinel — which does carry "no child
+ran" — is named as the one that does; `CHANGELOG.md`'s released `[1.5.0]` entry still says the
+server passes no `--observe`, left as the historical record it is, with ADR 0069's matching bullet
+already superseded in writing by ADR 0074; and the page's own opening line still summarised the
+tool as `{config_path}`.
+
+**Cleanup pass** (four read-only reviewers). Applied: `observeArg` returns
+`error{InvalidObserve}!?ObserveMode` instead of a hand-rolled three-way union and reuses `strArg`
+rather than re-spelling its switch; `RunKind` became `union(enum){ explore: ?ObserveMode, replay }`,
+which makes a replay under a chosen mode unrepresentable rather than forbidden by a comment (ADR
+0074 leaves that question open, and the type is where an open question belongs); the acceptance
+leg's reset was split from its call so the invalid-value loop stops re-inlining the request
+envelope, and the request is now written straight into a pipe instead of through `sh -c` and its
+doubled quoting (the environment still prefixes the server, which is what this leg needs and what
+`drive()` has no equivalent of — that helper passes no variables at all); the
+macOS script dropped a `mkdir` for the state directory after measuring that the engine creates it,
+and kept the one for the workspace it owns; and four prose repetitions came out of the freeze page,
+the ADR and this entry. **Not applied**: generating the schema's enum array from `ObserveMode` —
+the input schema is a frozen surface and must not follow an internal enum by itself, so what went
+in instead is a test that walks the enum's fields and asserts each is both accepted by `observeArg`
+and advertised in `toolsListBody()`, with the member count pinned at two so a removal is red as
+well. Also not applied: trimming the four invalid values to two (they cost one process each, and
+each spelling is one a real caller might send).
+
+**Two things the first Linux run caught, and one of them was self-inflicted.** The new leg was
+written as "mcp 16" — a number the suite already uses for the environment check — so the run
+printed two checks under one name. It is mcp 19. The larger one: every leg that sent the parameter
+behaved as though it had not been sent, and the reason was not in the leg. The seen-red script for
+the macOS check restored the mutated `src/mcp.zig` with `git checkout --`, and the implementation
+was **uncommitted** — so the restore threw the feature away along with the mutation, and its own
+report line ("restored: 0 changes to `src/mcp.zig`") read as "clean" when it meant "gone". The
+cross-build that followed built a server without the parameter, and the acceptance measured that.
+The implementation was rewritten and the run repeated. What the incident says about the check is
+good news — an argument that never reaches the server fails leg 2 and every invalid-value leg,
+loudly and for the right reason — and what it says about the mutation harness is that a restore
+which reaches for HEAD is only safe when HEAD holds what you are restoring to.
+
 ## 2026-09-18 — the #569 check flaked CI twice and kept nothing either time; a failing run now keeps its own words (#625)
 
 **What happened.** `spike/thread-kill-lands.sh` on the macOS job refused `kill_did_not_land` for one

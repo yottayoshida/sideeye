@@ -318,8 +318,9 @@ the tool result's `structuredContent`, minified. `isError` is derived from
 `verdict`: a real verdict (PASS/FAIL) is `isError: false`; every refusal
 (UNKNOWN, SETUP_ERROR) is `isError: true` — retry after doing what `next_step`
 says and fixing what the `message` names, don't parse the error text (ADR 0010).
-`observe_syscalls` (#599) names `--observe syscalls`, which this server does not
-pass, so its advice is for the command line (`docs/mcp.md`).
+`observe_syscalls` (#599) names `--observe syscalls`, which an agent can follow
+through the MCP server as well: `sideeye_explore_config` takes an optional
+`observe` (#617, `docs/mcp.md`).
 A SETUP_ERROR says which class it is in `setup_error_reason` (#518), and a
 failing setup's status in `setup_exit_code` / `setup_signal`; branch on those,
 never on the sentence. The text block's first line carries the class the way it
