@@ -1157,11 +1157,46 @@ jobs:
         run: bash spike/fsusage/acceptance-local.sh
 
       - name: A crash point reached on a worker thread kills the world — pthread, GCD, and the no-thread control (#569)
+        id: thread-kill-lands
         # Twelve explorations of each toy at nine crash points, every one required to PASS.
         # Before #569 this script's pthread toy refused kill_did_not_land 11 runs in 12 and its
         # GCD toy 12 in 12 on an arm64 Mac; the red was seen there, not on this runner, and the
         # script says so. No root and no oracle. The script builds into an empty prefix of its own.
-        run: bash spike/thread-kill-lands.sh 12
+        # The work directory is placed where the step below can find it: one run in twelve
+        # refused kill_did_not_land here on 2026-09-16 and 2026-09-18 (#625), and the summary
+        # line was all that was kept of either.
+        env:
+          THREAD_KILL_LANDS_BASE: ${{ runner.temp }}/thread-kill-lands
+        run: |
+          mkdir -p "$THREAD_KILL_LANDS_BASE"
+          bash spike/thread-kill-lands.sh 12
+
+      - name: Keep the failing worlds of the step above (#625)
+        # Only when that step itself failed. Two things had to be got right here, and the first
+        # draft of each was wrong:
+        #
+        #   * `failure()` alone is true for any earlier step of this job, and an earlier failure
+        #     skips the step above — so the condition would fire with nothing to upload.
+        #   * the step condition alone does not run at all: a condition holding no status function
+        #     has `success()` ANDed onto it by Actions, and `success()` is false the moment the
+        #     step above fails. `spike-fsusage.yml`'s upload says `always()` for this reason.
+        #
+        # Both together are the condition that means what the sentence says. The script copies
+        # each failing run's report, transcript and world directory under failed/, and this
+        # uploads them so the refusal's message and the world's trace can be read after the
+        # runner is gone.
+        #
+        # `warn`, not `ignore`: this path has never matched a real failure (the script side was
+        # seen red on this repository's own Mac; a hosted runner's failure is what it is for), and
+        # `ignore` is the one setting that says nothing when it matches nothing — a third flake
+        # would lose its worlds again with no sign of it. `warn` leaves an annotation and still
+        # does not fail the job.
+        if: always() && steps.thread-kill-lands.conclusion == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: thread-kill-lands-failed-worlds
+          path: ${{ runner.temp }}/thread-kill-lands/*/failed/
+          if-no-files-found: warn
 
 
   # The timewarrior finding lives here as a replayed regression, not a recipe (#82):

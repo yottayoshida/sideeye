@@ -33,13 +33,20 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 # At least one: zero runs would pass every toy having measured nothing.
 case "$RUNS" in ''|*[!0-9]*|0|0*) echo "FAIL: RUNS must be a positive number, got '$RUNS'"; exit 1 ;; esac
 
+fail() { echo "FAIL: $*"; exit 1; }
+
 WORK="$(mktemp -d "${THREAD_KILL_LANDS_BASE:-$HOME}/thread-kill-lands-XXXXXX")"
+# Without this, a base directory that does not exist leaves WORK empty (there is no `set -e`
+# here), the build lands in /out, and the script reports "zig build failed" — a true sentence
+# about the wrong cause. The CI step creates its base; a hand invocation need not.
+# `fail` is defined above rather than below, where it used to sit: the first draft of this guard
+# called it four lines before its definition, so the guard itself was a command-not-found that
+# nothing stopped, and the run went on to report the build failure it was written to prevent.
+[ -n "$WORK" ] || fail "could not make a work directory under ${THREAD_KILL_LANDS_BASE:-$HOME} — does it exist?"
 OUT="$WORK/out"
 SIDEEYE="$OUT/bin/sideeye"
 SHIM="$OUT/lib/libsideeye_shim.dylib"
 CC=/usr/bin/cc
-
-fail() { echo "FAIL: $*"; exit 1; }
 
 echo "predicate: for each of pthread, gcd and nothread, all $RUNS runs exit 0 with verdict PASS"
 echo "           over 9 crash points (--allow-unverified, no oracle)"
@@ -99,6 +106,44 @@ report() { python3 -c "
 import json,sys
 try: d=json.load(open(sys.argv[1])); print(d.get('verdict'), d.get('crash_points'), d.get('unknown_reason'))
 except Exception: print('(no-json) - -')" "$1"; }
+# The refusal's own words: `message` says which of the engine's refusal sites fired
+# (of the six that answer `kill_did_not_land`, the three in the world loop are the ones a
+# run here can reach — no landing record, a different operation sequence, a world that
+# exited on its own; the three in `containment.zig` are cgroup-side and this script is
+# macOS-only), and `next_step` says whose fault it reads as.
+detail() { python3 -c "
+import json,sys
+try:
+    d=json.load(open(sys.argv[1]))
+    print('    message:  ', (d.get('message') or '-').replace(chr(10), ' '))
+    print('    next_step:', (d.get('next_step') or '-').replace(chr(10), ' ')[:300])
+except Exception as e: print('    (report unreadable:', e, ')')" "$1"; }
+
+# A failing run keeps everything it produced. Twice (2026-09-16 and 2026-09-18, #625) one
+# run in twelve refused `kill_did_not_land` on the hosted runner, the summary line above was
+# all CI kept, and neither occurrence could be told apart from the others afterwards: the
+# work directory is a temp path nothing uploads. So the failing run's report, its explore
+# transcript and its world directory (the world's trace files and its stdout) are copied
+# under failed/, which the CI job uploads when the step is red, and the report's own words
+# are printed here beside the summary.
+keep_failed() {
+    local kind=$1 i=$2 dst="$WORK/failed/$kind-$i"
+    mkdir -p "$dst"
+    cp "$WORK/$kind-$i.json" "$WORK/$kind-$i.txt" "$dst/" 2>/dev/null
+    [ -d "$WORK/w-$kind-$i" ] && cp -R "$WORK/w-$kind-$i" "$dst/world"
+    detail "$WORK/$kind-$i.json"
+    # The transcript opens with the verdict, the reason and its sentence. Measured on the
+    # refusal the pre-#569 shim produces ("a world that should have been killed exited on its
+    # own"), where the closing lines carried nothing the opening lines had not; the engine's
+    # other refusal sites were not read this way, and the diagnosis does not rest on this
+    # excerpt — `message` above comes from the report.
+    echo "    transcript (first 4 lines of $kind-$i.txt):"
+    head -n 4 "$WORK/$kind-$i.txt" | sed 's/^/      | /'
+    # What was actually kept, rather than what the copies were asked to keep: a run whose
+    # world directory is gone (a setup that failed and undid its own mkdirs) copies less, and
+    # the difference belongs in the log rather than in the reader's assumption.
+    echo "    kept under: $dst — $(cd "$dst" && ls | tr '\n' ' ')"
+}
 
 bad=0
 for kind in pthread gcd nothread; do
@@ -114,10 +159,11 @@ for kind in pthread gcd nothread; do
             pass=$((pass + 1))
         else
             echo "  $kind run $i: exit=$rc verdict=$verdict crash_points=$points reason=$reason"
+            keep_failed "$kind" "$i"
         fi
     done
     echo "  $kind: $pass of $RUNS passed"
     [ "$pass" = "$RUNS" ] || bad=1
 done
-[ "$bad" = "0" ] || fail "a world did not die where it was asked to, or a control failed (see the lines above)"
+[ "$bad" = "0" ] || fail "a world did not die where it was asked to, or a control failed (see the lines above; the failing runs are kept under $WORK/failed)"
 echo "PASS"
