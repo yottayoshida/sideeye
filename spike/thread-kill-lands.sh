@@ -145,6 +145,30 @@ keep_failed() {
     echo "    kept under: $dst — $(cd "$dst" && ls | tr '\n' ' ')"
 }
 
+# A run that continued past a refused `setpgid(0, 0)` says so on the engine's stderr, which
+# lands in this run's transcript (#629). With that fix in place such a run **passes**, so
+# `keep_failed` never sees it, the transcript dies with the temp directory, and the one
+# record of the state three CI failures were read as `kill_did_not_land` is lost on the only
+# machine where it has ever appeared. The job log is kept whether the step is green or red,
+# so the line goes there. `session` equal to the child's pid is the refusal `man 2 setpgid`
+# documents; anything else is one it does not, and is worth an issue rather than a re-read.
+kept_notes=0
+note_kept() {
+    local kind=$1 i=$2 lines n
+    lines=$(grep "already leads its own group" "$WORK/$kind-$i.txt" 2>/dev/null) || return 0
+    [ -n "$lines" ] || return 0
+    n=$(printf '%s\n' "$lines" | wc -l | tr -d ' ')
+    kept_notes=$((kept_notes + 1))
+    echo "  $kind run $i: $n child(ren) continued past a refused setpgid(0, 0) (#629)"
+    # Every line, not the first. A run forks a child per crash point, and the line that
+    # matters is the one whose session is not its own pid — the refusal `man 2 setpgid` does
+    # not explain. Nothing puts that one first. Bounded so a build where every child writes
+    # one (the mutation this was seen red with) cannot bury the summary below.
+    printf '%s\n' "$lines" | head -n 20 | sed 's/^/      | /'
+    [ "$n" -gt 20 ] && echo "      | (and $((n - 20)) more)"
+    return 0
+}
+
 bad=0
 for kind in pthread gcd nothread; do
     pass=0
@@ -155,6 +179,7 @@ for kind in pthread gcd nothread; do
             > "$WORK/$kind-$i.txt" 2>&1
         rc=$?
         read -r verdict points reason <<< "$(report "$WORK/$kind-$i.json")"
+        note_kept "$kind" "$i" # before the verdict branch: a green run carries it too
         if [ "$rc" = "0" ] && [ "$verdict" = "PASS" ] && [ "$points" = "9" ]; then
             pass=$((pass + 1))
         else
@@ -165,5 +190,13 @@ for kind in pthread gcd nothread; do
     echo "  $kind: $pass of $RUNS passed"
     [ "$pass" = "$RUNS" ] || bad=1
 done
+# Before the `fail` below, which exits: a red run is the one most worth knowing this about,
+# and "0 runs" is itself a reading — without it a green run cannot be told from one that
+# never looked.
+if [ "$kept_notes" = "0" ]; then
+    echo "  setpgid(0, 0) was refused in 0 runs (#629)"
+else
+    echo "  setpgid(0, 0) was refused, and survived, in $kept_notes run(s) (#629) — the lines above name each one's session"
+fi
 [ "$bad" = "0" ] || fail "a world did not die where it was asked to, or a control failed (see the lines above; the failing runs are kept under $WORK/failed)"
 echo "PASS"
