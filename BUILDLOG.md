@@ -2,6 +2,90 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-18 — the child's group, not the child's `setpgid` call (#629)
+
+**What the diagnostics said, and what I read into it.** #626 shipped diagnostics for the macOS
+flake #625 tracked, and they fired on the very next pull request (#628): each failing run's
+transcript opened with `sideeye: the child could not be arranged before exec: setpgid(0, 0)
+failed, errno 1`, and `kill_did_not_land` was the symptom of a world that never ran. I filed
+#629 with a cause attached: the engine's parent issues `setpgid(pid, pid)` for the same child
+"to close the window where the child has not been scheduled yet", so when the parent wins that
+race the child's own `setpgid(0, 0)` finds itself already a group leader and is refused. I wrote
+that sentence from reading the two call sites. It is wrong.
+
+**Measured, before writing any fix.** A C probe on this host, parent winning the race by
+construction (the child waits on a pipe until the parent's `setpgid(pid, pid)` has returned):
+the child's `setpgid(0, 0)` answers **rc=0**. Leading a group of one's own is not a state the
+call is refused for. `man 2 setpgid` allows a self-call exactly one EPERM — "the process
+indicated by the pid argument is a session leader" — the other two EPERM clauses naming a
+*different* process or a pgid that is not the caller's pid. The state that reproduces CI's
+errno is therefore `setsid`, and it does, byte for byte: `-1`, `errno 1`, with
+`getpgid(0) == getpid() == getsid(0)`, on this arm64 Mac and in a Linux container (`gcc:13`),
+so the same clause holds on both platforms CI runs.
+
+**The fix follows the invariant rather than the call.** What the child must not do is `exec`
+while still sharing the engine's group — the shim's crash point kills `kill(0, SIGKILL)`, the
+caller's whole group. `setpgid(0, 0)` is how it gets there; it is not the only way it can
+arrive. So a refusal is now answered by asking the kernel where this process actually is: a
+child already leading its own group runs, and one that is not still exits 126. The errno is
+captured before `getpgid` and restored (a successful call may write errno), and the refusal's
+note now names the pid, group and session it read.
+
+**Both outcomes write a line.** What remains unexplained is how a forked child on a hosted
+runner came to be *seen* as a session leader: 200k forks of exactly this shape — orphaned
+session, parent racing with `setpgid(pid, pid)` — produced zero refusals here. Silent recovery
+would erase the only evidence that the state happens at all, which is the failure mode #625
+spent three occurrences in: a symptom with no name. So the recovery writes "setpgid(0, 0)
+failed, errno N, but the child already leads its own group (pid P, session S); continuing", and
+if `S == P` the next occurrence has confirmed the documented clause without another round of
+reading call sites. If it does not, the note says that too.
+
+**What review moved (R1).** Two findings, both taken. The first: the note I had just called
+"the record of the next occurrence" is written on a run that now **passes**, and
+`spike/thread-kill-lands.sh` keeps transcripts only for failing runs, with the CI upload
+conditioned on the step being red. So on the only machine where this state has ever appeared,
+the fix would have made its own evidence unreachable — the sentence in this entry was false
+where it mattered. The check now greps each run's transcript for the note, prints it with the
+session it read, and ends with the count either way; measured 3 of 3 against a build mutated
+to write the note unconditionally, 0 of 9 against this one. The second: a child that continues
+is, by the clause that refused it, a session leader — so inside the target a `setpgid(0, 0)`
+that shells make succeeds normally and is refused here, and nothing in the report says which
+kind of world produced the verdict. Saying it there means a field in a frozen surface, so it
+is #630 rather than this PR, with the limit written into the CHANGELOG entry instead.
+
+**What review moved (R2).** No P0 or P1; six P2, five taken. Two were my own overstatements:
+the seam's comment said "the kernel cannot be made to produce the refusal this branch is for"
+while the CHANGELOG said, in the same PR, that whether CI's refusals were that clause is
+unsettled — if one was not, this is the branch it took, and the comment now says so. The other
+called "a child's group and session coincide" a property of `fork`; it is the property of the
+hosts measured, and a parent with job control would break it. Two were the check again: the
+count line sat after `fail`, so a red run — the one most worth knowing it about — never printed
+it, and `grep -m 1` showed a run's first note only, which is the wrong one to keep when the
+line that matters is the one whose session is not its own pid. Both fixed and measured on a
+build mutated to write the note unconditionally with the verdict forced red: 11 notes per run,
+the count printed, then the refusal. The fifth: the surviving note's `write` inherits a
+dependency on fd 2 that the dying note did not have — `SIGPIPE` at its default ends a child
+that was about to run — which is now written where the shared `write` is, rather than left for
+the next reader to find. Not taken: `getpgid` could stop being `pub` like `getsid`, but it was
+`pub` before this PR and the file's habit is `pub`.
+
+**And one gap in my own testing.** The refusal branch — the exit this function keeps, and the
+note naming pid, group and session — had no test at all: every test I wrote covered the
+recovery. The kernel cannot produce that case (a refused self-call means a session leader,
+which means a group of its own), so the call is now on a seam the way `dup2Bounded` takes its
+`dup2`, and a fake supplies the refusal. Two mutants die: swapping `group` and `session` in
+the format string, and swallowing the refusal (`expected 126, found 7`). The field order is
+tested with three distinct numbers, which a fork cannot offer — a child's group and session
+coincide.
+
+**Seen red.** The test makes the kernel do the refusing — `setsid`, then a vacuity guard that
+exits 12 if this kernel accepts `setpgid(0, 0)` after all, then the helper, then exit 7 — and
+reads the child's note off a pipe. With the recovery branch removed the suite fails
+`expected 7, found 126`, which is the CI failure's own exit code, reproduced deterministically
+on a laptop for the first time in three occurrences. A second test forks a child that arranges
+nothing and asserts `getpgid(0) != getpid()`, so "already leads its own group" is not a
+property every child has and the 126 exit is still reachable.
+
 ## 2026-09-18 — the dominant wall is two walls, and the mode moves one of them
 
 **Why this was measured.** g3 named `child_touched_state_dir` the largest single refusal among
@@ -50,6 +134,7 @@ messages differ — and the re-run is what the artifacts hold.
 **Not filed.** The record names the split and stops there; whether the ordering wall is worth
 crossing is the owner's call, and crossing it is a question about a judgement that rests on one
 numbering, not about observation.
+
 
 ## 2026-09-18 — the engine's own next step, made executable from the agent-facing surface (#617)
 
