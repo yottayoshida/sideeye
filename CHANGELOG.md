@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **A second never-run corpus for the UNKNOWN-rate page, selected before any of it runs** (#619, **ADR 0073**; `spike/unknown-rate/select-b2.sh`, `b2-*.txt`, `b2-exclusion-aliases.tsv`, `engine-pins.tsv`, `count.py b2-selection`, [docs/unknown-rate.md](docs/unknown-rate.md)). The B-group was swept on 2026-08-16 by v0.9.0 and its seven explored targets are no longer fresh. B2 is thirty Debian 13 packages chosen by a committed predicate — a state-changing command-line program in a language the first table of `docs/target-classes.md` is written in — in an order keyed on the v1.5.0 tag's commit rather than the alphabet, minus every package the project has run, read or sealed, with the ledgers' spellings mapped to package names by an alias table. This is the first of three merges: the list now, the defines next, the swept numbers last, so the first-parent history shows the names were fixed before anything ran against them. Generation g3 will measure B2 and re-measure B on the released v1.5.0 build (pinned by digest), publish the two apart, and set no threshold from B2. `count.py b2-selection` holds the list to its derivation and every ledger name to the exclusions, with its own selftest; the pinned message of the `gen-group-unknown` fixture moves with the group list.
+
 ## [1.5.0] - 2026-09-17
 
 ### Added

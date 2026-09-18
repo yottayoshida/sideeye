@@ -7038,7 +7038,7 @@ for pair in \
     "apparatus-digest-missing:digest lines, not the engine's" \
     "apparatus-head-empty:no resolved head: line" \
     "apparatus-image-unlisted:the apparatus record does not" \
-    "gen-group-unknown:is not one of A/B/control" \
+    "gen-group-unknown:is not one of A/B/B2/control" \
     "gen-covers-no-group:a row no generation covers" \
     "corpus-since-unknown:is not a generation" \
     "outcome-map-columns:does not have 3 columns" \
@@ -7126,8 +7126,30 @@ if [ -n "$ur_amb" ]; then
     printf '%s\n' "$ur_amb"
     ur_fails=$((ur_fails + $(printf '%s\n' "$ur_amb" | wc -l | tr -d ' ')))
 fi
+# The B2 selection chain (#619, ADR 0073): the committed target list is the keyed
+# first-N derivation of the pool minus the exclusions, and every name the five
+# machine-readable ledgers spell is excluded directly or through the alias table.
+# A mode of its own rather than a branch of `check`, because the fixture trees
+# above carry no B2 files and a fail-closed reader there would hollow out every
+# red they exist to prove — the reason check-ledger-prose.sh is separate too. Its
+# reds are proven by its own selftest on a scratch copy of the live tree: the
+# baseline copy green, then one mutation per refusal the mode can raise (twenty-two:
+# the derivation proven twice, the short-row refusal once per ledger read past
+# column 0), each dying on its own message and the count of proofs asserted. The selftest's output is kept and printed on failure — a red
+# whose `die()` sentence is thrown away says only that something failed.
+if ! python3 "$ROOT/spike/unknown-rate/count.py" b2-selection --root "$ROOT"; then
+    echo "     the committed B2 selection is not select-b2.sh's derivation, or a ledger name is not excluded"
+    ur_fails=$((ur_fails + 1))
+fi
+b2_st=$(python3 "$ROOT/spike/unknown-rate/count.py" b2-selection --selftest --root "$ROOT" 2>&1)
+b2_rc=$?
+if [ "$b2_rc" != 0 ]; then
+    echo "     b2-selection --selftest failed: a mutation the mode should refuse passed, or the baseline copy is red"
+    printf '%s\n' "$b2_st" | grep -v '^count.py b2-selection: OK' | tail -3 | sed 's/^/       /'
+    ur_fails=$((ur_fails + 1))
+fi
 if [ "$ur_fails" = "0" ]; then
-    echo "ok   unknown-rate page in sync; gate red on all $ur_red tampered fixtures"
+    echo "ok   unknown-rate page in sync; gate red on all $ur_red tampered fixtures; B2 selection chain holds"
 else
     echo "FAIL unknown-rate drift gate: $ur_fails problem(s)"
     fails=$((fails + 1))

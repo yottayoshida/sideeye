@@ -1,0 +1,22 @@
+# Which released build a generation is swept with (#619, ADR 0073). One row per
+# generation that runs a release rather than a build of the checkout; a
+# generation with no row here builds the engine from HEAD the way g1 and g2 did.
+#
+# Columns (tab-separated):
+#   generation  tag  asset  sha256
+#
+# sha256 is the digest GitHub publishes for the asset, copied here before the
+# sweep. This file is committed with the selection (the first of #619's three
+# merges); the readers land with the defines (the second): sweep.sh will fetch
+# the asset, refuse on a mismatch, unpack it in the zig-out layout under
+# spike/unknown-rate/engine/<tag>/ (ignored by git) and mount that read-only at
+# /work/zig-out, and apparatus.txt will then record the pin it checked against
+# on a line of its own, beside the banner and the two digest lines the
+# container computes from the mounted files; count.py check will refuse a
+# complete generation that has a row here and no such line. Until that merge,
+# nothing reads this file — it is the pin, written before the engine ran.
+#
+# The point of a release rather than a HEAD build: the selection is committed
+# before any candidate runs, and main moves several times a day, so "the engine
+# chosen before the sweep" has to be a thing that does not move with main.
+g3	v1.5.0	sideeye-v1.5.0-aarch64-linux.tar.gz	f81c58a3eb632a352bba067457c8a0331ff9df91e914f0a39561da384b024815

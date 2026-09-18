@@ -5,8 +5,9 @@ targets to be **measured and published**, with a target threshold **set from
 that data** — and DESIGN §18 names "UNKNOWN dominates" as a kill condition.
 This page is the measurement's fixed rulebook and its published numbers, and
 it lands in two merges: the rulebook and apparatus first, the sweep's
-results after, in a separate PR — so the first-parent history proves the
-corpus predates the numbers (the same shape
+results after, in a separate PR (three for the B2-group added by #619, whose
+list merges before its defines — its section below says why) — so the
+first-parent history proves the corpus predates the numbers (the same shape
 `spike/assisted/verify-assisted.sh` checks for assisted claims). Until the
 results PR merges, the Results section below carries an explicit
 not-yet-measured placeholder that the CI gate asserts; everything else on
@@ -121,8 +122,13 @@ threshold set from it would be satisfied by construction. So:
 - **B-group** — targets this project has never run, selected mechanically
   (no hand-picking; see below). **The threshold is set from B-group data
   only.**
-- A-group and B-group are never pooled; no combined headline number exists
-  on this page or anywhere else.
+- **B2-group** — a second never-run set, selected mechanically from Debian 13
+  after v1.5 shipped (#619, ADR 0073; its own subsection below). To be
+  measured in generation g3 on the released v1.5.0 engine, beside a
+  re-measurement of the B-group on the same engine that will be published as a
+  historical comparison and not as fresh evidence. No threshold is set from B2.
+- A-group, B-group and B2-group are never pooled; no combined headline number
+  exists on this page or anywhere else.
 
 ## The rules (frozen before the sweep)
 
@@ -269,7 +275,22 @@ threshold set from it would be satisfied by construction. So:
   B-group's did not, and the threshold is set from B alone. Re-measuring B
   would put a criterion whose margin is one trial back in play as a side
   effect of correcting a published figure that is not its basis. A future
-  B measurement is its own decision, with its own generation.
+  B measurement is its own decision, with its own generation — and that
+  decision is #619's, the next bullet.
+- **B2-group, and the g3 re-measurement of B (#619, ADR 0073).** A second
+  mechanically selected group, frozen the same way as B and one step earlier:
+  its selection protocol and its target list merge before any define exists,
+  the defines merge before the sweep runs, and the results merge last, so the
+  first-parent order shows the names were fixed before anything ran against
+  them. Generation g3 will measure B2 and re-measure B on one engine — the
+  released v1.5.0 build, pinned in `engine-pins.tsv`, not a build of the
+  checkout — and publish the two in separate tables, never pooled: B's g3
+  figures will be a historical comparison against the names g1 measured, B2's
+  the fresh reading. No threshold is set from B2, and none is set before its
+  number is published. B's g3 figures are evaluated against the threshold below
+  as any B sweep's are, and what that comes to is recorded rather than decided
+  here. The protocol is in the corpus section, under B2; the first of the three
+  merges is the one this page describes as of this revision.
 
 ## The corpus
 
@@ -409,6 +430,157 @@ trail hashes those directories. The
 funnel instrument — in text + exit code, since preflight has no
 machine-readable form (a deliberate constraint: `explore --config` answers
 strictly more, and `--json` lives there).
+
+### B2-group — 30 targets, machine-selected on trixie (#619)
+
+**Every B2 figure on this page is recomputed from reports the released v1.5.0
+engine wrote against targets whose selection was committed before any of them
+was run.** That sentence is the group's promise; what follows is what holds it.
+
+**Where this section stands.** Three merges carry B2, and this revision of the
+page is the first: the protocol, the list, the exclusions and the engine pin
+are committed, and `count.py b2-selection` holds them. The defines, the
+two-leg launcher, `legs.tsv`, the readers of the engine pin in `sweep.sh` and
+`count.py check`, and `b2-clock.sh` land with the second merge; the artifacts
+and the numbers with the third. Until then, the paragraphs below that name
+those pieces say what the second merge is held to, not what the checkout does
+today — the footing the Results section stood on before the first sweep ran.
+
+**Why a second group.** The B-group above was swept on 2026-08-16 by the v0.9.0
+engine (contract v10). Since then the define surface and the engine moved —
+argv operations, exec chains, child-process accounting, the thread rule,
+`--observe syscalls` — and the seven B targets that reached an explore are no
+longer fresh: their refusals are on this page, two of them motivated later
+work, and hnb has since reached a verdict on a newer engine (the correction
+above). Re-running them measures how far the engine widened on that sample; it
+cannot say how often today's product reaches a verdict on a target it has never
+met. B2 asks that, and the two readings are published apart.
+
+**Selection** is `spike/unknown-rate/select-b2.sh`, run inside a
+`debian:trixie-slim` container against Debian 13's own package metadata
+(debtags; the release identity of the lists it read is in
+`b2-selection-record.txt`). The predicate: `role::program`; `implemented-in::`
+one of c, c++, python, perl, ruby, php, haskell, java, ecmascript — the
+languages the rows of `docs/target-classes.md`'s first table are written in;
+`use::` one of editing, converting, compressing, organizing, storing,
+synchronizing — a program that changes something; `works-with::` one of the
+file-shaped families (file, text, db, pim, mail, archive, image, image:raster,
+image:vector, software:source, software:package, vcs, logfile, font,
+dictionary, spreadsheet, calendar, audio, video); `interface::commandline`; not
+daemon, x11, graphical or web; and the same name filters as before. The pool
+is `b2-candidates.txt` (289 packages). Then the committed exclusions
+(`b2-exclusions.txt`) are removed and the **first 30** of the keyed order are
+the group, `b2-targets.txt`. Whatever the predicate produced is the group; no
+hand touched it at any stage, and `count.py b2-selection` holds the list to
+that derivation in CI.
+
+**The order is a keyed hash, not the alphabet.** Each candidate is ranked by
+`sha256("<package>\t<key>")`, the key being the commit the v1.5.0 tag points
+at (`b2-order-key.txt`): fixed and public before the pool was generated, and
+unrelated to any name. The first pool's alphabetical head was heavy in
+database-server tooling, which is why nine of its twenty were W2 walls.
+Choosing the key was a human decision — what it closes is reordering a list
+after seeing it, no more.
+
+**The bias, published.** Debtags coverage is partial: a package with no
+`use::` tag is not in the pool, `implemented-in::rust` is absent from trixie's
+vocabulary so no Rust target can be selected this way, and
+`interface::text-mode` programs (hnb's kind) are out. The predicate was chosen
+from tag semantics and the pool's size and language split — 289 packages, of
+which 275 carry one first-table language tag (155 C, 58 Perl, 30 C++, 23
+Python, 4 Haskell, 3 Java, 2 Ruby) and 14 carry two or more, the one PHP
+among them; counted by tag occurrence, so that a package with two tags counts
+in both, 166 C, 71 Perl, 33 C++, 26 Python, 5 Haskell, 4 Ruby, 3 Java, 1 PHP
+— never from a candidate's name. The pool size is held to `b2-candidates.txt`
+by `count.py b2-selection`, which reads the sentence above that states it; the
+split was counted once from the archive's tags on 2026-09-18 (`BUILDLOG.md`
+carries the counting) and no check recomputes it. N is 30 because the first pool's funnel put 7 of 20 into an
+explore and a single trial should not move the rate by a seventh; that is an
+expectation, and the funnel table is where it is measured.
+
+**Fresh means never met, under any name.** `b2-exclusions.txt` carries every
+package this project has already run, read or sealed — the twenty of the
+B-group, the A-group and its control, every target in `spike/outcome-funnel.tsv`
+and `spike/upstream-reports.tsv`, every tool in a table of
+`docs/target-classes.md`, the candidates the dogfood and cohort selections
+turned away, and the campaign taint ledger. Tool names and Debian package
+names differ (`GNU Stow` is `stow`; `mid3v2` is `python3-mutagen`), so
+`b2-exclusion-aliases.tsv` maps every ledger spelling to its packages, or to
+`-` where no Debian package exists, and `count.py b2-selection` holds four
+things: the target list is the keyed first-N derivation of the pool minus the
+exclusions; every name in the five machine-readable ledgers (`b-targets.txt`,
+`b-exclusions.txt`, `corpus.tsv` — the A-group and its control — the outcome
+funnel, the upstream reports) is excluded either directly or through the alias
+table; no alias names a package the exclusions do not carry; and the pool size
+this section states is the size of `b2-candidates.txt`. The prose sources — a dogfood run's rejection table,
+a cohort's candidate list — were read by hand into the exclusions and are
+held by nothing but that file. The alias table is written from memory of the
+archive and can be wrong in the direction that matters: a target selected here
+that this project already met under a name the table does not map becomes
+**wall W0**. Authoring each define therefore starts with a search of this
+repository for the package name and the binaries it ships, pasted into the
+define's `NOTES.md`; a hit is a W0 row, never a replacement. A W0 row means
+the alias table was short; it is recorded, and the table is not corrected
+after the fact. And, as for the B-group: **this page is the record** that the
+30 names in `b2-targets.txt` were read by this project.
+
+**The run contract**, for every target past the walls, will be
+`launchers/bgroup.sh` — keeping its name and its arguments, so the B rows of
+`corpus.tsv`, held to their g1 manifest by the argv binding above, do not
+change — with one uniform minimal define under `defines-b2/<t>/`: `setup.sh`;
+the one representative state-changing command from the target's own
+documentation as `op.txt` or, where the space-split contract cannot spell it,
+an `op.sh` naming its program by absolute path (the correction above); an
+optional `env.sh`; and an optional `expect-status.txt` carrying the exit
+convention the target's documentation states (cookietool's refusal was the
+uniform protocol's `0`, not the target's). Judge `l0`, strict oracle. Three
+legs, each recorded: `preflight --twice`, whose answer is the funnel
+instrument and never the verdict; an `explore` under the default observation
+mode; and, only when that explore refuses with a `next_step` naming
+`--observe syscalls`, a second `explore` under that mode. **The verdict is the
+last leg's.** `legs.tsv` beside the reports will name each leg's mode,
+verdict, reason, report path and sha256, and `report.json` — the file the
+manifest binds — will be a copy of the last leg's; `count.py check` will open
+each leg, recompute the digests, and refuse a trial whose second leg exists
+without the first having asked for it, is missing when the first did, or whose
+`report.json` is not the last leg's bytes. When the second leg refuses too,
+the tables will print both reasons; a second leg refused
+`syscalls_may_have_killed` is read as the mode's side effect and not as the
+target's own wall — its wall is the first leg's reason, and the first leg,
+being the default-mode run that refusal's own `next_step` says to compare
+against, is the comparison. No invariant is weakened to reach a verdict. The
+B rows re-measured in g3 will run through the same launcher, so their first
+leg is the g1 protocol plus the `--twice` answer, and any second leg is
+recorded the same way.
+
+**The engine is the released build.** `engine-pins.tsv` names, per
+generation, the release tag, the asset and its sha256 as GitHub publishes it —
+committed with this merge, read by nothing until the next. `sweep.sh` will
+fetch the asset, refuse on a digest mismatch, unpack it under
+`spike/unknown-rate/engine/` (ignored by git) in the `zig-out` layout, and
+mount it read-only at `/work/zig-out` in place of a build of the checkout, so
+the banner and the two digest lines in `apparatus.txt` describe the shipped
+binary and a further line records the pin it was checked against; a complete
+generation with a pin whose record lacks that line will be refused.
+
+**Authoring time is recorded, self-reported.** `spike/unknown-rate/b2-clock.tsv`
+will carry one line per event per target — `setup_started`,
+`first_accepted_recording` (the first `preflight` that exited 0), `final` (the
+define committed, or the wall decided) — appended by `b2-clock.sh` when the
+author reaches that point. It sits outside the define directories, whose bytes
+the manifest's define digest covers. It is what the author wrote down, and
+nothing checks it against a clock; it is published so that reach and authoring
+friction are not read as one number.
+
+**No threshold.** The threshold section below is evaluated on the B-group, and
+g3's B figures will be held to it as any B sweep's are — including the
+sentence that a sweep failing part 1 is DESIGN §18 material. Whether criterion 4's status
+moves on that is the owner's call, made after the number exists and recorded
+in `PRD.md` with the date. B2 gets no threshold on this page, and any threshold
+or widening issue the frozen result suggests is filed from that result, not
+before it. Rows that reach an explore here do not join `spike/outcome-funnel.tsv`,
+as the B-group's did not: that record is one row per campaign and target and
+this sweep is not a campaign; folding the two funnels into one is its own change.
 
 ## Method
 

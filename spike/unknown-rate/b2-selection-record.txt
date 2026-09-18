@@ -1,0 +1,44 @@
+generated: select-b2.sh (N=30)
+pool after predicate: 289 packages
+order key: 4f8a54ec754b591e76132e7a65f6d12c9afe4e32
+apt release identity of the lists read:
+     origin deb.debian.org
+     release a=now
+     release v=13,o=Debian,a=stable-security,n=trixie-security,l=Debian-Security,c=main,b=arm64
+     release v=13-updates,o=Debian,a=stable-updates,n=trixie-updates,l=Debian,c=main,b=arm64
+     release v=13.7,o=Debian,a=stable,n=trixie,l=Debian,c=main,b=arm64
+ 100 /var/lib/dpkg/status
+ 500 http://deb.debian.org/debian trixie-updates/main arm64 Packages
+ 500 http://deb.debian.org/debian trixie/main arm64 Packages
+ 500 http://deb.debian.org/debian-security trixie-security/main arm64 Packages
+keyed order, first 30 after exclusions (hash  package):
+  0242f8f2aa55e9c28b2c0c781fcbbcd756370caa020af760e57d4ad958759ab4  dvdbackup
+  0254589f2654ec80d8b1dd5ac5f1e6e100e6beb87eb25e8845a4daaeda6657c7  roffit
+  043f21dcbd89f654ef462eb23440f5e1fd2c97a14b899e8a4a95065e65806359  bs1770gain
+  058545adeb8270c1e639139abf631c1774d948132622c36545118553095f56f0  txt2html
+  05c4c014b62bbe8751f8c9c0d1d2e4b9befe8c5b647a8afe20ad72cdf2d9f4c7  httrack
+  068b7fb9e6b4acbafc6563f509b098e4a59ec05b1f974491aca88042929a6655  otf2bdf
+  0a18770f3abb97d3752e081d9ab9e68d3122e67ea4fbc18332a0b01b5dba67d0  psutils
+  0b6da8282f488f2bfefc8d4a55c22ccd1027fa96c4a1a003b838103ed6e10246  zbar-tools
+  0d692ab8fb2e16caaad510b8ed8b1ad9fe4332a6dcfd9bb444c513d1401ed06c  debmirror
+  0e9aa3e1e25b492e286657fb69dbef2a7061d9233ed47f43dfb262745f572cea  unmass
+  0ea38898d93063c84ba4c50d976ef065394d112cb26087bf99284f1fc7b5b9c1  tcpslice
+  0ee7fb51d949d6de5f278131d35d2757ec551388e012a500c4d6da39beb1ccd6  debian-cd
+  10495870916f539d06c5cf9a9d4d6893d01a7b3dace25fc0844186255738ff25  enscribe
+  1095a6682d6da51690195a026ddf78030063a97e1bbc205f041f3711fabc31da  aggregate
+  10e03cd96cc0a7aced3f67a150424cf768bf1447a9cfc84291702e15b4185711  mp3roaster
+  118ea0996f11ebb4b0135c5d7fe2554de72d53f3f77c5eae12dbfff5bf154c06  clzip
+  12db56907bc4b619d9b5b1f5400879760e02f3f26d73da94b281d5c0c16b8658  crip
+  1352faa33ad673c44fc2f64b648420812da7c76c007e20bd2b2394841ff8bb2a  giflib-tools
+  1559dd42d89f6a523b1092d66725854fe771700f8266c8c6c86c39b3be2b886b  emacspeak
+  15e2e5b38e7150dee001dd3010c40344383f79594c523f5686b4fcc22785b065  pngcrush
+  1727078aab1c7a511baa3b2cac932bff68aeb2d6935d717b187905a2f43e7326  migrationtools
+  181c62f1a8ed938b9e7520a1d440c74fc04be50c5a802fb5fb6e5c36fd47ecda  pacpl
+  1b348c5688eb9b891cdef1e3b3fb06a564e6af61dcbf7435dbaeaa949fd502e2  c2hs
+  1bcff1c5cda791233b4ec1360f5903351113d916ef66cbd05dccc643ea09121e  apt-utils
+  1be6630fc917cf6c0c3ab1e9723f7a553ef7aadd8d9057cc58694fc5d4ae431a  mail-expire
+  1c81379aba3e0b12d6cc2bda27c33c237e54334076795524730952deeafac96e  conv-tools
+  1cb8508c36dc9e96195ba90bd432bb8836ba27085e99181eab5d2c05566f14dc  sgml-base
+  1d6bc2b3aef8d7801711d3d42a3ddb217d7f19825edea7ebe083648f74ef220e  zh-autoconvert
+  1e6f7e3de9ad60eb5c230d4b9970b8f11585badf7d4a8c071907f3ec6d1c426b  icnsutils
+  20a025fe852a7c627b29ba87c48ecce4c532288b0d0f072e7a714e59c49848bf  pgdbf
