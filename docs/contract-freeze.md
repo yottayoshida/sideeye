@@ -231,3 +231,9 @@ stay the same.
    their input schemas, and the isError derivation rule (isError follows the
    verdict structure: real verdicts false, refusals true — ADR 0010).
    Additive extension stays open: new tools, new optional parameters.
+   **That allowance was used for the first time on 2026-09-18** (#617, ADR 0074):
+   `sideeye_explore_config` gained an optional `observe`, so an agent can follow
+   the `--observe syscalls` step the engine names in a refusal's `next_step`.
+   Omitted, it passes no flag and reaches the run every earlier caller reached;
+   nothing in the list above changed. No row in `surface-changes.tsv`: that
+   ledger is for breaks, and an addition this paragraph permits is not one.

@@ -392,6 +392,18 @@ jobs:
       - name: Every MCP environment read is documented, and every documented one is read (#389)
         run: python3 spike/check-mcp-env.py docs/mcp.md src/mcp.zig
 
+      # #617: the parameter is Linux's to use, and macOS's to answer. The Linux leg lives
+      # in spike/mcp-acceptance.sh (mcp 19); this one holds the other half — the argument
+      # reaches the engine here too, and comes back as the engine's own named refusal
+      # rather than as a silent run in the default mode.
+      - name: The explore tool carries observe to a named refusal on macOS (#617)
+        run: |
+          mkdir -p /tmp/mcp-observe
+          cc -o /tmp/mcp-observe/toy spike/toys/toy.c -lpthread
+          sh spike/check-mcp-observe-macos.sh \
+             zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib \
+             /tmp/mcp-observe /tmp/mcp-observe/toy
+
       # #325's call site, on the platform the author works on. The property — a relative
       # `define.state` resolves against the case file, not the invoking cwd — is held in
       # the Linux container by acceptance legs I-M, and `resolvePathAgainst`'s own unit
