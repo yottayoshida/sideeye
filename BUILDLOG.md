@@ -2,6 +2,83 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-18 — the #569 check flaked CI twice and kept nothing either time; a failing run now keeps its own words (#625)
+
+**What happened.** `spike/thread-kill-lands.sh` on the macOS job refused `kill_did_not_land` for one
+run of twelve on 2026-09-16 (PR #608, the `nothread` control, run 11) and again on 2026-09-18
+(PR #624, `pthread`, run 2) — both pull requests changed no code the check runs, both re-runs were
+green, and both refusals came after a complete recording of nine crash points, so each was one
+explored world of ten. The repository's rule is that a test that flakes twice is fixed before
+anything else merges; the owner chose to follow it, #624 waits, and this entry is the fix's.
+
+**What could not be known.** The script printed the verdict, the crash-point count and the reason
+for a failing run, and nothing else; the report's `message` — which of the three
+`kill_did_not_land` sites the world loop can reach on macOS fired (no `kill_landed` record at the
+asked-for operation, a different operation sequence, or a world that exited by a status rather
+than by SIGKILL; `src/containment.zig` has three more, and they are cgroup-side, so this script
+cannot reach them) — and the world's trace stayed in a `mktemp` directory under the runner's home,
+which nothing uploaded. Two occurrences, zero diagnosable. That is the first thing to change, and
+it is what this entry ships whether or not the cause is found: the failing run's report,
+transcript and world directory are copied under `failed/` — with the copy naming what it actually
+kept, since a run whose world directory is gone copies less — the report's `message` and
+`next_step` are printed beside the summary line, and a CI step uploads `failed/`.
+
+**Two things about that step the review had to correct.** It was written `if: failure()`, which
+is true for any earlier failure in the job — and an earlier failure skips the check, so the
+condition would have been about the wrong thing; it now reads that step's own conclusion. And it
+was written `if-no-files-found: ignore`, the one setting that says nothing when it matches
+nothing: this path has never matched a real failure, because the script side is what was seen red
+here and a hosted runner's failure is the thing it exists for, so a third flake could have lost
+its worlds again with no sign of it. `warn` leaves an annotation without failing the job. Also
+from the review: the script now refuses outright when `THREAD_KILL_LANDS_BASE` names a directory
+that does not exist, instead of leaving `WORK` empty (there is no `set -e`) and reporting
+"zig build failed" about it.
+
+**That last guard was written wrong and the run that checked it said so.** It called `fail` four
+lines above where `fail` is defined, so the guard was a command-not-found, nothing stopped it, and
+the script went on to report exactly the build failure the guard exists to prevent — the defect it
+was written against, reproduced by the fix for it. Pointing the base at `/no/such/dir` is what
+showed it: the output read `FAIL: zig build failed; nothing was measured` with `--prefix /out`.
+`fail` now sits above the guard, and the same invocation answers "could not make a work directory
+under /no/such/dir — does it exist?". A guard nobody runs once is a comment.
+
+**Reproduction, attempted and failed.** On this arm64 Mac (macOS 15.3.1, the machine #569's own
+red was measured on) the script passed 180 of 180 at 60 runs per kind, and then 300 of 300 at 100
+runs per kind with ten busy loops competing for the CPU — the shape a shared hosted runner was the
+obvious guess for. 480 runs, no refusal. So the cause is not reproduced here and this change does
+not claim it: what ships is the ability to read the next occurrence, and the check is otherwise
+exactly as it was. The two known occurrences are one control run and one pthread run, which is
+already evidence that whatever it is does not belong to the worker-thread delivery #569 fixed.
+
+**Seen red.** The new failure path was exercised by mutating `killAtCrashPoint` back to the
+pre-#569 shape (the group kill and `_exit`, with `raise` and the wait removed). Twice, because the
+first attempt measured the script before its own guard was fixed; the numbers here are the second
+attempt's: **seven failing runs** — pthread 1 of 4 passing, GCD 0 of 4, the no-thread control 4 of
+4. The control passing is what that mutation predicts, and the pthread toy passing once is the
+same race #569's own measurement saw from the other side (263 of 2,000 kills landed there). Every
+refusal was `kill_did_not_land` with the message "a world that should have been killed exited on
+its own" and the `next_step` "Nothing in the define fixes this: it is a defect in Sideeye. File it
+with the report attached.", printed beside each summary line with the transcript's opening lines,
+and each kept directory listed what it held: `<kind>-<n>.json`, `<kind>-<n>.txt`, `world`. The
+shim source was restored from HEAD afterwards (`git status` clean under `shim/`), and the
+unmutated check is green here. The transcript excerpt printed is the **first** four lines, not the
+last: on those runs the closing lines carried nothing the opening lines had not, while the opening
+lines carry the verdict, the reason and its sentence. That was measured on one of the three
+refusal sites the world loop can reach — the one that mutation produces — and the diagnosis does
+not rest on the excerpt anyway: `message` comes from the report, and the world directory travels
+with it.
+
+**One guard here has no falsification, and it is the one that was wrong twice.** The script's two
+— the diagnostics and the base-directory check — were each seen red. The CI step's condition was
+not, because nothing available here runs a hosted macOS job: its first draft was `failure()`,
+which is true for any earlier step of the job; its second was the step's own conclusion, which
+Actions ANDs with an implicit `success()` when a condition names no status function, so it would
+have been skipped exactly when it was wanted — a condition that reads correctly and never runs.
+The second review found that by reading the expression against Actions' rule and against
+`spike-fsusage.yml`, whose upload says `always()` for the same reason. It is now
+`always() && steps.thread-kill-lands.conclusion == 'failure'`, and it is still unfalsified: the
+next occurrence is what shows whether the artifact appears. The path is written twice, in the
+step's `env` and in the upload's `path`, and nothing checks that they agree.
 ## 2026-09-18 — g3: B2 measured for the first time, B re-measured beside it, and the walls named (#619, third of three)
 
 **The run.** A clean worktree at the second merge (`0b9e5e6`), `sweep.sh g3`, the released
