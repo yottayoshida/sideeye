@@ -1,0 +1,15 @@
+image sideeye-ur-b2 sha256:4712a432bed3fca27c100a822ae8ee713e92190ef66af4d34fb21a9276e1f379
+image sideeye-ur-extra sha256:e124ccf0a5887f47542bfde8c3f28f2909807c82fc2758ba018051187222fc90
+## sideeye version
+sideeye 1.5.0 (trace contract v18)
+## sha256
+3a32debb958c829a94d73aed4b0c5eb8c580c68a6b0d019291eb504086fe4c80  /work/zig-out/bin/sideeye
+20fdbe61eb414c53f942fdd63caca4b7a8ccd3d6d2df9265fd1c44ebe48afad2  /work/zig-out/lib/libsideeye_shim.so
+## uname
+aarch64
+run pacpl wrappers :: explore --state /tmp/m/pacpl/state --setup /work/spike/unknown-rate/defines-b2/pacpl/setup.sh --operation pacpl --to flac /tmp/m/pacpl/state/a.wav --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace --work /tmp/m/pacpl/work --json /out/pacpl-wrappers.json 
+run pacpl syscalls :: explore --state /tmp/m/pacpl/state --setup /work/spike/unknown-rate/defines-b2/pacpl/setup.sh --operation pacpl --to flac /tmp/m/pacpl/state/a.wav --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace --work /tmp/m/pacpl/work --json /out/pacpl-syscalls.json --observe syscalls
+run mail-expire wrappers :: explore --state /tmp/m/mail-expire/state --setup /work/spike/unknown-rate/defines-b2/mail-expire/setup.sh --operation mail-expire -t /tmp/m/mail-expire/state 30 /tmp/m/mail-expire/state/inbox --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace --work /tmp/m/mail-expire/work --json /out/mail-expire-wrappers.json 
+run mail-expire syscalls :: explore --state /tmp/m/mail-expire/state --setup /work/spike/unknown-rate/defines-b2/mail-expire/setup.sh --operation mail-expire -t /tmp/m/mail-expire/state 30 /tmp/m/mail-expire/state/inbox --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace --work /tmp/m/mail-expire/work --json /out/mail-expire-syscalls.json --observe syscalls
+run lbdb wrappers :: explore --state /tmp/m/lbdb/state --setup /work/spike/unknown-rate/defines-b/lbdb/setup.sh --operation /work/spike/unknown-rate/defines-b/lbdb/op.sh --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace --work /tmp/m/lbdb/work --json /out/lbdb-wrappers.json 
+run lbdb syscalls :: explore --state /tmp/m/lbdb/state --setup /work/spike/unknown-rate/defines-b/lbdb/setup.sh --operation /work/spike/unknown-rate/defines-b/lbdb/op.sh --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace --work /tmp/m/lbdb/work --json /out/lbdb-syscalls.json --observe syscalls
