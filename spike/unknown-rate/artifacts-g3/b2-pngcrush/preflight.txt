@@ -1,0 +1,27 @@
+  Recompressing IDAT chunks in /tmp/bgroup-pre/pngcrush/state/a.png
+   Total length of data found in critical chunks            =       126
+   Best pngcrush method        =   2 (ws 11 fm 1 zl 4 zs 0) =        73
+CPU time decode 0.001266, encode 0.001515, other 0.003614, total 0.010208 sec
+  Recompressing IDAT chunks in /tmp/bgroup-pre/pngcrush/state/a.png
+   Total length of data found in critical chunks            =       126
+   Best pngcrush method        =   2 (ws 11 fm 1 zl 4 zs 0) =        73
+CPU time decode 0.001824, encode 0.002239, other 0.005221, total 0.014746 sec
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 3 operations (161 syscall lines examined, 62 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2002 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /tmp/bgroup-pre/pngcrush/state --setup "/work/spike/unknown-rate/defines-b2/pngcrush/setup.sh" --operation "pngcrush -q -ow /tmp/bgroup-pre/pngcrush/state/a.png /tmp/bgroup-pre/pngcrush/state/pngout.png" \
+               --check <your-invariant.sh> --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
+preflight exit=0

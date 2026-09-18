@@ -1,0 +1,1322 @@
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Done.
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Encoding image /tmp/bgroup/enscribe/state/in.xbm into Microsoft WAV audio file /tmp/bgroup/enscribe/state/out.wav
+samplerate: 44100 Hz  channels: 2
+Scaling Image
+Opening output file
+Building output audio file
+Done.
+PASS  261/261 explored worlds satisfied the built-in atomicity invariant
+      explored 261 worlds (crash points 260 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 260 operations (2123 syscall lines examined, 801 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+sideeye: json sha256=53b72dbe7fb60698fd4c1a02e9c49f8fa8153d18d454e4937f5fa2452df034f3;

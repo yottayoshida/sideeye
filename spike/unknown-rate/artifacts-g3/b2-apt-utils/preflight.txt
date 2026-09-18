@@ -1,0 +1,23 @@
+Packages done, Starting contents.
+Done. 652 B in 1 archives. Took 0s
+Packages done, Starting contents.
+Done. 652 B in 1 archives. Took 0s
+PREFLIGHT  recording accepted — 16 state-changing operation(s) observed
+
+atomicity    10 path(s) judged pre-or-post
+oracle       agreed on 6 operations (639 syscall lines examined, 133 in scope of the judged state), witness strace — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and ordered rather than compared one by one: this is `oracle_verified_subject_only`, and `oracle_verified` stays false. What accounts for a write neither observer placed is the per-path reconciliation, not this comparison
+processes    a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2007 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /tmp/bgroup-pre/apt-utils/state --setup "/work/spike/unknown-rate/defines-b2/apt-utils/setup.sh" --operation "apt-ftparchive -q generate /tmp/bgroup-pre/apt-utils/state/apt.conf" \
+               --check <your-invariant.sh> --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
+preflight exit=0

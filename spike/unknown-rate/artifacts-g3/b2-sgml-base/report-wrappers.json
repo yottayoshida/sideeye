@@ -1,0 +1,31 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "frozen",
+  "contract_version": 18,
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "oracle_verified": true,
+  "crash_points": 3,
+  "explored": 4,
+  "violations": 1,
+  "expected_status": 0,
+  "earliest": {
+    "crash_point": 2,
+    "invariant": "built-in atomicity (L0)",
+    "after": {"op": "rename", "path": "/tmp/bgroup/sgml-base/state/central.cat"},
+    "before": {"op": "open", "path": "/tmp/bgroup/sgml-base/state/central.cat"},
+    "subject": "central.cat",
+    "observed": "present before and after the operation, but gone from the crashed state"
+  },
+  "l0": "2 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "/tmp/bgroup/sgml-base/work/cases/000001.json",
+  "replay": "sideeye replay /tmp/bgroup/sgml-base/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so",
+  "evidence": "/tmp/bgroup/sgml-base/work/evidence/000001.json",
+  "oracle": "agreed on 3 operations (229 syscall lines examined, 22 in scope of the judged state), witness strace",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "none configured",
+  "processes": "single process",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

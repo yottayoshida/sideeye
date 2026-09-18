@@ -1,0 +1,12 @@
+PASS  176/176 explored worlds satisfied the built-in atomicity invariant
+      explored 176 worlds (crash points 175 + 1 baseline)
+      expected status: 8
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 175 operations (2481 syscall lines examined, 358 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+sideeye: json sha256=4b751e5e810d610e95b229ad26358d1aef6ab781e3fbd7d7ca4f2b4d9873419f;

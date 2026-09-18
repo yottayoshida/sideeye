@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "frozen",
+  "contract_version": 18,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "oracle_verified": true,
+  "crash_points": 175,
+  "explored": 176,
+  "violations": 0,
+  "expected_status": 8,
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "evidence": "-",
+  "oracle": "agreed on 175 operations (2481 syscall lines examined, 358 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "none configured",
+  "processes": "single process",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

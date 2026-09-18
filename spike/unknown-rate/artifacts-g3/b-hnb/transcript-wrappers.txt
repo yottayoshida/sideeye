@@ -1,0 +1,23 @@
+FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  open(/tmp/bgroup/hnb/state/notes.hnb)
+            before write(/tmp/bgroup/hnb/state/notes.hnb)
+path        notes.hnb
+observed    holding neither the old nor the new content
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (199 syscall lines examined, 28 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/bgroup/hnb/work/cases/000001.json
+replay      sideeye replay /tmp/bgroup/hnb/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+evidence    /tmp/bgroup/hnb/work/evidence/000001.json
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/bgroup/hnb/state SIDEEYE_TRACE_PATH=/tmp/bgroup/hnb/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=56a056073b574d0b29b8ff427106cb00168088103854d53f1b9b17631cc0e4d8;

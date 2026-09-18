@@ -1,0 +1,26 @@
+  Recompressing IDAT chunks in /tmp/bgroup/pngcrush/state/a.png
+   Total length of data found in critical chunks            =       126
+   Best pngcrush method        =   2 (ws 11 fm 1 zl 4 zs 0) =        73
+CPU time decode 0.001586, encode 0.001944, other 0.004413, total 0.012334 sec
+  Recompressing IDAT chunks in /tmp/bgroup/pngcrush/state/a.png
+   Total length of data found in critical chunks            =       126
+  Recompressing IDAT chunks in /tmp/bgroup/pngcrush/state/a.png
+   Total length of data found in critical chunks            =       126
+  Recompressing IDAT chunks in /tmp/bgroup/pngcrush/state/a.png
+   Total length of data found in critical chunks            =       126
+  Recompressing IDAT chunks in /tmp/bgroup/pngcrush/state/a.png
+   Total length of data found in critical chunks            =       126
+   Best pngcrush method        =   2 (ws 11 fm 1 zl 4 zs 0) =        73
+CPU time decode 0.000039, encode 0.000104, other 0.000214, total 0.000411 sec
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+      explored 4 worlds (crash points 3 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 3 operations (161 syscall lines examined, 62 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+sideeye: json sha256=199b22f1171731e3ee2e3f1581b51ace7bf0364910be9d55bd83d8881d837f95;

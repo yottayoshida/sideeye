@@ -1,0 +1,23 @@
+FAIL  3 of 26 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 21 of 25
+            after  write(/tmp/bgroup/bogofilter-sqlite/state/wordlist.db)
+            before write(/tmp/bgroup/bogofilter-sqlite/state/wordlist.db)
+path        wordlist.db
+observed    holding neither the old nor the new content
+explored    26 worlds (crash points 25 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 25 operations (355 syscall lines examined, 116 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/bgroup/bogofilter-sqlite/work/cases/000001.json
+replay      sideeye replay /tmp/bgroup/bogofilter-sqlite/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
+evidence    /tmp/bgroup/bogofilter-sqlite/work/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/tmp/bgroup/bogofilter-sqlite/state SIDEEYE_TRACE_PATH=/tmp/bgroup/bogofilter-sqlite/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=21 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=57bee37861aaab0d0da8640d5ef9d49ffb2d68e1edb02bd088548e2639b3049d;

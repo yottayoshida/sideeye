@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/report",
+  "schema_status": "frozen",
+  "contract_version": 18,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "oracle_verified": true,
+  "crash_points": 260,
+  "explored": 261,
+  "violations": 0,
+  "expected_status": 0,
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "evidence": "-",
+  "oracle": "agreed on 260 operations (2123 syscall lines examined, 801 in scope of the judged state), witness strace",
+  "metadata_writes": "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+  "checker": "none configured",
+  "processes": "single process",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes"]
+}

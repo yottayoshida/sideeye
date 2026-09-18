@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 3 operations (199 syscall lines examined, 28 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded the subject replacing its own image, and that run's capture is never parsed, so nothing accounts for it; the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2002 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /tmp/bgroup-pre/hnb/state --setup "/work/spike/unknown-rate/defines-b/hnb/setup.sh" --operation "/work/spike/unknown-rate/defines-b/hnb/op.sh" \
+               --check <your-invariant.sh> --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
+preflight exit=0
