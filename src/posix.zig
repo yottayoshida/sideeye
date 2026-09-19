@@ -96,9 +96,11 @@ pub extern "c" fn fdopendir(fd: c_int) ?*anyopaque;
 
 pub extern "c" fn getpid() c_int;
 pub extern "c" fn getpgid(pid: c_int) c_int;
-/// Only `childEnterOwnGroup`'s tests call this (#629): leading a session is the one state
-/// the manual says `setpgid(0, 0)` is refused for, so it is how a test reaches the real
-/// refusal instead of asking a fake to answer -1.
+/// Three references (#632): `childEnterOwnGroup`'s fallback, for a child the kernel will not
+/// move out of the engine's group; the test that injects the real one into that fallback; and
+/// the test that reaches the real `setpgid` refusal — leading a session is the one state the
+/// manual says a self-call is refused for, so a test gets there this way rather than by
+/// asking a fake to answer -1.
 extern "c" fn setsid() c_int;
 /// Read for one purpose only: the two notes a child writes when `setpgid(0, 0)` refuses it
 /// (#629). The documented refusal is "the caller is a session leader", so the session id is
@@ -1051,34 +1053,36 @@ fn childArrangeFailed(what: []const u8) noreturn {
 /// down with it. `setpgid(0, 0)` is how the child gets there; it is not the only way it can
 /// arrive, and this side used to read any non-zero return as "it did not".
 ///
-/// Three macOS CI failures died here with `errno 1` and were read as `kill_did_not_land`
+/// Five macOS CI failures died here with `errno 1` and were read as `kill_did_not_land`
 /// (#625): the world never ran, so the crash point's kill had nothing to kill. The manual
 /// allows a self-call exactly one EPERM — "the process indicated by the pid argument is a
 /// session leader" (`man 2 setpgid`; `setpgid(2)` on Linux says the same) — and a session
-/// leader already leads a process group of its own. Measured on this host: `setsid` then
-/// `setpgid(0, 0)` answers -1 with errno 1 while `getpgid(0) == getpid()`. That is the
-/// state the exec needs, so a refusal is answered by asking the kernel where this process
-/// is rather than by trusting one return value.
+/// leader already leads a process group of its own, so that case needs no move: measured
+/// here, `setsid` then `setpgid(0, 0)` answers -1 with errno 1 while `getpgid(0) ==
+/// getpid()`. Hence the first branch below, and hence asking the kernel where this process
+/// is rather than trusting one return value.
 ///
-/// What is **not** explained is how a forked child came to be seen as a session leader on a
-/// hosted runner: 200k forks of this exact shape, parent racing with `setpgid(pid, pid)` in
-/// an orphaned session, never reproduced it here. That is why both outcomes write a line —
-/// the recovery says which state it kept, the refusal names the group and session it read —
-/// so a next occurrence is diagnosed by its own note rather than by re-reading these two
-/// call sites (#626's lesson, applied to the fix rather than to the symptom).
+/// **The CI refusals were not that clause** (#632). The note this function writes said so on
+/// its first firing — `pid 5173, group 971, session 1`, a session id that is not the child's
+/// pid — and the kernel explains the rest: `SESS_LEADER` compares proc *pointers* against an
+/// `s_leader` nothing clears when the leader exits, so a `proc` reused at a dead leader's
+/// address is refused a leadership it does not have. The second branch is what that child
+/// does instead; the third is the exit that remains when neither call will move it.
+/// Both surviving branches write a line, which is how the first one was diagnosed at all
+/// (#626's lesson, applied to the fix rather than to the symptom).
 fn childEnterOwnGroup() void {
-    childEnterOwnGroupWith(setpgid);
+    childEnterOwnGroupWith(setpgid, setsid);
 }
 
-/// The body, with the call on a seam the way `dup2Bounded` takes its `dup2` — for one
-/// reason: **no refusal the manual documents reaches this branch.** A self-call is refused
-/// only for a session leader, and a session leader already leads its own group, so on the
-/// two hosts measured (macOS 15 arm64, `gcc:13`) every real refusal takes the branch above
-/// and a fake is the only way to exercise this one. That is not the same as saying the
-/// branch is dead: whether the hosted-runner refusals of #625 were that clause is unsettled,
-/// and if one was not, this is the branch it took — which is why it names the state it read
-/// rather than only the call.
-fn childEnterOwnGroupWith(setpgid_fn: anytype) void {
+/// Both calls are on seams, the way `dup2Bounded` takes its `dup2`, for one reason: **no host
+/// available here can be made to refuse either of them.** A self-call is refused only for a
+/// session leader, who already leads their own group (first branch), and `setsid` is refused
+/// only for a group leader or a pid that already names a group — neither reachable for a
+/// freshly forked child still sitting in the engine's group. The refusal the hosted runner
+/// produced is a third thing (#632, a `proc` reused at a dead session leader's address),
+/// which no test here can arrange either. So the second branch is exercised with a fake
+/// `setpgid` and the real `setsid`, and the exit below needs both faked.
+fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype) void {
     if (setpgid_fn(0, 0) == 0) return;
     const err = std.c._errno().*; // read before `getpgid`: a successful call may write errno
     const pid = getpid();
@@ -1086,6 +1090,34 @@ fn childEnterOwnGroupWith(setpgid_fn: anytype) void {
     if (group == pid) {
         var kept: [160]u8 = undefined;
         writeNoteLine(fmtChildGroupKeptNote(&kept, err, pid, getsid(0)));
+        return;
+    }
+    // Still in the engine's group, and the call that leaves it has been refused (#632). The
+    // kernel's one EPERM for a self-call is `SESS_LEADER`, which compares **proc pointers**
+    // against an `s_leader` its own header marks constant and nothing clears when the leader
+    // exits — so a `proc` reused at a dead leader's address is refused a leadership its
+    // session id says it does not have. That refusal is permanent for this child, and it
+    // refuses the parent's `setpgid(pid, pid)` for the same reason: the check is on the
+    // target. `setsid` is refused on other grounds: `setsid_internal` refuses a process that
+    // is already a group leader — excluded here, since this child's group is the engine's —
+    // or one whose pid already names a group anywhere, which POSIX excludes for a child this
+    // young: `fork` may not hand out a pid that "match[es] any active process group ID", the
+    // same rule ADR 0002 decision 1 leans on for `kill(-N, …)`. Neither refusal should reach
+    // this child, then — and the branch below stays all the same, because what the `exec`
+    // depends on is the group `getpgid` reports, not an argument about what cannot happen.
+    //
+    // Two costs, recorded rather than hidden (ADR 0075; owner's ruling 2026-09-19, against
+    // losing the run entirely). That world runs with a session of its own, so a target
+    // arranging its own group — a shell does — has its `setpgid(0, 0)` refused where it
+    // normally succeeds, and no report field says which kind of world this was (#630). And
+    // a session of one's own has no controlling terminal: on macOS `sudo -n`'s ticket is
+    // cached per terminal (`src/main.zig`'s own note), so a child that arrives here on the
+    // sudo probe or the `fs_usage` sidecar can be told to run `sudo -v` in the terminal
+    // where it just did. Neither is measured — the kernel state cannot be made here — and
+    // both are reasoned from this repository's own text.
+    if (setsid_fn() >= 0 and getpgid(0) == pid) {
+        var left: [160]u8 = undefined;
+        writeNoteLine(fmtChildLeftBySetsidNote(&left, err, pid, group));
         return;
     }
     var buf: [80]u8 = undefined;
@@ -1138,6 +1170,13 @@ fn fmtChildArrangeNote(buf: []u8, what: []const u8, err: c_int) []const u8 {
 /// (measured here, `pgid == sid`), so a swapped pair would read as correct.
 fn fmtChildGroupRefusedWhat(buf: []u8, pid: c_int, group: c_int, sid: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "setpgid(0, 0) (pid {d}, group {d}, session {d})", .{ pid, group, sid }) catch "setpgid(0, 0)";
+}
+
+/// The third outcome (#632): the call was refused, the child was still in the engine's group,
+/// and `setsid` took it out. Names the group it left, because that number is the engine's and
+/// says what the child escaped; the session it now leads is its own pid.
+fn fmtChildLeftBySetsidNote(buf: []u8, err: c_int, pid: c_int, was_group: c_int) []const u8 {
+    return std.fmt.bufPrint(buf, "sideeye: setpgid(0, 0) failed, errno {d}, so the child left group {d} with setsid and now leads its own (pid {d}); continuing\n", .{ err, was_group, pid }) catch "sideeye: setpgid(0, 0) failed and the child left the engine's group with setsid\n";
 }
 
 /// The other outcome (#629): the call was refused and the child is where it needed to be
@@ -1201,16 +1240,20 @@ test "the child's arrangement note names the call and the errno, on one line" {
     try std.testing.expectEqualStrings("setpgid(0, 0) (pid 11, group 22, session 33)", fmtChildGroupRefusedWhat(&buf, 11, 22, 33));
     // Too small for the state: the call still names itself rather than nothing.
     try std.testing.expectEqualStrings("setpgid(0, 0)", fmtChildGroupRefusedWhat(&tiny, 11, 22, 33));
+    // The third note (#632) names the group left behind — the engine's — and the pid now
+    // leading a session of its own, with two distinct numbers so the pair cannot swap unseen.
+    try std.testing.expectEqualStrings("sideeye: setpgid(0, 0) failed, errno 1, so the child left group 22 with setsid and now leads its own (pid 11); continuing\n", fmtChildLeftBySetsidNote(&buf, 1, 11, 22));
+    try std.testing.expect(std.mem.endsWith(u8, fmtChildLeftBySetsidNote(&tiny, 1, 11, 22), "\n"));
 }
 
-test "a child that is not in a group of its own still exits 126, naming where it was (#629)" {
-    // The fake is here because the kernel cannot supply this case: it refuses a self-call
-    // only for a session leader, and such a child leads its own group, so every real
-    // refusal takes the other branch. The child below is an ordinary fork — its group is
-    // the test binary's — and the refusal it is handed is the errno CI carried.
+test "a child the kernel will not move out of the engine's group leaves it with setsid (#632)" {
+    // The refusal is faked, because the kernel supplies it only in a state a laptop cannot
+    // reach (#632: a `proc` reused at a dead session leader's address); `setsid` below is
+    // the real one, in the real state the fallback is for — an ordinary forked child, whose
+    // group is the test binary's, being refused the call that would leave it.
     const Fake = struct {
         fn setpgid(_: c_int, _: c_int) c_int {
-            std.c._errno().* = 1; // EPERM
+            std.c._errno().* = 1; // EPERM, the errno all five CI occurrences carried
             return -1;
         }
     };
@@ -1222,7 +1265,55 @@ test "a child that is not in a group of its own still exits 126, naming where it
     if (pid == 0) {
         _ = close(fds[0]);
         if (dup2(fds[1], 2) < 0) _exit(10);
-        childEnterOwnGroupWith(Fake.setpgid);
+        // No guard for "already leads its own group" here: `fork` may not hand this child a
+        // pid matching an active group id (POSIX), so it cannot be leading one. The check
+        // this test rests on is the `_exit(12)` below, which asks the kernel afterwards.
+        childEnterOwnGroupWith(Fake.setpgid, setsid);
+        // The invariant, asked of the kernel rather than of the call that was refused: this
+        // child must not `exec` while it still shares the engine's group.
+        if (getpgid(0) != getpid()) _exit(12);
+        _exit(7);
+    }
+    _ = close(fds[1]);
+    var buf: [256]u8 = undefined;
+    const n = read(fds[0], &buf, buf.len);
+    _ = close(fds[0]);
+    var status: c_int = 0;
+    _ = waitpid(pid, &status, 0);
+    // 12 would mean it continued without the group; 126 that it refused where `setsid` works.
+    try std.testing.expectEqual(Term{ .exited = 7 }, decodeStatus(status));
+    try std.testing.expect(n > 0);
+    const note = buf[0..@intCast(n)];
+    var expect: [160]u8 = undefined;
+    const said = try std.fmt.bufPrint(&expect, "errno 1, so the child left group {d} with setsid and now leads its own (pid {d})", .{ parent_group, pid });
+    try std.testing.expect(std.mem.indexOf(u8, note, said) != null);
+}
+
+test "a child that can leave the engine's group by neither call exits 126, naming where it was (#629, #632)" {
+    // Both calls faked: the exit this function keeps is reachable only when the kernel
+    // refuses the group AND refuses the new session, which no host here can be made to do.
+    const Fake = struct {
+        fn setpgid(_: c_int, _: c_int) c_int {
+            std.c._errno().* = 1; // EPERM
+            return -1;
+        }
+        fn setsid() c_int {
+            // A different errno from the `setpgid` fake on purpose: the note must carry the
+            // errno of the call it names, so the restore before `childArrangeFailed` is
+            // load-bearing and its removal fails this test rather than passing by accident.
+            std.c._errno().* = 13; // EACCES
+            return -1;
+        }
+    };
+    var fds: [2]c_int = undefined;
+    try std.testing.expect(pipe(&fds) == 0);
+    const parent_group = getpgid(0);
+    const pid = fork();
+    try std.testing.expect(pid >= 0);
+    if (pid == 0) {
+        _ = close(fds[0]);
+        if (dup2(fds[1], 2) < 0) _exit(10);
+        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid);
         _exit(7); // reached only if the refusal was swallowed
     }
     _ = close(fds[1]);
@@ -2107,7 +2198,10 @@ fn runChildImplWithOps(
     if (cfd >= 0) _ = close(cfd);
     // Repeated in the parent to close the window where the child has not been scheduled
     // yet. Whichever call runs first wins; the second fails harmlessly (EACCES once the
-    // child has exec'd, ESRCH if it has already exited).
+    // child has exec'd, ESRCH if it has already exited, and since #632 EPERM when the child
+    // has left for a session of its own, which this call may not cross). The result is
+    // discarded for all of them: the child checks its own group, and that check is the one
+    // the `exec` depends on.
     _ = setpgid(pid, pid);
 
     if (cg) |spawn_cg| {

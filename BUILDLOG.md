@@ -2,6 +2,80 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-19 — the refusal was not the clause; the child leaves with `setsid` (#632)
+
+**The instrument answered on its first firing.** #629 shipped a note naming the child's pid,
+group and session precisely because the three earlier occurrences carried only an errno. The
+next CI run after it merged — PR #628, and main's own run for the merge, two minutes apart on
+different macOS checks — printed `setpgid(0, 0) (pid 5173, group 971, session 1) failed, errno
+1`. Session 1, not 5173: **not** a session leader, which is the only EPERM `man 2 setpgid`
+allows a self-call. The fix behaved exactly as written (the child was still in the engine's
+group, so it refused to `exec`), and the flake was not the thing it fixed. That is what
+#629's CHANGELOG said would be true if a session id ever came back other than the pid, and it
+came back on the first try.
+
+**The kernel closed it.** XNU's `setpgid` has one EPERM branch reachable for `(0, 0)` —
+`SESS_LEADER(targp, targp_pg->pg_session)` — and the macro compares **proc pointers**, against
+an `s_leader` that `proc_internal.h` marks `(C)` constant and that nothing clears when the
+leader exits. A `proc` reused at a dead session leader's address is refused a leadership its
+session id denies. It explains the errno, the state, why an idle laptop never reproduced it in
+200k forks, and why the parent's `setpgid(pid, pid)` cannot rescue the child either: that check
+tests the target.
+
+**Why `setsid` and not a second fork.** `setsid_internal` refuses only a process that is
+already a group leader or one whose pid already names a group — neither true while the child
+sits in the engine's group — so the state that refuses `setpgid` does not refuse `setsid`, and
+it grants a new session *and* a new group in one call. Forking again would also work (a
+different `proc`), but the parent cannot tell this refusal from a `dup2` failure: they share
+exit 126, and the exit codes are frozen. Owner's ruling, ADR 0075. The cost is honest and
+recorded: that world runs in a session of its own, so a shell's `setpgid(0, 0)` inside it is
+refused where it normally succeeds, and #630 is now a state the engine reaches on purpose
+rather than only by accident.
+
+**What review moved (R1).** Three findings, all mine to fix and none in the code. The first:
+I wrote in four places that `setsid`'s two refusals "neither hold here, precisely because the
+child is still in the engine's group". Only the first is excluded that way. The second —
+a process group already named by this pid — is a *global* lookup: a group outlives its leader
+while a member lives, and pids are reused. The code was right (that child falls to the 126
+exit); the sentence was not, and the same sentence stood in the ADR, the CHANGELOG and the
+entry above. The second: a session of one's own has no controlling terminal, and macOS caches
+`sudo -n`'s ticket per terminal — a fact this repository already writes down at its own sudo
+probe. The probe and the `fs_usage` sidecar arrange their group through this same helper, so a
+child taking the fallback there can be told to run `sudo -v` in the terminal where it just
+did. I had named one cost and called it "the cost"; there are two, and the second is on the
+platform the fallback exists for. The third: the function's own docstring still opened with
+"three macOS CI failures" and "what is **not** explained is how a forked child came to be seen
+as a session leader" — the reading this very change falsifies, thirty lines above the comment
+that falsifies it, at the first place a reader lands.
+
+**And one test that had stopped testing.** The 126 branch's two fakes both answered errno 1,
+so the line that restores the refused call's errno before the note could be deleted with the
+suite still green. The `setsid` fake now answers EACCES and the assertion still demands errno
+1; removing the restore fails it.
+
+**What review moved (R2), including a correction I introduced myself.** R1 was right that
+"`setsid`'s two refusals neither hold here" was too strong; the fix I wrote for it went too far
+the other way — "a group outlives its leader while a member lives, and pids are reused" — and
+R2 caught it by noticing it contradicted this repository's own ADR 0002 decision 1, which
+removes a `getpgid` confirmation on the grounds that a freshly allocated pid cannot equal a
+live group id. POSIX settles it in `fork`'s favour: the child's pid may not "match any active
+process group ID", so that second refusal cannot reach a child this young. The 126 branch
+stays anyway, and its reason is now the honest one — what the `exec` depends on is the group
+`getpgid` reports, not an argument about which refusals are possible, since the refusal this
+whole change is about is one the manual does not describe either. R2 also found the seam's own
+docstring still saying the question was unsettled and that the 126 branch was the one a
+non-session-leader would take (both false since this morning), the ADR overstating the sudo
+cost (126 and a ticketless `sudo -n` print the *same* sentence — only the stderr note differs),
+the controlling-terminal consequence written for the two helper spawns but not for the world
+itself, and a figure — "36 of 36 on the runner" — that belongs to #629's build in PR #631, not
+to this one, which has not been to CI at all. All taken.
+
+**What is tested, and by what.** No host here can be made to produce either refusal, so the
+fallback is a real `setsid` against a faked `setpgid`, with the child asserting the invariant
+itself (`getpgid(0) == getpid()`, else exit 12) rather than trusting the call it just made;
+the 126 below it needs both calls faked. Both mutants die: no fallback reads `expected 7,
+found 126`, and swapping the numbers in the new note fails the note's check.
+
 ## 2026-09-18 — the child's group, not the child's `setpgid` call (#629)
 
 **What the diagnostics said, and what I read into it.** #626 shipped diagnostics for the macOS
