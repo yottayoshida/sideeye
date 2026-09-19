@@ -113,7 +113,10 @@ what `--observe syscalls` finds behind it, and nothing the wrappers observation 
 - Not taken here, with the reason each stays out: `childrenMayBeJudged`'s unattributed writer — strace
   treats the subject's threads as the subject, so what remains at that site on Linux is another
   process the shim did not record, a raw fork or a child the shim is not loaded into, and the second
-  is the process `--observe syscalls` kills; `state_changed_unaccounted` and
+  is the process `--observe syscalls` kills **(narrowed by ADR 0076, 2026-09-19: the site gets the
+  step for the one shape where the writer's own shim announced itself and recorded no operation —
+  measured on lbdb — and keeps the class wall for the writer with no shim in its image, which is
+  the process this sentence is about)**; `state_changed_unaccounted` and
   `state_changed_without_ops`, which see a change without its origin, so another process's write
   looks the same; `oracle_saw_phantom`; macOS, which has no such mode.
 - The MCP server passes no `--observe` and a `sideeye.toml` has no key for it, so through the server

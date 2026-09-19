@@ -291,6 +291,24 @@ it is — `; the oracle's capture at <work>/oracle.txt holds the child's own
 lines, its execve among them` — because the child's argv is in that file and
 nothing used to say the file existed.
 
+**The `next_step` follows which condition refused the run** (#634, ADR 0076).
+This refusal stands at two walls. A writer **the shim was loaded into** — the
+trace holds an `exec` or a `shim_ready` from it and no operation of its own, so
+its writes went around the interposed entry points — is counted at the kernel
+boundary, and a run in the default mode on Linux is sent to `--observe
+syscalls`, the step `oracle_missed_operation` already uses; a run already in
+that mode, or off Linux, is not. Every other shape keeps the step it had,
+including the one the mode would **kill**: a writer whose image holds no shim —
+an `exec` recorded after its last `shim_ready`, or no record of its own at all,
+which is a child that never loaded the shim or loaded it without Sideeye's
+environment (case 4(g) above) — and case 4 is what happens to such a child under
+that filter. Writers whose operations overlap and a child nothing waited for
+keep it too, because two processes writing at once are ordered by the scheduler
+wherever their operations are counted. Measured on three targets in both modes
+(`spike/followup-child-touch-modes/`): `lbdb`, whose child announces itself and
+flushes a buffered stdout at `exit()`, moved to PASS; `pacpl` and `mail-expire`
+produced byte-identical reports.
+
 ## The account (always present)
 
 Free-form strings whose *presence* is stable and whose prose may improve

@@ -2066,7 +2066,16 @@ fn phaseOracle(run: *Run) void {
                 // from an honest exit to one calling a thread another process, which is
                 // the sentence ADR 0055 declined to publish.
                 const reason = boundary.unattributedWriterReason(trace, parsed);
-                unknown(reason, boundary.withOracleCapture(arena, why, if (args.oracle != null) oracle_out else null, why), .unwrap_or_class_wall);
+                // And WHICH wall it is (#634, ADR 0076). The refusal has one name over
+                // two of them. The step names `--observe syscalls` for one shape only —
+                // a writer whose own shim announced itself and recorded no operation, so
+                // its writes went around the interposed entry points — because that is
+                // the shape measured to cross (lbdb) and the one the mode does not kill.
+                // Writers that overlap are ordered by the scheduler wherever their
+                // operations are counted, and a writer with no shim in its image is what
+                // ADR 0069 declined this step for. The step follows the wall the way
+                // `missedOperationNext` follows the mode (#599, ADR 0069).
+                unknown(reason, boundary.withOracleCapture(arena, why.detail, if (args.oracle != null) oracle_out else null, why.detail), boundary.childTouchedNext(why.wall, args.observe, builtin.os.tag == .linux));
             }
             run.admitted.children_admitted = true;
             boundary.boundary_ev.children_judged = true;
