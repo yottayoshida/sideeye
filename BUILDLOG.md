@@ -2,6 +2,191 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-19 — the first measured runs, and a headline figure that could not be measured (#618, merge 2 of 3)
+
+**The first run.** `lmdb-utils`, eight minutes, two revisions: a bare define, then the same
+define with `scratch = ["data.mdb"]` and a comment explaining why LMDB's file is scratch to the
+byte-level rule but not unjudged. Grading is two fresh graders against the sealed card, and it
+happens after the run from the committed evidence, so a re-grade never re-runs a subject.
+
+**`runnable_elapsed_s` was structurally unmeasurable, and the selftest was green.** The audit
+finds the point where the run became runnable by matching a verdict at a line start,
+`^(PASS|FAIL)\b` under `re.M`. Every `text` it reads is a serialised event — the normaliser
+stores `json.dumps(event)` — so a newline the engine printed is carried as the two characters
+`\` and `n`, and the anchor has nothing but the leading `{` to sit on. Measured on the first
+real transcript: **0 of 500 events matched, while three of them held a real engine verdict.**
+Every run would have published a null, and a null there reads as "the subject never got that
+far" rather than "the detector cannot fire".
+
+The selftest passed because its fixture wrote the verdict as a bare `"PASS over 3 crash
+points"` — a string that *starts* with the word, which is a shape the normaliser never produces.
+The fixture was built by hand to satisfy the detector instead of by the apparatus that feeds it,
+and that is the whole defect: a green check over a fixture with the wrong shape is not a
+measurement. The fixture now serialises its events the way the normaliser does, which turned the
+selftest red before the detector was touched, and the detector now matches the escape as well as
+a real line start. The first real figure follows: **404 s to a runnable define.**
+
+**The outcome list was closed against the wrong thing.** Both graders returned on
+`lmdb-utils` agreeing exactly — same verdict on both revisions, same deciding card line (the
+define leaves `lock.mdb` judged, which the card measured as non-durable). Neither accepted any
+revision. `audit.py` printed `contested-or-ungraded`: the same string it prints for a run nobody
+has opened. So the study's own headline quantity — did the session reach a define that asks the
+target's question — was being published as a gap. The four outcome forms had no name for *both
+graders graded and neither accepted*; PROTOCOL.md said in bold that there was no fifth outcome,
+and the first measured run was one. `none-valid` is the name, `ungraded` is now distinct from it,
+and the selftest tells the four states apart — red first on three of the four.
+
+The protocol edit was **written, reverted, and applied afterwards**. PROTOCOL.md is inside the
+sealed manifest, so amending it while two runs were still to go would have refused them —
+`run-authoring.sh` checks the seal before it spends a session — and split four measurements
+across two answer keys. The text went back, the remaining runs went under the same seal, and
+the change landed once all four had run: a dated Amendments entry, a pre-image under
+`manifests/be6f92eb…/`, and a ledger row through `ledger-append.sh`. Review then corrected that
+amendment's wording and it took a second row, so the seal reads **eight rows, eight pre-images,
+five published runs**; the **four measured** runs name `228c73b6…` and the void run names
+`698c8410…`, both rows the ledger still holds. (This paragraph first said "seven rows … five
+published runs, all naming `228c73b6…`". The first half went stale the moment the second row
+landed; the second half was never true — the void run has named an older key since merge 1. It
+is the defect this same entry is about, written into the entry about it.) It
+changes no card, no rubric line and no grade — the graders are never shown this document.
+`audit.py` is not in the manifest, so the detector fixes were free to land immediately.
+
+**The graders cannot see the checker, and two of them said so unprompted.** `watch-defines.py`
+snapshots `*.toml`, so a revision is the define and nothing else. Half of what a define means
+lives in the `check` script it names, and the rubric's `vacuous checker` verdict is *about that
+script* — the card for `genisoimage` names "a checker that only reads `isoinfo`'s exit code" as
+the vacuous case, and the exit code is 0 on an image truncated to a ninth. Grader A on
+`lmdb-utils` and grader B on `genisoimage` each reached this on their own and each refused to
+grade `vacuous checker` on a file they had not been given. **So that verdict cannot be reached
+in this round, and the verdicts skew high.**
+
+Not fixed mid-campaign. The watcher is outside the sealed manifest, so changing it would have
+been allowed, and that is exactly why the decision has to be made on something other than
+whether it is allowed: two runs are already published under the current apparatus and their
+containers are gone, so a third and fourth measured with the checker in hand would not be
+comparable to them, and nothing could be recomputed for the first two. The limitation is
+published with the runs, attached to each semantic point rather than to a footnote, and the
+watcher change belongs to a next round with all four targets re-run under it.
+
+**The same confusion a third time, one layer down.** The sheet parser collected only the rows
+saying `semantically valid`. A grader who was assigned a revision and never wrote a line for it
+produces a sheet that reads exactly like a grader who rejected it — the id is absent from the
+accepted set either way — and the run then publishes `none-valid` or `contested` off a verdict
+nobody gave. Each sheet must now carry one of the rubric's four verdicts for every revision its
+own map names, and the fixture had to be fixed first: it wrote verdict rows only for the
+revisions it accepted, which is the very shape the refusal is about, so the case could not have
+been reached. Seen red on a copy with that one block removed.
+
+Three defects in one sitting, all the same shape: a measurement that was never taken reading as
+a measured negative. Null elapsed read as "the subject never got there"; `contested-or-ungraded`
+read as "graded and contested"; an unwritten verdict read as a rejection. None of them was a
+wrong number — each was a missing number wearing a number's clothes.
+
+**A password the target invented, published by the study's own normalisation.** The scan before
+committing — `security.md`'s patterns over every transcript about to go into a public repository
+— hit twice in `fossil`. One is the manual the subject was told to read (`fossil user password
+${USER} ${PWD}`) and stays: that is evidence. The other is real, `admin-user: tester (initial
+password is "…")`, printed by `fossil init` inside the box. The redaction list was a list of
+*vendors'* token shapes — `sk-ant-`, `ghp_`, a bearer token — and nothing in it was about a
+**target** generating a credential during the run. It authenticates to nothing (the container is
+destroyed) but it is a password in a public repository, so it goes; owner's call, asked before
+committing because a secret-scan hit is a stop.
+
+The raw transcript is a tempfile now and was already gone, so this is an **edit of published
+evidence**, and it is recorded as one rather than quietly applied: `run-authoring.sh` carries the
+expression for future runs, the run's `normalisation.txt` gains
+`generated_passwords_redacted_after_publication  2`, and only the value is replaced — `password
+is` stays, so a reader can see that something was there. Re-scanned afterwards: zero
+value-bearing shapes across all five published transcripts.
+
+**Review found that the detector fix made a committed page false, and I had not looked.** The
+first-sight review's P0: `runs/dos2unix/README.md` said of the void run "**It produced no
+verdict.** `runnable_elapsed_s` is null: the session ended without an exploration exiting 0 or
+1", and built a reading on it. With the detector repaired that run reads **217 s**, from a real
+`PASS 11/11` at `07:02:59.920Z` — it reached a runnable define faster than any of the four
+measured runs. The null was never a fact about the session; it was the instrument, and a page
+had already reasoned from it. `BUILDLOG.md` carried the same "no verdict" in its merge-1 entry.
+This repository's own lesson is "when you change the body, go looking for the same number
+written a second way beside it", and the same-class scan here was for *figures*, not for
+*prose that had already drawn a conclusion from one*. Both corrected, with the withdrawal
+stated rather than the sentence quietly swapped. The scan also caught `runs/dos2unix/README.md`
+quoting, as the protocol's authority, the exact sentence this merge rewrote.
+
+**And four more of the same class the review found and I had not.** The map↔verdict check added
+above compares a sheet with itself, so nothing checked the map against `revisions/`: measured on
+fixtures, a map covering one of two revisions publishes `none-valid` for a revision no grader
+was shown, and a map naming `07` in a two-revision run publishes `semantic_revision: "07"` — a
+semantic point at a snapshot that does not exist. Two contradictory verdict rows for one id let
+the acceptance win silently. A third grade sheet would quietly change "both agreed" to "all
+three agreed". And `assign-grading.py` rewrote its sheet unconditionally, so re-drawing an
+assignment deleted the grader's verdicts and left a map-only sheet the audit reads as
+`ungraded` — a run dropping from `graded` back to ungraded with nothing refusing, while the
+disposition tool next to it refuses a second decision. All four refused now, each seen red on a
+fixture first; the sheet protection was measured against a real graded sheet, which is unchanged
+after the refusal.
+
+The review's own axis — falsify a guard against its own predicate, not against the accident that
+motivated it — took down the new CI step: it audits every directory with a `meta.json`, while
+the protocol both requires a run that starts to be published and calls a run with no snapshot
+`void`. Publishing such a run would have left a choice between a permanently red job and a
+protocol violation. The guard's predicate is "every run the study **counts** still reads", so a
+`void` run is now reported and not enforced, and the step fails if it counted none.
+
+One P2 was overstated on both sides. The review read the runs' dispositions as never having gone
+through `set-disposition.py`; the first rebuttal written here said four of five did, and that
+was wrong too — `lmdb-utils` carries `disposition_tooling_note: "Written by hand: this run was
+decided before set-disposition.py existed"`, in its own `meta.json`, in this same diff. **Three
+of five went through the tool** (`genisoimage`, `fossil`, `dos2unix-measured`), one was decided
+by hand and says so, and merge 1's void run predates the tool entirely. A rebuttal that
+contradicts the evidence sitting beside it is worse than the finding it answers.
+
+**The confirmation round found three defects the fixes had just created, one of them the same
+defect it was fixing.** The P0 above is "changing a figure leaves the prose that reasoned from
+it behind". Three paragraphs later, in the entry announcing that fix, this file said the seal
+read "seven rows, seven pre-images, five published runs, all naming `228c73b6…`". The second
+amendment row made the first half stale within the hour, and the second half had never been
+true — the void run has named an older key since merge 1. The same-class scan that caught the
+P0 grepped for the *phrase* ("no verdict", "fifth outcome"); it did not grep for the audit's own
+output strings, and `spike/authoring-cost/pilot/README.md` quotes
+`semantic_status: contested-or-ungraded` — a value this merge deleted. Both corrected, and the
+scan in the PR body now names the string it should have run.
+
+Third: the rebuttal written here to a finding that the runs' dispositions never went through
+`set-disposition.py` claimed four of five did. `lmdb-utils` carries
+`disposition_tooling_note: "Written by hand"` **in this same diff**. Three of five went through
+the tool. Answering a wrong finding with a wrong number is worse than the finding.
+
+Two overclaims went with them. The contradiction refusal compared *acceptance*, so
+`wrong question` beside `vacuous checker` on one id passed while the message said "two different
+verdicts" — measured, then made true by comparing the verdicts. And four `meta.json` notes said
+the blinding "still held" because neither grader was told which revision was written first: the
+graders are handed `revisions/01.toml` and `02.toml`, so the ordinal is in the path. What the
+shuffle removes is the id as a cue; the write order is **requested** and not hidden, and the
+notes and `runs/README.md` say that now.
+
+Three guards added this round had no committed case — the third-sheet refusal, the
+contradiction refusal, and `assign-grading.py` entirely. Each was "measured on a fixture" that
+lived in a scratch directory for one afternoon, which is a guard nobody will notice losing.
+Cases for the first two, a `--selftest` and a CI step for the third, and the overwrite guard
+seen red on a copy with that block removed.
+
+**The simplify pass found the drift it was about to create.** `run-authoring.sh` normalised its
+two published files in two heredocs, each with its own copy of the redaction list — and the
+target-generated password shape had just been added to the transcript's copy and not to
+stderr's. A password printed to stderr would have shipped, hours after the whole point of the
+change was that one had shipped. Both files go through one `scrub` now. Measured on planted
+input: before, the stderr keeps `Qq8AnOtHeR9`; after, both files carry `[redacted]` and both
+have the home path rewritten to `~`.
+
+**Two smaller ones, from the same sitting.** The raw, un-normalised transcript was being written
+*inside* the published run directory and deleted at the end — a session that dies in the middle
+leaves host paths and anything credential-shaped in the directory the next `git add` sweeps; the
+deletion was never the safeguard, the location was wrong, and it is a tempfile now. And the
+grading assignment derived the target package from the run's directory name, which hands the
+grader the path of a card that does not exist the moment a run is named anything else — and one
+is, because `dos2unix/` was already taken by the void run. `meta.json` already records which
+package ran; that is now where it is read from.
+
 ## 2026-09-19 — the answer key, and the two defects the rehearsal found (#618, merge 1 of 3)
 
 **What this merge is.** #618 wants the semantic half of authoring measured before any
@@ -49,7 +234,8 @@ check that an existing run directory is refused. The refusal standing in front o
 `selection.tsv` lookup that matched the package against the wrong column — so it had been
 refusing *every* target, including the four that are selected, which means the launcher could
 never have run at all. Fixing the column removed the wrong refusal and the launcher did its job:
-seven minutes, 449 transcript events, two defines caught by the watcher, no verdict. It is
+seven minutes, 449 transcript events, two defines caught by the watcher, and — as merge 2's
+detector fix later showed — a PASS at 217 s, where this paragraph first said "no verdict". It is
 published as `void` with its reason, because this study's own protocol says a run that starts is
 published and deleting evidence is the failure it is built against. Its transcript also showed the repository-trace
 list firing for a reason that is not a subject reaching anything: both hits sit in one event

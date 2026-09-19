@@ -1,0 +1,28 @@
+{
+  "target": "genisoimage",
+  "manifest": "228c73b68ba4823e14056d1fb31bf3eda43b4c51ca3433606efadcea4da9f220",
+  "started": "2026-09-19T07:53:32Z",
+  "ended": "2026-09-19T08:00:44Z",
+  "session_exit": 0,
+  "target_version": "9:1.1.11-3.4",
+  "claude_cli": "2.1.278 (Claude Code)",
+  "subject_model": "claude-opus-5[1m]",
+  "image": "sha256:fcb5528c2963ab2136e4e0807ec0cda58f7f8f233ca2ecdb45585cf3bbe8cf69",
+  "disposition": "graded",
+  "graders": [
+    {
+      "sheet": "grades/a.tsv",
+      "model": "claude-opus-5[1m]",
+      "context": "fresh, no conversation history"
+    },
+    {
+      "sheet": "grades/b.tsv",
+      "model": "claude-opus-5[1m]",
+      "context": "fresh, no conversation history"
+    }
+  ],
+  "disposition_note": "Not void and not adjudicate: the apparatus completed, genisoimage installed, the subject saw the prompt, and the audit's repository-trace list is empty. Read before the grades.",
+  "disposition_traces_seen": 0,
+  "grader_assignment_note": "One revision, so there is no shuffle to draw and no cross-check on the given id: both graders saw it as `G`. The order is NOT shielded: the paths handed to a grader are `revisions/NN.toml`, so the ordinal is visible, and the brief asks them not to read it as a cue rather than preventing it. An earlier version of this note called the blinding held; it is requested, and what the shuffle actually removes is the *id* as a cue, not the filename.",
+  "grading_limitation": "The graders were given the define TOML only: `watch-defines.py` snapshots `*.toml`, so the `check` and `setup` scripts a define names are not in the grading material. The rubric's `vacuous checker` verdict is about that script, so it could not be reached in this round and the verdicts skew high. Raised independently by graders on this run and on the other, before this note existed. Not fixed mid-campaign: the two earlier runs' containers are gone and could not be recomputed, so a later run measured with the checker in hand would not be comparable to them."
+}

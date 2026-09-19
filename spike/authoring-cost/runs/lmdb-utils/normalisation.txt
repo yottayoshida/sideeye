@@ -1,0 +1,3 @@
+events	500
+json_lines_rejected	0
+repo_root_named_before_normalisation	0

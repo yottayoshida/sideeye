@@ -1,0 +1,15 @@
+# sideeye define for lmdb-utils: `mdb_load` loading 250 records into an existing env.
+#
+# data.mdb is scratch to the built-in byte-level pre-or-post rule, not unjudged: LMDB
+# commits by writing new pages into data.mdb and then flipping a meta page in the same
+# file, so a correct crash leaves bytes that are neither old nor new. What LMDB promises
+# is logical, and check.sh judges it in every world: the env reopens at a commit point.
+[world]
+state = "./state"
+
+[define]
+cwd       = "/home/user/lmdbcase"
+setup     = "./setup.sh"
+operation = ["/usr/bin/mdb_load", "-T", "-f", "/home/user/lmdbcase/load.txt", "/home/user/lmdbcase/state"]
+check     = "./check.sh"
+scratch   = ["data.mdb"]

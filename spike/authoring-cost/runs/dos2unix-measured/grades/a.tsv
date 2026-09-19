@@ -1,0 +1,7 @@
+# grader A, run dos2unix-measured, assignment seeded by (run, grader)
+# map	G	01
+G	unresolved by card	mechanical, semantic	claim 5 (whether a leftover d2utmp* should be reported as a defect is unspecified; claim 3 puts it inside the judged state)
+# G — had to know that dos2unix assembles the converted bytes in a `d2utmp`+six temporary IN THE FILE'S OWN DIRECTORY and renames over the original (claim 3); this define roots the judged state at exactly that directory while declaring no scratch, so a tree crashed just before the rename keeps a temporary whose treatment is left to the claim the card marks unspecified (claim 5).
+# grader note: not `wrong question` — the judged state holds a.txt and b.txt, which the card calls durable (claims 1-2); nothing the card calls scratch is judged, and setup/check live outside `state/` so the apparatus is not mixed into the judgement. Converting two files in one operation does not contradict claim 2, which is per-file old-or-new.
+# grader note: `unresolved by card` chosen because the card assigns this exact fork in advance — a define declaring `d2utmp*` scratch respects claim 4 and is valid; one that turns on the leftover temporary is unresolved rather than wrong. This define is not the former.
+# APPARATUS LIMITATION: the revision carries only `check = "/bin/sh …/check.sh"`; the assertion's body is outside it, so `vacuous checker` cannot be asserted against something never seen. For this target the split between `vacuous checker` and `semantically valid` is not decidable from the revision file alone.

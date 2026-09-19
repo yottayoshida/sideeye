@@ -1,0 +1,7 @@
+# grader B, run dos2unix-measured, assignment seeded by (run, grader)
+# map	G	01
+G	semantically valid	mechanical, semantic	claim 3 (the d2utmp* temporary lives in the file's own directory, hence inside the judged state) — with claims 1-2 behind it
+# G — had to know claim 3, that dos2unix assembles the conversion in a `d2utmp`+six temporary in the file's own directory rather than in the working directory; the define reflects it by rooting the judged state at the directory holding the two files the operation names, so claim 1's in-place rewrite and claim 2's old-or-new bytes are both inside the judged tree. It declares no scratch, which leaves the leftover temporary to claim 5 (unspecified) rather than contradicting claim 4.
+# grader note: not `wrong question` — both durable files are judged and nothing the card calls scratch is. Two files in one operation is wider than the card's example, not contrary to it, since claim 2 is per-file.
+# grader note: not `unresolved by card` — the verdict does not depend only on claim 5. Per DESIGN.md:233 the built-in invariant does not constrain a file present in only one of the two snapshots, so the temporary cannot move the verdict.
+# APPARATUS LIMITATION: the revision's artefact is the TOML only; check.sh's body is not copied (`watch-defines.py` snapshots `*.toml`). `vacuous checker` — an existence-only or always-exit-0 checker — is therefore undecidable from the text, and `checker quality` could not be assigned either.

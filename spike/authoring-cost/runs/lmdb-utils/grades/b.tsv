@@ -1,0 +1,12 @@
+# grader B, run lmdb-utils, assignment seeded by (run, grader)
+# map	G	02
+# map	K	01
+G	wrong question	mechanical, semantic	claim 2 (lock.mdb is not durable state; belongs in scratch)
+K	wrong question	mechanical, semantic	claim 4 (contract is recovery, not bytes) + claim 2
+# G — had to know claims 3 and 4: LMDB commits in place, so a correct crash leaves `data.mdb` holding bytes that are neither the old nor the new image, and the contract is that the env still opens and reads back committed records; G reflects exactly that by exempting `data.mdb` and moving the assertion into `check.sh`, but not claim 2 — `lock.mdb` stays inside the judged state under the byte rule.
+# K — same two things; declares no `scratch` at all, so every file under `./state` is held to byte pre-or-post: `data.mdb` asserted byte-equal is the case claim 4 names outright, and `lock.mdb` is judged as durable against claim 2.
+# grader note: the dividing line is `data.mdb` — G moves it to a logical reopen check and satisfies claims 3/4; K is the define the card names as wrong question outright.
+# grader note: G was not softened for being close; it fails on one point only (claim 2).
+# grader note: no `vacuous checker` — order of application reaches `wrong question` first, and `check.sh` is not among the snapshots, so nothing shows it cannot fail.
+# grader note: no `unresolved by card` — neither define turns on claim 5; the deciding lines are the `measured` claims 2 and 4.
+# grader note: `observational` not assigned to either — neither asks for an observation mode.

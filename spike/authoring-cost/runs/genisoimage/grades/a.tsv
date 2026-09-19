@@ -1,0 +1,7 @@
+# grader A, run genisoimage, assignment seeded by (run, grader)
+# map	G	01
+G	semantically valid	semantic, mechanical	claims 1 and 2 (scratch on out.iso rests on claim 1's streamed, no-rename write; the contract is left behavioural per claim 2). Claim 5 is not turned on.
+# G — had to know claim 1: genisoimage streams its single output in place with no temporary-and-rename, so a crashed run legitimately leaves out.iso absent, empty or short; the define declares out.iso scratch, removing it from the built-in pre-or-post judgement and leaving claim 2's behavioural question to check.sh, and it takes no position on the unspecified claim 5.
+# grader note: requiring byte equality would have been the wrong question here — the card's contract is behavioural, so scratching out.iso is the side that matches it.
+# grader note: claim 5 would be turned on by a define REQUIRING the absence of a short image; this one tolerates it, so the verdict does not depend on the unspecified claim.
+# APPARATUS LIMITATION: revisions/ holds 01.toml and index.tsv only — the `check.sh` and `setup.sh` the define names are NOT in the grading material. The card's two checker traps (claim 3: reading only isoinfo's exit code = vacuous; claim 4: grepping the image for a.txt = wrong question) can be neither confirmed nor ruled out from the TOML. This verdict covers the judged state, the scratch declaration and the operation; if the checker reads only the exit code it falls to `vacuous checker`.

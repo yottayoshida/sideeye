@@ -1,0 +1,29 @@
+{
+  "target": "dos2unix",
+  "manifest": "228c73b68ba4823e14056d1fb31bf3eda43b4c51ca3433606efadcea4da9f220",
+  "started": "2026-09-19T08:11:22Z",
+  "ended": "2026-09-19T08:16:21Z",
+  "session_exit": 0,
+  "target_version": "7.4.3-1",
+  "claude_cli": "2.1.278 (Claude Code)",
+  "subject_model": "claude-opus-5[1m]",
+  "image": "sha256:316ebd684f9a01471dad3458d3adaccbe0a5f52bc95339cc8cdda7f399a544d5",
+  "disposition": "graded",
+  "graders": [
+    {
+      "sheet": "grades/a.tsv",
+      "model": "claude-opus-5[1m]",
+      "context": "fresh, no conversation history"
+    },
+    {
+      "sheet": "grades/b.tsv",
+      "model": "claude-opus-5[1m]",
+      "context": "fresh, no conversation history"
+    }
+  ],
+  "disposition_note": "Not void and not adjudicate: the apparatus completed, dos2unix installed, the subject saw the prompt, and the audit's repository-trace list is empty. Read before the grades. Named dos2unix-measured because runs/dos2unix holds the void run.",
+  "disposition_traces_seen": 0,
+  "grader_assignment_note": "One revision, so there is no shuffle to draw and no cross-check on the given id: both graders saw it as `G`. The order is NOT shielded: the paths handed to a grader are `revisions/NN.toml`, so the ordinal is visible, and the brief asks them not to read it as a cue rather than preventing it. An earlier version of this note called the blinding held; it is requested, and what the shuffle actually removes is the *id* as a cue, not the filename.",
+  "grading_limitation": "The graders were given the define TOML only: `watch-defines.py` snapshots `*.toml`, so the `check` and `setup` scripts a define names are not in the grading material. The rubric's `vacuous checker` verdict is about that script, so it could not be reached in this round and the verdicts skew high. Raised independently by graders on every run, before this note existed. Not fixed mid-campaign: the earlier runs' containers are gone and could not be recomputed, so a later run measured with the checker in hand would not be comparable.",
+  "outcome_note": "`contested`, and the disagreement is the finding (PROTOCOL.md). Both graders read the same define the same way — the judged state is rooted at the directory dos2unix builds its `d2utmp*` temporary in, and no scratch is declared — and split on what that means: one called it `semantically valid` because DESIGN.md:233 leaves a file present in only one snapshot unconstrained, so the leftover cannot move the verdict; the other called it `unresolved by card` because the card assigns this exact fork in advance and this define is not the branch it calls valid. No semantic point is published."
+}

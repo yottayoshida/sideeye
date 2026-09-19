@@ -1,0 +1,7 @@
+[world]
+state = "/home/user/d2u-define/state"
+
+[define]
+setup     = "/bin/sh /home/user/d2u-define/setup.sh"
+operation = "/usr/bin/dos2unix /home/user/d2u-define/state/a.txt /home/user/d2u-define/state/b.txt"
+check     = "/bin/sh /home/user/d2u-define/check.sh"

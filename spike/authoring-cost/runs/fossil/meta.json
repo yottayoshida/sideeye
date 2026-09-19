@@ -1,0 +1,28 @@
+{
+  "target": "fossil",
+  "manifest": "228c73b68ba4823e14056d1fb31bf3eda43b4c51ca3433606efadcea4da9f220",
+  "started": "2026-09-19T08:00:46Z",
+  "ended": "2026-09-19T08:11:20Z",
+  "session_exit": 0,
+  "target_version": "1:2.21-1+deb12u1",
+  "claude_cli": "2.1.278 (Claude Code)",
+  "subject_model": "claude-opus-5[1m]",
+  "image": "sha256:79dd0fd8a409a93c31e5ebd0e16bc0804c90be5d93908ac97cc98c6f25b774a3",
+  "disposition": "graded",
+  "graders": [
+    {
+      "sheet": "grades/a.tsv",
+      "model": "claude-opus-5[1m]",
+      "context": "fresh, no conversation history"
+    },
+    {
+      "sheet": "grades/b.tsv",
+      "model": "claude-opus-5[1m]",
+      "context": "fresh, no conversation history"
+    }
+  ],
+  "disposition_note": "Not void and not adjudicate: the apparatus completed, fossil installed, the subject saw the prompt, and the audit's repository-trace list is empty. Read before the grades.",
+  "disposition_traces_seen": 0,
+  "grader_assignment_note": "Two revisions, and the two graders drew OPPOSITE assignments (A: G=02 K=01; B: G=01 K=02). This is the one run where a verdict following the given id rather than the content would show as a disagreement the maps explain — and both graders accepted both revisions, so no such signal appears. The order is NOT shielded: the paths handed to a grader are `revisions/NN.toml`, so the ordinal is visible, and the brief asks them not to read it as a cue rather than preventing it. An earlier version of this note called the blinding held; it is requested, and what the shuffle actually removes is the *id* as a cue, not the filename.",
+  "grading_limitation": "The graders were given the define TOML only: `watch-defines.py` snapshots `*.toml`, so the `check` and `setup` scripts a define names are not in the grading material. The rubric's `vacuous checker` verdict is about that script, so it could not be reached in this round and the verdicts skew high. Raised independently by graders on every run, before this note existed. Not fixed mid-campaign: the earlier runs' containers are gone and could not be recomputed, so a later run measured with the checker in hand would not be comparable."
+}

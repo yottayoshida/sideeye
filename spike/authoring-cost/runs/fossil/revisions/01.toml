@@ -1,0 +1,18 @@
+# Crash-consistency of one `fossil commit` (fossil 2.21).
+# The commit is one SQLite transaction over repo.fossil and co/.fslckout.
+# Those files, their rollback journals, the random-named super-journal and
+# fossil's config db (home/) are SQLite files: their raw bytes mid-commit
+# are not the state fossil promises anything about, so the built-in
+# per-file invariant leaves them alone and check.sh judges them through
+# fossil, after SQLite's own journal recovery. co/a.txt stays judged.
+# No marker: "New_Version:" is printed before the transaction commits.
+[world]
+state = "state"
+
+[define]
+setup     = "/home/user/authoring/fossil-define/setup.sh"
+operation = "fossil commit --chdir co -U tester -m second --date-override 2020-01-03T00:00:00 --no-warnings"
+check     = "/home/user/authoring/fossil-define/check.sh"
+cwd       = "state"
+apparatus = ["env:FOSSIL_HOME=/home/user/authoring/fossil-define/state/home"]
+scratch   = ["repo.fossil", "repo.fossil-journal", "co/.fslckout", "co/.fslckout-journal", "co/.fslckout-mj*", "home"]

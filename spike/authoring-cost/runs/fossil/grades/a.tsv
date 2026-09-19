@@ -1,0 +1,11 @@
+# grader A, run fossil, assignment seeded by (run, grader)
+# map	G	02
+# map	K	01
+G	semantically valid	semantic, mechanical, observational	claims 2, 3, 4
+K	semantically valid	semantic, mechanical, observational	claims 2, 3, 4
+# G — had to know that the durable record is repo.fossil while its bytes change on every commit (claim 4), so survival is decided by fossil's own integrity check (claim 3), and that `.fslckout` is a derivative rebuildable from the repo and may be scratch (claim 2); the define reflects all three by taking the three SQLite files out of the per-file byte invariant and judging them through fossil.
+# K — reflects the same three points in the same shape, and additionally lists the rollback journal and the random-named super-journal paths in scratch; no card claim decides that listing, so the question it asks is the same as G's.
+# grader note: neither claims byte identity for repo.fossil (claim 4), neither ignores the durable repo, and both scratch `.fslckout` — the shape the card calls respecting claim 2. So not `wrong question`.
+# grader note: not `unresolved by card` — claim 5 (may an uncommitted working file remain) is not turned on, since both leave `co/a.txt` judged and a commit does not rewrite working files; claim 6 is not turned on because `.fslckout` is scratch.
+# grader note: `observational` on both because each chose an oracle over a marker, saying `New_Version:` is printed before the transaction commits.
+# APPARATUS LIMITATION: check.sh's body is not in the grading material, so `vacuous checker` could not be established either way. The verdict is against the assertion the define declares (through fossil, after SQLite's journal recovery).
