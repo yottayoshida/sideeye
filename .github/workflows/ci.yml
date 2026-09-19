@@ -1636,7 +1636,13 @@ jobs:
   authoring-cost:
     runs-on: ubuntu-latest
     steps:
+      # Full history: the freshness predicate reads a FIXED commit (base-commit.txt), because
+      # against the working tree it excludes this study's own selection the moment the study is
+      # published. A default shallow clone does not hold that commit, and the check exits 2
+      # saying so — measured on this PR's first run.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
 
       # The apparatus refuses on evidence it cannot read. Three of the four cases are
       # refusals, so a reader that accepted anything would fail here rather than in a run.
