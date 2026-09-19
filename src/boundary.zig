@@ -519,6 +519,59 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
 /// untrapped run, so nothing accounted for a child in the run the trace came from. The
 /// oracle now watches the run it judges in that mode too, and the two conditions below are
 /// asked of it the way they are asked of any other run.
+/// Which of the two walls behind `child_touched_state_dir` a refusal stands at (#634).
+///
+/// The refusal has one name and two remedies, measured on three targets under both
+/// observation modes (`spike/followup-child-touch-modes/`, #628): `lbdb` refuses under the
+/// default mode because its writing child records nothing of its own, and reaches PASS over
+/// 8 crash points under `--observe syscalls`; `pacpl` and `mail-expire` refuse in **both**
+/// modes with byte-identical reports. The difference is not the target's language — it is
+/// which condition of `childrenMayBeJudged` stopped the run.
+pub const ChildWall = enum {
+    /// A writer **the shim was loaded into** — it announced itself, so the trace holds
+    /// records of its own — whose writes the interposed entry points never counted, so its
+    /// operations hold no crash-point number. The kernel boundary counts what libc's entry
+    /// points miss (ADR 0052, ADR 0054), and `lbdb` crossed exactly this under
+    /// `--observe syscalls`: its child flushes a buffered stdout at `exit()`, which leaves
+    /// libc without crossing the PLT.
+    ///
+    /// **The shim being there is what makes the step safe to give**, not a detail of the
+    /// measurement. Under that mode a filter is inherited across `exec` while the `exec`
+    /// resets the handler that makes it survivable, so an image the shim cannot be loaded
+    /// into dies at its first state-changing call (`src/cli.zig`, measured) — and a child
+    /// whose death the target survives can leave the run judged **without that child's
+    /// work** (`docs/report-schema.md`, case 4, not measured). ADR 0069 declined this step
+    /// for that reason and named this site; the reason still holds for the writer with no
+    /// records, which is why it is not this member.
+    shimmed_writer_unnumbered,
+    /// Every other refusal this test makes: a writer with no records of its own (the child
+    /// the mode would kill), writers whose operations overlap, a child nothing waited for,
+    /// a child whose creation the capture does not show, a writer the oracle cannot place
+    /// because it resolves paths against the subject's working directory, an exhausted
+    /// arena. None of them is answered by counting the operations somewhere else — two
+    /// processes writing at once are ordered by the scheduler wherever they are counted.
+    not_the_modes_wall,
+};
+
+/// What `childrenMayBeJudged` answers when the run may not be judged: the sentence naming
+/// what stopped it, and which wall that is.
+pub const ChildRefusal = struct {
+    detail: []const u8,
+    wall: ChildWall,
+};
+
+/// The step for `child_touched_state_dir` (#634), shaped after `missedOperationNext` (#599,
+/// ADR 0069) and guarded the same way: the mode exists on Linux only, and naming it to a run
+/// already in it would send the reader in a circle. Only the wall the mode was measured to
+/// cross gets it; the rest keep the step they had, because a step that cannot work is worse
+/// than one that only points at the class.
+pub fn childTouchedNext(wall: ChildWall, observe: contract.ObserveMode, on_linux: bool) contract.NextStep {
+    return switch (wall) {
+        .shimmed_writer_unnumbered => if (observe == .wrappers and on_linux) .observe_syscalls else .unwrap_or_class_wall,
+        .not_the_modes_wall => .unwrap_or_class_wall,
+    };
+}
+
 /// Which refusal an unattributed writer gets, when `childrenMayBeJudged` has already said
 /// that the run is refused (#544, ADR 0060 decision 8).
 ///
@@ -545,10 +598,10 @@ pub fn childrenMayBeJudged(
     arena: std.mem.Allocator,
     trace: engine.TraceInfo,
     parsed: oracle.Parsed,
-) ?[]const u8 {
+) ?ChildRefusal {
     if (!trace.foreign_kill_point and !parsed.childTouched()) return null;
 
-    const primary = trace.primary_pid orelse return "the trace holds state-directory operations but no process announced itself, so none of them can be attributed";
+    const primary = trace.primary_pid orelse return .{ .wall = .not_the_modes_wall, .detail = "the trace holds state-directory operations but no process announced itself, so none of them can be attributed" };
 
     // Both witnesses, collapsed to one entry per writing process before anything is
     // compared. Written this way for cost as much as for shape: the first version asked
@@ -566,7 +619,7 @@ pub fn childrenMayBeJudged(
             if (w.pid == op.pid) seen = true;
         }
         if (!seen) shim_writers.append(arena, op) catch
-            return "out of memory while reading which processes wrote in the judged directory";
+            return .{ .wall = .not_the_modes_wall, .detail = "out of memory while reading which processes wrote in the judged directory" };
     }
     // The oracle's, carrying where each one first wrote — the point the window is measured
     // from and the one the reap has to follow.
@@ -581,7 +634,7 @@ pub fn childrenMayBeJudged(
             if (w.id == m.id) seen = true;
         }
         if (!seen) oracle_writers.append(arena, m) catch
-            return "out of memory while reading which processes the oracle saw write";
+            return .{ .wall = .not_the_modes_wall, .detail = "out of memory while reading which processes the oracle saw write" };
     }
 
     // Condition 1, from the shim's side: every process the shim recorded writing is one
@@ -592,11 +645,14 @@ pub fn childrenMayBeJudged(
             if (o.id == w.pid) in_oracle = true;
         }
         if (!in_oracle)
-            return std.fmt.allocPrint(
+            // Not the mode's wall: what hides this writer is the oracle resolving a
+            // relative path against the subject's working directory, which the kernel
+            // boundary does not change.
+            return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
                 arena,
                 "a process other than the subject (pid {d}) performed {s}({s}) and the oracle's account does not place it. That reader resolves a relative path against the subject's working directory, so a child that changed its own is invisible to it — and with only one witness for those operations, nothing can check that nobody else wrote while they ran",
                 .{ w.pid, w.class.name(), w.path },
-            ) catch "a process recorded state-directory operations the oracle's account does not place";
+            ) catch "a process recorded state-directory operations the oracle's account does not place" };
     }
 
     // Condition 1's other direction, and condition 2, once per writing child.
@@ -626,17 +682,39 @@ pub fn childrenMayBeJudged(
             // process with that id. It reads as the same question and is not: it reworded
             // the refusal on the strace path too, where the id really is a pid, and the
             // v15 fixture in this file caught it.
+            // Is the shim in the image this writer is running NOW? The question is about
+            // the image, not the pid (#634, ADR 0076). `exec` is recorded by the image that
+            // calls it, before the call — so an `exec` from this pid says only that some
+            // image in it called one, and the next image may be the static or env-stripped
+            // one `--observe syscalls` kills. `shim_ready` is written by a shim that has
+            // initialised, so the shim is here iff the LAST of the two, in trace order, is
+            // a `shim_ready`. lbdb's child records `exec` then `shim_ready`, and a child
+            // that execs away from the shim records the `exec` after.
+            var shim_in_writer_image = false;
+            for (trace.ops.items) |op| {
+                if (op.pid != w.id) continue;
+                switch (op.class) {
+                    .shim_ready => shim_in_writer_image = true,
+                    .exec => shim_in_writer_image = false,
+                    else => {},
+                }
+            }
             if (parsed.primary_pid == null)
-                return std.fmt.allocPrint(
+                // A witness that names threads: the id may be a thread, and this platform
+                // has no such mode anyway. Left off the step's path deliberately.
+                return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
                     arena,
                     "id {d} mutated the judged directory in the oracle's account and recorded nothing of its own. This witness names a thread and knows no process for it, so this is either a process that never loaded the shim or a thread whose operations went around the shim's wrappers; calling it a process would assert the half this run cannot see. Either way its operations hold no crash-point number and the sequence the crash points were read from is incomplete",
                     .{w.id},
-                ) catch "an id mutated the judged directory and the witness cannot say whether it is a process";
-            return std.fmt.allocPrint(
+                ) catch "an id mutated the judged directory and the witness cannot say whether it is a process" };
+            return .{ .wall = if (shim_in_writer_image) .shimmed_writer_unnumbered else .not_the_modes_wall, .detail = std.fmt.allocPrint(
                 arena,
-                "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle",
-                .{w.id},
-            ) catch "a process mutated the judged directory without recording anything of its own";
+                "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. {s}",
+                .{ w.id, if (shim_in_writer_image)
+                    "Its shim announced itself and recorded no operation, so its writes went around the interposed entry points — a buffered stream flushed inside libc does that"
+                else
+                    "A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle" },
+            ) catch "a process mutated the judged directory without recording anything of its own" };
         }
 
         // Where this child was created. Without it the window would start at the child's
@@ -655,11 +733,11 @@ pub fn childrenMayBeJudged(
             if (c.id == w.id and (spawned_at == null or c.at < spawned_at.?)) spawned_at = c.at;
         }
         const window_from = if (spawned_at) |sp| @min(sp, w.at) else null;
-        const from = window_from orelse return std.fmt.allocPrint(
+        const from = window_from orelse return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
             arena,
             "the oracle's capture does not show where process {d} was created, and it wrote in the judged directory: without that point there is no window in which to ask whether anything else wrote while it ran",
             .{w.id},
-        ) catch "the capture does not show where a writing process was created";
+        ) catch "the capture does not show where a writing process was created" };
 
         // The first reap after that first write. Not "the first reap of it at all": a pid
         // can be reaped once, but reading the first one that follows keeps the comparison
@@ -671,18 +749,18 @@ pub fn childrenMayBeJudged(
                 break;
             }
         }
-        const until = reaped_at orelse return std.fmt.allocPrint(
+        const until = reaped_at orelse return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
             arena,
             "a process other than the subject (pid {d}) performed {s}({s}) and nothing waited for it afterwards: its operations and the subject's are ordered by the scheduler rather than by a join, so the sequence they were numbered in is one sample rather than the order the program imposes",
             .{ w.id, if (recorded) |o| o.class.name() else "an operation", if (recorded) |o| o.path else "" },
-        ) catch "nothing waited for a process that wrote in the judged directory";
+        ) catch "nothing waited for a process that wrote in the judged directory" };
 
         for (parsed.mutations.items) |other| {
             if (other.id == w.id) continue;
             if (other.at > from and other.at < until)
                 // Named the way #484's refusal names things — pid, operation, path — for
                 // the same reason: the operator's next move should not start from a guess.
-                return std.fmt.allocPrint(
+                return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
                     arena,
                     "a process other than the subject (pid {d}) performed {s}({s}), and process {d} wrote in the judged directory while it was still running — nothing had collected it yet. Two processes writing at once are ordered by the scheduler, so the sequence they were numbered in is the one this run happened to produce and a crash point would not name the same operation on the next. A run whose writers take turns is judged; one whose writers overlap is not",
                     .{
@@ -691,7 +769,7 @@ pub fn childrenMayBeJudged(
                         if (recorded) |o| o.path else "",
                         other.id,
                     },
-                ) catch "two processes wrote in the judged directory at the same time";
+                ) catch "two processes wrote in the judged directory at the same time" };
         }
     }
 
@@ -876,6 +954,26 @@ pub fn withOracleCapture(arena: std.mem.Allocator, sentence: []const u8, capture
     // report disagreeing about what was compared (review, P2). One run, one sentence.
     const joined = std.fmt.allocPrint(arena, "{s}; the oracle's capture at {s} holds the child's own lines, its execve among them", .{ sentence, cap }) catch return fallback;
     return sanitizeForReport(arena, joined) catch fallback;
+}
+
+test "the step for child_touched_state_dir follows the wall, not the refusal's name (#634)" {
+    // The wall the mode was measured to cross, in the mode that can cross it.
+    try std.testing.expectEqual(contract.NextStep.observe_syscalls, childTouchedNext(.shimmed_writer_unnumbered, .wrappers, true));
+    // Already in that mode: naming it would send the reader in a circle.
+    try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, childTouchedNext(.shimmed_writer_unnumbered, .syscalls, true));
+    // Off Linux the flag answers `platform_unsupported`, so the step must not name it.
+    try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, childTouchedNext(.shimmed_writer_unnumbered, .wrappers, false));
+    // The other wall keeps the step it had in every combination: counting the operations
+    // somewhere else does not order two writers that overlap (measured on pacpl and
+    // mail-expire, byte-identical reports in both modes).
+    for ([_]contract.ObserveMode{ .wrappers, .syscalls }) |m| {
+        for ([_]bool{ true, false }) |linux| {
+            try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, childTouchedNext(.not_the_modes_wall, m, linux));
+        }
+    }
+    // Every wall is answered: a new member added without a step here fails to compile
+    // rather than falling through to the class wall by default.
+    try std.testing.expectEqual(@as(usize, 2), @typeInfo(ChildWall).@"enum".fields.len);
 }
 
 test "foreignTouchDetail names the record, both ends of a two-path op, and defangs a forged line (#484)" {
@@ -1563,8 +1661,14 @@ test "an id a thread-naming witness cannot attribute is refused as an id, not as
     // The run is refused either way; what this pins is the sentence. Delete the branch and
     // the old wording comes back, which the first assertion fails on; widen it to every
     // witness and the v15 fixture below fails. Neither direction stays green.
-    try std.testing.expect(std.mem.indexOf(u8, why, "id 99 mutated the judged directory") != null);
-    try std.testing.expect(std.mem.indexOf(u8, why, "process 99 mutated") == null);
+    try std.testing.expect(std.mem.indexOf(u8, why.detail, "id 99 mutated the judged directory") != null);
+    try std.testing.expect(std.mem.indexOf(u8, why.detail, "process 99 mutated") == null);
+    // Not the mode's wall under the witness that cannot say process from thread: one of
+    // its two readings is a process that never loaded the shim, which is the image the
+    // mode kills, and the witness cannot say which reading this is. (The step would say
+    // the class wall regardless — this witness is macOS-only and the mode is Linux-only —
+    // but the wall is the honest answer rather than the one the guard makes moot.)
+    try std.testing.expectEqual(ChildWall.not_the_modes_wall, why.wall);
 }
 
 test "the two conditions on a run with a writing child (v15)" {
@@ -1607,7 +1711,7 @@ test "the two conditions on a run with a writing child (v15)" {
         .subject_tids = .empty,
         .primary_pid = 7,
     };
-    try std.testing.expectEqual(@as(?[]const u8, null), childrenMayBeJudged(arena, trace, handoff));
+    try std.testing.expectEqual(@as(?ChildRefusal, null), childrenMayBeJudged(arena, trace, handoff));
 
     // Condition 2: the parent's second write moves to BEFORE the wait returned. Nothing
     // else changes — same processes, same operations, same reap — so this is the
@@ -1615,20 +1719,27 @@ test "the two conditions on a run with a writing child (v15)" {
     var overlap = handoff;
     overlap.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 25 } });
     const raced = childrenMayBeJudged(arena, trace, overlap) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, raced, "(pid 8) performed rename(/tmp/s/a)") != null);
-    try std.testing.expect(std.mem.indexOf(u8, raced, "process 7 wrote in the judged directory while it was still running") != null);
+    try std.testing.expect(std.mem.indexOf(u8, raced.detail, "(pid 8) performed rename(/tmp/s/a)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, raced.detail, "process 7 wrote in the judged directory while it was still running") != null);
+    // Two writers at once are ordered by the scheduler: counting their operations at the
+    // kernel boundary instead would not order them, so this wall keeps its step (#634).
+    try std.testing.expectEqual(ChildWall.not_the_modes_wall, raced.wall);
 
     // Condition 2's other half: nothing collected the child at all.
     var no_reap = handoff;
     no_reap.reaps = .empty;
     const unreaped = childrenMayBeJudged(arena, trace, no_reap) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, unreaped, "(pid 8) performed rename(/tmp/s/a) and nothing waited for it") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unreaped.detail, "(pid 8) performed rename(/tmp/s/a) and nothing waited for it") != null);
+    try std.testing.expectEqual(ChildWall.not_the_modes_wall, unreaped.wall);
 
     // Condition 1, the direction that catches a child the oracle could not place.
     var oracle_blind = handoff;
     oracle_blind.mutations = try events.list(arena, &.{.{ .id = 7, .at = 10 }});
     const unplaced = childrenMayBeJudged(arena, trace, oracle_blind) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, unplaced, "(pid 8) performed rename(/tmp/s/a) and the oracle's account does not place it") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unplaced.detail, "(pid 8) performed rename(/tmp/s/a) and the oracle's account does not place it") != null);
+    // The oracle resolves relative paths against the subject's cwd, which no observation
+    // mode changes — so this direction of condition 1 is not the mode's wall either.
+    try std.testing.expectEqual(ChildWall.not_the_modes_wall, unplaced.wall);
 
     // Condition 1, the other direction: a writer the shim never recorded — the shape
     // `TOY_SPAWN_WRITES` produces, and the one that would otherwise make the whole
@@ -1642,7 +1753,42 @@ test "the two conditions on a run with a writing child (v15)" {
     unshimmed.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 99, .at = 35 }, .{ .id = 7, .at = 40 } });
     unshimmed.reaps = try events.list(arena, &.{ .{ .id = 8, .at = 30 }, .{ .id = 99, .at = 37 } });
     const no_records = childrenMayBeJudged(arena, trace, unshimmed) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, no_records, "process 99 mutated the judged directory") != null);
+    try std.testing.expect(std.mem.indexOf(u8, no_records.detail, "process 99 mutated the judged directory") != null);
+    // **Not** the mode's wall (#634): pid 99 wrote nothing the shim recorded and announced
+    // nothing either, so the shim never ran in it — the image `--observe syscalls` kills at
+    // its first state-changing call, which ADR 0069 declined this step for.
+    try std.testing.expectEqual(ChildWall.not_the_modes_wall, no_records.wall);
+
+    // The shape that IS the mode's wall, and the only difference from the fixture above:
+    // the same writer announced itself first, so the shim was loaded into it and only its
+    // writes went around the interposed entry points — lbdb's child, which flushes a
+    // buffered stdout at `exit()`. That child the mode does not kill; it numbers its
+    // writes at the kernel boundary.
+    var announced = trace;
+    var ops: std.ArrayList(engine.Op) = .empty;
+    for (trace.ops.items) |op| try ops.append(arena, op);
+    try ops.append(arena, .{ .class = .shim_ready, .seq = 0, .pid = 99, .tid = 99, .path = "/tmp/s", .aux = "" });
+    announced.ops = ops;
+    const shimmed = childrenMayBeJudged(arena, announced, unshimmed) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, shimmed.detail, "process 99 mutated the judged directory") != null);
+    try std.testing.expectEqual(ChildWall.shimmed_writer_unnumbered, shimmed.wall);
+    // And the sentence follows the wall: this writer's shim did announce itself, so the
+    // refusal must not tell the reader it never loaded one while the step says otherwise.
+    try std.testing.expect(std.mem.indexOf(u8, shimmed.detail, "Its shim announced itself") != null);
+
+    // The shape the pid-level question got wrong (#634 R2): the same writer announces
+    // itself and then **execs away** — a static helper, an environment stripped of the
+    // preload. `exec` is recorded by the image that calls it, before the call, so a pid
+    // with an `exec` last is running an image the shim is not in, and that is the image
+    // `--observe syscalls` kills rather than counts.
+    var exec_away = trace;
+    var ops2: std.ArrayList(engine.Op) = .empty;
+    for (announced.ops.items) |op| try ops2.append(arena, op);
+    try ops2.append(arena, .{ .class = .exec, .seq = 0, .pid = 99, .tid = 99, .path = "/usr/bin/static-helper", .aux = "" });
+    exec_away.ops = ops2;
+    const gone = childrenMayBeJudged(arena, exec_away, unshimmed) orelse return error.TestExpectedRefusal;
+    try std.testing.expectEqual(ChildWall.not_the_modes_wall, gone.wall);
+    try std.testing.expect(std.mem.indexOf(u8, gone.detail, "never loaded the shim") != null);
 
     // Condition 2's window starts at the FORK, not at the child's first write. Same
     // processes, same reap, same operations — only the parent's second write moves back
@@ -1652,14 +1798,14 @@ test "the two conditions on a run with a writing child (v15)" {
     var parent_in_window = handoff;
     parent_in_window.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 7, .at = 18 }, .{ .id = 8, .at = 20 } });
     const straddled = childrenMayBeJudged(arena, trace, parent_in_window) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, straddled, "process 7 wrote in the judged directory while it was still running") != null);
+    try std.testing.expect(std.mem.indexOf(u8, straddled.detail, "process 7 wrote in the judged directory while it was still running") != null);
 
     // And a capture that does not show where the writer came from cannot be asked the
     // question at all.
     var no_spawn = handoff;
     no_spawn.spawns = .empty;
     const unplaced_child = childrenMayBeJudged(arena, trace, no_spawn) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, unplaced_child, "does not show where process 8 was created") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unplaced_child.detail, "does not show where process 8 was created") != null);
 
     // A mode gate stood here: `--observe syscalls` refused every one of these shapes,
     // because its oracle watched a separate untrapped run and nothing accounted for a
@@ -1710,8 +1856,8 @@ test "two children writing before either is collected are refused (v15)" {
         .primary_pid = 7,
     };
     const why = childrenMayBeJudged(arena, trace, racing) orelse return error.TestExpectedRefusal;
-    try std.testing.expect(std.mem.indexOf(u8, why, "(pid 8) performed write(/tmp/s/x)") != null);
-    try std.testing.expect(std.mem.indexOf(u8, why, "process 9 wrote in the judged directory while it was still running") != null);
+    try std.testing.expect(std.mem.indexOf(u8, why.detail, "(pid 8) performed write(/tmp/s/x)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, why.detail, "process 9 wrote in the judged directory while it was still running") != null);
 }
 
 test "preflight's second run names a thread as a thread, not as an image change (v16)" {

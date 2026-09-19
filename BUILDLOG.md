@@ -2,6 +2,95 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-19 — one refusal, two walls, one step (#634)
+
+**What #628 measured and did not change.** Three targets refused `child_touched_state_dir` by
+the g3 sweep, run once per observation mode: `lbdb` moved to PASS under `--observe syscalls`,
+`pacpl` and `mail-expire` produced byte-identical reports in both modes. That is two walls
+behind one name — where operations are counted, and the order two writers took — and the
+record said so without touching the engine.
+
+**What the engine already knew.** `childrenMayBeJudged` evaluates the two conditions
+separately and returns the sentence for whichever one stopped the run, so the distinction
+existed at the moment of refusal and died there: both sites passed `.unwrap_or_class_wall`,
+and the report carried the same reason and the same step for both. An operator at the
+accounting wall had a flag that crosses it, shipped and documented, and nothing said so.
+
+**The shape was already in the file.** `missedOperationNext` (#599, ADR 0069) returns
+`.observe_syscalls` when the run is in `wrappers` mode on Linux and the class wall otherwise.
+`childTouchedNext` is the same function with the wall as its first argument. The return type
+of the admission test grew a field rather than the engine growing a second decision site —
+the alternative was re-deriving the condition at the call site, which is the shape where one
+of the two copies eventually lies.
+
+**What was deliberately not done.** A machine-readable split — two `unknown_reason` values, or
+a field naming the condition — is the fuller answer and is not free: those values are the
+report schema, frozen as surface 2. The step is the part that changes what an operator does
+next, and `observe_syscalls` is an existing value, so naming it at a second site adds nothing
+to the schema. The issue records the larger question.
+
+**Which shapes get the step** (rewritten after review; the first version of this paragraph
+gave it to a class that includes the child the mode kills). Only a writer the shim was loaded
+into. The other direction of condition 1 — the shim recorded a writer the oracle could not
+place — is invisible because the oracle resolves relative paths against the subject's working
+directory, which no observation mode changes, so it keeps the class wall. Under the
+thread-naming witness the id may be a thread or a process that never loaded the shim, and the
+witness cannot say which, so that branch keeps it too; the guard would make it moot anyway,
+since that witness is macOS-only and the mode is Linux-only.
+
+**What review moved (R1), and it was the whole shape of the change.** Two P0s, both against
+the first draft, which gave the step to *every* unattributed writer. The first: two acceptance
+legs assert that this refusal keeps asking about the wrapper, because the class behind it is
+targets that ARE shell scripts (#506) — `zig build test` does not run acceptance, so my three
+measurements could not see it. The second is the one that matters: **ADR 0069 declined this
+step at this site**, and the reason is still true. A writer with no records of its own is a
+child the shim was never loaded into, and that is precisely the image `--observe syscalls`
+kills — a filter inherited across `exec`, a handler the `exec` reset. `docs/report-schema.md`
+case 4 then says a child whose death the target survives ends without a refusal, and a child
+whose work was inside the state directory would leave the run judged without that work, a case
+that page marks unmeasured. The draft would have pointed an operator from an honest UNKNOWN at
+a mode that can return a quiet verdict with the writer's work missing.
+
+**The narrowing, and why the engine can make it.** `lbdb` crossed because its child *does*
+load the shim: the trace holds its `exec` and `shim_ready` and no operation, since it flushes a
+buffered stdout at `exit()`. `TOY_SPAWN_WRITES` — the acceptance toy — `posix_spawn`s
+`/bin/sh` with an empty environment, so it leaves no records at all. Every record the shim
+writes reaches `TraceInfo.ops`, so "this pid appears in the trace" is "the shim ran here", and
+that is the discriminator between the wall the mode crosses and the child it kills. ADR 0076
+records it; the two unit fixtures differ in exactly one record.
+
+**What I got wrong about my own evidence.** I had written "the kernel boundary numbers it" as a
+property of the wall, from one target. The refusal's own sentence names two shapes — an emptied
+environment, a static image — and for those the kernel boundary does not number the writer, it
+kills it. One measurement, generalised one step too far, and the generalisation was the change.
+
+**What review moved (R2): the same defect, one layer in.** The narrowing asked whether the
+writer's pid appears in the trace at all. But `exec` is recorded by the image that *calls* it,
+before the call — so a child that inherits the shim, announces itself, and then execs a static
+helper leaves an `exec` under its pid and runs an image with no shim. The pid-level question
+said "shim here" and would have sent exactly the process ADR 0069 names to the mode that kills
+it. The question is about the image: the shim is there iff the last `exec`-or-`shim_ready`
+record for that pid is a `shim_ready`. lbdb's child records `exec` then `shim_ready`; the
+exec-away shape records them the other way round. A third fixture pins it, and mutating the
+check back to the pid-level question turns it red.
+
+R2 also found three prose defects, all of them mine: the call site still carried the sentence
+I had already retracted in this entry; the refusal told the reader the child "never loaded the
+shim" in the very case the step now says to count its writes at the kernel boundary, so the
+sentence now follows the wall; and `spike/followup-child-touch-modes/NOTES.md` — the record
+this ADR cites — says lbdb's child "never loads the shim", which is wrong and now carries a
+correction pointing at the measurement in `docs/target-classes.md`. ADR 0069's bullet now
+carries a note naming ADR 0076, the way the same file already notes ADR 0074.
+
+**Seen red.** Two fixtures that differ in one record — the same writer with and without an
+announcement of its own — pin the two walls, and misclassifying either fails the admission
+test; dropping the mode guard fails the step table (`expected .unwrap_or_class_wall, found
+.observe_syscalls`). The first attempt at the second mutation did not compile — dropping the
+guard left an argument unused — which is not a measurement, so it was redone one mutation at a
+time. What is **not** covered end to end: the changed step has no acceptance leg, because no
+toy produces `lbdb`'s shape; the unchanged step has two, and they are what caught the first
+draft.
+
 ## 2026-09-19 — the refusal was not the clause; the child leaves with `setsid` (#632)
 
 **The instrument answered on its first firing.** #629 shipped a note naming the child's pid,

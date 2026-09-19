@@ -39,7 +39,15 @@ measurement needed: the difference below is the flag's, not the environment's.
 **Visibility — `lbdb`.** Its default-mode refusal says the other process "mutated the
 judged directory in the oracle's account and **recorded nothing of its own**": the writing
 child is `/usr/lib/lbdb/fetchaddr` (the define's `op.sh` execs `lbdb-fetchaddr`, which runs
-it), it writes through the parent shell's redirected stdout and never loads the shim, so the oracle sees writes that hold no crash-point number. Counting at the kernel
+it), it writes through the parent shell's redirected stdout, so the oracle sees writes that hold no crash-point number.
+
+> **Correction, 2026-09-19 (#634).** This paragraph said the child "never loads the shim".
+> That is wrong, and `docs/target-classes.md`'s row for this target has the measurement
+> (2026-09-08): the shim records the child's `exec` and its `shim_ready` and no operation at
+> all — its write is a buffered stdout flushed at `exit()`, which leaves libc without
+> crossing the PLT (ADR 0005). The shim is loaded; what it does not see is the write. The
+> distinction decides who may be sent to `--observe syscalls`: a child the shim is **not**
+> loaded into is the one that mode kills (ADR 0076). Counting at the kernel
 boundary gives those writes numbers, and the run reaches a verdict — `processes` on the
 passing report reads "those operations hold crash-point addresses: no two processes'
 operations interleaved and every writing child was reaped (contract v15)". This reaches
