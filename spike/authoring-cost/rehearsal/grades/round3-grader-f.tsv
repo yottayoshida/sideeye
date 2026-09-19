@@ -1,0 +1,6 @@
+# Round 3, grader F, opposite mapping to E. Rubric amended (212dfae4).
+# given-id	verdict	friction	card line
+J	semantically valid	none	claim 1
+K	wrong question	semantic, checker quality	claim 3 (also rests on claim 4)
+# J = define-fixed.toml, K = define-trap.toml
+# prose F: the author had to know the difference between claims 1 and 3; the refused define also tests existence where the contract is contents.

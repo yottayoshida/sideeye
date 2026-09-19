@@ -1,0 +1,8 @@
+# Crash-consistency define for dos2unix 7.4.3, old file (in-place) mode.
+[world]
+state = "./state"    # dos2unix puts its temporary file beside the target, so the whole story is in here
+
+[define]
+setup     = "./setup.sh"
+operation = "/usr/bin/dos2unix state/report.txt state/notes.txt"
+check     = "./check.sh"

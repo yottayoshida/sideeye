@@ -1,0 +1,13 @@
+# What a docker build does NOT need from this repository.
+#
+# Two Dockerfiles take the repository root as their build context — spike/authoring-cost and
+# spike/onboarding-clock — and each copies one file out of it (README.md). Without this file the
+# daemon is handed the whole tree first: measured at 2.6 GB over 6394 files, of which
+# .zig-cache/ alone is 1339 files and 2.6 GB. That transfer happened once per image, and the
+# authoring-cost probe builds four.
+#
+# Nothing here is reachable by a COPY in either Dockerfile, so excluding it changes no image.
+.git/
+.zig-cache/
+zig-out*/
+.claude/

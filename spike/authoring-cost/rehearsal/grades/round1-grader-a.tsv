@@ -1,0 +1,6 @@
+# Round 1, grader A. Contaminated: the define files named their own verdicts in a comment.
+# given-id	verdict	friction	card line
+X	semantically valid	semantic	claim 1 + claim 3
+Y	wrong question	semantic	claim 3 (also rests on claim 4)
+# X = define-fixed.toml, Y = define-trap.toml
+# prose A: the author had to know the contract is notes.txt's contents and that .index is rebuilt every run; the valid define reflects it as a scratch declaration.

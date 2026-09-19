@@ -1,0 +1,6 @@
+# Round 2, grader D. Comments removed; rubric as first sealed (45839a11).
+# given-id	verdict	friction	card line
+S	semantically valid	none	claim 1 + claim 3 via scratch
+T	unresolved by card	semantic	claim 4
+# S = define-fixed.toml, T = define-trap.toml
+# prose D: the author had to know durable is notes.txt's contents, .index is scratch, and their at-rest agreement is undecided; the valid define reflects all three.

@@ -1,0 +1,5 @@
+# shape	package	rank-hash	why-this-shape
+atomic	dos2unix	68b342e101988514	converts one file's line endings in place, with a documented "keep the original" mode
+behavioural	genisoimage	3d1249600d434e67	writes an image its own reader can walk back
+journaled	lmdb-utils	69378b69cd076fb1	LMDB is a copy-on-write B+tree with mdb_stat/mdb_copy as its own readers
+scratch	fossil	ab4dfc01b1152a99	keeps a repository database and a per-checkout state file it recreates on open

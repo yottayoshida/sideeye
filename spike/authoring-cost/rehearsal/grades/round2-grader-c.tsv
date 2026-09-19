@@ -1,0 +1,6 @@
+# Round 2, grader C. Comments removed; rubric as first sealed (45839a11).
+# given-id	verdict	friction	card line
+M	unresolved by card	none	claim 4
+N	semantically valid	semantic	claim 3 + claim 1
+# M = define-trap.toml, N = define-fixed.toml
+# prose C: the author had to know .index is derived and that its at-rest agreement is not part of the contract; the refused define rests its verdict on exactly that.

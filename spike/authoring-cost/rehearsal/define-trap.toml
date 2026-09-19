@@ -1,0 +1,4 @@
+# A define for the rehearsal's synthetic target.
+operation = "sh /home/user/synthetic-target.sh /home/user/state hello"
+state = "/home/user/state"
+check = "test -f /home/user/state/.index && test -f /home/user/state/notes.txt && test \"$(cat /home/user/state/.index)\" = \"$(wc -l < /home/user/state/notes.txt)\""

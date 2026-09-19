@@ -1632,3 +1632,42 @@ jobs:
 
       - name: The box name has one spelling
         run: sh spike/check-box-name.sh
+
+  authoring-cost:
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: the freshness predicate reads a FIXED commit (base-commit.txt), because
+      # against the working tree it excludes this study's own selection the moment the study is
+      # published. A default shallow clone does not hold that commit, and the check exits 2
+      # saying so — measured on this PR's first run.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # The apparatus refuses on evidence it cannot read. Three of the four cases are
+      # refusals, so a reader that accepted anything would fail here rather than in a run.
+      - name: The authoring audit refuses on incomplete evidence
+        run: python3 spike/authoring-cost/audit.py --selftest
+
+      # The seal, at every merge rather than only at the one that wrote it: the live answer
+      # key must be the ledger's last row, each hash must keep its pre-image, and a run must
+      # name a hash the ledger holds. It prints what it scanned and fails when it scanned none.
+      - name: The answer key is sealed, with its pre-image
+        run: sh spike/authoring-cost/check-sealed.sh
+
+      # The negative half, on a copy: an edited answer key and a ledger row with no pre-image
+      # must both be refused. It lives in the script so it can be run before pushing — the
+      # first version was seventeen lines of YAML that edited a tracked file and put it back.
+      - name: The seal can fail
+        run: sh spike/authoring-cost/check-sealed.sh --selftest
+
+      - name: The selection re-derives from its pools and its key
+        run: sh spike/authoring-cost/select-targets.sh --check
+
+      # A target that cannot be installed or run offline cannot be measured, and the result of
+      # asking is committed rather than remembered.
+      - name: Every selected target was probed green before sealing
+        run: sh spike/authoring-cost/probe-selection.sh --check
+
+      - name: The box name has one spelling
+        run: sh spike/authoring-cost/check-box-name.sh

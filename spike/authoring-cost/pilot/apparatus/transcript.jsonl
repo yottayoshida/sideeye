@@ -1,0 +1,4 @@
+{"ts": "2026-09-19T07:00:00Z", "text": "reading the README"}
+{"ts": "2026-09-19T07:02:00Z", "text": "docker exec authoring-box sh -c 'sideeye preflight'"}
+{"ts": "2026-09-19T07:05:00Z", "text": "docker exec authoring-box sh -c 'sideeye explore'"}
+{"ts": "2026-09-19T07:06:00Z", "text": "PASS over 2 crash points"}
