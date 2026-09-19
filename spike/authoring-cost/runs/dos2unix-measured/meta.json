@@ -25,5 +25,13 @@
   "disposition_traces_seen": 0,
   "grader_assignment_note": "One revision, so there is no shuffle to draw and no cross-check on the given id: both graders saw it as `G`. The order is NOT shielded: the paths handed to a grader are `revisions/NN.toml`, so the ordinal is visible, and the brief asks them not to read it as a cue rather than preventing it. An earlier version of this note called the blinding held; it is requested, and what the shuffle actually removes is the *id* as a cue, not the filename.",
   "grading_limitation": "The graders were given the define TOML only: `watch-defines.py` snapshots `*.toml`, so the `check` and `setup` scripts a define names are not in the grading material. The rubric's `vacuous checker` verdict is about that script, so it could not be reached in this round and the verdicts skew high. Raised independently by graders on every run, before this note existed. Not fixed mid-campaign: the earlier runs' containers are gone and could not be recomputed, so a later run measured with the checker in hand would not be comparable.",
-  "outcome_note": "`contested`, and the disagreement is the finding (PROTOCOL.md). Both graders read the same define the same way — the judged state is rooted at the directory dos2unix builds its `d2utmp*` temporary in, and no scratch is declared — and split on what that means: one called it `semantically valid` because DESIGN.md:233 leaves a file present in only one snapshot unconstrained, so the leftover cannot move the verdict; the other called it `unresolved by card` because the card assigns this exact fork in advance and this define is not the branch it calls valid. No semantic point is published."
+  "outcome_note": "`contested`, and the disagreement is the finding (PROTOCOL.md). Both graders read the same define the same way — the judged state is rooted at the directory dos2unix builds its `d2utmp*` temporary in, and no scratch is declared — and split on what that means: one called it `semantically valid` because DESIGN.md:233 leaves a file present in only one snapshot unconstrained, so the leftover cannot move the verdict; the other called it `unresolved by card` because the card assigns this exact fork in advance and this define is not the branch it calls valid. No semantic point is published.",
+  "judged_sets": [
+    {
+      "ts": "2026-09-19T08:14:43.814Z",
+      "judged": 2,
+      "scratch": "",
+      "matched": 0
+    }
+  ]
 }

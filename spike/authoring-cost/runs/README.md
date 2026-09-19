@@ -13,18 +13,23 @@ remembered afterwards:
 
 `audit.py <run>` derives the figures from those files and refuses when they do not line up.
 
+`meta.json` also carries **`judged_sets`** — every set the subject actually had the engine
+judge, in order, read from the engine's own `l0` line in the transcript. That is not the same
+list as `revisions/`: a define handed to the engine on the command line never becomes a file.
+The conclusions drawn from these runs are in [`../RESULTS.md`](../RESULTS.md).
+
 ## The four measured runs (2026-09-19)
 
 All four ran under manifest `228c73b6…`, one session each, `claude --safe-mode -p` on
 `claude-opus-5[1m]`, graded by two fresh graders on the same model with no conversation history
 and no sight of each other's answers.
 
-| run | revisions | runnable | outcome | semantic point |
-|---|---|---|---|---|
-| `dos2unix-measured` | 1 | 235 s | `contested` | none published |
-| `genisoimage` | 1 | 358 s | `graded` | revision 01 |
-| `lmdb-utils` | 2 | 404 s | `none-valid` | none — neither revision accepted |
-| `fossil` | 2 | 485 s | `graded` | revision 01 |
+| run | judged states | revisions | runnable | outcome | semantic point |
+|---|---|---|---|---|---|
+| `dos2unix-measured` | 1 | 1 | 235 s | `contested` | none published |
+| `genisoimage` | **2** | 1 | 358 s | `graded` | revision 01 |
+| `lmdb-utils` | **4** | 2 | 404 s | `none-valid` | none — neither revision accepted |
+| `fossil` | **3** | 2 | 485 s | `graded` | revision 01 |
 
 **Four runs, four different outcome shapes**, including one the protocol had no name for:
 `lmdb-utils` is a session that reached a define the engine would run and never reached one that
@@ -32,10 +37,13 @@ asked LMDB's question — both graders agreeing exactly, on the verdict and on t
 line. `none-valid` was added for it (PROTOCOL.md, Amendments 2026-09-19), after all four runs and
 before any grade became a figure.
 
-The elapsed figures are the session's, not a person's, and the revision count is this study's
-primary figure for that reason. What a reader should not take from the table is a ranking by
-difficulty: `dos2unix` is fastest *and* contested, `fossil` is slowest *and* accepted at its
-first revision.
+The elapsed figures are the session's, not a person's, so a count is what matters — but **the
+count is `judged states`, not revisions**, and this table said otherwise until the sequence was
+read out of the transcripts. A define handed to the engine on the command line never becomes a
+file, so the watcher never sees it, and three of these four runs reached a judged set no
+snapshot caught. What a reader should not take from the table is a ranking by difficulty:
+`dos2unix` is fastest *and* contested, and `genisoimage`'s accepted revision is a transcription
+of a decision already made and checked on the command line a minute and a half earlier.
 
 **Where the two graders split.** Only `dos2unix-measured`, and on the same reading of the same
 define: the judged state is rooted at the directory dos2unix assembles its `d2utmp*` temporary

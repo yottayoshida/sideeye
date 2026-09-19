@@ -20,8 +20,15 @@ What it cannot see, stated here rather than assumed away:
 
   * a define written and rewritten within one second shows as one revision;
   * a define held only in the subject's head, or piped straight into the engine, is not a file
-    and is not seen (the run's transcript still holds it, and the audit's counts will disagree,
-    which is a refusal rather than a silent gap);
+    and is not seen. The transcript still holds it: the engine prints what it judged on every
+    run, so `audit.py` derives the **judged-set sequence** from there and every run publishes
+    it beside this snapshot count. Measured over the first four runs, three reached a judged set
+    no snapshot caught, so the two counts differ routinely and a difference is **published, not
+    refused** — the first item above produces one legitimately. What is refused is a record that
+    does not carry its sequence, or carries one its transcript does not support. (This clause
+    read "the audit's counts will disagree, which is a refusal rather than a silent gap" until
+    2026-09-19, and nothing had ever performed that refusal — five published runs went through
+    in silence. Refusing the difference itself would refuse the first item above.);
   * content is the key, so a define reverted to an earlier text counts as a new revision — the
     sequence is what was tried, not the set of distinct texts.
 """

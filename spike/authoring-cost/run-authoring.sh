@@ -215,5 +215,9 @@ EOF
 
 docker rm -f "$BOX_NAME" >/dev/null 2>&1 || true
 echo "wrote $out"
+# The judged-set sequence, written before anything reads the run: `audit.py` refuses a record
+# that does not carry it, and `set-disposition.py` runs the audit, so a run without this cannot
+# be dispositioned at all.
+python3 "$here/audit.py" --write-sequence "$out" || true
 python3 "$here/audit.py" "$out" || true
 echo "next: read the audit's repository-trace list, write the disposition into meta.json, then grade."

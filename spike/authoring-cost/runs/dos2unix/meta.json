@@ -9,5 +9,19 @@
   "image": "sha256:d5c9595dd38674fc9fb2a99a3a0f154ea1dda9359dcdab334aaaf1a5efcfc603",
   "disposition": "void",
   "graders": [],
-  "void_reason": "Started by an apparatus test of the launcher's refusal paths, not by the study's procedure, and before the protocol was committed. It is published because PROTOCOL.md says a run that starts is published; it is excluded from every figure."
+  "void_reason": "Started by an apparatus test of the launcher's refusal paths, not by the study's procedure, and before the protocol was committed. It is published because PROTOCOL.md says a run that starts is published; it is excluded from every figure.",
+  "judged_sets": [
+    {
+      "ts": "2026-09-19T07:00:22.599Z",
+      "judged": 1,
+      "scratch": "",
+      "matched": 0
+    },
+    {
+      "ts": "2026-09-19T07:02:50.224Z",
+      "judged": 3,
+      "scratch": "",
+      "matched": 0
+    }
+  ]
 }
