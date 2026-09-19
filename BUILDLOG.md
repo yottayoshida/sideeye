@@ -86,6 +86,56 @@ on a laptop for the first time in three occurrences. A second test forks a child
 nothing and asserts `getpgid(0) != getpid()`, so "already leads its own group" is not a
 property every child has and the 126 exit is still reachable.
 
+## 2026-09-18 — the dominant wall is two walls, and the mode moves one of them
+
+**Why this was measured.** g3 named `child_touched_state_dir` the largest single refusal among
+B2's five and filed nothing from it, deliberately. The question that leaves open is whether the
+observation mode #617 just made reachable from the agent surface would move it. Three targets —
+`lbdb` (B), `pacpl` and `mail-expire` (B2), the three the sweep refused this way — each run once
+under the default mode and once under `--observe syscalls`, on the engine g3 used, defines
+untouched, strace as the oracle. Six runs, `spike/followup-child-touch-modes/`.
+
+**The answer is a split, not a number.** `lbdb` moves: refused at the default mode because its
+child writes through the parent shell's redirect and records nothing of its own, it reaches PASS
+over 8 crash points under the syscall boundary — the run `docs/target-classes.md` already records
+for it, reproduced here on another machine and a rebuilt image. `pacpl` and `mail-expire` do not
+move, and each one's two runs carry the refusal **byte for byte** (the messages were compared as
+whole strings; both runs of a target share one state path, so nothing in the message varies with
+the mode): a child wrote in the judged directory while the subject was still running, nothing
+having collected it. That is an ordering fact. Two processes writing at once are ordered by the
+scheduler, and counting their operations somewhere else does not make them take turns.
+
+**"The mode did nothing" and "the mode was not installed" are different claims, and the second
+was ruled out structurally rather than by reading the messages.** `src/main.zig` refuses
+`platform_unsupported` (or `environment`) the moment the subject's announcement does not say the
+filter is armed, and that check sits in the phase that runs **before** the one this refusal comes
+from — so a run that reaches `child_touched_state_dir` under the flag is a run whose filter was
+installed. (The first draft said "above every refusal in that function"; the two live in different
+phases, and the review read the call order rather than taking the sentence.)
+
+**What was predicted before the results were read** is committed beside the artifacts
+(`expected-before-reading.md`) rather than only claimed here: `lbdb` to PASS (the page already said
+so), `pacpl` and `mail-expire` "unknown — could reach a verdict now that both witnesses are of the
+same run". The first held; the second was wrong, and wrong in a way worth keeping: the guess
+treated the class as one thing because the refusal has one name.
+
+**The first version of this record asserted its own apparatus instead of recording it**, which the
+review caught by comparing it with `spike/followup-527` — that record says its engine's identity is
+"recorded from inside the box rather than asserted here" and commits the file that holds it. This
+one now does the same: `artifacts/apparatus.txt` carries the version line (1.5.0, contract v18),
+both sha256s as the container computed them, and the argv of each of the six runs, all written
+from inside; **each target's two lines differ only in `--json` and the presence of the flag**. The
+two image ids in the same file are the host's `docker images`, because a container cannot read its
+own image id — the second review caught the first draft of this paragraph claiming otherwise, and
+the same draft said all six argv lines were alike, which is true only within a target's pair. The same pass fixed a state path
+that carried the mode name — it made two runs that differ only in a flag look like two runs whose
+messages differ — and the re-run is what the artifacts hold.
+
+**Not filed.** The record names the split and stops there; whether the ordering wall is worth
+crossing is the owner's call, and crossing it is a question about a judgement that rests on one
+numbering, not about observation.
+
+
 ## 2026-09-18 — the engine's own next step, made executable from the agent-facing surface (#617)
 
 **What was broken.** Since #599 a run refused `oracle_missed_operation` names `--observe syscalls`
