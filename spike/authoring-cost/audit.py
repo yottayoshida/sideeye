@@ -9,19 +9,28 @@ The figures this study publishes are not typed by hand. They come from two commi
     subject wrote, in the order it was observed, copied by the apparatus rather than by the
     subject (`watch-defines.py`).
 
-**Elapsed figures come from the transcript; revisions are counted, not timed.** The watcher runs
+**Elapsed figures come from the transcript; the rest is counted, not timed.** The watcher runs
 on the container's clock and the session on the host's, so this never subtracts one from the
 other: `runnable` is published as an elapsed and a revision number, and the semantic point is
-published as a **revision number only**. What this refuses on is evidence that cannot be read:
-a gap in the snapshot sequence, an index row that does not match its snapshot, or a verdict in
-the transcript with no define ever seen — a run whose watcher stopped is void, not short. Those
-refusals are what the selftest exercises, and none of them depends on how many times a
-particular subject happened to revise.
+published as a **revision number only**.
+
+**The primary count is `judged_states`, not `revisions`.** A define handed to the engine on the
+command line never becomes a file, so the watcher never sees it — measured across the four runs,
+three reached a judged set no snapshot caught, and one of those is the state its card calls the
+wrong question. The engine prints what it judged on every run, so the transcript holds them all.
+
+What this refuses on is evidence that cannot be read: a gap in the snapshot sequence, an index
+row that does not match its snapshot, a verdict in the transcript with no define ever seen — a
+run whose watcher stopped is void, not short — and a record that does not carry its judged-set
+sequence, or carries one that is not what its transcript holds.
 
 Usage:
-    audit.py <run-dir>             derive and print
-    audit.py --check <run-dir>     same, non-zero exit on any refusal
-    audit.py --selftest            synthetic fixtures only; touches no run
+    audit.py <run-dir>               derive and print
+    audit.py --check <run-dir>       same, non-zero exit on any refusal
+    audit.py --check-all             every published run; a void run is reported, not enforced
+    audit.py --check-page <page.md>  hold a page's run table to what the evidence derives
+    audit.py --write-sequence <run>  write the judged-set sequence into the run's meta.json
+    audit.py --selftest              synthetic fixtures only; touches no run
 """
 
 import hashlib
@@ -49,6 +58,41 @@ VERDICT = re.compile(r"(?:^|\\n)(PASS|FAIL)\b", re.M)
 VERDICTS = frozenset(
     {"semantically valid", "wrong question", "vacuous checker", "unresolved by card"}
 )
+# The engine's own account of WHAT IT JUDGED, echoed on every run: `N path(s) judged
+# pre-or-post`, and when the define declared scratch, `; K path(s) matched by scratch, not
+# judged (declared: …)`. This is the study's second ledger.
+#
+# `watch-defines.py` snapshots `*.toml`, so a define handed to the engine on the command line
+# never becomes a revision. Measured on the four runs: three of them decided something the
+# graders never saw, and `fossil`'s unrecorded state is the one its card calls the wrong
+# question. The transcript holds those states because the engine printed this line for each.
+#
+# The count must sit immediately before ` path(s)`: a transcript also carries the bare format
+# string out of a grep of the engine's own source (`33477: path(s) judged pre-or-post`, measured
+# in `lmdb-utils` at 07:48:06), and an anchorless pattern reads that as a judged set.
+# Read in two steps, because one expression got this wrong in three ways at once and could not
+# detect any of them: `--write-sequence` and `derive()` share the walk, so a misreading is
+# self-consistent and the guard agrees with itself forever.
+#
+# What the single expression that stood here —
+#   `…pre-or-post(?:; …matched by scratch, not judged \(declared: ([^)\\"]{0,200})\))?`
+# — got wrong, each measured against that exact pattern:
+#   * the HISTORY form puts a clause between the two (`; H file(s) judged by the history
+#     form …; K path(s) matched by scratch …`), so the optional group did not match at all and
+#     the scratch declaration silently became "";
+#   * `(+K more)` truncation ends in `))`, and the class stopping at the first `)` stored
+#     `a, b, c (+3 more` — which reached `runs/fossil/meta.json` before this was fixed;
+#   * the class excludes `"` and `\` and caps at 200, so a declaration holding either, or
+#     longer than that, also silently became "" (`appendSanitized` escapes neither character).
+# Each one collapses two adjacent states that differ only in their scratch into one, which
+# undercounts the study's primary figure with nothing refusing.
+JUDGED_COUNT = re.compile(r"([0-9]+) path\(s\) judged pre-or-post")
+# The declaration's end is found by BALANCING the parenthesis `(declared:` opened, not by
+# position. Two measured failures of position-based reads, both silent: a lazy `(.*?)\)(?!\))`
+# read `data (1).mdb` as `data (1`, and reading to the last `)` on the line broke the moment an
+# l0 line was the final thing in its event, where the window carries the JSON's own `)"}`.
+# Balance is indifferent to both. A clause that never closes is refused rather than guessed.
+SCRATCH_START = re.compile(r"([0-9]+) path\(s\) matched by scratch, not judged \(declared: ")
 # Strings that say the subject reached this repository. The Disposition step reads this list.
 # Strings that say the subject REACHED this repository — a route, not a mention.
 #
@@ -157,6 +201,65 @@ def read_revisions(run_dir):
     return numbers
 
 
+def judged_sets(events):
+    """The judged sets the subject actually had the engine judge, in order.
+
+    **Adjacent repeats are collapsed, non-adjacent ones are not.** Each event reaches this
+    file twice — once as the tool call, once as its result — so an un-collapsed walk doubles
+    every entry; and two consecutive runs of the same define are the same state, not two.
+    What must survive is a RETURN: `lmdb-utils` went `2` → `1 (scratch lock.mdb)` → **`2`** →
+    `1 (scratch data.mdb)`, and a walk that collapsed by value rather than by adjacency read
+    that as three states and lost the round trip — which is the single best piece of evidence
+    that the subject had no handle on the judged set. The first draft of this study's
+    conclusion made exactly that mistake.
+    """
+    seq = []
+    for e in events:
+        for m in JUDGED_COUNT.finditer(e["text"]):
+            # The rest of this l0 line only. Lines arrive as the two characters `\` and `n`
+            # inside a serialised event, so that is the terminator.
+            tail = e["text"][m.end() :]
+            end = tail.find("\\n")
+            line = tail if end < 0 else tail[:end]
+            scratch, matched = "", 0
+            hit = SCRATCH_START.search(line)
+            if hit:
+                rest = line[hit.end() :]
+                # Close on the parenthesis that balances `(declared:`, counting depth rather
+                # than trusting position. `a, b, c (+3 more))` closes on the second, a path
+                # holding `data (1).mdb` closes at the end, and whatever follows the clause —
+                # the l0 string sits inside a JSON value, so it can be `)"}` or `)'` — is
+                # irrelevant. Reading to the last `)` on the line got this wrong the moment an
+                # l0 line was the final thing in its event.
+                depth, close = 1, -1
+                for i, ch in enumerate(rest):
+                    depth += (ch == "(") - (ch == ")")
+                    if depth == 0:
+                        close = i
+                        break
+                if close < 0:
+                    raise Refusal(
+                        f"an l0 line at {e['ts']} declares scratch and does not close it: "
+                        f"{line[:160]!r}"
+                    )
+                scratch, matched = rest[:close].strip(), int(hit.group(1))
+            elif "matched by scratch" in line:
+                # Refuse rather than record "". An unreadable declaration used to read as no
+                # declaration at all, which merges this state into its neighbour.
+                raise Refusal(
+                    f"an l0 line at {e['ts']} declares scratch and could not be read: "
+                    f"{line[:160]!r}"
+                )
+            # `matched` is the engine's count of RECORDED paths the declaration reached, which
+            # is not the number of patterns declared — `fossil` declared six and four matched.
+            # Two states with the same declaration and a different reach are different states.
+            entry = {"judged": int(m.group(1)), "scratch": scratch, "matched": matched}
+            if seq and all(seq[-1][k] == entry[k] for k in ("judged", "scratch", "matched")):
+                continue
+            seq.append({"ts": e["ts"], **entry})
+    return seq
+
+
 def derive(run_dir):
     events = read_transcript(Path(run_dir) / "transcript.jsonl")
     revisions = read_revisions(run_dir)
@@ -182,6 +285,41 @@ def derive(run_dir):
             "cannot be read, so no elapsed figure can be published"
         )
 
+    # The judged-set sequence, derived here and held against what the run publishes.
+    #
+    # `watch-defines.py`'s docstring already promised this: a define piped straight into the
+    # engine "is not seen (the run's transcript still holds it, and **the audit's counts will
+    # disagree, which is a refusal rather than a silent gap**)". Nothing implemented it, and
+    # five published runs went through in silence. The refusal is on the RECORD, not on the
+    # disagreement: a count that differs from the snapshot total is a fact this study publishes
+    # (the watcher's first documented blind spot — a rewrite inside one second — produces one
+    # legitimately), while a run that does not carry its sequence at all cannot be read.
+    derived = judged_sets(events)
+    meta_path = Path(run_dir) / "meta.json"
+    if not meta_path.exists():
+        raise Refusal(
+            "no meta.json — a run with no record cannot carry its judged-set sequence, and "
+            "skipping it here let the new refusal be avoided by deleting a file"
+        )
+    else:
+        recorded = json.loads(meta_path.read_text(encoding="utf-8")).get("judged_sets")
+        if recorded is None:
+            raise Refusal(
+                "meta.json carries no `judged_sets`: the engine printed what it judged on every "
+                f"run ({len(derived)} state(s) in this transcript) and the record does not hold "
+                "them, so the states no snapshot caught are unreadable. Write them with "
+                "`audit.py --write-sequence <run>`"
+            )
+        keys = ("judged", "scratch", "matched")
+        if [{k: s.get(k) for k in keys} for s in recorded] != [
+            {k: s.get(k) for k in keys} for s in derived
+        ]:
+            raise Refusal(
+                f"meta.json's `judged_sets` ({len(recorded)} state(s)) is not what this "
+                f"transcript holds ({len(derived)} state(s)) — the record was edited away from "
+                "its evidence"
+            )
+
     runnable = None
     for e in events:
         if VERDICT.search(e["text"]):
@@ -195,6 +333,12 @@ def derive(run_dir):
     result = {
         "run": Path(run_dir).resolve().name,
         "revisions": len(revisions),
+        # How many judged sets the subject reached, against how many the watcher caught. These
+        # are not the same measurement and the study stopped calling `revisions` its primary
+        # figure when they came apart: a define never written to a file is invisible to the
+        # watcher and fully visible here.
+        "judged_states": len(derived),
+        "judged_sets": derived,
         "started": start.isoformat().replace("+00:00", "Z"),
         "runnable_elapsed_s": None,
         "repo_traces": [],
@@ -371,6 +515,13 @@ def _fixture(tmp, revisions, invocations, gap=False, bad_digest=False, verdict=T
         )
     (run / "transcript.jsonl").write_text(
         "".join(json.dumps(obj) + "\n" for obj in lines), encoding="utf-8"
+    )
+    # Every run carries a record, and the record carries its judged-set sequence — a fixture
+    # without one would exercise a shape the apparatus refuses, so the other cases could not
+    # reach what they are about.
+    (run / "meta.json").write_text(
+        json.dumps({"target": "fixture", "judged_sets": judged_sets(read_transcript(run / "transcript.jsonl"))}),
+        encoding="utf-8",
     )
     return run
 
@@ -627,6 +778,155 @@ def selftest():
             else:
                 print("ok   a revision a sheet was assigned and never judged is refused")
 
+    # 7. The judged-set sequence: the round trip survives, the noise does not, and a record
+    #    that is missing or edited away from its transcript is refused.
+    with tempfile.TemporaryDirectory() as tmp:
+        cases += 1
+        run = _fixture(tmp, 2, 2)
+        lines = [json.loads(l) for l in (run / "transcript.jsonl").open(encoding="utf-8")]
+
+        def judged_event(ts, text):
+            # Doubled on purpose: every event reaches the audit twice, as the call and as its
+            # result, and an un-collapsed walk would read eight states where there are four.
+            return [{"ts": ts, "text": json.dumps({"m": text})}] * 2
+
+        # The shape `lmdb-utils` actually produced, plus the grep of the engine's own source
+        # that sits in the same transcript and has no count in front of ` path(s)`.
+        lines += judged_event("2026-09-19T00:10:00Z", "atomicity 2 path(s) judged pre-or-post")
+        lines += judged_event(
+            "2026-09-19T00:11:00Z",
+            "1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: lock.mdb)",
+        )
+        lines += judged_event("2026-09-19T00:12:00Z", "33477: path(s) judged pre-or-post")
+        lines += judged_event("2026-09-19T00:13:00Z", "atomicity 2 path(s) judged pre-or-post")
+        lines += judged_event(
+            "2026-09-19T00:14:00Z",
+            "1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: data.mdb)",
+        )
+        (run / "transcript.jsonl").write_text(
+            "".join(json.dumps(o) + "\n" for o in lines), encoding="utf-8"
+        )
+        seq = judged_sets(read_transcript(run / "transcript.jsonl"))
+        want = [(2, ""), (1, "lock.mdb"), (2, ""), (1, "data.mdb")]
+        got = [(s["judged"], s["scratch"]) for s in seq]
+        if got != want:
+            print(f"FAIL selftest: judged-set sequence {got}, expected {want}")
+            failures += 1
+        else:
+            print("ok   the judged-set sequence keeps its round trip and drops the grep noise")
+
+        cases += 1
+        meta = run / "meta.json"
+        meta.write_text(json.dumps({"target": "fixture"}), encoding="utf-8")
+        try:
+            derive(run)
+            print("FAIL selftest: a run with no recorded judged_sets was accepted")
+            failures += 1
+        except Refusal as exc:
+            if "carries no `judged_sets`" not in str(exc):
+                print(f"FAIL selftest: refused for the wrong reason: {exc}")
+                failures += 1
+            else:
+                print("ok   a run whose record holds no judged-set sequence is refused")
+
+        cases += 1
+        meta.write_text(json.dumps({"target": "fixture", "judged_sets": seq}), encoding="utf-8")
+        try:
+            derive(run)
+        except Refusal as exc:
+            print(f"FAIL selftest: the correct sequence was refused: {exc}")
+            failures += 1
+        else:
+            print("ok   a run whose record matches its transcript reads")
+
+        cases += 1
+        # The round trip removed — the exact edit the first draft of the conclusion made.
+        meta.write_text(
+            json.dumps({"target": "fixture", "judged_sets": [seq[0], seq[1], seq[3]]}),
+            encoding="utf-8",
+        )
+        try:
+            derive(run)
+            print("FAIL selftest: a record edited away from its transcript was accepted")
+            failures += 1
+        except Refusal as exc:
+            if "not what this transcript holds" not in str(exc):
+                print(f"FAIL selftest: refused for the wrong reason: {exc}")
+                failures += 1
+            else:
+                print("ok   a record edited away from its transcript is refused")
+
+    # 8. The l0 reader, against every shape the engine actually prints — the single expression
+    #    this replaced got three of them wrong and, sharing its walk with the writer, agreed
+    #    with itself about all three.
+    cases += 1
+    shapes = [
+        ("plain", "2 path(s) judged pre-or-post\\n", (2, "")),
+        (
+            "with a scratch declaration",
+            "2 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: a.txt)\\n",
+            (2, "a.txt"),
+        ),
+        (
+            "with the history clause in between",
+            "2 path(s) judged pre-or-post; 3 file(s) judged by the history form (appended tails "
+            "not judged): x; 1 path(s) matched by scratch, not judged (declared: a.txt)\\n",
+            (2, "a.txt"),
+        ),
+        (
+            "with the (+K more) truncation",
+            "2 path(s) judged pre-or-post; 6 path(s) matched by scratch, not judged "
+            "(declared: a, b, c (+3 more))\\n",
+            (2, "a, b, c (+3 more)"),
+        ),
+        (
+            "with parentheses inside a declared path",
+            "2 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged "
+            "(declared: data (1).mdb)\\n",
+            (2, "data (1).mdb"),
+        ),
+        (
+            "as the last thing in its event, with no trailing newline",
+            "2 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged "
+            '(declared: a.txt)"}',
+            (2, "a.txt"),
+        ),
+    ]
+    bad = 0
+    for label, text, want in shapes:
+        got = judged_sets([{"ts": "T", "text": text}])
+        if [(g["judged"], g["scratch"]) for g in got] != [want]:
+            print(f"FAIL selftest: l0 {label}: read {got}, expected {want}")
+            bad += 1
+    try:
+        judged_sets([{"ts": "T", "text": "2 path(s) judged pre-or-post; 1 path(s) matched by "
+                                         "scratch, not judged (declared: unterminated\\n"}])
+        print("FAIL selftest: an unreadable scratch declaration was recorded as none")
+        bad += 1
+    except Refusal:
+        pass
+    if bad:
+        failures += 1
+    else:
+        print("ok   every l0 shape the engine prints reads, and an unreadable one is refused")
+
+    # 9. A run with no record at all. `derive()` used to skip the sequence check when meta.json
+    #    was absent, so the new refusal could be avoided by deleting a file.
+    with tempfile.TemporaryDirectory() as tmp:
+        cases += 1
+        run = _fixture(tmp, 1, 1)
+        (run / "meta.json").unlink()
+        try:
+            derive(run)
+            print("FAIL selftest: a run with no meta.json was accepted")
+            failures += 1
+        except Refusal as exc:
+            if "no meta.json" not in str(exc):
+                print(f"FAIL selftest: refused for the wrong reason: {exc}")
+                failures += 1
+            else:
+                print("ok   a run with no record is refused rather than skipped")
+
     with tempfile.TemporaryDirectory() as tmp:
         cases += 1
         # 4. A verdict with no define seen: the watcher was not running.
@@ -654,9 +954,133 @@ def selftest():
     return 0
 
 
+def write_sequence(run_dir):
+    """Derive the judged-set sequence and write it into the run's meta.json.
+
+    Derived and written by the same walk `derive()` checks against, so a record and its
+    evidence cannot be produced by two different readings of the transcript.
+    """
+    run = Path(run_dir)
+    events = read_transcript(run / "transcript.jsonl")
+    seq = judged_sets(events)
+    meta_path = run / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta["judged_sets"] = seq
+    meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    snaps = len(read_revisions(run))
+    print(f"{run.name}: {len(seq)} judged state(s), {snaps} snapshot(s)")
+    return 0
+
+
+def counted_runs(runs_dir):
+    """The published runs this study counts — every one with a record, minus the void ones.
+
+    One definition, because it had two: this function and a shell loop in `ci.yml` each decided
+    what `void` meant, and a check whose subject is chosen in two places is one edit away from
+    two different subjects.
+    """
+    out = []
+    for d in sorted(Path(runs_dir).iterdir()):
+        meta = d / "meta.json"
+        if not meta.is_file():
+            continue
+        if json.loads(meta.read_text(encoding="utf-8")).get("disposition") == "void":
+            continue
+        out.append(d)
+    return out
+
+
+def check_all(runs_dir):
+    """Every published run re-derives; a void run is reported rather than enforced.
+
+    PROTOCOL.md requires a run that starts to be published, and one of the things that makes a
+    run void is evidence the audit refuses to read. Enforcing both would leave only a choice
+    between a permanently red job and an unpublished run, so this guard's predicate is "every
+    run the study COUNTS still reads".
+    """
+    runs_dir = Path(runs_dir)
+    published = [d for d in sorted(runs_dir.iterdir()) if (d / "meta.json").is_file()]
+    counted = {d.name for d in counted_runs(runs_dir)}
+    bad = 0
+    for d in published:
+        try:
+            derive(d)
+        except Refusal as exc:
+            if d.name in counted:
+                print(f"REFUSED: {d.name}: {exc}")
+                bad += 1
+            else:
+                print(f"note: {d.name} is void; refusal reported, not enforced: {exc}")
+    if not counted:
+        print("REFUSED: no counted run was audited — a check that scanned nothing is not a check")
+        return 1
+    if bad:
+        return 1
+    print(f"ok   {len(published)} published run(s), {len(counted)} counted, all re-derive")
+    return 0
+
+
+PAGE_ROW = re.compile(
+    r"^\|\s*`([a-z0-9-]+)`\s*\|\s*\**(\d+)\**\s*\|\s*\**(\d+)\**\s*\|\s*(\d+) s\s*\|", re.M
+)
+
+
+def check_page(page_path):
+    """Hold a page's run table to what `audit.py` derives, row by row.
+
+    The study's figures are derived; a table retyping them is not, and a table is what a reader
+    actually reads. Two pages carry one (`RESULTS.md` and `runs/README.md`), and the columns are
+    `run | judged states | revisions | runnable`.
+    """
+    page = Path(page_path)
+    runs_dir = Path(__file__).resolve().parent / "runs"
+    text = page.read_text(encoding="utf-8")
+    rows = PAGE_ROW.findall(text)
+    if not rows:
+        print(f"REFUSED: {page} holds no run table row — a check that scanned nothing is not a check")
+        return 1
+    # The row SET, not just the rows that happened to match. Measured on a copy: deleting a
+    # run's row left this green at "3 row(s) match", and so did a row whose name lost its
+    # backticks and carried a figure off by 97 — the pattern simply stopped seeing them.
+    # A check that only inspects what it recognises cannot notice a row going missing.
+    counted = {d.name for d in counted_runs(runs_dir)}
+    listed = {name for name, *_ in rows}
+    if listed != counted:
+        missing, extra = sorted(counted - listed), sorted(listed - counted)
+        print(
+            f"REFUSED: {page.name}'s run table lists {sorted(listed)}; the counted runs are "
+            f"{sorted(counted)}" + (f" — missing {missing}" if missing else "")
+            + (f" — unknown {extra}" if extra else "")
+        )
+        return 1
+    bad = 0
+    for name, states, revisions, runnable in rows:
+        try:
+            out = derive(runs_dir / name)
+        except Refusal as exc:
+            print(f"REFUSED: {name}: {exc}")
+            bad += 1
+            continue
+        want = (out["judged_states"], out["revisions"], out["runnable_elapsed_s"])
+        got = (int(states), int(revisions), int(runnable))
+        if got != want:
+            print(f"REFUSED: {page.name} says {name} is {got}, the evidence says {want}")
+            bad += 1
+    if bad:
+        return 1
+    print(f"ok   {page.name}: {len(rows)} row(s) match what the evidence derives")
+    return 0
+
+
 def main(argv):
     if len(argv) == 2 and argv[1] == "--selftest":
         return selftest()
+    if len(argv) == 3 and argv[1] == "--check-page":
+        return check_page(argv[2])
+    if len(argv) == 2 and argv[1] == "--check-all":
+        return check_all(Path(__file__).resolve().parent / "runs")
+    if len(argv) == 3 and argv[1] == "--write-sequence":
+        return write_sequence(argv[2])
     check = len(argv) == 3 and argv[1] == "--check"
     if not (len(argv) == 2 or check):
         print(__doc__)

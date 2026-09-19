@@ -24,5 +24,25 @@
   "disposition_note": "Not void and not adjudicate: the apparatus completed, fossil installed, the subject saw the prompt, and the audit's repository-trace list is empty. Read before the grades.",
   "disposition_traces_seen": 0,
   "grader_assignment_note": "Two revisions, and the two graders drew OPPOSITE assignments (A: G=02 K=01; B: G=01 K=02). This is the one run where a verdict following the given id rather than the content would show as a disagreement the maps explain — and both graders accepted both revisions, so no such signal appears. The order is NOT shielded: the paths handed to a grader are `revisions/NN.toml`, so the ordinal is visible, and the brief asks them not to read it as a cue rather than preventing it. An earlier version of this note called the blinding held; it is requested, and what the shuffle actually removes is the *id* as a cue, not the filename.",
-  "grading_limitation": "The graders were given the define TOML only: `watch-defines.py` snapshots `*.toml`, so the `check` and `setup` scripts a define names are not in the grading material. The rubric's `vacuous checker` verdict is about that script, so it could not be reached in this round and the verdicts skew high. Raised independently by graders on every run, before this note existed. Not fixed mid-campaign: the earlier runs' containers are gone and could not be recomputed, so a later run measured with the checker in hand would not be comparable."
+  "grading_limitation": "The graders were given the define TOML only: `watch-defines.py` snapshots `*.toml`, so the `check` and `setup` scripts a define names are not in the grading material. The rubric's `vacuous checker` verdict is about that script, so it could not be reached in this round and the verdicts skew high. Raised independently by graders on every run, before this note existed. Not fixed mid-campaign: the earlier runs' containers are gone and could not be recomputed, so a later run measured with the checker in hand would not be comparable.",
+  "judged_sets": [
+    {
+      "ts": "2026-09-19T08:05:19.408Z",
+      "judged": 6,
+      "scratch": "",
+      "matched": 0
+    },
+    {
+      "ts": "2026-09-19T08:05:57.870Z",
+      "judged": 2,
+      "scratch": "repo.fossil, repo.fossil-journal, co/.fslckout (+3 more)",
+      "matched": 4
+    },
+    {
+      "ts": "2026-09-19T08:09:35.952Z",
+      "judged": 2,
+      "scratch": "repo.fossil, co/.fslckout, home",
+      "matched": 4
+    }
+  ]
 }

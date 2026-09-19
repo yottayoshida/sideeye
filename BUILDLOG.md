@@ -2,6 +2,114 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-19 — the study's primary count was the wrong count (#618, merge 3 of 3)
+
+**What this merge concludes.** The repeated authoring cost is updating the judged set — which
+paths under the state root the built-in byte rule is the right question for — and the part
+Sideeye can remove is reporting it, not deciding it. Filed as #638 rather than built, because
+#618's sixth condition asks for a feature to be *filed from* the evidence, and a merge that both
+names the cost and ships the answer leaves no way to tell a finding from a justification written
+beside the thing it justifies. ADR 0078 carries the rejected alternatives.
+
+**The count was of the wrong thing, and two review rounds took the draft apart to find it.** The
+plan's first load-bearing claim was "all four runs turned on the scratch boundary"; the grade
+sheets say otherwise — three of four put the byte rule's fitness beside it (`lmdb-utils`: "claim
+4 (bytes are not the contract)"; `genisoimage`: "byte equality would have been the wrong question
+here"; `fossil`: claims 2, 3 and 4 together). Its second was "the engine never names the judged
+paths"; `src/report.zig` says "Names are bounded — the point is 'which files got the weaker
+claim', not an inventory" (ADR 0004), and a FAIL names the violating path. Both replaced.
+
+Then the confirmation round broke the rewrite's own measurements. **I wrote that the two clocks
+were 2m42s apart; they agree to the second** — the number came from subtracting a snapshot from
+an `l0` line that was not its own, which is exactly the mis-join the same paragraph was warning
+against. And the lmdb sequence is **four** states, not three: my extraction deduplicated by
+value, so `2 → 1 → 2 → 1` collapsed the return to judging everything — the single best piece of
+evidence for the argument it was supporting. Both re-measured and corrected before anything was
+written to the repository.
+
+**The review of this merge found the reader was wrong in three ways it could never detect.**
+`--write-sequence` and `derive()` share one walk, so a misreading is self-consistent and the
+guard agrees with itself forever. The single expression dropped the scratch declaration entirely
+when the engine put its history-form clause between the two halves, truncated `a, b, c (+3
+more))` at the first `)` — which had already reached `runs/fossil/meta.json` — and returned ""
+for any declaration past its length cap or holding a quote. Each one merges two adjacent states
+that differ only in scratch, so the study's primary figure undercounts with nothing refusing.
+Read in two steps now, and **an unreadable declaration is a refusal rather than an empty
+string**: the fix is not a better pattern, it is removing the silent answer. Four shapes and the
+unreadable one are in the selftest.
+
+Three more from the same round. `--check-page` only inspected rows its pattern matched, so
+deleting a run's row left it green at "3 row(s) match" — the row set is held to the counted runs
+now. A run with no `meta.json` skipped the sequence check entirely, which made the new refusal
+avoidable by deleting a file. And the docstring this merge's property is quoted *from* was still
+saying the counts disagreeing is itself the refusal, which this merge deliberately changed —
+the source of the promise was left false while three other files explained the change.
+
+Two prose counts were wrong and are recounted from the records: the judged set **moved** in three
+of four runs and its **count fell** in two, where the draft said three narrowed more than once
+(only `lmdb-utils` did). And the ADR said three issues were filed where two were.
+
+**The simplify pass removed four CI checks by accident.** Collapsing two shell loops into one
+`audit.py --check-all` was a real finding — "is this run counted" was decided once in Python and
+once in YAML, which is the shape where one of them starts lying — but the edit was a slice from
+one comment to another, and four steps sat between them: both seal checks, the disposition
+guard's selftest and the grading assignment's. `ci.yml` still parsed and every local check stayed
+green, because nothing local reads that file. Caught by listing the job's step names and
+diffing them against `HEAD`, which is the only thing that would have caught it. The same shape
+as this session's earlier rewrite that dropped the rest of a file: **a slice edit deletes what it
+does not name, and a parse is not a diff.**
+
+**The confirmation round found the reader still truncating, in a shape the fix had not
+considered.** Reading the declaration lazily to a `)` not followed by another handled
+`(+3 more))` and read `data (1).mdb` as `data (1)`, silently, because the first `)` there is
+followed by `.` rather than by another `)`. Reading instead to the **last** `)` on the line fixed that and
+broke the moment an l0 line was the final thing in its event, where the window carries the
+JSON's own `)"}`. The third attempt counts parentheses: close where the depth the `(declared:`
+opened returns to zero, which is indifferent to both what is inside and what follows. Three
+position-based readings, each wrong on a different real shape — the lesson is that position was
+never the thing to read.
+
+The same round caught two prose errors and one comment that documented a pattern nobody had
+written. The comment "measured" three failures of the expression it replaced, but quoted a
+simplified version of that expression against which only one of the three happens — the length
+cap and the excluded `"`/`\` belong to the real one. And `RESULTS.md` wrote fossil's scratch as
+`×6` / `×3`, which are the numbers of declared patterns; the engine says `4 path(s) matched by
+scratch` for both. The sequence now records the engine's `matched` count as well as the
+declaration, so a state whose declaration changed while its reach did not is visible as what it
+is — which is exactly fossil's second move.
+
+**What the sequences show.** Three of four runs reached a judged set no snapshot caught, because
+a define handed to the engine on the command line never becomes a file. `fossil`'s unrecorded
+state is `6 path(s) judged` — the shape its own card calls the wrong question, i.e. the first
+wrong interpretation, absent from the record while #618's fourth condition asks for exactly
+that. `genisoimage`'s "right at the first revision" was an artefact of counting files: the
+`out.iso` decision was made and checked on the command line ninety seconds before the watcher
+saw anything.
+
+**A refusal that had been promised since the apparatus was written.** `watch-defines.py`'s
+docstring says a define piped straight into the engine "is not seen (the run's transcript still
+holds it, and the audit's counts will disagree, which is a refusal rather than a silent gap)".
+Nothing performed it; five published runs went through in silence. `audit.py` now derives the
+sequence and refuses a record that does not carry it or carries one its transcript does not
+support. Measured red first — all five runs refused, with `lmdb-utils` reporting 4 states —
+before the records were written.
+
+The refusal is on the **record**, not on the disagreement. Refusing whenever the sequence and the
+snapshot count differ would have refused the watcher's own first documented blind spot (a rewrite
+inside one second is one revision, by design) and turned the CI job permanently red.
+
+**Three pages carried the claim this merge falsifies.** "The revision count is this study's
+primary figure" lived in `PROTOCOL.md`, in `audit.py`'s docstring and in `runs/README.md` — the
+same sentence in three places, which is how one of them stays wrong. All three corrected; the
+protocol's change is a dated amendment with its own ledger row and pre-image, and no grade, card
+or verdict moves.
+
+**One issue fewer than planned, and why.** The plan named three. The watcher's blindness to
+command-line defines is declared in its own docstring, this merge implements the refusal that
+docstring promised and publishes the states, so the part that remains is that graders see a
+subset of what was authored — which is #639, together with the missing checker body. Filing it
+alone would have filed a declared and now-surfaced limitation twice.
+
 ## 2026-09-19 — the first measured runs, and a headline figure that could not be measured (#618, merge 2 of 3)
 
 **The first run.** `lmdb-utils`, eight minutes, two revisions: a bare define, then the same
