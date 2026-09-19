@@ -1,0 +1,15 @@
+# Shape 3: disposable scratch or cache state mixed into the same tree as the durable state.
+# OUR judgement: the tool writes an index or cache it can rebuild, beside something it cannot.
+# Column 3 is the offline smoke command (see pool-atomic.txt).
+#
+# Removed 2026-09-19 before sealing, by probe-selection.sh, with the reason each time:
+#   apt-file — installs (3.3) and answers --help, but its index is fetched over the network and
+#   the box has none at run time. The first probe only asked for --help and passed it; the smoke
+#   column exists because of this.
+#   plocate — installs (1.1.18-1), but its index build chowns the database and fails
+#   `fchown: Operation not permitted` for the non-root subject this apparatus runs. Measured in
+#   the box rather than inferred: the probe's command is the shape's own operation.
+mairix	indexes a maildir into a database it can rebuild entirely from the messages beside it	mkdir -p /tmp/md/new /tmp/md/cur /tmp/md/tmp && printf 'From: a@b\nSubject: t\n\nbody\n' > /tmp/md/new/1 && printf 'base=/tmp/md\nmaildir=.\ndatabase=/tmp/md/.index\n' > /tmp/mairixrc && mairix -f /tmp/mairixrc && test -s /tmp/md/.index
+fossil	keeps a repository database and a per-checkout state file it recreates on open	mkdir -p /tmp/fw && fossil init /tmp/r.fossil >/dev/null && cd /tmp/fw && fossil open /tmp/r.fossil >/dev/null && test -f /tmp/fw/.fslckout
+fontconfig	fc-cache writes per-directory caches that are rebuilt on demand	fc-cache -f /tmp && fc-list >/dev/null
+man-db	mandb writes an index database derived from the pages themselves	mandb --version

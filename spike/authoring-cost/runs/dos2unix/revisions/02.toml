@@ -1,0 +1,12 @@
+# Crash-consistency define for dos2unix 7.4.3, old file (in-place) mode.
+# Run with: sideeye explore --config sideeye.toml --oracle /usr/bin/strace --observe syscalls
+# (--observe syscalls because stdio flushes a full buffer from inside libc, which the
+#  default mode cannot see; dos2unix is one process, execs nothing, leaves SIGSYS alone.)
+[world]
+state = "./state"    # dos2unix puts its temporary file beside the target, so the whole story is in here
+
+[define]
+cwd       = "."
+setup     = "./setup.sh"
+operation = "/usr/bin/dos2unix state/report.txt state/notes.txt"
+check     = "./check.sh"

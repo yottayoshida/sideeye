@@ -1,0 +1,8 @@
+# Shape 4: the useful invariant is behavioural — the tool's own reader, checker or doctor must
+# agree with what was persisted. OUR judgement: the package ships a verify/test subcommand whose
+# answer is the contract, rather than a byte pattern a checker could compare.
+# Column 3 is the offline smoke command (see pool-atomic.txt).
+par2	par2 verify is the tool's own statement about whether the data is intact	printf 'data\n' > /tmp/d.bin && cd /tmp && par2 create -q d.bin && par2 verify -q d.bin
+dar	dar -t tests an archive with the same library that wrote it	mkdir -p /tmp/ds && printf 'x\n' > /tmp/ds/f && dar -c /tmp/arch -R /tmp/ds -Q >/dev/null && dar -t /tmp/arch -Q
+duplicity	has its own verify against a backend	duplicity --version
+genisoimage	writes an image its own reader can walk back	mkdir -p /tmp/iso && printf 'x\n' > /tmp/iso/f && genisoimage -quiet -o /tmp/o.iso /tmp/iso && isoinfo -i /tmp/o.iso -l | grep -qi f

@@ -1,0 +1,6 @@
+# Can each selected target be measured at all? Written by probe-selection.sh.
+# Probed 2026-09-19T06:46:52Z, image built per target, run with --network=none.
+ok	atomic	dos2unix	7.4.3-1	smoke passed offline
+ok	behavioural	genisoimage	9:1.1.11-3.4	smoke passed offline
+ok	journaled	lmdb-utils	0.9.24-1	smoke passed offline
+ok	scratch	fossil	1:2.21-1+deb12u1	smoke passed offline

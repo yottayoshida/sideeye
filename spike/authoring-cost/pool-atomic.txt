@@ -1,0 +1,9 @@
+# Shape 1: a single-file operation whose intended contract is old-or-new byte atomicity.
+# Membership is OUR judgement, written before the runs (PROTOCOL.md, "Targets"): what a package
+# rewrites, and whether a half-written file would be the defect. Column 2 says why we put it
+# here; column 3 is the offline smoke command probe-selection.sh runs to prove the package can
+# be measured at all (a binary that only answers --help is not a target).
+crudini	rewrites one INI file in place; a half-written config is the failure a user would call a bug	printf '[s]\nk=v\n' > /tmp/p.ini && crudini --set /tmp/p.ini s k w && crudini --get /tmp/p.ini s k
+dos2unix	converts one file's line endings in place, with a documented "keep the original" mode	printf 'a\r\n' > /tmp/p.txt && dos2unix /tmp/p.txt && test -s /tmp/p.txt
+xmlstarlet	edits one XML document in place through a temporary file	printf '<a><b>1</b></a>' > /tmp/p.xml && xmlstarlet ed -L -u '/a/b' -v 2 /tmp/p.xml && grep -q 2 /tmp/p.xml
+augeas-tools	augtool edits config files in place and has its own save modes	augtool --version

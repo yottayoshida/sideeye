@@ -1,0 +1,3 @@
+operation = "dos2unix f.txt"
+state = "/home/user/state"
+check = "test -s /home/user/state/f.txt"

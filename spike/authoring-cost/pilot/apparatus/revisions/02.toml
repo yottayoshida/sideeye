@@ -1,0 +1,2 @@
+operation = "dos2unix f.txt"
+state = "/home/user/state"

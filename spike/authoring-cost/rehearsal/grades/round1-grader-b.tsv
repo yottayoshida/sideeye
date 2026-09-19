@@ -1,0 +1,6 @@
+# Round 1, grader B. Contaminated (and B is the grader who reported the leak).
+# given-id	verdict	friction	card line
+P	wrong question	none	claim 3
+Q	semantically valid	semantic	claim 1 / claim 3
+# P = define-trap.toml, Q = define-fixed.toml
+# prose B: the author had to know .index is derived from notes.txt, as the card documents; the refused define judges the derived file as part of the contract.

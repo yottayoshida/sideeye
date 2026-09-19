@@ -1,0 +1,5 @@
+# A define for the rehearsal's synthetic target.
+operation = "sh /home/user/synthetic-target.sh /home/user/state hello"
+state = "/home/user/state"
+scratch = [".index"]
+check = "awk 'BEGIN{r=0} {if (length($0) == 0) r=1} END{exit r}' /home/user/state/notes.txt && test -s /home/user/state/notes.txt"

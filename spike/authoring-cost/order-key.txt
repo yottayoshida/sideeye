@@ -1,0 +1,5 @@
+# The key the candidate order is hashed with, so the alphabet does not decide which target a
+# shape gets. It is the commit the v1.5.0 tag names — a value fixed before this study existed
+# and not chosen by it (`git rev-list -n 1 v1.5.0`). Same shape as
+# spike/unknown-rate/b2-order-key.txt.
+4f8a54ec754b591e76132e7a65f6d12c9afe4e32

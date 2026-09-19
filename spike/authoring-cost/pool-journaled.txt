@@ -1,0 +1,11 @@
+# Shape 2: a journaled or transactional store whose correct contract includes recovery.
+# OUR judgement: the store documents a log, a journal or a repair path, so byte equality after a
+# crash is the wrong question and "the store still opens and reads back" is the right one.
+# Column 3 is the offline smoke command (see pool-atomic.txt).
+#
+# Removed 2026-09-19 before sealing, by probe-selection.sh:
+#   gdbm-l10n — installs (1.23-3) but ships no program under /usr/bin: it is the localisation
+#   package, not the tool. Our pool row was wrong about what the package contains.
+tdb-tools	Samba's trivial database has a recovery area and tdbtool/tdbbackup to exercise it	tdbtool /tmp/p.tdb create && tdbtool /tmp/p.tdb store k v && tdbtool /tmp/p.tdb show k
+lmdb-utils	LMDB is a copy-on-write B+tree with mdb_stat/mdb_copy as its own readers	mkdir -p /tmp/lm && mdb_stat -e /tmp/lm 2>/dev/null; mdb_stat -V
+bogofilter	keeps a Berkeley DB word list with its own recovery on open	printf 'hello spam\n' | bogofilter -s -d /tmp/bg 2>/dev/null; test -d /tmp/bg || mkdir -p /tmp/bg

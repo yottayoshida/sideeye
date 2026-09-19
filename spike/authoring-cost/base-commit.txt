@@ -1,0 +1,12 @@
+# The commit the freshness predicate reads.
+#
+# The predicate is "no tracked file outside this study names the target". Run against the
+# working tree it eats itself: this study's own CHANGELOG entry names the four targets, so the
+# selection stops re-deriving the moment it is published (measured — `select-targets.sh --check`
+# went red naming `dos2unix … named by CHANGELOG.md`).
+#
+# Reading a FIXED commit — the one this work branched from — keeps the question the one that was
+# actually asked: what did the repository already say about this package when it was chosen. It
+# also makes the selection re-derivable forever, by anyone, without the answer depending on what
+# has been written since.
+c29442c11b88acc7510423a170709a2d2f2892ce

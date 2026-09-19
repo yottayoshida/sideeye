@@ -2,6 +2,80 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-19 — the answer key, and the two defects the rehearsal found (#618, merge 1 of 3)
+
+**What this merge is.** #618 wants the semantic half of authoring measured before any
+setup-automation feature is built: not "can a fresh user reach a verdict" (the onboarding clock
+measures that) but "is the question the define asks the right one for this target". The issue's
+first acceptance condition is that the protocol and the selection rule are committed before the
+measurement, so this merge is the apparatus and the answer key, with nothing measured yet.
+
+**Where the design fought back.** Three drafts died before the one that shipped. A
+with-cookbook / without-cookbook split: unenforceable, because the driver is an API client that
+cannot be network-isolated and this repository is public — the clock's own protocol says so, and
+a condition that cannot be held is not declared. A seal by the absence of results ("no runs
+directory yet"): it goes red on the merge that adds the first run, which is the shape
+`check-sealed-campaigns.sh` exists to avoid; the seal is a manifest with its pre-image instead.
+A `PATH` shim over `sideeye` to snapshot revisions: the subject unpacks the engine itself, so a
+shim announces the tool is already installed and an invocation by path walks around it — a
+watcher on the artefact catches even a define written and abandoned before it ran, which is the
+case #618 cares most about.
+
+**Four apparatus errors, caught before sealing rather than after.** `gdbm-l10n` was in a pool as
+a journaled store: it installs and ships no program, because it is the localisation package.
+`apt-file` answered `--help` offline and passed the first probe, then turned out to need a
+network for the index its whole shape is about — the probe now runs the shape's own operation,
+which is why that column exists. `plocate` builds its index with a `fchown` that a non-root
+subject cannot do. And the slim image excludes documentation: the task asks the subject to read
+the target's manual and a card's `documented` backing cites it, so without that fix every run
+would have measured a different question. Each removal is written into the pool file with its
+reason.
+
+**Review found the answer key itself was wrong.** Four cards, four claims whose cited evidence
+did not support them, and two that were false when measured. `dos2unix`'s trace was quoted as
+showing "no write to the original" from a trace set that did not include `write`, and its
+temporary was called "in the file's directory" from a run whose working directory *was* that
+directory. `lmdb`'s "no rename appears" came from a set without `renameat`, and the claim that
+decides byte comparison is the wrong question was backed `documented` by a citation about what
+`mdb_stat` displays. `fossil`'s card said the checkout works without `.fslckout`; measured, it
+answers `current directory is not within an open check-out`. `genisoimage`'s said a truncated
+image lists nothing; measured, `isoinfo` exits **0** on an image cut to a ninth and prints a
+directory without the file — which is a better claim than the one it replaced, because it names
+a vacuous checker the study is looking for. All four re-measured, corrections kept beside the
+claims, and sealed as a third ledger row.
+
+**And one run happened by accident.** A refusal-path test read `run-authoring.sh dos2unix` as a
+check that an existing run directory is refused. The refusal standing in front of it was a
+`selection.tsv` lookup that matched the package against the wrong column — so it had been
+refusing *every* target, including the four that are selected, which means the launcher could
+never have run at all. Fixing the column removed the wrong refusal and the launcher did its job:
+seven minutes, 449 transcript events, two defines caught by the watcher, no verdict. It is
+published as `void` with its reason, because this study's own protocol says a run that starts is
+published and deleting evidence is the failure it is built against. Its transcript also showed the repository-trace
+list firing for a reason that is not a subject reaching anything: both hits sit in one event
+whose command reads the README the apparatus put in the box, and that README quotes the
+repository's URL and the cookbook. The box is network-off and the session's own usage record
+shows zero web requests. **I had written this up as the first measurement that the unenforceable
+leg gets crossed; it is the first measurement that the detector fires on the apparatus's own
+handout**, which is a different finding and a worse detector.
+
+**The rehearsal found what the selftests could not.** `audit.py --selftest` covers the evidence
+reader and `check-sealed.sh` covers the seal; neither can say whether a rubric and a card
+separate a right question from a wrong one. So: a synthetic target, a card with a deliberate
+`unspecified` line, a planted trap and a corrected define, and two fresh graders per round with
+opposite ID mappings.
+
+Round 1 gave the required pair twice — and grader B reported that both define files opened with
+a comment naming their own verdict. Shuffled IDs do not blind a reader when the text says which
+is which, so round 1 is published as contaminated. Round 2, with the comments gone and two
+different graders, gave `unresolved by card` for the trap twice, against round 1's `wrong
+question` twice — **four graders, one sentence, 2–2**. Both readings were in the ordering rule,
+and round 1's agreement had hidden it: two graders choosing the same reading is not the same as
+one reading being available. The rule now says `wrong question` first, with `unresolved by card`
+reserved for a define no graded claim decides, amended with a dated note, a new ledger row and
+its pre-image — and the seal behaved exactly as designed while that happened: red the moment the
+rubric changed, green again once the row was appended.
+
 ## 2026-09-19 — one refusal, two walls, one step (#634)
 
 **What #628 measured and did not change.** Three targets refused `child_touched_state_dir` by
