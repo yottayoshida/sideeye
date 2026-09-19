@@ -15,7 +15,10 @@ Committed under `pilot/apparatus/`:
 | `meta.json` | `disposition: void` — see below |
 
 `audit.py` on it reads: 3 revisions, `runnable_elapsed_s: 360`, no repository traces,
-`semantic_status: contested-or-ungraded` (nothing was graded, because nothing was authored).
+`semantic_status: ungraded` (nothing was graded, because nothing was authored). That last value
+read `contested-or-ungraded` until merge 2 split the grading states apart — one string used to
+cover both "nobody looked" and "both graders looked and accepted nothing", and this page quoted
+it while it did.
 
 ## What this is not
 

@@ -1,0 +1,8 @@
+# grader B, run genisoimage, assignment seeded by (run, grader)
+# map	G	01
+G	semantically valid	semantic, checker quality	claim 1 + claim 2 (no temp-and-rename / contract is behavioural)
+# G — had to know that genisoimage writes out.iso start to finish with no temp-and-rename (claim 1), so a post-crash out.iso can match neither pre nor post; the define catches that one point, drops out.iso to scratch, keeps the built-in judgement off it, and leaves the real question (claim 2, whether its own reader can walk the contents) to check.sh.
+# grader note: not wrong question — the card does not call out.iso durable and says the contract is behavioural; the define claims no byte equality, greps no `a.txt` (claim 4), and demands no absence of a short image (claim 5, unspecified). Its header comment says outright that out.iso may be absent, empty or cut short.
+# grader note: `vacuous checker` could not be established — `check` names an external check.sh whose body is not in the grading material. An undecidable class is not asserted.
+# grader note: `checker quality` assigned because dropping the whole built-in judgement leaves check.sh as the single path that can FAIL.
+# APPARATUS LIMITATION (to the study, not a grade): the card is designed so the verdict turns on the checker's body, and graders receive the TOML only. `vacuous checker` cannot be assigned for this target, so the verdict skews high. Recommend sealing the checker body with the revision in a next round.

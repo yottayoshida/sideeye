@@ -1,0 +1,8 @@
+[world]
+state = "./state"
+
+[define]
+cwd       = "/home/user/lmdbcase"
+setup     = "./setup.sh"
+operation = ["/usr/bin/mdb_load", "-T", "-f", "/home/user/lmdbcase/load.txt", "/home/user/lmdbcase/state"]
+check     = "./check.sh"

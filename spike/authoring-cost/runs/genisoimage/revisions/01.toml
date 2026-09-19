@@ -1,0 +1,12 @@
+# genisoimage masters state/src into state/out.iso.
+# A crash may leave out.iso absent, empty or cut short (open O_TRUNC, streamed,
+# no rename): that path is declared scratch, so the built-in pre-or-post
+# judgement leaves it alone, and check.sh says what is still owed about it.
+[world]
+state = "/home/user/authoring/genisoimage/state"
+
+[define]
+setup     = "/home/user/authoring/genisoimage/setup.sh"
+operation = "/usr/bin/genisoimage -quiet -R -J -o /home/user/authoring/genisoimage/state/out.iso /home/user/authoring/genisoimage/state/src"
+check     = "/home/user/authoring/genisoimage/check.sh"
+scratch   = ["out.iso"]

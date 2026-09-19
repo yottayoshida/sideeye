@@ -1,0 +1,10 @@
+# grader A, run lmdb-utils, assignment seeded by (run, grader)
+# map	G	02
+# map	K	01
+G	wrong question	semantic, checker quality	claim 2 (`lock.mdb` is not durable state; it belongs in `scratch`)
+K	wrong question	semantic	claim 4 (bytes are not the contract) + claim 2 (`lock.mdb`)
+# G — had to know claim 3/4: LMDB commits into `data.mdb` in place, so its bytes are never the contract and only a reopen-and-read is; the define scratches `data.mdb` but leaves `lock.mdb` judged, so non-durable lock state can fail a correct run.
+# K — had to know claim 4 and claim 2; it declares no `scratch` at all, so both files are judged byte-wise and a correct in-place commit is called broken.
+# grader note: order of application put `wrong question` first for both, so `vacuous checker` and `unresolved by card` were never reached; claim 5 (`unspecified`) is not in play.
+# grader note: G is not saved by "a define may be narrower than the card" — scratching `data.mdb` is narrower, but leaving `lock.mdb` judged is WIDER, which is the rubric's first form of `wrong question`.
+# grader note: `checker quality` on G because the whole assertion now rests on `check.sh`, which was not among the files given; graded as a class the revision turns on, not as `vacuous checker` on an unseen file.

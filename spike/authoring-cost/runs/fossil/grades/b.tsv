@@ -1,0 +1,12 @@
+# grader B, run fossil, assignment seeded by (run, grader)
+# map	G	01
+# map	K	02
+G	semantically valid	semantic, mechanical, observational, checker quality	claims 2, 3, 4
+K	semantically valid	semantic, mechanical, observational, checker quality	claims 2, 3, 4
+# G — had to know that the durable record is repo.fossil while its bytes change per commit (claim 4) and that `co/.fslckout` is a rebuildable derivative belonging in scratch (claim 2); it drops both and hands the judgement to fossil's integrity check (claim 3), breaking no graded card line. The extra journal and `.fslckout-mj*` spellings in scratch are apparatus redundancy touching no claim.
+# K — had to know that the commit is one SQLite transaction spanning repo.fossil and `co/.fslckout`, that repo.fossil's bytes change per commit (receive time included, claim 4), and that `.fslckout` is rebuildable (claim 2); it reflects the three as scratch declarations plus delegation to fossil's integrity check (claim 3).
+# grader note: neither treats `.fslckout` as a durable record, neither asserts byte identity for repo.fossil, both keep `co/a.txt` judged — no route to `wrong question`.
+# grader note: no define turns on claims 5 or 6 (both unspecified), so `unresolved by card` does not apply.
+# grader note: `checker quality` on both is not a defect — with every durable path moved to scratch, whether the run can fail at all rests entirely on check.sh.
+# grader note: the two differ only by the journal spellings in scratch. L0 judges files present in both the pre and post snapshots, so a journal that exists only in crash worlds was never judged; the difference stays mechanical.
+# APPARATUS LIMITATION: check.sh's body was not among the files given, so `vacuous checker` is visible only as far as the define's own text reaches.

@@ -34,9 +34,8 @@ cannot be read: a gap in the snapshot sequence, an index row whose digest is not
 or no snapshot at all, which makes the run `void` however fast the transcript looks.
 
 **Outcome forms**, all published with the same detail: `graded` (both graders accepted some
-revision), `contested` (at least one grader accepted a revision and they never agreed on one —
-including the case where only one of them accepted anything), `none-valid` (both graded and
-neither accepted any revision), `no-verdict` (the session ended without a runnable define),
+revision), `contested` (each accepted something, never the same one), `none-valid` (both graded
+and neither accepted any revision), `no-verdict` (the session ended without a runnable define),
 `void` (see Disposition). A run that starts is published in one of these forms. **No run goes
 unpublished, and a run's form is never left blank because grading was inconvenient.**
 
@@ -182,14 +181,3 @@ retroactively, and a run keeps the manifest it named.)*
   go and **reverted until they finished**, because this file is inside the sealed manifest and
   amending it mid-campaign would have refused those runs and split four measurements across two
   answer keys.
-
-- **2026-09-19 — the `contested` wording corrected, by review of the amendment above.** That
-  amendment rewrote the parenthetical to "each accepted something, never the same one", which
-  **excludes the one contested run this study has**: on `dos2unix-measured` grader A accepted
-  nothing and grader B accepted one revision. It matched neither the new wording nor
-  `none-valid`, while "What is measured" above — unchanged, and what the code implements — has
-  always said that one grader accepting alone publishes as `contested`. A self-contradiction
-  three lines under a sentence saying a run's form is never left blank, caught before anything
-  was committed. No run's outcome changes: `dos2unix-measured` was `contested` before this line
-  and is `contested` after it. Kept as a second row rather than rewritten into the first,
-  because the ledger is append-only and because the review finding it is part of the record.

@@ -1644,10 +1644,44 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The apparatus refuses on evidence it cannot read. Three of the four cases are
-      # refusals, so a reader that accepted anything would fail here rather than in a run.
+      # The apparatus refuses on evidence it cannot read, and tells apart the four states a
+      # run's grading can be in. A reader that accepted anything would fail here rather than
+      # in a run; so would one that printed the same string for "graded, nothing valid" and
+      # "nobody has graded it", which is what it did until the first real run.
       - name: The authoring audit refuses on incomplete evidence
         run: python3 spike/authoring-cost/audit.py --selftest
+
+      # Every published run, at every merge. `Nothing is edited after the fact` (PROTOCOL.md,
+      # Evidence) is a promise about files that are already committed, and nothing was checking
+      # it: a revision edited later, or an index row no longer matching its snapshot, would sit
+      # in the record until someone re-ran the audit by hand. The selftest above proves the
+      # refusals fire; this points them at the real evidence.
+      - name: Every published run's evidence still reads
+        run: |
+          set -eu
+          found=0
+          graded=0
+          for run in spike/authoring-cost/runs/*/; do
+            [ -f "$run/meta.json" ] || continue
+            found=$((found + 1))
+            echo "--- $run"
+            # A `void` run is REPORTED, not enforced. PROTOCOL.md requires a run that starts to
+            # be published, and one of the things that makes a run void is evidence the audit
+            # refuses to read — no snapshot at all. Failing on those two rules together would
+            # leave only a choice between a permanently red job and an unpublished run, so this
+            # guard's own predicate is "every run the study counts still reads", and a void run
+            # is not one the study counts.
+            if grep -q '"disposition": *"void"' "$run/meta.json"; then
+              python3 spike/authoring-cost/audit.py --check "$run" || echo "    (void run; refusal reported, not enforced)"
+              continue
+            fi
+            graded=$((graded + 1))
+            python3 spike/authoring-cost/audit.py --check "$run"
+          done
+          # A loop that matched nothing exits 0 and says nothing, which is the shape this
+          # repository keeps re-learning. There is at least one counted run from merge 2 on.
+          [ "$graded" -gt 0 ] || { echo "no counted run was audited (found $found directories)"; exit 1; }
+          echo "audited $found published run(s), $graded of them counted"
 
       # The seal, at every merge rather than only at the one that wrote it: the live answer
       # key must be the ledger's last row, each hash must keep its pre-image, and a run must
@@ -1660,6 +1694,18 @@ jobs:
       # first version was seventeen lines of YAML that edited a tracked file and put it back.
       - name: The seal can fail
         run: sh spike/authoring-cost/check-sealed.sh --selftest
+
+      # The disposition guard: PROTOCOL.md says step 2 is answered from the audit's trace list
+      # rather than from memory, and until this existed nothing made that true.
+      - name: A run's disposition cannot be written past its own evidence
+        run: python3 spike/authoring-cost/set-disposition.py --selftest
+
+      # The grading assignment: the same draw every time, and never over a sheet that already
+      # carries verdicts. The second was added from a review finding and had no committed case
+      # — the tool next to it refuses a second disposition while this one silently deleted a
+      # grader's answers, leaving a run at `ungraded` with nothing refusing.
+      - name: A grading assignment is reproducible and never overwrites verdicts
+        run: python3 spike/authoring-cost/assign-grading.py --selftest
 
       - name: The selection re-derives from its pools and its key
         run: sh spike/authoring-cost/select-targets.sh --check

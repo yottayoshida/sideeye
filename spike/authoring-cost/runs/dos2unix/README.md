@@ -2,7 +2,10 @@
 
 This is not one of the four measured runs. It is a complete authoring session that started by
 accident, and it is here because the protocol says so: *"A run that starts is published in one
-of these forms. There is no fifth outcome and no unpublished run."*
+of these forms. No run goes unpublished, and a run's form is never left blank because grading
+was inconvenient."* (That sentence used to end "There is no fifth outcome and no unpublished
+run", and the fifth outcome arrived with the first measured run — `none-valid`. The rule this
+page rests on, that a run which starts is published, is the half that held.)
 
 ## What happened
 
@@ -31,9 +34,16 @@ Two things worth keeping, neither of them a figure:
   did not reach this repository**, and an earlier version of this file said it did. What the run
   measures is the detector: as first written it cannot tell a subject that read the handout from
   one that fetched a raw URL, which is what `audit.py`'s needles were narrowed for afterwards.
-- **It produced no verdict.** `runnable_elapsed_s` is null: the session ended without an
-  exploration exiting 0 or 1. What a fresh subject did in seven minutes with this target is
-  itself a reading, and merge 2's runs will be read beside it.
+- **It reached a verdict at 217 s, and this page said for a while that it never did.** The
+  sentence here used to read "it produced no verdict — `runnable_elapsed_s` is null", written
+  straight off the audit's output. The null was the detector, not the session: `audit.py` looked
+  for a verdict at a line start, and every line in a normalised transcript carries its newlines
+  as the two characters `\` and `n`, so the anchor never matched. Corrected in merge 2 with the
+  detector; the run's own event at `07:02:59.920Z` is `PASS  11/11 explored worlds satisfied the
+  built-in atomicity invariant`, 217 s after the session started. The reading that hung off the
+  null — "what a fresh subject did in seven minutes without getting there" — was a reading of an
+  instrument, and it is withdrawn. What stands is that this session reached a runnable define
+  faster than any of the four measured runs did.
 
 ## For merge 2
 

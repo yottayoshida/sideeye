@@ -1,0 +1,5 @@
+box: authoring-box
+id: 649ec820fe9d283a966fc0ec6bfc1e07cab4220fc629298c6190ee3b7f2862e9
+image: sha256:79dd0fd8a409a93c31e5ebd0e16bc0804c90be5d93908ac97cc98c6f25b774a3
+contents: README.md
+contents: sideeye-v1.5.0-aarch64-linux.tar.gz
