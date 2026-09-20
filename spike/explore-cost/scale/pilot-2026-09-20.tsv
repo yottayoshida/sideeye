@@ -1,0 +1,10 @@
+ts	host	crash_points_requested	cycles_arg	crash_points_reported	worlds	state_files	state_bytes	mode	checker	checker_cmd	rep	wall_s	per_world_s	maxrss	maxrss_unit	work_max_bytes	work_final_bytes	sample_interval_s	trace_bytes	report_bytes	case_bytes	verdict	oracle_verified	note
+2026-09-20T09:41:39Z	Darwin-arm64	100	34	102	103	0	1024	wrappers	none		1	3.546	0.03443	5865472	bytes		881520		881520	1066	0	PASS	False	
+2026-09-20T09:41:43Z	Darwin-arm64	100	34	102	103	200	102400	wrappers	none		1	49.110	0.47680	68370432	bytes		881520		881520	4875	0	PASS	False	
+2026-09-20T09:42:32Z	Darwin-arm64	1000	334	1002	1003	0	1024	wrappers	none		1	71.311	0.07110	12075008	bytes		80801520		80801520	1068	0	PASS	False	
+2026-09-20T09:43:44Z	Darwin-arm64	1000	334	1002	1003	0	1024	wrappers	none		4			12156928	bytes	80801520	80801520	0.25	80801520	1068	0	PASS	False	sampling leg: the wall clock is not recorded because the sampler walks the work directory
+2026-09-20T09:45:27Z	Linux-aarch64	100	34	102	103	0	1024	wrappers	none		1	0.211	0.00205	11712	KiB		587467		499528	917	0	PASS	True	the engine's `version` probe reached the same peak, so this figure is a floor rather than the exploration's own
+2026-09-20T09:45:28Z	Linux-aarch64	100	34	102	103	0	1024	syscalls	none		1	0.231	0.00225	11724	KiB		613153		501192	1156	0	PASS	True	the engine's `version` probe reached the same peak, so this figure is a floor rather than the exploration's own
+2026-09-20T09:45:28Z	Linux-aarch64	100	34	102	103	0	1024	wrappers	cheap	/w/check-kept.sh	1	0.230	0.00224	11712	KiB		587568		499528	981	0	PASS	True	the engine's `version` probe reached the same peak, so this figure is a floor rather than the exploration's own
+2026-09-20T09:45:28Z	Linux-aarch64	100	34			0	1024	wrappers	cheap	/bin/true	1				KiB									not-counted: explored 0 worlds (UNKNOWN/checker_not_falsified)
+2026-09-20T09:45:28Z	Linux-aarch64	100	34	102	103	200	102400	wrappers	none		1	2.766	0.02685	69320	KiB		587467		499528	4726	0	PASS	True	
