@@ -350,6 +350,8 @@ the class stays where it is (#598).
 | candidate | why not in the corpus |
 |---|---|
 | `docs/ci-quickstart/sideeye.toml` | drives the demo toy, not a third-party tool |
+| `docs/ci-quickstart/release/sideeye-clean.toml` | same: the release quickstart's PASS lane drives the demo toy (#620) |
+| `docs/ci-quickstart/release/sideeye-bug.toml` | same: the release quickstart's FAIL lane drives the demo toy with its bug planted (#620) |
 | `spike/assisted/buku/inspection/inv.toml` | instrumentation from the buku-withdrawal analysis, not a corpus question |
 | taskwarrior | in the supported table, but **no committed define exists** — only BUILDLOG prose. Authoring one today would be answer-known authoring: added to A it only lowers a rate that is already not the threshold basis; added to B it contaminates the threshold basis with a known PASS |
 | omamori surface (`spike/dogfood-omamori-surface.sh`) | Rust is not a supported class (the first table); DESIGN §18's demand to re-run it before citation was answered by #141 (re-measured 2026-08-16, all four writers PASS under v10), separately from this measurement |
