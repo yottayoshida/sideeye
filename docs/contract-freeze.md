@@ -183,6 +183,35 @@ stay the same.
    **The rule is unchanged** — a fifth ruling would be its own, and four is no more
    a pattern than three was. Its ledger row is a sweep's job, as the notes above give.
 
+   **Two more optional fields, 2026-09-20 (#638, ADR 0079).** `l0_judged_paths` and
+   `l0_judged_paths_omitted` name the set the built-in atomicity form judged, which
+   `l0` had only ever counted. Both are covered by the additive allowance and neither
+   is a closed set, so this is not a break and needs no ruling of the kind the four
+   above record — the paragraph exists because the freeze's additions are named here
+   rather than left to the code. They are present together on every run that reached
+   L0 classification and absent together on every run that did not, and a run whose
+   judged set is empty carries an empty array rather than no field. The names carry
+   `l0_` deliberately: `judgeL1` judges the post-only and pre-only entries, which the
+   L0 plan excludes by construction, so a bare `judged_paths` would have to change
+   meaning — and this page says a field changes name instead — the day the L1 set is
+   reported too. The array is capped twice — a thousand entries and 64 KiB
+   of names, whichever binds first — with the remainder counted, so what the pair
+   promises is "the whole set, or a prefix of it and a count of the rest", never "the
+   whole set"; `docs/report-schema.md` states that in both rows. The byte ceiling is not
+   decoration: the MCP server reads the report with a 4 MiB cap and answers a larger one
+   with a tool error, and before this field no part of the report grew with the target's
+   state tree. Held to the page by `spike/check-report-schema.py` in both directions.
+   **No row in `surface-changes.tsv`** — not because an additive change has none (`sc-06`
+   is one) but for the reason the notes above give: a row for a change made after the pin
+   fails `check-freeze-audit.sh`, and both arrive when a sweep re-reads the surfaces and
+   moves the pin in one commit. **That sweep will not be prompted by the extraction**, and
+   this is said here rather than left to be discovered: `spike/freeze-audit/surface-sets.sh`
+   matches a schema field as ``^| `[a-z_]+` ``, which no name holding a digit satisfies —
+   `l0` and `l1` have been outside the extracted set since before this change, and these two
+   join them, so `check-freeze-audit.sh` cannot report any of the four as drift in either
+   direction. Widening the pattern moves the extracted set away from the pin, which is the
+   sweep's own job and not this change's.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

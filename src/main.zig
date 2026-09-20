@@ -1609,6 +1609,10 @@ fn phaseRecording(run: *Run) void {
     const l0_plan = engine.classifyWith(gpa, initial, final, report.scratch_declared) catch setupError(.environment, "out of memory");
     report.l0_history_count = l0_plan.history_count;
     report.l0_note = report.buildL0Note(arena, l0_plan);
+    // #638, ADR 0079: the same plan, as data. Published here rather than at the report's
+    // own build so that every exit below — the UNKNOWNs included — carries the set that
+    // actually existed, for the reason the paragraph above gives about the note.
+    report.publishJudgedPaths(arena, l0_plan);
 
     // Now that the classification exists, not at the read: see the pairing above. Ahead
     // of the version check below, and the two cannot both apply: a capped read returns
