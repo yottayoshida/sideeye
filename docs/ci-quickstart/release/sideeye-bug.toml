@@ -1,0 +1,20 @@
+# The release quickstart's FAIL lane (#620). `.github/workflows/quickstart-release.yml` runs
+# this on every push to main and every pull request, using a Sideeye taken from a published
+# release rather than built from source — so the page documenting that path cannot rot.
+#
+# The target here has a planted delete-before-rename bug, so **the job passes when Sideeye
+# exits 1**. That is the opposite of what you want in your own project, and it is deliberate:
+# a lane that can only produce exit 0 cannot tell "Sideeye explored and found nothing" from
+# "Sideeye did nothing". Your gate is the other file beside this one, `sideeye-clean.toml`,
+# whose target is correct and whose job asserts exit 0.
+#
+# Relative commands resolve against this file's directory (ADR 0007). `target-bug` is built by
+# the workflow from `spike/toys/toy.c` with `-DBUGGY=1`; your target goes in its place, and it
+# finds its own state its own way — `[world] state` tells Sideeye where to watch.
+
+[world]
+state = "/tmp/sideeye-quickstart-bug"
+
+[define]
+setup     = "./target-bug init"
+operation = "./target-bug rotate"

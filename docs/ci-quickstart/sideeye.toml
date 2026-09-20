@@ -1,8 +1,8 @@
-# The CI quickstart's define — the exact file .github/workflows/quickstart.yml
-# runs on every push to main and every pull request, against this repo's demo
-# target (a toy with a planted delete-before-rename bug). Swap the lines under
-# [define] for your own target and keep the workflow; docs/ci-quickstart.md
-# walks through it.
+# The SOURCE-BUILD self-test's define — the exact file .github/workflows/quickstart.yml runs
+# on every push to main and every pull request, against this repo's demo target (a toy with a
+# planted delete-before-rename bug). Since #620 the define a new adopter copies is one of the
+# two in release/ beside this file, and docs/ci-quickstart.md walks through those; this one
+# stays because the source-build path is still exercised.
 #
 # Relative commands resolve against this file's directory (ADR 0007), so the
 # demo target is named from here. The demo toy finds its state through the

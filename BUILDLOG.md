@@ -2,6 +2,87 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-20 — the release quickstart, and a macOS lane the plan had wrong three ways (#620, ADR 0080)
+
+**What this ships.** A quickstart that installs a pinned release instead of building one, run by
+CI on both platforms. The surface is a shell script an adopter copies, not an action and not a
+reusable workflow: this repository declares five frozen surfaces and records every break of each
+on its own ruling, and an action's inputs and version compatibility would be a sixth. #620
+declined to pre-select one and asked for the smallest durable surface; a copy is durable because
+nothing outside this repository is pinned to it.
+
+**The plan's macOS lane was wrong in three ways, and a blind reviewer found all three.** It said
+"verify fs_usage exists, then pass it as the oracle" — but `--oracle-fs-usage` is a **boolean**,
+and Sideeye starts `sudo -n /usr/bin/fs_usage` itself after probing `sudo -n /usr/bin/true`
+(`src/cli.zig`, `src/main.zig`), so the precheck the plan described was not the precheck the code
+performs. It ignored a **hard 96-byte ceiling on the state root** under that oracle
+(`fsu_sentinel_max_root = 156 − 20 − 40`), which would have made the state path in a copyable
+example carry an invisible length rule. And its clean lane renames, while the only macOS
+verified-PASS evidence this repository holds is an `open`/`write`/`close` toy — so "exit 0 on
+macOS" was an unmeasured new claim, under an oracle that turns narrowings into refusals (ADR 0031).
+
+The lane claims less now, and the reason that decided it was already written here: `spike-fsusage.yml`
+opens with "This is a measurement apparatus, not standing CI … **it must never be made a required
+check**." Building a standing lane on `sudo -n` would have contradicted that rather than extended
+it. macOS explores a target with a planted bug and asserts the FAIL, which needs no oracle —
+measured locally on this machine before the decision, with neither `--oracle` nor
+`--allow-unverified`, and the same reason `ci.yml`'s macOS MCP leg gives for running without one.
+
+**Two more things the plan got wrong, both measured rather than argued.** It planned to use
+`gh api`, following `docs/cli.md`; `gh` needs a token even for a public read, and a copied script
+runs in jobs that have none. Unauthenticated `curl` returns the same three digests — checked —
+so the script uses that and says which way it authenticated. And it planned a new
+self-contained target under `docs/`; `ci.yml` already compiles exactly the toy it wants with one
+line, and the default build of `spike/toys/toy.c` is the clean one, so both lanes come from the
+existing file with two compiles and no new source. (The plan justified the new file with "1778
+lines producing 16 toys". 1778 lines is `toy.c` alone and it produces four; the number was wrong
+in the direction that favoured the decision.)
+
+**The installer verifies itself.** `--selftest` drives the platform map — including macOS's
+`arm64` against the asset's `aarch64`, which a mapping that forgets it fails as "no asset for
+this platform", the shape that reads like a packaging gap — a missing asset, a null digest, a
+malformed digest and a tampered download, with no network. The three pieces take their inputs as
+arguments precisely so the selftest drives the shipping code rather than a copy of it. Its
+temporary directory is cleaned by naming the three files it wrote and then `rmdir`, not by a
+recursive remove of a path held in a variable: a script that runs in someone else's CI should not
+be able to delete more than it created. That change came from a guard on the author's machine
+refusing the recursive form, which was the right refusal for the wrong reason and a better script
+either way.
+
+**The blind review found the calling convention broken where it mattered most: in the page that
+carries the promise.** The script printed its log *and* a `SIDEEYE_BIN=<path>` line to stdout;
+the workflow handled that with a grep into `$GITHUB_ENV`, but `docs/ci-quickstart.md` showed two
+lines that used `$SIDEEYE_BIN` directly, and nothing had ever exported it. The page that says
+"copy the workflow and install-sideeye.sh" was demonstrating a snippet that cannot run. Fixed by
+changing the convention rather than the page: **stdout is the path and nothing else, the
+commentary goes to stderr**, so `bin=$(sh install-sideeye.sh v1.5.0 dir)` is the whole of it —
+measured afterwards, and the capture is one line holding an executable.
+
+Three more from the same round. **The token was never wired**: Actions does not put one in the
+environment on its own (this repository spells `GH_TOKEN: ${{ github.token }}` in `release.yml`
+for that reason), so both jobs would have taken the unauthenticated path at 60 requests an hour
+per source IP, shared across GitHub's NAT — a mitigation the script already supported and the
+workflow did not use. **Two files started lying about themselves**: `quickstart.yml` and
+`docs/ci-quickstart/sideeye.toml` each said they were the quickstart that `docs/ci-quickstart.md`
+documents, which stopped being true the moment that page changed; leaving them "untouched" as the
+plan said would have left two files claiming the same role. And **`SIDEEYE_REPO` / `SIDEEYE_API`
+were removed**: an undocumented pair that would have moved the asset and the digest it is checked
+against to the same new origin, which is a verification that checks nothing.
+
+**Not fixed, recorded instead.** `docs/cli.md` says the shim search means "run it from the
+directory you untarred — or pass `--shim`". The search reads the binary's own canonical path and
+never consults the cwd (`findShim`, #78), so the advice is over-restrictive rather than wrong,
+and this change ships an example that contradicts it: the workflow invokes the binary by absolute
+path from the repository root with no `--shim`, and it was measured working that way here first.
+It falsifies nothing this PR promises and meets none of the issue predicates, so it is a line in
+the PR body and not an issue.
+
+**Measured before any of it was committed**: the real install, on this machine, from the
+published `v1.5.0` release — unauthenticated read, digest matched, version printed,
+`sideeye 1.5.0 (trace contract v18)` — and then an explore with that binary and **no `--shim`**,
+which found the planted counterexample and exited 1. That is the macOS lane end to end, before CI
+ever saw it.
+
 ## 2026-09-20 — the judged set as data, and three things the plan had wrong (#638, ADR 0079)
 
 **What this implements.** `l0_judged_paths` and `l0_judged_paths_omitted`: the set the built-in

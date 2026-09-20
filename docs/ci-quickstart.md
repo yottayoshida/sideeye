@@ -1,10 +1,18 @@
 # CI quickstart (GitHub Actions)
 
-The example here is not a listing — it is [`.github/workflows/quickstart.yml`](../.github/workflows/quickstart.yml),
-a real workflow that runs on every push to main and every pull request in this
-repository, against [`docs/ci-quickstart/sideeye.toml`](ci-quickstart/sideeye.toml).
-A quickstart that CI itself executes cannot quietly rot into fiction. To adopt
-it: copy the workflow, swap the define, invert one gate.
+The example here is not a listing — it is
+[`.github/workflows/quickstart-release.yml`](../.github/workflows/quickstart-release.yml),
+a real workflow that runs on every push to main and every pull request in this repository,
+against the defines in [`docs/ci-quickstart/release/`](ci-quickstart/release/). A quickstart
+that CI itself executes cannot quietly rot into fiction. To adopt it: copy the workflow and
+[`install-sideeye.sh`](ci-quickstart/release/install-sideeye.sh), and swap the define.
+
+**It installs a published release. There is no Zig and no build of Sideeye** (#620, ADR 0080) —
+your setup effort goes into your define and your checker, not into Sideeye's toolchain. The
+older [`quickstart.yml`](../.github/workflows/quickstart.yml) still builds from source and
+stays as *this repository's* self-test; if you want that path, it is documented by its own
+comments.
+
 Its actions are pinned to commit SHAs rather than tags, which is this repository's own
 rule (ADR 0061) and not something the quickstart needs: copy it as it stands and let
 whatever keeps your actions current update them, or put the tags back. The gate below is
@@ -50,17 +58,48 @@ spelled with the argv form, one line, passed verbatim (ADR 0019):
 spelled as argv skips `sideeye preflight` (flags carry the string form only)
 and goes straight to `explore --config`, which answers strictly more.
 
-**2. The workflow steps** — build sideeye (zig 0.16 via `mlugg/setup-zig`),
-install `strace` (the completeness oracle; without it a would-be PASS refuses
-as `completeness_not_verified` — sideeye does not certify what it could not
-fully observe), then:
+**2. The workflow steps** — run the installer's own selftest, check that no Zig is on `PATH`,
+install `strace` (the completeness oracle; without it a would-be PASS refuses as
+`completeness_not_verified` — sideeye does not certify what it could not fully observe),
+install a pinned Sideeye from the release, then explore:
 
 ```sh
-zig-out/bin/sideeye explore --config sideeye.toml \
-  --shim zig-out/lib/libsideeye_shim.so \
+bin=$(sh install-sideeye.sh v1.5.0 "$RUNNER_TEMP/sideeye")
+"$bin" explore --config sideeye.toml \
   --oracle /usr/bin/strace \
   --json report.json
 ```
+
+**stdout is the path and nothing else** — the running commentary goes to stderr, so the
+capture above is the whole calling convention. In a workflow, `echo "SIDEEYE_BIN=$bin" >>
+"$GITHUB_ENV"` carries it to later steps. The script needs `curl`, `tar`, `python3` and a
+sha256 tool, all of which GitHub-hosted runners have; it does not need Zig, a compiler, or `gh`.
+
+The version is an argument with no default: following the latest release would let a build
+you did not choose turn your gate red, or green. The installer selects the asset for the
+runner's platform, **refuses outright when the release has none** rather than reaching for a
+neighbouring one, and checks the download against the sha256 GitHub publishes for that asset
+before anything runs. What that check establishes — the bytes are the ones GitHub holds, not
+who produced them — is stated in [cli.md](cli.md#installing-without-homebrew), which is also
+where the by-hand form of the same two commands lives. `sh install-sideeye.sh --selftest`
+runs its own failure cases, with no network, and the workflow runs it before it trusts it.
+
+**One caution on copying the PASS lane's assertion.** It gates on `verdict == "PASS" and
+oracle_verified`, which is right for a target whose own process does the writing. A define whose
+operation writes through a child process earns `oracle_verified_subject_only` instead, with
+`oracle_verified` staying false — a legitimate PASS that this assertion would call red. Read
+[report-schema.md](report-schema.md) for which of the two your target reaches before you copy
+the check.
+
+**No `--shim`.** A release tarball unpacks flat, binary beside shim, and sideeye looks beside
+itself before `../lib` (#78) — so the flag would be path surgery for nothing. Pass it only if
+you have separated the two files.
+
+**On macOS the same workflow explores a target with a planted bug and asserts the FAIL, with
+no oracle.** A FAIL is evidence on its own; a verified PASS on that platform would mean
+`fs_usage` under `sudo`, which this repository has ruled out of standing CI. So the macOS lane
+proves the installed binary and shim work there, and makes no PASS-side claim — the Linux job
+is where `oracle_verified` is asserted. ADR 0080 has the three reasons.
 
 **3. The gate** — the exit code is the whole integration:
 
@@ -71,8 +110,12 @@ zig-out/bin/sideeye explore --config sideeye.toml \
 | 2 | UNKNOWN | **Fail the job by default.** Sideeye refused to judge and `unknown_reason` says why (see [report-schema.md](report-schema.md)). Treating UNKNOWN as green is how a target quietly leaves the tested set. |
 | 3 | SETUP_ERROR | Fail the job; the define itself did not run. |
 
-The demo workflow inverts the gate (`test "$rc" = 1`) because its target has a
-planted bug — the job proves detection. Your target gates on `= 0`.
+The workflow runs **both** directions, and the pair is the point: the lane you copy
+([`sideeye-clean.toml`](ci-quickstart/release/sideeye-clean.toml)) has a correct target and
+gates on `= 0`, and a second lane ([`sideeye-bug.toml`](ci-quickstart/release/sideeye-bug.toml))
+has a target with a planted bug and gates on `= 1`. Without the second, a green run cannot be
+told from a Sideeye that explored nothing; without the first, the example never shows the gate
+you will actually write.
 
 The four rows above are the verdicts a run can reach. Commands that produce no
 verdict are not in the table and are not gates: `version` and `help` exit 0

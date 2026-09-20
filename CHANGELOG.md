@@ -8,6 +8,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **A CI quickstart that installs a released Sideeye instead of building one** (#620, **ADR 0080**;
+  `.github/workflows/quickstart-release.yml`, `docs/ci-quickstart/release/`, `docs/ci-quickstart.md`).
+  The existing quickstart is executable and CI keeps it honest, but adopting it asked a project
+  to install Zig and build the binary and shim before reaching its own define. The new one runs
+  on every push to main and every pull request with **no Zig on the runner — asserted, not
+  implied**: the job fails if `zig` is on `PATH`. `install-sideeye.sh` takes the version as an
+  argument with **no default**, maps the runner's platform to an asset (`arm64` to `aarch64`,
+  the spelling macOS reports against the one the release publishes), refuses outright when the
+  release carries no matching asset rather than reaching for a neighbour, and checks the
+  download against the sha256 GitHub publishes for it. What that establishes is unchanged and
+  unrepeated — `docs/cli.md` already says the bytes are the ones GitHub holds and not who
+  produced them, and ADR 0061 says why no checksum file rides beside them. `--selftest` drives
+  the platform map, a missing asset, a null digest and a tampered download with no network, and
+  both jobs run it before trusting the installer. **Two lanes, deliberately**: a correct target
+  gating on exit 0 with `oracle_verified` asserted — the shape an adopter copies — and a target
+  with a planted bug gating on exit 1, because a lane that can only pass cannot be told from a
+  Sideeye that explored nothing. **The macOS lane carries no oracle and says so**: a verified
+  PASS there would mean `fs_usage` under `sudo`, which `spike-fsusage.yml` rules out of standing
+  CI in its own first paragraph, and a FAIL is evidence on its own (the reason `ci.yml`'s macOS
+  leg already runs without one). No `--shim` anywhere — a release tarball unpacks flat and the
+  binary looks beside itself (#78). `quickstart.yml` keeps its behaviour and stays as
+  this repository's source-build self-test; its header comment and the one on
+  `docs/ci-quickstart/sideeye.toml` are corrected, because both said they were the quickstart
+  this page documents and that stopped being true here.
 - **The judged set is reported as data, not only as a count** (#638, **ADR 0079**;
   `docs/report-schema.md`, `docs/contract-freeze.md` surface 2). A `--json` report now carries
   `l0_judged_paths` — the paths the built-in atomicity form judged, read from the same plan the

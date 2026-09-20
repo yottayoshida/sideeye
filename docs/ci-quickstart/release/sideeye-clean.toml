@@ -1,0 +1,24 @@
+# The release quickstart's PASS lane (#620) — **this is the one to copy**.
+#
+# The target is correct, so Sideeye exits 0 and the job asserts 0, which is the shape your own
+# gate takes: nothing to invert, nothing to explain. `.github/workflows/quickstart-release.yml`
+# runs it with a completeness oracle (`strace`) and then checks `oracle_verified` in the JSON
+# report, so a PASS in this lane is one a second witness agreed with rather than one the shim
+# claimed alone.
+#
+# Beside it, `sideeye-bug.toml` explores a target with a planted bug and asserts exit 1. Both
+# lanes exist because either alone is weak: a lane that can only pass cannot distinguish a real
+# exploration from a no-op, and a lane that can only fail never exercises the gate you will write.
+#
+# Relative commands resolve against this file's directory (ADR 0007). `target-clean` is built by
+# the workflow from `spike/toys/toy.c` with no flags; replace both lines with your own command.
+# `[world] state` is **sacrificial** — Sideeye empties and rebuilds it once per explored world,
+# hundreds of times in a run — so it is a scratch copy your `setup` produces, never a directory
+# anything else depends on.
+
+[world]
+state = "/tmp/sideeye-quickstart-clean"
+
+[define]
+setup     = "./target-clean init"
+operation = "./target-clean rotate"
