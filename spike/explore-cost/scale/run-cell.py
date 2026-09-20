@@ -137,6 +137,23 @@ def not_counted(base, reason):
 
 
 def run_cell(a):
+    # First, before the probe spawns anything. Both refusals exist for one reason: a usage error
+    # that reaches the engine comes back as a refusal, and a refusal lands in the record as a
+    # not-counted **measurement**. A row saying "the engine refused" when the truth is "the
+    # harness was invoked wrong" is exactly the confusion this apparatus exists to make
+    # impossible, so neither shape gets as far as a row.
+    #
+    # `--setup-cmd` and `--operation-cmd` are one mode, not two flags. Half of them is never
+    # meaningful: without `--toy` it spells the command `None init`, and *with* `--toy` it
+    # silently pairs a real setup with the toy's own operation — a mixture nothing in the row
+    # would show, since only `--operation-cmd` blanks the request columns.
+    if (a.setup_cmd is None) != (a.operation_cmd is None):
+        raise SystemExit("run-cell: --setup-cmd and --operation-cmd are one mode; give both "
+                         "(a real target) or neither (the toy)")
+    if a.setup_cmd is None and not a.toy:
+        raise SystemExit("run-cell: --toy is required unless both --setup-cmd and "
+                         "--operation-cmd are given")
+
     started = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
     if started != 0:
         sys.exit("run-cell: this process has already waited for a child, so ru_maxrss is "
@@ -173,7 +190,11 @@ def run_cell(a):
     base = {
         "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "host": "%s-%s" % (os.uname().sysname, os.uname().machine),
-        "crash_points_requested": a.crash_points, "cycles_arg": cycles,
+        # An anchor asked for no particular count — the target's own operation decides. Leaving
+        # the request columns empty is the honest reading; filling them with the toy's arithmetic
+        # would put a number nobody asked for beside one the engine reported.
+        "crash_points_requested": "" if a.operation_cmd else a.crash_points,
+        "cycles_arg": "" if a.operation_cmd else cycles,
         "state_files": a.state_files, "state_bytes": a.state_bytes,
         "mode": a.mode, "checker": a.checker, "rep": a.rep,
         # Which checker, not just whether: the pilot holds two rows whose identity tuple is
@@ -184,9 +205,11 @@ def run_cell(a):
     }
 
     report = os.path.join(work_root, "report.json")
+    setup_cmd = a.setup_cmd or ("%s init" % a.toy)
+    operation_cmd = a.operation_cmd or ("%s rotate %d" % (a.toy, cycles))
     cmd = [a.engine, "explore", "--state", state,
-           "--setup", "%s init" % a.toy,
-           "--operation", "%s rotate %d" % (a.toy, cycles),
+           "--setup", setup_cmd,
+           "--operation", operation_cmd,
            "--work", work, "--json", report]
     if a.mode == "syscalls":
         cmd += ["--observe", "syscalls"]
@@ -198,6 +221,8 @@ def run_cell(a):
         cmd += ["--check", a.cheap_checker]
 
     env = dict(os.environ, TOY_STATE=state)
+    if a.state_env:
+        env[a.state_env] = state
 
     stop = threading.Event()
     seen = {"max": 0}
@@ -220,6 +245,8 @@ def run_cell(a):
         thread.join(timeout=5)
         seen["max"] = max(seen["max"], dir_bytes(work))
 
+    if a.label:
+        add_note(base, "target: " + a.label)
     base["maxrss"] = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
     if base["maxrss"] <= probe_rss:
         add_note(base, "the engine's `version` probe reached the same peak, so this figure is "
@@ -371,23 +398,31 @@ def selftest():
     # and it was outside the tests. A stand-in engine closes that: it writes a report the cell
     # path then reads, so the row comes out of the real code with numbers this test chose.
     stub_dir = tempfile.mkdtemp(prefix="se621-selftest-stub-")
+
+    def write_stub_engine(path, records_state_to=None):
+        """One stand-in engine, used twice. `version` answers so the probe passes; `explore`
+        writes a report at --json. The `sleep` is deliberate: without it the stub finishes
+        inside the third decimal `wall_s` is rounded to, `wall_s` reads 0.000, and the divisor
+        check compares three candidates against zero — where the SMALLEST wins and the case
+        fails for a reason that has nothing to do with the divisor. It passed on a loaded
+        machine and failed on an idle one, which is the wrong way round for a test to be
+        sensitive to. `records_state_to` is for the anchor case: `--state-env` is the one knob
+        whose effect never reaches the row, so the engine writes down what it was exported."""
+        body = ["#!/bin/sh",
+                "[ \"$1\" = version ] && { echo 'fake 0.0.0'; exit 0; }"]
+        if records_state_to:
+            body.append("printf '%s' \"$SE621_PROBE_STATE\" > " + records_state_to)
+        body += ["sleep 0.05",
+                 "while [ $# -gt 0 ]; do [ \"$1\" = --json ] && out=$2; shift; done",
+                 "printf '%s' '{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\","
+                 "\"crash_points\":9,\"explored\":10,\"oracle_verified\":false,"
+                 "\"case\":\"(none)\"}' > \"$out\""]
+        with open(path, "w") as f:
+            f.write("\n".join(body) + "\n")
+        os.chmod(path, 0o755)
+
     stub = os.path.join(stub_dir, "fake-engine")
-    with open(stub, "w") as f:
-        f.write("#!/bin/sh\n"
-                "# `version` answers so the probe passes; `explore` writes a report at --json.\n"
-                "[ \"$1\" = version ] && { echo 'fake 0.0.0'; exit 0; }\n"
-                "# Deliberately slow enough to measure. Without it the stub finishes inside the\n"
-                "# third decimal `wall_s` is rounded to, `wall_s` reads 0.000, and the divisor\n"
-                "# check below compares three candidates against zero — where the SMALLEST wins\n"
-                "# and the case fails for a reason that has nothing to do with the divisor. It\n"
-                "# passed on a loaded machine and failed on an idle one, which is the wrong way\n"
-                "# round for a test to be sensitive to.\n"
-                "sleep 0.05\n"
-                "while [ $# -gt 0 ]; do [ \"$1\" = --json ] && out=$2; shift; done\n"
-                "printf '%s' '{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\","
-                "\"crash_points\":9,\"explored\":10,\"oracle_verified\":false,"
-                "\"case\":\"(none)\"}' > \"$out\"\n")
-    os.chmod(stub, 0o755)
+    write_stub_engine(stub)
 
     class Args:
         engine = stub
@@ -402,6 +437,32 @@ def selftest():
         oracle = None
         sample_work_dir = False
         sample_interval = 0.25
+        # The anchor knobs, at their defaults. This class is the cell path's whole input, so a
+        # knob added to the parser and forgotten here stops the suite — which is how the two
+        # were kept in step when the anchor mode arrived.
+        setup_cmd = None
+        operation_cmd = None
+        state_env = None
+        label = ""
+
+    # Both refusals, each seen red once by deleting its own guard: without them the cell runs
+    # on and the engine's complaint lands in the record as a not-counted measurement.
+    def refused(what, mutate, wanted):
+        bad = Args()
+        mutate(bad)
+        try:
+            run_cell(bad)
+            check(what, False, "it ran instead of refusing")
+        except SystemExit as e:
+            check(what, wanted in str(e), str(e))
+
+    def half_given(x):
+        x.operation_cmd = "some real operation"   # and setup_cmd left None
+    refused("half an anchor is refused, not measured", half_given, "are one mode")
+
+    def no_target_at_all(x):
+        x.toy = ""
+    refused("a cell with no target at all is refused", no_target_at_all, "--toy is required")
 
     row = run_cell(Args()).split("\t")
     at = {c: i for i, c in enumerate(COLUMNS)}
@@ -428,6 +489,41 @@ def selftest():
               "wall=%s per=%s; best divisor looks like %d" % (wall, per, closest))
     check("the cell path fills the row's verdict from the report",
           row[at["verdict"]] == "PASS", row[at["verdict"]])
+
+    # The anchor path, driven end to end. It runs as a **subprocess** because one cell is one
+    # process: this process has now waited for the stub above, so a second `run_cell` here would
+    # be refused by the guard at the top of it — correctly. Until these cases existed, the
+    # anchor mode's four effects were never executed by any test and the rows it produced were
+    # the only evidence it worked.
+    envstub = os.path.join(stub_dir, "env-engine")
+    seen = os.path.join(stub_dir, "seen.txt")
+    write_stub_engine(envstub, records_state_to=seen)
+    out = subprocess.run(
+        [sys.executable, os.path.abspath(__file__), "--engine", envstub,
+         "--crash-points", "7", "--rep", "1",
+         "--setup-cmd", "/bin/true", "--operation-cmd", "/bin/true",
+         "--state-env", "SE621_PROBE_STATE",
+         "--label", "a real target"],
+        capture_output=True, text=True)
+    check("the anchor path emits a row at all", out.returncode == 0, out.stderr[-200:])
+    if out.returncode == 0:
+        arow = out.stdout.rstrip("\n").split("\t")
+        check("an anchor leaves the request columns empty",
+              arow[at["crash_points_requested"]] == "" and arow[at["cycles_arg"]] == "",
+              "requested=%r cycles=%r" % (arow[at["crash_points_requested"]],
+                                          arow[at["cycles_arg"]]))
+        check("an anchor still reports the engine's own counts",
+              arow[at["crash_points_reported"]] == "9" and arow[at["worlds"]] == "10",
+              "reported=%r worlds=%r" % (arow[at["crash_points_reported"]], arow[at["worlds"]]))
+        check("the label rides the note column, beside whatever else is noted",
+              "target: a real target" in arow[at["note"]], arow[at["note"]])
+        got = open(seen).read() if os.path.exists(seen) else "(the engine never ran)"
+        check("--state-env exports the resolved state directory to the child",
+              got.endswith("/state") and os.path.isabs(got), got)
+
+    os.remove(envstub)
+    if os.path.exists(seen):
+        os.remove(seen)
     os.remove(stub)
     os.rmdir(stub_dir)
 
@@ -446,7 +542,18 @@ def main():
         return
     p = argparse.ArgumentParser()
     p.add_argument("--engine", required=True)
-    p.add_argument("--toy", required=True)
+    p.add_argument("--toy")
+    # The real-target anchor (#621 condition 5). Deliberately NOT `--config`: the engine refuses
+    # `--config` beside `--state/--setup/--operation`, and a define whose `[world] state` the
+    # harness never sees would leave the state columns describing padding that is not there.
+    # With these, the anchor runs through the same row, the same not-counted rule and the same
+    # RSS method as every synthetic cell, and the state columns keep meaning "what this harness
+    # built" in both.
+    p.add_argument("--setup-cmd", help="replaces the toy's `init` (real-target anchor)")
+    p.add_argument("--operation-cmd", help="replaces the toy's `rotate N` (real-target anchor)")
+    p.add_argument("--state-env", default=None,
+                   help="an extra variable exported to the target, pointing at the state directory")
+    p.add_argument("--label", default="", help="what this row is, when it is not the scale toy")
     p.add_argument("--crash-points", type=int, required=True)
     p.add_argument("--state-files", type=int, default=0)
     p.add_argument("--state-bytes", type=int, default=1024)
