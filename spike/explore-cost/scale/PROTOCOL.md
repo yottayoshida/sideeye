@@ -167,6 +167,35 @@ this page says so before the grid rather than concluding "no difference was foun
 The grid reports both with their individual values; what it does not do is claim a mode or a
 checker cost.
 
+### The first grid ran on a loaded host, and what happens to both runs is decided here
+
+The first full grid (`grid-2026-09-20-loaded-host.tsv`, 150 rows, no refusals) was measured
+while this machine was also running other work — review subagents, in this same session. It
+shows it. Across the 48 cells with all three repetitions, **repetition 3 is the fastest in
+almost every one** (median 1.00 of the cell's fastest, worst 1.26) while repetition 2 sits at
+1.52 and repetition 1 at 1.13. The within-cell spread has a **median of 1.58× and a maximum of
+2.38×**; `../RESULTS-AT-SCALE.md` reports 1.08× to 1.58× for three consecutive runs of one cell,
+so the median here is the old record's worst case.
+
+**Decided before the second run, so that re-running is not a search for a better answer:**
+
+1. **Both runs are kept and both are published.** The loaded one is not deleted and not
+   described as a mistake: it is the measurement of this benchmark under host contention, which
+   is a fact a CI user shares.
+2. **The quiet run is the record for absolute figures** — wall time, per-world, and the
+   comparison against the declared reading. It is a second run on the same machine with nothing
+   else of this session's running.
+3. **Ratios are computed within a run, never across the two.** The state-size multiplier, the
+   observation-mode difference and the checker difference all divide two cells measured under
+   the same conditions, so contention cancels; the absolute seconds do not.
+4. **If the quiet run's spread is no better, that is the answer** and the absolute figures are
+   reported as upper bounds with the spread beside them. There is no third run.
+
+Repetition 3 of the loaded run already matches the declared reading closely, and **that is not
+the reason for re-running** — picking it would be choosing a subset after seeing the result.
+The reason is that a figure taken while the machine was doing something else is not the figure
+this page said it would publish.
+
 **What would make this a problem**, stated now rather than after the numbers: an operation a
 project would plausibly run in CI taking longer than its other checks, or a resource growing
 faster than the world count. **If the measured envelope stays inside these figures, the correct
