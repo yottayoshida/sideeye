@@ -376,6 +376,13 @@ def selftest():
         f.write("#!/bin/sh\n"
                 "# `version` answers so the probe passes; `explore` writes a report at --json.\n"
                 "[ \"$1\" = version ] && { echo 'fake 0.0.0'; exit 0; }\n"
+                "# Deliberately slow enough to measure. Without it the stub finishes inside the\n"
+                "# third decimal `wall_s` is rounded to, `wall_s` reads 0.000, and the divisor\n"
+                "# check below compares three candidates against zero — where the SMALLEST wins\n"
+                "# and the case fails for a reason that has nothing to do with the divisor. It\n"
+                "# passed on a loaded machine and failed on an idle one, which is the wrong way\n"
+                "# round for a test to be sensitive to.\n"
+                "sleep 0.05\n"
                 "while [ $# -gt 0 ]; do [ \"$1\" = --json ] && out=$2; shift; done\n"
                 "printf '%s' '{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\","
                 "\"crash_points\":9,\"explored\":10,\"oracle_verified\":false,"
@@ -410,10 +417,15 @@ def selftest():
     # against `wall / 10` directly and failed on the rounding rather than on the logic.
     wall = float(row[at["wall_s"]])
     per = float(row[at["per_world_s"]])
-    closest = min((10, 9, 7), key=lambda n: abs(per * n - wall))
-    check("per-world divides by the reported world count",
-          closest == 10,
-          "wall=%s per=%s; best divisor looks like %d" % (wall, per, closest))
+    if wall <= 0.0:
+        check("per-world divides by the reported world count", False,
+              "wall_s rounded to %s, so no divisor can be told from another; the stub must "
+              "take longer than the column's precision" % row[at["wall_s"]])
+    else:
+        closest = min((10, 9, 7), key=lambda n: abs(per * n - wall))
+        check("per-world divides by the reported world count",
+              closest == 10,
+              "wall=%s per=%s; best divisor looks like %d" % (wall, per, closest))
     check("the cell path fills the row's verdict from the report",
           row[at["verdict"]] == "PASS", row[at["verdict"]])
     os.remove(stub)
