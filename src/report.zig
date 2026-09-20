@@ -286,6 +286,50 @@ pub var apparatus_declared: []const []const u8 = &.{};
 /// carries no field.
 pub var scratch_declared: []const []const u8 = &.{};
 
+/// How many judged paths the report lists before it starts counting instead (#638, ADR 0079).
+/// The state tree has no entry ceiling — `max_state_tree_bytes` bounds held memory, which a
+/// tree of many small files reaches at a count in the millions — so an unbounded array would
+/// be the one field that scales with the target's tree. The largest judged set measured while
+/// authoring real defines was fourteen (`spike/authoring-cost/RESULTS.md`, `genisoimage`);
+/// this is seventy times that, and a run that reaches it is telling its author to narrow the
+/// state directory rather than to read the list.
+pub const max_judged_paths_listed: usize = 1000;
+
+/// The second ceiling, and the one that bounds the document: how many bytes of path names the
+/// array carries before it starts counting instead.
+///
+/// The entry ceiling alone does not bound the report. `contract.max_path` is 4096, so a
+/// thousand entries is four megabytes of names before escaping, and `jsonString` expands a
+/// control byte to `\uXXXX` and an invalid UTF-8 byte to `\ufffd` — six bytes each. **The MCP
+/// server reads the report with a 4 MiB cap** (`mcp.zig`) and answers a larger one with a tool
+/// error, so without this a wide enough state tree would turn a real verdict into "sideeye
+/// produced no report". Before this field existed nothing in the report grew with the target's
+/// tree and that ceiling was unreachable; this keeps it that way.
+///
+/// 64 KiB of names is ~1000 paths at 64 bytes each, so it does not bind before the entry
+/// ceiling on anything shaped like a define a person wrote, and 384 KiB after the worst-case
+/// escaping leaves the MCP cap an order of magnitude of room.
+pub const max_judged_paths_bytes: usize = 64 * 1024;
+
+/// The L0 judged set as data (#638, ADR 0079): every path the built-in atomicity form judged,
+/// read from the same plan the judgement reads (ADR 0004). `l0` says how many and in which
+/// two forms; this says which. Set together with `l0_classified` by `publishJudgedPaths`, so
+/// a refusal raised before the classification existed carries neither field — the presence
+/// rule `apparatus` and `scratch` follow, keyed on a different fact.
+pub var l0_judged_paths: []const []const u8 = &.{};
+
+/// How many judged paths `l0_judged_paths` does NOT list. Zero is the common case and says
+/// the array is the whole set; non-zero is the reading that matters, because the promise the
+/// page makes is "the whole set, or a PREFIX of it and a count of the rest", never "the whole
+/// set". A prefix rather than a fixed count: either ceiling can bind first, and an allocation
+/// failure leaves no names at all with every path counted here.
+pub var l0_judged_paths_omitted: u32 = 0;
+
+/// Whether the run reached L0 classification. Not derivable from the two above: a run whose
+/// judged set is legitimately empty — a define that declared everything scratch — publishes an
+/// empty array with nothing omitted, and that is a different fact from never having classified.
+pub var l0_classified: bool = false;
+
 /// The recovery account (#606, ADR 0072): what the run did about a declared recovery, as a
 /// sentence. Null until the define was read and found to declare one, so a report from a
 /// define without `[recovery]` — and a refusal raised before the define was read — carries no
@@ -629,6 +673,51 @@ pub fn buildL0Note(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
         names.appendSlice(arena, more) catch return base;
     }
     return std.fmt.allocPrint(arena, "{s}; {d} path(s) matched by scratch, not judged (declared: {s})", .{ base, plan.scratch_matched, names.items }) catch base;
+}
+
+/// Publish the judged set as data (#638, ADR 0079), from the same plan `buildL0Note` counts
+/// and `judgeL0` walks.
+///
+/// **The plan is the only argument, and that is the design.** The set is not "the post
+/// snapshot minus scratch": `classifyWith` keeps a path only where pre and post BOTH hold it
+/// and both kinds are ones the built-in invariants compare. A projection handed a snapshot
+/// could quietly answer the wrong question; one handed the plan cannot reach a snapshot to
+/// get it wrong (`rules/memory` calls this preferring impossible over detected).
+///
+/// The paths are duped into the caller's arena rather than borrowed. `PlannedFile.rel`
+/// borrows from the pre snapshot, which `main` frees on a defer of its own; the report is
+/// built before that today, and this removes the coupling rather than relying on it.
+pub fn publishJudgedPaths(arena: std.mem.Allocator, plan: engine.L0Plan) void {
+    l0_classified = true;
+    const total = plan.files.items.len;
+    // Both ceilings, whichever binds first, decided before anything is allocated so the
+    // array's length and the omitted count are two readings of one number.
+    var listed: usize = 0;
+    var bytes: usize = 0;
+    while (listed < total and listed < max_judged_paths_listed) : (listed += 1) {
+        const next = bytes + plan.files.items[listed].rel.len;
+        if (next > max_judged_paths_bytes) break;
+        bytes = next;
+    }
+    // An allocation failure must not turn into a silent lie. The count stays true and every
+    // path reads as one this report did not name, which is exactly what happened.
+    const out = arena.alloc([]const u8, listed) catch return omitAll(total);
+    for (out, plan.files.items[0..listed]) |*slot, f| {
+        slot.* = arena.dupe(u8, f.rel) catch return omitAll(total);
+    }
+    l0_judged_paths = out;
+    l0_judged_paths_omitted = countedOmitted(total - listed);
+}
+
+fn omitAll(total: usize) void {
+    l0_judged_paths = &.{};
+    l0_judged_paths_omitted = countedOmitted(total);
+}
+
+/// Saturating rather than `@intCast`: the field is a count a reader compares against zero,
+/// and a tree wide enough to overflow it would take the report down with a panic instead.
+fn countedOmitted(n: usize) u32 {
+    return if (n > std.math.maxInt(u32)) std.math.maxInt(u32) else @intCast(n);
 }
 
 fn buildL0NoteBase(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
@@ -1260,6 +1349,15 @@ fn buildJson(
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": ");
     try w.appendSlice(arena, notTestedJson());
+    // #638, ADR 0079. LAST in the document, and the position is the decision: this is the only
+    // field whose length grows with the target's state tree, so anywhere else it pushes back
+    // the fields a reader of a FAIL needs first — `message`, `next_step`, `earliest`. Written
+    // here it moves no existing byte. Present only on a run that reached classification, so a
+    // SETUP ERROR raised before the define was read carries neither field.
+    if (l0_classified) {
+        try jsonArrayField(w, arena, "l0_judged_paths", l0_judged_paths, false);
+        try w.print(arena, ",\n  \"l0_judged_paths_omitted\": {d}", .{l0_judged_paths_omitted});
+    }
     try w.appendSlice(arena, "\n}\n");
     return buf.items;
 }
@@ -1744,4 +1842,187 @@ test "the checker and marker accounts say none was configured only once every so
     // touches only the flag.
     try std.testing.expectEqualStrings(checkerNoteFor(.unparsed), checker_note);
     try std.testing.expectEqualStrings(l1NoteFor(.unparsed), l1_note);
+}
+
+/// Save and restore the three globals `publishJudgedPaths` writes. `zig build test` runs the
+/// tests of one file in a shared binary, so a test that publishes a judged set would otherwise
+/// leave it in front of whatever calls `buildJson` next — the shape the `scratch_declared` test
+/// above uses by hand, factored out here because four tests need it rather than one.
+const SavedJudged = struct {
+    paths: []const []const u8,
+    omitted: u32,
+    classified: bool,
+
+    fn save() SavedJudged {
+        return .{ .paths = l0_judged_paths, .omitted = l0_judged_paths_omitted, .classified = l0_classified };
+    }
+
+    fn restore(self: SavedJudged) void {
+        l0_judged_paths = self.paths;
+        l0_judged_paths_omitted = self.omitted;
+        l0_classified = self.classified;
+    }
+};
+
+/// A snapshot fixture that can carry kinds. `engine.testSnapshot` hardcodes `.file`, and the
+/// set this file publishes is defined partly by the kinds `classifyWith` declines to compare.
+fn snapshotWithKinds(gpa: std.mem.Allocator, entries: []const engine.Entry) !engine.Snapshot {
+    var snap: engine.Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    errdefer snap.arena.deinit();
+    const a = snap.arena.allocator();
+    for (entries) |e| try snap.entries.append(a, .{
+        .rel = try a.dupe(u8, e.rel),
+        .kind = e.kind,
+        .content = try a.dupe(u8, e.content),
+    });
+    try engine.finalizeEntries(&snap);
+    return snap;
+}
+
+test "the published judged set is the shared judged pairs, not the snapshot (#638, ADR 0079)" {
+    // The field's whole point is the SET, and every acceptance fixture holds nothing but
+    // shared regular files — so "the post snapshot minus scratch" passes all of them while
+    // answering a different question. What `classifyWith` excludes is pinned here instead:
+    // a path the operation created, a path it deleted, a kind the invariants cannot compare,
+    // and a declared scratch path. A symlink present on both sides is judged (#122), so it
+    // is in the fixture as the control against "regular files only".
+    //
+    // The unsupported kind is `file -> FIFO`, and the spelling is the point. `classifyWith`
+    // walks the PRE entries, so a post-only FIFO never reaches its kind test at all — it is
+    // dropped by the presence rule, exactly as `new.json` is, and a leg written that way
+    // measures nothing about kinds (review caught this: the first version of this fixture had
+    // `pipe` post-only and the kind test could be deleted with the suite still green). A pair
+    // unsupported on BOTH sides cannot occur either, because `refuseUnsupportedEntry` reads the
+    // initial snapshot before classification; it reads the final one AFTER, which is what makes
+    // a path that was a file and became a FIFO the reachable spelling and this leg a real one.
+    const gpa = std.testing.allocator;
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+
+    var pre = try snapshotWithKinds(gpa, &.{
+        .{ .rel = "gone.json", .kind = .file, .content = "the operation deletes this\n" },
+        .{ .rel = "key.json", .kind = .file, .content = "key=1\n" },
+        .{ .rel = "link", .kind = .symlink, .content = "key.json" },
+        .{ .rel = "nondet.txt", .kind = .file, .content = "before\n" },
+        .{ .rel = "pipe", .kind = .file, .content = "a file the operation replaces with a FIFO\n" },
+    });
+    defer pre.deinit();
+    var post = try snapshotWithKinds(gpa, &.{
+        .{ .rel = "key.json", .kind = .file, .content = "key=2\n" },
+        .{ .rel = "link", .kind = .symlink, .content = "key.json" },
+        .{ .rel = "new.json", .kind = .file, .content = "the operation creates this\n" },
+        .{ .rel = "nondet.txt", .kind = .file, .content = "after\n" },
+        .{ .rel = "pipe", .kind = .other, .content = "" },
+    });
+    defer post.deinit();
+
+    const scratch = [_][]const u8{"nondet.txt"};
+    var plan = try engine.classifyWith(gpa, pre, post, &scratch);
+    defer plan.deinit();
+
+    const saved = SavedJudged.save();
+    defer saved.restore();
+    publishJudgedPaths(arena_state.allocator(), plan);
+
+    try std.testing.expect(l0_classified);
+    try std.testing.expectEqual(@as(u32, 0), l0_judged_paths_omitted);
+    // Equality, not containment: a containment test passes for an implementation that
+    // publishes the whole snapshot, which is the implementation this exists to reject.
+    const want = [_][]const u8{ "key.json", "link" };
+    try std.testing.expectEqual(want.len, l0_judged_paths.len);
+    for (want, l0_judged_paths) |w, got| try std.testing.expectEqualStrings(w, got);
+}
+
+test "a judged set past the cap is truncated and the remainder counted (#638, ADR 0079)" {
+    // One over the cap, so the boundary is measured rather than a round number well past it.
+    const gpa = std.testing.allocator;
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    const n = max_judged_paths_listed + 1;
+    const entries = try arena.alloc(engine.Entry, n);
+    for (entries, 0..) |*e, i| {
+        e.* = .{ .rel = try std.fmt.allocPrint(arena, "f{d:0>6}.txt", .{i}), .kind = .file, .content = "x" };
+    }
+    var pre = try snapshotWithKinds(gpa, entries);
+    defer pre.deinit();
+    var post = try snapshotWithKinds(gpa, entries);
+    defer post.deinit();
+
+    var plan = try engine.classifyWith(gpa, pre, post, &.{});
+    defer plan.deinit();
+    try std.testing.expectEqual(n, plan.files.items.len);
+
+    const saved = SavedJudged.save();
+    defer saved.restore();
+    publishJudgedPaths(arena, plan);
+
+    try std.testing.expectEqual(max_judged_paths_listed, l0_judged_paths.len);
+    try std.testing.expectEqual(@as(u32, 1), l0_judged_paths_omitted);
+    // The names are the plan's order, which is the snapshot's sorted order — so the one
+    // left out is the last, and a reader who sees a non-zero count knows the list is a
+    // prefix rather than a sample.
+    try std.testing.expectEqualStrings("f000000.txt", l0_judged_paths[0]);
+    try std.testing.expectEqualStrings("f000999.txt", l0_judged_paths[max_judged_paths_listed - 1]);
+}
+
+test "the judged set stops at the byte ceiling before the entry ceiling (#638, ADR 0079)" {
+    // The entry ceiling alone does not bound the document, and the MCP server answers a report
+    // over 4 MiB with a tool error rather than a verdict — so a wide tree of long names has to
+    // stop on bytes. Names here are long enough that the byte ceiling binds first: the entry
+    // count stays well under `max_judged_paths_listed` and the array is shorter still.
+    const gpa = std.testing.allocator;
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    const name_len = 512;
+    const n = 400; // 400 * 512 = 200 KiB of names, over the 64 KiB ceiling, under 1000 entries
+    const entries = try arena.alloc(engine.Entry, n);
+    for (entries, 0..) |*e, i| {
+        const rel = try arena.alloc(u8, name_len);
+        @memset(rel, 'x');
+        _ = std.fmt.bufPrint(rel[0..8], "f{d:0>6}/", .{i}) catch unreachable;
+        e.* = .{ .rel = rel, .kind = .file, .content = "x" };
+    }
+    var snap = try snapshotWithKinds(gpa, entries);
+    defer snap.deinit();
+
+    var plan = try engine.classifyWith(gpa, snap, snap, &.{});
+    defer plan.deinit();
+    try std.testing.expectEqual(n, plan.files.items.len);
+
+    const saved = SavedJudged.save();
+    defer saved.restore();
+    publishJudgedPaths(arena, plan);
+
+    // The entry ceiling did not bind — that is what makes this a test of the other one.
+    try std.testing.expect(l0_judged_paths.len < max_judged_paths_listed);
+    try std.testing.expectEqual(n - l0_judged_paths.len, @as(usize, l0_judged_paths_omitted));
+    var bytes: usize = 0;
+    for (l0_judged_paths) |q| bytes += q.len;
+    try std.testing.expect(bytes <= max_judged_paths_bytes);
+    // And it stopped AT the ceiling rather than well short of it: one more name would cross.
+    try std.testing.expect(bytes + name_len > max_judged_paths_bytes);
+}
+
+test "a run that classified an empty judged set is not a run that never classified (#638)" {
+    const gpa = std.testing.allocator;
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+
+    var empty = try snapshotWithKinds(gpa, &.{});
+    defer empty.deinit();
+    var plan = try engine.classifyWith(gpa, empty, empty, &.{});
+    defer plan.deinit();
+
+    const saved = SavedJudged.save();
+    defer saved.restore();
+    l0_classified = false;
+    publishJudgedPaths(arena_state.allocator(), plan);
+
+    try std.testing.expect(l0_classified);
+    try std.testing.expectEqual(@as(usize, 0), l0_judged_paths.len);
+    try std.testing.expectEqual(@as(u32, 0), l0_judged_paths_omitted);
 }

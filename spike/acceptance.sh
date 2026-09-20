@@ -4387,6 +4387,45 @@ if ! grep -q '"scratch"' "$SD/scratch.json" 2>/dev/null; then
     echo "FAIL the scratch fixture carries no scratch field, so the schema check below cannot see the row it documents"
     fails=$((fails + 1))
 fi
+# The judged set as data (#638, ADR 0079), end to end on the fixture whose shape the
+# authoring-cost study measured: one path declared scratch, one path judged and never
+# violating. `lmdb-utils` ended on exactly this — `scratch = ["data.mdb"]`, judging the one
+# file its subject had already identified as non-durable, which no FAIL ever named because
+# it never broke.
+#
+# Asserted as SET EQUALITY, not containment. A containment test passes for an implementation
+# publishing the whole post snapshot, and that implementation is what this exists to reject:
+# it would carry `nondet.txt` — the path the define took OUT of the judgement — and say the
+# run judged what it was told not to look at.
+judged=$(python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1]))
+print("MISSING" if "l0_judged_paths" not in d else ",".join(sorted(d["l0_judged_paths"])))
+' "$SD/scratch.json" 2>/dev/null)
+if [ "$judged" != "key.json" ]; then
+    echo "FAIL the scratch fixture's l0_judged_paths is '$judged', wanted exactly 'key.json' (scratch must not be judged, and the field must be present)"
+    fails=$((fails + 1))
+else
+    echo "ok   the judged set is published as data and holds the judged path alone (#638)"
+fi
+if ! grep -q '"l0_judged_paths_omitted": 0' "$SD/scratch.json" 2>/dev/null; then
+    echo "FAIL the scratch fixture does not carry l0_judged_paths_omitted: 0, so the array is not known to be the whole set"
+    fails=$((fails + 1))
+fi
+# The other half of the presence rule: a SETUP ERROR raised before the define was read
+# classified nothing, and must carry NEITHER field. Without this leg, "present on every run"
+# and "present when classified" are indistinguishable, and the page documents the second.
+setup_fields=$(python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(",".join(k for k in d if k.startswith("l0_judged_paths")) or "none")
+' "$SD/setup.json" 2>/dev/null || echo "UNREADABLE")
+if [ "$setup_fields" != "none" ]; then
+    echo "FAIL the SETUP_ERROR fixture's judged-set fields are '$setup_fields', wanted 'none' (that run never reached L0 classification; UNREADABLE means the fixture itself is missing)"
+    fails=$((fails + 1))
+else
+    echo "ok   a run that never classified carries neither judged-set field (#638)"
+fi
 # A report for the fields only a declared recovery carries (#606, ADR 0072): the account
 # string, and the recovery object inside BOTH exhibits — TOY_SPLIT_REWRITE's two exhibits are
 # different worlds, and recover-split.sh passes one and fails the other, so `command_exit`,

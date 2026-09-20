@@ -348,6 +348,20 @@ buys — the row landing earlier — the next sweep buys again anyway. **(A) is
 taken.** (B) is recorded because it is the shape to move to if
 `spike/freeze-audit/` ever stops being sweep-owned.
 
+**For the next sweep (#638, 2026-09-20):** the report gained `l0_judged_paths` and
+`l0_judged_paths_omitted` (ADR 0079), two plain additive fields with no closed set. The
+extraction that exists for `schema_fields` **cannot see them, and the reason is older than
+they are**: `spike/freeze-audit/surface-sets.sh` matches a field as ``^| `[a-z_]+` ``, and no
+name holding a digit satisfies it — `l0` and `l1` have been outside the extracted set from the
+start: the schema-field rungs compared 33 extracted names against the 35 top-level names the page
+documented before this change, and 37 after it.
+Widening the pattern to `[a-z0-9_]+` is a one-character change and it moves the extracted set,
+so it belongs to the sweep that re-reads the surfaces and moves the pin in the same commit, not
+to the change that noticed it. Until then the two fields are held by
+`spike/check-report-schema.py` (page ↔ generated reports, both directions) and by the legs in
+`spike/acceptance.sh`; `docs/contract-freeze.md` says in its surface-2 paragraph that the
+extraction does not cover them, so nobody reads "a sweep will pick it up" as a mechanism.
+
 **For the next sweep (#518, 2026-09-09):** the report gained a second closed set,
 `setup_error_reason` (five classes, `contract.SetupErrorReason`, ADR 0057). No
 extraction exists for it — `spike/freeze-audit/surface-sets.sh` still names six

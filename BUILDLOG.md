@@ -2,6 +2,97 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-20 — the judged set as data, and three things the plan had wrong (#638, ADR 0079)
+
+**What this implements.** `l0_judged_paths` and `l0_judged_paths_omitted`: the set the built-in
+atomicity form judged, as data. ADR 0078 filed this rather than building it beside the study
+that found it, and left the bound open. It is a thousand entries with the remainder counted
+(owner ruling, 2026-09-20), chosen against two measurements rather than a feeling: the largest
+judged set any of the four authoring runs reached was fourteen (`genisoimage`), and the state
+tree has no entry ceiling at all — `max_state_tree_bytes` bounds held memory at 256 MiB, which a
+tree of small files reaches in the millions. Unbounded, this would have been the one field in
+the report that scales with the target's tree.
+
+**Three things the plan got wrong, all found by the blind reviewer, none by me.**
+
+*The field was going to be called `judged_paths`.* `judgeL1` judges the post-only entries'
+durability and the pre-only entries' absence, and neither enters the L0 plan — so a marker run
+has paths that are judged and would not have appeared. `docs/report-schema.md` says a field
+changes name before it changes meaning, which would have made reporting the L1 set later a
+break. It is `l0_` prefixed now and that door stays additive.
+
+*The placement argument ran backwards.* The plan put the field right after `scratch` and cited a
+measurement for it: the `lmdb-utils` subject read `head -c 3000` of its report at `07:49:40`
+(measured in the transcript, along with the fact — which I had assumed the other way and was
+wrong about — that the subject passed `--json` on both of its last two runs and grepped the
+file). The reviewer pointed out that the JSON order there is
+`scratch → message → next_step → earliest`, so putting a tree-sized array at the front pushes
+every diagnostic a reader of a FAIL needs first out of that same window. And three thousand
+bytes of this document is not valid JSON in any case. It is written last now, where it displaces
+nothing, and that is the whole reason.
+
+*The falsifiable checks could not tell the judged set from the snapshot.* Every acceptance
+fixture holds nothing but shared regular files, so "the post snapshot minus scratch" would have
+passed all three checks the plan listed while answering a different question. Measured, not
+argued: `classifyWith` was mutated to append post-only entries and the suite run — the new
+`report.zig` test killed it, along with two existing `judge.zig` tests. The cap was mutated to a
+million and the truncation test killed that one alone. The projection function takes the
+`L0Plan` and nothing else, so it has no snapshot in scope to get wrong; the test is the belt.
+
+**The diff review found a regression I had introduced and a test that measured nothing.**
+
+*The entry cap alone did not bound the report, and the MCP surface has a 4 MiB ceiling.*
+`src/mcp.zig` reads the report with `readFile(arena, temp_json, 4 * 1024 * 1024)` and answers a
+larger one with a tool error rather than a verdict. A thousand entries is four megabytes at
+`contract.max_path`, before `jsonString` expands a control byte to six. Until this field nothing
+in the report grew with the target's tree, so that ceiling was unreachable — a count-only bound
+would have made it reachable and turned a PASS into "sideeye produced no report". The count
+stays, because it is what the owner chose and what the frozen page can state plainly; a second
+ceiling of 64 KiB of names now sits beside it and is the one that actually bounds the document.
+ADR 0079's rejected-alternatives row said the opposite before this and now says why both.
+
+*The unjudged-kind leg of the new test was measuring nothing.* The fixture had `pipe` as a
+post-only FIFO, and `classifyWith` walks the PRE entries — so that element was dropped by the
+presence rule and never reached the kind test at all, exactly as `new.json` is. Deleting
+`if (!isJudgedKind(po.kind)) continue;` left the suite green. The reachable spelling is a path
+that was a regular file and became a FIFO: classification runs before
+`refuseUnsupportedEntry` sees the final snapshot, which is what makes that state occur. With the
+fixture fixed, the mutation is killed by this test and **by no other** — nothing else in the
+suite covered that line.
+
+*Three sentences in the new documentation were false as written.* "never the size of the set"
+is wrong on every run with no history-form file, which is most of them (`buildL0NoteBase` prints
+`plan.files.items.len` outright when `history_count == 0`). "the first 1000 in sorted order" is
+wrong in the out-of-memory branch, where the array is empty. And "it reports the same set
+`l0_judged_paths` names" ignored that `reconcileOrRefuse` appends a third count to `l0` about a
+subtree a rename moved in from outside the judged root. All three now say what is true.
+
+*A leg that could not go red.* The SETUP_ERROR leg was `grep -q ... 2>/dev/null`, which exits
+non-zero — passes — when the fixture is missing. It reads the keys through python now and a
+missing file prints `UNREADABLE`, which fails; verified on synthetic input, along with the
+leaked-fields case.
+
+**And one the review found that this change does not fix.** `spike/freeze-audit/surface-sets.sh`
+extracts a schema field as ``^| `[a-z_]+` ``, so no name holding a digit is in the extracted set:
+`l0` and `l1` have been outside it from the start, and these two join them: 33 extracted names
+against the 35 top-level names the page documented before this change, 37 after it (counted, and
+the first version of this paragraph gave the post-change number as though it were the old one). `docs/contract-freeze.md` and ADR 0079 both said the missing
+`surface-changes.tsv` row "arrives when a sweep re-reads the surfaces", which reads as a mechanism
+and is not one for these names. Widening the pattern moves the extracted set away from the pin,
+which `check-freeze-audit.sh` says in as many words is a sweep's job and not a change's. Not
+filed as an issue: `docs/freeze-audit.md` already carries the channel for this — a "For the next
+sweep" note, as `setup_error_reason` has had since #518 — and a second channel for the same
+message is a second place to forget. The note is written there, and both pages now say the
+extraction does not cover these names.
+
+**What was dropped.** The plan also called for an end-to-end truncation leg in
+`spike/acceptance.sh` with a 1001-entry state directory. Dropped: every world restores and
+re-snapshots that tree, so the leg costs real CI time to re-measure a pure function a
+mutation-proven unit test already covers. The acceptance suite gets the two legs that are
+genuinely end-to-end instead — the set on the scratch fixture, asserted as equality rather than
+containment, and the absence of both fields on the SETUP_ERROR fixture, which is the half of the
+presence rule that "present on every run" would otherwise satisfy.
+
 ## 2026-09-19 — the study's primary count was the wrong count (#618, merge 3 of 3)
 
 **What this merge concludes.** The repeated authoring cost is updating the judged set — which
