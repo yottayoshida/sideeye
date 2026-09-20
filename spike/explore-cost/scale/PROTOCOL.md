@@ -133,6 +133,40 @@ the pilot to the grid's container, small state, with a strict oracle:
 
 On the large state, multiply by about thirteen: roughly 3 s, 20 s and 50 s.
 
+### The second clause, declared before the grid's rows are read
+
+The decision rule below has two halves, and the first draft of this page gave an expectation
+only for the first (wall time). That is not enough to apply it: the second half is "a resource
+growing faster than the world count", and **the pilot already shows one**. Rows 1 and 3 of
+`pilot-2026-09-20.tsv` put `trace_bytes` at 881,520 over 103 worlds and 80,801,520 over 1,003 —
+**91.7× for 9.74× the worlds**, where a square would predict 94.8×. Per-world trace goes from
+8.6 KB to 80.6 KB, because the engine keeps one trace per world and each trace holds the whole
+operation, which is itself N.
+
+So this is written now, **while the grid is still running and before any of its rows have been
+looked at**, rather than after:
+
+| resource | expected shape | how it will be read |
+|---|---|---|
+| wall time | rises with worlds, per-world flattening (pilot: 2.1× per-world over 10× worlds) | inside the table above → not a problem |
+| `trace_bytes`, `work_final_bytes` | **quadratic in the world count**, ~80 MB at 1,000 crash points on this toy | **this is the designed consequence of one-trace-per-world, not a discovery.** It is a problem only if the absolute figure reaches a scale a CI job cannot hold — the test is the number of bytes, not the exponent |
+| peak RSS | rises with the **state tree**, not with the world count (pilot: 11.7 MB at one file, 69.3 MB at 20 MB of padding, at the same world count) | a rise with worlds instead would be the second clause firing |
+
+**What this concedes:** the second clause, read as written, is satisfied by a resource that was
+always going to grow that way, and saying so afterwards would have been reading the rule to fit
+the numbers. The clause is therefore narrowed here, in public, before the numbers: growth faster
+than the world count counts as a problem **when the absolute size becomes one**, and the
+threshold is stated as bytes so that the grid can fail it.
+
+### Repetitions, and what three of them cannot separate
+
+The pilot put `syscalls` at 1.10× of `wrappers` and a cheap checker at 1.09×. `../RESULTS-AT-SCALE.md`
+records the spread of three consecutive runs of one cell at **1.08× to 1.58×**. The spread is
+larger than either effect, so **three repetitions cannot tell these two apart from noise**, and
+this page says so before the grid rather than concluding "no difference was found" afterwards.
+The grid reports both with their individual values; what it does not do is claim a mode or a
+checker cost.
+
 **What would make this a problem**, stated now rather than after the numbers: an operation a
 project would plausibly run in CI taking longer than its other checks, or a resource growing
 faster than the world count. **If the measured envelope stays inside these figures, the correct
