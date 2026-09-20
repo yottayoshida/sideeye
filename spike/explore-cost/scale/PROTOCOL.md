@@ -9,6 +9,10 @@ committed before final numbers are published".
 The grid itself, and the conclusion about whether crash-point budgeting is warranted, are the
 second merge. **Nothing here says exploration is or is not affordable.**
 
+> Added with the second merge, and the only line on this page written after the numbers existed:
+> the grid, the anchor and the conclusion are `RESULTS.md` beside this file. Everything else here
+> is as it was committed, including the parts the measurement did not bear out.
+
 ## The target
 
 `spike/toys/toy_scale.c`. `rotate <N>` performs N create-write-unlink cycles on one temporary

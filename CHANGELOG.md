@@ -8,6 +8,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **What an exhaustive exploration costs, measured from 10 to 1000 crash points, and the
+  decision that follows from it: nothing** (#621 second of two, **ADR 0082**;
+  `spike/explore-cost/scale/RESULTS.md`, two 150-row grids and an anchor). A thousand crash
+  points — **fifty-five times the p90** of this repository's dogfood corpus and three-quarters of
+  the largest run it has on record — takes **4.2 seconds** on a one-file judged state and
+  **30 seconds** on a 20 MB one. The report grows by nine bytes across 77× the worlds; trace and
+  work bytes are quadratic and reach 45.8 MB at the top, which the protocol had declared in advance
+  would count only if the absolute size became a problem. So the rule written before the grid ran
+  applies as written and **no budget, sampling, `--max-worlds` or quick mode is added**, and no
+  follow-up issue is filed, because none of the measurements names a bottleneck for one. The
+  declaration is held in the other direction too: `syscalls` and a cheap checker are each slower
+  in **24 of 24 pairs**, a direction independent of how many repetitions were taken, and this
+  record attaches **no cost** to either because three repetitions cannot carry the magnitude.
+  Four things are published against the conclusion's own interest. **The memory reading in the
+  first draft was floors, not measurements** — every small-state row carries the instrument's own
+  note that the engine's `version` probe reached the same peak — and on the rows where the figure
+  is the exploration's own, RSS **does** rise with the world count, 5.1% over 77×, which the
+  pilot's shorthand had said it would not; the rule's own text ("growing faster than the world
+  count") is what is applied, with both readings stated. **The real-target anchor is 1.37×**, not
+  the 1.83× an earlier draft reached by dividing by the cheapest point on a U-shaped curve, and
+  it licenses no multiplier for real targets in general — on this repository's earlier host the
+  same define cost about five times *that* record's toys. Every figure comes from Docker Desktop on an Apple M4 and **not from a CI runner**,
+  and the clause as written is a ratio against a project's other checks that this record does not
+  compute. And the first grid, taken while the host was busy, is kept rather than discarded — it
+  shows this benchmark is sensitive to host load at the **2.4×** level, and what happened to both
+  runs was decided before the second one was taken.
 - **The apparatus for measuring what exhaustive exploration costs at scale, and its protocol,
   committed before any figures** (#621 first of two, **ADR 0081**; `spike/toys/toy_scale.c`,
   `spike/explore-cost/scale/`). #613 measured real targets and said outright that its sample
