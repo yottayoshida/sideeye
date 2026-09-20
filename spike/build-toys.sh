@@ -106,6 +106,12 @@ echo "building toy-stack"
 # platform-minimum thread and a patterned 256 KiB one, both doing interposed work.
 gcc $cc_flags -o "$out/toy-stack" "$root/spike/toys/toy_stack.c" -lpthread
 
+echo "building toy-scale"
+# The scale benchmark's target (#621, ADR 0081): N crash points from N temporary cycles, with
+# the judged state fixed at one file so the world count and the state size stay independent
+# axes. N is an argument so the parameter is readable from the command that ran the cell.
+gcc $cc_flags -o "$out/toy-scale" "$root/spike/toys/toy_scale.c"
+
 echo "building toy-rust"
 rustc -O -o "$out/toy-rust" "$root/spike/toys/toy_rust.rs"
 

@@ -8,6 +8,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **The apparatus for measuring what exhaustive exploration costs at scale, and its protocol,
+  committed before any figures** (#621 first of two, **ADR 0081**; `spike/toys/toy_scale.c`,
+  `spike/explore-cost/scale/`). #613 measured real targets and said outright that its sample
+  could not speak for the 100-plus class; this is the controlled instrument for that gap.
+  **The target moves one axis**: N create-write-unlink cycles on a temporary path give crash
+  points without growing the judged state, because a first draft that wrote N files cost six
+  times more per world and would have blamed the world count for the state tree — the
+  conflation #621 names. N is a command argument, so the parameter is readable from the
+  command that ran the cell, and the row carries the requested and reported crash-point counts
+  in separate columns — they differ at every one of the six grid points. Peak RSS is `getrusage(RUSAGE_CHILDREN).ru_maxrss` — the
+  maximum over waited-for descendants, bytes on macOS and KiB on Linux, both stated in the row
+  — rather than `/usr/bin/time -v`, which is not in `spike/Dockerfile` and would have meant
+  editing an image whose versions are pinned for another campaign. **A run that did not explore
+  produces no figures**, `measure.sh`'s rule, and the selftest holds it: an early version left
+  a refused run's memory figure in the column an explored run's sits in. The nine-cell pilot
+  is committed with the protocol, and four of its findings changed the work — the container is
+  **17× faster** than this host rather than slower (the plan and its review both assumed the
+  opposite direction), observation mode and a cheap checker each cost about 1.1×, **Sideeye
+  refuses a checker it cannot falsify** (`/bin/true` produced `checker_not_falsified` and no
+  numbers), and on small-state container cells **the engine's own `version` probe reaches the
+  same memory peak as the exploration**, so those rows say their RSS is a floor rather than
+  presenting it as the measurement. The grid, the real-target
+  anchor and the conclusion are the second merge; **nothing here says exploration is or is not
+  affordable**, and the protocol declares the reading it expects before the numbers exist.
 - **A CI quickstart that installs a released Sideeye instead of building one** (#620, **ADR 0080**;
   `.github/workflows/quickstart-release.yml`, `docs/ci-quickstart/release/`, `docs/ci-quickstart.md`).
   The existing quickstart is executable and CI keeps it honest, but adopting it asked a project

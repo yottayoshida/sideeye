@@ -2,6 +2,100 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-20 — measuring before budgeting: the apparatus, and four things measuring changed (#621, ADR 0081)
+
+**What this merge is.** The instrument and the protocol for #621, committed before the numbers
+because that is the issue's first acceptance condition. The grid and the conclusion are next.
+
+**Measuring while planning changed the design four times, and twice it contradicted a reviewer.**
+
+*The target was wrong.* The first shape did N write-and-rename pairs over N files, which grows
+the judged state with the crash-point count — the conflation #621 names outright. Measured, it
+cost about six times more per world, and every bit of that would have been read as the world
+count's doing. The shape that ships does N create-write-unlink cycles on a temporary path:
+temporaries are in neither snapshot, so the judged state stays one file, the run PASSes, and no
+case is saved to vary the cost. Crash points come out at exactly 3N.
+
+*The runtime estimate was wrong in both directions.* The plan said "about three and a half
+hours", from host figures. The blind review said that was one to two orders out and proposed
+extrapolating from a large-state, small-N cell on the premise that per-world cost does not
+depend on N. Measured on this machine, **it does** — the committed pilot has per-world at
+0.03443 s over 103 worlds and 0.07110 s over 1,003, a factor of about two — so that shortcut
+underestimates. And then the pilot found the thing neither of us had: **the container is about
+seventeen times FASTER than the host** (0.03443 against 0.00205 s/world), not slower, because
+per-world work is restoring and snapshotting a tree and Linux does that far more cheaply here.
+The grid is about a quarter of an hour, not three and a half. **So the runtime is no longer a
+reason to split this in two** — the reason that stands is the issue's acceptance condition, and
+the protocol says so rather than keeping the old justification.
+
+*`/usr/bin/time -v` is not in the container.* Review caught it; GNU time is a separate Debian
+package and adding it would run apt inside an image whose comment pins its versions for the
+blind-hunt candidates. `resource.getrusage(RUSAGE_CHILDREN).ru_maxrss` is the same number from
+the Python that already launches the engine, and it settles by definition the question the
+issue asked to be stated — the maximum over waited-for descendants, never the sum of processes
+alive at once. Its unit differs by platform, which this work hit rather than read about.
+
+*Sideeye refuses a checker it cannot falsify.* The cheap-checker leg was going to be
+`/bin/true`. It produced `UNKNOWN / checker_not_falsified` and no figures at all. The leg needs
+a checker that can fail, and `check-kept.sh` is that. **The harness is why this was visible**:
+an earlier version of it would have written the refusal as `0 worlds, 0 seconds`, and the
+checker leg would have been published as free.
+
+**The selftest earned itself twice on the day it was written.** It caught `not_counted` leaving
+a refused run's memory figure and work-directory size in the columns an explored run's sit in —
+the same defect as recording zero, one step subtler. And running the thing caught two more:
+`trace_bytes` and `work_final_bytes` were both the whole work directory, two labels over one
+number; and a cross-compiled engine run on the build host died in a traceback instead of
+refusing, which is now a `version` probe before anything is measured. That last one happened
+twice in one day, in two different pieces of work.
+
+**The blind review of the diff found one thing the apparatus does not do and four ways its own
+tests were softer than they read.** The missing thing is the metric: #621 asks for the work
+directory's **maximum** as well as its final size, `run-cell.py` could sample it, and
+`run-grid.sh` never asked — so the grid as written would have produced that column empty in
+every row while the protocol described how it was taken. There is a sampling pass now, and the
+pilot carries one of its rows.
+
+The four soft tests, each measured by the reviewer mutating this code rather than reading it:
+the selftest looped over `FIGURE_COLUMNS` to check `FIGURE_COLUMNS`, so dropping a column from
+the list removed the case guarding it and nothing went red; `run-grid.sh` indexed columns by
+number while the selftest indexed by name, so reordering `COLUMNS` left the suite green and the
+resume logic reading the wrong fields; and **the selftest never entered `run_cell` at all**, so
+changing `per_world_s`'s divisor from the reported world count to the requested crash points —
+the single easiest line here to get wrong — was green. The figure list is now pinned against a
+literal, the grid reads its column positions from `run-cell.py --header`, and a stand-in engine
+drives one whole cell so the division is covered; that last case was watched to fail under the
+reviewer's own mutation before it was kept.
+
+**And the pilot had to be thrown away and re-measured.** Adding a `checker_cmd` column — the
+review's point that two rows were otherwise indistinguishable, one with a checker the engine
+accepted and one with `/bin/true` — made the file hold rows of two different widths under one
+header. A record whose rows do not match its header is worse than no record, so all nine cells
+were re-run. The re-measurement immediately showed something the first pass had hidden: on every
+small-state container cell, **the engine's `version` probe reaches the same memory peak as the
+exploration**, so the RSS in those rows is a floor. The harness now says so in the row. The
+review had called that ordering issue small; on this hardware it applies to every small cell.
+
+**Numbers this entry's first draft got wrong**, all corrected against the committed record: the
+grid is 1,926 worlds a leg and not 1,916; **all six** grid points report a crash-point count
+different from the request, not five of six; the pilot is nine cells, not seven; and the
+protocol quoted a per-world series from drafting runs that were never committed while a
+committed pair measuring the same thing sat in the file beside it.
+
+**One claim in ADR 0081 was simply false.** It said the requested N "lands in the report's
+`operation` field", and that this was what made the reported-versus-requested claim checkable
+from a single report — the only stated reason for preferring an argument to an environment
+variable. **There is no `operation` field**, in the emitter or in the schema page. The ADR now
+carries the correction and a smaller reason that is true.
+
+**One correction, and then a correction to the correction.** A first draft of the protocol page
+claimed its pilot table was generated from `pilot-2026-09-20.tsv` when it had in fact been typed
+out, and this entry said so in as many words. The table **is** generated now — the whole pilot
+was re-measured after the `checker_cmd` column, and the table was written from the file by
+script in the same pass — so the sentence here calling it hand-transcribed became the false one.
+A page about not trusting numbers you did not measure is the worst place for either version to
+be wrong, and on one day it managed both directions.
+
 ## 2026-09-20 — the release quickstart, and a macOS lane the plan had wrong three ways (#620, ADR 0080)
 
 **What this ships.** A quickstart that installs a pinned release instead of building one, run by
