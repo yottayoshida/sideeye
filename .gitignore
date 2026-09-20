@@ -38,3 +38,8 @@ __pycache__/
 # evidence is its mechanical projection (timeline.tsv + meta.json).
 spike/onboarding-clock/runs/*/transcript.jsonl
 spike/onboarding-clock/runs/*/*.log
+
+# The release quickstart compiles its demo targets beside its define (#620); CI build output,
+# never committed — the source is spike/toys/toy.c and the workflow names the two compiles.
+docs/ci-quickstart/release/target-clean
+docs/ci-quickstart/release/target-bug

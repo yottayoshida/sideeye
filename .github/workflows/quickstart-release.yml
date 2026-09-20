@@ -1,0 +1,163 @@
+name: quickstart-release
+
+# This workflow IS the release quickstart (#620, ADR 0080): `docs/ci-quickstart.md` documents
+# this exact file, and it runs on every push to main and every pull request, so the path a new
+# adopter copies cannot quietly rot into fiction. The older `quickstart.yml` builds Sideeye from
+# source and stays as this repository's self-test; this one installs a published release and
+# never sees a Zig compiler.
+#
+# Its actions are pinned to commit SHAs rather than tags, which is this repository's own rule
+# (ADR 0061) and not something an adopter needs — copy it as it stands, or put the tags back and
+# let whatever keeps your actions current do the work.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Pinned, never `latest`: a build you did not choose must not be able to turn your gate red,
+  # or green. Moving this is a deliberate edit, which is the point.
+  SIDEEYE_VERSION: v1.5.0
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # Proves the installer can go red before it is trusted to say green — the platform map
+      # (including macOS's `arm64` against the asset's `aarch64`), an asset the release does not
+      # carry, an asset with no published digest, and a tampered download. No network.
+      - name: The installer's own failure cases still fail
+        run: sh docs/ci-quickstart/release/install-sideeye.sh --selftest
+
+      # The claim this workflow exists to make, asserted rather than implied. Grepping the YAML
+      # would not cover a script that shells out to zig; this looks at the machine.
+      - name: No Zig toolchain is present
+        run: |
+          if command -v zig >/dev/null 2>&1; then
+            echo "::error::zig is on PATH; this quickstart must not build Sideeye from source"
+            zig version
+            exit 1
+          fi
+          echo "no zig on PATH — Sideeye will come from a release asset"
+
+      # The oracle is installed separately from Sideeye and checked, because a run that silently
+      # loses its second witness reports a weaker claim under the same exit code.
+      - name: Install the completeness oracle
+        run: |
+          sudo apt-get update && sudo apt-get install -y strace
+          test -x /usr/bin/strace || { echo "::error::strace did not land at /usr/bin/strace"; exit 1; }
+
+      # The token is passed explicitly because Actions does not put one in the environment on
+      # its own, and the unauthenticated API limit is 60 requests an hour per source IP — shared
+      # across every job on GitHub's NAT, so a run could go red for someone else's traffic. The
+      # script works without it and says which way it went; this only buys the rate limit.
+      - name: Install Sideeye from the pinned release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bin=$(sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye")
+          echo "SIDEEYE_BIN=$bin" >> "$GITHUB_ENV"
+
+      - name: Build the demo targets
+        run: |
+          cc -O0 -o docs/ci-quickstart/release/target-clean spike/toys/toy.c -lpthread
+          cc -O0 -DBUGGY=1 -o docs/ci-quickstart/release/target-bug spike/toys/toy.c -lpthread
+
+      # The lane an adopter copies: a correct target, a verified PASS, `test "$rc" = 0`.
+      # No `--shim`: a release tarball unpacks flat and Sideeye looks beside itself (#78).
+      - name: Explore the correct target — this is your gate
+        run: |
+          rc=0
+          "$SIDEEYE_BIN" explore --config docs/ci-quickstart/release/sideeye-clean.toml \
+            --oracle /usr/bin/strace --json /tmp/clean.json || rc=$?
+          echo "sideeye exited $rc (0 clean / 1 counterexample / 2 refused / 3 setup error)"
+          test "$rc" = 0
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/clean.json"))
+          if d["schema"] != "sideeye/report": sys.exit(str(d))
+          # A PASS is not the whole claim: without this, a run whose oracle never agreed would
+          # gate the same as one whose did.
+          if not (d["verdict"] == "PASS" and d["oracle_verified"]):
+              sys.exit("wanted a verified PASS, got verdict=%s oracle_verified=%s"
+                       % (d["verdict"], d["oracle_verified"]))
+          print("verified PASS over", d["explored"], "worlds;", d["l0"])
+          PY
+
+      # The lane that makes the green above mean something: a target with a real bug must be
+      # caught. A Sideeye that explored nothing cannot produce this exit code.
+      - name: Explore a target with a planted bug — this must fail
+        run: |
+          rc=0
+          "$SIDEEYE_BIN" explore --config docs/ci-quickstart/release/sideeye-bug.toml \
+            --oracle /usr/bin/strace --json /tmp/bug.json || rc=$?
+          echo "sideeye exited $rc"
+          test "$rc" = 1
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/bug.json"))
+          e = d["earliest"]
+          print("verdict:", d["verdict"], "— crash point", e["crash_point"])
+          print("window: after", e["after"], "before", e["before"])
+          print("replay:", d["replay"])
+          PY
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: The installer's own failure cases still fail
+        run: sh docs/ci-quickstart/release/install-sideeye.sh --selftest
+
+      - name: No Zig toolchain is present
+        run: |
+          if command -v zig >/dev/null 2>&1; then
+            echo "::error::zig is on PATH; this quickstart must not build Sideeye from source"
+            zig version
+            exit 1
+          fi
+          echo "no zig on PATH — Sideeye will come from a release asset"
+
+      # The token is passed explicitly because Actions does not put one in the environment on
+      # its own, and the unauthenticated API limit is 60 requests an hour per source IP — shared
+      # across every job on GitHub's NAT, so a run could go red for someone else's traffic. The
+      # script works without it and says which way it went; this only buys the rate limit.
+      - name: Install Sideeye from the pinned release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bin=$(sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye")
+          echo "SIDEEYE_BIN=$bin" >> "$GITHUB_ENV"
+
+      - name: Build the demo target
+        run: cc -O0 -DBUGGY=1 -o docs/ci-quickstart/release/target-bug spike/toys/toy.c -lpthread
+
+      # **This lane carries no completeness oracle, and that is a decision** (ADR 0080). macOS's
+      # oracle is `fs_usage` under `sudo`, and `spike-fsusage.yml` — the only place this
+      # repository runs it — says in its first paragraph that it "must never be made a required
+      # check". A FAIL needs no oracle: the target has a real bug and the counterexample is
+      # evidence on its own, which is the same reason `ci.yml`'s macOS MCP leg runs without one.
+      # What this lane therefore does NOT establish on macOS is a verified PASS; the Linux job
+      # above is where that claim is made.
+      - name: Explore a target with a planted bug — this must fail
+        run: |
+          rc=0
+          "$SIDEEYE_BIN" explore --config docs/ci-quickstart/release/sideeye-bug.toml \
+            --json /tmp/bug.json || rc=$?
+          echo "sideeye exited $rc"
+          test "$rc" = 1
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/bug.json"))
+          e = d["earliest"]
+          print("verdict:", d["verdict"], "— crash point", e["crash_point"])
+          # Stated rather than assumed: this lane's PASS-side claim is not being made.
+          print("oracle_verified:", d["oracle_verified"], "(no oracle on this lane — see ADR 0080)")
+          PY
