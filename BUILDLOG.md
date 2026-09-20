@@ -2,6 +2,111 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-20 — the grid, and the measurement that was contaminated by the reviewer measuring it (#621, ADR 0082)
+
+**What this merge is.** The 150-cell grid, the real-target anchor and the conclusion #621 asked
+for. The conclusion is the one the protocol said was allowed if the envelope held: no feature
+follows. The instrument and the declaration are the merge before this one.
+
+**I contaminated my own measurement, and the record shows it.** The first grid ran while this
+same machine was running review subagents for other work. The rows admit it without being asked:
+across the 48 three-repetition cells, repetition 3 — the last to run, when the other work had
+finished — is the fastest in nearly every one, and the within-cell spread has a median of 1.58×
+and a maximum of 2.38×. Seeing a pattern that says "the machine got quieter as I went" is not the
+same as having a rule for what to do about it, and I had none. So **before re-running I committed
+the rule** (`14b66dd`): both runs are kept, the quiet one is the record for absolute figures,
+ratios are computed within a run so that contention cancels, and **if the quiet run were no
+better, that was the answer**. Writing the rule after seeing the second run would have been
+choosing a subset after seeing the result, which is exactly what this whole apparatus exists to
+stop. The quiet run's spread came back at 1.02× median, 1.08× max. Both TSVs are committed. The
+loaded run is not waste: the 2.4× is a real fact about running an exploration beside other work.
+
+**A test was passing because the machine was busy.** `run-cell.py --selftest` has a case that
+drives `run_cell` end to end against a stand-in engine and checks the per-world divisor by
+picking the "closest divisor" to the measured wall. On the now-quiet host the stub finished
+inside the third decimal of `wall_s`, `wall` rounded to `0.000`, the closest-divisor arithmetic
+picked 7 instead of 10, and the case went red — which stopped the grid, correctly, because
+`run-grid.sh` runs under `set -e`. The fix is a `sleep 0.05` in the stub and an explicit failure
+when wall rounds to zero, and the divisor mutation is still killed afterwards (checked, not
+assumed). The uncomfortable part is the diagnosis: **that assertion had been green for two days
+because the host was loaded**. Load was holding up a check of the arithmetic that the same load
+was distorting.
+
+**The second thing the selftest caught was itself.** Adding the anchor knobs (`--setup-cmd`,
+`--operation-cmd`, `--state-env`, `--label`) to the argument parser but not to the stub's `Args`
+class produced an `AttributeError` from inside the selftest. That is the reverse of a nuisance:
+it is the proof that the integration case really enters `run_cell` rather than testing helpers
+around it. The first version of this selftest, one merge ago, never entered `run_cell` at all and
+said nothing when the divisor was wrong.
+
+**The anchor's design was a subtraction, not an addition.** `measure-targets.sh` carries seven
+re-pathed defines and the obvious pick was the most expensive one in #613's table. Every
+candidate with a checker compares against a backup file *outside* the judged state, which would
+have meant either changing what is judged or declaring apparatus in the middle of a run whose
+whole point is to be ordinary. Picking timewarrior's checker-less leg dissolved three separate
+problems at once — the `--config` exclusivity, the state columns that would have been false, and
+the external backup file — and the answer it gives is the one that matters: the real target costs
+more per world than the toy, so the toy is the cheap side and the curve is not flattered by its
+own target. *(Written as **1.8×**; review showed that divided by the cheapest point on a U-shaped
+curve. Against the nearest world count it is **1.37×** — the direction stands, the figure moved.
+See below.)* The deterministic FAIL leg is there because the scale toy PASSes by construction and
+`case_bytes` is 0 in all 150 grid rows; the planted-bug toy gives the 538 bytes #621 asked for.
+
+**A third thing found by re-reading rather than by review.** Making `--toy` optional for the
+anchor left a path where giving only one of the two anchor knobs spells the engine command
+`None init`. The engine refuses that, and the harness would have filed the refusal as a
+`not-counted` **measurement** — a row saying "the engine refused" when the truth is "the harness
+was invoked wrong". It is refused up front now, before the version probe spawns anything, and the
+selftest case was seen red once by deleting the guard from a copy (exit 1 with the case reading
+`it ran`, exit 0 with the guard). Nothing in the committed rows came through that path — every
+anchor row carries both knobs — so this is a hole closed, not a figure corrected.
+
+**Blind review found two things wrong with the record, and both were mine reading past the
+instrument.** First, "a thousand crash points is five times the p90 of the dogfood corpus" — the
+repository's own figure is **p90 = 18**, so it is fifty-five times, and the sentence I wrote was
+the justification that the measured range covers real use. Second and worse: **the peak-RSS
+conclusion was built entirely out of rows the instrument had labelled as floors.** All 75
+small-state rows carry the note "the engine's `version` probe reached the same peak, so this
+figure is a floor rather than the exploration's own" — a disclosure the previous merge added
+precisely so a floor could not be published as a measurement — and I read the number and skipped
+the note. On the rows where RSS *is* the exploration's own, it rises 5.1% over 77× the worlds, so
+the pilot's "rises with the state tree, not with the world count" is false as written. The record
+now states both readings of the clause, applies the rule's own text ("growing faster than the
+world count", which memory misses by three orders of magnitude) and says that is a judgement
+rather than a threshold that moved.
+
+Two more from the same round. The anchor's **1.8×** divided timewarrior at 20 worlds by the toy
+at 52 — the minimum of a U-shaped curve, the farthest measured point, and the most flattering
+denominator available. Against the nearest point it is **1.37×**; both readings are now on the
+page. And the anchor and FAIL legs **existed only as commands I had typed**, on a page whose own
+standard for the pilot table was "generated by the command in this page's history, not
+transcribed" — `run-anchor.sh` is committed now, written after the fact and labelled as such.
+
+**The second round caught the first round's fix.** Correcting "the toy is 1.8× cheaper" meant
+saying what the anchor does *not* license, and to do that I cited this repository's earlier
+at-scale record as "six real defines, a 19× spread". That table has **seven** defines over five
+programs, **two of them its own toys**; the 0.014 s end of the range I quoted is a toy's figure;
+the real defines span **2.9×**; and the page's own sentence says **18×**, not 19. The same
+paragraph then correctly called 0.014–0.017 "that record's own toys" four lines later, so the
+page contradicted itself. The comparison that actually carries the point is toy-to-real on one
+machine — there the same timewarrior define cost about five times *that* record's toys, against
+1.37× this one — and that is what the page says now. Worth naming plainly: **a correction
+introduced a fresh misattribution in three files, in the paragraph whose subject was being
+careful about what a source supports.**
+
+Two more from the same round. The growth exponent had been quoted as "roughly the world count to
+the **1.3**" — that is the top decade only; least-squares over all six points is **1.10**, and
+13→103 is 0.85. The single figure is 1.10 and the page now says the exponent is not constant.
+And "over all 150 large-state rows" was the two runs pooled on a page that says everything below
+is the quiet run — it is **75**. Units were drifting too: memory in MiB and trace bytes in
+decimal MB under one label, now named separately.
+
+**What the conclusion does not cover, stated here rather than only in the ADR.** Every figure is
+Docker Desktop on an M4, which the previous merge measured at ~17× the macOS host beside it. "No
+feature follows" is supported for hardware of this class. The honest form of #621's first clause
+is a ratio against a project's other checks on the same machine, and this record does not make
+that comparison.
+
 ## 2026-09-20 — measuring before budgeting: the apparatus, and four things measuring changed (#621, ADR 0081)
 
 **What this merge is.** The instrument and the protocol for #621, committed before the numbers
