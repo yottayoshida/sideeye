@@ -1,0 +1,36 @@
+# fresh.sh --selftest, before and after the change this campaign makes to how a
+# follow-through row is written. Captured 2026-09-21T07:50:58Z.
+
+== with the reason written the way the PREVIOUS campaign wrote it (no campaign path)
+ok   a target the funnel names comes back seen
+ok   a target only #618 names is still seen
+ok   another campaign's measured target still reads seen
+FAIL overcommit matched this campaign's own records: b2-exclusions:151 
+ok   an invented name comes back fresh
+fresh: 1 case(s) failed
+   rc=1
+
+== with the campaign path in the reason, which is what this campaign commits
+ok   a target the funnel names comes back seen
+ok   a target only #618 names is still seen
+ok   another campaign's measured target still reads seen
+ok   this campaign's own records do not make its own target look already met
+ok   an invented name comes back fresh
+fresh: selftest green
+   rc=0
+
+== the refusal added by the same-class sweep, seen red (2026-09-21T08:28:05Z)
+   A search that could not READ its ledger must not come back looking like 'no hit',
+   because here 'no hit' is `fresh` — the expensive direction by this script's own header.
+   Run against a present but unreadable ledger:
+   fresh: could not search ../../../../tmp/ro.tsv (grep exited 2)
+   rc=2 (expect 2)
+
+== and green again on the committed ledgers
+ok   a target the funnel names comes back seen
+ok   a target only #618 names is still seen
+ok   another campaign's measured target still reads seen
+ok   this campaign's own records do not make its own target look already met
+ok   an invented name comes back fresh
+fresh: selftest green
+   rc=0

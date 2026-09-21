@@ -1,0 +1,16 @@
+lefthook: 1.13.6
+linkage: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=7b3ed3df42f8e05e5407a8ae3fc14c7d6fd26f21, stripped
+
+=== preflight.sh visibility on lefthook install ===
+== artifacts: /tmp/pf-lh
+== target exit status: 0
+  open     kernel=2/2 in-root, interposed=8, unmatched=2
+  write    kernel=2/2 in-root, interposed=273, unmatched=2, 1 interposed call(s) had no resolvable path
+WALL the kernel mutated the state root past the interposer:
+  open     33    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks/pre-commit", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 5</tmp/lh-repo/.git/hooks/pre-commit>
+  open     33    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks/prepare-commit-msg", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 5</tmp/lh-repo/.git/hooks/prepare-commit-msg>
+  write    33    write(5</tmp/lh-repo/.git/hooks/pre-commit>, "#!/bin/sh\n\nif [ \"$LEFTHOOK_VERBO"..., 2022) = 2022
+  write    33    write(5</tmp/lh-repo/.git/hooks/prepare-commit-msg>, "#!/bin/sh\n\nif [ \"$LEFTHOOK_VERBO"..., 2030) = 2030
+  reading: an LD_PRELOAD shim cannot see these; this is the cargo
+           class (#217), a named wall at probe time, zero defines spent
+VISIBILITY rc=1

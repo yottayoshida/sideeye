@@ -1,0 +1,60 @@
+# how reachable is the window WITHOUT a crash-point injector?
+# A full install takes ~69 ms here, most of it Ruby startup, so the first sweep
+# (52-520 ms) mostly fired after the writing was over and found nothing. This one
+# sweeps 40-90 ms in 1 ms steps, twice: SIGINT (what Ctrl-C sends) and SIGKILL.
+
+   INT over 51 attempts: incomplete hook 0 / fewer hooks 0 / clean 51
+
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+   KILL over 51 attempts: incomplete hook 0 / fewer hooks 0 / clean 51
+
+# Did the sweep actually straddle the writing phase? The bucket 'clean' above merges
+# 'killed before any hook was written' with 'killed after all ten', and a 0 from a
+# sweep that never caught the process mid-install would mean nothing.
+# Below: the hook COUNT left by each SIGKILL, so the transition is visible or absent.
+
+Killed
+   40ms -> 0 hook(s) written, 0 incomplete
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+   48ms -> 1 hook(s) written, 0 incomplete
+Killed
+   49ms -> 10 hook(s) written, 0 incomplete
+Killed
+   50ms -> 1 hook(s) written, 0 incomplete
+Killed
+   51ms -> 0 hook(s) written, 0 incomplete
+Killed
+Killed
+   53ms -> 10 hook(s) written, 0 incomplete
+Killed
+Killed
+Killed
+Killed
+Killed

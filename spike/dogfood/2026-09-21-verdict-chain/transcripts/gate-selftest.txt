@@ -1,0 +1,44 @@
+ok   visibility green on a libc-routed toy (rc=0)
+ok   interior RED on a one-operation toy (rc=1)
+ok   threads green on a toy with one writing thread (rc=0)
+ok   interior green on a four-operation toy (rc=0)
+ok   threads RED on two threads writing the state root (rc=1)
+ok   threads green when two threads write SIBLINGS of the root (rc=0)
+ok   threads green when two threads only PRINT paths under the root (rc=0)
+ok   visibility answers 2 when the instrument is missing (rc=2)
+ok   interior answers 2 when no INTERIOR count is printed (rc=2)
+ok   threads answers 2 when strace is not installed (rc=2)
+ok   visibility RED on lefthook (the 2026-09-21 release-path target) (rc=1)
+
+gate: 0 case(s) failed of 11
+--- leg 1 ---
+  rename   kernel=1/1 in-root, interposed=1, unmatched=0
+PASS every in-root mutation passed through an interposable function
+gate visibility rc=0
+--- leg 2 ---
+  reading: one atomic mutation - no interior to crash inside;
+           a contrast measurement, not a criterion-1 slot (the papis shape)
+gate interior rc=1 (kill points inside the state root: 1; rule 15 wants >= 2)
+--- leg 3 ---
+gate threads rc=0 (1 thread id(s) wrote inside the state root; 0 clone(s) carrying CLONE_THREAD)
+--- leg 4 ---
+INTERIOR kill points inside the state root: 4 (fsync=1, open=1, rename=1, write=1)
+  reading: 4 crash points; the operation has an interior
+gate interior rc=0 (kill points inside the state root: 4)
+--- leg 5 ---
+gate threads rc=1 (2 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD. See the header for what this does and does not claim)
+--- leg 6 ---
+  reading: an LD_PRELOAD shim cannot see these; this is the cargo
+           class (#217), a named wall at probe time, zero defines spent
+gate visibility rc=1
+--- leg 7 ---
+gate threads rc=0 (0 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD)
+--- leg 8 ---
+gate threads rc=0 (0 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD)
+--- leg 9 ---
+BROKEN preflight.sh not found at /tmp/gate-selftest.1/not-a-file (mount the repo read-only at /repo)
+--- leg 10 ---
+gate interior rc=2 (preflight printed no INTERIOR count)
+--- leg 11 ---
+BROKEN strace not installed - the gate cannot measure
+gate: selftest green

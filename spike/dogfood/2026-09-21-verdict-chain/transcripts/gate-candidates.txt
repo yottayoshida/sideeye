@@ -1,0 +1,38 @@
+# candidate gate rows, 2026-09-21T08:25:38Z
+# gate.sh all <label> <state-root> -- <cmd>   (0 clear / 1 red / 2 could not measure)
+# Each gate runs the operation, so GATE_RESET rebuilds the pre-state before each one.
+
+########## overcommit 0.73.0 (Ruby) — the slate candidate ##########
+version: overcommit 0.73.0
+interpreter: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=f3adccf00023e57dc54c92aaf3f5f9dbf9c5b0ba, for GNU/Linux 3.7.0, stripped
+=== overcommit ===
+reset: sh /ap/seed-state.sh
+PASS every in-root mutation passed through an interposable function
+gate visibility rc=0
+gate interior rc=0 (kill points inside the state root: 3)
+gate threads rc=0 (1 thread id(s) wrote inside the state root; 2 clone(s) carrying CLONE_THREAD)
+GATE overcommit     visibility=0 interior=0 threads=0
+rc=0
+
+########## lefthook 1.13.6 (Go) — the previous run's target, not a candidate here ##########
+version: 1.13.6
+linkage: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=7b3ed3df42f8e05e5407a8ae3fc14c7d6fd26f21, stripped
+=== lefthook ===
+reset: sh /tmp/reset-lefthook.sh
+           class (#217), a named wall at probe time, zero defines spent
+gate visibility rc=1
+gate interior rc=0 (kill points inside the state root: 4)
+gate threads rc=0 (1 thread id(s) wrote inside the state root; 5 clone(s) carrying CLONE_THREAD)
+GATE lefthook       visibility=1 interior=0 threads=0
+rc=1
+
+########## detox (C, Debian) — clears the gate, excluded on rule 1 ##########
+linkage: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=bd4907a99e75cb5094a373801d7fa6d0f30fc1a6, for GNU/Linux 3.7.0, stripped
+=== detox ===
+reset: sh /tmp/reset-detox.sh
+PASS every in-root mutation passed through an interposable function
+gate visibility rc=0
+gate interior rc=0 (kill points inside the state root: 2)
+gate threads rc=0 (1 thread id(s) wrote inside the state root; 0 clone(s) carrying CLONE_THREAD)
+GATE detox          visibility=0 interior=0 threads=0
+rc=0

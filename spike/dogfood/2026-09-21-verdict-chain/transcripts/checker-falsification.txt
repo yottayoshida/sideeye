@@ -1,0 +1,38 @@
+GREEN 1 — a finished install
+   rc=0 (expect 0)
+GREEN 2 — fewer hooks (a crash before the rest)
+   rc=0 (expect 0)
+GREEN 3 — samples only: the state every world starts from, uncorrupted
+   rc=0 (expect 0)
+RED 1 — samples only, every file junked  <-- the state the engine falsifies with
+   check: applypatch-msg.sample is a git sample and no longer starts with a shebang
+   rc=1 (expect 1)
+RED 2 — a finished install, every file junked
+   check: applypatch-msg.sample is a git sample and no longer starts with a shebang
+   rc=1 (expect 1)
+RED 3 — one hook cut short
+   check: pre-commit is cut short before its rescue block
+   rc=1 (expect 1)
+RED 4 — a complete hook without its exec bit
+   check: commit-msg is not executable, so git would skip the hook install wrote
+   rc=1 (expect 1)
+RED 5 — a file that is neither a sample nor a managed hook
+   check: post-update is neither a git sample nor a hook overcommit manages
+   rc=1 (expect 1)
+RED 6 — a junked sample beside a finished install
+   check: pre-commit.sample is a git sample and no longer starts with a shebang
+   rc=1 (expect 1)
+GREEN 4 — an empty old-hooks left behind by a crash in that window
+   rc=0 (expect 0)
+RED 7 — some OTHER directory in the hooks dir (the skip must be scoped to old-hooks)
+   check: stray-dir exists and is not a regular file
+   rc=1 (expect 1)
+RED 8 — a regular FILE named old-hooks (the skip is for the tool's directory only)
+   check: old-hooks is neither a git sample nor a hook overcommit manages
+   rc=1 (expect 1)
+GREEN 5 — seed-state refuses a repo path outside /tmp
+   seed-state: refusing to empty '/etc' — OC_REPO must be an absolute path under /tmp
+   rc=2 (expect 2)
+RED 9 — a file whose NAME is a glob that would match a managed hook
+   check: pre-commi? is neither a git sample nor a hook overcommit manages
+   rc=1 (expect 1)

@@ -1,0 +1,68 @@
+# Two measurements this run's record cites and had not committed.
+# Captured 2026-09-21T08:22:09Z.
+
+############ 1. how overcommit --install moves its bytes ############
+# Why it matters: preflight.sh's interior count is taken from the trace set
+#   %file,write,pwrite64,writev,fsync,fdatasync,ftruncate
+# and the engine's own run counted 31 crash points against the gate's 3.
+
+== successful syscalls naming a path under the hooks directory, by name ==
+     29 fstat
+     20 openat
+     20 close
+     10 lseek
+     10 copy_file_range
+      2 getdents64
+      1 unlinkat
+      1 mkdirat
+
+== the three copy_file_range calls that carry the bytes (first three of ten) ==
+[pid    17] copy_file_range(11</var/lib/gems/3.3.0/gems/overcommit-0.73.0/template-dir/hooks/overcommit-hook>, NULL, 12</tmp/oc-repo/.git/hooks/overcommit-hook>, NULL, 3682, 0) = 3682
+[pid    17] copy_file_range(11</tmp/oc-repo/.git/hooks/overcommit-hook>, NULL, 12</tmp/oc-repo/.git/hooks/commit-msg>, NULL, 3682, 0) = 3682
+[pid    17] copy_file_range(11</tmp/oc-repo/.git/hooks/overcommit-hook>, NULL, 12</tmp/oc-repo/.git/hooks/post-checkout>, NULL, 3682, 0) = 3682
+== total copy_file_range calls ==
+10
+
+== is copy_file_range in preflight.sh's trace set? ==
+77:        -e trace=%file,write,pwrite64,writev,fsync,fdatasync,ftruncate \
+  -> copy_file_range takes descriptors, so it is in neither %file nor the write list.
+  -> The gate's interior count is a FLOOR. docs/report-schema.md also names raw
+     copy_file_range as untrappable under --observe syscalls; this run reached a
+     verdict because Ruby calls it through glibc, where the shim interposes it.
+
+############ 2. the third reachability sweep, with its attempt count stated ############
+Killed
+   40ms -> 0 hook(s) written, 0 incomplete
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+   56ms -> 10 hook(s) written, 0 incomplete
+Killed
+Killed
+Killed
+Killed
+Killed
+Killed
+   64ms -> 0 hook(s) written, 0 incomplete
+Killed
+Killed
+   66ms -> 10 hook(s) written, 0 incomplete
+Killed
+Killed
+
+   KILL over 51 attempts (40-90 ms, 1 ms steps): 0 incomplete hook(s) in total
+   The transitions above are what say the kills landed inside the install rather than
+   only before or after it — without them a zero would say nothing.

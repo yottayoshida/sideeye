@@ -2,6 +2,158 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-21 — The dogfood entry gate answers with an exit code, and it was measured against the binary that got past the last one
+
+The 2026-09-21 release-path run spent its only target slot on lefthook, which is statically
+linked, and stopped at `attempted`. It had run the linkage probe. What it did not do was
+read the probe's output past `ELF 64-bit LSB executable`; `statically linked` is further
+along the same line. `spike/dogfood/README.md` already says to measure before writing the
+candidate table, so the rule was not the gap — the reading was, and another sentence
+telling the next reader to read carefully leaves the same road open.
+
+`apparatus/gate.sh` answers three questions with 0, 1 or 2 instead. `visibility` is
+`spike/cohort4/preflight.sh` used as-is (cohort 4's sealed records cite that script, so it
+is not edited); `interior` and a thread count are turned into exit codes around it.
+
+**Four things were measured that the plan for this had asserted.**
+
+*The preflight had never been run here.* `grep -rn -i preflight spike/dogfood/2026-09-21-release-path/`
+is 0 lines. "lefthook would have been red at this gate" was a reading of the script, not an
+observation — and `preflight-analyse.py:126` has an `if not kernel: sys.exit(2)` that a
+badly chosen state root reaches. So the image was built first, `preflight.sh --selftest`
+made green in it, and only then was lefthook measured: **rc=1**, with the four unmatched
+kernel calls named. Had that order been reversed, the missing compiler would have produced
+the same 2 and it would have read as a fact about lefthook.
+
+*The interior gate's red could not be shown with the toy this repository already has.*
+`spike/cohort4/preflight-selftest.txt:51` measures `toy.c` at 4 kill points — green.
+`apparatus/toy_single_op.c` is one `rename` into the root and nothing else.
+
+*The thread gate counted the wrong thing.* It first counted clones carrying `CLONE_THREAD`
+and went red at one. Against `overcommit --install` that is red on two, both of them the
+Ruby VM's startup threads, neither touching the judged directory — and by that rule every
+Ruby, Python and Node candidate is disqualified. Since contract v16 the engine judges a
+threaded run when one thread wrote the judged directory, and since v18 when a creation or a
+join orders two writers (ADR 0067). The gate now counts thread ids that write inside the
+state root. Its red leg changed with it: two threads writing, not a process that starts one.
+
+*`fresh.sh` was not reading the ledger its own campaign writes to.* The previous run added
+`lefthook` to `spike/unknown-rate/b2-exclusions.txt` as a follow-through, and that file was
+not among the six the freshness checker searched. It is here, with `b2-targets.txt` and
+`b2-candidates.txt` — #619's selection, in flight, which is #618's argument one study later.
+Measured before claiming it mattered: of 77 names screened, **one** (`delta`) was caught by
+the three new ledgers and by nothing else. `b2-exclusions` matched 29, all of them already
+in another ledger. The hole was real and its cost so far was one candidate.
+
+Two smaller ones, both caught by reading rather than by a check. `gate_all` set `GATE_OUT`
+as a prefix on shell *function* calls, which cannot reach a variable the script read once at
+the top — all three gates wrote into one directory and each candidate erased the last one's
+artifacts. And the first freshness screen passed its 48-name pool as one unquoted zsh
+variable, which does not word-split: the whole list arrived as a single name and came back
+`fresh`. A screen that fails toward "everything is new" is the wrong direction for a check
+whose two errors are not symmetric.
+
+**The slate.** `overcommit` 0.73.0, `overcommit --install`, judged root `.git/hooks`.
+`husky` was the better fit on every rule but one and was dropped on a measured rule 2:
+latest release 2024-11-18, last push 2026-03-19. Gate rows are in `SELECTION.md`; the
+checker was falsified before use.
+
+**Then the run, and two more reversals.**
+
+The first explore came back `UNKNOWN checker_not_falsified` — the engine refusing to trust
+a checker it could not make respond. The cause is worth writing down because it is not the
+obvious one: the falsification corrupts each world's **initial** state (`src/main.zig:2444`
+restores `initial` and then corrupts it), which here is the fourteen `*.sample` files
+`git init` leaves and nothing else. A checker that named only the ten files the operation
+writes had nothing to say about that state and exited 0. **The previous campaign's checker
+has the same hole**, unmeasured — its run stopped at `oracle_missed_operation` and never
+reached the checker stage, so nothing has ever exercised it. The fix is the truer
+invariant anyway: every entry in the directory is either one of git's samples or a
+complete, executable overcommit hook.
+
+The second explore came back **FAIL 11/32 with the earliest exhibit inside
+`mkdir(old-hooks)` … `rmdir(old-hooks)`** — which is overcommit's own scratch directory,
+not a defect. Measured, both branches: with no pre-existing user hook it is created,
+holds nothing and is removed; with one, the user's hook is moved into it by a single
+`renameat` and the directory stays. Under this define nobody depends on it, so it is
+declared `scratch` (ADR 0043) and skipped by the checker — scoped to the name, with a
+leg proving a *different* stray directory still fails. Reporting that first FAIL would
+have been this repository's buku lesson a third time: judging a store by a rule stricter
+than its contract.
+
+With that declared: **FAIL 10 of 32, earliest crash point 4 of 31 — the truncating `open`
+of `overcommit-hook` before its `write`, a zero-byte executable hook.** `oracle_verified`,
+reproduced identically twice.
+
+**The report question was decided by measuring, and the answer was no.** The consequence
+is real and was measured with a control in the same run: a complete hook makes `git commit`
+exit 1 and fail the check; the zero-byte one lets the same offending commit through at exit
+0 with the hooks never mentioned. But the data comes back (`overcommit --install` again
+restores it), nothing user-authored is at risk (one atomic `renameat`), and **204 timed
+kills over four 51-attempt sweeps left zero incomplete hooks**. The four are not one
+measurement: two report `fewer hooks 0`, the third records the hook count per attempt and
+shows kills landing inside the install (48 ms → 1 hook, 49 ms → 10, 50 ms → 1), and the
+fourth steps from 0 to 10 without ever showing a partial count. They disagree, which says
+the timing is not stable at this granularity — the third is what keeps the zeros from being
+vacuous, and an earlier draft of this entry said the *same* sweep did both, which the
+transcript does not support. A crash point exists; a
+crash does not land there. Sideeye measures the first and says in every report that it does
+not measure the second.
+
+Two process notes. The first reachability sweep fired at 52–520 ms against a 69 ms install
+and found nothing, which meant nothing — the same shape as the duplicate check that ran six
+space-separated queries through an API whose zero for those is unconditional, after
+`novelty-prescan.sh`'s header says in as many words not to work around it. Both are kept in
+the transcripts, the second struck through. Twice in one run, a zero was nearly taken for a
+measurement.
+
+**The blind review found four more, and three of them were in the apparatus rather than in
+the prose.**
+
+*The three gates ran back to back with no reset*, so each measured the operation applied to
+what the one before it left. For an installer the second run is a different operation:
+`overcommit --install` writes ten hooks and then finds them there. The candidate table had
+`detox` at `visibility 2` and this page's first draft explained that as a property of
+`detox -r`; with a reset between the gates detox clears all three. `GATE_RESET` now runs
+before each gate and `gate.sh all` prints what it ran, or prints that it ran nothing.
+
+*The in-root test was a bare substring*, so the root's siblings counted as inside it — and
+the gate's own green leg stages at `<root>.staging`, which is exactly such a sibling, so the
+error was invisible in the leg most likely to meet it. Matching `"$root/"` fixes it and a
+seventh leg holds it: two threads writing two siblings must count zero writers.
+
+*The thread count fell to green when it could not measure.* Only an empty strace file
+returned 2; any other way of losing the `pid` prefix left every first field non-numeric, the
+count at 0, and the gate green. The prefix is now checked before the count is believed.
+
+The fourth is a number: `interior` reported 3 kill points where the engine's run found 31.
+Measured: `overcommit --install` moves its bytes with **`copy_file_range`**, ten times, and
+that call is in neither `%file` nor `preflight.sh`'s write list. The gate's count is a floor
+and now says so. The same syscall is one of the operations #217 names as untrappable under
+`--observe syscalls`; this run reached a verdict because Ruby calls it through glibc, where
+the shim interposes it.
+
+Two of the review's findings were this entry's own: a checker leg tally for a transcript
+that had grown past it, and the claim that one sweep both found zero
+incomplete hooks and caught the process mid-install when those were two different runs
+reporting different things. Both are corrected above. The pattern in all four prose defects
+is the same — a sentence written when the measurement said one thing, left standing after
+the measurement was redone.
+
+The same review's tail added two more, both of them cases where a test written on the whole
+line accepts something the rule does not mean. `gate_threads` applied its `write` clause to
+the entire strace line, so `write(1</dev/pts/0>, "installing <root>/pre-commit")` counted as
+a write into the root and a thread that only logged became a writer; the position is what
+distinguishes them, since `strace -y` prints a descriptor as `4</path>` and a path argument
+as `"/path"`, and the count is taken by `awk` per call class now. And `verify.sh` put the
+filename in the PATTERN of a `case` (`case "$managed" in *" $b "*`), which makes a name
+carrying `*` or `?` a glob that can match a managed hook it is not. Both have their own
+red leg: two threads that print the root's path and write nothing must count zero, and a
+file named `pre-commi?` must be refused. Neither changed a number in this run — no target
+here logs paths and nothing overcommit writes carries a glob character — which is why they
+would have stayed invisible.
+
+
 ## 2026-09-21 — the adoption path, and three probes I ran without reading (ADR 0084)
 
 **What this is.** The first dogfood run where Sideeye arrives the way the quickstart tells a
@@ -23154,6 +23306,20 @@ the declared invariant existing as three byte-identical copies across the
 dogfood scripts and this experiment, and the leg-C predicate implemented twice
 — is #65, because the fix direction runs through shipped measurement scripts
 this plan pledged not to touch.
+
+**CI caught one more, and it is the second campaign in a row it has caught in the same
+page.** `check 11` in `spike/acceptance.sh` holds every backticked token containing a slash
+in `docs/target-classes.md` to a path that exists in the repository; absolute ones are
+skipped. The new row quoted the crash point as `` `.git/hooks/overcommit-hook` `` — relative,
+so the check looked for it here and did not find it. The previous campaign was caught by the
+same check on the same page for the same reason.
+
+What that says is not that the row was careless; it is that **the pre-push check list was a
+subset of CI**. Ten checks were run locally before the push and every one was green; check
+11 lives inside the acceptance suite, which runs in the Linux container, and was not among
+them. The token is the run's real path now (`/tmp/oc-repo/...`), which is both what the
+engine saw and what the check skips, and the check's own logic was run over all four pages
+here before pushing again.
 
 ## 2026-08-12 — v0.4.0: the milestone is the measurements; the tag carries a passenger
 
