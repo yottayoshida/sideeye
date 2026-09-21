@@ -1,14 +1,9 @@
 # The grading rubric — sealed before the first run
 
 A grader receives: one sealed contract card, this rubric, a target's define revisions **in
-shuffled order** under given ids, **and what the subject wrote beside each revision** —
-every file it put in the define's own directory. In the recorded runs that is the `check` and
-`setup` the define names and what those call, and also the data they build the case from. Three
-things are not in it: a script the define names **outside** that directory, anything in a
-subdirectory, and **Sideeye's own report** — the last deliberately, because this page tells you
-to judge the define against the card and not against what the tool would report, and two of the
-recorded runs wrote a report straight into the define's directory. A capture too large to hand
-over is named with its size rather than dropped. It returns one verdict per revision and
+shuffled order** under given ids, **and the scripts the subject wrote beside each revision** —
+every file the subject put in the define's own directory, which in the recorded runs is the
+`check` and `setup` it names and whatever those call. It returns one verdict per revision and
 the friction classes that revision turns on. It never sees the other grader's answer, the run's
 transcript, or which revision came last.
 
