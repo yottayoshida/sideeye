@@ -59,6 +59,21 @@ output and exit 1** — indistinguishable from a failing check, and it fires pre
 candidate is clear. It was caught because the selftest printed nothing and I ran it alone to see
 the exit code instead of trusting the `&&` chain it was in.
 
+**CI found two more, and both are the shape of a record reaching past itself.** A path written
+`transcripts/linkage-full.txt` in `docs/target-classes.md` — that page's paths are repo-relative
+and check 11 walks them, so it went red on a file that exists. It is the **same class** as a path
+error blind review had already found in `SELECTION.md`, and I fixed that one and did not sweep for
+others; a same-class scan over my own corrections would have caught it before the push.
+
+The second is a follow-up nobody's list mentions. Adding a target to the outcome funnel puts it in
+`count.py b2-selection`'s coverage check: **every name the funnel holds must be excluded from the
+B2 candidate pool** by `b2-exclusions.txt` or an alias, or the drift gate refuses. Blind review had
+looked at exactly this file and reported it unaffected, correctly, about the thing it checked —
+`count.py`'s define glob is `spike/cohort*/*/ops/*.toml`, which no dogfood directory matches. The
+coupling is on the target *name*, one dependency over from the one that was examined.
+`spike/dogfood/README.md` lists three things a run owes upward; this is a fourth, and it exists
+only once a funnel row does.
+
 **What this run cannot say.** Nothing about GitHub-hosted runners: the proxy CA takes that off the
 table, and `quickstart-release.yml` is where it is answered. Nothing about the adoption path's
 reach: one target, and its wall is about the target's linkage rather than about how Sideeye got
