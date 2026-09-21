@@ -72,13 +72,10 @@ cannot be enforced is not declared. What is declared instead is the **Dispositio
 - **Revisions are files.** A watcher (`watch-defines.py`) runs as the container's main process
   and copies every define the subject writes — any `*.toml` under its home whose contents
   changed — to `runs/<target>/revisions/NN.toml`, with `index.tsv` recording the order, the
-  digest and the path. **It copies the scripts beside that define too** — the files the
-  subject put directly in the define's own directory, meaning every direct child that is not a
-  `*.toml`, is not under the define's `[world] state`, and either did not exist when the watcher
-  started or has changed since — to `revisions/scripts/MM.<name>`, with its own index carrying
-  the revision each capture was in force for. The last clause is what keeps the image's own
-  files out: the watcher is the container's first process, so what is already there is the
-  image's and only a change to it is the subject writing. A script is rewritten more often than the define file is, so the two are counted
+  digest and the path. **It copies the scripts beside that define too** — every file in the
+  define's own directory that is not a `*.toml` and not under its `[world] state` — to
+  `revisions/scripts/MM.<name>`, with its own index carrying the revision each capture was in
+  force for. A script is rewritten more often than the define file is, so the two are counted
   separately and the revision sequence is unchanged by a script edit.
 
   *(Amended 2026-09-21, #639. The scripts half did not exist for the first four runs: the

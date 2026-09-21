@@ -1,33 +1,18 @@
 # The grading rubric — sealed before the first run
 
 A grader receives: one sealed contract card, this rubric, a target's define revisions **in
-shuffled order** under given ids, **and what the subject wrote beside each revision** —
-every file it put in the define's own directory. In the recorded runs that is the `check` and
-`setup` the define names and what those call, and also the data they build the case from. Three
-things are not in it: a script the define names **outside** that directory, anything in a
-subdirectory, and **Sideeye's own report** — the last deliberately, because this page tells you
-to judge the define against the card and not against what the tool would report, and two of the
-recorded runs wrote a report straight into the define's directory. A capture too large to hand
-over is named with its size rather than dropped. It returns one verdict per revision and
-the friction classes that revision turns on. It never sees the other grader's answer, the run's
-transcript, or which revision came last.
+shuffled order** with their revision numbers removed, **and the scripts the subject had written
+beside each revision — including the ones its `check` and `setup` call**. It returns one verdict
+per revision and the friction classes that revision turns on. It never sees the other grader's
+answer, the run's transcript, or which revision came last.
 
-**The order is hidden by the shuffle and by the instruction not to read filenames, not by
-renaming the files.** A grader is handed repository paths — `revisions/NN.toml`, and
-`revisions/scripts/MM.<name>` beneath them — so the numbers are visible and are not the order
-they were written in. `grader-prompt.md` says so to the grader in as many words.
-
-*(Amended 2026-09-21, #639, after the first four runs were graded. Two changes. **The scripts**:
-until now the material was the `*.toml` snapshots alone, so `vacuous checker` — defined below
-entirely in terms of the checker's behaviour — could not be reached from what a grader held, and
-every grader in that round said so unprompted. **The four published runs were graded without the
+*(Amended 2026-09-21, #639, after the first four runs were graded. Until this amendment the
+material was the `*.toml` snapshots alone, so `vacuous checker` — defined below entirely in
+terms of the checker's behaviour — could not be reached from what a grader held, and every
+grader in that round said so unprompted. **The four published runs were graded without the
 scripts**; their sheets carry each grader's own note saying which class was undecidable, and
-`RESULTS.md` records what that leaves standing. This changes what a grader is handed from here
-on; it does not change a verdict already given. **The order clause**: this page said revisions
-were handed over "with their revision numbers removed", which was never true of any round —
-`RESULTS.md` has said the opposite since it was written, and the numbers are in the paths. The
-sentence is corrected to what the apparatus does rather than the apparatus to the sentence,
-because four graded rounds relied on the behaviour and none on the wording.)*
+`RESULTS.md` records what that leaves standing. This amendment changes what a grader is handed
+from here on; it does not change a verdict already given.)*
 
 ## The four verdicts
 
