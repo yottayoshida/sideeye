@@ -8,6 +8,7 @@ remembered afterwards:
 | `meta.json` | the launcher — target, the sealed manifest the run was graded under, the session's start and end, the target's installed version, the subject's model, the disposition |
 | `transcript.jsonl` | the launcher, normalised (home path to `~` at a boundary, credential shapes redacted, `SIDEEYE_*` kept because it is apparatus configuration) |
 | `revisions/NN.toml` + `index.tsv` | the watcher inside the box, one snapshot per define the subject wrote |
+| `revisions/scripts/MM.<name>` + `index.tsv` | the watcher, one snapshot per file the subject wrote beside a define — its checker, its setup, and what those read. Absent from a run recorded before #639 |
 | `grades/*.tsv` | the two graders, independently, against the sealed card and rubric |
 | `box.txt`, `normalisation.txt`, `session-stderr.log` | the apparatus's own account of what it built and what it dropped |
 
@@ -30,6 +31,7 @@ and no sight of each other's answers.
 | `genisoimage` | **2** | 1 | 358 s | `graded` | revision 01 |
 | `lmdb-utils` | **4** | 2 | 404 s | `none-valid` | none — neither revision accepted |
 | `fossil` | **3** | 2 | 485 s | `graded` | revision 01 |
+| `genisoimage-scripts` | 2 | 3 | 657 s | `ungraded` | — (apparatus, not a measurement: `RESULTS.md`) |
 
 **Four runs, four different outcome shapes**, including one the protocol had no name for:
 `lmdb-utils` is a session that reached a define the engine would run and never reached one that

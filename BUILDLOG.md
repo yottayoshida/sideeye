@@ -2,6 +2,158 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-21 — the grading material, and three mutants that were green for the wrong reason (#639, ADR 0083)
+
+**What this is.** `grade-rubric.md` defines `vacuous checker` entirely in terms of the checker's
+behaviour, and the material a grader was handed never contained a checker. The watcher captures
+the subject's scripts now and `assign-grading.py` hands them over.
+
+**The plan was wrong three times before a line was written, and blind review found all of it.**
+The first draft fixed the watcher and the rubric — and left out `assign-grading.py`, which is the
+thing that actually gives a grader its material. Shipping that would have made the rubric promise
+something the pipeline still did not deliver: **the defect #639 describes, freshly recreated by
+the PR fixing it.** The second draft numbered script edits as revisions, which breaks all three
+conditions `audit.py` puts on `revisions/` and voids every run. The third drew its capture rule
+as a list of exclusions — and the watch root is the whole home, so it would have captured the
+watcher's own `index.tsv` and grown a row per second forever. The rule is positive now: a file is
+captured when it sits under a directory holding a define already snapshotted.
+
+**`check` is a command string, not a path.** Five of the eight recorded revisions spell it
+`./check.sh` or `/bin/sh /path/check.sh`, and `--cwd` defaults to the engine's own working
+directory, which a watcher cannot know. Resolving the name would also have missed `mksrc.sh` —
+`genisoimage`'s checker calls it to rebuild the tree it diffs against, and no define mentions it.
+That is why the unit is the directory.
+
+**Three mutants were green for the wrong reason, and each one looked green in a different way.**
+The discipline here is "a check must be seen red once", and all three would have passed a careless
+reading of it:
+
+1. *Killing the positive capture rule crashed with a `KeyError` before reaching the decoy
+   assertion.* `exit=1` looked like the check firing. It was not; the check never ran. Rewritten
+   as a form an exclusion-list implementation would actually take, it produces four `FAIL` lines
+   naming the dotfiles, the README and the tarball.
+2. *Mutating `assign-grading.py` produced a traceback in every case* — because the mutant was
+   written to a scratch directory where `grader-prompt.md`, which it reads from its own directory,
+   does not exist. The harness was broken, not the code. Mutating in place gives real answers.
+3. *Removing the "the watcher did not copy this" guard changed nothing*, and the reason was a
+   design fault of mine: the watcher glued the note onto the **revision field**, so a not-copied
+   row could never match a revision anyway and the guard was unreachable. The note is its own
+   column now, and removing either guard — the note one or the existence one — goes red on its
+   own assertion.
+
+**The lesson is one line: a mutant's exit code is not evidence. The `FAIL` line is.** All three
+exited non-zero while proving nothing.
+
+**Running the watcher for real found what thirteen green selftest cases did not.** Started as an
+actual process against a box-shaped tree, edited underneath it: it captured the checker and the
+`mksrc.sh` beside it, ignored the README and the target's state, and wrote nothing to stderr.
+Then the define was edited **without touching its scripts** — the most ordinary thing a subject
+does — and the grader brief came out with revision 02 offered **no scripts at all** while 01 was
+offered two. Two harms in one: that revision's grader is back in exactly the position #639
+describes, and the empty entry is identifiable as the later revision in a sheet whose order is
+deliberately shuffled — damage outside the promise, caused by the change that keeps it.
+
+The cause was the fixture, not the logic: every selftest case bumped a revision and then changed
+a script, so "revision moved, scripts stood still" never ran. Scripts are carried forward now
+(for revision NN, the latest capture at or before NN), and the case that would have caught it is
+in the suite — reverting to exact-revision keying reds it by name.
+
+**The four published runs are not re-graded.** The issue said closing this needed a new round on
+all four because "their containers are gone, so the scripts are not recoverable" — which is
+false, and this repository already held the counterexample: `lmdb-case-from-transcript.sh`,
+written yesterday for #638, quotes `lmdb-utils`'s scripts verbatim out of the transcript. Before
+deciding, all four checkers were recovered and set beside what the graders actually wrote. None
+moves: `genisoimage`'s grader had written the downgrade condition out loud — *"if the checker
+reads only the exit code it falls to `vacuous checker`"* — and the checker runs `isovfy`, diffs
+an `isoinfo` listing, extracts every file and `cmp`s it; `lmdb-utils` reached `wrong question`
+first, where the rubric's order of application stops. `RESULTS.md` prints those conditions and
+where each checker can be read, and **does not say what a grader would have decided** — that
+would be the self-assessment the two-grader protocol exists to avoid.
+
+**Blind review on the diff found the capture rule leaking three ways, and the promise's own
+source sentence false.** All four reproduced on the first try.
+
+- A define that **parses but names no `[world] state`** left the watcher with nothing to exclude,
+  and recursion then swept the target's data into the grading material — and kept it, since the
+  content never changes again.
+- A define written **directly in `/home/user/authoring`** swept the image's README and the engine
+  tarball. That is not a hypothetical location: `prompt.md` points the subject there, and
+  `genisoimage`'s transcript shows it extracting the engine into that very directory. The ADR
+  had claimed those were excluded "by construction"; they were excluded by all five subjects
+  happening to work one level down.
+- **Two defines, one nested in the other**: the outer sweep knew nothing of the inner one's state.
+
+Two rules fixed all three and are each seen red on their own case: capture **direct children
+only** (scripts sit beside the define, the target's data sits under `state/`), and remember what
+was on disk **when the watcher started** — it is PID 1, so everything already there is the
+image's and only a change to it is the subject writing. The `[world] state` exclusion survives
+deciding exactly one shape now, `state = "."`, and has a case of its own.
+
+**The fourth was in the sentence the property was quoted from.** `grade-rubric.md` said a grader
+receives the revisions "with their revision numbers removed" — it never did, in any round: the
+paths handed over are `revisions/NN.toml`, and `RESULTS.md` has said so since it was written.
+This PR had re-sealed that clause. The sentence is corrected to what the apparatus does rather
+than the apparatus to the sentence, because four graded rounds relied on the behaviour and none
+on the wording. The rubric's new scripts clause was narrowed the same way: capture is by
+directory, so a `check` naming a script outside it is not collected, and the docstring says so.
+
+**The second round found the engine's own verdict in the grading material.** Rebuilding all five
+recorded directory shapes and running the watcher against each: `dos2unix` and `dos2unix-measured`
+both wrote `--json .../report.json` **into the define's own directory**, so the capture rule
+handed a grader Sideeye's verdict — against a page that says, three paragraphs down, to judge the
+define "not against what the tool would report". Excluded now by the report's own `schema` field
+rather than by its name, because nothing makes a report be called `report.json`.
+
+The same rebuild showed `lmdb-utils`'s `base.txt` and `load.txt` being captured, and that one
+went the other way: they are the subject's, they are what its checker reads, and a grader needs
+them. **The mechanism was right and the sentence was wrong** — the rubric claimed the material
+was "the `check` and `setup` it names and whatever those call", which is false for three of the
+five shapes. Twice in this PR the fix was to change the mechanism and once to change the text;
+what decided each time was which reading the rubric's *other* sentences already committed to.
+
+Two more from that round, both in code this PR added. **`scripts_for` matched on the basename**,
+so two define directories each holding a `check.sh` would hand one revision's grader the other's
+file — worse than handing over nothing, since `vacuous checker` would then be decided against a
+file the revision never named. It keys on the path the subject wrote now. And the **union of
+every state** — added in the previous round to close the nesting leak — turned out to be closed
+by direct-children-only instead, while the union itself deleted a second subject's scripts where
+one define declared the directory another lived in. Reverted, and the mutation that proves it is
+in the suite: before this, **no case failed when the union was removed**, so a rule with no
+check and a measured harm had shipped past one review.
+
+**Three ledger rows in one day, and the third is my ordering mistake**: I re-sealed after fixing
+the rubric and only then read `PROTOCOL.md`, which described the capture without the start-time
+rule. The seal is append-only, so the fix is a third row rather than a quiet edit — which is the
+point of it.
+
+**One run closes the issue, and it was worth waiting for the code to settle first.** #639's
+first condition is about a run's material, so no amount of apparatus work satisfies it without
+a run. `genisoimage-scripts` took 657 s and produced ten captures over three revisions. Two
+things in it were not in any earlier run and neither was anticipated: **the subject wrote its
+checker in Python** (`check.py`), and it worked in `/home/user/world/`, a directory none of the
+five recorded runs used. Resolving the `check` command string would have had to handle both;
+capturing by directory did not care. Also captured: `src.manifest` and a 72-byte `out.iso.pre`
+holding a size and a hash — the subject's own controls, which its checker compares against and
+without which a grader could not read it. Not captured: anything under `state/`, and no report.
+
+Had this run gone first, it would have gone with the code the two review rounds rejected — and
+the study has one void run already from a launch that was not ready.
+
+**The fifth row is in the table and is not a measurement.** The audit binds `RESULTS.md`'s run
+table to the counted runs, so the row had to appear; grading it was a separate question and the
+answer is no. The selection fixes one target per semantic shape, committed before any run, and a
+second pass over `genisoimage` is outside that design — counting it would put a repeat of one
+shape into a denominator built for four distinct ones. Nothing in #639 asks for a verdict from
+it, and one verdict on the only run whose material differs from the other four would answer
+nothing about what the extra material does.
+
+**Left open, deliberately.** "What a grader receives" is defined in two places: `grade-rubric.md`,
+which is sealed, and the brief plus `assign-grading.py`, which are not. The seal stays green while
+the brief changes — the gap #639 itself grew in. Closing it means adding a fifth name to
+`check-sealed.sh`'s fixed list, and the same function hashes every pre-image, so all nine existing
+ones would hash to something they never contained (recomputed: 9/9 mismatch). The only repair
+would be editing a pre-image, which is the one thing a seal exists to forbid.
+
 ## 2026-09-20 — the grid, and the measurement that was contaminated by the reviewer measuring it (#621, ADR 0082)
 
 **What this merge is.** The 150-cell grid, the real-target anchor and the conclusion #621 asked

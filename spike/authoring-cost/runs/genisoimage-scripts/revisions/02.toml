@@ -1,0 +1,22 @@
+# genisoimage crash-consistency define.
+#
+# genisoimage streams an ISO9660 image into -o: O_WRONLY|O_CREAT|O_TRUNC, then
+# sequential write()s, no lseek, no temp file, no rename, no fsync.  So it never
+# promised that out.iso is complete, valid, or absent after a crash -- only that
+# it never writes backwards, and never writes to the tree it reads.  check.py
+# asserts exactly that and nothing else.
+
+[world]
+state   = "./state"
+
+
+                             # so its bytes are not repeatable and the built-in
+                             # pre-or-post rule is the wrong question for it;
+                             # check.py judges it instead.
+
+[define]
+cwd       = "."
+scratch   = ["out.iso"]
+setup     = "./setup.sh"
+operation = ["/usr/bin/genisoimage", "-quiet", "-o", "./state/out.iso", "./state/src"]
+check     = "./check.py"
