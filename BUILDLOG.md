@@ -120,7 +120,10 @@ before each gate and `gate.sh all` prints what it ran, or prints that it ran not
 *The in-root test was a bare substring*, so the root's siblings counted as inside it — and
 the gate's own green leg stages at `<root>.staging`, which is exactly such a sibling, so the
 error was invisible in the leg most likely to meet it. Matching `"$root/"` fixes it and a
-seventh leg holds it: two threads writing two siblings must count zero writers.
+leg of its own holds it: two threads writing two siblings must count zero writers.
+(Written as "a seventh leg" first, which stopped being true when a leg was added before it —
+the suite prints each leg's evidence under its own line now, so there is no second ordering
+to fall out of step with.)
 
 *The thread count fell to green when it could not measure.* Only an empty strace file
 returned 2; any other way of losing the `pid` prefix left every first field non-numeric, the
@@ -23320,6 +23323,25 @@ subset of CI**. Ten checks were run locally before the push and every one was gr
 them. The token is the run's real path now (`/tmp/oc-repo/...`), which is both what the
 engine saw and what the check skips, and the check's own logic was run over all four pages
 here before pushing again.
+
+**After the merge, the second review's tail found three more of the same kind, and one of
+them was hiding the evidence for this run's own claim.** `gate_all` transcribed each gate's
+log with `tail -2`, and `preflight.sh`'s reading for the wall it names runs to two lines —
+so the committed transcript carried `class (#217), a named wall …` with no sentence in front
+of it. The reason lefthook is red, which is the one red this campaign's promise rests on,
+was unreadable from the record that exists to carry it. The log was complete on disk the
+whole time; it was the *showing* that dropped it. From the `reading:` marker to the end now,
+not a line count.
+
+The other two were an ordering. The selftest collected its legs as `l1 … l11` and dumped
+them at the end in numeric order, which stopped matching the order of the `expect` calls the
+moment a leg was inserted in the middle — `ok` line 6 and `--- leg 6 ---` became different
+legs. Each leg prints its own evidence under its own line now, because nothing keeps two
+orderings in step except not having two; and this file's "a seventh leg holds it" was the
+same drift in prose, replaced by the thing it was counting.
+
+Also this time: `check 11`'s own logic was run over all four pages before the push, which is
+the gap the previous round found the expensive way.
 
 ## 2026-08-12 — v0.4.0: the milestone is the measurements; the tag carries a passenger
 
