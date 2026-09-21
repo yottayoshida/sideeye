@@ -33,3 +33,6 @@ RED 8 — a regular FILE named old-hooks (the skip is for the tool's directory o
 GREEN 5 — seed-state refuses a repo path outside /tmp
    seed-state: refusing to empty '/etc' — OC_REPO must be an absolute path under /tmp
    rc=2 (expect 2)
+RED 9 — a file whose NAME is a glob that would match a managed hook
+   check: pre-commi? is neither a git sample nor a hook overcommit manages
+   rc=1 (expect 1)

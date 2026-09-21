@@ -3,9 +3,11 @@ ok   interior RED on a one-operation toy (rc=1)
 ok   threads green on a toy with one writing thread (rc=0)
 ok   interior green on a four-operation toy (rc=0)
 ok   threads RED on two threads writing the state root (rc=1)
+ok   threads green when two threads write SIBLINGS of the root (rc=0)
+ok   threads green when two threads only PRINT paths under the root (rc=0)
 ok   visibility RED on lefthook (the 2026-09-21 release-path target) (rc=1)
 
-gate: 0 case(s) failed of 6
+gate: 0 case(s) failed of 8
 --- leg 1 ---
   rename   kernel=1/1 in-root, interposed=1, unmatched=0
 PASS every in-root mutation passed through an interposable function
@@ -26,4 +28,8 @@ gate threads rc=1 (2 thread id(s) wrote inside the state root; 3 clone(s) carryi
   reading: an LD_PRELOAD shim cannot see these; this is the cargo
            class (#217), a named wall at probe time, zero defines spent
 gate visibility rc=1
+--- leg 7 ---
+gate threads rc=0 (0 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD)
+--- leg 8 ---
+gate threads rc=0 (0 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD)
 gate: selftest green

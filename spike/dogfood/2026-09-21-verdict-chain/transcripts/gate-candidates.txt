@@ -1,4 +1,4 @@
-# candidate gate rows, RE-MEASURED 2026-09-21T08:08:00Z
+# candidate gate rows, RE-MEASURED 2026-09-21T08:15:50Z
 # The first measurement ran the three gates back to back with no reset, so interior
 # and threads saw the operation applied to what the gate before them left. For an
 # installer that is a different operation. GATE_RESET rebuilds the pre-state now.

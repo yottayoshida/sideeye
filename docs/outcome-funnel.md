@@ -144,7 +144,7 @@ outcome funnel -- every campaign
 83 encounters (one campaign meeting one target) over 22 campaigns, 16 of them
 recording every target they met; 70 distinct targets.
 62 rows are held to a report this repository committed; 21 name a written record only.
-165 candidates screened before the slates were fixed, over the 16 campaign(s) that
+194 candidates screened before the slates were fixed, over the 16 campaign(s) that
 recorded one; the rest kept no such count.
 
 reach, over the 16 campaign(s) that recorded every target they met

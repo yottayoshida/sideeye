@@ -169,18 +169,44 @@ gate_threads() {
         echo "gate threads rc=2 (no line in the strace output carries a numeric id prefix; the count this gate makes is not available)"
         return 2
     fi
-    # A writing line: the call mutates state, it names something INSIDE the root, and it
-    # did not fail. `= -1` is dropped because an attempt the kernel refused changed nothing.
+    # A writing line: the call mutates state, it names something INSIDE the root, and it did
+    # not fail. `= -1` is dropped because an attempt the kernel refused changed nothing.
     #
-    # `"$root/"` with the separator, not `"$root"`: a plain substring match also accepts the
-    # root's SIBLINGS — `<root>.staging`, `<root>.tmp`, `<root>-old` — and this gate's own
-    # green leg writes exactly such a sibling (`toy_single_op.c` stages at `"%s.staging"`),
-    # so the error was invisible in a leg designed to pass.
-    writers=$(grep -E '((open|openat)|creat|rename(at2?)?|unlink(at)?|mkdir(at)?|rmdir|link(at)?|symlink(at)?|truncate|ftruncate|write|pwrite64|writev|fsync|fdatasync)\(' "$log" \
-        | grep -F "$root/" \
-        | grep -vE '= -1' \
-        | grep -E 'O_WRONLY|O_RDWR|O_CREAT|O_TRUNC|O_APPEND|rename|unlink|mkdir|rmdir|link|symlink|truncate|write|fsync|fdatasync' \
-        | awk '$1 ~ /^[0-9]+$/ {print $1}' | sort -u | grep -c '' || true)
+    # Two things this has to get right, both of them mistakes an earlier version made.
+    #
+    # **The separator.** A plain substring test for the root also accepts its SIBLINGS —
+    # `<root>.staging`, `<root>.tmp`, `<root>-old` — and this gate's own green leg writes
+    # exactly such a sibling (`toy_single_op.c` stages at `"%s.staging"`), so the error was
+    # invisible in the leg most likely to meet it.
+    #
+    # **Where the root is allowed to appear.** Testing the whole line for the path counts a
+    # log message as a write: `write(1</dev/pts/0>, "installing /tmp/r/.git/hooks/pre-commit")`
+    # passes a naive filter on every clause, and a thread that only prints becomes a writer.
+    # So the position matters. Under `strace -y` a descriptor prints as `4</resolved/path>`
+    # and a path argument prints as `"/the/path"`, which is the difference this uses:
+    # descriptor-based calls (write, fsync, ftruncate…) are accepted only through the `<`
+    # annotation, and path-taking calls through either.
+    writers=$(awk -v root="$root/" '
+        $1 !~ /^[0-9]+$/ { next }                       # no id prefix: not a line we count
+        /= -1/           { next }                       # the kernel refused it
+        {
+            call = $0
+            sub(/^[0-9]+[ \t]+/, "", call)
+            sub(/\(.*/, "", call)
+        }
+        call ~ /^(write|pwrite64|writev|fsync|fdatasync|ftruncate)$/ {
+            if (index($0, "<" root) > 0) print $1
+            next
+        }
+        call ~ /^(open|openat|creat)$/ {
+            if ($0 !~ /O_WRONLY|O_RDWR|O_CREAT|O_TRUNC|O_APPEND/) next
+            if (index($0, "\"" root) > 0 || index($0, "<" root) > 0) print $1
+            next
+        }
+        call ~ /^(rename|renameat|renameat2|unlink|unlinkat|mkdir|mkdirat|rmdir|link|linkat|symlink|symlinkat|truncate)$/ {
+            if (index($0, "\"" root) > 0 || index($0, "<" root) > 0) print $1
+        }
+    ' "$log" | sort -u | grep -c '' || true)
     [ -n "$writers" ] || writers=0
     if [ "$writers" -gt 1 ]; then
         echo "gate threads rc=1 ($writers thread id(s) wrote inside the state root; $created clone(s) carrying CLONE_THREAD. See the header for what this does and does not claim)"
@@ -311,6 +337,21 @@ for t in ts: t.start()
 for t in ts: t.join()' >"$tmp/l7" 2>&1
     expect "threads green when two threads write SIBLINGS of the root" 0 $?
 
+    # --- a thread that only PRINTS the root's path is not a writer.
+    #
+    # The first version applied its `write` test to the whole line, so
+    # `write(1</dev/pts/0>, "installing <root>/pre-commit")` counted — a thread that logged
+    # became a writer. Two threads printing the path and writing nothing must count 0.
+    mkdir -p "$tmp/log/root"
+    OUT="$tmp/o8" gate_threads "$tmp/log/root" -- env "R=$tmp/log/root" python3 -u -c 'import threading, os, sys
+r = os.environ["R"]
+def w(n):
+    sys.stdout.write("installing " + r + "/" + n + "\n"); sys.stdout.flush()
+ts = [threading.Thread(target=w, args=(s,)) for s in ("a", "b")]
+for t in ts: t.start()
+for t in ts: t.join()' >"$tmp/l8" 2>&1
+    expect "threads green when two threads only PRINT paths under the root" 0 $?
+
     # --- visibility red: lefthook, the target the previous run admitted
     mkdir -p "$tmp/lh-repo"
     ( cd "$tmp/lh-repo" && git init -q . && git config user.email t@example.com && git config user.name t \
@@ -320,8 +361,8 @@ for t in ts: t.join()' >"$tmp/l7" 2>&1
 
     echo
     OUT=$outer_out
-    echo "gate: $fails case(s) failed of 7"
-    for f in 1 2 3 4 5 6 7; do echo "--- leg $f ---"; tail -3 "$tmp/l$f"; done
+    echo "gate: $fails case(s) failed of 8"
+    for f in 1 2 3 4 5 6 7 8; do echo "--- leg $f ---"; tail -3 "$tmp/l$f"; done
     [ "$fails" = 0 ] || return 1
     echo "gate: selftest green"
     return 0

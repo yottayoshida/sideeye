@@ -32,21 +32,19 @@ fail() { echo "check: $*" >&2; exit 1; }
 
 [ -d "$h" ] || fail "the hooks directory is gone"
 
-managed=" commit-msg overcommit-hook post-checkout post-commit post-merge post-rewrite pre-commit pre-push pre-rebase prepare-commit-msg "
 
 for f in "$h"/* "$h"/.*; do
     b=${f##*/}
+    case "$b" in .|..) continue ;; esac
     # `old-hooks` is overcommit's own scratch under this define: it is created, nothing is
     # moved into it (no pre-existing user hook is seeded), and it is removed again —
     # measured, both branches. A world crashed inside that window leaves an empty directory
-    # git does not look at. It is declared `scratch` in the toml for the built-in
+    # git does not look at, so it is declared `scratch` in the toml for the built-in
     # invariants and skipped here for the same reason. **Under a define that seeds a
     # pre-existing hook this would be wrong**: there the directory holds the user's file.
-    case "$b" in .|..) continue ;; esac
-    # `old-hooks` is skipped only when it is what the tool makes — a DIRECTORY. A regular
-    # file of that name is not overcommit's scratch and falls through to the checks below,
-    # so the skip cannot be used as a hiding place for a corrupted file that happens to
-    # carry the name.
+    # Skipped only when it is what the tool makes — a DIRECTORY. A regular file of that name
+    # is not overcommit's scratch and falls through to the checks below, so the skip cannot
+    # become a hiding place for a corrupted file that happens to carry the name.
     if [ "$b" = old-hooks ] && [ -d "$f" ]; then continue; fi
     [ -e "$f" ] || continue                 # the glob itself when the directory is empty
     [ -f "$f" ] || fail "$b exists and is not a regular file"
@@ -57,8 +55,14 @@ for f in "$h"/* "$h"/.*; do
             head -c 2 "$f" | grep -q '#!' || fail "$b is a git sample and no longer starts with a shebang"
             ;;
         *)
-            case "$managed" in
-                *" $b "*)
+            # The NAME is the subject, so it is what `case` matches and the ten names are
+            # literal patterns. The earlier form put the name IN the pattern
+            # (`case "$managed" in *" $b "*`), which makes a filename carrying `*` or `?`
+            # into a glob that can match a managed name it is not. Nothing overcommit writes
+            # carries one, which is exactly why it would have gone unnoticed.
+            case "$b" in
+                commit-msg|overcommit-hook|post-checkout|post-commit|post-merge|\
+                post-rewrite|pre-commit|pre-push|pre-rebase|prepare-commit-msg)
                     # Both ends, because a file holding only the leading comment would pass a
                     # name-only test: the entrypoint names itself in its header and again in
                     # its last lines, so the tail is what says the copy reached its end.

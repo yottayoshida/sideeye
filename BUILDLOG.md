@@ -139,6 +139,19 @@ reporting different things. Both are corrected above. The pattern in all four pr
 is the same — a sentence written when the measurement said one thing, left standing after
 the measurement was redone.
 
+The same review's tail added two more, both of them cases where a test written on the whole
+line accepts something the rule does not mean. `gate_threads` applied its `write` clause to
+the entire strace line, so `write(1</dev/pts/0>, "installing <root>/pre-commit")` counted as
+a write into the root and a thread that only logged became a writer; the position is what
+distinguishes them, since `strace -y` prints a descriptor as `4</path>` and a path argument
+as `"/path"`, and the count is taken by `awk` per call class now. And `verify.sh` put the
+filename in the PATTERN of a `case` (`case "$managed" in *" $b "*`), which makes a name
+carrying `*` or `?` a glob that can match a managed hook it is not. Both have their own
+red leg: two threads that print the root's path and write nothing must count zero, and a
+file named `pre-commi?` must be refused. Neither changed a number in this run — no target
+here logs paths and nothing overcommit writes carries a glob character — which is why they
+would have stayed invisible.
+
 
 ## 2026-09-21 — the adoption path, and three probes I ran without reading (ADR 0084)
 
