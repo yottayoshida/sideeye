@@ -114,6 +114,12 @@ truncated at the terminal width. Their dispositions do not turn on it — they f
   target's linkage rather than about how Sideeye was installed. The installer did its job.
 - **No upstream report.** The run produced no FAIL, so there is nothing to report and no
   judgement about novelty to make.
+- **A fourth thing a run owes, which `spike/dogfood/README.md` does not list.** Adding a target
+  to the funnel puts it in `count.py b2-selection`'s coverage check: every name the funnel holds
+  must be excluded from the B2 candidate pool by `spike/unknown-rate/b2-exclusions.txt` or an
+  alias. CI caught this one — `'lefthook' … is not covered` — after the funnel row was written
+  and before it was merged. The README names three follow-ups; this is a fourth, and it only
+  appears once a funnel row exists.
 - **The funnel cannot hold the first leg.** Its earliest stage is `attempted` — "the target
   reached a define and the engine ran against it" — so a target that failed at *adoption* could
   not have a row at all. None did here, which is why `coverage` is `full` honestly: the slate is
