@@ -1,0 +1,27 @@
+{
+  "target": "genisoimage",
+  "manifest": "83a1d3aa4395023a168fdce8ed7fefe944fd4a91b6a4cbf47815fc2749aee377",
+  "started": "2026-09-21T03:06:32Z",
+  "ended": "2026-09-21T03:22:13Z",
+  "session_exit": 0,
+  "target_version": "9:1.1.11-3.4",
+  "claude_cli": "2.1.278 (Claude Code)",
+  "subject_model": "claude-opus-5[1m]",
+  "image": "sha256:e4650ace348b914d768cd2e3cee48289565c3237700532918ec2ec0340fe3046",
+  "disposition": "pending",
+  "graders": [],
+  "judged_sets": [
+    {
+      "ts": "2026-09-21T03:15:44.699Z",
+      "judged": 11,
+      "scratch": "",
+      "matched": 0
+    },
+    {
+      "ts": "2026-09-21T03:16:48.912Z",
+      "judged": 11,
+      "scratch": "out.iso",
+      "matched": 1
+    }
+  ]
+}

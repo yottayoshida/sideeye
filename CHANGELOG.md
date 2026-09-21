@@ -8,6 +8,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **The grading material is what the subject wrote, not what the define names** (#639,
+  **ADR 0083**; `spike/authoring-cost/watch-defines.py`, `assign-grading.py`, `grade-rubric.md`,
+  `PROTOCOL.md`). `grade-rubric.md` defines one of its four verdicts entirely in terms of the
+  checker's behaviour, and the material handed to a grader was the `*.toml` snapshots alone — so
+  **`vacuous checker` could not be reached, and every grader in the first round said so
+  unprompted**. The watcher now also captures the scripts beside each define and
+  `assign-grading.py` puts them in the brief. **The unit is the subject's directory rather than
+  the files the define names**: `check` is a command string, five of eight recorded revisions
+  spell it relatively or behind an interpreter, and `genisoimage`'s checker calls an `mksrc.sh`
+  no define mentions — so resolving the name would have missed what a grader needs anyway. The
+  capture rule is stated **positively**, because the watch root is the whole home and an
+  exclusion list reaches the dotfiles, the image README, the engine tarball and the watcher's
+  own index — that last one growing a row per second forever. **Naming the directory is not
+  enough by itself**, which blind review measured three ways before this shipped: recursing
+  swept the target's data in whenever a define named no `[world] state`, a define written in
+  `/home/user/authoring` swept the image's README and tarball, and a define nested inside
+  another leaked the inner target. Capture is direct children only, and only of files that were
+  not there when the watcher started or have changed since — the watcher is the container's
+  first process, so everything already on disk is the image's. The scripts are a **second column,
+  never a second revision**: `audit.py` requires `revisions/`'s snapshots to be a gapless `1..N`
+  matching its index, and a script is rewritten more often than its define is (three script
+  states to two revisions in one recorded run). They reach the grader through the printed brief
+  and never through the sheet, whose `# map` `audit.py` refuses to see anything but revision
+  numbers in. **The four published runs are not re-graded** and both sealed pages carry a dated
+  amendment saying they were graded without the scripts; `RESULTS.md` now prints, per run, where
+  the checker can be read in the committed transcript and the condition each grader wrote for
+  changing its mind — and stops there rather than deciding it, which would be the self-assessment
+  the two-grader protocol exists to avoid. The watcher also gains its first check at all, and
+  its poll body is wrapped: it is the container's PID 1, so an exception kills the box and voids
+  the session rather than losing one snapshot.
 - **What an exhaustive exploration costs, measured from 10 to 1000 crash points, and the
   decision that follows from it: nothing** (#621 second of two, **ADR 0082**;
   `spike/explore-cost/scale/RESULTS.md`, two 150-row grids and an anchor). A thousand crash

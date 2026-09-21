@@ -1,0 +1,30 @@
+# genisoimage crash-consistency define.
+#
+# Measured on this box: genisoimage opens -o with O_WRONLY|O_CREAT|O_TRUNC and
+# then writes the image forward, sector by sector -- 137 writes, zero lseeks,
+# no temp file, no rename, no fsync, no unlink (still zero lseeks under
+# -boot-info-table, the one mode that "patches" anything).  Its own man page
+# pipes it into wodim and lets -o name a tape or a CD writer, so forward-only
+# is the contract, not an accident.
+#
+# Therefore it does NOT promise that a crash leaves out.iso complete, valid,
+# mountable, or absent -- it leaves the partial file behind even on a clean
+# error exit.  check.py asserts only the two things it does promise:
+#   1. the pathspec tree is read-only and comes back byte-identical;
+#   2. out.iso is either exactly the image that was already there, or a prefix
+#      of the image a completed run writes -- never anything in between.
+
+[world]
+state = "./state"
+
+[define]
+cwd       = "."
+scratch   = ["out.iso"]
+# The image carries a wall-clock volume timestamp and genisoimage has no option
+# to pin it (no -creation-date, no SOURCE_DATE_EPOCH), so out.iso is not
+# byte-repeatable and sideeye/s built-in pre-or-post rule is the wrong question
+# for a streamed file anyway.  Declared scratch, and judged by check.py instead,
+# which masks the ISO9660 date fields structurally rather than by sampling.
+setup     = "./setup.sh"
+operation = ["/usr/bin/genisoimage", "-quiet", "-o", "./state/out.iso", "./state/src"]
+check     = "./check.py"

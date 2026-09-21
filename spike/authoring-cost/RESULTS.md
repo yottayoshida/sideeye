@@ -19,6 +19,19 @@ is a weaker guarantee and is said here rather than implied away.
 | `genisoimage` | 2 | 1 | 358 s | `graded` | revision 01 |
 | `lmdb-utils` | 4 | 2 | 404 s | `none-valid` | none — neither revision accepted |
 | `fossil` | 3 | 2 | 485 s | `graded` | revision 01 |
+| `genisoimage-scripts` | 2 | 3 | 657 s | `ungraded` | — (not a measurement; see below) |
+
+**The fifth row is apparatus, not measurement.** `genisoimage-scripts` was run on 2026-09-21 to
+satisfy #639's first acceptance condition — that a run's grading material contains the scripts
+the subject wrote — and it does: `revisions/scripts/` holds ten captures across three revisions,
+including a `check.py` (this subject wrote Python), the `src.manifest` and `out.iso.pre` its
+checker compares against, and no `state/` file and no Sideeye report. **It is deliberately not
+graded and the measured set stays at four.** The study's selection is one target per semantic
+shape, committed before any run; a second pass over `genisoimage` is outside that design, and
+counting it would put a repeat of one shape into a denominator built to hold four distinct ones.
+Nothing in #639's conditions asks for a verdict from it, and one verdict on the only run whose
+material differs from the other four would answer nothing about what the extra material does —
+that comparison needs a design, not a spare row.
 
 **`judged states` is the primary count, and it is not the revision count.** A judged state is
 what the engine's own `l0` line reports — a **count of judged paths plus the scratch declaration
@@ -120,7 +133,7 @@ Two issues, each with an acceptance case drawn from a measured failure:
 | filed | from | predicate |
 |---|---|---|
 | **#638** report the judged set as data | `lmdb-utils`, the unnamed `lock.mdb` at `07:49:50` | `reach` — the next step past a wall this study measured. Not a defect: `report-schema.md` describes `l0` correctly as counts and promises no names |
-| **#639** the study grades a subset of what the subject authored | every grader raised the missing checker unprompted; three of four runs reached a judged set no snapshot caught | `broken-promise` — `grade-rubric.md` asks for a verdict defined by the checker's behaviour while the apparatus never supplies the checker |
+| **#639** the study grades a subset of what the subject authored | every grader raised the missing checker unprompted; three of four runs reached a judged set no snapshot caught | `broken-promise` — `grade-rubric.md` asked for a verdict defined by the checker's behaviour while the apparatus never supplied the checker. **Closed 2026-09-21**: the watcher captures what the subject wrote beside each define and `assign-grading.py` hands it over, and `genisoimage-scripts` is the run that shows it — ten captures over three revisions, no `state/` file and no Sideeye report among them. The four measured runs' verdicts are unchanged, and the section above says what that leaves standing |
 
 A third was planned and **dropped**: the watcher's blindness to a define handed to the engine on
 the command line, as an issue of its own. Its docstring declares it, this merge implements the
@@ -132,8 +145,33 @@ now-surfaced limitation twice.
 
 - **n = 4.** One target per semantic shape, one session each, one model as subject and the same
   model as both graders. Grading is agreement, not truth, and the protocol says so.
-- **The verdicts skew high.** `vacuous checker` could not be reached, because the checker's body
-  is not in the grading material.
+- **One of the four verdicts could not be reached.** `vacuous checker` is defined entirely in
+  terms of the checker's behaviour, and the grading material was the `*.toml` snapshots alone,
+  so the checker's body was never in it. Every grader in the round said so unprompted and none
+  asserted a class it could not see; their sheets carry the note. **#639 fixed the apparatus,
+  not this round** — from 2026-09-21 the material carries the scripts beside each define
+  (`PROTOCOL.md`, `grade-rubric.md`, both amended with that date), and these four verdicts stand
+  as they were given.
+
+  **What that leaves standing is checkable rather than asserted.** The checkers are in the
+  committed transcripts, and the graders wrote down what would have moved them:
+
+  | run | where the checker is | what the grader said it turned on |
+  |---|---|---|
+  | `genisoimage` | `runs/genisoimage/transcript.jsonl`, the Bash call at `07:59:11Z` | grader A: *"This verdict covers the judged state, the scratch declaration and the operation; if the checker reads only the exit code it falls to `vacuous checker`."* The checker runs `isovfy`, diffs an `isoinfo -R -f` listing against a rebuilt tree, extracts every file with `isoinfo -R -x` and `cmp`s it, and checks each symlink |
+  | `lmdb-utils` | `lmdb-case-from-transcript.sh` beside this page, quoted verbatim with its timestamps | both graders reached `wrong question` first, and `grade-rubric.md`'s order of application stops there — grader A's sheet says so outright |
+  | `fossil` | `runs/fossil/transcript.jsonl`, `08:07:25Z` then two edits at `08:10:11Z` and `08:10:13Z` | both graders rested the verdict on the scratch declaration and the delegation to fossil, both of which are in the `*.toml` |
+  | `dos2unix-measured` | `runs/dos2unix-measured/transcript.jsonl`, `08:14:36Z` | the two graders split on claim 5, which the card marks `unspecified`; neither cited the checker as the fork |
+
+  **This page does not say what a grader would have decided.** It prints the condition each
+  grader wrote and where the checker can be read, and stops — deciding it here would be the
+  self-assessment the whole two-grader protocol exists to avoid.
+
+  Two things about reading those transcripts: `run-authoring.sh`'s `scrub()` rewrites
+  `GENERATED_PASSWORD` and `SECRET` where they appear, so a scrubbed line is not the original
+  byte for byte; and the `<none>` images `box.txt` names are the **base** images — the subject's
+  files lived in the container's writable layer, which is gone, so the transcript is the record
+  and not a second copy of it.
 - **The write order was requested, not hidden.** Revisions are handed over as `revisions/NN.toml`.
 - **No feature is justified by this page alone.** The one repeated cost it names is filed, not
   implemented, and its acceptance case is a specific measured moment rather than this argument.
