@@ -23307,6 +23307,20 @@ dogfood scripts and this experiment, and the leg-C predicate implemented twice
 — is #65, because the fix direction runs through shipped measurement scripts
 this plan pledged not to touch.
 
+**CI caught one more, and it is the second campaign in a row it has caught in the same
+page.** `check 11` in `spike/acceptance.sh` holds every backticked token containing a slash
+in `docs/target-classes.md` to a path that exists in the repository; absolute ones are
+skipped. The new row quoted the crash point as `` `.git/hooks/overcommit-hook` `` — relative,
+so the check looked for it here and did not find it. The previous campaign was caught by the
+same check on the same page for the same reason.
+
+What that says is not that the row was careless; it is that **the pre-push check list was a
+subset of CI**. Ten checks were run locally before the push and every one was green; check
+11 lives inside the acceptance suite, which runs in the Linux container, and was not among
+them. The token is the run's real path now (`/tmp/oc-repo/...`), which is both what the
+engine saw and what the check skips, and the check's own logic was run over all four pages
+here before pushing again.
+
 ## 2026-08-12 — v0.4.0: the milestone is the measurements; the tag carries a passenger
 
 Version 0.3.0 → 0.4.0, both hand-written strings at once (the unit test holds the
