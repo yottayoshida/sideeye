@@ -99,7 +99,19 @@ seen_in() {
         # filtered stream, which numbers the lines it was handed and so reports a number
         # that does not exist in the file. Measured: with one `$mine` row removed above it,
         # `pre-commit` was reported at b2-exclusions:165 while the file's 165 is `poetry`.
-        line=$(grep -n -i -F "$name" "$root/$path" 2>/dev/null | grep -v -F "$mine" | head -1 | cut -d: -f1 || true)
+        # Same class as the gate's threads count, found by sweeping for it: a search that
+        # could not read its input must not come back looking like "no hit", because here
+        # "no hit" is `fresh` — the direction this script's own header calls the expensive
+        # one. `grep` distinguishes them (0 match, 1 no match, 2 error) and the status is
+        # read rather than thrown away with `2>/dev/null`.
+        # `&& grc=0 || grc=$?`, not `; grc=$?`: under `set -e` an assignment takes the
+        # status of its command substitution, so a plain no-match (grep's 1) kills the
+        # script — silently, exiting 1, which reads exactly like a failing check. That is
+        # the trap this file's own comment below already describes, met a second time from
+        # a different direction. An `||` list is not a `set -e` trigger.
+        hit=$(grep -n -i -F "$name" "$root/$path" 2>/dev/null) && grc=0 || grc=$?
+        [ "$grc" -le 1 ] || { echo "fresh: could not search $path (grep exited $grc)" >&2; exit 2; }
+        line=$(printf '%s\n' "$hit" | grep -v -F "$mine" | head -1 | cut -d: -f1 || true)
         # `if`, not `[ ] && printf`: under `set -e` a false test as the last statement of a
         # loop body makes the function return 1, the command substitution that called it
         # fails, and the whole script dies with no output at all. Measured — the first
