@@ -8,6 +8,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **The first run of the adoption path on a real project, and what it cost** (**ADR 0084**;
+  `spike/dogfood/2026-09-21-release-path/`). `docs/ci-quickstart.md` says a project adopts Sideeye
+  by copying the workflow and `install-sideeye.sh` and swapping the define. That script had only
+  ever run against the two toys the page ships; all fourteen dogfood runs before this one mounted
+  a tarball the operator unpacked. **The installer works**: the digest GitHub publishes was
+  fetched and matched, stdout was the binary's absolute path and nothing else, and no Zig was
+  involved. **Two adoption costs the pages do not state** each took a round of *"Change the
+  define"* with no line named — `lefthook install` only runs inside the repository, so the define
+  needs a `cwd` the page's template does not show; and `cwd` is resolved **before** the state
+  directory is made, on purpose, so a `cwd` the define's own setup would create can never resolve.
+  Neither is repaired here: a measurement that fixes what it measures cannot report what it found.
+  The target itself reached a named wall — `oracle_missed_operation`, because lefthook is
+  statically linked and there is no dynamic linker to interpose through — which **rule 10 should
+  have caught before the run**: the probe was executed and its output not read past `ELF 64-bit
+  LSB executable`, with `statically linked` further along the same line. Linkage is classified
+  mechanically now. **The funnel cannot hold the first leg** and this change does not extend it:
+  its earliest stage is "the target reached a define and the engine ran", so an adoption failure
+  has no row, and a stage before it would make all 81 committed rows claim they cleared something
+  nobody measured. The slate is defined as the targets that cleared adoption, which keeps
+  `coverage=full` true rather than approximately true — `COVERAGE` is a closed pair and its
+  checker validates membership only. Screening found something worth keeping: of 53 names checked
+  against six ledgers, **27 were already met and only 9 of those are in the funnel** — they are
+  in earlier runs' `SELECTION.md` files, which hold the candidates a run turned away. The first
+  draft of the record said twelve: the screen had run in batches and the batches were counted by
+  eye, and the transcript the figure is now read from is committed beside it.
 - **The grading material is what the subject wrote, not what the define names** (#639,
   **ADR 0083**; `spike/authoring-cost/watch-defines.py`, `assign-grading.py`, `grade-rubric.md`,
   `PROTOCOL.md`). `grade-rubric.md` defines one of its four verdicts entirely in terms of the

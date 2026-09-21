@@ -2,6 +2,70 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-21 — the adoption path, and three probes I ran without reading (ADR 0084)
+
+**What this is.** The first dogfood run where Sideeye arrives the way the quickstart tells a
+project to get it — the vendored `install-sideeye.sh`, a pinned release, a digest checked against
+GitHub's — instead of a tarball the operator unpacked. One target, one named wall, and two
+adoption costs the pages do not state.
+
+**The installer is fine, and the first evidence said otherwise.** Run in a container here it dies
+with `curl: (60) SSL certificate problem: self-signed certificate in certificate chain`. Before
+writing that down as a finding I put a control in the same run: `https://example.com` fails
+identically, and the certificate offered for `api.github.com` is issued by the corporate
+proxy's own CA rather than by a public one. It is this machine's proxy, not the script. With the CA trusted the
+installer fetches, matches the published digest, and prints the binary's absolute path on stdout
+and nothing else — exactly what the page claims. **Without that control this run would have
+recorded a defect in `install-sideeye.sh` that does not exist**, and the blind review of the plan
+had said so in advance: "落ちたとき原因を分ける対照が無い".
+
+**Two things the pages do not say, each costing a round of blind repair.** `lefthook install`
+refuses outside a git repository, so the define needs a `cwd` — the quickstart's template does not
+show one, and the engine's refusal says only *"Change the define"*, never which line. Three controls in one run located it, the third differing from the shipped define **only** by
+the `cwd` line: bare `exit 0`, shim-only `exit 0` with both hooks written, and the de-`cwd`ed
+define under the engine refusing `recording_run_failed`. The first version of this record claimed
+those three and the file held two, one of them a different define from two minutes earlier —
+blind review caught it by the mtimes. Then `cwd` turned out to be
+resolved **before** the state directory is made — deliberately, `src/main.zig`: *"a define naming
+a directory that is not there must refuse before anything on disk has moved"* — so the repository
+cannot live in the state and cannot be created by the define's own setup. Neither is repaired
+here. A measurement that fixes what it measures cannot say what the thing measured was like.
+
+**Three probes run, three outputs not read to the end.** Rule 10 wants dynamic linking *verified
+by probe, never assumed*. I ran `file -bL` on every candidate and stopped reading at `ELF 64-bit
+LSB executable`; `statically linked` is further along the same line. `lefthook` went into the
+slate and refused with `oracle_missed_operation` — the oracle saw the `openat` creating
+`pre-commit`, the shim's account ended after 0 operations, and `ldd` says `not a dynamic
+executable`. Reading the same probe output mechanically afterwards showed **`go` is static too**,
+so `go mod init` had been failing rule 10 twice over while only its thread count was written down.
+Running a probe and reading a probe are different pieces of work, and only the first was done.
+
+**`fresh.sh` said my own slate was already met.** The freshness gate searches six ledgers — five
+was not enough, because the funnel holds encounters and not the candidates a run turned away, and
+review found #618's selection in none of them. Of **53 names, 27 came back already met, and only 9 of those are in the
+funnel**; `mise` is in five `SELECTION.md` files and in `target-classes.md` but in no funnel row.
+The first draft of this entry said "50 names, 12 already met, not one in the funnel" — the screen
+had been run in batches and counted by eye, and the claim about the funnel was never checked at
+all. The transcript the figures are read from is committed beside the record now. Then, re-running the gate after
+the run had written its own records, it returned `SEEN lefthook` against the funnel row, the
+target-classes row and the `SELECTION.md` this very run had just added — which would have made the
+freshness of this selection impossible to check ever again. The campaign's own records are excluded
+now, and that case is in the suite with a mutation that reds it.
+
+**A `set -e` trap, found by measuring rather than by reading.** The first `fresh.sh` ended
+`[ -n "$line" ] && printf …` as the last statement of a loop body. When the test is false the
+function returns 1, the command substitution calling it fails, and the script dies **with no
+output and exit 1** — indistinguishable from a failing check, and it fires precisely when a
+candidate is clear. It was caught because the selftest printed nothing and I ran it alone to see
+the exit code instead of trusting the `&&` chain it was in.
+
+**What this run cannot say.** Nothing about GitHub-hosted runners: the proxy CA takes that off the
+table, and `quickstart-release.yml` is where it is answered. Nothing about the adoption path's
+reach: one target, and its wall is about the target's linkage rather than about how Sideeye got
+there. And the funnel still cannot count the chain the campaign is named after — its first stage
+is "the engine ran against it", so an adoption failure has no row at all, and reading
+adoption → verdict → report takes this page beside the funnel.
+
 ## 2026-09-21 — the grading material, and three mutants that were green for the wrong reason (#639, ADR 0083)
 
 **What this is.** `grade-rubric.md` defines `vacuous checker` entirely in terms of the checker's
