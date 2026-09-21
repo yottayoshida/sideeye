@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   well as green, with the visibility red being the statically linked binary the previous
   run admitted. One target, `overcommit` 0.73.0: **FAIL 10/32**, `oracle_verified`,
   reproduced twice, novel on the tracker and deliberately not filed — the state is restored
-  by re-running the same command and 153 timed kills over three sweeps left no partial hook.
+  by re-running the same command and 204 timed kills over four sweeps left no partial hook.
   `spike/dogfood/README.md`'s ordering rule now carries the exit-code requirement.
 
 

@@ -93,9 +93,10 @@ only been shown half its range, and this is the half that is a real binary.
 
 **The interior counts are floors, and for overcommit the floor is ten times under.**
 `preflight.sh`'s trace set is `%file,write,pwrite64,writev,fsync,fdatasync,ftruncate`.
-`overcommit --install` moves its bytes with **`copy_file_range`**, ten times — measured:
-ten write-flag `openat`s, ten `copy_file_range`s, one `mkdirat`, one `unlinkat` under the
-hooks directory. `copy_file_range` takes descriptors, so it is in neither `%file` nor the
+`overcommit --install` moves its bytes with **`copy_file_range`**, ten times — measured in
+`transcripts/copy-file-range-and-third-sweep.txt`: twenty `openat`s, ten `copy_file_range`s,
+one `mkdirat` and one `unlinkat` naming a path under the hooks directory, with three of the
+ten copies quoted in full. `copy_file_range` takes descriptors, so it is in neither `%file` nor the
 write list, and the gate saw `3 (mkdir=1, open=1, rmdir=1)` where the engine's own run
 counted **31 crash points**. Rule 15 asks only for more than one, which both numbers
 answer, but the gate's number is not the engine's and this page does not pretend it is.
@@ -134,7 +135,7 @@ target issuing the same call raw would be refused.
 - **Rule 8**: `overcommit --install` is non-interactive and exits 0 (measured).
 - **Rule 9**: the checker is written against the tool's own output shape
   (`apparatus/verify.sh`), falsified before use — `transcripts/checker-falsification.txt`
-  holds **five greens and eight reds**, including the state the engine actually corrupts
+  holds **five greens and nine reds**, including the state the engine actually corrupts
   (the samples alone, which the checker's first version accepted) and a regular file
   wearing the scratch directory's name.
 - **Rule 10**: measured by the gate above, not forecast.

@@ -188,7 +188,10 @@ gate_threads() {
     # annotation, and path-taking calls through either.
     writers=$(awk -v root="$root/" '
         $1 !~ /^[0-9]+$/ { next }                       # no id prefix: not a line we count
-        /= -1/           { next }                       # the kernel refused it
+        # The RESULT, not the line: `/= -1/` anywhere also drops a write whose data happens
+        # to contain those three characters, and dropping a writer makes the gate greener —
+        # the wrong direction for a check whose two errors are not symmetric.
+        $0 ~ /\)[ \t]*=[ \t]*-1( |$)/ { next }          # the kernel refused it
         {
             call = $0
             sub(/^[0-9]+[ \t]+/, "", call)
@@ -243,15 +246,31 @@ gate_all() {
         echo "reset: NONE — interior and threads below measured the operation applied to"
         echo "       what the gate before them left, which is not the same operation."
     fi
-    [ -n "${GATE_RESET:-}" ] && sh -c "$GATE_RESET" > "$OUT/reset.log" 2>&1
-    gate_visibility "$root" -- "$@" > "$OUT/visibility.log" 2>&1
-    v=$?
-    [ -n "${GATE_RESET:-}" ] && sh -c "$GATE_RESET" > "$OUT/reset.log" 2>&1
-    gate_interior "$root" -- "$@" > "$OUT/interior.log" 2>&1
-    i=$?
-    [ -n "${GATE_RESET:-}" ] && sh -c "$GATE_RESET" > "$OUT/reset.log" 2>&1
-    gate_threads "$root" -- "$@" > "$OUT/threads.log" 2>&1
-    t=$?
+    # **A reset that fails is a 2, not a shrug.** The first version ran the reset and looked
+    # at nothing: a failing reset left the next gate measuring the state the last one left —
+    # the very defect the reset exists to remove — with no trace. It also wrote all three
+    # resets to one log with `>`, so the first failure was gone by the third. Each reset now
+    # has its own log and its own status, and a failure ends the row at 2.
+    reset_before() { # $1 which gate
+        [ -n "${GATE_RESET:-}" ] || return 0
+        sh -c "$GATE_RESET" > "$OUT/reset-$1.log" 2>&1
+        rrc=$?
+        [ "$rrc" = 0 ] && return 0
+        echo "gate $1 rc=2 (the reset before it exited $rrc; see reset-$1.log — the gate was not run)"
+        return 2
+    }
+    if reset_before visibility; then
+        gate_visibility "$root" -- "$@" > "$OUT/visibility.log" 2>&1
+        v=$?
+    else v=2; fi
+    if reset_before interior; then
+        gate_interior "$root" -- "$@" > "$OUT/interior.log" 2>&1
+        i=$?
+    else i=2; fi
+    if reset_before threads; then
+        gate_threads "$root" -- "$@" > "$OUT/threads.log" 2>&1
+        t=$?
+    else t=2; fi
     tail -2 "$OUT/visibility.log"; tail -1 "$OUT/interior.log"; tail -1 "$OUT/threads.log"
     OUT=$base
     printf 'GATE %-14s visibility=%s interior=%s threads=%s\n' "$label" "$v" "$i" "$t"
@@ -352,6 +371,21 @@ for t in ts: t.start()
 for t in ts: t.join()' >"$tmp/l8" 2>&1
     expect "threads green when two threads only PRINT paths under the root" 0 $?
 
+    # --- the 2s. ADR 0085's first rule is "0, 1, 2 — and the 2 is kept", so the 2 needs its
+    # own falsification: a gate that could only ever answer 0 or 1 would pass every leg
+    # above and still break the rule the design rests on. Three of the four ways this file
+    # produces a 2, each triggered at its own site. `die_broken` exits rather than returns,
+    # so those two run in a subshell.
+    (PREFLIGHT="$tmp/not-a-file" gate_visibility "$tmp/single-state" -- true) >"$tmp/l9" 2>&1
+    expect "visibility answers 2 when the instrument is missing" 2 $?
+
+    printf '#!/bin/sh\nexit 0\n' > "$tmp/stub-preflight.sh"
+    OUT="$tmp/o10" PREFLIGHT="$tmp/stub-preflight.sh" gate_interior "$tmp/single-state" -- true >"$tmp/l10" 2>&1
+    expect "interior answers 2 when no INTERIOR count is printed" 2 $?
+
+    (PATH=/nonexistent gate_threads "$tmp/single-state" -- true) >"$tmp/l11" 2>&1
+    expect "threads answers 2 when strace is not installed" 2 $?
+
     # --- visibility red: lefthook, the target the previous run admitted
     mkdir -p "$tmp/lh-repo"
     ( cd "$tmp/lh-repo" && git init -q . && git config user.email t@example.com && git config user.name t \
@@ -361,8 +395,8 @@ for t in ts: t.join()' >"$tmp/l8" 2>&1
 
     echo
     OUT=$outer_out
-    echo "gate: $fails case(s) failed of 8"
-    for f in 1 2 3 4 5 6 7 8; do echo "--- leg $f ---"; tail -3 "$tmp/l$f"; done
+    echo "gate: $fails case(s) failed of 11"
+    for f in 1 2 3 4 5 6 7 8 9 10 11; do echo "--- leg $f ---"; tail -3 "$tmp/l$f"; done
     [ "$fails" = 0 ] || return 1
     echo "gate: selftest green"
     return 0

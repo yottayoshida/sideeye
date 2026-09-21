@@ -89,13 +89,14 @@ reproduced identically twice.
 is real and was measured with a control in the same run: a complete hook makes `git commit`
 exit 1 and fail the check; the zero-byte one lets the same offending commit through at exit
 0 with the hooks never mentioned. But the data comes back (`overcommit --install` again
-restores it), nothing user-authored is at risk (one atomic `renameat`), and **153 timed
-kills over three 51-attempt sweeps left zero incomplete hooks**. The three are not one
-measurement: the first two report `fewer hooks 0` and the third, which records the hook
-count per attempt, shows kills landing inside the install (48 ms → 1 hook, 49 ms → 10,
-50 ms → 1). They disagree, which says the timing is not stable at this granularity — the
-third is what keeps the zeros from being vacuous, and an earlier draft of this entry said
-the *same* sweep did both, which the transcript does not support. A crash point exists; a
+restores it), nothing user-authored is at risk (one atomic `renameat`), and **204 timed
+kills over four 51-attempt sweeps left zero incomplete hooks**. The four are not one
+measurement: two report `fewer hooks 0`, the third records the hook count per attempt and
+shows kills landing inside the install (48 ms → 1 hook, 49 ms → 10, 50 ms → 1), and the
+fourth steps from 0 to 10 without ever showing a partial count. They disagree, which says
+the timing is not stable at this granularity — the third is what keeps the zeros from being
+vacuous, and an earlier draft of this entry said the *same* sweep did both, which the
+transcript does not support. A crash point exists; a
 crash does not land there. Sideeye measures the first and says in every report that it does
 not measure the second.
 
@@ -132,8 +133,8 @@ and now says so. The same syscall is one of the operations #217 names as untrapp
 `--observe syscalls`; this run reached a verdict because Ruby calls it through glibc, where
 the shim interposes it.
 
-Two of the review's findings were this entry's own: "three greens and three reds" for a
-transcript that by then held eleven legs, and the claim that one sweep both found zero
+Two of the review's findings were this entry's own: a checker leg tally for a transcript
+that had grown past it, and the claim that one sweep both found zero
 incomplete hooks and caught the process mid-install when those were two different runs
 reporting different things. Both are corrected above. The pattern in all four prose defects
 is the same — a sentence written when the measurement said one thing, left standing after

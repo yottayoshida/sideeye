@@ -11,7 +11,8 @@ Selection, the ledgers, and every candidate's gate row: [SELECTION.md](SELECTION
 
 ## The gate, before anything else this page says
 
-`apparatus/gate.sh`, seven legs, each seen (`transcripts/gate-selftest.txt`):
+`apparatus/gate.sh`, **eleven legs — five greens, three reds and three twos** — each seen
+(`transcripts/gate-selftest.txt`):
 
 | leg | target | expected | measured |
 |---|---|---|---|
@@ -22,6 +23,15 @@ Selection, the ledgers, and every candidate's gate row: [SELECTION.md](SELECTION
 | threads green | one writing thread | 0 | 0 |
 | threads **RED** | two threads writing the judged root | 1 | **1** |
 | threads green | two threads writing **siblings** of the root | 0 | 0 |
+| threads green | two threads that only *print* paths under the root | 0 | 0 |
+| visibility **2** | the instrument missing | 2 | **2** |
+| interior **2** | an instrument printing no count | 2 | **2** |
+| threads **2** | `strace` not installed | 2 | **2** |
+
+The last three are there because ADR 0085's first rule is *"0, 1, 2 — and the 2 is kept"*.
+A gate that could only ever answer 0 or 1 passes every other leg above and still breaks the
+rule the design rests on, so the 2 needs its own falsification rather than being taken on
+the strength of the code that produces it.
 
 Two of those legs are not the ones this campaign's plan named, and the reasons are the
 measurements:
@@ -60,9 +70,11 @@ that order. What that proves is that the conclusions were written before the exp
 not that the result was unseen, because the run happens outside git.
 
 The earlier wording here said "ahead of the transcripts", which was false of `e064dee`
-itself: that commit carries eight of them. Only this note was rewritten; the three branches
-below are byte-identical to what `e064dee` holds, and `git show e064dee:spike/dogfood/2026-09-21-verdict-chain/RESULTS.md`
-is how a reader checks that rather than taking it from this sentence.*
+itself: that commit carries eight of them. **The three branches below are byte-identical to
+what `e064dee` holds** — the rest of this page has moved since, this note and the gate table
+above among it, so "only this note was rewritten" would be the same kind of stale sentence.
+`git show e064dee:spike/dogfood/2026-09-21-verdict-chain/RESULTS.md` is how a reader checks
+the branches rather than taking it from here.*
 
 The chain this campaign is named after is `docs/outcome-funnel.md`'s:
 `attempted → explored → judged → novel → report_worthy → filed`. It has reached `filed` 19
@@ -129,20 +141,24 @@ Three measurements decided the report question, and the owner's call followed th
 2. **Nothing the user authored is at risk.** The single path that touches a user-authored
    file is one `renameat` — atomic, measured under `strace` — and the file is intact in
    `.git/hooks/old-hooks/` afterwards. No crash can lose it.
-3. **An ordinary interruption did not reach the window in 153 attempts.** Three sweeps of
-   51, each 40–90 ms in 1 ms steps against a ~69 ms install: SIGINT, SIGKILL, and a third
-   SIGKILL sweep that recorded the hook count per attempt. **Zero incomplete hooks in all
-   three.**
+3. **An ordinary interruption did not reach the window in 204 attempts.** Four sweeps
+   against a ~69 ms install, each stepping 40–90 ms in 1 ms steps — 51 delays, so 4 × 51.
+   Three are in `transcripts/sigint-reachability.txt` (SIGINT, SIGKILL, and a SIGKILL sweep
+   recording the hook count per attempt) and the fourth in
+   `transcripts/copy-file-range-and-third-sweep.txt`, which states its count.
+   **Zero incomplete hooks in every one of the four.**
 
-   The three are not one measurement and this page does not merge them. The first two
-   report `fewer hooks 0`; the third shows kills landing *inside* the install — 48 ms leaves
-   1 hook of 10, 49 ms leaves 10, 50 ms leaves 1, 51 ms leaves 0. Those disagree, which says
-   the timing is not stable between runs at this granularity rather than that either is
-   wrong. What the third sweep establishes is that the kills do land mid-install, so the
-   zeros are not the vacuous kind; what all three establish together is that none of 153
-   kills landed inside one file's `open`→`write`. That window is under a millisecond. The
-   shape that *is* reachable — fewer hooks, none of them partial — is one this run's
-   checker accepts as legitimate and one `overcommit --install` repairs.
+   They are four measurements and this page does not merge them, because they agree about
+   nothing except that zero. The first two report `fewer hooks 0`; the third catches the
+   process mid-install — 48 ms leaves 1 hook of 10, 49 ms leaves 10, 50 ms leaves 1; the
+   fourth steps from 0 hooks straight to 10 and back, never showing a partial count. That
+   spread is the timing moving between runs at this granularity, not one sweep being wrong.
+   **The third is what keeps the zeros from being vacuous** — it shows kills landing inside
+   the install rather than only before or after it, which is the thing a zero alone cannot
+   say. What all four give together is that none of 204 kills landed inside one file's
+   `open`→`write`, a window under a millisecond. The shape that *is* reachable — fewer
+   hooks, none of them partial — is one this run's checker accepts as legitimate and one
+   `overcommit --install` repairs.
 
 So: **a crash point exists and a crash does not land there.** Sideeye measures the first
 and says in every report that it does not measure the second (`not tested: power loss`).

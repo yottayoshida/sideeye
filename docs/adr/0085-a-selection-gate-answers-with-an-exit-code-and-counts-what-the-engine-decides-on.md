@@ -80,9 +80,11 @@ targets the engine judges, and it would have turned away this campaign's own sla
 
 - The dogfood ordering rule in `spike/dogfood/README.md` now carries the exit-code
   requirement and the two conditions, with this ADR as its reason.
-- A gate's red leg is a committed transcript, not a claim. `gate.sh --selftest` runs six
-  legs — three reds, three greens — and a wrapper that always answered one value fails
-  three of them.
+- A gate's red leg is a committed transcript, not a claim. `gate.sh --selftest` runs
+  **eleven legs — five greens, three reds and three twos**. A wrapper that always answered
+  0 fails the six that are not 0; one that always answered 1 fails the eight that are not 1.
+  The three twos are there because rule 1 is the one the rest of the design rests on, and a
+  gate that could only ever answer 0 or 1 would pass every other leg while breaking it.
 - **The gate does not decide everything the engine does.** Two writing threads is a red
   here and not a refusal: whether a creation or a join orders them is v18's question, which
   needs a real run. The gate says admission depends on something it cannot check.
