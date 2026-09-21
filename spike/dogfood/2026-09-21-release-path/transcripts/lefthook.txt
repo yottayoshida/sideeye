@@ -1,0 +1,15 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record — and under --observe syscalls each trapped call reaches the oracle twice, once refused and once re-issued, so this can also mean a refusal the capture did not carry (one operation too many) or a retraction that fired on an entry that had run (one too few); divergence at operation 1: the oracle saw: 33    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks/pre-commit", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 3</tmp/lh-repo/.git/hooks/pre-commit>; the shim's account ends after 0 operation(s)
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+divergence  openat
+
+atomicity   14 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   3 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=896e8ad8b259cb37b659954cdb189b097aa097ca7206fa0d698d660ac8bf2497;

@@ -1,0 +1,12 @@
+# Probe-only image: the five candidates Debian does not package, fetched at build time so the
+# probes (rule 10: linkage and threads, verified never assumed) can run before the candidate
+# table is written. Not the run image — that one is Dockerfile, and it installs Sideeye.
+FROM sideeye-relpath
+RUN curl -fsSL https://get.volta.sh | bash -s -- --skip-setup > /tmp/volta.log 2>&1; tail -1 /tmp/volta.log
+ENV VOLTA_HOME=/root/.volta
+ENV PATH=/root/.volta/bin:/root/.cargo/bin:/root/.jenv/bin:/root/.nodenv/bin:$PATH
+RUN curl -fsSL https://raw.githubusercontent.com/evilmartians/lefthook/master/install.sh 2>/dev/null | sh > /tmp/lh.log 2>&1 || true; \
+    command -v lefthook || (go install github.com/evilmartians/lefthook@latest > /tmp/lh2.log 2>&1 && cp /root/go/bin/lefthook /usr/local/bin/ ) || echo "lefthook MISSING"
+RUN curl -fsSL --proto '=https' --tlsv1.2 https://sh.rustup.rs -o /tmp/rustup.sh && sh /tmp/rustup.sh -y --profile minimal --default-toolchain none > /tmp/rustup.log 2>&1; tail -1 /tmp/rustup.log
+RUN git clone -q --depth 1 https://github.com/jenv/jenv.git /root/.jenv && git clone -q --depth 1 https://github.com/nodenv/nodenv.git /root/.nodenv
+RUN { for t in volta lefthook rustup jenv nodenv; do printf '%-10s %s\n' "$t" "$(command -v $t || echo MISSING)"; done; } 2>&1

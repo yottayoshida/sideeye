@@ -1,0 +1,20 @@
+=== the image that produced the verdict ===
+image: sideeye-relpath-probe (apparatus/Dockerfile.probe, FROM sideeye-relpath)
+engine: /opt/se/sideeye-v1.5.0-aarch64-linux/sideeye
+sideeye 1.5.0 (trace contract v18)
+
+=== lefthook: version and linkage, read to the end of the line ===
+1.13.6
+path: /usr/local/bin/lefthook
+ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=7MNGMMDvZdkP_ylfsi9j/1pH_93KZJ6lg4Alsymgq/pCZ5UNHKnc9SS4P3zkAR/-BBkM6j7ztIgoXOAfWuR, BuildID[sha1]=5966addb03fcb29d954085caf9b5eb9ea33fe11a, with debug_info, not stripped
+	not a dynamic executable
+
+=== the same reading for every probed candidate ===
+lefthook  ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=7MNGMMDvZdkP_ylfsi9j/1pH_93KZJ6lg4Alsymgq/pCZ5UNHKnc9SS4P3zkAR/-BBkM6j7ztIgoXOAfWuR, BuildID[sha1]=5966addb03fcb29d954085caf9b5eb9ea33fe11a, with debug_info, not stripped
+volta     ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, BuildID[sha1]=04ca0313f4d737ab66cddce10b357d0f7b16746b, with debug_info, not stripped
+rustup    ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, not stripped
+jenv      Bourne-Again shell script, ASCII text executable
+nodenv    Bourne-Again shell script, ASCII text executable
+go        ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=c40ef355e8161690c0966e73d90d1234b4f52924, stripped
+node      ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, BuildID[sha1]=1d6f258ba587a6f31108587d48291bf3e93bc2f4, with debug_info, not stripped
+rbenv     Bourne-Again shell script, ASCII text executable

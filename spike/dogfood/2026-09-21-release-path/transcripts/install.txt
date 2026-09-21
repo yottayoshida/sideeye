@@ -1,0 +1,19 @@
+=== what the installer put on stdout ===
+/opt/se/sideeye-v1.5.0-aarch64-linux/sideeye
+=== its log (stderr) ===
+install-sideeye: reading yottayoshida/sideeye release v1.5.0 (unauthenticated; shares this runner's rate limit)
+install-sideeye: sideeye-v1.5.0-aarch64-linux.tar.gz published digest sha256:f81c58a3eb632a352bba067457c8a0331ff9df91e914f0a39561da384b024815
+install-sideeye: downloaded digest matches (f81c58a3eb632a352bba067457c8a0331ff9df91e914f0a39561da384b024815)
+install-sideeye: sideeye 1.5.0 (trace contract v18)
+=== the engine it produced ===
+sideeye 1.5.0 (trace contract v18)
+=== which candidates the image has ===
+OK rbenv
+OK nodejs
+OK npm
+OK golang-go
+rbenv  /usr/bin/rbenv
+node   /usr/bin/node
+npm    /usr/bin/npm
+go     /usr/bin/go
+git    /usr/bin/git

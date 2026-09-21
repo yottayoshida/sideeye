@@ -1,0 +1,4 @@
+rbenv  symbolic link to ../lib/rbenv/libexec/rbenv
+node   ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamicall
+npm    symbolic link to ../share/nodejs/npm/bin/npm-cli.js
+go     symbolic link to ../lib/go-1.24/bin/go

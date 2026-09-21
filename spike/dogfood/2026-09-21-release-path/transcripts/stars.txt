@@ -1,0 +1,6 @@
+# rule 1, measured 2026-09-21T05:50:06Z with: gh api repos/<r> --jq .stargazers_count
+evilmartians/lefthook      8833
+volta-cli/volta            13068
+rust-lang/rustup           7048
+jenv/jenv                  6661
+nodenv/nodenv              2415

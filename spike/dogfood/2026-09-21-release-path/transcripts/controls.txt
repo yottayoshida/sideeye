@@ -1,0 +1,25 @@
+engine: /opt/se/sideeye-v1.5.0-aarch64-linux/sideeye
+sideeye 1.5.0 (trace contract v18)
+=== control A: lefthook install alone, no engine, no shim ===
+sync hooks: ✔️ (pre-commit)
+exit=0
+=== control B: the same command with ONLY the shim preloaded ===
+sync hooks: ✔️ (pre-commit)
+exit=0
+hooks written:
+pre-commit prepare-commit-msg 
+=== control C: the shipped define with the cwd line deleted, under the engine ===
+--- the define control C ran (diff from the shipped one is the cwd line) ---
+[world]
+state = "/tmp/lh-repo/.git/hooks"
+[define]
+setup     = "./seed-state.sh"
+operation = ["lefthook", "install"]
+check     = "./verify.sh"
+UNKNOWN  recording_run_failed
+         the operation exited 1 during the recording run where 0 was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)
+next        Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.
+
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+(control C ran under --observe syscalls, the same mode as the run)
