@@ -1,0 +1,6 @@
+=== which are present, and what they are ===
+volta     /root/.volta/bin/volta             ELF 64-bit LSB pie executable, ARM aarch64
+lefthook  /usr/local/bin/lefthook            ELF 64-bit LSB executable, ARM aarch64, ve
+rustup    /root/.cargo/bin/rustup            ELF 64-bit LSB pie executable, ARM aarch64
+jenv      /root/.jenv/bin/jenv               Bourne-Again shell script, ASCII text exec
+nodenv    /root/.nodenv/bin/nodenv           Bourne-Again shell script, ASCII text exec

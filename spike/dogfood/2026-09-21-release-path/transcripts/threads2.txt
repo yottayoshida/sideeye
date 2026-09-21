@@ -1,0 +1,7 @@
+--- CLONE_THREAD (real threads) vs plain fork ---
+go mod init example.com/x  threads=8   forks=11
+npm init -y                threads=11  forks=12
+--- why rbenv local wrote nothing ---
+rbenv: version `3.2.0' not installed
+rbenv exit=1
+* system (set by /root/.rbenv/version)

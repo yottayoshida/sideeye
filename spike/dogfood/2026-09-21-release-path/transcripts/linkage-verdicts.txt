@@ -1,0 +1,9 @@
+TOOL       LINKAGE        VERDICT
+lefthook   static         rule 10: no interposition
+volta      dynamic        passes rule 10
+rustup     dynamic        passes rule 10
+jenv       script         the interpreter is what is observed
+nodenv     script         the interpreter is what is observed
+go         static         rule 10: no interposition
+node       dynamic        passes rule 10
+rbenv      script         the interpreter is what is observed

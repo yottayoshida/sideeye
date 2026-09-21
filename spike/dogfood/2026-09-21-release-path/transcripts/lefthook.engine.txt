@@ -1,0 +1,2 @@
+sideeye 1.5.0 (trace contract v18)
+engine path: /opt/se/sideeye-v1.5.0-aarch64-linux/sideeye

@@ -1,0 +1,11 @@
+rbenv  /usr/lib/rbenv/libexec/rbenv                   Bourne-Again shell script, ASCII text executable
+go     /usr/lib/go-1.24/bin/go                        ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), 
+--- threads: clone() during a real mutating command ---
+rbenv local              clone calls=11
+go mod init              clone calls=10
+npm init -y              clone calls=11
+--- what each wrote ---
+.
+..
+go.mod
+package.json

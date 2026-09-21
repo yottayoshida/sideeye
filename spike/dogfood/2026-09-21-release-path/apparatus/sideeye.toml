@@ -1,0 +1,22 @@
+# lefthook install, explored. Copied from docs/ci-quickstart.md's template with the define
+# swapped — which is the claim this run is testing.
+#
+# Two things the template did not say, both found by running it:
+#
+#   1. `lefthook install` only works inside the repository. The engine runs the operation from
+#      the toml's own directory, so without a `cwd` the recording run exits 1 on
+#      `fatal: not a git repository` and the report says only "change the define".
+#   2. **`cwd` cannot be the state directory.** It is resolved before the state's mkdir, on
+#      purpose (`src/main.zig`: "a define naming a directory that is not there must refuse
+#      before anything on disk has moved"). So the repository lives outside the judged root and
+#      the judged root is the hooks directory the operation writes — which is also the honest
+#      judged set: `.git/hooks` is what `lefthook install` owes, and the rest of the repository
+#      is not its business.
+[world]
+state = "/tmp/lh-repo/.git/hooks"
+
+[define]
+setup     = "./seed-state.sh"
+cwd       = "/tmp/lh-repo"
+operation = ["lefthook", "install"]
+check     = "./verify.sh"

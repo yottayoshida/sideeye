@@ -1,0 +1,8 @@
+remind    /usr/bin/remind        ELF 64-bit LSB pie executable, ARM aarch
+bibtool   /usr/bin/bibtool       ELF 64-bit LSB pie executable, ARM aarch
+abook     /usr/bin/abook         ELF 64-bit LSB pie executable, ARM aarch
+--- a non-interactive mutating command, and its threads ---
+remind -n              threads=0
+0 exit-ok
+bibtool -s -o          threads=0
+0 wrote=out.bib
