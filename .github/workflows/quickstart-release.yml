@@ -108,6 +108,56 @@ jobs:
           print("replay:", d["replay"])
           PY
 
+      # #647: a target that only works inside its own project directory, which is the shape of
+      # most real tools and not of the two lanes above — the engine hands `target-clean` its
+      # state through `TOY_STATE`, so it runs the same from anywhere and a `cwd` added to those
+      # defines would hold nothing up. `TOY_PROJECT` makes its `rotate` refuse unless
+      # `./quickstart-project` is in its current directory.
+      #
+      # The directory is made BEFORE Sideeye starts: `cwd` is resolved and checked before the
+      # state directory is created, so one the define's own setup made would not be there yet.
+      # Then the same file with its `cwd` line deleted must fail the way #647 recorded it —
+      # exit 2, `recording_run_failed` — or the green half proves nothing about the line.
+      - name: A target that needs its project directory — with cwd, then without it
+        env:
+          TOY_PROJECT: quickstart-project
+        run: |
+          mkdir -p /tmp/sideeye-quickstart-project
+          touch /tmp/sideeye-quickstart-project/quickstart-project
+          rc=0
+          "$SIDEEYE_BIN" explore --config docs/ci-quickstart/release/sideeye-project.toml \
+            --oracle /usr/bin/strace --json /tmp/project.json || rc=$?
+          echo "with cwd: sideeye exited $rc"
+          test "$rc" = 0
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/project.json"))
+          if not (d["verdict"] == "PASS" and d["oracle_verified"]):
+              sys.exit("with cwd, wanted a verified PASS, got verdict=%s oracle_verified=%s"
+                       % (d["verdict"], d["oracle_verified"]))
+          print("with cwd: verified PASS over", d["explored"], "worlds")
+          PY
+          # The control is written beside the original, so its relative commands resolve the
+          # same way, and it must differ by exactly the one line — any more and the failure
+          # below could be something else's.
+          grep -v '^cwd ' docs/ci-quickstart/release/sideeye-project.toml \
+            > docs/ci-quickstart/release/sideeye-project-nocwd.toml
+          n=$(diff docs/ci-quickstart/release/sideeye-project.toml \
+                   docs/ci-quickstart/release/sideeye-project-nocwd.toml | grep -c '^<' || true)
+          test "$n" = 1 || { echo "the control differs by $n line(s), not 1"; exit 1; }
+          rc=0
+          "$SIDEEYE_BIN" explore --config docs/ci-quickstart/release/sideeye-project-nocwd.toml \
+            --oracle /usr/bin/strace --json /tmp/project-nocwd.json || rc=$?
+          echo "without cwd: sideeye exited $rc"
+          test "$rc" = 2
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/project-nocwd.json"))
+          if d.get("unknown_reason") != "recording_run_failed":
+              sys.exit("without cwd, wanted recording_run_failed, got %s" % d.get("unknown_reason"))
+          print("without cwd:", d["verdict"], d["unknown_reason"])
+          PY
+
   macos:
     runs-on: macos-latest
     steps:

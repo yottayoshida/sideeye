@@ -29,9 +29,25 @@ state = "/tmp/myapp-state"        # scratch directory sideeye empties and rebuil
 
 [define]
 setup     = "./ci/seed-state.sh"  # produces the initial state, runs once
+cwd       = "."                   # where setup/operation/check run — relative to THIS file
 operation = "myapp commit"        # explored: killed before each state-changing op
 # check   = "./ci/verify.sh"      # optional L2: your own invariant, run after each crash
 ```
+
+**`cwd` is where the three commands run, and a tool that only works inside its own project
+needs it** — git, most build tools, anything that looks for its config in the current directory.
+Leave it out and they run in whatever directory Sideeye was started from — usually a failure the
+run refuses as `recording_run_failed`, and worse when the tool walks up the tree and finds some
+*other* project there, because then nothing fails. Releases after v1.5.0, the version this page
+pins, print a `cwd` line in the report (`command_cwd` in the JSON) naming the directory the
+commands ran in, and `(none declared: Sideeye's own)` when you wrote none (#647). Two things to
+know. A relative `cwd` resolves against **this file's directory** — `"."` means "where this toml
+sits", which is your project's root when the toml is at the root and not otherwise. And it is
+resolved **before** the state directory is made, so a directory your own `setup` would create is
+not there yet: build it before Sideeye starts, in the step before the one that runs it.
+[`sideeye-project.toml`](ci-quickstart/release/sideeye-project.toml) is that second shape, and the
+workflow runs it — with the directory made first, and again with its `cwd` line deleted, to show
+the run failing without it.
 
 **`state` is sacrificial.** Exploration empties and rebuilds that directory once per
 world — hundreds of times in one run — and what comes back is a restore from the
@@ -51,7 +67,9 @@ location or a directory containing one, never a directory merely because it is
 shallow.
 
 Relative paths and place-naming commands (`./x`, `../x`) resolve against the
-toml's own directory, so the file means the same thing from any cwd (ADR 0007).
+toml's own directory, so the file means the same thing from any cwd (ADR 0007). That is
+where its *paths* resolve; where its *commands run* is `cwd`, above — a separate thing, and
+the one a tool that needs its own directory depends on.
 Commands split on spaces — no quoting. An argument that carries a space is
 spelled with the argv form, one line, passed verbatim (ADR 0019):
 `operation = ["myapp", "commit", "-m", "a message with spaces"]`. A define
@@ -115,7 +133,11 @@ The workflow runs **both** directions, and the pair is the point: the lane you c
 gates on `= 0`, and a second lane ([`sideeye-bug.toml`](ci-quickstart/release/sideeye-bug.toml))
 has a target with a planted bug and gates on `= 1`. Without the second, a green run cannot be
 told from a Sideeye that explored nothing; without the first, the example never shows the gate
-you will actually write.
+you will actually write. A third lane
+([`sideeye-project.toml`](ci-quickstart/release/sideeye-project.toml), Linux) runs a target that
+only works inside its own project directory, with that directory declared as `cwd`, and gates on
+`= 0` — then runs the same file with the `cwd` line deleted and gates on `= 2` with
+`recording_run_failed`. Without the second half, a `cwd` that held nothing up would pass too.
 
 The four rows above are the verdicts a run can reach. Commands that produce no
 verdict are not in the table and are not gates: `version` and `help` exit 0

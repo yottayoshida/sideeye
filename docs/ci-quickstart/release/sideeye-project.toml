@@ -1,0 +1,30 @@
+# The release quickstart's project lane (#647): a target that only works inside its own project
+# directory, and a define that says which directory that is.
+#
+# Most real tools are this shape — git, lefthook, overcommit, most build tools look for their
+# configuration in the current directory and refuse or misbehave anywhere else. The target here
+# is the same `target-clean` as `sideeye-clean.toml`, run with `TOY_PROJECT` set, which makes its
+# `rotate` refuse unless `./quickstart-project` exists in its current directory. That is the
+# whole point of this file: **without the `cwd` line below, the operation fails**.
+#
+# Two things `.github/workflows/quickstart-release.yml` does around it, both part of what it
+# shows:
+#
+#   1. **The directory is made before Sideeye starts.** `cwd` is resolved and checked before the
+#      state directory is created, so a directory the define's own `setup` would make is not
+#      there yet when it is checked (`docs/cli.md`). Build it in the step before.
+#   2. **The same file is run with the `cwd` line deleted**, and must fail as
+#      `recording_run_failed`. A lane that could only pass would not show that the line matters
+#      — the reason `sideeye-clean.toml` has `sideeye-bug.toml` beside it.
+#
+# Relative commands resolve against this file's directory (ADR 0007) — `cwd` does not change
+# that, it changes where the commands *run*. A relative `cwd` would resolve against this file's
+# directory too; this one is absolute because the directory lives outside the checkout.
+
+[world]
+state = "/tmp/sideeye-quickstart-project/state"
+
+[define]
+setup     = "./target-clean init"
+cwd       = "/tmp/sideeye-quickstart-project"
+operation = "./target-clean rotate"
