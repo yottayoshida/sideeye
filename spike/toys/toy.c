@@ -13,6 +13,8 @@
  *
  * Environment:
  *   TOY_STATE      state directory (default ./state)
+ *   TOY_PROJECT    if set, `rotate` refuses (exit 1) unless ./$TOY_PROJECT exists in its
+ *                  current directory: a tool that only works inside its project (#647)
  *   TOY_FORK       if set, fork a trivial child before rotating (boundary case)
  *   TOY_SELFEXEC   write one state file, then exec this same binary; the rotate runs
  *                  in the second image (#123's judged shape: a tail-exec chain)
@@ -1623,6 +1625,29 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
+    /* TOY_PROJECT: the tool that only works inside its own project directory — git,
+     * lefthook, overcommit, most build tools. When set, `rotate` refuses unless
+     * `./$TOY_PROJECT` exists in its CURRENT directory, and exits 1 before touching the
+     * state. The release quickstart's cwd lane (#647) is built on this: without it the toy
+     * never needs a `cwd` at all — the engine hands every child `TOY_STATE`, so it finds its
+     * state from anywhere — and a define declaring one would pass with or without the line.
+     *
+     * `init` does not look, on purpose. #647 observed a define whose setup did not care where
+     * it ran and whose operation did, so the run refused at the recording run
+     * (`recording_run_failed`, exit 2). Gating `init` as well would move that refusal to
+     * setup (`setup_failed`, exit 3) and reproduce a different failure from the one observed.
+     *
+     * The check is `access()`, a read that no witness counts as a state operation, and the
+     * marker sits outside the state directory, so a run that passes it is judged exactly as
+     * one without it. Unset, nothing here runs — and this file is embedded in the shipped
+     * binary as `sideeye demo`, which never sets it. */
+    if (strcmp(argv[1], "rotate") == 0) {
+        const char *proj = getenv("TOY_PROJECT");
+        if (proj && *proj && access(proj, F_OK) != 0) {
+            fprintf(stderr, "not inside a project: ./%s is not in the current directory\n", proj);
+            return 1;
+        }
+    }
     /* rotate-msg <message>: rotates only when <message> is the exact byte string
      * "note with spaces" — one argv element carrying spaces. The split-on-space
      * string form cannot spell that argument (it arrives split into three

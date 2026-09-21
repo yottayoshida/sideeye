@@ -212,6 +212,19 @@ stay the same.
    direction. Widening the pattern moves the extracted set away from the pin, which is the
    sweep's own job and not this change's.
 
+   **Two plain additive fields, 2026-09-21 (#647, ADR 0086).** `command_cwd` (string) and
+   `command_cwd_declared` (bool) name the directory the define's commands ran in, and whether
+   it was declared. Both are optional in the allowance's sense — present from the point the
+   declared `cwd` is resolved, absent from any report raised before it — and neither is a
+   closed set, so the allowance covers them with no ruling of their own, as it covered
+   `setup_exit_code` and `setup_signal`. `contract_version` does not move: it numbers the
+   trace contract between the shim and the engine, which this does not touch. **Unlike the
+   four digit-holding names above, these two do match the extraction's pattern**, so the next
+   `check-freeze-audit.sh` reports them as drift — exit 3, the signal that the audit is stale,
+   not a failure, and a run that no job in this repository's CI makes. Moving the pin to
+   include them is that sweep's job and not this change's, for the reason the paragraph above
+   gives and the script says where a reader meets it.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

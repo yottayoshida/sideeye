@@ -8746,6 +8746,163 @@ else
     echo "FAIL no case_version 4 file was written (nothing to check the law against)"
     cwd_fails=$((cwd_fails + 1))
 fi
+
+# ---- #647, ADR 0086: the report names the directory the define's commands ran in -----------
+# `command_cwd` and `command_cwd_declared` in the JSON, a `cwd` line in the text. Every block
+# that prints `expected` carries the line, so each of the four is reached here on a run of its
+# own — PASS, the zero-operation PASS, FAIL, UNKNOWN. A test that reached only FAIL and UNKNOWN
+# would stay green with the line missing from PASS, which is the block the plan for this change
+# first mislabelled. Paths are compared against `pwd -P`: `realpath` and `getcwd` both return
+# the resolved spelling, and a `"."` declaration only matches if it WAS resolved — written raw
+# it would read `<dir>/.`, since `resolvePathAgainst` does not normalise.
+cw=$cd/cw647
+mkdir -p $cw/proj $cw/from $cw/pstate
+proj_real=$(cd $cw/proj && pwd -P)
+from_real=$(cd $cw/from && pwd -P)
+cwd_json() { # $1 = report file, $2 = key -> the value as JSON, or <absent>, or <unreadable>
+    python3 - "$1" "$2" <<'EOF'
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    print("<unreadable>"); sys.exit(0)
+print(json.dumps(d[sys.argv[2]]) if sys.argv[2] in d else "<absent>")
+EOF
+}
+cwd_toml() { # $1 = file, $2 = setup, $3 = operation, $4 = cwd value or empty for none
+    # `if`, not `[ ] && printf`: the group's status would be the failed test's when no cwd is
+    # given, which is harmless here only because this suite does not run under `set -e`.
+    { printf '[world]\nstate = "%s"\n\n[define]\nsetup     = "%s"\noperation = "%s"\n' "$cw/pstate" "$2" "$3"
+      if [ -n "$4" ]; then printf 'cwd       = "%s"\n' "$4"; fi; } > "$1"
+}
+cwd_expect() { # $1 label, $2 report json, $3 text, $4 wanted path, $5 wanted declared, $6 wanted text line
+    got_p=$(cwd_json "$2" command_cwd); got_d=$(cwd_json "$2" command_cwd_declared)
+    if [ "$got_p" = "\"$4\"" ] && [ "$got_d" = "$5" ] && printf '%s\n' "$3" | grep -qxF -- "$6"; then
+        echo "ok   $1"
+    else
+        echo "FAIL $1: command_cwd=$got_p declared=$got_d, wanted \"$4\" $5 and the line [$6]"
+        printf '%s\n' "$3" | grep -n 'cwd' | sed 's/^/     | /' | head -4
+        cwd_fails=$((cwd_fails + 1))
+    fi
+}
+
+# Leg 6 — PASS, declared as "." from a toml one directory away: the resolved path, and `true`.
+cwd_toml $cw/proj/pass.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "."
+o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/pass.toml --shim "$SHIM" --work $cw/w6 --oracle /usr/bin/strace --json $cw/r6.json 2>&1)
+cwd_expect "PASS carries the declared cwd, resolved, in both forms" $cw/r6.json "$o" "$proj_real" true "      cwd: $proj_real"
+
+# Leg 7 — PASS, nothing declared: Sideeye's own directory, `false`, and the text says whose.
+cwd_toml $cw/proj/pass-none.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" ""
+o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/pass-none.toml --shim "$SHIM" --work $cw/w7 --oracle /usr/bin/strace --json $cw/r7.json 2>&1)
+cwd_expect "an undeclared cwd is Sideeye's own, and the report says so" $cw/r7.json "$o" "$from_real" false "      cwd: $from_real  (none declared: Sideeye's own)"
+
+# Leg 8 — the zero-operation PASS, which renders a block of its own (`doctor` only reads).
+cwd_toml $cw/proj/zero.toml "$OUT/toy-bug init" "$OUT/toy-bug doctor" "."
+o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/zero.toml --shim "$SHIM" --work $cw/w8 --oracle /usr/bin/strace --json $cw/r8.json 2>&1)
+if echo "$o" | grep -q "nothing that can change"; then
+    cwd_expect "the zero-operation PASS carries it too" $cw/r8.json "$o" "$proj_real" true "      cwd: $proj_real"
+else
+    echo "FAIL zero-operation leg did not reach the zero-operation PASS block (nothing to check)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    cwd_fails=$((cwd_fails + 1))
+fi
+
+# Leg 9 — FAIL.
+cwd_toml $cw/proj/fail.toml "$OUT/toy-bug init" "$OUT/toy-bug rotate" "."
+o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/fail.toml --shim "$SHIM" --work $cw/w9 --oracle /usr/bin/strace --json $cw/r9.json 2>&1)
+if echo "$o" | grep -q "^FAIL "; then
+    cwd_expect "FAIL carries it" $cw/r9.json "$o" "$proj_real" true "cwd         $proj_real"
+else
+    echo "FAIL the FAIL leg did not reach a FAIL (nothing to check)"; cwd_fails=$((cwd_fails + 1))
+fi
+
+# Leg 10 — UNKNOWN, and the shape #647 recorded: an operation that only works inside its own
+# project, run with no `cwd` declared, from somewhere else. The `cwd` line has to be where the
+# reader of `recording_run_failed` already is — after `next`, before the classification block
+# — or it exists and is not read: the detail sends them to `--expect-status` and `next` sends
+# them back to the detail before either reaches a line further down.
+cwd_toml $cw/proj/project.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" ""
+o=$(cd $cw/from && TOY_PROJECT=quickstart-project "$SIDEEYE" explore --config $cw/proj/project.toml --shim "$SHIM" --work $cw/w10 --oracle /usr/bin/strace --json $cw/r10.json 2>&1)
+rc=$?
+if [ "$rc" = "2" ] && [ "$(cwd_json $cw/r10.json unknown_reason)" = '"recording_run_failed"' ]; then
+    cwd_expect "UNKNOWN carries it, for the refusal #647 recorded" $cw/r10.json "$o" "$from_real" false "cwd         $from_real  (none declared: Sideeye's own)"
+    n_next=$(printf '%s\n' "$o" | grep -n '^next  ' | head -1 | cut -d: -f1)
+    n_cwd=$(printf '%s\n' "$o" | grep -n '^cwd  ' | head -1 | cut -d: -f1)
+    n_atom=$(printf '%s\n' "$o" | grep -n '^atomicity  ' | head -1 | cut -d: -f1)
+    if [ -n "$n_next" ] && [ -n "$n_cwd" ] && [ -n "$n_atom" ] && [ "$n_next" -lt "$n_cwd" ] && [ "$n_cwd" -lt "$n_atom" ]; then
+        echo "ok   on UNKNOWN the cwd line sits under next, above the classification block"
+    else
+        echo "FAIL the cwd line is not between next and atomicity (next=$n_next cwd=$n_cwd atomicity=$n_atom)"
+        cwd_fails=$((cwd_fails + 1))
+    fi
+else
+    echo "FAIL the #647 shape did not refuse recording_run_failed (exit $rc, reason $(cwd_json $cw/r10.json unknown_reason))"
+    echo "$o" | sed 's/^/     | /' | head -4
+    cwd_fails=$((cwd_fails + 1))
+fi
+
+# Legs 11-13 — where the fields start. They appear from the moment the declared `cwd` is
+# resolved: a SETUP ERROR raised before that has no directory to name, one raised after it
+# does. The two ends alone would pass an implementation that set the value at the end of phase
+# 0, so the nearest later refusal (`--work` inside the state) is here as well. Each leg first
+# requires that a report WAS written and says SETUP_ERROR — an absent field in an absent file
+# would read as the right answer.
+cwd_presence() { # $1 label, $2 report, $3 text, $4 phrase the refusal must name, $5 present|absent
+    v=$(cwd_json "$2" verdict); p=$(cwd_json "$2" command_cwd)
+    if [ "$v" != '"SETUP_ERROR"' ] || ! printf '%s\n' "$3" | grep -qF -- "$4"; then
+        echo "FAIL $1: did not reach the intended SETUP ERROR (verdict $v)"
+        printf '%s\n' "$3" | sed 's/^/     | /' | head -3
+        cwd_fails=$((cwd_fails + 1)); return
+    fi
+    if { [ "$5" = present ] && [ "$p" != "<absent>" ]; } || { [ "$5" = absent ] && [ "$p" = "<absent>" ]; }; then
+        echo "ok   $1"
+    else
+        echo "FAIL $1: command_cwd=$p, wanted it $5"; cwd_fails=$((cwd_fails + 1))
+    fi
+}
+cwd_toml $cw/proj/gone.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "$cw/not-there"
+o=$("$SIDEEYE" explore --config $cw/proj/gone.toml --shim "$SHIM" --work $cw/w11 --oracle /usr/bin/strace --json $cw/r11.json 2>&1)
+cwd_presence "a cwd that does not resolve leaves the report with no directory to name" $cw/r11.json "$o" "the declared cwd could not be resolved" absent
+cwd_toml $cw/proj/work.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "."
+o=$("$SIDEEYE" explore --config $cw/proj/work.toml --shim "$SHIM" --work $cw/pstate/w12 --oracle /usr/bin/strace --json $cw/r12.json 2>&1)
+cwd_presence "a SETUP ERROR just after the cwd resolved carries it (--work inside the state)" $cw/r12.json "$o" "--work must not be the state directory or inside it" present
+cwd_toml $cw/proj/setup.toml "/bin/false" "$OUT/toy-fixed rotate" "."
+o=$("$SIDEEYE" explore --config $cw/proj/setup.toml --shim "$SHIM" --work $cw/w13 --oracle /usr/bin/strace --json $cw/r13.json 2>&1)
+cwd_presence "a failing setup carries it: the directory was known before setup ran" $cw/r13.json "$o" "--setup exited 1" present
+
+# Leg 14 — preflight, where a define is first tried. Its report names the directory too, and
+# its `next` hint carries the `cwd` it accepted: pasted without `--cwd`, the hint would run the
+# operation from wherever explore is started, and a tool that needs its own directory would
+# refuse `recording_run_failed` on the define preflight had just accepted — #647 again, one
+# step later. So the hint is not only read but run, from a directory that is not the project,
+# with `--check` (a placeholder) taken out and `sideeye` spelled as this suite's binary.
+touch $cw/proj/quickstart-project
+o=$(cd $cw/from && TOY_PROJECT=quickstart-project "$SIDEEYE" preflight --state $cw/pstate --setup "$OUT/toy-fixed init" --cwd $cw/proj/. --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --oracle /usr/bin/strace --work $cw/w14 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -qxF -- "cwd          $proj_real"; then
+    echo "ok   preflight's report names the declared cwd, resolved"
+else
+    echo "FAIL preflight: exit $rc, wanted 0 and the line [cwd          $proj_real]"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+    cwd_fails=$((cwd_fails + 1))
+fi
+hint=$(printf '%s\n' "$o" | sed -n '/^next  /,$p' | tr -d '\\\n' | sed 's/^next *sideeye //; s/--check <your-invariant.sh> //')
+case "$hint" in
+    *"--cwd \"$proj_real\""*)
+        o=$(cd $cw/from && eval "TOY_PROJECT=quickstart-project \"\$SIDEEYE\" $hint --work $cw/w14b --json $cw/r14.json" 2>&1)
+        rc=$?
+        if [ "$rc" = "0" ] && [ "$(cwd_json $cw/r14.json verdict)" = '"PASS"' ]; then
+            echo "ok   preflight's next hint carries --cwd, and run as printed it reaches PASS"
+        else
+            echo "FAIL preflight's hint, run as printed: exit $rc, verdict $(cwd_json $cw/r14.json verdict), reason $(cwd_json $cw/r14.json unknown_reason)"
+            printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+            cwd_fails=$((cwd_fails + 1))
+        fi ;;
+    *)
+        echo "FAIL preflight's next hint does not carry --cwd \"$proj_real\": [$hint]"
+        cwd_fails=$((cwd_fails + 1)) ;;
+esac
+
 rm -rf $cd
 if [ "$cwd_fails" != "0" ]; then
     fails=$((fails + cwd_fails))
