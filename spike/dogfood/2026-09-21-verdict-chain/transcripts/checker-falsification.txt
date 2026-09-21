@@ -1,0 +1,15 @@
+=== green: a finished install ===
+rc=0 (expect 0)
+=== green: fewer hooks (a crash before the rest) ===
+rc=0 (expect 0)
+=== green: no hooks at all ===
+rc=0 (expect 0)
+=== RED: a hook cut short ===
+check: pre-commit is cut short before its rescue block
+rc=1 (expect 1)
+=== RED: a complete hook without its exec bit ===
+check: commit-msg is not executable, so git would skip the hook install wrote
+rc=1 (expect 1)
+=== RED: a hook that is not overcommit's ===
+check: post-commit exists but is not overcommit's
+rc=1 (expect 1)

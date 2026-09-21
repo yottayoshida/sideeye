@@ -1,0 +1,27 @@
+# the adoption step, read back from the image, 2026-09-21T07:21:10Z
+# image: sideeye-vc (apparatus/Dockerfile), installer: the vendored docs/ci-quickstart/release/install-sideeye.sh
+
+=== apt candidates ===
+OK ruby
+OK ruby-dev
+OK build-essential
+MISSING recutils
+OK detox
+
+=== installer stdout (/install.path) — the page says this is the path and nothing else ===
+/opt/se/sideeye-v1.5.0-aarch64-linux/sideeye
+
+=== installer stderr, digest lines (/install.log) ===
+install-sideeye: reading yottayoshida/sideeye release v1.5.0 (unauthenticated; shares this runner's rate limit)
+install-sideeye: sideeye-v1.5.0-aarch64-linux.tar.gz published digest sha256:f81c58a3eb632a352bba067457c8a0331ff9df91e914f0a39561da384b024815
+install-sideeye: downloaded digest matches (f81c58a3eb632a352bba067457c8a0331ff9df91e914f0a39561da384b024815)
+install-sideeye: sideeye 1.5.0 (trace contract v18)
+
+=== the engine that stdout named ===
+sideeye 1.5.0 (trace contract v18)
+
+=== candidate versions ===
+overcommit 0.73.0
+ruby 3.3.8 (2025-04-09 revision b200bad6cd) [aarch64-linux-gnu]
+sh: 1: recset: not found
+detox: unrecognized option '--version'

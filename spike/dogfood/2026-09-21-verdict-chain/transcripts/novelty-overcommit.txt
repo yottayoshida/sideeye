@@ -1,0 +1,296 @@
+== novelty pre-scan: sds/overcommit
+== date: 2026-09-21T07:26:16Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          13 hit(s) (all listed)
+      #760 open 2021-08-06 `gemfile:` option causes post-checkout to frequently crash a rebase when working with a team that frequently updates the Gemfile.lock
+      #869 open 2025-04-09 Incompatibility with `git-branchless`
+      #884 closed 2026-06-23 Flay hook ignores flay crashes by only reading stdout
+      #863 merged 2025-02-15 Restore ability to specify "gemfile: false" in config
+      #769 closed 2021-12-28 Ruby 3.1: YamlSyntax crashes when checking Rails database.yml
+      #755 merged 2021-06-01 Fix pronto hooks with warning level
+      #201 closed 2015-05-01 Committing with an empty commit message causes all CommitMsg hooks to blow up
+      #295 closed 2015-11-11 Staged changes wiped while committing
+      #450 closed 2016-11-09 Credo hook crashes when code does not compile correctly
+      #554 closed 2018-02-13 "Directory not empty" error after upgrading 0.41 → 0.42: 
+      #512 closed 2017-09-20 LineEndings pre-commit hook crashes when passed filenames with spaces
+      #163 closed 2015-04-06 Modify ScssLint pre-commit hook to gracefully handle case when no files are linted
+      #320 closed 2016-01-05 Overcommit crashes in Ruby 2.3.0 with rvm
+  corrupt        5 hit(s) (all listed)
+      #847 open 2024-04-10 Unable to setup environment for pre-commit hook run: unknown switch
+      #328 closed 2016-02-01 Error("invalid byte sequence in UTF-8") occurs when commiting message includes multibyte string in Mac OSX.
+      #524 closed 2017-11-27 Git index becoming corrupted
+      #571 closed 2018-04-06 no such file @ rb_file_size_s
+      #188 merged 2015-04-18 Restore MERGE_HEAD and CHERRY_PICK_HEAD without newline
+  corruption     0 hit(s)
+  truncated      0 hit(s)
+  truncate       2 hit(s) (all listed)
+      #147 closed 2015-03-25 Size hook status reports to the width of the terminal
+      #184 closed 2015-04-16 Vim/Fugitive integration
+  empty          66 hit(s) (all listed)
+      #736 open 2020-12-27 Problems with commit message titles start with #
+      #898 open 2026-09-11 Stop wrapping commands in cmd.exe on Windows
+      #750 open 2021-05-19 Teach ad-hoc hooks line-parsing using regexes in YAML
+      #760 open 2021-08-06 `gemfile:` option causes post-checkout to frequently crash a rebase when working with a team that frequently updates the Gemfile.lock
+      #836 open 2024-02-24 Various specs fail on Windows for all Ruby versions
+      #757 open 2021-06-11 750: Teach ad-hoc hooks line parsing
+      #884 closed 2026-06-23 Flay hook ignores flay crashes by only reading stdout
+      #897 closed 2026-09-08 Merge state is restored into the *common* git dir, leaving a stale MERGE_HEAD in the main worktree
+      #881 closed 2026-06-02 Possible race when parallel hooks read HookContext input
+      #882 merged 2026-06-02 Make hook context input reads thread-safe
+      #735 closed 2020-12-18 git merge failure
+      #781 closed 2022-04-29 Emoji in command output seems to break
+      #734 closed 2020-11-24 `git commit --amend` borked
+      #37 closed 2014-02-28 Error when rebasing master.
+      #68 closed 2014-07-30 Rebasing with Gemfile conflicts causes changes to be lost
+      #52 closed 2014-04-08 could not open .git/MERGE_HEAD
+      #231 closed 2015-06-26 Standard and SemiStandard hooks misleadingly report success
+      #244 closed 2015-07-08 Commit message hooks fail on very large commit messages with possibly weird characters
+      #168 closed 2015-04-08 Error when removing submodule
+      #127 closed 2015-03-10 Executing custom rake tasks on precommit
+  atomic         7 hit(s) (all listed)
+      #898 open 2026-09-11 Stop wrapping commands in cmd.exe on Windows
+      #847 open 2024-04-10 Unable to setup environment for pre-commit hook run: unknown switch
+      #505 closed 2017-08-10 Adding Signature History Support
+      #420 closed 2016-08-19 pre-push should run pre-commit checks on each commit to be pushed
+      #61 closed 2014-07-02 Q: Is there any way to set a flag in the config file to check all files each commit?
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+      #520 merged 2017-11-04 prepare-commit-message hook
+  atomically     1 hit(s) (all listed)
+      #520 merged 2017-11-04 prepare-commit-message hook
+  interrupted    14 hit(s) (all listed)
+      #226 closed 2015-06-09 Grep argument list too long when running overcommit -r with MergeConflicts
+      #244 closed 2015-07-08 Commit message hooks fail on very large commit messages with possibly weird characters
+      #216 closed 2015-05-23 Error on pre-rebase hook
+      #338 closed 2016-02-11 specify npm script to run for the EsLint hook
+      #296 closed 2015-11-13 Bugs Adding Existing Git Hooks
+      #359 closed 2016-03-29 Add a :skip status to pre_commit hooks
+      #306 closed 2015-12-03 Overcommit scss-lint hook raises error if stylesheet doesn't pass SingleLinePerSelector rule?
+      #478 closed 2017-03-22 Overcommit pre-push hooks freeze between tasks
+      #586 closed 2018-07-11 Hang with Minitest and RSpec PrePush hooks
+      #650 closed 2019-06-25 Traceback when setting parallelize to false
+      #55 closed 2014-05-20 No such file or directory @ utime_internal
+      #228 closed 2015-06-19 Unable to read from standard input in pre-commit hooks
+      #270 closed 2015-07-28 RuboCop hook and error formatting
+      #287 closed 2015-10-22 ScssLint pre-commit hook should handle commits only containing excluded files
+  interrupt      30 hit(s) (all listed)
+      #791 open 2022-06-06 invalid byte sequence in UTF-8 in Windows10 and Windows Server 2016
+      #850 open 2024-04-28 Invalid byte sequence in UTF-8
+      #795 closed 2022-08-18 Invalid byte sequence in UTF-8 (Windows)
+      #325 closed 2016-01-22 Should fail loudly when a custom hook specified via configuration cannot be found
+      #735 closed 2020-12-18 git merge failure
+      #12 closed 2013-06-24 overcommit 0.1.10 hangs waiting for Rhino
+      #226 closed 2015-06-09 Grep argument list too long when running overcommit -r with MergeConflicts
+      #244 closed 2015-07-08 Commit message hooks fail on very large commit messages with possibly weird characters
+      #216 closed 2015-05-23 Error on pre-rebase hook
+      #338 closed 2016-02-11 specify npm script to run for the EsLint hook
+      #296 closed 2015-11-13 Bugs Adding Existing Git Hooks
+      #359 closed 2016-03-29 Add a :skip status to pre_commit hooks
+      #383 closed 2016-06-06 Rubocop .git/index: index file open failed: Not a directory
+      #306 closed 2015-12-03 Overcommit scss-lint hook raises error if stylesheet doesn't pass SingleLinePerSelector rule?
+      #328 closed 2016-02-01 Error("invalid byte sequence in UTF-8") occurs when commiting message includes multibyte string in Mac OSX.
+      #389 closed 2016-06-23 Is it possible to wait until push to run the CommitMsg hook?
+      #476 closed 2017-03-18 Freeze when parallelize is disabled for a hook
+      #478 closed 2017-03-22 Overcommit pre-push hooks freeze between tasks
+      #534 closed 2018-01-05 Support for Go test & Windows can't find path
+      #586 closed 2018-07-11 Hang with Minitest and RSpec PrePush hooks
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         8 hit(s) (all listed)
+      #735 closed 2020-12-18 git merge failure
+      #12 closed 2013-06-24 overcommit 0.1.10 hangs waiting for Rhino
+      #476 closed 2017-03-18 Freeze when parallelize is disabled for a hook
+      #711 closed 2020-04-01 Overcommit should emit a warning when issuing "git reset --hard" or "git stash"
+      #720 closed 2020-06-20 Overcommit taking long time to exit
+      #55 closed 2014-05-20 No such file or directory @ utime_internal
+      #161 closed 2015-04-06 Windows support?
+      #80 closed 2014-09-16 Ctrl-c lost working tree on 0.16
+  power          1 hit(s) (all listed)
+      #308 closed 2015-12-14 Configure colors
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           5 hit(s) (all listed)
+      #300 open 2015-11-26 Remember all previously verified configurations 
+      #9 closed 2013-06-14 Tests are being run against files as they exist on disk, not actual contents staged for commit
+      #571 closed 2018-04-06 no such file @ rb_file_size_s
+      #562 closed 2018-02-27 With overcommit enabled, git submodule commits cause "fatal: Path '.gitmodules' exists on disk, but not in 'HEAD'."
+      #520 merged 2017-11-04 prepare-commit-message hook
+  partial        6 hit(s) (all listed)
+      #898 open 2026-09-11 Stop wrapping commands in cmd.exe on Windows
+      #613 closed 2019-01-17 custom starter.yml
+      #777 merged 2022-04-25 Partial log flushing to make long hooks intuitive
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+      #483 closed 2017-04-03 haml-lint: Does not honor per-linter excludes from .haml-lint.yml
+      #681 closed 2019-10-13 Introduce `exclude_branch_patterns` on Hook Config
+  incomplete     2 hit(s) (all listed)
+      #620 closed 2019-03-03 AppVeyor: Workaround 2.3 rubygems update [incomplete]
+      #526 merged 2017-12-01 Fix mdl MESSAGE_REGEX
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #762 open 2021-08-21 On failure of a pre-commit hook, run git stash pop
+      #300 open 2015-11-26 Remember all previously verified configurations 
+      #41 closed 2014-03-12 Stashing changes confuses editors
+      #711 closed 2020-04-01 Overcommit should emit a warning when issuing "git reset --hard" or "git stash"
+      #55 closed 2014-05-20 No such file or directory @ utime_internal
+  recovery       1 hit(s) (all listed)
+      #676 merged 2019-09-29 Provide better instructions on commit-msg failure
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #506 closed 2017-08-16 Reverse word env variable for disabling overcommit
+  half-written   0 hit(s)
+  wipe           7 hit(s) (all listed)
+      #238 open 2015-07-01 Add support for pre-commit hooks that have file changing side-effects
+      #402 closed 2016-07-18 Overcommit makes it impossible to use Github for Desktop (Mac) to commit
+      #65 closed 2014-07-24 Wipes working changes if git stash fails
+      #214 closed 2015-05-19 Using rubocop with -a option.
+      #295 closed 2015-11-11 Staged changes wiped while committing
+      #327 closed 2016-01-28 Add PreCommit hook to disallow committing to specified branches
+      #235 closed 2015-06-30 Add KeybaseDirSign pre-commit hook + tests.
+  wipes          2 hit(s) (all listed)
+      #65 closed 2014-07-24 Wipes working changes if git stash fails
+      #214 closed 2015-05-19 Using rubocop with -a option.
+  erase          2 hit(s) (all listed)
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+      #42 closed 2014-03-31 Overcommit always uses default rubocop configuration
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+  destroy        2 hit(s) (all listed)
+      #41 closed 2014-03-12 Stashing changes confuses editors
+      #158 closed 2015-04-06 Add failing test case for restoring unstaged changes
+  destroys       1 hit(s) (all listed)
+      #41 closed 2014-03-12 Stashing changes confuses editors
+  overwrite      10 hit(s) (all listed)
+      #868 open 2025-03-18 Invoke Bundler Context: `File.read()` doesn't use the right encoding
+      #402 closed 2016-07-18 Overcommit makes it impossible to use Github for Desktop (Mac) to commit
+      #607 closed 2018-10-31 When Overcommit gem is installed in a Nix environment, updating hooks fails
+      #565 closed 2018-03-20 Target a subdirectory within hook config
+      #7 closed 2013-06-07 When installing, should complain if hooks already exist
+      #237 closed 2015-07-01 Document the current capabilities and limitations of pre-commit hooks
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+      #191 closed 2015-04-22 Add pre-commit hook to enforce file mode permissions
+      #138 closed 2015-03-23 Restore old hooks on uninstall
+      #648 merged 2019-06-21 [FEATURE] New pre-commit hook: RubySyntax
+  clobber        4 hit(s) (all listed)
+      #138 closed 2015-03-23 Restore old hooks on uninstall
+      #520 merged 2017-11-04 prepare-commit-message hook
+      #93 closed 2015-01-14 Add git-guilt post-commit hook
+      #141 closed 2015-03-24 Save old hooks on install, restore on uninstall
+  blank          6 hit(s) (all listed)
+      #884 closed 2026-06-23 Flay hook ignores flay crashes by only reading stdout
+      #245 closed 2015-07-09 Implement modified_files in PostCheckout, PostMerge, and PostRewrite hook contexts
+      #370 closed 2016-04-24 Eslint doesn't run on git commit but does with overcommit -r
+      #705 closed 2020-02-20 ReplaceBranch adds trailing newline to commit message
+      #115 closed 2015-03-02 Ignore blank lines in csslint output
+      #212 closed 2015-05-18 Add change log file.
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #665 open 2019-09-01 300 remember all previously verified configurations
+  mangled        2 hit(s) (all listed)
+      #898 open 2026-09-11 Stop wrapping commands in cmd.exe on Windows
+      #422 closed 2016-08-22 #419 - Added missing TSLint reference in the README
+  contents       33 hit(s) (all listed)
+      #665 open 2019-09-01 300 remember all previously verified configurations
+      #798 open 2022-11-09 "Could not find gem '...' in locally installed gems" Upon Running Overcommit
+      #836 open 2024-02-24 Various specs fail on Windows for all Ruby versions
+      #888 closed 2026-07-24 Restore operation state to linked worktrees
+      #887 merged 2026-07-24 Fix operation state restoration in linked worktrees
+      #143 closed 2015-03-25 Allow hooks to depend on other hooks
+      #325 closed 2016-01-22 Should fail loudly when a custom hook specified via configuration cannot be found
+      #31 closed 2014-02-21 Security concern with repo-based hooks
+      #41 closed 2014-03-12 Stashing changes confuses editors
+      #68 closed 2014-07-30 Rebasing with Gemfile conflicts causes changes to be lost
+      #57 closed 2014-06-12 ctags illegal option
+      #12 closed 2013-06-24 overcommit 0.1.10 hangs waiting for Rhino
+      #9 closed 2013-06-14 Tests are being run against files as they exist on disk, not actual contents staged for commit
+      #189 closed 2015-04-19 Add section that documents the hooks?
+      #240 closed 2015-07-02 problem_on_unmodified_line Clarification
+      #168 closed 2015-04-08 Error when removing submodule
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+      #195 closed 2015-04-26 Pre Push Hook is not running all hooks
+      #400 closed 2016-07-13 Installing on Windows: symlinking without elevated privileges 
+      #351 closed 2016-03-01 ScssLint not using config file
+  in-place       37 hit(s) (all listed)
+      #788 open 2022-05-22 Overcommit says I have overcommit hooks on ALL repositories
+      #699 open 2019-12-17 Overcommit's precommit hook fumbles deleted/renamed files.
+      #794 closed 2022-08-02 Help For Using Overcommit With A Dockerized Application
+      #505 closed 2017-08-10 Adding Signature History Support
+      #776 closed 2022-03-28 Support for `EmojiSubject`
+      #708 closed 2020-03-09 Inheriting configuration from a dependency gem
+      #644 closed 2019-06-06 CargoTest Broken In Non-Rust Projects
+      #82 closed 2014-09-29 Workflow with submodules
+      #6 closed 2013-06-07 Occasionally uses wrong Ruby version for linting
+      #189 closed 2015-04-19 Add section that documents the hooks?
+      #220 closed 2015-06-01 Spaces in paths still not handled properly everywhere
+      #89 closed 2014-12-11 image_optim integration
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+      #210 closed 2015-05-07 Link to hook homepages where available
+      #363 closed 2016-04-06 Execute hooks in subdirectories
+      #412 closed 2016-08-12 Hook to check versions match between Gemfile.rb and overcommit_gems.rb
+      #288 closed 2015-10-23 Add possibility to act on warnings
+      #301 closed 2015-11-29 Add pre-commit to check unix line feeds
+      #322 closed 2016-01-10 overcommit --sign not working?
+      #560 closed 2018-02-24 Post-checkout failure
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         1 hit(s) (all listed)
+      #402 closed 2016-07-18 Overcommit makes it impossible to use Github for Desktop (Mac) to commit
+  disk+full      0 hit(s)
+  data+loss      1 hit(s) (all listed)
+      #762 open 2021-08-21 On failure of a pre-commit hook, run git stash pop
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #769 closed 2021-12-28 Ruby 3.1: YamlSyntax crashes when checking Rails database.yml
+  atomic+write   1 hit(s) (all listed)
+      #520 merged 2017-11-04 prepare-commit-message hook
+  lock+file      17 hit(s) (all listed)
+      #762 open 2021-08-21 On failure of a pre-commit hook, run git stash pop
+      #898 open 2026-09-11 Stop wrapping commands in cmd.exe on Windows
+      #859 merged 2025-01-23 Load bundled gems on expected version
+      #796 merged 2022-09-08 Allow overriding Gemfile.lock
+      #68 closed 2014-07-30 Rebasing with Gemfile conflicts causes changes to be lost
+      #122 closed 2015-03-05 Extract built-in hooks a la pre-commit
+      #293 closed 2015-11-10 Question about BundleCheck hook
+      #295 closed 2015-11-11 Staged changes wiped while committing
+      #350 closed 2016-03-01 overcommit requires 'bundle exec git ...' !?
+      #412 closed 2016-08-12 Hook to check versions match between Gemfile.rb and overcommit_gems.rb
+      #495 closed 2017-06-16 unable to run EsLint precommit hook
+      #482 closed 2017-03-26 Add pre-commit hook for license_finder
+      #712 closed 2020-04-06 Overcommit 0.48.0 has dependency on mini_racer 0.2.4 compilation issue to solve an overcommit dependency on Fedora 31?
+      #55 closed 2014-05-20 No such file or directory @ utime_internal
+      #224 closed 2015-06-02 Bundler 1.10.0 breaks `overcommit -r`
+      #602 merged 2018-10-19 Add more information to the BundleCheck error msg
+      #520 merged 2017-11-04 prepare-commit-message hook
+  write+failure  2 hit(s) (all listed)
+      #288 closed 2015-10-23 Add possibility to act on warnings
+      #543 merged 2018-01-20 Add GitLfs post-checkout, post-commit and post-merge hooks
+  file+contents  32 hit(s) (all listed)
+      #665 open 2019-09-01 300 remember all previously verified configurations
+      #798 open 2022-11-09 "Could not find gem '...' in locally installed gems" Upon Running Overcommit
+      #836 open 2024-02-24 Various specs fail on Windows for all Ruby versions
+      #887 merged 2026-07-24 Fix operation state restoration in linked worktrees
+      #888 closed 2026-07-24 Restore operation state to linked worktrees
+      #143 closed 2015-03-25 Allow hooks to depend on other hooks
+      #325 closed 2016-01-22 Should fail loudly when a custom hook specified via configuration cannot be found
+      #31 closed 2014-02-21 Security concern with repo-based hooks
+      #41 closed 2014-03-12 Stashing changes confuses editors
+      #68 closed 2014-07-30 Rebasing with Gemfile conflicts causes changes to be lost
+      #57 closed 2014-06-12 ctags illegal option
+      #12 closed 2013-06-24 overcommit 0.1.10 hangs waiting for Rhino
+      #9 closed 2013-06-14 Tests are being run against files as they exist on disk, not actual contents staged for commit
+      #189 closed 2015-04-19 Add section that documents the hooks?
+      #240 closed 2015-07-02 problem_on_unmodified_line Clarification
+      #168 closed 2015-04-08 Error when removing submodule
+      #135 closed 2015-03-19 Changes lost which are made attempting a commit
+      #195 closed 2015-04-26 Pre Push Hook is not running all hooks
+      #400 closed 2016-07-13 Installing on Windows: symlinking without elevated privileges 
+      #351 closed 2016-03-01 ScssLint not using config file
+
+== 51 terms run; 36 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

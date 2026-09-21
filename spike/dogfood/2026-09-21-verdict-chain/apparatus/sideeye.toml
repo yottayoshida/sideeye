@@ -1,0 +1,18 @@
+# overcommit --install, explored. Copied from docs/ci-quickstart.md's template with the
+# define swapped, plus the two lines that page does not show — which is #647.
+#
+#   1. `overcommit --install` only works inside the repository, so the define needs a `cwd`.
+#      The template has no `cwd` line.
+#   2. `cwd` is resolved BEFORE the state directory is made, so a `cwd` this define's own
+#      setup would create can never resolve. The repository is therefore built outside the
+#      judged root, and the judged root is the hooks directory the operation writes — which
+#      is also the honest judged set: `.git/hooks` is what `overcommit --install` owes, and
+#      the rest of the repository is not its business.
+[world]
+state = "/tmp/oc-repo/.git/hooks"
+
+[define]
+setup     = "./seed-state.sh"
+cwd       = "/tmp/oc-repo"
+operation = ["overcommit", "--install"]
+check     = "./verify.sh"

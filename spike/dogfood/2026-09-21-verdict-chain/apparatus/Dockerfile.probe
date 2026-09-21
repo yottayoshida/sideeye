@@ -1,0 +1,14 @@
+# The gate image: the run image plus a compiler, nothing else.
+#
+# `spike/cohort4/preflight.sh` compiles its interposing logger (`cc -shared -fPIC … -ldl`)
+# and, for `--selftest`, the two toys — so `cc` is what separates this image from the one
+# that explores. Everything the gates read lives in the repository, which is **mounted
+# read-only at /repo** rather than copied in: preflight.sh writes only into the output
+# directory it is given, so a copy would be a second, drifting spelling of scripts this
+# repository already holds (#65 is about the copies already paid for).
+#
+# Why the split at all, when the gates are engine-free: the run image is what the verdict
+# is attributed to, and adding a toolchain to it after the installer has run would mean the
+# binary that produced the verdict lived in an image nobody explored with.
+FROM sideeye-vc
+RUN apt-get install -y --no-install-recommends gcc libc6-dev > /tmp/apt-gcc.log 2>&1 && cc --version | head -1

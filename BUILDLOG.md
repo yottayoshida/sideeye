@@ -2,6 +2,63 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-21 — The dogfood entry gate answers with an exit code, and it was measured against the binary that got past the last one
+
+The 2026-09-21 release-path run spent its only target slot on lefthook, which is statically
+linked, and stopped at `attempted`. It had run the linkage probe. What it did not do was
+read the probe's output past `ELF 64-bit LSB executable`; `statically linked` is further
+along the same line. `spike/dogfood/README.md` already says to measure before writing the
+candidate table, so the rule was not the gap — the reading was, and another sentence
+telling the next reader to read carefully leaves the same road open.
+
+`apparatus/gate.sh` answers three questions with 0, 1 or 2 instead. `visibility` is
+`spike/cohort4/preflight.sh` used as-is (cohort 4's sealed records cite that script, so it
+is not edited); `interior` and a thread count are turned into exit codes around it.
+
+**Four things were measured that the plan for this had asserted.**
+
+*The preflight had never been run here.* `grep -rn -i preflight spike/dogfood/2026-09-21-release-path/`
+is 0 lines. "lefthook would have been red at this gate" was a reading of the script, not an
+observation — and `preflight-analyse.py:126` has an `if not kernel: sys.exit(2)` that a
+badly chosen state root reaches. So the image was built first, `preflight.sh --selftest`
+made green in it, and only then was lefthook measured: **rc=1**, with the four unmatched
+kernel calls named. Had that order been reversed, the missing compiler would have produced
+the same 2 and it would have read as a fact about lefthook.
+
+*The interior gate's red could not be shown with the toy this repository already has.*
+`spike/cohort4/preflight-selftest.txt:51` measures `toy.c` at 4 kill points — green.
+`apparatus/toy_single_op.c` is one `rename` into the root and nothing else.
+
+*The thread gate counted the wrong thing.* It first counted clones carrying `CLONE_THREAD`
+and went red at one. Against `overcommit --install` that is red on two, both of them the
+Ruby VM's startup threads, neither touching the judged directory — and by that rule every
+Ruby, Python and Node candidate is disqualified. Since contract v16 the engine judges a
+threaded run when one thread wrote the judged directory, and since v18 when a creation or a
+join orders two writers (ADR 0067). The gate now counts thread ids that write inside the
+state root. Its red leg changed with it: two threads writing, not a process that starts one.
+
+*`fresh.sh` was not reading the ledger its own campaign writes to.* The previous run added
+`lefthook` to `spike/unknown-rate/b2-exclusions.txt` as a follow-through, and that file was
+not among the six the freshness checker searched. It is here, with `b2-targets.txt` and
+`b2-candidates.txt` — #619's selection, in flight, which is #618's argument one study later.
+Measured before claiming it mattered: of 77 names screened, **one** (`delta`) was caught by
+the three new ledgers and by nothing else. `b2-exclusions` matched 29, all of them already
+in another ledger. The hole was real and its cost so far was one candidate.
+
+Two smaller ones, both caught by reading rather than by a check. `gate_all` set `GATE_OUT`
+as a prefix on shell *function* calls, which cannot reach a variable the script read once at
+the top — all three gates wrote into one directory and each candidate erased the last one's
+artifacts. And the first freshness screen passed its 48-name pool as one unquoted zsh
+variable, which does not word-split: the whole list arrived as a single name and came back
+`fresh`. A screen that fails toward "everything is new" is the wrong direction for a check
+whose two errors are not symmetric.
+
+**The slate.** `overcommit` 0.73.0, `overcommit --install`, judged root `.git/hooks`.
+`husky` was the better fit on every rule but one and was dropped on a measured rule 2:
+latest release 2024-11-18, last push 2026-03-19. Gate rows are in `SELECTION.md`; the
+checker was falsified before use — three greens, three reds.
+
+
 ## 2026-09-21 — the adoption path, and three probes I ran without reading (ADR 0084)
 
 **What this is.** The first dogfood run where Sideeye arrives the way the quickstart tells a

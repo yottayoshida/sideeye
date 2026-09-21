@@ -1,0 +1,9 @@
+# rule 1 (stars) and rule 2 (recent release), measured 2026-09-21T07:18:27Z
+# command: gh api repos/<r> --jq '[.stargazers_count, .pushed_at]'  +  gh api repos/<r>/releases/latest
+repo                      stars  pushed_at              latest_release
+typicode/husky            35328  2026-03-19T23:03:16Z   v9.1.7 2024-11-18
+sds/overcommit             4004  2026-09-06T07:06:51Z   v0.73.0 2026-09-06
+pnpm/pnpm                 36579  2026-09-21T07:15:11Z   v12.5.1 2026-09-18
+yarnpkg/berry              8103  2026-09-19T13:13:16Z   @yarnpkg/cli/4.18.0 2026-07-29
+getzola/zola              17459  2026-09-16T12:08:08Z   v0.23.6 2026-09-12
+typst/typst               56152  2026-09-18T17:51:39Z   v0.15.1 2026-07-17
