@@ -1676,6 +1676,14 @@ jobs:
       - name: A run's disposition cannot be written past its own evidence
         run: python3 spike/authoring-cost/set-disposition.py --selftest
 
+      # The watcher was the one tool here with no check at all, and it is the container's PID 1:
+      # an exception in it kills the box and voids the session rather than losing a snapshot.
+      # The cases that matter are the decoys — the whole home is watched, so a capture rule
+      # written as exclusions reaches the dotfiles, the image README, the engine tarball and
+      # the watcher's own index, the last growing a row per second forever (#639, ADR 0083).
+      - name: The watcher captures the subject's scripts and nothing else
+        run: python3 spike/authoring-cost/watch-defines.py --selftest
+
       # The grading assignment: the same draw every time, and never over a sheet that already
       # carries verdicts — it silently deleted a grader's answers before that refusal existed.
       - name: A grading assignment is reproducible and never overwrites verdicts
