@@ -12,6 +12,16 @@
 # pre-state the built-in rule judges against.
 set -eu
 repo=${OC_REPO:-/tmp/oc-repo}
+# This script empties `$repo` and is committed, so it can be run somewhere it was not meant
+# to be. The guard is on the shape of the path rather than on trust: an absolute path under
+# /tmp whose name is not /tmp itself. Nothing here needs to run outside the container.
+case "$repo" in
+    /tmp/?*) : ;;
+    *) echo "seed-state: refusing to empty '$repo' — OC_REPO must be an absolute path under /tmp" >&2; exit 2 ;;
+esac
+case "$repo" in
+    */..*|*/.) echo "seed-state: refusing a path with a parent reference: '$repo'" >&2; exit 2 ;;
+esac
 rm -rf "$repo"
 mkdir -p "$repo"
 cd "$repo"

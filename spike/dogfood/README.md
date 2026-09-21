@@ -52,6 +52,25 @@ still belongs in the candidate row, because a target whose wall is *expected* an
 *named* can enter with the apparatus that lifts it. What the measurement removes
 is the case where the forecast was simply wrong.
 
+**The measurement has to answer with an exit code** (2026-09-21, bought by one more
+target slot). The release-path run of that date *did* run the linkage probe before
+writing its candidate table, and still admitted a statically linked binary: it read
+the probe's output as far as `ELF 64-bit LSB executable`, and `statically linked` is
+further along the same line. What failed was the reading, not the measuring — so a
+sentence telling the next reader to read to the end of the line leaves the same road
+open. `spike/dogfood/2026-09-21-verdict-chain/apparatus/gate.sh` is the shape that
+does not: three questions, each answered 0, 1 or 2, with **2 kept distinct from 1**
+because "the apparatus could not measure" is not "the target is walled".
+
+Two conditions come with it, both learned the same day. **Every gate must have been
+seen red**, on a target whose red is the one being claimed — the visibility gate's
+red is lefthook 1.13.6 itself, pinned, not a toy that fails for a different reason.
+And **a gate must count what the engine decides on, not a proxy for it**: the thread
+gate first counted threads *created* and went red on the Ruby VM's own startup
+threads, which would disqualify every interpreted candidate there is; since contract
+v16 the engine judges by the thread ids that *wrote the judged directory*, and the
+gate counts that now.
+
 Two measured details that reading would not have produced, both from that day:
 
 - `oxipng -t 1` still starts a thread. The flag sets rayon's pool size; it does

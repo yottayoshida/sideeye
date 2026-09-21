@@ -16,3 +16,17 @@ setup     = "./seed-state.sh"
 cwd       = "/tmp/oc-repo"
 operation = ["overcommit", "--install"]
 check     = "./verify.sh"
+
+# `overcommit --install` makes `.git/hooks/old-hooks` and removes it again. Measured, with
+# both branches seen:
+#
+#   no pre-existing user hook (this define)  mkdirat(old-hooks) ... unlinkat(old-hooks,
+#                                            AT_REMOVEDIR) — it holds nothing and does not
+#                                            survive the run
+#   a pre-existing user hook                 rename(pre-commit -> old-hooks/pre-commit) and
+#                                            the directory STAYS, holding the user's file
+#
+# Under THIS define nobody depends on it, which is what `scratch` means (ADR 0043). Under a
+# define that seeds a pre-existing hook it would hold user data and this declaration would
+# be wrong — so it is scoped to the define, not to the tool.
+scratch   = ["old-hooks"]

@@ -42,7 +42,10 @@ it is closed here — and its measured cost so far is one candidate.
 
 ## The screen
 
-**77 distinct names, 35 fresh, 42 already met.** Two batches: the first is the previous
+**77 distinct names screened for freshness, 35 fresh, 42 already met. The 35 are the
+campaign's candidate count** — every one of them carries a rule's disposition below, and it
+is that number, not the freshness grep's 77, that `spike/outcome-funnel-campaigns.tsv`
+records. Two batches: the first is the previous
 run's pool minus what it consumed, the second is chosen for the shape this campaign wants —
 an in-place mutation whose write path is *not* the truncate-then-write formatter shape that
 `docs/target-classes.md` already publishes for black, rustfmt and pyupgrade, since a
@@ -50,7 +53,7 @@ rediscovery of that shape reaches `judged` and stops there.
 
 Three names deserve their hit being read rather than counted, because a loose substring
 match is what `fresh.sh` uses on purpose: `pre-commit` matches the hook filename in this
-project's own lefthook rows — **and is a real meet anyway**, `b2-exclusions:165`
+project's own lefthook rows — **and is a real meet anyway**, `b2-exclusions:166`
 (`pre-commit  measured (outcome-funnel.tsv)`). `rsync` is `funnel:52`, PASS 7/7 in the
 2026-09-11 run. `jpegoptim` is in `b2-exclusions` and two earlier SELECTION.md files.
 **No false `fresh` and no false `SEEN` in this pool.**
@@ -64,9 +67,16 @@ Measured values with the command that produced them. Rule numbers are
 
 | target | visibility | interior | threads | result |
 |---|---|---|---|---|
-| **overcommit 0.73.0** (Ruby) | **0** | **0** — 3 kill points | **0** — 1 writing thread id, 2 clones created | **enters** |
-| lefthook 1.13.6 (Go) | **1** | 0 — 5 kill points | 0 — 1 writing thread id, 5 clones | turned away |
-| detox (C, Debian) | **2** | 1 — 0 kill points | 0 | could not measure |
+| **overcommit 0.73.0** (Ruby) | **0** | **0** — 3 kill points (a floor; see below) | **0** — 1 writing thread id, 2 clones created | **enters** |
+| lefthook 1.13.6 (Go) | **1** | 0 — 4 kill points | 0 — 1 writing thread id, 5 clones | turned away |
+| detox (C, Debian) | **0** | **0** — 2 kill points | **0** | clears the gate; excluded on rule 1 |
+
+**These are the second measurement.** The first ran the three gates back to back with no
+reset, so `interior` and `threads` saw the operation applied to what the gate before them
+had left — for an installer that is a different operation. It put `1 — 0 kill points` and
+`visibility 2` against detox, which this page then explained as a property of `detox -r`.
+It was a property of the harness. `gate.sh all` now runs a reset before each gate and says
+so in its output, and every row above is from a run that did.
 
 Two of those rows are worth reading rather than skimming.
 
@@ -76,12 +86,24 @@ question the previous campaign got wrong, on the same binary, at the same versio
 to 1.13.6 in `apparatus/Dockerfile` for exactly that reason, since upstream is at 2.1.14
 and any other build would be a different measurement.
 
-**detox's 2 is not a red and was not folded into one.** Its `-r` invocation had already
-renamed the files on the bare run before it, so the measured run mutated nothing, and
-`preflight.sh` refused it with *"operation did nothing (a zero with no denominator is not a
-pass)"*. `gate.sh` passes a 2 through unchanged. detox was never a slate candidate (rule 1)
-and the invocation was not tuned; the row is here because a gate whose greens are all toys
-has only been shown half its range.
+**detox clears all three gates and still does not enter.** It is a real, dynamically
+linked C tool that mutates files in place, and rule 1 is the only thing that stops it: no
+GitHub home with 1,000 stars. The row is here because a gate whose greens are all toys has
+only been shown half its range, and this is the half that is a real binary.
+
+**The interior counts are floors, and for overcommit the floor is ten times under.**
+`preflight.sh`'s trace set is `%file,write,pwrite64,writev,fsync,fdatasync,ftruncate`.
+`overcommit --install` moves its bytes with **`copy_file_range`**, ten times — measured:
+ten write-flag `openat`s, ten `copy_file_range`s, one `mkdirat`, one `unlinkat` under the
+hooks directory. `copy_file_range` takes descriptors, so it is in neither `%file` nor the
+write list, and the gate saw `3 (mkdir=1, open=1, rmdir=1)` where the engine's own run
+counted **31 crash points**. Rule 15 asks only for more than one, which both numbers
+answer, but the gate's number is not the engine's and this page does not pretend it is.
+
+That syscall is also worth naming for a second reason: #217's body lists raw
+`copy_file_range` among the operations `--observe syscalls` cannot trap. This run reached a
+verdict because Ruby's call goes through glibc's wrapper, where the shim interposes it. A
+target issuing the same call raw would be refused.
 
 ### Rejected before the gate
 
@@ -111,8 +133,10 @@ has only been shown half its range.
 - **Rule 7**: no database anywhere in the judged root.
 - **Rule 8**: `overcommit --install` is non-interactive and exits 0 (measured).
 - **Rule 9**: the checker is written against the tool's own output shape
-  (`apparatus/verify.sh`), falsified before use — three greens and three reds,
-  `transcripts/checker-falsification.txt`.
+  (`apparatus/verify.sh`), falsified before use — `transcripts/checker-falsification.txt`
+  holds **five greens and eight reds**, including the state the engine actually corrupts
+  (the samples alone, which the checker's first version accepted) and a regular file
+  wearing the scratch directory's name.
 - **Rule 10**: measured by the gate above, not forecast.
 - **Rule 14**: `transcripts/novelty-overcommit.txt` — controls green (the positive control
   returned both known black issues, the negative returned 0), 51 terms, 36 with hits, none

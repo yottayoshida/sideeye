@@ -1,0 +1,21 @@
+# consequence and recoverability, measured 2026-09-21T07:43:28Z
+# every exit status below is the command's own: no pipes between the command and $?
+
+repo has a first commit: 11c14c4
+
+=== control: a COMPLETE overcommit pre-commit hook runs and is visible ===
+git commit exit=1
+Running pre-commit hooks
+Check for trailing whitespace....................[TrailingWhitespace] FAILED
+✗ One or more pre-commit hooks failed
+
+=== the crash state: pre-commit zeroed by the truncating open, write not yet done ===
+  size: 0 mode: -rwxr-xr-x
+git commit exit=0
+  git said: Running commit-msg hooks Check subject line................................[SingleLineSubject] OK 
+  RESULT: the commit was created with the hook silently doing nothing
+
+=== recoverability: does re-running the same command restore it? ===
+  before: rc=1  check: pre-commit exists but is not overcommit's
+  re-install exit=0
+  after : rc=0  

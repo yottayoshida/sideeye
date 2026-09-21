@@ -1,32 +1,74 @@
 #!/bin/sh
-# What `overcommit --install` owes after it is killed partway.
+# What `overcommit --install` owes, judged over EVERY entry in the hooks directory.
 #
-# It copies one Ruby entrypoint into `.git/hooks` under ten names — measured: ten regular
-# files of 3,682 bytes, one distinct md5 between them. The contract this checks is the one
-# a user would notice: **a hook file that exists must be a complete overcommit hook, and
-# executable**. Git runs whatever is at that path on the next commit, so a hook cut off
-# mid-file is worse than no hook at all, and a complete hook without its exec bit is a
-# hook git silently skips.
+# `overcommit --install` copies one Ruby entrypoint into `.git/hooks` under ten names —
+# measured: ten regular files of 3,682 bytes, one distinct md5 between them. Beside them sit
+# the fourteen `*.sample` files `git init` wrote, which install must not damage.
 #
-# Legitimate after a crash: no hook, or fewer hooks than a finished run writes. Those are
-# recoverable by running install again. A hook that exists and is cut short is not.
+# The user-visible contract: **every file in this directory is either one of git's samples
+# or a complete, executable overcommit hook.** Git runs whatever is at a hook path on the
+# next commit, so a hook cut off mid-file is worse than no hook at all, and a complete hook
+# without its exec bit is one git silently skips.
 #
-# Both ends are checked, because a file holding only the leading comment would pass a
-# name-only test: the entrypoint names itself in its header and again in its last lines
-# (the `EX_SOFTWARE` rescue), so the tail is what says the copy reached its end.
+# Legitimate after a crash: no overcommit hook, or fewer than a finished run writes. Those
+# are recoverable by running install again. A hook that exists and is cut short is not.
+#
+# ## Why this judges the samples too, which install does not write
+#
+# The first version looped over the ten managed names only and was refused by the engine:
+# `UNKNOWN checker_not_falsified`, *"the checker accepted a state whose every file had been
+# overwritten with junk"*. The falsification corrupts each world's **initial** state
+# (`src/main.zig:2444` restores `initial` and then corrupts it) — which here is the fourteen
+# samples and nothing else, the state `seed-state.sh` leaves. A checker that names only the
+# ten files the operation writes has nothing to say about that state, so it exits 0 and the
+# engine correctly refuses to trust an instrument it could not make respond.
+#
+# Judging every entry fixes that and is the truer invariant anyway: a state holding a file
+# that is neither a sample nor a whole overcommit hook is one a user would not accept,
+# whoever put it there.
 set -u
 h=${OC_HOOKS:-/tmp/oc-repo/.git/hooks}
 fail() { echo "check: $*" >&2; exit 1; }
 
 [ -d "$h" ] || fail "the hooks directory is gone"
 
-for f in "$h"/commit-msg "$h"/overcommit-hook "$h"/post-checkout "$h"/post-commit \
-         "$h"/post-merge "$h"/post-rewrite "$h"/pre-commit "$h"/pre-push \
-         "$h"/pre-rebase "$h"/prepare-commit-msg; do
-    [ -e "$f" ] || continue                       # not written yet: install had not got there
-    [ -f "$f" ] || fail "${f##*/} exists and is not a regular file"
-    head -c 200 "$f" | grep -q 'Overcommit' || fail "${f##*/} exists but is not overcommit's"
-    tail -c 200 "$f" | grep -q 'EX_SOFTWARE' || fail "${f##*/} is cut short before its rescue block"
-    [ -x "$f" ] || fail "${f##*/} is not executable, so git would skip the hook install wrote"
+managed=" commit-msg overcommit-hook post-checkout post-commit post-merge post-rewrite pre-commit pre-push pre-rebase prepare-commit-msg "
+
+for f in "$h"/* "$h"/.*; do
+    b=${f##*/}
+    # `old-hooks` is overcommit's own scratch under this define: it is created, nothing is
+    # moved into it (no pre-existing user hook is seeded), and it is removed again —
+    # measured, both branches. A world crashed inside that window leaves an empty directory
+    # git does not look at. It is declared `scratch` in the toml for the built-in
+    # invariants and skipped here for the same reason. **Under a define that seeds a
+    # pre-existing hook this would be wrong**: there the directory holds the user's file.
+    case "$b" in .|..) continue ;; esac
+    # `old-hooks` is skipped only when it is what the tool makes — a DIRECTORY. A regular
+    # file of that name is not overcommit's scratch and falls through to the checks below,
+    # so the skip cannot be used as a hiding place for a corrupted file that happens to
+    # carry the name.
+    if [ "$b" = old-hooks ] && [ -d "$f" ]; then continue; fi
+    [ -e "$f" ] || continue                 # the glob itself when the directory is empty
+    [ -f "$f" ] || fail "$b exists and is not a regular file"
+    case "$b" in
+        *.sample)
+            # git writes these; install must leave them alone. Their first two bytes are
+            # what says the file is still a script rather than whatever replaced it.
+            head -c 2 "$f" | grep -q '#!' || fail "$b is a git sample and no longer starts with a shebang"
+            ;;
+        *)
+            case "$managed" in
+                *" $b "*)
+                    # Both ends, because a file holding only the leading comment would pass a
+                    # name-only test: the entrypoint names itself in its header and again in
+                    # its last lines, so the tail is what says the copy reached its end.
+                    head -c 200 "$f" | grep -q 'Overcommit' || fail "$b exists but is not overcommit's"
+                    tail -c 200 "$f" | grep -q 'EX_SOFTWARE' || fail "$b is cut short before its rescue block"
+                    [ -x "$f" ] || fail "$b is not executable, so git would skip the hook install wrote"
+                    ;;
+                *) fail "$b is neither a git sample nor a hook overcommit manages" ;;
+            esac
+            ;;
+    esac
 done
 exit 0

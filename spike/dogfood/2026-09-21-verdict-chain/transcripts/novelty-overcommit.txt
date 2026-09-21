@@ -294,3 +294,28 @@
 == counts are not summed: a saturated term has no count, and one issue answers many terms
 == this script does not decide novelty. The judgement, and the write
    shape it is about, go in the target's proposal citing this transcript.
+# duplicate check for THIS window, as sds/overcommit's CONTRIBUTING asks first
+# date: 2026-09-21T07:44:04Z
+# policy read: CONTRIBUTING.md (bug reports: duplicates, steps, observed vs expected,
+#   OVERCOMMIT_DEBUG, stack trace). No issue template. No LLM/AI policy.
+
+
+!! THE SIX QUERIES BELOW ARE VOID AND ARE KEPT ONLY AS A RECORD OF THE MISTAKE.
+!! They are space-separated, and novelty-prescan.sh's own header says a
+!! space-separated query RETURNS ZERO through this API whatever the tracker holds —
+!! "Multi-word terms are refused by the script for that reason; do not work around it."
+!! Working around it is exactly what this was. Each zero below is the API's behaviour,
+!! not a statement about sds/overcommit. The duplicate check that counts is the
+!! single-word sweep above, whose controls were green.
+!!
+!!   install empty hook / interrupted install / zero byte hook / partial install /
+!!   install killed / hook file empty        -> 0 hit(s) each, meaning nothing
+
+== valid single-word sweep for the operation's own name, 2026-09-21T07:44:56Z
+   install    100 hit(s)  SATURATED - a floor, not a count
+   uninstall  22 hit(s)
+   hooks      100 hit(s)  SATURATED - a floor, not a count
+   read by hand against this window: the nearest are #7 (install should complain when
+   hooks already exist), #138 and #141 (save and restore old hooks on uninstall), and
+   #65 / #135 / #295 (the stash flow during a COMMIT, a different operation).
+   Nothing found is about install being interrupted.

@@ -46,15 +46,23 @@
 #               there is no world *inside* the mutation — so it does not answer the
 #               question a dogfood run is spending its slot on.
 #
-#   threads     The operation created at least one thread. **This is a selection
-#               preference, not a prediction of refusal.** Since contract v16 a run that
-#               creates threads is judged when one thread wrote the judged directory,
-#               and since v18 when a creation or a join orders two writers (ADR 0067);
-#               `docs/report-schema.md` states both. Whether a given target clears that
-#               is the engine's decision on a real run, which this gate does not make.
-#               A red here says: admitting this candidate depends on a rule this gate
-#               cannot check, so in a run with one target slot, prefer one that does not
-#               need it.
+#   threads     More than one thread id performed a state-changing call INSIDE the state
+#               root. **This is a selection preference, not a prediction of refusal.**
+#               Since contract v16 a run that creates threads is judged when one thread
+#               wrote the judged directory, and since v18 when a creation or a join orders
+#               two writers (ADR 0067); `docs/report-schema.md` states both. Whether a
+#               given target clears that is the engine's decision on a real run, which
+#               this gate does not make. A red here says: admitting this candidate depends
+#               on a rule this gate cannot check, so in a run with one target slot, prefer
+#               one that does not need it. (It counted threads *created* first; see
+#               gate_threads' own header for why that was wrong.)
+#
+# ## The state has to be put back between gates
+#
+# Each gate runs the operation, so three gates run it three times. For an installer the
+# second run is a different operation from the first — measured: `overcommit --install`
+# writes ten hooks and then finds them already there. `gate.sh all` runs `$GATE_RESET`
+# before each gate, and says so in its output when there is none.
 set -u
 
 PREFLIGHT=${PREFLIGHT:-/repo/spike/cohort4/preflight.sh}
@@ -150,13 +158,29 @@ gate_threads() {
     fi
     created=$(grep -c 'CLONE_THREAD' "$log" 2>/dev/null || true)
     [ -n "$created" ] || created=0
-    # A writing line: the call mutates state, it names the root, and it did not fail.
-    # `= -1` is dropped because an attempt that the kernel refused changed nothing.
-    writers=$(grep -E '(openat?|creat|rename(at2?)?|unlink(at)?|mkdir(at)?|rmdir|link(at)?|symlink(at)?|truncate|ftruncate|write|pwrite64|writev|fsync|fdatasync)\(' "$log" \
-        | grep -F "$root" \
+    # **The id prefix has to be there before any count is believed.** `strace -f` puts the
+    # pid or tid first on every line, and this whole gate is a count of distinct first
+    # fields. If that prefix is absent — no `-f`, a refused ptrace leaving only an error
+    # line, a format this does not expect — every line's first field fails the numeric test
+    # and the count comes out 0, which is the GREEN answer. "One writer, measured" and
+    # "nothing was measured" would be the same output. So the prefix is checked first and
+    # its absence is a 2.
+    if [ "$(awk '$1 ~ /^[0-9]+$/' "$log" | grep -c '' || true)" = 0 ]; then
+        echo "gate threads rc=2 (no line in the strace output carries a numeric id prefix; the count this gate makes is not available)"
+        return 2
+    fi
+    # A writing line: the call mutates state, it names something INSIDE the root, and it
+    # did not fail. `= -1` is dropped because an attempt the kernel refused changed nothing.
+    #
+    # `"$root/"` with the separator, not `"$root"`: a plain substring match also accepts the
+    # root's SIBLINGS — `<root>.staging`, `<root>.tmp`, `<root>-old` — and this gate's own
+    # green leg writes exactly such a sibling (`toy_single_op.c` stages at `"%s.staging"`),
+    # so the error was invisible in a leg designed to pass.
+    writers=$(grep -E '((open|openat)|creat|rename(at2?)?|unlink(at)?|mkdir(at)?|rmdir|link(at)?|symlink(at)?|truncate|ftruncate|write|pwrite64|writev|fsync|fdatasync)\(' "$log" \
+        | grep -F "$root/" \
         | grep -vE '= -1' \
         | grep -E 'O_WRONLY|O_RDWR|O_CREAT|O_TRUNC|O_APPEND|rename|unlink|mkdir|rmdir|link|symlink|truncate|write|fsync|fdatasync' \
-        | awk '{print $1}' | sort -u | grep -cE '^[0-9]+$' || true)
+        | awk '$1 ~ /^[0-9]+$/ {print $1}' | sort -u | grep -c '' || true)
     [ -n "$writers" ] || writers=0
     if [ "$writers" -gt 1 ]; then
         echo "gate threads rc=1 ($writers thread id(s) wrote inside the state root; $created clone(s) carrying CLONE_THREAD. See the header for what this does and does not claim)"
@@ -179,10 +203,27 @@ gate_all() {
     OUT="$base/$label"
     mkdir -p "$OUT"
     echo "=== $label ==="
+    # **Each gate runs the operation again, so the state has to be put back between them.**
+    # Without this the second gate measures the operation applied to what the first one
+    # left, which for an installer is a different operation: `overcommit --install` writes
+    # ten hooks the first time and finds them already there the second, so an interior
+    # count taken after visibility is a count of the repeat. Measured — the first version of
+    # this function recorded `3 kill points` for a target the engine then explored at 31.
+    # GATE_RESET is the command that rebuilds the pre-state; with none, the row still prints
+    # but says what it is.
+    if [ -n "${GATE_RESET:-}" ]; then
+        echo "reset: $GATE_RESET"
+    else
+        echo "reset: NONE — interior and threads below measured the operation applied to"
+        echo "       what the gate before them left, which is not the same operation."
+    fi
+    [ -n "${GATE_RESET:-}" ] && sh -c "$GATE_RESET" > "$OUT/reset.log" 2>&1
     gate_visibility "$root" -- "$@" > "$OUT/visibility.log" 2>&1
     v=$?
+    [ -n "${GATE_RESET:-}" ] && sh -c "$GATE_RESET" > "$OUT/reset.log" 2>&1
     gate_interior "$root" -- "$@" > "$OUT/interior.log" 2>&1
     i=$?
+    [ -n "${GATE_RESET:-}" ] && sh -c "$GATE_RESET" > "$OUT/reset.log" 2>&1
     gate_threads "$root" -- "$@" > "$OUT/threads.log" 2>&1
     t=$?
     tail -2 "$OUT/visibility.log"; tail -1 "$OUT/interior.log"; tail -1 "$OUT/threads.log"
@@ -252,6 +293,24 @@ for t in ts: t.start()
 for t in ts: t.join()' >"$tmp/l5" 2>&1
     expect "threads RED on two threads writing the state root" 1 $?
 
+    # --- the root's boundary: writes to a SIBLING are not writes inside the root.
+    #
+    # This leg exists because the first version matched the root as a bare substring, so
+    # `<root>.staging` counted as in-root — and the green leg above stages at exactly that
+    # name, which made the error invisible in the one place it was already happening. Two
+    # threads writing two siblings must count 0 writers; under the old match they counted 2
+    # and this leg is red.
+    mkdir -p "$tmp/edge" "$tmp/edge/root"
+    OUT="$tmp/o7" gate_threads "$tmp/edge/root" -- env "R=$tmp/edge/root" python3 -c 'import threading, os
+r = os.environ["R"]
+def w(n):
+    with open(r + n, "w") as f:      # r + n, NOT r + "/" + n: a sibling of the root
+        f.write(n)
+ts = [threading.Thread(target=w, args=(s,)) for s in (".staging", ".tmp")]
+for t in ts: t.start()
+for t in ts: t.join()' >"$tmp/l7" 2>&1
+    expect "threads green when two threads write SIBLINGS of the root" 0 $?
+
     # --- visibility red: lefthook, the target the previous run admitted
     mkdir -p "$tmp/lh-repo"
     ( cd "$tmp/lh-repo" && git init -q . && git config user.email t@example.com && git config user.name t \
@@ -261,8 +320,8 @@ for t in ts: t.join()' >"$tmp/l5" 2>&1
 
     echo
     OUT=$outer_out
-    echo "gate: $fails case(s) failed of 6"
-    for f in 1 2 3 4 5 6; do echo "--- leg $f ---"; tail -3 "$tmp/l$f"; done
+    echo "gate: $fails case(s) failed of 7"
+    for f in 1 2 3 4 5 6 7; do echo "--- leg $f ---"; tail -3 "$tmp/l$f"; done
     [ "$fails" = 0 ] || return 1
     echo "gate: selftest green"
     return 0

@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `spike/dogfood/2026-09-21-verdict-chain/` — a dogfood run whose candidates enter through a
+  gate that answers with an exit code (ADR 0085), each of its three questions seen red as
+  well as green, with the visibility red being the statically linked binary the previous
+  run admitted. One target, `overcommit` 0.73.0: **FAIL 10/32**, `oracle_verified`,
+  reproduced twice, novel on the tracker and deliberately not filed — the state is restored
+  by re-running the same command and 153 timed kills over three sweeps left no partial hook.
+  `spike/dogfood/README.md`'s ordering rule now carries the exit-code requirement.
+
+
 - **The first run of the adoption path on a real project, and what it cost** (**ADR 0084**;
   `spike/dogfood/2026-09-21-release-path/`). `docs/ci-quickstart.md` says a project adopts Sideeye
   by copying the workflow and `install-sideeye.sh` and swapping the define. That script had only

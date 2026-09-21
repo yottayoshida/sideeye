@@ -56,7 +56,88 @@ whose two errors are not symmetric.
 **The slate.** `overcommit` 0.73.0, `overcommit --install`, judged root `.git/hooks`.
 `husky` was the better fit on every rule but one and was dropped on a measured rule 2:
 latest release 2024-11-18, last push 2026-03-19. Gate rows are in `SELECTION.md`; the
-checker was falsified before use — three greens, three reds.
+checker was falsified before use.
+
+**Then the run, and two more reversals.**
+
+The first explore came back `UNKNOWN checker_not_falsified` — the engine refusing to trust
+a checker it could not make respond. The cause is worth writing down because it is not the
+obvious one: the falsification corrupts each world's **initial** state (`src/main.zig:2444`
+restores `initial` and then corrupts it), which here is the fourteen `*.sample` files
+`git init` leaves and nothing else. A checker that named only the ten files the operation
+writes had nothing to say about that state and exited 0. **The previous campaign's checker
+has the same hole**, unmeasured — its run stopped at `oracle_missed_operation` and never
+reached the checker stage, so nothing has ever exercised it. The fix is the truer
+invariant anyway: every entry in the directory is either one of git's samples or a
+complete, executable overcommit hook.
+
+The second explore came back **FAIL 11/32 with the earliest exhibit inside
+`mkdir(old-hooks)` … `rmdir(old-hooks)`** — which is overcommit's own scratch directory,
+not a defect. Measured, both branches: with no pre-existing user hook it is created,
+holds nothing and is removed; with one, the user's hook is moved into it by a single
+`renameat` and the directory stays. Under this define nobody depends on it, so it is
+declared `scratch` (ADR 0043) and skipped by the checker — scoped to the name, with a
+leg proving a *different* stray directory still fails. Reporting that first FAIL would
+have been this repository's buku lesson a third time: judging a store by a rule stricter
+than its contract.
+
+With that declared: **FAIL 10 of 32, earliest crash point 4 of 31 — the truncating `open`
+of `overcommit-hook` before its `write`, a zero-byte executable hook.** `oracle_verified`,
+reproduced identically twice.
+
+**The report question was decided by measuring, and the answer was no.** The consequence
+is real and was measured with a control in the same run: a complete hook makes `git commit`
+exit 1 and fail the check; the zero-byte one lets the same offending commit through at exit
+0 with the hooks never mentioned. But the data comes back (`overcommit --install` again
+restores it), nothing user-authored is at risk (one atomic `renameat`), and **153 timed
+kills over three 51-attempt sweeps left zero incomplete hooks**. The three are not one
+measurement: the first two report `fewer hooks 0` and the third, which records the hook
+count per attempt, shows kills landing inside the install (48 ms → 1 hook, 49 ms → 10,
+50 ms → 1). They disagree, which says the timing is not stable at this granularity — the
+third is what keeps the zeros from being vacuous, and an earlier draft of this entry said
+the *same* sweep did both, which the transcript does not support. A crash point exists; a
+crash does not land there. Sideeye measures the first and says in every report that it does
+not measure the second.
+
+Two process notes. The first reachability sweep fired at 52–520 ms against a 69 ms install
+and found nothing, which meant nothing — the same shape as the duplicate check that ran six
+space-separated queries through an API whose zero for those is unconditional, after
+`novelty-prescan.sh`'s header says in as many words not to work around it. Both are kept in
+the transcripts, the second struck through. Twice in one run, a zero was nearly taken for a
+measurement.
+
+**The blind review found four more, and three of them were in the apparatus rather than in
+the prose.**
+
+*The three gates ran back to back with no reset*, so each measured the operation applied to
+what the one before it left. For an installer the second run is a different operation:
+`overcommit --install` writes ten hooks and then finds them there. The candidate table had
+`detox` at `visibility 2` and this page's first draft explained that as a property of
+`detox -r`; with a reset between the gates detox clears all three. `GATE_RESET` now runs
+before each gate and `gate.sh all` prints what it ran, or prints that it ran nothing.
+
+*The in-root test was a bare substring*, so the root's siblings counted as inside it — and
+the gate's own green leg stages at `<root>.staging`, which is exactly such a sibling, so the
+error was invisible in the leg most likely to meet it. Matching `"$root/"` fixes it and a
+seventh leg holds it: two threads writing two siblings must count zero writers.
+
+*The thread count fell to green when it could not measure.* Only an empty strace file
+returned 2; any other way of losing the `pid` prefix left every first field non-numeric, the
+count at 0, and the gate green. The prefix is now checked before the count is believed.
+
+The fourth is a number: `interior` reported 3 kill points where the engine's run found 31.
+Measured: `overcommit --install` moves its bytes with **`copy_file_range`**, ten times, and
+that call is in neither `%file` nor `preflight.sh`'s write list. The gate's count is a floor
+and now says so. The same syscall is one of the operations #217 names as untrappable under
+`--observe syscalls`; this run reached a verdict because Ruby calls it through glibc, where
+the shim interposes it.
+
+Two of the review's findings were this entry's own: "three greens and three reds" for a
+transcript that by then held eleven legs, and the claim that one sweep both found zero
+incomplete hooks and caught the process mid-install when those were two different runs
+reporting different things. Both are corrected above. The pattern in all four prose defects
+is the same — a sentence written when the measurement said one thing, left standing after
+the measurement was redone.
 
 
 ## 2026-09-21 — the adoption path, and three probes I ran without reading (ADR 0084)

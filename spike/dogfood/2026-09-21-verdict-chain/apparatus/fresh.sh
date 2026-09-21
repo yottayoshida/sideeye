@@ -42,7 +42,8 @@ set -eu
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/../../../.." && pwd)"
 
-# Each entry: <label>:<path>. All six are read; a missing one is a hard error rather than a
+# Each entry: <label>:<path>. All eight are read (plus the globbed selection files and
+# pools, which makes nine sources); a missing one is a hard error rather than a
 # quiet skip — a ledger that silently does not exist would make every candidate look fresh.
 ledgers="
 funnel:spike/outcome-funnel.tsv
@@ -94,7 +95,11 @@ seen_in() {
     for entry in $ledgers; do
         label=${entry%%:*}; path=${entry#*:}
         [ -f "$root/$path" ] || { echo "fresh: missing ledger $path" >&2; exit 2; }
-        line=$(without_mine "$root/$path" | grep -n -i -F -m1 "$name" | cut -d: -f1 || true)
+        # `grep -n` on the FILE, then drop this campaign's own rows — not `grep -n` on the
+        # filtered stream, which numbers the lines it was handed and so reports a number
+        # that does not exist in the file. Measured: with one `$mine` row removed above it,
+        # `pre-commit` was reported at b2-exclusions:165 while the file's 165 is `poetry`.
+        line=$(grep -n -i -F "$name" "$root/$path" 2>/dev/null | grep -v -F "$mine" | head -1 | cut -d: -f1 || true)
         # `if`, not `[ ] && printf`: under `set -e` a false test as the last statement of a
         # loop body makes the function return 1, the command substitution that called it
         # fails, and the whole script dies with no output at all. Measured — the first
@@ -138,6 +143,22 @@ if [ "${1:-}" = "--selftest" ]; then
         *funnel*) echo "ok   another campaign's measured target still reads seen" ;;
         *) echo "FAIL lefthook did not come back seen from the funnel; is \$mine too wide?"; fails=$((fails + 1)) ;;
     esac
+
+    # The other direction of the same scoping: this campaign's OWN target must still read
+    # fresh after this campaign has written its follow-through rows, or the freshness of
+    # this selection could never be re-checked. The exclusion works by campaign path
+    # (`grep -v -F "$mine"`), so every row this run adds has to carry that path in its
+    # text — including the one in a NAME ledger, `spike/unknown-rate/b2-exclusions.txt`,
+    # whose rows are `<package>\t<reason>` and carried no path before this campaign. The
+    # previous run wrote `lefthook  measured (2026-09-21 release-path dogfood)` there, which
+    # its own checker could not have dropped; this run writes the path instead. Without that
+    # change this case is red.
+    if [ -z "$(seen_in overcommit)" ]; then
+        echo "ok   this campaign's own records do not make its own target look already met"
+    else
+        echo "FAIL overcommit matched this campaign's own records: $(seen_in overcommit | tr '\n' ' ')"
+        fails=$((fails + 1))
+    fi
 
     # An invented name must be clear, or every candidate would read as already met.
     if [ -z "$(seen_in zzqx-not-a-real-tool)" ]; then
