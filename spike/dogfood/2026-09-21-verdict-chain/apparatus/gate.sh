@@ -271,7 +271,17 @@ gate_all() {
         gate_threads "$root" -- "$@" > "$OUT/threads.log" 2>&1
         t=$?
     else t=2; fi
-    tail -2 "$OUT/visibility.log"; tail -1 "$OUT/interior.log"; tail -1 "$OUT/threads.log"
+    # From the `reading:` marker to the end, not a fixed line count: `preflight.sh`'s
+    # reading runs to two lines for the wall it names, and `tail -2` cut the first of them —
+    # so the transcript carried `class (#217), a named wall …` with no sentence in front of
+    # it, and the reason for the one red this campaign's promise rests on was unreadable
+    # from the record that is supposed to carry it.
+    if grep -q 'reading:' "$OUT/visibility.log"; then
+        sed -n '/reading:/,$p' "$OUT/visibility.log"
+    else
+        tail -2 "$OUT/visibility.log"
+    fi
+    tail -1 "$OUT/interior.log"; tail -1 "$OUT/threads.log"
     OUT=$base
     printf 'GATE %-14s visibility=%s interior=%s threads=%s\n' "$label" "$v" "$i" "$t"
     if [ "$v" = 0 ] && [ "$i" = 0 ] && [ "$t" = 0 ]; then return 0; fi
@@ -293,8 +303,16 @@ selftest() {
     tmp=${TMPDIR:-/tmp}/gate-selftest.$$
     mkdir -p "$tmp" || die_broken "cannot create $tmp"
     fails=0
-    expect() { # name expected actual
+    # `expect` prints the leg's own evidence directly under its own line. The first version
+    # collected the logs as `$tmp/l1 … l11` and dumped them at the end in numeric order,
+    # which stopped matching the order of these calls as soon as a leg was inserted in the
+    # middle: `ok` line 6 and `--- leg 6 ---` became different legs, so a reader
+    # cross-referencing them read the wrong transcript. Nothing keeps two orderings in step
+    # except not having two.
+    expect() { # name expected actual [logfile]
         if [ "$2" = "$3" ]; then echo "ok   $1 (rc=$3)"; else echo "FAIL $1: expected rc=$2, got rc=$3"; fails=$((fails + 1)); fi
+        [ -n "${4:-}" ] && [ -f "$4" ] && sed -n '$p' "$4" | sed 's/^/       /'
+        return 0
     }
 
     outer_out=$OUT   # same reason as in gate_all: OUT is read once, so each leg sets it
@@ -306,19 +324,19 @@ selftest() {
     mkdir -p "$tmp/single-state"
     TOY_STATE="$tmp/single-state" "$tmp/single" init >/dev/null 2>&1 || die_broken "single init failed"
     OUT="$tmp/o1" gate_visibility "$tmp/single-state" -- env "TOY_STATE=$tmp/single-state" "$tmp/single" rotate >"$tmp/l1" 2>&1
-    expect "visibility green on a libc-routed toy" 0 $?
+    expect "visibility green on a libc-routed toy" 0 $? "$tmp/l1"
     TOY_STATE="$tmp/single-state" "$tmp/single" init >/dev/null 2>&1
     OUT="$tmp/o2" gate_interior "$tmp/single-state" -- env "TOY_STATE=$tmp/single-state" "$tmp/single" rotate >"$tmp/l2" 2>&1
-    expect "interior RED on a one-operation toy" 1 $?
+    expect "interior RED on a one-operation toy" 1 $? "$tmp/l2"
     TOY_STATE="$tmp/single-state" "$tmp/single" init >/dev/null 2>&1
     OUT="$tmp/o3" gate_threads "$tmp/single-state" -- env "TOY_STATE=$tmp/single-state" "$tmp/single" rotate >"$tmp/l3" 2>&1
-    expect "threads green on a toy with one writing thread" 0 $?
+    expect "threads green on a toy with one writing thread" 0 $? "$tmp/l3"
 
     # --- the repository's own toy: four kill points, so interior must be green
     mkdir -p "$tmp/multi-state"
     TOY_STATE="$tmp/multi-state" "$tmp/multi" init >/dev/null 2>&1 || die_broken "multi init failed"
     OUT="$tmp/o4" gate_interior "$tmp/multi-state" -- env "TOY_STATE=$tmp/multi-state" "$tmp/multi" rotate >"$tmp/l4" 2>&1
-    expect "interior green on a four-operation toy" 0 $?
+    expect "interior green on a four-operation toy" 0 $? "$tmp/l4"
 
     # --- threads red: TWO threads writing inside the state root.
     #
@@ -336,7 +354,7 @@ def w(n):
 ts = [threading.Thread(target=w, args=(str(i),)) for i in range(2)]
 for t in ts: t.start()
 for t in ts: t.join()' >"$tmp/l5" 2>&1
-    expect "threads RED on two threads writing the state root" 1 $?
+    expect "threads RED on two threads writing the state root" 1 $? "$tmp/l5"
 
     # --- the root's boundary: writes to a SIBLING are not writes inside the root.
     #
@@ -354,7 +372,7 @@ def w(n):
 ts = [threading.Thread(target=w, args=(s,)) for s in (".staging", ".tmp")]
 for t in ts: t.start()
 for t in ts: t.join()' >"$tmp/l7" 2>&1
-    expect "threads green when two threads write SIBLINGS of the root" 0 $?
+    expect "threads green when two threads write SIBLINGS of the root" 0 $? "$tmp/l7"
 
     # --- a thread that only PRINTS the root's path is not a writer.
     #
@@ -369,7 +387,7 @@ def w(n):
 ts = [threading.Thread(target=w, args=(s,)) for s in ("a", "b")]
 for t in ts: t.start()
 for t in ts: t.join()' >"$tmp/l8" 2>&1
-    expect "threads green when two threads only PRINT paths under the root" 0 $?
+    expect "threads green when two threads only PRINT paths under the root" 0 $? "$tmp/l8"
 
     # --- the 2s. ADR 0085's first rule is "0, 1, 2 — and the 2 is kept", so the 2 needs its
     # own falsification: a gate that could only ever answer 0 or 1 would pass every leg
@@ -377,26 +395,25 @@ for t in ts: t.join()' >"$tmp/l8" 2>&1
     # produces a 2, each triggered at its own site. `die_broken` exits rather than returns,
     # so those two run in a subshell.
     (PREFLIGHT="$tmp/not-a-file" gate_visibility "$tmp/single-state" -- true) >"$tmp/l9" 2>&1
-    expect "visibility answers 2 when the instrument is missing" 2 $?
+    expect "visibility answers 2 when the instrument is missing" 2 $? "$tmp/l9"
 
     printf '#!/bin/sh\nexit 0\n' > "$tmp/stub-preflight.sh"
     OUT="$tmp/o10" PREFLIGHT="$tmp/stub-preflight.sh" gate_interior "$tmp/single-state" -- true >"$tmp/l10" 2>&1
-    expect "interior answers 2 when no INTERIOR count is printed" 2 $?
+    expect "interior answers 2 when no INTERIOR count is printed" 2 $? "$tmp/l10"
 
     (PATH=/nonexistent gate_threads "$tmp/single-state" -- true) >"$tmp/l11" 2>&1
-    expect "threads answers 2 when strace is not installed" 2 $?
+    expect "threads answers 2 when strace is not installed" 2 $? "$tmp/l11"
 
     # --- visibility red: lefthook, the target the previous run admitted
     mkdir -p "$tmp/lh-repo"
     ( cd "$tmp/lh-repo" && git init -q . && git config user.email t@example.com && git config user.name t \
       && printf 'pre-commit:\n  commands:\n    noop:\n      run: "true"\n' > lefthook.yml ) || die_broken "could not seed the lefthook repo"
     OUT="$tmp/o6" gate_visibility "$tmp/lh-repo/.git/hooks" -- env -C "$tmp/lh-repo" lefthook install >"$tmp/l6" 2>&1
-    expect "visibility RED on lefthook (the 2026-09-21 release-path target)" 1 $?
+    expect "visibility RED on lefthook (the 2026-09-21 release-path target)" 1 $? "$tmp/l6"
 
     echo
     OUT=$outer_out
     echo "gate: $fails case(s) failed of 11"
-    for f in 1 2 3 4 5 6 7 8 9 10 11; do echo "--- leg $f ---"; tail -3 "$tmp/l$f"; done
     [ "$fails" = 0 ] || return 1
     echo "gate: selftest green"
     return 0

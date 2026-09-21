@@ -1,4 +1,4 @@
-# candidate gate rows, 2026-09-21T08:25:38Z
+# candidate gate rows, 2026-09-21T08:49:49Z
 # gate.sh all <label> <state-root> -- <cmd>   (0 clear / 1 red / 2 could not measure)
 # Each gate runs the operation, so GATE_RESET rebuilds the pre-state before each one.
 
@@ -19,6 +19,7 @@ version: 1.13.6
 linkage: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=7b3ed3df42f8e05e5407a8ae3fc14c7d6fd26f21, stripped
 === lefthook ===
 reset: sh /tmp/reset-lefthook.sh
+  reading: an LD_PRELOAD shim cannot see these; this is the cargo
            class (#217), a named wall at probe time, zero defines spent
 gate visibility rc=1
 gate interior rc=0 (kill points inside the state root: 4)
