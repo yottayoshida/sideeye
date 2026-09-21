@@ -63,7 +63,7 @@ project's own lefthook rows — **and is a real meet anyway**, `b2-exclusions:16
 Measured values with the command that produced them. Rule numbers are
 `spike/cohort4/SCOUT-BRIEF.md`'s.
 
-### Gated (`apparatus/gate.sh all`, `transcripts/gate-candidates.txt`)
+### Gated (`apparatus/gate-candidates.sh`, output in `transcripts/gate-candidates.txt`)
 
 | target | visibility | interior | threads | result |
 |---|---|---|---|---|
@@ -75,8 +75,12 @@ Measured values with the command that produced them. Rule numbers are
 reset, so `interior` and `threads` saw the operation applied to what the gate before them
 had left — for an installer that is a different operation. It put `1 — 0 kill points` and
 `visibility 2` against detox, which this page then explained as a property of `detox -r`.
-It was a property of the harness. `gate.sh all` now runs a reset before each gate and says
-so in its output, and every row above is from a run that did.
+It was a property of the harness. `gate.sh all` now runs a reset before each gate, says so
+in its output and stops the row at 2 if the reset fails, and every row above is from a run
+that did. The resets themselves are committed — overcommit's is `seed-state.sh`, the define's
+own setup, and the other two are written by `gate-candidates.sh`; an earlier version set
+`GATE_RESET` to scripts under `/tmp` that this repository does not hold, which left the one
+step whose point is that a reader can check it as the one step they could not.
 
 Two of those rows are worth reading rather than skimming.
 
