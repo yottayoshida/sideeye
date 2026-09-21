@@ -2,6 +2,91 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-21 — The report names the directory the define's commands ran in (#647)
+
+#647 was filed from the release-path dogfood: `lefthook install` only works inside its
+repository, the quickstart's template had no `cwd`, and the run refused `recording_run_failed`
+— an exit status and, by ADR 0030's rule, no cause. The engine could not know the cause. It did
+know where the commands ran, resolved in phase 0 and handed to the oracle, and the report said
+nothing of it. `command_cwd` and `command_cwd_declared` now say it, in every report after the
+declared `cwd` is resolved, and a `cwd` line says it in the text — on UNKNOWN under `next`
+(ADR 0086).
+
+**The quickstart's toy never needed a `cwd`, which is the part that would have gone wrong
+quietly.** The engine hands every child `TOY_STATE`, and the toy reads only that, so it writes
+its state from any directory — measured: the clean lane's toy wrote `/tmp/sideeye-quickstart-clean/key.json`
+and nothing appeared under the engine's own `./state`. A `cwd` added to the quickstart's defines
+would have passed with or without the line, and #647's complaint — CI's guarantee does not reach
+the `cwd` field — would have been met in letter and left standing. `TOY_PROJECT` makes `rotate`
+refuse outside a directory holding a marker, and the release lane now runs the define twice,
+with `cwd` and with that one line deleted, requiring exit 2 and `recording_run_failed` for the
+second. `rotate` only, not `init`: gating setup would have produced `setup_failed`, exit 3, which
+is not the failure #647 observed. Measured first against the v1.5.0 release engine — the plan
+rested on the step's environment reaching the operation, which review had read and nobody had
+run: with `cwd`, verified PASS; without, exit 2 `recording_run_failed`; and the same no-`cwd`
+define without `TOY_PROJECT`, PASS — so the failure is the variable reaching the operation, not
+something else about the missing line.
+
+**The plan had the text blocks wrong, and review found it twice.** It named two blocks that
+print `expected`; there are four — UNKNOWN, FAIL, PASS, and the zero-operation PASS, in two
+different formats — and it had mislabelled the FAIL block as "PASS/FAIL". Built as planned, PASS
+would have carried no `cwd` line. The second review then found the test for it did not reach
+the zero-operation block either: the existing fixture's operation writes, so it is never zero
+operations. Both are covered now, each block on a run of its own.
+
+**The line's position was the altitude question.** Beside `expected` at the bottom of UNKNOWN
+the line existed and would not be read: the detail points at `--expect-status`, `next` points
+back at the detail, and `cwd` was eight lines further. Under `next`, beside `divergence`, is
+where the reader already is, and the acceptance suite's line-anchored reads do not move there.
+
+**The acceptance run was wrong twice before it was right.** The first run failed the #647 leg
+for a reason that had nothing to do with the change: `spike/out/toy-fixed` was from 2026-09-16
+and predated `TOY_PROJECT` — CI builds the toys with `spike/build-toys.sh` before the suite, and
+the local run had skipped it. The second compared the branch with `main` and found 12 failures
+against 19, which read as this change fixing seven: the fresh `main` worktree had none of the
+apparatus binaries CI builds (`-Dtest-seq-gap`, `-Dtest-no-cgroup`, …) and the branch had stale
+ones. With CI's build sequence applied to both trees, in the same image: **no failure on the
+branch that is not on `main`.** The twelve both share are this environment's — the suite runs as
+root in Docker Desktop, and several legs say so themselves ("RLIMIT_NPROC is ignored for root").
+
+Two documentation defects caught before review. `docs/cli.md` first said a `cwd` the define's
+own setup creates "can never resolve"; it resolves if an earlier run left it behind, which is
+worse — the define works on one machine and not on a clean one — and the sentence now says that.
+And its FAIL example is labelled "Real output", and was not: it predated the `evidence` line,
+the `witness strace` clause and `SIDEEYE_SEQ_BASE=`, and counted 68 syscall lines where the
+same command now examines 82. Adding the `cwd` line to it would have produced output no run ever
+printed. It is replaced by the command's actual output.
+
+**Review of the diff found the same defect one step earlier, in `preflight`.** Preflight accepts
+`--cwd`, resolves it, and is where a define is first tried; its report named no directory, and
+its `next` hint — whose own comment says it carries the define preflight accepted, `--setup` and
+`--expect-status` included — dropped `--cwd`. Pasted as printed, the hint ran the operation from
+wherever explore was started: #647's refusal, on the define preflight had just blessed. The hint
+predates this change, so this is not a regression; it is the same promise, and it took three
+lines. Preflight's text gains the `cwd` line and the hint carries `--cwd "<dir>"`. Leg 14 does
+not only read the hint: it runs it as printed from a directory that is not the project, and
+requires PASS. Seen red both ways — the hint without `--cwd`, and preflight without the line.
+
+The same review found the documents saying more than the code does, in four places. The schema
+row said the field is on "every verdict" and listed only SETUP ERROR as the exception, while
+replay's `case_no_longer_applies` is raised before the `cwd` is resolved and carries neither
+field; the rule is now written as the boundary it is — present after the `cwd` is resolved,
+absent before — with that refusal named among the absences. `docs/cli.md` and the quickstart said
+a forgotten `cwd` *fails* and refuses `recording_run_failed`; it can also be `setup_failed`, and
+for a tool that walks up the tree to find its project, as git does, a run against some other
+project that nothing refuses — the quiet case, and the worse one. "Directly under `next`" is not
+true when a `divergence` line is present. And the quickstart page described a `cwd` line that
+v1.5.0, the release it pins, does not print; it says so now. Beside those, `docs/unknown-rate.md`
+names every define it excludes, and the new one was not named.
+
+The second review confirmed each of those and found one more of the same kind, written in this
+change: `docs/cli.md` said a relative `cwd` resolves against the toml's directory "not against
+where Sideeye was started" — true in a `sideeye.toml`, false for the `--cwd` flag, which resolves
+like any command-line path against the directory Sideeye was started in (measured: `--cwd proj`
+from a scratch directory reported `<scratch>/proj`). The bullet above it says the same define
+works as flags, so a flag user would have read it the wrong way. Four code comments still said
+"directly under `next`" or "every verdict"; they say what the code does now.
+
 ## 2026-09-21 — The dogfood entry gate answers with an exit code, and it was measured against the binary that got past the last one
 
 The 2026-09-21 release-path run spent its only target slot on lefthook, which is statically

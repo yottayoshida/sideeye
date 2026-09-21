@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **The report names the directory the define's commands ran in** (#647, ADR 0086): `command_cwd` and `command_cwd_declared` in the JSON, from the point the declared `cwd` is resolved, and a `cwd` line in the text — on UNKNOWN under `next`, where a reader of `recording_run_failed` already is, and in `preflight`'s report, whose `next` hint now carries the `--cwd` it was given (pasted without it, the hint refused the define preflight had just accepted) — with `(none declared: Sideeye's own)` when nothing was declared. The quickstart template carries `cwd` with the rule it follows (relative to the toml, not the project root), `docs/cli.md` states that `cwd` is resolved before the state directory is made, and the release lane runs a define whose operation fails without its `cwd` — then runs it again with the line deleted, and requires the failure.
 
 - `spike/dogfood/2026-09-21-verdict-chain/` — a dogfood run whose candidates enter through a
   gate that answers with an exit code (ADR 0085), each of its three questions seen red as

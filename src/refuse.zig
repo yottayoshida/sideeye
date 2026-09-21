@@ -416,6 +416,9 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     // `next`, before the classification block, so the two lines the acceptance suite
     // anchors on (the reason, and the detail beneath it) keep their positions.
     if (report.divergence_syscall.len > 0) say("divergence  {s}\n", .{report.divergence_syscall});
+    // #647: under `next` (below `divergence`), where a reader of `recording_run_failed` is — the
+    // one line that can name the `cwd` an operation needed and did not get.
+    report.sayCwd(json_arena orelse std.heap.page_allocator, "cwd         {s}{s}\n");
     report.sayApparatus(json_arena orelse std.heap.page_allocator, "apparatus   {s}\n");
     report.sayRecovery("recovery    {s}\n");
     say(

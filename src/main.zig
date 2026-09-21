@@ -459,6 +459,10 @@ const Run = struct {
         alt_differs: bool,
         real_buf: [contract.max_path]u8,
         alt_buf: [contract.max_path]u8,
+        /// Where the define's commands run: the declared `cwd`, resolved, or Sideeye's own.
+        /// Computed once in phase 0 and read by both the report and the oracle (#647); null
+        /// only when Sideeye's own `getcwd` failed.
+        effective_cwd: ?[]const u8,
     };
     const Recording = struct {
         rec_trace: []const u8,
@@ -1011,6 +1015,24 @@ fn phaseDefine(run: *Run) void {
         if (args.oracle) |o| args.oracle = resolvePathAgainst(pin_arena, pin_base, o);
     }
 
+    // #647: where the define's commands run, decided once, here — directly after the
+    // declared `cwd` has been resolved and pinned, and before anything else in phase 0 can
+    // refuse. A SETUP ERROR raised from this line on carries the directory in its JSON; one
+    // raised above it (the config, the `cwd` vet) does not, because there is no directory
+    // to name yet. The oracle reads this same value (`phaseOracle`), where it used to take
+    // its own `getcwd` — two spellings of one fact is how a report and an oracle come to
+    // name different directories for the same run.
+    //
+    // Undeclared, it is Sideeye's own directory: the engine never chdirs (only the forked
+    // child does, `src/posix.zig`), so that is what every child inherits.
+    const effective_cwd: ?[]const u8 = args.cwd orelse blk: {
+        var own_cwd_buf: [contract.max_path]u8 = undefined;
+        const own = posix.getcwd(&own_cwd_buf, own_cwd_buf.len) orelse break :blk null;
+        break :blk arena_state.allocator().dupe(u8, std.mem.span(own)) catch null;
+    };
+    report.command_cwd = effective_cwd;
+    report.command_cwd_declared = args.cwd != null;
+
     // Bound after the pin above, not before it: `findShim`'s own answer is already
     // absolute, but an explicit `--shim ./lib.dylib` is the caller's spelling, and the
     // loader resolves it in the child — after the chdir. Read too early, this const would
@@ -1256,6 +1278,7 @@ fn phaseDefine(run: *Run) void {
     run.define.state_abs = state_abs;
     run.define.state_alt = state_alt;
     run.define.alt_differs = alt_differs;
+    run.define.effective_cwd = effective_cwd;
 }
 
 /// Phase 1 of the run: Runs the setup command, if any, and refuses on its failure.
@@ -1963,9 +1986,12 @@ fn phaseOracle(run: *Run) void {
         // completeness check that compares them reports that as the shim having missed an
         // operation, or as a containment decision about a file nothing touched. A verdict
         // drawn from that is wrong in a way neither observer can see.
-        var oracle_cwd_buf: [contract.max_path]u8 = undefined;
-        const oracle_cwd = args.cwd orelse
-            if (posix.getcwd(&oracle_cwd_buf, oracle_cwd_buf.len)) |p| std.mem.span(p) else "/";
+        //
+        // Read from the one computation phase 0 made (#647) rather than a `getcwd` of its
+        // own, so the report's `command_cwd` and the directory the oracle resolves against are
+        // one value. `"/"` is kept for the case where Sideeye's own `getcwd` failed, exactly
+        // as before — and the report no longer papers over it: it carries no `command_cwd`.
+        const oracle_cwd = run.define.effective_cwd orelse "/";
         const parsed = if (args.oracle_fs_usage) blk: {
             const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd, trace.subject_writer_tid_list.items, trace.subject_started_tid_list.items) catch setupError(.environment, "out of memory");
             // A capture with a hole in it is not an account to compare against. Each
@@ -2379,7 +2405,7 @@ fn phasePreflight(run: *Run) void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
-        preflightReport(arena, n, state, pf_setup, pf_op, shim, args.oracle, args.expect_status, repeat);
+        preflightReport(arena, n, state, pf_setup, args.cwd, pf_op, shim, args.oracle, args.expect_status, repeat);
     }
 
     if (n == 0) {
@@ -2406,6 +2432,7 @@ fn phasePreflight(run: *Run) void {
             \\      not tested: {s}
             \\
         , .{ report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.l1_note, report.case_note, report.notTestedText() });
+        report.sayCwd(arena, "      cwd: {s}{s}\n");
         report.sayApparatus(arena, "      apparatus: {s}\n");
         report.sayRecovery("      recovery: {s}\n");
         if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
@@ -3366,6 +3393,7 @@ fn phaseReport(run: *Run) void {
             report.l1_note,                case_shown,
             replay_cmd,                    report.evidence_note,
         });
+        report.sayCwd(arena, "cwd         {s}{s}\n");
         report.sayApparatus(arena, "apparatus   {s}\n");
         report.sayRecovery("recovery    {s}\n");
         // Printed only when the two exhibits are different worlds; when the
@@ -3438,6 +3466,7 @@ fn phaseReport(run: *Run) void {
         \\      not tested: {s}
         \\
     , .{ report.explored, report.explored, report.singleCrashPointClause(n), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
+    report.sayCwd(arena, "      cwd: {s}{s}\n");
     report.sayApparatus(arena, "      apparatus: {s}\n");
     report.sayRecovery("      recovery: {s}\n");
     report.saySingleCrashPointNote(n);
@@ -3800,7 +3829,7 @@ fn observeAgain(
 /// behavior, checker falsification) have not run, and the fixed `not checked` list
 /// names them. The acceptance suite pins this wording — the claim cannot quietly grow
 /// back into one this command does not earn.
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, cwd: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, repeat: ?Repeat) noreturn {
     // "not accepted", not "accepted but split". `docs/contract-freeze.md` says a
     // preflight that ACCEPTS the recording exits 0; under `--twice` the caller asked a
     // second question, so acceptance means the recording held *and* the two runs
@@ -3846,6 +3875,10 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             say("\n", .{});
         }
     }
+    // #647: where the observed run's commands ran, and whether that was chosen. Preflight
+    // is where a define is first tried, so a tool that needs its own directory fails here
+    // first — and this is the line that names the directory it ran in.
+    report.sayCwd(arena, "cwd          {s}{s}\n");
     say(
         \\atomicity    {s}
         \\oracle       {s}
@@ -3915,6 +3948,13 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         std.fmt.allocPrint(arena, " --setup \"{s}\"", .{s}) catch " --setup <cmd>"
     else
         "";
+    // #647: a declared `cwd` rides the same rule. Pasted without it, the hint runs the
+    // operation from wherever explore is started, and a tool that needs its own directory
+    // refuses `recording_run_failed` on the very define preflight accepted.
+    const cwd_part = if (cwd) |c|
+        std.fmt.allocPrint(arena, " --cwd \"{s}\"", .{c}) catch " --cwd <dir>"
+    else
+        "";
     const expect_part = if (expect_status) |es|
         std.fmt.allocPrint(arena, " --expect-status {d}", .{es}) catch " --expect-status <n>"
     else
@@ -3945,10 +3985,10 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
     say(
-        \\next         sideeye explore --state {s}{s} --operation "{s}"{s} \
+        \\next         sideeye explore --state {s}{s}{s} --operation "{s}"{s} \
         \\               --check <your-invariant.sh> --shim {s}{s}
         \\
-    , .{ state, setup_part, operation, expect_part, shim, oracle_part });
+    , .{ state, setup_part, cwd_part, operation, expect_part, shim, oracle_part });
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 

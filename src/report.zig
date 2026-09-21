@@ -272,6 +272,24 @@ pub var violations: u32 = 0;
 /// The declared success status in effect (default 0), mirrored into every report so a
 /// PASS over a non-zero convention is machine-auditable (ADR 0014).
 pub var expected_status_val: u8 = 0;
+/// The directory the define's setup, operation and checker ran in (#647): the declared
+/// `cwd`, resolved, or Sideeye's own when none was declared. Set once, in phase 0, right
+/// after the declared `cwd` is resolved and pinned — the same value the oracle is handed to
+/// resolve the subject's relative paths against, so the report and the oracle cannot name
+/// two different directories for one run.
+///
+/// Null until then, and null for good on a SETUP ERROR raised by the config or by the `cwd`
+/// vet itself: the report then carries neither field, because it has no directory to name.
+/// Also null if Sideeye's own `getcwd` failed — a value it does not have is not written.
+///
+/// Why it exists: the refusal an adopter meets first when an operation needs its own
+/// directory is `recording_run_failed`, which (ADR 0030) reports what was observed — an exit
+/// status — and no cause. Where the commands ran is also an observation, the engine already
+/// holds it, and it is the one that names the line to add.
+pub var command_cwd: ?[]const u8 = null;
+/// Whether `command_cwd` came from a declaration or is Sideeye's own default. The distinction
+/// is the useful half: the failure #647 recorded was a `cwd` that was never declared.
+pub var command_cwd_declared: bool = false;
 /// The define's apparatus as declared (ADR 0041), set by `checkApparatus` once every entry
 /// passed. Empty when nothing was declared, and the report then carries neither field: an
 /// empty array would read as "declared nothing" on a SETUP ERROR raised before any define
@@ -892,6 +910,50 @@ pub fn scratchNote(arena: std.mem.Allocator) []const u8 {
     return out.items;
 }
 
+test "the report names where the define's commands ran, and whether that was declared, only once it is known (#647)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const saved_cwd = command_cwd;
+    const saved_decl = command_cwd_declared;
+    defer {
+        command_cwd = saved_cwd;
+        command_cwd_declared = saved_decl;
+    }
+
+    // Before phase 0 has resolved the `cwd` — a config or `cwd`-vet refusal — neither field.
+    command_cwd = null;
+    const before = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .define_invalid, "m", null);
+    try std.testing.expect(std.mem.indexOf(u8, before, "command_cwd") == null);
+
+    // Declared: the resolved path, and `true`.
+    command_cwd = "/tmp/proj";
+    command_cwd_declared = true;
+    const decl = try buildJson(a, "PASS", 0, null, null, null, null, null, null);
+    try std.testing.expect(std.mem.indexOf(u8, decl, "\n  \"command_cwd\": \"/tmp/proj\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, decl, "\n  \"command_cwd_declared\": true") != null);
+
+    // Undeclared: Sideeye's own directory is still a directory the commands ran in, so the
+    // path is there — `false` is what says it was nobody's choice.
+    command_cwd = "/home/runner/work";
+    command_cwd_declared = false;
+    const own = try buildJson(a, "UNKNOWN", 2, null, null, "recording_run_failed", null, "m", "Do this.");
+    try std.testing.expect(std.mem.indexOf(u8, own, "\n  \"command_cwd\": \"/home/runner/work\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, own, "\n  \"command_cwd_declared\": false") != null);
+
+    // A SETUP ERROR raised after the `cwd` was resolved carries it: its text is one line by
+    // design, and the JSON is where the directory still has to be.
+    const after = try buildJson(a, "SETUP_ERROR", 3, null, null, null, .setup_failed, "m", null);
+    try std.testing.expect(std.mem.indexOf(u8, after, "\"command_cwd\"") != null);
+
+    // Escaped through the JSON writer, not written raw: a control byte in a directory name
+    // must not reach the report as itself.
+    command_cwd = "/tmp/a\nb";
+    const esc = try buildJson(a, "PASS", 0, null, null, null, null, null, null);
+    try std.testing.expect(std.mem.indexOf(u8, esc, "/tmp/a\\nb") != null);
+    try std.testing.expect(std.mem.indexOf(u8, esc, "/tmp/a\nb") == null);
+}
+
 test "a SETUP_ERROR report carries its class, and the setup's status only under setup_failed and only as measured (#518)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
@@ -942,6 +1004,24 @@ pub fn sayApparatus(arena: std.mem.Allocator, comptime fmt: []const u8) void {
 /// carries the field.
 pub fn sayRecovery(comptime fmt: []const u8) void {
     if (recovery_note) |rn| say(fmt, .{rn});
+}
+
+/// The text report's `cwd` line (#647), in the calling block's own style, read from the
+/// variable the JSON field reads. Printed in every block that prints `expected` — UNKNOWN,
+/// FAIL, PASS and the zero-operation PASS — and in `preflight`'s report; like `sayRecovery`,
+/// not on SETUP ERROR's one-line text, whose JSON still carries the field. Nothing is printed
+/// while `command_cwd` is unset, which is every report raised before the `cwd` is resolved.
+///
+/// In the UNKNOWN block it sits under `next` — below `divergence` when there is one: that is
+/// where a reader of `recording_run_failed` already is. Placed with `expected` further down, the line
+/// would exist and not be read — the detail sends the reader to `--expect-status` and `next`
+/// sends them back to the detail before either reaches it.
+///
+/// The label is `cwd`, the key the reader would add to the toml, and an undeclared one says
+/// so. Defanged: a declared `cwd` arrives from a config or a case file, outside the trust
+/// boundary, and a control byte in a directory name would otherwise forge a report line.
+pub fn sayCwd(arena: std.mem.Allocator, comptime fmt: []const u8) void {
+    if (command_cwd) |c| say(fmt, .{ defang.textShown(arena, c), if (command_cwd_declared) "" else "  (none declared: Sideeye's own)" });
 }
 
 /// One exhibit's recovery object, inside that exhibit's JSON object. `command_exit` is present
@@ -1212,6 +1292,16 @@ fn buildJson(
     // is 3 must be distinguishable, by machine, from a PASS that required 0.
     try w.appendSlice(arena, ",\n  \"expected_status\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{expected_status_val}));
+    // #647: present on every report raised once the define's `cwd` has been resolved, a
+    // SETUP ERROR raised after that point included — whose text is one line by design and
+    // carries no `cwd` line, the way it carries no recovery line (see `sayCwd`). The string is the
+    // variable the text reads; `jsonString` escapes it, `textShown` defangs it.
+    if (command_cwd) |c| {
+        try w.appendSlice(arena, ",\n  \"command_cwd\": ");
+        try jsonString(w, arena, c);
+        try w.appendSlice(arena, ",\n  \"command_cwd_declared\": ");
+        try w.appendSlice(arena, if (command_cwd_declared) "true" else "false");
+    }
 
     // ADR 0041: present only when the define declared something (the presence rule
     // `next_step` and `divergence_syscall` follow), each entry as it was spelled; the
