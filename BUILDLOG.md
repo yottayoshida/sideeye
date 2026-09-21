@@ -74,6 +74,12 @@ coupling is on the target *name*, one dependency over from the one that was exam
 `spike/dogfood/README.md` lists three things a run owes upward; this is a fourth, and it exists
 only once a funnel row does.
 
+**And a third, of a kind that cannot be seen by reading.** The `target-classes.md` row quotes the
+oracle's line, which contains `O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC`. In a Markdown table `|` is the
+cell separator, so the row had seven cells against a four-cell header and **GitHub silently drops
+everything past the fourth** — the file keeps the text, the page does not show it. `count.py`
+counts cells and said so, naming the fix. Nothing about reading the file would have caught it.
+
 **What this run cannot say.** Nothing about GitHub-hosted runners: the proxy CA takes that off the
 table, and `quickstart-release.yml` is where it is answered. Nothing about the adoption path's
 reach: one target, and its wall is about the target's linkage rather than about how Sideeye got
