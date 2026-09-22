@@ -21,7 +21,7 @@ permissions:
 env:
   # Pinned, never `latest`: a build you did not choose must not be able to turn your gate red,
   # or green. Moving this is a deliberate edit, which is the point.
-  SIDEEYE_VERSION: v1.5.0
+  SIDEEYE_VERSION: v1.6.0
 
 jobs:
   linux:

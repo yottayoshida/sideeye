@@ -6,7 +6,7 @@
 #   sh install-sideeye.sh --selftest
 #
 # **stdout is the absolute path of the installed binary, and nothing else**; the running
-# commentary goes to stderr. So `bin=$(sh install-sideeye.sh v1.5.0 dir)` is the whole of the
+# commentary goes to stderr. So `bin=$(sh install-sideeye.sh v1.6.0 dir)` is the whole of the
 # calling convention, and a caller that wants the log still sees it. Copy this file into your
 # repository beside your define — it is meant to be vendored, not curl'd: a script fetched at
 # run time is a pin you do not hold.
@@ -144,7 +144,7 @@ selftest() {
     _want "Linux x86_64"  x86_64-linux
     _want "Linux aarch64" aarch64-linux
     _want "Darwin arm64"  aarch64-macos
-    # A correct mapping, not a promise that the release carries it: v1.5.0 publishes three
+    # A correct mapping, not a promise that the release carries it: v1.6.0 publishes three
     # assets and this is not one of them, so a run on an Intel Mac maps cleanly and then stops
     # at "no asset named" — which is the fail-closed path, not a mapping bug.
     _want "Darwin x86_64" x86_64-macos

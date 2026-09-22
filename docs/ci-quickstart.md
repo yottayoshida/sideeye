@@ -38,8 +38,8 @@ operation = "myapp commit"        # explored: killed before each state-changing 
 needs it** — git, most build tools, anything that looks for its config in the current directory.
 Leave it out and they run in whatever directory Sideeye was started from — usually a failure the
 run refuses as `recording_run_failed`, and worse when the tool walks up the tree and finds some
-*other* project there, because then nothing fails. Releases after v1.5.0, the version this page
-pins, print a `cwd` line in the report (`command_cwd` in the JSON) naming the directory the
+*other* project there, because then nothing fails. Since v1.6.0, the version this page
+pins, the report prints a `cwd` line (`command_cwd` in the JSON) naming the directory the
 commands ran in, and `(none declared: Sideeye's own)` when you wrote none (#647). Two things to
 know. A relative `cwd` resolves against **this file's directory** — `"."` means "where this toml
 sits", which is your project's root when the toml is at the root and not otherwise. And it is
@@ -82,7 +82,7 @@ install `strace` (the completeness oracle; without it a would-be PASS refuses as
 install a pinned Sideeye from the release, then explore:
 
 ```sh
-bin=$(sh install-sideeye.sh v1.5.0 "$RUNNER_TEMP/sideeye")
+bin=$(sh install-sideeye.sh v1.6.0 "$RUNNER_TEMP/sideeye")
 "$bin" explore --config sideeye.toml \
   --oracle /usr/bin/strace \
   --json report.json
