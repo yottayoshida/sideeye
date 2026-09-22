@@ -2,6 +2,27 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-22 — The journal stops here, at v1.6.0
+
+**This is the last entry.** The owner's decision, taken once v1.6.0 was out: the journal no
+longer earns its place, and a release is the natural place to close it. Nothing is appended
+after this line. The file stays as the record through v1.6.0, and every "see BUILDLOG
+YYYY-MM-DD" citation in the tree still points at an entry that exists. Decisions from here on
+go where they would have gone beside it — ADRs, pull-request bodies, `CHANGELOG.md` — and the
+`buildlog` CI job that failed a code change without an entry here is removed with this.
+
+**v1.6.0, shipped.** Merge commit `ce6991b` (#653), annotated tag `v1.6.0` on it, Release
+"v1.6.0 — Judged paths, command cwd, and a release-installed quickstart" with notes written
+for the page and a link to the section at the tag, as v1.5.0 did. main's CI on the merge
+commit was green before the tag. `release.yml` built the three assets on publish; each sha256
+was computed from the downloaded bytes and matches the digest GitHub publishes —
+`22907cc9…c2f0` aarch64-macos, `9874490a…aaa4` x86_64-linux, `86622c84…f483` aarch64-linux —
+and each tarball starts `sideeye 1.6.0 (trace contract v18)`: macOS on this Mac (and
+`sideeye demo` exit 1), `linux/amd64` and `linux/arm64` in a bare `debian:trixie-slim`. The
+tap moved in `yottayoshida/homebrew-tap#70` (`brew audit --new` rc 0; `brew upgrade` 1.5.0 →
+1.6.0, rc 0; `sideeye version` and the demo from `PATH`). The quickstart's pin moved in #654,
+and its release lane installed v1.6.0 on both platforms with the digest matching.
+
 ## 2026-09-22 — v1.6.0: the block read against itself, and ten sentences later entries had overtaken
 
 Twenty-one entries, five days and 54 commits since v1.5.0 (33 on the first parent, 18 merges) when this was read: 16 Added, 1 Changed, 4 Fixed. No contract version in the block — the trace contract stays v18.

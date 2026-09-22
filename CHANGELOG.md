@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **`BUILDLOG.md` is closed at v1.6.0** (`CLAUDE.md`, `.github/workflows/ci.yml`, `spike/dogfood/README.md`). The development journal is no longer appended to — the owner's decision at the release. The file stays as the record through v1.6.0, so the citations of its entries across the tree still resolve; its last entry says so and records what v1.6.0 shipped. The `buildlog` CI job, which failed a pull request that changed code without touching the journal, is removed, and the two places that told a reader to write an entry — the dogfood directory's sunset and a spike script's failure message — now point at the pull request and the CHANGELOG. A release still reads its block against itself; the reading goes in the release pull request's body.
+
 - **The CI quickstart pins v1.6.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`). The release lane installs the published v1.6.0 asset instead of v1.5.0's, and the page says so: an adopter copying it now gets the `cwd` line and `command_cwd` the page describes, which v1.5.0 did not print. The pin could not move with the version bump, because the lane downloads the asset and the asset existed only once the release was published. Nothing else in the lane changes.
 
 ## [1.6.0] - 2026-09-22

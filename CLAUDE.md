@@ -1,29 +1,15 @@
 # Working in this repository
 
-## BUILDLOG.md is a delivery artifact, not an afterthought
+## BUILDLOG.md is closed at v1.6.0
 
-This repository keeps a development journal (`BUILDLOG.md`, newest first) that records
-decisions **when they are made — including the ones that turn out wrong**. It is the one
-artifact here that generic delivery routines (CHANGELOG, ADRs, PR bodies) do not cover,
-and it went unwritten for four pull requests once because no routine asked for it.
-
-The contract:
-
-- **Append at the moment of the decision, not at delivery.** Start the entry when the
-  work starts and let it grow: a design choice, a measurement, a reversal — each gets its
-  paragraph when it happens, in the same working tree as the change it describes.
-  Batch-writing at PR time is the documented failure mode, not a lesser form of
-  compliance: the containment entry was written once at PR-open, its central argument
-  was reversed in review two hours later, and the reversal never made it back in.
-- **Re-read the entry at PR-open and after every review round.** Anything that reversed
-  or moved since a paragraph was written gets recorded before merge. PR-open is when the
-  entry is *re-read*, not when it is written.
-- Heading format: `## YYYY-MM-DD — <claim>`. State what was decided, what was measured
-  (real numbers, real output), and what went wrong — the reversals are the point.
-- CI enforces the mechanical half only — a pull request that changes `src/`, `shim/`,
-  `spike/`, `build.zig` or `build.zig.zon` without touching `BUILDLOG.md` fails. CI sees
-  the final diff and cannot see *when* the entry was written; the timing half of the
-  contract lives in this file and in the habit.
+`BUILDLOG.md` was this repository's development journal from its first commit to the
+v1.6.0 release (2026-09-22). **It is no longer appended to** — the owner's decision, at the
+release, that it no longer earns its place. It stays in the tree as the record up to that
+release, and the many "see BUILDLOG YYYY-MM-DD" citations across the code, the docs and the
+spike records still resolve. What a new decision needs goes where it would have gone beside
+the journal anyway: an ADR when it is one, the pull request's body for what was measured
+and what reversed, and `CHANGELOG.md` for what shipped. CI no longer requires the file to
+change.
 
 ## Other conventions
 
@@ -64,8 +50,8 @@ The contract:
   renumber they point at a different decision.
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
   **A release reads the block against itself before it renames the heading**, and records
-  the reading in `BUILDLOG.md` — which entries a later one falsified, and what was done
-  about each. Appending per merge means the author of an entry reads their own paragraph
+  the reading in the release pull request's body — which entries a later one falsified,
+  and what was done about each. Appending per merge means the author of an entry reads their own paragraph
   and nothing else, so entry-to-entry consistency is nobody's job until this moment; and a
   release that renames the heading without reading freezes whatever disagreed. `[1.0.0]`
   shipped that way: it went out carrying "`readTrace` stays deliberately uncapped" beside

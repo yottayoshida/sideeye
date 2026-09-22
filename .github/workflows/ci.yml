@@ -1251,34 +1251,6 @@ jobs:
         env:
           SIDEEYE_REPO: ${{ github.workspace }}
 
-  # The development journal is a delivery artifact here, and it went unwritten for four
-  # pull requests once because nothing asked for it. Now something asks: a PR that
-  # changes code without touching BUILDLOG.md does not merge. The decision logic was
-  # shown its red against a synthetic code-only changeset before being trusted.
-  buildlog:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Changed code requires a BUILDLOG entry
-        run: |
-          # Three-dot: diff from the merge-base, so a base branch that moved ahead does
-          # not smuggle its own file list into this PR's changed set.
-          changed=$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")
-          printf 'changed files:\n%s\n' "$changed"
-          if echo "$changed" | grep -qE '^(src/|shim/|spike/|build\.zig$|build\.zig\.zon$)'; then
-            if ! echo "$changed" | grep -qx 'BUILDLOG.md'; then
-              echo '::error::This PR changes code but not BUILDLOG.md.'
-              echo 'BUILDLOG.md is the running decision log (newest first, "## YYYY-MM-DD — claim").'
-              echo 'Write the entry before the PR: what was decided, what was measured, what went wrong.'
-              exit 1
-            fi
-          fi
-          echo 'ok: BUILDLOG requirement satisfied'
-
   # The language bar is a claim about what this repository is, and it was wrong three
   # times: the rule said "register a record when its campaign closes" and nothing read
   # .gitattributes at the moment one closed (ADR 0021). The direction is inverted now,
