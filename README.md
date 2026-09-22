@@ -36,7 +36,7 @@ $ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
 ```
 
 - **`demo`** — sixty seconds, needs a C compiler, writes nothing permanent. It compiles a tool with a planted bug, explores it, prints a real FAIL report. Exit 1 — the bug found — is success, so it doubles as a smoke test of binary and shim.
-- **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted` (exit 0), or a refusal naming the detector a real run would use (exit 2). `--twice` also checks that two clean runs leave the same bytes.
+- **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted` (exit 0), a refusal naming the detector a real run would use (exit 2), or a SETUP ERROR when the define cannot be set up at all — a `cwd` that does not exist, say (exit 3). `--twice` also checks that two clean runs leave the same bytes, and exits 1 naming the paths when they do not.
 - **`explore`** — the real thing, with the whole define in one file:
 
 ```toml
@@ -47,15 +47,17 @@ state = "./state"               # the one directory your tool's state lives in
 setup     = "mytool init"
 operation = "mytool rotate-key" # the shim is inserted into this one, not into setup or check
 check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + restart
+cwd       = "."                 # optional: where the three commands run
 ```
 
 - `operation` is the one command the shim is inserted into; `setup` and `check` are ordinary commands. Naming an executable image rather than a `#!` script keeps the insertion independent of the interpreter.
+- `cwd` is needed by a tool that only works inside its own project (git, most build tools); without it the commands run in Sideeye's own directory. It resolves against the toml's directory, and before the state directory is made — so a directory your own `setup` creates is not there yet. Every report from that point on names the directory the commands ran in.
 - Command strings split on spaces, no quoting. An argument with a space takes the argv form: `operation = ["mytool", "commit", "-m", "a message"]`.
-- `--oracle` is a second witness, checking the shim's account against the kernel's (strace on Linux). Without one, a single-process target reaches PASS only under `--allow-unverified`, and the report says so.
+- `--oracle` is a second witness, checking the shim's account against the kernel's: `--oracle /usr/bin/strace` on Linux, `--oracle-fs-usage` on macOS (it needs root, so run `sudo -v` first in the same terminal). Without one, a single-process target reaches PASS only under `--allow-unverified`, and the report says so.
 - `--shim` names the shim when it is not beside the binary; `--work` moves the scratch for traces and cases (default `/tmp/sideeye-work`); `--json <path>` writes the report as JSON too.
 - Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0.
 
-A FAIL saves its counterexample under `<work>/cases/` and prints the `sideeye replay` line that re-runs it. Every flag, the optional define keys, replay: [docs/cli.md](docs/cli.md).
+A FAIL saves its counterexample under `<work>/cases/` and prints the `sideeye replay` line that re-runs it, beside an evidence bundle under `<work>/evidence/` that `sideeye evidence <case>` renders for a maintainer who has never used Sideeye. Every flag, the optional define keys, replay, evidence: [docs/cli.md](docs/cli.md).
 
 ## Writing the check
 
@@ -90,7 +92,7 @@ Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2), wit
 
 ## After the first find
 
-The finding is not the durable artifact — the declaration is. Re-ask after the tool changes with `explore --config`; a saved case answers `case no longer applies` rather than passing silently once the recording moves under it, which is what makes one worth keeping in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)).
+The finding is not the durable artifact — the declaration is. Re-ask after the tool changes with `explore --config`; a saved case answers `case no longer applies` rather than passing silently once the recording moves under it, which is what makes one worth keeping in CI ([docs/cli.md](docs/cli.md#what-it-is-for-after-the-first-find)). To run your define in CI, [docs/ci-quickstart.md](docs/ci-quickstart.md) installs a pinned release, checks its digest against the one GitHub publishes, and needs no Zig on the runner.
 
 ## What Sideeye is not
 
