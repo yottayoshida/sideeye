@@ -2,6 +2,29 @@
 
 Development journal, newest first. Decisions are recorded when they are made — including the ones that turn out wrong. This file is allowed to be embarrassing in hindsight; that is what it is for.
 
+## 2026-09-22 — v1.6.0: the block read against itself, and ten sentences later entries had overtaken
+
+Twenty-one entries, five days and 54 commits since v1.5.0 (33 on the first parent, 18 merges) when this was read: 16 Added, 1 Changed, 4 Fixed. No contract version in the block — the trace contract stays v18.
+
+**Why minor.** The owner chose it (2026-09-22, "v1.6.0で"). What the block adds is additive under `docs/contract-freeze.md`: two report fields present only on runs that reached classification (`l0_judged_paths`, `l0_judged_paths_omitted`, #638) and two naming the commands' directory (`command_cwd`, `command_cwd_declared`, #647), an optional MCP parameter under surface 5's standing allowance (#617), a `next_step` that follows which wall refused (#634 — an existing value at a second site), a stderr note that is not a frozen surface (#629, #632, #651), a workflow and a page (#620). No `unknown_reason` member, no exit code, no `sideeye.toml` key.
+
+**The reading found ten sentences the block had overtaken**, each one true when its entry merged:
+
+- #632's "since this one has not been to CI yet" — it has, 32 times; the sentence now says when it was written and points at the #651 entry, which counts them.
+- #625's open question, "the next occurrence is what shows whether the artifact appears" — it did: #651's run uploaded `failed/gcd-11/`, which that session downloaded and read. And its "the flake is not explained" now names what explained it (#629, #632, #651).
+- #634's "a machine-readable split of the reason stays open on #634" — #634 is closed, and its own closing comment says the split is not done. Nothing tracks it; the entry says so rather than naming an issue that no longer carries it.
+- The sealed authoring study's "no target has been authored against yet" — the two #618 entries above it are the runs. The entry was also filed under **Fixed**, and it adds an apparatus; it moves to Added, beside the other two #618 entries. That is the only move.
+- #618's second entry, "the graders see the define and not the checker … the watcher snapshots `*.toml`" — true of that round; since #639 the watcher captures the scripts. Past tense, and a pointer.
+- #618's third, "#639 carries the grading material's two gaps" — #639 is closed by the entry above it.
+- The B2 selection's "Generation g3 will measure…" and the B2 defines' "g3 … is on the page as a placeholder" — the third merge measured it and filled the page.
+- The adoption run's "two adoption costs the pages do not state" — #647 states both on the pages; past tense, and "(#647, above, states both)".
+
+`spike/check-changelog-block.py` holds the mechanical half and was green before and after: seven sentences name a direction, and all seven resolve to an entry on the side they say.
+
+**Read and left.** The three-part series (#618, #619, #621) each say what the next merge will carry — "the grid … are the second merge", "the sweep and its numbers are the third merge" — which is still a true statement about the order they merged in. #629's "the parent's own `setpgid(pid, pid)` leaves the child a group leader and EPERM follows, is **measured false**" is about the child's `setpgid`, and stays true; #651's finding is about `setsid`, and its entry says so. The entry for the verdict-chain dogfood opens with a path rather than a bold title, unlike the rest; left, since the checker reads titles only where they exist.
+
+**The version is in the same four files**: `build.zig.zon`, `src/cli.zig`, the README's tarball line, and `docs/cli.md`'s three install and digest lines. The other `1.5.0` hits are records — generation g3 in `docs/unknown-rate.md`, `PRD.md`'s criterion 4, ADR 0073 and 0086, `docs/target-classes.md` — and **the quickstart's pin**, `SIDEEYE_VERSION: v1.5.0` in `.github/workflows/quickstart-release.yml` with its two copies in `docs/ci-quickstart.md`. That one is a version an adopter copies, and it cannot move in this pull request: the lane downloads the asset, and the asset exists only once the release is published. It moves in the pull request after the publish, and until then the page tells an adopter to install the previous release — which is what it said yesterday.
+
 ## 2026-09-22 — A refused `setsid` is the engine's own rescue having landed, and the child asks again (#651)
 
 CI run 35588812014 lost a world of `spike/thread-kill-lands.sh` to the exit #632 kept: `setpgid(0, 0)` refused, `setsid` refused, 126, and `kill_did_not_land` with "Change the define". Second flake of that check since it was fixed, so by this repository's rule it goes before anything else merges.

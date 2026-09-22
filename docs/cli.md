@@ -7,15 +7,15 @@ The README carries the shortest path to a first verdict. This page carries the r
 Take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases). Sideeye ships as a binary **and** a shim library, and it looks for the shim beside **itself** — the binary's own canonical path, never the working directory — before `../lib`, so an untarred release runs from anywhere and needs no `--shim` unless you have separated the two files. That search declines a candidate it cannot attribute (a symlink, or a file someone else owns), so an install directory that is not yours alone is refused by name rather than trusted:
 
 ```
-$ tar xzf sideeye-v1.5.0-aarch64-macos.tar.gz && cd sideeye-v1.5.0-aarch64-macos
+$ tar xzf sideeye-v1.6.0-aarch64-macos.tar.gz && cd sideeye-v1.6.0-aarch64-macos
 $ ./sideeye version
 ```
 
 Each release asset carries a sha256 GitHub computed when it was uploaded, so checking a download needs nothing published beside it:
 
 ```
-$ gh api repos/yottayoshida/sideeye/releases/tags/v1.5.0 --jq '.assets[] | "\(.digest)  \(.name)"'
-$ shasum -a 256 sideeye-v1.5.0-aarch64-macos.tar.gz     # sha256sum, on Linux
+$ gh api repos/yottayoshida/sideeye/releases/tags/v1.6.0 --jq '.assets[] | "\(.digest)  \(.name)"'
+$ shasum -a 256 sideeye-v1.6.0-aarch64-macos.tar.gz     # sha256sum, on Linux
 ```
 
 The digest reads `sha256:<hex>`; compare the hex. What this establishes is that the bytes are the ones GitHub holds — not who produced them: the digest and the release are the same account's word, and a checksum file published in the same release would be too.
