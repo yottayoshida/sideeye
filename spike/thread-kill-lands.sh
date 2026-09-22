@@ -146,24 +146,26 @@ keep_failed() {
 }
 
 # A run that continued past a refused `setpgid(0, 0)` says so on the engine's stderr, which
-# lands in this run's transcript (#629, #632). With those fixes in place such a run
+# lands in this run's transcript (#629, #632, #651). With those fixes in place such a run
 # **passes**, so `keep_failed` never sees it, the transcript dies with the temp directory,
 # and the one record of the state five CI failures were read as `kill_did_not_land` is lost
 # on the only machine where it has ever appeared. The job log is kept whether the step is
-# green or red, so the line goes there. Two lines can appear: a child that already led its
-# own group (#629, which names the session it read) and one that left the engine's with
-# `setsid` (#632, which names the group it left).
+# green or red, so the line goes there. Three lines can appear: a child that already led its
+# own group (#629, which names the session it read), one that left the engine's with
+# `setsid` (#632, which names the group it left), and one refused `setsid` as well because
+# the engine's own `setpgid(pid, pid)` had landed by then (#651, which names both errnos).
 kept_notes=0
 note_kept() {
     local kind=$1 i=$2 lines n
-    # Both surviving notes open this way — the one that kept its group (#629) and the one
-    # that left the engine's with `setsid` (#632) — and so do the shortened strings either
-    # falls back to if its buffer is ever too small, which naming `errno` would miss.
+    # All three surviving notes open this way — the one that kept its group (#629), the one
+    # that left the engine's with `setsid` (#632), and the one refused `setsid` as well and
+    # found the group its own by then (#651) — and so do the shortened strings each falls
+    # back to if its buffer is ever too small, which naming `errno` would miss.
     lines=$(grep "sideeye: setpgid(0, 0) failed" "$WORK/$kind-$i.txt" 2>/dev/null) || return 0
     [ -n "$lines" ] || return 0
     n=$(printf '%s\n' "$lines" | wc -l | tr -d ' ')
     kept_notes=$((kept_notes + 1))
-    echo "  $kind run $i: $n child(ren) continued past a refused setpgid(0, 0) (#629, #632)"
+    echo "  $kind run $i: $n child(ren) continued past a refused setpgid(0, 0) (#629, #632, #651)"
     # Every line, not the first. A run forks a child per crash point, and they need not
     # agree: which branch each child took is the reading, and nothing puts the interesting
     # one first. Bounded so a build where every child writes one (the mutation this was seen
@@ -200,9 +202,9 @@ done
 # not be arranged` note instead and dies, and that run fails, where `keep_failed` prints its
 # transcript in full.
 if [ "$kept_notes" = "0" ]; then
-    echo "  no child continued past a refused setpgid(0, 0) in any run (#629, #632)"
+    echo "  no child continued past a refused setpgid(0, 0) in any run (#629, #632, #651)"
 else
-    echo "  setpgid(0, 0) was refused, and survived, in $kept_notes run(s) (#629, #632) — the lines above say which state each one was in"
+    echo "  setpgid(0, 0) was refused, and survived, in $kept_notes run(s) (#629, #632, #651) — the lines above say which state each one was in"
 fi
 [ "$bad" = "0" ] || fail "a world did not die where it was asked to, or a control failed (see the lines above; the failing runs are kept under $WORK/failed)"
 echo "PASS"
