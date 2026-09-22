@@ -41,7 +41,7 @@ const removeFile = files.removeFile;
 /// Must match `.version` in `build.zig.zon`. They are two hand-written strings for the
 /// same number, and they had already drifted: the package said 0.1.0 while `--help` said
 /// 0.1.0-dev. A test below holds them together.
-pub const version = "1.5.0";
+pub const version = "1.6.0";
 
 /// `--apparatus` is repeatable and the flag parser owns no allocator; a define with more
 /// devices than this belongs in a toml. The entries live here and `Args.apparatus` is a

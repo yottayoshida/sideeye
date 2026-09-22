@@ -16,10 +16,10 @@ It has found replay-confirmed counterexamples in real tools — timewarrior, top
 $ brew install yottayoshida/tap/sideeye
 ```
 
-macOS on Apple silicon, Linux on x86_64 and aarch64. Sideeye is a binary and a shim library, and it looks for the shim beside itself before `../lib`, so a Homebrew install and an untarred release both work as they are. Or take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases) and run it where you unpacked it:
+macOS on Apple silicon, Linux on x86_64 and aarch64. Sideeye is a binary and a shim library, and it looks for the shim beside itself, then in `../lib`. Or take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases) and run it where you unpacked it:
 
 ```
-$ tar xzf sideeye-v1.5.0-aarch64-macos.tar.gz && cd sideeye-v1.5.0-aarch64-macos
+$ tar xzf sideeye-v1.6.0-aarch64-macos.tar.gz && cd sideeye-v1.6.0-aarch64-macos
 $ ./sideeye version
 ```
 
@@ -35,8 +35,8 @@ $ sideeye preflight --state <dir> --operation "<cmd>"
 $ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
 ```
 
-- **`demo`** — sixty seconds, needs a C compiler, writes nothing permanent. It compiles a tool with a planted bug, explores it, prints a real FAIL report. Exit 1 — the bug found — is success, so it doubles as a smoke test of binary and shim.
-- **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted` (exit 0), or a refusal naming the detector a real run would use (exit 2). `--twice` also checks that two clean runs leave the same bytes.
+- **`demo`** — sixty seconds, needs a C compiler, writes nothing permanent. It explores a planted bug and prints a real FAIL report. Exit 1 — the bug found — is success, so it doubles as a smoke test of binary and shim.
+- **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted` (exit 0), or a refusal naming the detector a real run would use (exit 2; 3 if the define cannot be set up). `--twice` also checks that two clean runs leave the same bytes (exit 1 if not).
 - **`explore`** — the real thing, with the whole define in one file:
 
 ```toml
@@ -51,7 +51,7 @@ check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + r
 
 - `operation` is the one command the shim is inserted into; `setup` and `check` are ordinary commands. Naming an executable image rather than a `#!` script keeps the insertion independent of the interpreter.
 - Command strings split on spaces, no quoting. An argument with a space takes the argv form: `operation = ["mytool", "commit", "-m", "a message"]`.
-- `--oracle` is a second witness, checking the shim's account against the kernel's (strace on Linux). Without one, a single-process target reaches PASS only under `--allow-unverified`, and the report says so.
+- `--oracle` is a second witness, checking the shim's account against the kernel's (strace on Linux, `--oracle-fs-usage` after `sudo -v` on macOS). Without one, a single-process target reaches PASS only under `--allow-unverified`, and the report says so.
 - `--shim` names the shim when it is not beside the binary; `--work` moves the scratch for traces and cases (default `/tmp/sideeye-work`); `--json <path>` writes the report as JSON too.
 - Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0.
 
