@@ -30,6 +30,13 @@ the leader exits. A `proc` allocated at a dead session leader's address compares
 refusal is then permanent for that child, and the parent's `setpgid(pid, pid)` is refused by
 the same check, which tests the target. Nothing outside the child can move it either.
 
+**Amended 2026-09-22 (#651, ADR 0087).** The last two sentences are contradicted by the
+runner. Of the six refusals the macOS job logged in the three days after this ADR shipped,
+five ended with the child already leading a group of its own — the parent's `setpgid(pid,
+pid)` had landed. The source still puts the `SESS_LEADER` check on the target for both
+callers, so the pointer reading does not explain those five, and the mechanism of the refusal
+is unexplained again. Nothing below depends on it, as the next paragraph says.
+
 **The decision does not rest on that reading.** The refusal is measured; the reuse is
 inferred, and not reproduced. Whatever the kernel's reason, the observable is a child the
 `setpgid` family will not move, and the second call below is a different family.
@@ -47,6 +54,16 @@ which POSIX excludes for a child this young: `fork` may not return a pid that "m
 active process group ID". That is the same rule ADR 0002 decision 1 leans on when it argues a
 freshly allocated pid cannot name a live group, and the two now agree; an earlier draft of
 this ADR said the opposite and contradicted it.
+
+**Amended 2026-09-22 (#651, ADR 0087).** The second refusal does reach this child, and it is
+the engine's own doing: `fork` excludes a group named by the child's pid at the moment of the
+fork, and the parent's `setpgid(pid, pid)`, issued right after `fork` returns there, creates
+one a moment later — with the child inside it, since `enterpgrp` always places its subject in
+the group it creates. A `setsid` refused between the child's reading of its group and the
+call is therefore a child that already leads a group of its own. It now asks `getpgid` once
+more after that refusal and runs if the group is its own; the exit below remains for a kernel
+that still reports the engine's group, and names both refusals. The Consequences' "refused by
+both calls and still exits" was written without noticing this.
 
 The 126 exit stays regardless. What the `exec` depends on is the group `getpgid` reports after
 the call, not an argument about which refusals are possible — the refusal this ADR is about
@@ -85,12 +102,19 @@ this: it improves the report of a run that still dies. It remains open as part o
   differs is the note on stderr, which now says the child left the group.
 - The 126 exit is not removed. A child whose pid already names a group is refused by both
   calls and still exits, naming the pid, group and session it read.
+  **Amended 2026-09-22 (#651, ADR 0087): the second sentence is false.** A pid that already
+  names a group names the group this child is in — `enterpgrp` places its subject inside the
+  group it creates — so such a child runs, after asking `getpgid` once more; it happened on
+  the runner, with the parent's `setpgid(pid, pid)` landing between the child's reading and
+  its `setsid`. The exit remains for a kernel that still reports the engine's group, and its
+  note names what both calls answered.
 - **The world itself loses its controlling terminal too**, not only the two helper spawns: a
   target that opens `/dev/tty` or expects a terminal signal behaves differently in that world
   from every other world of the same run. Unmeasured for the same reason, and it is the class
   #630 is about — the report does not say which kind of world produced the verdict.
 - The child writes one line to the engine's stderr saying which group it left, so the state is
-  legible in a transcript. `spike/thread-kill-lands.sh` prints any such line on the job log,
-  green or red, with a count either way.
+  legible in a transcript (since #651 one of three surviving notes, all opening the same way).
+  `spike/thread-kill-lands.sh` prints any such line on the job log, green or red, with a count
+  either way.
 - The fallback cannot be exercised by the kernel on any host available here, so it is tested
   with a fake refusal and the real `setsid`; the 126 exit below it needs both calls faked.
