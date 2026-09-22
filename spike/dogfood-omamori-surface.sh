@@ -107,7 +107,7 @@ print("%s  crash_points=%s explored=%s" % (got, r.get("crash_points"), r.get("ex
 ' "$RUN/$label/report.json"; then
         pass "$label: the pinned outcome (exit $rc)"
     else
-        fail "$label: outcome moved — remeasure, and update the BUILDLOG entry that cites this"
+        fail "$label: outcome moved — remeasure, and record it in the PR that moves it (the BUILDLOG entry citing this is closed with the journal, v1.6.0)"
         sed 's/^/     | /' "$RUN/$label/report.txt" | tail -8
     fi
 }

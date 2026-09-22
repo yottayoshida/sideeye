@@ -119,8 +119,8 @@ gap, and the check was green the whole time.
 
 Delete this directory if `RUNS.md` gains no row for twelve weeks (from
 2026-09-05, so 2026-11-28). An empty log means the use it was built for is not
-happening, and the two runs it would hold by then belong in BUILDLOG entries
-instead.
+happening, and the two runs it would hold by then belong in their pull requests
+and `CHANGELOG.md` instead (`BUILDLOG.md` is closed at v1.6.0).
 
 Delete the ordering rule above — not the directory — if a run ever produces a
 candidate table where the screening measurement and the rule-16 forecast
