@@ -1,0 +1,19 @@
+# ast-grep/ast-grep — rule 11 (recent bug reports and who answered) and rule 14 (novelty pre-scan), 2026-09-22T03:49:55Z
+## recent issues labelled bug (or all, if no bug label)
+#2867 CLOSED 2026-08-03 comments=0 Changed result matching comment in JS class member in ^0.45.0
+#2847 CLOSED 2026-07-25 comments=6 [bug] Encoded sequences in string changes how pattern: behaves
+#2814 CLOSED 2026-07-16 comments=1 [bug] ast-grep ignore comments falsely report unused-suppression with 
+#2803 CLOSED 2026-07-12 comments=2 [bug] --no-ignore does not apply to ruleDirs, silently skipping rules 
+#2697 CLOSED 2026-06-10 comments=4 [bug] Multi Meta Variable saved as single Meta Variable?
+#2681 CLOSED 2026-06-03 comments=0 Unfixable rule silently ignored with `--update-all`
+## novelty: atomic / truncate / corrupt / crash / empty file / data loss
+[atomic] #2940 closed [feature] Option to match generic interfaces/classes without explicit type param
+[atomic] #2807 closed Cargo audit failing on `RUSTSEC-2026-0204`
+[atomic] #2720 closed [feature] Add --severity=<LEVEL> filter to `sg scan` to suppress lower-severity 
+[atomic] #2464 closed confusing doc about "constraints"
+[atomic] #2504 closed [bug] Matching "" includes in C/C++ works, but matching on <> style includes doe
+[crash] #2553 closed [bug] SIGSEGV when GC collects native AST objects during concurrent async operat
+[crash] #1925 closed [bug] Large files prove problematic
+[crash] #1779 closed [bug] RuntimeError / Segfault with a nested grep rule
+[crash] #1380 closed [bug] napi.findFiles() issue: SgNode for file A apparently references text from 
+[crash] #943 closed Can input be avoided with "--update-all"?

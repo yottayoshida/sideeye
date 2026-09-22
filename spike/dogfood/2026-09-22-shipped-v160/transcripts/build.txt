@@ -1,0 +1,6 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 b7bf4ec778bc31111a523ac09f714000691a1f894bcc628cc5ed4a4aa2ae119f
+build: the page's (working tree)    sha256 b7bf4ec778bc31111a523ac09f714000691a1f894bcc628cc5ed4a4aa2ae119f
+build: the page's at tag v1.6.0     sha256 896748c8638725bb9997b999d7e4cd5b255bfe5e8c870756ad779dd3e5c60584
+build: NOTE the page's installer has moved since v1.6.0
+build: sideeye-sv ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

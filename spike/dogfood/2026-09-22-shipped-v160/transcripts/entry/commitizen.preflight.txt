@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 4 state-changing operation(s) observed
+
+cwd          /s/cz/repo
+atomicity    51 path(s) judged pre-or-post
+oracle       agreed on 4 operations (10962 syscall lines examined, 2767 in scope of the judged state), witness strace
+processes    8 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/cz/repo --cwd "/s/cz/repo" --operation "cz bump --yes --files-only" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.6.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

@@ -1,0 +1,9 @@
+# Was each measured version the latest? (queried 2026-09-22T04:56:15Z)
+PyPI commitizen     latest 4.18.1
+PyPI ast-grep-cli   latest 0.45.3
+GitHub commitizen-tools/commitizen  latest release v4.18.0 (2026-08-19T14:46:32Z)
+GitHub ast-grep/ast-grep            latest release 0.45.3 (2026-08-31T01:42:23Z)
+GitHub todotxt/todo.txt-cli         latest release v2.14.0 (2026-09-01T17:37:16Z)
+# installed in the box (apparatus/Dockerfile pins):
+      && /opt/py/bin/pip install --no-cache-dir commitizen==4.18.1 ast-grep-cli==0.45.3 git-cliff==2.14.2 > /tmp/pip.log 2>&1; \
+  RUN curl -fsSL -o /tmp/todo.tgz https://github.com/todotxt/todo.txt-cli/releases/download/v2.14.0/todo.txt_cli-2.14.0.tar.gz \

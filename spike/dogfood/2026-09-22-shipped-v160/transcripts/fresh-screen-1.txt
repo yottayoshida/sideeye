@@ -1,0 +1,79 @@
+SEEN  tidy  b2-exclusions:206
+SEEN  tidy  spike/dogfood/2026-09-16-userview-3/SELECTION.md:51
+SEEN  optipng  b2-exclusions:149
+SEEN  optipng  b2-candidates:188
+SEEN  optipng  spike/dogfood/2026-09-05-userview/SELECTION.md:95
+SEEN  optipng  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  optipng  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  jpegoptim  b2-exclusions:105
+SEEN  jpegoptim  b2-candidates:150
+SEEN  jpegoptim  spike/dogfood/2026-09-06-userview-2/SELECTION.md:57
+SEEN  jpegoptim  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  jpegoptim  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:58
+SEEN  pngcrush  b2-targets:20
+SEEN  pngcrush  b2-candidates:203
+SEEN  gifsicle  b2-exclusions:81
+SEEN  gifsicle  b2-candidates:113
+SEEN  gifsicle  spike/dogfood/2026-09-06-userview-2/SELECTION.md:55
+SEEN  gifsicle  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  xmlstarlet  b2-exclusions:224
+SEEN  xmlstarlet  spike/dogfood/2026-09-06-userview-2/SELECTION.md:192
+SEEN  xmlstarlet  spike/authoring-cost/pool-atomic.txt:8
+SEEN  exiftool  b2-exclusions:119
+SEEN  exiftool  spike/dogfood/2026-09-05-userview/SELECTION.md:55
+SEEN  exiftool  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  exiftool  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  id3v2  funnel:45
+SEEN  id3v2  target-classes:42
+SEEN  id3v2  b2-exclusions:172
+SEEN  id3v2  b2-candidates:139
+SEEN  id3v2  spike/dogfood/2026-09-06-userview-2/SELECTION.md:35
+SEEN  id3v2  spike/dogfood/2026-09-11-past-walls/SELECTION.md:79
+SEEN  id3v2  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  vorbiscomment  b2-exclusions:221
+SEEN  vorbiscomment  spike/dogfood/2026-09-06-userview-2/SELECTION.md:278
+fresh recode
+SEEN  indent  b2-candidates:143
+fresh astyle
+SEEN  uncrustify  b2-exclusions:211
+SEEN  uncrustify  spike/dogfood/2026-09-16-userview-3/SELECTION.md:55
+SEEN  autopep8  b2-exclusions:41
+SEEN  autopep8  spike/dogfood/2026-09-06-userview-2/SELECTION.md:274
+SEEN  autopep8  spike/dogfood/2026-09-16-userview-3/SELECTION.md:47
+SEEN  yapf  b2-exclusions:227
+SEEN  yapf  spike/dogfood/2026-09-06-userview-2/SELECTION.md:268
+SEEN  yapf  spike/dogfood/2026-09-16-userview-3/SELECTION.md:46
+SEEN  gzip  b2-candidates:127
+SEEN  patch  funnel:39
+SEEN  patch  target-classes:20
+SEEN  patch  b2-candidates:194
+SEEN  patch  spike/dogfood/2026-09-06-imagemagick-refix/SELECTION.md:4
+SEEN  patch  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:31
+SEEN  crudini  b2-exclusions:67
+SEEN  crudini  spike/dogfood/2026-09-06-userview-2/SELECTION.md:58
+SEEN  crudini  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  crudini  spike/authoring-cost/pool-atomic.txt:6
+SEEN  augtool  spike/authoring-cost/pool-atomic.txt:9
+SEEN  autoflake  b2-exclusions:40
+SEEN  autoflake  spike/dogfood/2026-09-06-userview-2/SELECTION.md:276
+SEEN  autoflake  spike/dogfood/2026-09-16-userview-3/SELECTION.md:48
+fresh docformatter
+SEEN  add-trailing-comma  spike/dogfood/2026-09-16-userview-3/SELECTION.md:49
+fresh mdformat
+fresh toml-sort
+SEEN  nbstripout  b2-exclusions:133
+SEEN  nbstripout  spike/dogfood/2026-09-06-userview-2/SELECTION.md:271
+fresh pyproject-fmt
+fresh yamlfix
+fresh flynt
+fresh pycln
+fresh rufo
+fresh htmlbeautifier
+fresh js-beautify
+fresh sort-package-json
+fresh stylelint
+SEEN  prettier  funnel:71
+SEEN  prettier  target-classes:69
+SEEN  prettier  b2-exclusions:142
+SEEN  prettier  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:58
+fresh eslint

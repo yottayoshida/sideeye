@@ -1,0 +1,30 @@
+rrthomas/recode	★151	pushed=2026-01-13	archived=false	lang=C
+PyCQA/docformatter	★598	pushed=2026-08-10	archived=false	lang=Python
+ikamensh/flynt	★732	pushed=2026-07-19	archived=false	lang=Rust
+hukkin/mdformat	★823	pushed=2026-08-31	archived=false	lang=Python
+hadialqattan/pycln	★315	pushed=2026-01-13	archived=false	lang=Python
+tox-dev/toml-fmt	★86	pushed=2026-09-15	archived=false	lang=Rust
+pappasam/toml-sort	★116	pushed=2026-09-12	archived=false	lang=Python
+lyz-code/yamlfix	★262	pushed=2025-12-18	archived=false	lang=Python
+threedaymonk/htmlbeautifier	★373	pushed=2024-02-13	archived=false	lang=Ruby
+ruby-formatter/rufo	★938	pushed=2026-05-28	archived=false	lang=Ruby
+eslint/eslint	★27513	pushed=2026-09-21	archived=false	lang=JavaScript
+beautifier/js-beautify	★8997	pushed=2026-09-21	archived=false	lang=JavaScript
+keithamus/sort-package-json	★917	pushed=2026-06-03	archived=false	lang=JavaScript
+stylelint/stylelint	★11523	pushed=2026-09-21	archived=false	lang=JavaScript
+ast-grep/ast-grep	★15990	pushed=2026-09-21	lang=Rust
+commitizen-tools/commitizen	★3513	pushed=2026-09-18	lang=Python
+orhun/git-cliff	★12257	pushed=2026-09-18	lang=Rust
+todotxt/todo.txt-cli	★6175	pushed=2026-09-06	lang=Shell
+twisted/towncrier	★922	pushed=2026-09-08	lang=Python
+PHP-CS-Fixer/PHP-CS-Fixer	★13554	pushed=2026-09-21	lang=PHP
+rectorphp/rector	★10427	pushed=2026-09-21	lang=PHP
+ktlint/ktlint	★6744	pushed=2026-09-17	lang=Kotlin
+keepassxreboot/keepassxc	★28897	pushed=2026-09-22	lang=C++
+tweag/ormolu	★1073	pushed=2026-09-08	lang=Haskell
+haskell/stylish-haskell	★1026	pushed=2025-12-28	lang=Haskell
+madler/pigz	★2969	pushed=2025-08-16	lang=C
+lz4/lz4	★12088	pushed=2026-07-01	lang=C
+pypa/hatch	★7236	pushed=2026-09-20	lang=Python
+copier-org/copier	★3585	pushed=2026-09-18	lang=Python
+mesonbuild/meson	★6633	pushed=2026-09-21	lang=Python

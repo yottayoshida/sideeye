@@ -1,0 +1,11 @@
+SEEN  lefthook  funnel:112
+SEEN  lefthook  target-classes:76
+SEEN  lefthook  b2-exclusions:117
+SEEN  lefthook  spike/dogfood/2026-09-21-release-path/SELECTION.md:37
+SEEN  lefthook  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:56
+SEEN  overcommit  funnel:113
+SEEN  overcommit  target-classes:76
+SEEN  overcommit  b2-exclusions:151
+SEEN  overcommit  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:70
+SEEN  husky  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:117
+SEEN  detox  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:72

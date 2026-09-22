@@ -1,0 +1,3 @@
+# beautifier/js-beautify — rule 11 (recent bug reports and who answered) and rule 14 (novelty pre-scan), 2026-09-22T03:50:26Z
+## recent issues labelled bug (or all, if no bug label)
+## novelty: atomic / truncate / corrupt / crash / empty file / data loss

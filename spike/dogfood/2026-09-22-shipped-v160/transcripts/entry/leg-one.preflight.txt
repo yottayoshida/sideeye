@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 1 state-changing operation(s) observed
+
+cwd          /w  (none declared: Sideeye's own)
+atomicity    0 path(s) judged pre-or-post
+oracle       agreed on 1 operations (307 syscall lines examined, 1 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/leg-one --operation "python3 /ap/toys/one.py /s/leg-one" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.6.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

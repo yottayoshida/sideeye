@@ -1,0 +1,35 @@
+SEEN  php-cs-fixer  spike/dogfood/2026-09-16-userview-3/SELECTION.md:57
+SEEN  rector  funnel:57
+SEEN  rector  target-classes:36
+SEEN  rector  blind-hunt3-taint:21
+SEEN  rector  spike/dogfood/2026-09-06-imagemagick-refix/SELECTION.md:6
+SEEN  rector  spike/dogfood/2026-09-11-past-walls/SELECTION.md:60
+SEEN  rector  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:97
+SEEN  rector  spike/dogfood/2026-09-16-outside-git/SELECTION.md:109
+SEEN  rector  spike/dogfood/2026-09-16-threads-take-turns/SELECTION.md:17
+SEEN  rector  spike/dogfood/2026-09-16-userview-3/SELECTION.md:155
+SEEN  rector  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:102
+SEEN  rector  spike/authoring-cost/pool-scratch.txt:14
+fresh ktlint
+SEEN  keepassxc  target-classes:117
+SEEN  keepassxc  b2-exclusions:108
+SEEN  keepassxc  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  keepassxc  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+fresh ormolu
+fresh stylish-haskell
+SEEN  pigz  b2-exclusions:160
+SEEN  pigz  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:35
+SEEN  lz4  funnel:70
+SEEN  lz4  target-classes:71
+SEEN  lz4  b2-exclusions:121
+SEEN  lz4  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:35
+SEEN  hatch  funnel:77
+SEEN  hatch  target-classes:73
+SEEN  hatch  b2-exclusions:92
+SEEN  hatch  spike/dogfood/2026-09-16-outside-git/SELECTION.md:42
+SEEN  copier  b2-exclusions:169
+SEEN  copier  spike/dogfood/2026-09-06-userview-2/SELECTION.md:267
+SEEN  meson  funnel:95
+SEEN  meson  target-classes:107
+SEEN  meson  b2-exclusions:129
+SEEN  meson  spike/dogfood/2026-09-16-userview-3/SELECTION.md:111

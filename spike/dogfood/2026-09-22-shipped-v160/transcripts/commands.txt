@@ -1,0 +1,33 @@
+# The docker invocations this run made, as typed (paths shortened to <apparatus> and <out>).
+# Written out after the run from the session's own command history — no tool captured it, so
+# it is the run's word, like the prediction stamp.
+# The network is present in exactly one place: `docker build`, where the installer fetches the
+# release asset and the candidates are installed. Everything after it runs with --network none.
+
+## the box (network: yes — the install happens here)
+sh apparatus/build.sh            # stages the proxy CA, vendors and checks the installer, then:
+docker build -t sideeye-sv <apparatus>
+
+## the entry gate: every leg and every candidate (network: none)
+docker run --rm --network none --cap-add SYS_PTRACE -v <apparatus>:/ap:ro -v <out>:/out sideeye-sv \
+    sh -c 'for l in write2 one stamp rawwrite childwrite twothreads badcwd static; do OUT=/out/legs sh /ap/entry.sh /ap/legs/$l; done;
+           ORACLE=/nonexistent OUT=/out/legs-oracle-missing sh /ap/entry.sh /ap/legs/write2'
+docker run --rm --network none --cap-add SYS_PTRACE -v <apparatus>:/ap:ro -v <out>:/out sideeye-sv \
+    sh -c 'OUT=/out/legs sh /ap/entry.sh /ap/legs/joinedthreads'
+docker run --rm --network none --cap-add SYS_PTRACE -v <apparatus>:/ap:ro -v <out>:/out sideeye-sv \
+    sh -c 'for c in eslint stylelint js-beautify ast-grep git-cliff commitizen todo.txt ormolu ktlint; do OUT=/out/entry sh /ap/entry.sh /ap/defines/$c; done'
+
+## the three targets, end to end (network: none) — one container each
+docker run --rm --network none --cap-add SYS_PTRACE -v <apparatus>:/ap:ro -v <out>:/out sideeye-sv sh /ap/run.sh commitizen
+docker run --rm --network none --cap-add SYS_PTRACE -v <apparatus>:/ap:ro -v <out>:/out sideeye-sv sh /ap/run.sh ast-grep
+docker run --rm --network none --cap-add SYS_PTRACE -v <apparatus>:/ap:ro -v <out>:/out sideeye-sv sh /ap/run.sh todo.txt
+
+## the gate's own selftest, in the verdict-chain box (network: none; needs lefthook, which this box lacks)
+docker run --rm --network none --cap-add SYS_PTRACE -v <repo>:/repo:ro -v <verdict-chain apparatus>:/ap:ro sideeye-vc-probe sh /ap/gate.sh --selftest
+
+## by hand (network: none): the checkers, ktlint's first define, the interpreters; ulimit -f 0
+docker run --rm --network none -v <apparatus>:/ap:ro sideeye-sv sh -c '…'     # checkers-ktlint-interpreters.txt
+docker run --rm --network none -v <apparatus>:/ap:ro sideeye-sv bash -c '…'   # ulimit-repro.txt
+
+## the x86_64 asset starting (a bare image, no Sideeye install, no target)
+docker run --rm --platform linux/amd64 -v <assets>:/a:ro debian:trixie-slim sh -c '… sideeye version'

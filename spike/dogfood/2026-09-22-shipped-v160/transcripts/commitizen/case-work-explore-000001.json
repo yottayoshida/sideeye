@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.6.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/cz/repo",
+    "operation": "cz bump --yes --files-only",
+    "check": "/ap/defines/commitizen/check.sh",
+    "cwd": "/s/cz/repo",
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 4,
+  "prefix_hash": "8a30a6b9c0e2adf3",
+  "after_class": "open",
+  "after_path": "/s/cz/repo/pyproject.toml",
+  "before_class": "write",
+  "before_path": "/s/cz/repo/pyproject.toml",
+  "violation": "hybrid"
+}

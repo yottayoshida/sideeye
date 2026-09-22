@@ -1,0 +1,27 @@
+# gate.sh --selftest, run 2026-09-22 against the verdict-chain apparatus directory (the shipped-v160 copy of gate.sh is byte-identical: cmp)
+ok   visibility green on a libc-routed toy (rc=0)
+       gate visibility rc=0
+ok   interior RED on a one-operation toy (rc=1)
+       gate interior rc=1 (kill points inside the state root: 1; rule 15 wants >= 2)
+ok   threads green on a toy with one writing thread (rc=0)
+       gate threads rc=0 (1 thread id(s) wrote inside the state root; 0 clone(s) carrying CLONE_THREAD)
+ok   interior green on a four-operation toy (rc=0)
+       gate interior rc=0 (kill points inside the state root: 4)
+ok   threads RED on two threads writing the state root (rc=1)
+       gate threads rc=1 (2 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD. See the header for what this does and does not claim)
+ok   threads green when two threads write SIBLINGS of the root (rc=0)
+       gate threads rc=0 (0 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD)
+ok   threads green when two threads only PRINT paths under the root (rc=0)
+       gate threads rc=0 (0 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD)
+ok   visibility answers 2 when the instrument is missing (rc=2)
+       BROKEN preflight.sh not found at /tmp/gate-selftest.1/not-a-file (mount the repo read-only at /repo)
+ok   interior answers 2 when no INTERIOR count is printed (rc=2)
+       gate interior rc=2 (preflight printed no INTERIOR count)
+ok   threads answers 2 when strace is not installed (rc=2)
+       BROKEN strace not installed - the gate cannot measure
+ok   visibility RED on lefthook (the 2026-09-21 release-path target) (rc=1)
+       gate visibility rc=1
+
+gate: 0 case(s) failed of 11
+gate: selftest green
+selftest exit: 0

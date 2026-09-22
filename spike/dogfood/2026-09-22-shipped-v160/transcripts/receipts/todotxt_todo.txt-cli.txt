@@ -1,0 +1,31 @@
+# todotxt/todo.txt-cli — rule 11 (recent bug reports and who answered) and rule 14 (novelty pre-scan), 2026-09-22T03:49:39Z
+## recent issues labelled bug (or all, if no bug label)
+#258 CLOSED 2018-08-17 comments=12 Append tool overwrites beginning of todo line
+#254 CLOSED 2018-05-31 comments=7 PRESERVE_LINE_NUMBERS option does not affect the "do" action
+#199 CLOSED 2017-01-03 comments=11 Segmentation fault when invoking with --help? (minor)
+#179 CLOSED 2016-05-17 comments=2 Windows - installed cli but doesn't work?
+#168 OPEN 2015-09-08 comments=7 Inline mode not supported by NetBSD's sed
+## novelty: atomic / truncate / corrupt / crash / empty file / data loss
+[empty file] #254 closed PRESERVE_LINE_NUMBERS option does not affect the "do" action
+[data loss] #359 closed Fail on broken symlink to avoid potential data loss
+[data loss] #294 closed add command does not check/add preceding newline character
+
+## recent issues, any label (the bug label stops at 2018)
+#489 CLOSED 2026-09-06 comments=2 by=headoop make test fails when $TODO_DIR points to own config location
+#486 OPEN 2026-08-20 comments=1 by=pursvir feat: add support for listing several files at once via curl
+#478 CLOSED 2026-01-02 comments=2 by=zeitschlag Documentation: Screencast is not available
+#477 OPEN 2025-11-27 comments=0 by=pursvir Incorrect list highlighting in some edge cases
+#474 CLOSED 2025-10-10 comments=1 by=ys7i How to revert done item?
+#472 CLOSED 2025-09-29 comments=0 by=msoulier help output incorrect
+#470 OPEN 2025-09-29 comments=2 by=rosconap Feature Request: Add `addp` command for adding tasks with pr
+#469 CLOSED 2025-08-19 comments=0 by=mattgrieser Bug: -h/--help option causes argument parsing issues
+#467 OPEN 2025-07-18 comments=1 by=mhalano Feature request: Add a new task with the same project and co
+#465 CLOSED 2025-06-29 comments=4 by=pursvir Completions for TODO_ACTIONS_DIR actions do not work in Zsh
+## who answered the latest three with comments
+#489: inkarkat(MEMBER) 2026-09-06, headoop(NONE) 2026-09-06
+#486: inkarkat(MEMBER) 2026-08-21
+#478: inkarkat(MEMBER) 2026-01-04, inkarkat(MEMBER) 2026-06-26
+## release
+v2.14.0	Latest	v2.14.0	2026-09-01T17:37:16Z
+v2.13.0		v2.13.0	2024-12-25T10:30:20Z
+v2.12.0		v2.12.0	2020-08-12T04:38:49Z

@@ -1,0 +1,389 @@
+== novelty pre-scan: commitizen-tools/commitizen
+== date: 2026-09-22T04:01:46Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          99 hit(s) (all listed)
+      #1975 open 2026-05-09 fix(out): reconfigure stdout to UTF-8 on any non-UTF-8 terminal
+      #1979 open 2026-05-09 fix(providers/uv): treat uv.lock as optional
+      #525 open 2022-06-21 Sort commits by scope within changelog categories
+      #1733 open 2025-12-23 fix(cargo_provider): support workspace virtual manifests
+      #956 open 2024-01-09 Exceptions when using cz from ISO8859-1 Terminal
+      #1518 open 2025-06-09 feat(bump_rule): add BumpRule, VersionIncrement enum, ConventionalCommitBumpRule
+      #2002 merged 2026-05-25 fix(providers/cargo): don't crash on workspace member with fixed version
+      #2001 closed 2026-05-21 CRASH on cargo provider
+      #1976 open 2026-05-09 Triage audit (round 3): 8 newer bugs + 22 older feature/refactor items (May 2026)
+      #2078 closed 2026-08-25 feat(bump): add commit filter pattern
+      #1732 closed 2025-12-23 cz bump crashes with version_provider=cargo on workspace virtual manifest (missing [package] / TypeError on version.workspace)
+      #1922 closed 2026-04-02 Broken docs
+      #1933 merged 2026-04-14 build(deps-dev): bump pytest from 9.0.2 to 9.0.3
+      #1581 closed 2025-09-04 Wrong handling of cargo workspaces
+      #1352 closed 2025-02-07 cz commit -e crashes on editor exit
+      #1301 merged 2024-11-29 fix(get-next-bump): fix to permit usage of --get-next option even when update_changelog_on_bump is set to true
+      #1339 merged 2025-01-20 build(deps-dev): bump mkdocs-material from 9.5.49 to 9.5.50
+      #1312 merged 2024-12-17 build(deps-dev): bump mkdocs-material from 9.5.48 to 9.5.49
+      #1269 merged 2024-10-21 build(deps-dev): bump mypy from 1.12.0 to 1.12.1
+      #1268 merged 2024-10-21 build(deps-dev): bump mkdocs-material from 9.5.41 to 9.5.42
+  corrupt        4 hit(s) (all listed)
+      #883 open 2023-10-11 changelog_incremental is set as default when calling changelog from cz bump
+      #1973 open 2026-05-09 fix(changelog): clearer error when changelog format cannot be inferred
+      #1972 merged 2026-05-09 fix(tags): widen prerelease and devrelease tag regexes for SemVer2
+      #1351 merged 2025-01-31 feat(providers): add uv_provider
+  corruption     1 hit(s) (all listed)
+      #1854 closed 2026-02-08 fix: add explicit UTF-8 encoding to all file read/write operations
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2082 merged 2026-09-03 build(deps-dev): bump mkdocs-material from 9.7.6 to 9.7.7
+      #2039 merged 2026-07-29 build(deps-dev): update uv-build requirement from <0.12,>=0.9.17 to >=0.9.17,<0.13
+      #2032 merged 2026-07-17 ci(deps): bump actions/setup-go from 6 to 7
+      #2021 merged 2026-07-01 build(deps): update argcomplete requirement from <3.7,>=1.12.1 to >=1.12.1,<3.8
+      #2004 merged 2026-05-29 ci(deps): bump uv from 0.11.6 to 0.11.15
+      #2013 merged 2026-06-08 ci(deps): bump codecov/codecov-action from 6 to 7
+      #2016 merged 2026-06-19 ci(deps): bump actions/checkout from 6 to 7
+      #1992 merged 2026-05-11 ci(deps): bump urllib3 from 2.6.3 to 2.7.0
+      #2020 merged 2026-06-22 ci(deps): bump peter-evans/find-comment from 3 to 4
+      #1931 merged 2026-04-10 build(deps): bump uv from 0.11.3 to 0.11.6
+      #1914 merged 2026-03-27 ci(deps): bump codecov/codecov-action from 5 to 6
+      #1998 merged 2026-05-20 ci(deps): bump peter-evans/create-or-update-comment from 4 to 5
+      #1882 merged 2026-02-25 build(deps): bump filelock from 3.20.1 to 3.20.3
+      #1893 merged 2026-03-13 ci(deps): bump dorny/paths-filter from 3 to 4
+      #1734 merged 2025-12-25 ci(deps): bump actions/checkout from 5 to 6
+      #1666 merged 2025-11-21 ci(deps): bump actions/checkout from 5 to 6
+      #1577 merged 2025-08-12 ci(deps): bump actions/checkout from 4 to 5
+      #1585 merged 2025-09-05 ci(deps): bump actions/github-script from 7 to 8
+      #1584 merged 2025-09-05 ci(deps): bump actions/setup-python from 5 to 6
+      #1583 merged 2025-09-05 ci(deps): bump actions/labeler from 5 to 6
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2082 merged 2026-09-03 build(deps-dev): bump mkdocs-material from 9.7.6 to 9.7.7
+      #2039 merged 2026-07-29 build(deps-dev): update uv-build requirement from <0.12,>=0.9.17 to >=0.9.17,<0.13
+      #2032 merged 2026-07-17 ci(deps): bump actions/setup-go from 6 to 7
+      #2021 merged 2026-07-01 build(deps): update argcomplete requirement from <3.7,>=1.12.1 to >=1.12.1,<3.8
+      #2004 merged 2026-05-29 ci(deps): bump uv from 0.11.6 to 0.11.15
+      #2013 merged 2026-06-08 ci(deps): bump codecov/codecov-action from 6 to 7
+      #2016 merged 2026-06-19 ci(deps): bump actions/checkout from 6 to 7
+      #1992 merged 2026-05-11 ci(deps): bump urllib3 from 2.6.3 to 2.7.0
+      #2020 merged 2026-06-22 ci(deps): bump peter-evans/find-comment from 3 to 4
+      #1931 merged 2026-04-10 build(deps): bump uv from 0.11.3 to 0.11.6
+      #1914 merged 2026-03-27 ci(deps): bump codecov/codecov-action from 5 to 6
+      #1998 merged 2026-05-20 ci(deps): bump peter-evans/create-or-update-comment from 4 to 5
+      #1882 merged 2026-02-25 build(deps): bump filelock from 3.20.1 to 3.20.3
+      #1893 merged 2026-03-13 ci(deps): bump dorny/paths-filter from 3 to 4
+      #1734 merged 2025-12-25 ci(deps): bump actions/checkout from 5 to 6
+      #1666 merged 2025-11-21 ci(deps): bump actions/checkout from 5 to 6
+      #1577 merged 2025-08-12 ci(deps): bump actions/checkout from 4 to 5
+      #1585 merged 2025-09-05 ci(deps): bump actions/github-script from 7 to 8
+      #1584 merged 2025-09-05 ci(deps): bump actions/setup-python from 5 to 6
+      #1583 merged 2025-09-05 ci(deps): bump actions/labeler from 5 to 6
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2079 open 2026-08-25 body_length_limit collapses blank lines in commit body
+      #1966 open 2026-05-09 fix(config): preserve unicode characters when writing yaml config
+      #2006 open 2026-05-30 feat(ConventionalCommitsCZ): add support for customizable change type choices and bump map overrides
+      #527 open 2022-06-23 Support optional chars in tag_format depending on if var is set or not
+      #1798 open 2026-01-14 feat(cli): add cz --version back and add cz --report to separate them from cz version
+      #1385 open 2025-04-15 Deprecate the `cz_customize` convention and allow for overriding functionality
+      #1207 open 2024-08-13 feat(commit): implement questions 'filter' support with handlers
+      #1993 open 2026-05-14 fix(check): expand env vars in rev_range arg
+      #2089 open 2026-09-15 fix(tags): find current tag matched by a regex-only legacy tag format
+      #1970 open 2026-05-09 fix(cz_customize): set commit_parser default that captures change_type
+      #1987 open 2026-05-09 fix(changelog): restore cwd-relative resolution for --file-name CLI arg
+      #1967 open 2026-05-09 fix(tags): substitute ${devrelease} placeholder in tag_format
+      #1919 open 2026-03-31 Support multi-line commit body input
+      #574 open 2022-09-04 Incremental changelog fails without tags
+      #1969 open 2026-05-09 fix(bump): skip commit step when there are no files to commit
+      #688 open 2023-03-16 Bump increments to new pre-release version from pre-release version when it wouldn't from final version
+      #1530 open 2025-06-10 2nd git.commit error: "On branch main nothing to commit, working tree clean"
+      #1164 open 2024-06-20 cz bump - Overwrites my cz.yaml emoji
+      #2080 merged 2026-08-25 fix(commit): preserve blank lines with body length limit
+      #1923 open 2026-04-04 commitizen-branch fails with exit code: 23 and message fatal: ..: '..' is outside repository
+  atomic         3 hit(s) (all listed)
+      #1820 closed 2026-01-27 feat(docker): add Docker image publishing to GHCR
+      #1667 merged 2025-11-21 docs(external_links): fix outdated link and add links to another commitizen talk
+      #988 merged 2024-02-19 build(deps-dev): bump ruff from 0.2.1 to 0.2.2
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      4 hit(s) (all listed)
+      #1604 merged 2025-09-15 fix(Init): raise InitFailedError on keyboard interrupt on pre-commit …
+      #1641 merged 2025-11-08 4.10.0 release
+      #1123 merged 2024-05-20 build(deps-dev): bump pytest from 8.2.0 to 8.2.1
+      #712 merged 2023-04-19 Release/v3
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         5 hit(s) (all listed)
+      #1630 closed 2025-09-24 Feature/multiline edit
+      #1152 closed 2024-06-04 git cz doesn't return success status when used with the --retry flag. Causing command to hang.
+      #625 closed 2022-11-28 Improve `cz init` command
+      #393 closed 2021-06-23 Neither body nor footer do appear in the commit message
+      #712 merged 2023-04-19 Release/v3
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2072 merged 2026-08-20 docs(tutorial): fix setup-cz link
+      #2073 merged 2026-08-20 ci(links): avoid duplicate broken link reports
+      #537 closed 2022-07-19 adds a changelog tag parser to filter tags (--tag-parser; tag_parser)
+      #1305 merged 2024-12-02 build(deps-dev): bump ruff from 0.8.0 to 0.8.1
+      #1219 closed 2024-08-22 Commitizen installed not able to run command on windows system
+      #1140 merged 2024-05-23 build(deps-dev): bump ruff from 0.4.4 to 0.4.5
+      #1074 merged 2024-04-19 build(deps-dev): bump ruff from 0.3.7 to 0.4.0
+      #973 merged 2024-01-29 build(deps-dev): bump black from 23.12.1 to 24.1.1
+      #892 closed 2023-10-18 build(deps-dev): bump black from 23.9.1 to 23.10.0
+      #897 merged 2023-10-24 build(deps-dev): bump black from 23.9.1 to 23.10.1
+      #932 closed 2023-12-05 build(deps-dev): bump ruff from 0.0.292 to 0.1.7
+      #978 merged 2024-02-01 ci(deps): bump codecov/codecov-action from 3 to 4
+      #795 merged 2023-07-24 build(deps-dev): bump ruff from 0.0.278 to 0.0.280
+      #511 merged 2022-05-04 Ensure At Least One Blank Line Between Old and New Changelog Content
+      #541 merged 2022-08-02 refactor(changelog): removes unused code
+      #536 merged 2022-07-16 fix(changelog): skip non-compliant commit subjects when building changelog
+      #539 merged 2022-07-26 fix(bump): send changelog to stdout when `dry-run` is paired with `changelog-to-stdout`
+      #497 merged 2022-04-11 Make cz schema pattern more precise
+      #534 merged 2022-07-02 feat(bump): make increment option case insensitive
+      #522 merged 2022-06-09 Sign tag
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           4 hit(s) (all listed)
+      #1978 open 2026-05-09 fix(bump): flag sibling version mismatches under --check-consistency
+      #1313 merged 2024-12-18 build(deps-dev): bump pytest-regressions from 2.5.0 to 2.6.0
+      #1150 merged 2024-06-03 build(deps-dev): bump ruff from 0.4.6 to 0.4.7
+      #505 merged 2022-04-28 fix: respect pre-commit reformats when bumping
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2089 open 2026-09-15 fix(tags): find current tag matched by a regex-only legacy tag format
+      #1278 open 2024-10-26 make everything in a cz_ customizable through toml/json and etc
+      #410 open 2021-08-01 Optional Developer Certificate of Origin (DCO) commit question
+      #1677 open 2025-11-30 Add new capabilities to `cz version`
+      #1261 open 2024-10-15 fix(bump)!: only add version files and staged changes
+      #1992 merged 2026-05-11 ci(deps): bump urllib3 from 2.6.3 to 2.7.0
+      #1795 closed 2026-01-13 build: remove unnecessary poe config in pyproject.toml
+      #1538 merged 2025-06-11 refactor(Init): extract _get_config_data for readability
+      #1294 closed 2024-11-18 `--no-raise` is not possible with `--debug`
+      #1825 merged 2026-01-31 feat(cli): add description when choosing a commit rule
+      #1760 merged 2026-01-04 build: manually update uv.lock
+      #1516 merged 2025-06-08 test(cz_customize): add missing YAML configuration file tests
+      #1639 merged 2025-10-30 Feat/version info
+      #1715 closed 2025-12-10 fix: workspace member with fixed version
+      #1588 closed 2025-09-07 Allow partial customization of Conventional Commits: add/remove change types and extend configuration options
+      #1725 closed 2025-12-12 test: remove skip_below_py_3_10
+      #1695 closed 2025-12-06 Fix typo in check test
+      #1692 merged 2025-12-04 perf(ruff): enable ruff rules TC001~TC006
+      #1685 merged 2025-12-03 fix(git): replace lstrip with strip for compatibility issue
+      #1682 merged 2025-12-03 perf: add TYPE_CHECKING to CzQuestion imports
+  incomplete     17 hit(s) (all listed)
+      #1932 open 2026-04-12 refactor: replace mypy with ty for static type checking
+      #2041 closed 2026-07-29 docs: remove star history section from README
+      #472 closed 2022-01-16 version bump with breaking change, release candidate (rc0) didn't increment major version number
+      #1924 merged 2026-04-05 Fix/docs
+      #1724 merged 2025-12-12 feat(version): add MANUAL_VERSION, --next and --patch to version command
+      #1053 closed 2024-04-04 Turn on mypy check_untyped_defs = true
+      #1187 merged 2024-07-22 build(deps-dev): bump mypy from 1.10.1 to 1.11.0
+      #1150 merged 2024-06-03 build(deps-dev): bump ruff from 0.4.6 to 0.4.7
+      #880 merged 2023-10-06 build(deps-dev): bump mkdocs-material from 9.4.3 to 9.4.4
+      #904 closed 2023-11-07 build(deps-dev): bump mkdocs-material from 9.4.6 to 9.4.8
+      #885 merged 2023-10-16 build(deps-dev): bump mkdocs-material from 9.4.5 to 9.4.6
+      #882 merged 2023-10-11 build(deps-dev): bump mkdocs-material from 9.4.4 to 9.4.5
+      #740 merged 2023-05-10 fix: use only version tags in changelog
+      #573 closed 2022-08-30 Typos in bump options
+      #548 closed 2022-08-03 Update supported Python classifiers
+      #143 merged 2020-03-11 build(deps-dev): update mypy requirement from ^0.761 to ^0.770
+      #305 merged 2020-11-14 Provide shell completion for cz
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       3 hit(s) (all listed)
+      #2088 merged 2026-09-14 ci: remove redundant incremental changelog setting
+      #1981 merged 2026-05-09 ci(pythonpublish): add workflow_dispatch trigger for republishing tags
+      #1165 merged 2024-06-21 build(deps-dev): bump ruff from 0.4.8 to 0.4.10
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   1 hit(s) (all listed)
+      #995 merged 2024-02-28 fix(changelog): handle custom tag_format in changelog generation
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #1219 closed 2024-08-22 Commitizen installed not able to run command on windows system
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #453 closed 2021-11-11 custom committer plugin not found when using cz check via git hook
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1164 open 2024-06-20 cz bump - Overwrites my cz.yaml emoji
+      #575 open 2022-09-04 Check commit signatures when using cz
+      #434 open 2021-09-28 Shared cross-repository configuration for commitizen
+      #996 open 2024-02-29 fix(commands/bump): prevent using incremental changelog when it is set to false in config
+      #1970 open 2026-05-09 fix(cz_customize): set commit_parser default that captures change_type
+      #2087 merged 2026-09-14 ci(deps): bump dawidd6/action-homebrew-bump-formula from 8 to 10
+      #2091 merged 2026-09-18 ci(deps): bump soupsieve from 2.8.4 to 2.9
+      #2059 merged 2026-08-09 build(deps): bump pymdown-extensions from 11.0 to 11.0.1
+      #2084 merged 2026-09-09 build(deps): bump gitpython from 3.1.58 to 3.1.59
+      #2082 merged 2026-09-03 build(deps-dev): bump mkdocs-material from 9.7.6 to 9.7.7
+      #2037 merged 2026-07-28 ci(deps): bump pymdown-extensions from 10.21.3 to 11.0
+      #2024 merged 2026-07-10 ci(deps): bump soupsieve from 2.8.3 to 2.8.4
+      #2039 merged 2026-07-29 build(deps-dev): update uv-build requirement from <0.12,>=0.9.17 to >=0.9.17,<0.13
+      #1984 closed 2026-05-09 feat(customize): add required field for input questions
+      #2058 merged 2026-08-09 build(deps): bump gitpython from 3.1.57 to 3.1.58
+      #2038 merged 2026-07-28 ci(deps): bump gitpython from 3.1.52 to 3.1.54
+      #1985 closed 2026-05-09 feat: add changelog_skip_prereleases setting to omit prerelease entries from changelog
+      #950 closed 2023-12-29 Help wanted: commitizen 3.x not supoort generate CHANGELOG with tag format like v1.0.0-release
+      #2050 merged 2026-08-04 build(deps): bump gitpython from 3.1.54 to 3.1.57
+      #1986 closed 2026-05-09 feat: add cz dump-config command to output effective configuration
+  clobber        2 hit(s) (all listed)
+      #2021 merged 2026-07-01 build(deps): update argcomplete requirement from <3.7,>=1.12.1 to >=1.12.1,<3.8
+      #646 merged 2022-12-28 Feature: version providers
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2079 open 2026-08-25 body_length_limit collapses blank lines in commit body
+      #2080 merged 2026-08-25 fix(commit): preserve blank lines with body length limit
+      #2085 open 2026-09-11 fix(changelog): skip unreachable tags when picking previous release (#2083)
+      #1975 open 2026-05-09 fix(out): reconfigure stdout to UTF-8 on any non-UTF-8 terminal
+      #1967 open 2026-05-09 fix(tags): substitute ${devrelease} placeholder in tag_format
+      #2007 open 2026-05-30 docs(contributing): add agent-facing playbooks and architecture overview
+      #1993 open 2026-05-14 fix(check): expand env vars in rev_range arg
+      #1970 open 2026-05-09 fix(cz_customize): set commit_parser default that captures change_type
+      #1979 open 2026-05-09 fix(providers/uv): treat uv.lock as optional
+      #1987 open 2026-05-09 fix(changelog): restore cwd-relative resolution for --file-name CLI arg
+      #1961 open 2026-05-09 feat(config): warn on unknown configuration keys
+      #956 open 2024-01-09 Exceptions when using cz from ISO8859-1 Terminal
+      #1983 open 2026-05-09 fix(bump): only consider commit titles when matching bump patterns
+      #1980 open 2026-05-09 fix(git): tolerate noisy git rev-parse output in is_git_project
+      #1978 open 2026-05-09 fix(bump): flag sibling version mismatches under --check-consistency
+      #1900 open 2026-03-18 Fix and improve test: message_length_limit
+      #1969 open 2026-05-09 fix(bump): skip commit step when there are no files to commit
+      #1973 open 2026-05-09 fix(changelog): clearer error when changelog format cannot be inferred
+      #1932 open 2026-04-12 refactor: replace mypy with ty for static type checking
+      #1966 open 2026-05-09 fix(config): preserve unicode characters when writing yaml config
+  unreadable     1 hit(s) (all listed)
+      #1972 merged 2026-05-09 fix(tags): widen prerelease and devrelease tag regexes for SemVer2
+  garbage        2 hit(s) (all listed)
+      #1980 open 2026-05-09 fix(git): tolerate noisy git rev-parse output in is_git_project
+      #798 closed 2023-07-27 change log was generated with garbage data
+  mangled        1 hit(s) (all listed)
+      #1966 open 2026-05-09 fix(config): preserve unicode characters when writing yaml config
+  contents       40 hit(s) (all listed)
+      #1897 open 2026-03-17 cz info does not read from info_path for non root directory
+      #1068 open 2024-04-16 Cannot create release version after creating a pre-release version
+      #1207 open 2024-08-13 feat(commit): implement questions 'filter' support with handlers
+      #1959 open 2026-05-09 Promote PR bump preview to a reusable workflow in setup-cz
+      #1948 merged 2026-05-07 docs: add llms.txt via mkdocs-llmstxt plugin
+      #1936 closed 2026-04-17 Provide a skill for agentic coding
+      #1913 merged 2026-03-26 build(deps): bump requests from 2.32.5 to 2.33.0
+      #1881 merged 2026-02-25 build(deps): bump urllib3 from 2.6.2 to 2.6.3
+      #1448 merged 2025-05-23 docs(label_pr.yml): add labels based on new PR title
+      #463 closed 2021-12-17 No tag found to do an incremental changelog
+      #1048 merged 2024-04-01 cli(script): gen screenshot for cli helps
+      #572 closed 2022-08-29 Cannot commit using tmp file if computer name has a space in it
+      #1183 merged 2024-07-19 build(deps-dev): bump ruff from 0.5.2 to 0.5.3
+      #990 merged 2024-02-20 build(deps-dev): bump mkdocs-material from 9.5.9 to 9.5.10
+      #998 closed 2024-03-01 build(deps-dev): bump mkdocs-material from 9.5.11 to 9.5.12
+      #1030 merged 2024-03-18 build(deps-dev): bump black from 24.2.0 to 24.3.0
+      #993 merged 2024-02-26 build(deps-dev): bump mkdocs-material from 9.5.10 to 9.5.11
+      #980 merged 2024-02-05 build(deps-dev): bump mkdocs-material from 9.5.6 to 9.5.7
+      #1031 merged 2024-03-18 build(deps-dev): bump mkdocs-material from 9.5.13 to 9.5.14
+      #1006 merged 2024-03-07 build(deps-dev): bump mkdocs-material from 9.5.11 to 9.5.13
+  in-place       55 hit(s) (all listed)
+      #913 open 2023-11-17 Improve referencing __version__ attribute.
+      #1615 open 2025-09-18 Tag not set correctly using devreleases with semver2 and custom tag_format
+      #2007 open 2026-05-30 docs(contributing): add agent-facing playbooks and architecture overview
+      #1371 open 2025-03-15 `cz bump` generates broken commit when run from a subfolder.
+      #1959 open 2026-05-09 Promote PR bump preview to a reusable workflow in setup-cz
+      #819 open 2023-08-20 Add a new FAQ for describing how to handle the case that some dependency happens to have the same version as the project version
+      #1975 open 2026-05-09 fix(out): reconfigure stdout to UTF-8 on any non-UTF-8 terminal
+      #1966 open 2026-05-09 fix(config): preserve unicode characters when writing yaml config
+      #1983 open 2026-05-09 fix(bump): only consider commit titles when matching bump patterns
+      #1772 open 2026-01-05 Bump Increments `PATCH` Version on `ci` Commit
+      #1954 merged 2026-05-09 ci: place --no-raise before bump subcommand in bumpversion.yml
+      #365 open 2021-03-31 changelog --subdirectory
+      #2039 merged 2026-07-29 build(deps-dev): update uv-build requirement from <0.12,>=0.9.17 to >=0.9.17,<0.13
+      #2008 merged 2026-05-30 ci: make bump preview comment sticky
+      #1955 merged 2026-05-09 docs(exit_codes): note that --no-raise must precede the subcommand
+      #1957 merged 2026-05-09 ci: add PR bump preview workflow
+      #1953 merged 2026-05-09 docs(skill): point install guidance at docs README
+      #1996 merged 2026-05-19 ci(deps): bump idna from 3.11 to 3.15
+      #1974 closed 2026-05-09 fix(changelog): add changelog_subject_only to skip body parsing
+      #1614 closed 2025-09-18 Direct bump with changelog creation not possible using semver2, custom tag_format and prerelease option
+  unclean        0 hit(s)
+  shutdown       4 hit(s) (all listed)
+      #1938 merged 2026-04-26 build(deps): bump gitpython from 3.1.46 to 3.1.47
+      #1097 merged 2024-05-06 build(deps-dev): bump ruff from 0.4.2 to 0.4.3
+      #801 merged 2023-07-28 build(deps-dev): bump mkdocs from 1.4.3 to 1.5.1
+      #797 closed 2023-07-27 build(deps-dev): bump mkdocs from 1.4.3 to 1.5.0
+  reboot         2 hit(s) (all listed)
+      #250 closed 2020-08-14 feat(commands/commit): apply prepare-commit-msg hook
+      #1409 closed 2025-05-12 `poetry all` tests fail
+  disk+full      2 hit(s) (all listed)
+      #1978 open 2026-05-09 fix(bump): flag sibling version mismatches under --check-consistency
+      #505 merged 2022-04-28 fix: respect pre-commit reformats when bumping
+  data+loss      1 hit(s) (all listed)
+      #2078 closed 2026-08-25 feat(bump): add commit filter pattern
+  partial+write  4 hit(s) (all listed)
+      #1677 open 2025-11-30 Add new capabilities to `cz version`
+      #1552 merged 2025-06-13 fix(CommitizenProvider): raise if version is None
+      #463 closed 2021-12-17 No tag found to do an incremental changelog
+      #578 merged 2022-09-07 Report hook installation fail
+  crash+safe     6 hit(s) (all listed)
+      #1975 open 2026-05-09 fix(out): reconfigure stdout to UTF-8 on any non-UTF-8 terminal
+      #1733 open 2025-12-23 fix(cargo_provider): support workspace virtual manifests
+      #1518 open 2025-06-09 feat(bump_rule): add BumpRule, VersionIncrement enum, ConventionalCommitBumpRule
+      #956 open 2024-01-09 Exceptions when using cz from ISO8859-1 Terminal
+      #2002 merged 2026-05-25 fix(providers/cargo): don't crash on workspace member with fixed version
+      #838 merged 2023-09-08 build(deps-dev): bump pytest from 7.4.1 to 7.4.2
+  atomic+write   1 hit(s) (all listed)
+      #988 merged 2024-02-19 build(deps-dev): bump ruff from 0.2.1 to 0.2.2
+  lock+file      51 hit(s) (all listed)
+      #1979 open 2026-05-09 fix(providers/uv): treat uv.lock as optional
+      #1383 open 2025-04-06 Make uv.lock optional bump
+      #1733 open 2025-12-23 fix(cargo_provider): support workspace virtual manifests
+      #2067 open 2026-08-15 feat: JSON Schema for commitizen configuration (issue #1565)
+      #1896 open 2026-03-14 feat: add PEP 751 version provider with pylock.toml support
+      #1397 open 2025-05-03 Add support for PEP 751 lockfiles
+      #1976 open 2026-05-09 Triage audit (round 3): 8 newer bugs + 22 older feature/refactor items (May 2026)
+      #1932 open 2026-04-12 refactor: replace mypy with ty for static type checking
+      #1969 open 2026-05-09 fix(bump): skip commit step when there are no files to commit
+      #1518 open 2025-06-09 feat(bump_rule): add BumpRule, VersionIncrement enum, ConventionalCommitBumpRule
+      #1548 open 2025-06-12 fix(version_schemes): support arbitrary semver pre-release labels
+      #1965 open 2026-05-09 Triage audit: 30 open untriaged non-bug issues (May 2026, follow-up to #1964)
+      #2002 merged 2026-05-25 fix(providers/cargo): don't crash on workspace member with fixed version
+      #1936 closed 2026-04-17 Provide a skill for agentic coding
+      #1732 closed 2025-12-23 cz bump crashes with version_provider=cargo on workspace virtual manifest (missing [package] / TypeError on version.workspace)
+      #1859 closed 2026-02-09 Add set_version encoding tests and fix missing encoding in provider writes
+      #1931 merged 2026-04-10 build(deps): bump uv from 0.11.3 to 0.11.6
+      #1882 merged 2026-02-25 build(deps): bump filelock from 3.20.1 to 3.20.3
+      #1764 merged 2026-01-05 ci(uv): use uv sync --frozen everywhere
+      #1755 merged 2026-01-02 fix(providers): normalize package names in uv provider for uv.lock matching
+  write+failure  15 hit(s) (all listed)
+      #1973 open 2026-05-09 fix(changelog): clearer error when changelog format cannot be inferred
+      #956 open 2024-01-09 Exceptions when using cz from ISO8859-1 Terminal
+      #1733 open 2025-12-23 fix(cargo_provider): support workspace virtual manifests
+      #1978 open 2026-05-09 fix(bump): flag sibling version mismatches under --check-consistency
+      #1965 open 2026-05-09 Triage audit: 30 open untriaged non-bug issues (May 2026, follow-up to #1964)
+      #1889 merged 2026-03-05 CI: make release workflows fork-friendly
+      #1135 closed 2024-05-21 cz commit -s  should fail with deprecation warning BEFORE going through dialog, --help should reflect behavior
+      #1508 merged 2025-06-07 refactor(bump): eliminate similar patterns in code
+      #1552 merged 2025-06-13 fix(CommitizenProvider): raise if version is None
+      #1466 merged 2025-05-29 refactor: improve types and avoid nested loop, add types for untyped functions
+      #1409 closed 2025-05-12 `poetry all` tests fail
+      #1181 merged 2024-07-15 build(deps-dev): bump ruff from 0.5.1 to 0.5.2
+      #517 merged 2022-05-22 feat(pre-commit): Add commitizen-branch hook
+      #544 closed 2022-08-03 `UnicodeDecodeError` if commit messages contain Unicode characters
+      #67 closed 2019-11-18 pytest failure: shutil.py:606: PermissionError, bump.py:126: SystemExit
+  file+contents  24 hit(s) (all listed)
+      #1897 open 2026-03-17 cz info does not read from info_path for non root directory
+      #1207 open 2024-08-13 feat(commit): implement questions 'filter' support with handlers
+      #1959 open 2026-05-09 Promote PR bump preview to a reusable workflow in setup-cz
+      #1948 merged 2026-05-07 docs: add llms.txt via mkdocs-llmstxt plugin
+      #1936 closed 2026-04-17 Provide a skill for agentic coding
+      #1913 merged 2026-03-26 build(deps): bump requests from 2.32.5 to 2.33.0
+      #1448 merged 2025-05-23 docs(label_pr.yml): add labels based on new PR title
+      #463 closed 2021-12-17 No tag found to do an incremental changelog
+      #1048 merged 2024-04-01 cli(script): gen screenshot for cli helps
+      #572 closed 2022-08-29 Cannot commit using tmp file if computer name has a space in it
+      #993 merged 2024-02-26 build(deps-dev): bump mkdocs-material from 9.5.10 to 9.5.11
+      #1006 merged 2024-03-07 build(deps-dev): bump mkdocs-material from 9.5.11 to 9.5.13
+      #1031 merged 2024-03-18 build(deps-dev): bump mkdocs-material from 9.5.13 to 9.5.14
+      #961 merged 2024-01-16 build(deps-dev): bump mkdocs-material from 9.5.3 to 9.5.4
+      #946 merged 2023-12-25 build(deps-dev): bump mkdocs-material from 9.5.2 to 9.5.3
+      #914 closed 2023-11-20 build(deps-dev): bump mkdocs-material from 9.4.6 to 9.4.10
+      #376 closed 2021-05-02 feat(changelog): add 'template' option to supply a custom changelog template
+      #918 closed 2023-11-24 build(deps-dev): bump mkdocs-material from 9.4.6 to 9.4.11
+      #629 merged 2022-12-03 Add Unicode Support
+      #822 closed 2023-08-22 build(deps-dev): bump mkdocs-material from 9.1.21 to 9.2.1
+
+== 51 terms run; 35 returned hits, 7 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

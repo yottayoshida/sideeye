@@ -1,0 +1,63 @@
+SEEN  typos  b2-exclusions:210
+SEEN  typos  spike/dogfood/2026-09-16-userview-3/SELECTION.md:45
+SEEN  sd  funnel:46
+SEEN  sd  target-classes:45
+SEEN  sd  b2-exclusions:118
+SEEN  sd  b2-candidates:230
+SEEN  sd  spike/dogfood/2026-09-06-userview-2/SELECTION.md:54
+SEEN  sd  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  sd  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:124
+fresh ast-grep
+SEEN  zoxide  funnel:91
+SEEN  zoxide  target-classes:66
+SEEN  zoxide  b2-exclusions:229
+SEEN  zoxide  spike/dogfood/2026-09-16-userview-3/SELECTION.md:44
+SEEN  jrnl  unknown-rate-exclusions:28
+SEEN  jrnl  blind-hunt3-taint:45
+SEEN  jrnl  b2-exclusions:106
+SEEN  jrnl  spike/dogfood/2026-09-05-userview/SELECTION.md:23
+SEEN  jrnl  spike/dogfood/2026-09-06-userview-2/SELECTION.md:26
+SEEN  jrnl  spike/dogfood/2026-09-16-userview-3/SELECTION.md:33
+SEEN  jrnl  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+fresh commitizen
+SEEN  jupytext  b2-exclusions:107
+SEEN  jupytext  spike/dogfood/2026-09-06-userview-2/SELECTION.md:266
+SEEN  clang-format  b2-exclusions:61
+SEEN  clang-format  spike/dogfood/2026-09-16-userview-3/SELECTION.md:59
+SEEN  vim  funnel:76
+SEEN  vim  target-classes:74
+SEEN  vim  b2-exclusions:135
+SEEN  vim  b2-candidates:270
+SEEN  vim  spike/dogfood/2026-09-16-outside-git/SELECTION.md:24
+SEEN  vim  spike/dogfood/2026-09-16-userview-3/SELECTION.md:42
+SEEN  pngquant  b2-exclusions:164
+SEEN  pngquant  b2-candidates:205
+SEEN  pngquant  spike/dogfood/2026-09-06-userview-2/SELECTION.md:190
+SEEN  svgo  funnel:72
+SEEN  svgo  target-classes:69
+SEEN  svgo  b2-exclusions:143
+SEEN  svgo  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:59
+SEEN  gawk  b2-candidates:108
+SEEN  khal  target-classes:27
+SEEN  khal  unknown-rate-exclusions:17
+SEEN  khal  blind-hunt3-taint:21
+SEEN  khal  b2-exclusions:109
+SEEN  khal  spike/dogfood/2026-09-05-userview/SELECTION.md:26
+SEEN  khal  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  khal  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+fresh git-cliff
+SEEN  taplo  spike/dogfood/2026-09-06-userview-2/SELECTION.md:46
+SEEN  taplo  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  stylua  spike/dogfood/2026-09-16-userview-3/SELECTION.md:56
+SEEN  dprint  target-classes:135
+SEEN  hledger  unknown-rate-exclusions:12
+SEEN  hledger  blind-hunt3-taint:22
+SEEN  hledger  b2-exclusions:17
+SEEN  hledger  spike/dogfood/2026-09-05-userview/SELECTION.md:25
+SEEN  hledger  spike/dogfood/2026-09-06-userview-2/SELECTION.md:26
+SEEN  hledger  spike/dogfood/2026-09-16-userview-3/SELECTION.md:33
+SEEN  hledger  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+fresh todo.txt
+SEEN  kislyuk  spike/dogfood/2026-09-06-userview-2/SELECTION.md:51
+fresh towncrier
+SEEN  djlint  spike/dogfood/2026-09-16-userview-3/SELECTION.md:50

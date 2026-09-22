@@ -1,0 +1,7 @@
+[world]
+state = "/s/cz/repo"
+
+[define]
+operation = "cz bump --yes --files-only"
+cwd       = "/s/cz/repo"
+check     = "/ap/defines/commitizen/check.sh"
