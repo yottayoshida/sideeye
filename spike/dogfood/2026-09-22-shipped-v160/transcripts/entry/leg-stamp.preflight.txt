@@ -1,0 +1,22 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   stamp.txt (content differs)
+
+cwd          /w  (none declared: Sideeye's own)
+atomicity    0 path(s) judged pre-or-post
+oracle       agreed on 2 operations (321 syscall lines examined, 11 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2004 ms apart differed under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

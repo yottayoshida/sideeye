@@ -1,0 +1,6 @@
+[world]
+state = "/s/todo/data"
+
+[define]
+operation = "/opt/todo/todo.sh -d /s/todo/todo.cfg add buy-bread"
+check     = "/ap/defines/todo.txt/check.sh"

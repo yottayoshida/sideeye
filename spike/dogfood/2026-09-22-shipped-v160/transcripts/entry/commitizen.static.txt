@@ -1,0 +1,2 @@
+static: /opt/py/bin/cz: Python script, ASCII text executable
+next: sideeye explore --state /s/cz/repo --cwd "/s/cz/repo" --operation "cz bump --yes --files-only" \

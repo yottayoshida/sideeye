@@ -8,7 +8,7 @@
 
 Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process before each state-changing operation, one crash world each, then brings back the earliest failing one as a replayable case. It breaks worlds, not inputs: same input, hostile universe.
 
-It has found counterexamples in real tools — RuboCop, Himalaya, ImageMagick, AWS CLI, codespell, and more — twenty of them reported upstream. Verdicts are deterministic, and a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS. One exception is named rather than hidden: a directory a recorded `rename` moved in from outside the judged tree is attributed to that one record, because its source was never snapshotted — so a later unrecorded write inside that subtree can still ride a PASS. Every report says how many paths that covered (`paths_attributed_to_rename`), and a run reporting zero has no such gap.
+It has found counterexamples in real tools — RuboCop, Himalaya, ImageMagick, AWS CLI, codespell, and more — 21 of them reported upstream. Verdicts are deterministic, and a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS. One exception is named rather than hidden: a directory a recorded `rename` moved in from outside the judged tree is attributed to that one record, because its source was never snapshotted — so a later unrecorded write inside that subtree can still ride a PASS. Every report says how many paths that covered (`paths_attributed_to_rename`), and a run reporting zero has no such gap.
 
 ## Installation
 

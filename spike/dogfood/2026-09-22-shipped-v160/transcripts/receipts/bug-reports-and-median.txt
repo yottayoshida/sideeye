@@ -1,0 +1,48 @@
+# recent bug reports, word counts of the body (gh api, 2026-09-22T04:50:31Z)
+## ast-grep/ast-grep label 'bug' — per issue, then the median
+#2867 2026-08-03 comments=0 words=193
+#2847 2026-07-25 comments=6 words=230
+#2814 2026-07-16 comments=1 words=421
+#2803 2026-07-12 comments=2 words=300
+#2697 2026-06-10 comments=4 words=251
+#2681 2026-06-03 comments=0 words=147
+#2655 2026-05-19 comments=2 words=253
+#2644 2026-05-15 comments=4 words=135
+#2551 2026-03-17 comments=1 words=65
+#2525 2026-03-10 comments=3 words=246
+#2509 2026-02-28 comments=1 words=899
+#2478 2026-02-15 comments=0 words=80
+#2449 2026-01-20 comments=2 words=228
+#2429 2026-01-05 comments=14 words=562
+#2388 2025-12-13 comments=2 words=94
+#2387 2025-12-13 comments=1 words=200
+#2361 2025-11-30 comments=0 words=36
+#2301 2025-10-23 comments=5 words=234
+#2262 2025-09-28 comments=4 words=109
+#2247 2025-09-15 comments=3 words=135
+median: 228 of 20
+## commitizen-tools/commitizen label 'type: bug' — per issue, then the median
+#2089 2026-09-15 comments=1 words=421
+#2086 2026-09-13 comments=9 words=480
+#2085 2026-09-11 comments=2 words=274
+#2080 2026-08-25 comments=2 words=287
+#2074 2026-08-20 comments=3 words=502
+#2072 2026-08-20 comments=2 words=228
+#2065 2026-08-14 comments=2 words=338
+#2052 2026-08-05 comments=3 words=267
+#2041 2026-07-29 comments=11 words=92
+#2029 2026-07-14 comments=2 words=254
+#2026 2026-07-12 comments=1 words=186
+#2018 2026-06-21 comments=2 words=157
+#2017 2026-06-19 comments=2 words=232
+#2015 2026-06-16 comments=0 words=269
+#2008 2026-05-30 comments=2 words=356
+#2005 2026-05-30 comments=3 words=252
+#2003 2026-05-26 comments=6 words=307
+#2002 2026-05-25 comments=2 words=488
+#2001 2026-05-21 comments=0 words=117
+#1993 2026-05-14 comments=2 words=511
+median: 274 of 20
+# the report held to it, counted the same way as the bodies above (jq's split(" "): single spaces only)
+report-ast-grep.md: 348 words split on spaces; 363 split on any whitespace
+# this file was taken at review, after the report was posted (04:24:02Z, filed-ast-grep.txt)

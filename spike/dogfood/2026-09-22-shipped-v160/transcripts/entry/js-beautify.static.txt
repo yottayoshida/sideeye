@@ -1,0 +1,2 @@
+static: /usr/local/bin/js-beautify: Node.js script executable, ASCII text
+next: sideeye explore --state /s/jsb/proj --cwd "/s/jsb/proj" --operation "js-beautify -r a.js" \

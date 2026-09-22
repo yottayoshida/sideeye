@@ -1,0 +1,6 @@
+[world]
+state = "/s/ktlint/proj"
+
+[define]
+operation = "/opt/ktlint -F a.kt"
+cwd       = "/s/ktlint/proj"

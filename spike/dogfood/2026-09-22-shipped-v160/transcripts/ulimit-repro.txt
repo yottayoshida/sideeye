@@ -1,0 +1,45 @@
+## ast-grep ast-grep 0.45.3
+before: 22 bytes
+var x = 1;
+var y = 2;
+exit: 153
+bash: line 4:    14 File size limit exceeded( ulimit -f 0; ast-grep scan --rule rule.yml --update-all a.js )
+after:  0 bytes
+## control, no limit
+Applied 2 changes
+exit: 0; after: 20 bytes
+let x = 1
+let y = 2
+## commitizen 4.18.1
+before: 126 bytes
+bump: version 0.1.0 → 0.2.0
+tag to create: v0.2.0
+increment detected: MINOR
+
+OSError: [Errno 27] File too large
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/bin/cz", line 8, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/commitizen/cli.py", line 727, in main
+    args.func(conf, arguments)()  # type: ignore[arg-type]
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/commitizen/commands/bump.py", line 339, in __call__
+    changelog_cmd()
+    ~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/commitizen/commands/changelog.py", line 312, in __call__
+    self._write_changelog(changelog_out, lines, changelog_meta)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/commitizen/commands/changelog.py", line 166, in _write_changelog
+    with smart_open(
+         ~~~~~~~~~~^
+        self.file_name, "w", encoding=self.config.settings["encoding"]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as changelog_file:
+    ^
+OSError: [Errno 27] File too large
+exit: 1
+after:  126 bytes; git can restore: 126 bytes in HEAD

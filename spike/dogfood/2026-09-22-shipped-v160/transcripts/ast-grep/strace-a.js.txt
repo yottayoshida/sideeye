@@ -1,0 +1,13 @@
+20    execve("/opt/py/bin/ast-grep", ["ast-grep", "scan", "--rule", "rule.yml", "--update-all", "a.js"], 0xaaab15645880 /* 16 vars */) = 0
+21    statx(AT_FDCWD</s/sg/proj>, "a.js", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=22, ...}) = 0
+22    openat(AT_FDCWD</s/sg/proj>, "a.js", O_RDONLY|O_CLOEXEC) = 3</s/sg/proj/a.js>
+22    statx(3</s/sg/proj/a.js>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=22, ...}) = 0
+22    read(3</s/sg/proj/a.js>, "var x = 1;\nvar y = 2;\n", 22) = 22
+22    read(3</s/sg/proj/a.js>,  <unfinished ...>
+22    statx(3</s/sg/proj/a.js>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK,  <unfinished ...>
+22    close(3</s/sg/proj/a.js> <unfinished ...>
+20    openat(AT_FDCWD</s/sg/proj>, "a.js", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</s/sg/proj/a.js>
+20    statx(3</s/sg/proj/a.js>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+20    write(3</s/sg/proj/a.js>, "let x = 1\nlet y = 2\n", 20) = 20
+20    statx(3</s/sg/proj/a.js>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=20, ...}) = 0
+20    close(3</s/sg/proj/a.js>)         = 0

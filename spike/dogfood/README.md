@@ -60,7 +60,11 @@ further along the same line. What failed was the reading, not the measuring — 
 sentence telling the next reader to read to the end of the line leaves the same road
 open. `spike/dogfood/2026-09-21-verdict-chain/apparatus/gate.sh` is the shape that
 does not: three questions, each answered 0, 1 or 2, with **2 kept distinct from 1**
-because "the apparatus could not measure" is not "the target is walled".
+because "the apparatus could not measure" is not "the target is walled". Since
+2026-09-22 two of the three are answered by the installed engine itself —
+`sideeye preflight --twice --oracle` mapped to 0, 1 or 2 by its `next` sentence, plus
+`file -L` for static linkage (`2026-09-22-shipped-v160/apparatus/entry.sh`, ADR 0085
+amended) — because the logger the first gate used had fallen behind the shim.
 
 Two conditions come with it, both learned the same day. **Every gate must have been
 seen red**, on a target whose red is the one being claimed — the visibility gate's
@@ -126,4 +130,6 @@ Delete the ordering rule above — not the directory — if a run ever produces 
 candidate table where the screening measurement and the rule-16 forecast
 disagree in the direction that matters: the screen says a target is measurable
 and the engine then refuses it. That would mean the screen is not measuring what
-it claims to.
+it claims to. Where the screen is the engine's own preflight, "refuses" means
+in a phase the preflight ran; a refusal in one it prints as `not checked` is not
+that case (ADR 0085's amendment).

@@ -1,0 +1,7 @@
+[world]
+state = "/s/sg/proj"
+
+[define]
+operation = "ast-grep scan --rule rule.yml --update-all a.js"
+cwd       = "/s/sg/proj"
+check     = "/ap/defines/ast-grep/check.sh"

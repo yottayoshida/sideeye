@@ -1,0 +1,18 @@
+# tweag/ormolu — rule 11 (recent bug reports and who answered) and rule 14 (novelty pre-scan), 2026-09-22T03:50:04Z
+## recent issues labelled bug (or all, if no bug label)
+#1194 CLOSED 2026-03-17 comments=1 Extra blank lines in multiline strings cause AST mismatch
+#1192 CLOSED 2026-02-12 comments=3 Ormolu support for ExplicitLevelImports
+#1188 CLOSED 2026-01-15 comments=1 Or pattern case branches are doubly indented
+#1183 CLOSED 2025-11-27 comments=0 Semicolons removed from parenthesized multi-line or patterns
+#1180 CLOSED 2025-10-25 comments=1 parse error on input -> for a case expression in a multi-statement do 
+#1178 CLOSED 2025-09-26 comments=1 Parse error on guard
+## novelty: atomic / truncate / corrupt / crash / empty file / data loss
+[atomic] #902 open Preserve blank lines between case branches
+[atomic] #856 closed AST differs on comment after a magic comment
+[corrupt] #856 closed AST differs on comment after a magic comment
+[corrupt] #703 closed Formatting in pre-commit hook vs CI
+[empty file] #1181 closed Bad behavior when running ormolu on a file and piping to that file itself
+[crash] #781 closed Crash if unable to find a .cabal file with --cabal-default-extensions
+[crash] #47 closed Support rendering of remaining types of expressions
+[crash] #187 closed Crashes on unboxed string literals
+[crash] #355 closed Infix pattern synonym: ghc panic

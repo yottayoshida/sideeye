@@ -1,0 +1,6 @@
+[world]
+state = "/s/stylelint/proj"
+
+[define]
+operation = "stylelint --fix a.css"
+cwd       = "/s/stylelint/proj"

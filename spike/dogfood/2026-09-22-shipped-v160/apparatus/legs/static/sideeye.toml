@@ -1,0 +1,5 @@
+[world]
+state = "/s/leg-static"
+
+[define]
+operation = "/bin/busybox touch /s/leg-static/t"

@@ -1,0 +1,1 @@
+gate threads rc=1 (2 thread id(s) wrote inside the state root; 3 clone(s) carrying CLONE_THREAD. See the header for what this does and does not claim)

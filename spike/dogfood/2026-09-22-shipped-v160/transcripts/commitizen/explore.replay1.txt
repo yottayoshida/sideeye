@@ -1,0 +1,27 @@
+falsify: cz version --project failed: Failed to parse pyproject.toml: Unexpected character: '
+falsify: ' at line 1 col 24
+cz reads the project version as 'No project information in this project.'
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 4 of 4
+            after  open(/s/cz/repo/pyproject.toml)
+            before write(/s/cz/repo/pyproject.toml)
+path        pyproject.toml
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   51 path(s) judged pre-or-post
+oracle      agreed on 4 operations (10923 syscall lines examined, 2767 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/commitizen/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/cz/repo
+processes   8 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/cz/repo SIDEEYE_TRACE_PATH=/out/commitizen/work-explore-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.6.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=4 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=d24d6d951d96abb74f1915b9374476b2fedd6ef8371aa18536957de5ca0074a2;

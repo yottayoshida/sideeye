@@ -1,0 +1,7 @@
+ok   a target the funnel names comes back seen
+ok   a target only #618 names is still seen
+ok   another campaign's measured target still reads seen
+ok   the previous campaign's own target reads seen from here
+ok   this campaign's own records do not make its own target look already met
+ok   an invented name comes back fresh
+fresh: selftest green

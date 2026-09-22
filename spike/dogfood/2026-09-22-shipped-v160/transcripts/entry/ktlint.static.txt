@@ -1,0 +1,2 @@
+static: /opt/ktlint: POSIX shell script executable (binary data)
+next: sideeye explore --state /s/ktlint/proj --cwd "/s/ktlint/proj" --operation "/opt/ktlint -F Main.kt" \

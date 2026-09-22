@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+cwd          /s/ormolu/proj
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 3 operations (208 syscall lines examined, 35 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2002 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/ormolu/proj --cwd "/s/ormolu/proj" --operation "ormolu --mode inplace A.hs" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.6.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

@@ -1,0 +1,31 @@
+# The first gate run (threads measured without a seed first — see SELECTION.md). Superseded by entry-candidates.txt.
+# The first nine rows are the first define of each candidate; the last is ktlint's second define (Main.kt), run the same way.
+ROW eslint static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected; threads=-
+  exit=1
+ROW stylelint static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected; threads=-
+  exit=1
+ROW js-beautify static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations; threads=0
+  exit=0
+ROW ast-grep static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations; threads=0
+  exit=0
+ROW git-cliff static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations; threads=0
+  exit=0
+ROW commitizen static=0 preflight_rc=0 gate=0 detail=accepted, 4 operations; threads=0
+  exit=0
+ROW todo.txt static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation); threads=0
+  exit=0
+ROW ktlint static=0 preflight_rc=2 gate=DEFINE detail=define: recording_run_failed; threads=-
+  exit=3
+ROW ormolu static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations; threads=0
+  exit=0
+ROW ktlint static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations; threads=0
+  exit=0
+
+# Each threads question's last line, from that run:
+ast-grep: gate threads rc=0 (0 thread id(s) wrote inside the state root; 12 clone(s) carrying CLONE_THREAD)
+commitizen: gate threads rc=0 (0 thread id(s) wrote inside the state root; 0 clone(s) carrying CLONE_THREAD)
+git-cliff: gate threads rc=0 (1 thread id(s) wrote inside the state root; 8 clone(s) carrying CLONE_THREAD)
+js-beautify: gate threads rc=0 (0 thread id(s) wrote inside the state root; 7 clone(s) carrying CLONE_THREAD)
+ormolu: gate threads rc=0 (0 thread id(s) wrote inside the state root; 2 clone(s) carrying CLONE_THREAD)
+todo.txt: gate threads rc=0 (1 thread id(s) wrote inside the state root; 0 clone(s) carrying CLONE_THREAD)
+ktlint (second define): gate threads rc=0 (0 thread id(s) wrote inside the state root; 47 clone(s) carrying CLONE_THREAD)

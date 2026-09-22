@@ -96,3 +96,37 @@ targets the engine judges, and it would have turned away this campaign's own sla
   and the engine then refused. `spike/dogfood/README.md` already names that as the
   condition for deleting the ordering rule itself, and the two should go together — it
   would mean the gate is not measuring what it claims.
+
+**Amended 2026-09-22 (the shipped-v160 run, `spike/dogfood/2026-09-22-shipped-v160/`; owner's
+ruling).** Visibility and interior are now answered by **the installed engine's own
+`sideeye preflight --twice --oracle <strace>`**, and static linkage by `file -L` on the
+operation's image; threads stays the gate above, unchanged. Four things move with it.
+
+- *Why the alternative rejected above is taken now.* "It costs a written define per
+  candidate" still holds; the run bounds it at twenty candidates, and the logger this gate
+  used is the 2026-08-22 one, which does not see what the v1.6.0 shim interposes — a
+  `mkstemp`-based atomic replace reads red there (`spike/cohort4/mkstemp-class.txt`) and is
+  judged by the engine since contract v13. That is the proxy this ADR's own rule 3 forbids, and a
+  preflight is the engine counting what it decides on.
+- *preflight's exit is mapped, not passed through* — its 2 is "refused", this gate's 2 is
+  "could not measure". The mapping reads the `next` sentence, a fixed string: a refusal
+  naming `--observe syscalls` is cleared and followed once in explore (the product's own
+  loop); a class wall or an unaccounted boundary is red; "Change the define" is a define
+  revision, counted and re-run, never red; the environment and the shim pair are 2. Not
+  every row has been seen: the run's `SELECTION.md` lists which were, on what — most on toys,
+  the define-revision row on a candidate, the static red on busybox rather than lefthook —
+  and the four that were not.
+- *Threads is asked from the define's seed.* `gate.sh` reads its reset only in `all`, so a
+  caller asking `threads` alone must seed first; the run's first gate did not, measured the
+  operation over preflight's already-formatted output, and read "0 writers" on five of seven
+  candidates — a green that measured nothing, found in review and re-run. And threads is now
+  **stricter than the engine**: it counts writer thread ids without reading their order, so a
+  target whose writers are ordered by joins — which preflight accepts and explore judges —
+  reads red there (the run's `joinedthreads` toy). Asked only of what preflight accepted, its
+  red can only be that disagreement, which is the proxy rule 3 forbids. No candidate met it;
+  the next run that uses this gate either drops the question or says what it still catches.
+- *The sunset is read by phase.* Preflight runs the recording phases explore does, and prints
+  as `not checked` what it cannot run (kill landing, world-side boundaries, baseline, checker
+  falsification). The sunset above fires on a refusal in a phase the gate ran — the same
+  engine answering twice differently — and not on one the gate says it did not check. The
+  shipped-v160 run met neither: its one explore refusal was the gate's own answer repeated.

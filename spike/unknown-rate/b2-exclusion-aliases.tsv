@@ -72,3 +72,11 @@ vim	vim;vim-nox;vim-tiny;vim-gtk3	outcome-funnel.tsv
 vips	libvips-tools	outcome-funnel.tsv
 virtualenv	virtualenv;python3-virtualenv	outcome-funnel.tsv
 xz	xz-utils	outcome-funnel.tsv
+commitizen	commitizen	outcome-funnel.tsv (not in trixie; sid and forky carry it)
+ast-grep	-	outcome-funnel.tsv (pip ast-grep-cli, a Rust binary)
+ast-grep 0.45.3	-	upstream-reports.tsv
+todo.txt-cli	todotxt-cli	outcome-funnel.tsv
+js-beautify	node-js-beautify;jsbeautifier	outcome-funnel.tsv
+stylelint	-	outcome-funnel.tsv (npm only)
+git-cliff	-	outcome-funnel.tsv (pip git-cliff, a Rust binary)
+ktlint	-	outcome-funnel.tsv (a GitHub release; a jar behind a shell prelude)

@@ -1,0 +1,6 @@
+[world]
+state = "/s/ormolu/proj"
+
+[define]
+operation = "ormolu --mode inplace A.hs"
+cwd       = "/s/ormolu/proj"

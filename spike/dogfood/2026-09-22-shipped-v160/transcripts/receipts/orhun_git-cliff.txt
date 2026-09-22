@@ -1,0 +1,9 @@
+# orhun/git-cliff — rule 11 (recent bug reports and who answered) and rule 14 (novelty pre-scan), 2026-09-22T03:50:18Z
+## recent issues labelled bug (or all, if no bug label)
+#1640 CLOSED 2026-09-13 comments=0 Running tests attempts to sign tags
+#1620 CLOSED 2026-08-29 comments=4 The `--config-url` option is unavailable; it always throws an error.
+#1612 CLOSED 2026-08-21 comments=2 Commit parser field regexes should have conjunctive relationship
+#1598 CLOSED 2026-07-31 comments=0 local commit gets skipped by commit parsers if looking for label field
+#1596 CLOSED 2026-07-30 comments=1 Remote requests fail instantly with "operation timed out" when the con
+#1591 CLOSED 2026-07-24 comments=0 include_path silently swallows a trailing positional RANGE
+## novelty: atomic / truncate / corrupt / crash / empty file / data loss

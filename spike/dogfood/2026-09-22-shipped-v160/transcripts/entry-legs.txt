@@ -1,0 +1,21 @@
+ROW write2 static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations; threads=0
+  exit=0
+ROW one static=0 preflight_rc=0 gate=1 detail=interior: 1 operation(s); threads=-
+  exit=1
+ROW stamp static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes; threads=-
+  exit=1
+ROW rawwrite static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation); threads=0
+  exit=0
+ROW childwrite static=0 preflight_rc=2 gate=1 detail=wall: sequence_numbering_broken; threads=-
+  exit=1
+ROW twothreads static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected; threads=-
+  exit=1
+ROW badcwd static=0 preflight_rc=3 gate=DEFINE detail=define: the declared cwd could not be resolved: /s/leg-badcwd-not-made; threads=-
+  exit=3
+ROW static static=1 preflight_rc=- gate=1 detail=statically linked: /bin/busybox
+  exit=1
+== the oracle binary missing (write2 again, its own output directory)
+ROW write2 static=0 preflight_rc=3 gate=2 detail=setup: --oracle is not an executable file; the completeness check cannot run; threads=-
+  exit=2
+ROW joinedthreads static=0 preflight_rc=0 gate=1 detail=accepted, 4 operations; threads: more than one writer; threads=1
+  exit=1

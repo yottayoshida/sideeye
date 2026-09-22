@@ -1,0 +1,518 @@
+== novelty pre-scan: ast-grep/ast-grep
+== date: 2026-09-22T03:56:39Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          50 hit(s) (all listed)
+      #2924 open 2026-09-05 fix(deps): update rust-wasm-bindgen monorepo
+      #2862 closed 2026-08-02 chore(deps): update rust crate pyo3 to v0.29.2 - autoclosed
+      #2806 closed 2026-07-14 fix(core): cap display_context walk distance to avoid output blowup on minified files
+      #2641 merged 2026-05-13 chore(deps): update rust crate napi-build to v2.3.2
+      #2553 closed 2026-03-19 [bug] SIGSEGV when GC collects native AST objects during concurrent async operations (napi, macOS ARM64)
+      #2577 closed 2026-04-02 fix(napi): prevent SIGSEGV when GC collects SgRoot during concurrent async ops
+      #2639 merged 2026-05-12 fix(lsp): initialize tracing subscriber to surface tower-lsp errors
+      #2362 merged 2025-11-30 chore(deps): update rust crate pyo3 to v0.27.2
+      #2328 merged 2025-11-07 fix(napi): avoid crash when pattern invalid
+      #2561 merged 2026-03-28 fix(deps): update rust-wasm-bindgen monorepo
+      #2685 merged 2026-06-06 Outline command
+      #1970 closed 2025-05-04 poc: use oxc as alternative parser
+      #2213 merged 2025-09-03 feat(cli): impl. comp-time flag for `Commands::Docs`
+      #2420 closed 2026-01-03 paths_from_stdin
+      #2018 merged 2025-05-28 chore(deps): update rust crate tree-sitter to v0.25.8
+      #2177 merged 2025-08-12 chore(deps): update dependency oxlint to v1.12.0
+      #1925 closed 2025-04-13 [bug] Large files prove problematic
+      #1803 merged 2025-02-13 chore(deps): update dependency prettier to v3.5.1
+      #1863 closed 2025-03-11 fix(deps): update rust crate pyo3 to 0.24.0 - autoclosed
+      #1807 merged 2025-02-16 chore(deps): update rust crate tempfile to v3.17.1
+  corrupt        8 hit(s) (all listed)
+      #2639 merged 2026-05-12 fix(lsp): initialize tracing subscriber to surface tower-lsp errors
+      #2676 merged 2026-06-02 fix: don't leak metavar bindings from a negated `not` rule
+      #2496 closed 2026-02-24 fix(deps): update rust-wasm-bindgen monorepo - autoclosed
+      #2561 merged 2026-03-28 fix(deps): update rust-wasm-bindgen monorepo
+      #2279 merged 2025-10-09 chore(deps): update rust crate regex to v1.12.1
+      #1873 closed 2025-03-13 feat: ast-grep WASM
+      #1885 merged 2025-03-19 chore(deps): update rust crate tempfile to v3.19.1
+      #1879 closed 2025-03-16 Feat wasm
+  corruption     5 hit(s) (all listed)
+      #2862 closed 2026-08-02 chore(deps): update rust crate pyo3 to v0.29.2 - autoclosed
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+      #2420 closed 2026-01-03 paths_from_stdin
+      #1879 closed 2025-03-16 Feat wasm
+      #912 merged 2024-02-03 fix(deps): update rust crate napi to 2.15.1
+  truncated      4 hit(s) (all listed)
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2887 merged 2026-08-10 fix: exit quietly on broken pipe instead of erroring
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+  truncate       13 hit(s) (all listed)
+      #2895 closed 2026-08-18 feat(scan): add --severity threshold to filter findings by minimum level
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2887 merged 2026-08-10 fix: exit quietly on broken pipe instead of erroring
+      #2647 closed 2026-05-18 feat(scan.rs): support show diagnostic reports in favor of just errors
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2444 merged 2026-01-14 feat(cli): add --max-diagnostics-shown flag to scan subcommand
+      #2574 merged 2026-04-01 fix(deps): update rust crate similar to v3
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+      #2084 merged 2025-07-05 fix: fix new clippy errors
+      #1629 merged 2024-11-29 feat(napi): Expose node id via SgNode
+      #1334 merged 2024-07-20 chore(deps): update rust crate bit-set to 0.8.0
+      #964 merged 2024-03-02 chore(deps): update rust crate tempfile to 3.10.1
+      #670 merged 2023-10-14 fix(deps): update rust crate pyo3 to 0.20.0
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2954 open 2026-09-19 feat(outline): add Java enum member rule
+      #2953 open 2026-09-19 outline: Java module declarations are missing from java.yml
+      #2943 open 2026-09-17 fix(scan): bind utilDirs utils for inline rules
+      #2952 open 2026-09-19 outline: Java annotation types and elements are missing from java.yml
+      #2930 open 2026-09-08 fix(scan): resolve utilDirs for --inline-rules
+      #2942 open 2026-09-17 feat(language): add Zig support
+      #2957 open 2026-09-19 outline: a nested declaration produces no element and its members are attributed to the enclosing one
+      #2958 open 2026-09-19 feat(outline): recurse nested declaration members
+      #2863 closed 2026-08-03 [bug] C# pattern '$A + $B' silently drops second metavariable; rewrite expands unbound $B to empty string
+      #2757 merged 2026-06-21 fix: skip empty files in outline
+      #2650 open 2026-05-19 feat(cli): add `ast-grep playground` subcommand
+      #2910 closed 2026-08-27 outline: decorated class/property declaration reports the leading decorator's line, not the declaration's own line
+      #2913 merged 2026-08-29 fix(outline): anchor fallback signatures to names
+      #2901 merged 2026-08-21 chore(deps): update dependency dprint to v0.56.1
+      #2869 closed 2026-08-04 chore(deps): update rust crate similar to v3.1.2 - autoclosed
+      #2861 merged 2026-08-02 feat(outline): add C# multiline member signatures
+      #2846 closed 2026-07-25 [feature] Outline keep multi-line method args in C#/.NET 
+      #2877 closed 2026-08-08 chore(deps): update rust crate tree-sitter-scala to v0.26.2 - autoclosed
+      #2691 merged 2026-06-07 feat: add outline rule definition
+      #2749 merged 2026-06-20 refactor: fold outline extract options into extractors
+  atomic         54 hit(s) (all listed)
+      #2940 closed 2026-09-16 [feature] Option to match generic interfaces/classes without explicit type parameter wildcards
+      #2924 open 2026-09-05 fix(deps): update rust-wasm-bindgen monorepo
+      #2807 closed 2026-07-16 Cargo audit failing on `RUSTSEC-2026-0204`
+      #2816 closed 2026-07-18 chore(deps): update rust crate futures to v0.3.33 - autoclosed
+      #2862 closed 2026-08-02 chore(deps): update rust crate pyo3 to v0.29.2 - autoclosed
+      #2661 closed 2026-05-23 Add TOML support
+      #2647 closed 2026-05-18 feat(scan.rs): support show diagnostic reports in favor of just errors
+      #2720 closed 2026-06-14 [feature] Add --severity=<LEVEL> filter to `sg scan` to suppress lower-severity findings
+      #2640 closed 2026-05-12 fix(lsp): buffer diagnostics during initialization race (#2638)
+      #2679 closed 2026-06-02 fix/dart-expression-patterns
+      #2660 merged 2026-05-22 fix(deps): update rust-wasm-bindgen monorepo - autoclosed
+      #2464 closed 2026-02-06 confusing doc about "constraints"
+      #2705 closed 2026-06-13 fix(deps): update rust crate pyo3 to 0.29.0
+      #2444 merged 2026-01-14 feat(cli): add --max-diagnostics-shown flag to scan subcommand
+      #2504 closed 2026-02-26 [bug] Matching "" includes in C/C++ works, but matching on <> style includes doesn't
+      #2561 merged 2026-03-28 fix(deps): update rust-wasm-bindgen monorepo
+      #2494 merged 2026-02-22 chore(deps): update dependency @ast-grep/napi to v0.41.0
+      #2441 closed 2026-01-12 [bug] Incorrect/confusing scope for function_declarator selector in C++ when there are modifiers like `override` or `noexcept`
+      #1873 closed 2025-03-13 feat: ast-grep WASM
+      #646 closed 2023-09-27 [question] how to match function call with package selector in Go.
+  atomically     4 hit(s) (all listed)
+      #2705 closed 2026-06-13 fix(deps): update rust crate pyo3 to 0.29.0
+      #2640 closed 2026-05-12 fix(lsp): buffer diagnostics during initialization race (#2638)
+      #2444 merged 2026-01-14 feat(cli): add --max-diagnostics-shown flag to scan subcommand
+      #2209 merged 2025-08-31 Allowing LSP clients without publish diagnostics data support to support code fixes
+  interrupted    1 hit(s) (all listed)
+      #2887 merged 2026-08-10 fix: exit quietly on broken pipe instead of erroring
+  interrupt      3 hit(s) (all listed)
+      #2823 closed 2026-07-19 [feature] Strictness option for `nthChild`
+      #2887 merged 2026-08-10 fix: exit quietly on broken pipe instead of erroring
+      #2815 closed 2026-07-17 [bug] Line continuation in Python prevents a match in some cases
+  sigkill        0 hit(s)
+  sigint         2 hit(s) (all listed)
+      #2595 merged 2026-04-16 fix: replace postinstall script with binary resolution in ast-grep
+      #2188 closed 2025-08-21 [feature] Sigint/Ctrl+c should exit interactive mode.
+  ctrl-c         2 hit(s) (all listed)
+      #2189 merged 2025-08-21 Add Ctrl+C support to exit interactive mode
+      #2188 closed 2025-08-21 [feature] Sigint/Ctrl+c should exit interactive mode.
+  power          11 hit(s) (all listed)
+      #334 open 2023-04-17 [pipedream] Add control flow / data dependency operators to ast-grep
+      #144 open 2022-12-21 [perf] benchmark and profiling ast-grep core matching logic
+      #1790 open 2025-02-05 [feature] move ast-grep/napi to ESM
+      #2772 closed 2026-06-26 Data Models for Multi-Variable Behavioral Analysis
+      #2713 merged 2026-06-14 Refactor rule config
+      #80 closed 2022-10-27 Using ast-grep as a library
+      #2028 merged 2025-06-01 feat: multiple fixer support 
+      #671 closed 2023-10-14 [feature] support GUI rule by JSON schema
+      #769 closed 2023-12-10 Setup CodeRabbit (uses ast-grep and AI to review PRs)
+      #339 merged 2023-04-22 fix(deps): update rust crate regex to 1.8.1
+      #68 closed 2022-10-08 Update Rust crate clap to v4
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           11 hit(s) (all listed)
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2843 merged 2026-07-23 Deprecate the sg command on all platforms
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2493 closed 2026-02-22 chore(deps): update dependency web-tree-sitter to ^0.25.0 || ^0.26.0 - autoclosed
+      #2492 merged 2026-02-22 chore(deps): update dependency web-tree-sitter to ^0.25.0 || ^0.26.0
+      #1712 closed 2024-12-30 [feature]`sg scan -U` should not return exit code 0 in case errors were fixed
+      #1776 closed 2025-01-28 PoC: Read files with specified encoding
+      #396 closed 2023-05-19 [feature] support `--inline-rules` option for sg scan
+      #761 merged 2023-12-09 chore(deps): update dependency ava to v6
+      #789 merged 2023-12-16 feat: add inline-rules command line options
+      #552 merged 2023-07-28 feat(test): add test case filter for sg test
+  partial        47 hit(s) (all listed)
+      #2670 merged 2026-05-29 fix: don't leak metavar bindings from ellipsis-end lookahead
+      #2676 merged 2026-06-02 fix: don't leak metavar bindings from a negated `not` rule
+      #2750 merged 2026-06-21 perf: cache transform replace regexes
+      #1716 closed 2024-12-31 [feature] Add support for vue files
+      #2745 merged 2026-06-19 feat: add outline extractor options
+      #2438 merged 2026-01-10 chore(deps): update dependency @types/node to v24.10.12
+      #2685 merged 2026-06-06 Outline command
+      #1873 closed 2025-03-13 feat: ast-grep WASM
+      #1970 closed 2025-05-04 poc: use oxc as alternative parser
+      #2273 merged 2025-10-06 chore(deps): update dependency oxlint to v1.20.0
+      #2567 closed 2026-03-29 Feat/add dart support
+      #1791 closed 2025-02-05 [feature] allow ERROR node in pattern to match everything
+      #2209 merged 2025-08-31 Allowing LSP clients without publish diagnostics data support to support code fixes
+      #2112 merged 2025-07-20 feat: add skeleton for selector
+      #2125 merged 2025-07-27 Bump schemars
+      #1833 closed 2025-03-02 feat: separate print/process threads
+      #1870 merged 2025-03-13 chore: Remove tree-sitter facade
+      #1834 merged 2025-03-02 feat: separate print/process threads
+      #1522 merged 2024-10-10 fix(deps): update dependency @babel/core to v7.25.8
+      #1879 closed 2025-03-16 Feat wasm
+  incomplete     40 hit(s) (all listed)
+      #2958 open 2026-09-19 feat(outline): recurse nested declaration members
+      #1795 open 2025-02-08 [feature] make color-printing's range pattern's match_end
+      #2957 open 2026-09-19 outline: a nested declaration produces no element and its members are attributed to the enclosing one
+      #2516 open 2026-03-05 Add Erlang support
+      #2945 merged 2026-09-18 feat(outline): add Java record_declaration rule
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2668 closed 2026-05-27 feat: add musl (Alpine Linux) native binary support to
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2713 merged 2026-06-14 Refactor rule config
+      #2540 merged 2026-03-15 chore(deps): update dependency web-tree-sitter to v0.26.7
+      #2541 merged 2026-03-15 chore(deps): update rust crate tree-sitter to v0.26.7 - autoclosed
+      #2561 merged 2026-03-28 fix(deps): update rust-wasm-bindgen monorepo
+      #1970 closed 2025-05-04 poc: use oxc as alternative parser
+      #2460 closed 2026-02-03 fix(deps): update rust crate pyo3 to 0.28.0 - autoclosed
+      #2204 closed 2025-08-29 fix(deps): update rust crate pyo3 to 0.26.0 - autoclosed
+      #2520 merged 2026-03-08 Feat util
+      #1873 closed 2025-03-13 feat: ast-grep WASM
+      #2112 merged 2025-07-20 feat: add skeleton for selector
+      #2209 merged 2025-08-31 Allowing LSP clients without publish diagnostics data support to support code fixes
+      #1572 closed 2024-11-03 chore(deps): update rust crate thiserror to v1.0.69 - autoclosed
+  dataloss       0 hit(s)
+  recover        10 hit(s) (all listed)
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+      #2112 merged 2025-07-20 feat: add skeleton for selector
+      #1957 merged 2025-04-26 ast-grep Parser Abstraction Part 2 Doc
+      #1847 merged 2025-03-05 feat: move processing to worker thread
+      #1879 closed 2025-03-16 Feat wasm
+      #1940 merged 2025-04-20 feat: ast-grep Parser Abstratction (Part 1, Node)
+      #1111 merged 2024-05-04 fix(deps): update dependency @babel/core to v7.24.5
+      #1218 closed 2024-06-13 [bug] Some Kotlin pattern works differently between CLI and Playground
+      #947 closed 2024-02-23 [bug] Metavariables in C++ seem to depend on length
+      #761 merged 2023-12-09 chore(deps): update dependency ava to v6
+  recovery       14 hit(s) (all listed)
+      #2825 open 2026-07-20 perf(outline): add per-rule stopBy traversal bounds
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2880 merged 2026-08-08 chore(deps): update dependency web-tree-sitter to v0.26.12
+      #2881 closed 2026-08-08 chore(deps): update rust crate tree-sitter to v0.26.12 - autoclosed
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2449 closed 2026-01-20 [bug] C++ with macros cause poor parsing / error recovery
+      #2477 closed 2026-02-15 feat: add SystemVerilog language support
+      #1871 closed 2025-03-13 chore(deps): update rust crate tree-sitter to 0.25.0 - autoclosed
+      #1583 closed 2024-11-07 [bug] Multi Meta Variable do not work as expected
+      #1670 merged 2024-12-15 feat: add typing test
+      #1783 closed 2025-02-02 fix(deps): update rust crate tree-sitter-native to 0.25.0
+      #1218 closed 2024-06-13 [bug] Some Kotlin pattern works differently between CLI and Playground
+      #947 closed 2024-02-23 [bug] Metavariables in C++ seem to depend on length
+      #931 merged 2024-02-11 fix(deps): update rust crate tree-sitter-ruby to 0.20.1
+  rollback       28 hit(s) (all listed)
+      #2550 closed 2026-03-16 Core engine optimisation
+      #959 merged 2024-02-25 Revert "fix(deps): update rust crate pyo3 to 0.20.3"
+      #474 closed 2023-06-25 chore(deps): roll back dependency @ast-grep/cli-darwin-arm64 to 0.6.7
+      #475 closed 2023-06-25 chore(deps): roll back dependency @ast-grep/cli-darwin-x64 to 0.6.7
+      #453 closed 2023-06-11 chore(deps): roll back dependency @ast-grep/cli-darwin-x64 to 0.6.4
+      #452 closed 2023-06-11 chore(deps): roll back dependency @ast-grep/cli-darwin-arm64 to 0.6.4
+      #371 closed 2023-05-14 chore(deps): roll back dependency @ast-grep/cli-darwin-x64 to 0.5.1
+      #370 closed 2023-05-14 chore(deps): roll back dependency @ast-grep/cli-darwin-arm64 to 0.5.1
+      #340 closed 2023-04-23 chore(deps): roll back dependency @ast-grep/cli-darwin-arm64 to 0.3.3 - autoclosed
+      #341 closed 2023-04-23 chore(deps): roll back dependency @ast-grep/cli-darwin-x64 to 0.3.3 - autoclosed
+      #289 closed 2023-03-11 chore(deps): roll back dependency @ast-grep/cli-darwin-arm64 to 0.3.1 - autoclosed
+      #290 closed 2023-03-11 chore(deps): roll back dependency @ast-grep/cli-darwin-x64 to 0.3.1 - autoclosed
+      #231 closed 2023-02-04 chore(deps): roll back dependency @ast-grep/cli-linux-x64-gnu to 0.2.4 - autoclosed
+      #232 closed 2023-02-04 chore(deps): roll back dependency @ast-grep/cli-win32-x64-msvc to 0.2.4 - autoclosed
+      #225 closed 2023-01-29 chore(deps): roll back dependency @ast-grep/cli-darwin-arm64 to 0.2.3 - autoclosed
+      #226 closed 2023-01-29 chore(deps): roll back dependency @ast-grep/cli-darwin-x64 to 0.2.3 - autoclosed
+      #177 closed 2023-01-14 chore(deps): roll back dependency @ast-grep/cli-linux-x64-gnu to 0.1.15 - autoclosed
+      #178 closed 2023-01-14 chore(deps): roll back dependency @ast-grep/cli-win32-x64-msvc to 0.1.15 - autoclosed
+      #169 closed 2023-01-08 chore(deps): roll back dependency @ast-grep/cli-darwin-x64 to 0.1.15 - autoclosed
+      #168 closed 2023-01-08 chore(deps): roll back dependency @ast-grep/cli-darwin-arm64 to 0.1.15 - autoclosed
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2913 merged 2026-08-29 fix(outline): anchor fallback signatures to names
+      #2842 merged 2026-07-23 Avoid Windows Defender false positive for sg.exe
+      #2751 merged 2026-06-21 perf: use single traversal for outline extraction
+      #2745 merged 2026-06-19 feat: add outline extractor options
+      #2700 merged 2026-06-11 feat: add outline CLI shell
+      #2690 merged 2026-06-07 feat: add outline item model
+      #2703 merged 2026-06-11 feat: add outline entry model
+      #2706 closed 2026-06-13 feat: add outline rule schema
+      #1875 closed 2025-03-13 feat(KindMatcher): Support super types
+      #2685 merged 2026-06-06 Outline command
+      #2072 merged 2025-06-28 chore(deps): update dependency @types/node to v22.15.34
+      #1675 merged 2024-12-15 feat: extract language objects out and deprecate language objects
+      #1970 closed 2025-05-04 poc: use oxc as alternative parser
+      #2482 merged 2026-02-16 feat: make default rule id to filename
+      #2103 merged 2025-07-17 feat(language): add solidity support
+      #1662 merged 2024-12-14 feat: improve type generation
+      #2520 merged 2026-03-08 Feat util
+      #2169 merged 2025-08-11 chore(deps): update actions/checkout action to v5
+      #2168 closed 2025-08-10 chore(deps): update dependency node to v22
+      #2143 merged 2025-08-04 chore(deps): update dependency chalk to v5.5.0
+  half-written   2 hit(s) (all listed)
+      #2909 closed 2026-08-26 unused-suppression: a comment merely mentioning 'ast-grep-ignore:' as prose is parsed as a live directive
+      #2520 merged 2026-03-08 Feat util
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          5 hit(s) (all listed)
+      #2032 open 2025-06-03 [feature] Add `constraints` field to fixes.
+      #2924 open 2026-09-05 fix(deps): update rust-wasm-bindgen monorepo
+      #2877 closed 2026-08-08 chore(deps): update rust crate tree-sitter-scala to v0.26.2 - autoclosed
+      #2460 closed 2026-02-03 fix(deps): update rust crate pyo3 to 0.28.0 - autoclosed
+      #1940 merged 2025-04-20 feat: ast-grep Parser Abstratction (Part 1, Node)
+  erasing        1 hit(s) (all listed)
+      #2924 open 2026-09-05 fix(deps): update rust-wasm-bindgen monorepo
+  erased         3 hit(s) (all listed)
+      #2032 open 2025-06-03 [feature] Add `constraints` field to fixes.
+      #2877 closed 2026-08-08 chore(deps): update rust crate tree-sitter-scala to v0.26.2 - autoclosed
+      #2460 closed 2026-02-03 fix(deps): update rust crate pyo3 to 0.28.0 - autoclosed
+  destroy        4 hit(s) (all listed)
+      #2704 merged 2026-06-13 fix(deps): update rust-wasm-bindgen monorepo
+      #2561 merged 2026-03-28 fix(deps): update rust-wasm-bindgen monorepo
+      #333 merged 2023-04-16 fix(deps): update rust crate napi to 2.12.5
+      #300 merged 2023-03-18 fix(deps): update rust crate napi to 2.11.4
+  destroys       0 hit(s)
+  overwrite      38 hit(s) (all listed)
+      #2917 merged 2026-08-31 feat: add min-severity cli
+      #2947 open 2026-09-19 fix(schema): allow null in Relation.field enum
+      #2942 open 2026-09-17 feat(language): add Zig support
+      #2720 closed 2026-06-14 [feature] Add --severity=<LEVEL> filter to `sg scan` to suppress lower-severity findings
+      #2725 closed 2026-06-15 Preserve root multi-metavariable captures
+      #2617 closed 2026-05-04 [feature] Codemod via compose rules
+      #2685 merged 2026-06-06 Outline command
+      #2505 merged 2026-02-26 fix: override severity on `rule` & `inline-rules` flags
+      #581 merged 2023-08-06 fix(deps): update rust crate crossterm to 0.27.0
+      #2482 merged 2026-02-16 feat: make default rule id to filename
+      #2392 merged 2025-12-14 fix: exit status to 1 when no match
+      #2567 closed 2026-03-29 Feat/add dart support
+      #2391 merged 2025-12-14 fix: correct typos in CHANGELOG.md
+      #2420 closed 2026-01-03 paths_from_stdin
+      #2274 closed 2025-10-07 perf: using ahash instead of std hash
+      #2343 merged 2025-11-11 docs(installation): add mise installation alternative method
+      #2604 merged 2026-04-19 chore(deps): update astral-sh/setup-uv action to v8
+      #2328 merged 2025-11-07 fix(napi): avoid crash when pattern invalid
+      #2100 merged 2025-07-13 Remove whitespace and a comment that is no longer true
+      #2125 merged 2025-07-27 Bump schemars
+  clobber        0 hit(s)
+  blank          20 hit(s) (all listed)
+      #2888 merged 2026-08-10 chore(deps): update dependency oxlint to v1.78.0
+      #2862 closed 2026-08-02 chore(deps): update rust crate pyo3 to v0.29.2 - autoclosed
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2681 closed 2026-06-03 Unfixable rule silently ignored with `--update-all`
+      #2697 closed 2026-06-10 [bug] Multi Meta Variable saved as single Meta Variable?
+      #2726 merged 2026-06-15 chore(deps): update oxlint monorepo to v1.70.0
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2727 merged 2026-06-16 Reject root multi-metavariable patterns
+      #1899 merged 2025-03-26 fix(deps): update rust crate clap to v4.5.34
+      #2209 merged 2025-08-31 Allowing LSP clients without publish diagnostics data support to support code fixes
+      #2057 closed 2025-06-17 chore(deps): update dependency @biomejs/biome to v2 - autoclosed
+      #1702 merged 2024-12-26 fix(deps): update dependency @swc/core to v1.10.4
+      #2154 merged 2025-08-06 Implement LSP rule reloading with decoupled CLI logic
+      #1715 merged 2024-12-31 [doc] add nixpkgs info
+      #1834 merged 2025-03-02 feat: separate print/process threads
+      #1879 closed 2025-03-16 Feat wasm
+      #1587 merged 2024-11-08 refactor: move stdErr into inspect mod
+      #1125 merged 2024-05-05 fix: build from source
+      #718 closed 2023-11-16 [bug] Pattern from Playground not working with ast-grep (call with surrounding arguments)
+      #68 closed 2022-10-08 Update Rust crate clap to v4
+  unreadable     1 hit(s) (all listed)
+      #902 closed 2024-02-01 [feature] simplify transformation using CSS funciton like syntax
+  garbage        10 hit(s) (all listed)
+      #2878 merged 2026-08-08 fix(deps): update rust-wasm-bindgen monorepo
+      #389 closed 2023-05-17 [feature] Add PyO3 integration for ast-grep
+      #2577 closed 2026-04-02 fix(napi): prevent SIGSEGV when GC collects SgRoot during concurrent async ops
+      #2553 closed 2026-03-19 [bug] SIGSEGV when GC collects native AST objects during concurrent async operations (napi, macOS ARM64)
+      #1850 closed 2025-03-06 [bug] --color=never is not respected
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+      #1380 closed 2024-08-05 [bug] napi.findFiles() issue: SgNode for file A apparently references text from file B
+      #1523 closed 2024-10-11 [bug] Empty matches with Dart language
+      #1124 closed 2024-05-05 fix(deps): update rust crate tree-sitter-native to 0.22.0 - autoclosed
+      #1000 closed 2024-03-17 fix(deps): update rust crate tree-sitter-native to 0.22.5
+  mangled        4 hit(s) (all listed)
+      #2924 open 2026-09-05 fix(deps): update rust-wasm-bindgen monorepo
+      #2660 merged 2026-05-22 fix(deps): update rust-wasm-bindgen monorepo - autoclosed
+      #1000 closed 2024-03-17 fix(deps): update rust crate tree-sitter-native to 0.22.5
+      #958 closed 2024-02-24 fix(deps): update rust crate tree-sitter-native to 0.22.1
+  contents       32 hit(s) (all listed)
+      #2957 open 2026-09-19 outline: a nested declaration produces no element and its members are attributed to the enclosing one
+      #2628 closed 2026-05-10 [feature] Output AST command in CLI
+      #2595 merged 2026-04-16 fix: replace postinstall script with binary resolution in ast-grep
+      #2421 closed 2026-01-03 [feature] pass source code filenames via stdin and immediately push results to stdout
+      #2504 closed 2026-02-26 [bug] Matching "" includes in C/C++ works, but matching on <> style includes doesn't
+      #2574 merged 2026-04-01 fix(deps): update rust crate similar to v3
+      #2465 merged 2026-02-07 chore(deps): update pyo3/maturin-action action to v1.50.0
+      #2685 merged 2026-06-06 Outline command
+      #2441 closed 2026-01-12 [bug] Incorrect/confusing scope for function_declarator selector in C++ when there are modifiers like `override` or `noexcept`
+      #2604 merged 2026-04-19 chore(deps): update astral-sh/setup-uv action to v8
+      #2482 merged 2026-02-16 feat: make default rule id to filename
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+      #2041 merged 2025-06-07 feat: add simple cli multi fix
+      #1625 closed 2024-11-28 [bug] Unable to make ast-grep scan work with ignored rules in VCS
+      #2274 closed 2025-10-07 perf: using ahash instead of std hash
+      #1704 closed 2024-12-27 [bug] I can't get the name of file recognized by ast-grep cli
+      #1551 merged 2024-10-22 chore(deps): update rust crate anyhow to v1.0.91
+      #1548 merged 2024-10-22 chore(deps): update rust crate thiserror to v1.0.66
+      #1061 closed 2024-04-18 [feature] Add a way to override rule severities from the CLI
+      #1579 merged 2024-11-06 chore(deps): update rust crate thiserror to v2
+  in-place       91 hit(s) (all listed)
+      #2950 open 2026-09-19 fix(outline): report Java private/protected fields in the outline
+      #2949 open 2026-09-19 outline: Java private/protected fields are missing from java.yml
+      #2800 open 2026-07-11 [feature] Rule performance / most expensive tests
+      #722 open 2023-11-20 [feature] LSP: inform user when rule is invalid
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2958 open 2026-09-19 feat(outline): recurse nested declaration members
+      #2516 open 2026-03-05 Add Erlang support
+      #56 open 2022-09-23 command `sg` is in the process of deprecation
+      #1141 open 2024-05-12 [feature] debugger REPL?
+      #2856 closed 2026-07-28 Named nodes discarded by `pattern`
+      #2945 merged 2026-09-18 feat(outline): add Java record_declaration rule
+      #2887 merged 2026-08-10 fix: exit quietly on broken pipe instead of erroring
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2843 merged 2026-07-23 Deprecate the sg command on all platforms
+      #2629 closed 2026-05-10 [feature] Support rules defining sort order
+      #2743 merged 2026-06-19 fix: cover async rust outline rules
+      #2763 merged 2026-06-22 Move outline docs and benchmarks out of repo
+      #2655 closed 2026-05-19 [bug] Windows: npm global install produces broken shims that invoke native .exe through Node.js
+      #2677 merged 2026-06-02 fix: don't leak metavar bindings across siblings in nthChild ofRule
+      #2705 closed 2026-06-13 fix(deps): update rust crate pyo3 to 0.29.0
+  unclean        0 hit(s)
+  shutdown       7 hit(s) (all listed)
+      #2596 merged 2026-04-16 chore(deps): update rust crate napi to v3.8.5 - autoclosed
+      #2638 closed 2026-05-12 Bug: LSP diagnostics lost during initialization — publishDiagnostics suppressed before server enters Initialized state
+      #2637 closed 2026-05-12 Bug: LSP diagnostics silently dropped - missing tracing subscriber hides tower-lsp transport errors
+      #2514 closed 2026-03-03 chore(deps): update rust crate tokio to v1.50.0 - autoclosed
+      #2366 merged 2025-12-02 chore(deps): update rust crate napi to v3.6.1
+      #2080 merged 2025-07-02 fix(deps): update rust crate tokio to v1.46.1
+      #1855 merged 2025-03-07 fix(deps): update rust crate tokio to v1.44.0
+  reboot         0 hit(s)
+  disk+full      8 hit(s) (all listed)
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2843 merged 2026-07-23 Deprecate the sg command on all platforms
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2493 closed 2026-02-22 chore(deps): update dependency web-tree-sitter to ^0.25.0 || ^0.26.0 - autoclosed
+      #2492 merged 2026-02-22 chore(deps): update dependency web-tree-sitter to ^0.25.0 || ^0.26.0
+      #1776 closed 2025-01-28 PoC: Read files with specified encoding
+      #761 merged 2023-12-09 chore(deps): update dependency ava to v6
+      #789 merged 2023-12-16 feat: add inline-rules command line options
+  data+loss      4 hit(s) (all listed)
+      #2486 merged 2026-02-18 refactor: addr_of_mut to OnceLock
+      #1873 closed 2025-03-13 feat: ast-grep WASM
+      #1834 merged 2025-03-02 feat: separate print/process threads
+      #1958 merged 2025-04-28 Parser Abstraction Part 3 Language
+  partial+write  10 hit(s) (all listed)
+      #2676 merged 2026-06-02 fix: don't leak metavar bindings from a negated `not` rule
+      #2750 merged 2026-06-21 perf: cache transform replace regexes
+      #2745 merged 2026-06-19 feat: add outline extractor options
+      #2685 merged 2026-06-06 Outline command
+      #1873 closed 2025-03-13 feat: ast-grep WASM
+      #2567 closed 2026-03-29 Feat/add dart support
+      #1834 merged 2025-03-02 feat: separate print/process threads
+      #1833 closed 2025-03-02 feat: separate print/process threads
+      #1847 merged 2025-03-05 feat: move processing to worker thread
+      #1626 merged 2024-11-29 feat: Add support for range matcher
+  crash+safe     15 hit(s) (all listed)
+      #2553 closed 2026-03-19 [bug] SIGSEGV when GC collects native AST objects during concurrent async operations (napi, macOS ARM64)
+      #2577 closed 2026-04-02 fix(napi): prevent SIGSEGV when GC collects SgRoot during concurrent async ops
+      #2685 merged 2026-06-06 Outline command
+      #2639 merged 2026-05-12 fix(lsp): initialize tracing subscriber to surface tower-lsp errors
+      #2561 merged 2026-03-28 fix(deps): update rust-wasm-bindgen monorepo
+      #1970 closed 2025-05-04 poc: use oxc as alternative parser
+      #2328 merged 2025-11-07 fix(napi): avoid crash when pattern invalid
+      #2154 merged 2025-08-06 Implement LSP rule reloading with decoupled CLI logic
+      #1957 merged 2025-04-26 ast-grep Parser Abstraction Part 2 Doc
+      #1870 merged 2025-03-13 chore: Remove tree-sitter facade
+      #1879 closed 2025-03-16 Feat wasm
+      #1661 merged 2024-12-14 [RFC] feat(napi): Typed SgNode and SgRoot
+      #1940 merged 2025-04-20 feat: ast-grep Parser Abstratction (Part 1, Node)
+      #1497 merged 2024-09-29 refactor: better file organization for CLI crates
+      #670 merged 2023-10-14 fix(deps): update rust crate pyo3 to 0.20.0
+  atomic+write   12 hit(s) (all listed)
+      #2647 closed 2026-05-18 feat(scan.rs): support show diagnostic reports in favor of just errors
+      #2640 closed 2026-05-12 fix(lsp): buffer diagnostics during initialization race (#2638)
+      #2705 closed 2026-06-13 fix(deps): update rust crate pyo3 to 0.29.0
+      #2444 merged 2026-01-14 feat(cli): add --max-diagnostics-shown flag to scan subcommand
+      #646 closed 2023-09-27 [question] how to match function call with package selector in Go.
+      #1873 closed 2025-03-13 feat: ast-grep WASM
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+      #1847 merged 2025-03-05 feat: move processing to worker thread
+      #1770 merged 2025-01-25 feat: add tracing of resolved configuration file path
+      #1626 merged 2024-11-29 feat: Add support for range matcher
+      #1587 merged 2024-11-08 refactor: move stdErr into inspect mod
+      #434 closed 2023-05-31 Match function with and without modifiers
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2943 open 2026-09-17 fix(scan): bind utilDirs utils for inline rules
+      #2942 open 2026-09-17 feat(language): add Zig support
+      #2650 open 2026-05-19 feat(cli): add `ast-grep playground` subcommand
+      #2358 open 2025-11-25 Support Rule Paths from GitHub URLs
+      #2914 open 2026-08-30 chore(deps): update dependency web-tree-sitter to ^0.27.0
+      #2516 open 2026-03-05 Add Erlang support
+      #2883 merged 2026-08-09 feat(outline): extract embedded language symbols
+      #2945 merged 2026-09-18 feat(outline): add Java record_declaration rule
+      #2891 closed 2026-08-13 feat: highlight only the consumed pattern range
+      #2832 closed 2026-07-20 chore(deps): update rust crate clap to v4.6.4 - autoclosed
+      #2831 merged 2026-07-20 Revert "chore(deps): update dependency typescript to v7"
+      #2915 closed 2026-08-30 chore(deps): update rust crate tree-sitter to 0.27.0 - autoclosed
+      #2750 merged 2026-06-21 perf: cache transform replace regexes
+      #2845 closed 2026-07-24 perf(outline): add per-rule stopBy traversal bounds
+      #2707 closed 2026-06-13 fix(deps): update rust crate pythonize to 0.29.0
+      #2705 closed 2026-06-13 fix(deps): update rust crate pyo3 to 0.29.0
+      #2877 closed 2026-08-08 chore(deps): update rust crate tree-sitter-scala to v0.26.2 - autoclosed
+      #2748 merged 2026-06-20 refactor: split outline extract options and style
+      #2640 closed 2026-05-12 fix(lsp): buffer diagnostics during initialization race (#2638)
+      #2638 closed 2026-05-12 Bug: LSP diagnostics lost during initialization — publishDiagnostics suppressed before server enters Initialized state
+  write+failure  91 hit(s) (all listed)
+      #2650 open 2026-05-19 feat(cli): add `ast-grep playground` subcommand
+      #2887 merged 2026-08-10 fix: exit quietly on broken pipe instead of erroring
+      #2942 open 2026-09-17 feat(language): add Zig support
+      #2958 open 2026-09-19 feat(outline): recurse nested declaration members
+      #2843 merged 2026-07-23 Deprecate the sg command on all platforms
+      #2917 merged 2026-08-31 feat: add min-severity cli
+      #2806 closed 2026-07-14 fix(core): cap display_context walk distance to avoid output blowup on minified files
+      #2647 closed 2026-05-18 feat(scan.rs): support show diagnostic reports in favor of just errors
+      #2913 merged 2026-08-29 fix(outline): anchor fallback signatures to names
+      #2757 merged 2026-06-21 fix: skip empty files in outline
+      #2750 merged 2026-06-21 perf: cache transform replace regexes
+      #2687 merged 2026-06-07 fix: remove all impl, start from scratch
+      #2771 merged 2026-06-26 feat: Support `*.bazel` files in python
+      #2638 closed 2026-05-12 Bug: LSP diagnostics lost during initialization — publishDiagnostics suppressed before server enters Initialized state
+      #2715 merged 2026-06-14 refactor: move optional fixer to RuleConfig
+      #2732 closed 2026-06-19 Add outline CLI execution
+      #2721 merged 2026-06-14 refactor: wrap rewriter config errors
+      #2700 merged 2026-06-11 feat: add outline CLI shell
+      #2758 merged 2026-06-21 fix: extract Python from-import modules in outline
+      #2714 merged 2026-06-14 fix: add fixer var check
+  file+contents  22 hit(s) (all listed)
+      #2957 open 2026-09-19 outline: a nested declaration produces no element and its members are attributed to the enclosing one
+      #2628 closed 2026-05-10 [feature] Output AST command in CLI
+      #2421 closed 2026-01-03 [feature] pass source code filenames via stdin and immediately push results to stdout
+      #2685 merged 2026-06-06 Outline command
+      #2574 merged 2026-04-01 fix(deps): update rust crate similar to v3
+      #2604 merged 2026-04-19 chore(deps): update astral-sh/setup-uv action to v8
+      #2441 closed 2026-01-12 [bug] Incorrect/confusing scope for function_declarator selector in C++ when there are modifiers like `override` or `noexcept`
+      #2482 merged 2026-02-16 feat: make default rule id to filename
+      #2484 merged 2026-02-16 feat: support ast-grep-wasm
+      #2274 closed 2025-10-07 perf: using ahash instead of std hash
+      #2041 merged 2025-06-07 feat: add simple cli multi fix
+      #1625 closed 2024-11-28 [bug] Unable to make ast-grep scan work with ignored rules in VCS
+      #1704 closed 2024-12-27 [bug] I can't get the name of file recognized by ast-grep cli
+      #1917 merged 2025-04-08 feat: YAML schema validation for node and field types
+      #1749 closed 2025-01-18 chore: improve types by inferring type map from passed lang
+      #1061 closed 2024-04-18 [feature] Add a way to override rule severities from the CLI
+      #1497 merged 2024-09-29 refactor: better file organization for CLI crates
+      #1323 merged 2024-07-14 feat: support multiple language in scan
+      #860 merged 2024-01-15 refactor: move fixer to RuleCore
+      #843 merged 2024-01-09 feat: add modify_range for tweaking fix range selection
+
+== 51 terms run; 41 returned hits, 3 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

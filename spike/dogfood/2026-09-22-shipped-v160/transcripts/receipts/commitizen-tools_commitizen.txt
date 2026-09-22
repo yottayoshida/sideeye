@@ -1,0 +1,9 @@
+# commitizen-tools/commitizen — rule 11 (recent bug reports and who answered) and rule 14 (novelty pre-scan), 2026-09-22T03:49:47Z
+## recent issues labelled bug (or all, if no bug label)
+## novelty: atomic / truncate / corrupt / crash / empty file / data loss
+[corrupt] #883 open changelog_incremental is set as default when calling changelog from cz bump
+[crash] #525 open Sort commits by scope within changelog categories
+[crash] #956 open Exceptions when using cz from ISO8859-1 Terminal
+[crash] #2001 closed CRASH on cargo provider
+[crash] #1976 open Triage audit (round 3): 8 newer bugs + 22 older feature/refactor items (May 2026
+[crash] #1732 closed cz bump crashes with version_provider=cargo on workspace virtual manifest (missi

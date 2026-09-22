@@ -1,0 +1,5 @@
+[world]
+state = "/s/leg-rawwrite"
+
+[define]
+operation = "python3 /ap/toys/rawwrite.py /s/leg-rawwrite"

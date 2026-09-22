@@ -1,0 +1,23 @@
+todo.txt: pre-state=0 operation=0 post-state=0 todo.txt-emptied=1
+commitizen: pre-state=0 operation=0 post-state=0 pyproject.toml-emptied=1
+ast-grep: pre-state=0 operation=0 post-state=0 a.js-emptied=1
+## ktlint, the first define by hand
+/s/ktlint/proj/a.kt:1:1: File name 'a.kt' should conform PascalCase (cannot be auto-corrected) (standard:filename)
+/s/ktlint/proj/a.kt:1:1: File name 'a.kt' should conform PascalCase (cannot be auto-corrected) (standard:filename)
+
+Summary error count (descending) by rule:
+  standard:filename: 2
+ktlint exit 1
+## the six #! candidates: the first line of each, then the linkage of every interpreter those lines name (and what /usr/bin/env and /opt/ktlint go on to run)
+/usr/local/bin/eslint: #!/usr/bin/env node
+/usr/local/bin/stylelint: #!/usr/bin/env node
+/usr/local/bin/js-beautify: #!/usr/bin/env node
+/opt/py/bin/cz: #!/opt/py/bin/python3
+/opt/todo/todo.sh: #!/usr/bin/env bash
+/opt/ktlint: #!/bin/sh
+/usr/bin/env -> /usr/bin/env: dynamically linked
+/usr/bin/node -> /usr/bin/node: dynamically linked
+/opt/py/bin/python3 -> /usr/bin/python3.13: dynamically linked
+/usr/bin/bash -> /usr/bin/bash: dynamically linked
+/bin/sh -> /usr/bin/dash: dynamically linked
+/usr/bin/java -> /usr/lib/jvm/java-21-openjdk-arm64/bin/java: dynamically linked

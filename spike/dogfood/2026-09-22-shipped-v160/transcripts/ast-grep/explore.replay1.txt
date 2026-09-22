@@ -1,0 +1,28 @@
+Applied 2 changes
+falsify: the declaration of x is gone from a.js
+the declaration of x is gone from a.js
+Applied 2 changes
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/s/sg/proj/a.js)
+            before write(/s/sg/proj/a.js)
+path        a.js
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 2 operations (358 syscall lines examined, 54 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/ast-grep/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/sg/proj
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 11 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 10 join(s) and 1 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/sg/proj SIDEEYE_TRACE_PATH=/out/ast-grep/work-explore-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.6.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=14ca15f03ad2b08b94536b652398cbea6151fac55a01ff5d3a86ab9c92c08bd2;

@@ -1,0 +1,1 @@
+https://github.com/ast-grep/ast-grep/issues/2959 2026-09-22T04:24:02Z --update-all leaves a file at 0 bytes when interrupted between open and write
