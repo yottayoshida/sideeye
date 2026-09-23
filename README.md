@@ -57,6 +57,10 @@ check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + r
 
 A FAIL saves its counterexample under `<work>/cases/` and prints the `sideeye replay` line that re-runs it. Every flag, the optional define keys, replay: [docs/cli.md](docs/cli.md).
 
+**After the first find.** The finding is not the durable artifact — the declaration is. Re-ask after the tool changes with `explore --config`; a saved case answers `case no longer applies` rather than passing silently once the recording moves under it, which is what makes one worth keeping in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)).
+
+**From an agent.** `sideeye mcp` is a stateless MCP server with two tools, `sideeye_explore_config` and `sideeye_replay_case`. A config and a saved case are both commands it will run, and a replayed case empties the state directory it names — so run it in a container, over a directory made for it: [docs/mcp.md](docs/mcp.md).
+
 ## Writing the check
 
 The check is where your invariants live. This one cross-examines the tool's own diagnostic — a tool may be broken as long as it says so; the violation is the claim and the observable truth disagreeing:
@@ -83,14 +87,6 @@ Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2), wit
 - **A clean run exits its declared success status** (default 0).
 - **Byte-repeatable writes.** A second clean run must leave the same bytes under `--state`; `preflight --twice` measures this.
 - **Other processes take turns with the state.** Forked helpers are judged under an oracle, provided no two processes' writes interleave and every writing child is reaped. One leaving its process group is judged only on Linux, where the engine can make cgroups. A process boundary or a self-`exec` needs Linux's `--oracle`, or is UNKNOWN.
-
-## Driving it from an agent
-
-`sideeye mcp` is a stateless MCP server with two tools, `sideeye_explore_config` and `sideeye_replay_case`. A config and a saved case are both commands it will run, and a replayed case empties the state directory it names — so run it in a container, over a directory made for it: [docs/mcp.md](docs/mcp.md).
-
-## After the first find
-
-The finding is not the durable artifact — the declaration is. Re-ask after the tool changes with `explore --config`; a saved case answers `case no longer applies` rather than passing silently once the recording moves under it, which is what makes one worth keeping in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)).
 
 ## What Sideeye is not
 
