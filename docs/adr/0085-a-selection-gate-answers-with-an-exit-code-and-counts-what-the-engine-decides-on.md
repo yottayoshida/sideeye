@@ -130,3 +130,36 @@ operation's image; threads stays the gate above, unchanged. Four things move wit
   falsification). The sunset above fires on a refusal in a phase the gate ran — the same
   engine answering twice differently — and not on one the gate says it did not check. The
   shipped-v160 run met neither: its one explore refusal was the gate's own answer repeated.
+
+**Amended 2026-09-26 (the threads-gate run, `spike/dogfood/2026-09-26-threads-gate-virtualenv/`).**
+The threads question is dropped: an entry gate asks static linkage and the installed engine's
+`preflight --twice --oracle`, and nothing more. It is the answer the 2026-09-22 amendment asked
+the next run for, and it follows from where the question sits, not from a measurement.
+`entry.sh` asks threads on two paths only. After preflight *accepted*, the engine has already
+asked its own thread rule of both recorded runs (`src/main.zig`, `trace.second_writer_thread`
+in run A's structural checks and again in run B's; contract 18 at v1.6.0), so a threads red
+there can only be this gate disagreeing with the engine — rule 3's proxy. After preflight
+answered *FOLLOW* (`--observe syscalls`) the engine's rule has not necessarily run, because
+FOLLOW comes from an operation the shim did not number; but what follows FOLLOW is a preflight
+or an explore under syscalls, which asks the same rule. On neither path does the question
+decide anything the engine does not decide itself.
+
+The run measured the disagreement on the one real target whose writers a join orders:
+virtualenv 20.31.2 (Debian's package, the target judged PASS 1382/1382 under v18 on
+2026-09-16), through the 2026-09-22 gate unchanged, in the 2026-09-22 box plus Debian's
+`python3-virtualenv`. preflight accepted
+1381 operations with the account *"2 thread id(s) of the subject's own process wrote the
+judged directory; … 2 join(s)"*, and threads counted the same two ids — the main thread and the
+pip worker — and answered red. The two contrasts gave their 2026-09-22 answers in the same box.
+
+What it would still catch, and why that is not a reason to keep it: a writer the engine
+under-counts. #543's raw `clone` is not one — a thread made that way hides its *creation*, not
+its writes, so a second writer through it is refused by the engine at preflight and a single
+one is counted as one by both. The other half of #543, a writer going straight to syscalls
+that the shim never records, is refused at preflight because an entry gate runs preflight
+with `--oracle`, which sees the writes the shim missed; a gate that dropped the oracle would
+have to ask again. No other under-count is known.
+
+The copies of `entry.sh` in the 2026-09-22 and 2026-09-26 run directories keep the question,
+because sealed records cite them; a run that copies the file forward removes the threads block.
+The sunset above is unchanged.

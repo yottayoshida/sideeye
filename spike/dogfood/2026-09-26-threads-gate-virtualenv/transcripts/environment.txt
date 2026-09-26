@@ -1,0 +1,9 @@
+image: sideeye-tg FROM sideeye-sv
+sideeye: sideeye 1.6.0 (trace contract v18)
+install-sideeye: sideeye-v1.6.0-aarch64-linux.tar.gz published digest sha256:86622c84a7ae9bec66a4e560c021f3f446d8c31f6d833222ea00271c2c81f483
+install-sideeye: downloaded digest matches (86622c84a7ae9bec66a4e560c021f3f446d8c31f6d833222ea00271c2c81f483)
+virtualenv 20.31.2 from /usr/lib/python3/dist-packages/virtualenv/__init__.py
+python3-virtualenv	20.31.2+ds-1+deb13u1
+Python 3.13.5
+strace -- version 6.13
+aarch64

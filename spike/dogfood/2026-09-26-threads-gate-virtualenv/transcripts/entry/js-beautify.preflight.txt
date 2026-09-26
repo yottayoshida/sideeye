@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+cwd          /s/jsb/proj
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 3 operations (1835 syscall lines examined, 448 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded the subject replacing its own image, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 5 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2007 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/jsb/proj --cwd "/s/jsb/proj" --operation "js-beautify -r a.js" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.6.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace
