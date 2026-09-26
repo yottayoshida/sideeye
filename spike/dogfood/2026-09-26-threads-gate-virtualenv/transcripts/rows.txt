@@ -1,0 +1,6 @@
+ROW joinedthreads static=0 preflight_rc=0 gate=1 detail=accepted, 4 operations; threads: more than one writer; threads=1
+exit 1
+ROW js-beautify static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations; threads=0
+exit 0
+ROW virtualenv static=0 preflight_rc=0 gate=1 detail=accepted, 1381 operations; threads: more than one writer; threads=1
+exit 1

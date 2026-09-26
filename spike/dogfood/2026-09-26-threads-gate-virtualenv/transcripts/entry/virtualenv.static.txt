@@ -1,0 +1,2 @@
+static: /usr/bin/virtualenv: Python script, ASCII text executable
+next: sideeye explore --state /s/venv --operation "/usr/bin/virtualenv -q --no-download /s/venv/v2" \

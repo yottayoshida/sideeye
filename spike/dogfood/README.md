@@ -74,6 +74,12 @@ gate first counted threads *created* and went red on the Ruby VM's own startup
 threads, which would disqualify every interpreted candidate there is; since contract
 v16 the engine judges by the thread ids that *wrote the judged directory*, and the
 gate counts that now.
+**Since 2026-09-26 threads is the engine's question alone** (ADR 0085 amended): the gate's
+own count is dropped, and threads are measured before the candidate table by the preflight
+the gate already runs, which refuses unordered writers (`multiple_threads_detected` — eslint
+and stylelint on 2026-09-22) and admits writers a creation or a join orders. The count read no order, so on
+virtualenv — two writers a join orders, which preflight accepted — it answered red where the
+engine judges; `2026-09-26-threads-gate-virtualenv/` measured it.
 
 Two measured details that reading would not have produced, both from that day:
 

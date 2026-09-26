@@ -1,0 +1,5 @@
+[world]
+state = "/s/venv"
+
+[define]
+operation = "/usr/bin/virtualenv -q --no-download /s/venv/v2"
