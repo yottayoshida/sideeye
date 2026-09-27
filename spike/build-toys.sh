@@ -8,6 +8,8 @@
 #               (and, under --observe syscalls, a verdict: `raw-all` issues one of every
 #                trapped name, so the handler's whole dispatch is read against the oracle)
 #   toy-static  no dynamic linker, so no injection at all          -> expect UNKNOWN
+#   toy-supsig  static, under a signal storm: --observe supervised's count vs the oracle (#217)
+#   toy-supthreads static, two writer threads: --observe supervised's thread wall (#217)
 #   toy-rust    a real-language stand-in; what it calls is measured, not assumed
 set -eu
 
@@ -63,6 +65,15 @@ echo "building toy-static"
 # The static link is the point; the linker's warning about getpwnam-style lookups in
 # statically linked binaries does not apply to what this toy does.
 gcc $cc_flags -static -DBUGGY=1 -o "$out/toy-static" "$root/spike/toys/toy.c" -lpthread
+
+echo "building toy-supsig"
+# Static too: --observe supervised is the mode for a target no shim can enter (#217).
+gcc $cc_flags -static -pthread -o "$out/toy-supsig" "$root/spike/toys/toy_supsig.c"
+
+echo "building toy-supthreads"
+gcc $cc_flags -static -pthread -o "$out/toy-supthreads" "$root/spike/toys/toy_supthreads.c"
+# Its dynamic twin, the control: the same source under the shim, where the join is recorded.
+gcc $cc_flags -pthread -o "$out/toy-supthreads-dyn" "$root/spike/toys/toy_supthreads.c"
 
 echo "building toy-mixed"
 gcc $cc_flags -o "$out/toy-mixed" "$root/spike/toys/toy_mixed.c"

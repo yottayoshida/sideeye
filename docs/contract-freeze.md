@@ -279,3 +279,10 @@ stay the same.
    Omitted, it passes no flag and reaches the run every earlier caller reached;
    nothing in the list above changed. No row in `surface-changes.tsv`: that
    ledger is for breaks, and an addition this paragraph permits is not one.
+   **Used a second time on 2026-09-27** (#217, ADR 0089): that same `observe`
+   gained the value `supervised`. Read as additive because every input the
+   schema accepted before is accepted with the same meaning, and an agent that
+   never sends the new value reaches exactly the run it reached. The same change
+   adds the value to the CLI's `--observe`, which is not a frozen surface. No
+   `unknown_reason`, `next_step` or report field was added; `contract_version`
+   did not move, since no existing mode's numbering changed.

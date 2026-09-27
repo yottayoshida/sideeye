@@ -119,7 +119,8 @@ stack is unaffected: the flag then means nothing and the handler runs where it w
 - **Leave the set at four and answer #542 from outside the process** — the `#217`
   direction, a supervisor tracing the target. Rejected by the owner before this plan: it is
   a second observation architecture for one question, and the in-process path already had
-  the filter, the handler and the account.
+  the filter, the handler and the account. *(Set aside by the owner on 2026-09-27 for #217's own question — a target no shim can
+  enter — in ADR 0089, which builds that supervisor with seccomp user notification.)*
 - **Trap `rt_sigaction` and `rt_sigprocmask` in the filter** instead of interposing libc.
   Four arguments each, so the marker fits, and it would cover the raw callers interposition
   cannot see. Not taken here: it puts the shim in the business of rewriting the target's
