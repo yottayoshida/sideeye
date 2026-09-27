@@ -246,3 +246,31 @@ the judge's own selftest then loads it as `cmd_eval` would). Each is meant to ki
 | `not-json-blind` | `s\|        return {"gate": "not_json", "channel": "report", "detail": "sealed bytes do not parse: %s" % e}\|        return {"gate": "sealed", "channel": "report", "sha256": want, "doc": {}}\|` | sealed bytes that do not parse — the copy calls them a sealed empty document |
 | `seal-none-blind` | `s\|    if value == b"none":\|    if False:\|` | sideeye's own "the report was not written" token. **Kills no `seal-*` case**: the judge's selftest has no `none` case, and the module's `--selftest` is what goes red. Recorded rather than hidden — the judge sees this branch only through `acceptance.sh`'s check 11h |
 | `seal-anchored` | `s\|    n = log.count(prefix)\|    n = sum(1 for l in log.split(b"\\n") if l.startswith(prefix))\|` | the rule itself: puts the line-anchored count back, so the hidden-then-forged stream reads as one token — the review's hole (R1 C1), killed by `seal-ambiguous` alone |
+
+## Mutations of `spike/container_seals.py` for the two containers (#603)
+
+Since #603 (ADR 0088) the build and the measurement run in two containers, each channel is read
+only from its own container's stream (`judge_eval_split`), and the host's `docker run` exit
+statuses decide the replay gate ahead of every token (`precondition`). The cases are in the
+module's own `--selftest` (run by `spike/acceptance.sh`'s check 11h), not in `judge.sh selftest`:
+(a) the build prints a forged rc, seal and functional gate and then fails — the case builds that
+stream and asserts that the one-stream reading seals it, and that `precondition(2, None)` is
+`build_failed`, (b) `precondition(0, 137)` is `measurement_did_not_complete` — a status alone, no
+stream, because once the status is non-zero no token is read, (c) both exit 0 with a forged rc and seal in the
+build's stream and the real FAIL in the measurement's, (d) the clean split as the positive control.
+Each program was applied to a copy, `cmp` confirmed the copy differs, and the copy's `--selftest`
+was run.
+
+| label | sed program | branch it blinds | killed by |
+|---|---|---|---|
+| `split-concatenated` | `s\|        log = build_log if ch in FROM_BUILD else measure_log\|        log = build_log + measure_log if not isinstance(build_log, tuple) and not isinstance(measure_log, tuple) else (build_log if ch in FROM_BUILD else measure_log)\|` | reading each channel from its own stream — the copy reads the two streams as one | (c): rc and report go `seal_ambiguous` — and the clean one-stream cases too, since `judge_eval` is `judge_eval_split(log, log, …)` and the copy then reads every token twice. A first version of this program concatenated a `(gate, detail)` refusal too and died in a traceback instead of a wrong gate; the tuple guard is what makes the kill a wrong gate |
+| `measure-rc-blind` | `s\|    if measure_rc != 0:\|    if False:\|` | a measurement that did not exit 0 | (b) |
+| `precondition-build-blind` | `s\|    if build_rc != 0 or measure_rc is None:\|    if False:\|` | a failed build, or a measurement never started | (a): the copy calls it `measurement_did_not_complete` |
+| `precondition-never-none` | `s\|^    return None$\|    return "build_failed"\|` | the tokens deciding at all | (d): the positive control |
+
+**Not held by a selftest**: the few lines of `judge.sh`'s `cmd_eval` python that pass the two
+streams and the two statuses to these functions and turn `precondition`'s answer into the
+replay gate. `judge.sh selftest` does not run `cmd_eval`. They are held by the real-docker runs
+recorded in the PR: both controls (`expectation_met` true, `build_rc` and `measure_rc` 0) and the
+red toy, whose verdict moved from `other` under the one-container judge to `fail_reproduced` at
+the case's k under this one.

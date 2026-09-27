@@ -72,7 +72,11 @@ STEP_EXTRA = {"eval": ["run-stage-diff.json", "run-stage-diffs.jsonl"]}
 # Not "recorded when present" like the rest: eval's verdict is read out of this stream, and the run
 # whose binary is the agent's is the one that would benefit from the file being gone. A step that
 # does not leave them is refused rather than attested for what it did leave (found in review).
-STEP_EXTRA_REQUIRED = {"eval": ["run-container.log", "run-container.err"]}
+# Since #603 (ADR 0088) eval runs two containers and reads each channel from its own container's
+# stream, so the ground is the two streams and the two captures of docker's stderr -- not the
+# concatenation `<mode>-container.log`, which is written for a person and which the judge does not
+# read. Holding only the concatenation would attest a file the verdict never stood on (review).
+STEP_EXTRA_REQUIRED = {"eval": ["run-build.log", "run-measure.log", "run-build.err", "run-measure.err"]}
 CHUNK = 65536
 
 
@@ -361,9 +365,9 @@ def pre_run_inputs(ctx, prompt):
                       "which records the image the judge must run (#592)")
     # The two control verdicts, and the streams they were read from (#597): a control's verdict is
     # a pre-run input, so the ground it stood on is one too.
-    data = [manifest, protocol, ctx.res("neg-verdict.json"), ctx.res("pos-verdict.json"),
-            ctx.res("neg-container.log"), ctx.res("pos-container.log"),
-            ctx.res("neg-container.err"), ctx.res("pos-container.err")]
+    data = [manifest, protocol, ctx.res("neg-verdict.json"), ctx.res("pos-verdict.json")]
+    data += [ctx.res("%s-%s.%s" % (m, c, x)) for m in ("neg", "pos")
+             for c in ("build", "measure") for x in ("log", "err")]
     for opt in ("neg-secondary.json", "pos-secondary.json"):
         if os.path.isfile(ctx.res(opt)):
             data.append(ctx.res(opt))
@@ -717,8 +721,10 @@ case "$sub" in
           printf '{"restored": [], "removed": []}\n' >> "$RESULTS/run-stage-diffs.jsonl"
           # The container's stream and the host's capture of docker's own stderr: the real eval
           # always leaves both, and record_output requires them (#597).
-          printf 'judge: replay-rc=0;\n' > "$RESULTS/run-container.log"
-          : > "$RESULTS/run-container.err" ;;
+          printf 'judge: func-status=ran;\n' > "$RESULTS/run-build.log"
+          printf 'judge: replay-rc=0;\n' > "$RESULTS/run-measure.log"
+          : > "$RESULTS/run-build.err"
+          : > "$RESULTS/run-measure.err" ;;
     secondary) printf '{"full_explore": {"gate": "pass"}}\n' > "$RESULTS/run-secondary.json" ;;
     finalize) printf '{"loop_closed": true}\n' > "$RESULTS/manifest.json"; echo "loop_closed: True" ;;
 esac
@@ -897,13 +903,15 @@ def selftest():
         _write(os.path.join(seal, "protocol.json"), json.dumps({"pin": "0" * 40, "image": "x", "image_id": "sha256:" + "0" * 64}))
         _write(os.path.join(results, "neg-verdict.json"), '{"expectation_met": true}\n')
         _write(os.path.join(results, "pos-verdict.json"), '{"expectation_met": true}\n')
-        _write(os.path.join(results, "neg-container.log"), "judge: replay-rc=1;\n")
-        _write(os.path.join(results, "pos-container.log"), "judge: replay-rc=0;\n")
+        for m, rc in (("neg", 1), ("pos", 0)):
+            _write(os.path.join(results, "%s-build.log" % m), "judge: func-status=ran;\n")
+            _write(os.path.join(results, "%s-measure.log" % m), "judge: replay-rc=%d;\n" % rc)
         # The host's own capture of docker's stderr: written on every eval, empty when docker had
         # nothing to say, and required rather than optional -- it is the only place a failure to
         # start the container leaves its reason (found in review).
-        _write(os.path.join(results, "neg-container.err"), "")
-        _write(os.path.join(results, "pos-container.err"), "")
+        for m in ("neg", "pos"):
+            for c in ("build", "measure"):
+                _write(os.path.join(results, "%s-%s.err" % (m, c)), "")
         _write(os.path.join(repo, "spike", "replay_gate.py"), "# gate\n")
         _write(os.path.join(repo, "spike", "suite_summary.py"), "# summary\n")
         _write(os.path.join(repo, "spike", "container_seals.py"), "# seals\n")

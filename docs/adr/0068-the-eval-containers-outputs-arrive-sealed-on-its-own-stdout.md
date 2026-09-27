@@ -1,6 +1,12 @@
 # 0068 — The eval container's outputs arrive sealed, on the container's own stdout, and the judge reads nothing else
 
 - **Status:** Accepted (2026-09-16)
+- **Amended by:** ADR 0088 — the measurement's root filesystem (the named residual in Consequences),
+  and with it the shape this page describes: eval now runs two containers, so there are two streams
+  (`<mode>-build.log`, `<mode>-measure.log`, each channel read from its own; `<mode>-container.log` is
+  their concatenation, for reading), the replay report lands in `<mode>-measure-out-<tag>/` rather
+  than `<mode>-container-out/`, and the verdict carries `build_rc` and `measure_rc` in place of
+  `container_rc`.
 - **Closes:** #597, the residual ADR 0066 named ("inside the container the agent-built `timew` runs
   under the sealed `sideeye` as the same uid, and `sideeye` writes its replay JSON into the directory
   that binary can write").
@@ -158,6 +164,11 @@ this decision adds is the module to the list, not a closing of the window.
   one `sideeye` wrote; it does not say `sideeye`, its oracle or the checker ran on a pristine image.
   Filed as its own issue; the read-only measurement container above is the candidate, gated on the
   two controls reproducing at `case_k` over whatever `/tmp` becomes.
+  **Amended by ADR 0088 (#603), which closes it:** the replay now runs in a second container started
+  from the image by id with `--read-only` and a fresh volume at `/tmp`, and both controls reproduced
+  over that volume. The same change reads each channel only from its own container's stream and
+  decides from `docker run`'s exit statuses whether the measurement ran at all — the "exactly one"
+  rule above stops a forgery being added, not the real token being withheld.
 - Also outside the set, said rather than implied: the secondary observation's container outputs
   (explore report, four upstream suites' rc and text — read from files the agent-built binaries can
   write; evidence, not a gate); the functional gate's export is the subject's own output, so a
