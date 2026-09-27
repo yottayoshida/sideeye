@@ -26,16 +26,27 @@
 # reads each back as one token counted anywhere in the stream and required exactly once, then
 # holds the report file to the digest. A channel that does not seal is a refusal
 # (`seal_missing`, `seal_ambiguous`, `seal_mismatch`, `not_json`, `not_a_regular_file`,
-# `unreadable`, `too_large`), not a verdict. The stream is `<mode>-container.log`, and that is where a person reads a refusal's
+# `unreadable`, `too_large`), not a verdict. Since #603 there are two containers and two streams,
+# `<mode>-build.log` and `<mode>-measure.log`, each channel read from its own; `<mode>-container.log`
+# is the two concatenated, and that is where a person reads a refusal's
 # reason: sideeye's stderr goes there too, and `<mode>-replay.txt` is its stdout alone (unlike
 # stage.sh's `explore.txt`, which holds both). Outside that set, and said here rather than
 # implied: the secondary observation's container outputs (the explore report and four upstream
 # suites' rc and text, still read from files the agent-built binaries can write — evidence, not
-# a gate: `loop_closed` is the three gates); **the eval container's root filesystem after the
-# subject first runs** — the subject is uid 0 on a writable rootfs, so `/usr/bin/strace` (the
-# oracle), the `sh` the checker runs under, `libc`, and with it every dynamically linked binary
-# exec'd afterwards, the sealed `sideeye` included, are its to replace, and the seal says the
-# file is what sideeye wrote, not that sideeye ran on a pristine image (its own issue); `.git/`
+# a gate: `loop_closed` is the three gates); **since #603 (ADR 0088) the replay runs in a second
+# container, started from the image by id with `--read-only`, so the root filesystem the replay
+# loads from — `/usr/bin/strace` (the oracle), the checker's `sh` and `python3`, `libc`, and
+# through `libc` the sealed `sideeye` — is the image's, whatever the agent's code did as root
+# during the build and the functional gate**; what the measurement can write is named in
+# `cmd_eval` (a fresh volume at `/tmp`, docker's `/dev`, `/dev/shm` and `/dev/mqueue`, its own output directory), none of it on
+# `PATH` or searched by the loader, and each channel is read only from its own container's stream,
+# with a measurement that did not exit 0 never read at all. Still outside: **what the subject
+# writes during the replay itself** — it is uid 0 in the measurement container too, so the
+# oracle's output and the shim's trace under `--work /tmp/judge-work` are within its reach while
+# it runs — `/dev/null` in docker's writable `/dev` among them (separating them needs another uid for the subject, which ADR 0068 declined because the
+# uid would enter the operation the case records); and **a same-uid process that ptraces the
+# measurement's shell or `sideeye`** and has the container exit 0 without the real tokens (no Yama
+# on the measured host; ADR 0058's same-uid reach); `.git/`
 # (recorded, not refused); processes that leave the agent's process group; the same-uid reach
 # ADR 0058 measured; and the interpreter, `sh` and `docker` themselves.
 # The path channel below voids a transcript that names this repository or the
@@ -51,9 +62,10 @@
 #       nothing else, or the command refuses (#512, #513). The two controls are only
 #       verified, never rebuilt, and refuse unless the stage already is the seal.
 #       Then rebuild timewarrior from the
-#       stage's repo/ tree only, and measure three things in one --network none
-#       container: the functional (non-degeneracy) gate, then the replay of the
-#       sealed case with a fresh state. Emits <mode>-verdict.json; for the two
+#       stage's repo/ tree only and run the functional (non-degeneracy) gate in one
+#       --network none container, then replay the sealed case with a fresh state in a
+#       second one, --read-only, started from the image by id (#603). Emits
+#       <mode>-verdict.json, which carries both containers' exit statuses; for the two
 #       controls it also enforces the expected outcome and exits nonzero when the
 #       control does not hold (so a broken apparatus stops the experiment before
 #       any agent runs — the mutual contrast is the red for these checks):
@@ -534,31 +546,55 @@ cmd_eval() {
     # functional gate must drive the same command the case records.
     OPERATION=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["operation"])' "$SEAL/protocol.json")
     IMAGE_ID=$(image_id)
-    COUT=$(container_out "$MODE")
+    # Two containers since #603 (ADR 0088). The agent's code runs as root before the replay does --
+    # its CMakeLists.txt at configure time, the timew it built during the functional gate -- so in
+    # one container with a writable root filesystem everything the replay loads from there was the
+    # subject's to replace: the oracle (/usr/bin/strace), the checker's sh, libc and, through libc,
+    # the sealed sideeye itself. The build and the functional gate stay in the first container; the
+    # replay runs in a second one started from the same image by id, --read-only, so its root
+    # filesystem is the image's whatever ran before it. What the measurement can write is named:
+    #   /tmp       a fresh anonymous volume (--rm removes it): the state directory, --work, the
+    #              oracle's output. Not tmpfs, which moves the observed directory onto another
+    #              filesystem than the one the case was recorded on (stage.sh); the two controls
+    #              reproducing at case_k over this volume is what admits it.
+    #   /tmp/loop-bin   a read-only bind of a directory holding the built timew and nothing else,
+    #              so the PATH entry the operation resolves `timew` through cannot be planted.
+    #   $COUT      the measurement's own output directory, made empty for this run.
+    #   /dev, /dev/shm, /dev/mqueue   docker's tmpfs and mqueue, writable even under --read-only
+    #              (measured) -- so the subject can replace /dev/null during the replay, which is
+    #              the "what the subject writes during the replay" residual in the header, not a
+    #              replacement from before it. None is on PATH or searched by the loader or python.
+    # The checker's `python3 -` puts its working directory first on sys.path; that is the case's
+    # command_cwd, which for this stage is the image's WORKDIR (/work, read-only here) because the
+    # define declares no cwd. A define that declared one under /tmp would give that back.
+    # Every directory the host hands a container is made here with mkdir WITHOUT -p, under a name
+    # unique to this run: an existing name -- a directory left over, or a symlink planted where the
+    # next run's would be -- fails the mkdir instead of being followed or reused (review).
+    tag=$(date -u +%Y%m%dT%H%M%SZ)-$$
+    BOUT="$RESULTS/$MODE-build-out-$tag"
+    BIN="$RESULTS/$MODE-bin-$tag"
+    COUT="$RESULTS/$MODE-measure-out-$tag"
+    mkdir "$BOUT" "$BIN" "$COUT" || { echo "could not make this run's own directories under $RESULTS" >&2; exit 1; }
     set -- run --rm --network none \
-        -v "$STAGE:$STAGE:ro" -v "$COUT:$COUT" \
-        -e STAGE="$STAGE" -e RESULTS="$COUT" -e MODE="$MODE" \
+        -v "$STAGE:$STAGE:ro" -v "$BOUT:/out" \
+        -e STAGE="$STAGE" -e MODE="$MODE" \
         -e OPERATION="$OPERATION"
     if [ "$MODE" = "pos" ]; then
         set -- "$@" -v "$PATCH:/tmp/fix.patch:ro"
     fi
-    # No stamp here any more. It existed because the verdict read the container's files and had
-    # to tell this run's from the last one's (#64 review); since #597 the verdict reads the
-    # container's stream, which the host truncates each run, and the report file is held to the
-    # digest sideeye printed in THIS stream -- a leftover file cannot match it. `secondary` still
-    # reads files, and still stamps.
-    set +e
-    # What the judge reads leaves the container on its own stdout, not through the directory the
-    # agent-built binary shares with sideeye (#597, ADR 0068). The subject can append to that
-    # stream -- it is uid 0, and during the replay it inherits sideeye's stderr -- but it cannot
-    # take back a byte another process already put there, so each value the judge needs is one
-    # token, put on the stream by the process that made it, at the moment it made it, and read
-    # back by spike/container_seals.py as "exactly one, wherever it appears". Hence:
+    # What the judge reads leaves each container on its own stdout, not through a directory a
+    # binary the agent built can write (#597, ADR 0068). The subject can append to that stream --
+    # it is uid 0 -- but it cannot take back a byte another process already put there, so each
+    # value the judge needs is one token, put on the stream by the process that made it, and read
+    # back by spike/container_seals.py as "exactly one, wherever it appears" -- and, since #603,
+    # only from the stream of the container whose process makes it: the functional gate's two
+    # tokens from the build's, the replay's rc and sideeye's seal from the measurement's. A token
+    # the build prints can therefore never stand for the replay, and whether the measurement ran
+    # to its end is not read from any token at all: it is `docker run`'s exit status, which the
+    # host holds (container_seals.precondition). Hence, in each container:
     #   `exec 2>&1` first: docker multiplexes stdout and stderr as separate frames and the CLI
     #     writes both into one file; a token that straddles a frame boundary could have a frame of
     #     the OTHER stream land inside it. One stream, and frames only ever concatenate.
-    #   every external binary runs before the subject does (mkdir, cp); after its first run the
-    #     shell uses builtins only (printf, $(...)) and the sealed sideeye on the read-only stage.
     #   the functional gate's export is received by the shell and put on the stream between two
     #     markers, so the judge reads the bytes the shell saw, not a file the subject can rewrite.
     #   Measured: dash's printf emits that block in one write up to 8 KiB (three at 64 KiB) -- but
@@ -569,14 +605,16 @@ cmd_eval() {
     #   sideeye's own token (`sideeye: json sha256=...;`) rides its stderr, which is the stream.
     # The files beside them (func-export.json, func-status, replay-rc) are still written, for a
     # person reading the run; the judge does not open them.
+    set +e
     docker "$@" "$IMAGE_ID" sh -eu -c '
         exec 2>&1
         cp -r "$STAGE/repo" /tmp/src
         if [ "$MODE" = "pos" ]; then git -C /tmp/src apply /tmp/fix.patch; fi
         cmake -S /tmp/src -B /tmp/build -DCMAKE_BUILD_TYPE=Release >/dev/null
         cmake --build /tmp/build -j"$(nproc)" >/dev/null
-        mkdir -p /tmp/loop-bin /tmp/func-state /tmp/loop-state
+        mkdir -p /tmp/loop-bin /tmp/func-state
         cp /tmp/build/src/timew /tmp/loop-bin/timew
+        cp /tmp/build/src/timew /out/timew
         export PATH="/tmp/loop-bin:$PATH"
 
         # Non-degeneracy gate, in a normal (crash-free) world: seed, add, undo.
@@ -590,31 +628,73 @@ cmd_eval() {
              && $OPERATION >/dev/null \
              && timew undo >/dev/null \
              && timew export ); then fstatus=ran; fi
-        printf "%s\n" "$fexport" > "$RESULTS/$MODE-func-export.json"
-        printf "%s\n" "$fstatus" > "$RESULTS/$MODE-func-status"
+        printf "%s\n" "$fexport" > "/out/$MODE-func-export.json"
+        printf "%s\n" "$fstatus" > "/out/$MODE-func-status"
         printf "judge: func-status=%s;\n" "$fstatus"
         printf "judge: func-export begin;\n%s\njudge: func-export end;\n" "$fexport"
-
-        # The replay, from a fresh state at the path the case pins. Only stdout (the text
-        # report) goes to the file: stderr is the stream, and carries the seal sideeye prints.
-        export TIMEWARRIORDB=/tmp/loop-state
-        rrc=0
-        "$STAGE/.harness/sideeye" replay "$STAGE/work/cases/000001.json" \
-            --shim "$STAGE/.harness/libsideeye_shim.so" \
-            --work /tmp/judge-work \
-            --oracle /usr/bin/strace \
-            --json "$RESULTS/$MODE-replay.json" \
-            > "$RESULTS/$MODE-replay.txt" || rrc=$?
-        printf "%s\n" "$rrc" > "$RESULTS/$MODE-replay-rc"
-        printf "judge: replay-rc=%s;\n" "$rrc"
-    ' > "$RESULTS/$MODE-container.log" 2> "$RESULTS/$MODE-container.err"
-    container_rc=$?
+    ' > "$RESULTS/$MODE-build.log" 2> "$RESULTS/$MODE-build.err"
+    build_rc=$?
+    : > "$RESULTS/$MODE-measure.log"
+    : > "$RESULTS/$MODE-measure.err"
+    measure_rc=none
+    # The built binary crosses to the measurement as one regular file, taken without following a
+    # link, under a size cap, into a directory holding nothing else, and made executable here: the
+    # build container is gone by now (--rm), so nothing is writing what is read.
+    # Why a binary did not cross goes into the build's own stderr capture, beside the build's. The
+    # read is container_seals.read_regular -- the same one open, no links, regular file, cap -- run
+    # from the module's bytes like everywhere else this judge loads it (no .pyc, ADR 0066).
+    if [ "$build_rc" -eq 0 ] && python3 -I - "$BOUT/timew" "$BIN/timew" "$SIDEEYE_REPO/spike/container_seals.py" 2>> "$RESULTS/$MODE-build.err" <<'PY'
+import os, sys
+src, dst, module = sys.argv[1], sys.argv[2], sys.argv[3]
+seals = {}
+with open(module, "rb") as f:
+    exec(compile(f.read(), module, "exec"), seals)
+gate, data = seals["read_regular"](src, 512 * 1024 * 1024)
+if gate != "ok":
+    sys.exit("the build's timew did not cross (%s): %s" % (gate, data))
+out = os.open(dst, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o755)
+try:
+    os.write(out, data)
+    os.fchmod(out, 0o755)
+finally:
+    os.close(out)
+PY
+    then
+        docker run --rm --network none --read-only \
+            --mount type=volume,dst=/tmp \
+            -v "$STAGE:$STAGE:ro" -v "$BIN:/tmp/loop-bin:ro" -v "$COUT:$COUT" \
+            -e STAGE="$STAGE" -e RESULTS="$COUT" -e MODE="$MODE" \
+            "$IMAGE_ID" sh -eu -c '
+            exec 2>&1
+            mkdir /tmp/loop-state
+            export PATH="/tmp/loop-bin:$PATH"
+            # The replay, from a fresh state at the path the case pins. Only stdout (the text
+            # report) goes to the file: stderr is the stream, and carries the seal sideeye prints.
+            export TIMEWARRIORDB=/tmp/loop-state
+            rrc=0
+            "$STAGE/.harness/sideeye" replay "$STAGE/work/cases/000001.json" \
+                --shim "$STAGE/.harness/libsideeye_shim.so" \
+                --work /tmp/judge-work \
+                --oracle /usr/bin/strace \
+                --json "$RESULTS/$MODE-replay.json" \
+                > "$RESULTS/$MODE-replay.txt" || rrc=$?
+            printf "%s\n" "$rrc" > "$RESULTS/$MODE-replay-rc"
+            printf "judge: replay-rc=%s;\n" "$rrc"
+        ' > "$RESULTS/$MODE-measure.log" 2> "$RESULTS/$MODE-measure.err"
+        measure_rc=$?
+    fi
+    # For a person reading the run: both streams, build first. The judge reads the two files above.
+    cat "$RESULTS/$MODE-build.log" "$RESULTS/$MODE-measure.log" > "$RESULTS/$MODE-container.log"
+    cat "$RESULTS/$MODE-build.err" "$RESULTS/$MODE-measure.err" > "$RESULTS/$MODE-container.err"
     set -e
 
-    python3 -I - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$container_rc" "$SIDEEYE_REPO/spike" <<'PY'
+    python3 -I - "$RESULTS" "$MODE" "$SEAL/protocol.json" "$build_rc" "$measure_rc" "$SIDEEYE_REPO/spike" "$COUT" <<'PY'
 import json, os, sys
 
-results, mode, proto_path, container_rc = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+results, mode, proto_path = sys.argv[1], sys.argv[2], sys.argv[3]
+build_rc = int(sys.argv[4])
+measure_rc = None if sys.argv[5] == "none" else int(sys.argv[5])
+cout = sys.argv[7]
 # The replay gate is spike/replay_gate.py, shared with dogfood-timew-replay.sh's leg C (#65);
 # the seals on the container's channels are spike/container_seals.py (#597). Both are
 # executed from their bytes, not imported: an import takes spike/__pycache__/replay_gate.*.pyc
@@ -629,42 +709,48 @@ def load_from_bytes(path, name):
     with open(path, "rb") as f:
         exec(compile(f.read(), path, "exec"), mod.__dict__)
     return mod
-gate = load_from_bytes(os.path.join(sys.argv[5], "replay_gate.py"), "replay_gate").gate
-seals = load_from_bytes(os.path.join(sys.argv[5], "container_seals.py"), "container_seals")
+gate = load_from_bytes(os.path.join(sys.argv[6], "replay_gate.py"), "replay_gate").gate
+seals = load_from_bytes(os.path.join(sys.argv[6], "container_seals.py"), "container_seals")
 proto = json.load(open(proto_path))
 
 # Every value below came over the container's own stdout (see the shell above): one token per
 # channel, counted anywhere in the stream and required exactly once, and the report file held to
 # the digest sideeye printed when it wrote it. A channel that does not seal is a refusal with its
 # reason, not a verdict, and the gates below never see a document for it (#597, ADR 0068).
-stream_path = os.path.join(results, "%s-container.log" % mode)
-report_path = os.path.join(results, mode + "-container-out", "%s-replay.json" % mode)
-sgate, stream = seals.read_stream(stream_path)
-if sgate != "ok":
-    # The ground every token stands on did not read: every channel refuses, with that reason.
-    sealed = seals.refuse_all(sgate, stream)
-else:
-    sealed = seals.judge_eval(stream, report_path)
+# Since #603 each channel comes from its own container's stream (container_seals.FROM_BUILD /
+# FROM_MEASURE), and a stream that did not read refuses its own channels with that reason.
+def stream(name):
+    g, data = seals.read_stream(os.path.join(results, "%s-%s.log" % (mode, name)))
+    return data if g == "ok" else (g, data)
+report_path = os.path.join(cout, "%s-replay.json" % mode)
+sealed = seals.judge_eval_split(stream("build"), stream("measure"), report_path)
+# What the host knows ahead of every token: whether each container exited 0, and whether the
+# measurement was started at all. A token can say only what some process printed.
+pre = seals.precondition(build_rc, measure_rc)
 
 verdict = {
     "mode": mode,
-    "container_rc": container_rc,
+    "build_rc": build_rc,
+    "measure_rc": measure_rc,
     # A run's record is its rebuild's; a control is only checked, never rebuilt.
     "stage_diff": json.load(open(os.path.join(
         results, "%s-stage-%s.json" % (mode, "diff" if mode == "run" else "check")))),
-    # The rc token is the shell's last line; under `sh -eu` a build that fails never reaches it,
-    # so no token is the ordinary shape of a build that failed. `replay.gate` reads `build_failed`
-    # for exactly that case (`rc` missing), so the two agree there and part company only when the
-    # rc token is unsealed for another reason -- two of them, or a malformed value -- where this
-    # stays false and the gate names which.
-    "build_ok": sealed["rc"]["gate"] == "sealed",
+    # From the host's facts, not from a token (#603): the build container exited 0 AND its timew
+    # crossed to the measurement, which is exactly when the measurement was started -- so this and
+    # a replay gate of `build_failed` never disagree. Why a binary did not cross is in
+    # <mode>-build.err (review).
+    "build_ok": build_rc == 0 and measure_rc is not None,
     # What each channel said, minus the documents themselves: the reason a refusal gives is
     # read from here.
     "seals": {k: {kk: vv for kk, vv in v.items() if kk != "doc"} for k, v in sealed.items()},
 }
 
 replay = {"gate": "build_failed"}
-if sealed["rc"]["gate"] == "sealed" and sealed["report"]["gate"] == "sealed":
+if pre is not None:
+    # Decided before any token: the build failed (or its binary did not cross), or the measurement
+    # did not exit 0 -- in which case whatever tokens its stream holds are not read (#603).
+    replay = {"gate": pre, "build_rc": build_rc, "measure_rc": measure_rc}
+elif sealed["rc"]["gate"] == "sealed" and sealed["report"]["gate"] == "sealed":
     rrc = sealed["rc"]["value"]
     rj = sealed["report"]["doc"]
     replay = {
@@ -677,8 +763,9 @@ if sealed["rc"]["gate"] == "sealed" and sealed["report"]["gate"] == "sealed":
         "crash_point": (rj.get("earliest") or {}).get("crash_point"),
     }
     replay["gate"], _ = gate(rj, rrc, proto["case_ops_total"])
-elif sealed["rc"]["gate"] != "seal_missing":
-    # The shell reached the replay (or something forged its rc), but a seal did not hold.
+else:
+    # Both containers exited 0, so the shell reached the replay, but a seal did not hold -- a
+    # missing rc token included, which is no longer the shape of a failed build.
     broken = sealed["rc"] if sealed["rc"]["gate"] != "sealed" else sealed["report"]
     replay = {"gate": broken["gate"], "channel": broken["channel"], "detail": broken["detail"]}
 verdict["replay"] = replay
@@ -707,10 +794,11 @@ if mode == "neg":
     # exits FAIL; pinning the reproduced crash point to the case's k keeps a
     # differently-broken apparatus from opening the agent gate. The container's own
     # exit is part of the expectation: a build that failed wrote nothing this run.
-    expected = (container_rc == 0 and replay["gate"] == "fail_reproduced" and func["gate"] == "pass"
+    expected = (build_rc == 0 and measure_rc == 0
+                and replay["gate"] == "fail_reproduced" and func["gate"] == "pass"
                 and replay.get("crash_point") == proto["case_k"])
 elif mode == "pos":
-    expected = container_rc == 0 and replay["gate"] == "pass" and func["gate"] == "pass"
+    expected = build_rc == 0 and measure_rc == 0 and replay["gate"] == "pass" and func["gate"] == "pass"
 verdict["expectation_met"] = expected
 
 out = os.path.join(results, "%s-verdict.json" % mode)

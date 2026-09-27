@@ -214,21 +214,58 @@ CHANNELS = ("rc", "report", "func_status", "func_export")
 
 
 def judge_eval(log, report_path, max_bytes=MAX_REPORT_BYTES):
-    """Every channel the judge's eval reads, each judged on its own."""
-    sealers = {"rc": lambda: seal_rc(log),
-               "report": lambda: seal_report(log, report_path, max_bytes),
-               "func_status": lambda: seal_func_status(log),
-               "func_export": lambda: seal_func_export(log)}
-    missing = set(CHANNELS) ^ set(sealers)
-    if missing:
-        raise AssertionError("CHANNELS and the sealers disagree: %r" % sorted(missing))
-    return {ch: sealers[ch]() for ch in CHANNELS}
+    """Every channel the judge's eval reads, each judged on its own, all from one stream -- the
+    one-container shape, kept for the CLI and for the selftest cases that show why #603 split it."""
+    return judge_eval_split(log, log, report_path, max_bytes)
 
 
 def refuse_all(gate, detail):
     """Every channel refusing for one reason -- the stream itself did not read, so no token in it
     can be counted. Here rather than at the caller, so the channel names live in one place."""
     return {ch: {"gate": gate, "channel": ch, "detail": detail} for ch in CHANNELS}
+
+
+# Which container's stream each channel is read from, since the build and the measurement run in
+# two containers (#603, ADR 0088). The functional gate runs in the build container, the replay in
+# the measurement container, and a channel is read ONLY from the stream of the container whose
+# process makes it: a token the subject prints during the build (its CMakeLists.txt runs at
+# configure time, as root) can then never stand for the replay's rc or report, however many or few
+# real tokens there are. Reading both from one concatenated stream would count a build-time forgery
+# as the only token whenever the measurement never ran (found in review).
+FROM_BUILD = ("func_status", "func_export")
+FROM_MEASURE = ("rc", "report")
+
+
+def judge_eval_split(build_log, measure_log, report_path, max_bytes=MAX_REPORT_BYTES):
+    """Every channel the judge's eval reads, each from its own container's stream. A stream that
+    did not read is passed as (gate, detail) instead of bytes, and its channels refuse with it."""
+    if set(FROM_BUILD) | set(FROM_MEASURE) != set(CHANNELS) or set(FROM_BUILD) & set(FROM_MEASURE):
+        raise AssertionError("FROM_BUILD and FROM_MEASURE must partition CHANNELS")
+    sealers = {"rc": lambda log: seal_rc(log),
+               "report": lambda log: seal_report(log, report_path, max_bytes),
+               "func_status": lambda log: seal_func_status(log),
+               "func_export": lambda log: seal_func_export(log)}
+    out = {}
+    for ch in CHANNELS:
+        log = build_log if ch in FROM_BUILD else measure_log
+        if isinstance(log, tuple):
+            out[ch] = {"gate": log[0], "channel": ch, "detail": log[1]}
+        else:
+            out[ch] = sealers[ch](log)
+    return out
+
+
+def precondition(build_rc, measure_rc):
+    """What the replay gate is before any token is read, from what the HOST knows: the exit status
+    `docker run` returned for each container (`measure_rc` is None when the measurement was never
+    started). Tokens can only say what a process printed; whether the process that prints the real
+    ones ran to its end is a fact about the container, and the subject cannot print it (#603).
+    Returns a gate name, or None when both containers exited 0 and the tokens decide."""
+    if build_rc != 0 or measure_rc is None:
+        return "build_failed"
+    if measure_rc != 0:
+        return "measurement_did_not_complete"
+    return None
 
 
 def main(argv):
@@ -384,6 +421,60 @@ def selftest():
         check("export-missing", seal_func_export(log.replace(FUNC_BEGIN, b"")), "seal_missing", "func_export")
         check("export-object", seal_func_export(_clean_log(report, export=b"{}")), "not_json", "func_export")
         check("export-garbage", seal_func_export(_clean_log(report, export=b"")), "not_json", "func_export")
+
+        # #603: two containers, each channel from its own stream, and the host's exit statuses ahead
+        # of every token. Build and measurement halves of a clean run, split the way judge.sh does.
+        build_half = (b"cmake output\n" + PREFIX_FUNC_STATUS + b"ran;\n"
+                      + FUNC_BEGIN + b'[{"tags": ["alpha"]}]' + FUNC_END + b"\n")
+        measure_half = (b"FAIL  the text report\n" + PREFIX_JSON + _sha(report) + b";\n"
+                        + PREFIX_RC + b"1;\n")
+        # (d) the positive control: both exited 0, every token in its own stream -> all sealed, and
+        # the precondition leaves the decision to the tokens.
+        out = judge_eval_split(build_half, measure_half, rpath)
+        for ch in out.values():
+            check("split-clean:" + ch["channel"], ch, "sealed")
+        if out["rc"].get("value") != 1 or out["report"].get("doc", {}).get("verdict") != "FAIL":
+            failures.append("split-clean: the measurement's values were not read back")
+        if precondition(0, 0) is not None:
+            failures.append("precondition(0, 0): %r, wanted None" % precondition(0, 0))
+        # (a) the build prints a forged rc, seal and functional gate, then fails, and a report whose
+        # digest matches the forgery sits where the measurement would write: the measurement never
+        # starts. The host's statuses decide it, whatever the tokens say.
+        forged_report = b'{"verdict": "PASS", "explored": 2, "crash_points": 24}\n'
+        with open(rpath, "wb") as f:
+            f.write(forged_report)
+        forged_build = (build_half + PREFIX_RC + b"0;\n" + PREFIX_JSON + _sha(forged_report) + b";\n")
+        if precondition(2, None) != "build_failed":
+            failures.append("(a) precondition(2, None): %r, wanted build_failed" % precondition(2, None))
+        # ...and the same stream read as ONE concatenated log is the hole this closes: every channel
+        # seals, the forged PASS among them.
+        concat = judge_eval(forged_build, rpath)
+        if not all(v["gate"] == "sealed" for v in concat.values()) \
+                or concat["report"]["doc"].get("verdict") != "PASS":
+            failures.append("(a) no longer demonstrates the concatenated hole: %r" % {
+                k: v["gate"] for k, v in concat.items()})
+        # (b) a measurement container that did not exit 0: the status alone decides, so whatever
+        # tokens its stream holds -- a forged rc and seal among them -- are never read.
+        if precondition(0, 137) != "measurement_did_not_complete":
+            failures.append("(b) precondition(0, 137): %r, wanted measurement_did_not_complete"
+                            % precondition(0, 137))
+        # (c) both exit 0; the build stream carries a forged rc=0 and a forged seal, the measurement
+        # stream the real FAIL. Read by container, the replay's channels are the real ones; read as
+        # one stream, they would refuse as doubled.
+        with open(rpath, "wb") as f:
+            f.write(report)
+        forged_build = (build_half + PREFIX_RC + b"0;\n" + PREFIX_JSON + _sha(forged_report) + b";\n")
+        out = judge_eval_split(forged_build, measure_half, rpath)
+        check("(c) rc", out["rc"], "sealed", "rc")
+        check("(c) report", out["report"], "sealed", "report")
+        if out["rc"].get("value") != 1 or out["report"].get("doc", {}).get("verdict") != "FAIL":
+            failures.append("(c): the build's forgery was read: rc %r, verdict %r" % (
+                out["rc"].get("value"), out["report"].get("doc", {}).get("verdict")))
+        check("(c) concatenated", judge_eval(forged_build + measure_half, rpath)["rc"], "seal_ambiguous", "rc")
+        # A stream that did not read refuses its own channels and only those.
+        out = judge_eval_split(build_half, ("unreadable", "no measure log"), rpath)
+        check("split-unread:rc", out["rc"], "unreadable", "rc")
+        check("split-unread:func", out["func_status"], "sealed", "func_status")
 
         # The CLI agrees with judge_eval: 0 on the clean pair, 1 with the report rewritten.
         lpath = os.path.join(work, "container.log")
