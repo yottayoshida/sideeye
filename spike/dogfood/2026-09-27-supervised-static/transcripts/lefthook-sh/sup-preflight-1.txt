@@ -1,0 +1,20 @@
+PREFLIGHT  recording accepted — 4 state-changing operation(s) observed
+
+cwd          /tmp/lh-repo
+atomicity    13 path(s) judged pre-or-post
+oracle       agreed on 4 operations (496 syscall lines examined, 18 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    3 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 5 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /tmp/lh-repo/.git/hooks --setup "/ap/lefthook/seed-state.sh" --cwd "/tmp/lh-repo" --operation "/bin/sh /ap/lhsh.sh" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace
+exit 0

@@ -1,0 +1,18 @@
+31    execve("/bin/busybox", ["/bin/busybox", "sed", "-i", "s/a/z/", "/tmp/bb/f.txt"], 0xaaab146d68c0 /* 19 vars */) = 0
+31    readlinkat(AT_FDCWD</w>, "/proc/self/exe", "/usr/bin/busybox", 4096) = 16
+31    newfstatat(AT_FDCWD</w>, "/tmp/bb/f.txt", {st_mode=S_IFREG|0644, st_size=9, ...}, 0) = 0
+31    openat(AT_FDCWD</w>, "/tmp/bb/f.txtgsrWJY", O_RDWR|O_CREAT|O_EXCL, 0600) = 3</tmp/bb/f.txtgsrWJY>
+31    fcntl(3</tmp/bb/f.txtgsrWJY>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+31    fchmod(3</tmp/bb/f.txtgsrWJY>, 0100644) = 0
+31    fchown(3</tmp/bb/f.txtgsrWJY>, 0, 0) = 0
+31    openat(AT_FDCWD</w>, "/tmp/bb/f.txt", O_RDONLY) = 4</tmp/bb/f.txt>
+31    newfstatat(4</tmp/bb/f.txt>, "", {st_mode=S_IFREG|0644, st_size=9, ...}, AT_EMPTY_PATH) = 0
+31    read(4</tmp/bb/f.txt>, "a1\nb2\na3\n", 4096) = 9
+31    newfstatat(3</tmp/bb/f.txtgsrWJY>, "", {st_mode=S_IFREG|0644, st_size=0, ...}, AT_EMPTY_PATH) = 0
+31    read(4</tmp/bb/f.txt>, "", 4096)  = 0
+31    close(4</tmp/bb/f.txt>)           = 0
+31    write(3</tmp/bb/f.txtgsrWJY>, "z1\nb2\nz3\n", 9) = 9
+31    close(3</tmp/bb/f.txtgsrWJY>)     = 0
+31    renameat(AT_FDCWD</w>, "/tmp/bb/f.txtgsrWJY", AT_FDCWD</w>, "/tmp/bb/f.txt") = 0
+31    exit_group(0)                     = ?
+31    +++ exited with 0 +++

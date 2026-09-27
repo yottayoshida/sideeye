@@ -1,0 +1,4 @@
+run 1: exit 0
+.second has changed since chezmoi last wrote it (diff/overwrite/all-overwrite/skip/quit)? chezmoi: .second: EOF
+run 2 (destination emptied, database kept): exit 1
+run 3 (destination emptied, database removed): exit 0

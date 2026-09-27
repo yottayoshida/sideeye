@@ -1,0 +1,2 @@
+/usr/local/bin/chezmoi: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=guvl2W62AGZBc0Xe8XgX/0g_y6izC9FDipRHLl-hI/Em4g_bhyC2MwD6ybyrH1/YXQykMNDJW6Flh123F17, BuildID[sha1]=d4a60eabcd90f26e87ed8bf5cb9f4dd044a9176f, stripped
+	not a dynamic executable

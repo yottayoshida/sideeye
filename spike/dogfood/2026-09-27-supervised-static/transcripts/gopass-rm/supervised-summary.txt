@@ -1,0 +1,10 @@
+target gopass-rm  stage supervised  engine sideeye 1.6.0 (trace contract v18)  binary ccb814491679
+preflight 1: exit 0  PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+preflight 2: exit 0  PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+preflight 3: exit 0  PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+preflight 4: exit 0  PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+preflight 5: exit 0  PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+preflight accepted: 5 of 5
+explore 1: exit 0  PASS  3 None True
+explore 2: exit 0  PASS  3 None True
+explore 3: exit 0  PASS  3 None True

@@ -1,0 +1,519 @@
+41    execve("/usr/local/bin/lefthook", ["/usr/local/bin/lefthook", "install"], 0xaaab146308c0 /* 21 vars */) = 0
+41    openat(AT_FDCWD</tmp/lh-repo>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+41    read(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>, "2097152\n", 20) = 8
+41    close(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>) = 0
+41    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9794000
+41    mmap(NULL, 131072, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9774000
+41    mmap(NULL, 1048576, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9674000
+41    mmap(NULL, 8388608, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8e00000
+41    mmap(NULL, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb4e00000
+41    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff94e00000
+41    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff74e00000
+41    mmap(0x4000000000, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x4000000000
+41    mmap(NULL, 33554432, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff72e00000
+41    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9662000
+41    mmap(0x4000000000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x4000000000
+41    mmap(0xffffb9774000, 131072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb9774000
+41    mmap(0xffffb9674000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb9674000
+41    mmap(0xffffb8e02000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb8e02000
+41    mmap(0xffffb4e10000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb4e10000
+41    mmap(0xffff94e80000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff94e80000
+41    mmap(0xffff74e80000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff74e80000
+41    mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff72d00000
+41    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9652000
+41    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9642000
+41    fcntl(0</dev/null>, F_GETFD)      = 0
+41    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFD) = 0
+41    fcntl(2</out/lefthook/entry-preflight.txt>, F_GETFD) = 0
+41    openat(AT_FDCWD</tmp/lh-repo>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/41/mountinfo>
+41    read(3</proc/41/mountinfo>, "143 92 0:62 / / rw,relatime - ov"..., 65536) = 3052
+41    read(3</proc/41/mountinfo>, "", 65536) = 0
+41    close(3</proc/41/mountinfo>)      = 0
+41    openat(AT_FDCWD</tmp/lh-repo>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/41/cgroup>
+41    read(3</proc/41/cgroup>, "0::/sideeye-31-361e46ca763e8306/"..., 65536) = 37
+41    read(3</proc/41/cgroup>, "", 65536) = 0
+41    close(3</proc/41/cgroup>)         = 0
+41    openat(AT_FDCWD</tmp/lh-repo>, "/sys/fs/cgroup/sideeye-31-361e46ca763e8306/work/cpu.max", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    clone(child_stack=0x4000030000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 42
+41    clone(child_stack=0x4000074000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 43
+41    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9602000
+41    clone(child_stack=0x4000070000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 44
+43    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff72cc0000
+43    clone(child_stack=0x4000116000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 45
+41    fcntl(0</dev/null>, F_GETFL)      = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+41    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFL) = 0x28001 (flags O_WRONLY|O_LARGEFILE|O_NOFOLLOW)
+41    fcntl(2</out/lefthook/entry-preflight.txt>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+41    ioctl(1</tmp/se-work/stdout-record.txt>, TCGETS, 0x400008adac) = -1 ENOTTY (Inappropriate ioctl for device)
+41    ioctl(1</tmp/se-work/stdout-record.txt>, TCGETS, 0x400018bc5c) = -1 ENOTTY (Inappropriate ioctl for device)
+41    ioctl(1</tmp/se-work/stdout-record.txt>, TCGETS, 0x400018bd2c) = -1 ENOTTY (Inappropriate ioctl for device)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/local/cargo/bin/git", 0x40000b63f8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/local/sbin/git", 0x40000b64b8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/local/bin/git", 0x40000b6578, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/sbin/git", 0x40000b6638, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/bin/git", {st_mode=S_IFREG|0755, st_size=3756992, ...}, 0) = 0
+41    faccessat2(AT_FDCWD</tmp/lh-repo>, "/usr/bin/git", X_OK, AT_EACCESS) = 0
+41    pipe2([3<pipe:[481547]>, 4<pipe:[481547]>], O_CLOEXEC) = 0
+41    fcntl(3<pipe:[481547]>, F_GETFL)  = 0 (flags O_RDONLY)
+41    fcntl(3<pipe:[481547]>, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+41    epoll_create1(EPOLL_CLOEXEC)      = 5<anon_inode:[eventpoll]>
+41    eventfd2(0, EFD_CLOEXEC|EFD_NONBLOCK) = 6<anon_inode:[eventfd]>
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 6<anon_inode:[eventfd]>, {events=EPOLLIN, data={u32=15013456, u64=15013456}}) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3<pipe:[481547]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2650800129, u64=18446666431941574657}}) = 0
+41    fcntl(4<pipe:[481547]>, F_GETFL)  = 0x1 (flags O_WRONLY)
+41    fcntl(4<pipe:[481547]>, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 4<pipe:[481547]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2617245697, u64=18446666431908020225}}) = 0
+41    pipe2([7<pipe:[481548]>, 8<pipe:[481548]>], O_CLOEXEC) = 0
+41    fcntl(7<pipe:[481548]>, F_GETFL)  = 0 (flags O_RDONLY)
+41    fcntl(7<pipe:[481548]>, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 7<pipe:[481548]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2583691265, u64=18446666431874465793}}) = 0
+41    fcntl(8<pipe:[481548]>, F_GETFL)  = 0x1 (flags O_WRONLY)
+41    fcntl(8<pipe:[481548]>, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 8<pipe:[481548]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2550136833, u64=18446666431840911361}}) = 0
+41    pipe2([9<pipe:[481549]>, 10<pipe:[481549]>], O_CLOEXEC) = 0
+41    fcntl(9<pipe:[481549]>, F_GETFL)  = 0 (flags O_RDONLY)
+41    fcntl(9<pipe:[481549]>, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 9<pipe:[481549]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2516582401, u64=18446666431807356929}}) = 0
+41    fcntl(10<pipe:[481549]>, F_GETFL) = 0x1 (flags O_WRONLY)
+41    fcntl(10<pipe:[481549]>, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 10<pipe:[481549]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2483027969, u64=18446666431773802497}}) = 0
+41    pidfd_open(41, 0)                 = 11<anon_inode:[pidfd]>
+41    waitid(P_PIDFD, 11<anon_inode:[pidfd]>, 0x400018b2b8, WEXITED, NULL) = -1 ECHILD (No child processes)
+41    pidfd_send_signal(11<anon_inode:[pidfd]>, 0, NULL, 0) = 0
+41    clone(child_stack=NULL, flags=CLONE_VM|CLONE_PIDFD|CLONE_VFORK <unfinished ...>
+46    exit_group(0)                     = ?
+41    <... clone resumed>, parent_tid=[12<anon_inode:[pidfd]>]) = 46
+46    +++ exited with 0 +++
+41    waitid(P_PIDFD, 12<anon_inode:[pidfd]>, {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=46, si_uid=0, si_status=0, si_utime=0, si_stime=0}, WEXITED|__WCLONE, NULL) = 0
+41    close(12<anon_inode:[pidfd]>)     = 0
+41    close(11<anon_inode:[pidfd]>)     = 0
+41    fcntl(3<pipe:[481547]>, F_GETFL)  = 0x800 (flags O_RDONLY|O_NONBLOCK)
+41    fcntl(3<pipe:[481547]>, F_SETFL, O_RDONLY) = 0
+41    fcntl(8<pipe:[481548]>, F_GETFL)  = 0x801 (flags O_WRONLY|O_NONBLOCK)
+41    fcntl(8<pipe:[481548]>, F_SETFL, O_WRONLY) = 0
+41    fcntl(10<pipe:[481549]>, F_GETFL) = 0x801 (flags O_WRONLY|O_NONBLOCK)
+41    fcntl(10<pipe:[481549]>, F_SETFL, O_WRONLY) = 0
+41    pipe2([11<pipe:[481550]>, 12<pipe:[481550]>], O_CLOEXEC) = 0
+41    clone(child_stack=NULL, flags=CLONE_VM|CLONE_PIDFD|CLONE_VFORK|SIGCHLD <unfinished ...>
+42    epoll_pwait(5<anon_inode:[eventpoll]>, [{events=EPOLLOUT, data={u32=2617245697, u64=18446666431908020225}}, {events=EPOLLOUT, data={u32=2550136833, u64=18446666431840911361}}, {events=EPOLLOUT, data={u32=2483027969, u64=18446666431773802497}}], 128, 0, NULL, 0) = 3
+47    dup3(3<pipe:[481547]>, 0</dev/null>, 0) = 0<pipe:[481547]>
+47    dup3(8<pipe:[481548]>, 1</tmp/se-work/stdout-record.txt>, 0) = 1<pipe:[481548]>
+47    dup3(10<pipe:[481549]>, 2</out/lefthook/entry-preflight.txt>, 0) = 2<pipe:[481549]>
+47    execve("/usr/bin/git", ["git", "version"], 0x40000b6840 /* 22 vars */ <unfinished ...>
+41    <... clone resumed>, parent_tid=[13<anon_inode:[pidfd]>]) = 47
+47    <... execve resumed>)             = 0
+41    close(12<pipe:[481550]>)          = 0
+41    read(11<pipe:[481550]>, "", 8)    = 0
+47    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+41    close(11<pipe:[481550]> <unfinished ...>
+47    <... mmap resumed>)               = 0xffff98984000
+41    <... close resumed>)              = 0
+47    openat(AT_FDCWD</tmp/lh-repo>, "/work/zig-out/lib/libsideeye_shim.so", O_RDONLY|O_CLOEXEC <unfinished ...>
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 3<pipe:[481547]>, 0x400018b460) = 0
+41    close(3<pipe:[481547]>)           = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 8<pipe:[481548]>, 0x400018b460) = 0
+47    <... openat resumed>)             = 3</work/zig-out/lib/libsideeye_shim.so>
+41    close(8<pipe:[481548]> <unfinished ...>
+47    read(3</work/zig-out/lib/libsideeye_shim.so>,  <unfinished ...>
+41    <... close resumed>)              = 0
+47    <... read resumed>"\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 10<pipe:[481549]>, 0x400018b460 <unfinished ...>
+44    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+41    <... epoll_ctl resumed>)          = 0
+47    newfstatat(3</work/zig-out/lib/libsideeye_shim.so>, "",  <unfinished ...>
+44    <... mmap resumed>)               = 0xffff72c80000
+41    close(10<pipe:[481549]>)          = 0
+47    <... newfstatat resumed>{st_mode=S_IFREG|0755, st_size=3545712, ...}, AT_EMPTY_PATH) = 0
+41    waitid(P_PIDFD, 13<anon_inode:[pidfd]>,  <unfinished ...>
+47    mmap(NULL, 5551000, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 4<pipe:[481547]>, 0x4000086db0 <unfinished ...>
+43    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+47    <... mmap resumed>)               = 0xffff98400000
+44    <... epoll_ctl resumed>)          = 0
+47    mmap(0xffff98400000, 5485464, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0 <unfinished ...>
+45    read(7<pipe:[481548]>,  <unfinished ...>
+44    close(4<pipe:[481547]> <unfinished ...>
+43    <... mmap resumed>)               = 0xffff72c40000
+47    <... mmap resumed>)               = 0xffff98400000
+45    <... read resumed>0x4000124000, 512) = -1 EAGAIN (Resource temporarily unavailable)
+45    epoll_pwait(5<anon_inode:[eventpoll]>,  <unfinished ...>
+44    <... close resumed>)              = 0
+45    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+44    epoll_pwait(5<anon_inode:[eventpoll]>,  <unfinished ...>
+43    clone(child_stack=0x4000112000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+47    mmap(0xffff98424000, 368640, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x14000) = 0xffff98424000
+47    mmap(0xffff9848d000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x6d000 <unfinished ...>
+43    <... clone resumed>)              = 48
+47    <... mmap resumed>)               = 0xffff9848d000
+43    read(9<pipe:[481549]>,  <unfinished ...>
+47    mmap(0xffff9849e000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x6e000 <unfinished ...>
+43    <... read resumed>0x4000294000, 512) = -1 EAGAIN (Resource temporarily unavailable)
+47    <... mmap resumed>)               = 0xffff9849e000
+47    mmap(0xffff984a4000, 4813720, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff984a4000
+47    close(3</work/zig-out/lib/libsideeye_shim.so>) = 0
+47    faccessat(AT_FDCWD</tmp/lh-repo>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+47    openat(AT_FDCWD</tmp/lh-repo>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+47    newfstatat(3</etc/ld.so.cache>, "", {st_mode=S_IFREG|0644, st_size=8635, ...}, AT_EMPTY_PATH) = 0
+47    mmap(NULL, 8635, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffff98981000
+47    close(3</etc/ld.so.cache>)        = 0
+47    openat(AT_FDCWD</tmp/lh-repo>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>
+47    read(3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+47    newfstatat(3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, "", {st_mode=S_IFREG|0644, st_size=592440, ...}, AT_EMPTY_PATH) = 0
+47    mmap(NULL, 721648, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9834f000
+47    mmap(0xffff98350000, 656112, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, 0) = 0xffff98350000
+47    mmap(0xffff983ef000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, 0x8f000) = 0xffff983ef000
+47    close(3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>) = 0
+47    openat(AT_FDCWD</tmp/lh-repo>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>
+47    read(3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+47    newfstatat(3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, "", {st_mode=S_IFREG|0644, st_size=133520, ...}, AT_EMPTY_PATH) = 0
+47    mmap(NULL, 262560, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9830f000
+47    mmap(0xffff98310000, 197024, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, 0) = 0xffff98310000
+47    mmap(0xffff9833f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, 0x1f000) = 0xffff9833f000
+47    close(3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>) = 0
+47    openat(AT_FDCWD</tmp/lh-repo>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+47    read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0000y\2\0\0\0\0\0"..., 832) = 832
+47    newfstatat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "", {st_mode=S_IFREG|0755, st_size=1651408, ...}, AT_EMPTY_PATH) = 0
+47    mmap(NULL, 1826912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff98151000
+47    mmap(0xffff98160000, 1761376, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffff98160000
+47    mmap(0xffff982fc000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x18c000) = 0xffff982fc000
+47    mmap(0xffff98302000, 49248, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff98302000
+47    close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+47    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9897f000
+47    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/se-work/trace-record.bin", O_RDWR|O_CREAT|O_APPEND|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC, 0644) = 3</tmp/se-work/trace-record.bin>
+47    statx(3</tmp/se-work/trace-record.bin>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=0, ...}) = 0
+47    fcntl(3</tmp/se-work/trace-record.bin>, F_DUPFD, 900) = 900</tmp/se-work/trace-record.bin>
+47    fcntl(900</tmp/se-work/trace-record.bin>, F_SETFD, FD_CLOEXEC) = 0
+47    close(3</tmp/se-work/trace-record.bin>) = 0
+47    lseek(900</tmp/se-work/trace-record.bin>, 0, SEEK_END) = 0
+47    write(900</tmp/se-work/trace-record.bin>, "SIDEEYE1\22\0\0\0", 12) = 12
+47    write(900</tmp/se-work/trace-record.bin>, "\204\3\0\0\0\0/\0\0\0/\0\0\0\0\0\0\0\27\0\0\0/tmp/lh-re"..., 65) = 65
+47    openat(AT_FDCWD</tmp/lh-repo>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/47/cgroup>
+47    read(3</proc/47/cgroup>, "0::/sideeye-31-361e46ca763e8306/"..., 128) = 37
+47    close(3</proc/47/cgroup>)         = 0
+47    write(900</tmp/se-work/trace-record.bin>, "\210\3\0\0\0\0/\0\0\0/\0\0\0\0\0\0\0\27\0\0\0/tmp/lh-re"..., 60) = 60
+47    openat(AT_FDCWD</tmp/lh-repo>, "/dev/null", O_RDWR) = -1 ENETDOWN (Network is down)
+47    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff9823d884, si_syscall=__NR_openat, si_arch=AUDIT_ARCH_AARCH64} ---
+47    openat(AT_FDCWD</tmp/lh-repo>, "/dev/null", O_RDWR) = 3</dev/null>
+47    statx(3</dev/null>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFCHR|0666, stx_size=0, ...}) = 0
+47    close(3</dev/null>)               = 0
+47    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/share/locale", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+47    faccessat(AT_FDCWD</tmp/lh-repo>, "/etc/gitconfig", R_OK) = -1 ENOENT (No such file or directory)
+47    faccessat(AT_FDCWD</tmp/lh-repo>, "/root/.config/git/config", R_OK) = -1 ENOENT (No such file or directory)
+47    faccessat(AT_FDCWD</tmp/lh-repo>, "/root/.gitconfig", R_OK) = -1 ENOENT (No such file or directory)
+47    getcwd("/tmp/lh-repo", 129)       = 13
+47    newfstatat(1<pipe:[481548]>, "", {st_mode=S_IFIFO|0600, st_size=0, ...}, AT_EMPTY_PATH) = 0
+47    newfstatat(1<pipe:[481548]>, "", {st_mode=S_IFIFO|0600, st_size=0, ...}, AT_EMPTY_PATH) = 0
+47    write(1<pipe:[481548]>, "git version 2.39.5\n", 19) = 1
+47    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff9823dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+47    statx(1<pipe:[481548]>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFIFO|0600, stx_size=0, ...}) = 0
+47    write(1<pipe:[481548]>, "git version 2.39.5\n", 19) = 19
+44    <... epoll_pwait resumed>[{events=EPOLLIN, data={u32=2583691265, u64=18446666431874465793}}], 128, -1, NULL, 0) = 1
+44    read(7<pipe:[481548]>,  <unfinished ...>
+47    exit_group(0)                     = ?
+44    <... read resumed>"git version 2.39.5\n", 512) = 19
+44    read(7<pipe:[481548]>, 0x4000300013, 1005) = -1 EAGAIN (Resource temporarily unavailable)
+47    +++ exited with 0 +++
+44    epoll_pwait(5<anon_inode:[eventpoll]>,  <unfinished ...>
+41    <... waitid resumed>{si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=47, si_uid=0, si_status=0, si_utime=0, si_stime=0}, WEXITED, {ru_utime={tv_sec=0, tv_usec=0}, ru_stime={tv_sec=0, tv_usec=2157}, ...}) = 0
+44    <... epoll_pwait resumed>[{events=EPOLLHUP, data={u32=2516582401, u64=18446666431807356929}}, {events=EPOLLHUP, data={u32=2583691265, u64=18446666431874465793}}], 128, 0, NULL, 0) = 2
+42    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=47, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+41    close(13<anon_inode:[pidfd]>)     = 0
+41    read(9<pipe:[481549]>, "", 512)   = 0
+48    epoll_pwait(5<anon_inode:[eventpoll]>,  <unfinished ...>
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 9<pipe:[481549]>, 0x4000118dc0 <unfinished ...>
+48    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+44    read(7<pipe:[481548]>,  <unfinished ...>
+41    <... epoll_ctl resumed>)          = 0
+44    <... read resumed>"", 1005)       = 0
+41    close(9<pipe:[481549]> <unfinished ...>
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 7<pipe:[481548]>, 0x400011cdc0 <unfinished ...>
+41    <... close resumed>)              = 0
+44    <... epoll_ctl resumed>)          = 0
+44    close(7<pipe:[481548]>)           = 0
+44    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/local/cargo/bin/git", 0x4000320038, 0) = -1 ENOENT (No such file or directory)
+44    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/local/sbin/git", 0x40003200f8, 0) = -1 ENOENT (No such file or directory)
+44    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/local/bin/git", 0x40003201b8, 0) = -1 ENOENT (No such file or directory)
+44    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/sbin/git", 0x4000320278, 0) = -1 ENOENT (No such file or directory)
+44    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/bin/git", {st_mode=S_IFREG|0755, st_size=3756992, ...}, 0) = 0
+44    faccessat2(AT_FDCWD</tmp/lh-repo>, "/usr/bin/git", X_OK, AT_EACCESS) = 0
+44    pipe2([3<pipe:[474882]>, 4<pipe:[474882]>], O_CLOEXEC) = 0
+44    fcntl(3<pipe:[474882]>, F_GETFL)  = 0 (flags O_RDONLY)
+44    fcntl(3<pipe:[474882]>, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3<pipe:[474882]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2583691266, u64=18446666431874465794}}) = 0
+44    fcntl(4<pipe:[474882]>, F_GETFL)  = 0x1 (flags O_WRONLY)
+44    fcntl(4<pipe:[474882]>, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 4<pipe:[474882]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2516582402, u64=18446666431807356930}}) = 0
+44    pipe2([7<pipe:[474883]>, 8<pipe:[474883]>], O_CLOEXEC) = 0
+44    fcntl(7<pipe:[474883]>, F_GETFL)  = 0 (flags O_RDONLY)
+44    fcntl(7<pipe:[474883]>, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 7<pipe:[474883]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2617245698, u64=18446666431908020226}}) = 0
+44    fcntl(8<pipe:[474883]>, F_GETFL)  = 0x1 (flags O_WRONLY)
+44    fcntl(8<pipe:[474883]>, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 8<pipe:[474883]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2483027970, u64=18446666431773802498}}) = 0
+44    pipe2([9<pipe:[474884]>, 10<pipe:[474884]>], O_CLOEXEC) = 0
+44    fcntl(9<pipe:[474884]>, F_GETFL)  = 0 (flags O_RDONLY)
+44    fcntl(9<pipe:[474884]>, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 9<pipe:[474884]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2550136834, u64=18446666431840911362}}) = 0
+44    fcntl(10<pipe:[474884]>, F_GETFL) = 0x1 (flags O_WRONLY)
+44    fcntl(10<pipe:[474884]>, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 10<pipe:[474884]>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2650800130, u64=18446666431941574658}}) = 0
+44    fcntl(3<pipe:[474882]>, F_GETFL)  = 0x800 (flags O_RDONLY|O_NONBLOCK)
+44    fcntl(3<pipe:[474882]>, F_SETFL, O_RDONLY) = 0
+44    fcntl(8<pipe:[474883]>, F_GETFL)  = 0x801 (flags O_WRONLY|O_NONBLOCK)
+44    fcntl(8<pipe:[474883]>, F_SETFL, O_WRONLY) = 0
+44    fcntl(10<pipe:[474884]>, F_GETFL) = 0x801 (flags O_WRONLY|O_NONBLOCK)
+44    fcntl(10<pipe:[474884]>, F_SETFL, O_WRONLY) = 0
+44    pipe2([11<pipe:[474885]>, 12<pipe:[474885]>], O_CLOEXEC) = 0
+44    clone(child_stack=NULL, flags=CLONE_VM|CLONE_PIDFD|CLONE_VFORK|SIGCHLD <unfinished ...>
+49    dup3(3<pipe:[474882]>, 0</dev/null>, 0) = 0<pipe:[474882]>
+49    dup3(8<pipe:[474883]>, 1</tmp/se-work/stdout-record.txt>, 0) = 1<pipe:[474883]>
+49    dup3(10<pipe:[474884]>, 2</out/lefthook/entry-preflight.txt>, 0) = 2<pipe:[474884]>
+49    execve("/usr/bin/git", ["git", "rev-parse", "--path-format=absolute", "--show-toplevel", "--git-path", "hooks", "--git-path", "info", "--git-dir"], 0x4000320480 /* 22 vars */ <unfinished ...>
+44    <... clone resumed>, parent_tid=[13<anon_inode:[pidfd]>]) = 49
+49    <... execve resumed>)             = 0
+44    close(12<pipe:[474885]>)          = 0
+49    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+44    read(11<pipe:[474885]>,  <unfinished ...>
+49    <... mmap resumed>)               = 0xffffb0c59000
+44    <... read resumed>"", 8)          = 0
+49    openat(AT_FDCWD</tmp/lh-repo>, "/work/zig-out/lib/libsideeye_shim.so", O_RDONLY|O_CLOEXEC <unfinished ...>
+44    close(11<pipe:[474885]>)          = 0
+49    <... openat resumed>)             = 3</work/zig-out/lib/libsideeye_shim.so>
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 3<pipe:[474882]>, 0x400018b460 <unfinished ...>
+49    read(3</work/zig-out/lib/libsideeye_shim.so>,  <unfinished ...>
+44    <... epoll_ctl resumed>)          = 0
+44    close(3<pipe:[474882]> <unfinished ...>
+49    <... read resumed>"\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+44    <... close resumed>)              = 0
+49    newfstatat(3</work/zig-out/lib/libsideeye_shim.so>, "",  <unfinished ...>
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 8<pipe:[474883]>, 0x400018b460 <unfinished ...>
+49    <... newfstatat resumed>{st_mode=S_IFREG|0755, st_size=3545712, ...}, AT_EMPTY_PATH) = 0
+44    <... epoll_ctl resumed>)          = 0
+49    mmap(NULL, 5551000, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+44    close(8<pipe:[474883]> <unfinished ...>
+49    <... mmap resumed>)               = 0xffffb06d5000
+44    <... close resumed>)              = 0
+49    mmap(0xffffb06e0000, 5485464, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0 <unfinished ...>
+44    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 10<pipe:[474884]>, 0x400018b460 <unfinished ...>
+49    <... mmap resumed>)               = 0xffffb06e0000
+44    <... epoll_ctl resumed>)          = 0
+44    close(10<pipe:[474884]>)          = 0
+44    waitid(P_PIDFD, 13<anon_inode:[pidfd]>,  <unfinished ...>
+49    mmap(0xffffb0704000, 368640, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x14000) = 0xffffb0704000
+49    mmap(0xffffb076d000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x6d000) = 0xffffb076d000
+49    mmap(0xffffb077e000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</work/zig-out/lib/libsideeye_shim.so>, 0x6e000 <unfinished ...>
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 4<pipe:[474882]>, 0x400033e5b0 <unfinished ...>
+49    <... mmap resumed>)               = 0xffffb077e000
+41    <... epoll_ctl resumed>)          = 0
+41    close(4<pipe:[474882]> <unfinished ...>
+49    mmap(0xffffb0784000, 4813720, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+41    <... close resumed>)              = 0
+49    <... mmap resumed>)               = 0xffffb0784000
+41    read(9<pipe:[474884]>,  <unfinished ...>
+49    close(3</work/zig-out/lib/libsideeye_shim.so> <unfinished ...>
+48    read(7<pipe:[474883]>,  <unfinished ...>
+41    <... read resumed>0x40001d0000, 512) = -1 EAGAIN (Resource temporarily unavailable)
+49    <... close resumed>)              = 0
+41    epoll_pwait(5<anon_inode:[eventpoll]>,  <unfinished ...>
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/etc/ld.so.preload", R_OK <unfinished ...>
+48    <... read resumed>0x4000294200, 512) = -1 EAGAIN (Resource temporarily unavailable)
+41    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+41    epoll_pwait(5<anon_inode:[eventpoll]>,  <unfinished ...>
+49    <... faccessat resumed>)          = -1 ENOENT (No such file or directory)
+48    epoll_pwait(5<anon_inode:[eventpoll]>,  <unfinished ...>
+49    openat(AT_FDCWD</tmp/lh-repo>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC <unfinished ...>
+48    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+49    <... openat resumed>)             = 3</etc/ld.so.cache>
+49    newfstatat(3</etc/ld.so.cache>, "", {st_mode=S_IFREG|0644, st_size=8635, ...}, AT_EMPTY_PATH) = 0
+49    mmap(NULL, 8635, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffffb0c56000
+49    close(3</etc/ld.so.cache>)        = 0
+49    openat(AT_FDCWD</tmp/lh-repo>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>
+49    read(3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+49    newfstatat(3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, "", {st_mode=S_IFREG|0644, st_size=592440, ...}, AT_EMPTY_PATH) = 0
+49    mmap(NULL, 721648, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb062f000
+49    mmap(0xffffb0630000, 656112, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, 0) = 0xffffb0630000
+49    mmap(0xffffb06cf000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>, 0x8f000) = 0xffffb06cf000
+49    close(3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.11.2>) = 0
+49    openat(AT_FDCWD</tmp/lh-repo>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>
+49    read(3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+49    newfstatat(3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, "", {st_mode=S_IFREG|0644, st_size=133520, ...}, AT_EMPTY_PATH) = 0
+49    mmap(NULL, 262560, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb05ef000
+49    mmap(0xffffb05f0000, 197024, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, 0) = 0xffffb05f0000
+49    mmap(0xffffb061f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>, 0x1f000) = 0xffffb061f000
+49    close(3</usr/lib/aarch64-linux-gnu/libz.so.1.2.13>) = 0
+49    openat(AT_FDCWD</tmp/lh-repo>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+49    read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0000y\2\0\0\0\0\0"..., 832) = 832
+49    newfstatat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "", {st_mode=S_IFREG|0755, st_size=1651408, ...}, AT_EMPTY_PATH) = 0
+49    mmap(NULL, 1826912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb0431000
+49    mmap(0xffffb0440000, 1761376, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffffb0440000
+49    mmap(0xffffb05dc000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x18c000) = 0xffffb05dc000
+49    mmap(0xffffb05e2000, 49248, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb05e2000
+49    close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+49    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb0c54000
+49    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/se-work/trace-record.bin", O_RDWR|O_CREAT|O_APPEND|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC, 0644) = 3</tmp/se-work/trace-record.bin>
+49    statx(3</tmp/se-work/trace-record.bin>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=137, ...}) = 0
+49    fcntl(3</tmp/se-work/trace-record.bin>, F_DUPFD, 900) = 900</tmp/se-work/trace-record.bin>
+49    fcntl(900</tmp/se-work/trace-record.bin>, F_SETFD, FD_CLOEXEC) = 0
+49    close(3</tmp/se-work/trace-record.bin>) = 0
+49    lseek(900</tmp/se-work/trace-record.bin>, 0, SEEK_END) = 137
+49    write(900</tmp/se-work/trace-record.bin>, "\204\3\0\0\0\0001\0\0\0001\0\0\0\0\0\0\0\27\0\0\0/tmp/lh-re"..., 65) = 65
+49    openat(AT_FDCWD</tmp/lh-repo>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/49/cgroup>
+49    read(3</proc/49/cgroup>, "0::/sideeye-31-361e46ca763e8306/"..., 128) = 37
+49    close(3</proc/49/cgroup>)         = 0
+49    write(900</tmp/se-work/trace-record.bin>, "\210\3\0\0\0\0001\0\0\0001\0\0\0\0\0\0\0\27\0\0\0/tmp/lh-re"..., 60) = 60
+49    openat(AT_FDCWD</tmp/lh-repo>, "/dev/null", O_RDWR) = -1 ENETDOWN (Network is down)
+49    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffffb051d884, si_syscall=__NR_openat, si_arch=AUDIT_ARCH_AARCH64} ---
+49    openat(AT_FDCWD</tmp/lh-repo>, "/dev/null", O_RDWR) = 3</dev/null>
+49    statx(3</dev/null>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFCHR|0666, stx_size=0, ...}) = 0
+49    close(3</dev/null>)               = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/usr/share/locale", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/etc/gitconfig", R_OK) = -1 ENOENT (No such file or directory)
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/root/.config/git/config", R_OK) = -1 ENOENT (No such file or directory)
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/root/.gitconfig", R_OK) = -1 ENOENT (No such file or directory)
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/HEAD", {st_mode=S_IFREG|0644, st_size=23, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/HEAD", O_RDONLY) = 3</tmp/lh-repo/.git/HEAD>
+49    read(3</tmp/lh-repo/.git/HEAD>, "ref: refs/heads/master\n", 255) = 23
+49    read(3</tmp/lh-repo/.git/HEAD>, "", 232) = 0
+49    statx(3</tmp/lh-repo/.git/HEAD>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=23, ...}) = 0
+49    readlinkat(AT_FDCWD</tmp/lh-repo>, "/proc/self/fd/3", "/tmp/lh-repo/.git/HEAD", 4096) = 22
+49    close(3</tmp/lh-repo/.git/HEAD>)  = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/commondir", 0xffffc9e28518, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/objects", X_OK) = 0
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/refs", X_OK) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, ".git/commondir", 0xffffc9e28628, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+49    openat(AT_FDCWD</tmp/lh-repo>, ".git/config", O_RDONLY) = 3</tmp/lh-repo/.git/config>
+49    newfstatat(3</tmp/lh-repo/.git/config>, "", {st_mode=S_IFREG|0644, st_size=132, ...}, AT_EMPTY_PATH) = 0
+49    newfstatat(3</tmp/lh-repo/.git/config>, "", {st_mode=S_IFREG|0644, st_size=132, ...}, AT_EMPTY_PATH) = 0
+49    read(3</tmp/lh-repo/.git/config>, "[core]\n\trepositoryformatversion "..., 4096) = 132
+49    read(3</tmp/lh-repo/.git/config>, "", 4096) = 0
+49    statx(3</tmp/lh-repo/.git/config>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=132, ...}) = 0
+49    readlinkat(AT_FDCWD</tmp/lh-repo>, "/proc/self/fd/3", "/tmp/lh-repo/.git/config", 4096) = 24
+49    close(3</tmp/lh-repo/.git/config>) = 0
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, ".git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, ".git/commondir", 0xffffc9e28588, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/etc/gitconfig", R_OK) = -1 ENOENT (No such file or directory)
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/root/.config/git/config", R_OK) = -1 ENOENT (No such file or directory)
+49    faccessat(AT_FDCWD</tmp/lh-repo>, "/root/.gitconfig", R_OK) = -1 ENOENT (No such file or directory)
+49    faccessat(AT_FDCWD</tmp/lh-repo>, ".git/config", R_OK) = 0
+49    openat(AT_FDCWD</tmp/lh-repo>, ".git/config", O_RDONLY) = 3</tmp/lh-repo/.git/config>
+49    newfstatat(3</tmp/lh-repo/.git/config>, "", {st_mode=S_IFREG|0644, st_size=132, ...}, AT_EMPTY_PATH) = 0
+49    newfstatat(3</tmp/lh-repo/.git/config>, "", {st_mode=S_IFREG|0644, st_size=132, ...}, AT_EMPTY_PATH) = 0
+49    read(3</tmp/lh-repo/.git/config>, "[core]\n\trepositoryformatversion "..., 4096) = 132
+49    read(3</tmp/lh-repo/.git/config>, "", 4096) = 0
+49    statx(3</tmp/lh-repo/.git/config>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=132, ...}) = 0
+49    readlinkat(AT_FDCWD</tmp/lh-repo>, "/proc/self/fd/3", "/tmp/lh-repo/.git/config", 4096) = 24
+49    close(3</tmp/lh-repo/.git/config>) = 0
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(1<pipe:[474883]>, "", {st_mode=S_IFIFO|0600, st_size=0, ...}, AT_EMPTY_PATH) = 0
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/info", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    getcwd("/tmp/lh-repo", 129)       = 13
+49    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(1<pipe:[474883]>, "", {st_mode=S_IFIFO|0600, st_size=0, ...}, AT_EMPTY_PATH) = 0
+49    write(1<pipe:[474883]>, "/tmp/lh-repo\n/tmp/lh-repo/.git/h"..., 78) = 1
+49    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffffb051dc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+49    statx(1<pipe:[474883]>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_TYPE|STATX_NLINK, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFIFO|0600, stx_size=0, ...}) = 0
+49    write(1<pipe:[474883]>, "/tmp/lh-repo\n/tmp/lh-repo/.git/h"..., 78 <unfinished ...>
+41    <... epoll_pwait resumed>[{events=EPOLLIN, data={u32=2617245698, u64=18446666431908020226}}], 128, -1, NULL, 0) = 1
+49    <... write resumed>)              = 78
+41    read(7<pipe:[474883]>, "/tmp/lh-repo\n/tmp/lh-repo/.git/h"..., 512) = 78
+41    read(7<pipe:[474883]>,  <unfinished ...>
+49    exit_group(0 <unfinished ...>
+41    <... read resumed>0x400029604e, 946) = -1 EAGAIN (Resource temporarily unavailable)
+49    <... exit_group resumed>)         = ?
+41    epoll_pwait(5<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+41    epoll_pwait(5<anon_inode:[eventpoll]>, [{events=EPOLLHUP, data={u32=2550136834, u64=18446666431840911362}}, {events=EPOLLHUP, data={u32=2617245698, u64=18446666431908020226}}], 128, -1, NULL, 0) = 2
+49    +++ exited with 0 +++
+44    <... waitid resumed>{si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=49, si_uid=0, si_status=0, si_utime=0, si_stime=0}, WEXITED, {ru_utime={tv_sec=0, tv_usec=2904}, ru_stime={tv_sec=0, tv_usec=0}, ...}) = 0
+44    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=49, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+48    read(9<pipe:[474884]>,  <unfinished ...>
+44    close(13<anon_inode:[pidfd]> <unfinished ...>
+48    <... read resumed>"", 512)        = 0
+41    read(7<pipe:[474883]>,  <unfinished ...>
+48    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 9<pipe:[474884]>, 0x4000118dc0 <unfinished ...>
+44    <... close resumed>)              = 0
+41    <... read resumed>"", 946)        = 0
+48    <... epoll_ctl resumed>)          = 0
+48    close(9<pipe:[474884]> <unfinished ...>
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 7<pipe:[474883]>, 0x4000119dc0 <unfinished ...>
+48    <... close resumed>)              = 0
+41    <... epoll_ctl resumed>)          = 0
+41    close(7<pipe:[474883]>)           = 0
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/info", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    ioctl(1</tmp/se-work/stdout-record.txt>, TCGETS, 0x400018ab0c) = -1 ENOTTY (Inappropriate ioctl for device)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook.yml", {st_mode=S_IFREG|0644, st_size=52, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook.yml", {st_mode=S_IFREG|0644, st_size=52, ...}, 0) = 0
+41    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook.yml", O_RDONLY|O_CLOEXEC) = 3</tmp/lh-repo/lefthook.yml>
+41    fcntl(3</tmp/lh-repo/lefthook.yml>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/lefthook.yml>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/lh-repo/lefthook.yml>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2617245699, u64=18446666431908020227}}) = -1 EPERM (Operation not permitted)
+41    fcntl(3</tmp/lh-repo/lefthook.yml>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/lefthook.yml>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+41    read(3</tmp/lh-repo/lefthook.yml>, "pre-commit:\n  commands:\n    noop"..., 512) = 52
+41    read(3</tmp/lh-repo/lefthook.yml>, "", 460) = 0
+41    close(3</tmp/lh-repo/lefthook.yml>) = 0
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook-local.yml", 0x40002a0278, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.lefthook-local.yml", 0x40002a0338, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.config/lefthook-local.yml", 0x40002a03f8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook-local.yaml", 0x40002a04b8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.lefthook-local.yaml", 0x40002a0578, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.config/lefthook-local.yaml", 0x40002a0638, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook-local.json", 0x40002a06f8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.lefthook-local.json", 0x40002a07b8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.config/lefthook-local.json", 0x40002a0878, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook-local.toml", 0x40002a0938, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.lefthook-local.toml", 0x40002a09f8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.config/lefthook-local.toml", 0x40002a0ab8, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks/pre-commit", 0x40002a0e78, 0) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks/pre-commit", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 3</tmp/lh-repo/.git/hooks/pre-commit>
+41    fcntl(3</tmp/lh-repo/.git/hooks/pre-commit>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/.git/hooks/pre-commit>, F_SETFL, O_WRONLY|O_NONBLOCK|O_LARGEFILE) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/lh-repo/.git/hooks/pre-commit>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2617245700, u64=18446666431908020228}}) = -1 EPERM (Operation not permitted)
+41    fcntl(3</tmp/lh-repo/.git/hooks/pre-commit>, F_GETFL) = 0x20801 (flags O_WRONLY|O_NONBLOCK|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/.git/hooks/pre-commit>, F_SETFL, O_WRONLY|O_LARGEFILE) = 0
+41    write(3</tmp/lh-repo/.git/hooks/pre-commit>, "#!/bin/sh\n\nif [ \"$LEFTHOOK_VERBO"..., 2022) = 2022
+41    close(3</tmp/lh-repo/.git/hooks/pre-commit>) = 0
+41    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/hooks/prepare-commit-msg", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 3</tmp/lh-repo/.git/hooks/prepare-commit-msg>
+41    fcntl(3</tmp/lh-repo/.git/hooks/prepare-commit-msg>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/.git/hooks/prepare-commit-msg>, F_SETFL, O_WRONLY|O_NONBLOCK|O_LARGEFILE) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/lh-repo/.git/hooks/prepare-commit-msg>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2617245701, u64=18446666431908020229}}) = -1 EPERM (Operation not permitted)
+41    fcntl(3</tmp/lh-repo/.git/hooks/prepare-commit-msg>, F_GETFL) = 0x20801 (flags O_WRONLY|O_NONBLOCK|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/.git/hooks/prepare-commit-msg>, F_SETFL, O_WRONLY|O_LARGEFILE) = 0
+41    write(3</tmp/lh-repo/.git/hooks/prepare-commit-msg>, "#!/bin/sh\n\nif [ \"$LEFTHOOK_VERBO"..., 2030) = 2030
+41    close(3</tmp/lh-repo/.git/hooks/prepare-commit-msg>) = 0
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook.yml", {st_mode=S_IFREG|0644, st_size=52, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/lefthook.yml", {st_mode=S_IFREG|0644, st_size=52, ...}, 0) = 0
+41    openat(AT_FDCWD</tmp/lh-repo>, "/tmp/lh-repo/.git/info/lefthook.checksum", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0644) = 3</tmp/lh-repo/.git/info/lefthook.checksum>
+41    fcntl(3</tmp/lh-repo/.git/info/lefthook.checksum>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/.git/info/lefthook.checksum>, F_SETFL, O_WRONLY|O_NONBLOCK|O_LARGEFILE) = 0
+41    epoll_ctl(5<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/lh-repo/.git/info/lefthook.checksum>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=2617245702, u64=18446666431908020230}}) = -1 EPERM (Operation not permitted)
+41    fcntl(3</tmp/lh-repo/.git/info/lefthook.checksum>, F_GETFL) = 0x20801 (flags O_WRONLY|O_NONBLOCK|O_LARGEFILE)
+41    fcntl(3</tmp/lh-repo/.git/info/lefthook.checksum>, F_SETFL, O_WRONLY|O_LARGEFILE) = 0
+41    write(3</tmp/lh-repo/.git/info/lefthook.checksum>, "77f961b69dd8f94beadf9218d43e7a2b"..., 45) = 45
+41    close(3</tmp/lh-repo/.git/info/lefthook.checksum>) = 0
+41    write(1</tmp/se-work/stdout-record.txt>, "sync hooks: \342\234\224\357\270\217 (pre-commit)\n", 32) = 32
+41    exit_group(0)                     = ?
+48    +++ exited with 0 +++
+45    +++ exited with 0 +++
+44    +++ exited with 0 +++
+43    +++ exited with 0 +++
+42    +++ exited with 0 +++
+41    +++ exited with 0 +++

@@ -1,0 +1,2 @@
+/usr/local/bin/jj: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=09104ac0ac11d1c74296ffd1cdbf6137d2e199c6, not stripped
+	not a dynamic executable

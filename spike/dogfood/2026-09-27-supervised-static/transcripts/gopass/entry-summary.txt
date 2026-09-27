@@ -1,0 +1,3 @@
+target gopass  stage entry  engine sideeye 1.6.0 (trace contract v18)  binary ccb814491679
+linkage: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked
+reproduce under --observe wrappers: exit 2  UNKNOWN  no_shim_marker
