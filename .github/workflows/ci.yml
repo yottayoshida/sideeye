@@ -154,6 +154,18 @@ jobs:
           test -x zig-out/bin/sideeye-testnocgroup
           test "$sha_before" = "$sha_after"
 
+      # #217's test engine, same guard: -Dtest-supervise-delay must ADD an engine that holds each
+      # supervised answer 2 ms (the window WAIT_KILLABLE_RECV is for) and leave the shipped engine
+      # byte-identical. The unit test in src/main.zig asserting the shipped delay is 0 holds the
+      # literal; acceptance's supervised leg runs this engine where the suite is contained.
+      - name: Build the supervised-delay test engine, shipped engine unchanged (#217)
+        run: |
+          sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          zig build -Dtest-supervise-delay
+          sha_after=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          test -x zig-out/bin/sideeye-testsupervisedelay
+          test "$sha_before" = "$sha_after"
+
       # The ancestor probe (#358) needs its own invocation — folding it into the step
       # above would leave the new option unexercised — and asserts a property rather than
       # a difference. Both options keep their shipped value as a separate literal in

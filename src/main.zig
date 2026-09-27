@@ -100,6 +100,7 @@ const evidence = @import("evidence.zig");
 // The recovery phase (#606, ADR 0072): run after the exploration, never able to end the process.
 const recovery = @import("recovery.zig");
 const containment = @import("containment.zig");
+const supervise = @import("supervise.zig");
 // Aliased rather than spelled `defang.` at each site, so the call sites read as they did
 // when the bodies lived here (#572): the report-side callers outnumber the boundary's, and
 // a move that renames every one of them is a move that cannot be read as a move.
@@ -365,6 +366,31 @@ fn runOperationObserved(
     /// cgroup holds it and every process it follows.
     cg: ?*posix.CgroupSpawn,
 ) posix.Term {
+    const sup = superviseSpawn(gpa, arena, observe, op_argv, trace_path, state_abs, state_alt, 0, cg);
+    // The trace path stays out of a supervised target's environment: the engine writes the trace
+    // itself, and nothing in the target should be told where it is (review).
+    const env_trace = if (observe == .supervised) "" else trace_path;
+    const term = runOperationObservedSpawn(gpa, arena, sup.argv, state_abs, state_alt, preloadFor(observe, shim), oracle_path, oracle_out, env_trace, stdout_path, cwd, observe, cg);
+    sup.finish();
+    return term;
+}
+
+/// `runOperationObserved`'s spawn, with the argv and the preload already chosen for the mode.
+fn runOperationObservedSpawn(
+    gpa: std.mem.Allocator,
+    arena: std.mem.Allocator,
+    op_argv: []const []const u8,
+    state_abs: []const u8,
+    state_alt: []const u8,
+    shim: []const u8,
+    oracle_path: ?[]const u8,
+    oracle_out: []const u8,
+    trace_path: []const u8,
+    stdout_path: []const u8,
+    cwd: ?[]const u8,
+    observe: contract.ObserveMode,
+    cg: ?*posix.CgroupSpawn,
+) posix.Term {
     if (oracle_path) |strace_path| {
         // Environment goes to the target via strace's -E, not through our own
         // setenv: LD_PRELOAD applied here would load the shim into strace itself,
@@ -418,6 +444,56 @@ fn runOperationObserved(
         .{ contract.env.kill_aside, "" },
         .{ preload_var, shim },
     }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+}
+
+/// Under `--observe supervised` (#217, ADR 0089): the session that will count this spawn from
+/// outside it, and the argv that starts the operation through `sideeye __filter-exec`. For the
+/// other modes, no session and the operation's own argv. The session writes the trace the shim
+/// would have written, at the path the shim would have been told; the caller finishes it after
+/// the spawn returns and before anything reads that trace.
+const SupervisedSpawn = struct {
+    session: ?*supervise.Session,
+    argv: []const []const u8,
+
+    fn finish(self: SupervisedSpawn) void {
+        if (self.session) |s| s.finish();
+    }
+};
+
+fn superviseSpawn(
+    gpa: std.mem.Allocator,
+    arena: std.mem.Allocator,
+    observe: contract.ObserveMode,
+    op_argv: []const []const u8,
+    trace_path: []const u8,
+    state_abs: []const u8,
+    state_alt: []const u8,
+    kill_at: u32,
+    cg: ?*const posix.CgroupSpawn,
+) SupervisedSpawn {
+    if (observe != .supervised) return .{ .session = null, .argv = op_argv };
+    const self_exe = supervise.selfExe(arena) orelse
+        setupError(.environment, "--observe supervised: could not read /proc/self/exe to start the filter installer");
+    const s = supervise.Session.start(gpa, .{
+        .trace_path = trace_path,
+        .state_dir = state_abs,
+        .state_alt = state_alt,
+        .kill_at = kill_at,
+        .run_cgroup = containment.runName(cg),
+        .kill_cgroup = containment.killName(cg),
+    }) catch setupError(.environment, "--observe supervised: could not start the supervising thread");
+    const argv = supervise.wrapArgv(arena, self_exe, s.childFd(), op_argv) catch setupError(.environment, "out of memory");
+    return .{ .session = s, .argv = argv };
+}
+
+/// Who kept the account the oracle is compared with, for the sentences that name it.
+fn observerName(observe: contract.ObserveMode) []const u8 {
+    return if (observe == .supervised) "supervising engine" else "shim";
+}
+
+/// The preload a spawn gets: the shim, or nothing under `--observe supervised`, which loads none.
+fn preloadFor(observe: contract.ObserveMode, shim: []const u8) []const u8 {
+    return if (observe == .supervised) "" else shim;
 }
 
 /// The capture an observed run writes its evidence to, on both of the two branches
@@ -546,6 +622,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const argv = try init.args.toSlice(arena_state.allocator());
+
+    // `--observe supervised` (#217, ADR 0089): this binary started as the filter installer in
+    // front of the operation. It installs the filter, hands the listener to the engine that
+    // started it, and execs the operation — nothing else in `main` may run first, since every
+    // call it made would be the subject's.
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], supervise.exec_arg)) supervise.filterExec(argv);
 
     // `mcp` runs a stateless MCP stdio server and never returns to the explore/replay
     // pipeline below (that pipeline is entirely explore/replay-specific). It forwards
@@ -1459,6 +1541,21 @@ fn phaseRecording(run: *Run) void {
     // landing before the engine has decided it can proceed. It is not the whole check —
     // the shim announces its own install result and the trace is checked for it below —
     // it is the half that catches the ordinary environment before anything runs.
+    boundary.observe_mode = args.observe;
+    // Interrupted calls are dropped from the oracle's reading under this mode only (#217): its
+    // counting observer is the kernel's notification, which a signal withdraws.
+    oracle.fold_restarted = args.observe == .supervised;
+    if (args.observe == .supervised) {
+        if (!supervise.available)
+            setupError(.platform_unsupported, "--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which this platform has no equivalent of");
+        if (!supervise.kernelSupports())
+            setupError(.platform_unsupported, "--observe supervised needs a kernel that accepts a seccomp user-notification listener with SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV (Linux 5.19 or later), and this one does not");
+        // Required, not preferred (#217, review): the crash point's kill reaches a process that
+        // left the process group only through a cgroup, and without the shim there is nothing
+        // inside the process to notice that it left.
+        if (containment.spawn(false) == null)
+            setupError(.environment, "--observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group");
+    }
     if (args.observe == .syscalls) {
         if (builtin.os.tag != .linux)
             setupError(.platform_unsupported, "--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default)");
@@ -1707,6 +1804,8 @@ fn phaseStructural(run: *Run) void {
     // calls gaining a member a breaking change — and because this is what a setup error
     // is: the run could not be arranged the way the invocation declared, which is the
     // same reading the `apparatus` check uses for a device that was not there.
+    if (args.observe == .supervised and !std.mem.eql(u8, trace.observe_aux, contract.observe_aux.supervised))
+        setupError(.environment, "--observe supervised: the recording run's account was not written by the supervising engine, so its observation path cannot be claimed");
     if (args.observe == .syscalls and !std.mem.eql(u8, trace.observe_aux, contract.observe_aux.armed)) {
         if (std.mem.eql(u8, trace.observe_aux, contract.observe_aux.unsupported))
             setupError(.platform_unsupported, "--observe syscalls was asked for and the shim reports it cannot install a filter at all: this shim was built for a platform or an architecture whose trap frame it does not know. Rebuild the pair, or use --observe wrappers");
@@ -1955,7 +2054,10 @@ fn phaseOracle(run: *Run) void {
     // that says the two views agreed, and a reader should be able to see which is which
     // without knowing how the run was invoked.
     if (args.allow_unverified)
-        report.oracle_note = "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported";
+        report.oracle_note = if (args.observe == .supervised)
+            "NOT VERIFIED (--allow-unverified) — nothing checked what the supervising engine counted"
+        else
+            "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported";
     if (args.has_oracle) {
         // Set before the exits below, not after them. Every `unknown()` in this block is
         // raised by the oracle having run and disagreed; a report saying "not run" beside
@@ -2148,8 +2250,8 @@ fn phaseOracle(run: *Run) void {
         if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
             .missed => |m| unknown(.oracle_missed_operation, report.divergenceDetail(
                 arena,
-                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the shim did not record{s}", .{mode_hint}) catch
-                    "the oracle saw a state-directory operation the shim did not record",
+                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the {s} did not record{s}", .{ observerName(args.observe), mode_hint }) catch
+                    "the oracle saw a state-directory operation the observer did not record",
                 m.index,
                 shim_ops.items,
                 parsed.lines.items,
@@ -2157,8 +2259,8 @@ fn phaseOracle(run: *Run) void {
             ), boundary.missedOperationNext(args.observe, builtin.os.tag == .linux)),
             .phantom => |p| unknown(.oracle_saw_phantom, report.divergenceDetail(
                 arena,
-                std.fmt.allocPrint(arena, "the shim recorded an operation the oracle did not see{s}", .{mode_hint}) catch
-                    "the shim recorded an operation the oracle did not see",
+                std.fmt.allocPrint(arena, "the {s} recorded an operation the oracle did not see{s}", .{ observerName(args.observe), mode_hint }) catch
+                    "the observer recorded an operation the oracle did not see",
                 p.index,
                 shim_ops.items,
                 parsed.lines.items,
@@ -2628,11 +2730,12 @@ fn phaseExploration(run: *Run) void {
         // stopped and removed before its spawn returned.
         var wcg = containment.spawn(true);
         const wcg_ptr: ?*posix.CgroupSpawn = if (wcg) |*c| c else null;
-        const term = posix.runChildCaptureWorld(gpa, op_argv, &.{
+        const wsup = superviseSpawn(gpa, arena, args.observe, op_argv, world_trace, state_abs, state_alt, @intCast(k), wcg_ptr);
+        const wterm = posix.runChildCaptureWorld(gpa, wsup.argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
-            .{ contract.env.trace_path, world_trace },
+            .{ contract.env.trace_path, if (args.observe == .supervised) "" else world_trace },
             .{ contract.env.kill_at, kstr },
             // The engine has put this child in its own process group (`runChildImpl`),
             // so the shim may take the group down rather than one process. Set here and
@@ -2651,7 +2754,7 @@ fn phaseExploration(run: *Run) void {
             .{ contract.env.run_cgroup, containment.runName(wcg_ptr) },
             .{ contract.env.kill_cgroup, containment.killName(wcg_ptr) },
             .{ contract.env.kill_aside, containment.asideName(wcg_ptr) },
-            .{ preload_var, shim },
+            .{ preload_var, preloadFor(args.observe, shim) },
             // `exclusive` for the reason on `recordingCapture`, and free for the same
             // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
             // of this loop, so a re-run over one work directory never meets its own
@@ -2679,6 +2782,10 @@ fn phaseExploration(run: *Run) void {
             },
             error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
+        // Every process of the world is dead by now; the supervising thread's account is
+        // complete once it has been joined (#217).
+        wsup.finish();
+        const term = wterm;
 
         var wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
         refuse.answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
@@ -2692,6 +2799,8 @@ fn phaseExploration(run: *Run) void {
         // operation and the kill lands somewhere nobody chose. Everything above about
         // "the mode is a fact and not a request" applies here more sharply than to the
         // recording, because a wrong answer here is a verdict rather than a refusal.
+        if (args.observe == .supervised and !std.mem.eql(u8, wtrace.observe_aux, contract.observe_aux.supervised))
+            setupError(.environment, "--observe supervised: a world's account was not written by the supervising engine");
         if (args.observe == .syscalls and !std.mem.eql(u8, wtrace.observe_aux, contract.observe_aux.armed))
             setupError(.environment, "--observe syscalls was asked for and an explored world's shim does not report the filter installed, although the recording run's did: the crash point this world was told to stop at is an index into a sequence it did not count. Re-run, and if it repeats the environment is refusing the filter for some processes and not others");
 
@@ -3238,7 +3347,13 @@ fn phaseReport(run: *Run) void {
         else
             "";
         const replay_cmd = if (saved_case) |sc|
-            std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ sc, shim, recovery_flags }) catch "-"
+            (if (args.observe == .supervised)
+                // No shim to name, and the mode must be: a case does not record the mode that
+                // produced it (ADR 0052), and replayed without it a static target has no shim
+                // to count through (#217).
+                std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ sc, recovery_flags })
+            else
+                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ sc, shim, recovery_flags })) catch "-"
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -3305,7 +3420,10 @@ fn phaseReport(run: *Run) void {
             const creplay = if (same_world)
                 replay_cmd
             else if (csaved) |cc|
-                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ cc, shim, recovery_flags }) catch "-"
+                (if (args.observe == .supervised)
+                    std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ cc, recovery_flags })
+                else
+                    std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ cc, shim, recovery_flags })) catch "-"
             else
                 "-";
             // One bundle per case, so the shared-world case reuses the earliest's rather
@@ -3424,18 +3542,23 @@ fn phaseReport(run: *Run) void {
             \\processes   {s}
             \\not tested  {s}
             \\
-            \\reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} SIDEEYE_SEQ_BASE= <operation>
             \\
-        , .{
-            boundary.boundaryAccount(),
-            report.notTestedText(),
-            state_abs,
-            alt_env,
-            repro_trace,
-            preload_var,
-            shim,
-            f.k,
-        });
+        , .{ boundary.boundaryAccount(), report.notTestedText() });
+        // Under `--observe supervised` there is no shim to preload: the crash point is the
+        // engine's, counted from outside the target (#217), so the one command that reproduces
+        // it is the replay line above.
+        if (args.observe == .supervised)
+            // The replay line only where it is a command; a replay's own FAIL has none (review).
+            say("reproduce   {s}  (the crash point is the engine's, from outside the operation; there is no shim to preload)\n", .{if (saved_case != null) replay_cmd else "this run again, with --observe supervised"})
+        else
+            say("reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} SIDEEYE_SEQ_BASE= <operation>\n", .{
+                state_abs,
+                alt_env,
+                repro_trace,
+                preload_var,
+                shim,
+                f.k,
+            });
         if (args.json) |jp| report.writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
             .k = f.k,
             .after = after,
@@ -3984,11 +4107,17 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         // is the place that owes the reference.
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
+    // Under `--observe supervised` the next command names the mode, not a shim: there is no shim
+    // in that mode, and an explore without the flag counts through one the target cannot load.
+    const observe_part = if (boundary.observe_mode == .supervised)
+        "--observe supervised"
+    else
+        std.fmt.allocPrint(arena, "--shim {s}", .{shim}) catch "--shim <lib>";
     say(
         \\next         sideeye explore --state {s}{s}{s} --operation "{s}"{s} \
-        \\               --check <your-invariant.sh> --shim {s}{s}
+        \\               --check <your-invariant.sh> {s}{s}
         \\
-    , .{ state, setup_part, cwd_part, operation, expect_part, shim, oracle_part });
+    , .{ state, setup_part, cwd_part, operation, expect_part, observe_part, oracle_part });
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
@@ -4503,6 +4632,10 @@ test "the shipped engine options carry the shipped values (#365)" {
     // A shipped engine that never contained a run would be the comparison engine under the
     // shipped name (#559): every containment leg would compare it with itself and stay green.
     try std.testing.expect(!engine_build_options.no_cgroup);
+    // A shipped engine that delayed every supervised answer (#217) would be the test engine
+    // under the shipped name: slower, and the one measurement of WAIT_KILLABLE_RECV would
+    // compare it with itself.
+    try std.testing.expectEqual(@as(u32, 0), engine_build_options.supervise_reply_delay_ms);
 }
 
 test "the shipped trace caps fall back to the engine's constant (#365)" {
@@ -4517,7 +4650,7 @@ test "the shipped trace caps fall back to the engine's constant (#365)" {
     try std.testing.expectEqual(engine.max_trace_bytes_total, trace_budget_limit);
 }
 
-test "no sixth engine build option arrives unchecked (#365)" {
+test "no seventh engine build option arrives unchecked (#365)" {
     // The ratchet. Asserting five values says nothing about a SIXTH option arriving, and
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
@@ -4526,7 +4659,8 @@ test "no sixth engine build option arrives unchecked (#365)" {
     //
     // It fired for real on 2026-08-30: #377's `trace_budget_override` was the fourth, and
     // this test is what stopped it arriving without the two assertions above. #559's
-    // `no_cgroup` was the fifth.
+    // `no_cgroup` was the fifth. #217's `supervise_reply_delay_ms` was the sixth, and fired it
+    // on 2026-09-27 before its shipped-value assertion was read here.
     const decls = @typeInfo(engine_build_options).@"struct".decls;
-    try std.testing.expectEqual(@as(usize, 5), decls.len);
+    try std.testing.expectEqual(@as(usize, 6), decls.len);
 }

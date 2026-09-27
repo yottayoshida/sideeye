@@ -2779,6 +2779,140 @@ for m in wrappers syscalls; do
     fi
 done
 
+# ---- --observe supervised (#217, ADR 0089): the same static toy, counted from outside ----
+# The two legs above are the wall; these are the mode that goes past it. Needs a cgroup v2 the
+# engine can create cgroups in, so it runs where the suite is contained, and asserts the
+# refusal where it is not. The dynamic twin under the default mode is the comparison: the same
+# source, the same five crash points, the same earliest one. An engine that let the k-th call
+# run before killing would put the earliest FAIL at 4 (the unlink already done), not 5.
+sup_field() {   # sup_field <json>: verdict, crash points, earliest, oracle_verified
+    python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print((d["verdict"], d["crash_points"], (d.get("earliest") or {}).get("crash_point"), d.get("oracle_verified")))' "$1" 2>/dev/null
+}
+sup_explore() {   # sup_explore <dir> <toy> <mode flags...>
+    sd=$1; st=$2; shift 2
+    rm -rf "$sd" && mkdir -p "$sd/state"
+    TOY=$st "$SIDEEYE" explore --state "$sd/state" --setup "$st init" --operation "$st rotate" \
+        --check "$ROOT/spike/check.sh" "$@" --oracle /usr/bin/strace --work "$sd/work" \
+        --json "$sd/r.json" > "$sd/out.txt" 2>&1
+}
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    sup_explore /tmp/acc-sup "$OUT/toy-static" --observe supervised
+    sup_rc=$?
+    sup_explore /tmp/acc-dyn "$OUT/toy-bug" --shim "$SHIM"
+    s_v=$(sup_field /tmp/acc-sup/r.json)
+    d_v=$(sup_field /tmp/acc-dyn/r.json)
+    if [ "$sup_rc" = 1 ] && [ "$s_v" = "('FAIL', 5, 5, True)" ] && [ "$s_v" = "$d_v" ]; then
+        echo "ok   --observe supervised judges the static toy the default mode refuses: FAIL at crash point 5 of 5 with the oracle agreeing, as the dynamic twin under the default mode"
+    else
+        echo "FAIL --observe supervised on the static toy: exit $sup_rc $s_v, the dynamic twin $d_v (wanted ('FAIL', 5, 5, True) for both)"
+        sed 's/^/     | /' /tmp/acc-sup/out.txt | head -8
+        fails=$((fails + 1))
+    fi
+    if grep -q '^replay      sideeye replay .* --observe supervised' /tmp/acc-sup/out.txt; then
+        echo "ok   its replay line names the mode, not a shim"
+    else
+        echo "FAIL the supervised report's replay line does not name --observe supervised"
+        fails=$((fails + 1))
+    fi
+    case_sup=/tmp/acc-sup/work/cases/000001.json
+    o=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --observe supervised --oracle /usr/bin/strace --work /tmp/acc-sup/r1 2>&1)
+    r1=$?
+    o2=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc-sup/r2 2>&1)
+    r2=$?
+    if [ "$r1" = 1 ] && echo "$o" | grep -q "crash point 5 of 5" && [ "$r2" = 2 ] && echo "$o2" | grep -q "^UNKNOWN  no_shim_marker$"; then
+        echo "ok   the supervised case replays under --observe supervised at the same crash point, and refuses no_shim_marker without it"
+    else
+        echo "FAIL replaying the supervised case: with the mode exit $r1, without it exit $r2"
+        fails=$((fails + 1))
+    fi
+    # No oracle: the filter installer's exec into the operation is the launch, not an image
+    # change, so the run is not refused boundary_without_oracle (plan review, Major-1).
+    rm -rf /tmp/acc-sup/state /tmp/acc-sup/w3 && mkdir -p /tmp/acc-sup/state
+    o=$(TOY=$OUT/toy-static "$SIDEEYE" explore --state /tmp/acc-sup/state --setup "$OUT/toy-static init" \
+        --operation "$OUT/toy-static rotate" --check "$ROOT/spike/check.sh" --observe supervised \
+        --allow-unverified --work /tmp/acc-sup/w3 2>&1)
+    rc=$?
+    if [ "$rc" = 1 ] && echo "$o" | grep -q "crash point 5 of 5"; then
+        echo "ok   without an oracle the supervised run is judged, not refused for a boundary"
+    else
+        echo "FAIL the supervised run without an oracle: exit $rc (wanted 1, crash point 5 of 5)"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+    # Signals (#217 check 2). (b) before the engine takes a call: strace prints the interrupted
+    # entry `= ? ERESTARTSYS` and the restarted call, and the oracle must count one. The
+    # precondition is asserted, so a run in which no call happened to be interrupted cannot
+    # pass for the wrong reason. (a) after it: the delaying engine holds each call for 2 ms
+    # while the storm continues, so received calls ARE interrupted; without
+    # WAIT_KILLABLE_RECV such a run never finishes (measured), with it the count holds.
+    sup_sig() {   # sup_sig <engine>: sets ok_runs, er, caught over five runs
+        er=0; ok_runs=0; caught=0
+        for i in 1 2 3 4 5; do
+            rm -rf /tmp/acc-sig && mkdir -p /tmp/acc-sig/s
+            o=$(TOY_STATE=/tmp/acc-sig/s timeout 120 "$1" preflight --state /tmp/acc-sig/s \
+                --setup "$OUT/toy-supsig init" --operation "$OUT/toy-supsig rotate" \
+                --observe supervised --oracle /usr/bin/strace --work /tmp/acc-sig/w 2>&1)
+            if echo "$o" | grep -q "agreed on 80 operations"; then ok_runs=$((ok_runs + 1)); fi
+            n=$(grep -c ERESTART /tmp/acc-sig/w/oracle.txt 2>/dev/null)
+            er=$((er + ${n:-0}))
+            c=$(sed -n 's/^signals caught: //p' /tmp/acc-sig/w/stdout-record.txt 2>/dev/null)
+            caught=$((caught + ${c:-0}))
+        done
+    }
+    sup_sig "$SIDEEYE"
+    if [ "$ok_runs" = 5 ] && [ "$er" -gt 0 ]; then
+        echo "ok   under a signal storm the supervised count and the oracle agree on 80 operations in 5 of 5 runs, $er interrupted entries retracted"
+    else
+        echo "FAIL under a signal storm: $ok_runs of 5 runs agreed on 80 operations, $er interrupted entries in the captures (wanted 5 and more than 0)"
+        fails=$((fails + 1))
+    fi
+    # The thread wall the docs state: two writer threads, ordered by a join the shim would have
+    # recorded and this mode cannot, refuse rather than being judged. The dynamic twin under the
+    # default mode is the control that the same source IS judged there.
+    sup_threads() {   # sup_threads <label> <toy> <mode flags...>: exit status in th_rc
+        lb=$1; tt=$2; shift 2
+        rm -rf /tmp/acc-th/s /tmp/acc-th/w && mkdir -p /tmp/acc-th/s
+        TOY_STATE=/tmp/acc-th/s "$SIDEEYE" preflight --state /tmp/acc-th/s --setup "$tt init" \
+            --operation "$tt rotate" "$@" --oracle /usr/bin/strace --work /tmp/acc-th/w > "/tmp/acc-th-$lb.txt" 2>&1
+        th_rc=$?
+    }
+    mkdir -p /tmp/acc-th
+    sup_threads sup "$OUT/toy-supthreads" --observe supervised
+    th_sup_rc=$th_rc
+    sup_threads dyn "$OUT/toy-supthreads-dyn" --shim "$SHIM"
+    th_dyn_rc=$th_rc
+    if [ "$th_sup_rc" = 2 ] && grep -q "^UNKNOWN  multiple_threads_detected$" /tmp/acc-th-sup.txt && [ "$th_dyn_rc" = 0 ]; then
+        echo "ok   two writer threads refuse multiple_threads_detected under --observe supervised, and are judged under the shim"
+    else
+        echo "FAIL the thread wall: supervised exit $th_sup_rc, shim exit $th_dyn_rc (wanted 2 multiple_threads_detected, and 0)"
+        sed 's/^/     | /' /tmp/acc-th-sup.txt | head -4
+        fails=$((fails + 1))
+    fi
+    if [ -x "$ROOT/zig-out/bin/sideeye-testsupervisedelay" ]; then
+        sup_sig "$ROOT/zig-out/bin/sideeye-testsupervisedelay"
+        if [ "$ok_runs" = 5 ] && [ "$caught" -gt 0 ]; then
+            echo "ok   with each answer held 2 ms the count still agrees in 5 of 5 runs, $caught signals caught while calls waited"
+        else
+            echo "FAIL with each answer held 2 ms: $ok_runs of 5 runs agreed, $caught signals caught"
+            fails=$((fails + 1))
+        fi
+    else
+        echo "     NOT MEASURED: sideeye-testsupervisedelay is not built (zig build -Dtest-supervise-delay)"
+    fi
+else
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \
+        --observe supervised --work /tmp/acc/work 2>&1)
+    rc=$?
+    if [ "$rc" = 3 ] && echo "$o" | grep -q "needs a cgroup v2 the engine can create cgroups in"; then
+        echo "ok   uncontained, --observe supervised is a setup error that names the cgroup it needs"
+    else
+        echo "FAIL uncontained --observe supervised: exit $rc (wanted 3 naming the cgroup)"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+fi
+
 # ---- contract v14: the inherited filter's cost, pinned so it cannot drift silently ----
 # The mode's sharpest limit, and the only one here that changes what the TARGET does rather
 # than what Sideeye can see: a seccomp filter is inherited across exec and cannot be

@@ -60,7 +60,7 @@ witness would see it. None of the four trapped syscalls takes six arguments, whi
 makes the register free; a comptime check in `syscalls.zig` refuses a fifth member that
 would take it.
 
-**3. `SECCOMP_RET_USER_NOTIF` was declined.** It would put the engine itself in the
+**3. `SECCOMP_RET_USER_NOTIF` was declined.** *(Amended by ADR 0089, 2026-09-27: `--observe supervised` uses it, with strace watching the same run as a second, independent witness — the objection below answered by measurement, not reversed by argument.)* It would put the engine itself in the
 supervisor's seat, and `oracle_verified` — frozen by name in `docs/contract-freeze.md`
 surface 2 (#94) — would quietly go from "two observers agreed" to "one observer agreed with
 itself". Syscall User Dispatch was declined for a duller reason: the development kernel has

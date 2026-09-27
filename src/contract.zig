@@ -292,10 +292,20 @@ pub const ObserveMode = enum {
     /// correctly on both kernels either, so it is refused
     /// (`unsupported_syscall_observed`) rather than counted.
     syscalls,
+    /// From outside the process (#217, ADR 0089), Linux only. The engine starts the target
+    /// through `sideeye __filter-exec`, which installs a seccomp user-notification filter and
+    /// execs it; the engine then counts the same kill-point operations at the syscall
+    /// boundary from its own process, writing the trace itself, and no shim is loaded. What it
+    /// reaches that the other two cannot: a statically linked target, which has no loader to
+    /// take a shim. What it cannot judge: a run whose writes come from two threads — the
+    /// thread-order records are the shim's, read from inside `pthread_create` and
+    /// `pthread_join` — which refuses as `multiple_threads_detected`.
+    supervised,
 
     pub fn parse(text: []const u8) ?ObserveMode {
         if (std.mem.eql(u8, text, "wrappers")) return .wrappers;
         if (std.mem.eql(u8, text, "syscalls")) return .syscalls;
+        if (std.mem.eql(u8, text, "supervised")) return .supervised;
         return null;
     }
 
@@ -318,6 +328,9 @@ pub const observe_aux = struct {
     /// This build cannot install one at all — not Linux, or an architecture whose trap
     /// frame layout the shim does not know.
     pub const unsupported = "observe:syscalls-unsupported";
+    /// Written by the engine itself, not by a shim, under `--observe supervised` (#217): the
+    /// filter was installed and the engine holds its listener.
+    pub const supervised = "observe:supervised";
 };
 
 /// What a `cgroup` record's `aux` says (v17, #559). One class with six values rather than
@@ -425,6 +438,86 @@ pub const cgroup_aux = struct {
     /// group. Written before the kill, which ends the writer.
     pub const kill_alone = "cgroup:kill-alone";
 };
+
+/// Where a process stands against the run's cgroup (v17, #559), read from its `/proc/<pid>/cgroup`
+/// text. Here rather than in the shim since the supervised observer (#217, ADR 0089) answers the
+/// same question from outside the process, and one reading of that file is the only way the two
+/// observers cannot disagree about it.
+pub const CgroupStanding = enum { held, outside, unknown };
+
+pub const CgroupLine = struct {
+    run: []const u8,
+    /// Bytes of the current line seen so far.
+    col: usize = 0,
+    /// The current line still opens `0::`.
+    v2: bool = true,
+    /// Bytes of the path after `0::`.
+    path_len: usize = 0,
+    /// The path still agrees with `run`: equal to it so far, and past its end only across a
+    /// `/`, so a sibling whose name the run's is a prefix of is beside it and not inside it.
+    within: bool = true,
+
+    pub fn feed(self: *CgroupLine, b: u8) ?CgroupStanding {
+        if (b == '\n') return self.endLine();
+        defer self.col += 1;
+        if (self.col < 3) {
+            if (b != "0::"[self.col]) self.v2 = false;
+            return null;
+        }
+        if (!self.v2) return null;
+        const i = self.path_len;
+        self.path_len += 1;
+        if (i < self.run.len) {
+            if (b != self.run[i]) self.within = false;
+        } else if (i == self.run.len and self.run.len > 0) {
+            if (self.run[self.run.len - 1] != '/' and b != '/') self.within = false;
+        }
+        return null;
+    }
+
+    fn endLine(self: *CgroupLine) ?CgroupStanding {
+        const answer: ?CgroupStanding = if (self.v2 and self.col >= 3)
+            (if (self.run.len > 0 and self.within and self.path_len >= self.run.len) .held else .outside)
+        else
+            null;
+        self.* = .{ .run = self.run };
+        return answer;
+    }
+
+    /// The file ended; a last line with no newline still counts.
+    pub fn finish(self: *CgroupLine) CgroupStanding {
+        return self.endLine() orelse .unknown;
+    }
+};
+
+pub fn standingOf(text: []const u8, run: []const u8) CgroupStanding {
+    var line: CgroupLine = .{ .run = run };
+    for (text) |b| {
+        if (line.feed(b)) |answer| return answer;
+    }
+    return line.finish();
+}
+
+test "a process is within the run's cgroup at it or below it, never beside it, wherever its line sits (v17, #559)" {
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab/inner\n", "/sideeye-1-ab"));
+    // A sibling whose name the run's is a prefix of is beside it, not inside it.
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-abc\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/any/thing\n", "/"));
+    // No run cgroup is nothing to be within.
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-ab\n", ""));
+    // A hybrid host lists its v1 hierarchies first; the answer is the `0::` line's, and a
+    // v1 line that mentions the run's path is not it.
+    const hybrid = "12:memory:/sideeye-1-ab\n11:pids:/user.slice\n10:devices:/user.slice\n9:blkio:/user.slice\n" ++
+        "8:cpu,cpuacct:/user.slice\n1:name=systemd:/user.slice/user-1000.slice/session-2.scope\n0::/sideeye-1-ab/w\n";
+    try std.testing.expectEqual(CgroupStanding.held, standingOf(hybrid, "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.outside, standingOf("12:memory:/sideeye-1-ab\n0::/user.slice\n", "/sideeye-1-ab"));
+    // The last line needs no newline; a file with no `0::` line at all has no answer.
+    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.unknown, standingOf("12:memory:/x\n", "/sideeye-1-ab"));
+    try std.testing.expectEqual(CgroupStanding.unknown, standingOf("10::/sideeye-1-ab\n", "/sideeye-1-ab"));
+}
 
 pub const unresolved_kind = struct {
     /// The path could not be resolved at all (`resolveAt` failed).

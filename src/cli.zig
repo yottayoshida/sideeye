@@ -154,10 +154,10 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls] [--work <dir>] [--twice]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--twice]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
     \\  sideeye help
@@ -269,7 +269,7 @@ const usage_fmt =
     \\               case may point the deletion. The MCP server passes its
     \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
     \\               replay
-    \\  --observe wrappers|syscalls
+    \\  --observe wrappers|syscalls|supervised
     \\               where operations are counted. Default `wrappers`: the
     \\               interposed libc entry points, with buffered stdio observed at
     \\               flush granularity (ADR 0005). `syscalls` (Linux) counts at the
@@ -300,6 +300,18 @@ const usage_fmt =
     \\               sigaction/signal/sigprocmask/pthread_sigmask against it, which a
     \\               target can notice, but not every way in: docs/report-schema.md
     \\               item (4) names the ways known
+    \\               `supervised` (Linux 5.19+, aarch64/x86_64) counts from OUTSIDE
+    \\               the target: the engine starts it through a seccomp
+    \\               user-notification filter, no shim is loaded, and each
+    \\               state-changing call waits for the engine, which counts it and
+    \\               lets it run — or, at the crash point, kills the run before it
+    \\               runs. The mode for a statically linked target, which the other
+    \\               two refuse as no_shim_marker. It needs a cgroup v2 the engine
+    \\               can create cgroups in. Its walls: a run whose writes come from
+    \\               two threads refuses (the thread-order records are the shim's);
+    \\               a target that installs its own seccomp filter can hide calls
+    \\               from it; setuid children lose their privilege (no_new_privs).
+    \\               Its case replays with --observe supervised, not --shim
     \\  --allow-unverified
     \\               accept PASS with no completeness check. On macOS this is the
     \\               answer when no privilege is available: SIP leaves DTrace's
@@ -540,7 +552,7 @@ pub fn parse(argv: []const []const u8) Parsed {
         const v = argv[i + 1];
         if (std.mem.eql(u8, argv[i], "--observe")) {
             args.observe = contract.ObserveMode.parse(v) orelse
-                setupError(.define_invalid, "--observe takes `wrappers` (the default) or `syscalls`");
+                setupError(.define_invalid, "--observe takes `wrappers` (the default), `syscalls` or `supervised`");
         } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).

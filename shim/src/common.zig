@@ -1206,6 +1206,10 @@ pub fn init() void {
     if (c.getenv(contract.env.observe)) |raw| {
         if (contract.ObserveMode.parse(std.mem.span(raw))) |mode| switch (mode) {
             .wrappers => {},
+            // The engine starts a supervised target without this shim and counts it itself
+            // (#217). A shim loaded anyway — `/etc/ld.so.preload`, a wrapper's own LD_PRELOAD —
+            // stays silent rather than count the same operations a second time (review).
+            .supervised => return,
             .syscalls => observe_note = blk: {
                 // Before the filter, not after: a trap can arrive the instant it is up,
                 // and the guards are what keep the signal reaching the handler. Set here
@@ -1321,7 +1325,7 @@ fn relocateHigh(fd: c_int) c_int {
     return fd;
 }
 
-const CgroupStanding = enum { held, outside, unknown };
+const CgroupStanding = contract.CgroupStanding;
 
 /// Move this process from the run's `work` cgroup up into the run's own (v17, #559), so the
 /// crash point's `cgroup.kill` does not end it before its group kill. False when there is
@@ -1412,79 +1416,9 @@ fn cgroupStandingAt(proc_path: [*:0]const u8) CgroupStanding {
 
 /// One `/proc/self/cgroup` line at a time, fed a byte at a time, answering at the end of the
 /// first `0::` line whether its path is the run's cgroup or below it.
-const CgroupLine = struct {
-    run: []const u8,
-    /// Bytes of the current line seen so far.
-    col: usize = 0,
-    /// The current line still opens `0::`.
-    v2: bool = true,
-    /// Bytes of the path after `0::`.
-    path_len: usize = 0,
-    /// The path still agrees with `run`: equal to it so far, and past its end only across a
-    /// `/`, so a sibling whose name the run's is a prefix of is beside it and not inside it.
-    within: bool = true,
+const CgroupLine = contract.CgroupLine;
+const standingOf = contract.standingOf;
 
-    fn feed(self: *CgroupLine, b: u8) ?CgroupStanding {
-        if (b == '\n') return self.endLine();
-        defer self.col += 1;
-        if (self.col < 3) {
-            if (b != "0::"[self.col]) self.v2 = false;
-            return null;
-        }
-        if (!self.v2) return null;
-        const i = self.path_len;
-        self.path_len += 1;
-        if (i < self.run.len) {
-            if (b != self.run[i]) self.within = false;
-        } else if (i == self.run.len and self.run.len > 0) {
-            if (self.run[self.run.len - 1] != '/' and b != '/') self.within = false;
-        }
-        return null;
-    }
-
-    fn endLine(self: *CgroupLine) ?CgroupStanding {
-        const answer: ?CgroupStanding = if (self.v2 and self.col >= 3)
-            (if (self.run.len > 0 and self.within and self.path_len >= self.run.len) .held else .outside)
-        else
-            null;
-        self.* = .{ .run = self.run };
-        return answer;
-    }
-
-    /// The file ended; a last line with no newline still counts.
-    fn finish(self: *CgroupLine) CgroupStanding {
-        return self.endLine() orelse .unknown;
-    }
-};
-
-fn standingOf(text: []const u8, run: []const u8) CgroupStanding {
-    var line: CgroupLine = .{ .run = run };
-    for (text) |b| {
-        if (line.feed(b)) |answer| return answer;
-    }
-    return line.finish();
-}
-
-test "a process is within the run's cgroup at it or below it, never beside it, wherever its line sits (v17, #559)" {
-    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab\n", "/sideeye-1-ab"));
-    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab/inner\n", "/sideeye-1-ab"));
-    // A sibling whose name the run's is a prefix of is beside it, not inside it.
-    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-abc\n", "/sideeye-1-ab"));
-    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/\n", "/sideeye-1-ab"));
-    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/any/thing\n", "/"));
-    // No run cgroup is nothing to be within.
-    try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-ab\n", ""));
-    // A hybrid host lists its v1 hierarchies first; the answer is the `0::` line's, and a
-    // v1 line that mentions the run's path is not it.
-    const hybrid = "12:memory:/sideeye-1-ab\n11:pids:/user.slice\n10:devices:/user.slice\n9:blkio:/user.slice\n" ++
-        "8:cpu,cpuacct:/user.slice\n1:name=systemd:/user.slice/user-1000.slice/session-2.scope\n0::/sideeye-1-ab/w\n";
-    try std.testing.expectEqual(CgroupStanding.held, standingOf(hybrid, "/sideeye-1-ab"));
-    try std.testing.expectEqual(CgroupStanding.outside, standingOf("12:memory:/sideeye-1-ab\n0::/user.slice\n", "/sideeye-1-ab"));
-    // The last line needs no newline; a file with no `0::` line at all has no answer.
-    try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab", "/sideeye-1-ab"));
-    try std.testing.expectEqual(CgroupStanding.unknown, standingOf("12:memory:/x\n", "/sideeye-1-ab"));
-    try std.testing.expectEqual(CgroupStanding.unknown, standingOf("10::/sideeye-1-ab\n", "/sideeye-1-ab"));
-}
 
 pub fn stateDir() []const u8 {
     return state_dir_buf[0..state_dir_len];

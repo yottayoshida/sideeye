@@ -531,6 +531,50 @@ fn setPending(arena: std.mem.Allocator, list: *std.ArrayList(PendingWrite), w: P
     try list.append(arena, w);
 }
 
+/// Mark a pending entry's operation and mutation dead, for the compaction at the end.
+fn retract(
+    arena: std.mem.Allocator,
+    q: PendingWrite,
+    dead_ops: *std.ArrayList(usize),
+    dead_muts: *std.ArrayList(usize),
+    out: anytype,
+) !void {
+    if (q.op) |i| {
+        try dead_ops.append(arena, i);
+        // A pending entry carrying an `op` index was set on the subject path, which
+        // increments this counter before it appends — so the count cannot be zero here.
+        // Asserted rather than saturated: `-|` would absorb a future path that sets `.op`
+        // without counting the line, and absorbing it is how the count would go quietly wrong.
+        std.debug.assert(out.lines_in_scope > 0);
+        out.lines_in_scope -= 1;
+    }
+    if (q.mutation) |i| try dead_muts.append(arena, i);
+}
+
+/// Whether interrupted calls are dropped (#217). Set by the engine under `--observe supervised`
+/// only, where the counting observer is the kernel's notification: a signal that takes a call
+/// back before the engine received it withdraws the notification, so the engine counted nothing
+/// and the interrupted entry must not count either. Under the shim it stays off — the shim counts
+/// at libc's entry whatever the kernel does next, and a call that returns EINTR without SA_RESTART
+/// is one count there and one entry here (review, P1).
+pub var fold_restarted: bool = false;
+
+/// strace's spelling of a call a signal interrupted before it completed, read at the END of the
+/// line, where strace puts the return: a target-chosen string inside the arguments cannot reach
+/// it, because the arguments are followed by `) = <return>` (review, P1 — the first version found
+/// the text anywhere in the line, so a write carrying it erased its own entry).
+fn isRestartedCall(line: []const u8) bool {
+    const t = std.mem.trimEnd(u8, line, " \t\r");
+    const tails = [_][]const u8{
+        " = ? ERESTARTSYS (To be restarted if SA_RESTART is set)",
+        " = ? ERESTARTNOINTR (To be restarted)",
+        " = ? ERESTARTNOHAND (To be restarted if no handler)",
+        " = ? ERESTART_RESTARTBLOCK (Interrupted by signal)",
+    };
+    for (tails) |tail| if (std.mem.endsWith(u8, t, tail)) return true;
+    return false;
+}
+
 /// Rebuild the lists without the retracted entries, once, at the end of the parse.
 ///
 /// Removing an entry the moment its refusal was read would have been wrong: every index
@@ -1262,18 +1306,24 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // reason as the two readers above: `syscallName` answers null for a
             // `--- … ---` line, and a test in this file pins that.
             if (isSeccompRefusal(line)) {
+                if (takePending(&pending, pid)) |q| try retract(arena, q, &dead_ops, &dead_muts, &out);
+                continue;
+            }
+            // A call a signal interrupted before it ran (#217): strace prints its entry and
+            // then `= ? ERESTARTSYS` (or another `ERESTART*`), and the call is restarted by the
+            // kernel under SA_RESTART or answers EINTR without one — either way this entry
+            // did not change the state, and the restarted call, if any, is its own line.
+            // Counting both made the oracle one operation ahead of every observer that counts
+            // a call once (the shim at libc's entry; the supervising engine, whose
+            // notification a signal withdraws before it is received). The split shape
+            // retracts the entry its unfinished half appended; the whole-line shape is never
+            // appended.
+            if (fold_restarted and isRestartedCall(line)) {
+                // Either shape ends the window a refusal could retract in: the split one by
+                // retracting the entry its unfinished half appended, the whole-line one by
+                // closing it before the line is dropped (review).
                 if (takePending(&pending, pid)) |q| {
-                    if (q.op) |i| {
-                        try dead_ops.append(arena, i);
-                        // A pending entry carrying an `op` index was set on the subject
-                        // path, which increments this counter before it appends — so the
-                        // count cannot be zero here. Asserted rather than saturated: `-|`
-                        // would absorb a future path that sets `.op` without counting the
-                        // line, and absorbing it is how the count would go quietly wrong.
-                        std.debug.assert(out.lines_in_scope > 0);
-                        out.lines_in_scope -= 1;
-                    }
-                    if (q.mutation) |i| try dead_muts.append(arena, i);
+                    if (std.mem.indexOf(u8, line, " resumed>") != null) try retract(arena, q, &dead_ops, &dead_muts, &out);
                 }
                 continue;
             }
@@ -1532,7 +1582,9 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // a child had not been collected yet, and the parent is the anyone else that
             // most often has.
             if (pid) |me| try noteEvent(arena, &out.mutations, me, out.lines_seen);
-            if (isTrapped(name, line)) try setPending(arena, &pending, .{
+            // Under `--observe supervised` every appended entry can be retracted, not only the
+            // trapped family: `pwritev2` and `copy_file_range` are counted there too (review).
+            if (isTrapped(name, line) or fold_restarted) try setPending(arena, &pending, .{
                 .pid = pid,
                 .op = out.classes.items.len - 1,
                 .mutation = if (pid == null) null else out.mutations.items.len - 1,
@@ -3190,4 +3242,84 @@ test "a move between cgroups is seen from any process, and a read, a failure or 
     // Before the launch the lines are the apparatus's, as for every other reading here.
     const early = try parse(a, "4242  openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_WRONLY) = 3\n", "/tmp/s", "", "/work");
     try std.testing.expect(early.cgroup_move == null);
+}
+
+test "a call a signal interrupted before it ran is not counted, in either shape strace prints it (#217)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The two shapes measured under `--observe supervised` (2026-09-27): the split one, where
+    // the resumed half carries `= ? ERESTARTSYS`, and the one-line one. Each is followed by
+    // the restarted call, which is the one that ran.
+    const text =
+        \\45    execve("/tmp/toy-sig", ["toy-sig", "rotate"], 0x7ff) = 0
+        \\45    write(3</tmp/sg/f.tmp>, "x\n", 2 <unfinished ...>
+        \\46    kill(45, SIGUSR1 <unfinished ...>
+        \\45    <... write resumed>)              = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+        \\46    <... kill resumed>)               = 0
+        \\45    --- SIGUSR1 {si_signo=SIGUSR1, si_code=SI_USER, si_pid=45, si_uid=0} ---
+        \\45    write(3</tmp/sg/f.tmp>, "x\n", 2) = 2
+        \\45    openat(AT_FDCWD</work>, "/tmp/sg/f.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+        \\45    --- SIGUSR1 {si_signo=SIGUSR1, si_code=SI_USER, si_pid=45, si_uid=0} ---
+        \\45    openat(AT_FDCWD</work>, "/tmp/sg/f.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 4</tmp/sg/f.tmp>
+        \\
+    ;
+    fold_restarted = true;
+    defer fold_restarted = false;
+    const p = try parse(arena_state.allocator(), text, "/tmp/sg", "", "/work");
+    const want = [_]contract.OpClass{ .write, .open };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+    try std.testing.expectEqual(@as(usize, 2), p.lines_in_scope);
+    try std.testing.expect(std.mem.endsWith(u8, p.lines.items[0], "= 2"));
+}
+
+test "the control: the same calls without the interruption are counted once each (#217)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const text =
+        \\45    execve("/tmp/toy-sig", ["toy-sig", "rotate"], 0x7ff) = 0
+        \\45    write(3</tmp/sg/f.tmp>, "x\n", 2 <unfinished ...>
+        \\46    kill(45, SIGUSR1 <unfinished ...>
+        \\45    <... write resumed>)              = 2
+        \\45    write(3</tmp/sg/f.tmp>, "x\n", 2) = 2
+        \\45    openat(AT_FDCWD</work>, "/tmp/sg/f.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 4</tmp/sg/f.tmp>
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/sg", "", "/work");
+    const want = [_]contract.OpClass{ .write, .write, .open };
+    try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
+}
+
+test "outside --observe supervised an interrupted call still counts, as the shim at libc's entry counts it (#217 review)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    // The wrappers-mode EINTR shape: no SA_RESTART, so the kernel does not restart; libc returns
+    // -1/EINTR and the program retries. The shim counted twice (once per libc call), and the
+    // oracle must too.
+    const text =
+        \\45    execve("/tmp/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\45    write(3</tmp/sg/f.tmp>, "x\\n", 2) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+        \\45    --- SIGUSR1 {si_signo=SIGUSR1, si_code=SI_USER, si_pid=45, si_uid=0} ---
+        \\45    write(3</tmp/sg/f.tmp>, "x\\n", 2) = 2
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/sg", "", "/work");
+    try std.testing.expectEqual(@as(usize, 2), p.classes.items.len);
+}
+
+test "a target-chosen string cannot pass for strace's interrupted-call return (#217 review)" {
+    // The data is inside the arguments; the return follows them. Only the tail is strace's.
+    try std.testing.expect(!isRestartedCall("45    write(3</s/f>, \" = ? ERESTARTSYS (To be restarted if SA_RESTART is set)\", 57) = 57"));
+    try std.testing.expect(isRestartedCall("45    <... write resumed>)              = ? ERESTARTSYS (To be restarted if SA_RESTART is set)"));
+    try std.testing.expect(isRestartedCall("45    openat(AT_FDCWD</w>, \"/s/f\", O_WRONLY) = ? ERESTARTNOINTR (To be restarted)"));
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    fold_restarted = true;
+    defer fold_restarted = false;
+    const text =
+        \\45    execve("/tmp/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\45    write(3</tmp/sg/f>, " = ? ERESTARTSYS (To be restarted if SA_RESTART is set)", 57) = 57
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/sg", "", "/work");
+    try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
 }

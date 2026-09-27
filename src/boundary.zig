@@ -56,6 +56,9 @@ pub var rec_image: ?image.Observation = null;
 /// assignment sites each overwrote the whole sentence, and the world-only one dropped the
 /// image-replacement disclosure the recording had set (#123) with nothing to catch it.
 pub var boundary_ev: BoundaryEvidence = .{};
+/// The run's observation mode, for the sentences that say what the observer can see (#217):
+/// under `--observe supervised` it is the engine, at the syscall boundary, not a shim at libc's.
+pub var observe_mode: contract.ObserveMode = .wrappers;
 
 pub const BoundaryEvidence = struct {
     /// The completeness observer, and how far it got. Named is not the same as read.
@@ -444,9 +447,12 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
     };
     return switch (ev.witness) {
         // #405: the one assertion the old default made on every unwitnessed run.
-        .none => "not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran",
-        .unread => |k| std.fmt.bufPrint(scratch, "not established: no boundary was recorded by the shim, and the {s} account was not read", .{k.name()}) catch
-            "not established: no boundary was recorded by the shim, and the oracle's account was not read",
+        .none => if (observe_mode == .supervised)
+            "not established: no boundary was recorded — the supervising engine is notified of clone, clone3, fork, vfork, the exec family, setsid and setpgid at the syscall boundary, from outside the target — but no second witness ran"
+        else
+            "not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran",
+        .unread => |k| std.fmt.bufPrint(scratch, "not established: no boundary was recorded by the {s}, and the {s} account was not read", .{ if (observe_mode == .supervised) "supervising engine" else "shim", k.name() }) catch
+            "not established: no boundary was recorded, and the oracle's account was not read",
         .read => |r| switch (r.kind) {
             // strace follows children (`-f`), so no other pid in its account is an
             // observation that there was none.
@@ -1149,7 +1155,10 @@ pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
         .elf => |e| if (e.has_interp)
             "it names an interpreter, so it is dynamically linked and the marker's absence has another cause"
         else
-            "it names no interpreter, so it is statically linked and no preloaded library can reach it",
+            // The mode that goes past this wall is named here, in the sentence, because the step
+            // beside it is `class_wall` and the step set is closed (#217): on Linux,
+            // `--observe supervised` counts such a target from outside it.
+            "it names no interpreter, so it is statically linked and no preloaded library can reach it; on Linux 5.19 or later, on aarch64 or x86_64, --observe supervised counts it from outside the process instead",
         .macho => |m| blk: {
             const s = m.signing orelse break :blk if (m.dyldlink)
                 "it is dynamically linked and carries no code signature"
