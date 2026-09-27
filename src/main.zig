@@ -1990,14 +1990,19 @@ fn phaseOracle(run: *Run) void {
     // without knowing how the run was invoked.
     if (args.allow_unverified)
         report.oracle_note = if (args.observe == .supervised)
-            "NOT VERIFIED (--allow-unverified) — nothing checked what the supervising engine counted"
+            "NOT VERIFIED (--allow-unverified) — nothing checked what the supervising engine counted from outside the target, with no shim loaded"
         else
             "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported";
     if (args.has_oracle) {
         // Set before the exits below, not after them. Every `unknown()` in this block is
         // raised by the oracle having run and disagreed; a report saying "not run" beside
         // `unknown_reason: oracle_missed_operation` contradicts itself.
-        report.oracle_note = "ran; the comparison did not complete";
+        report.oracle_note = if (args.observe == .supervised)
+            // Who kept the account the oracle disagreed with is most needed exactly here, on a
+            // run the comparison refused (#217 review): the engine's, not a shim's.
+            "ran; the comparison did not complete — the account compared was the supervising engine's, counted from outside the target with no shim loaded"
+        else
+            "ran; the comparison did not complete";
         // "could not be read", not "produced no output": an oracle that ran and
         // recorded nothing leaves a readable empty file, which the lines-seen check
         // below answers with oracle_saw_nothing. This site fires when the capture
@@ -2269,6 +2274,18 @@ fn phaseOracle(run: *Run) void {
                     "{s} of THIS run — the kernel refuses each trapped call and the handler re-issues it, " ++
                         "so the capture carries the refused entry beside the one that ran; each refused entry " ++
                         "is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read",
+                    .{note},
+                ) catch note;
+            if (args.observe == .supervised)
+                // Who counted, in the line a reader already looks at for the witness (#217, ADR
+                // 0089). Under this mode the account the oracle is compared with is the engine's,
+                // taken from outside the target, and the capture was read with one rule the other
+                // modes do not use.
+                note = std.fmt.allocPrint(
+                    arena,
+                    "{s} of THIS run — the operations were counted from outside the target by the supervising " ++
+                        "engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle " ++
+                        "does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)",
                     .{note},
                 ) catch note;
             if (run.admitted.children_admitted)
