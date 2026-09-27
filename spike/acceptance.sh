@@ -2808,6 +2808,16 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
         sed 's/^/     | /' /tmp/acc-sup/out.txt | head -8
         fails=$((fails + 1))
     fi
+    # Who counted is said where the witness is read (#217): the oracle line of the supervised run
+    # names the engine and the absent shim; the dynamic twin's, counted by the shim, does not.
+    if grep '^oracle ' /tmp/acc-sup/out.txt | grep -q "counted from outside the target by the supervising engine" &&
+       grep -q '^oracle .*witness strace' /tmp/acc-dyn/out.txt &&
+       ! grep '^oracle ' /tmp/acc-dyn/out.txt | grep -q "supervising engine"; then
+        echo "ok   the supervised report's oracle line says the engine counted from outside, and the shim run's does not"
+    else
+        echo "FAIL the oracle lines: supervised '$(grep '^oracle ' /tmp/acc-sup/out.txt | cut -c1-80)', shim '$(grep '^oracle ' /tmp/acc-dyn/out.txt | cut -c1-80)'"
+        fails=$((fails + 1))
+    fi
     if grep -q '^replay      sideeye replay .* --observe supervised' /tmp/acc-sup/out.txt; then
         echo "ok   its replay line names the mode, not a shim"
     else
