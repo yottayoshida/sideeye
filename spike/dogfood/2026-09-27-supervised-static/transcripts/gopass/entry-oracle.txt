@@ -1,0 +1,255 @@
+54    execve("/usr/local/bin/gopass", ["/usr/local/bin/gopass", "generate", "--print=false", "test/generated", "20"], 0xaaaad6d2f8c0 /* 21 vars */) = 0
+54    openat(AT_FDCWD</w>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+54    read(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>, "2097152\n", 20) = 8
+54    close(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>) = 0
+54    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaac48000
+54    mmap(NULL, 131072, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaac28000
+54    mmap(NULL, 1048576, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaab28000
+54    mmap(NULL, 8388608, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaa200000
+54    mmap(NULL, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffa6200000
+54    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff86200000
+54    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff66200000
+54    mmap(0x4000000000, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x4000000000
+54    mmap(NULL, 33554432, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff64200000
+54    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaab16000
+54    mmap(0x4000000000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x4000000000
+54    mmap(0xffffaac28000, 131072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffaac28000
+54    mmap(0xffffaab28000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffaab28000
+54    mmap(0xffffaa202000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffaa202000
+54    mmap(0xffffa6210000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffa6210000
+54    mmap(0xffff86280000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff86280000
+54    mmap(0xffff66280000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff66280000
+54    mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaaa16000
+54    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaaa06000
+54    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff641f0000
+54    fcntl(0</dev/null>, F_GETFD)      = 0
+54    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFD) = 0
+54    fcntl(2</out/gopass/entry-preflight.txt>, F_GETFD) = 0
+54    openat(AT_FDCWD</w>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/54/mountinfo>
+54    read(3</proc/54/mountinfo>, "143 92 0:62 / / rw,relatime - ov"..., 65536) = 3052
+54    read(3</proc/54/mountinfo>, "", 65536) = 0
+54    close(3</proc/54/mountinfo>)      = 0
+54    openat(AT_FDCWD</w>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/54/cgroup>
+54    read(3</proc/54/cgroup>, "0::/sideeye-45-b3b46d5ff0cf0293/"..., 65536) = 37
+54    read(3</proc/54/cgroup>, "", 65536) = 0
+54    close(3</proc/54/cgroup>)         = 0
+54    openat(AT_FDCWD</w>, "/sys/fs/cgroup/sideeye-45-b3b46d5ff0cf0293/work/cpu.max", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+54    clone(child_stack=0x4000044000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 55
+54    clone(child_stack=0x4000088000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 56
+54    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff641b0000
+54    clone(child_stack=0x4000084000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 57
+56    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff64170000
+56    mmap(NULL, 1439992, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff64010000
+56    clone(child_stack=0x4000116000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 58
+54    clone(child_stack=0x4000112000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 59
+54    fcntl(0</dev/null>, F_GETFL)      = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+54    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFL) = 0x28001 (flags O_WRONLY|O_LARGEFILE|O_NOFOLLOW)
+54    fcntl(2</out/gopass/entry-preflight.txt>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+54    openat(AT_FDCWD</w>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 3</proc/54/auxv>
+54    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63fd0000
+55    tgkill(54, 54, SIGURG)            = 0
+54    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=54, si_uid=0} ---
+54    fcntl(3</proc/54/auxv>, F_GETFL)  = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+54    fcntl(3</proc/54/auxv>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+54    epoll_create1(EPOLL_CLOEXEC)      = 4<anon_inode:[eventpoll]>
+54    eventfd2(0, EFD_CLOEXEC|EFD_NONBLOCK) = 5<anon_inode:[eventfd]>
+54    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 5<anon_inode:[eventfd]>, {events=EPOLLIN, data={u32=19451000, u64=19451000}}) = 0
+54    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</proc/54/auxv>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524097, u64=18446572653914357761}}) = -1 EPERM (Operation not permitted)
+54    fcntl(3</proc/54/auxv>, F_GETFL)  = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+54    fcntl(3</proc/54/auxv>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+54    fstat(3</proc/54/auxv>, {st_mode=S_IFREG|0400, st_size=0, ...}) = 0
+54    read(3</proc/54/auxv>, "!\0\0\0\0\0\0\0\0\240\310\252\377\377\0\0003\0\0\0\0\0\0\0p\22\0\0\0\0\0\0"..., 512) = 336
+54    read(3</proc/54/auxv>, "", 944)   = 0
+54    close(3</proc/54/auxv>)           = 0
+54    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x4000189dc0) = -1 ENOTTY (Inappropriate ioctl for device)
+54    ioctl(1</tmp/se-work/stdout-record.txt>, TCGETS, 0x4000189cbc) = -1 ENOTTY (Inappropriate ioctl for device)
+54    ioctl(2</out/gopass/entry-preflight.txt>, TCGETS, 0x4000189cfc) = -1 ENOTTY (Inappropriate ioctl for device)
+54    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63f90000
+54    clone(child_stack=0x40003d2000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 60
+59    openat(AT_FDCWD</w>, "/tmp/gp/.config/gopass/config", O_RDONLY|O_CLOEXEC) = 3</tmp/gp/.config/gopass/config>
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+59    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.config/gopass/config>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524098, u64=18446572653914357762}} <unfinished ...>
+57    mmap(0x4000400000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+59    <... epoll_ctl resumed>)          = -1 EPERM (Operation not permitted)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_GETFL <unfinished ...>
+57    <... mmap resumed>)               = 0x4000400000
+59    <... fcntl resumed>)              = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_SETFL, O_RDONLY|O_LARGEFILE <unfinished ...>
+57    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+59    <... fcntl resumed>)              = 0
+57    <... mmap resumed>)               = 0xffff63f50000
+59    read(3</tmp/gp/.config/gopass/config>, "[mounts]\n\tpath = ~/.local/share/"..., 4096) = 137
+59    read(3</tmp/gp/.config/gopass/config>,  <unfinished ...>
+57    clone(child_stack=0x40003ce000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+59    <... read resumed>"", 3959)       = 0
+59    close(3</tmp/gp/.config/gopass/config>) = 0
+57    <... clone resumed>)              = 61
+59    openat(AT_FDCWD</w>, "/etc/gopass/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+59    openat(AT_FDCWD</w>, "/tmp/gp/.config/gopass/config", O_RDONLY|O_CLOEXEC) = 3</tmp/gp/.config/gopass/config>
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_GETFL <unfinished ...>
+61    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+59    <... fcntl resumed>)              = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+61    <... mmap resumed>)               = 0xffff63f10000
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+59    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.config/gopass/config>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524099, u64=18446572653914357763}}) = -1 EPERM (Operation not permitted)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+59    read(3</tmp/gp/.config/gopass/config>, "[mounts]\n\tpath = ~/.local/share/"..., 4096) = 137
+59    read(3</tmp/gp/.config/gopass/config>, "", 3959) = 0
+59    close(3</tmp/gp/.config/gopass/config>) = 0
+59    openat(AT_FDCWD</w>, "/etc/gopass/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+59    openat(AT_FDCWD</w>, "/tmp/gp/.config/gopass/config", O_RDONLY|O_CLOEXEC) = 3</tmp/gp/.config/gopass/config>
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+59    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.config/gopass/config>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524100, u64=18446572653914357764}}) = -1 EPERM (Operation not permitted)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.config/gopass/config>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+59    read(3</tmp/gp/.config/gopass/config>, "[mounts]\n\tpath = ~/.local/share/"..., 4096) = 137
+59    read(3</tmp/gp/.config/gopass/config>, "", 3959) = 0
+59    close(3</tmp/gp/.config/gopass/config>) = 0
+59    openat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/config", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+59    openat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/config.worktree", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+59    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x4000189ba0) = -1 ENOTTY (Inappropriate ioctl for device)
+59    fstat(0</dev/null>, {st_mode=S_IFCHR|0666, st_rdev=makedev(0x1, 0x3), ...}) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/reminder", 0x40001749f8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass", 0x4000174ab8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass", 0x4000174b78, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache", 0x4000174c38, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+59    mkdirat(AT_FDCWD</w>, "/tmp/gp/.cache", 0700) = 0
+59    mkdirat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass", 0700) = 0
+59    mkdirat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass", 0700) = 0
+59    mkdirat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/reminder", 0700) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.gopass-mapping", 0x4000174ff8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.git", 0x40001750b8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.fslckout", 0x4000175178, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.jj",  <unfinished ...>
+55    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+59    <... newfstatat resumed>0x4000175238, 0) = -1 ENOENT (No such file or directory)
+55    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root", {st_mode=S_IFDIR|0700, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.gpg-id", 0x40001759b8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.age-ids", 0x4000175a78, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.config/gopass/age-keyring.age", 0x4000175b38, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.age-recipients", {st_mode=S_IFREG|0644, st_size=63, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/github-ssh", 0x4000175cb8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+59    mkdirat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/github-ssh", 0700) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients", 0x4000175e38, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+59    mkdirat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients", 0700) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.age-recipients", {st_mode=S_IFREG|0644, st_size=63, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test/generated.age", 0x4000546338, 0) = -1 ENOENT (No such file or directory)
+59    mmap(NULL, 4096, PROT_READ|PROT_WRITE, 0x8 /* MAP_??? */|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+56    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+59    <... mmap resumed>)               = 0xffffaaa05000
+59    write(1</tmp/se-work/stdout-record.txt>, "\342\234\205 Password for entry \"test/gen"..., 50) = 50
+59    write(1</tmp/se-work/stdout-record.txt>, "Not printing secrets by default."..., 91) = 91
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test/generated.age", 0x40005463f8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test/.pass-template", 0x40005464b8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.pass-template", 0x4000546578, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test/generated/.age-recipients", 0x4000546638, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test/.age-recipients", 0x40005466f8, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.age-recipients", {st_mode=S_IFREG|0644, st_size=63, ...}, 0) = 0
+59    openat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/.age-recipients", O_RDONLY|O_CLOEXEC) = 3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>
+59    fcntl(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+59    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524101, u64=18446572653914357765}}) = -1 EPERM (Operation not permitted)
+59    fcntl(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+59    fstat(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, {st_mode=S_IFREG|0644, st_size=63, ...}) = 0
+59    read(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, "age13qce2nmlmh3xaz4nlykvzxhhznad"..., 512) = 63
+59    read(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>, "", 449) = 0
+59    close(3</tmp/gp/.local/share/gopass/stores/root/.age-recipients>) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity", 0x4000546938, 0) = -1 ENOENT (No such file or directory)
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.config/gopass/age/identities", {st_mode=S_IFREG|0600, st_size=256, ...}, 0) = 0
+59    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+59    unlinkat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity", 0) = -1 ENOENT (No such file or directory)
+59    unlinkat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+59    openat(AT_FDCWD</w>, "/tmp/gp/.config/gopass/age/identities", O_RDONLY|O_CLOEXEC) = 3</tmp/gp/.config/gopass/age/identities>
+59    fcntl(3</tmp/gp/.config/gopass/age/identities>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.config/gopass/age/identities>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+59    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.config/gopass/age/identities>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524102, u64=18446572653914357766}}) = -1 EPERM (Operation not permitted)
+59    fcntl(3</tmp/gp/.config/gopass/age/identities>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+59    fcntl(3</tmp/gp/.config/gopass/age/identities>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+59    fstat(3</tmp/gp/.config/gopass/age/identities>, {st_mode=S_IFREG|0600, st_size=256, ...}) = 0
+59    read(3</tmp/gp/.config/gopass/age/identities>, "age-encryption.org/v1\n-> scrypt "..., 512) = 256
+59    read(3</tmp/gp/.config/gopass/age/identities>, "", 256) = 0
+59    close(3</tmp/gp/.config/gopass/age/identities>) = 0
+59    mmap(0x4004000000, 268435456, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x4004000000
+59    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63efe000
+59    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63eec000
+59    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63eda000
+59    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63ec8000
+59    mmap(0x4000800000, 268435456, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x4000800000
+59    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+58    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63eb8000
+61    tgkill(54, 59, SIGURG <unfinished ...>
+58    clone(child_stack=0x400021a000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+61    <... tgkill resumed>)             = 0
+59    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=54, si_uid=0} ---
+58    <... clone resumed>)              = 62
+61    tgkill(54, 58, SIGURG <unfinished ...>
+58    tgkill(54, 61, SIGURG <unfinished ...>
+61    <... tgkill resumed>)             = 0
+58    <... tgkill resumed>)             = 0
+61    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=54, si_uid=0} ---
+58    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=54, si_uid=0} ---
+62    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+62    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63e78000
+62    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff63e38000
+61    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+61    openat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0644) = 3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_SETFL, O_WRONLY|O_NONBLOCK|O_LARGEFILE) = 0
+61    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524103, u64=18446572653914357767}}) = -1 EPERM (Operation not permitted)
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_GETFL) = 0x20801 (flags O_WRONLY|O_NONBLOCK|O_LARGEFILE)
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_SETFL, O_WRONLY|O_LARGEFILE) = 0
+61    write(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, "age13qce2nmlmh3xaz4nlykvzxhhznad"..., 62) = 62
+61    close(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>) = 0
+61    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity", {st_mode=S_IFREG|0644, st_size=62, ...}, 0) = 0
+61    newfstatat(AT_FDCWD</w>, "/tmp/gp/.config/gopass/age/identities", {st_mode=S_IFREG|0600, st_size=256, ...}, 0) = 0
+61    newfstatat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity", {st_mode=S_IFREG|0644, st_size=62, ...}, 0) = 0
+61    openat(AT_FDCWD</w>, "/tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity", O_RDONLY|O_CLOEXEC) = 3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+61    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524104, u64=18446572653914357768}}) = -1 EPERM (Operation not permitted)
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+61    fcntl(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+61    fstat(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, {st_mode=S_IFREG|0644, st_size=62, ...}) = 0
+61    read(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, "age13qce2nmlmh3xaz4nlykvzxhhznad"..., 512) = 62
+61    read(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>, "", 450) = 0
+61    close(3</tmp/gp/.cache/gopass/gopass/age-identity-recipients/identity>) = 0
+61    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test", 0x4000546578, 0) = -1 ENOENT (No such file or directory)
+61    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test", 0x4000546638, 0) = -1 ENOENT (No such file or directory)
+61    newfstatat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+61    mkdirat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test", 0700) = 0
+61    openat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test/generated.age", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+61    openat(AT_FDCWD</w>, "/tmp/gp/.local/share/gopass/stores/root/test/generated.age", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0644) = 3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>
+61    fcntl(3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+61    fcntl(3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>, F_SETFL, O_WRONLY|O_NONBLOCK|O_LARGEFILE) = 0
+61    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=939524105, u64=18446572653914357769}}) = -1 EPERM (Operation not permitted)
+61    fcntl(3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>, F_GETFL) = 0x20801 (flags O_WRONLY|O_NONBLOCK|O_LARGEFILE)
+61    fcntl(3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>, F_SETFL, O_WRONLY|O_LARGEFILE) = 0
+61    write(3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>, "age-encryption.org/v1\n-> X25519 "..., 221) = 221
+61    close(3</tmp/gp/.local/share/gopass/stores/root/test/generated.age>) = 0
+61    exit_group(0)                     = ?
+56    <... epoll_pwait resumed> <unfinished ...>) = ?
+62    +++ exited with 0 +++
+61    +++ exited with 0 +++
+60    +++ exited with 0 +++
+59    +++ exited with 0 +++
+58    +++ exited with 0 +++
+55    +++ exited with 0 +++
+57    +++ exited with 0 +++
+56    +++ exited with 0 +++
+54    +++ exited with 0 +++

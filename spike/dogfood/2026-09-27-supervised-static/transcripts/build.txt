@@ -1,0 +1,23 @@
+build: gh_2.97.0_linux_arm64.tar.gz  sha256 73ea440ecad9c9e284429997ee6f93577bc6f7bc6fba357ef62c53ad8fb641a5  ok
+build: lefthook_1.13.6_Linux_arm64  sha256 1e61c71d221143e4c2351c551a6ae66d36b62cce1d916cad67c40c4bd9211530  ok
+build: chezmoi_2.72.1_linux_arm64.tar.gz  sha256 75508ef41216b6d64f3145986b751729d7f92d09c6bad77d51cf2895ab35a508  ok
+build: gopass-1.17.0-linux-arm64.tar.gz  sha256 dc716451c395264e47e3f13702cdab4a7721f375a7465f6969c872f7c75092e2  ok
+build: jj-v0.44.0-aarch64-unknown-linux-musl.tar.gz  sha256 60d42fa2a9abaa445eff10cd2087458562aaad5a54b90309e5a3787ecc985ff2  ok
+gh: gh version 2.97.0 (2026-07-31)
+chezmoi: chezmoi version v2.72.1, commit f901167e4685db90da56d6a2a19df642cb3e0247, built at 2026-08-30T13:33:37Z, built by goreleaser
+gopass: gopass 1.17.0 (08ebbadb) go1.25.0 linux arm64
+jj: jj 0.44.0-af45d57de7163cc5f17f3df178a31577e4951ea3
+lefthook: 1.13.6
+busybox-static: 1:1.35.0-4+deb12u1+b1
+git: git version 2.39.5
+strace: strace -- version 6.1
+ccbb0f14178faefac1cb0f336a853071fa63a1d0df23ef5ab7a304fe3859e082  /usr/local/bin/gh
+4bd7b75a8acb141e9b5df696abb1a43ed08147054951fa9cd3fafc600c97cc1b  /usr/local/bin/chezmoi
+213e1b2f1980c8f6c3f7fefda7592209a74dd685607cc5ce8aa498422dbe1eb5  /usr/local/bin/gopass
+b2fdb4eb7521d02430111fa570e7836ef2f49a80c19974c1f8385511d35d92e2  /usr/local/bin/jj
+1e61c71d221143e4c2351c551a6ae66d36b62cce1d916cad67c40c4bd9211530  /usr/local/bin/lefthook
+61781806ad3650b0b9d2b3fc6971e2bffdca967af1a95375abd0578bafff14fb  /bin/busybox
+build: engine built from 01e67607ed80c73611512168ac429d2ff4a3ab7e
+ccb814491679d8da88fad188a0fef42265df92695d695f19da5fb224ed6c54f7  /work/zig-out/bin/sideeye
+8c627c1927b36bf7d18fc10f1a64745dd314d3f86e77e87dab25e948f9df36d0  /work/zig-out/lib/libsideeye_shim.so
+sideeye 1.6.0 (trace contract v18)

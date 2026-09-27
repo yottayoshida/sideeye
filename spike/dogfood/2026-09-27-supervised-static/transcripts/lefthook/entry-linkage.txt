@@ -1,0 +1,2 @@
+/usr/local/bin/lefthook: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=7b3ed3df42f8e05e5407a8ae3fc14c7d6fd26f21, stripped
+	not a dynamic executable

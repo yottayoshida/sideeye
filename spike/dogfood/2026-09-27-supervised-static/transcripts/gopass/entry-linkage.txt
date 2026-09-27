@@ -1,0 +1,2 @@
+/usr/local/bin/gopass: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=4f48ab7f798bf8c7735a892d757099d8d60e5aa5, stripped
+	not a dynamic executable

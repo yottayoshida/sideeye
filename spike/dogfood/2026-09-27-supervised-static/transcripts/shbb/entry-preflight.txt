@@ -1,0 +1,15 @@
+UNKNOWN  recording_run_failed
+         the operation did not exit normally during the recording run
+next        Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.
+cwd         /w  (none declared: Sideeye's own)
+
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: this run was refused before the shim's account of it was read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+exit 2

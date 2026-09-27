@@ -1,0 +1,2 @@
+/bin/busybox: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), statically linked, BuildID[sha1]=2d0361f90c8817f80eb486e1ccf7f5177cdd2883, for GNU/Linux 3.7.0, stripped
+	not a dynamic executable

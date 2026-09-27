@@ -1,0 +1,2 @@
+/usr/local/bin/gh: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=by0k8_Jm8RMnjFiaXHNc/sgUMUUWJi_46NaeY4Q7y/nXVP6Oxg9CB7d4dtJP3X/8eLA5CbZ3BLf8csQueDh, BuildID[sha1]=943058b85bcfe6a77897d0ebc8d7ea16b1d88ded, stripped
+	not a dynamic executable

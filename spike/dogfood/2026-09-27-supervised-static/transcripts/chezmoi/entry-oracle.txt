@@ -1,0 +1,368 @@
+33    execve("/usr/local/bin/chezmoi", ["/usr/local/bin/chezmoi", "apply", "--source", "/tmp/cz/src", "--destination", "/tmp/cz/dest", "--no-tty"], 0xaaaadbb818c0 /* 19 vars */) = 0
+33    openat(AT_FDCWD</w>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+33    read(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>, "2097152\n", 20) = 8
+33    close(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>) = 0
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb89c9000
+33    mmap(NULL, 131072, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb89a9000
+33    mmap(NULL, 1048576, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb88a9000
+33    mmap(NULL, 8388608, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8000000
+33    mmap(NULL, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb4000000
+33    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff94000000
+33    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff74000000
+33    mmap(0x422684000000, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x422684000000
+33    mmap(NULL, 33554432, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff72000000
+33    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8897000
+33    mmap(0x422687c00000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x422687c00000
+33    mmap(0xffffb89a9000, 131072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb89a9000
+33    mmap(0xffffb88eb000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb88eb000
+33    mmap(0xffffb8211000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb8211000
+33    mmap(0xffffb5089000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffb5089000
+33    mmap(0xffff9c44d000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff9c44d000
+33    mmap(0xffff7c44d000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff7c44d000
+33    mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71f00000
+33    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8887000
+33    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8877000
+33    fcntl(0</dev/null>, F_GETFD)      = 0
+33    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFD) = 0
+33    fcntl(2</out/chezmoi/entry-preflight.txt>, F_GETFD) = 0
+33    mmap(NULL, 1439992, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71da0000
+33    openat(AT_FDCWD</w>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/33/cgroup>
+33    read(3</proc/33/cgroup>, "0::/sideeye-27-d7ada9f3c0501fb5/"..., 65536) = 37
+33    read(3</proc/33/cgroup>, "", 65536) = 0
+33    close(3</proc/33/cgroup>)         = 0
+33    openat(AT_FDCWD</w>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/33/mountinfo>
+33    read(3</proc/33/mountinfo>, "143 92 0:62 / / rw,relatime - ov"..., 65536) = 3052
+33    close(3</proc/33/mountinfo>)      = 0
+33    openat(AT_FDCWD</w>, "/sys/fs/cgroup/sideeye-27-d7ada9f3c0501fb5/work/cpu.max", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    clone(child_stack=0x422687c8e000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 34
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8837000
+33    clone(child_stack=0x422687ce2000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 35
+33    clone(child_stack=0x422687cde000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 36
+35    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71d60000
+35    clone(child_stack=0x422687d18000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 37
+33    clone(child_stack=0x422687d14000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 38
+33    openat(AT_FDCWD</w>, "/etc/localtime", O_RDONLY) = 3</usr/share/zoneinfo/Etc/UTC>
+33    read(3</usr/share/zoneinfo/Etc/UTC>, "TZif2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 4096) = 114
+33    read(3</usr/share/zoneinfo/Etc/UTC>, "", 4096) = 0
+33    close(3</usr/share/zoneinfo/Etc/UTC>) = 0
+33    fcntl(0</dev/null>, F_GETFL)      = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFL) = 0x28001 (flags O_WRONLY|O_LARGEFILE|O_NOFOLLOW)
+33    fcntl(2</out/chezmoi/entry-preflight.txt>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+33    openat(AT_FDCWD</w>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 3</proc/33/auxv>
+33    fcntl(3</proc/33/auxv>, F_GETFL)  = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</proc/33/auxv>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_create1(EPOLL_CLOEXEC)      = 4<anon_inode:[eventpoll]>
+33    eventfd2(0, EFD_CLOEXEC|EFD_NONBLOCK) = 5<anon_inode:[eventfd]>
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 5<anon_inode:[eventfd]>, {events=EPOLLIN, data={u32=37750304, u64=37750304}}) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</proc/33/auxv>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091329, u64=9223293885243981825}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</proc/33/auxv>, F_GETFL)  = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</proc/33/auxv>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(3</proc/33/auxv>, {st_mode=S_IFREG|0400, st_size=0, ...}) = 0
+33    read(3</proc/33/auxv>, "!\0\0\0\0\0\0\0\0\260\240\270\377\377\0\0003\0\0\0\0\0\0\0p\22\0\0\0\0\0\0"..., 512) = 336
+33    read(3</proc/33/auxv>, "", 944)   = 0
+33    close(3</proc/33/auxv>)           = 0
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x422687d4bd50) = -1 ENOTTY (Inappropriate ioctl for device)
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x422687d4bd30) = -1 ENOTTY (Inappropriate ioctl for device)
+33    openat(AT_FDCWD</w>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 3</proc/33/auxv>
+33    fcntl(3</proc/33/auxv>, F_GETFL)  = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</proc/33/auxv>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</proc/33/auxv>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091330, u64=9223293885243981826}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</proc/33/auxv>, F_GETFL)  = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</proc/33/auxv>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(3</proc/33/auxv>, {st_mode=S_IFREG|0400, st_size=0, ...}) = 0
+33    read(3</proc/33/auxv>, "!\0\0\0\0\0\0\0\0\260\240\270\377\377\0\0003\0\0\0\0\0\0\0p\22\0\0\0\0\0\0"..., 512) = 336
+33    read(3</proc/33/auxv>, "", 944)   = 0
+33    close(3</proc/33/auxv>)           = 0
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/xclip", 0x422687d7a638, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/xclip", 0x422687d7a6f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/xclip", 0x422687d7a7b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/xclip", 0x422687d7a878, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/xclip", 0x422687d7a938, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/xclip", 0x422687d7a9f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/xclip", 0x422687d7aab8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/xsel", 0x422687d7ab78, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/xsel", 0x422687d7ac38, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/xsel", 0x422687d7acf8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/xsel", 0x422687d7adb8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/xsel", 0x422687d7ae78, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/xsel", 0x422687d7af38, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/xsel", 0x422687d7aff8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/termux-clipboard-set", 0x422687d7b0b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/termux-clipboard-set", 0x422687d7b178, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/termux-clipboard-set", 0x422687d7b238, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/termux-clipboard-set", 0x422687d7b2f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/termux-clipboard-set", 0x422687d7b3b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/termux-clipboard-set", 0x422687d7b478, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/termux-clipboard-set", 0x422687d7b538, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/clip.exe", 0x422687d7b5f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/clip.exe", 0x422687d7b6b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/clip.exe", 0x422687d7b778, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/clip.exe", 0x422687d7b838, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/clip.exe", 0x422687d7b8f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/clip.exe", 0x422687d7b9b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/clip.exe", 0x422687d7ba78, 0) = -1 ENOENT (No such file or directory)
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71d20000
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x422687ef1c40) = -1 ENOTTY (Inappropriate ioctl for device)
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x422687ef1ba0) = -1 ENOTTY (Inappropriate ioctl for device)
+33    mmap(0x422688000000, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x422688000000
+33    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8825000
+33    mmap(0x422688000000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x422688000000
+35    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71ce0000
+33    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+34    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+35    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71ca0000
+33    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb8815000
+36    clone(child_stack=0x422687e7c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+37    tgkill(33, 35, SIGURG <unfinished ...>
+33    clone(child_stack=0x422687e78000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+38    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+37    <... tgkill resumed>)             = 0
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+38    <... mmap resumed>)               = 0xffff71c60000
+36    <... clone resumed>)              = 39
+38    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+37    tgkill(33, 38, SIGURG <unfinished ...>
+33    <... clone resumed>)              = 40
+38    <... mmap resumed>)               = 0xffffb8813000
+37    <... tgkill resumed>)             = 0
+35    tgkill(33, 33, SIGURG <unfinished ...>
+38    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+35    <... tgkill resumed>)             = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+35    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+38    tgkill(33, 35, SIGURG <unfinished ...>
+35    <... mmap resumed>)               = 0xffffb8811000
+38    <... tgkill resumed>)             = 0
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/pwsh", 0x4226882ce0f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/pwsh", 0x4226882ce1b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/pwsh", 0x4226882ce278, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/pwsh", 0x4226882ce338, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/pwsh", 0x4226882ce3f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/pwsh",  <unfinished ...>
+35    tgkill(33, 36, SIGURG <unfinished ...>
+33    <... newfstatat resumed>0x4226882ce4b8, 0) = -1 ENOENT (No such file or directory)
+35    <... tgkill resumed>)             = 0
+33    newfstatat(AT_FDCWD</w>, "/bin/pwsh",  <unfinished ...>
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+33    <... newfstatat resumed>0x4226882ce578, 0) = -1 ENOENT (No such file or directory)
+37    tgkill(33, 33, SIGURG)            = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+37    tgkill(33, 33, SIGURG)            = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+33    newfstatat(AT_FDCWD</w>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+37    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+37    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71c20000
+37    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71be0000
+37    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71ba0000
+33    newfstatat(AT_FDCWD</w>, "/w", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    openat(AT_FDCWD</w>, "/tmp/cz/home/.config/chezmoi", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+33    openat(AT_FDCWD</w>, "/etc/xdg/chezmoi", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/home/.local/share/chezmoi", 0x422687d7a1b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/share/chezmoi", 0x422687d7a278, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/share/chezmoi", 0x422687d7a3f8, 0) = -1 ENOENT (No such file or directory)
+33    openat(AT_FDCWD</w>, "/tmp/cz/home/.config/chezmoi/chezmoi.toml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/home/.config/chezmoi/chezmoistate.boltdb", 0x422687d7a6f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/src", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/src/.git", 0x422687d7a878, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/.git", 0x422687d7a938, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/.git", 0x422687d7a9f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/.git", 0x422687d7aab8, 0) = -1 ENOENT (No such file or directory)
+33    openat(AT_FDCWD</w>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3</etc/passwd>
+33    fcntl(3</etc/passwd>, F_GETFL)    = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</etc/passwd>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</etc/passwd>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091331, u64=9223293885243981827}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</etc/passwd>, F_GETFL)    = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</etc/passwd>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    read(3</etc/passwd>, "root:x:0:0:root:/root:/bin/bash\n"..., 4096) = 839
+33    close(3</etc/passwd>)             = 0
+33    openat(AT_FDCWD</w>, "/etc/group", O_RDONLY|O_CLOEXEC) = 3</etc/group>
+33    fcntl(3</etc/group>, F_GETFL)     = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</etc/group>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</etc/group>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091332, u64=9223293885243981828}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</etc/group>, F_GETFL)     = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</etc/group>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    read(3</etc/group>, "root:x:0:\ndaemon:x:1:\nbin:x:2:\ns"..., 4096) = 434
+33    close(3</etc/group>)              = 0
+33    openat(AT_FDCWD</w>, "/etc/hosts", O_RDONLY|O_CLOEXEC) = 3</etc/hosts>
+33    fcntl(3</etc/hosts>, F_GETFL)     = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</etc/hosts>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</etc/hosts>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091333, u64=9223293885243981829}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</etc/hosts>, F_GETFL)     = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</etc/hosts>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(3</etc/hosts>, {st_mode=S_IFREG|0644, st_size=148, ...}) = 0
+33    read(3</etc/hosts>, "127.0.0.1\tlocalhost\n::1\tlocalhos"..., 512) = 148
+33    read(3</etc/hosts>, "", 364)      = 0
+33    close(3</etc/hosts>)              = 0
+33    openat(AT_FDCWD</w>, "/etc/hostname", O_RDONLY|O_CLOEXEC) = 3</etc/hostname>
+33    fcntl(3</etc/hostname>, F_GETFL)  = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</etc/hostname>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</etc/hostname>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091334, u64=9223293885243981830}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</etc/hostname>, F_GETFL)  = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</etc/hostname>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(3</etc/hostname>, {st_mode=S_IFREG|0644, st_size=13, ...}) = 0
+33    read(3</etc/hostname>, "1da4dbdbe3a3\n", 512) = 13
+33    read(3</etc/hostname>, "", 499)   = 0
+33    close(3</etc/hostname>)           = 0
+33    newfstatat(AT_FDCWD</w>, "/proc/sys/kernel", {st_mode=S_IFDIR|0555, st_size=0, ...}, 0) = 0
+33    openat(AT_FDCWD</w>, "/proc/sys/kernel/osrelease", O_RDONLY|O_CLOEXEC) = 3</proc/sys/kernel/osrelease>
+33    fcntl(3</proc/sys/kernel/osrelease>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</proc/sys/kernel/osrelease>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</proc/sys/kernel/osrelease>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091335, u64=9223293885243981831}}) = 0
+33    fstat(3</proc/sys/kernel/osrelease>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+33    read(3</proc/sys/kernel/osrelease>, "6.12.76-linuxkit\n", 512) = 17
+33    read(3</proc/sys/kernel/osrelease>, "", 879) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 3</proc/sys/kernel/osrelease>, 0x42268829e940) = 0
+33    close(3</proc/sys/kernel/osrelease>) = 0
+33    openat(AT_FDCWD</w>, "/proc/sys/kernel/ostype", O_RDONLY|O_CLOEXEC) = 3</proc/sys/kernel/ostype>
+33    fcntl(3</proc/sys/kernel/ostype>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</proc/sys/kernel/ostype>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</proc/sys/kernel/ostype>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091336, u64=9223293885243981832}}) = 0
+33    fstat(3</proc/sys/kernel/ostype>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+33    read(3</proc/sys/kernel/ostype>, "Linux\n", 512) = 6
+33    read(3</proc/sys/kernel/ostype>, "", 890) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 3</proc/sys/kernel/ostype>, 0x42268829e940) = 0
+33    close(3</proc/sys/kernel/ostype>) = 0
+33    openat(AT_FDCWD</w>, "/proc/sys/kernel/version", O_RDONLY|O_CLOEXEC) = 3</proc/sys/kernel/version>
+33    fcntl(3</proc/sys/kernel/version>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</proc/sys/kernel/version>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</proc/sys/kernel/version>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091337, u64=9223293885243981833}}) = 0
+33    fstat(3</proc/sys/kernel/version>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+33    read(3</proc/sys/kernel/version>, "#1 SMP Sun Mar  8 14:41:59 UTC 2"..., 512) = 36
+33    read(3</proc/sys/kernel/version>, "", 860) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_DEL, 3</proc/sys/kernel/version>, 0x42268829e940) = 0
+33    close(3</proc/sys/kernel/version>) = 0
+33    openat(AT_FDCWD</w>, "/etc/os-release", O_RDONLY|O_CLOEXEC) = 3</usr/lib/os-release>
+33    fcntl(3</usr/lib/os-release>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</usr/lib/os-release>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</usr/lib/os-release>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091338, u64=9223293885243981834}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</usr/lib/os-release>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</usr/lib/os-release>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(3</usr/lib/os-release>, {st_mode=S_IFREG|0644, st_size=267, ...}) = 0
+33    read(3</usr/lib/os-release>, "PRETTY_NAME=\"Debian GNU/Linux 12"..., 512) = 267
+33    read(3</usr/lib/os-release>, "", 245) = 0
+33    close(3</usr/lib/os-release>)     = 0
+33    readlinkat(AT_FDCWD</w>, "/proc/self/exe", "/usr/local/bin/chezmoi", 128) = 22
+33    openat(AT_FDCWD</w>, "/tmp/cz/src/.chezmoiroot", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    openat(AT_FDCWD</w>, "/tmp/cz/src", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</tmp/cz/src>
+33    getdents64(3</tmp/cz/src>, 0x422688176000 /* 4 entries */, 8192) = 112
+33    getdents64(3</tmp/cz/src>, 0x422688176000 /* 0 entries */, 8192) = 0
+33    close(3</tmp/cz/src>)             = 0
+33    openat(AT_FDCWD</w>, "/tmp/cz/src/.chezmoiversion", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/src", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/src", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    openat(AT_FDCWD</w>, "/tmp/cz/src", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</tmp/cz/src>
+33    getdents64(3</tmp/cz/src>, 0x422688176000 /* 4 entries */, 8192) = 112
+33    getdents64(3</tmp/cz/src>, 0x422688176000 /* 0 entries */, 8192) = 0
+33    close(3</tmp/cz/src>)             = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/src/dot_second", {st_mode=S_IFREG|0644, st_size=12, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/src/dot_testrc", {st_mode=S_IFREG|0644, st_size=19, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    openat(AT_FDCWD</w>, "/tmp/cz/src/dot_second", O_RDONLY|O_CLOEXEC) = 3</tmp/cz/src/dot_second>
+33    fcntl(3</tmp/cz/src/dot_second>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</tmp/cz/src/dot_second>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/cz/src/dot_second>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091339, u64=9223293885243981835}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</tmp/cz/src/dot_second>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</tmp/cz/src/dot_second>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(3</tmp/cz/src/dot_second>, {st_mode=S_IFREG|0644, st_size=12, ...}) = 0
+33    read(3</tmp/cz/src/dot_second>, "second file\n", 512) = 12
+33    read(3</tmp/cz/src/dot_second>, "", 500) = 0
+33    close(3</tmp/cz/src/dot_second>)  = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/dest/.second", 0x422687d7b478, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/dest", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    openat(AT_FDCWD</w>, "/tmp/.renameio-TempDir4023148019", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</tmp/.renameio-TempDir4023148019>
+33    fcntl(3</tmp/.renameio-TempDir4023148019>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+33    fcntl(3</tmp/.renameio-TempDir4023148019>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/.renameio-TempDir4023148019>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091340, u64=9223293885243981836}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</tmp/.renameio-TempDir4023148019>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</tmp/.renameio-TempDir4023148019>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+33    close(3</tmp/.renameio-TempDir4023148019>) = 0
+33    openat(AT_FDCWD</w>, "/tmp/cz/dest/.renameio-TempDir3620221538", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</tmp/cz/dest/.renameio-TempDir3620221538>
+33    fcntl(3</tmp/cz/dest/.renameio-TempDir3620221538>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+33    fcntl(3</tmp/cz/dest/.renameio-TempDir3620221538>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/cz/dest/.renameio-TempDir3620221538>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091341, u64=9223293885243981837}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</tmp/cz/dest/.renameio-TempDir3620221538>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</tmp/cz/dest/.renameio-TempDir3620221538>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+33    close(3</tmp/cz/dest/.renameio-TempDir3620221538>) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/dest/.renameio-TempDir3620221538", {st_mode=S_IFREG|0600, st_size=0, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    renameat(AT_FDCWD</w>, "/tmp/.renameio-TempDir4023148019", AT_FDCWD</w>, "/tmp/cz/dest/.renameio-TempDir3620221538") = 0
+33    unlinkat(AT_FDCWD</w>, "/tmp/cz/dest/.renameio-TempDir3620221538", 0) = 0
+33    openat(AT_FDCWD</w>, "/tmp/..second8360894627316513473", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</tmp/..second8360894627316513473>
+33    fcntl(3</tmp/..second8360894627316513473>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+33    fcntl(3</tmp/..second8360894627316513473>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/..second8360894627316513473>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091342, u64=9223293885243981838}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</tmp/..second8360894627316513473>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</tmp/..second8360894627316513473>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+33    fstat(3</tmp/..second8360894627316513473>, {st_mode=S_IFREG|0600, st_size=0, ...}) = 0
+33    fchmod(3</tmp/..second8360894627316513473>, 0644) = 0
+33    write(3</tmp/..second8360894627316513473>, "second file\n", 12) = 12
+33    fsync(3</tmp/..second8360894627316513473>) = 0
+33    close(3</tmp/..second8360894627316513473>) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/dest/.second", 0x422687d7b778, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+33    renameat(AT_FDCWD</w>, "/tmp/..second8360894627316513473", AT_FDCWD</w>, "/tmp/cz/dest/.second") = 0
+33    mkdirat(AT_FDCWD</w>, "/tmp/cz/home/.config/chezmoi", 0777) = -1 ENOENT (No such file or directory)
+33    mkdirat(AT_FDCWD</w>, "/tmp/cz/home/.config", 0777) = 0
+33    mkdirat(AT_FDCWD</w>, "/tmp/cz/home/.config/chezmoi", 0777) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/home/.config/chezmoi/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    openat(AT_FDCWD</w>, "/tmp/cz/home/.config/chezmoi/chezmoistate.boltdb", O_RDWR|O_CREAT|O_CLOEXEC, 0600) = 3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>
+33    fcntl(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+33    fcntl(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091343, u64=9223293885243981839}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+33    flock(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, LOCK_EX|LOCK_NB) = 0
+33    fstat(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, {st_mode=S_IFREG|0600, st_size=0, ...}) = 0
+33    pwrite64(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, "\0\0\0\0\0\0\0\0\4\0\0\0\0\0\0\0\355\332\f\355\2\0\0\0\0\20\0\0\0\0\0\0"..., 16384, 0) = 16384
+33    fdatasync(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>) = 0
+33    fstat(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>,  <unfinished ...>
+34    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+33    <... fstat resumed>{st_mode=S_IFREG|0600, st_size=16384, ...}) = 0
+34    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+33    mmap(NULL, 32768, PROT_READ, MAP_SHARED, 3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, 0) = 0xffffb8809000
+33    fstat(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, {st_mode=S_IFREG|0600, st_size=16384, ...}) = 0
+33    ftruncate(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, 32768) = 0
+33    fsync(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>) = 0
+33    pwrite64(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, "\4\0\0\0\0\0\0\0\2\0\1\0\0\0\0\0\1\0\0\0\20\0\0\0\n\0\0\0\300\0\0\0"..., 4096, 16384) = 4096
+33    pwrite64(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, "\5\0\0\0\0\0\0\0\20\0\2\0\0\0\0\0\2\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0"..., 4096, 20480) = 4096
+33    fdatasync(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>) = 0
+33    pwrite64(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, "\0\0\0\0\0\0\0\0\4\0\0\0\0\0\0\0\355\332\f\355\2\0\0\0\0\20\0\0\0\0\0\0"..., 4096, 0) = 4096
+33    fdatasync(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>) = 0
+33    openat(AT_FDCWD</w>, "/tmp/cz/src/dot_testrc", O_RDONLY|O_CLOEXEC) = 6</tmp/cz/src/dot_testrc>
+33    fcntl(6</tmp/cz/src/dot_testrc>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(6</tmp/cz/src/dot_testrc>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 6</tmp/cz/src/dot_testrc>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091344, u64=9223293885243981840}}) = -1 EPERM (Operation not permitted)
+33    fcntl(6</tmp/cz/src/dot_testrc>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(6</tmp/cz/src/dot_testrc>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(6</tmp/cz/src/dot_testrc>, {st_mode=S_IFREG|0644, st_size=19, ...}) = 0
+33    read(6</tmp/cz/src/dot_testrc>, "hello from chezmoi\n", 512) = 19
+33    read(6</tmp/cz/src/dot_testrc>, "", 493) = 0
+33    close(6</tmp/cz/src/dot_testrc>)  = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/dest/.testrc", 0x422687d7be38, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+33    openat(AT_FDCWD</w>, "/tmp/..testrc3522172496878450756", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 6</tmp/..testrc3522172496878450756>
+33    fcntl(6</tmp/..testrc3522172496878450756>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+33    fcntl(6</tmp/..testrc3522172496878450756>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 6</tmp/..testrc3522172496878450756>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=3909091345, u64=9223293885243981841}}) = -1 EPERM (Operation not permitted)
+33    fcntl(6</tmp/..testrc3522172496878450756>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(6</tmp/..testrc3522172496878450756>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+33    fstat(6</tmp/..testrc3522172496878450756>, {st_mode=S_IFREG|0600, st_size=0, ...}) = 0
+33    fchmod(6</tmp/..testrc3522172496878450756>, 0644) = 0
+33    write(6</tmp/..testrc3522172496878450756>, "hello from chezmoi\n", 19) = 19
+33    fsync(6</tmp/..testrc3522172496878450756>) = 0
+33    close(6</tmp/..testrc3522172496878450756>) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/cz/dest/.testrc", 0x4226882681b8, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+33    renameat(AT_FDCWD</w>, "/tmp/..testrc3522172496878450756", AT_FDCWD</w>, "/tmp/cz/dest/.testrc") = 0
+33    pwrite64(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, "\2\0\0\0\0\0\0\0\2\0\1\0\0\0\0\0\1\0\0\0\20\0\0\0\n\0\0\0`\1\0\0"..., 4096, 8192) = 4096
+33    pwrite64(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, "\3\0\0\0\0\0\0\0\20\0\2\0\0\0\0\0\4\0\0\0\0\0\0\0\5\0\0\0\0\0\0\0"..., 4096, 12288) = 4096
+33    fdatasync(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>) = 0
+33    pwrite64(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, "\1\0\0\0\0\0\0\0\4\0\0\0\0\0\0\0\355\332\f\355\2\0\0\0\0\20\0\0\0\0\0\0"..., 4096, 4096) = 4096
+33    fdatasync(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>) = 0
+33    flock(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>, LOCK_UN) = 0
+33    close(3</tmp/cz/home/.config/chezmoi/chezmoistate.boltdb>) = 0
+33    exit_group(0)                     = ?
+40    +++ exited with 0 +++
+39    +++ exited with 0 +++
+38    +++ exited with 0 +++
+37    +++ exited with 0 +++
+36    +++ exited with 0 +++
+35    +++ exited with 0 +++
+34    +++ exited with 0 +++
+33    +++ exited with 0 +++

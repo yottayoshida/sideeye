@@ -1,0 +1,257 @@
+33    execve("/usr/local/bin/gh", ["/usr/local/bin/gh", "config", "set", "git_protocol", "ssh"], 0xaaaaf7cf98c0 /* 20 vars */) = 0
+33    openat(AT_FDCWD</w>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+33    read(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>, "2097152\n", 20) = 8
+33    close(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>) = 0
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f7f0000
+33    mmap(NULL, 131072, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f7d0000
+33    mmap(NULL, 1048576, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f6d0000
+33    mmap(NULL, 8388608, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ee00000
+33    mmap(NULL, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ae00000
+33    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff6ae00000
+33    mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ae00000
+33    mmap(0x7c70c8000000, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7c70c8000000
+33    mmap(NULL, 33554432, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48e00000
+33    mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f6be000
+33    mmap(0x7c70c8800000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7c70c8800000
+33    mmap(0xffff8f7d0000, 131072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff8f7d0000
+33    mmap(0xffff8f74c000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff8f74c000
+33    mmap(0xffff8f1e3000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff8f1e3000
+33    mmap(0xffff8cd1c000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff8cd1c000
+33    mmap(0xffff7a6e1000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff7a6e1000
+33    mmap(0xffff5a6e1000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff5a6e1000
+33    mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48d00000
+33    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f6ae000
+33    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f69e000
+33    fcntl(0</dev/null>, F_GETFD)      = 0
+33    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFD) = 0
+33    fcntl(2</out/gh/entry-preflight.txt>, F_GETFD) = 0
+33    mmap(NULL, 1439992, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48ba0000
+33    openat(AT_FDCWD</w>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/33/cgroup>
+33    read(3</proc/33/cgroup>, "0::/sideeye-26-57676b4dd0f41de0/"..., 65536) = 37
+33    read(3</proc/33/cgroup>, "", 65536) = 0
+33    close(3</proc/33/cgroup>)         = 0
+33    openat(AT_FDCWD</w>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/33/mountinfo>
+33    read(3</proc/33/mountinfo>, "143 92 0:62 / / rw,relatime - ov"..., 65536) = 3052
+33    close(3</proc/33/mountinfo>)      = 0
+33    openat(AT_FDCWD</w>, "/sys/fs/cgroup/sideeye-26-57676b4dd0f41de0/work/cpu.max", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    clone(child_stack=0x7c70c8a26000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 34
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f65e000
+33    clone(child_stack=0x7c70c8a78000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 35
+33    clone(child_stack=0x7c70c8a74000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 36
+35    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f61e000
+35    clone(child_stack=0x7c70c8aa0000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 37
+33    clone(child_stack=0x7c70c8a9c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 38
+33    fcntl(0</dev/null>, F_GETFL)      = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(1</tmp/se-work/stdout-record.txt>, F_GETFL) = 0x28001 (flags O_WRONLY|O_LARGEFILE|O_NOFOLLOW)
+33    fcntl(2</out/gh/entry-preflight.txt>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+33    readlinkat(AT_FDCWD</w>, "/proc/self/exe", "/usr/local/bin/gh", 128) = 17
+33    openat(AT_FDCWD</w>, "/usr/local/bin/gh", O_RDONLY|O_CLOEXEC) = 3</usr/local/bin/gh>
+33    fcntl(3</usr/local/bin/gh>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+33    fcntl(3</usr/local/bin/gh>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_create1(EPOLL_CLOEXEC)      = 4<anon_inode:[eventpoll]>
+33    eventfd2(0, EFD_CLOEXEC|EFD_NONBLOCK) = 5<anon_inode:[eventfd]>
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 5<anon_inode:[eventfd]>, {events=EPOLLIN, data={u32=38369696, u64=38369696}}) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</usr/local/bin/gh>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=922746881, u64=9223310125823950849}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</usr/local/bin/gh>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</usr/local/bin/gh>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+33    fstat(3</usr/local/bin/gh>, {st_mode=S_IFREG|0755, st_size=38076578, ...}) = 0
+33    pread64(3</usr/local/bin/gh>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\2\0\267\0\1\0\0\0000\241\t\0\0\0\0\0"..., 64, 0) = 64
+33    pread64(3</usr/local/bin/gh>, "O\0\0\24\5\0N9\245\1\0006\377\0\0\361\340\260\237\232\342\240\237\232\37\1\0\361\1\261\237\232"..., 64, 4759572) = 64
+33    pread64(3</usr/local/bin/gh>, "\0\0\0\0\0\0\0\0\220\v@\371\377c0\353\t\2\0T\376\17\35\370\375\203\37\370\375#\0\321"..., 64, 9519144) = 64
+33    pread64(3</usr/local/bin/gh>, "\343O@\371\4\0\0\24\37\256\313\227\343O@\371#\3\0\371\340g\0\371\3 \0\371c&\0\320"..., 64, 14278716) = 64
+33    pread64(3</usr/local/bin/gh>, "\v\10\0!\0!\0@\0\0\0\0\0\0\0\322\v\351\0\0\0\0\0\200\240\t\1\0\0\0\0\0"..., 64, 19038289) = 64
+33    pread64(3</usr/local/bin/gh>, "equest\0net/http.envProxyFunc\0net"..., 64, 23797861) = 64
+33    pread64(3</usr/local/bin/gh>, "`\3_\1`\3_\6\0\364\20\6\2\1\6\1/\0106\7\3\4\5\4\3\5\0\0\10\2\10\1"..., 64, 28557433) = 64
+33    pread64(3</usr/local/bin/gh>, "\230\33\0(\0\0\0\0\0\0\0q'\3\0\331\354\27\0\371\354'\0\4\0\0\0\377Y\0\0\26"..., 64, 33317005) = 64
+33    close(3</usr/local/bin/gh>)       = 0
+33    mmap(0x7c70c8c00000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7c70c8c00000
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x7c70c8ba3dd0) = -1 ENOTTY (Inappropriate ioctl for device)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/xclip", 0x7c70c8af4638, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/xclip",  <unfinished ...>
+34    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+33    <... newfstatat resumed>0x7c70c8af46f8, 0) = -1 ENOENT (No such file or directory)
+34    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/xclip", 0x7c70c8af47b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/xclip", 0x7c70c8af4878, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/xclip", 0x7c70c8af4938, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/xclip", 0x7c70c8af49f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/xclip", 0x7c70c8af4ab8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/xsel", 0x7c70c8af4b78, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/xsel", 0x7c70c8af4c38, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/xsel", 0x7c70c8af4cf8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/xsel", 0x7c70c8af4db8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/xsel", 0x7c70c8af4e78, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/xsel", 0x7c70c8af4f38, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/xsel", 0x7c70c8af4ff8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/termux-clipboard-set", 0x7c70c8af50b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/termux-clipboard-set", 0x7c70c8af5178, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/termux-clipboard-set", 0x7c70c8af5238, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/termux-clipboard-set", 0x7c70c8af52f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/termux-clipboard-set", 0x7c70c8af53b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/termux-clipboard-set", 0x7c70c8af5478, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/termux-clipboard-set", 0x7c70c8af5538, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/clip.exe", 0x7c70c8af55f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/clip.exe", 0x7c70c8af56b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/clip.exe", 0x7c70c8af5778, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/sbin/clip.exe", 0x7c70c8af5838, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/bin/clip.exe", 0x7c70c8af58f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/sbin/clip.exe", 0x7c70c8af59b8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/bin/clip.exe", 0x7c70c8af5a78, 0) = -1 ENOENT (No such file or directory)
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48b60000
+37    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48b20000
+33    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+33    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f60e000
+38    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+36    clone(child_stack=0x7c70c8c74000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+38    <... mmap resumed>)               = 0xffff8f60c000
+36    <... clone resumed>)              = 39
+36    tgkill(33, 33, SIGURG)            = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    tgkill(33, 33, SIGURG)            = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+36    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48ae0000
+36    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48aa0000
+33    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+38    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+33    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+38    <... mmap resumed>)               = 0xffff48a60000
+33    <... mmap resumed>)               = 0xffff48a50000
+39    tgkill(33, 33, SIGURG <unfinished ...>
+34    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+39    <... tgkill resumed>)             = 0
+36    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+34    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    <... mmap resumed>)               = 0xffff48a10000
+36    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f60a000
+33    tgkill(33, 36, SIGURG)            = 0
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+35    mmap(0x7c70c9000000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+36    tgkill(33, 33, SIGURG <unfinished ...>
+35    <... mmap resumed>)               = 0x7c70c9000000
+36    <... tgkill resumed>)             = 0
+35    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+35    <... mmap resumed>)               = 0xffff489d0000
+36    tgkill(33, 35, SIGURG)            = 0
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+36    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48990000
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48950000
+33    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+36    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f608000
+33    clone(child_stack=0x7c70c8c78000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+39    tgkill(33, 33, SIGURG)            = 0
+33    <... clone resumed>)              = 40
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+40    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8f606000
+39    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+39    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48910000
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TCGETS, 0x7c70c8febd2c) = -1 ENOTTY (Inappropriate ioctl for device)
+33    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+35    tgkill(33, 33, SIGURG <unfinished ...>
+37    tgkill(33, 36, SIGURG <unfinished ...>
+35    <... tgkill resumed>)             = 0
+40    clone(child_stack=0x7c70c8f7c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+37    <... tgkill resumed>)             = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+40    <... clone resumed>)              = 41
+36    tgkill(33, 35, SIGURG)            = 0
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    tgkill(33, 33, SIGURG <unfinished ...>
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    <... tgkill resumed>)             = 0
+40    tgkill(33, 36, SIGURG)            = 0
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    tgkill(33, 33, SIGURG)            = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    tgkill(33, 33, SIGURG)            = 0
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+36    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TIOCGWINSZ, 0x7c70c9255c80) = -1 ENOTTY (Inappropriate ioctl for device)
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff488d0000
+33    ioctl(0</dev/null>, TCGETS, 0x7c70c9255dbc) = -1 ENOTTY (Inappropriate ioctl for device)
+33    openat(AT_FDCWD</w>, "/tmp/ghcfg/config.yml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    openat(AT_FDCWD</w>, "/tmp/ghcfg/hosts.yml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    ioctl(1</tmp/se-work/stdout-record.txt>, TCGETS, 0x7c70c925595c) = -1 ENOTTY (Inappropriate ioctl for device)
+34    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+33    ioctl(2</out/gh/entry-preflight.txt>, TCGETS <unfinished ...>
+34    <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+33    <... ioctl resumed>, 0x7c70c925599c) = -1 ENOTTY (Inappropriate ioctl for device)
+33    readlinkat(AT_FDCWD</w>, "/proc/self/exe", "/usr/local/bin/gh", 128) = 17
+33    newfstatat(AT_FDCWD</w>, "/usr/local/cargo/bin/gh", 0x7c70c8d68638, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/sbin/gh", 0x7c70c8d686f8, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/usr/local/bin/gh", {st_mode=S_IFREG|0755, st_size=38076578, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    openat(AT_FDCWD</w>, "/tmp/ghhome/.local/state/gh/device-id", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+33    mmap(NULL, 4096, PROT_READ|PROT_WRITE, 0x8 /* MAP_??? */|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+40    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+33    <... mmap resumed>)               = 0xffff8f605000
+33    newfstatat(AT_FDCWD</w>, "/tmp/ghhome/.local/state/gh", 0x7c70c8d68878, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/ghhome/.local/state", 0x7c70c8d68938, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/ghhome/.local", 0x7c70c8d689f8, 0) = -1 ENOENT (No such file or directory)
+33    newfstatat(AT_FDCWD</w>, "/tmp/ghhome", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    mkdirat(AT_FDCWD</w>, "/tmp/ghhome/.local", 0755) = 0
+33    mkdirat(AT_FDCWD</w>, "/tmp/ghhome/.local/state", 0755) = 0
+33    mkdirat(AT_FDCWD</w>, "/tmp/ghhome/.local/state/gh", 0755) = 0
+33    openat(AT_FDCWD</w>, "/tmp/ghhome/.local/state/gh/device-id.tmp.3143314899", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>
+33    fcntl(3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+33    fcntl(3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=922746882, u64=9223310125823950850}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+33    write(3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>, "5ee1917f-759a-4013-94df-3d20b543"..., 36) = 36
+33    close(3</tmp/ghhome/.local/state/gh/device-id.tmp.3143314899>) = 0
+33    linkat(AT_FDCWD</w>, "/tmp/ghhome/.local/state/gh/device-id.tmp.3143314899", AT_FDCWD</w>, "/tmp/ghhome/.local/state/gh/device-id", 0) = 0
+33    unlinkat(AT_FDCWD</w>, "/tmp/ghhome/.local/state/gh/device-id.tmp.3143314899", 0) = 0
+33    newfstatat(AT_FDCWD</w>, "/etc/localtime", {st_mode=S_IFLNK|0777, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    newfstatat(AT_FDCWD</w>, "/etc", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    newfstatat(AT_FDCWD</w>, "/etc/localtime", {st_mode=S_IFLNK|0777, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    readlinkat(AT_FDCWD</w>, "/etc/localtime", "/usr/share/zoneinfo/Etc/UTC", 128) = 27
+33    newfstatat(AT_FDCWD</w>, "/usr", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    newfstatat(AT_FDCWD</w>, "/usr/share", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    newfstatat(AT_FDCWD</w>, "/usr/share/zoneinfo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    newfstatat(AT_FDCWD</w>, "/usr/share/zoneinfo/Etc", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    newfstatat(AT_FDCWD</w>, "/usr/share/zoneinfo/Etc/UTC", {st_mode=S_IFREG|0644, st_size=114, ...}, AT_SYMLINK_NOFOLLOW) = 0
+33    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+41    tgkill(33, 33, SIGURG)            = 0
+37    tgkill(33, 41, SIGURG <unfinished ...>
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+41    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+37    <... tgkill resumed>)             = 0
+37    tgkill(33, 41, SIGURG <unfinished ...>
+41    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+37    <... tgkill resumed>)             = 0
+39    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48890000
+37    tgkill(33, 39, SIGURG <unfinished ...>
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+37    <... tgkill resumed>)             = 0
+37    tgkill(33, 39, SIGURG)            = 0
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+33    mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff48850000
+37    tgkill(33, 33, SIGURG <unfinished ...>
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=33, si_uid=0} ---
+37    <... tgkill resumed>)             = 0
+33    openat(AT_FDCWD</w>, "/tmp/ghhome/.local/share/gh/extensions", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+38    epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+33    newfstatat(AT_FDCWD</w>, "/tmp/ghcfg", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+33    openat(AT_FDCWD</w>, "/tmp/ghcfg/config.yml", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 3</tmp/ghcfg/config.yml>
+33    fcntl(3</tmp/ghcfg/config.yml>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+33    fcntl(3</tmp/ghcfg/config.yml>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+33    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/ghcfg/config.yml>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data={u32=922746883, u64=9223310125823950851}}) = -1 EPERM (Operation not permitted)
+33    fcntl(3</tmp/ghcfg/config.yml>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+33    fcntl(3</tmp/ghcfg/config.yml>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+33    write(3</tmp/ghcfg/config.yml>, "# The current version of the con"..., 1659) = 1659
+33    close(3</tmp/ghcfg/config.yml>)   = 0
+33    exit_group(0)                     = ?
+39    +++ exited with 0 +++
+37    +++ exited with 0 +++
+35    +++ exited with 0 +++
+41    +++ exited with 0 +++
+40    <... epoll_pwait resumed> <unfinished ...>) = ?
+38    +++ exited with 0 +++
+34    +++ exited with 0 +++
+40    +++ exited with 0 +++
+36    +++ exited with 0 +++
+33    +++ exited with 0 +++
