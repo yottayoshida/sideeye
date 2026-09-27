@@ -118,6 +118,66 @@ test {
     if (available) _ = @import("supervise_linux.zig");
 }
 
+/// One operation spawn's supervision: the session that counts it, and the argv that starts it
+/// through the filter installer. For the other modes, no session and the operation's own argv.
+/// The session writes the trace the shim would have written, at the path the shim would have been
+/// told; `finish` is called after the spawn returns and before anything reads that trace.
+pub const Spawn = struct {
+    session: ?*Session,
+    argv: []const []const u8,
+
+    pub fn start(
+        gpa: std.mem.Allocator,
+        arena: std.mem.Allocator,
+        observe: contract.ObserveMode,
+        op_argv: []const []const u8,
+        trace_path: []const u8,
+        state_dir: []const u8,
+        state_alt: []const u8,
+        kill_at: u32,
+        run_cgroup: []const u8,
+        kill_cgroup: []const u8,
+    ) StartError!Spawn {
+        if (observe != .supervised) return .{ .session = null, .argv = op_argv };
+        const self_exe = selfExe(arena) orelse return error.SelfExeUnreadable;
+        const s = try Session.start(gpa, .{
+            .trace_path = trace_path,
+            .state_dir = state_dir,
+            .state_alt = state_alt,
+            .kill_at = kill_at,
+            .run_cgroup = run_cgroup,
+            .kill_cgroup = kill_cgroup,
+        });
+        const argv = wrapArgv(arena, self_exe, s.childFd(), op_argv) catch return error.OutOfMemory;
+        return .{ .session = s, .argv = argv };
+    }
+
+    pub fn finish(self: Spawn) void {
+        if (self.session) |s| s.finish();
+    }
+};
+
+pub const StartError = Error || error{SelfExeUnreadable};
+
+/// The setup-error sentence for a supervision that could not start.
+pub fn startFailure(e: StartError) []const u8 {
+    return switch (e) {
+        error.SelfExeUnreadable => "--observe supervised: could not read /proc/self/exe to start the filter installer",
+        error.OutOfMemory => "out of memory",
+        error.Unsupported, error.SpawnSetup => "--observe supervised: could not start the supervising thread",
+    };
+}
+
+/// The preload a spawn gets: the shim, or nothing under `--observe supervised`, which loads none.
+pub fn preloadFor(observe: contract.ObserveMode, shim: []const u8) []const u8 {
+    return if (observe == .supervised) "" else shim;
+}
+
+/// Who kept the account the oracle is compared with, for the sentences that name it.
+pub fn observerName(observe: contract.ObserveMode) []const u8 {
+    return if (observe == .supervised) "supervising engine" else "shim";
+}
+
 /// This binary's own path, for the filter installer argv: `/proc/self/exe` resolved.
 pub fn selfExe(arena: std.mem.Allocator) ?[]const u8 {
     if (!available) return null;

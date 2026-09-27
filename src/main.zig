@@ -366,31 +366,15 @@ fn runOperationObserved(
     /// cgroup holds it and every process it follows.
     cg: ?*posix.CgroupSpawn,
 ) posix.Term {
-    const sup = superviseSpawn(gpa, arena, observe, op_argv, trace_path, state_abs, state_alt, 0, cg);
-    // The trace path stays out of a supervised target's environment: the engine writes the trace
-    // itself, and nothing in the target should be told where it is (review).
+    // Under `--observe supervised` (#217, ADR 0089) the operation starts through the filter
+    // installer, the engine's session counts it, no shim is preloaded, and the trace path stays out
+    // of the target's environment (the engine writes the trace itself).
+    const sup = supervise.Spawn.start(gpa, arena, observe, op_argv, trace_path, state_abs, state_alt, 0, containment.runName(cg), containment.killName(cg)) catch |e|
+        setupError(.environment, supervise.startFailure(e));
+    defer sup.finish();
+    const argv = sup.argv;
     const env_trace = if (observe == .supervised) "" else trace_path;
-    const term = runOperationObservedSpawn(gpa, arena, sup.argv, state_abs, state_alt, preloadFor(observe, shim), oracle_path, oracle_out, env_trace, stdout_path, cwd, observe, cg);
-    sup.finish();
-    return term;
-}
-
-/// `runOperationObserved`'s spawn, with the argv and the preload already chosen for the mode.
-fn runOperationObservedSpawn(
-    gpa: std.mem.Allocator,
-    arena: std.mem.Allocator,
-    op_argv: []const []const u8,
-    state_abs: []const u8,
-    state_alt: []const u8,
-    shim: []const u8,
-    oracle_path: ?[]const u8,
-    oracle_out: []const u8,
-    trace_path: []const u8,
-    stdout_path: []const u8,
-    cwd: ?[]const u8,
-    observe: contract.ObserveMode,
-    cg: ?*posix.CgroupSpawn,
-) posix.Term {
+    const preload = supervise.preloadFor(observe, shim);
     if (oracle_path) |strace_path| {
         // Environment goes to the target via strace's -E, not through our own
         // setenv: LD_PRELOAD applied here would load the shim into strace itself,
@@ -410,7 +394,7 @@ fn runOperationObservedSpawn(
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
-            .{ contract.env.trace_path, trace_path },
+            .{ contract.env.trace_path, env_trace },
             // Pinned empty so an ambient value in the operator's shell cannot
             // become the first image's numbering base (R1; parseU32("") is 0).
             .{ contract.env.seq_base, "" },
@@ -420,21 +404,21 @@ fn runOperationObservedSpawn(
             .{ contract.env.run_cgroup, containment.runName(cg) },
             .{ contract.env.kill_cgroup, "" },
             .{ contract.env.kill_aside, "" },
-            .{ preload_var, shim },
+            .{ preload_var, preload },
         };
         for (pairs) |kv| {
             list.append(arena, "-E") catch setupError(.environment, "out of memory");
             const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError(.environment, "out of memory");
             list.append(arena, joined) catch setupError(.environment, "out of memory");
         }
-        for (op_argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
+        for (argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
         return posix.runChildCaptureContained(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
     }
-    return posix.runChildCaptureContained(gpa, op_argv, &.{
+    return posix.runChildCaptureContained(gpa, argv, &.{
         .{ "TOY_STATE", state_abs },
         .{ contract.env.state_dir, state_abs },
         .{ contract.env.state_dir_alt, state_alt },
-        .{ contract.env.trace_path, trace_path },
+        .{ contract.env.trace_path, env_trace },
         // Pinned empty: see the oracle-path pairs above.
         .{ contract.env.seq_base, "" },
         .{ contract.env.observe, observe.name() },
@@ -442,59 +426,10 @@ fn runOperationObservedSpawn(
         .{ contract.env.run_cgroup, containment.runName(cg) },
         .{ contract.env.kill_cgroup, "" },
         .{ contract.env.kill_aside, "" },
-        .{ preload_var, shim },
+        .{ preload_var, preload },
     }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 }
 
-/// Under `--observe supervised` (#217, ADR 0089): the session that will count this spawn from
-/// outside it, and the argv that starts the operation through `sideeye __filter-exec`. For the
-/// other modes, no session and the operation's own argv. The session writes the trace the shim
-/// would have written, at the path the shim would have been told; the caller finishes it after
-/// the spawn returns and before anything reads that trace.
-const SupervisedSpawn = struct {
-    session: ?*supervise.Session,
-    argv: []const []const u8,
-
-    fn finish(self: SupervisedSpawn) void {
-        if (self.session) |s| s.finish();
-    }
-};
-
-fn superviseSpawn(
-    gpa: std.mem.Allocator,
-    arena: std.mem.Allocator,
-    observe: contract.ObserveMode,
-    op_argv: []const []const u8,
-    trace_path: []const u8,
-    state_abs: []const u8,
-    state_alt: []const u8,
-    kill_at: u32,
-    cg: ?*const posix.CgroupSpawn,
-) SupervisedSpawn {
-    if (observe != .supervised) return .{ .session = null, .argv = op_argv };
-    const self_exe = supervise.selfExe(arena) orelse
-        setupError(.environment, "--observe supervised: could not read /proc/self/exe to start the filter installer");
-    const s = supervise.Session.start(gpa, .{
-        .trace_path = trace_path,
-        .state_dir = state_abs,
-        .state_alt = state_alt,
-        .kill_at = kill_at,
-        .run_cgroup = containment.runName(cg),
-        .kill_cgroup = containment.killName(cg),
-    }) catch setupError(.environment, "--observe supervised: could not start the supervising thread");
-    const argv = supervise.wrapArgv(arena, self_exe, s.childFd(), op_argv) catch setupError(.environment, "out of memory");
-    return .{ .session = s, .argv = argv };
-}
-
-/// Who kept the account the oracle is compared with, for the sentences that name it.
-fn observerName(observe: contract.ObserveMode) []const u8 {
-    return if (observe == .supervised) "supervising engine" else "shim";
-}
-
-/// The preload a spawn gets: the shim, or nothing under `--observe supervised`, which loads none.
-fn preloadFor(observe: contract.ObserveMode, shim: []const u8) []const u8 {
-    return if (observe == .supervised) "" else shim;
-}
 
 /// The capture an observed run writes its evidence to, on both of the two branches
 /// above and for both of the two paths this function is called with
@@ -2250,7 +2185,7 @@ fn phaseOracle(run: *Run) void {
         if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
             .missed => |m| unknown(.oracle_missed_operation, report.divergenceDetail(
                 arena,
-                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the {s} did not record{s}", .{ observerName(args.observe), mode_hint }) catch
+                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the {s} did not record{s}", .{ supervise.observerName(args.observe), mode_hint }) catch
                     "the oracle saw a state-directory operation the observer did not record",
                 m.index,
                 shim_ops.items,
@@ -2259,7 +2194,7 @@ fn phaseOracle(run: *Run) void {
             ), boundary.missedOperationNext(args.observe, builtin.os.tag == .linux)),
             .phantom => |p| unknown(.oracle_saw_phantom, report.divergenceDetail(
                 arena,
-                std.fmt.allocPrint(arena, "the {s} recorded an operation the oracle did not see{s}", .{ observerName(args.observe), mode_hint }) catch
+                std.fmt.allocPrint(arena, "the {s} recorded an operation the oracle did not see{s}", .{ supervise.observerName(args.observe), mode_hint }) catch
                     "the observer recorded an operation the oracle did not see",
                 p.index,
                 shim_ops.items,
@@ -2730,7 +2665,8 @@ fn phaseExploration(run: *Run) void {
         // stopped and removed before its spawn returned.
         var wcg = containment.spawn(true);
         const wcg_ptr: ?*posix.CgroupSpawn = if (wcg) |*c| c else null;
-        const wsup = superviseSpawn(gpa, arena, args.observe, op_argv, world_trace, state_abs, state_alt, @intCast(k), wcg_ptr);
+        const wsup = supervise.Spawn.start(gpa, arena, args.observe, op_argv, world_trace, state_abs, state_alt, @intCast(k), containment.runName(wcg_ptr), containment.killName(wcg_ptr)) catch |e|
+            setupError(.environment, supervise.startFailure(e));
         const wterm = posix.runChildCaptureWorld(gpa, wsup.argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
@@ -2754,7 +2690,7 @@ fn phaseExploration(run: *Run) void {
             .{ contract.env.run_cgroup, containment.runName(wcg_ptr) },
             .{ contract.env.kill_cgroup, containment.killName(wcg_ptr) },
             .{ contract.env.kill_aside, containment.asideName(wcg_ptr) },
-            .{ preload_var, preloadFor(args.observe, shim) },
+            .{ preload_var, supervise.preloadFor(args.observe, shim) },
             // `exclusive` for the reason on `recordingCapture`, and free for the same
             // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
             // of this loop, so a re-run over one work directory never meets its own
