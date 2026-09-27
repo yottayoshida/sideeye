@@ -1083,7 +1083,7 @@ fn phaseDefine(run: *Run) void {
         // Minor-3: this and the two --work refusals below predate the rule's helper
         // and were the last three keeping their side effect).
         if (state_created) _ = posix.rmdir(state_z.ptr);
-        setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, the shim and the engine would filter on different spellings of it", .{ textShown(arena_state.allocator(), state), refuse.resolveFailure(arena_state.allocator(), state, why) });
+        setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, {s}", .{ textShown(arena_state.allocator(), state), refuse.resolveFailure(arena_state.allocator(), state, why), if (args.observe == .supervised) "the engine could not match the paths it reads from the target against it" else "the shim and the engine would filter on different spellings of it" });
     };
 
     // A recovery is a pair (#606, ADR 0072), held here and only here: after the case or the
@@ -1477,6 +1477,7 @@ fn phaseRecording(run: *Run) void {
     // the shim announces its own install result and the trace is checked for it below —
     // it is the half that catches the ordinary environment before anything runs.
     boundary.observe_mode = args.observe;
+    report.noteObserver(args.observe == .supervised);
     // Interrupted calls are dropped from the oracle's reading under this mode only (#217): its
     // counting observer is the kernel's notification, which a signal withdraws.
     oracle.fold_restarted = args.observe == .supervised;
@@ -2110,7 +2111,7 @@ fn phaseOracle(run: *Run) void {
         // more than ten lines were examined; the tool itself shipped without the check
         // its own suite considered necessary.
         if (parsed.lines_seen == 0)
-            unknown(.oracle_saw_nothing, "the oracle produced no output, so nothing was compared against the shim's account", .environment);
+            unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
 
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
