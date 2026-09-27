@@ -28,14 +28,18 @@ jj)
     mkdir -p "$HOME"
     STATE=/tmp/cohort2/jj/repo; SETUP=/ap/jj/setup.sh; CHECK=/ap/jj/check.sh; EXPECT=0
     OP="/usr/local/bin/jj -R /tmp/cohort2/jj/repo commit -m probe"; MODE=wrappers ;;
-chezmoi)
+chezmoi|chezmoi-force)
     export HOME=/tmp/cz/home
     mkdir -p /tmp/cz/src "$HOME"
     printf 'hello from chezmoi\n' > /tmp/cz/src/dot_testrc
     printf 'second file\n' > /tmp/cz/src/dot_second
     STATE=/tmp/cz/dest; SETUP=/ap/cz-setup.sh
-    OP="/usr/local/bin/chezmoi apply --source /tmp/cz/src --destination /tmp/cz/dest --no-tty"; MODE=wrappers ;;
-gopass)
+    OP="/usr/local/bin/chezmoi apply --source /tmp/cz/src --destination /tmp/cz/dest --no-tty"; MODE=wrappers
+    # Correction, after the fixed define's result (RESULTS.md): `preflight --twice` restores only
+    # --state, so chezmoi's own database under $HOME remembers the first run and the second asks
+    # "has changed since chezmoi last wrote it" and exits 1 — with no engine at all, too.
+    [ "$t" = chezmoi-force ] && OP="$OP --force" ;;
+gopass|gopass-rm)
     export GOPASS_AGE_PASSWORD=testpassphrase
     # One store made once, copied into the judged root by every setup (gp-setup.sh), so each
     # world starts from the same bytes rather than from a fresh `gopass setup`.
@@ -44,16 +48,23 @@ gopass)
     printf 'first\n' | GOPASS_HOMEDIR=/tmp/gp-golden gopass insert -f seed/entry0 >> "$O/golden-setup.txt" 2>&1
     export GOPASS_HOMEDIR=/tmp/gp
     STATE=/tmp/gp/.local/share/gopass/stores/root; SETUP=/ap/gp-setup.sh
-    OP="/usr/local/bin/gopass generate --print=false test/generated 20"; MODE=wrappers ;;
+    OP="/usr/local/bin/gopass generate --print=false test/generated 20"; MODE=wrappers
+    # Correction: `generate` writes a random secret, age-encrypted with a fresh ephemeral key, so
+    # two runs cannot leave equal bytes by design. Removing an entry writes nothing random.
+    [ "$t" = gopass-rm ] && OP="/usr/local/bin/gopass rm -f seed/entry0" ;;
 gh)
     export GH_CONFIG_DIR=/tmp/ghcfg HOME=/tmp/ghhome
     STATE=/tmp/ghcfg; SETUP=/ap/gh-setup.sh
     OP="/usr/local/bin/gh config set git_protocol ssh"; MODE=wrappers ;;
-lefthook|lefthook-sh)
+lefthook|lefthook-sh|lefthook-nocheck)
     export LH_REPO=/tmp/lh-repo LH_HOOKS=/tmp/lh-repo/.git/hooks
     sh /ap/lefthook/seed-state.sh   # `cwd` must exist before the engine starts (docs/cli.md)
     STATE=/tmp/lh-repo/.git/hooks; SETUP=/ap/lefthook/seed-state.sh; CHECK=/ap/lefthook/verify.sh; CWD=/tmp/lh-repo
-    if [ "$t" = lefthook ]; then OP="/usr/local/bin/lefthook install"; MODE=syscalls
+    # Correction: the 2026-09-21 checker accepts a hooks directory with no lefthook hook in it
+    # (install had not got there), so it also accepts that directory overwritten with junk and
+    # is refused checker_not_falsified. Without it the built-in atomicity rule judges.
+    [ "$t" = lefthook-nocheck ] && CHECK=""
+    if [ "$t" != lefthook-sh ]; then OP="/usr/local/bin/lefthook install"; MODE=syscalls
     else OP="/bin/sh /ap/lhsh.sh"; MODE=none; fi ;;
 bbsed)
     STATE=/tmp/bb; SETUP=/ap/bb-setup.sh
@@ -100,7 +111,7 @@ for i in 1 2 3 4 5; do
     rc=$?
     echo "exit $rc" >> "$O/sup-preflight-$i.txt"
     [ "$rc" = 0 ] && acc=$((acc + 1))
-    say "preflight $i: exit $rc  $(grep -m1 -E '^(UNKNOWN|SETUP|preflight|  *[a-z_]+$)' "$O/sup-preflight-$i.txt")"
+    say "preflight $i: exit $rc  $(grep -m1 -E '^(UNKNOWN|SETUP|PREFLIGHT)' "$O/sup-preflight-$i.txt")"
 done
 say "preflight accepted: $acc of 5"
 [ "$acc" -gt 0 ] || exit 0

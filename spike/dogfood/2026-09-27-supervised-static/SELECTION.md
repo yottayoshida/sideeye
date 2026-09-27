@@ -1,7 +1,7 @@
 # Selection — 2026-09-27 supervised-static
 
-The static-linkage wall in `docs/target-classes.md` names five real tools: Jujutsu (row 87),
-chezmoi and gopass (row 88), lefthook (row 89) and `gh` (the "Static binaries" clause under the
+The static-linkage wall in `docs/target-classes.md` names five real tools: Jujutsu, chezmoi and gopass (one row),
+lefthook, each in the "Refusals that are the correct answer" table, and `gh` (the "Static binaries" clause under the
 tables). `--observe supervised` (#217, ADR 0089, PR #663) counts a statically linked target from
 outside the process; until this run it had been measured on a toy only, and the page says so and
 says the rows move only when a real tool is re-measured. This run re-measures them. It is the
@@ -12,11 +12,11 @@ fixed by the page, not by taste.**
 
 | # | target | why it is here | the row's mode |
 |---|---|---|---|
-| 1 | Jujutsu 0.44.0, `jj commit` | row 87 | wrappers |
-| 2 | chezmoi 2.72.1, `chezmoi apply` | row 88 | wrappers |
-| 3 | gopass 1.17.0, `gopass generate` | row 88 | wrappers |
+| 1 | Jujutsu 0.44.0, `jj commit` | the Jujutsu row | wrappers |
+| 2 | chezmoi 2.72.1, `chezmoi apply` | the chezmoi/gopass row | wrappers |
+| 3 | gopass 1.17.0, `gopass generate` | the chezmoi/gopass row | wrappers |
 | 4 | `gh` 2.97.0, `gh config set` | "Static binaries" clause | wrappers |
-| 5 | lefthook 1.13.6, `lefthook install` | row 89 | **syscalls** (the row was measured there) |
+| 5 | lefthook 1.13.6, `lefthook install` | the lefthook row | **syscalls** (the row was measured there) |
 | 6 | busybox-static `sed -i`, run directly | declared before measuring (below) | wrappers |
 | 7 | busybox-static `sed -i`, run by a dynamic `/bin/sh` that `exec`s it | declared before measuring (below) | **syscalls** |
 
@@ -69,7 +69,7 @@ Every row the page carries reproduced before it moves.
 copying it in (`transcripts/build.txt`): `gh_2.97.0_checksums.txt`, `chezmoi_2.72.1_checksums.txt`,
 `gopass_1.17.0_SHA256SUMS`, `lefthook_checksums.txt`, and for Jujutsu the value `spike/cohort2`
 pinned. busybox-static is Debian bookworm's `1:1.35.0-4+deb12u1+b1`, installed at that version.
-The versions are the rows' own. Row 87 calls 0.44.0 "the latest stable, so the recheck is
+The versions are the rows' own. The Jujutsu row calls 0.44.0 "the latest stable, so the recheck is
 inherent" — that is no longer a claim this run tests; 0.44.0 is held fixed so only the engine
 changes.
 
@@ -84,8 +84,8 @@ changes.
 | lefthook | `lefthook install`, state `.git/hooks`, `cwd` the repository, seed and checker as committed | `2026-09-21-release-path/apparatus/` (copied to `apparatus/lefthook/`) |
 | busybox, direct and via sh | `busybox sed -i s/a/z/ f.txt` over a three-line file | new |
 
-Every operation names its image by absolute path (the refusal text names the linkage only then,
-row 88). jj, chezmoi, gopass and gh use built-in atomicity except where a checker is named above.
+Every operation names its image by absolute path (the refusal text names the linkage only then —
+the chezmoi/gopass row). jj, chezmoi, gopass and gh use built-in atomicity except where a checker is named above.
 
 ## Deviations, declared
 

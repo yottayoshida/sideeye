@@ -1,0 +1,10 @@
+target lefthook  stage supervised  engine sideeye 1.6.0 (trace contract v18)  binary ccb814491679
+preflight 1: exit 0  
+preflight 2: exit 0  
+preflight 3: exit 0  
+preflight 4: exit 0  
+preflight 5: exit 0  
+preflight accepted: 5 of 5
+explore 1: exit 2  UNKNOWN  4 None True
+explore 2: exit 2  UNKNOWN  4 None True
+explore 3: exit 2  UNKNOWN  4 None True

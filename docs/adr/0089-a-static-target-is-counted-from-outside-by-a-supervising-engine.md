@@ -129,5 +129,10 @@ catches a signal while its call waits for the supervisor has the call restarted 
   the flag the run never finished (killed after nine minutes); with both, 5 of 5 agree.
 - Measured on aarch64 only. x86_64's legacy spellings (`open`, `creat`, `rename`, `fork`, `vfork`
   and the rest) are compiled and first executed by CI's acceptance, contained.
-- The real static targets are not re-measured here; `docs/target-classes.md` says so, and #217
-  stays open for that measurement.
+- The real static targets were not re-measured by this change; #217 stayed open for that
+  measurement. **Re-measured 2026-09-27** (`spike/dogfood/2026-09-27-supervised-static/`):
+  busybox-static's `sed -i`, direct and through a dynamic `sh` that `exec`s it, PASS 3/3 with 5 of 5
+  preflights accepted, judging the file it rewrites; `gh` PASS 3/3 judging no file it wrote; chezmoi,
+  gopass and lefthook refused as first defined (their own second run, a random secret, a checker
+  that cannot be falsified) and reach PASS 3/3 only with chezmoi's `--force`, gopass's `rm` in
+  place of `generate` and lefthook without the checker, judging no file they wrote; Jujutsu stops at the thread wall 5 of 5.

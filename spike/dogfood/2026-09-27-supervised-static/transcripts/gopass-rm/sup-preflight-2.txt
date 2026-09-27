@@ -1,0 +1,20 @@
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+cwd          /w  (none declared: Sideeye's own)
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 3 operations (179 syscall lines examined, 19 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /tmp/gp/.local/share/gopass/stores/root --setup "/ap/gp-setup.sh" --operation "/usr/local/bin/gopass rm -f seed/entry0" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace
+exit 0

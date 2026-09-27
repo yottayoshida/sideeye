@@ -14,7 +14,7 @@
 🧪 Creating cryptographic key pair (age) ...
 ✅ Key pair for age generated
 ⚠ 🔐 We need to unlock your newly created private key now! Please enter the passphrase you just generated.
-✅ Key pair age1gyuntg0t5m28k20w9mguvmhwg88c56svze2veh42dvsxc9hr3f0qywz58c validated
+✅ Key pair age1890jpaka04czd3hu4ltq5zw2fzx6q4t38k9ll8qgv4ph8afmdshqn06y7k validated
 🔐 Cryptographic keys generated
 🌟 Configuring your password store ...
 ✅ Configuration written
