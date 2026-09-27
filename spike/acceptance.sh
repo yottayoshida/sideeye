@@ -2898,6 +2898,26 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
         sed 's/^/     | /' /tmp/acc-th-sup.txt | head -4
         fails=$((fails + 1))
     fi
+    # What that refusal says (#217): this mode's rule, by the engine's name — not the shim's
+    # v18 sentence, which calls writes a join orders "judged" in a mode that records no join —
+    # and no field of the report, text or JSON, names a shim this run never loaded (the JSON's
+    # metadata account kept one until review found it). Both sides are asserted: the positive
+    # ones so a run with no sentence, or no JSON, cannot pass. preflight has no JSON form, so
+    # the JSON is an explore's, refused at its recording the same way.
+    rm -rf /tmp/acc-th/s /tmp/acc-th/w /tmp/acc-th-sup.json && mkdir -p /tmp/acc-th/s
+    TOY_STATE=/tmp/acc-th/s "$SIDEEYE" explore --state /tmp/acc-th/s --setup "$OUT/toy-supthreads init" \
+        --operation "$OUT/toy-supthreads rotate" --observe supervised --oracle /usr/bin/strace \
+        --work /tmp/acc-th/w --json /tmp/acc-th-sup.json > /dev/null 2>&1
+    if grep -q "Nothing the supervising engine recorded orders" /tmp/acc-th-sup.txt \
+        && grep -q "no join is recorded, nor which thread a creation made" /tmp/acc-th-sup.txt \
+        && grep -q "supervising engine is not notified of ownership" /tmp/acc-th-sup.json \
+        && ! grep -q -i "the shim" /tmp/acc-th-sup.txt && ! grep -q -i "the shim" /tmp/acc-th-sup.json; then
+        echo "ok   the supervised thread refusal states that mode's rule, and neither its text nor its JSON says the shim did anything"
+    else
+        echo "FAIL the supervised thread refusal does not state the mode's rule, or names the shim"
+        grep -h -o -i '.\{0,60\}the shim.\{0,40\}' /tmp/acc-th-sup.txt /tmp/acc-th-sup.json 2>/dev/null | head -4 | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
     if [ -x "$ROOT/zig-out/bin/sideeye-testsupervisedelay" ]; then
         sup_sig "$ROOT/zig-out/bin/sideeye-testsupervisedelay"
         if [ "$ok_runs" = 5 ] && [ "$caught" -gt 0 ]; then

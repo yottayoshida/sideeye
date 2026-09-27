@@ -304,9 +304,9 @@ pub fn answerForOversizedTrace(t: engine.TraceInfo, where: []const u8, cap: usiz
 fn traceTooLarge(size: ?u64, where: []const u8, cap: usize) noreturn {
     if (json_arena) |ja| {
         if (size) |sz|
-            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read: {d} bytes against a {d}-byte cap; the shim's account is complete, but the engine declined to hold it", .{ where, sz, cap }) catch "the trace is larger than this engine will read", .narrow_state)
+            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read: {d} bytes against a {d}-byte cap; {s}'s account is complete, but the engine declined to hold it", .{ where, sz, cap, boundary.recorder() }) catch "the trace is larger than this engine will read", .narrow_state)
         else
-            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read (over the {d}-byte cap); the shim's account is complete, but the engine declined to hold it", .{ where, cap }) catch "the trace is larger than this engine will read", .narrow_state);
+            unknown(.trace_too_large, std.fmt.allocPrint(ja, "the trace from {s} is larger than this engine will read (over the {d}-byte cap); {s}'s account is complete, but the engine declined to hold it", .{ where, cap, boundary.recorder() }) catch "the trace is larger than this engine will read", .narrow_state);
     }
     // Unreachable in practice for the same reason snapshotOrRefuse's fallback is:
     // json_arena is assigned before the parse loop, ahead of every call site. Kept so
@@ -457,7 +457,10 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
 /// weaker claim deliberately, and the report says which claim was made.
 pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool) void {
     if (has_oracle or allow_unverified) return;
-    const base = "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim";
+    const base = if (boundary.observe_mode == .supervised)
+        "no oracle was given, so the supervising engine's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim"
+    else
+        "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim";
     // A discovered strace is only ever NAMED here, never attached: a second witness
     // joining on its own would silently strengthen what a flagless verdict claims —
     // and flip every caller that measured the no-oracle behavior (#78).
@@ -754,8 +757,11 @@ pub fn reconcileOrRefuse(
         "";
     const detail = std.fmt.allocPrint(
         arena,
-        "the judged state changed at {d} path(s) that no recorded operation names, so the account of this run is incomplete: {s}{s}. The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all",
-        .{ r.total, names.items, more },
+        "the judged state changed at {d} path(s) that no recorded operation names, so the account of this run is incomplete: {s}{s}. {s}",
+        .{ r.total, names.items, more, if (boundary.observe_mode == .supervised)
+            "The supervising engine records the calls its filter watches, in the target and the processes it starts; a change made another way — through a mapped file, say, or by a process the target did not start — leaves no record at all"
+        else
+            "The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all" },
     ) catch "the judged state changed at a path that no recorded operation names";
     unknown(.state_changed_unaccounted, detail, .class_wall);
 }

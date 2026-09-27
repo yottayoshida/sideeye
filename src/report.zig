@@ -103,7 +103,10 @@ pub var oracle_verified_subject_only: bool = false;
 /// verdict input. The default says why absence of a note is not absence of writes:
 /// without an oracle nothing can see a chown, and "was not seen" must not read as
 /// "did not happen" here any more than anywhere else in this tool.
-pub var metadata_note: []const u8 = initialMetadataNote(.unparsed);
+pub var metadata_note: []const u8 = initialMetadataNote(.unparsed, false);
+/// What the parser established about the oracle, kept so the metadata account can be
+/// re-derived once the observation mode is known (#217, `noteObserver`).
+var oracle_asked: OracleAsked = .unparsed;
 
 /// What the parser has established about the completeness oracle so far (#352). Both
 /// account strings above are assigned from this — at their initialisers, the moment either
@@ -137,7 +140,17 @@ fn initialOracleNote(asked: OracleAsked) []const u8 {
     };
 }
 
-fn initialMetadataNote(asked: OracleAsked) []const u8 {
+fn initialMetadataNote(asked: OracleAsked, supervised: bool) []const u8 {
+    // Who does not see these calls is the observer's name (#217): under `--observe
+    // supervised` no shim is loaded, and the engine's filter is not told of them either.
+    if (supervised) return switch (asked) {
+        .unparsed => "not established: this run stopped while its arguments were still being read; the supervising engine is not notified of ownership/permission/timestamp calls, so only a completed oracle account could show them",
+        .named => |kind| switch (kind) {
+            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of ownership/permission/timestamp calls",
+            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of ownership/permission/timestamp calls",
+        },
+        .none => "not observable (no oracle ran; the supervising engine is not notified of ownership/permission/timestamp calls)",
+    };
     return switch (asked) {
         .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose ownership/permission/timestamp calls, so only a completed oracle account could show them",
         // "before its metadata account was completed", not "before its capture was read":
@@ -154,7 +167,14 @@ fn initialMetadataNote(asked: OracleAsked) []const u8 {
 /// Assign both accounts from what the parser has established.
 pub fn noteOracle(asked: OracleAsked) void {
     oracle_note = initialOracleNote(asked);
-    metadata_note = initialMetadataNote(asked);
+    oracle_asked = asked;
+    metadata_note = initialMetadataNote(asked, false);
+}
+/// Re-derive the metadata account once the observation mode is known (#217). The parser
+/// records the oracle before the mode is read, so the account it wrote names the shim;
+/// called before any run, so no comparison's account is overwritten.
+pub fn noteObserver(supervised: bool) void {
+    metadata_note = initialMetadataNote(oracle_asked, supervised);
 }
 /// The declared invariant's account. Same rule as `oracle_note` (#352): "none configured"
 /// is written only once every source of a checker — the flag, a replayed case, the toml —
@@ -1625,10 +1645,10 @@ pub fn divergenceDetail(
     const shim_part = if (index < shim_ops.len) blk: {
         const op = shim_ops[index];
         break :blk if (op.aux.len > 0)
-            std.fmt.allocPrint(arena, "the shim recorded: {s}(\"{s}\" -> \"{s}\")", .{ @tagName(op.class), op.path, op.aux }) catch return lead
+            std.fmt.allocPrint(arena, "{s} recorded: {s}(\"{s}\" -> \"{s}\")", .{ boundary.recorder(), @tagName(op.class), op.path, op.aux }) catch return lead
         else
-            std.fmt.allocPrint(arena, "the shim recorded: {s}(\"{s}\")", .{ @tagName(op.class), op.path }) catch return lead;
-    } else std.fmt.allocPrint(arena, "the shim's account ends after {d} operation(s)", .{index}) catch return lead;
+            std.fmt.allocPrint(arena, "{s} recorded: {s}(\"{s}\")", .{ boundary.recorder(), @tagName(op.class), op.path }) catch return lead;
+    } else std.fmt.allocPrint(arena, "{s}'s account ends after {d} operation(s)", .{ boundary.recorder(), index }) catch return lead;
     const composed = std.fmt.allocPrint(arena, "{s}; divergence at operation {d}: {s}; {s}", .{
         lead, index + 1, oracle_part, shim_part,
     }) catch return lead;
@@ -1869,27 +1889,27 @@ test "the oracle account says no oracle was given only once the arguments were r
     try std.testing.expectEqualStrings("not run (no --oracle given)", initialOracleNote(.none));
     try std.testing.expectEqualStrings(
         "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
-        initialMetadataNote(.none),
+        initialMetadataNote(.none, false),
     );
     // Before the parse loop finishes, and once a flag was consumed, neither account may
     // claim that none was given.
     const states = [_]OracleAsked{ .unparsed, .{ .named = .strace }, .{ .named = .fs_usage } };
     for (states) |s| {
         try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(s), "no --oracle given") == null);
-        try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(s), "no oracle ran") == null);
+        try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(s, false), "no oracle ran") == null);
     }
     try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.unparsed), "not established") != null);
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.unparsed), "not established") != null);
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.unparsed, false), "not established") != null);
     // The named wording carries the flag that was read, and the fs_usage one is not the
     // strace one with a suffix — the acceptance legs match the whole phrase.
     try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.{ .named = .strace }), "--oracle was named") != null);
     try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(.{ .named = .fs_usage }), "--oracle-fs-usage was named") != null);
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }), "--oracle was named") != null);
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .fs_usage }), "--oracle-fs-usage was named") != null);
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }, false), "--oracle was named") != null);
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .fs_usage }, false), "--oracle-fs-usage was named") != null);
     // The named metadata wording asserts no progress: the comparison block can refuse
     // after reading the capture and before assigning the metadata account, so "before its
     // capture was read" would be false there.
-    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }), "capture was read") == null);
+    try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }, false), "capture was read") == null);
 }
 
 test "noteOracle assigns both accounts, and the initialiser is the unparsed state (#352)" {
@@ -1903,7 +1923,7 @@ test "noteOracle assigns both accounts, and the initialiser is the unparsed stat
     // Nothing else in this test binary assigns these globals, so what was saved is the
     // initialiser.
     try std.testing.expectEqualStrings(initialOracleNote(.unparsed), saved_o);
-    try std.testing.expectEqualStrings(initialMetadataNote(.unparsed), saved_m);
+    try std.testing.expectEqualStrings(initialMetadataNote(.unparsed, false), saved_m);
     noteOracle(.{ .named = .strace });
     try std.testing.expect(std.mem.indexOf(u8, oracle_note, "--oracle was named") != null);
     try std.testing.expect(std.mem.indexOf(u8, metadata_note, "--oracle was named") != null);
@@ -2115,4 +2135,53 @@ test "a run that classified an empty judged set is not a run that never classifi
     try std.testing.expect(l0_classified);
     try std.testing.expectEqual(@as(usize, 0), l0_judged_paths.len);
     try std.testing.expectEqual(@as(u32, 0), l0_judged_paths_omitted);
+}
+
+test "under --observe supervised the divergence detail names the engine's account, not the shim's (#217)" {
+    defer divergence_syscall = "";
+    const saved = boundary.observe_mode;
+    defer boundary.observe_mode = saved;
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const ops = [_]engine.Op{.{ .class = .open, .seq = 1, .pid = 1, .tid = 1, .path = "/tmp/s/a", .aux = "" }};
+    const lines = [_][]const u8{ "openat(AT_FDCWD, \"/tmp/s/a\", O_RDWR) = 3", "unlinkat(AT_FDCWD, \"/tmp/s/b\", 0) = 0" };
+    const names = [_][]const u8{ "openat", "unlinkat" };
+
+    boundary.observe_mode = .supervised;
+    const held = divergenceDetail(arena, "lead", 0, &ops, &lines, &names);
+    try std.testing.expect(std.mem.indexOf(u8, held, "the supervising engine recorded: open(\"/tmp/s/a\")") != null);
+    const ended = divergenceDetail(arena, "lead", 1, &ops, &lines, &names);
+    try std.testing.expect(std.mem.indexOf(u8, ended, "the supervising engine's account ends after 1 operation(s)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, held, "shim") == null);
+    try std.testing.expect(std.mem.indexOf(u8, ended, "shim") == null);
+
+    // Control: the default mode's words stand.
+    boundary.observe_mode = .wrappers;
+    try std.testing.expect(std.mem.indexOf(u8, divergenceDetail(arena, "lead", 0, &ops, &lines, &names), "the shim recorded: open(\"/tmp/s/a\")") != null);
+    try std.testing.expect(std.mem.indexOf(u8, divergenceDetail(arena, "lead", 1, &ops, &lines, &names), "the shim's account ends after 1 operation(s)") != null);
+}
+
+test "under --observe supervised the metadata account names the engine's filter, re-derived once the mode is known (#217)" {
+    const saved = metadata_note;
+    const saved_asked = oracle_asked;
+    defer {
+        metadata_note = saved;
+        oracle_asked = saved_asked;
+    }
+    for ([_]OracleAsked{ .unparsed, .none, .{ .named = .strace }, .{ .named = .fs_usage } }) |asked| {
+        const sup = initialMetadataNote(asked, true);
+        try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine is not notified of ownership/permission/timestamp calls") != null);
+        try std.testing.expect(std.mem.indexOf(u8, sup, "shim") == null);
+        // The rest of the sentence is the same claim in both modes: only the observer moves.
+        const def = initialMetadataNote(asked, false);
+        try std.testing.expect(std.mem.indexOf(u8, def, "the shim does not interpose ownership/permission/timestamp calls") != null);
+    }
+    // The parser records the oracle before the mode is known; noteObserver re-derives it.
+    noteOracle(.{ .named = .strace });
+    try std.testing.expect(std.mem.indexOf(u8, metadata_note, "the shim does not interpose") != null);
+    noteObserver(true);
+    try std.testing.expectEqualStrings(initialMetadataNote(.{ .named = .strace }, true), metadata_note);
+    noteObserver(false);
+    try std.testing.expectEqualStrings(initialMetadataNote(.{ .named = .strace }, false), metadata_note);
 }

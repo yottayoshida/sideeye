@@ -60,6 +60,14 @@ pub var boundary_ev: BoundaryEvidence = .{};
 /// under `--observe supervised` it is the engine, at the syscall boundary, not a shim at libc's.
 pub var observe_mode: contract.ObserveMode = .wrappers;
 
+/// Who kept the account a sentence quotes (#217): the shim, or under `--observe supervised`
+/// the engine, which loads no shim and counts from outside the target. The account has the
+/// shim's shape in both modes — the supervising engine writes the shim's records — so every
+/// sentence that says "the shim recorded" reads its subject here rather than assuming one.
+pub fn recorder() []const u8 {
+    return if (observe_mode == .supervised) "the supervising engine" else "the shim";
+}
+
 pub const BoundaryEvidence = struct {
     /// The completeness observer, and how far it got. Named is not the same as read.
     witness: Witness = .none,
@@ -274,9 +282,19 @@ pub fn boundaryAccount() []const u8 {
     // three returns below all interpolate `{threads}`, and a clause added at one of them
     // would vanish on the other two. That has happened here before, to the world clause.
     var thread_buf: [360]u8 = undefined;
-    const threads: []const u8 = if (boundary_ev.threads > 0)
+    // Under `--observe supervised` the rule is not v18's (#217): the engine is told a thread
+    // was created and by whom, never which thread was made, and no join reaches it at all,
+    // so no recorded edge can order two threads' writes and a second writing thread refuses.
+    // The counts of hand-overs, joins and detaches are left out rather than printed as
+    // zeros a reader would take for measured absences.
+    const threads: []const u8 = if (boundary_ev.threads > 0 and observe_mode == .supervised)
+        std.fmt.bufPrint(&thread_buf, "; the supervising engine recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
+            "; the supervising engine recorded threads created"
+    else if (boundary_ev.threads > 0)
         std.fmt.bufPrint(&thread_buf, "; the shim recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory; {d} hand-over(s) between threads in causal order, {d} join(s) and {d} detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads, boundary_ev.thread_turns, boundary_ev.thread_joins, boundary_ev.thread_detaches }) catch
             "; the shim recorded threads created (v16)"
+    else if (boundary_ev.unrecorded_writer_thread and observe_mode == .supervised)
+        "; a thread the supervising engine never recorded creating wrote the judged directory, so its count of threads is a floor and no witness is held against it (v16, #543)"
     else if (boundary_ev.unrecorded_writer_thread)
         "; a thread the shim never recorded creating wrote the judged directory, so its count of threads is a floor and no witness is held against it (v16, #543)"
     else
@@ -337,9 +355,15 @@ const fs_usage_silence = "no other process mutated the judged directory in the f
 fn boundaryRecordingClause(scratch: []u8) []const u8 {
     const ev = boundary_ev;
     if (!ev.trace_read)
-        return "not established: this run was refused before the shim's account of it was read";
+        return if (observe_mode == .supervised)
+            "not established: this run was refused before the supervising engine's account of it was read"
+        else
+            "not established: this run was refused before the shim's account of it was read";
     if (!ev.shim_reported)
-        return "not established: the shim never announced itself in this run, so nothing observed process boundaries";
+        return if (observe_mode == .supervised)
+            "not established: the supervising engine's account never opened in this run, so nothing observed process boundaries"
+        else
+            "not established: the shim never announced itself in this run, so nothing observed process boundaries";
     // Above `shim_hard` deliberately, and the combination that would make the order
     // matter is unreachable rather than merely unlikely: `children_judged` is set inside
     // the oracle block, which a run with a hard boundary never reaches — the
@@ -364,12 +388,12 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
         else
             "a process other than the subject operated on the judged directory; its operations have no crash-point address";
     if (ev.shim_hard) |name|
-        return std.fmt.bufPrint(scratch, "the shim recorded {s}", .{name}) catch "the shim recorded a boundary that is refused by name";
+        return std.fmt.bufPrint(scratch, "{s} recorded {s}", .{ recorder(), name }) catch "a boundary was recorded that is refused by name";
     // The oracle's own boundary, which the child count cannot carry: a thread emits no
     // pid, so `children` stays 0 and the witness matrix below would read this as an
     // observation of a single process. Measured by review on a `CLONE_THREAD` capture.
     if (ev.oracle_boundary) |name| return switch (ev.witness) {
-        .read => |r| std.fmt.bufPrint(scratch, "the {s} account reports {s}, which crosses a process boundary the shim did not record", .{ r.kind.name(), name }) catch
+        .read => |r| std.fmt.bufPrint(scratch, "the {s} account reports {s}, which crosses a process boundary {s} did not record", .{ r.kind.name(), name, recorder() }) catch
             "the oracle's account reports a call that crosses a process boundary",
         else => "the oracle's account reports a call that crosses a process boundary",
     };
@@ -384,14 +408,16 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
     // talking about rather than calling both "a process boundary". Before 2026-09-07
     // they said the latter of a self-exec run, which is the same overclaim as the
     // disagreement the `.read` arm used to report (measured on a judged run).
-    const recorded: []const u8 = if (ev.shim_process_boundary)
-        "the shim recorded a process boundary"
+    const what: []const u8 = if (ev.shim_process_boundary)
+        "a process boundary"
     else if (ev.shim_thread_only)
-        "the shim recorded a thread"
+        "a thread"
     else if (ev.shim_subject_detached)
-        "the shim recorded the subject leaving its process group"
+        "the subject leaving its process group"
     else
-        "the shim recorded the subject replacing its own image";
+        "the subject replacing its own image";
+    var recorded_buf: [96]u8 = undefined;
+    const recorded: []const u8 = std.fmt.bufPrint(&recorded_buf, "{s} recorded {s}", .{ recorder(), what }) catch "a boundary was recorded";
     switch (ev.witness) {
         .read => |r| if (r.lines == 0) return if (ev.shim_boundary)
             std.fmt.bufPrint(scratch, "not established: {s} and the {s} capture was empty, so nothing was compared", .{ recorded, r.kind.name() }) catch
@@ -403,15 +429,15 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
     }
     if (ev.shim_boundary) return switch (ev.witness) {
         .none => std.fmt.bufPrint(scratch, "{s} and no second witness ran", .{recorded}) catch
-            "the shim recorded a boundary and no second witness ran",
+            "a boundary was recorded and no second witness ran",
         // The tail names the other process only when there was one to name: an image
         // change leaves nothing unaccounted for on that axis.
         .unread => |k| if (ev.shim_process_boundary)
             std.fmt.bufPrint(scratch, "{s}; the {s} account was not read, so nothing accounts for what the other process did", .{ recorded, k.name() }) catch
-                "the shim recorded a process boundary and the oracle's account was not read"
+                "a process boundary was recorded and the oracle's account was not read"
         else
             std.fmt.bufPrint(scratch, "{s}; the {s} account was not read", .{ recorded, k.name() }) catch
-                "the shim recorded the subject replacing its own image and the oracle's account was not read",
+                "the subject was recorded replacing its own image and the oracle's account was not read",
         .read => |r| if (r.children > 0)
             // Kept verbatim from before this field became evidence: a FAIL's reader has
             // to see that the window is attributed to the subject alone.
@@ -420,8 +446,8 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
             // The two witnesses disagree. Neither is preferred here: a `vfork` that
             // failed leaves a boundary record with no child, and a child the oracle lost
             // leaves the same shape. The run says so rather than picking.
-            std.fmt.bufPrint(scratch, "the shim recorded a process boundary and {s} observed no other process; the two accounts disagree and this run does not resolve them", .{r.kind.name()}) catch
-                "the shim and the oracle disagree about whether a process boundary happened"
+            std.fmt.bufPrint(scratch, "{s} recorded a process boundary and {s} observed no other process; the two accounts disagree and this run does not resolve them", .{ recorder(), r.kind.name() }) catch
+                "the two accounts disagree about whether a process boundary happened"
         else switch (r.kind) {
             // The only boundary the shim recorded is the subject replacing its own
             // image. That claims no second process, so a witness reporting one process
@@ -716,7 +742,13 @@ pub fn childrenMayBeJudged(
             return .{ .wall = if (shim_in_writer_image) .shimmed_writer_unnumbered else .not_the_modes_wall, .detail = std.fmt.allocPrint(
                 arena,
                 "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. {s}",
-                .{ w.id, if (shim_in_writer_image)
+                // Checked first (#217, review): the supervising engine writes a start record
+                // at every exec, so `shim_in_writer_image` holds there too, and the filter is
+                // inherited by every process the target starts — which is all strace follows.
+                // Such a writer is inside the engine's sight, and wrote some way it does not watch.
+                .{ w.id, if (observe_mode == .supervised)
+                    "Under --observe supervised every process the target starts inherits the engine's filter, so this one wrote the judged directory some way the filter does not watch — through a mapped file, say — or its calls were not counted"
+                else if (shim_in_writer_image)
                     "Its shim announced itself and recorded no operation, so its writes went around the interposed entry points — a buffered stream flushed inside libc does that"
                 else
                     "A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle" },
@@ -836,7 +868,10 @@ pub fn secondRunLabel(trace: engine.TraceInfo, detach_refused: bool) ?[]const u8
 /// thread's open, which is the one the operator did not need pointing to. `where` is the
 /// run it happened in, the way `unresolvedDetail` takes it.
 pub fn threadDetail(arena: std.mem.Allocator, first: ?engine.Op, second: engine.Op, first_detached: bool, where: []const u8) []const u8 {
-    const fallback = "two threads of one process wrote in the judged directory with no creation or join the shim recorded ordering them, so no crash-point address in this run can be trusted";
+    const fallback = if (observe_mode == .supervised)
+        "two threads of one process wrote in the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so no crash-point address in this run can be trusted"
+    else
+        "two threads of one process wrote in the judged directory with no creation or join the shim recorded ordering them, so no crash-point address in this run can be trusted";
     const first_clause = if (first) |f|
         std.fmt.allocPrint(arena, "tid {d} performed {s}({s}) and ", .{ f.tid, f.class.name(), f.path }) catch return fallback
     else
@@ -849,10 +884,24 @@ pub fn threadDetail(arena: std.mem.Allocator, first: ?engine.Op, second: engine.
         std.fmt.allocPrint(arena, "; tid {d} was detached, so no join could order it", .{first.?.tid}) catch return fallback
     else
         "";
+    // The rule the sentence ends on is the mode's own (#217). Under `--observe supervised`
+    // the engine is told a thread was created and by whom, never which thread was made, and
+    // no join reaches it, so no recorded edge orders two threads' writes: a second writing
+    // thread refuses however the target orders it, and the v18 sentence — "is judged" when
+    // creations and joins order the writes — would send a reader to add a join that this
+    // mode cannot see.
+    const rule: []const u8 = if (observe_mode == .supervised)
+        "Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash point names the same operation on the next run, and writes from two or more threads of one process refuse. The modes that load a shim, which records creations and joins, judge a process whose threads' writes they order (v18)"
+    else
+        "No thread creation or join the shim recorded orders the first of those before the second";
+    const tail: []const u8 = if (observe_mode == .supervised)
+        ""
+    else
+        ", so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)";
     const composed = std.fmt.allocPrint(
         arena,
-        "two threads of process {d} wrote in the judged directory{s}: {s}tid {d} performed {s}({s}). No thread creation or join the shim recorded orders the first of those before the second{s}, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)",
-        .{ second.pid, where, first_clause, second.tid, second.class.name(), second.path, detached_clause },
+        "two threads of process {d} wrote in the judged directory{s}: {s}tid {d} performed {s}({s}). {s}{s}{s}",
+        .{ second.pid, where, first_clause, second.tid, second.class.name(), second.path, rule, if (observe_mode == .supervised) "" else detached_clause, tail },
     ) catch return fallback;
     return sanitizeForReport(arena, composed) catch fallback;
 }
@@ -1120,6 +1169,12 @@ fn noShimNextFor(observed: ?image.Observation) contract.NextStep {
 /// The path is target-derived and goes through `textShown`, like every other
 /// target-controlled string that reaches the text report.
 pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
+    // Under `--observe supervised` no shim was asked to load, and the image's linkage is not
+    // the question (#217, review): the engine writes the start record itself when it takes
+    // the listener, so a trace without one means the engine could not open or write its own
+    // trace while the operation ran — and the operation ran on regardless.
+    if (observe_mode == .supervised)
+        return "the trace carries no start record: under --observe supervised the engine writes it itself when the operation launches, so the engine could not open or write its trace file (a full disk, say) while the operation ran";
     const opening = "the trace carries no shim marker";
     const obs = rec_image orelse return arena.dupe(u8, opening ++
         "; the operation's image was not examined") catch opening;
@@ -1191,6 +1246,8 @@ pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
 /// the first run, and even that is stated as a disagreement between two readings rather
 /// than as a replacement with a time on it.
 pub fn noShimDetailSecondRun(arena: std.mem.Allocator) []const u8 {
+    if (observe_mode == .supervised)
+        return "the second observed run's trace carries no start record, although the first one did: under --observe supervised the engine writes it itself when the operation launches, so the engine could not open or write that run's trace file while the operation ran";
     const opening = "the second observed run carries no shim marker, although the first one did";
     const obs = rec_image orelse return opening;
     const path = obs.path orelse return opening;
@@ -1784,6 +1841,20 @@ test "the two conditions on a run with a writing child (v15)" {
     // And the sentence follows the wall: this writer's shim did announce itself, so the
     // refusal must not tell the reader it never loaded one while the step says otherwise.
     try std.testing.expect(std.mem.indexOf(u8, shimmed.detail, "Its shim announced itself") != null);
+    // Under --observe supervised both shapes say that mode's reason (#217 review): the
+    // engine writes a start record at every exec, and every process the target starts
+    // inherits its filter, so neither "never loaded the shim" nor "its shim announced
+    // itself" is true there.
+    {
+        const saved_mode = observe_mode;
+        defer observe_mode = saved_mode;
+        observe_mode = .supervised;
+        for ([_]@TypeOf(trace){ trace, announced }) |t| {
+            const r = childrenMayBeJudged(arena, t, unshimmed) orelse return error.TestExpectedRefusal;
+            try std.testing.expect(std.mem.indexOf(u8, r.detail, "every process the target starts inherits the engine's filter") != null);
+            try std.testing.expect(std.mem.indexOf(u8, r.detail, "shim") == null);
+        }
+    }
 
     // The shape the pid-level question got wrong (#634 R2): the same writer announces
     // itself and then **execs away** — a static helper, an environment stripped of the
@@ -1936,4 +2007,105 @@ test "preflight's second run names a detach only where it refuses, and the subje
     var own = try engine.readTrace(&tb2, std.mem.span(fz2));
     defer own.deinit();
     try std.testing.expectEqualStrings("the subject leaving its process group", secondRunLabel(own, false).?);
+}
+
+test "under --observe supervised the thread refusal states that mode's rule and names no shim; the default mode's sentence is unchanged (#217)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const saved = observe_mode;
+    defer observe_mode = saved;
+    const first: engine.Op = .{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/s/a", .aux = "" };
+    const second: engine.Op = .{ .class = .write, .seq = 2, .pid = 7, .tid = 8, .path = "/s/b", .aux = "" };
+
+    observe_mode = .supervised;
+    const sup = threadDetail(arena, first, second, false, "");
+    try std.testing.expect(std.mem.indexOf(u8, sup, "tid 7 performed write(/s/a) and tid 8 performed write(/s/b)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "Nothing the supervising engine recorded orders") != null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "no join is recorded, nor which thread a creation made") != null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "however the target orders them this run cannot establish that a crash point names the same operation") != null);
+    // Not the default mode's claim that the order IS the scheduler's: a target a join
+    // orders is ordered, and what fails is only this mode's sight of it (review).
+    try std.testing.expect(std.mem.indexOf(u8, sup, "would not name the same operation") == null);
+    // The sentence the operator was misled by: "judged" only in the default mode's name.
+    try std.testing.expect(std.mem.indexOf(u8, sup, "the shim recorded") == null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "is judged, however many threads") == null);
+    // A detach this mode never records is not spoken of.
+    try std.testing.expect(std.mem.indexOf(u8, threadDetail(arena, first, second, true, ""), "detached") == null);
+
+    // Control: the default mode's sentence, byte for byte as it stood before #217's wording.
+    observe_mode = .wrappers;
+    try std.testing.expectEqualStrings(
+        "two threads of process 7 wrote in the judged directory: tid 7 performed write(/s/a) and tid 8 performed write(/s/b). No thread creation or join the shim recorded orders the first of those before the second, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)",
+        threadDetail(arena, first, second, false, ""),
+    );
+    try std.testing.expect(std.mem.indexOf(u8, threadDetail(arena, first, second, true, ""), "; tid 7 was detached, so no join could order it, so their order") != null);
+}
+
+test "under --observe supervised the processes line names the engine and that mode's thread rule (#217)" {
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    const saved_mode = observe_mode;
+    defer observe_mode = saved_mode;
+    boundary_ev = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_thread_only = true, .threads = 3, .writer_threads = 1, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 40 } } };
+
+    observe_mode = .supervised;
+    const sup = boundaryAccount();
+    try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine recorded 3 thread(s) created, and 1 thread id(s)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse") != null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "the shim") == null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "writes ordered by a recorded creation or join are judged") == null);
+
+    // Control: the default mode keeps its v18 clause.
+    observe_mode = .wrappers;
+    const def = boundaryAccount();
+    try std.testing.expect(std.mem.indexOf(u8, def, "the shim recorded 3 thread(s) created") != null);
+    try std.testing.expect(std.mem.indexOf(u8, def, "(v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)") != null);
+}
+
+test "under --observe supervised a boundary and a refused-early run name the engine, not the shim (#217)" {
+    const saved = boundary_ev;
+    defer boundary_ev = saved;
+    const saved_mode = observe_mode;
+    defer observe_mode = saved_mode;
+    const disagree: BoundaryEvidence = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .shim_process_boundary = true, .witness = .{ .read = .{ .kind = .strace, .children = 0, .lines = 68 } } };
+    const unread: BoundaryEvidence = .{ .trace_read = true, .shim_reported = true, .shim_boundary = true, .witness = .{ .unread = .strace } };
+
+    observe_mode = .supervised;
+    boundary_ev = disagree;
+    try std.testing.expect(std.mem.indexOf(u8, boundaryAccount(), "the supervising engine recorded a process boundary and strace observed no other process") != null);
+    boundary_ev = unread;
+    try std.testing.expect(std.mem.indexOf(u8, boundaryAccount(), "the supervising engine recorded the subject replacing its own image; the strace account was not read") != null);
+    boundary_ev = .{};
+    try std.testing.expectEqualStrings("not established: this run was refused before the supervising engine's account of it was read", boundaryAccount());
+    for ([_]BoundaryEvidence{ disagree, unread, .{}, .{ .trace_read = true } }) |ev| {
+        boundary_ev = ev;
+        try std.testing.expect(std.mem.indexOf(u8, boundaryAccount(), "shim") == null);
+    }
+
+    // Control: the default mode's words stand.
+    observe_mode = .wrappers;
+    boundary_ev = disagree;
+    try std.testing.expect(std.mem.indexOf(u8, boundaryAccount(), "the shim recorded a process boundary and strace observed no other process") != null);
+    boundary_ev = .{};
+    try std.testing.expectEqualStrings("not established: this run was refused before the shim's account of it was read", boundaryAccount());
+}
+
+test "under --observe supervised a missing start record and an unrecorded writer are explained as that mode's, not the shim's (#217 review)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const saved = observe_mode;
+    defer observe_mode = saved;
+
+    observe_mode = .supervised;
+    for ([_][]const u8{ noShimDetail(arena), noShimDetailSecondRun(arena) }) |d| {
+        try std.testing.expect(std.mem.indexOf(u8, d, "the engine writes it itself when the operation launches") != null);
+        try std.testing.expect(std.mem.indexOf(u8, d, "shim") == null);
+        try std.testing.expect(std.mem.indexOf(u8, d, "statically linked") == null);
+    }
+    // Control: the default mode still opens on the shim's marker.
+    observe_mode = .wrappers;
+    try std.testing.expect(std.mem.startsWith(u8, noShimDetail(arena), "the trace carries no shim marker"));
+    try std.testing.expect(std.mem.startsWith(u8, noShimDetailSecondRun(arena), "the second observed run carries no shim marker"));
 }

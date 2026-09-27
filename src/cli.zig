@@ -634,6 +634,10 @@ pub fn parse(argv: []const []const u8) Parsed {
     // Only now can "no --oracle given" be said: the whole argv has been read and no flag
     // named one. Before this line the account says nothing was established (#352).
     if (!args.has_oracle) report.noteOracle(.none);
+    // The oracle account names its observer (#217): known here once the whole argv is read,
+    // so a run refused before the recording does not carry the shim's name under supervised.
+    // `phaseRecording` re-derives it again for a mode a toml or a replayed case set later.
+    report.noteObserver(args.observe == .supervised);
     // The flags are the only source of a checker and a marker unless a replayed case or a
     // toml follows; those two blocks settle their own accounts once they have read theirs
     // (#352). Settled here and not at the marker vet: `--state is required` and its
