@@ -74,7 +74,8 @@ Before any engine ran, each candidate's operation ran once plainly from its seed
 
 `file -L` on each operation's image and on the interpreters the scripts name
 (`transcripts/linkage.txt`). **Static: gofumpt, yamlfmt, helm, jsonnetfmt, terraform, kubectl
-(Go); sqruff, tombi, alejandra (Rust, musl).** Dynamic: biome, rumdl, scalafmt, and the
+(Go); sqruff, tombi, alejandra (Rust — `file -L` does not name the libc; sqruff's, tombi's and
+alejandra's asset names say musl).** Dynamic: biome, rumdl, scalafmt, and the
 interpreters behind the rest (`php`, `java`, `node`, `perl`, `python3`, `ruby`). oxfmt's `oxfmt`
 is a Node script that loads a native addon (`oxfmt.linux-arm64-gnu.node`, dynamically linked).
 
@@ -90,15 +91,25 @@ unchanged. Two things changed, both written into the script's header:
    Then the same preflight with `--observe supervised`, which is the answer mapped, the row
    marked SUPERVISED.
 
-The legs, each mapping row on something that gives it (`transcripts/entry-legs.txt`): all ten
+The legs, one per mapping row a leg was written for (`transcripts/entry-legs.txt`): all ten
 land on the row they were written for — `write2` 0, `one` 1 interior, `stamp` 1 byte-repeatability,
 `rawwrite` 0 FOLLOW, `childwrite` and `twothreads` 1 wall, `badcwd` DEFINE, `joinedthreads` 0
 (accepted, 4 operations — the answer the dropped threads question used to contradict), and two
 static legs: busybox-static's `sed -i` **0 under supervised** (3 operations), and busybox-static's
 `touch` of a new file **1, `state_changed_without_ops`, under supervised**. The second is not a
 supervised miss: the dynamic coreutils `touch` gets the same refusal in the default mode and under
-supervised (`transcripts/probe-touch.txt`) — creating an empty file is recorded as no mutating
-operation in any mode.
+supervised, and under `--observe syscalls` too — preflight exit 2 in each (`apparatus/probe-touch.sh`,
+`transcripts/probe-touch.txt`) — so creating an empty file is recorded as no mutating operation in
+any of the three modes.
+
+**The two "could not measure" rows**, run after the review asked for them
+(`transcripts/entry-legs-gate2.txt`, 01:19Z): `write2` with `ORACLE` pointing at no file answers
+**2** (`setup: --oracle is not an executable file`), as on 2026-09-22; and the static `sed -i` leg
+in a box that is *not* privileged — no cgroup the engine can make — answers **2 SUPERVISED**
+(`--observe supervised needs a cgroup v2 the engine can create cgroups in`), not 1. So the new
+branch keeps "could not measure" apart from "walled". **Not seen on anything:** preflight 2 with a
+"Change the define", environment, shim-pair or retry sentence; preflight 3 on the define's own
+message other than the missing cwd; an unmapped answer.
 
 **What the page's mode tells a static target.** All nine static candidates, and the two static
 legs, refuse `no_shim_marker` in the default mode, and they are told two different things,
@@ -156,7 +167,7 @@ Eighteen cleared, and a pre-scan is about fifty GitHub searches per tracker agai
 thirty a minute, so the candidates were shortlisted to six **before** the pre-scan: three static —
 kubectl (a kubeconfig is state a user does not want to lose), terraform, sqruff — and three
 dynamic in three more languages — nbqa, standardrb, pint. The other twelve are recorded in the
-funnel as attempted, stopped by this run's choice.
+funnel as attempted, stopped by this run's choice; pint, once dropped (below), by rule 11.
 
 Rule 11 (`transcripts/receipts/rule11-bug-reports.txt`, the last ten issues and the first reply
 from a project member, collaborator or contributor): kubectl replied to 10 of its last 10 bug

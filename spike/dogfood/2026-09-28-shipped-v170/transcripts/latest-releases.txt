@@ -1,0 +1,10 @@
+# latest releases, read 2026-09-28T01:19:34Z
+kubernetes/kubernetes v1.37.1
+hashicorp/terraform v1.16.4
+quarylabs/sqruff v0.40.0
+kubectl stable.txt v1.37.1
+terraform checkpoint 1.16.4
+pypi nbqa 1.9.1
+pypi black 26.5.1
+rubygems standard 1.56.0
+PHPCSStandards/PHP_CodeSniffer 4.0.4

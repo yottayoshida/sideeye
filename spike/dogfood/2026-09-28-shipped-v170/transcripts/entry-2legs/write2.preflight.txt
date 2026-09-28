@@ -1,0 +1,1 @@
+SETUP ERROR  --oracle is not an executable file; the completeness check cannot run

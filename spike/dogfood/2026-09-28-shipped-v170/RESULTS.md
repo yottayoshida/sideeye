@@ -4,7 +4,9 @@ The released v1.7.0, installed by the page's installer, run with the page's comm
 (`apparatus/run.sh`: `explore --config … --oracle /usr/bin/strace --json`, no `--observe`) on the
 six candidates the owner signed off, all six of those that cleared the gate and the novelty
 pre-scan. Timeline: `transcripts/timeline.txt`; the prediction was fixed at 00:21:28Z
-(`transcripts/prediction.sha256`), the pre-scans ran 00:17–00:51Z (`transcripts/receipts/prescan-started.txt`), the explores
+(`transcripts/prediction.sha256` — a time this run wrote itself; git cannot confirm it, since the
+first commit is after the explores. pint's `has_issues=false`, and phpcbf in its place, were found
+before that time in a query that was not kept; `transcripts/stars.txt` repeats it at 00:22), the pre-scans ran 00:17–00:51Z (`transcripts/receipts/prescan-started.txt`), the explores
 00:51–00:54Z.
 
 ## The six
@@ -26,7 +28,8 @@ rule — the file existed before the operation, so it must hold its old bytes or
 (`transcripts/checkers-seen-red.txt`), agreed. `oracle_verified` is true for five;
 nbqa's is `oracle_verified_subject_only` (its child black's four operations placed, not compared).
 `command_cwd` is in every report whose define declares one. Every version is the project's
-latest release on 2026-09-28, installed that morning, so no re-measurement on a newer one was due.
+latest release, read again at 01:19Z from each project's release channel
+(`transcripts/latest-releases.txt`), so no re-measurement on a newer one was due.
 
 Transcripts: `transcripts/<target>/` (default mode) and `transcripts/<target>-r1/` (revision 1),
 each with the explore's text and JSON, both replays, and `sideeye evidence`'s Markdown. The case
@@ -68,9 +71,17 @@ on aarch64 or x86_64, --observe supervised counts it from outside the process in
 detail, once, and all three reached their FAIL under supervised with the oracle agreeing on every
 operation.
 
-So v1.7.0 carries a static target to a verdict, **but not from the spelling a user writes**: a
-bare name gets a `--shim` step, and a path gets a `next` sentence that contradicts its own detail.
-Neither sends the reader to the flag that works. Recorded as found; the owner's ruling
+What needed the path was the pointer, not the mode. **Supervised itself takes the bare name**: the
+gate's supervised preflight ran `kubectl config use-context …` named bare and accepted 4
+operations with the oracle agreeing (`transcripts/entry/kubectl.preflight.txt`), and the same for
+the other eight. The FAILs above were measured on the revision-1 spelling; no explore under
+supervised was run on the bare name. So v1.7.0 can carry a static target to a verdict from the
+spelling a user writes, **but its default-mode refusal does not send the user there**: a bare name
+gets a `--shim` step, and a path gets a `next` sentence that contradicts its own detail. Neither
+names the flag that works; only the detail line on a path does. (`run.sh`'s follow greps the whole
+of `explore.txt` for the flag, target output included, not only the detail line; it was seen not
+firing on the bare names and firing on revision 1, and not tried against a target that prints the
+string itself.) Recorded as found; the owner's ruling
 (2026-09-28) is to change it in a pull request of its own, not here — this run changes no engine
 code.
 
@@ -87,18 +98,20 @@ code.
 | the static three's route to supervised | the detail names it | only once the image is named by path |
 
 nbqa is the one to read against its tracker: nbQA-dev/nbQA#542, *"Make mutations atomic"*, merged
-2021-02-17, is in its pre-scan (`transcripts/receipts/nbQA-dev_nbQA.prescan.txt`). The notebook
-nbqa writes back is still opened with a truncating open in 1.9.1.
+2021-02-17, is in its pre-scan (`transcripts/receipts/nbQA-dev_nbQA.prescan.txt`) — its title only;
+its diff was not read. What was measured is that the notebook 1.9.1 writes back is opened with a
+truncating open.
 
 ## Novelty and reporting
 
 The pre-scan (`spike/cohort4/novelty-prescan.sh`, both controls green in every receipt) ran on all
-six trackers, and on laravel/pint's before pint was dropped, **before the explores**
-(`transcripts/receipts/prescan-started.txt`) — the order rule 14 asks for, which the 2026-09-22 run
+six trackers — and on laravel/pint's, which had been queued before pint was dropped and ran after
+it (00:42Z) — **before the explores** (`transcripts/receipts/prescan-started.txt`) — the order rule 14 asks for, which the 2026-09-22 run
 did not keep. No hit on any tracker is about an interrupted rewrite of the file these operations
 write. terraform's hits about empty state files (hashicorp/terraform#17066, #23538) are
 `apply`'s state, not `fmt`'s source. kubectl's kubeconfig is written by client-go, so its search
-was repeated on kubernetes/kubernetes (`transcripts/receipts/kubernetes_kubernetes.kubeconfig.txt`,
+was repeated on kubernetes/kubernetes — **at 00:55Z, after the explores**, so this one search is
+not a pre-scan; it is the novelty check a FAIL gets (`transcripts/receipts/kubernetes_kubernetes.kubeconfig.txt`,
 terms joined with `+` after the first, space-separated attempt returned zero for five of six — the
 trap the pre-scan's header names): lock files for concurrent writers (kubernetes/kubernetes#28034),
 nothing about a torn write.
@@ -114,9 +127,15 @@ is normally under version control, so the loss is recoverable:
 ## Found in passing
 
 - **The static leg `touch`** (a new empty file) refuses `state_changed_without_ops` under
-  supervised, and so does coreutils' dynamic `touch` in both modes (`transcripts/probe-touch.txt`):
-  an open that creates an empty file is not a recorded mutating operation in any mode. Not
-  supervised's; not filed.
+  supervised, and so does coreutils' dynamic `touch` in the default mode, under `--observe
+  syscalls` and under supervised — preflight exit 2 in all four (`apparatus/probe-touch.sh`,
+  `transcripts/probe-touch.txt`; the first draft of that transcript printed a filter's exit code,
+  not preflight's, and was replaced). An open that creates an empty file is not a recorded mutating
+  operation in any of the three modes. Not supervised's; not filed.
 - **One `run.sh` start failed to parse** — `Syntax error: Unterminated quoted string` at line 61,
-  on kubectl, the first target, at 00:51:43Z (`transcripts/run-all.txt`). The same command re-run
-  under `sh -x` parsed and ran; it did not recur on the eight later starts. Not explained.
+  on kubectl, the first target, at 00:51:43Z (`transcripts/run-all.txt`); `timeline.txt`'s
+  "kubectl done" at that second is that failed start. The same command re-run under `sh -x`
+  parsed and ran (its trace was not kept); it did not recur on the eight later starts, and kubectl
+  was run once more at 01:19Z with the committed `run.sh` (sha256 `107a5549…`, the bytes every run
+  read — the file was last edited before 00:40), which is what `transcripts/kubectl/` holds
+  (`transcripts/run-kubectl-rerun.txt`): the same refusal. Not explained.
