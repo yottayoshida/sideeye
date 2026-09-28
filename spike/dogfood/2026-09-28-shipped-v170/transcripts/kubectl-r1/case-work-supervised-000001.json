@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/kubectl",
+    "operation": "/opt/bin/kubectl config use-context b --kubeconfig /s/kubectl/config",
+    "check": "/ap/defines/kubectl-r1/check.sh",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 4,
+  "prefix_hash": "ecdde2900e148f37",
+  "after_class": "open",
+  "after_path": "/s/kubectl/config",
+  "before_class": "write",
+  "before_path": "/s/kubectl/config",
+  "violation": "hybrid"
+}

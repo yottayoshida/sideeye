@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/nbqa/proj",
+    "operation": "nbqa black nb.ipynb",
+    "check": "/ap/defines/nbqa/check.sh",
+    "cwd": "/s/nbqa/proj",
+    "expected_status": 0
+  },
+  "k": 10,
+  "ops_total": 12,
+  "prefix_hash": "34c0eae1173c4542",
+  "after_class": "open",
+  "after_path": "/s/nbqa/proj/nb.ipynb",
+  "before_class": "write",
+  "before_path": "/s/nbqa/proj/nb.ipynb",
+  "violation": "hybrid"
+}

@@ -1,0 +1,7 @@
+[world]
+state = "/s/phpcbf/proj"
+
+[define]
+operation = "php /opt/bin/phpcbf.phar --standard=PSR12 a.php"
+cwd       = "/s/phpcbf/proj"
+check     = "/ap/defines/phpcbf/check.sh"

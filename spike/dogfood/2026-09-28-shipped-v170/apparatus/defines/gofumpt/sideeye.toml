@@ -1,0 +1,6 @@
+[world]
+state = "/s/gofumpt/proj"
+
+[define]
+operation = "gofumpt -w main.go"
+cwd       = "/s/gofumpt/proj"

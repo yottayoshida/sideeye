@@ -1,0 +1,6 @@
+[world]
+state = "/s/pg_format/proj"
+
+[define]
+operation = "pg_format -i a.sql"
+cwd       = "/s/pg_format/proj"

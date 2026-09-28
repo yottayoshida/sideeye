@@ -1,0 +1,426 @@
+== novelty pre-scan: quarylabs/sqruff
+== date: 2026-09-28T00:28:49Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          72 hit(s) (all listed)
+      #4556 open 2026-09-25 test(cv11): cover literal shorthand casts (7568)
+      #4418 open 2026-09-21 feat(oracle): support synonym statements (7291)
+      #4445 open 2026-09-22 feat(oracle): improve grant and revoke parsing (7338)
+      #3672 merged 2026-09-02 fix(postgres): parse multiline special literals (SQLFluff #5965)
+      #3016 merged 2026-07-24 fix(oracle): drop reference to undefined JSONObjectContentSegment
+      #2944 merged 2026-07-16 fix: LT12 no longer errors on empty files (4834)
+      #3033 merged 2026-07-29 chore: advance sqlfluff sha past RF05 empty identifier fix (#4953)
+      #3086 merged 2026-08-10 chore: bump pyo3 from 0.29.0 to 0.29.2
+      #2428 closed 2026-03-16 Add dialect config validation with error handling
+      #2772 merged 2026-06-16 chore: port LT02 reindent templated-line bounds-check test (4707)
+      #2980 closed 2026-07-20 chore: bump vite from 8.1.3 to 8.1.5
+      #2069 closed 2025-12-12 fix(reflow): use relevant untaken count for indent calculations
+      #2606 closed 2026-05-13 [Bug]: LT05 panics with Option::unwrap on None when long line is inside a CTE and exceeds limit due to template expansion
+      #2651 merged 2026-05-26 fix(lsp): respect workspace config and sqruffignore
+      #2504 merged 2026-03-30 chore: bump @tailwindcss/postcss from 4.2.1 to 4.2.2
+      #2520 merged 2026-04-06 chore: bump tailwindcss from 4.2.1 to 4.2.2
+      #2752 closed 2026-06-15 chore: bump vscode-languageclient from 9.0.1 to 10.0.0
+      #2663 closed 2026-06-01 chore: bump @tailwindcss/postcss from 4.2.2 to 4.3.0
+      #2574 merged 2026-04-27 chore: bump CodSpeedHQ/action from 4.13.1 to 4.14.0
+      #2289 closed 2026-02-06 Panic: capacity overflow in reindent when linting CTE with inline select and aliased join
+  corrupt        6 hit(s) (all listed)
+      #3171 merged 2026-08-17 chore: advance sqlfluff SHA past dbt log suppression (#5070)
+      #3678 closed 2026-09-02 fix(snowflake): parse connect by prior selects (5996)
+      #2059 closed 2025-10-30 [Bug]: Whitespace expected within concatenation operator in `DISTINCT` statement
+      #2044 closed 2025-10-20 chore: bump regex from 1.11.2 to 1.12.2
+      #2035 closed 2025-10-13 chore: bump regex from 1.11.2 to 1.12.1
+      #1452 merged 2025-03-24 chore: bump tempfile from 3.19.0 to 3.19.1
+  corruption     6 hit(s) (all listed)
+      #4493 open 2026-09-24 fix(ST02): preserve simple CASE expressions (7432)
+      #3019 merged 2026-07-26 fix(postgres): lex the jsonb operators @?, @@, ?| and ?&
+      #3018 closed 2026-07-26 [Bug]: postgres dialect does not lex the jsonb operators @?, @@, ?| and ?&
+      #3086 merged 2026-08-10 chore: bump pyo3 from 0.29.0 to 0.29.2
+      #2059 closed 2025-10-30 [Bug]: Whitespace expected within concatenation operator in `DISTINCT` statement
+      #2356 merged 2026-02-20 chore: bump pyo3 from 0.28.1 to 0.28.2 in the cargo group across 1 directory
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3015 open 2026-07-24 fix(lexer): stop dropping input after an unlexable byte
+      #2837 closed 2026-06-30 bug: Super-linear formatting time on large SQL files
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+      #3294 merged 2026-08-24 chore: bump Swatinem/rust-cache from 2.7.8 to 2.9.2
+      #4313 merged 2026-09-18 chore(deps): bump anyio from 4.12.1 to 4.14.2 in the uv group across 1 directory
+      #3195 merged 2026-08-17 chore: bump sqlparse from 0.5.4 to 0.6.0 in the uv group across 1 directory
+      #3059 closed 2026-08-03 chore: bump @playwright/test from 1.61.1 to 1.62.1
+      #3062 merged 2026-08-05 chore: bump cryptography from 48.0.1 to 50.0.0 in the uv group across 1 directory
+      #3056 merged 2026-08-03 chore: bump CodSpeedHQ/action from 4.18.5 to 5.0.1
+      #3058 merged 2026-08-03 chore: bump prettier from 3.9.4 to 3.9.6
+      #3079 merged 2026-08-10 chore: bump Swatinem/rust-cache from 2.9.1 to 2.9.2
+      #2827 merged 2026-06-29 chore: bump CodSpeedHQ/action from 4.17.6 to 4.18.1
+      #2864 merged 2026-07-06 chore: bump prettier from 3.8.4 to 3.9.4
+      #2923 merged 2026-07-13 chore: bump CodSpeedHQ/action from 4.18.1 to 4.18.5
+      #2931 merged 2026-07-13 chore: bump typescript-eslint from 8.61.1 to 8.63.0
+      #2661 closed 2026-06-01 chore: bump code-server from 4.112.0 to 4.117.0
+      #2980 closed 2026-07-20 chore: bump vite from 8.1.3 to 8.1.5
+      #2686 closed 2026-06-08 chore: bump typescript-eslint from 8.56.1 to 8.60.1
+      #3021 closed 2026-07-27 chore: bump @secretlint/secretlint-formatter-sarif from 13.0.2 to 13.0.4
+      #2665 closed 2026-06-01 chore: bump react-resizable-panels from 4.0.16 to 4.11.2
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4535 open 2026-09-25 feat(tsql): support RESTORE DATABASE statements (7525)
+      #3015 open 2026-07-24 fix(lexer): stop dropping input after an unlexable byte
+      #4132 closed 2026-09-13 feat(athena): support Trino v3 functions (6788)
+      #4099 closed 2026-09-12 feat(mysql): support ALTER TABLE partition options (6742)
+      #3127 merged 2026-08-14 chore: port Oracle LISTAGG WITHIN GROUP fixtures (#4999)
+      #2837 closed 2026-06-30 bug: Super-linear formatting time on large SQL files
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+      #3294 merged 2026-08-24 chore: bump Swatinem/rust-cache from 2.7.8 to 2.9.2
+      #2775 merged 2026-06-16 chore: advance sqlfluff sha for Spark Iceberg DDL (4690)
+      #4313 merged 2026-09-18 chore(deps): bump anyio from 4.12.1 to 4.14.2 in the uv group across 1 directory
+      #3195 merged 2026-08-17 chore: bump sqlparse from 0.5.4 to 0.6.0 in the uv group across 1 directory
+      #3059 closed 2026-08-03 chore: bump @playwright/test from 1.61.1 to 1.62.1
+      #3062 merged 2026-08-05 chore: bump cryptography from 48.0.1 to 50.0.0 in the uv group across 1 directory
+      #3056 merged 2026-08-03 chore: bump CodSpeedHQ/action from 4.18.5 to 5.0.1
+      #3058 merged 2026-08-03 chore: bump prettier from 3.9.4 to 3.9.6
+      #3079 merged 2026-08-10 chore: bump Swatinem/rust-cache from 2.9.1 to 2.9.2
+      #2827 merged 2026-06-29 chore: bump CodSpeedHQ/action from 4.17.6 to 4.18.1
+      #2864 merged 2026-07-06 chore: bump prettier from 3.8.4 to 3.9.4
+      #2923 merged 2026-07-13 chore: bump CodSpeedHQ/action from 4.18.1 to 4.18.5
+      #2931 merged 2026-07-13 chore: bump typescript-eslint from 8.61.1 to 8.63.0
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4400 open 2026-09-21 feat(tsql): remove empty batches (7280)
+      #4541 open 2026-09-25 feat(oracle): add empty batch rule (7498)
+      #4573 open 2026-09-25 fix(jinja): preserve quotes around empty placeholders (7582)
+      #4589 open 2026-09-27 feat(oracle): support JSON_TABLE columns (#7560)
+      #4577 open 2026-09-25 fix(duckdb): allow trailing commas in map literals (#7606)
+      #4571 open 2026-09-25 feat(duckdb): support MAP literals (7564)
+      #4424 open 2026-09-21 chore(sqlfluff): advance cursor for keyword sorting (7339)
+      #4529 open 2026-09-25 fix(databricks): support materialized view filters and constraints (7522)
+      #4543 open 2026-09-25 feat(config): skip implicit indents by element (7540)
+      #3015 open 2026-07-24 fix(lexer): stop dropping input after an unlexable byte
+      #3759 closed 2026-09-03 chore(tsql): record empty catch block support (6116)
+      #4538 open 2026-09-25 feat(postgres): support psql copy and set commands (7528)
+      #4441 open 2026-09-22 fix(alignment): use configured tab indent unit (7289)
+      #4334 open 2026-09-20 fix(tsql): support consecutive semicolons (7094)
+      #2429 open 2026-03-16 Fix indentation handling for comments in bracketed expressions
+      #4398 open 2026-09-21 chore(deps): bump fancy-regex from 0.19.0 to 0.19.2
+      #3033 merged 2026-07-29 chore: advance sqlfluff sha past RF05 empty identifier fix (#4953)
+      #4295 closed 2026-09-17 fix(tsql): support binary constant notation (7112)
+      #4187 closed 2026-09-14 feat: support PostgreSQL variadic array arguments (6887)
+      #2944 merged 2026-07-16 fix: LT12 no longer errors on empty files (4834)
+  atomic         32 hit(s) (all listed)
+      #4456 open 2026-09-22 feat(duckdb): support SET statements (7404)
+      #4559 open 2026-09-25 feat(tsql): support typed XML and datatype methods (7578)
+      #3361 merged 2026-08-28 feat: support Postgres BEGIN ATOMIC function bodies (#5316)
+      #3562 closed 2026-08-31 feat(postgres): parse RETURN in atomic functions (SQLFluff #5761)
+      #4272 closed 2026-09-17 chore(oracle): expand assignment fixtures (7067)
+      #4073 closed 2026-09-12 feat(postgres): support CTEs in procedure bodies (6632)
+      #3663 closed 2026-09-02 fix(snowflake): parse scriptless stored procedures (SQLFluff #5982)
+      #3404 closed 2026-08-30 feat: support PostgreSQL SQL function bodies (#5376)
+      #3350 merged 2026-08-25 feat: advance SQLFluff SHA for T-SQL procedures (#5305)
+      #4166 closed 2026-09-13 feat(tsql): support JSON array and object functions (6845)
+      #4210 closed 2026-09-14 feat: support MySQL null-safe equality (6929)
+      #3887 closed 2026-09-06 feat(cli): group GitHub native annotations by file (6312)
+      #3971 closed 2026-09-09 feat(tsql): parse next sequence values in expressions (6431)
+      #3883 closed 2026-09-05 fix(tsql): correct CREATE FUNCTION syntax (6289)
+      #3601 closed 2026-08-31 feat(bigquery): support EXECUTE IMMEDIATE (SQLFluff #5820)
+      #2999 merged 2026-07-21 chore: advance sqlfluff sha past clickhouse CREATE DATABASE (#4620)
+      #3041 merged 2026-07-29 chore: limit SQLFluff port PR automation
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+      #2676 merged 2026-06-06 fix(ST03): exempt data-modifying CTEs from unused_cte
+      #2923 merged 2026-07-13 chore: bump CodSpeedHQ/action from 4.18.1 to 4.18.5
+  atomically     2 hit(s) (all listed)
+      #2579 closed 2026-04-27 chore: bump fancy-regex from 0.17.0 to 0.18.0
+      #2711 merged 2026-06-12 chore: bump pyo3 from 0.28.3 to 0.29.0 in the cargo group across 1 directory
+  interrupted    5 hit(s) (all listed)
+      #4172 merged 2026-09-13 chore: update Rust to 1.98.1
+      #3089 closed 2026-08-12 chore: combine Rust dependency updates
+      #2888 merged 2026-07-11 chore: advance sqlfluff-sha past "fix files as we go" refactor (4777)
+      #1975 merged 2025-09-15 chore: bump react-resizable-panels from 3.0.5 to 3.0.6
+      #1628 merged 2025-06-05 Fix windows release shasum step
+  interrupt      6 hit(s) (all listed)
+      #4071 merged 2026-09-12 chore: add optimized SQLFluff port workflow
+      #4172 merged 2026-09-13 chore: update Rust to 1.98.1
+      #3089 closed 2026-08-12 chore: combine Rust dependency updates
+      #2888 merged 2026-07-11 chore: advance sqlfluff-sha past "fix files as we go" refactor (4777)
+      #1975 merged 2025-09-15 chore: bump react-resizable-panels from 3.0.5 to 3.0.6
+      #1628 merged 2025-06-05 Fix windows release shasum step
+  sigkill        1 hit(s) (all listed)
+      #2750 merged 2026-06-15 chore: bump CodSpeedHQ/action from 4.17.0 to 4.17.5
+  sigint         0 hit(s)
+  ctrl-c         4 hit(s) (all listed)
+      #2659 merged 2026-06-01 chore: bump CodSpeedHQ/action from 4.15.1 to 4.17.0
+      #2302 closed 2026-02-09 chore: bump @playwright/test from 1.57.0 to 1.58.2
+      #2268 closed 2026-02-02 chore: bump @playwright/test from 1.57.0 to 1.58.1
+      #704 closed 2024-09-09 chore: bump ui_test from 0.23.0 to 0.26.3
+  power          7 hit(s) (all listed)
+      #4282 closed 2026-09-17 test(oracle): cover power and MOD operators (7061)
+      #3058 merged 2026-08-03 chore: bump prettier from 3.9.4 to 3.9.6
+      #1642 closed 2025-06-12 [Bug]: Illegal instruction (core dumped) on sqruff lint for version 0.26.4+
+      #1614 closed 2025-05-26 chore: bump @vitejs/plugin-react-swc from 3.9.0 to 3.10.0
+      #1528 merged 2025-04-21 chore: bump @vitejs/plugin-react-swc from 3.8.1 to 3.9.0
+      #808 closed 2024-09-23 chore: bump @eslint/js from 9.10.0 to 9.11.0
+      #807 closed 2024-09-23 chore: bump eslint from 9.10.0 to 9.11.0
+  outage         1 hit(s) (all listed)
+      #2764 merged 2026-06-15 chore: bump pyjwt from 2.10.1 to 2.13.0 in the uv group across 1 directory
+  ENOSPC         0 hit(s)
+  disk           11 hit(s) (all listed)
+      #4339 open 2026-09-20 fix(cli): respect ignores for stdin filenames (7168)
+      #4152 merged 2026-09-13 feat(snowflake): support catalog integrations (6793)
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+      #1884 closed 2025-08-12 [Bug]: sqruff uses all available memory and disk
+      #2701 merged 2026-06-10 fix(ci): expose hermetic pytest venv site-packages via PYTHONPATH
+      #2984 closed 2026-07-20 chore: bump @tailwindcss/postcss from 4.3.1 to 4.3.3
+      #2755 closed 2026-06-15 chore: bump @secretlint/secretlint-rule-no-dotenv from 11.7.1 to 13.0.2
+      #2754 closed 2026-06-15 chore: bump @secretlint/secretlint-formatter-sarif from 11.4.0 to 13.0.2
+      #2503 merged 2026-03-30 chore: bump bazel-contrib/setup-bazel from 0.18.0 to 0.19.0
+      #2646 merged 2026-05-25 chore: bump @secretlint/secretlint-rule-preset-recommend from 12.3.1 to 13.0.2
+      #1146 closed 2024-12-30 chore: bump glob from 0.3.1 to 0.3.2
+  partial        22 hit(s) (all listed)
+      #4406 open 2026-09-21 fix(rebreak): skip anchorless locations (7285)
+      #3470 closed 2026-08-30 chore: record stricter not-equals starter config (#5580)
+      #3466 closed 2026-08-30 chore: advance SQLFluff SHA for starter config docs (#5562)
+      #3811 closed 2026-09-04 feat(duckdb): support create macro statements (6194)
+      #3383 merged 2026-08-29 chore: advance SQLFluff SHA for README link update (#5340)
+      #3807 closed 2026-09-04 feat(databricks): support volume statements (6179)
+      #2921 merged 2026-07-12 chore: advance sqlfluff SHA past SQLite partial index support (4833)
+      #3065 merged 2026-08-07 chore: update React dependencies
+      #2806 merged 2026-06-24 chore: advance sqlfluff SHA past docs-only starter config (#4702)
+      #2822 merged 2026-06-28 chore: enable jinja templater for ignored rule fixtures that pass
+      #2915 merged 2026-07-12 chore: advance sqlfluff SHA past Hive INSERT INTO without TABLE (4819)
+      #2846 merged 2026-07-02 chore: advance sqlfluff-sha past hive SET syntax (4763)
+      #2609 merged 2026-05-17 chore: bump urllib3 from 2.6.3 to 2.7.0 in the uv group across 1 directory
+      #2599 merged 2026-05-04 feat: auto-fix naked identifiers when prefer_quoted_identifiers is enabled (RF06)
+      #2659 merged 2026-06-01 chore: bump CodSpeedHQ/action from 4.15.1 to 4.17.0
+      #2770 merged 2026-06-15 chore: bump the uv group across 1 directory with 2 updates
+      #1873 closed 2025-08-05 T-SQL ELSE/ELSE IF indentation issue: Keywords misclassified as Word tokens causing LT02 violations
+      #2353 merged 2026-02-18 Prevent newlines before statement terminators in clause formatting
+      #2613 merged 2026-05-18 chore: bump vite from 8.0.8 to 8.0.13
+      #2486 merged 2026-03-23 chore: bump eslint from 9.39.4 to 10.1.0
+  incomplete     14 hit(s) (all listed)
+      #4420 open 2026-09-21 test(oracle): cover associative array collections (7330)
+      #823 open 2024-09-27 Switch to an event-based parser
+      #4098 closed 2026-09-12 fix(oracle): update reserved keywords (6730)
+      #4004 closed 2026-09-10 feat(snowflake): support foreign key actions (6473)
+      #4269 closed 2026-09-17 feat: add Redshift CREATE DATABASE syntax (7055)
+      #3245 merged 2026-08-22 chore: advance sqlfluff-sha for Snowflake external table [NOT] NULL columns (#5157)
+      #3442 merged 2026-08-30 feat: allow MySQL null/not null in any position in datetime columns (#5473)
+      #2570 closed 2026-04-20 chore: bump eslint from 10.2.0 to 10.2.1
+      #2512 merged 2026-04-02 chore: bump lodash-es from 4.17.23 to 4.18.1 in the npm_and_yarn group across 1 directory
+      #2608 merged 2026-05-14 chore: bump the npm_and_yarn group across 1 directory with 9 updates
+      #1710 closed 2025-06-27 RF01-RF06: T-SQL JOIN parsing causes parser panics
+      #1941 merged 2025-09-08 chore: bump pyo3 from 0.25.1 to 0.26.0
+      #514 closed 2024-07-15 chore(deps): bump ui_test from 0.23.0 to 0.24.0
+      #139 merged 2023-11-11 chore(deps): update fancy-regex requirement from 0.11 to 0.12
+  dataloss       0 hit(s)
+  recover        4 hit(s) (all listed)
+      #2428 closed 2026-03-16 Add dialect config validation with error handling
+      #1830 merged 2025-07-21 chore: bump esbuild from 0.25.6 to 0.25.8
+      #1590 closed 2025-05-12 chore: bump tailwindcss from 3.4.17 to 4.1.6
+      #1577 closed 2025-05-05 chore: bump tailwindcss from 3.4.17 to 4.1.5
+  recovery       4 hit(s) (all listed)
+      #4385 open 2026-09-21 feat(tsql): support ALTER DATABASE recovery options (7241)
+      #4305 closed 2026-09-17 feat(tsql): rework batch and statement handling (7113)
+      #4071 merged 2026-09-12 chore: add optimized SQLFluff port workflow
+      #1577 closed 2025-05-05 chore: bump tailwindcss from 3.4.17 to 4.1.5
+  rollback       8 hit(s) (all listed)
+      #4580 open 2026-09-25 fix(tsql): support WITH termination clause for ALTER DATABASE SET (#7586)
+      #4385 open 2026-09-21 feat(tsql): support ALTER DATABASE recovery options (7241)
+      #4217 closed 2026-09-14 chore: advance SQLFluff for existing Trino statements (6928)
+      #3755 merged 2026-09-03 chore(sqlfluff): port SQLite RAISE fixture (6108)
+      #3046 merged 2026-07-30 fix(trino): catch up with SQLFluff and stop panicking on common statements
+      #3104 merged 2026-08-13 fix(sqlite): SQLite CREATE TRIGGER parsing
+      #3017 closed 2026-07-24 Parser panics on CREATE TABLE / INSERT in the Trino dialect (grammar refs to keywords Trino removed)
+      #1810 closed 2025-07-16 T-SQL dialect comprehensive parsing improvements and bug fixes
+  resume         7 hit(s) (all listed)
+      #4596 open 2026-09-27 feat(oracle): support ALTER SESSION statements (#7630)
+      #4345 open 2026-09-20 feat(snowflake): support alter dynamic table (7176)
+      #4313 merged 2026-09-18 chore(deps): bump anyio from 4.12.1 to 4.14.2 in the uv group across 1 directory
+      #2533 closed 2026-04-12 feat: add ALTER CORTEX SEARCH SERVICE statement for Snowflake
+      #1996 merged 2025-09-17 feat(snowflake): alter network policy'
+      #1993 merged 2025-09-17 feat(snowflake): resource monitor statements
+      #1994 merged 2025-09-17 feat(snowflake): alter database'
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #2764 merged 2026-06-15 chore: bump pyjwt from 2.10.1 to 2.13.0 in the uv group across 1 directory
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #2080 closed 2025-12-27 feat(dialects): update dialect definitions
+      #2264 merged 2026-02-02 chore: bump pyo3 from 0.27.2 to 0.28.0
+  erasing        1 hit(s) (all listed)
+      #2080 closed 2025-12-27 feat(dialects): update dialect definitions
+  erased         11 hit(s) (all listed)
+      #1775 closed 2025-07-09 T-SQL IF statement without BEGIN/END block parsing support
+      #2080 closed 2025-12-27 feat(dialects): update dialect definitions
+      #2181 merged 2026-01-13 refactor: remove vec_of_erased helper
+      #1859 closed 2025-08-02 Document Sqruff's lexer/parser architecture and differences from SQLFluff
+      #1996 merged 2025-09-17 feat(snowflake): alter network policy'
+      #2264 merged 2026-02-02 chore: bump pyo3 from 0.27.2 to 0.28.0
+      #1750 closed 2025-07-05 AL02 incorrectly flags T-SQL alias syntax when using DISTINCT TOP
+      #1858 closed 2025-08-02 Document T-SQL keyword lexing behavior and architectural considerations
+      #1673 closed 2025-06-22 T-SQL: WITH keyword incorrectly parsed as alias instead of table hint
+      #1773 merged 2025-07-09 feat: enhance T-SQL DECLARE TABLE parsing with IDENTITY, DEFAULT, and CHECK constraint support
+      #1643 merged 2025-06-12 feat: add Snowflake ASOF join fixtures
+  destroy        3 hit(s) (all listed)
+      #2060 open 2025-11-01 [Bug]: Extension 'sqruff' is configured as formatter but it cannot format 'SQL'-files
+      #2615 merged 2026-05-18 chore: bump @playwright/test from 1.57.0 to 1.60.0
+      #2569 closed 2026-04-20 chore: bump @playwright/test from 1.57.0 to 1.60.0
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4574 open 2026-09-25 chore(sqlfluff): advance cursor for StarRocks overwrite (7601)
+      #4324 open 2026-09-20 fix(sparksql): support INSERT INTO REPLACE WHERE/USING statements (#7147)
+      #3795 closed 2026-09-04 chore(sparksql): record CTE insert overwrite support (6172)
+      #4238 closed 2026-09-15 feat: add Apache Doris SQL dialect (6979)
+      #4369 open 2026-09-21 feat(duckdb): support copy to options (7209)
+      #3017 closed 2026-07-24 Parser panics on CREATE TABLE / INSERT in the Trino dialect (grammar refs to keywords Trino removed)
+      #4043 closed 2026-09-11 fix(st03): normalize quoted CTE references (6591)
+      #4397 open 2026-09-21 chore(deps): bump clap from 4.6.6 to 4.6.7
+      #4392 open 2026-09-21 chore(deps): bump docker/setup-qemu-action from 4.3.0 to 4.4.0
+      #2853 merged 2026-07-04 feat: add StarRocks dialect
+      #4057 closed 2026-09-11 feat(bigquery): support LOAD DATA statements (6612)
+      #4393 open 2026-09-21 chore(deps): bump docker/setup-buildx-action from 4.3.0 to 4.4.1
+      #4394 open 2026-09-21 chore(deps): bump docker/build-push-action from 7.3.0 to 7.4.0
+      #3983 closed 2026-09-09 feat(impala): add dialect support (6445)
+      #3937 merged 2026-09-08 test: prevent LSP fixture directory collisions
+      #4398 open 2026-09-21 chore(deps): bump fancy-regex from 0.19.0 to 0.19.2
+      #4203 closed 2026-09-14 chore(deps): bump toml from 1.1.4+spec-1.1.0 to 1.1.6+spec-1.1.0
+      #4202 closed 2026-09-14 chore(deps): bump configparser from 3.2.0 to 3.3.0
+      #3046 merged 2026-07-30 fix(trino): catch up with SQLFluff and stop panicking on common statements
+      #4201 closed 2026-09-14 chore(deps): bump indexmap from 2.14.0 to 2.14.2
+  clobber        0 hit(s)
+  blank          45 hit(s) (all listed)
+      #4545 open 2026-09-25 fix(layout): preserve CTE separator blank lines (7542)
+      #4504 open 2026-09-24 fix(LT08): skip blank line for PostgreSQL CYCLE/SEARCH clauses (7468)
+      #4005 closed 2026-09-10 chore: advance SQLFluff cursor for fixture lint fix (6483)
+      #4400 open 2026-09-21 feat(tsql): remove empty batches (7280)
+      #4278 closed 2026-09-17 fix(layout): handle templated newlines in LT15 (7032)
+      #2741 open 2026-06-14 chore: decompose cargo-hack feature sweep into per-crate parallel targets
+      #3115 merged 2026-08-13 fix(cli): preserve stdin formatter trailing newlines
+      #2246 open 2026-01-31 test(CV03): add test for unquoted multibyte identifiers
+      #3065 merged 2026-08-07 chore: update React dependencies
+      #2988 closed 2026-07-20 `sqruff fix -` (stdin) always emits an extra trailing newline
+      #4121 closed 2026-09-13 chore: record existing layout newlines rule (6641)
+      #2799 merged 2026-06-22 chore: keep out zero length keywords from dialect keyword sets (4723)
+      #2899 merged 2026-07-11 chore: bump sqlfluff SHA — brackets/implicit indents fix already ported (#4797)
+      #2688 merged 2026-06-08 chore: bump prettier from 3.8.3 to 3.8.4
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+      #1809 closed 2025-07-16 T-SQL: Multiple BEGIN/END blocks in a file fail to parse correctly
+      #3086 merged 2026-08-10 chore: bump pyo3 from 0.29.0 to 0.29.2
+      #2599 merged 2026-05-04 feat: auto-fix naked identifiers when prefer_quoted_identifiers is enabled (RF06)
+      #2651 merged 2026-05-26 fix(lsp): respect workspace config and sqruffignore
+      #2461 merged 2026-03-19 refactor: type reflow layout config
+  unreadable     0 hit(s)
+  garbage        2 hit(s) (all listed)
+      #4519 open 2026-09-24 feat(tsql): support additional OPENROWSET bulk options (7491)
+      #1551 merged 2025-04-28 chore: bump esbuild from 0.25.2 to 0.25.3
+  mangled        1 hit(s) (all listed)
+      #2335 merged 2026-02-15 chore: add ruff auto-fix to formatting GitHub Action
+  contents       50 hit(s) (all listed)
+      #4039 open 2026-09-11 [Bug]: LT02 flags the contents of ON CONFLICT ... DO UPDATE SET as over-indented (fixed upstream in sqlfluff)
+      #4412 open 2026-09-21 feat(postgres): support RETURNING in JSON functions (7317)
+      #4571 open 2026-09-25 feat(duckdb): support MAP literals (7564)
+      #4560 open 2026-09-25 fix(trino): support JSON null and returning clauses (7561)
+      #4559 open 2026-09-25 feat(tsql): support typed XML and datatype methods (7578)
+      #4460 open 2026-09-23 feat(tsql): support JSON scalar and aggregate functions (7410)
+      #3976 closed 2026-09-09 fix(sparksql): parse hint function contents (6437)
+      #3957 closed 2026-09-08 docs: add README table of contents (#6407)
+      #4435 open 2026-09-21 feat(bigquery): support limits in aggregate functions (7370)
+      #3757 closed 2026-09-03 fix(dialects): wrap function contents for spacing (5809)
+      #4561 open 2026-09-25 feat(bigquery): support chained function calls (7577)
+      #4091 closed 2026-09-12 fix(postgres): parse JSON object key-value syntax (6708)
+      #3947 closed 2026-09-08 fix(lt01): keep match condition parentheses attached (6395)
+      #3934 closed 2026-09-08 fix(st02): preserve generated function spacing (6366)
+      #3914 closed 2026-09-07 fix(rf05): allow quoted Postgres extension names (6345)
+      #3907 closed 2026-09-07 fix(st06): preserve column order in set expressions (6298)
+      #3732 closed 2026-09-03 chore(sqlfluff): record existing ClickHouse decimal and match port (6063)
+      #3485 closed 2026-08-30 feat: upgrade Greenplum dialect (#5546)
+      #4084 closed 2026-09-12 fix(tsql): allow DEFAULT as function argument (6663)
+      #3974 merged 2026-09-09 perf: move Zed extension checks into the Bazel workspace
+  in-place       62 hit(s) (all listed)
+      #1967 open 2025-09-13 My example formatted weirdly if a comment is in a specific place
+      #4417 open 2026-09-21 fix(tsql): terminate GROUP BY clauses correctly (7327)
+      #4332 open 2026-09-20 feat(mariadb): support OR REPLACE routines (7148)
+      #4368 open 2026-09-21 feat(tsql): require begin/end for procedure bodies (7202)
+      #4479 open 2026-09-23 feat(layout): align following leading elements (6720)
+      #3120 open 2026-08-13 fix(duckdb): parse named parameters in FROM-first queries
+      #3715 open 2026-09-03 [Bug]: binstall pkg-url does not match Linux release asset names
+      #4160 closed 2026-09-13 feat(snowflake): support resource monitors (6834)
+      #327 open 2024-05-23 Potential optimizations
+      #3884 closed 2026-09-06 feat(snowflake): support temporary UDFs (6309)
+      #366 open 2024-06-10 VS Code extension
+      #3357 merged 2026-08-27 fix: more robust algorithm for LT09 multiline fix (#5309)
+      #3801 closed 2026-09-04 feat(mysql): allow optional AS in create table select (6109)
+      #4222 closed 2026-09-14 feat: support T-SQL graph tables (6948)
+      #4076 closed 2026-09-12 feat(snowflake): support Streamlit titles (6642)
+      #3541 closed 2026-08-31 feat: support Snowflake dynamic table refresh options (#5715)
+      #4094 closed 2026-09-12 feat(redshift): support GROUP BY ALL (6714)
+      #4012 closed 2026-09-10 feat(snowflake): expand GRANT statement support (6503)
+      #3675 closed 2026-09-02 feat(mariadb): add MariaDB dialect (#5856)
+      #3090 merged 2026-08-12 chore: enforce alphabetical SyntaxKind with google/keep-sorted
+  unclean        0 hit(s)
+  shutdown       3 hit(s) (all listed)
+      #2711 merged 2026-06-12 chore: bump pyo3 from 0.28.3 to 0.29.0 in the cargo group across 1 directory
+      #1407 merged 2025-03-10 chore: bump pyo3 from 0.23.5 to 0.24.0
+      #670 closed 2024-09-03 Placeholder templater not working as expected
+  reboot         0 hit(s)
+  disk+full      6 hit(s) (all listed)
+      #2984 closed 2026-07-20 chore: bump @tailwindcss/postcss from 4.3.1 to 4.3.3
+      #2755 closed 2026-06-15 chore: bump @secretlint/secretlint-rule-no-dotenv from 11.7.1 to 13.0.2
+      #2754 closed 2026-06-15 chore: bump @secretlint/secretlint-formatter-sarif from 11.4.0 to 13.0.2
+      #2646 merged 2026-05-25 chore: bump @secretlint/secretlint-rule-preset-recommend from 12.3.1 to 13.0.2
+      #2503 merged 2026-03-30 chore: bump bazel-contrib/setup-bazel from 0.18.0 to 0.19.0
+      #1146 closed 2024-12-30 chore: bump glob from 0.3.1 to 0.3.2
+  data+loss      3 hit(s) (all listed)
+      #3015 open 2026-07-24 fix(lexer): stop dropping input after an unlexable byte
+      #2047 closed 2025-10-20 chore: bump eslint from 9.35.0 to 9.38.0
+      #2048 closed 2025-10-20 chore: bump @eslint/js from 9.35.0 to 9.38.0
+  partial+write  1 hit(s) (all listed)
+      #2613 merged 2026-05-18 chore: bump vite from 8.0.8 to 8.0.13
+  crash+safe     2 hit(s) (all listed)
+      #2069 closed 2025-12-12 fix(reflow): use relevant untaken count for indent calculations
+      #1830 merged 2025-07-21 chore: bump esbuild from 0.25.6 to 0.25.8
+  atomic+write   2 hit(s) (all listed)
+      #3887 closed 2026-09-06 feat(cli): group GitHub native annotations by file (6312)
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+  lock+file      41 hit(s) (all listed)
+      #2871 open 2026-07-08 refactor: config early engine foundation
+      #3943 closed 2026-09-08 feat(databricks): support identifier clauses (6377)
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+      #3946 closed 2026-09-08 fix(snowflake): parse complex connect by expressions (6396)
+      #3974 merged 2026-09-09 perf: move Zed extension checks into the Bazel workspace
+      #3935 merged 2026-09-08 perf: migrate remaining Cargo runtime tests to native Bazel targets
+      #3887 closed 2026-09-06 feat(cli): group GitHub native annotations by file (6312)
+      #3036 merged 2026-07-29 chore: decouple Cargo vendoring from Rust sources
+      #2842 merged 2026-07-02 chore: move dialect config tests to fixtures
+      #2715 merged 2026-06-12 Add pnpm lockfile validation check to Bazel build
+      #2773 merged 2026-06-16 chore: bump vscode-languageclient and vscode-languageserver to 10.0.0
+      #2831 closed 2026-06-29 chore: bump vscode-languageserver from 10.0.0 to 10.0.1
+      #2788 merged 2026-06-22 chore: bump rust-lang/crates-io-auth-action from 1.0.4 to 1.0.5
+      #2651 merged 2026-05-26 fix(lsp): respect workspace config and sqruffignore
+      #2167 merged 2026-01-12 chore: CI check for Bazel lock file sync
+      #2752 closed 2026-06-15 chore: bump vscode-languageclient from 9.0.1 to 10.0.0
+      #2685 closed 2026-06-08 chore: bump vscode-languageserver from 9.0.1 to 10.0.0
+      #2382 merged 2026-03-07 chore: bump version to 0.35.1
+      #2500 merged 2026-03-30 chore: bump rust-lang/crates-io-auth-action from 1.0.3 to 1.0.4
+      #2280 closed 2026-02-05 Upgrade pnpm from 10.0.0 to 10.28.2
+  write+failure  7 hit(s) (all listed)
+      #2658 open 2026-06-01 fix(config): surface invalid config and honor configured SQL extensions
+      #2498 open 2026-03-27 Meta: Close the remaining practical parity gaps between sqruff and SQLFluff
+      #3073 merged 2026-08-08 ci: use sandbox-local Cargo home
+      #3033 merged 2026-07-29 chore: advance sqlfluff sha past RF05 empty identifier fix (#4953)
+      #2786 closed 2026-06-22 chore: bump @playwright/test from 1.60.0 to 1.61.0
+      #2764 merged 2026-06-15 chore: bump pyjwt from 2.10.1 to 2.13.0 in the uv group across 1 directory
+      #2518 closed 2026-04-06 chore: bump pyo3 from 0.28.2 to 0.28.3
+  file+contents  11 hit(s) (all listed)
+      #366 open 2024-06-10 VS Code extension
+      #3485 closed 2026-08-30 feat: upgrade Greenplum dialect (#5546)
+      #3974 merged 2026-09-09 perf: move Zed extension checks into the Bazel workspace
+      #2492 merged 2026-03-26 chore: bump requests from 2.32.5 to 2.33.0 in the uv group across 1 directory
+      #2608 merged 2026-05-14 chore: bump the npm_and_yarn group across 1 directory with 9 updates
+      #1838 closed 2025-07-25 [Bug]: [sqruff:layout:type:comma] line_position = leading not working as expected
+      #1583 merged 2025-05-05 refactor: remove base module and flatten module hierarchy
+      #1515 merged 2025-04-14 chore: bump houseabsolute/actions-rust-cross from 1.0.3 to 1.0.4
+      #1372 closed 2025-02-25 chore: bump tailwindcss from 3.4.17 to 4.0.9
+      #1354 closed 2025-02-22 chore: bump tailwindcss from 3.4.17 to 4.0.8
+      #1226 merged 2025-01-20 chore: bump houseabsolute/actions-rust-cross from 0 to 1
+
+== 51 terms run; 41 returned hits, 4 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

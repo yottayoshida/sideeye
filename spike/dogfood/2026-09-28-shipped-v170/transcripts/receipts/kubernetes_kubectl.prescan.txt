@@ -1,0 +1,401 @@
+== novelty pre-scan: kubernetes/kubectl
+== date: 2026-09-28T00:17:15Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          11 hit(s) (all listed)
+      #1798 closed 2025-11-11 kubectl leaks memory on macOS when authentication fails (kalloc.1024 keeps growing)
+      #1724 closed 2025-02-28 Unhandled panic crash on rollout_history printer.PrintObj
+      #1647 closed 2024-09-07 Pressing ctrl+\ results in a panic? or segfault?
+      #1459 closed 2023-08-04 Mention namespace in "pods not found" error message
+      #1299 closed 2022-10-09 Kubectl on MacOS Montery 12.6 causing networking crash, requires restart
+      #1275 closed 2022-09-05 SegFault error on specific commands
+      #1159 closed 2021-12-25 crashes while generating secret manifest
+      #1053 closed 2021-05-11 kubectl freezing mac
+      #993 closed 2020-12-15 `kubectl get pods --sort-by=status` makes kubectl crash (error not handled)
+      #78 closed 2017-10-16 New apply path crashes when there is no group
+      #550 closed 2018-10-30 kubectl expose crashes when there are no selectors (apps group only)
+  corrupt        4 hit(s) (all listed)
+      #1405 closed 2023-04-02 Corrupted secrets - illegal base64 data at input byte 3
+      #1384 closed 2023-03-07 kubectl disable probes for troubleshooting
+      #1273 closed 2022-09-01 Misleading error message instead of timeout exception
+      #1304 closed 2022-10-13 Kubectl doesn't allow "describe" for resource with slash in the name
+  corruption     1 hit(s) (all listed)
+      #1779 closed 2025-08-30 kubectl delete hangs indefinitely due to TCP connection breakdown behind LB during MTU/PMTU-related packet loss
+  truncated      13 hit(s) (all listed)
+      #1414 open 2023-04-17 kubectl wait sometime doesn't resolve ready condition
+      #1800 closed 2025-11-20 Unexpected EOF error when trying to create a job from a cronjob in kubectl 1.32+
+      #1737 closed 2025-04-25 Support autocompletion for `kuberc` aliases
+      #1585 closed 2024-04-11 No tab completion available for kubectl set command 
+      #1466 closed 2023-08-15 Bash completion is broken for aliases that contain a flag
+      #120 closed 2017-11-02 Cannot autocomplete kubectl bash aliases
+      #1220 closed 2022-05-26 Kubectl drain ignore DaemonSet still gets DaemonSets
+      #1280 closed 2022-09-13 kubectl fails to apply strategic merge patch to custom resource
+      #1034 closed 2021-03-24 Dots in pod name are not supported in get describe commands
+      #712 closed 2019-09-02 Object exceeds last-applied-configuration annotation
+      #586 closed 2019-02-06 kubectl cluster-info dump: error: a versioned object must be passed to a printer
+      #780 closed 2019-12-03 kubectl label node - did not remove label
+      #917 closed 2020-08-19 kubectl logs command with label selector does not show all entries (results truncated)
+  truncate       18 hit(s) (all listed)
+      #1883 open 2026-09-16 kubectl events breaks table layout on multi-line event messages
+      #1414 open 2023-04-17 kubectl wait sometime doesn't resolve ready condition
+      #1676 closed 2024-11-05 kubectl get --raw incorrectly truncates the server URL's path before appending the requested path
+      #965 open 2020-10-23 Support for setting resourceVersion in kubectl get
+      #1800 closed 2025-11-20 Unexpected EOF error when trying to create a job from a cronjob in kubectl 1.32+
+      #1737 closed 2025-04-25 Support autocompletion for `kuberc` aliases
+      #1585 closed 2024-04-11 No tab completion available for kubectl set command 
+      #1466 closed 2023-08-15 Bash completion is broken for aliases that contain a flag
+      #120 closed 2017-11-02 Cannot autocomplete kubectl bash aliases
+      #1220 closed 2022-05-26 Kubectl drain ignore DaemonSet still gets DaemonSets
+      #1280 closed 2022-09-13 kubectl fails to apply strategic merge patch to custom resource
+      #1034 closed 2021-03-24 Dots in pod name are not supported in get describe commands
+      #306 closed 2018-02-20 "kubectl get" downloads the entire swagger spec (GET /swagger-2.0.0.pb-v1) on every invocation
+      #712 closed 2019-09-02 Object exceeds last-applied-configuration annotation
+      #586 closed 2019-02-06 kubectl cluster-info dump: error: a versioned object must be passed to a printer
+      #780 closed 2019-12-03 kubectl label node - did not remove label
+      #646 closed 2019-04-22 when EXTERNAL-IP too long
+      #917 closed 2020-08-19 kubectl logs command with label selector does not show all entries (results truncated)
+  empty          99 hit(s) (all listed)
+      #1885 open 2026-09-23 kubectl create ingress accepts empty default-backend fields and empty annotation keys
+      #1886 open 2026-09-22 kubectl create quota and set resources accept empty resource names
+      #1882 open 2026-09-09 kubectl explain: Missing validation error when --api-version is an empty string
+      #1881 open 2026-09-09 `kubectl wait --for=jsonpath`: support inequality/negation operators (`!=`) in addition to `=`
+      #847 open 2020-03-27 Wrong error code thrown when list of a certain resource is empty
+      #1884 closed 2026-09-22 kubectl create quota and set resources accept empty resource names
+      #1528 open 2023-12-08 Proposal (cmd/describe): Denote list elements in describe output
+      #1870 open 2026-08-13 kubectl completion fish - label support required
+      #1878 closed 2026-09-08 `kubectl wait --while`: wait *while* a condition holds, returning when it no longer does
+      #1589 open 2024-04-23 kubectl apply --dry-run=client attempts to connect to the server
+      #1389 open 2023-03-16 Basic authentication was removed but kubectl config set-credentials can set basic auth infos
+      #1596 open 2024-05-03 `kubectl get --ignore-not-found` behavior unclear
+      #1872 closed 2026-08-23 kubectl explain writes partial output to stdout when the field path is invalid
+      #1348 open 2023-01-11 kubectl proxy when you request an api that requires http Authorization header authentication, it will not process the response correctly
+      #978 open 2020-11-10 kubectl uses far more memory than expected
+      #866 open 2020-05-04 kubectl get doesn't stream results with many results
+      #1398 open 2023-03-28 kubectl plugin completion searches all of PATH, even when not needed
+      #1347 open 2022-04-07 kubectl drain: influencing order of draining Pods
+      #216 closed 2018-01-22 Kubectl through a proxy
+      #1780 closed 2025-03-10 kubectl debug: change default profile and remove legacy profile
+  atomic         3 hit(s) (all listed)
+      #1494 open 2023-10-01 ApplySet: More integration with core components of Kubernetes.
+      #1290 closed 2022-09-29 Improve error message for action on missing namespace
+      #570 closed 2018-12-18 kustomize follow ups
+  atomically     1 hit(s) (all listed)
+      #1290 closed 2022-09-29 Improve error message for action on missing namespace
+  interrupted    1 hit(s) (all listed)
+      #1627 closed 2024-07-29 Drain Package Functions Should Use PollUntilContextTimeout and Return Properly Typed Errors
+  interrupt      10 hit(s) (all listed)
+      #1368 open 2023-02-10 port-forward dropping the connection for certain type of files
+      #1544 closed 2024-01-12 interrupting kubectl watch with Ctrl-C breaks readline
+      #1757 closed 2025-07-06 Not working tab completion for kubectl get command
+      #1760 closed 2025-07-12 Tracking Issue: Improve kubectl unit test coverage and structure
+      #1647 closed 2024-09-07 Pressing ctrl+\ results in a panic? or segfault?
+      #1487 closed 2023-09-20 Enhancement: `kubectl wait --for=existence`
+      #1373 closed 2023-02-16 kubectl logs --follow shouldn't timeout or exit non-zero otherwise
+      #1365 closed 2023-02-08 Improvements around kubectl delete --all
+      #1053 closed 2021-05-11 kubectl freezing mac
+      #958 closed 2020-10-16 About the signal handler in t.Safe()
+  sigkill        3 hit(s) (all listed)
+      #1739 closed 2025-04-30 Pod shows as Completed when InitContainer is terminated in Error
+      #1331 closed 2022-11-25 kubectl diff failed when creating the namespace and resources at the same time
+      #1053 closed 2021-05-11 kubectl freezing mac
+  sigint         3 hit(s) (all listed)
+      #686 closed 2019-07-22 Service port forwarding recovery on restarted pods
+      #698 closed 2019-08-13 Client-side apply has a pathological case with deeply nested identical objects
+      #920 closed 2020-08-24 port-forwarding for services should favour choosing newer pods over older pods
+  ctrl-c         15 hit(s) (all listed)
+      #1857 open 2016-10-20 kubectl exec escape sequence (tilde-dot)
+      #1544 closed 2024-01-12 interrupting kubectl watch with Ctrl-C breaks readline
+      #1757 closed 2025-07-06 Not working tab completion for kubectl get command
+      #930 closed 2020-09-12 Bash autocompletion hangs when additional authentication (in addition to having access credential) is required
+      #1617 closed 2024-07-02 rsync via kubectl hangs
+      #1487 closed 2023-09-20 Enhancement: `kubectl wait --for=existence`
+      #595 closed 2019-03-03 "error: unexpected EOF" when following logs
+      #1445 closed 2023-06-30 kubectl run command doesn't honor `Ctrl+C` when used with `sleep`
+      #1070 closed 2021-06-08 debug: ability to disable health check probes on pod copies
+      #1299 closed 2022-10-09 Kubectl on MacOS Montery 12.6 causing networking crash, requires restart
+      #1228 closed 2022-06-10 kubectl exec -it <pod> bash hangs after you type exit
+      #1132 closed 2021-10-19 `kubectl run` doesn't exit (1.22 only; works in 1.21 and earlier)
+      #1068 closed 2021-06-01 Kubectl infinitely hangs when deleting an in-use PersistentVolumeClaim
+      #878 closed 2020-06-10 C-p is bound over
+      #668 closed 2019-06-12 `kubectl get --watch` exits after ~90 seconds when getting CRDs
+  power          6 hit(s) (all listed)
+      #1597 open 2024-05-08 `kubectl describe` sometimes shows memory in millibytes
+      #1475 closed 2023-08-23 Only show what I have permission to see in kubectl get all
+      #1570 closed 2024-03-06 Allow removing fields from kubectl debug copied pods or containers
+      #1365 closed 2023-02-08 Improvements around kubectl delete --all
+      #1313 closed 2022-10-18 Make `kubectl logs` aware of network connection changes
+      #493 closed 2018-05-25 [Windows] Unable to open kube config file
+  outage         4 hit(s) (all listed)
+      #1442 open 2023-06-15 Proposal: Deprecate the usage of NoOptDefVal on flags
+      #1766 closed 2025-08-04 `kubectl apply`: Deleting one instance of a duplicate environment variable removes all occurrences – breaking change affecting Helm, Helmfile, ArgoCD, and automation toolchains
+      #1774 closed 2025-08-24 Add a safeguard for `kubectl delete <workloads> --all --all-namespaces`.
+      #1714 closed 2025-02-11 warn on missing healthchecks
+  ENOSPC         0 hit(s)
+  disk           15 hit(s) (all listed)
+      #1452 open 2023-07-24 kubectl create secret generic --help does not describe type
+      #1880 open 2026-08-18 Reduce useless duplicate reading of certificate data
+      #1154 closed 2021-11-29 Support for reading `--namespace` and `--context` values from env vars
+      #1071 closed 2021-06-08 debug: ability to replicate volume mounts 
+      #1654 closed 2024-09-05 Add kubectl create secret --from-base64-literal and --random-value-for-key
+      #1759 closed 2025-07-11 Supplying kubeconfig via process subsitution ( --kubeconfig=<(cat kubeconfig.file) ) doesn't work
+      #1545 closed 2024-01-15 Encrypted volumes not cleaned up from system cleanly
+      #1358 closed 2023-01-24 Why is kubectl attempting to use bash when only /bin/sh is installed
+      #1380 closed 2023-02-27 kubectl 1.24.10 fails with DBus error System.Error.E2BIG Argument list too long
+      #1221 closed 2022-05-30 wrong example in configmap help
+      #1275 closed 2022-09-05 SegFault error on specific commands
+      #210 closed 2018-01-16 kubectl --serviceaccount option use 
+      #226 closed 2018-01-25 kubectl panic on pod delete
+      #501 closed 2018-06-20 Allow [kubectl config set-cluster] to specify certificate-authority data in command.
+      #938 closed 2020-09-21 Allocatable->Allocated
+  partial        10 hit(s) (all listed)
+      #1872 closed 2026-08-23 kubectl explain writes partial output to stdout when the field path is invalid
+      #1853 open 2026-02-10 kubectl get <category> should filter out 403 errors from non authorized types
+      #866 open 2020-05-04 kubectl get doesn't stream results with many results
+      #1506 closed 2023-10-22 kubectl debug: add optional CLI argument to specify an imagePullSecret
+      #1808 closed 2025-12-18 unmanagedFatal contains unnecessary text that is duplicated later
+      #151 closed 2017-11-28 kubectl get all does not list all resources in a namespace
+      #1550 closed 2024-01-27 Concurrent `kubectl apply` for the same resource
+      #41 closed 2017-06-23 Kubectl caches partially populated api discovery
+      #63 closed 2017-09-21 ANSI escape sequences aren't terminated by kubectl logs
+      #552 closed 2018-11-01 kubectl version: needs better error message when server not available
+  incomplete     16 hit(s) (all listed)
+      #1795 open 2025-11-03 kubectl suggestion should also include aliases
+      #1827 closed 2026-02-24 [kubectl] Add 'current' alias for 'config current-context' for symmetry with 'use'
+      #1301 closed 2020-09-10 kubectl rollout undo should warn about undefined behaviour with kubectl apply
+      #1800 closed 2025-11-20 Unexpected EOF error when trying to create a job from a cronjob in kubectl 1.32+
+      #1666 closed 2024-10-05 `kubectl scale` fails with cryptic error if it can't fetch parent resource
+      #1533 closed 2023-08-05 Service's information about Endpoints doesn't update after creating EndpointSlice object
+      #1525 closed 2023-11-27 Instable conection via `kubectl port-forward`
+      #1521 closed 2021-09-16 kubectl config set-credentials add`interactive-mode` and `provide-cluster-info` options
+      #1259 closed 2022-07-23 kubectl wait doesn't support complex jsonpath
+      #1185 closed 2022-03-11 `kubectl run --help `  incomplete translations
+      #999 closed 2021-01-06 The --local flag require valid kubeconfig to be present
+      #190 closed 2017-12-27 kubctl explain resourcequota.spec.hard incomplete 
+      #523 closed 2018-08-20 The `patch` command should not require a KUBECONFIG when using --local
+      #853 closed 2020-04-04 [v1.18.0] kubectl's version cannot be retrieved WITHOUT a kube config or additional params
+      #912 closed 2020-08-16 Kubectl version causes an error and doesn't print client verison
+      #991 closed 2020-12-13 kubectl apply --validate=true --dry-run=client requires connection to Kubernetes cluster
+  dataloss       0 hit(s)
+  recover        9 hit(s) (all listed)
+      #1368 open 2023-02-10 port-forward dropping the connection for certain type of files
+      #1670 closed 2024-10-14 Ability to apply objects from custom reader
+      #1774 closed 2025-08-24 Add a safeguard for `kubectl delete <workloads> --all --all-namespaces`.
+      #1169 closed 2022-01-26 Port-forward drops connection to pod after first connection
+      #1626 closed 2024-07-25 Allow kubeconfig option load a list of kubeconfig files
+      #686 closed 2019-07-22 Service port forwarding recovery on restarted pods
+      #1053 closed 2021-05-11 kubectl freezing mac
+      #491 closed 2018-05-24 Possible to bypass Service validation via "apply", loses declarative spec and locks down the object forever
+      #738 closed 2019-10-11 `kubectl rollout status` does not stop when a pod enters CrashLoopBackOff
+  recovery       1 hit(s) (all listed)
+      #686 closed 2019-07-22 Service port forwarding recovery on restarted pods
+  rollback       10 hit(s) (all listed)
+      #1301 closed 2020-09-10 kubectl rollout undo should warn about undefined behaviour with kubectl apply
+      #1786 closed 2025-09-27 kubectl: Local node object mutated before server patch/update succeeds
+      #1760 closed 2025-07-12 Tracking Issue: Improve kubectl unit test coverage and structure
+      #1751 closed 2025-06-19 Add support for kubectl rollout restart --all --all-namespaces
+      #1297 closed 2022-10-07 Kubectl rollout undo can cause unexpected config merges
+      #598 closed 2019-03-04 "kubectl rollout history --revision=n" produces wrong/inconsistent output with "-o yaml"?
+      #92 closed 2017-10-20 Remove dependency on k8s.io/kubernetes/pkg/apis/extensions from kubectl
+      #73 closed 2017-10-06 Replace type "switch" statements with KindVisitor
+      #127 closed 2017-11-09 Replace type "switch" statements with KindVisitor in "rollback"
+      #56 closed 2017-08-28 kubectl cycle pods
+  resume         6 hit(s) (all listed)
+      #1425 open 2023-05-05 kubectl cp will return a error "Dropping out copy after 0 retries error: unexpected EOF"
+      #1760 closed 2025-07-12 Tracking Issue: Improve kubectl unit test coverage and structure
+      #1674 closed 2024-11-01 kubectl run pod disconnects after 30s
+      #686 closed 2019-07-22 Service port forwarding recovery on restarted pods
+      #779 closed 2019-12-02 auth can-i gives wrong answer for create with resource name
+      #1103 closed 2021-09-01 kubectl cp fails with Error unexpected EOF
+  half-written   0 hit(s)
+  wipe           5 hit(s) (all listed)
+      #1442 open 2023-06-15 Proposal: Deprecate the usage of NoOptDefVal on flags
+      #569 open 2018-12-17 Feature Request: Support $HOME/.kube/config.d/*
+      #1774 closed 2025-08-24 Add a safeguard for `kubectl delete <workloads> --all --all-namespaces`.
+      #713 closed 2019-09-05 Installation of kubectl on Windows Server 2012 removed all content from System Path Variable
+      #696 closed 2019-08-08 Kubectl can wipe a cluster with a single command
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #1545 closed 2024-01-15 Encrypted volumes not cleaned up from system cleanly
+      #1066 closed 2021-06-01 Metadata field of nested objects inside CR getting erased
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #1066 closed 2021-06-01 Metadata field of nested objects inside CR getting erased
+  destroy        6 hit(s) (all listed)
+      #1154 closed 2021-11-29 Support for reading `--namespace` and `--context` values from env vars
+      #1071 closed 2021-06-08 debug: ability to replicate volume mounts 
+      #1759 closed 2025-07-11 Supplying kubeconfig via process subsitution ( --kubeconfig=<(cat kubeconfig.file) ) doesn't work
+      #1461 closed 2023-08-07 `kubectl delete deploy,ns -n foo  --all` deletes all namespaces
+      #1266 closed 2022-08-22 kubectl timeout causing goroutine errors and system freezes
+      #867 closed 2020-05-10 Be able to specify that a resource should not exist
+  destroys       0 hit(s)
+  overwrite      21 hit(s) (all listed)
+      #1868 closed 2026-08-03 Add `kubectl config merge`
+      #569 open 2018-12-17 Feature Request: Support $HOME/.kube/config.d/*
+      #1841 closed 2026-04-14 kubectl plugins: provide the launching kubectl executable path to plugins
+      #1804 closed 2025-12-04 kubectl alpha kuberc set command clears existing options when --overwrite is used without --option
+      #1802 closed 2025-12-01 Can't provide filepath via KUBERC environment variable
+      #1715 closed 2025-02-13 kubectl debug with --as and --as-group overwrites service account
+      #1637 closed 2024-08-07 Improvement for k8s.io/docs/reference/kubectl/generated/kubectl_label/
+      #1570 closed 2024-03-06 Allow removing fields from kubectl debug copied pods or containers
+      #1407 closed 2023-04-05 Kubectl v1.26.x annotate overwrites even with --overwrite=false set
+      #1550 closed 2024-01-27 Concurrent `kubectl apply` for the same resource
+      #1338 closed 2022-12-19 error: The gcp auth plugin has been removed
+      #1378 closed 2023-02-26 kubectl diff does not report missing ConfigMap keys
+      #1133 closed 2021-10-20 Display used seccomp profile on `kubectl describe`
+      #1262 closed 2022-08-03 `kubectl config` drops all comments from kubeconfig file
+      #1189 closed 2022-03-15 fish auto-completion
+      #1136 closed 2021-10-23 Missing command to label Pods of a Kubernetes Workload
+      #1098 closed 2021-08-24 run commands don't return when using kubectl 1.22.x
+      #975 closed 2020-11-06 Kubectl command can not overwrite the service or deployment which be changed by manual update. 
+      #39 closed 2017-06-21 Scaling a deployment always sets 'schedulerName' to 'default-scheduler' (kubectl 1.5.7, master 1.6.4)
+      #125 closed 2017-11-08 Kubectl completion zsh error 
+  clobber        3 hit(s) (all listed)
+      #1101 closed 2021-08-30 Converting from usage of kubectl run --limits to --overrides not clear
+      #587 closed 2019-02-07 Error: forwarding ports: error upgrading connection: error dialing backend: - Azure Kubernetes Service
+      #1203 closed 2022-04-19 Creating context blows out custom adds to .kube/config
+  blank          15 hit(s) (all listed)
+      #1869 closed 2026-08-08 kubectl server v1.35.1: rollout history CHANGE-CAUSE shows incorrect image version
+      #995 open 2020-12-16 [request] add -o csv for easy exporting of resources to spreadsheets.
+      #665 closed 2019-06-06 wait command can be more robust
+      #843 closed 2020-03-19 Add custom trusted CA when connecting through HTTP Proxy with Deep Packet Inspection (MITM Certificate)
+      #1394 closed 2023-03-22 panic when running kubectl config set-credentials with certificate credentials 
+      #1299 closed 2022-10-09 Kubectl on MacOS Montery 12.6 causing networking crash, requires restart
+      #994 closed 2020-12-15 kubectl auth gives invalid answer when namespace argument is blank
+      #1081 closed 2021-07-16 Container in a pod can't get configured to the defined port in the yaml file 
+      #25 closed 2017-06-07 Unable to kubectl get -o jsonpath annotation value
+      #186 closed 2017-12-19 Default output from kubectl when getting a CRD named Status is wrong
+      #217 closed 2018-01-22 Error: error validating "": error validating data: kind not set
+      #552 closed 2018-11-01 kubectl version: needs better error message when server not available
+      #857 closed 2020-04-13 kubectl logs error message not easily handled
+      #895 closed 2020-07-13 Let kubectl not to use a proxy
+      #582 closed 2019-02-03 kubectl get all has lots of blank lines to stderr
+  unreadable     1 hit(s) (all listed)
+      #197 closed 2018-01-08 kubectl apply includes raw and useless data into the error message
+  garbage        6 hit(s) (all listed)
+      #1647 closed 2024-09-07 Pressing ctrl+\ results in a panic? or segfault?
+      #914 closed 2020-08-18 `kubectl create` alternatives
+      #1292 closed 2022-09-30 Support 'kubectl get' for owner objects or owned objects through ownerReferences
+      #1092 closed 2021-08-05 `kubectl config` hides input errors
+      #66 closed 2017-09-29 Deprecate "Discovery" and replace with openapi
+      #140 closed 2017-11-16 kubectl -n kube-system and kubectl --all-namespaces, differ in behavior
+  mangled        0 hit(s)
+  contents       29 hit(s) (all listed)
+      #1880 open 2026-08-18 Reduce useless duplicate reading of certificate data
+      #1854 open 2016-10-06 Take kubectl apply out of Alpha and into Beta
+      #1044 open 2021-04-28 Place CACHEDIR.TAG file in ~/.kube/cache and ~/.kube/http-cache
+      #524 open 2018-08-24 Add ANSI colors to kubectl describe and other outputs
+      #1812 closed 2026-01-06 Help does not match or needs updated
+      #1071 closed 2021-06-08 debug: ability to replicate volume mounts 
+      #1759 closed 2025-07-11 Supplying kubeconfig via process subsitution ( --kubeconfig=<(cat kubeconfig.file) ) doesn't work
+      #1697 closed 2025-01-09 After upgrading to MacOS 15.2 (24C101), kubectl fails all commands with KILLED: 9
+      #1535 closed 2023-12-18 kubectl not handling certain JSONPath queries
+      #1496 closed 2023-10-04 False success creating secret for type kubernetes.io/service-account-token when service account does not exist
+      #914 closed 2020-08-18 `kubectl create` alternatives
+      #61 closed 2017-09-11 kubectl edit <resource> fails with Edit cancelled, no changes made even when file has modifications
+      #1290 closed 2022-09-29 Improve error message for action on missing namespace
+      #454 closed 2018-04-29 kubectl cp to work on stopped/completed pods
+      #1125 closed 2021-10-04 kubectl doesn't understand ~ abbreviation in path for plugins
+      #113 closed 2017-11-01 Need a command to list all available/existing types (or resources) in a cluster 
+      #37 closed 2017-06-20 Current bash-completion instructions do not work on Mac OS 10.11.6 and bash 3.2
+      #125 closed 2017-11-08 Kubectl completion zsh error 
+      #104 closed 2017-10-25 kubectl exec: mark -p option as deprecated in the help output
+      #427 closed 2018-04-11 Cannot use Windows paths in create secret --from-file
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1044 open 2021-04-28 Place CACHEDIR.TAG file in ~/.kube/cache and ~/.kube/http-cache
+      #1488 open 2023-09-20 Create a list of all patch releases
+      #1880 open 2026-08-18 Reduce useless duplicate reading of certificate data
+      #1468 open 2023-08-17 Kubectl explain show "example" section for CRD fields
+      #1729 open 2025-03-24 The resources.limits.memory unit is automatically converted. Why cannot the unit be displayed as configured?
+      #1769 open 2025-08-12 kubectl describe suffers from N+1 query problem when falling back to prefix search, causing performance issues
+      #1389 open 2023-03-16 Basic authentication was removed but kubectl config set-credentials can set basic auth infos
+      #1340 open 2016-04-18 Improve default kubectl behavior when it doesn't know what cluster to talk to
+      #123 open 2017-11-08 kubectl CLI should more consistently and concisely convey discovery
+      #978 open 2020-11-10 kubectl uses far more memory than expected
+      #1632 closed 2024-08-07 Improve kubectl built-in help
+      #1821 closed 2026-02-02 kubectl plugin list does not detect overshadowed plugins on Windows
+      #1817 closed 2026-01-28 kubectl: consider accepting -o yml as alias for -o yaml
+      #1586 closed 2024-04-17 WarningHandler cannot be configured when applying
+      #1154 closed 2021-11-29 Support for reading `--namespace` and `--context` values from env vars
+      #1546 closed 2024-01-18 kubectl completion, config current-context and version commands are too slow
+      #1772 closed 2025-08-18 kubectl edit behaves strangely on v1.33 client (editor issue, possibly resource-related)
+      #151 closed 2017-11-28 kubectl get all does not list all resources in a namespace
+      #1770 closed 2025-08-14 `kubectl scale` shows confusing/concatenated error vs. clear NotFound from other commands
+      #1755 closed 2025-07-02 Add port names to `describe pod`
+  unclean        1 hit(s) (all listed)
+      #905 closed 2020-08-07 Add support for passing yaml or json files in kubectl patch
+  shutdown       6 hit(s) (all listed)
+      #1347 open 2022-04-07 kubectl drain: influencing order of draining Pods
+      #1169 closed 2022-01-26 Port-forward drops connection to pod after first connection
+      #1628 closed 2024-07-30 "kubectl rollout status" not waiting for previous replica termination
+      #1299 closed 2022-10-09 Kubectl on MacOS Montery 12.6 causing networking crash, requires restart
+      #826 closed 2020-02-26 Allow adding annotations to pod when using kubectl run
+      #971 closed 2020-10-30 Node Events update on Node failure
+  reboot         8 hit(s) (all listed)
+      #1347 open 2022-04-07 kubectl drain: influencing order of draining Pods
+      #1798 closed 2025-11-11 kubectl leaks memory on macOS when authentication fails (kalloc.1024 keeps growing)
+      #1751 closed 2025-06-19 Add support for kubectl rollout restart --all --all-namespaces
+      #1532 closed 2023-12-11 kubectl drain ignores terminating pods when reboot master node
+      #1000 closed 2021-01-06 kubectl Unable to connect to the server Azure Kubernetes Service
+      #1266 closed 2022-08-22 kubectl timeout causing goroutine errors and system freezes
+      #971 closed 2020-10-30 Node Events update on Node failure
+      #992 closed 2020-12-13 pod always pull image even if imagePullPolicy: IfNotPresent
+  disk+full      0 hit(s)
+  data+loss      5 hit(s) (all listed)
+      #151 closed 2017-11-28 kubectl get all does not list all resources in a namespace
+      #1525 closed 2023-11-27 Instable conection via `kubectl port-forward`
+      #1239 closed 2022-07-07 Weird behaviour with `--prune` when updating immutable labels with `--force`
+      #48 closed 2017-08-09 Kubectl fails to resolve names except through DNS
+      #826 closed 2020-02-26 Allow adding annotations to pod when using kubectl run
+  partial+write  2 hit(s) (all listed)
+      #1872 closed 2026-08-23 kubectl explain writes partial output to stdout when the field path is invalid
+      #151 closed 2017-11-28 kubectl get all does not list all resources in a namespace
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      8 hit(s) (all listed)
+      #569 open 2018-12-17 Feature Request: Support $HOME/.kube/config.d/*
+      #1587 open 2024-04-22 kubectl diff fails to detect deletions made in manifest after kubectl create
+      #1246 closed 2022-07-22 `error: open .kube/config.lock: permission denied`
+      #1750 closed 2025-06-10 kubectl apply incorrectly deletes duplicate environment variables
+      #1668 closed 2024-10-08 kubectl using 1200% CPU on MacOS 14.4.1
+      #1460 closed 2023-08-06 --kubeconfig creates 
+      #192 closed 2018-01-04 kubectl exec connection error: desc = "transport: dial unix docker-containerd.sock: connect: connection refused": unknown
+      #708 closed 2019-08-23 lock file
+  write+failure  8 hit(s) (all listed)
+      #1872 closed 2026-08-23 kubectl explain writes partial output to stdout when the field path is invalid
+      #1620 closed 2024-07-05 Port forwarding dies after cancelling a TCP request
+      #1625 closed 2024-07-21 Client-side validation is skipped if the cluster and resource support server-side validation
+      #686 closed 2019-07-22 Service port forwarding recovery on restarted pods
+      #1077 closed 2021-07-06 Kubectl should not describe all APIs when executing unrelated calls
+      #798 closed 2020-01-09 kubectl replace doesn't work with immutable fields
+      #558 closed 2018-11-08 kubectl port-forward flaky e2e tests
+      #687 closed 2019-07-23 Occasionally "broken pipe" and "connection reset by peer" on version 1.11.6
+  file+contents  23 hit(s) (all listed)
+      #1880 open 2026-08-18 Reduce useless duplicate reading of certificate data
+      #1854 open 2016-10-06 Take kubectl apply out of Alpha and into Beta
+      #1044 open 2021-04-28 Place CACHEDIR.TAG file in ~/.kube/cache and ~/.kube/http-cache
+      #524 open 2018-08-24 Add ANSI colors to kubectl describe and other outputs
+      #1812 closed 2026-01-06 Help does not match or needs updated
+      #1071 closed 2021-06-08 debug: ability to replicate volume mounts 
+      #1759 closed 2025-07-11 Supplying kubeconfig via process subsitution ( --kubeconfig=<(cat kubeconfig.file) ) doesn't work
+      #1697 closed 2025-01-09 After upgrading to MacOS 15.2 (24C101), kubectl fails all commands with KILLED: 9
+      #1535 closed 2023-12-18 kubectl not handling certain JSONPath queries
+      #1496 closed 2023-10-04 False success creating secret for type kubernetes.io/service-account-token when service account does not exist
+      #914 closed 2020-08-18 `kubectl create` alternatives
+      #61 closed 2017-09-11 kubectl edit <resource> fails with Edit cancelled, no changes made even when file has modifications
+      #1290 closed 2022-09-29 Improve error message for action on missing namespace
+      #454 closed 2018-04-29 kubectl cp to work on stopped/completed pods
+      #1125 closed 2021-10-04 kubectl doesn't understand ~ abbreviation in path for plugins
+      #697 closed 2019-08-10 Unexpected consequences of using untrusted kubeconfig files
+      #815 closed 2020-02-05 kubectl apply -k . --prune doesn't create generated resources
+      #125 closed 2017-11-08 Kubectl completion zsh error 
+      #427 closed 2018-04-11 Cannot use Windows paths in create secret --from-file
+      #227 closed 2018-01-26 Consider preferring USERPROFILE as the home path more often on Windows
+
+== 51 terms run; 41 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

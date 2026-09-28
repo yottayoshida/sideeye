@@ -1,0 +1,4 @@
+static: /opt/bin/jsonnetfmt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=1de9ae9ba0d5625ebfde22cf31da0b3ed330d885, stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: sideeye explore --state /s/jsonnetfmt/proj --cwd "/s/jsonnetfmt/proj" --operation "jsonnetfmt -i a.jsonnet" \

@@ -1,0 +1,4 @@
+static: /opt/bin/helm: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=2H8jkwlw3z_0vfUVSI3Z/jJOudck27XhMoOB8rJWz/dKXAeyXJvFBNvA7_HGei/CjRmTu7_sPZSF1_hYNJo, BuildID[sha1]=101a4edff531499cae594eef3137eca80d94dee9, stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: sideeye explore --state /s/helm --operation "helm repo remove b --repository-config /s/helm/cfg/repositories.yaml --repository-cache /s/helm/cache" \

@@ -1,0 +1,4 @@
+static: /opt/bin/yamlfmt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=6226db3b9e484493c87b4fd28426b3409b581565, stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: sideeye explore --state /s/yamlfmt/proj --cwd "/s/yamlfmt/proj" --operation "yamlfmt a.yaml" \

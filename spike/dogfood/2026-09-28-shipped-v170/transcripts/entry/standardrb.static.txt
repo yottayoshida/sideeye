@@ -1,0 +1,2 @@
+static: /usr/local/bin/standardrb: Ruby script, ASCII text executable
+next: sideeye explore --state /s/standardrb/proj --cwd "/s/standardrb/proj" --operation "standardrb --fix a.rb" \

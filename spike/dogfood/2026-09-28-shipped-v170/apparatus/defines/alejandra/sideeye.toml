@@ -1,0 +1,6 @@
+[world]
+state = "/s/alejandra/proj"
+
+[define]
+operation = "alejandra -q a.nix"
+cwd       = "/s/alejandra/proj"

@@ -1,0 +1,4 @@
+static: /opt/bin/sqruff: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, not stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: sideeye explore --state /s/sqruff/proj --cwd "/s/sqruff/proj" --operation "sqruff fix a.sql" \

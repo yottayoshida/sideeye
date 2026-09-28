@@ -1,0 +1,92 @@
+== kubernetes/kubectl (label kind/bug)
+#1885 2026-09-23 comments=3 first_project_reply=CONTRIBUTOR 2026-09-23
+#1886 2026-09-22 comments=4 first_project_reply=CONTRIBUTOR 2026-09-22
+#1884 2026-09-22 comments=3 first_project_reply=CONTRIBUTOR 2026-09-22
+#1883 2026-09-16 comments=6 first_project_reply=CONTRIBUTOR 2026-09-16
+#1882 2026-09-09 comments=4 first_project_reply=CONTRIBUTOR 2026-09-11
+#1879 2026-09-04 comments=4 first_project_reply=CONTRIBUTOR 2026-09-04
+#1875 2026-08-27 comments=5 first_project_reply=CONTRIBUTOR 2026-08-27
+#1872 2026-08-23 comments=4 first_project_reply=MEMBER 2026-08-23
+#1869 2026-08-08 comments=6 first_project_reply=MEMBER 2026-08-12
+#1862 2026-07-04 comments=3 first_project_reply=CONTRIBUTOR 2026-07-15
+== hashicorp/terraform (label bug)
+#39292 2026-09-25 comments=1 first_project_reply=CONTRIBUTOR 2026-09-25
+#39285 2026-09-25 comments=1 first_project_reply=CONTRIBUTOR 2026-09-25
+#39283 2026-09-24 comments=5 first_project_reply=CONTRIBUTOR 2026-09-24
+#39265 2026-09-22 comments=5 first_project_reply=CONTRIBUTOR 2026-09-22
+#39235 2026-09-16 comments=4 first_project_reply=MEMBER 2026-09-16
+#39230 2026-09-16 comments=2 first_project_reply=CONTRIBUTOR 2026-09-16
+#39228 2026-09-16 comments=2 first_project_reply=CONTRIBUTOR 2026-09-16
+#39207 2026-09-14 comments=3 first_project_reply=CONTRIBUTOR 2026-09-15
+#39194 2026-09-11 comments=2 first_project_reply=MEMBER 2026-09-11
+== quarylabs/sqruff (label bug)
+#4317 2026-09-20 comments=2 first_project_reply=COLLABORATOR 2026-09-20
+#3715 2026-09-03 comments=0 first_project_reply=none
+#3077 2026-08-09 comments=0 first_project_reply=none
+#3035 2026-07-29 comments=0 first_project_reply=none
+#3032 2026-07-29 comments=0 first_project_reply=none
+#3018 2026-07-26 comments=0 first_project_reply=none
+#3017 2026-07-24 comments=1 first_project_reply=COLLABORATOR 2026-07-28
+#3014 2026-07-24 comments=1 first_project_reply=none
+#2988 2026-07-20 comments=2 first_project_reply=COLLABORATOR 2026-08-13
+#2869 2026-07-08 comments=0 first_project_reply=none
+== nbQA-dev/nbQA (label bug)
+#857 2024-07-26 comments=3 first_project_reply=COLLABORATOR 2024-07-26
+#821 2023-05-21 comments=2 first_project_reply=COLLABORATOR 2023-05-21
+#801 2023-03-03 comments=2 first_project_reply=COLLABORATOR 2023-03-03
+#701 2022-03-01 comments=14 first_project_reply=COLLABORATOR 2022-03-01
+#679 2021-11-25 comments=6 first_project_reply=COLLABORATOR 2021-11-25
+#588 2021-05-11 comments=20 first_project_reply=COLLABORATOR 2021-05-11
+#565 2021-04-08 comments=15 first_project_reply=COLLABORATOR 2021-04-09
+#543 2021-02-19 comments=28 first_project_reply=CONTRIBUTOR 2021-02-19
+#534 2021-01-24 comments=1 first_project_reply=COLLABORATOR 2021-01-24
+#500 2020-12-05 comments=11 first_project_reply=COLLABORATOR 2020-12-06
+== standardrb/standard (label bug)
+== laravel/pint (label bug)
+== nbQA-dev/nbQA (any label, last 10 issues)
+#901 2026-04-30 comments=2 first_project_reply=COLLABORATOR 2026-04-30
+#893 2025-11-05 comments=3 first_project_reply=COLLABORATOR 2025-11-05
+#891 2025-09-13 comments=0 first_project_reply=none
+#889 2025-06-29 comments=1 first_project_reply=COLLABORATOR 2025-08-03
+#887 2025-06-03 comments=2 first_project_reply=COLLABORATOR 2025-06-05
+#885 2025-05-19 comments=2 first_project_reply=COLLABORATOR 2025-05-19
+#882 2025-04-02 comments=0 first_project_reply=none
+#880 2025-03-18 comments=2 first_project_reply=COLLABORATOR 2025-03-18
+== standardrb/standard (any label, last 10 issues)
+#834 2026-09-18 comments=2 first_project_reply=COLLABORATOR 2026-09-21
+#829 2026-08-26 comments=1 first_project_reply=none
+#828 2026-08-26 comments=1 first_project_reply=none
+#814 2026-06-29 comments=2 first_project_reply=CONTRIBUTOR 2026-06-29
+== laravel/pint (any label, last 10 issues)
+== PHPCSStandards/PHP_CodeSniffer (has_issues=true; any label, last 10 issues)
+#1497 2026-09-15 comments=4 first_project_reply=MEMBER 2026-09-16
+#1496 2026-09-11 comments=0 first_project_reply=none
+#1494 2026-09-07 comments=0 first_project_reply=none
+#1493 2026-09-07 comments=1 first_project_reply=none
+#1491 2026-09-04 comments=8 first_project_reply=MEMBER 2026-09-05
+#1481 2026-08-14 comments=8 first_project_reply=MEMBER 2026-08-14
+#1479 2026-08-11 comments=3 first_project_reply=MEMBER 2026-08-11
+#1472 2026-08-05 comments=0 first_project_reply=none
+#1460 2026-07-05 comments=0 first_project_reply=none
+== tombi-toml/tombi (has_issues=true; any label, last 10 issues)
+#2213 2026-09-26 comments=3 first_project_reply=COLLABORATOR 2026-09-27
+#2210 2026-09-25 comments=1 first_project_reply=COLLABORATOR 2026-09-27
+#2207 2026-09-22 comments=0 first_project_reply=none
+#2206 2026-09-22 comments=0 first_project_reply=none
+#2205 2026-09-22 comments=0 first_project_reply=none
+#2204 2026-09-22 comments=0 first_project_reply=none
+#2203 2026-09-22 comments=0 first_project_reply=none
+#2202 2026-09-22 comments=0 first_project_reply=none
+#2201 2026-09-22 comments=0 first_project_reply=none
+#2200 2026-09-22 comments=0 first_project_reply=none
+== kamadorueda/alejandra (has_issues=true; any label, last 10 issues)
+#491 2026-08-22 comments=1 first_project_reply=none
+#474 2026-01-13 comments=3 first_project_reply=OWNER 2026-03-28
+#472 2025-09-28 comments=0 first_project_reply=none
+#471 2025-09-24 comments=1 first_project_reply=none
+#470 2025-09-03 comments=0 first_project_reply=none
+#469 2025-08-16 comments=3 first_project_reply=none
+#468 2025-07-28 comments=0 first_project_reply=none
+#467 2025-07-22 comments=0 first_project_reply=none
+#463 2025-06-03 comments=0 first_project_reply=none
+#462 2025-05-31 comments=0 first_project_reply=none

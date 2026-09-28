@@ -1,0 +1,4 @@
+static: /opt/bin/kubectl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=1TznR9iszLe2VtBojPLF/xzv_CLw0uSTMwe1gdym0/N2vRLvF6bqTV29o-u4Yh/r3ASr-_mNunXzXKhV2-B, BuildID[sha1]=ea2f938fcf25fdc190fed106ee400df0a6e03116, stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: sideeye explore --state /s/kubectl --operation "kubectl config use-context b --kubeconfig /s/kubectl/config" \

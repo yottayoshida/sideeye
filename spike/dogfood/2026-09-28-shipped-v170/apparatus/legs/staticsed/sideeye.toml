@@ -1,0 +1,5 @@
+[world]
+state = "/s/leg-staticsed"
+
+[define]
+operation = "/bin/busybox sed -i s/one/uno/ /s/leg-staticsed/f.txt"

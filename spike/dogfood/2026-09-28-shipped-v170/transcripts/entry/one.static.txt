@@ -1,0 +1,2 @@
+static: /opt/py/bin/python3: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=9e7f76dabfdf1c3b469670d23239b2f4cb2743d1, for GNU/Linux 3.7.0, stripped
+next: sideeye explore --state /s/leg-one --operation "python3 /ap/toys/one.py /s/leg-one" \

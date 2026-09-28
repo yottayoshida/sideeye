@@ -1,0 +1,7 @@
+kubectl    seed=0 after-op=0 empty=1 half=1  (current-context is '', neither a nor b)
+terraform  seed=0 after-op=0 empty=1 half=1  (terraform cannot parse main.tf)
+sqruff     seed=0 after-op=0 empty=1 half=1  (a.sql is not the seed's query: 'selecta,bfr')
+nbqa       seed=0 after-op=0 empty=1 half=1  (nb.ipynb is not JSON: Unterminated string starting at: line 1 column 113 (char 112))
+standardrb seed=0 after-op=0 empty=1 half=1  (ruby cannot parse a.rb)
+pint       seed=0 after-op=0 empty=1 half=1  (php cannot parse a.php)
+phpcbf     seed=0 after-op=0 empty=1 half=1  (php cannot parse a.php)

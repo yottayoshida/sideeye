@@ -1,0 +1,237 @@
+fresh gofumpt
+SEEN  shfmt  b2-exclusions:202
+SEEN  shfmt  spike/dogfood/2026-09-06-userview-2/SELECTION.md:41
+SEEN  shfmt  spike/dogfood/2026-09-11-past-walls/SELECTION.md:33
+SEEN  shfmt  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  yq  b2-exclusions:234
+SEEN  yq  spike/dogfood/2026-09-06-userview-2/SELECTION.md:42
+SEEN  yq  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  yq  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+SEEN  dasel  spike/dogfood/2026-09-06-userview-2/SELECTION.md:43
+SEEN  dasel  spike/dogfood/2026-09-11-past-walls/SELECTION.md:33
+SEEN  dasel  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  dasel  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+SEEN  sops  spike/dogfood/2026-09-06-userview-2/SELECTION.md:44
+SEEN  sops  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  sops  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+fresh kubectl
+fresh helm
+SEEN  direnv  b2-exclusions:71
+SEEN  direnv  spike/dogfood/2026-09-05-userview/SELECTION.md:56
+SEEN  direnv  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  direnv  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  direnv  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+SEEN  mise  target-classes:54
+SEEN  mise  spike/dogfood/2026-09-05-userview/SELECTION.md:58
+SEEN  mise  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  mise  spike/dogfood/2026-09-11-read-only-542/SELECTION.md:25
+SEEN  mise  spike/dogfood/2026-09-16-cargo-v16/SELECTION.md:7
+SEEN  mise  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  mise  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+SEEN  zoxide  funnel:91
+SEEN  zoxide  target-classes:66
+SEEN  zoxide  b2-exclusions:235
+SEEN  zoxide  spike/dogfood/2026-09-16-userview-3/SELECTION.md:44
+SEEN  taplo  spike/dogfood/2026-09-06-userview-2/SELECTION.md:46
+SEEN  taplo  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  stylua  spike/dogfood/2026-09-16-userview-3/SELECTION.md:56
+SEEN  dprint  target-classes:140
+fresh biome
+SEEN  ruff  b2-exclusions:198
+SEEN  ruff  spike/dogfood/2026-09-06-userview-2/SELECTION.md:45
+SEEN  ruff  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  typos  b2-exclusions:216
+SEEN  typos  spike/dogfood/2026-09-16-userview-3/SELECTION.md:45
+SEEN  sd  funnel:46
+SEEN  sd  target-classes:45
+SEEN  sd  b2-exclusions:121
+SEEN  sd  b2-candidates:230
+SEEN  sd  spike/dogfood/2026-09-06-userview-2/SELECTION.md:54
+SEEN  sd  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  sd  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:124
+fresh yamlfmt
+SEEN  black  target-classes:32
+SEEN  black  b2-exclusions:46
+SEEN  black  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  black  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  black  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:51
+SEEN  autopep8  b2-exclusions:41
+SEEN  autopep8  spike/dogfood/2026-09-06-userview-2/SELECTION.md:274
+SEEN  autopep8  spike/dogfood/2026-09-16-userview-3/SELECTION.md:47
+SEEN  autoflake  b2-exclusions:40
+SEEN  autoflake  spike/dogfood/2026-09-06-userview-2/SELECTION.md:276
+SEEN  autoflake  spike/dogfood/2026-09-16-userview-3/SELECTION.md:48
+SEEN  yapf  b2-exclusions:233
+SEEN  yapf  spike/dogfood/2026-09-06-userview-2/SELECTION.md:268
+SEEN  yapf  spike/dogfood/2026-09-16-userview-3/SELECTION.md:46
+SEEN  sqlfluff  target-classes:49
+SEEN  sqlfluff  b2-exclusions:205
+SEEN  sqlfluff  spike/dogfood/2026-09-06-userview-2/SELECTION.md:39
+SEEN  sqlfluff  spike/dogfood/2026-09-11-past-walls/SELECTION.md:26
+SEEN  sqlfluff  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:34
+SEEN  sqlfluff  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  clang-format  b2-exclusions:61
+SEEN  clang-format  spike/dogfood/2026-09-16-userview-3/SELECTION.md:59
+SEEN  rubocop  funnel:84
+SEEN  rubocop  target-classes:59
+SEEN  rubocop  b2-exclusions:195
+SEEN  rubocop  spike/dogfood/2026-09-16-userview-3/SELECTION.md:41
+fresh standardrb
+SEEN  php-cs-fixer  spike/dogfood/2026-09-16-userview-3/SELECTION.md:57
+SEEN  tidy  b2-exclusions:211
+SEEN  tidy  spike/dogfood/2026-09-16-userview-3/SELECTION.md:51
+SEEN  exiftool  b2-exclusions:122
+SEEN  exiftool  spike/dogfood/2026-09-05-userview/SELECTION.md:55
+SEEN  exiftool  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  exiftool  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  pngquant  b2-exclusions:169
+SEEN  pngquant  b2-candidates:205
+SEEN  pngquant  spike/dogfood/2026-09-06-userview-2/SELECTION.md:190
+SEEN  gifsicle  b2-exclusions:83
+SEEN  gifsicle  b2-candidates:113
+SEEN  gifsicle  spike/dogfood/2026-09-06-userview-2/SELECTION.md:55
+SEEN  gifsicle  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  svgo  funnel:72
+SEEN  svgo  target-classes:69
+SEEN  svgo  b2-exclusions:147
+SEEN  svgo  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:59
+SEEN  jpegoptim  b2-exclusions:107
+SEEN  jpegoptim  b2-candidates:150
+SEEN  jpegoptim  spike/dogfood/2026-09-06-userview-2/SELECTION.md:57
+SEEN  jpegoptim  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  jpegoptim  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:58
+SEEN  optipng  b2-exclusions:153
+SEEN  optipng  b2-candidates:188
+SEEN  optipng  spike/dogfood/2026-09-05-userview/SELECTION.md:95
+SEEN  optipng  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  optipng  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+fresh zopfli
+SEEN  uncrustify  b2-exclusions:217
+SEEN  uncrustify  spike/dogfood/2026-09-16-userview-3/SELECTION.md:55
+SEEN  rustfmt  target-classes:33
+SEEN  rustfmt  b2-exclusions:201
+SEEN  rustfmt  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  rustfmt  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  rustfmt  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:51
+SEEN  jrnl  unknown-rate-exclusions:28
+SEEN  jrnl  blind-hunt3-taint:45
+SEEN  jrnl  b2-exclusions:108
+SEEN  jrnl  spike/dogfood/2026-09-05-userview/SELECTION.md:23
+SEEN  jrnl  spike/dogfood/2026-09-06-userview-2/SELECTION.md:26
+SEEN  jrnl  spike/dogfood/2026-09-16-userview-3/SELECTION.md:33
+SEEN  jrnl  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+SEEN  nb  funnel:103
+SEEN  nb  target-classes:20
+SEEN  nb  b2-exclusions:96
+SEEN  nb  b2-candidates:85
+SEEN  nb  spike/dogfood/2026-09-05-userview/SELECTION.md:23
+SEEN  nb  spike/dogfood/2026-09-06-userview-2/SELECTION.md:271
+SEEN  nb  spike/dogfood/2026-09-16-userview-3/SELECTION.md:111
+SEEN  nb  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+SEEN  nb  spike/authoring-cost/pool-scratch.txt:12
+fresh dstask
+fresh git-bug
+SEEN  topydo  funnel:104
+SEEN  topydo  target-classes:26
+SEEN  topydo  unknown-rate-exclusions:15
+SEEN  topydo  blind-hunt3-taint:5
+SEEN  topydo  spike/dogfood/2026-09-05-userview/SELECTION.md:26
+SEEN  topydo  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  topydo  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  khal  target-classes:27
+SEEN  khal  unknown-rate-exclusions:17
+SEEN  khal  blind-hunt3-taint:21
+SEEN  khal  b2-exclusions:112
+SEEN  khal  spike/dogfood/2026-09-05-userview/SELECTION.md:26
+SEEN  khal  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  khal  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  khard  unknown-rate-exclusions:30
+SEEN  khard  blind-hunt3-taint:5
+SEEN  khard  b2-exclusions:113
+SEEN  khard  spike/dogfood/2026-09-05-userview/SELECTION.md:26
+SEEN  khard  spike/dogfood/2026-09-06-userview-2/SELECTION.md:26
+SEEN  khard  spike/dogfood/2026-09-16-userview-3/SELECTION.md:33
+SEEN  khard  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+SEEN  calcurse  funnel:105
+SEEN  calcurse  target-classes:22
+SEEN  calcurse  unknown-rate-exclusions:19
+SEEN  calcurse  b2-exclusions:55
+SEEN  calcurse  b2-candidates:33
+SEEN  calcurse  spike/dogfood/2026-09-05-userview/SELECTION.md:26
+SEEN  calcurse  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  calcurse  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  remind  spike/dogfood/2026-09-21-release-path/SELECTION.md:88
+SEEN  hledger  unknown-rate-exclusions:12
+SEEN  hledger  blind-hunt3-taint:22
+SEEN  hledger  b2-exclusions:17
+SEEN  hledger  spike/dogfood/2026-09-05-userview/SELECTION.md:25
+SEEN  hledger  spike/dogfood/2026-09-06-userview-2/SELECTION.md:26
+SEEN  hledger  spike/dogfood/2026-09-16-userview-3/SELECTION.md:33
+SEEN  hledger  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+SEEN  trash-cli  funnel:110
+SEEN  trash-cli  target-classes:41
+SEEN  trash-cli  b2-exclusions:215
+SEEN  trash-cli  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  trash-cli  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  restic  b2-exclusions:188
+SEEN  restic  spike/dogfood/2026-09-05-userview/SELECTION.md:62
+SEEN  restic  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  restic  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  kopia  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:126
+SEEN  pre-commit  funnel:16
+SEEN  pre-commit  target-classes:47
+SEEN  pre-commit  b2-exclusions:171
+SEEN  pre-commit  spike/dogfood/2026-09-16-userview-3/SELECTION.md:78
+SEEN  pre-commit  spike/dogfood/2026-09-21-release-path/SELECTION.md:80
+SEEN  pre-commit  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:55
+SEEN  poetry  funnel:108
+SEEN  poetry  target-classes:34
+SEEN  poetry  b2-exclusions:170
+SEEN  poetry  spike/dogfood/2026-09-05-userview/SELECTION.md:59
+SEEN  poetry  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  poetry  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  uv  funnel:117
+SEEN  uv  target-classes:69
+SEEN  uv  b2-exclusions:220
+SEEN  uv  spike/dogfood/2026-09-05-userview/SELECTION.md:43
+SEEN  uv  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  uv  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:110
+SEEN  uv  spike/dogfood/2026-09-16-threads-take-turns/SELECTION.md:18
+SEEN  uv  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  uv  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:44
+SEEN  pdm  b2-exclusions:178
+SEEN  pdm  spike/dogfood/2026-09-05-userview/SELECTION.md:59
+SEEN  pdm  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  pdm  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  hatch  funnel:77
+SEEN  hatch  target-classes:73
+SEEN  hatch  b2-exclusions:94
+SEEN  hatch  spike/dogfood/2026-09-16-outside-git/SELECTION.md:42
+fresh bump-my-version
+SEEN  jupytext  b2-exclusions:110
+SEEN  jupytext  spike/dogfood/2026-09-06-userview-2/SELECTION.md:266
+SEEN  nbstripout  b2-exclusions:136
+SEEN  nbstripout  spike/dogfood/2026-09-06-userview-2/SELECTION.md:271
+fresh nbqa
+fresh blacken-docs
+SEEN  ssort  b2-candidates:181
+fresh usort
+fresh ufmt
+SEEN  google-java-format  funnel:67
+SEEN  google-java-format  target-classes:70
+SEEN  google-java-format  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:15
+fresh scalafmt
+fresh ktfmt
+SEEN  prettier  funnel:71
+SEEN  prettier  target-classes:69
+SEEN  prettier  b2-exclusions:146
+SEEN  prettier  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:58
+fresh markdownlint-cli2
+SEEN  buf  target-classes:52
+SEEN  buf  spike/dogfood/2026-09-06-userview-2/SELECTION.md:108
+fresh golines
+fresh goimports
+fresh cargo-sort
+fresh terraform
+fresh tflint
+fresh hclfmt

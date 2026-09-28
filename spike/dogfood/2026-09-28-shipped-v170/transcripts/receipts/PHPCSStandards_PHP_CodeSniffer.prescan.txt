@@ -1,0 +1,352 @@
+== novelty pre-scan: PHPCSStandards/PHP_CodeSniffer
+== date: 2026-09-28T00:46:04Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          3 hit(s) (all listed)
+      #152 open 2023-12-10 QA: standards should not have conflicting rules / fix fixer conflicts
+      #1112 closed 2025-06-04 `--parallel` option fails if pcntl_waitpid returns non-managed process ID
+      #996 merged 2025-04-15 Ruleset: remove test specific code 
+  corrupt        3 hit(s) (all listed)
+      #1417 open 2026-04-22 fix(PEAR.FunctionCallSignature): avoid reindenting heredoc/nowdoc blocks
+      #1493 open 2026-09-07 Generic.WhiteSpace.ScopeIndent: false positives and destructive fixer for code nested inside property hook bodies
+      #671 merged 2024-11-12 Generators: add initial set of tests
+  corruption     1 hit(s) (all listed)
+      #1111 closed 2025-06-03 Unable to Install PHPCS using PHIVE
+  truncated      41 hit(s) (all listed)
+      #1486 merged 2026-08-20 GH Actions: Bump the action-runners group with 2 updates
+      #1439 merged 2026-06-20 GH Pages/Actions: Bump shivammathur/setup-php from 2.37.0 to 2.37.2 in the action-runners group across 1 directory
+      #1465 merged 2026-07-20 GH Pages/Actions: Bump actions/checkout from 7.0.0 to 7.0.1 in the action-runners group
+      #1458 merged 2026-07-05 GH Actions: Bump actions/cache/restore from 5.0.5 to 6.1.0
+      #1456 merged 2026-07-05 GH Actions: Bump actions/cache/save from 5.0.5 to 6.1.0
+      #1334 merged 2025-12-01 GH Pages/Actions: Bump shivammathur/setup-php from 2.35.5 to 2.36.0 in the action-runners group
+      #1276 merged 2025-09-19 GH Pages/Actions: Bump shivammathur/setup-php from 2.35.4 to 2.35.5 in the action-runners group
+      #1340 merged 2025-12-15 GH Actions: Bump actions/cache from 4.3.0 to 5.0.1
+      #1196 merged 2025-08-18 GH Pages/Actions: Bump actions/checkout from 4 to 5
+      #1370 merged 2026-02-05 GH Pages/Actions: Bump actions/checkout from 6.0.1 to 6.0.2 in the action-runners group
+      #1459 merged 2026-07-05 GH Actions: Bump actions/checkout from 6.0.2 to 7.0.0
+      #1454 merged 2026-07-05 GH Pages/Actions: Bump actions/checkout from 6.0.2 to 7.0.0
+      #1466 merged 2026-07-20 GH Actions: Bump the action-runners group with 6 updates
+      #1329 merged 2025-11-24 GH Pages/Actions: Bump actions/checkout from 5.0.0 to 6.0.0
+      #1431 closed 2026-06-05 GH Pages/Actions: Bump the action-runners group across 1 directory with 2 updates
+      #1441 merged 2026-06-20 GH Actions: Bump the action-runners group across 1 directory with 8 updates
+      #1440 closed 2026-06-20 GH Actions: Bump the action-runners group across 1 directory with 9 updates
+      #1432 closed 2026-06-05 GH Actions: Bump the action-runners group across 1 directory with 4 updates
+      #1416 merged 2026-04-20 GH Actions: Bump the action-runners group with 4 updates
+      #1398 closed 2026-03-20 GH Actions: Bump the action-runners group with 3 updates
+  truncate       41 hit(s) (all listed)
+      #1486 merged 2026-08-20 GH Actions: Bump the action-runners group with 2 updates
+      #1439 merged 2026-06-20 GH Pages/Actions: Bump shivammathur/setup-php from 2.37.0 to 2.37.2 in the action-runners group across 1 directory
+      #1465 merged 2026-07-20 GH Pages/Actions: Bump actions/checkout from 7.0.0 to 7.0.1 in the action-runners group
+      #1458 merged 2026-07-05 GH Actions: Bump actions/cache/restore from 5.0.5 to 6.1.0
+      #1456 merged 2026-07-05 GH Actions: Bump actions/cache/save from 5.0.5 to 6.1.0
+      #1334 merged 2025-12-01 GH Pages/Actions: Bump shivammathur/setup-php from 2.35.5 to 2.36.0 in the action-runners group
+      #1276 merged 2025-09-19 GH Pages/Actions: Bump shivammathur/setup-php from 2.35.4 to 2.35.5 in the action-runners group
+      #1340 merged 2025-12-15 GH Actions: Bump actions/cache from 4.3.0 to 5.0.1
+      #1196 merged 2025-08-18 GH Pages/Actions: Bump actions/checkout from 4 to 5
+      #1370 merged 2026-02-05 GH Pages/Actions: Bump actions/checkout from 6.0.1 to 6.0.2 in the action-runners group
+      #1459 merged 2026-07-05 GH Actions: Bump actions/checkout from 6.0.2 to 7.0.0
+      #1454 merged 2026-07-05 GH Pages/Actions: Bump actions/checkout from 6.0.2 to 7.0.0
+      #1466 merged 2026-07-20 GH Actions: Bump the action-runners group with 6 updates
+      #1329 merged 2025-11-24 GH Pages/Actions: Bump actions/checkout from 5.0.0 to 6.0.0
+      #1431 closed 2026-06-05 GH Pages/Actions: Bump the action-runners group across 1 directory with 2 updates
+      #1441 merged 2026-06-20 GH Actions: Bump the action-runners group across 1 directory with 8 updates
+      #1197 closed 2025-08-21 Squiz.Commenting.FunctionComment truncates class name if it contains underscores
+      #1198 merged 2025-08-21 Squiz/FunctionComment: bug fix - classnames with underscores truncate the return type
+      #1440 closed 2026-06-20 GH Actions: Bump the action-runners group across 1 directory with 9 updates
+      #1432 closed 2026-06-05 GH Actions: Bump the action-runners group across 1 directory with 4 updates
+  empty          92 hit(s) (all listed)
+      #1433 open 2026-06-07 @param with empty type: Tag value for @param tag indented incorrectly
+      #1495 open 2026-09-07 Tokenizer/PHP: fix ? tokenization in property hook parameters
+      #483 open 2024-05-07 Generic/InlineControlStructure: two issues when fixing some do-while statements 
+      #1291 open 2025-10-11 Runner: allow suppressing "No files were checked" error
+      #9 open 2023-11-08 Handling of list() language construct
+      #1480 open 2026-08-13 Util/Cache: add unit tests
+      #863 open 2025-03-07 Rule `<exclude-pattern>` with `type="relative"` don't work
+      #1460 open 2026-07-05 Stacked `case` Statements with Comments in Between Incorrectly Flagged Indentation
+      #512 open 2024-05-23 Squiz.NamingConventions.ValidVariableName.NotCamelCaps + property promotion = false positive
+      #1282 open 2025-09-23 Check handling of attributes on function declaration parameters
+      #1145 open 2025-06-18 Generic/OpeningFunctionBraceBsdAllman: potential minor bug when fixing the `BraceOnSameLine` error
+      #1451 closed 2026-07-01 Tokenizer: fatal error when a `const` name is the last non-empty token in a file
+      #1461 merged 2026-07-06 Tokenizer/PHP: fix error when a const name is the last non-empty token in a file
+      #17 open 2023-11-08 Feature suggestion: Improve information available about installed standards
+      #1462 closed 2026-07-10 Tokenizer/PHP: prevent fatal error on unfinished const declaration
+      #966 open 2025-04-13 Investigate use of `PHP_CODESNIFFER_IN_TESTS` in src code
+      #1081 open 2025-05-06 Excluding a class of rules via `<exclude name="xxx"/>`, inside a ruleset ... globally excludes them ...
+      #662 open 2024-11-09 Use ANSI color codes and Unicode characters on Windows as well
+      #29 open 2023-11-08 PSR-PER 2.0.0 has been released
+      #38 open 2023-11-09 Avoid incompatibility between `Generic` and `PSR2` standards for function call indentation
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1490 open 2026-08-26 Squiz/SwitchDeclaration: remove duplicate strtoupper($type) calls
+      #1481 open 2026-08-14 False positive for Squiz.PHP.DisallowComparisonAssignment.AssignedComparison
+      #1482 open 2026-08-14 Update DisallowComparisonAssignmentSniff.php #1481
+      #1489 open 2026-08-26 PSR2/SwitchDeclaration: remove dead code, bow out on parse errors
+      #1442 open 2026-06-22 PHP 8.4 | Tokenizer/PHP: property hooks
+      #451 open 2024-04-15 [Documentation] Squiz: Function Spacing
+      #1396 open 2026-03-17 Add support to use short forms of type keywords
+      #1425 open 2026-05-07 Add test for processing hidden files
+      #1424 open 2026-05-07 Add hidden file to Filter/AcceptTest
+      #1350 open 2025-12-23 Handle parse error in File::getMethodProperties()
+      #1292 open 2025-10-11 Define polyfilled T_* constants from Tokenizer as int
+      #1366 open 2026-02-03 Generic.WhiteSpace.ScopeIndent: Fix multi-line extends/implements indentation
+      #844 open 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ClassDeclaration sniff
+      #375 open 2024-03-03 Ensure that Fixer::endChangeset() returns the real outcome
+      #1444 merged 2026-06-24 Generic/MultipleStatementAlignment: fix wrapped chained assignment
+      #1453 merged 2026-07-03 Squiz/MultiLineFunctionDeclaration: use placeholders in error messages
+      #1452 merged 2026-07-02 Squiz/FunctionDeclarationArgumentSpacing: use placeholders in error messages
+      #1446 merged 2026-06-27 PSR2/ClassDeclarationSniff: use placeholders in error messages
+      #1449 merged 2026-07-01 Squiz/SwitchDeclarationSniff: use placeholders in error messages
+      #1447 merged 2026-06-29 PSR2/SwitchDeclarationSniff: use placeholders in error messages
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #791 merged 2025-01-23 GH Actions/quicktest: use Linux Arm64
+  interrupt      2 hit(s) (all listed)
+      #184 closed 2023-12-25 4.0 | Revise exit codes for PHPCS and PHPCBF commands
+      #791 merged 2025-01-23 GH Actions/quicktest: use Linux Arm64
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          6 hit(s) (all listed)
+      #9 open 2023-11-08 Handling of list() language construct
+      #1403 closed 2026-03-26 Handle //*/ trick with an option to Squiz.Commenting.BlockComment.CloserSameLine and Squiz.Commenting.InlineComment.NoSpaceBefore
+      #791 merged 2025-01-23 GH Actions/quicktest: use Linux Arm64
+      #826 merged 2025-02-16 Squiz/FunctionSpacing: bug fix for attribute handling
+      #184 closed 2023-12-25 4.0 | Revise exit codes for PHPCS and PHPCBF commands
+      #154 merged 2023-12-10 Report Full: fix delimiter line bug
+  outage         6 hit(s) (all listed)
+      #1450 open 2026-07-01 Generators: display a message when no documentation is available
+      #815 open 2025-02-12 PSR2/NamespaceDeclaration: do not enforce new line in inline HTML
+      #1156 merged 2025-06-30 Make the PHAR "website" a little more fancy
+      #1129 merged 2025-06-12 Changelog for the 3.13.1 release
+      #1130 merged 2025-06-13 Update for new GPG keys
+      #816 merged 2025-02-12 File::getDeclarationName(): prevent incorrect result during live coding 
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #38 open 2023-11-09 Avoid incompatibility between `Generic` and `PSR2` standards for function call indentation
+      #996 merged 2025-04-15 Ruleset: remove test specific code 
+  partial        15 hit(s) (all listed)
+      #844 open 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ClassDeclaration sniff
+      #24 open 2023-11-08 PHP 8.0 | Tokenizer: Handle reserved keywords being used in namespaced names
+      #1282 open 2025-09-23 Check handling of attributes on function declaration parameters
+      #1364 open 2026-01-25 Tentatively explore making PHPCSUtils a runtime dependency
+      #1048 merged 2025-04-25 Fixer::fixFile(): bug fix for incorrect return value
+      #390 closed 2024-03-13 4.0 | Proposal: add parameter types to methods in PHPCS
+      #1156 merged 2025-06-30 Make the PHAR "website" a little more fancy
+      #848 merged 2025-02-27 [Docs] Add XML doc for Squiz.Commenting.BlockComment sniff
+      #689 closed 2024-11-15 4.0 | Formally stop support for sniffs not complying with the PHPCS naming conventions
+      #842 merged 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ValidClassName sniff
+      #843 merged 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ClassFileName sniff
+      #547 merged 2024-07-14 Add test file for PSR12.Operators.OperatorSpacing
+      #178 closed 2023-12-21 Squiz/VariableComment: incorrectly flags missing docblock for properties with union/intersection type
+      #103 merged 2023-11-13 GH Actions: Bump actions/checkout from 3 to 4
+      #86 merged 2023-11-11 GH Actions: Bump actions/checkout from 3 to 4
+  incomplete     15 hit(s) (all listed)
+      #1303 open 2025-11-04 Consider a generic token to indicate that code is incomplete
+      #1253 open 2025-09-13 Set up `.git-blame-ignore-revs`
+      #1392 open 2026-03-09 PHP extension detection and requirements documentation
+      #1357 closed 2026-01-08 Squiz.Scope.StaticThisUsage false positive for Closure::bind closure inside static method
+      #1230 merged 2025-09-10 PHP 8.5 | Tokenizer/PHP: properly fix "Using null as an array offset" deprecation
+      #998 merged 2025-04-15 AbstractSniffTestCase: mark sniff tests without test case files as incomplete
+      #780 closed 2025-01-06 Proposal: flag regular PHP  comments with PHPDoc tags and convert them to DocBlocks
+      #123 merged 2023-12-04 Improve handling of disable/enable/ignore directives
+      #858 closed 2025-03-06 4.0 | Removed feature support: error or warning ?
+      #184 closed 2023-12-25 4.0 | Revise exit codes for PHPCS and PHPCBF commands
+      #663 merged 2024-11-11 Tests: Add unit tests for Common::prepareForOutput()
+      #524 merged 2024-06-05 Common::getSniffCode(): add tests, more defensive coding and minor simplification
+      #748 merged 2024-11-29 Squiz/ArrayDeclaration: fixes false positive when handling short lists inside `foreach`
+      #571 closed 2024-07-22 Incomplete <exclude> rule causes following rules not to be executed
+      #857 merged 2025-03-06 Ruleset: improve error handling
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #750 closed 2024-12-02 Squiz/FunctionComment: support generics in docblock
+  recovery       0 hit(s)
+  rollback       2 hit(s) (all listed)
+      #375 open 2024-03-03 Ensure that Fixer::endChangeset() returns the real outcome
+      #589 open 2024-08-08 PSR2/PSR12 SwitchDeclarationSniff fatal error
+  resume         2 hit(s) (all listed)
+      #1010 merged 2025-04-15 (Nearly) All status, debug, and progress output is now sent to STDERR instead of STDOUT
+      #571 closed 2024-07-22 Incomplete <exclude> rule causes following rules not to be executed
+  half-written   1 hit(s) (all listed)
+      #1491 open 2026-09-04 Proposal: sniff for invisible characters in hard-coded identifier names
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        5 hit(s) (all listed)
+      #521 open 2024-06-05 QA: review stray variables after loops
+      #425 open 2024-03-30 PSR2.Classes.ClassDeclaration: thorough review of the sniff code
+      #576 merged 2024-07-27 Tests: stability tweaks for the non-sniff tests
+      #424 merged 2024-03-29 PSR2/ClassDeclaration: support namespace relative names / prevent fixer conflict
+      #259 closed 2024-01-14 Keep Installed Paths When Upgrading Versions
+  destroys       1 hit(s) (all listed)
+      #259 closed 2024-01-14 Keep Installed Paths When Upgrading Versions
+  overwrite      82 hit(s) (all listed)
+      #1479 open 2026-08-11 Allow result cache keys to be relative to a checkout directory
+      #1292 open 2025-10-11 Define polyfilled T_* constants from Tokenizer as int
+      #1276 merged 2025-09-19 GH Pages/Actions: Bump shivammathur/setup-php from 2.35.4 to 2.35.5 in the action-runners group
+      #1492 merged 2026-09-05 GH Pages/Actions: Bump actions/deploy-pages from 5.0.0 to 5.0.1 in the action-runners group
+      #1486 merged 2026-08-20 GH Actions: Bump the action-runners group with 2 updates
+      #1470 merged 2026-08-01 GH Actions: Bump the action-runners group with 2 updates
+      #1467 merged 2026-07-20 GH Actions: Bump actions/setup-node from 6.4.0 to 7.0.0
+      #1457 merged 2026-07-05 GH Actions: Bump phpcsstandards/xmllint-validate from 1.0.1 to 2.0.0
+      #1415 merged 2026-04-20 GH Pages/Actions: Bump actions/upload-pages-artifact from 4.0.0 to 5.0.0
+      #1341 merged 2025-12-15 GH Actions: Bump peter-evans/create-pull-request from 7.0.11 to 8.0.0
+      #1342 merged 2025-12-15 GH Actions: Bump actions/upload-artifact from 5.0.0 to 6.0.0
+      #1439 merged 2026-06-20 GH Pages/Actions: Bump shivammathur/setup-php from 2.37.0 to 2.37.2 in the action-runners group across 1 directory
+      #1337 merged 2025-12-08 GH Pages/Actions: Bump actions/checkout from 6.0.0 to 6.0.1 in the action-runners group
+      #1343 merged 2025-12-15 GH Actions: Bump actions/download-artifact from 6.0.0 to 7.0.0
+      #1465 merged 2026-07-20 GH Pages/Actions: Bump actions/checkout from 7.0.0 to 7.0.1 in the action-runners group
+      #1458 merged 2026-07-05 GH Actions: Bump actions/cache/restore from 5.0.5 to 6.1.0
+      #1456 merged 2026-07-05 GH Actions: Bump actions/cache/save from 5.0.5 to 6.1.0
+      #1407 merged 2026-04-05 GH Pages/Actions: Bump actions/configure-pages from 5.0.0 to 6.0.0
+      #1406 merged 2026-04-05 GH Pages/Actions: Bump actions/deploy-pages from 4.0.5 to 5.0.0
+      #1397 merged 2026-03-20 GH Pages/Actions: Bump shivammathur/setup-php from 2.36.0 to 2.37.0 in the action-runners group
+  clobber        0 hit(s)
+  blank          50 hit(s) (all listed)
+      #1231 open 2025-09-10 Tokenizer/PHP: investigate/review handling of "blanked out" tokens
+      #1282 open 2025-09-23 Check handling of attributes on function declaration parameters
+      #425 open 2024-03-30 PSR2.Classes.ClassDeclaration: thorough review of the sniff code
+      #21 open 2023-11-08 PSR12.Files.FileHeader: false positive when there is no header
+      #1202 open 2025-08-28 sniff for attributes being multiline
+      #1314 open 2025-11-09 Squiz.ControlStructures.SwitchDeclaration: thorough review of the sniff code
+      #815 open 2025-02-12 PSR2/NamespaceDeclaration: do not enforce new line in inline HTML
+      #577 open 2024-07-27 `phpcs-only` attribute is not always respected
+      #1253 open 2025-09-13 Set up `.git-blame-ignore-revs`
+      #451 open 2024-04-15 [Documentation] Squiz: Function Spacing
+      #1448 merged 2026-07-01 Tokenizer/PHP: fix tokenizer error for a line comment before a ternary colon
+      #1354 merged 2025-12-29 Avoid PHP error on parse error in `PSR12.Functions.ReturnTypeDeclaration`
+      #1315 merged 2025-11-10 Squiz/SwitchDeclaration: bug fix - fixer conflict for single line code
+      #1243 merged 2025-09-12 CS: normalize code style rules [5]
+      #155 closed 2023-12-10 QA: "normalize" the code style rules used by this code base a little
+      #830 merged 2025-02-18 PEAR/FunctionComment: bug fix - handling of blank lines in pre-amble
+      #840 merged 2025-02-21 Squiz/MemberVarSpacing: bug fix - handling of blank lines in pre-amble 
+      #35 merged 2023-11-09 4.0 | PSR12/FileHeader: make "SpacingAfter" and "SpacingInside" errorcodes modular
+      #945 closed 2025-04-08 New warning about function spacing since version 3.12.0
+      #1098 merged 2025-05-16 Squiz/FunctionOpeningBraceSpace: update XML doc
+  unreadable     1 hit(s) (all listed)
+      #1311 open 2025-11-08 Fatal error when PHPCS tries to create a `LocalFile` object for a symlinked directory on Windows
+  garbage        0 hit(s)
+  mangled        1 hit(s) (all listed)
+      #421 merged 2024-03-29 File::getMethodProperties(): skip over closure use statements
+  contents       39 hit(s) (all listed)
+      #1460 open 2026-07-05 Stacked `case` Statements with Comments in Between Incorrectly Flagged Indentation
+      #682 open 2024-11-13 Generic/LowercasedFilename: sniff doesn't handle non-ANSII characters properly
+      #811 open 2025-02-11 PHPDoc type definitions - what's the standard we follow?
+      #1146 open 2025-06-20 Squiz.Arrays.ArrayDeclaration.ValueNoNewline false positive with anonymous classes
+      #1073 open 2025-05-02 "Referenced sniff does not exist" error when ruleset was auto-discovered via path traversal
+      #1373 open 2026-02-19 Report types "source" and "summary" appear to be swapped
+      #1263 open 2025-09-16 Load CodeSniffer.conf also from current dir, make it confgurable
+      #1356 open 2026-01-06 PSR12/OperatorSpacing: add perCompatible property to not check union type operator spacing in catch() statements
+      #1430 closed 2026-05-22 PHP on node.js, no LOCK_EX, added a method to allow cacheFileReport to append to reports when LOCK_EX is missing
+      #1280 merged 2025-09-22 Tokenizer/PHP: fix tokens missing/file content being removed by attribute retokenization
+      #1082 closed 2025-05-07 Use the new exit codes when fixing code provided via STDIN
+      #107 closed 2023-11-24 Make the PHAR "website" a little more fancy
+      #1097 merged 2025-05-14 GH Actions: auto-trigger update of schema website
+      #1151 merged 2025-06-26 Generic/Syntax: add support for inspecting code passed via STDIN
+      #1126 closed 2025-06-06 fix: Check that the result of pcntl_waitpid is the PID of a managed process
+      #933 merged 2025-04-05 AttributesTest: simplify test code
+      #390 closed 2024-03-13 4.0 | Proposal: add parameter types to methods in PHPCS
+      #848 merged 2025-02-27 [Docs] Add XML doc for Squiz.Commenting.BlockComment sniff
+      #816 merged 2025-02-12 File::getDeclarationName(): prevent incorrect result during live coding 
+      #996 merged 2025-04-15 Ruleset: remove test specific code 
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1109 open 2025-05-29 `where` output on Windows may contain multiple paths
+      #1497 open 2026-09-15 Support standard, category, sniff, and error codes in `--sniff` and `--exclude`
+      #440 open 2024-04-10 Generic.CodeAnalysis.JumbledIncrementer: improve the actionability of the error messages
+      #1479 open 2026-08-11 Allow result cache keys to be relative to a checkout directory
+      #1312 open 2025-11-08 Generic/ScopeIndent: false positive with nested closures
+      #787 open 2025-01-19 ANSI colors in JSON report
+      #451 open 2024-04-15 [Documentation] Squiz: Function Spacing
+      #578 open 2024-07-27 Rewrite `PSR12.Files.DeclareStatement` sniff
+      #577 open 2024-07-27 `phpcs-only` attribute is not always respected
+      #1427 open 2026-05-18 report-checkstyle arg is not creating parent direcories and failes when missing
+      #1231 open 2025-09-10 Tokenizer/PHP: investigate/review handling of "blanked out" tokens
+      #969 open 2025-04-14 Auto-detect colour support for output
+      #1356 open 2026-01-06 PSR12/OperatorSpacing: add perCompatible property to not check union type operator spacing in catch() statements
+      #734 open 2024-11-26 Support new PHP 8.4 syntaxes
+      #1310 open 2025-11-07 add a getter for PHP_CodeSniffer\Files\File::$content
+      #29 open 2023-11-08 PSR-PER 2.0.0 has been released
+      #485 open 2024-05-08 Allow phpcbf to use the cache
+      #337 open 2024-02-15 Weird indentation for lines with more complex HTML & PHP code
+      #1491 open 2026-09-04 Proposal: sniff for invisible characters in hard-coded identifier names
+      #1423 open 2026-04-29 Undefined array key "parenthesis_closer"
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #1296 merged 2025-10-23 Runner: add test for "out of memory" shutdown handler
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #38 open 2023-11-09 Avoid incompatibility between `Generic` and `PSR2` standards for function call indentation
+  data+loss      0 hit(s)
+  partial+write  3 hit(s) (all listed)
+      #844 open 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ClassDeclaration sniff
+      #1048 merged 2025-04-25 Fixer::fixFile(): bug fix for incorrect return value
+      #843 merged 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ClassFileName sniff
+  crash+safe     0 hit(s)
+  atomic+write   47 hit(s) (all listed)
+      #1490 open 2026-08-26 Squiz/SwitchDeclaration: remove duplicate strtoupper($type) calls
+      #1482 open 2026-08-14 Update DisallowComparisonAssignmentSniff.php #1481
+      #1489 open 2026-08-26 PSR2/SwitchDeclaration: remove dead code, bow out on parse errors
+      #1425 open 2026-05-07 Add test for processing hidden files
+      #1424 open 2026-05-07 Add hidden file to Filter/AcceptTest
+      #844 open 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ClassDeclaration sniff
+      #375 open 2024-03-03 Ensure that Fixer::endChangeset() returns the real outcome
+      #1453 merged 2026-07-03 Squiz/MultiLineFunctionDeclaration: use placeholders in error messages
+      #1430 closed 2026-05-22 PHP on node.js, no LOCK_EX, added a method to allow cacheFileReport to append to reports when LOCK_EX is missing
+      #1452 merged 2026-07-02 Squiz/FunctionDeclarationArgumentSpacing: use placeholders in error messages
+      #1446 merged 2026-06-27 PSR2/ClassDeclarationSniff: use placeholders in error messages
+      #1449 merged 2026-07-01 Squiz/SwitchDeclarationSniff: use placeholders in error messages
+      #1447 merged 2026-06-29 PSR2/SwitchDeclarationSniff: use placeholders in error messages
+      #1445 merged 2026-06-25 PEAR/FunctionDeclarationSniff: use placeholders in error messages
+      #1360 merged 2026-01-16 PSR2.Classes.PropertyDeclaration: add T_STATIC to tokens list
+      #1359 closed 2026-01-16 Tokens: add CLASS_MODIFIERS and PROPERTY_MODIFIERS constants
+      #1358 merged 2026-01-09 PSR2 WrongOpenercase with colon and bracket is unclear
+      #1308 merged 2025-11-04 Fix wrong indentation with arrow function
+      #1204 closed 2025-08-30 Add option to allow heredoc after function open bracket
+      #1190 closed 2025-08-12 Add a new report for GitHub Actions annotations
+  lock+file      11 hit(s) (all listed)
+      #1430 closed 2026-05-22 PHP on node.js, no LOCK_EX, added a method to allow cacheFileReport to append to reports when LOCK_EX is missing
+      #1343 merged 2025-12-15 GH Actions: Bump actions/download-artifact from 6.0.0 to 7.0.0
+      #1342 merged 2025-12-15 GH Actions: Bump actions/upload-artifact from 5.0.0 to 6.0.0
+      #1340 merged 2025-12-15 GH Actions: Bump actions/cache from 4.3.0 to 5.0.1
+      #1399 merged 2026-03-20 GH Actions: Bump ramsey/composer-install from 3.1.1 to 4.0.0
+      #1398 closed 2026-03-20 GH Actions: Bump the action-runners group with 3 updates
+      #1401 merged 2026-03-20 GH Actions: Bump the action-runners group across 1 directory with 7 updates
+      #1157 closed 2025-07-01 Bad tag for v4.0.0-beta1 causing composer update to fail
+      #1126 closed 2025-06-06 fix: Check that the result of pcntl_waitpid is the PID of a managed process
+      #456 merged 2024-04-19 Composer: avoid writing a lock file
+      #376 merged 2024-03-04 GH Actions: Bump ramsey/composer-install from 2 to 3
+  write+failure  4 hit(s) (all listed)
+      #1491 open 2026-09-04 Proposal: sniff for invisible characters in hard-coded identifier names
+      #1292 open 2025-10-11 Define polyfilled T_* constants from Tokenizer as int
+      #1419 closed 2026-04-28 Use work-stealing scheduler for parallel runs
+      #1371 merged 2026-02-05 GH Actions: Bump the action-runners group with 4 updates
+  file+contents  27 hit(s) (all listed)
+      #1460 open 2026-07-05 Stacked `case` Statements with Comments in Between Incorrectly Flagged Indentation
+      #682 open 2024-11-13 Generic/LowercasedFilename: sniff doesn't handle non-ANSII characters properly
+      #1073 open 2025-05-02 "Referenced sniff does not exist" error when ruleset was auto-discovered via path traversal
+      #1373 open 2026-02-19 Report types "source" and "summary" appear to be swapped
+      #1263 open 2025-09-16 Load CodeSniffer.conf also from current dir, make it confgurable
+      #1356 open 2026-01-06 PSR12/OperatorSpacing: add perCompatible property to not check union type operator spacing in catch() statements
+      #1430 closed 2026-05-22 PHP on node.js, no LOCK_EX, added a method to allow cacheFileReport to append to reports when LOCK_EX is missing
+      #1280 merged 2025-09-22 Tokenizer/PHP: fix tokens missing/file content being removed by attribute retokenization
+      #1082 closed 2025-05-07 Use the new exit codes when fixing code provided via STDIN
+      #107 closed 2023-11-24 Make the PHAR "website" a little more fancy
+      #390 closed 2024-03-13 4.0 | Proposal: add parameter types to methods in PHPCS
+      #1126 closed 2025-06-06 fix: Check that the result of pcntl_waitpid is the PID of a managed process
+      #1097 merged 2025-05-14 GH Actions: auto-trigger update of schema website
+      #1151 merged 2025-06-26 Generic/Syntax: add support for inspecting code passed via STDIN
+      #996 merged 2025-04-15 Ruleset: remove test specific code 
+      #1020 merged 2025-04-17 Tokenizer/PHP: namespaced names as single token, mirroring PHP 8.0+ 
+      #816 merged 2025-02-12 File::getDeclarationName(): prevent incorrect result during live coding 
+      #848 merged 2025-02-27 [Docs] Add XML doc for Squiz.Commenting.BlockComment sniff
+      #843 merged 2025-02-25 [Docs] Add XML doc for Squiz.Classes.ClassFileName sniff
+      #857 merged 2025-03-06 Ruleset: improve error handling
+
+== 51 terms run; 33 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

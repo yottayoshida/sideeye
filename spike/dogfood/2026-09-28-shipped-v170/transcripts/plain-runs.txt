@@ -1,0 +1,19 @@
+alejandra   rc=0 CHANGED  
+biome       rc=0 CHANGED  Formatted 1 file in 3ms. Fixed 1 file.
+gofumpt     rc=0 CHANGED  
+helm        rc=0 CHANGED  "b" has been removed from your repositories
+jsonnetfmt  rc=0 CHANGED  a.jsonnet
+ktfmt       rc=0 CHANGED  Done formatting a.kt
+kubectl     rc=0 CHANGED  Switched to context "b".
+nbqa        rc=0 CHANGED  reformatted nb.ipynb  All done! ✨ 🍰 ✨ 1 file reformatted.
+oxfmt       rc=0 CHANGED  Finished in 5ms on 1 files using 10 threads. No config found, using defaults. Please add a config file or try 
+pg_format   rc=0 CHANGED  
+phpcbf      rc=0 CHANGED   PHPCBF RESULT SUMMARY ---------------------------------------------------------------------- FILE            
+pint        rc=0 CHANGED     ✓    ─────────────────────────────────�
+rumdl       rc=0 CHANGED  a.md:1:1: [MD022] Expected 1 blank line below heading [fixed] a.md:3:1: [MD032] List should be preceded by bla
+scalafmt    rc=0 CHANGED  
+sqruff      rc=0 CHANGED  == [a.sql] FAIL L:   1 | P:  10 | LT01 | Expected single whitespace between "," and "b".                      
+standardrb  rc=0 CHANGED  
+terraform   rc=0 CHANGED  main.tf
+tombi       rc=0 CHANGED  1 file formatted
+yamlfmt     rc=0 CHANGED  

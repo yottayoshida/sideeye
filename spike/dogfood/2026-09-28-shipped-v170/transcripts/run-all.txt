@@ -1,0 +1,28 @@
+=== kubectl 00:51:43
+/ap/run.sh: 61: Syntax error: Unterminated quoted string
+=== terraform 00:51:43
+explore exit 2: UNKNOWN no_shim_marker
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+=== sqruff 00:51:44
+explore exit 2: UNKNOWN no_shim_marker
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+=== nbqa 00:51:45
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== standardrb 00:51:53
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== phpcbf 00:52:19
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

@@ -1,0 +1,15 @@
+### default  /usr/bin/touch
+UNKNOWN  state_changed_without_ops
+         the state directory changed while zero mutating operations were recorded: operations were missed
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+rc=0
+### supervised  /usr/bin/touch
+UNKNOWN  state_changed_without_ops
+         the state directory changed while zero mutating operations were recorded: operations were missed
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+rc=0
+### supervised  /bin/busybox touch
+UNKNOWN  state_changed_without_ops
+         the state directory changed while zero mutating operations were recorded: operations were missed
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+rc=0

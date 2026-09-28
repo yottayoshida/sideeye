@@ -1,0 +1,56 @@
+SEEN  just  spike/dogfood/2026-09-06-imagemagick-refix/SELECTION.md:19
+SEEN  just  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+SEEN  shellharden  spike/dogfood/2026-09-16-userview-3/SELECTION.md:52
+fresh topiary
+SEEN  deno  target-classes:85
+SEEN  deno  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+SEEN  deno  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:8
+SEEN  zig  target-classes:92
+SEEN  zig  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:18
+SEEN  zig  spike/dogfood/2026-09-16-outside-git/SELECTION.md:17
+SEEN  zig  spike/dogfood/2026-09-21-release-path/SELECTION.md:5
+fresh pip-tools
+fresh pip-compile
+fresh pgFormatter
+fresh pg_format
+fresh alejandra
+fresh nixfmt
+fresh fourmolu
+fresh ocamlformat
+fresh perltidy
+fresh rumdl
+fresh tombi
+fresh oxlint
+fresh oxfmt
+fresh pyproject-fmt
+SEEN  copier  b2-exclusions:174
+SEEN  copier  spike/dogfood/2026-09-06-userview-2/SELECTION.md:267
+fresh sqruff
+fresh dart
+fresh statix
+SEEN  xmlstarlet  b2-exclusions:230
+SEEN  xmlstarlet  spike/dogfood/2026-09-06-userview-2/SELECTION.md:192
+SEEN  xmlstarlet  spike/authoring-cost/pool-atomic.txt:8
+fresh jsonnetfmt
+fresh cabal-fmt
+fresh hindent
+fresh leptosfmt
+fresh rustywind
+SEEN  harper  target-classes:89
+SEEN  harper  spike/dogfood/2026-09-06-userview-2/SELECTION.md:149
+fresh refurb
+fresh cruft
+SEEN  pipx  b2-exclusions:168
+SEEN  pipx  spike/dogfood/2026-09-16-userview-3/SELECTION.md:97
+SEEN  pipx  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+fresh swiftformat
+fresh swiftlint
+fresh luacheck
+SEEN  stylish  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:35
+fresh pint
+fresh laravel-pint
+fresh phpcbf
+fresh elm-format
+fresh purty
+fresh zprint
+fresh cljfmt

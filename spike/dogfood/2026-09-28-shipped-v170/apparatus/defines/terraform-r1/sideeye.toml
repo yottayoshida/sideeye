@@ -1,0 +1,9 @@
+# Revision 1 (after the result of ../terraform): the operation's image named by absolute path, the
+# one change a user makes when the refusal says Sideeye did not resolve it. Nothing else differs.
+[world]
+state = "/s/terraform/proj"
+
+[define]
+operation = "/opt/bin/terraform fmt"
+cwd       = "/s/terraform/proj"
+check     = "/ap/defines/terraform-r1/check.sh"

@@ -1,0 +1,4 @@
+static: /opt/bin/terraform: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=enxA4gTmEw7cdv1cmsFx/upfCedy0mD1ywSm0qA1S/CHZnQHdYAZxPIjuewAz9/HaXgQct1axSB5QBjtio2, BuildID[sha1]=8399b7f2969eb8bf5d513788e0425a9369be8c15, stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: sideeye explore --state /s/terraform/proj --cwd "/s/terraform/proj" --operation "terraform fmt" \

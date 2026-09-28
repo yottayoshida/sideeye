@@ -1,0 +1,7 @@
+[world]
+state = "/s/sqruff/proj"
+
+[define]
+operation = "sqruff fix a.sql"
+cwd       = "/s/sqruff/proj"
+check     = "/ap/defines/sqruff/check.sh"

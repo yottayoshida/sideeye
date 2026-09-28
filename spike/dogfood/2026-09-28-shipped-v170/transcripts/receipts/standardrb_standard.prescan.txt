@@ -1,0 +1,278 @@
+== novelty pre-scan: standardrb/standard
+== date: 2026-09-28T00:38:02Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          26 hit(s) (all listed)
+      #819 closed 2026-07-06 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #813 closed 2026-06-22 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #824 merged 2026-07-27 Bump json from 2.19.2 to 2.19.9
+      #822 merged 2026-07-13 Bump ruby-lsp from 0.26.9 to 0.26.10
+      #830 closed 2026-08-31 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.91
+      #795 merged 2026-03-19 Bump json from 2.18.0 to 2.19.2
+      #821 closed 2026-07-13 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #776 closed 2025-12-29 Update rubocop requirement from ~> 1.81.7 to >= 1.81.7, < 1.83.0
+      #786 closed 2026-02-03 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #785 closed 2026-02-01 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #762 merged 2025-11-03 Update rubocop requirement from ~> 1.80.2 to >= 1.80.2, < 1.82.0
+      #759 closed 2025-10-27 Update rubocop requirement from ~> 1.80.2 to >= 1.80.2, < 1.82.0
+      #737 merged 2025-07-22 Bump ruby-lsp from 0.23.13 to 0.26.0
+      #735 closed 2025-07-17 Bump ruby-lsp from 0.23.13 to 0.25.0
+      #645 closed 2024-07-18 standardrb != rails standard. This is causing CI problems.
+      #548 closed 2023-04-03 Update rubocop requirement from ~> 1.48.1 to >= 1.48.1, < 1.50.0
+      #515 closed 2023-01-30 Update rubocop requirement from = 1.42.0 to = 1.44.1
+      #513 closed 2023-01-23 Update rubocop requirement from = 1.42.0 to = 1.44.0
+      #550 closed 2023-04-15 Update rubocop requirement from ~> 1.48.1 to >= 1.48.1, < 1.51.0
+      #525 closed 2023-02-13 Update rubocop requirement from = 1.44.1 to = 1.45.1
+  corrupt        1 hit(s) (all listed)
+      #830 closed 2026-08-31 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.91
+  corruption     1 hit(s) (all listed)
+      #821 closed 2026-07-13 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+  truncated      57 hit(s) (all listed)
+      #833 open 2026-09-14 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.92
+      #830 closed 2026-08-31 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.91
+      #826 closed 2026-08-10 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.90
+      #816 merged 2026-07-01 Bump step-security/harden-runner from 2.18.0 to 2.19.4
+      #821 closed 2026-07-13 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #819 closed 2026-07-06 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #813 closed 2026-06-22 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #809 closed 2026-06-03 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.88
+      #808 closed 2026-05-19 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.87
+      #801 closed 2026-04-13 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.87
+      #804 merged 2026-05-02 Bump step-security/harden-runner from 2.14.1 to 2.18.0
+      #796 closed 2026-03-23 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.87
+      #792 closed 2026-03-09 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.86
+      #786 closed 2026-02-03 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #776 closed 2025-12-29 Update rubocop requirement from ~> 1.81.7 to >= 1.81.7, < 1.83.0
+      #791 closed 2026-03-03 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.86
+      #773 merged 2025-12-15 Bump peter-evans/create-pull-request from 7 to 8
+      #762 merged 2025-11-03 Update rubocop requirement from ~> 1.80.2 to >= 1.80.2, < 1.82.0
+      #785 closed 2026-02-01 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #759 closed 2025-10-27 Update rubocop requirement from ~> 1.80.2 to >= 1.80.2, < 1.82.0
+  truncate       61 hit(s) (all listed)
+      #833 open 2026-09-14 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.92
+      #830 closed 2026-08-31 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.91
+      #826 closed 2026-08-10 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.90
+      #816 merged 2026-07-01 Bump step-security/harden-runner from 2.18.0 to 2.19.4
+      #821 closed 2026-07-13 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #819 closed 2026-07-06 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #813 closed 2026-06-22 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #809 closed 2026-06-03 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.88
+      #808 closed 2026-05-19 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.87
+      #801 closed 2026-04-13 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.87
+      #804 merged 2026-05-02 Bump step-security/harden-runner from 2.14.1 to 2.18.0
+      #796 closed 2026-03-23 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.87
+      #792 closed 2026-03-09 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.86
+      #786 closed 2026-02-03 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #776 closed 2025-12-29 Update rubocop requirement from ~> 1.81.7 to >= 1.81.7, < 1.83.0
+      #791 closed 2026-03-03 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.86
+      #773 merged 2025-12-15 Bump peter-evans/create-pull-request from 7 to 8
+      #762 merged 2025-11-03 Update rubocop requirement from ~> 1.80.2 to >= 1.80.2, < 1.82.0
+      #785 closed 2026-02-01 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #656 closed 2024-10-29 Proposal: Update rubocop and handles a new cop
+  empty          61 hit(s) (all listed)
+      #787 open 2026-02-03 Disable Style/EmptyCaseCondition cop
+      #229 open 2020-12-15 Consider disabling Style/EmptyCaseCondition
+      #482 open 2022-11-10 rubyfmt compatibility
+      #833 open 2026-09-14 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.92
+      #195 open 2020-08-26 Re-enable Lint/MissingSuper
+      #826 closed 2026-08-10 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.90
+      #819 closed 2026-07-06 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #830 closed 2026-08-31 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.91
+      #821 closed 2026-07-13 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #807 closed 2026-05-13 Update rubocop to 1.86.1
+      #813 closed 2026-06-22 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #806 closed 2026-05-12 Update rubocop to 1.86.1 and standard-performance to 1.9.0
+      #801 closed 2026-04-13 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.87
+      #758 closed 2025-10-25 Disable `EmptyLinesAfterModuleInclusion`
+      #786 closed 2026-02-03 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #785 closed 2026-02-01 Update rubocop requirement from ~> 1.82.0 to >= 1.82, < 1.85
+      #762 merged 2025-11-03 Update rubocop requirement from ~> 1.80.2 to >= 1.80.2, < 1.82.0
+      #740 merged 2025-08-05 Bump ruby-lsp from 0.26.0 to 0.26.1
+      #656 closed 2024-10-29 Proposal: Update rubocop and handles a new cop
+      #748 merged 2025-09-08 Update rubocop requirement from ~> 1.75.5 to >= 1.75.5, < 1.81.0
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      2 hit(s) (all listed)
+      #756 merged 2025-10-13 Bump minitest from 5.25.5 to 5.26.0
+      #388 closed 2022-02-08 Running the "standardrb --fix" command changes "Class.new(Interrupt)" to "Class.new(RuntimeError)" (v1.1.5)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #685 closed 2024-11-26 100% CPU
+  power          4 hit(s) (all listed)
+      #826 closed 2026-08-10 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.90
+      #458 merged 2022-09-13 Fix autocorrect fixture so disable comments are preserved
+      #109 closed 2019-04-16 Semantic blocks
+      #211 closed 2020-10-14 standardrb compatibility with rubocop?
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           1 hit(s) (all listed)
+      #158 closed 2020-02-19 Tabs vs Spaces -- The blind remix.
+  partial        2 hit(s) (all listed)
+      #655 merged 2024-10-16 Add range formatting method to the formatter add-on
+      #90 closed 2019-03-03 Proposal: Style/FormatStringToken
+  incomplete     3 hit(s) (all listed)
+      #591 open 2023-11-20 Curious error with 'bundler/inline': Failed loading plugin `standard-custom' because we couldn't determine (RuntimeError) the corresponding plugin class to instantiate.
+      #65 closed 2019-01-04 Simple AssignmentInCondition?
+      #30 closed 2018-11-24 Feedback & proposals
+  dataloss       0 hit(s)
+  recover        10 hit(s) (all listed)
+      #422 closed 2022-06-06 Update rubocop requirement from = 1.29.1 to = 1.30.1
+      #419 closed 2022-05-30 Update rubocop-performance requirement from = 1.13.3 to = 1.14.0
+      #420 closed 2022-05-30 Update rubocop requirement from = 1.29.1 to = 1.30.0
+      #425 closed 2022-06-13 Update rubocop-performance requirement from = 1.13.3 to = 1.14.2
+      #437 closed 2022-07-18 Update rubocop-performance requirement from = 1.13.3 to = 1.14.3
+      #423 closed 2022-06-06 Update rubocop-performance requirement from = 1.13.3 to = 1.14.1
+      #434 closed 2022-07-11 Update rubocop requirement from = 1.29.1 to = 1.31.2
+      #432 closed 2022-07-04 Update rubocop requirement from = 1.29.1 to = 1.31.1
+      #17 closed 2018-11-15 A case for `Style/AccessModifierDeclarations` set to `inline`
+      #128 merged 2019-08-08 Set rubocop setting to disable extra spacing for alignment
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #181 closed 2020-05-28 Style/FrozenStringLiteralComment always on
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #703 closed 2025-03-13 Disable Lint/UselessConstantScoping
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #831 merged 2026-09-01 Bump step-security/harden-runner from 2.20.0 to 2.21.0
+      #827 merged 2026-08-24 Bump ruby-lsp from 0.26.10 to 0.26.11
+      #825 merged 2026-08-01 Bump step-security/harden-runner from 2.19.4 to 2.20.0
+      #833 open 2026-09-14 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.92
+      #818 merged 2026-07-06 Bump language_server-protocol from 3.17.0.5 to 3.17.0.6
+      #822 merged 2026-07-13 Bump ruby-lsp from 0.26.9 to 0.26.10
+      #824 merged 2026-07-27 Bump json from 2.19.2 to 2.19.9
+      #811 closed 2026-06-03 Bump actions/checkout from 6 to 6.0.2
+      #797 merged 2026-03-27 Bump ruby-lsp from 0.26.8 to 0.26.9
+      #816 merged 2026-07-01 Bump step-security/harden-runner from 2.18.0 to 2.19.4
+      #810 closed 2026-06-03 Bump step-security/harden-runner from 2.18.0 to 2.19.3
+      #817 merged 2026-07-01 Bump actions/checkout from 6 to 7
+      #830 closed 2026-08-31 Update rubocop requirement from ~> 1.88.0 to >= 1.88, < 1.91
+      #803 merged 2026-04-20 Bump rake from 13.3.1 to 13.4.2
+      #804 merged 2026-05-02 Bump step-security/harden-runner from 2.14.1 to 2.18.0
+      #793 merged 2026-03-16 Bump ruby-lsp from 0.26.7 to 0.26.8
+      #795 merged 2026-03-19 Bump json from 2.18.0 to 2.19.2
+      #783 merged 2026-01-26 Bump step-security/harden-runner from 2.14.0 to 2.14.1
+      #809 closed 2026-06-03 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.88
+      #790 merged 2026-02-23 Bump ruby-lsp from 0.26.6 to 0.26.7
+  clobber        5 hit(s) (all listed)
+      #654 merged 2024-10-10 Rake Clean
+      #478 closed 2022-11-07 Update rubocop requirement from = 1.35.1 to = 1.38.0
+      #473 closed 2022-10-24 Update rubocop requirement from = 1.35.1 to = 1.37.1
+      #370 closed 2021-12-27 Update rubocop requirement from = 1.23.0 to = 1.24.0
+      #373 closed 2022-01-03 Update rubocop requirement from = 1.23.0 to = 1.24.1
+  blank          16 hit(s) (all listed)
+      #794 open 2026-03-18 Incorrect code formatting result (flipped conditional logic)
+      #694 open 2025-02-18 Layout/EmptyLines prevents separating per-file license details from documentation comments
+      #795 merged 2026-03-19 Bump json from 2.18.0 to 2.19.2
+      #819 closed 2026-07-06 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #813 closed 2026-06-22 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #744 closed 2025-08-12 Update rubocop requirement from ~> 1.75.5 to >= 1.75.5, < 1.80.0
+      #746 closed 2025-08-26 Update rubocop requirement from ~> 1.75.5 to >= 1.75.5, < 1.81.0
+      #747 closed 2025-09-02 Update rubocop requirement from ~> 1.75.5 to >= 1.75.5, < 1.81.0
+      #602 closed 2024-01-31 Removes empty initialize methods: Style/RedundantInitialize: Remove unnecessary empty `initialize` method.
+      #485 merged 2022-11-17 Fix a formatting some YAML files
+      #550 closed 2023-04-15 Update rubocop requirement from ~> 1.48.1 to >= 1.48.1, < 1.51.0
+      #459 merged 2022-09-15 Support running Standard on older Ruby project
+      #259 closed 2021-02-21 Consider updating `Style/HashSyntax` to `ruby19` 
+      #240 closed 2021-01-07 Update rubocop requirement from = 1.7.0 to = 1.8.0
+      #242 closed 2021-01-07 Update rubocop requirement from = 1.7.0 to = 1.8.0
+      #247 closed 2021-01-18 Update rubocop requirement from = 1.7.0 to = 1.8.1
+  unreadable     1 hit(s) (all listed)
+      #821 closed 2026-07-13 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+  garbage        1 hit(s) (all listed)
+      #181 closed 2020-05-28 Style/FrozenStringLiteralComment always on
+  mangled        1 hit(s) (all listed)
+      #178 closed 2020-05-23 Misalignment with method definition + macro + ensure
+  contents       11 hit(s) (all listed)
+      #694 open 2025-02-18 Layout/EmptyLines prevents separating per-file license details from documentation comments
+      #733 merged 2025-07-17 Bump minitest from 5.25.1 to 5.25.5
+      #731 merged 2025-07-17 Bump peter-evans/create-pull-request from 6 to 7
+      #26 closed 2018-11-20 Hash Literals with a space
+      #639 merged 2024-07-02 Update ci workflow versions
+      #601 merged 2024-01-30 Remove incorrect textDocument/diagnostic request handler
+      #544 closed 2023-04-01 LSP server registration of executeCommand `standardRuby.formatAutoFixes` breaks VS Code
+      #536 closed 2023-03-08 Not making fixes in stdout when using parallel: true
+      #309 closed 2021-07-03 Single line function fix
+      #27 closed 2018-11-21 Feature request: Ignore generated files by Rails
+      #19 closed 2018-11-15 Allow Standard to integrate with AtomLinter
+  in-place       31 hit(s) (all listed)
+      #798 open 2026-03-30 Lots of false `Style/ReverseFind` warnings in Rails
+      #556 open 2023-04-27 Prevent direct rubocop CLI use
+      #694 open 2025-02-18 Layout/EmptyLines prevents separating per-file license details from documentation comments
+      #781 open 2026-01-26 Feature request: `WARNING: this project is being migrated` message should not be printed to the same stream as actual errors
+      #207 open 2020-10-05 Method definitions must not be nested catches singleton methods in minitest
+      #791 closed 2026-03-03 Update rubocop requirement from ~> 1.84.0 to >= 1.84, < 1.86
+      #742 merged 2025-08-05 Bump rake from 13.0.6 to 13.3.0
+      #623 closed 2024-04-08 Reasoning decisions behind rules?
+      #324 merged 2021-09-13 Change case indentation to match if/else
+      #613 closed 2024-03-07 RuboCop dependency is too loose
+      #221 merged 2020-11-12 update to rubocop 1.3.0
+      #703 closed 2025-03-13 Disable Lint/UselessConstantScoping
+      #543 merged 2023-03-31 Return an ExecuteCommandOptions struct in place of a boolean
+      #560 closed 2023-05-10 🔧 config/ruby-3.2.yml
+      #512 merged 2023-01-18 Support extending default configuration via extend_configs
+      #475 merged 2022-10-26 LSP server
+      #525 closed 2023-02-13 Update rubocop requirement from = 1.44.1 to = 1.45.1
+      #459 merged 2022-09-15 Support running Standard on older Ruby project
+      #342 merged 2021-10-13 Support ruby-next versioning
+      #351 merged 2021-10-18 disable Style/NegatedIf
+  unclean        0 hit(s)
+  shutdown       2 hit(s) (all listed)
+      #756 merged 2025-10-13 Bump minitest from 5.25.5 to 5.26.0
+      #544 closed 2023-04-01 LSP server registration of executeCommand `standardRuby.formatAutoFixes` breaks VS Code
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      2 hit(s) (all listed)
+      #630 merged 2024-05-17 Add support for Ruby LSP as a built-in add-on
+      #493 closed 2022-12-12 support for pre-commit?
+  partial+write  0 hit(s)
+  crash+safe     8 hit(s) (all listed)
+      #819 closed 2026-07-06 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #813 closed 2026-06-22 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #821 closed 2026-07-13 Update rubocop requirement from ~> 1.87.0 to >= 1.87, < 1.89
+      #776 closed 2025-12-29 Update rubocop requirement from ~> 1.81.7 to >= 1.81.7, < 1.83.0
+      #525 closed 2023-02-13 Update rubocop requirement from = 1.44.1 to = 1.45.1
+      #432 closed 2022-07-04 Update rubocop requirement from = 1.29.1 to = 1.31.1
+      #429 closed 2022-06-27 Update rubocop requirement from = 1.29.1 to = 1.31.0
+      #434 closed 2022-07-11 Update rubocop requirement from = 1.29.1 to = 1.31.2
+  atomic+write   0 hit(s)
+  lock+file      11 hit(s) (all listed)
+      #714 open 2025-04-14 Ruby Version Detection
+      #799 closed 2026-04-07 Publish new version to RubyGems
+      #618 closed 2024-03-15 Dealing with Gemfile.lock
+      #439 closed 2022-07-19 CodeClimate is not working
+      #742 merged 2025-08-05 Bump rake from 13.0.6 to 13.3.0
+      #569 closed 2023-07-10 Error: unrecognized cop or department Standard/BlockSingleLineBraces under rubocop
+      #340 closed 2021-10-12 Problems running bundler installed standard and rubocop
+      #282 closed 2021-03-27 VSCode problems
+      #357 closed 2021-12-01 Update rubocop-performance gemspec
+      #75 closed 2019-02-05 Proposal to reconsider trailing dot position
+      #27 closed 2018-11-21 Feature request: Ignore generated files by Rails
+  write+failure  1 hit(s) (all listed)
+      #639 merged 2024-07-02 Update ci workflow versions
+  file+contents  8 hit(s) (all listed)
+      #694 open 2025-02-18 Layout/EmptyLines prevents separating per-file license details from documentation comments
+      #731 merged 2025-07-17 Bump peter-evans/create-pull-request from 6 to 7
+      #639 merged 2024-07-02 Update ci workflow versions
+      #601 merged 2024-01-30 Remove incorrect textDocument/diagnostic request handler
+      #536 closed 2023-03-08 Not making fixes in stdout when using parallel: true
+      #309 closed 2021-07-03 Single line function fix
+      #27 closed 2018-11-21 Feature request: Ignore generated files by Rails
+      #19 closed 2018-11-15 Allow Standard to integrate with AtomLinter
+
+== 51 terms run; 29 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
