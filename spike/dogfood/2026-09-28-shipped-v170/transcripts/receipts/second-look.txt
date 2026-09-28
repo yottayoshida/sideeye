@@ -1,0 +1,43 @@
+# The second look at the five not-filed FAILs (2026-09-28, about 01:35-01:50Z).
+# Read-only research, one agent per target, then the nbQA claim re-read by hand (the lines below
+# marked "re-read"). Each entry: the default branch's writer, existing reports, the policies read.
+
+nbQA-dev/nbQA @ 0d2662cd591acb3b66422016c4d7de2761302b95
+  writer   nbqa/replace_source.py:295 temp_notebook = os.path.join(os.path.dirname(temp_file), os.path.basename(notebook))
+           nbqa/replace_source.py:209 with open(temp_notebook, "w", encoding="utf-8") as handle:
+           nbqa/replace_source.py:297 move(temp_notebook, notebook)
+           nbqa/__main__.py:525-526 tempfile.mkstemp(dir=os.path.dirname(notebook), ...)    (re-read)
+  history  #542 "Made mutations atomic" (merged 2021-02-17): write to python_file.parent / notebook.name, then move;
+           the temp .py was then in tempfile.TemporaryDirectory().
+           #573 "Same dir" (merged 2021-04-18): replaced TemporaryDirectory() with mkstemp(dir=dirname(notebook))  (re-read: diff lines)
+  reports  none about truncation on interruption (searched notebook+empty, notebook+truncated, atomic, interrupted, corrupt)
+  policy   docs/contributing.rst read in full; no CONTRIBUTING.md, no issue templates; no AI/LLM policy found
+  length   median of the last 20 issues: 601 characters
+
+hashicorp/terraform @ db4eef44f5bbd39a115f939304279caee7cf9b12
+  writer   internal/command/fmt.go:191 err := os.WriteFile(path, result, 0644)
+  reports  none (fmt+truncated, fmt+empty, fmt+atomic, fmt+disk+full, fmt+corrupt, fmt+killed ...)
+  policy   .github/CONTRIBUTING.md "AI Usage": transparency, accountability, quality; disclose AI use.
+           .github/ISSUE_TEMPLATE/bug_report.yml: optional field "Generative AI / LLM assisted development?"
+  length   median of the last 20 bug-labelled issues: 3,471.5 characters
+
+quarylabs/sqruff @ ba5385ef921d39881be4c949f32921e483f588e1
+  writer   crates/cli-lib/src/commands_fix.rs:59 std::fs::write(path, fixed).unwrap();
+  reports  none; closest #1876 (mtime changed with no change; fixed by skipping the write, not by making it atomic)
+  policy   CONTRIBUTING.md and docs/development/contributing.md cover build steps only; bug.yaml form; no AI policy
+  tracker  of 11 recent bug reports, most have 0 comments; several closed by a linked fix without discussion
+  length   median of the last 20 bug-labelled issues: 1,033 characters
+
+standardrb/standard -> rubocop/rubocop @ 3cece04207493489da35f500591af436dc6b0fe5
+  writer   standard's lib/standard/runners/rubocop.rb has no write; RuboCop's lib/rubocop/runner.rb:449 and
+           lib/rubocop/cop/team.rb:180 call Util.replace_file_contents, which writes a temporary file and renames it
+  known    rubocop/rubocop#15720 (this project's, 2026-09-16, closed) fixed by rubocop/rubocop#15721 (merged 2026-09-16);
+           latest RuboCop release v1.91.0 (2026-09-10) predates it; standard.gemspec pins rubocop "~> 1.88.0"
+
+PHPCSStandards/PHP_CodeSniffer @ 7f47350339831578dfab3eb288c12d18c1dfccfe (4.x)
+  writer   src/Reports/Cbf.php:96-98 file_put_contents($newFilename, $newContent);
+  reports  none about truncation on interruption; squizlabs/PHP_CodeSniffer#777 (2015, empty file) was a broken Windows `patch`
+  policy   .github/CONTRIBUTING.md "Do Not Submit AI Generated PRs" (banning); issue template has no AI clause
+  length   median of the last 20 bug issues: 3,021.5 characters
+
+# The owner's ruling (2026-09-28): draft and file nbqa and terraform; not sqruff or phpcbf.
