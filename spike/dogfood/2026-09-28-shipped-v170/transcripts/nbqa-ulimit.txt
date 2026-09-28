@@ -1,0 +1,16 @@
+$ wc -c < nb.ipynb
+260
+$ ( ulimit -f 0; nbqa black nb.ipynb ); echo "exit $?"
+Usage: python -m black [OPTIONS] SRC ...
+
+One of 'SRC' or 'code' is required.
+
+[1mnbQA failed to process nb.ipynb with exception "OSError(27, 'File too large')"[0m
+[1m
+If you believe the notebook(s) to be valid, please report a bug at https://github.com/nbQA-dev/nbQA/issues [0m
+
+exit 123
+$ wc -c < nb.ipynb
+260
+$ ls -A
+nb.ipynb

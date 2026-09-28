@@ -155,15 +155,15 @@ reach, over the 18 campaign(s) that recorded every target they met
     FAIL           36
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                32              23             22
-  report_worthy        24              15             22
-  filed                24              15             22
+  novel                31              22             24
+  report_worthy        26              17             24
+  filed                26              17             24
   acknowledged          4               2              3
   fixed                 4               2              3
   revalidated           4               2              3
 
-why encounters stopped: awaiting 13, declined 4, discussing 2, known 8, no_content_lost 1, not_worth 13, wall 34, withdrawn 1
-upstream states last read between 2026-08-13 and 2026-09-22; spike/upstream-report-status.sh measures them now.
+why encounters stopped: awaiting 15, declined 4, discussing 2, known 9, no_content_lost 1, not_worth 10, wall 34, withdrawn 1
+upstream states last read between 2026-08-13 and 2026-09-28; spike/upstream-report-status.sh measures them now.
 ```
 
 <!-- outcome-funnel:summary:end -->

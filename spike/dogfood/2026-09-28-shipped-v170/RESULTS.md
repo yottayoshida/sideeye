@@ -129,7 +129,33 @@ is normally under version control, so the loss is recoverable:
   disclosure, and replies to maintainers must be made without AI tools. The writer's source was
   read at a named commit (`transcripts/kubectl-writer-source.txt`) and the no-crash reproduction
   kept with its commands (`apparatus/kubectl-ulimit.sh`, `transcripts/kubectl-ulimit.txt`).
-- **terraform, sqruff, nbqa, standardrb, phpcbf: not filed** (`not_worth` in the funnel).
+- **The other five, first ruled not filed, then looked at again.** The first ruling applied the
+  commitizen precedent to all five. That precedent's reason is particular to `cz bump`, which runs
+  on a committed tree; the same day's ast-grep report — the same shape, a formatter rewriting
+  source in place — was filed because a formatter runs on a working tree whose uncommitted edits
+  are lost with the file. The owner asked whether none was worth reporting, and all five were
+  looked at again, each on its default branch, its tracker and its policies
+  (`transcripts/receipts/second-look.txt`):
+  - **nbqa: filed as nbQA-dev/nbQA#908** (`report-nbqa.md`). Read at `0d2662c`: nbQA-dev/nbQA#542
+    made the write-back go through a temporary file and a `move`, and nbQA-dev/nbQA#573, two months
+    later, made the temporary `.py` in the notebook's own directory, so the temporary notebook path
+    is the notebook itself, opened with `"w"`, and the `move` renames it onto itself.
+    `apparatus/ulimit-repro.sh nbqa-large`: 4,271 bytes to 512, not valid JSON
+    (`transcripts/nbqa-large-ulimit.txt`; with `ulimit -f 0` the `.py` write fails first and the
+    notebook is untouched, `transcripts/nbqa-ulimit.txt`). No policy on AI use.
+  - **terraform: filed as hashicorp/terraform#39299** (`report-terraform.md`), in the bug form's
+    fields. `internal/command/fmt.go` line 191 at `db4eef4`: `os.WriteFile`.
+    `apparatus/ulimit-repro.sh terraform`: 84 bytes to 0 (`transcripts/terraform-ulimit.txt`,
+    `terraform-ulimit-trace.txt`). CONTRIBUTING's "AI Usage" asks for disclosure, which the form's
+    AI field carries.
+  - **standardrb: already known.** The write is RuboCop's, and this project reported it as
+    rubocop/rubocop#15720, fixed on RuboCop's main by rubocop/rubocop#15721 — in no release yet;
+    standard 1.56.0 pins `rubocop ~> 1.88.0`. The freshness screen read standard as fresh because it
+    matches names, and standard is not RuboCop's name.
+  - **sqruff and phpcbf: not filed** (owner ruling, on the second look). Both write with a
+    truncating whole-file write on their default branches and neither tracker has a report; sqruff's
+    tracker mostly closes bug reports by a fix without discussion, and PHP_CodeSniffer's
+    CONTRIBUTING bans AI-generated pull requests.
 
 ## Found in passing
 

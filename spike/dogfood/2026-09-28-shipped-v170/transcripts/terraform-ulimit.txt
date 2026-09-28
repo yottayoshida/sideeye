@@ -1,0 +1,15 @@
+$ wc -c < main.tf
+84
+$ ( ulimit -f 0; terraform fmt ); echo "exit $?"
+main.tf
+[31m[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mFailed to write main.tf[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m
+[31m╵[0m[0m
+[0m[0m
+exit 2
+$ wc -c < main.tf
+0
+$ ls -A
+main.tf

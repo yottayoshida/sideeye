@@ -99,3 +99,5 @@ pint	-	outcome-funnel.tsv (a phar from the GitHub release)
 scalafmt	-	outcome-funnel.tsv (a GitHub release native binary)
 tombi	-	outcome-funnel.tsv (a GitHub release binary, Rust)
 yamlfmt	-	outcome-funnel.tsv (a GitHub release binary, Go)
+nbqa 1.9.1 (`nbqa black`, black 26.5.1)	-	upstream-reports.tsv
+terraform 1.16.4 `fmt`	-	upstream-reports.tsv
