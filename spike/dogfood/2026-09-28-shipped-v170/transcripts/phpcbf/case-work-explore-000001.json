@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/phpcbf/proj",
+    "operation": "php /opt/bin/phpcbf.phar --standard=PSR12 a.php",
+    "check": "/ap/defines/phpcbf/check.sh",
+    "cwd": "/s/phpcbf/proj",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/phpcbf/proj/a.php",
+  "before_class": "write",
+  "before_path": "/s/phpcbf/proj/a.php",
+  "violation": "hybrid"
+}

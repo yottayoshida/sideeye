@@ -1,0 +1,30 @@
+
+Time: 131ms; Memory: 8MB
+falsify: the function is gone
+the function is gone
+
+Time: 26ms; Memory: 8MB
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/s/phpcbf/proj/a.php)
+            before write(/s/phpcbf/proj/a.php)
+path        a.php
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (2828 syscall lines examined, 845 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /out/phpcbf/work-explore/cases/000001.json
+replay      sideeye replay /out/phpcbf/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/phpcbf/work-explore/evidence/000001.json
+cwd         /s/phpcbf/proj
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/phpcbf/proj SIDEEYE_TRACE_PATH=/out/phpcbf/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=47d65c604cdc2e7b59493a1a5bce692e49194d56dbdbc18e4bb0b2cc25531b99;

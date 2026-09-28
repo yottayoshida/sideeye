@@ -1,0 +1,6 @@
+[world]
+state = "/s/scalafmt/proj"
+
+[define]
+operation = "scalafmt a.scala"
+cwd       = "/s/scalafmt/proj"

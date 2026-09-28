@@ -1,0 +1,7 @@
+[world]
+state = "/s/standardrb/proj"
+
+[define]
+operation = "standardrb --fix a.rb"
+cwd       = "/s/standardrb/proj"
+check     = "/ap/defines/standardrb/check.sh"

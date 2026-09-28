@@ -1,0 +1,6 @@
+[world]
+state = "/s/rumdl/proj"
+
+[define]
+operation = "rumdl fmt a.md"
+cwd       = "/s/rumdl/proj"

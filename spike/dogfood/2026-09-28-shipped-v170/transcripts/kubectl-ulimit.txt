@@ -1,0 +1,9 @@
+$ wc -c < config
+355
+$ ( ulimit -f 0; kubectl config use-context b --kubeconfig ./config ); echo "exit $?"
+error: write ./config: file too large
+exit 1
+$ wc -c < config
+0
+$ ls -A
+config

@@ -1,0 +1,6 @@
+[world]
+state = "/s/pint/proj"
+
+[define]
+operation = "php /opt/bin/pint.phar a.php"
+cwd       = "/s/pint/proj"

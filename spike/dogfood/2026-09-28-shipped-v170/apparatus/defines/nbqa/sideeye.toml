@@ -1,0 +1,7 @@
+[world]
+state = "/s/nbqa/proj"
+
+[define]
+operation = "nbqa black nb.ipynb"
+cwd       = "/s/nbqa/proj"
+check     = "/ap/defines/nbqa/check.sh"

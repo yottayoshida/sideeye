@@ -1,0 +1,49 @@
+== [a.sql] FAIL
+L:   1 | P:  10 | LT01 | Expected single whitespace between "," and "b".
+                       | [layout.spacing]
+L:   1 | P:  11 | LT01 | Expected only single space before "FROM". Found "   ".
+                       | [layout.spacing]
+L:   2 | P:   1 | CP01 | Keywords must be consistently upper case.
+                       | [capitalisation.keywords]
+L:   2 | P:   6 | LT01 | Expected only single space before "c". Found "  ".
+                       | [layout.spacing]
+L:   2 | P:   9 | LT01 | Expected single whitespace between "c" and "=".
+                       | [layout.spacing]
+L:   2 | P:  10 | LT01 | Expected single whitespace between "=" and "1".
+                       | [layout.spacing]
+The linter processed 1 file(s).
+All Finished
+== [a.sql] FAIL
+L:   1 | P:  10 | LT01 | Expected single whitespace between "," and "b".
+                       | [layout.spacing]
+L:   1 | P:  11 | LT01 | Expected only single space before "FROM". Found "   ".
+                       | [layout.spacing]
+L:   2 | P:   1 | CP01 | Keywords must be consistently upper case.
+                       | [capitalisation.keywords]
+L:   2 | P:   6 | LT01 | Expected only single space before "c". Found "  ".
+                       | [layout.spacing]
+L:   2 | P:   9 | LT01 | Expected single whitespace between "c" and "=".
+                       | [layout.spacing]
+L:   2 | P:  10 | LT01 | Expected single whitespace between "=" and "1".
+                       | [layout.spacing]
+The linter processed 1 file(s).
+All Finished
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+cwd          /s/sqruff/proj
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (607 syscall lines examined, 31 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/sqruff/proj --cwd "/s/sqruff/proj" --operation "sqruff fix a.sql" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

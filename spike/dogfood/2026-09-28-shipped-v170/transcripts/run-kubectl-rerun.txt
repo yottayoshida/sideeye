@@ -1,0 +1,4 @@
+=== kubectl (re-run with the committed run.sh) 01:19:34
+explore exit 2: UNKNOWN no_shim_marker
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.

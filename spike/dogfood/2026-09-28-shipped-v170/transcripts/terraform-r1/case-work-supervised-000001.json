@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/terraform/proj",
+    "operation": "/opt/bin/terraform fmt",
+    "check": "/ap/defines/terraform-r1/check.sh",
+    "cwd": "/s/terraform/proj",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/terraform/proj/main.tf",
+  "before_class": "write",
+  "before_path": "/s/terraform/proj/main.tf",
+  "violation": "hybrid"
+}

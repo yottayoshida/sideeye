@@ -1,0 +1,188 @@
+== novelty pre-scan: nbQA-dev/nbQA
+== date: 2026-09-28T00:34:14Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          2 hit(s) (all listed)
+      #716 closed 2022-04-04 black being pinned to an older version causes a crash
+      #590 merged 2021-05-15 Dont crash if output cant be parsed
+  corrupt        3 hit(s) (all listed)
+      #696 closed 2022-01-20 Autopep8 corrupting notebooks with !pip command
+      #542 merged 2021-02-17 Make mutations atomic
+      #346 closed 2020-10-17 Latest hook changes might have a bug: InvalidManifestError
+  corruption     1 hit(s) (all listed)
+      #542 merged 2021-02-17 Make mutations atomic
+  truncated      3 hit(s) (all listed)
+      #821 open 2023-05-21 Invalid line number for reporting diagnostics at first line
+      #302 merged 2020-10-07 Pylint support. Replace `pass` with `type` for handling magics
+      #834 closed 2023-10-25 `tests/tools/test_ruff_works.py::test_ruff_works` fails with latest ruff 0.1.2
+  truncate       3 hit(s) (all listed)
+      #821 open 2023-05-21 Invalid line number for reporting diagnostics at first line
+      #302 merged 2020-10-07 Pylint support. Replace `pass` with `type` for handling magics
+      #834 closed 2023-10-25 `tests/tools/test_ruff_works.py::test_ruff_works` fails with latest ruff 0.1.2
+  empty          9 hit(s) (all listed)
+      #847 merged 2024-03-17 fix ruff tests by running the quiet mode
+      #744 merged 2022-09-10 remove cells emptied by nbqa
+      #742 closed 2022-09-06 remove empty cells after --float-to-top
+      #536 merged 2021-01-25 Don't add newline if empty file
+      #558 merged 2021-04-02 Refactor ignoring cells
+      #627 merged 2021-07-20 Extend addopts rather than overwrite
+      #588 closed 2021-05-11 KeyError(1) while parsing output from applying flake8
+      #412 closed 2020-11-01 running `nbqa` from command-line
+      #322 merged 2020-10-15 Github action: adding caching action to the tox.yml github action
+  atomic         2 hit(s) (all listed)
+      #542 merged 2021-02-17 Make mutations atomic
+      #563 closed 2021-04-05 notebook module shadows module causing mypy errors
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #542 merged 2021-02-17 Make mutations atomic
+  interrupt      1 hit(s) (all listed)
+      #542 merged 2021-02-17 Make mutations atomic
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #789 closed 2023-01-13 name temporary files with a pattern which can be globbed
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #411 merged 2020-11-01 Parse output from "unparseable error" from black
+      #302 merged 2020-10-07 Pylint support. Replace `pass` with `type` for handling magics
+      #559 merged 2021-04-02 opt-in to cell magics
+      #510 merged 2020-12-09 parse error message in case of assignment to literal
+      #490 merged 2020-11-29 fix: UnicodeDecodeError
+      #560 merged 2021-04-02 No diff if error
+      #578 merged 2021-04-28 fix output parsing
+      #575 merged 2021-04-19 [pre-commit.ci] pre-commit autoupdate
+      #586 merged 2021-05-10 [pre-commit.ci] pre-commit autoupdate
+      #574 merged 2021-04-18 support 3.6.0
+      #570 merged 2021-04-16 🧪TST Enable 'test_name_with_dot' under windows
+      #585 merged 2021-05-03 [pre-commit.ci] pre-commit autoupdate
+      #582 merged 2021-05-02 Use relative path for temporary Python file is possible
+      #584 merged 2021-05-02 remove --nbqa-config and --nbqa-ignore-cells
+      #580 merged 2021-05-01 BUG if passing several files, one of which doesn't exist, earlier tmp files aren't cleaned up
+      #547 merged 2021-02-25 Add nbqa-yapf
+      #537 merged 2021-01-31 fix error parsing when running on directory
+      #561 merged 2021-04-02 Notebook shadown module causing mypy errors
+      #571 merged 2021-04-17 preserve trailing semicolon if followed by comment
+      #13 merged 2020-07-12 check works with newline
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        1 hit(s) (all listed)
+      #575 merged 2021-04-19 [pre-commit.ci] pre-commit autoupdate
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      10 hit(s) (all listed)
+      #803 closed 2023-03-18 tell nbqa whether tool changes code
+      #745 merged 2022-09-12 Support Jupytext
+      #627 merged 2021-07-20 Extend addopts rather than overwrite
+      #669 closed 2021-10-21 Is extend-ignore taken into account?
+      #626 closed 2021-07-20 Different behaviour between `nbqa black` and `nbqa black --check`
+      #430 merged 2020-11-07 Advise to overwrite additional_dependencies
+      #294 merged 2020-10-05 append to pythonpath instead of overwriting it
+      #488 closed 2020-11-25 Can autoreload magics be kept above isort output?
+      #373 merged 2020-10-24 ENH always pass 'treat comment as code' with modern isort
+      #542 merged 2021-02-17 Make mutations atomic
+  clobber        0 hit(s)
+  blank          18 hit(s) (all listed)
+      #701 closed 2022-03-01 False flags errors from `nbqa isort`
+      #702 closed 2022-03-01 Flake8 async parsing issue
+      #547 merged 2021-02-25 Add nbqa-yapf
+      #4 closed 2020-07-12 need to save blank line at the end of file
+      #60 closed 2020-07-17 BUG? If a notebook doesn't end with a blank cell, then autoformatters will add a blank line to the previous cell
+      #30 closed 2020-07-12 check whether `black` adds blank lines at the end of cells (if so, can it be avoided?)
+      #164 closed 2020-08-16 Unable to run nbqa on notebooks present in directory without __init__.py
+      #293 closed 2020-10-05 Running nbqa with flake8 complains about blank lines on notebook cells with functions
+      #473 closed 2020-11-21 Tests don't pass if run in random order (bug?)
+      #265 closed 2020-09-26 BUG if a cell ends with a semicolon and then has a whitespace, the semicolon will go to the wrong line
+      #386 closed 2020-10-28 Strange docs in "Known Limitations"
+      #55 closed 2020-07-16 blank cells throw nqa off
+      #31 merged 2020-07-13 TST make sure black doesn't remove or add blank spaces at the end of cells
+      #59 merged 2020-07-17 BUG: make sure flake8 works if there's a blank cell
+      #286 merged 2020-10-02 Simplify output parsing
+      #324 merged 2020-10-16 CI Fix pylint hook
+      #341 merged 2020-10-17 Add darglint to pre-commit
+      #207 merged 2020-09-10 Added pylint as a pre-commit hook.
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       14 hit(s) (all listed)
+      #639 closed 2021-07-30 Add test for "unreachable code"
+      #626 closed 2021-07-20 Different behaviour between `nbqa black` and `nbqa black --check`
+      #565 closed 2021-04-08 Runtime error for certain combinations of notebook names
+      #534 closed 2021-01-24 BUG nbqa pyupgrade fails on notebook with only one cell which wouldn't be processed
+      #495 closed 2020-12-03 Strange behaviour when applying nbqa black to commented ipython magic
+      #360 closed 2020-10-21 [Suggestion] Ideas about ReviewNB
+      #547 merged 2021-02-25 Add nbqa-yapf
+      #369 merged 2020-10-24 Add table of contents
+      #293 closed 2020-10-05 Running nbqa with flake8 complains about blank lines on notebook cells with functions
+      #488 closed 2020-11-25 Can autoreload magics be kept above isort output?
+      #412 closed 2020-11-01 running `nbqa` from command-line
+      #317 merged 2020-10-13 Tests refactoring and cleanup
+      #210 merged 2020-09-10 Centralize configs
+      #452 merged 2020-11-12 Add --nbqa-diff
+  in-place       18 hit(s) (all listed)
+      #765 closed 2022-10-19 Useful tool for nbQA: docformatter
+      #717 closed 2022-04-04 Update Black version to 22.3.0
+      #701 closed 2022-03-01 False flags errors from `nbqa isort`
+      #555 closed 2021-03-23 Checking markdown cells for spelling errors, reading metrics etc
+      #627 merged 2021-07-20 Extend addopts rather than overwrite
+      #445 closed 2020-11-11 iPython syntax protection
+      #547 merged 2021-02-25 Add nbqa-yapf
+      #556 closed 2021-03-31 notebook shadow module causing mypy errors
+      #500 closed 2020-12-05 Black removing first character of the first code cell in nb
+      #289 closed 2020-10-04 Q: Can nbQA be used for quality checks inside a running notebook?
+      #318 closed 2020-10-15 Command 'black' not found while running 'black' without nbqa works fine
+      #258 closed 2020-09-24 QUESTION: how do you measure the complexity of a block of code or blocks of code in the entire notebook?
+      #282 closed 2020-10-01 BUG? `black` splits comment after trailing comma, nbqa doesn't preserve trailing comma
+      #358 merged 2020-10-21 Add extras_require, to install nbqa with all supported tools
+      #284 closed 2020-10-02 Different approach to replace line magics with a valid python source …
+      #288 merged 2020-10-03 Politely ask users to report bugs
+      #236 merged 2020-09-13 CONFIG Use setup.cfg instead of .nbqa.ini
+      #373 merged 2020-10-24 ENH always pass 'treat comment as code' with modern isort
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   1 hit(s) (all listed)
+      #563 closed 2021-04-05 notebook module shadows module causing mypy errors
+  lock+file      1 hit(s) (all listed)
+      #747 merged 2022-09-13 Support for subcommands
+  write+failure  4 hit(s) (all listed)
+      #573 merged 2021-04-17 Same dir
+      #230 merged 2020-09-12 Run from different dir
+      #373 merged 2020-10-24 ENH always pass 'treat comment as code' with modern isort
+      #377 merged 2020-10-27 Handle python code present as part of line magics
+  file+contents  11 hit(s) (all listed)
+      #626 closed 2021-07-20 Different behaviour between `nbqa black` and `nbqa black --check`
+      #565 closed 2021-04-08 Runtime error for certain combinations of notebook names
+      #534 closed 2021-01-24 BUG nbqa pyupgrade fails on notebook with only one cell which wouldn't be processed
+      #547 merged 2021-02-25 Add nbqa-yapf
+      #488 closed 2020-11-25 Can autoreload magics be kept above isort output?
+      #495 closed 2020-12-03 Strange behaviour when applying nbqa black to commented ipython magic
+      #293 closed 2020-10-05 Running nbqa with flake8 complains about blank lines on notebook cells with functions
+      #412 closed 2020-11-01 running `nbqa` from command-line
+      #317 merged 2020-10-13 Tests refactoring and cleanup
+      #210 merged 2020-09-10 Centralize configs
+      #452 merged 2020-11-12 Add --nbqa-diff
+
+== 51 terms run; 20 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,2 @@
+static: /usr/bin/pg_format: Perl script text executable
+next: sideeye explore --state /s/pg_format/proj --cwd "/s/pg_format/proj" --operation "pg_format -i a.sql" \

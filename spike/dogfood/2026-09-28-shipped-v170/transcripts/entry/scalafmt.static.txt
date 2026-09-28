@@ -1,0 +1,2 @@
+static: /opt/bin/scalafmt: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=6d7f62833b28b90ea78d53ce35bedc1eab6f06ed, for GNU/Linux 3.7.0, not stripped
+next: sideeye explore --state /s/scalafmt/proj --cwd "/s/scalafmt/proj" --operation "scalafmt a.scala" \

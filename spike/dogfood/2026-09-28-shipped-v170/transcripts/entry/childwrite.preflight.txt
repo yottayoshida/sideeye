@@ -1,0 +1,14 @@
+UNKNOWN  sequence_numbering_broken
+         two processes took the same number: the run's kill-point records and its highest sequence number disagree, which is what happens when their operations run at the same time — each reads the highest number the trace holds and both take the next one. No crash-point address can be trusted
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /w  (none declared: Sideeye's own)
+
+atomicity   0 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   a process other than the subject operated on the judged directory; its operations have no crash-point address
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

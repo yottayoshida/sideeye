@@ -1,0 +1,30 @@
+== [a.sql] FAIL
+L:   1 | P:  10 | LT01 | Expected single whitespace between "," and "b".
+                       | [layout.spacing]
+L:   1 | P:  11 | LT01 | Expected only single space before "FROM". Found "   ".
+                       | [layout.spacing]
+L:   2 | P:   1 | CP01 | Keywords must be consistently upper case.
+                       | [capitalisation.keywords]
+L:   2 | P:   6 | LT01 | Expected only single space before "c". Found "  ".
+                       | [layout.spacing]
+L:   2 | P:   9 | LT01 | Expected single whitespace between "c" and "=".
+                       | [layout.spacing]
+L:   2 | P:  10 | LT01 | Expected single whitespace between "=" and "1".
+                       | [layout.spacing]
+The linter processed 1 file(s).
+All Finished
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; the operation's first word names no path, so the OS resolved it through PATH and Sideeye did not
+next        Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+cwd         /s/sqruff/proj
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: the shim never announced itself in this run, so nothing observed process boundaries
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=e6c84a67f872055bbb736eb9c08095b2e7763f3343c6d3d8018cc6b6ecc43418;

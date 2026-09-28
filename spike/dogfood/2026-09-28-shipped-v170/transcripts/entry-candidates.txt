@@ -1,0 +1,38 @@
+ROW alejandra static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+  exit 0
+ROW biome static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+  exit 0
+ROW gofumpt static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 6 operations
+  exit 0
+ROW helm static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 4 operations
+  exit 0
+ROW jsonnetfmt static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+  exit 0
+ROW ktfmt static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+  exit 0
+ROW kubectl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 4 operations
+  exit 0
+ROW nbqa static=0 preflight_rc=0 gate=0 detail=accepted, 12 operations
+  exit 0
+ROW oxfmt static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+  exit 0
+ROW pg_format static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+  exit 0
+ROW phpcbf static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+  exit 0
+ROW pint static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+  exit 0
+ROW rumdl static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+  exit 1
+ROW scalafmt static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+  exit 0
+ROW sqruff static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+  exit 0
+ROW standardrb static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+  exit 0
+ROW terraform static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+  exit 0
+ROW tombi static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+  exit 0
+ROW yamlfmt static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+  exit 0

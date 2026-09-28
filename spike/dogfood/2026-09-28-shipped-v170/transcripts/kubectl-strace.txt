@@ -1,0 +1,8 @@
+15    openat(AT_FDCWD, "/s/kubectl/config", O_RDONLY|O_CLOEXEC) = 4
+15    openat(AT_FDCWD, "/s/kubectl/config.lock", O_RDONLY|O_CREAT|O_EXCL|O_CLOEXEC, 000) = 4
+15    openat(AT_FDCWD, "/s/kubectl/config", O_RDONLY|O_CLOEXEC) = 4
+15    openat(AT_FDCWD, "/s/kubectl/config", O_RDONLY|O_CLOEXEC) = 4
+15    openat(AT_FDCWD, "/s/kubectl/config", O_RDONLY|O_CLOEXEC) = 4
+15    openat(AT_FDCWD, "/s/kubectl/config", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 4
+15    write(4, "apiVersion: v1\nclusters:\n- clust"..., 339) = 339
+15    unlinkat(AT_FDCWD, "/s/kubectl/config.lock", 0) = 0

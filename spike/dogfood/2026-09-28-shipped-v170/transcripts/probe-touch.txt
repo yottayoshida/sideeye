@@ -1,0 +1,5 @@
+/usr/bin/touch | default | rc=2 | UNKNOWN  state_changed_without_ops
+/usr/bin/touch | --observe syscalls | rc=2 | UNKNOWN  state_changed_without_ops
+/usr/bin/touch | --observe supervised | rc=2 | UNKNOWN  state_changed_without_ops
+/bin/busybox touch | default | rc=2 | UNKNOWN  no_shim_marker
+/bin/busybox touch | --observe supervised | rc=2 | UNKNOWN  state_changed_without_ops

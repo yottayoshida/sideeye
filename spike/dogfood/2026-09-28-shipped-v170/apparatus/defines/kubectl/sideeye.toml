@@ -1,0 +1,6 @@
+[world]
+state = "/s/kubectl"
+
+[define]
+operation = "kubectl config use-context b --kubeconfig /s/kubectl/config"
+check     = "/ap/defines/kubectl/check.sh"

@@ -1,0 +1,2 @@
+static: /usr/bin/php: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=4c96ccc1712394c5f41e7b64c7bf1b7678ea7a22, for GNU/Linux 3.7.0, stripped
+next: sideeye explore --state /s/phpcbf/proj --cwd "/s/phpcbf/proj" --operation "php /opt/bin/phpcbf.phar --standard=PSR12 a.php" \

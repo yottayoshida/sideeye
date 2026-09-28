@@ -1,0 +1,25 @@
+gofumpt     /opt/bin/gofumpt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=65
+yamlfmt     /opt/bin/yamlfmt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+helm        /opt/bin/helm: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=2H
+jsonnetfmt  /opt/bin/jsonnetfmt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+terraform   /opt/bin/terraform: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=en
+kubectl     /opt/bin/kubectl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=1T
+biome       /opt/bin/biome: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+rumdl       /opt/bin/rumdl: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+sqruff      /opt/bin/sqruff: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, not stripped
+tombi       /opt/bin/tombi: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+alejandra   /opt/bin/alejandra: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, not stripped
+scalafmt    /opt/bin/scalafmt: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+php         /usr/bin/php: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+java        /usr/bin/java: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+node        /usr/bin/node: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+ruby        /usr/bin/ruby: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+pg_format   /usr/bin/pg_format: Perl script text executable
+oxfmt       /usr/local/bin/oxfmt: Node.js script executable, ASCII text
+nbqa        /opt/py/bin/nbqa: Python script, ASCII text executable
+standardrb  /usr/local/bin/standardrb: Ruby script, ASCII text executable
+
+oxfmt native:
+/usr/local/lib/node_modules/oxfmt/node_modules/@oxfmt/binding-linux-arm64-gnu/oxfmt.linux-arm64-gnu.node
+/usr/local/lib/node_modules/oxfmt/node_modules/@oxfmt/binding-linux-arm64-musl/oxfmt.linux-arm64-musl.node
+ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, stripped

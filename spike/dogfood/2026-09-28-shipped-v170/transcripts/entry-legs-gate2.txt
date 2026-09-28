@@ -1,0 +1,7 @@
+# legs for gate 2, 2026-09-28T01:19:09Z
+## write2 with the oracle binary missing (privileged box)
+ROW write2 static=0 preflight_rc=3 gate=2 detail=setup: --oracle is not an executable file; the completeness check cannot run
+  exit 2
+## staticsed (supervised) in a box that is NOT privileged: no cgroup the engine can make
+ROW staticsed static=1 preflight_rc=3 gate=2 detail=SUPERVISED; setup: --observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group
+  exit 2

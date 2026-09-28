@@ -1,0 +1,4 @@
+static: /opt/bin/gofumpt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=65ZkBpYGPDt9mH1BDPP6/vihtPGSFp9vyqJiLU0FH/xltG5SnhpmUkNN0Hb5b7/GmEQczosvJsH3BLgm6Md, BuildID[sha1]=4a0e5220f14c42414437d3fa31760f3c0917e77e, stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: sideeye explore --state /s/gofumpt/proj --cwd "/s/gofumpt/proj" --operation "gofumpt -w main.go" \

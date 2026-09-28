@@ -1,0 +1,2 @@
+static: /usr/local/bin/oxfmt: Node.js script executable, ASCII text
+next: sideeye explore --state /s/oxfmt/proj --cwd "/s/oxfmt/proj" --operation "oxfmt a.js" \

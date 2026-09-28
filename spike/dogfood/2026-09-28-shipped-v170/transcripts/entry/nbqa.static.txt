@@ -1,0 +1,2 @@
+static: /opt/py/bin/nbqa: Python script, ASCII text executable
+next: sideeye explore --state /s/nbqa/proj --cwd "/s/nbqa/proj" --operation "nbqa black nb.ipynb" \
