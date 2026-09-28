@@ -119,9 +119,13 @@ nothing about a torn write.
 The owner's ruling (2026-09-28), by the 2026-09-22 commitizen rule — a file a formatter rewrites
 is normally under version control, so the loss is recoverable:
 
-- **kubectl: report in preparation.** A kubeconfig is not under version control and carries the
-  cluster endpoints and credentials; losing it is not recovered from git. The project's
-  contribution and LLM-use policies are read before any text is written.
+- **kubectl: report in preparation**, drafted as `report-kubectl.md`. A kubeconfig is not under
+  version control and carries the cluster endpoints and credentials; losing it is not recovered
+  from git. Kubernetes' contribution and AI-use policies were read before the draft
+  (`transcripts/receipts/kubernetes-contribution-policy.txt`): AI assistance is allowed with a
+  disclosure, and replies to maintainers must be made without AI tools. The writer's source was
+  read at a named commit (`transcripts/kubectl-writer-source.txt`) and the no-crash reproduction
+  kept with its commands (`apparatus/kubectl-ulimit.sh`, `transcripts/kubectl-ulimit.txt`).
 - **terraform, sqruff, nbqa, standardrb, phpcbf: not filed** (`not_worth` in the funnel).
 
 ## Found in passing
@@ -136,6 +140,7 @@ is normally under version control, so the loss is recoverable:
   on kubectl, the first target, at 00:51:43Z (`transcripts/run-all.txt`); `timeline.txt`'s
   "kubectl done" at that second is that failed start. The same command re-run under `sh -x`
   parsed and ran (its trace was not kept); it did not recur on the eight later starts, and kubectl
-  was run once more at 01:19Z with the committed `run.sh` (sha256 `107a5549…`, the bytes every run
-  read — the file was last edited before 00:40), which is what `transcripts/kubectl/` holds
+  was run once more at 01:19Z with the committed `run.sh` (sha256 `107a5549…` at 01:19; its bytes at
+  00:51 were not recorded, so whether the other eight starts read the same text is not measured),
+  which is what `transcripts/kubectl/` holds
   (`transcripts/run-kubectl-rerun.txt`): the same refusal. Not explained.

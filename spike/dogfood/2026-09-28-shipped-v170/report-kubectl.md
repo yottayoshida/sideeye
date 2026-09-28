@@ -1,19 +1,20 @@
-Title: `kubectl config` empties the kubeconfig when the write fails or the process is killed mid-write
+Title: `kubectl config use-context` leaves the kubeconfig empty if its write fails or the process is killed before the write
 
 **What happened**:
 
-A `kubectl config` command that is killed, or whose write fails, between opening the kubeconfig and writing it leaves the file at 0 bytes. The previous contents — cluster endpoints, contexts, credentials — are gone. `ulimit -f 0` reproduces it without a crash:
+`kubectl config use-context` that is killed, or whose write fails, between opening the kubeconfig and writing it leaves the file at 0 bytes. The previous contents — cluster endpoints, contexts, credentials — are gone. `ulimit -f 0` reproduces it without a crash:
 
 ```
 $ wc -c < config
 355
-$ ( ulimit -f 0; kubectl config use-context b --kubeconfig ./config )
+$ ( ulimit -f 0; kubectl config use-context b --kubeconfig ./config ); echo "exit $?"
 error: write ./config: file too large
+exit 1
 $ wc -c < config
 0
 ```
 
-`clientcmd.WriteToFile` (`staging/src/k8s.io/client-go/tools/clientcmd/loader.go`, line 466 on `master`) calls `os.WriteFile(filename, content, 0600)`, which opens the file with `O_TRUNC` and writes afterwards. Between the two the old kubeconfig is gone from disk while the new one is still in memory, so a kill, a full disk or a failed write in that window leaves an empty file. The `.lock` file guards against concurrent writers; it does not help here.
+`clientcmd.WriteToFile` (`staging/src/k8s.io/client-go/tools/clientcmd/loader.go`, line 466 at `6c1c7702cf2052245ef10e699d45f071af306f59`) calls `os.WriteFile(filename, content, 0600)`, which opens the file with `O_TRUNC` and writes afterwards. Between the two the old kubeconfig is gone from disk while the new one is still in memory, so a kill or a failed write in that window leaves an empty file. (The reproduction above fails the write with `EFBIG`; I did not test a full disk, but `ENOSPC` on the same `write` would end the same way.) The `.lock` file guards against concurrent writers; it does not help here.
 
 **What you expected to happen**:
 
@@ -21,7 +22,7 @@ The kubeconfig holds either its old contents or its new ones, whatever happens t
 
 **How to reproduce it (as minimally and precisely as possible)**:
 
-With any kubeconfig that has two contexts:
+With a kubeconfig that has two contexts (I used a small test one with two clusters, two contexts and one token user):
 
 ```
 cp ~/.kube/config ./config

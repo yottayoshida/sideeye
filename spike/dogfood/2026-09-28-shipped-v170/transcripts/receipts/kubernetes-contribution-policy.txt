@@ -1,0 +1,5 @@
+# What was read before kubectl's report was drafted (2026-09-28, about 01:05Z; kept 01:26Z)
+kubernetes/kubectl CONTRIBUTING.md: the repository takes no direct contributions; code lives in kubernetes/kubernetes staging.
+kubernetes/kubectl .github/ISSUE_TEMPLATE/bug-report.md: headings What happened / What you expected to happen / How to reproduce it / Anything else we need to know? / Environment; security matters go to kubernetes.io/security.
+kubernetes/community contributors/guide/pull-requests.md, "AI Guidance": AI tools acceptable; disclose it ("This PR was written in part with the assistance of generative AI" is sufficient); AI co-author or assisted-by trailers not allowed; responses to review comments must be made without relying on AI tools, or the contribution is closed.
+kubernetes/community github-management/github-moderation.md: AI-generated content is covered by the same standards; the submitter must understand and be able to explain what they submit.

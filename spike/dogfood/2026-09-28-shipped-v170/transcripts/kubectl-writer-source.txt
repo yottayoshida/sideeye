@@ -1,0 +1,19 @@
+# client-go's kubeconfig writer, read (not run) 2026-09-28T01:26:03Z at kubernetes/kubernetes 6c1c7702cf2052245ef10e699d45f071af306f59
+# staging/src/k8s.io/client-go/tools/clientcmd/loader.go, lines 454-470 (numbered by grep -n)
+454:func WriteToFile(config clientcmdapi.Config, filename string) error {
+455:	content, err := Write(config)
+456:	if err != nil {
+457:		return err
+458:	}
+459:	dir := filepath.Dir(filename)
+460:	if _, err := os.Stat(dir); os.IsNotExist(err) {
+461:		if err = os.MkdirAll(dir, 0755); err != nil {
+462:			return err
+463:		}
+464:	}
+465:
+466:	if err := os.WriteFile(filename, content, 0600); err != nil {
+467:		return err
+468:	}
+469:	return nil
+470:}

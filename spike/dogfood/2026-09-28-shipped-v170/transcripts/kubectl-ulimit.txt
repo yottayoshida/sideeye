@@ -1,9 +1,9 @@
+$ wc -c < config
 355
-error: write /s/kubectl/config: file too large
-kubectl rc=1
+$ ( ulimit -f 0; kubectl config use-context b --kubeconfig ./config ); echo "exit $?"
+error: write ./config: file too large
+exit 1
+$ wc -c < config
 0
-total 8
-drwxr-xr-x 2 root root 4096 Sep 28 01:12 .
-drwxr-xr-x 3 root root 4096 Sep 28 01:12 ..
--rw------- 1 root root    0 Sep 28 01:12 config
- <- current-context after
+$ ls -A
+config
