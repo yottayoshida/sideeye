@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **The CI quickstart pins v1.7.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`). The release lane installs the published v1.7.0 asset instead of v1.6.0's. The page's `cwd` paragraph no longer calls v1.6.0 "the version this page pins": the `cwd` line has been printed since v1.6.0, which stays true as the pin moves. The pin could not move with the version bump, because the lane downloads the asset and the asset existed only once the release was published. Nothing else in the lane changes.
+
 ## [1.7.0] - 2026-09-27
 
 ### Added
