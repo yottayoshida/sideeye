@@ -230,23 +230,39 @@ the same from the bytes. For the success marker and the checker, `next_step`
 is `fix_define`.
 
 `no_shim_marker` is raised at two sites, and only one of them chooses its
-`next_step` from an observation (ADR 0040). At the recording run, `noShimNext`
-reads the same image facts the detail line reports. A statically linked ELF, a Mach-O not
-linked against dyld, and one whose code directory names a platform or carries
-the library-validation or hardened-runtime flag take the class wall. A file
-that was read and could not be recognised as an executable image — first
-four bytes unreadable, a magic none of the three families claims (where a `#!`
-script lands), an ELF magic followed by a class or data byte outside the two
-each admits, or a Mach-O slice whose own magic is neither — takes
-`operation_not_an_image`, whose sentence names the define: nothing there is a
-thing a library is inserted into, so `--shim` and the environment are not what
-to look at (#481, #482). Everything else — a first word resolved through
-`PATH`, a file that could not be read, one whose structure ran outside itself
-— is silent about linkage and keeps the shim step, which is the honest default
-rather than a diagnosis. The second site is `preflight --twice`'s second
-observed run, and it keeps the shim step whatever the image says: the first
-run's marker already answered every signing and linkage question about that
-file, so its absence the second time is not about the image.
+`next_step` from an observation (ADR 0040, amended by ADR 0090). At the recording
+run, `noShimNext` reads the same image facts the detail line reports. The image is
+the file the operation's first word names — resolved against the define's `cwd`
+when it is a path, and looked up along the engine's `PATH` when it is a bare name
+(the operation inherits that `PATH`; an `apparatus` `env:` entry is checked, not
+applied), with a relative `PATH` component taken against that same `cwd`. A file
+found that way is read the same as a named one, and the detail line says it was
+found along `PATH`. **On Linux on aarch64 or x86_64 — the builds that have `--observe
+supervised` — a statically linked 64-bit ELF refused under
+`--observe wrappers` or `syscalls` takes the step naming `--observe supervised`,
+whether the operation names it by path or by a bare name found on the engine's
+`PATH`**: that mode counts such a target from outside it, and the sentence names
+its conditions (Linux 5.19 or later, aarch64 or x86_64, a cgroup v2 the engine can
+create cgroups in). A 32-bit static ELF, a static ELF off Linux or on a Linux build for
+another architecture, a Mach-O not linked
+against dyld, and one whose code directory names a platform or carries the
+library-validation or hardened-runtime flag take the class wall. A file that was
+read and could not be recognised as an executable image — first four bytes
+unreadable, a magic none of the three families claims (where a `#!` script lands,
+named by path or by a bare name), an ELF magic followed by a class or data byte
+outside the two each admits, or a Mach-O slice whose own magic is neither — takes
+`operation_not_an_image`, whose sentence names the define: nothing there is a thing
+a library is inserted into, so `--shim` and the environment are not what to look
+at (#481, #482). Everything else — a bare name with `PATH` unset (the engine does
+not pick one libc's default list) or found in no `PATH` directory, a file that
+could not be read, one whose structure ran outside itself — is silent about
+linkage and keeps the shim step, which is the honest default rather than a
+diagnosis. Under `--observe supervised` the step is `environment` whatever the
+image: that mode loads no shim, and a trace without the start record the engine
+writes itself means the engine could not write its own trace. The second site is
+`preflight --twice`'s second observed run, and it keeps the shim step whatever the
+image says: the first run's marker already answered every signing and linkage
+question about that file, so its absence the second time is not about the image.
 
 `oracle_missed_operation` chooses its `next_step` from the observation mode
 (#599, ADR 0069). Under `--observe wrappers` on Linux it is `observe_syscalls`:
