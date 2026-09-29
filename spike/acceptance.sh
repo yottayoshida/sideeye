@@ -9592,10 +9592,65 @@ o=$(TOY_STATE=/tmp/acc-ns/b/state "$SIDEEYE" explore --state /tmp/acc-ns/b/state
     --operation "$OUT/toy-static rotate" --shim "$SHIM" --work /tmp/acc-ns/b/work --oracle /usr/bin/strace --json /tmp/acc-ns/b.json 2>&1)
 [ "$?" = "2" ] || { echo "FAIL next_step (static): the run did not refuse"; ns_fails=$((ns_fails + 1)); }
 ns_pair static "$o" /tmp/acc-ns/b.json
-if grep -q '"next_step": ".*refuses by design' /tmp/acc-ns/b.json; then
-    echo "ok   next_step (static): the step is the class wall, decided from the image"
+# Since ADR 0090 the step for a static 64-bit image on Linux is `--observe supervised`, the
+# mode that counts it from outside; before, it was the class wall, while the detail line beside
+# it named the mode — the two lines of one refusal disagreed.
+if grep -q '"next_step": "Run the same command again with --observe supervised' /tmp/acc-ns/b.json &&
+   ! grep -q '"next_step": ".*refuses by design' /tmp/acc-ns/b.json; then
+    echo "ok   next_step (static): the step is --observe supervised, decided from the image"
 else
-    echo "FAIL next_step (static): a statically linked image should take the class-wall step"
+    echo "FAIL next_step (static): a statically linked image on Linux should take the --observe supervised step"
+    ns_fails=$((ns_fails + 1))
+fi
+# The same image named by a bare name, as a user writes it (ADR 0090). Before, a first word
+# without a slash was never read, and the step was the shim's. The detail says the file is the
+# one Sideeye's search found. `ns_field` reads the JSON, so a SETUP ERROR or another refusal
+# cannot satisfy a leg that only greps for a sentence.
+ns_field() { python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2]) or "-")' "$1" "$2" 2>/dev/null; }
+mkdir -p /tmp/acc-ns/c/state /tmp/acc-ns/d/state
+o=$(TOY_STATE=/tmp/acc-ns/c/state PATH="$OUT:$PATH" "$SIDEEYE" explore --state /tmp/acc-ns/c/state --setup "$OUT/toy-static init" \
+    --operation "toy-static rotate" --shim "$SHIM" --work /tmp/acc-ns/c/work --oracle /usr/bin/strace --json /tmp/acc-ns/c.json 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && [ "$(ns_field /tmp/acc-ns/c.json unknown_reason)" = no_shim_marker ] &&
+   ns_field /tmp/acc-ns/c.json next_step | grep -q '^Run the same command again with --observe supervised' &&
+   ns_field /tmp/acc-ns/c.json message | grep -qF "on $OUT/toy-static (found along PATH): it names no interpreter"; then
+    echo "ok   next_step (static, bare name): read off PATH, and the step is --observe supervised, as by path"
+else
+    echo "FAIL next_step (static, bare name): exit $rc, reason $(ns_field /tmp/acc-ns/c.json unknown_reason), step [$(ns_field /tmp/acc-ns/c.json next_step)]"
+    ns_fails=$((ns_fails + 1))
+fi
+# Control: a dynamic image named bare, with a preload that loads and is not the shim, so no
+# marker appears. It is read off PATH too, and keeps the shim step — an implementation that
+# answered supervised for every bare name fails here. The library is the toy's own libc, found
+# with ldd, so the leg carries no architecture's path.
+ns_lib=$(ldd "$OUT/toy-fixed" | awk '$1 == "libc.so.6" { print $3 }')
+o=$(TOY_STATE=/tmp/acc-ns/d/state PATH="$OUT:$PATH" "$SIDEEYE" explore --state /tmp/acc-ns/d/state --setup "$OUT/toy-fixed init" \
+    --operation "toy-fixed rotate" --shim "$ns_lib" --work /tmp/acc-ns/d/work --oracle /usr/bin/strace --json /tmp/acc-ns/d.json 2>&1)
+rc=$?
+if [ -n "$ns_lib" ] && [ "$rc" = 2 ] && [ "$(ns_field /tmp/acc-ns/d.json unknown_reason)" = no_shim_marker ] &&
+   [ "$(ns_field /tmp/acc-ns/d.json next_step)" = "Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment." ] &&
+   ns_field /tmp/acc-ns/d.json message | grep -qF "on $OUT/toy-fixed (found along PATH): it names an interpreter"; then
+    echo "ok   next_step (dynamic, bare name): read off PATH, and the step stays the shim's"
+else
+    echo "FAIL next_step (dynamic, bare name): lib [$ns_lib] exit $rc, reason $(ns_field /tmp/acc-ns/d.json unknown_reason), step [$(ns_field /tmp/acc-ns/d.json next_step)]"
+    ns_fails=$((ns_fails + 1))
+fi
+# A relative PATH component is taken against the operation's cwd, where the child resolves it,
+# not the engine's (ADR 0090). `bin/tool` is the static toy under the define's cwd and the
+# dynamic one under the engine's: read from the right directory the step is supervised; read
+# from the engine's it is the shim step, and not read at all it is the shim step too.
+rm -rf /tmp/acc-ns/e && mkdir -p /tmp/acc-ns/e/cwd/bin /tmp/acc-ns/e/eng/bin /tmp/acc-ns/e/state
+cp "$OUT/toy-static" /tmp/acc-ns/e/cwd/bin/tool && cp "$OUT/toy-fixed" /tmp/acc-ns/e/eng/bin/tool
+o=$(cd /tmp/acc-ns/e/eng && TOY_STATE=/tmp/acc-ns/e/state PATH="bin:$PATH" "$SIDEEYE" explore --state /tmp/acc-ns/e/state \
+    --setup "$OUT/toy-static init" --operation "tool rotate" --cwd /tmp/acc-ns/e/cwd --shim "$SHIM" \
+    --work /tmp/acc-ns/e/work --oracle /usr/bin/strace --json /tmp/acc-ns/e.json 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && [ "$(ns_field /tmp/acc-ns/e.json unknown_reason)" = no_shim_marker ] &&
+   ns_field /tmp/acc-ns/e.json next_step | grep -q '^Run the same command again with --observe supervised' &&
+   ns_field /tmp/acc-ns/e.json message | grep -qF "on /tmp/acc-ns/e/cwd/bin/tool (found along PATH)"; then
+    echo "ok   next_step (relative PATH component): taken against the operation's cwd, as the child takes it"
+else
+    echo "FAIL next_step (relative PATH component): exit $rc, reason $(ns_field /tmp/acc-ns/e.json unknown_reason), message [$(ns_field /tmp/acc-ns/e.json message)]"
     ns_fails=$((ns_fails + 1))
 fi
 # Every document a NextStep sentence points at exists — read from the SOURCE table, not

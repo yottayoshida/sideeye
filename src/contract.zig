@@ -1424,6 +1424,25 @@ pub const NextStep = enum {
     /// privileges to the `PR_SET_NO_NEW_PRIVS` the mode sets, or a target that does not repeat,
     /// all end the same way (review).
     observe_syscalls,
+    /// `no_shim_marker` on a statically linked 64-bit ELF, in a build that can supervise (Linux, on
+    /// aarch64 or x86_64), under `--observe wrappers` or
+    /// `syscalls` (ADR 0090). No preloaded library reaches such an image, and `--observe
+    /// supervised` (ADR 0089) counts its calls from outside the process instead: the step the
+    /// `docs/cli.md` entry for that mode names for exactly this refusal. Chosen from the image
+    /// the engine read before the run — named by path, or found along `PATH` for a bare name —
+    /// and never under `supervised` itself, where the same reason means the engine could not
+    /// write its own trace. A 32-bit static image keeps `class_wall`: that mode does not see
+    /// i386-compat or x32 calls. The sentence names the mode's own conditions rather than asking
+    /// the kernel on a refusal path (ADR 0069's reason); below 5.19 the flag answers
+    /// `platform_unsupported`, which says so. It promises no verdict: under that mode a run whose
+    /// writes come from two threads still refuses. "The same command" rather than "explore or
+    /// preflight": a replay of a case recorded under that mode reaches this refusal too when the
+    /// flag is left off, and what it needs is the flag on the replay (review).
+    ///
+    /// ADR 0089 declined this member because "the step set is closed (frozen surface 2)". It is
+    /// not: `docs/contract-freeze.md` closes `unknown_reason` and `setup_error_reason`, and
+    /// `next_step` is neither (ADR 0069 recorded the same when it added `observe_syscalls`).
+    observe_supervised,
     /// A run's failures under `--observe syscalls` that a process the mode killed produces, where
     /// the site would otherwise say `fix_define` (#599, ADR 0069): the recording run's undeclared
     /// status, its signal and its missing success marker, and the baseline world's checker
@@ -1462,6 +1481,7 @@ pub const NextStep = enum {
             .quiesce => "Wait for whatever the target left running to finish, or stop it, so the state directory holds still; then re-run.",
             .relaunch => "Start the exploration from a process that stays alive for its whole duration; the one that launched this run has exited.",
             .observe_syscalls => "Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.",
+            .observe_supervised => "Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.",
             .syscalls_may_have_killed => "Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.",
             .sideeye_defect => "Nothing in the define fixes this: it is a defect in Sideeye. File it with the report attached.",
         };

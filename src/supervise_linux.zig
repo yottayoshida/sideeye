@@ -9,6 +9,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const contract = @import("contract");
 const supervise = @import("supervise.zig");
+const image = @import("image.zig");
 const engine_build_options = @import("engine_build_options");
 
 const linux = std.os.linux;
@@ -205,21 +206,17 @@ fn die(code: u8, comptime fmt: []const u8, args: anytype) noreturn {
 /// used as given, one without is looked up along `PATH` — BEFORE the filter goes in, so that the
 /// one `execve` the filter sees from this process is the launch and not a probe of `PATH`
 /// (review: a failed probe would otherwise read as an image change).
-fn resolveExecutable(name: [:0]const u8, out: *[4096]u8) ?[*:0]const u8 {
+///
+/// The search is `image.searchPath`, the same function the engine reads a bare name's image
+/// with before the run (ADR 0090), so the file a refusal describes and the file this launches
+/// come from one rule. No directory is passed: this process runs after the child's `chdir`, so a
+/// relative component already resolves where the operation will run. The default list for an
+/// unset `PATH` stays here: this is the caller that execs, so it is the one that has to choose.
+fn resolveExecutable(name: [:0]const u8, out: *[image.search_path_max]u8) ?[*:0]const u8 {
     if (std.mem.indexOfScalar(u8, name, '/') != null) return name.ptr;
     const path_env = std.c.getenv("PATH") orelse "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
-    var it = std.mem.splitScalar(u8, std.mem.span(path_env), ':');
-    while (it.next()) |dir_raw| {
-        const dir = if (dir_raw.len == 0) "." else dir_raw;
-        const full = std.fmt.bufPrintZ(out, "{s}/{s}", .{ dir, name }) catch continue;
-        if (linux.errno(linux.access(full.ptr, linux.X_OK)) != .SUCCESS) continue;
-        // A directory passes X_OK; execvp moves on past one, and so does this (review).
-        var sx: linux.Statx = undefined;
-        if (linux.errno(linux.statx(AT_FDCWD, full.ptr, 0, .{ .TYPE = true }, &sx)) != .SUCCESS) continue;
-        if (sx.mode & linux.S.IFMT != linux.S.IFREG) continue;
-        return full.ptr;
-    }
-    return null;
+    const found = image.searchPath(out, name, std.mem.span(path_env), null) orelse return null;
+    return found.ptr;
 }
 
 pub fn filterExec(argv: []const [:0]const u8) noreturn {
@@ -229,7 +226,7 @@ pub fn filterExec(argv: []const [:0]const u8) noreturn {
     const fd = std.fmt.parseInt(i32, argv[2], 10) catch die(126, "__filter-exec: not a descriptor: {s}", .{argv[2]});
     const op = argv[4..];
 
-    var path_buf: [4096]u8 = undefined;
+    var path_buf: [image.search_path_max]u8 = undefined;
     const exe = resolveExecutable(op[0], &path_buf) orelse
         die(127, "__filter-exec: {s}: not found on PATH", .{op[0]});
 

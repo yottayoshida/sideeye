@@ -57,6 +57,14 @@ and `unknown()` takes it as a required argument.**
   "otherwise" covers, which is now the three arms that really are silent. The paragraph is
   left standing rather than rewritten, because it states the branching the decision was
   made under.
+
+  **Amended 2026-09-29 (ADR 0090).** The wall list moved again. A statically linked 64-bit
+  ELF on Linux under `--observe wrappers` or `syscalls` takes `observe_supervised`, the step
+  naming the mode that counts it from outside (ADR 0089); a 32-bit static ELF, a static ELF
+  off Linux and the Mach-O arms keep the wall. Under `--observe supervised` the step is
+  `environment`. And "an unresolved path" is narrower: a bare name is now looked up along
+  the engine's `PATH` and read like a path, so only a bare name with `PATH` unset or found
+  nowhere on it stays silent about linkage. Left standing, like the note above.
 - The sentence is rendered once in `unknown()` and handed to both forms: the JSON
   `next_step` field (after `message`) and the text report's `next` line (after the
   detail line, which the acceptance suite reads as the line following the reason). The

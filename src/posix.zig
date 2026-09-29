@@ -480,6 +480,29 @@ fn statNoFollow(dirfd_: c_int, path: [*:0]const u8, want_uid: bool) ClassifyErro
     }
 }
 
+/// Whether `path`, followed through links, is a regular file this process may execute: the
+/// test a `PATH` candidate has to pass (`image.searchPath`, ADR 0090). Execute permission
+/// through `access`, and the type through a stat that follows — a name on `PATH` is often a
+/// link, and what `execve` runs is its target. No read permission is asked for: an
+/// execute-only file is still a program. A directory passes `X_OK`, and `execvp` moves past
+/// one; so does this. Any failure is "not this candidate" rather than an error, because the
+/// search moves on either way.
+pub fn isExecutableRegular(path: [*:0]const u8) bool {
+    if (access(path, X_OK) != 0) return false;
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        if (lnx.errno(lnx.statx(AT_FDCWD, path, 0, .{ .TYPE = true }, &stx)) != .SUCCESS) return false;
+        // The same gate `statNoFollow` keeps: a mode the kernel did not fill in is not an answer.
+        if (!stx.mask.TYPE) return false;
+        return lnx.S.ISREG(stx.mode);
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstatat(AT_FDCWD, path, &st, 0) != 0) return false;
+        return std.c.S.ISREG(st.mode);
+    }
+}
+
 /// Whether this kernel will accept a seccomp filter that answers `SECCOMP_RET_TRAP`.
 ///
 /// Asked with `SECCOMP_GET_ACTION_AVAIL`, which exists for exactly this question and
