@@ -1,0 +1,5 @@
+Terraform v1.18.0-dev
+sideeye 1.7.0 (trace contract v18)
+explore exit 0
+PASS - crash points: 3
+no case

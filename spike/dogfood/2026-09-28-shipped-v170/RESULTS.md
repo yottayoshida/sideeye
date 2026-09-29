@@ -148,6 +148,29 @@ is normally under version control, so the loss is recoverable:
     `apparatus/ulimit-repro.sh terraform`: 84 bytes to 0 (`transcripts/terraform-ulimit.txt`,
     `terraform-ulimit-trace.txt`). CONTRIBUTING's "AI Usage" asks for disclosure, which the form's
     AI field carries.
+    - **2026-09-29: the proposed fix, measured.** A maintainer answered with hashicorp/terraform#39303
+      (`fmt` writes through `replacefile.AtomicWriteFile`, a temporary file renamed over the
+      original, and follows a symlink with `os.Readlink`). Its head `dd3a8aa` and its base `db4eef4`
+      were built the same way (`CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build`, Go 1.26.5; sha256
+      `9c8f6355…` and `a262e6c2…`) and each bind-mounted over `/opt/bin/terraform` in the
+      `sideeye-sv170` box. The reported window is closed: under `--observe supervised`
+      (`apparatus/tf39303-supervised.sh`) the base FAILs at crash point 2 of 2, replayed twice, and
+      the head PASSes 4/4 (crash points 3 + 1 baseline); with `ulimit -f 0` the base leaves
+      `main.tf` at 0 bytes and the head keeps its 84 (`transcripts/terraform-39303/supervised-*.txt`,
+      `probe-*.txt`). Two things the base does not do (`apparatus/tf39303-probe.sh`,
+      `tf39303-wrong.sh`): a relative link's target is resolved from the working directory, not the
+      link's — `terraform fmt mod` run from `repo/`, with `mod/versions.tf -> ../versions.tf`,
+      overwrites an unrelated `../versions.tf` outside `repo/` with the formatted file and exits 0,
+      leaving the real target unformatted, and fails with exit 2 when nothing is there
+      (`wrong-*.txt`, `probe-*.txt`); run from inside `mod/` it formats the target. And `0600`,
+      `0664` and `0755` files all end up `0644`. The base formats the real target and keeps the mode
+      in every case. Reported on the issue with a direction for each and nothing tried
+      (`transcripts/terraform-39303/comment-5881440387.md`, the text as posted). This time the
+      comment was written in English from the start: the policy asks for disclosure and human
+      ownership, not for a human-written original. Not measured: owner and group, hard links,
+      power loss, Windows. The bare `terraform` in the define refused `no_shim_marker` naming no
+      mode, as in revision 1 (`default-*.txt`, `run.sh` unchanged), so the supervised run names the
+      mode itself.
   - **standardrb: already known.** The write is RuboCop's, and this project reported it as
     rubocop/rubocop#15720, fixed on RuboCop's main by rubocop/rubocop#15721 — in no release yet;
     standard 1.56.0 pins `rubocop ~> 1.88.0`. The freshness screen read standard as fresh because it
