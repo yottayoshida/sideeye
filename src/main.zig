@@ -1513,7 +1513,7 @@ fn phaseRecording(run: *Run) void {
     // computed from a mark taken before it. Taken once per run rather than per world:
     // this is a cold-path detail, not an observer, and must not join the exploration's
     // loop.
-    boundary.rec_image = image.observe(arena, op_argv[0], args.cwd);
+    boundary.rec_image = image.observe(arena, op_argv[0], args.cwd, if (std.c.getenv("PATH")) |p| std.mem.span(p) else null);
 
     // The macOS observer runs beside the recording rather than wrapping it, so it is
     // started here and stopped after — and both sentinels live inside the state root,

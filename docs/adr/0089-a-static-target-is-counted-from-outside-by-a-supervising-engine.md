@@ -94,6 +94,13 @@ catches a signal while its call waits for the supervisor has the call restarted 
    limit): replayed without the flag, a static target's case refuses `no_shim_marker`, never a wrong
    verdict. The report's `replay` and `reproduce` lines name `--observe supervised` instead of a
    shim. The static `no_shim_marker` detail says, beside `class_wall`, that this mode exists.
+   **Amended 2026-09-29 (ADR 0090): the "no new `next_step`" of this item, and the detail
+   sentence, no longer hold.** `observe_supervised` was added, and the detail line states the
+   linkage only; the step names the mode. The reason this ADR gave for leaving the step alone —
+   "the step set is closed (frozen surface 2)", in the Alternatives below — was wrong:
+   `docs/contract-freeze.md` surface 2 closes `unknown_reason`, and `setup_error_reason` is the
+   other closed set; `next_step` is neither. No `contract_version` bump and no new
+   `unknown_reason`, as here.
 
 ## Alternatives considered
 
@@ -108,7 +115,8 @@ catches a signal while its call waits for the supervisor has the call restarted 
   subject by the time it takes to notice the end, which the engine's lingering-process watch
   (`cgroupStop`, `noteLingering`) would read as a survivor on every contained run.
 - **A `next_step` naming this mode for a static target.** The step set is closed (frozen surface
-  2); the sentence beside `class_wall` names it instead.
+  2); the sentence beside `class_wall` names it instead. **Reversed 2026-09-29 by ADR 0090**: the
+  premise was false (see Consequence 7's amendment), and the two lines of one refusal disagreed.
 
 ## Consequences
 

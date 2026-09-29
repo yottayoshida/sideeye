@@ -124,13 +124,16 @@ pub const MachO = struct {
 };
 
 pub const Facts = union(enum) {
-    /// `argv[0]` carried no `/`, so the OS resolved it through `PATH` and Sideeye did
-    /// not. Reimplementing `execvp`'s search — empty components meaning the current
-    /// directory, relative components resolving against the child's cwd, the `ENOEXEC`
-    /// shell fallback, `EACCES` continuing to the next candidate — would put a second
-    /// copy of that rule in the tree, and the copy that drifts is the one that names
-    /// the wrong file with confidence.
-    not_resolved,
+    /// `argv[0]` carried no `/` and `searchPath` named no file for it. Which of the two
+    /// happened is the payload, because the detail line says different things: nothing was
+    /// searched, or the search found nothing.
+    ///
+    /// This arm used to cover every bare name: `execvp`'s search was not reimplemented, so
+    /// that the tree would hold no second copy of the rule to drift and name the wrong file
+    /// with confidence. #217 added that copy anyway, in `supervise_linux.zig`, for the file
+    /// `__filter-exec` launches. ADR 0090 made the two one function, `searchPath`, rather
+    /// than a third.
+    not_resolved: NotResolved,
     unreadable: Unreadable,
     /// Read, and neither ELF nor Mach-O. A `#!` script lands here; so does anything
     /// else. What the interpreter of a script would have been is a separate question
@@ -141,10 +144,24 @@ pub const Facts = union(enum) {
     macho: MachO,
 };
 
+pub const NotResolved = enum {
+    /// `PATH` is not set, so there was nothing to search. `execvp` falls back to a default
+    /// list then, and glibc's and musl's differ; the engine does not know which libc will
+    /// exec the operation, so it does not pick one (ADR 0090).
+    path_unset,
+    /// `PATH` was searched and no component held an executable regular file of that name.
+    not_found,
+};
+
 pub const Observation = struct {
     /// The path measured, or null when `facts` is `not_resolved`. Target-derived, so
     /// every caller that prints it must send it through `textShown` first.
     path: ?[]const u8,
+    /// The operation named a bare word and `searchPath` found `path` for it. Said beside the
+    /// path in the detail line, so a reader knows the file is the one this search chose, not
+    /// one the define named. Not part of `sameAnswer`: a second reading takes the path as
+    /// already found.
+    via_path: bool = false,
     /// The file's length at the moment of the reading. Part of what `sameAnswer`
     /// compares, and never printed as a fact about the run.
     size: ?u64,
@@ -165,12 +182,63 @@ pub fn sameAnswer(a: Observation, b: Observation) bool {
 ///
 /// `cwd` is the directory the child will `chdir` into (`[define] cwd`, #395); a
 /// relative `argv[0]` is resolved against it because that is what the child will do.
-pub fn observe(arena: std.mem.Allocator, argv0: []const u8, cwd: ?[]const u8) Observation {
-    if (std.mem.indexOfScalar(u8, argv0, '/') == null)
-        return .{ .path = null, .size = null, .facts = .not_resolved };
-
-    const path = resolveAgainst(arena, argv0, cwd) orelse
+///
+/// `path_env` is the `PATH` the operation inherits — the engine's own: the child is given
+/// only the engine's variables on top of it, and an `apparatus` `env:` entry is checked, not
+/// applied. A bare `argv[0]` is looked up along it with `searchPath` and its relative
+/// components against `cwd`, for the same reason. Null means `PATH` is unset, and then
+/// nothing is searched (`NotResolved.path_unset`).
+pub fn observe(arena: std.mem.Allocator, argv0: []const u8, cwd: ?[]const u8, path_env: ?[]const u8) Observation {
+    if (std.mem.indexOfScalar(u8, argv0, '/') != null) {
+        const path = resolveAgainst(arena, argv0, cwd) orelse
+            return .{ .path = null, .size = null, .facts = .{ .unreadable = .read_failed } };
+        return observePath(arena, path);
+    }
+    const env = path_env orelse
+        return .{ .path = null, .size = null, .facts = .{ .not_resolved = .path_unset } };
+    const buf = arena.alloc(u8, search_path_max) catch
         return .{ .path = null, .size = null, .facts = .{ .unreadable = .read_failed } };
+    const found = searchPath(buf, argv0, env, cwd) orelse
+        return .{ .path = null, .size = null, .facts = .{ .not_resolved = .not_found } };
+    var obs = observePath(arena, found);
+    obs.via_path = true;
+    return obs;
+}
+
+/// The longest candidate `searchPath` builds; a longer one is skipped, as `execvp` skips one
+/// past its own limit.
+pub const search_path_max = 4096;
+
+/// The one `PATH` search that decides which operation image the engine reads (`observe`) and
+/// which one `__filter-exec` launches (`supervise_linux.zig`), ADR 0090. Each component of `path_env` in
+/// order, an empty one meaning `.`; a relative component is taken against `cwd` when one is
+/// given, and against the process's own directory otherwise — `__filter-exec` passes none,
+/// because it runs after the child's `chdir`. The first candidate that is an executable
+/// regular file is the answer (`posix.isExecutableRegular`), written into `buf`.
+///
+/// What this does not copy from `execvp`: trying `execve` on each candidate, so a file that
+/// passes the test and then fails to exec is still the answer here, where `execvp` would move
+/// on to the next one only for `EACCES`; and the default list for an unset `PATH`, which the
+/// caller chooses. Under `--oracle` the file that runs is found by strace's own search, which
+/// agrees with this one as far as both follow the rule above. `refuse.zig`'s
+/// `findStraceForHint` is a separate search, for a hint that names strace, and is not this one.
+pub fn searchPath(buf: []u8, name: []const u8, path_env: []const u8, cwd: ?[]const u8) ?[:0]const u8 {
+    if (name.len == 0) return null;
+    var it = std.mem.splitScalar(u8, path_env, ':');
+    while (it.next()) |raw| {
+        const dir = if (raw.len == 0) "." else raw;
+        const full = if (dir[0] != '/' and cwd != null)
+            std.fmt.bufPrintZ(buf, "{s}/{s}/{s}", .{ cwd.?, dir, name }) catch continue
+        else
+            std.fmt.bufPrintZ(buf, "{s}/{s}", .{ dir, name }) catch continue;
+        if (posix.isExecutableRegular(full.ptr)) return full;
+    }
+    return null;
+}
+
+/// Read the file at `path`, already resolved. The half of `observe` after the name has
+/// become a path.
+fn observePath(arena: std.mem.Allocator, path: []const u8) Observation {
     const path_z = arena.dupeZ(u8, path) catch
         return .{ .path = path, .size = null, .facts = .{ .unreadable = .read_failed } };
 
@@ -640,8 +708,12 @@ fn fixtureDir(buf: []u8, tag: []const u8) [:0]u8 {
 }
 
 fn writeFixture(dir: [:0]const u8, name: []const u8, bytes: []const u8, out: []u8) ![:0]u8 {
+    return writeFixtureMode(dir, name, bytes, out, 0o644);
+}
+
+fn writeFixtureMode(dir: [:0]const u8, name: []const u8, bytes: []const u8, out: []u8, mode: c_uint) ![:0]u8 {
     const path = std.fmt.bufPrintZ(out, "{s}/{s}", .{ dir, name }) catch unreachable;
-    const fd = posix.open(path.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+    const fd = posix.open(path.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, mode);
     if (fd < 0) return error.SkipZigTest;
     defer _ = posix.close(fd);
     if (bytes.len != 0) {
@@ -697,7 +769,7 @@ fn factsOfBytes(tag: []const u8, bytes: []const u8) !Facts {
     }
     var arena = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena.deinit();
-    return observe(arena.allocator(), path, null).facts;
+    return observe(arena.allocator(), path, null, null).facts;
 }
 
 test "the platform byte is read even when flags are zero" {
@@ -1001,7 +1073,7 @@ test "hostile bytes produce an answer, never a crash" {
         var cut: usize = 0;
         while (cut <= fixture.len) : (cut += 1) {
             const path = try writeFixture(dir, "h", fixture[0..cut], &pbuf);
-            _ = observe(arena.allocator(), path, null);
+            _ = observe(arena.allocator(), path, null, null);
             _ = posix.unlink(path.ptr);
         }
         for ([_]u8{ 0xff, 0x00 }) |fill| {
@@ -1010,7 +1082,7 @@ test "hostile bytes produce an answer, never a crash" {
                 @memcpy(scratch[0..fixture.len], fixture);
                 scratch[i] = fill;
                 const path = try writeFixture(dir, "h", scratch[0..fixture.len], &pbuf);
-                _ = observe(arena.allocator(), path, null);
+                _ = observe(arena.allocator(), path, null, null);
                 _ = posix.unlink(path.ptr);
             }
         }
@@ -1080,10 +1152,92 @@ test "a script is unrecognised rather than guessed at" {
 test "argv[0] without a slash is not resolved, and says so" {
     var arena = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena.deinit();
-    const obs = observe(arena.allocator(), "git", null);
-    try testing.expectEqual(Facts.not_resolved, obs.facts);
+    const obs = observe(arena.allocator(), "git", null, null);
+    try testing.expectEqual(Facts{ .not_resolved = .path_unset }, obs.facts);
     try testing.expect(obs.path == null);
     try testing.expect(obs.size == null);
+    try testing.expect(!obs.via_path);
+}
+
+test "searchPath takes the first executable regular file, as execvp would (ADR 0090)" {
+    var rbuf: [256]u8 = undefined;
+    const root = fixtureDir(&rbuf, "search");
+    // a/tool is a directory, b/tool a file without execute permission, c/tool the program:
+    // each of the first two passes a test the next one does not.
+    var b1: [320]u8 = undefined;
+    var b2: [320]u8 = undefined;
+    var b3: [320]u8 = undefined;
+    var b4: [320]u8 = undefined;
+    const a = try std.fmt.bufPrintZ(&b1, "{s}/a", .{root});
+    const b = try std.fmt.bufPrintZ(&b2, "{s}/b", .{root});
+    const c = try std.fmt.bufPrintZ(&b3, "{s}/c", .{root});
+    const a_tool = try std.fmt.bufPrintZ(&b4, "{s}/a/tool", .{root});
+    _ = posix.mkdir(a.ptr, 0o755);
+    _ = posix.mkdir(b.ptr, 0o755);
+    _ = posix.mkdir(c.ptr, 0o755);
+    _ = posix.mkdir(a_tool.ptr, 0o755);
+    var pb: [512]u8 = undefined;
+    var pc: [512]u8 = undefined;
+    const b_tool = try writeFixtureMode(b, "tool", "x", &pb, 0o644);
+    const c_tool = try writeFixtureMode(c, "tool", "x", &pc, 0o755);
+    defer {
+        _ = posix.unlink(b_tool.ptr);
+        _ = posix.unlink(c_tool.ptr);
+        _ = posix.rmdir(a_tool.ptr);
+        _ = posix.rmdir(a.ptr);
+        _ = posix.rmdir(b.ptr);
+        _ = posix.rmdir(c.ptr);
+        _ = posix.rmdir(root.ptr);
+    }
+
+    var out: [search_path_max]u8 = undefined;
+    var env_buf: [1024]u8 = undefined;
+    const env = try std.fmt.bufPrint(&env_buf, "{s}:{s}:{s}", .{ a, b, c });
+    try testing.expectEqualStrings(c_tool, searchPath(&out, "tool", env, null) orelse return error.TestUnexpectedResult);
+    // Order decides: c first names c's file even with the others behind it.
+    const env_c_first = try std.fmt.bufPrint(&env_buf, "{s}:{s}", .{ c, b });
+    try testing.expectEqualStrings(c_tool, searchPath(&out, "tool", env_c_first, null) orelse return error.TestUnexpectedResult);
+    // Control: without c nothing qualifies, so the directory and the non-executable file
+    // are what the first assertion walked past, not what it happened to miss.
+    const env_no_c = try std.fmt.bufPrint(&env_buf, "{s}:{s}", .{ a, b });
+    try testing.expect(searchPath(&out, "tool", env_no_c, null) == null);
+
+    // A relative component, and an empty one (meaning "."), are taken against the cwd given.
+    var want: [512]u8 = undefined;
+    try testing.expectEqualStrings(
+        try std.fmt.bufPrint(&want, "{s}/c/tool", .{root}),
+        searchPath(&out, "tool", "c", root) orelse return error.TestUnexpectedResult,
+    );
+    try testing.expectEqualStrings(
+        try std.fmt.bufPrint(&want, "{s}/./tool", .{c}),
+        searchPath(&out, "tool", "/nonexistent-for-this-test::", c) orelse return error.TestUnexpectedResult,
+    );
+    // The same relative component against another directory finds nothing there.
+    try testing.expect(searchPath(&out, "tool", "c", a) == null);
+}
+
+test "a bare argv[0] is read off PATH and says it was, or says why it was not" {
+    var rbuf: [256]u8 = undefined;
+    const dir = fixtureDir(&rbuf, "bare");
+    var pbuf: [512]u8 = undefined;
+    const path = try writeFixtureMode(dir, "prog", "#!/bin/sh\n", &pbuf, 0o755);
+    defer {
+        _ = posix.unlink(path.ptr);
+        _ = posix.rmdir(dir.ptr);
+    }
+    var arena = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena.deinit();
+
+    const found = observe(arena.allocator(), "prog", null, dir);
+    try testing.expect(found.via_path);
+    try testing.expectEqualStrings(path, found.path orelse return error.TestUnexpectedResult);
+    // Read the way a named path is read: the script is `unrecognised`, as it is by path.
+    try testing.expectEqual(Facts.unrecognised, found.facts);
+    try testing.expectEqual(observe(arena.allocator(), path, null, null).facts, found.facts);
+
+    const missing = observe(arena.allocator(), "no-such-prog-for-this-test", null, dir);
+    try testing.expectEqual(Facts{ .not_resolved = .not_found }, missing.facts);
+    try testing.expect(missing.path == null and !missing.via_path);
 }
 
 test "a relative argv[0] resolves against the declared cwd, as the child will" {
@@ -1105,9 +1259,9 @@ test "a relative argv[0] resolves against the declared cwd, as the child will" {
     // half whenever the process happens to sit in the right directory, so the negative
     // half — the same argv[0] against a directory that holds nothing — is what pins the
     // join actually happening.
-    const with = observe(arena.allocator(), "./prog", dir);
+    const with = observe(arena.allocator(), "./prog", dir, null);
     try testing.expect(with.facts == .macho);
-    const without = observe(arena.allocator(), "./prog", "/nonexistent-cwd-for-this-test");
+    const without = observe(arena.allocator(), "./prog", "/nonexistent-cwd-for-this-test", null);
     try testing.expectEqual(Facts{ .unreadable = .no_such_file }, without.facts);
 }
 
@@ -1127,7 +1281,7 @@ test "a second reading of a replaced file does not agree with the first" {
     defer arena.deinit();
     const a = arena.allocator();
 
-    const before = observe(a, path, null);
+    const before = observe(a, path, null, null);
     try testing.expect(before.facts.macho.signing.?.libraryValidation());
     // Same reading twice is agreement: without this half, an implementation that always
     // reports disagreement would pass the interesting half of the test.
@@ -1147,7 +1301,7 @@ test "the host's own binaries, as a smoke test only" {
 
     // /usr/bin/true: flags 0, platform 16, and universal with an arm64e slice on Apple
     // silicon — the file that fails a subtype-exact slice picker.
-    const t = observe(a, "/usr/bin/true", null);
+    const t = observe(a, "/usr/bin/true", null, null);
     if (t.facts == .macho) {
         const s = t.facts.macho.signing.?;
         try testing.expect(s.platformNamed());
@@ -1157,6 +1311,6 @@ test "the host's own binaries, as a smoke test only" {
     // A second host file, read only to show the reader reaches a Mach-O at all. No
     // expectation is pinned on its flags: what a system binary carries is Apple's to
     // change, and the parser's own falsification is the fixtures above.
-    const other = observe(a, "/bin/ls", null);
+    const other = observe(a, "/bin/ls", null, null);
     try testing.expect(other.facts == .macho or other.facts == .undecidable);
 }

@@ -25,6 +25,7 @@
 //! collection does not depend on which test in `main.zig` happens to mention what.
 
 const std = @import("std");
+const supervise = @import("supervise.zig");
 const contract = @import("contract");
 const engine = @import("engine.zig");
 const posix = @import("posix.zig");
@@ -1088,8 +1089,15 @@ test "foreignTouchDetail names the record, both ends of a two-path op, and defan
 /// covers `.not_resolved`, `.unreadable` and `.undecidable`, and stops there: `.unrecognised`
 /// means the file WAS read, and what it says is not "nothing about linkage" but "no library
 /// goes into this", so that arm names the define instead (#481).
+///
+/// **Amended by ADR 0090.** A statically linked 64-bit ELF takes `observe_supervised` where this
+/// build can supervise (`supervise.available`: Linux, on aarch64 or x86_64)
+/// rather than the wall, because that mode counts such a target from outside it; a bare name is
+/// read off `PATH` first, so it reaches the same arm a path does. Under `--observe supervised`
+/// the step is `environment` whatever the image: no shim was asked to load, and a trace without
+/// the start record the engine writes itself means the engine could not write its trace.
 pub fn noShimNext() contract.NextStep {
-    return noShimNextFor(rec_image);
+    return noShimNextFor(rec_image, observe_mode, supervise.available);
 }
 
 /// The step for `oracle_missed_operation` (#599, ADR 0069): `--observe syscalls` where that mode
@@ -1117,10 +1125,20 @@ pub fn fixDefineUnder(observe: contract.ObserveMode) contract.NextStep {
 
 /// The observation-to-step table above, taking its observation as an argument rather than
 /// reading the global — so every arm can be pinned in a test without a recording behind it.
-fn noShimNextFor(observed: ?image.Observation) contract.NextStep {
+/// `can_supervise` is whether this build has the mode at all, passed in so every arm can be pinned
+/// on any host; the caller gives `supervise.available`, a compile-time fact, so no kernel is asked.
+fn noShimNextFor(observed: ?image.Observation, mode: contract.ObserveMode, can_supervise: bool) contract.NextStep {
+    // First, and before the image: under this mode the image's linkage is not the question
+    // (`noShimDetail` says why), and a static image here is the one the mode exists for.
+    if (mode == .supervised) return .environment;
     const obs = observed orelse return .check_shim;
     return switch (obs.facts) {
-        .elf => |e| if (e.has_interp) .check_shim else .class_wall,
+        .elf => |e| if (e.has_interp)
+            .check_shim
+        else if (e.class64 and can_supervise)
+            .observe_supervised
+        else
+            .class_wall,
         // Read in the same order `noShimDetail` reads them, so the step never contradicts
         // the sentence beside it: signing first, and only an unsigned image is judged by
         // its dyld linkage (review caught the reversed order on a signed, non-dyld image —
@@ -1179,9 +1197,17 @@ pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
     const obs = rec_image orelse return arena.dupe(u8, opening ++
         "; the operation's image was not examined") catch opening;
 
-    const path = obs.path orelse return arena.dupe(u8, opening ++
-        "; the operation's first word names no path, so the OS resolved it through PATH and Sideeye did not") catch opening;
+    const path = obs.path orelse return arena.dupe(u8, switch (obs.facts) {
+        .not_resolved => |why| switch (why) {
+            .path_unset => opening ++ "; the operation's first word names no path, and PATH is not set, so Sideeye did not look for the file it names",
+            .not_found => opening ++ "; the operation's first word names no path, and no directory on PATH holds an executable file of that name",
+        },
+        else => opening ++ "; the operation's image was not examined",
+    }) catch opening;
     const shown = textShown(arena, path);
+    // Said beside the path, so a reader knows this file is the one Sideeye's own search chose
+    // for a bare name (ADR 0090), not one the define named.
+    const found = if (obs.via_path) " (found along PATH)" else "";
 
     // "the two readings do not agree", and nothing further. Not "the content differs":
     // losing read permission after the run, or a transient failure, moves the answer
@@ -1194,7 +1220,9 @@ pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
         "";
 
     const body: []const u8 = switch (obs.facts) {
-        .not_resolved => "the OS resolved it through PATH and Sideeye did not",
+        // Unreachable with a path — `observe` returns `not_resolved` only with none — and kept
+        // as a sentence rather than `unreachable` because this line is a refusal's detail.
+        .not_resolved => "Sideeye did not find it on PATH",
         .unreadable => |u| switch (u) {
             .no_such_file => "nothing is there now",
             .permission_denied => "it cannot be opened for reading",
@@ -1210,10 +1238,9 @@ pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
         .elf => |e| if (e.has_interp)
             "it names an interpreter, so it is dynamically linked and the marker's absence has another cause"
         else
-            // The mode that goes past this wall is named here, in the sentence, because the step
-            // beside it is `class_wall` and the step set is closed (#217): on Linux,
-            // `--observe supervised` counts such a target from outside it.
-            "it names no interpreter, so it is statically linked and no preloaded library can reach it; on Linux 5.19 or later, on aarch64 or x86_64, --observe supervised counts it from outside the process instead",
+            // The observation only. The mode that goes past this wall used to be named here,
+            // because the step beside it was `class_wall`; the step names it now (ADR 0090).
+            "it names no interpreter, so it is statically linked and no preloaded library can reach it",
         .macho => |m| blk: {
             const s = m.signing orelse break :blk if (m.dyldlink)
                 "it is dynamically linked and carries no code signature"
@@ -1232,8 +1259,8 @@ pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
     // "before the run started", not "as it started". The reading is taken ahead of the
     // spawn and nothing pins it to the instant of exec; the honest upper bound on what
     // the observation supports is that it happened first.
-    return std.fmt.allocPrint(arena, "{s}; read before the run started, on {s}: {s}{s}", .{
-        opening, shown, body, drift,
+    return std.fmt.allocPrint(arena, "{s}; read before the run started, on {s}{s}: {s}{s}", .{
+        opening, shown, found, body, drift,
     }) catch opening;
 }
 
@@ -1438,12 +1465,18 @@ test "a bare single-process claim is scoped the moment anything follows it" {
     try std.testing.expect(std.mem.startsWith(u8, boundaryAccount(), "single process in the recording;"));
 }
 
-test "noShimNextFor: the step each image observation takes (#481)" {
+test "noShimNextFor: the step each image observation takes (#481, ADR 0090)" {
     const obs = struct {
         fn of(f: image.Facts) image.Observation {
             return .{ .path = "/x", .size = 0, .facts = f };
         }
     }.of;
+    const next = struct {
+        fn wrappers_linux(o: ?image.Observation) contract.NextStep {
+            return noShimNextFor(o, .wrappers, true);
+        }
+    }.wrappers_linux;
+    const static64: image.Facts = .{ .elf = .{ .has_interp = false, .class64 = true } };
 
     // The arm this test exists for. Read, and not recognised as an executable image: the
     // insertion had nothing to go into, and the define is what changes. `image.zig` reaches
@@ -1451,30 +1484,79 @@ test "noShimNextFor: the step each image observation takes (#481)" {
     // script lands), an ELF class or data byte outside the two each admits, and a Mach-O
     // slice whose own magic is neither — and all of them take the same step, because the
     // step is about what the file is not.
-    try std.testing.expectEqual(contract.NextStep.operation_not_an_image, noShimNextFor(obs(.unrecognised)));
+    try std.testing.expectEqual(contract.NextStep.operation_not_an_image, next(obs(.unrecognised)));
 
-    // The three that stay on the shim step: each is silent about linkage, so the shim is
-    // still the honest thing to look at.
-    //
-    // `.not_resolved` is the weakest of the three and a known reading problem rather than a
-    // settled answer — `docs/target-classes.md`'s chezmoi/gopass row records that the
-    // refusal names static linkage only when the operation's first word is a path, and says
-    // something else through PATH. A change that moves THIS arm is fixing that; it is not
-    // breaking this pin.
-    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.not_resolved)));
-    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .unreadable = .no_such_file })));
-    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .undecidable = .slice_not_unique })));
+    // The ones that stay on the shim step: each is silent about linkage, so the shim is
+    // still the honest thing to look at. `.not_resolved` is now only a bare name PATH did not
+    // lead anywhere (ADR 0090) — the chezmoi/gopass row of `docs/target-classes.md` recorded
+    // the reading problem this arm used to be, and ADR 0090 moved it.
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .not_resolved = .path_unset })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .not_resolved = .not_found })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .unreadable = .no_such_file })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .undecidable = .slice_not_unique })));
 
-    // Unchanged, and here so that widening the new arm to the whole switch fails: the two
-    // that read real image facts still split the wall from the shim.
-    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .elf = .{ .has_interp = true, .class64 = true } })));
-    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .elf = .{ .has_interp = false, .class64 = true } })));
-    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(obs(.{ .macho = .{ .dyldlink = true, .signing = null } })));
-    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .macho = .{ .dyldlink = false, .signing = null } })));
-    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } })));
+    // A static 64-bit ELF on Linux, under either shim mode, is sent to the mode that counts it
+    // from outside. Each condition is pinned by a neighbour that differs in it alone.
+    try std.testing.expectEqual(contract.NextStep.observe_supervised, next(obs(static64)));
+    try std.testing.expectEqual(contract.NextStep.observe_supervised, noShimNextFor(obs(static64), .syscalls, true));
+    //   ... not in a build without that mode (off Linux, or on another architecture),
+    try std.testing.expectEqual(contract.NextStep.class_wall, noShimNextFor(obs(static64), .wrappers, false));
+    //   ... not for a 32-bit image, whose i386-compat or x32 calls that mode does not see,
+    try std.testing.expectEqual(contract.NextStep.class_wall, next(obs(.{ .elf = .{ .has_interp = false, .class64 = false } })));
+    //   ... and not for a dynamic one, where the marker's absence has another cause.
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .elf = .{ .has_interp = true, .class64 = true } })));
+
+    // Under `--observe supervised` itself the step is the environment whatever was read: no
+    // shim was asked to load, and the start record the engine writes itself is what is missing.
+    // A static image is the case the mode exists for, so it is the one pinned first.
+    try std.testing.expectEqual(contract.NextStep.environment, noShimNextFor(obs(static64), .supervised, true));
+    try std.testing.expectEqual(contract.NextStep.environment, noShimNextFor(obs(.{ .not_resolved = .not_found }), .supervised, true));
+    try std.testing.expectEqual(contract.NextStep.environment, noShimNextFor(null, .supervised, true));
+
+    // The Mach-O arms are unchanged: the wall stays the wall, the shim stays the shim.
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .macho = .{ .dyldlink = true, .signing = null } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, next(obs(.{ .macho = .{ .dyldlink = false, .signing = null } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, next(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } })));
 
     // No observation at all — the run stopped before the image was read.
-    try std.testing.expectEqual(contract.NextStep.check_shim, noShimNextFor(null));
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(null));
+}
+
+test "noShimDetail says a bare name's file was found along PATH, and why none was (ADR 0090)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const saved_mode = observe_mode;
+    const saved_image = rec_image;
+    defer {
+        observe_mode = saved_mode;
+        rec_image = saved_image;
+    }
+    observe_mode = .wrappers;
+
+    rec_image = .{ .path = null, .size = null, .facts = .{ .not_resolved = .path_unset } };
+    try std.testing.expect(std.mem.indexOf(u8, noShimDetail(arena), "PATH is not set") != null);
+    rec_image = .{ .path = null, .size = null, .facts = .{ .not_resolved = .not_found } };
+    const nf = noShimDetail(arena);
+    try std.testing.expect(std.mem.indexOf(u8, nf, "no directory on PATH holds an executable file of that name") != null);
+    // The sentence this replaced said the OS resolved the name and Sideeye did not; after a
+    // search that is false.
+    try std.testing.expect(std.mem.indexOf(u8, nf, "Sideeye did not") == null);
+
+    // A path that does not exist: the reading is `unreadable`, and the only thing that differs
+    // between the two lines is where the path came from.
+    rec_image = .{ .path = "/nonexistent-for-this-test/prog", .size = null, .via_path = true, .facts = .{ .unreadable = .no_such_file } };
+    const via = noShimDetail(arena);
+    rec_image = .{ .path = "/nonexistent-for-this-test/prog", .size = null, .via_path = false, .facts = .{ .unreadable = .no_such_file } };
+    const named = noShimDetail(arena);
+    try std.testing.expect(std.mem.indexOf(u8, via, "/nonexistent-for-this-test/prog (found along PATH): ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, named, "(found along PATH)") == null);
+
+    // The static line states the linkage and no longer names the mode: the step does.
+    rec_image = .{ .path = "/nonexistent-for-this-test/prog", .size = null, .facts = .{ .elf = .{ .has_interp = false, .class64 = true } } };
+    const st = noShimDetail(arena);
+    try std.testing.expect(std.mem.indexOf(u8, st, "statically linked and no preloaded library can reach it") != null);
+    try std.testing.expect(std.mem.indexOf(u8, st, "--observe supervised") == null);
 }
 
 test "missedOperationNext names the syscall mode only on Linux and only where it is not in use (#599)" {
