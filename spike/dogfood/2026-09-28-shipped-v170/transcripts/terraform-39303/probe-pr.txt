@@ -1,0 +1,95 @@
+Terraform v1.18.0-dev
+
+## mode
+$ stat -c "%a %n" *.tf
+600 f600.tf
+664 f664.tf
+755 f755.tf
+$ terraform fmt
+f600.tf
+f664.tf
+f755.tf
+$ stat -c "%a %n" *.tf
+644 f600.tf
+644 f664.tf
+644 f755.tf
+
+## relative symlink, fmt run from the parent (-recursive)
+$ terraform fmt -recursive; echo "exit $?"
+mod/main.tf
+shared/main.tf
+╷
+│ Error: Failed to write ../shared/main.tf
+│ 
+│ 
+╵
+
+exit 2
+$ ls -l mod shared; find / -xdev -name "main.tf*" -newer /r/shared 2>/dev/null | grep -v "^/r/" ; cat shared/main.tf
+mod:
+total 0
+lrwxrwxrwx 1 root root 17 Sep 29 00:28 main.tf -> ../shared/main.tf
+
+shared:
+total 4
+-rw-r--r-- 1 root root 52 Sep 29 00:28 main.tf
+variable "a" {
+  default = "x"
+  type    = string
+}
+
+## relative symlink, fmt given the subdirectory
+$ terraform fmt mod; echo "exit $?"
+mod/main.tf
+╷
+│ Error: Failed to write ../shared/main.tf
+│ 
+│ 
+╵
+
+exit 2
+$ ls -l mod shared; cat shared/main.tf
+mod:
+total 0
+lrwxrwxrwx 1 root root 17 Sep 29 00:28 main.tf -> ../shared/main.tf
+
+shared:
+total 4
+-rw-r--r-- 1 root root 48 Sep 29 00:28 main.tf
+variable "a" {
+default="x"
+  type =    string
+}
+
+## relative symlink, fmt run inside the link's own directory (control)
+$ terraform fmt; echo "exit $?"
+main.tf
+exit 0
+$ ls -l /r/mod /r/shared; cat /r/shared/main.tf
+/r/mod:
+total 0
+lrwxrwxrwx 1 root root 17 Sep 29 00:28 main.tf -> ../shared/main.tf
+
+/r/shared:
+total 4
+-rw-r--r-- 1 root root 52 Sep 29 00:28 main.tf
+variable "a" {
+  default = "x"
+  type    = string
+}
+
+## ulimit -f 0
+$ wc -c < main.tf
+84
+$ ( ulimit -f 0; terraform fmt ); echo "exit $?"
+main.tf
+╷
+│ Error: Failed to write main.tf
+│ 
+│ 
+╵
+
+exit 2
+$ wc -c < main.tf; ls -A
+84
+main.tf
