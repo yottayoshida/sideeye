@@ -1,0 +1,6 @@
+[world]
+state = "/s/tombi/proj"
+
+[define]
+operation = "/opt/bin/tombi format --offline a.toml"
+cwd       = "/s/tombi/proj"
