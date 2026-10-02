@@ -200,7 +200,10 @@ is normally under version control, so the loss is recoverable:
       existed) agreed on every line but timestamps and the copy's random name. Not measured: what
       the first four kill points leave beside `main.tf`, a directory the user cannot write (the
       copy is made beside the path named), owner and group, hard links, power loss, Windows; the
-      default-mode leg was not re-run.
+      default-mode leg was not re-run. Answered on the issue with what was fixed and nothing else
+      (`transcripts/terraform-39303-28a34e9/comment-5945605229.md`, the text as posted) — the
+      owner's call: the window that is left is the design the maintainers chose and described, so
+      it is recorded here and not raised there.
   - **standardrb: already known.** The write is RuboCop's, and this project reported it as
     rubocop/rubocop#15720, fixed on RuboCop's main by rubocop/rubocop#15721 — in no release yet;
     standard 1.56.0 pins `rubocop ~> 1.88.0`. The freshness screen read standard as fresh because it
