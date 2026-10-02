@@ -1,0 +1,38 @@
+$ helm version
+version.BuildInfo{Version:"v4.3.0", GitCommit:"bec5b06ed841fe5269972d864d5177944fd5970f", GitTreeState:"clean", GoVersion:"go1.27.1", KubeClientVersion:"v1.37"}
+$ wc -c < repositories.yaml
+163
+$ ( ulimit -f 0; helm repo remove b --repository-config repositories.yaml --repository-cache cache ); echo "exit $?"
+Error: write repositories.yaml: file too large
+exit 1
+$ wc -c < repositories.yaml; ls -lA
+0
+total 0
+-rw-r--r-- 1 root root 0 Oct  2 06:02 repositories.yaml
+
+## the same command without the limit, under strace, the repositories file only
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate -P /demo/repositories.yaml helm repo remove b --repository-config repositories.yaml --repository-cache cache 2>&1 | grep -v -E "O_RDONLY|^\[pid +[0-9]+\] \+\+\+|^\+\+\+|SIGURG|resumed" | cut -c1-200
+strace: Process 44 attached
+strace: Process 45 attached
+strace: Process 46 attached
+strace: Process 47 attached
+strace: Process 48 attached
+strace: Process 49 attached
+strace: Process 50 attached
+strace: Process 51 attached
+[pid    43] write(4</demo/repositories.yaml>, "apiVersion: \"\"\ngenerated: \"0001-"..., 249) = 249
+"b" has been removed from your repositories
+$ wc -c < repositories.yaml; cat repositories.yaml
+249
+apiVersion: ""
+generated: "0001-01-01T00:00:00Z"
+repositories:
+- caFile: ""
+  certFile: ""
+  insecure_skip_tls_verify: false
+  keyFile: ""
+  name: a
+  pass_credentials_all: false
+  password: ""
+  url: https://a.example.invalid/charts
+  username: ""

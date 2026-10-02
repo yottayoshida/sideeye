@@ -8,7 +8,8 @@ that is neither old nor new with the original whole in a backup beside it. Every
 replayed twice by `run.sh`; every verdict is `oracle_verified`. No define carries a checker, so
 each verdict is the built-in rule's (`SELECTION.md`).
 
-Two upstream fixes were measured in the same sitting, each beside its parent commit: both close
+Two of the twelve were reported upstream, helm and tombi (below). Two upstream fixes were
+measured in the same sitting, each beside its parent commit: both close
 the window this project reported and neither breaks what the old write kept, except a second
 hard link.
 
@@ -138,6 +139,56 @@ The first attempt at these four runs reached no explore: `measure.sh` removed th
 directory's parent and the engine makes only the leaf (`transcripts/fix/host-first-attempt-setup-error.txt`,
 four `SETUP_ERROR`s). One line was added and all four re-run; the probes in that first attempt
 agree with the second and are not kept.
+
+## Novelty and reporting
+
+The novelty check came after the explores, not before them (`SELECTION.md`). For each of the
+twelve FAILs it read the writer on the default branch, the releases since the measured one, the
+tracker, and the project's rules for reports (`transcripts/receipts/after-the-fail.txt`; every
+writer line and every quoted policy line there was re-read by hand at the commit it names, and
+the search counts are the reading agents').
+
+**All twelve write the same way on their default branch today, and no tracker holds a report of
+this shape.** Two were filed — the owner's ruling, 2026-10-02, on those receipts — and each text
+was shown to the owner in full and posted unchanged:
+
+- **helm: filed as helm/helm#32709** (`report-helm.md`). The one target here that is not a source
+  file: `repositories.yaml` is a user's list of chart repositories, with their credentials. The
+  2026-09-28 kubectl finding is the same window on the same kind of file and was not filed — one
+  write long, and a kubeconfig can usually be regenerated. What helm has that kubectl did not is
+  its own record: the write was made atomic in 2017 (helm/helm#2449), reverted for a dependency's
+  licence with a note that it would need re-implementing (helm/helm#2938), and re-implemented in
+  2020 for `index.yaml` only (helm/helm#7954). Today `index.go` and `chartrepo.go` in the same
+  package write through `fileutil.AtomicWriteFile` and `repo.go` line 124 is `os.WriteFile`.
+  v4.3.0, the measured release, is the latest. No policy on AI use was found; the report carries
+  a disclosure.
+- **tombi: filed as tombi-toml/tombi#2265** (`report-tombi.md`), in its form's fields. A
+  formatter rewriting a working tree, the reason ast-grep, nbQA and terraform were filed on. The
+  box holds 1.5.6 and v1.7.0 came out the day before, so the release binary was measured first:
+  FAIL 1 of 4 in the same place, replayed twice, and 0 bytes under `ulimit -f 0`
+  (`PREDICTION-latest.md`, `transcripts/latest/`). Its maintainer answered ten of the last ten
+  outside reports. No policy on AI use was found; the report carries a disclosure.
+
+What each report quotes was run as the report's own steps
+(`apparatus/report-evidence.sh`, `transcripts/report-evidence-helm.txt` and `-tombi.txt`).
+
+The other ten FAILs are not filed:
+
+| Target | Why not |
+|---|---|
+| biome | Its `CONTRIBUTING.md` asks that contributor communication not be written with AI, so the text would have to be the owner's own; not taken up. Measured again on 2.5.15, the latest: the same FAIL (`transcripts/latest/`). Its tracker holds the opposite observation — a reporter who looked for truncation on a 40-file `--write` run and found none (biomejs/biome#11817) |
+| oxfmt | The same project answered the same shape for its linter in 2024 (oxc-project/oxc#6061): syncing was measured as too slow, the write stayed `fs::write`, and the fix was to write fewer files |
+| pg_format | Measured on Debian's 5.6; upstream is at v5.11 with the same `open`, not measured. An earlier report of the file emptied by an exception was fixed on the encoding side only |
+| scalafmt | One bug form, shaped for wrong formatting output, blank issues off; seven of the last ten bug reports closed without a comment |
+| alejandra | Half of recent bug reports answered, after 6 to 75 days |
+| jsonnetfmt | No maintainer reply on the last ten bug reports; no commit since the measured release |
+| yamlfmt | One maintainer in spare time; no reply on the six issues opened since February |
+| ktfmt | Moved to another organisation; no maintainer reply on recent outside issues |
+| pint | Issues are off, and the write is PHP-CS-Fixer's, whose form requires a reproduction on its own latest release — not measured here. A batch of file-handling reports reached that project privately in September and its content is not visible |
+| gofumpt | The write is Go's own `gofmt`, inherited: a backup, an in-place write, a truncate. The original survives in the backup; a pull request to Go to swap the file atomically (golang/go#44173) was closed unmerged, why was not read |
+
+No one of these is a judgement that the finding is not real; each is measured the same way as
+the two that were filed.
 
 ## Found in passing
 
