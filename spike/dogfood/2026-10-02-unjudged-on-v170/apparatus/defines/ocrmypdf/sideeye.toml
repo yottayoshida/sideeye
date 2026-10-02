@@ -1,0 +1,6 @@
+[world]
+state = "/s/ocrmypdf/ocr"
+
+[define]
+operation = "ocrmypdf -q --force-ocr /s/ocrmypdf/ocr/a.pdf /s/ocrmypdf/ocr/a.pdf"
+check     = "/ap/defines/ocrmypdf/check.sh"

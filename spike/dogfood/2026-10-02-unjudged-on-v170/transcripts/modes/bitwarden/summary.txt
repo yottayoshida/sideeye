@@ -1,0 +1,3 @@
+bitwarden: wrappers: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0
+bitwarden: syscalls: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0
+bitwarden: supervised: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0

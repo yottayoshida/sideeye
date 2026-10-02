@@ -1,0 +1,6 @@
+[world]
+state = "/s/php-cs-fixer-r1/proj"
+
+[define]
+operation = "php /opt/bin/php-cs-fixer.phar fix --rules=@PSR12 --no-interaction a.php"
+cwd       = "/s/php-cs-fixer-r1/proj"

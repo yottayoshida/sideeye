@@ -1,0 +1,24 @@
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/pg_format-511/proj/a.sql)
+            before write(/s/pg_format-511/proj/a.sql)
+path        a.sql
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (1431 syscall lines examined, 843 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/pg_format-511/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/pg_format-511/proj
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/pg_format-511/proj SIDEEYE_TRACE_PATH=/out/pg_format-511/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=6271ec36f9ca371c9a3df45380ca35f0849803a5a819d98dddb0c0b79f1008a5;

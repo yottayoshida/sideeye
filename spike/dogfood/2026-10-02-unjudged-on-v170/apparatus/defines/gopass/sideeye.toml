@@ -1,0 +1,8 @@
+[world]
+state = "/s/gopass/gp/.local/share/gopass/stores/root"
+
+[define]
+operation = "/usr/local/bin/gopass rm -f seed/entry0"
+# The 2026-09-27 run exported both before the engine started; env.sh beside this file does the
+# same, and these entries make a missing export a SETUP ERROR (ORIGIN.md).
+apparatus = ["env:GOPASS_HOMEDIR=/s/gopass/gp", "env:GOPASS_AGE_PASSWORD=testpassphrase"]

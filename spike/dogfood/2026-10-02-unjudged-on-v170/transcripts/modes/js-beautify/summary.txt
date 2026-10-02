@@ -1,0 +1,9 @@
+js-beautify: wrappers: exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: wrappers: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: wrappers: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: syscalls: exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: syscalls: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: syscalls: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: supervised: exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+js-beautify: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3

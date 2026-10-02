@@ -1,0 +1,25 @@
+# modes.sh, one box per target; the per-target summary is modes/<t>/summary.txt
+git-cliff: docker exit 0
+js-beautify: docker exit 0
+ktlint: docker exit 0
+ormolu: docker exit 0
+eslint: docker exit 0
+stylelint: docker exit 0
+prettier: docker exit 0
+svgo: docker exit 0
+npm-pkg-set: docker exit 0
+git: docker exit 0
+bitwarden: docker exit 0
+zstd: docker exit 0
+lz4: docker exit 0
+zstd-userview3: docker exit 0
+bat: docker exit 0
+ccache: docker exit 0
+meson: docker exit 0
+fish: docker exit 0
+vim: docker exit 0
+rrdtool: docker exit 0
+oxfmt-071: docker exit 0
+pg_format-511: docker exit 0
+php-cs-fixer: docker exit 0
+done

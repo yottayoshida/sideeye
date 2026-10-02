@@ -1,0 +1,5 @@
+[world]
+state = "/s/joplin/jp"
+
+[define]
+operation = "joplin --profile /s/joplin/jp mknote SecondNote"

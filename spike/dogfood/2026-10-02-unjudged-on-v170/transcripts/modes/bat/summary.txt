@@ -1,0 +1,3 @@
+bat: wrappers: exit 2: UNKNOWN baseline_violates_invariant oracle_verified=True crash_points=7
+bat: syscalls: exit 2: UNKNOWN baseline_violates_invariant oracle_verified=True crash_points=7
+bat: supervised: exit 2: UNKNOWN baseline_violates_invariant oracle_verified=True crash_points=7

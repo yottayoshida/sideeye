@@ -1,0 +1,54 @@
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+Running analysis on 9 cores with 10 files per process.
+Rules from configuration have been overridden by rules provided as command argument.
+ 0/1 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%
+ 1/1 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%
+
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+Running analysis on 9 cores with 10 files per process.
+Rules from configuration have been overridden by rules provided as command argument.
+ 0/1 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+Running analysis on 9 cores with 10 files per process.
+Rules from configuration have been overridden by rules provided as command argument.
+ 0/1 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%
+ 1/1 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%
+
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 6
+            after  open(/s/php-cs-fixer-r1/proj/a.php)
+            before write(/s/php-cs-fixer-r1/proj/a.php)
+path        a.php
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 6 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 6 operations (8717 syscall lines examined, 1384 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): utimensat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/php-cs-fixer-r1/modes/work-wrappers/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/php-cs-fixer-r1/proj
+processes   8 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/php-cs-fixer-r1/proj SIDEEYE_TRACE_PATH=/out/php-cs-fixer-r1/modes/work-wrappers-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=209b7346f83701045eb34d323d92fc35922de825247b5f1d4d68e04c449d5124;

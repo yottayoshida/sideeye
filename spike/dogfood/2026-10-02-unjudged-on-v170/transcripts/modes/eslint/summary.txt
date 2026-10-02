@@ -1,0 +1,3 @@
+eslint: wrappers: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0
+eslint: syscalls: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0
+eslint: supervised: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0

@@ -1,0 +1,9 @@
+php-cs-fixer-r1: wrappers: exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: wrappers: replay 1 exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: wrappers: replay 2 exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: syscalls: exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: syscalls: replay 1 exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: syscalls: replay 2 exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: supervised: exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=6
+php-cs-fixer-r1: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=6

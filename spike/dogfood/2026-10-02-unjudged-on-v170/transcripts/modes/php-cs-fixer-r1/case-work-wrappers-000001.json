@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/php-cs-fixer-r1/proj",
+    "operation": "php /opt/bin/php-cs-fixer.phar fix --rules=@PSR12 --no-interaction a.php",
+    "cwd": "/s/php-cs-fixer-r1/proj",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 6,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/php-cs-fixer-r1/proj/a.php",
+  "before_class": "write",
+  "before_path": "/s/php-cs-fixer-r1/proj/a.php",
+  "violation": "hybrid"
+}
