@@ -103,3 +103,6 @@ nbqa 1.9.1 (`nbqa black`, black 26.5.1)	-	upstream-reports.tsv
 terraform 1.16.4 `fmt`	-	upstream-reports.tsv
 helm 4.3.0 `repo remove`	-	upstream-reports.tsv
 tombi 1.5.6 and 1.7.0	-	upstream-reports.tsv
+php-cs-fixer	-	outcome-funnel.tsv (the project's phar from its GitHub release)
+ktlint 1.8.0	-	upstream-reports.tsv
+git-cliff 2.14.2 `--prepend`	-	upstream-reports.tsv

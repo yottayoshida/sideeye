@@ -8,11 +8,12 @@ every observation mode by name (`modes.sh`).
 **Under the page's path v1.7.0 judges 13 of the 31 rows: 9 FAIL, 3 PASS, and one PASS over a
 run that did not write.** Under the modes asked for by name it judges 14 (lefthook joins under
 supervised). The other 17 stand behind the same walls the earlier engines named — eleven of
-them one wall, two writing threads of one process. Three things in the table are new to this
-project: **mutool is judged for the first time and FAILs** (the window an earlier run read off
-`strace` but no engine could enter), the three static images are judged on a released engine
-for the first time (PASS, as the unreleased 2026-09-27 build said), and metaflac and fontforge
-reach on a released engine the verdicts an unreleased one gave on 2026-09-07.
+them one wall, two writing threads of one process. Nothing in the table is a verdict
+this project had not seen: what is new is that a **released** engine reaches them. mutool FAILs
+under syscalls — `a.pdf` gone between the `unlink` and the `open` — as an unreleased build
+measured on 2026-09-08; the three static images PASS under supervised, as the unreleased
+2026-09-27 build said; metaflac and fontforge reach the verdicts of 2026-09-07. Three of the
+nine FAILs were reported upstream (below).
 
 Every FAIL replayed twice and reproduced; every PASS and FAIL `oracle_verified`. All 33 under
 all three modes: `transcripts/modes/*/summary.txt`; the page's path: `transcripts/page/`.
@@ -51,7 +52,7 @@ and the script followed (`[s]` syscalls, `[sv]` supervised). The three modes are
 | stylelint 17.15.0 `--fix` | UNKNOWN `multiple_threads_detected` | same | same | same | |
 | metaflac 1.5.0 `--set-tag` | **PASS** 13/13 [s] | `oracle_missed_operation` | PASS | PASS | as 2026-09-07's unreleased build |
 | fontforge 20230101 `Generate` | **FAIL** 183/185 [s] | `oracle_missed_operation` | FAIL | FAIL | `f.ttf`, open → write, 759,720 → 743,316; **0** — as 2026-09-07 |
-| mutool 1.25.1 `clean a.pdf a.pdf` | **FAIL** 2/4 [s] | `oracle_missed_operation` | FAIL | FAIL | **`a.pdf` gone**: `unlink` → `open(O_CREAT\|O_EXCL)`, 537 → 563; crashed between them, no file. The first verdict on this target |
+| mutool 1.25.1 `clean a.pdf a.pdf` | **FAIL** 2/4 [s] | `oracle_missed_operation` | FAIL | FAIL | **`a.pdf` gone**: `unlink` → `open(O_CREAT\|O_EXCL)`, 537 → 563; crashed between them, no file. As the unreleased build of 2026-09-08 (16 of 16); the first on a release |
 | ocrmypdf 16.7.0 `--force-ocr` | UNKNOWN `baseline_violates_invariant` | same | same | same | the output differs between two clean runs |
 | bat 0.25.0 `cache --build` | UNKNOWN `baseline_violates_invariant` | same | same | same | `metadata.yaml`, with the clock pinned |
 | meson 1.7.0 `setup --reconfigure` | UNKNOWN `baseline_violates_invariant` | same | same | same | |
@@ -96,16 +97,18 @@ predicted, 6 not** (`transcripts/prediction-check.txt`):
   follows that one, which then refuses with no mode named. Supervised, asked for by name, PASSes
   as predicted. A user on the page's path never learns that.
 - **mutool** — predicted UNKNOWN `unresolvable_path` in every mode, "sure". Judged under
-  syscalls and FAILs. The 2026-09-07 follow-up found the unplaceable operation to be a `close`
-  on the unlinked descriptor, under both modes of that build; the released v1.7.0 under syscalls
-  places everything and judges. Which change between contract v14 and v18 did that was not
-  traced here — the engine's history is the place to read it, not this record.
+  syscalls and FAILs — **and the record said it would**: `docs/target-classes.md`'s mutool row
+  ends with the fix of 2026-09-08 (an unplaceable `close` is no ground for refusal) and the same
+  FAIL, 16 of 16, on that day's build. The prediction was written from the head of that row and
+  from the funnel, which holds only the 2026-09-06 refusal because the 2026-09-08 measurement
+  was not a campaign. This record's first draft then called today's FAIL the first verdict on
+  the target; it is the first on a released engine.
 - **git** — predicted "may be judged under supervised"; is not. Supervised orders a child that
   leaves the process group; git's detached maintenance child writes `.git/gc.pid.lock` while the
   parent is still writing, two processes at once, which no mode orders.
 
-Four of the six misses are the predictor reading its records and not the defines or the engine;
-two (mutool, git) are the engine doing something other than the record said. Twenty-six hits
+Five of the six misses are the predictor not reading what was on record — the defines, the
+writer's way in, a row to its end; one (git) is a guess about a mode that did not hold. Twenty-six hits
 over rows marked "sure" is what the record said it would be, and says little.
 
 ## What stands, by wall
@@ -120,7 +123,54 @@ over rows marked "sure" is what the record said it would be, and says little.
 | static image, bare name on the page's path | 0 here — but lefthook's path shows the shape: a refusal that does not name supervised is followed somewhere else | — |
 | static image | 3 (chezmoi, gopass, lefthook) | **yes**, supervised, as 2026-09-27 found on an unreleased build |
 | a write past the flush boundary | 2 (metaflac, fontforge) | **yes**, syscalls, as 2026-09-07 found on an unreleased build |
-| an operation on an unlinked path | 1 (mutool) | **yes**, syscalls — new |
+| an operation on an unlinked path | 1 (mutool) | **yes**, syscalls, as 2026-09-08 found on an unreleased build |
+
+## mutool at the latest release
+
+The box's mutool is Debian's 1.25.1; the latest is 1.28.5, and 1.27.0 dropped `O_EXCL` from the
+re-creating open on Linux. Built from the project's source tarball (sha256 `98a5c10c…`,
+`transcripts/mutool-1285-build.txt`) with the prediction committed first
+(`PREDICTION-mutool-latest.md`, `b97de04`): **FAIL 2 of 4 at the same point, replayed twice**
+(`transcripts/page/mutool-1285/`). Without Sideeye (`apparatus/mutool-latest.sh`,
+`transcripts/mutool-latest.txt`): strace shows `unlinkat`, `openat(O_RDWR|O_CREAT|O_TRUNC)`,
+`write`; under `ulimit -f 0` the file is 0 bytes; a SIGKILL on entry to the creating `openat`
+leaves the directory without `a.pdf`. All three as predicted.
+
+## Novelty and reporting
+
+Read after the explores (`SELECTION.md`): `transcripts/receipts/after-the-fail.txt`, each writer
+line re-read at the commit it names and the two MuPDF bugs re-read through Bugzilla's REST API.
+One reading there was wrong and is corrected in the receipts: the agent said MuPDF's bug 701797
+introduced the remove-before-open; its reporter's own sentence says the `remove()` was already
+there.
+
+No tracker holds a report of this shape for any of the six. The owner's ruling, 2026-10-02, on
+those receipts — each text shown in full first:
+
+- **ktlint: filed as ktlint/ktlint#3409** (`report-ktlint.md`, posted unchanged). A formatter
+  rewriting a working tree, the reason tombi was filed on this morning; 1.8.0 is the latest
+  stable; the maintainer answered seven of the last ten issues.
+- **git-cliff: filed as orhun/git-cliff#1650** (`report-git-cliff.md`, posted unchanged). The
+  report says itself that a changelog is usually committed and what is lost is what was not.
+  Its no-kill steps carry one line this run had to find: on a first run in a fresh home
+  git-cliff writes an update-check cache file, and under `ulimit -f 0` that write is the one
+  that dies (57 bytes kept on the first run, 0 on the next four) — so the steps run it once
+  first (`apparatus/report-evidence.sh`, `transcripts/report-evidence-git-cliff.txt`).
+- **mutool: to be filed by the owner on Artifex's Bugzilla** (`report-mutool.md`), which is
+  where MuPDF takes bugs — the GitHub repository is a mirror with issues off — and which needs
+  an account this run does not have. Not in `spike/upstream-reports.tsv` until it has a number.
+  The 2026-09-08 row had left this "not reported upstream — the owner's call"; that call is now
+  made. What it has that the other formatters do not: the file is gone, not emptied, and it is a
+  document, not source.
+
+Not filed:
+
+| Target | Why not |
+|---|---|
+| js-beautify | a member commented on one of the last ten issues, after 150 days |
+| ormolu | measured at Debian's 0.7.2.0 (2023); 0.9.0.0 came out the day before, writes the same way by reading, and has no linux/arm64 asset to measure |
+| fontforge | no tracker was read for it, in this run or on 2026-09-07 |
+| oxfmt, pg_format, PHP CS Fixer | not new: the newer releases FAIL as the versions the gate-cleared-twelve run measured, and that run's reasons stand. Two of its "not measured" are now measured |
 
 ## PHP CS Fixer: a PASS over no write
 
@@ -146,6 +196,9 @@ made; a define has to make the target write the thing the question is about.
   dies on a write that is not the target's. Two of this project's "no-crash routes" today (pint,
   fontforge) did not reach the file, which is what makes the kill the measurement and the limit
   a demonstration.
+- **The mutool row was read to its first sentence** (above, under the prediction), and the
+  reading agent's account of bug 701797 was taken into a report draft before the bug was opened;
+  both were caught by opening the source, the second before anything was posted.
 - **This run's own first attempts, kept**: `ulimit.sh` was first given `mu/a.pdf` and
   `ff/f.ttf` where the state root already ends in `mu`/`ff`, and printed empty sizes; the two
   lines were corrected and the whole script re-run. The 23 rows ran before the nine (two commits,
