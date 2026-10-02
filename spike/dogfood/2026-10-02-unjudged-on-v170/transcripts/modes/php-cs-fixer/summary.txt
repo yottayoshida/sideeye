@@ -1,0 +1,3 @@
+php-cs-fixer: wrappers: exit 0: PASS - oracle_verified=True crash_points=4
+php-cs-fixer: syscalls: exit 0: PASS - oracle_verified=True crash_points=4
+php-cs-fixer: supervised: exit 0: PASS - oracle_verified=True crash_points=4

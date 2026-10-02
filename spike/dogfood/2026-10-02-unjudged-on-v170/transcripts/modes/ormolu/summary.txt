@@ -1,0 +1,9 @@
+ormolu: wrappers: exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: wrappers: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: wrappers: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: syscalls: exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: syscalls: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: syscalls: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: supervised: exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+ormolu: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3

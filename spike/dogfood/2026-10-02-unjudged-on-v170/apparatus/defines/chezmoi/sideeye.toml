@@ -1,0 +1,9 @@
+[world]
+state = "/s/chezmoi/dest"
+
+[define]
+operation = "/usr/local/bin/chezmoi apply --source /s/chezmoi/src --destination /s/chezmoi/dest --no-tty --force"
+# The 2026-09-27 run exported HOME before the engine started; env.sh beside this file does the
+# same, and this line makes a missing export a SETUP ERROR rather than a run against the box's
+# HOME (ORIGIN.md).
+apparatus = ["env:HOME=/s/chezmoi/home"]

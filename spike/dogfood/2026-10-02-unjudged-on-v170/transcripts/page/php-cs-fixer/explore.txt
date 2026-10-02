@@ -1,0 +1,401 @@
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+
+ Do you want to create the config file? [yes]:
+  [0] yes
+  [1] no
+ > PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+
+ [WARNING] This command is experimental.                                        
+
+⚙️ Configuring PHP CS Fixer
+==========================
+
+Risky rules
+-----------
+
+ ! [NOTE] At PHP CS Fixer, we put our diligence to NOT change your code's logic 
+ !        and behaviour.                                                        
+ !                                                                              
+ !        Yet, some of the rules are opposite by design - explicitly _risky_ to 
+ !        apply.                                                                
+ !                                                                              
+ !        Examples are transforming `==` into `===` or removal of trailing      
+ !        whitespaces within multiline strings.                                 
+ !                                                                              
+ !        Such rules are improving your codebase even further, yet you shall    
+ !        always review changes proposed by _risky_ rules carefully.            
+
+ Do you want to enable _risky_ rules? [no]:
+  [0] yes
+  [1] no
+ > 
+
+`@auto` ruleset
+---------------
+
+ ! [NOTE] We recommend usage of `@auto` rulesets. They take insights from your  
+ !        existing `composer.json` to configure your project the best. For your 
+ !        current setup, that would mean:                                       
+
+ * `@autoPHPMigration` - Migration rules to improve code towards the minimum PHP supported by your project (taken from composer.json file).
+ * `@PER-CS` - Rules that follow PER Coding Style (https://www.php-fig.org/per/coding-style/), Set is an alias for the latest revision of PER-CS rules - use it if you always want to be in sync with newest PER-CS standard.
+
+More rulesets
+-------------
+
+Files finder
+------------
+
+ ! [NOTE] By default, PHP CS Fixer will look for `*.php` files excluding        
+ !        `./vendor/` dir.                                                      
+
+ [OK] Configuration file `.php-cs-fixer.dist.php` created.                      
+
+⚙️ Polishing GIT integration
+===========================
+
+ ! [NOTE] We recommend to add following entries to your `.gitignore` files:     
+
+ * `.php-cs-fixer.cache` - Cache file allowing to skip unchanged files on subsequent runs (will be added)
+ * `.php-cs-fixer.php` - The local configuration that will take precedence over .php-cs-fixer.dist.php configuration (will be added)
+
+ [OK] Git file `.gitignore` created.                                            
+
+Config file created, re-run the command to put it in action.
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+
+ Do you want to create the config file? [yes]:
+  [0] yes
+  [1] no
+ > PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+
+ [WARNING] This command is experimental.                                        
+
+⚙️ Configuring PHP CS Fixer
+==========================
+
+Risky rules
+-----------
+
+ ! [NOTE] At PHP CS Fixer, we put our diligence to NOT change your code's logic 
+ !        and behaviour.                                                        
+ !                                                                              
+ !        Yet, some of the rules are opposite by design - explicitly _risky_ to 
+ !        apply.                                                                
+ !                                                                              
+ !        Examples are transforming `==` into `===` or removal of trailing      
+ !        whitespaces within multiline strings.                                 
+ !                                                                              
+ !        Such rules are improving your codebase even further, yet you shall    
+ !        always review changes proposed by _risky_ rules carefully.            
+
+ Do you want to enable _risky_ rules? [no]:
+  [0] yes
+  [1] no
+ > 
+
+`@auto` ruleset
+---------------
+
+ ! [NOTE] We recommend usage of `@auto` rulesets. They take insights from your  
+ !        existing `composer.json` to configure your project the best. For your 
+ !        current setup, that would mean:                                       
+
+ * `@autoPHPMigration` - Migration rules to improve code towards the minimum PHP supported by your project (taken from composer.json file).
+ * `@PER-CS` - Rules that follow PER Coding Style (https://www.php-fig.org/per/coding-style/), Set is an alias for the latest revision of PER-CS rules - use it if you always want to be in sync with newest PER-CS standard.
+
+More rulesets
+-------------
+
+Files finder
+------------
+
+ ! [NOTE] By default, PHP CS Fixer will look for `*.php` files excluding        
+ !        `./vendor/` dir.                                                      
+
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+
+ Do you want to create the config file? [yes]:
+  [0] yes
+  [1] no
+ > PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+
+ [WARNING] This command is experimental.                                        
+
+⚙️ Configuring PHP CS Fixer
+==========================
+
+Risky rules
+-----------
+
+ ! [NOTE] At PHP CS Fixer, we put our diligence to NOT change your code's logic 
+ !        and behaviour.                                                        
+ !                                                                              
+ !        Yet, some of the rules are opposite by design - explicitly _risky_ to 
+ !        apply.                                                                
+ !                                                                              
+ !        Examples are transforming `==` into `===` or removal of trailing      
+ !        whitespaces within multiline strings.                                 
+ !                                                                              
+ !        Such rules are improving your codebase even further, yet you shall    
+ !        always review changes proposed by _risky_ rules carefully.            
+
+ Do you want to enable _risky_ rules? [no]:
+  [0] yes
+  [1] no
+ > 
+
+`@auto` ruleset
+---------------
+
+ ! [NOTE] We recommend usage of `@auto` rulesets. They take insights from your  
+ !        existing `composer.json` to configure your project the best. For your 
+ !        current setup, that would mean:                                       
+
+ * `@autoPHPMigration` - Migration rules to improve code towards the minimum PHP supported by your project (taken from composer.json file).
+ * `@PER-CS` - Rules that follow PER Coding Style (https://www.php-fig.org/per/coding-style/), Set is an alias for the latest revision of PER-CS rules - use it if you always want to be in sync with newest PER-CS standard.
+
+More rulesets
+-------------
+
+Files finder
+------------
+
+ ! [NOTE] By default, PHP CS Fixer will look for `*.php` files excluding        
+ !        `./vendor/` dir.                                                      
+
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+
+ Do you want to create the config file? [yes]:
+  [0] yes
+  [1] no
+ > PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+
+ [WARNING] This command is experimental.                                        
+
+⚙️ Configuring PHP CS Fixer
+==========================
+
+Risky rules
+-----------
+
+ ! [NOTE] At PHP CS Fixer, we put our diligence to NOT change your code's logic 
+ !        and behaviour.                                                        
+ !                                                                              
+ !        Yet, some of the rules are opposite by design - explicitly _risky_ to 
+ !        apply.                                                                
+ !                                                                              
+ !        Examples are transforming `==` into `===` or removal of trailing      
+ !        whitespaces within multiline strings.                                 
+ !                                                                              
+ !        Such rules are improving your codebase even further, yet you shall    
+ !        always review changes proposed by _risky_ rules carefully.            
+
+ Do you want to enable _risky_ rules? [no]:
+  [0] yes
+  [1] no
+ > 
+
+`@auto` ruleset
+---------------
+
+ ! [NOTE] We recommend usage of `@auto` rulesets. They take insights from your  
+ !        existing `composer.json` to configure your project the best. For your 
+ !        current setup, that would mean:                                       
+
+ * `@autoPHPMigration` - Migration rules to improve code towards the minimum PHP supported by your project (taken from composer.json file).
+ * `@PER-CS` - Rules that follow PER Coding Style (https://www.php-fig.org/per/coding-style/), Set is an alias for the latest revision of PER-CS rules - use it if you always want to be in sync with newest PER-CS standard.
+
+More rulesets
+-------------
+
+Files finder
+------------
+
+ ! [NOTE] By default, PHP CS Fixer will look for `*.php` files excluding        
+ !        `./vendor/` dir.                                                      
+
+ [OK] Configuration file `.php-cs-fixer.dist.php` created.                      
+
+⚙️ Polishing GIT integration
+===========================
+
+ ! [NOTE] We recommend to add following entries to your `.gitignore` files:     
+
+ * `.php-cs-fixer.cache` - Cache file allowing to skip unchanged files on subsequent runs (will be added)
+ * `.php-cs-fixer.php` - The local configuration that will take precedence over .php-cs-fixer.dist.php configuration (will be added)
+
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+
+ Do you want to create the config file? [yes]:
+  [0] yes
+  [1] no
+ > PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+
+ [WARNING] This command is experimental.                                        
+
+⚙️ Configuring PHP CS Fixer
+==========================
+
+Risky rules
+-----------
+
+ ! [NOTE] At PHP CS Fixer, we put our diligence to NOT change your code's logic 
+ !        and behaviour.                                                        
+ !                                                                              
+ !        Yet, some of the rules are opposite by design - explicitly _risky_ to 
+ !        apply.                                                                
+ !                                                                              
+ !        Examples are transforming `==` into `===` or removal of trailing      
+ !        whitespaces within multiline strings.                                 
+ !                                                                              
+ !        Such rules are improving your codebase even further, yet you shall    
+ !        always review changes proposed by _risky_ rules carefully.            
+
+ Do you want to enable _risky_ rules? [no]:
+  [0] yes
+  [1] no
+ > 
+
+`@auto` ruleset
+---------------
+
+ ! [NOTE] We recommend usage of `@auto` rulesets. They take insights from your  
+ !        existing `composer.json` to configure your project the best. For your 
+ !        current setup, that would mean:                                       
+
+ * `@autoPHPMigration` - Migration rules to improve code towards the minimum PHP supported by your project (taken from composer.json file).
+ * `@PER-CS` - Rules that follow PER Coding Style (https://www.php-fig.org/per/coding-style/), Set is an alias for the latest revision of PER-CS rules - use it if you always want to be in sync with newest PER-CS standard.
+
+More rulesets
+-------------
+
+Files finder
+------------
+
+ ! [NOTE] By default, PHP CS Fixer will look for `*.php` files excluding        
+ !        `./vendor/` dir.                                                      
+
+ [OK] Configuration file `.php-cs-fixer.dist.php` created.                      
+
+⚙️ Polishing GIT integration
+===========================
+
+ ! [NOTE] We recommend to add following entries to your `.gitignore` files:     
+
+ * `.php-cs-fixer.cache` - Cache file allowing to skip unchanged files on subsequent runs (will be added)
+ * `.php-cs-fixer.php` - The local configuration that will take precedence over .php-cs-fixer.dist.php configuration (will be added)
+
+Unable to determine minimum PHP version supported by your project from composer.json: Failed to read file "composer.json".
+If you need help while solving warnings, ask at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/discussions/, we will help you!
+
+PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+Loaded config default.
+
+ Do you want to create the config file? [yes]:
+  [0] yes
+  [1] no
+ > PHP CS Fixer 3.95.27 (730c761) Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors.
+PHP runtime: 8.4.26
+
+ [WARNING] This command is experimental.                                        
+
+⚙️ Configuring PHP CS Fixer
+==========================
+
+Risky rules
+-----------
+
+ ! [NOTE] At PHP CS Fixer, we put our diligence to NOT change your code's logic 
+ !        and behaviour.                                                        
+ !                                                                              
+ !        Yet, some of the rules are opposite by design - explicitly _risky_ to 
+ !        apply.                                                                
+ !                                                                              
+ !        Examples are transforming `==` into `===` or removal of trailing      
+ !        whitespaces within multiline strings.                                 
+ !                                                                              
+ !        Such rules are improving your codebase even further, yet you shall    
+ !        always review changes proposed by _risky_ rules carefully.            
+
+ Do you want to enable _risky_ rules? [no]:
+  [0] yes
+  [1] no
+ > 
+
+`@auto` ruleset
+---------------
+
+ ! [NOTE] We recommend usage of `@auto` rulesets. They take insights from your  
+ !        existing `composer.json` to configure your project the best. For your 
+ !        current setup, that would mean:                                       
+
+ * `@autoPHPMigration` - Migration rules to improve code towards the minimum PHP supported by your project (taken from composer.json file).
+ * `@PER-CS` - Rules that follow PER Coding Style (https://www.php-fig.org/per/coding-style/), Set is an alias for the latest revision of PER-CS rules - use it if you always want to be in sync with newest PER-CS standard.
+
+More rulesets
+-------------
+
+Files finder
+------------
+
+ ! [NOTE] By default, PHP CS Fixer will look for `*.php` files excluding        
+ !        `./vendor/` dir.                                                      
+
+ [OK] Configuration file `.php-cs-fixer.dist.php` created.                      
+
+⚙️ Polishing GIT integration
+===========================
+
+ ! [NOTE] We recommend to add following entries to your `.gitignore` files:     
+
+ * `.php-cs-fixer.cache` - Cache file allowing to skip unchanged files on subsequent runs (will be added)
+ * `.php-cs-fixer.php` - The local configuration that will take precedence over .php-cs-fixer.dist.php configuration (will be added)
+
+ [OK] Git file `.gitignore` created.                                            
+
+Config file created, re-run the command to put it in action.
+PASS  5/5 explored worlds satisfied the built-in atomicity invariant
+      explored 5 worlds (crash points 4 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 4 operations (8549 syscall lines examined, 1330 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: 10 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+      not tested: power loss, torn writes, concurrent processes
+      cwd: /s/php-cs-fixer/proj
+sideeye: json sha256=8ebe3ffe2047d38b311c85bf6201137e7c5636300137736c6c8e19bc8c833034;

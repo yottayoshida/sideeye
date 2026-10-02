@@ -1,0 +1,3 @@
+prettier: wrappers: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0
+prettier: syscalls: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0
+prettier: supervised: exit 2: UNKNOWN multiple_threads_detected oracle_verified=False crash_points=0

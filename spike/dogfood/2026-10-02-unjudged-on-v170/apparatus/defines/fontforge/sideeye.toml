@@ -1,0 +1,8 @@
+[world]
+state = "/s/fontforge/ff"
+
+[define]
+# The direct spelling, `fontforge -lang=ff -c Open("…");Generate("…");`, cannot be written here
+# (the toml string cannot carry a double quote); op.sh holds it and /bin/sh execs it — ORIGIN.md.
+operation = "/bin/sh /ap/defines/fontforge/op.sh"
+check     = "/ap/defines/fontforge/check.sh"

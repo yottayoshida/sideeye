@@ -1,0 +1,3 @@
+chezmoi: wrappers: exit 2: UNKNOWN no_shim_marker oracle_verified=False crash_points=0
+chezmoi: syscalls: exit 2: UNKNOWN no_shim_marker oracle_verified=False crash_points=0
+chezmoi: supervised: exit 0: PASS - oracle_verified=True crash_points=5

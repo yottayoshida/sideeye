@@ -1,0 +1,9 @@
+ktlint: wrappers: exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: wrappers: replay 1 exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: wrappers: replay 2 exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: syscalls: exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: syscalls: replay 1 exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: syscalls: replay 2 exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: supervised: exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=2
+ktlint: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=2

@@ -1,0 +1,44 @@
+control: an untouched file compares as the bytes it had before
+control: a same-length rewrite compares as not the bytes it had before
+## git-cliff: git-cliff --unreleased --prepend CHANGELOG.md
+before: 52 bytes
+File size limit exceeded
+exit 153: WARN  git_cliff > "cliff.toml" is not found, using the default configuration
+after:  0 bytes, not the bytes it had before; directory: .git CHANGELOG.md a b 
+## js-beautify: js-beautify -r a.js
+before: 41 bytes
+exit 0: }
+after:  0 bytes, not the bytes it had before; directory: a.js 
+## ktlint: /opt/ktlint -F Main.kt
+before: 25 bytes
+exit 1: 	at java.base/java.lang.Thread.run(Thread.java:1583)
+after:  0 bytes, not the bytes it had before; directory: Main.kt 
+## ormolu: ormolu --mode inplace A.hs
+before: 23 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: A.hs 
+## oxfmt-071: /opt/oxfmt071/node_modules/.bin/oxfmt a.js
+before: 48 bytes
+exit 2: Error occurred when checking code style in the above files.
+after:  0 bytes, not the bytes it had before; directory: a.js 
+## pg_format-511: perl -I/opt/pgf511/lib /opt/pgf511/pg_format -i a.sql
+before: 29 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: a.sql 
+## php-cs-fixer-r1: php /opt/bin/php-cs-fixer.phar fix --rules=@PSR12 --no-interaction a.php
+before: 39 bytes
+File size limit exceeded
+exit 153:  0/1 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%
+after:  0 bytes, not the bytes it had before; directory: a.php 
+## mutool: mutool clean /s/mutool/mu/a.pdf /s/mutool/mu/a.pdf
+before: 537 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: a.pdf 
+## fontforge: /bin/sh /ap/defines/fontforge/op.sh
+before: 759720 bytes
+File size limit exceeded
+exit 153: Program root: /usr
+after:  759720 bytes, the bytes it had before; directory: f.ttf 

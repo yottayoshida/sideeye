@@ -1,0 +1,71 @@
+# The novelty check for the FAILs of this run, read AFTER the explores (2026-10-02) by two
+# read-only agents, then every "writer" line and the MuPDF README lines re-read by hand at the
+# commit named (marked "re-read"). Search counts and tracker statistics are the agents'.
+# Shape as 2026-10-02-gate-cleared-twelve/transcripts/receipts/.
+
+orhun/git-cliff @ 60e0be97e945f71148172675be82399d382c9677 (2026-09-18)
+  writer   git-cliff/src/lib.rs:984 let mut out = io::BufWriter::new(File::create(path)?);  (re-read)
+           the same lines at v2.14.2
+  release  v2.14.2 (2026-09-18) is the latest = the measured one
+  reports  none of this shape (atomic 1, interrupt 1, truncate 23, ctrl-c 1, corrupt 2 - all unrelated)
+  policy   CONTRIBUTING: discuss via issue first; bug_report.yml requires description, steps,
+           expected, OS / Rust / project version; SECURITY: email. No AI policy found
+  tracker  owner commented on 4 of the last 10 bug issues (7 h to 15 d); 6 closed without comment
+  length   median of the last 20 issues: 1,381 characters
+
+beautifier/js-beautify @ 4f52c492a47d1aadfeb22b5350a4784a36f736b3 (2026-07-21)
+  writer   js/src/cli.js:513 fs.writeFileSync(outfile, pretty, 'utf8');  (re-read); same at v2.0.3 (agent)
+  release  v2.0.3 (2026-07-03) is the latest = the measured one
+  reports  none of this shape
+  policy   CONTRIBUTING: file an issue before a PR; a fix must land in both the JS and the
+           Python implementation. No SECURITY.md (#2522 asks for one, unanswered). No AI policy
+  tracker  a member commented on 1 of the last 10 issues (150 days); PRs are merged
+  length   median of the last 20 issues: 874 characters
+
+ktlint/ktlint (moved from pinterest/ktlint) @ 616af9383347469fe02a969b6b1c7686a34b812b (2026-10-01)
+  writer   ktlint-cli/.../KtlintCommandLine.kt:532-537 code.filePath?.toFile()?.writeText(formattedFileContent, UTF_8)  (re-read)
+           the same at 1.8.0 and 2.0.0-ALPHA-4
+  release  1.8.0 (2025-11-14) is the latest stable = the measured one; 2.0.0-ALPHA-4 (2026-08-21) pre-release
+  reports  none of this shape; #1013 (2020, closed) a BOM made -F empty the file - another cause
+  policy   bug_report.md asks for --log-level=debug output; a CLAUDE.md for Claude Code exists
+           with no word on AI-written issues. No AI policy found
+  tracker  a member replied to 7 of the last 10 issues, 5 h to 3 d
+  length   median of the last 20 issues: 1,883 characters
+
+tweag/ormolu @ 56fd8afc3ca03d9b32fa33785cffc673d27d7e1f (2026-10-01)
+  writer   app/Main.hs:171 T.Utf8.writeFile inputFile formattedInput  (re-read) - Data.Text.IO.Utf8,
+           "truncated to zero length before writing begins"; 0.7.2.0 had writeFileUtf8 = B.writeFile . encodeUtf8
+  release  **0.9.0.0 (2026-10-01) is the latest; the measured 0.7.2.0 is from 2023-09-06** (Debian's).
+           Same writer at 0.9.0.0 by reading; NOT measured — the release has no linux/arm64 asset
+  reports  none of this shape; #1181 (closed) the shell's own > emptied the file - another cause
+  policy   CONTRIBUTING: issues welcome, discuss non-trivial changes first; org bug template. No AI policy found
+  tracker  the two maintainers replied to 5 of the last 10 bug issues, 0 h to 98 d
+  length   median of the last 20 issues: 724 characters
+
+MuPDF — git://git.ghostscript.com/mupdf.git; github.com/ArtifexSoftware/mupdf is a mirror with issues off (re-read)
+@ 3a832965584efa322fb6157901d5a48aa21cf012 (2026-10-01)
+  writer   source/fitz/output.c:300 if (REMOVE(filename) < 0)                              (re-read)
+           source/fitz/output.c:304 file = FOPEN(filename, append ? "rb+" : "wb+" CLOBBER); (re-read)
+           CLOBBER is "x" on Windows only, "" elsewhere (:284-288, re-read). In 1.25.1 the mode was
+           "wb+x" (agent); the x went in 67eceeeda4a0, in 1.27.0 (agent). Measured here: 1.25.1
+           opens with O_EXCL, 1.28.5 without, both after an unlinkat
+           No branch for an output path equal to the input; no rename( under source/fitz, pdf, tools (agent)
+  release  1.28.5 (2026-09-25) is the latest; built from the source tarball and measured
+  reports  none of "same input and output leaves no file / an empty file" in the Bugzilla product
+           (2,249 bugs, twelve search terms — agent). Nearest: 701797 (2019, fixed), "symlink
+           attack: fz_new_output_with_path does not use O_EXCL" — its reporter: "There is remove()
+           before fopen() but it does not fix the race." and "Portable fix is to use mkstemp family
+           functions with fdopen."; Artifex, 2021-01-13: "Not sure we can make use of mkstemp(),
+           given this function's API?" (re-read through the Bugzilla REST API). The remove() was
+           there before that bug — the reading agent said the bug introduced it, which the
+           reporter's own sentence contradicts. 697649 (2017, wontfix): "mutool clean needs to seek
+           within the file as it outputs. Therefore it cannot output to stdout." (re-read)
+  policy   README:33-43 "Report bugs on the ghostscript bugzilla, with MuPDF as the selected
+           component: https://bugs.ghostscript.com/" (re-read). An account is needed to file. The
+           Ghostscript FAQ asks for a command line, the input file and the version (agent). No AI
+           policy found (README, docs/, .github/, the Bugzilla guidelines page, artifex.com — agent)
+  tracker  Artifex replied to 16 of the last 19 outside reports, median 2.8 days (agent)
+  length   median of the last 19 outside reports: 1,525 characters (agent)
+
+FontForge — not researched. The FAIL is the 2026-09-07 finding on a released engine, on
+Debian's 20230101; no tracker was read for it in this run or that one.

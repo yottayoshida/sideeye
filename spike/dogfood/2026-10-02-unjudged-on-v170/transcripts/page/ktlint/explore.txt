@@ -1,0 +1,24 @@
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/ktlint/proj/Main.kt)
+            before write(/s/ktlint/proj/Main.kt)
+path        Main.kt
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (15713 syscall lines examined, 180 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/ktlint/work-explore/cases/000001.json
+replay      sideeye replay /out/ktlint/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/ktlint/work-explore/evidence/000001.json
+cwd         /s/ktlint/proj
+processes   21 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 46 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/ktlint/proj SIDEEYE_TRACE_PATH=/out/ktlint/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=62232eb633c21221c8294fe0cf24b8b76eac0cb7597d33f4c751fffa5cb5491f;

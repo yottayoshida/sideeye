@@ -1,0 +1,3 @@
+ocrmypdf: wrappers: exit 2: UNKNOWN baseline_violates_invariant oracle_verified=True crash_points=2
+ocrmypdf: syscalls: exit 2: UNKNOWN baseline_violates_invariant oracle_verified=True crash_points=2
+ocrmypdf: supervised: exit 2: UNKNOWN baseline_violates_invariant oracle_verified=True crash_points=2

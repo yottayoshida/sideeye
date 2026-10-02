@@ -1,0 +1,5 @@
+[world]
+state = "/s/mutool/mu"
+
+[define]
+operation = "mutool clean /s/mutool/mu/a.pdf /s/mutool/mu/a.pdf"

@@ -1,0 +1,56 @@
+######## mutool: mutool version 1.25.1
+## the write path
+$ wc -c < a.pdf
+537
+$ strace -f -y -e trace=openat,write,unlink,unlinkat,rename,renameat,renameat2 mutool clean a.pdf a.pdf 2>&1 | grep -F a.pdf | grep -v O_RDONLY | cut -c1-150
+unlinkat(AT_FDCWD</demo>, "a.pdf", 0)   = 0
+openat(AT_FDCWD</demo>, "a.pdf", O_RDWR|O_CREAT|O_EXCL|O_TRUNC, 0666) = 4</demo/a.pdf>
+write(4</demo/a.pdf>, "%PDF-1.4\n%\302\265\302\266\n\n1 0 obj\n<</Type/"..., 563) = 563
+$ wc -c < a.pdf
+563
+## ulimit -f 0
+File size limit exceeded
+$ ( ulimit -f 0; mutool clean a.pdf a.pdf ) -> exit 153: 
+$ ls -l a.pdf | cut -c1-60
+-rw-r--r-- 1 root root 0 Oct  2 12:00 a.pdf
+a.pdf: not the seed bytes
+## SIGKILL on entry to the openat that re-creates a.pdf
+the creating openat is openat number 24 of this command (counted on a copy in /count)
+$ cmp -s a.pdf /tmp/orig.pdf && echo 'before: the seed, 537 bytes'
+before: the seed, 537 bytes
+$ strace -o /tmp/kill.strace -e trace=openat,unlinkat -e inject=openat:signal=KILL:when=24 mutool clean a.pdf a.pdf > /dev/null 2>&1; echo "exit $?"
+exit 137
+$ tail -3 /tmp/kill.strace | cut -c1-120
+unlinkat(AT_FDCWD, "a.pdf", 0)          = 0
+openat(AT_FDCWD, "a.pdf", O_RDWR|O_CREAT|O_EXCL|O_TRUNC, 0666) = ?
++++ killed by SIGKILL +++
+$ ls -A /demo; [ -e a.pdf ] && wc -c < a.pdf || echo 'a.pdf is gone'
+a.pdf is gone
+######## /opt/mupdf1285/mutool: mutool version 1.28.5
+## the write path
+$ wc -c < a.pdf
+537
+$ strace -f -y -e trace=openat,write,unlink,unlinkat,rename,renameat,renameat2 /opt/mupdf1285/mutool clean a.pdf a.pdf 2>&1 | grep -F a.pdf | grep -v O_RDONLY | cut -c1-150
+unlinkat(AT_FDCWD</demo>, "a.pdf", 0)   = 0
+openat(AT_FDCWD</demo>, "a.pdf", O_RDWR|O_CREAT|O_TRUNC, 0666) = 4</demo/a.pdf>
+write(4</demo/a.pdf>, "%PDF-1.4\n%\302\265\302\266\n% Written by MuPD"..., 589) = 589
+$ wc -c < a.pdf
+589
+## ulimit -f 0
+File size limit exceeded
+$ ( ulimit -f 0; /opt/mupdf1285/mutool clean a.pdf a.pdf ) -> exit 153: 
+$ ls -l a.pdf | cut -c1-60
+-rw-r--r-- 1 root root 0 Oct  2 12:00 a.pdf
+a.pdf: not the seed bytes
+## SIGKILL on entry to the openat that re-creates a.pdf
+the creating openat is openat number 9 of this command (counted on a copy in /count)
+$ cmp -s a.pdf /tmp/orig.pdf && echo 'before: the seed, 537 bytes'
+before: the seed, 537 bytes
+$ strace -o /tmp/kill.strace -e trace=openat,unlinkat -e inject=openat:signal=KILL:when=9 /opt/mupdf1285/mutool clean a.pdf a.pdf > /dev/null 2>&1; echo "exit $?"
+exit 137
+$ tail -3 /tmp/kill.strace | cut -c1-120
+unlinkat(AT_FDCWD, "a.pdf", 0)          = 0
+openat(AT_FDCWD, "a.pdf", O_RDWR|O_CREAT|O_TRUNC, 0666) = ?
++++ killed by SIGKILL +++
+$ ls -A /demo; [ -e a.pdf ] && wc -c < a.pdf || echo 'a.pdf is gone'
+a.pdf is gone

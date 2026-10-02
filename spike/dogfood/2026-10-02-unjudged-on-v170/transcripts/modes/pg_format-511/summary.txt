@@ -1,0 +1,9 @@
+pg_format-511: wrappers: exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: wrappers: replay 1 exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: wrappers: replay 2 exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: syscalls: exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: syscalls: replay 1 exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: syscalls: replay 2 exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: supervised: exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=2
+pg_format-511: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=2

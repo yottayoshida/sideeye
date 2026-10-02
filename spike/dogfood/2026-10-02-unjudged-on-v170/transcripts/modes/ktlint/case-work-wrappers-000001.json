@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/ktlint/proj",
+    "operation": "/opt/ktlint -F Main.kt",
+    "cwd": "/s/ktlint/proj",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/ktlint/proj/Main.kt",
+  "before_class": "write",
+  "before_path": "/s/ktlint/proj/Main.kt",
+  "violation": "hybrid"
+}

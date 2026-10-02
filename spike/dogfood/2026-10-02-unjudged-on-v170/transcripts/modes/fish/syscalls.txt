@@ -1,0 +1,15 @@
+UNKNOWN  unsupported_syscall_observed
+         inotify_add_watch
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /w  (none declared: Sideeye's own)
+
+atomicity   1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): fish/fish_variables
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process in the recording; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 1 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=d20b1e87df66c634957820599b48a822c092bda7bc0032b0e19873ddf27f1d71;

@@ -1,0 +1,6 @@
+[world]
+state = "/s/metaflac/fl"
+
+[define]
+operation = "metaflac --set-tag=ARTIST=probe /s/metaflac/fl/a.flac /s/metaflac/fl/b.flac /s/metaflac/fl/c.flac"
+check     = "/ap/defines/metaflac/check.sh"

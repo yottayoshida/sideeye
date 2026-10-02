@@ -1,0 +1,29 @@
+$ git-cliff --version
+git-cliff 2.14.2
+## the control: a first run in a fresh home, under the limit
+$ ls "$XDG_CACHE_HOME" 2>/dev/null | wc -l
+0
+$ strace -f -y -o /tmp/first.strace -e trace=openat,write sh -c "ulimit -f 0; exec git-cliff --unreleased --prepend CHANGELOG.md" > /dev/null 2>&1; echo "exit $?"; grep -B2 SIGXFSZ /tmp/first.strace | cut -c1-170; wc -c < CHANGELOG.md
+exit 153
+31    openat(AT_FDCWD</demo>, "/s/aux/cache/update-informer-rs/crates-git-cliff", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</s/aux/cache/update-informer-rs/crates-git
+31    write(3</s/aux/cache/update-informer-rs/crates-git-cliff>, "2.14.2", 6) = -1 EFBIG (File too large)
+31    --- SIGXFSZ {si_signo=SIGXFSZ, si_code=SI_USER, si_pid=31, si_uid=0} ---
+31    +++ killed by SIGXFSZ +++
+57
+
+## the report's steps: one ordinary run first, then the limit
+$ git-cliff --unreleased > /dev/null 2>&1; echo "exit $?"
+exit 0
+$ wc -c < CHANGELOG.md
+57
+$ ( ulimit -f 0; git-cliff --unreleased --prepend CHANGELOG.md ) 2>&1 | tail -3; wc -c < CHANGELOG.md
+File size limit exceeded
+WARN  git_cliff > "cliff.toml" is not found, using the default configuration
+0
+
+## without the limit, under strace
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate git-cliff --unreleased --prepend CHANGELOG.md 2>&1 | grep -F CHANGELOG.md | grep -v O_RDONLY | cut -c1-170
+openat(AT_FDCWD</demo>, "CHANGELOG.md", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</demo/CHANGELOG.md>
+write(3</demo/CHANGELOG.md>, "## [unreleased]\n\n### \360\237\220\233 Bug Fi"..., 103) = 103
+$ wc -c < CHANGELOG.md
+103

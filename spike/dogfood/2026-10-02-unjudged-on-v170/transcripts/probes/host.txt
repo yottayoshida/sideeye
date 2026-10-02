@@ -1,0 +1,10 @@
+box sideeye-uj170 sha256:2003b24fd978c0948c9e0dc9fe5845e73a755427789219f04d4f5670521daa76 created 2026-10-02T11:31:15.069512839Z
+# (the line above was read after the run: the script's own inspect printed 'No such image' once, with every docker run after it succeeding)
+
+started 2026-10-02T12:00:15Z
+ulimit: docker exit 0
+mutool-latest: docker exit 0
+write-paths: docker exit 0
+report-evidence-ktlint: docker exit 0
+report-evidence-git-cliff: docker exit 0
+versions: docker exit 0

@@ -1,0 +1,6 @@
+[world]
+state = "/s/jsb/proj"
+
+[define]
+operation = "js-beautify -r a.js"
+cwd       = "/s/jsb/proj"

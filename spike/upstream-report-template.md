@@ -1,7 +1,7 @@
 # Filing a finding upstream — the shape
 
-Twenty-six reports have gone out from this project (`upstream-reports.tsv`;
-twenty-five standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
+Twenty-eight reports have gone out from this project (`upstream-reports.tsv`;
+twenty-seven standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
 the worked examples this page was drawn from, and
 `ImageMagick/ImageMagick#8939` is the canonical instance — the owner's
 instruction on 2026-09-06 is that later reports go the same way. This page is

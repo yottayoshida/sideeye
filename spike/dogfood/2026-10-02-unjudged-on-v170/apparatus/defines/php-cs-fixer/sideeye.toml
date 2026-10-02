@@ -1,0 +1,6 @@
+[world]
+state = "/s/php-cs-fixer/proj"
+
+[define]
+operation = "php /opt/bin/php-cs-fixer.phar fix a.php"
+cwd       = "/s/php-cs-fixer/proj"

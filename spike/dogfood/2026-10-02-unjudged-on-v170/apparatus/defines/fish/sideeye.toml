@@ -1,0 +1,6 @@
+[world]
+state = "/s/fish/state"
+
+[define]
+operation = ["fish", "-c", "set -U MARKER_THIRD third-value"]
+check     = "/ap/defines/fish/check.sh"

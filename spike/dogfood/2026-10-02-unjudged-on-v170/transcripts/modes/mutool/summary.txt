@@ -1,0 +1,7 @@
+mutool: wrappers: exit 2: UNKNOWN oracle_missed_operation oracle_verified=False crash_points=0
+mutool: syscalls: exit 1: FAIL - oracle_verified=True crash_points=3
+mutool: syscalls: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+mutool: syscalls: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3
+mutool: supervised: exit 1: FAIL - oracle_verified=True crash_points=3
+mutool: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=3
+mutool: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=3

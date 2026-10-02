@@ -1,0 +1,29 @@
+######## PHP CS Fixer 3.95.27, bare: what it opens for writing under the project
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate php /opt/bin/php-cs-fixer.phar fix a.php 2>&1 | grep -E "O_WRONLY|O_RDWR|a\.php" | grep -v -E "O_RDONLY|/tmp/|/dev/|pipe:" | cut -c1-150
+openat(AT_FDCWD</s/php-cs-fixer/proj>, "/s/php-cs-fixer/proj/.php-cs-fixer.dist.php", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4</s/php-cs-fixer/proj/.php-cs
+openat(AT_FDCWD</s/php-cs-fixer/proj>, "/s/php-cs-fixer/proj/.gitignore", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4</s/php-cs-fixer/proj/.gitignore>
+$ ls -A; cmp -s a.php /tmp/a.orig && echo 'a.php: the seed bytes' || echo 'a.php: not the seed bytes'
+.gitignore
+.php-cs-fixer.dist.php
+a.php
+a.php: the seed bytes
+######## PHP CS Fixer 3.95.27, --rules=@PSR12 --no-interaction
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate php /opt/bin/php-cs-fixer.phar fix --rules=@PSR12 --no-interaction a.php 2>&1 | grep -E "O_WRONLY|O_RDWR|a\.php" | grep -v -E "O_RDONLY|/tmp/|/dev/|pipe:" | cut -c1-150
+openat(AT_FDCWD</s/php-cs-fixer-r1/proj>, "/s/php-cs-fixer-r1/proj/a.php", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4</s/php-cs-fixer-r1/proj/a.php>
+write(4</s/php-cs-fixer-r1/proj/a.php>, "<?php\n\nfunction f($x)\n{\n    retu"..., 45) = 45
+openat(AT_FDCWD</s/php-cs-fixer-r1/proj>, ".php-cs-fixer.cache", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4</s/php-cs-fixer-r1/proj/.php-cs-fixer.cache>
+openat(AT_FDCWD</s/php-cs-fixer-r1/proj>, "/s/php-cs-fixer-r1/proj/.php-cs-fixer.cache", O_RDWR) = 4</s/php-cs-fixer-r1/proj/.php-cs-fixer.cache>
+######## pint 1.32.1 (bundles v3.95.25)
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate php /opt/bin/pint.phar a.php 2>&1 | grep -E "O_WRONLY|O_RDWR|a\.php" | grep -v -E "O_RDONLY|/tmp/|/dev/|pipe:" | cut -c1-150
+openat(AT_FDCWD</s/php-cs-fixer-r1/proj>, "/s/php-cs-fixer-r1/proj/a.php", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4</s/php-cs-fixer-r1/proj/a.php>
+write(4</s/php-cs-fixer-r1/proj/a.php>, "<?php\n\nfunction f($x)\n{\n    retu"..., 45) = 45
+######## fontforge under ulimit -f 0: the write that dies (strace started outside the limit)
+exit 153
+$ grep -B2 SIGXFSZ /tmp/ff.strace | cut -c1-170
+78    openat(AT_FDCWD</s/php-cs-fixer-r1/proj>, "/tmp", O_RDWR|O_EXCL|O_TMPFILE, 0600) = 3</tmp/#580905>(deleted)
+78    write(3</tmp/#580905>(deleted), "Open(\"/s/fontforge/ff/f.ttf\"); G"..., 65) = -1 EFBIG (File too large)
+78    --- SIGXFSZ {si_signo=SIGXFSZ, si_code=SI_USER, si_pid=78, si_uid=0} ---
+78    +++ killed by SIGXFSZ +++
+$ grep -c 'f\.ttf.*O_\(WRONLY\|RDWR\)' /tmp/ff.strace
+0
+f.ttf: the seed bytes

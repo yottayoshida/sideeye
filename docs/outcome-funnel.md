@@ -141,28 +141,28 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-126 encounters (one campaign meeting one target) over 25 campaigns, 19 of them
-recording every target they met; 98 distinct targets.
-86 rows are held to a report this repository committed; 40 name a written record only.
+157 encounters (one campaign meeting one target) over 26 campaigns, 20 of them
+recording every target they met; 99 distinct targets.
+117 rows are held to a report this repository committed; 40 name a written record only.
 382 candidates screened before the slates were fixed, over the 18 campaign(s) that
 recorded one; the rest kept no such count.
 
-reach, over the 19 campaign(s) that recorded every target they met
-  attempted       117
-  explored         70
-  judged           66
-    PASS           18
-    FAIL           48
+reach, over the 20 campaign(s) that recorded every target they met
+  attempted       148
+  explored         87
+  judged           79
+    PASS           22
+    FAIL           57
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                44              35             26
-  report_worthy        30              21             26
-  filed                30              21             26
+  novel                49              40             28
+  report_worthy        33              24             28
+  filed                32              23             28
   acknowledged          6               4              5
   fixed                 6               4              5
   revalidated           6               4              5
 
-why encounters stopped: awaiting 17, declined 4, discussing 2, known 9, no_content_lost 2, not_worth 19, wall 34, withdrawn 1
+why encounters stopped: awaiting 19, declined 4, discussing 2, known 9, no_content_lost 2, not_worth 21, wall 52, withdrawn 1
 upstream states last read between 2026-08-13 and 2026-10-02; spike/upstream-report-status.sh measures them now.
 ```
 

@@ -1,0 +1,5 @@
+alejandra: wrappers: exit 2: UNKNOWN no_shim_marker oracle_verified=False crash_points=0
+alejandra: syscalls: exit 2: UNKNOWN no_shim_marker oracle_verified=False crash_points=0
+alejandra: supervised: exit 1: FAIL - oracle_verified=True crash_points=2
+alejandra: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=2
+alejandra: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=2

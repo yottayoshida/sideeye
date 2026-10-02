@@ -1,0 +1,65 @@
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+falsify: f.ttf を fontforge が開けない（25 bytes）
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+f.ttf を fontforge が開けない（0 bytes）
+Copyright (c) 2000-2025. See AUTHORS for Contributors.
+ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+ with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.
+ Version: 20230101
+ Based on sources from 2025-01-07 14:08 UTC-ML-D-GDK3.
+PythonUI_Init()
+copyUIMethodsToBaseTable()
+Program root: /usr
+This font contains both a 'kern' table and a 'GPOS' table.
+  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.
+Use-my-metrics flag set on at least two components in glyph 685
+The glyph named Omega is mapped to U+03A9.
+  But its name indicates it should be mapped to U+2126.
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 184
+            after  open(/s/fontforge/ff/f.ttf)
+            before write(/s/fontforge/ff/f.ttf)
+path        f.ttf
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 184 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 184 operations (43821 syscall lines examined, 11164 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/fontforge/modes/work-syscalls/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /w  (none declared: Sideeye's own)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/fontforge/ff SIDEEYE_TRACE_PATH=/out/fontforge/modes/work-syscalls-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=6b4cf7ed357f223877336c975aa50f62cf7833995fdb7958ebf79a2c38dd3548;

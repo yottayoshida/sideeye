@@ -1,0 +1,3 @@
+ccache: wrappers: exit 2: UNKNOWN kill_did_not_land oracle_verified=False crash_points=64
+ccache: syscalls: exit 2: UNKNOWN kill_did_not_land oracle_verified=False crash_points=64
+ccache: supervised: exit 2: UNKNOWN kill_did_not_land oracle_verified=False crash_points=64

@@ -1,0 +1,3 @@
+rumdl-nocache: wrappers: exit 0: PASS - oracle_verified=True crash_points=3
+rumdl-nocache: syscalls: exit 0: PASS - oracle_verified=True crash_points=3
+rumdl-nocache: supervised: exit 0: PASS - oracle_verified=True crash_points=3
