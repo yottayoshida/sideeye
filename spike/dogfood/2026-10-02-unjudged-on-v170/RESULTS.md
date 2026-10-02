@@ -33,7 +33,7 @@ and the script followed (`[s]` syscalls, `[sv]` supervised). The three modes are
 | **B: newer releases** | | | | | |
 | oxfmt 0.71.0 | **FAIL** 1/3 | FAIL | FAIL | FAIL | `a.js`, open → write, 48 → 60; **0** — as 0.70.0 |
 | pg_format v5.11 (upstream) | **FAIL** 1/3 | FAIL | FAIL | FAIL | `a.sql`, open → write, 29 → 49; **0** — as Debian's 5.6 |
-| PHP CS Fixer 3.95.27, its own phar | PASS 4/4 | PASS | PASS | PASS | **over no write**: with no config file it asks whether to create one and never opens `a.php` (below) |
+| PHP CS Fixer 3.95.27, its own phar | PASS 5/5 | PASS | PASS | PASS | **over no write**: with no config file it asks whether to create one and never opens `a.php` (below) |
 | … revision 1, `--rules=@PSR12 --no-interaction` | **FAIL** 1/7 | FAIL | FAIL | FAIL | `a.php`, open → write, 39 → 45; **0** — as the v3.95.25 inside pint |
 | **D: refused by an earlier engine** | | | | | |
 | chezmoi 2.72.1 `apply --force` | **PASS** 6/6 [sv] | `no_shim_marker` | `no_shim_marker` | PASS | the image named by path, so the bare-name sentence did not apply |
@@ -80,7 +80,7 @@ the kill.
 
 ## Against the prediction
 
-`PREDICTION.md`, committed as `6a631ed` at 07:48:14Z; the first explore started at 07:48:3xZ
+`PREDICTION.md`, committed as `6a631ed` at 07:48:14Z; the first explore started at 07:48:29Z
 (`transcripts/page/first-explore-started.txt`), the last nine after `110c92f`. Thirty-two rows
 predicted under the page's path and under supervised (zstd's two defines as one): **26 as
 predicted, 6 not** (`transcripts/prediction-check.txt`):
@@ -126,7 +126,7 @@ over rows marked "sure" is what the record said it would be, and says little.
 
 The latest phar, run as `php php-cs-fixer.phar fix a.php` in a directory with no
 `.php-cs-fixer.php`, prints "Do you want to create the config file?" and exits without opening
-`a.php` (`strace`, `transcripts/page/php-cs-fixer/`; 4 crash points, all elsewhere). The engine
+`a.php` (`strace`, `transcripts/page/php-cs-fixer/`; 4 crash points and the baseline, all elsewhere). The engine
 judged what the run wrote, which was not the file. Pint bundles a rule set and never asks, which
 is why the morning's pint define wrote. Revision 1 names the rules and turns interaction off;
 `strace` then shows the same `openat(O_WRONLY|O_CREAT|O_TRUNC)` and `write` as pint's v3.95.25,
