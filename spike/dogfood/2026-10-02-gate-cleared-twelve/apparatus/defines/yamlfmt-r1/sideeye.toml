@@ -1,0 +1,6 @@
+[world]
+state = "/s/yamlfmt/proj"
+
+[define]
+operation = "/opt/bin/yamlfmt a.yaml"
+cwd       = "/s/yamlfmt/proj"

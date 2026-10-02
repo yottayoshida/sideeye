@@ -1,0 +1,17 @@
+1 file formatted
+1 file formatted
+UNKNOWN  multiple_threads_detected
+         two threads of process 207 wrote in the judged directory in an explored world: tid 215 performed truncate(/s/tombi/proj/a.toml) and tid 212 performed write(/s/tombi/proj/a.toml). Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash point names the same operation on the next run, and writes from two or more threads of one process refuse. The modes that load a shim, which records creations and joins, judge a process whose threads' writes they order (v18)
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/tombi/proj
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        /out/tombi-r1/work-supervised/cases/000001.json
+expected    exit 0
+processes   single process in the recording; a thread was created in an explored world; the supervising engine recorded 11 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=2c1f76e70c0979312fcf09434a0ad9d74baf1d724c100ddb1333d844855c91d4;

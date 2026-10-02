@@ -1,0 +1,15 @@
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /opt/bin/jsonnetfmt: it names no interpreter, so it is statically linked and no preloaded library can reach it; on Linux 5.19 or later, on aarch64 or x86_64, --observe supervised counts it from outside the process instead
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/jsonnetfmt/proj
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: the shim never announced itself in this run, so nothing observed process boundaries
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=bf01cf66a03442cd4ed4c14b515e75d41829c8b7bf9de168bf2b1d1a8dae37c9;

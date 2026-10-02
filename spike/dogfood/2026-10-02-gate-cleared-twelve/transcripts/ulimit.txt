@@ -1,0 +1,61 @@
+control: an untouched file compares as the bytes it had before
+control: a same-length rewrite compares as not the bytes it had before
+## alejandra-r1: /opt/bin/alejandra -q a.nix
+before: 58 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: a.nix 
+## biome: biome format --write a.js
+before: 48 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: a.js 
+## gofumpt-r1: /opt/bin/gofumpt -w main.go
+before: 73 bytes
+exit 2: write main.go.1245445556121190724: file too large
+after:  73 bytes, the bytes it had before; directory: main.go main.go.1245445556121190724 
+## helm-r1: /opt/bin/helm repo remove b --repository-config /s/helm/cfg/repositories.yaml --repository-cache /s/helm/cache
+before: 163 bytes
+exit 1: Error: write /s/helm/cfg/repositories.yaml: file too large
+after:  0 bytes, not the bytes it had before; directory: repositories.yaml 
+## jsonnetfmt-r1: /opt/bin/jsonnetfmt -i a.jsonnet
+before: 41 bytes
+exit 1: write a.jsonnet: file too large
+after:  0 bytes, not the bytes it had before; directory: a.jsonnet 
+## ktfmt: java -jar /opt/bin/ktfmt.jar a.kt
+before: 55 bytes
+exit 1: Error formatting a.kt: File too large; skipping.
+after:  0 bytes, not the bytes it had before; directory: a.kt 
+## oxfmt: oxfmt a.js
+before: 48 bytes
+exit 2: Error occurred when checking code style in the above files.
+after:  0 bytes, not the bytes it had before; directory: a.js 
+## pg_format: pg_format -i a.sql
+before: 29 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: a.sql 
+## pint: php /opt/bin/pint.phar a.php
+before: 39 bytes
+File size limit exceeded
+exit 153: 
+after:  39 bytes, the bytes it had before; directory: a.php 
+## scalafmt: scalafmt a.scala
+before: 55 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: .scalafmt.conf a.scala 
+## tombi-r1: /opt/bin/tombi format --offline a.toml
+before: 36 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: a.toml 
+## yamlfmt-r1: /opt/bin/yamlfmt a.yaml
+before: 46 bytes
+exit 1: write a.yaml: file too large
+after:  0 bytes, not the bytes it had before; directory: a.yaml 
+## rumdl-nocache: rumdl fmt --no-cache a.md
+before: 62 bytes
+File size limit exceeded
+exit 153: 
+after:  62 bytes, the bytes it had before; directory: .a.md.rumdl-tmp.383.0 a.md 

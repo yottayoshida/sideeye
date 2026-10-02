@@ -1,0 +1,6 @@
+[world]
+state = "/s/biome/proj"
+
+[define]
+operation = "biome format --write a.js"
+cwd       = "/s/biome/proj"

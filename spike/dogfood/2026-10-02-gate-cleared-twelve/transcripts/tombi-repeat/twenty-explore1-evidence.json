@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/evidence",
+  "evidence_version": 1,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "target": {"operation": "/opt/bin/tombi format --offline a.toml", "state_root": "/s/tombi/proj"},
+  "exhibit": "earliest",
+  "crash_point": 3,
+  "crash_points_total": 3,
+  "boundary": {"after_op": "truncate", "after_path": "/s/tombi/proj/a.toml", "before_op": "write", "before_path": "/s/tombi/proj/a.toml"},
+  "invariant": "built-in atomicity (L0)",
+  "subject": "a.toml",
+  "observed": "holding neither the old nor the new content",
+  "consequence": [
+    {"path": "a.toml", "before": {"kind": "file", "size": 36}, "completed": {"kind": "file", "size": 37}, "crashed": {"kind": "file", "size": 0}, "pre_existing": true, "declared_scratch": false, "old_bytes_elsewhere": "no", "old_bytes_at": ""}
+  ],
+  "consequence_truncated": false,
+  "checker": {"configured": false, "failed": null, "diagnostic": null},
+  "replay": "sideeye replay /out/work1/cases/000001.json --observe supervised",
+  "case": "/out/work1/cases/000001.json",
+  "recovery": {"result": "not_configured"},
+  "caveats": []
+}

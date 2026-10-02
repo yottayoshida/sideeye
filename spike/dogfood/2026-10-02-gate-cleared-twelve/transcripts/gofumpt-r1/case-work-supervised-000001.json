@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/gofumpt/proj",
+    "operation": "/opt/bin/gofumpt -w main.go",
+    "cwd": "/s/gofumpt/proj",
+    "expected_status": 0
+  },
+  "k": 5,
+  "ops_total": 6,
+  "prefix_hash": "90876b61943f641a",
+  "after_class": "write",
+  "after_path": "/s/gofumpt/proj/main.go",
+  "before_class": "truncate",
+  "before_path": "/s/gofumpt/proj/main.go",
+  "violation": "hybrid"
+}

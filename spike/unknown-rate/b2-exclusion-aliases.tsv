@@ -101,3 +101,5 @@ tombi	-	outcome-funnel.tsv (a GitHub release binary, Rust)
 yamlfmt	-	outcome-funnel.tsv (a GitHub release binary, Go)
 nbqa 1.9.1 (`nbqa black`, black 26.5.1)	-	upstream-reports.tsv
 terraform 1.16.4 `fmt`	-	upstream-reports.tsv
+helm 4.3.0 `repo remove`	-	upstream-reports.tsv
+tombi 1.5.6 and 1.7.0	-	upstream-reports.tsv

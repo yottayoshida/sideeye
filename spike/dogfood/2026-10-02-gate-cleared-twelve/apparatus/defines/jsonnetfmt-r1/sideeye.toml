@@ -1,0 +1,6 @@
+[world]
+state = "/s/jsonnetfmt/proj"
+
+[define]
+operation = "/opt/bin/jsonnetfmt -i a.jsonnet"
+cwd       = "/s/jsonnetfmt/proj"

@@ -57,3 +57,5 @@ neovim/neovim	41940	standing	neovim 0.10.4 and 0.12.5 (`:wshada`)
 ast-grep/ast-grep	2959	standing	ast-grep 0.45.3
 nbQA-dev/nbQA	908	standing	nbqa 1.9.1 (`nbqa black`, black 26.5.1)
 hashicorp/terraform	39299	standing	terraform 1.16.4 `fmt`
+helm/helm	32709	standing	helm 4.3.0 `repo remove`
+tombi-toml/tombi	2265	standing	tombi 1.5.6 and 1.7.0

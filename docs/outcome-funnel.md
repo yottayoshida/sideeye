@@ -141,29 +141,29 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-111 encounters (one campaign meeting one target) over 24 campaigns, 18 of them
+126 encounters (one campaign meeting one target) over 25 campaigns, 19 of them
 recording every target they met; 98 distinct targets.
-71 rows are held to a report this repository committed; 40 name a written record only.
+86 rows are held to a report this repository committed; 40 name a written record only.
 382 candidates screened before the slates were fixed, over the 18 campaign(s) that
 recorded one; the rest kept no such count.
 
-reach, over the 18 campaign(s) that recorded every target they met
-  attempted       102
-  explored         55
-  judged           51
-    PASS           15
-    FAIL           36
+reach, over the 19 campaign(s) that recorded every target they met
+  attempted       117
+  explored         70
+  judged           66
+    PASS           18
+    FAIL           48
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                31              22             24
-  report_worthy        26              17             24
-  filed                26              17             24
-  acknowledged          4               2              3
-  fixed                 4               2              3
-  revalidated           4               2              3
+  novel                44              35             26
+  report_worthy        30              21             26
+  filed                30              21             26
+  acknowledged          6               4              5
+  fixed                 6               4              5
+  revalidated           6               4              5
 
-why encounters stopped: awaiting 15, declined 4, discussing 2, known 9, no_content_lost 1, not_worth 10, wall 34, withdrawn 1
-upstream states last read between 2026-08-13 and 2026-09-28; spike/upstream-report-status.sh measures them now.
+why encounters stopped: awaiting 17, declined 4, discussing 2, known 9, no_content_lost 2, not_worth 19, wall 34, withdrawn 1
+upstream states last read between 2026-08-13 and 2026-10-02; spike/upstream-report-status.sh measures them now.
 ```
 
 <!-- outcome-funnel:summary:end -->
