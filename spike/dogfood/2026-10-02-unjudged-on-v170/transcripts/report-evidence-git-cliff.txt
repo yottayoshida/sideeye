@@ -1,0 +1,17 @@
+$ git-cliff --version
+git-cliff 2.14.2
+$ git-cliff --unreleased > /dev/null 2>&1; echo "exit $?"
+exit 0
+$ wc -c < CHANGELOG.md
+57
+$ ( ulimit -f 0; git-cliff --unreleased --prepend CHANGELOG.md ) 2>&1 | tail -3; wc -c < CHANGELOG.md
+File size limit exceeded
+WARN  git_cliff > "cliff.toml" is not found, using the default configuration
+0
+
+## without the limit, under strace
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate git-cliff --unreleased --prepend CHANGELOG.md 2>&1 | grep -F CHANGELOG.md | grep -v O_RDONLY | cut -c1-170
+openat(AT_FDCWD</demo>, "CHANGELOG.md", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3</demo/CHANGELOG.md>
+write(3</demo/CHANGELOG.md>, "## [unreleased]\n\n### \360\237\220\233 Bug Fi"..., 103) = 103
+$ wc -c < CHANGELOG.md
+103

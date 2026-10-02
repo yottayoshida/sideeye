@@ -1,0 +1,24 @@
+FAIL  2 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 3
+            after  unlink(/s/mutool-1285/mu/a.pdf)
+            before open(/s/mutool-1285/mu/a.pdf)
+path        a.pdf
+observed    present before and after the operation, but gone from the crashed state
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (183 syscall lines examined, 73 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/mutool-1285/work-syscalls/cases/000001.json
+replay      sideeye replay /out/mutool-1285/work-syscalls/cases/000001.json --shim /opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/mutool-1285/work-syscalls/evidence/000001.json
+cwd         /w  (none declared: Sideeye's own)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/mutool-1285/mu SIDEEYE_TRACE_PATH=/out/mutool-1285/work-syscalls/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=f6433297773e388b9c9775302b1824545c7cb79c1954f8bba2b6701c303ec712;

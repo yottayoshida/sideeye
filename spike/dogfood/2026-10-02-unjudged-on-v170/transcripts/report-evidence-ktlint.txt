@@ -1,0 +1,19 @@
+$ java -jar /opt/ktlint --version; java -version 2>&1 | head -1
+ktlint version 1.8.0
+openjdk version "21.0.12.1" 2026-08-18
+$ wc -c < Main.kt
+36
+$ ( ulimit -f 0; java -jar /opt/ktlint -F Main.kt ) 2>&1 | grep -v "^\sat " | head -6; wc -c < Main.kt
+Exception in thread "main" java.util.concurrent.ExecutionException: java.io.IOException: File too large
+Caused by: java.io.IOException: File too large
+0
+
+## without the limit, under strace
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate java -jar /opt/ktlint -F Main.kt 2>&1 | grep -F Main.kt | grep -v O_RDONLY | cut -c1-170
+[pid   119] openat(AT_FDCWD</demo>, "/demo/Main.kt", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 5</demo/Main.kt>
+[pid   119] write(5</demo/Main.kt>, "fun main() {\n    println(\"hi\")\n}"..., 33) = 33
+$ wc -c < Main.kt; cat Main.kt
+33
+fun main() {
+    println("hi")
+}

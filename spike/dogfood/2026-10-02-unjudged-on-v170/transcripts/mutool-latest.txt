@@ -1,0 +1,22 @@
+$ /opt/mupdf1285/mutool -v
+mutool version 1.28.5
+## the write path
+$ wc -c < a.pdf
+537
+$ strace -f -y -e trace=openat,write,unlink,unlinkat,rename,renameat,renameat2 /opt/mupdf1285/mutool clean a.pdf a.pdf 2>&1 | grep -F a.pdf | grep -v O_RDONLY | cut -c1-150
+unlinkat(AT_FDCWD</demo>, "a.pdf", 0)   = 0
+openat(AT_FDCWD</demo>, "a.pdf", O_RDWR|O_CREAT|O_TRUNC, 0666) = 4</demo/a.pdf>
+write(4</demo/a.pdf>, "%PDF-1.4\n%\302\265\302\266\n% Written by MuPD"..., 589) = 589
+$ wc -c < a.pdf
+589
+## ulimit -f 0
+File size limit exceeded
+$ ( ulimit -f 0; mutool clean a.pdf a.pdf ); exit 153: 
+$ ls -l a.pdf | cut -c1-60
+-rw-r--r-- 1 root root 0 Oct  2 11:31 a.pdf
+a.pdf: not the original bytes
+## SIGKILL on entry to the first openat that would create a.pdf (after the unlink)
+$ strace -f -o /dev/null -e trace=openat -e inject=openat:signal=KILL:when=$(strace -f -e trace=openat /opt/mupdf1285/mutool clean a.pdf a.pdf 2>&1 | grep -c openat) /opt/mupdf1285/mutool clean a.pdf a.pdf > /dev/null 2>&1; echo "exit $?"
+exit 137
+$ ls -A /demo; [ -e a.pdf ] && wc -c < a.pdf || echo 'a.pdf is gone'
+a.pdf is gone
