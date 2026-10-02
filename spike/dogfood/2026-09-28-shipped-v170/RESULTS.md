@@ -171,6 +171,39 @@ is normally under version control, so the loss is recoverable:
       power loss, Windows. The bare `terraform` in the define refused `no_shim_marker` naming no
       mode, as in revision 1 (`default-*.txt`, `run.sh` unchanged), so the supervised run names the
       mode itself.
+    - **2026-10-02: the fix as rewritten, measured.** After that comment the pull request was
+      rewritten (its commits of 2026-09-30 and 2026-10-01): `fmt` now calls a new
+      `replacefile.NonAtomicWriteFileWithBackup`, modelled on gofmt — copy the original into
+      `main.tf<digits>` beside the file, open the target without truncating it, write the formatted
+      bytes from offset 0, cut the file to their length, remove the copy. Six predictions were
+      written from the diff before anything was built (`transcripts/terraform-39303-28a34e9/PREDICTION.md`,
+      its sha256 and time beside it); all six held. Head `28a34e9b8` and its merge-base with main
+      `e3b5fc125`, built as before (Go 1.27.1 this time; sha256 `69a22e51…` and `cfbadaf6…`), in the
+      same box, by `apparatus/tf39303b-host.sh` — the docker commands, which the 09-29 measurement
+      did not keep. On the 09-28 define the head PASSes 7/7 (crash points 6 + 1 baseline) where the
+      base FAILs at crash point 2 of 2, replayed twice (`supervised-*.txt`); `ulimit -f 0` leaves the
+      head's `main.tf` at its 84 bytes, exit 2, the error naming the copy it could not write, and no
+      copy left. Both things reported on 09-29 are gone (`probe-*.txt`, `wrong-*.txt`): `0600`,
+      `0664` and `0755` are kept, the relative link's real target is formatted in all three
+      spellings, and the unrelated `../versions.tf` is untouched — `wrong-pr.txt` and
+      `wrong-base.txt` are the same bytes. What is left is the window the design names. On a seed
+      formatting makes shorter (`apparatus/defines/terraform-shrink/`, 135 bytes to 86, the same
+      checker) the head FAILs 1 of 7, crash point 5 of 6, after the `write` and before the
+      `truncate`, replayed twice (`shrink-pr*.txt`); the evidence file says the old bytes are
+      elsewhere, in the copy (`shrink-pr-evidence.json`). Entered without Sideeye
+      (`apparatus/tf39303b-kill.sh`: strace delivers SIGKILL on entry to `ftruncate`), `main.tf` is
+      the 86 formatted bytes followed by the original's last 49, terraform cannot parse it, the
+      original is whole in `main.tf<digits>` (mode `0600`), and nothing prints that name — the
+      process is dead (`kill-pr.txt`). The base on that seed loses the file outright, as on the
+      other (`shrink-base*.txt`). The whole of `tf39303b-host.sh` was run once as committed and the
+      transcripts are that run's; two earlier passes (the first typed by hand, before the script
+      existed) agreed on every line but timestamps and the copy's random name. Not measured: what
+      the first four kill points leave beside `main.tf`, a directory the user cannot write (the
+      copy is made beside the path named), owner and group, hard links, power loss, Windows; the
+      default-mode leg was not re-run. Answered on the issue with what was fixed and nothing else
+      (`transcripts/terraform-39303-28a34e9/comment-5945605229.md`, the text as posted) — the
+      owner's call: the window that is left is the design the maintainers chose and described, so
+      it is recorded here and not raised there.
   - **standardrb: already known.** The write is RuboCop's, and this project reported it as
     rubocop/rubocop#15720, fixed on RuboCop's main by rubocop/rubocop#15721 — in no release yet;
     standard 1.56.0 pins `rubocop ~> 1.88.0`. The freshness screen read standard as fresh because it

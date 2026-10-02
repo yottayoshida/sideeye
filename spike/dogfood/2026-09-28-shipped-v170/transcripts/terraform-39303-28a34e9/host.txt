@@ -1,0 +1,12 @@
+cfbadaf6996ff35bac10f0bb6ce18657d3c08a02e75c68b8ca21c480815c03cb  terraform-base
+probe-base: docker exit 0
+wrong-base: docker exit 0
+supervised-base: docker exit 0
+shrink-base: docker exit 0
+69a22e512f025a5effa720e8c6c03c7ad99095ce900905f3cf050c4a43f243ac  terraform-pr
+probe-pr: docker exit 0
+wrong-pr: docker exit 0
+supervised-pr: docker exit 0
+shrink-pr: docker exit 0
+kill-base: docker exit 0
+kill-pr: docker exit 0

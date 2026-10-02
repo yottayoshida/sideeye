@@ -1,0 +1,31 @@
+Terraform v1.18.0-dev
+$ wc -c main.tf; cat main.tf
+135 main.tf
+variable "a" {
+        default   =   "x"
+        type      =    string
+}
+
+locals {
+            b   =   var.a
+            c   =   "y"
+}
+$ strace -f -o /dev/null -e trace=ftruncate -e inject=ftruncate:signal=KILL terraform fmt; echo "exit $?"
+main.tf
+exit 0
+$ ls -lA
+total 4
+-rw-r--r-- 1 root root 86 Oct  2 04:23 main.tf
+$ cat main.tf
+variable "a" {
+  default = "x"
+  type    = string
+}
+
+locals {
+  b = var.a
+  c = "y"
+}
+$ terraform fmt -write=false -list=false main.tf > /dev/null; echo "parse exit $?"
+parse exit 0
+$ for f in main.tf?*; do [ -e "$f" ] && { wc -c "$f"; cat "$f"; }; done
