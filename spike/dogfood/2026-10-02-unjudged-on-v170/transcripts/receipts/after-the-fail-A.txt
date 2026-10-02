@@ -1,0 +1,43 @@
+# The novelty check for the four A FAILs, read AFTER the explores by a read-only agent
+# (2026-10-02). NOT re-read by hand: the session hit its usage limit before the quoted
+# lines could be opened at the named commits. Treat every line as the agent's reading until
+# someone re-reads it. Shape as 2026-10-02-gate-cleared-twelve/transcripts/receipts/.
+
+orhun/git-cliff @ 60e0be97e945f71148172675be82399d382c9677 (2026-09-18)
+  writer   git-cliff/src/lib.rs:984 let mut out = io::BufWriter::new(File::create(path)?);  (agent)
+           the same lines at v2.14.2
+  release  v2.14.2 (2026-09-18) is the latest = the measured one
+  reports  none of this shape (atomic 1, interrupt 1, truncate 23, ctrl-c 1, corrupt 2 - all unrelated)
+  policy   CONTRIBUTING: discuss via issue first; bug_report.yml requires description, steps,
+           expected, OS / Rust / project version; SECURITY: email. No AI policy found
+  tracker  owner commented on 4 of the last 10 bug issues (7 h to 15 d); 6 closed without comment
+  length   median of the last 20 issues: 1,381 characters
+
+beautifier/js-beautify @ 4f52c492a47d1aadfeb22b5350a4784a36f736b3 (2026-07-21)
+  writer   js/src/cli.js:513 fs.writeFileSync(outfile, pretty, 'utf8');  (agent); same at v2.0.3
+  release  v2.0.3 (2026-07-03) is the latest = the measured one
+  reports  none of this shape
+  policy   CONTRIBUTING: file an issue before a PR; a fix must land in both the JS and the
+           Python implementation. No SECURITY.md (#2522 asks for one, unanswered). No AI policy
+  tracker  a member commented on 1 of the last 10 issues (150 days); PRs are merged
+  length   median of the last 20 issues: 874 characters
+
+ktlint/ktlint (moved from pinterest/ktlint) @ 616af9383347469fe02a969b6b1c7686a34b812b (2026-10-01)
+  writer   ktlint-cli/.../KtlintCommandLine.kt:532-537 code.filePath?.toFile()?.writeText(formattedFileContent, UTF_8)  (agent)
+           the same at 1.8.0 and 2.0.0-ALPHA-4
+  release  1.8.0 (2025-11-14) is the latest stable = the measured one; 2.0.0-ALPHA-4 (2026-08-21) pre-release
+  reports  none of this shape; #1013 (2020, closed) a BOM made -F empty the file - another cause
+  policy   bug_report.md asks for --log-level=debug output; a CLAUDE.md for Claude Code exists
+           with no word on AI-written issues. No AI policy found
+  tracker  a member replied to 7 of the last 10 issues, 5 h to 3 d
+  length   median of the last 20 issues: 1,883 characters
+
+tweag/ormolu @ 56fd8afc3ca03d9b32fa33785cffc673d27d7e1f (2026-10-01)
+  writer   app/Main.hs:171 T.Utf8.writeFile inputFile formattedInput  (agent) - Data.Text.IO.Utf8,
+           "truncated to zero length before writing begins"; 0.7.2.0 had writeFileUtf8 = B.writeFile . encodeUtf8
+  release  **0.9.0.0 (2026-10-01) is the latest; the measured 0.7.2.0 is from 2023-09-06** (Debian's).
+           Same writer at 0.9.0.0 by reading; NOT measured. A report would need 0.9.0.0 reproduced
+  reports  none of this shape; #1181 (closed) the shell's own > emptied the file - another cause
+  policy   CONTRIBUTING: issues welcome, discuss non-trivial changes first; org bug template. No AI policy found
+  tracker  the two maintainers replied to 5 of the last 10 bug issues, 0 h to 98 d
+  length   median of the last 20 issues: 724 characters
