@@ -1,0 +1,6 @@
+[world]
+state = "/s/rumdl/proj"
+
+[define]
+operation = "rumdl fmt --no-cache a.md"
+cwd       = "/s/rumdl/proj"

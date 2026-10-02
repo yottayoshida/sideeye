@@ -1,0 +1,6 @@
+[world]
+state = "/s/ktfmt/proj"
+
+[define]
+operation = "java -jar /opt/bin/ktfmt.jar a.kt"
+cwd       = "/s/ktfmt/proj"

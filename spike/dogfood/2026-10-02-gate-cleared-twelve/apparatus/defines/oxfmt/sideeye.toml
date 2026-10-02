@@ -1,0 +1,6 @@
+[world]
+state = "/s/oxfmt/proj"
+
+[define]
+operation = "oxfmt a.js"
+cwd       = "/s/oxfmt/proj"
