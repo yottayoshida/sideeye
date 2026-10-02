@@ -22,7 +22,7 @@ To reproduce without a kill:
   $ ls -l a.pdf
   -rw-r--r-- 1 root root 0 ... a.pdf
 
-With a kill: SIGKILL delivered between the unlinkat and the openat leaves the directory without a.pdf (strace -e inject=openat:signal=KILL on the creating openat shows it; the checker below killed the process at the same point and replayed it twice).
+With a kill: SIGKILL delivered between the unlinkat and the openat leaves the directory without a.pdf (strace -e inject=openat:signal=KILL:when=N, N being the ordinal of the creating openat, shows it — the trace ends with the unlinkat returning 0 and that openat unfinished; the checker below killed the process at the same point and replayed it twice).
 
 Expected: when the output path is the input path, the original is still there (or the complete new file is) if mutool does not finish.
 

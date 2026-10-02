@@ -7,8 +7,8 @@
 # The tool's output is taken through a command substitution — a pipe. The first version of this
 # script sent it to a regular file inside the limited subshell, where the limit applies to the
 # tool's own stdout as well: every "last line" came back empty, and an exit code could be the
-# write to that file rather than the write to the target (the first review's finding; that
-# version's output is kept as `transcripts/ulimit-first-attempt.txt`). The bytes are compared
+# write to that file rather than the write to the target (found by the first review of the
+# 2026-10-02 gate-cleared-twelve run, where that version's output is kept). The bytes are compared
 # with a copy taken before the run, because a size alone cannot tell a file left as it was from
 # one rewritten to the same length.
 set -u

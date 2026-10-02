@@ -7,7 +7,8 @@ furthest row in any campaign is `attempted` or `explored` — 28 of 98, read per
 row — plus the three newer releases the morning's gate-cleared-twelve run recorded as not
 measured. There is no candidate table, no screen and no gate: the targets were screened by the
 runs that first met them, and the question here is one question asked of all of them at once —
-**what does the released v1.7.0 say about the targets no engine has judged?**
+**what does the released v1.7.0 say about the targets no campaign has judged?** (Not "no
+engine": six of them were judged on unreleased builds outside any campaign — `RESULTS.md`.)
 
 The 31 rows, by why they were never judged:
 

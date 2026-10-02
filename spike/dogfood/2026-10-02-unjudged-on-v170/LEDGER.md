@@ -75,3 +75,17 @@ a newer release exists and was not measured.
   `SELECTION.md`, and they are not re-screened here.
 
 Thirty-one rows: 4 + 24 + 3.
+
+## Corrections after the run
+
+This file was written before anything ran and its rows stand. Three of its sentences were
+wrong, found by the first review and by reading `docs/target-classes.md` to the end of its rows:
+
+- "Each is the last refusal on record" and "never judged since" hold for campaigns in the
+  funnel, not for every build: mutool was judged on 2026-09-08 (FAIL 16 of 16, syscalls),
+  metaflac and fontforge on 2026-09-07, each on an unreleased build outside any campaign; its
+  last refusal on record is that day's `oracle_missed_operation` under the default mode. The
+  static three carry that note above; these three did not.
+- "Four were answered with a fix" is five: hashicorp/terraform#39303 answers the terraform
+  report and was measured on 2026-09-29 and again this morning. "None left" stands.
+- The D table has 24 rows and zstd is one of them with two defines.
