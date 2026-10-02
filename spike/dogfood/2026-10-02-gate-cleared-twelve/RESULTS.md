@@ -218,6 +218,14 @@ was shown to the owner in full and posted unchanged:
   FAIL 1 of 4 in the same place, replayed twice, and 0 bytes under `ulimit -f 0`
   (`PREDICTION-latest.md`, `transcripts/latest/`). Its maintainer answered ten of the last ten
   outside reports. No policy on AI use was found; the report carries a disclosure.
+  **Answered the same day.** tombi-toml/tombi#2266, merged as `55b8549` two and a half hours
+  after the report and in no release yet, writes over the file and truncates afterwards instead
+  of before; its text calls that "a partial mitigation: it is not atomic" and puts a temporary
+  file and a rename out of scope. The maintainer then closed the report: "This is possible, but
+  extremely rare. … Slowing down all operations for safety brings more harm than good. If that
+  is what you need, you should look for another tool." The owner's call, 2026-10-02: no reply,
+  and the fix is **not measured** — both commits were built from source and no explore was run,
+  so nothing here says what the new write does on a file that formatting makes shorter.
 
 What each report quotes was run as the report's own steps
 (`apparatus/report-evidence.sh`, `transcripts/report-evidence-helm.txt` and `-tombi.txt`). The
