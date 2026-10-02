@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/fontforge/ff",
+    "operation": "/bin/sh /ap/defines/fontforge/op.sh",
+    "check": "/ap/defines/fontforge/check.sh",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 184,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/fontforge/ff/f.ttf",
+  "before_class": "write",
+  "before_path": "/s/fontforge/ff/f.ttf",
+  "violation": "hybrid"
+}

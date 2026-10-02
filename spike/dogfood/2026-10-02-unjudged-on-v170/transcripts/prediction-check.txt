@@ -1,0 +1,36 @@
+# PREDICTION.md (6a631ed) against the runs, by hand: the page's final verdict and the supervised verdict, 32 rows (zstd's two defines as one).
+row             | page predicted                       | page got                                 | supervised predicted         | supervised got                     | 
+git-cliff       | FAIL                                 | FAIL                                     | FAIL                         | FAIL                               | ok
+js-beautify     | FAIL                                 | FAIL                                     | FAIL                         | FAIL                               | ok
+ktlint          | FAIL                                 | FAIL                                     | FAIL                         | FAIL                               | ok
+ormolu          | FAIL                                 | FAIL                                     | FAIL                         | FAIL                               | ok
+oxfmt-071       | FAIL                                 | FAIL                                     | FAIL                         | FAIL                               | ok
+pg_format-511   | FAIL                                 | FAIL                                     | FAIL                         | FAIL                               | ok
+php-cs-fixer    | FAIL                                 | PASS                                     | FAIL                         | PASS                               | MISS
+chezmoi         | UNKNOWN no_shim_marker               | PASS [supervised]                        | PASS                         | PASS                               | MISS
+gopass          | UNKNOWN no_shim_marker               | PASS [supervised]                        | PASS                         | PASS                               | MISS
+lefthook        | UNKNOWN no_shim_marker               | UNKNOWN oracle_missed_operation [syscalls] | PASS                         | PASS                               | MISS
+joplin          | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+bitwarden       | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+beets           | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+zstd            | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected [syscalls] | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+zstd-userview3  | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected [syscalls] | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+lz4             | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected [syscalls] | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+prettier        | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+svgo            | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+npm-pkg-set     | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+eslint          | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+stylelint       | UNKNOWN multiple_threads_detected    | UNKNOWN multiple_threads_detected        | UNKNOWN multiple_threads_detected | UNKNOWN multiple_threads_detected  | ok
+metaflac        | PASS                                 | PASS [syscalls]                          | PASS                         | PASS                               | ok
+fontforge       | FAIL                                 | FAIL [syscalls]                          | FAIL                         | FAIL                               | ok
+mutool          | UNKNOWN unresolvable_path            | FAIL [syscalls]                          | UNKNOWN unresolvable_path    | FAIL                               | MISS
+ocrmypdf        | UNKNOWN baseline_violates_invariant  | UNKNOWN baseline_violates_invariant      | UNKNOWN baseline_violates_invariant | UNKNOWN baseline_violates_invariant | ok
+bat             | UNKNOWN baseline_violates_invariant  | UNKNOWN baseline_violates_invariant      | UNKNOWN baseline_violates_invariant | UNKNOWN baseline_violates_invariant | ok
+meson           | UNKNOWN baseline_violates_invariant  | UNKNOWN baseline_violates_invariant      | UNKNOWN baseline_violates_invariant | UNKNOWN baseline_violates_invariant | ok
+ccache          | UNKNOWN kill_did_not_land            | UNKNOWN kill_did_not_land                | UNKNOWN kill_did_not_land    | UNKNOWN kill_did_not_land          | ok
+fish            | UNKNOWN unsupported_syscall_observed | UNKNOWN unsupported_syscall_observed     | UNKNOWN unsupported_syscall_observed | UNKNOWN unsupported_syscall_observed | ok
+vim             | UNKNOWN unsupported_syscall_observed | UNKNOWN unsupported_syscall_observed     | UNKNOWN unsupported_syscall_observed | UNKNOWN unsupported_syscall_observed | ok
+rrdtool         | UNKNOWN unsupported_syscall_observed | UNKNOWN unsupported_syscall_observed     | UNKNOWN unsupported_syscall_observed | UNKNOWN unsupported_syscall_observed | ok
+git             | UNKNOWN child_touched_state_dir      | UNKNOWN child_touched_state_dir          | judged (not sure)            | UNKNOWN child_touched_state_dir    | MISS
+
+26 of 32 as predicted; 6 not.

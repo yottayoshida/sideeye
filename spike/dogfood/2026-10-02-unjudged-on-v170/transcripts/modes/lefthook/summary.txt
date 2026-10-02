@@ -1,0 +1,3 @@
+lefthook: wrappers: exit 2: UNKNOWN oracle_missed_operation oracle_verified=False crash_points=0
+lefthook: syscalls: exit 2: UNKNOWN oracle_missed_operation oracle_verified=False crash_points=0
+lefthook: supervised: exit 0: PASS - oracle_verified=True crash_points=4

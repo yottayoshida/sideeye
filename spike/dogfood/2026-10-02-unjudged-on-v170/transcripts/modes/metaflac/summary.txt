@@ -1,0 +1,3 @@
+metaflac: wrappers: exit 2: UNKNOWN oracle_missed_operation oracle_verified=False crash_points=0
+metaflac: syscalls: exit 0: PASS - oracle_verified=True crash_points=12
+metaflac: supervised: exit 0: PASS - oracle_verified=True crash_points=12

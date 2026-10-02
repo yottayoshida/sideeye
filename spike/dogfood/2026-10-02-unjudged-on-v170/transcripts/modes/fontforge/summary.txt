@@ -1,0 +1,7 @@
+fontforge: wrappers: exit 2: UNKNOWN oracle_missed_operation oracle_verified=False crash_points=0
+fontforge: syscalls: exit 1: FAIL - oracle_verified=True crash_points=184
+fontforge: syscalls: replay 1 exit 1: FAIL - oracle_verified=True crash_points=184
+fontforge: syscalls: replay 2 exit 1: FAIL - oracle_verified=True crash_points=184
+fontforge: supervised: exit 1: FAIL - oracle_verified=True crash_points=184
+fontforge: supervised: replay 1 exit 1: FAIL - oracle_verified=True crash_points=184
+fontforge: supervised: replay 2 exit 1: FAIL - oracle_verified=True crash_points=184

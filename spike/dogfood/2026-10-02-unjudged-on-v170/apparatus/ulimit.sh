@@ -40,3 +40,5 @@ one ormolu A.hs
 one oxfmt-071 a.js
 one pg_format-511 a.sql
 one php-cs-fixer-r1 a.php
+one mutool a.pdf
+one fontforge f.ttf

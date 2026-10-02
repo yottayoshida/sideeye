@@ -1,0 +1,19 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/mutool/mu",
+    "operation": "mutool clean /s/mutool/mu/a.pdf /s/mutool/mu/a.pdf",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 3,
+  "prefix_hash": "9b314bd3289d1f8c",
+  "after_class": "unlink",
+  "after_path": "/s/mutool/mu/a.pdf",
+  "before_class": "open",
+  "before_path": "/s/mutool/mu/a.pdf",
+  "violation": "missing"
+}

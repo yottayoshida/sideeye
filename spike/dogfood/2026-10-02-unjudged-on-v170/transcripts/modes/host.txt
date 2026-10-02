@@ -23,3 +23,13 @@ oxfmt-071: docker exit 0
 pg_format-511: docker exit 0
 php-cs-fixer: docker exit 0
 done
+chezmoi: docker exit 0
+gopass: docker exit 0
+lefthook: docker exit 0
+joplin: docker exit 0
+beets: docker exit 0
+metaflac: docker exit 0
+fontforge: docker exit 0
+mutool: docker exit 0
+ocrmypdf: docker exit 0
+done

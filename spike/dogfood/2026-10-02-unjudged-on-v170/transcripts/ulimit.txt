@@ -32,3 +32,13 @@ before: 39 bytes
 File size limit exceeded
 exit 153:  0/1 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%
 after:  0 bytes, not the bytes it had before; directory: a.php 
+## mutool: mutool clean /s/mutool/mu/a.pdf /s/mutool/mu/a.pdf
+before: 537 bytes
+File size limit exceeded
+exit 153: 
+after:  0 bytes, not the bytes it had before; directory: a.pdf 
+## fontforge: /bin/sh /ap/defines/fontforge/op.sh
+before: 759720 bytes
+File size limit exceeded
+exit 153: Program root: /usr
+after:  759720 bytes, the bytes it had before; directory: f.ttf 
