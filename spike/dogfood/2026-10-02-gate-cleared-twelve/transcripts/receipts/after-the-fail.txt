@@ -1,0 +1,217 @@
+# The novelty check each FAIL got (2026-10-02), read AFTER the explores - the first pass ended
+# 04:58Z and this reading started after it. Not a pre-scan: rule 14's order is not kept
+# (SELECTION.md). Read-only research, one agent per three targets, then every "writer" line and
+# every quoted policy line re-read by hand from the named commit (marked "re-read"). Each entry:
+# the default branch's writer, releases since the measured one, existing reports, the policies
+# read, how the tracker answers bug reports, and the usual length of an issue there.
+# Counts of search hits are the agents'; what a search returned was not re-run by hand.
+
+kamadorueda/alejandra @ 33a287422e9329d7c2445ce40e01892ab15e3570 (2026-09-11)
+  writer   src/alejandra/src/format.rs:71 match std::fs::File::create(path) {          (re-read)
+           src/alejandra/src/format.rs:73 match file.write_all(data.as_bytes()) {       (re-read)
+  release  4.0.0 (2025-04-10) is the latest; main is 21 commits ahead, unreleased; the writer is unchanged
+  reports  none (titles, bodies and comments of all 489 issues and pull requests: atomic, empty file,
+           interrupt, kill, SIGINT, Ctrl-C, ENOSPC, disk full, data loss, tempfile, File::create,
+           fs::write, overwrit, crash - 0; truncat, 0 bytes, corrupt, fsync - 4 hits, each Nix code
+           being formatted or unrelated). Discussions are off
+  policy   CONTRIBUTING.md "Opening Issues / Feel free to speak your mind :)"; no issue template, no
+           SECURITY; no AI or LLM policy found (CONTRIBUTING, README, CODE_OF_CONDUCT, the vscode
+           integration's CONTRIBUTING)
+  tracker  of 10 recent bug-like issues (chosen by title; the tracker barely labels) the owner
+           replied to 5, first reply after 6 to 75 days
+  length   median of the last 20 issues: 728 characters
+
+tombi-toml/tombi @ 04c7394b3050e91509831e0cde516a78148b2730 (2026-10-01)
+  writer   rust/tombi-cli/src/app/command/format.rs:574 file.seek(std::io::SeekFrom::Start(0)).await?;   (re-read)
+           rust/tombi-cli/src/app/command/format.rs:575 file.set_len(0).await                             (re-read)
+           the file is opened through tokio::fs::OpenOptions with no truncate flag, and written
+           with write_all at :448 (agent's reading; not re-read)
+  release  six since 1.5.6; v1.7.0 (2026-10-01) is the latest and format.rs is the same there
+  reports  none (all 2,236 issues and pull requests and their comments: SIGINT, Ctrl-C, ENOSPC,
+           disk full, corrupt, data loss, fsync, set_len, File::create, interrupt - 0). Near it:
+           #746 (closed) an editor integration emptying pyproject.toml, a stdin-formatting setup;
+           #1502 (closed) a format that hangs and is killed by hand; #1901 and #1902 open the file
+           read-only for --check. None is about a write that is not atomic
+  policy   no CONTRIBUTING, no SECURITY; .github/ISSUE_TEMPLATE/config.yml blank_issues_enabled:
+           false; the form's required fields are current behaviour, expected behaviour,
+           reproduction, environment. No AI policy for contributors found (AGENTS.md and CLAUDE.md
+           there instruct agents working inside the repository)
+  tracker  the maintainer replied to 10 of the last 10 outside reports, median 0.47 days
+  length   median of the last 20 outside issues: 1,118 characters
+
+biomejs/biome @ 33e41182276206f15836513911571fa38d20e3db (2026-10-01)
+  writer   crates/biome_fs/src/fs/os.rs:159 self.inner.set_len(0)?;          (re-read)
+           crates/biome_fs/src/fs/os.rs:161 self.inner.rewind()?;            (re-read)
+           crates/biome_fs/src/fs/os.rs:163 self.inner.write_all(content)?;  (re-read)
+  release  2.5.15 (2026-09-30) since the measured 2.5.14; os.rs is the same in both and at HEAD
+  reports  none of this shape (all 10,788 issues and pull requests and about 31,500 comments:
+           atomic write, fsync, set_len, set_content, power loss - 0; truncat, empty file, 0 bytes,
+           interrupt, kill, SIGINT, ENOSPC, corrupt - read in context, none applies). Discussions
+           not searched (the search page failed to load). Review comments on pull requests not read
+  near     #11817 (closed 2026-09-28): an abort when the diagnostics stream is a closed pipe. Its
+           reporter: "the abort can land in the middle of a write run. I went looking for damage on
+           a 40-file `--write` run and found none ... nothing truncated, everything still parsed
+           afterwards. So this is a note about blast radius, not a corruption report."   (re-read)
+  policy   CONTRIBUTING.md:71 "Please do not use AI to write pull request descriptions or
+           contributor communication for this project."                                  (re-read)
+           CONTRIBUTING.md:73 "If we believe AI-generated communication was used, we may close the
+           pull request at our discretion."                                              (re-read)
+           .github/ISSUE_TEMPLATE/03_bug.yml: reports that do not follow the template are closed;
+           `biome rage` output, reproduction and expected result are required
+  tracker  10 of the last 10 bug-type issues labelled or assigned within 0.4 days
+  length   median of the last 20 issues: 2,590 characters, the template and `biome rage` included
+
+google/go-jsonnet @ 567b61ac4a6c23546a62d79324bb4aaed6bdc941 (2026-03-24; the v0.22.0 tag is this commit)
+  writer   cmd/internal/cmd/utils.go:131 f, createErr := os.Create(outputFile)   (re-read)
+           cmd/internal/cmd/utils.go:141 _, err = f.WriteString(output)          (re-read)
+  release  v0.22.0 is the latest; no commit on master since
+  reports  none (atomic, empty file, interrupt, SIGKILL, Ctrl-C, ENOSPC, disk full, zero bytes,
+           data loss, temp file - 0; truncate 1, kill 3, corrupt 1, in-place 4 - none applies)
+  policy   CONTRIBUTING is the CLA notice; no issue template, no SECURITY in the repository; no AI
+           policy found (the repository, google/.github, jsonnet.org's community page)
+  tracker  the last 10 bug issues (2026-06-06 to 2026-09-23) have no reply from a member or
+           collaborator; in February and March a collaborator replied within 0.4 to 6.1 days
+  length   median of the last 20 issues: 1,118 characters
+
+oxc-project/oxc (oxfmt) @ 16860185dafd0cc87e006e664b97fd798f0c557f (2026-10-02)
+  writer   apps/oxfmt/src/cli/service.rs:82 match fs::write(&path, &code) {   (re-read)
+  release  oxfmt v0.71.0 (2026-09-28) since the measured 0.70.0; the same line at the same place
+  reports  none for oxfmt (atomic, truncate, empty file, interrupt, kill, corrupt, data loss, temp
+           file, overwrite - read by title, none applies; SIGINT, Ctrl-C, ENOSPC, disk full, zero
+           bytes, fsync - 0)
+  near     #6061 (oxlint, closed 2024-10-21): "Coworkers report that lint --fix will sometimes
+           delete / empty / truncate a file."                                  (title re-read)
+           The reporter proposed a temporary file and a rename; a contributor tried fsync and
+           wrote that it cost about ten times the runtime; the change that closed it stops writing
+           files with no fix, and the write itself stayed fs::write (agent's reading of the thread)
+  policy   CONTRIBUTING.md:12-19 "AI Usage Policy": "Please disclose AI usage", "You are
+           responsible for all AI-generated issues or PRs you submit", "Low-quality or unreviewed
+           AI content will be closed immediately", repeated low-quality submissions banned  (re-read)
+  tracker  a member replied to 7 of 10 recent outside formatter issues, median about 0.6 days
+  length   median of the last 20 issues: 1,383.5 characters
+
+scalameta/scalafmt @ e3a02d65c2860d386c828cb9c2b5c8405f54e431 (2026-09-30)
+  writer   scalafmt-sysops/jvm-native/src/main/scala/org/scalafmt/sysops/PlatformFileOps.scala:98-101
+           def writeFile(...) ... Files.write(path, bytes)                      (re-read)
+           The measured binary is the Scala Native build, which takes this path; the JVM build
+           opens with CREATE, WRITE, TRUNCATE_EXISTING on another path and was not measured
+  release  v3.11.5 (2026-07-27) is the latest
+  reports  none (killed, interrupted, SIGINT, ENOSPC, disk full, 0 bytes, zero bytes, data loss,
+           temp file, Files.write, writeFile, fsync - 0; atomic 2, truncate 4, empty file 3,
+           corrupt 8 - none applies)
+  policy   blank issues disabled; one bug template with required configuration and command-line
+           sections, shaped for wrong formatting output. scalameta/.github CONTRIBUTING.md
+           "Contributing with agents": the human author answers for every line, and a reply an
+           agent posts says so with a signature line (agent's reading; not re-read)
+  tracker  a collaborator commented on 3 of the last 10 bug issues and closed the other 7 without
+           comment within 0 to 5.4 days
+  length   median of the last 20 issues: 1,230 characters
+
+Kotlin/ktfmt @ c223b51121d3a6b13e528c890b0d0f2eea40c25b (2026-09-18; facebook/ktfmt now resolves here)
+  writer   core/src/main/kotlin/org/jetbrains/ktfmt/cli/Main.kt:188 file.writeText(formattedCode, UTF_8)   (re-read)
+           v0.64 has the same line under its old package path (agent's reading; not re-read)
+  release  0.64 (2026-06-24) is the latest; main is 109 commits ahead
+  reports  none (interrupt, SIGINT, Ctrl-C, killed, ENOSPC, disk full, corrupt, 0 bytes, writeText,
+           temp file, partial write - 0; atomic 1, truncate 5, empty file 1, data loss 1 - none
+           applies). Discussions not searched
+  near     #465 (closed 2024-05): a misspelled flag still overwrites; a collaborator called it a bug
+           the same day - a data-loss report taken as a bug
+  policy   CONTRIBUTING.md asks for a clear, reproducible description; no issue template, no
+           SECURITY; no AI policy found
+  tracker  no maintainer reply on the last 10 issues (6 are members' own; the outside ones, #706
+           and #705, unanswered). On the `bug` label a collaborator replied to 5 of 10, after 1.2
+           to 110.9 days, the last such reply around March 2026
+  length   median of the last 20 issues: 1,024.5 characters
+
+darold/pgFormatter @ 57cd377321c8474a17ae59a139efa9c4019f21bd (2026-09-20)
+  writer   lib/pgFormatter/CLI.pm:215 open $fh, '>', $self->{'cfg'}->{'output'};   (re-read)
+           lib/pgFormatter/CLI.pm:222 print $fh $self->{'ready'};                    (re-read)
+           --inplace sets the output to the input. The measured build is Debian's 5.6-1, whose
+           only patch is the shebang; v5.6 has the same open at line 194 (agent's reading)
+  release  v5.7 to v5.11 since 5.6; v5.11 (2026-09-04) is the latest, the same open
+  reports  none (interrupted, SIGINT, Ctrl-C, kill, ENOSPC, disk full, 0 bytes, data loss, temp
+           file, emptied - 0; the hits for atomic and truncate are SQL keywords)
+  near     #268 (closed 2021-12): --inplace on a file with an emoji died on `Wide character in
+           print` "and empties" the file; #253 the same symptom. Fixed on the encoding side; the
+           truncate-then-write stayed
+  policy   no CONTRIBUTING, no issue template, no SECURITY; nothing about AI
+  tracker  the owner replied to 8 of the last 10 issues, median 2.8 days
+  length   median of the last 20 issues: 971.5 characters
+
+laravel/pint @ 006bd7825eb01daf92959d060b89cd9514fe4253 (the v1.32.1 tag) -> PHP-CS-Fixer/PHP-CS-Fixer @ 9baada7cd9623eb2ec4d1a2d10b46842efaca824 (2026-09-30)
+  writer   pint has no write of the formatted file; app/Actions/FixCode.php builds PhpCsFixer's
+           Runner, and composer.lock pins friendsofphp/php-cs-fixer v3.95.25 (agent's reading)
+           PHP-CS-Fixer src/Runner/Runner.php:744 if (false === @file_put_contents($fileRealPath, $new)) {   (re-read)
+           The phar was not opened: that this line is the one that ran is the lock file's word
+  release  pint 1.32.1 (2026-09-10) is the latest; PHP-CS-Fixer v3.95.27 (2026-09-22) is two past
+           the bundled one, the same line
+  reports  none on PHP-CS-Fixer (atomic write, data loss, ENOSPC, disk full, zero bytes, partial
+           write, emptied - 0; interrupt, Ctrl-C, killed, file_put_contents - none applies).
+           Discussions not searched
+  near     PHP-CS-Fixer #9854 (open), #9855 and #9856 (merged 2026-09-21): one reporter's
+           file-handling batch, "reported privately" to a maintainer first; #9856 says of the
+           cache file that "a create-temp + atomic-rename ... isn't a drop-in here". Whether the
+           private part covers the source write-back cannot be seen from outside
+  policy   laravel/pint: has_issues false (re-read 2026-10-02). laravel/docs contributions.md:97
+           "Pull request descriptions **must** be written entirely by the contributor. Pull requests
+           with AI-generated descriptions will be closed."                                 (re-read)
+           PHP-CS-Fixer: the bug form requires a reproducer on an up-to-date fixer, run with -vvv;
+           security reports go through advisories, not public issues; nothing about AI
+  tracker  PHP-CS-Fixer: a member replied to 2 of the last 10 `kind/bug` issues; 6 were closed
+           within 0.2 to 2.3 days with no comment
+  length   PHP-CS-Fixer: median of the last 20 issues 1,691.5 characters, the form's headings included
+
+helm/helm @ 53dfa521e019f7b832497066032406b9cda9d5d4 (2026-09-30)
+  writer   pkg/cmd/repo_remove.go:71 if err := r.WriteFile(o.repoFile, 0o600); err != nil {   (re-read)
+           pkg/repo/v1/repo.go:124 return os.WriteFile(path, data, perm)                       (re-read)
+           In the same package the index and the charts file go through
+           fileutil.AtomicWriteFile (index.go:251 and :263, chartrepo.go:115 and :120);
+           repo.go is the one writer there that does not                                       (re-read)
+  release  v4.3.0 (2026-09-09) is the latest, the measured one; 41 commits since, none to
+           repo.go or the repo commands (agent's reading). v3.22.0 writes the same way (agent's)
+  history  #2449 "Write repo file using atomicfile" (merged 2017-05-17)                        (re-read)
+           #2938 "Remove facebookgo dependencies" (merged 2017-10-03) reverted it for the
+           dependency's licence: "we will need to re-implement these fixes with our own
+           packages/alternative packages that are Apache v2 compatible."                       (re-read)
+           #3000 "write index file atomically" (opened 2017-10-03 to track that, closed
+           2018-03-12; by the stale bot, the agent says - not re-read)
+           #7988 and #7954 (2020-04-24) made index.yaml atomic                                 (re-read)
+  reports  no user report of an emptied repositories.yaml and no open pull request making
+           repo.go atomic (25 search terms; the ones with many hits read by title, top 6 to 8
+           only). Discussions and Slack not searched
+  policy   CONTRIBUTING.md: bugs go to GitHub issues, vulnerabilities to the security list;
+           the bug form requires what happened, what was expected, a minimal reproduction, the
+           Helm version and the Kubernetes version; pull requests need a DCO sign-off. No AI
+           policy found (CONTRIBUTING, SECURITY, the templates, helm/community's governance
+           pages); a maintainer wrote on #32494 that one should get its own issue, and none exists
+  tracker  of the last 8 outside bug-form issues a maintainer commented on 2 (within a day);
+           on the `bug` label, 4 of 10
+  length   median of the last 20 issues: about 2,400 characters
+
+google/yamlfmt @ 1cb82bef7e92dad5a5ffa71261a8ce748c9f1164 (2026-09-24)
+  writer   engine.go:100 return os.WriteFile(fd.Path, fd.Diff.Formatted, 0644)   (re-read)
+  release  v0.21.0 (2026-01-05) is the latest, the measured one
+  reports  none (all 324 issues and pull requests and 621 comments: atomic, interrupt, corrupt,
+           WriteFile, data loss, ENOSPC, disk full, backup, rename - 0). #91 (closed) is a
+           comment-only file formatted to 0 bytes, another matter
+  policy   CONTRIBUTING.md is the CLA and review notice; no issue template, no SECURITY; no AI
+           policy found. README: maintained by one person in spare time
+  tracker  the six issues opened since 2026-02-18 have no reply
+  length   median of the last 20 issues: about 830 characters
+
+mvdan/gofumpt @ 3e0cc4edc39797c8ed123f4e0a60e3ad1cdcd3b0 (2026-09-23)
+  writer   gofmt.go:730 bakname, err := backupFile(filename, orig, perm)        (re-read)
+           gofmt.go:738 fout, err := os.OpenFile(filename, os.O_WRONLY, perm)   (re-read)
+           gofmt.go:751-753 n, err := fout.Write(formatted) / if err == nil && int64(n) < size {
+           / err = fout.Truncate(int64(n))                                      (re-read)
+           The file is Go's own cmd/gofmt, inherited and updated by hand (README); the order -
+           backup, write in place, truncate - is the same in Go's gofmt (agent's diff against
+           golang/go master; Go's gofmt was not measured here)
+  release  v0.12.0 (2026-09-07) is the latest, the measured one
+  reports  none on gofumpt (355 issues and pull requests, 1,119 comments). On Go: golang/go#8984
+           (2016, the backup was added then), and a pull request to swap the file atomically,
+           golang/go#44173, closed unmerged
+  policy   no CONTRIBUTING, template or SECURITY; README welcomes issues. AGENTS.md there says
+           the inherited files are kept close to upstream
+  tracker  the owner commented on 7 of the last 10 issues, median 0.4 days
+  length   median of the last 20 issues: about 700 characters
