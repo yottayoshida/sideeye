@@ -64,3 +64,10 @@ RUN npm install -g --no-fund --no-audit eslint@10.11.0 stylelint@17.15.0 js-beau
 # Bitwarden CLI, at the version 2026-09-16-outside-git's transcripts report (that run installed
 # it unpinned).
 RUN npm install -g --no-fund --no-audit @bitwarden/cli@2026.8.0 > /tmp/npm-bw.log 2>&1; echo "npm bw exit: $?"; tail -2 /tmp/npm-bw.log; bw --version
+
+# mutool at the latest release, built from the project's source tarball (Debian has 1.25.1).
+RUN set -u; cd /tmp/dl; curl -fsSL -o mupdf-1.28.5.tgz https://mupdf.com/downloads/archive/mupdf-1.28.5-source.tar.gz \
+      && echo "OK mupdf-1.28.5 source" || echo "MISSING mupdf-1.28.5 source"; sha256sum mupdf-1.28.5.tgz | tee -a /tmp/dl-uj-sums.txt; \
+    mkdir -p /opt/mupdf-src && tar xzf mupdf-1.28.5.tgz -C /opt/mupdf-src --strip-components=1 && cd /opt/mupdf-src \
+      && make HAVE_X11=no HAVE_GLUT=no build=release -j8 build/release/mutool > /tmp/mupdf-build.log 2>&1; echo "make exit: $?"; tail -2 /tmp/mupdf-build.log; \
+    mkdir -p /opt/mupdf1285 && cp build/release/mutool /opt/mupdf1285/mutool && /opt/mupdf1285/mutool -v
