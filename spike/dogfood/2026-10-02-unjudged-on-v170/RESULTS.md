@@ -17,12 +17,14 @@ that a **released** engine reaches them — as far as `spike/outcome-funnel.tsv`
 images judge little (below the table). mutool FAILs
 under syscalls — `a.pdf` gone between the `unlink` and the `open` — as an unreleased build
 measured on 2026-09-08; the three static images PASS under supervised, as the unreleased
-2026-09-27 build said; metaflac and fontforge reach the verdicts of 2026-09-07. Three of the
-nine FAILs were reported upstream (below).
+2026-09-27 build said; metaflac and fontforge reach the verdicts of 2026-09-07. Two of the
+nine FAILs were reported upstream and a third report is drafted (below).
 
 Every FAIL replayed twice and reproduced; every PASS and FAIL `oracle_verified`. All 33 under
 all three modes: `transcripts/modes/*/summary.txt`; the page's path: `transcripts/page/`.
-Versions: `transcripts/versions.txt`.
+Versions: `transcripts/versions.txt` (what each tool prints) and `transcripts/probes/versions.txt`
+(npm's and dpkg's account: joplin 3.7.1, which prints no version of its own; Debian's beets
+package is 2.2.0-3 and the tool reports itself as 2.1.0, the figure used below).
 
 ## The 31 rows
 
@@ -199,7 +201,8 @@ Not filed:
 The latest phar, run as `php php-cs-fixer.phar fix a.php` in a directory with no
 `.php-cs-fixer.php`, prints "Do you want to create the config file?", writes `.php-cs-fixer.dist.php` and
 `.gitignore`, and exits without opening `a.php` for writing (`transcripts/probes/write-paths.txt`;
-the explore's 4 crash points are on those two files). The engine judged what the run wrote,
+the explore records 4 operations, and those two files are the only ones the run opens for
+writing under the project). The engine judged what the run wrote,
 which was not the PHP file. Pint bundles a rule set and never asks, which
 is why the morning's pint define wrote. Revision 1 names the rules and turns interaction off;
 the same transcript then shows the same `openat(O_WRONLY|O_CREAT|O_TRUNC)` and `write` as pint's v3.95.25,
