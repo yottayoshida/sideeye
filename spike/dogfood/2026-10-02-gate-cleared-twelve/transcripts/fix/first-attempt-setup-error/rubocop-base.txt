@@ -3,7 +3,7 @@ tool: 1.91.0
 sideeye 1.7.0 (trace contract v18)
 
 ## explore
-explore exit 0: PASS -
+explore exit 3: SETUP_ERROR -
 
 ## modes
 $ stat -c '%a %n' *.rb
@@ -686,7 +686,7 @@ For more information: https://docs.rubocop.org/rubocop/versioning.html
 exit 0
 $ ls -l mod; cat shared/x.rb; ls -A shared mod
 total 0
-lrwxrwxrwx 1 root root 14 Oct  2 06:29 x.rb -> ../shared/x.rb
+lrwxrwxrwx 1 root root 14 Oct  2 05:06 x.rb -> ../shared/x.rb
 # MARKER
 puts("x")
 mod:
@@ -697,8 +697,8 @@ x.rb
 
 ## a second hard link
 $ stat -c '%h links, inode %i  %n' one.rb two.rb
-2 links, inode 347358  one.rb
-2 links, inode 347358  two.rb
+2 links, inode 192772  one.rb
+2 links, inode 192772  two.rb
 $ ruby /src/exe/rubocop -a --force-default-config --only Layout/SpaceInsideParens one.rb > /dev/null; echo "exit $?"
 The following cops were added to RuboCop, but are not configured. Please set Enabled to either `true` or `false` in your `.rubocop.yml` file.
 
@@ -1034,12 +1034,9 @@ Style/YAMLFileRead: # new in 1.53
 For more information: https://docs.rubocop.org/rubocop/versioning.html
 exit 0
 $ stat -c '%h links, inode %i  %n' one.rb two.rb; cmp one.rb two.rb && echo 'same bytes' || echo 'the two names now differ'
-1 links, inode 347360  one.rb
-1 links, inode 347358  two.rb
-one.rb two.rb differ: char 15, line 2
-the two names now differ
-one.rb: not the original bytes
-two.rb: the original bytes
+2 links, inode 192772  one.rb
+2 links, inode 192772  two.rb
+same bytes
 
 ## ulimit -f 0
 $ wc -c < x.rb
@@ -1048,17 +1045,13 @@ $ ( ulimit -f 0; ruby /src/exe/rubocop -a --force-default-config --only Layout/S
 File size limit exceeded
 exit 153
 $ wc -c < x.rb; ls -A
-21
+0
 x.rb
-x.rb.230.16349719.rubocop.tmp
-x.rb: the original bytes
 
 ## SIGKILL on entry to rename (strace), then the directory
 $ strace -f -o /dev/null -e trace=rename,renameat,renameat2 -e inject=rename,renameat,renameat2:signal=KILL ruby /src/exe/rubocop -a --force-default-config --only Layout/SpaceInsideParens x.rb > /dev/null 2>&1; echo "exit $?"
 exit 137
 $ ls -lA; wc -c x.rb
-total 8
--rw-r--r-- 1 root root 21 Oct  2 06:29 x.rb
--rw-r--r-- 1 root root 19 Oct  2 06:29 x.rb.243.868558069.rubocop.tmp
-21 x.rb
-x.rb: the original bytes
+total 4
+-rw-r--r-- 1 root root 19 Oct  2 05:06 x.rb
+19 x.rb

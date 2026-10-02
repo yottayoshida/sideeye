@@ -3,9 +3,7 @@ tool: 0+source
 sideeye 1.7.0 (trace contract v18)
 
 ## explore
-explore exit 1: FAIL -
-replay 1 exit 1: FAIL -
-replay 2 exit 1: FAIL -
+explore exit 3: SETUP_ERROR -
 
 ## modes
 $ stat -c '%a %n' *.txt
@@ -36,7 +34,7 @@ FIXED: mod/x.txt
 exit 0
 $ ls -l mod; cat shared/x.txt; ls -A shared mod
 total 0
-lrwxrwxrwx 1 root root 15 Oct  2 06:28 x.txt -> ../shared/x.txt
+lrwxrwxrwx 1 root root 15 Oct  2 05:05 x.txt -> ../shared/x.txt
 MARKER keep
 The receiver did not separate.
 mod:
@@ -47,19 +45,18 @@ x.txt
 
 ## a second hard link
 $ stat -c '%h links, inode %i  %n' one.txt two.txt
-2 links, inode 347348  one.txt
-2 links, inode 347348  two.txt
+2 links, inode 174931  one.txt
+2 links, inode 174931  two.txt
 $ python3 -m codespell_lib -w one.txt > /dev/null; echo "exit $?"
 FIXED: one.txt
   one.txt:2: reciever ==> receiver
   one.txt:2: seperate ==> separate
 exit 0
 $ stat -c '%h links, inode %i  %n' one.txt two.txt; cmp one.txt two.txt && echo 'same bytes' || echo 'the two names now differ'
-2 links, inode 347348  one.txt
-2 links, inode 347348  two.txt
-same bytes
-one.txt: not the original bytes
-two.txt: not the original bytes
+1 links, inode 174932  one.txt
+1 links, inode 174931  two.txt
+one.txt two.txt differ: char 20, line 2
+the two names now differ
 
 ## ulimit -f 0
 $ wc -c < x.txt
@@ -67,15 +64,14 @@ $ wc -c < x.txt
 $ ( ulimit -f 0; python3 -m codespell_lib -w x.txt > /dev/null 2>&1 ); echo "exit $?"
 exit 1
 $ wc -c < x.txt; ls -A
-0
+43
 x.txt
-x.txt: not the original bytes
 
 ## SIGKILL on entry to rename (strace), then the directory
 $ strace -f -o /dev/null -e trace=rename,renameat,renameat2 -e inject=rename,renameat,renameat2:signal=KILL python3 -m codespell_lib -w x.txt > /dev/null 2>&1; echo "exit $?"
-exit 0
+exit 137
 $ ls -lA; wc -c x.txt
-total 4
--rw-r--r-- 1 root root 43 Oct  2 06:28 x.txt
+total 8
+-rw-r--r-- 1 root root 43 Oct  2 05:05 .codespell-yuz0xrle.tmp
+-rw-r--r-- 1 root root 43 Oct  2 05:05 x.txt
 43 x.txt
-x.txt: not the original bytes

@@ -1,0 +1,10 @@
+before: 39 bytes
+exit 153
+after:  39 bytes
+## the signal, and the three lines before it
+112-14    openat(AT_FDCWD</s/pint/proj>, "/opt/bin/pint.phar", O_RDONLY) = 4</opt/bin/pint.phar>
+113-14    openat(AT_FDCWD</s/pint/proj>, "/tmp/phptpeinci33cr0aZUimr1", O_RDWR|O_CREAT|O_EXCL, 0600) = 5</tmp/phptpeinci33cr0aZUimr1>
+114-14    write(5</tmp/phptpeinci33cr0aZUimr1>, "<?php\n\nnamespace HumbugBox4610\\K"..., 1011) = -1 EFBIG (File too large)
+115:14    --- SIGXFSZ {si_signo=SIGXFSZ, si_code=SI_USER, si_pid=14, si_uid=0} ---
+116:14    +++ killed by SIGXFSZ +++
+## every openat of a.php for writing in the whole run: 0

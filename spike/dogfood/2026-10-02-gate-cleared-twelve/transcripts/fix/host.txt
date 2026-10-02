@@ -1,4 +1,8 @@
+codespell-base: /src is d15559f7713333dc20ef39cae769975584d5479f 2026-09-16 dictionary: add pouplar correction
 codespell-base: docker exit 0 | explore exit 1: FAIL -
+codespell-fix: /src is 68804d2f8cdd2a12b380759ab3e79c358a11f19a 2026-09-21 Write --write-changes via a tempfile so interrupts cannot 
 codespell-fix: docker exit 0 | explore exit 0: PASS -
+rubocop-base: /src is 0d7a2163ef8f616322e3d5672850180987d6b7c7 2026-09-16 [Fix #15131] Read bitwise predicate setting from config
 rubocop-base: docker exit 0 | explore exit 1: FAIL -
+rubocop-fix: /src is b39e7f467233d341bcde463a0aa49f8dd4eed63d 2026-09-16 [Fix #15720] Fix source file truncation when autocorrect i
 rubocop-fix: docker exit 0 | explore exit 0: PASS -

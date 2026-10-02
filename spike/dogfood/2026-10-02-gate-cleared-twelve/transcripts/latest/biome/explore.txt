@@ -9,7 +9,7 @@ observed    holding neither the old nor the new content
 explored    4 worlds (crash points 3 + 1 baseline)
 expected    exit 0
 atomicity   1 path(s) judged pre-or-post
-oracle      agreed on 3 operations (824 syscall lines examined, 125 in scope of the judged state), witness strace
+oracle      agreed on 3 operations (822 syscall lines examined, 126 in scope of the judged state), witness strace
 metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
 checker     none configured
 l1          no marker configured
@@ -21,4 +21,4 @@ processes   single process in the recording; a thread was created in an explored
 not tested  power loss, torn writes, concurrent processes
 
 reproduce   SIDEEYE_STATE_DIR=/s/biome/proj SIDEEYE_TRACE_PATH=/out/biome/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
-sideeye: json sha256=d4dd5b5ee566f49b75a6de3f3a616634314238fd2057e779cd54141d941cfbff;
+sideeye: json sha256=ce991a4e81a2257e92646f140f11feb4ca6d2207abecd16ab4a362ff8c3ecbcc;

@@ -8,24 +8,13 @@ exit 153
 $ wc -c < a.toml; ls -lA
 0
 total 0
--rw-r--r-- 1 root root 0 Oct  2 06:02 a.toml
+-rw-r--r-- 1 root root 0 Oct  2 06:29 a.toml
 
 ## the same command without the limit, under strace, that file only
-$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate -P /demo/a.toml tombi format --offline a.toml 2>&1 | grep -v -E "^\[pid +[0-9]+\] \+\+\+|^\+\+\+|resumed" | cut -c1-200
-strace: Process 35 attached
-strace: Process 36 attached
-strace: Process 37 attached
-strace: Process 38 attached
-strace: Process 39 attached
-strace: Process 40 attached
-strace: Process 41 attached
-strace: Process 42 attached
-strace: Process 43 attached
-strace: Process 44 attached
-strace: Process 45 attached
-[pid    45] ftruncate(6</demo/a.toml>, 0) = 0
-[pid    45] write(6</demo/a.toml>, "[a]\nb = 1\nc = \"x\"\n\n[d]\ne = [1, 2"..., 37) = 37
-1 file formatted
+$ strace -f -y -e trace=openat,write,rename,renameat,renameat2,ftruncate tombi format --offline a.toml 2>&1 | grep -F a.toml | cut -c1-200
+[pid    46] openat(AT_FDCWD</demo>, "a.toml", O_RDWR|O_LARGEFILE|O_CLOEXEC) = 6</demo/a.toml>
+[pid    46] ftruncate(6</demo/a.toml>, 0) = 0
+[pid    46] write(6</demo/a.toml>, "[a]\nb = 1\nc = \"x\"\n\n[d]\ne = [1, 2"..., 37 <unfinished ...>
 $ wc -c < a.toml; cat a.toml
 37
 [a]

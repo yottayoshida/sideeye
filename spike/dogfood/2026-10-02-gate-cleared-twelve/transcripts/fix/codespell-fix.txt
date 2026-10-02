@@ -34,7 +34,7 @@ FIXED: mod/x.txt
 exit 0
 $ ls -l mod; cat shared/x.txt; ls -A shared mod
 total 0
-lrwxrwxrwx 1 root root 15 Oct  2 05:06 x.txt -> ../shared/x.txt
+lrwxrwxrwx 1 root root 15 Oct  2 06:28 x.txt -> ../shared/x.txt
 MARKER keep
 The receiver did not separate.
 mod:
@@ -45,18 +45,20 @@ x.txt
 
 ## a second hard link
 $ stat -c '%h links, inode %i  %n' one.txt two.txt
-2 links, inode 192753  one.txt
-2 links, inode 192753  two.txt
+2 links, inode 347348  one.txt
+2 links, inode 347348  two.txt
 $ python3 -m codespell_lib -w one.txt > /dev/null; echo "exit $?"
 FIXED: one.txt
   one.txt:2: reciever ==> receiver
   one.txt:2: seperate ==> separate
 exit 0
 $ stat -c '%h links, inode %i  %n' one.txt two.txt; cmp one.txt two.txt && echo 'same bytes' || echo 'the two names now differ'
-1 links, inode 192770  one.txt
-1 links, inode 192753  two.txt
+1 links, inode 347350  one.txt
+1 links, inode 347348  two.txt
 one.txt two.txt differ: char 20, line 2
 the two names now differ
+one.txt: not the original bytes
+two.txt: the original bytes
 
 ## ulimit -f 0
 $ wc -c < x.txt
@@ -66,12 +68,14 @@ exit 1
 $ wc -c < x.txt; ls -A
 43
 x.txt
+x.txt: the original bytes
 
 ## SIGKILL on entry to rename (strace), then the directory
 $ strace -f -o /dev/null -e trace=rename,renameat,renameat2 -e inject=rename,renameat,renameat2:signal=KILL python3 -m codespell_lib -w x.txt > /dev/null 2>&1; echo "exit $?"
 exit 137
 $ ls -lA; wc -c x.txt
 total 8
--rw-r--r-- 1 root root 43 Oct  2 05:06 .codespell-u0r745v1.tmp
--rw-r--r-- 1 root root 43 Oct  2 05:06 x.txt
+-rw-r--r-- 1 root root 43 Oct  2 06:28 .codespell-2ckpb3ce.tmp
+-rw-r--r-- 1 root root 43 Oct  2 06:28 x.txt
 43 x.txt
+x.txt: the original bytes

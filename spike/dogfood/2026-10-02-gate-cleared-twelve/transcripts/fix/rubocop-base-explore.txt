@@ -2004,7 +2004,7 @@ observed    holding neither the old nor the new content
 explored    5 worlds (crash points 4 + 1 baseline)
 expected    exit 0
 atomicity   2 path(s) judged pre-or-post
-oracle      agreed on 4 operations (36454 syscall lines examined, 56 in scope of the judged state), witness strace
+oracle      agreed on 4 operations (36460 syscall lines examined, 56 in scope of the judged state), witness strace
 metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
 checker     falsified before the run (corrupted state -> check failed); ran in 5 world(s)
 l1          no marker configured
@@ -2016,4 +2016,4 @@ processes   single process in the recording; a thread was created in an explored
 not tested  power loss, torn writes, concurrent processes
 
 reproduce   SIDEEYE_STATE_DIR=/s/fix/rubocop SIDEEYE_TRACE_PATH=/out/work/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
-sideeye: json sha256=bd193619bdb1aac941a1674f3539347f308a6fa333047838174e6229f07a14e8;
+sideeye: json sha256=9dabb56def2611607a28eef189fc8e9f76cd5a6f15357d820aaa543a1478ab30;

@@ -1,0 +1,84 @@
+# Every tombi 1.5.6 run of 2026-10-02 under --observe supervised, read back from the engine's
+# own output files: the verdict line and, for a FAIL, where. One line per run.
+
+## the gate's preflight --twice
+entry.sh: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+five-1: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+five-2: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+five-3: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+five-4: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+five-5: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-1: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-2: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-3: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-4: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-5: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-6: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-7: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-8: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-9: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-10: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-11: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-12: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-13: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-14: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-15: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-16: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-17: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-18: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-19: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+twenty-20: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+preflight totals: 26 runs; {'PREFLIGHT  recording accepted — 3 state-changing operation(s) observed': 26}
+
+## explore
+run.sh-first: UNKNOWN  multiple_threads_detected
+run.sh-1: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-2: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-3: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-4: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-5: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-6: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-7: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-8: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-9: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+run.sh-10: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+five-1: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+five-2: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+five-3: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+five-4: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+five-5: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-1: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-2: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-3: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-4: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-5: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-6: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-7: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-8: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-9: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-10: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-11: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-12: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-13: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-14: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-15: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-16: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-17: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-18: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-19: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+twenty-20: FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+explore totals: 36 runs
+  35 x FAIL  1 of 4 explored worlds violated an invariant | earliest 3 of 3, after truncate before write
+  1 x UNKNOWN multiple_threads_detected
+
+## replays of the ten FAILs found through run.sh (two each)
+run.sh-1: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
+run.sh-2: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
+run.sh-3: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
+run.sh-4: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
+run.sh-5: replay 1 exit 1: FAIL - | replay 2 exit 2: UNKNOWN multiple_threads_detected | evidence exit 0
+run.sh-6: replay 1 exit 1: FAIL - | replay 2 exit 2: UNKNOWN multiple_threads_detected | evidence exit 0
+run.sh-7: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
+run.sh-8: replay 1 exit 1: FAIL - | replay 2 exit 2: UNKNOWN multiple_threads_detected | evidence exit 0
+run.sh-9: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
+run.sh-10: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0

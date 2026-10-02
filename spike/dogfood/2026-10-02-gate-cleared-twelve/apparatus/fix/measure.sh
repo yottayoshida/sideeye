@@ -44,20 +44,28 @@ rm -rf /p/l && mkdir -p /p/l/shared /p/l/mod && bad "/p/l/shared/x.$ext" && ln -
 run "$tool mod/x.$ext > /dev/null; echo \"exit \$?\""
 run "ls -l mod; cat shared/x.$ext; ls -A shared mod"
 
+# From here on a file is compared with a copy taken before the run: codespell's correction is
+# the same length as the misspelling, so a size cannot tell the original from the fixed file
+# (the first review's finding). `orig` says which.
+orig() { cmp -s "$1" "$2" && echo "$1: the original bytes" || echo "$1: not the original bytes"; }
+
 echo; echo "## a second hard link"
-rm -rf /p/h && mkdir -p /p/h && cd /p/h && bad "one.$ext" && ln "one.$ext" "two.$ext"
+rm -rf /p/h && mkdir -p /p/h && cd /p/h && bad "one.$ext" && ln "one.$ext" "two.$ext" && cp "one.$ext" /p/h.orig
 run "stat -c '%h links, inode %i  %n' one.$ext two.$ext"
 run "$tool one.$ext > /dev/null; echo \"exit \$?\""
 run "stat -c '%h links, inode %i  %n' one.$ext two.$ext; cmp one.$ext two.$ext && echo 'same bytes' || echo 'the two names now differ'"
+orig "one.$ext" /p/h.orig; orig "two.$ext" /p/h.orig
 
 echo; echo "## ulimit -f 0"
-rm -rf /p/u && mkdir -p /p/u && cd /p/u && bad "x.$ext"
+rm -rf /p/u && mkdir -p /p/u && cd /p/u && bad "x.$ext" && cp "x.$ext" /p/u.orig
 run "wc -c < x.$ext"
 run "( ulimit -f 0; $tool x.$ext > /dev/null 2>&1 ); echo \"exit \$?\""
 run "wc -c < x.$ext; ls -A"
+orig "x.$ext" /p/u.orig
 
 echo; echo "## SIGKILL on entry to rename (strace), then the directory"
-rm -rf /p/k && mkdir -p /p/k && cd /p/k && bad "x.$ext"
+rm -rf /p/k && mkdir -p /p/k && cd /p/k && bad "x.$ext" && cp "x.$ext" /p/k.orig
 run "strace -f -o /dev/null -e trace=rename,renameat,renameat2 -e inject=rename,renameat,renameat2:signal=KILL $tool x.$ext > /dev/null 2>&1; echo \"exit \$?\""
 run "ls -lA; wc -c x.$ext"
+orig "x.$ext" /p/k.orig
 exit 0

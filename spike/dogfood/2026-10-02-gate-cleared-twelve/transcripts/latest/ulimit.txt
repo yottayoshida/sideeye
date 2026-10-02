@@ -1,63 +1,64 @@
 tombi 1.7.0 (aarch64-unknown-linux-musl)
 Version: 2.5.15
 
+control: an untouched file compares as the bytes it had before
+control: a same-length rewrite compares as not the bytes it had before
 ## alejandra-r1: /opt/bin/alejandra -q a.nix
 before: 58 bytes
 File size limit exceeded
 exit 153: 
-after:  0 bytes; directory: a.nix 
+after:  0 bytes, not the bytes it had before; directory: a.nix 
 ## biome: biome format --write a.js
 before: 48 bytes
 File size limit exceeded
 exit 153: 
-after:  0 bytes; directory: a.js 
+after:  0 bytes, not the bytes it had before; directory: a.js 
 ## gofumpt-r1: /opt/bin/gofumpt -w main.go
 before: 73 bytes
-exit 2: 
-after:  73 bytes; directory: main.go main.go.3434962686331662954 
+exit 2: write main.go.6127340126789119219: file too large
+after:  73 bytes, the bytes it had before; directory: main.go main.go.6127340126789119219 
 ## helm-r1: /opt/bin/helm repo remove b --repository-config /s/helm/cfg/repositories.yaml --repository-cache /s/helm/cache
 before: 163 bytes
-exit 1: 
-after:  0 bytes; directory: repositories.yaml 
+exit 1: Error: write /s/helm/cfg/repositories.yaml: file too large
+after:  0 bytes, not the bytes it had before; directory: repositories.yaml 
 ## jsonnetfmt-r1: /opt/bin/jsonnetfmt -i a.jsonnet
 before: 41 bytes
-exit 1: 
-after:  0 bytes; directory: a.jsonnet 
+exit 1: write a.jsonnet: file too large
+after:  0 bytes, not the bytes it had before; directory: a.jsonnet 
 ## ktfmt: java -jar /opt/bin/ktfmt.jar a.kt
 before: 55 bytes
-exit 1: 
-after:  0 bytes; directory: a.kt 
+exit 1: Error formatting a.kt: File too large; skipping.
+after:  0 bytes, not the bytes it had before; directory: a.kt 
 ## oxfmt: oxfmt a.js
 before: 48 bytes
-Aborted
-exit 134: 
-after:  0 bytes; directory: a.js 
+exit 2: Error occurred when checking code style in the above files.
+after:  0 bytes, not the bytes it had before; directory: a.js 
 ## pg_format: pg_format -i a.sql
 before: 29 bytes
 File size limit exceeded
 exit 153: 
-after:  0 bytes; directory: a.sql 
+after:  0 bytes, not the bytes it had before; directory: a.sql 
 ## pint: php /opt/bin/pint.phar a.php
 before: 39 bytes
 File size limit exceeded
 exit 153: 
-after:  39 bytes; directory: a.php 
+after:  39 bytes, the bytes it had before; directory: a.php 
 ## scalafmt: scalafmt a.scala
 before: 55 bytes
 File size limit exceeded
 exit 153: 
-after:  0 bytes; directory: .scalafmt.conf a.scala 
+after:  0 bytes, not the bytes it had before; directory: .scalafmt.conf a.scala 
 ## tombi-r1: /opt/bin/tombi format --offline a.toml
 before: 36 bytes
 File size limit exceeded
 exit 153: 
-after:  0 bytes; directory: a.toml 
+after:  0 bytes, not the bytes it had before; directory: a.toml 
 ## yamlfmt-r1: /opt/bin/yamlfmt a.yaml
 before: 46 bytes
-exit 1: 
-after:  0 bytes; directory: a.yaml 
+exit 1: write a.yaml: file too large
+after:  0 bytes, not the bytes it had before; directory: a.yaml 
 ## rumdl-nocache: rumdl fmt --no-cache a.md
 before: 62 bytes
 File size limit exceeded
 exit 153: 
-after:  62 bytes; directory: .a.md.rumdl-tmp.321.0 a.md 
+after:  62 bytes, the bytes it had before; directory: .a.md.rumdl-tmp.387.0 a.md 

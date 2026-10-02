@@ -18,6 +18,7 @@ mkdir -p "$out"
 for t in codespell rubocop; do
     for w in base fix; do
         mkdir -p "$out/$t-$w"
+        echo "$t-$w: /src is $(git -C "$src/src-$t-$w" log -1 --format='%H %cs %s' | cut -c1-110)"
         docker run --rm --privileged --cgroupns=private --network none -e PYTHONPATH=/src \
             -v "$here:/ap:ro" -v "$src/src-$t-$w:/src:ro" -v "$out/$t-$w:/out" \
             sideeye-sv170 sh /ap/fix/measure.sh "$t" > "$out/$t-$w.txt" 2>&1
