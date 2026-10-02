@@ -1,0 +1,4 @@
+codespell-base: docker exit 0 | explore exit 1: FAIL -
+codespell-fix: docker exit 0 | explore exit 0: PASS -
+rubocop-base: docker exit 0 | explore exit 1: FAIL -
+rubocop-fix: docker exit 0 | explore exit 0: PASS -

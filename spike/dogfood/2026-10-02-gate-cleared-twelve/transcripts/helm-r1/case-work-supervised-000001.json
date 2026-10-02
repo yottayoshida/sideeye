@@ -1,0 +1,19 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 2,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/helm",
+    "operation": "/opt/bin/helm repo remove b --repository-config /s/helm/cfg/repositories.yaml --repository-cache /s/helm/cache",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 4,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/helm/cfg/repositories.yaml",
+  "before_class": "write",
+  "before_path": "/s/helm/cfg/repositories.yaml",
+  "violation": "hybrid"
+}

@@ -1,0 +1,77 @@
+## versions
+tool: 0+source
+sideeye 1.7.0 (trace contract v18)
+
+## explore
+explore exit 0: PASS -
+
+## modes
+$ stat -c '%a %n' *.txt
+600 f600.txt
+664 f664.txt
+755 f755.txt
+$ python3 -m codespell_lib -w f600.txt f664.txt f755.txt > /dev/null; echo "exit $?"
+FIXED: f600.txt
+  f600.txt:2: reciever ==> receiver
+  f600.txt:2: seperate ==> separate
+FIXED: f664.txt
+  f664.txt:2: reciever ==> receiver
+  f664.txt:2: seperate ==> separate
+FIXED: f755.txt
+  f755.txt:2: reciever ==> receiver
+  f755.txt:2: seperate ==> separate
+exit 0
+$ stat -c '%a %n' *.txt
+600 f600.txt
+664 f664.txt
+755 f755.txt
+
+## relative symlink, run from the parent
+$ python3 -m codespell_lib -w mod/x.txt > /dev/null; echo "exit $?"
+FIXED: mod/x.txt
+  mod/x.txt:2: reciever ==> receiver
+  mod/x.txt:2: seperate ==> separate
+exit 0
+$ ls -l mod; cat shared/x.txt; ls -A shared mod
+total 0
+lrwxrwxrwx 1 root root 15 Oct  2 05:06 x.txt -> ../shared/x.txt
+MARKER keep
+The receiver did not separate.
+mod:
+x.txt
+
+shared:
+x.txt
+
+## a second hard link
+$ stat -c '%h links, inode %i  %n' one.txt two.txt
+2 links, inode 192753  one.txt
+2 links, inode 192753  two.txt
+$ python3 -m codespell_lib -w one.txt > /dev/null; echo "exit $?"
+FIXED: one.txt
+  one.txt:2: reciever ==> receiver
+  one.txt:2: seperate ==> separate
+exit 0
+$ stat -c '%h links, inode %i  %n' one.txt two.txt; cmp one.txt two.txt && echo 'same bytes' || echo 'the two names now differ'
+1 links, inode 192770  one.txt
+1 links, inode 192753  two.txt
+one.txt two.txt differ: char 20, line 2
+the two names now differ
+
+## ulimit -f 0
+$ wc -c < x.txt
+43
+$ ( ulimit -f 0; python3 -m codespell_lib -w x.txt > /dev/null 2>&1 ); echo "exit $?"
+exit 1
+$ wc -c < x.txt; ls -A
+43
+x.txt
+
+## SIGKILL on entry to rename (strace), then the directory
+$ strace -f -o /dev/null -e trace=rename,renameat,renameat2 -e inject=rename,renameat,renameat2:signal=KILL python3 -m codespell_lib -w x.txt > /dev/null 2>&1; echo "exit $?"
+exit 137
+$ ls -lA; wc -c x.txt
+total 8
+-rw-r--r-- 1 root root 43 Oct  2 05:06 .codespell-u0r745v1.tmp
+-rw-r--r-- 1 root root 43 Oct  2 05:06 x.txt
+43 x.txt

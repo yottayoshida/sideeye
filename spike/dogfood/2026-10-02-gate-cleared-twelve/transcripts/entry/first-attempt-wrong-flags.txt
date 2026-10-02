@@ -1,0 +1,8 @@
+## rumdl: operation = "rumdl fmt a.md"
+SETUP ERROR  preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more
+preflight exit 3
+state directory after: a.md 
+## rumdl-nocache: operation = "rumdl fmt --no-cache a.md"
+SETUP ERROR  preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more
+preflight exit 3
+state directory after: a.md 

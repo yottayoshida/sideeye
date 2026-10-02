@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/scalafmt/proj",
+    "operation": "scalafmt a.scala",
+    "cwd": "/s/scalafmt/proj",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 3,
+  "prefix_hash": "d5256dbb45ab4561",
+  "after_class": "truncate",
+  "after_path": "/s/scalafmt/proj/a.scala",
+  "before_class": "write",
+  "before_path": "/s/scalafmt/proj/a.scala",
+  "violation": "hybrid"
+}

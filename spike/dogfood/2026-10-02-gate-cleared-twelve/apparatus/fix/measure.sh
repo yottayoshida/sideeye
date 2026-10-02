@@ -20,7 +20,7 @@ bad() { case "$t" in codespell) printf 'MARKER keep\nThe reciever did not sepera
 
 echo "## versions"; echo "tool: $(ver 2>&1 | tail -1)"; "$SE" version
 echo; echo "## explore"
-rm -rf /s/fix
+rm -rf /s/fix && mkdir -p /s/fix   # the engine makes the leaf of --state, not its parent
 "$SE" explore --state "$SD" --setup "/ap/fix/setup-$t.sh" --operation "$op" --check "/ap/fix/check-$t.sh" \
     --oracle /usr/bin/strace --work /out/work --json /out/explore.json > /out/explore.txt 2>&1
 rc=$?; echo "explore exit $rc: $(reason /out/explore.json)"

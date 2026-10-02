@@ -1,0 +1,24 @@
+FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  truncate(/s/scalafmt/proj/a.scala)
+            before write(/s/scalafmt/proj/a.scala)
+path        a.scala
+observed    holding neither the old nor the new content
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 3 operations (149 syscall lines examined, 31 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/scalafmt/work-explore/cases/000001.json
+replay      sideeye replay /out/scalafmt/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/scalafmt/work-explore/evidence/000001.json
+cwd         /s/scalafmt/proj
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 3 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/scalafmt/proj SIDEEYE_TRACE_PATH=/out/scalafmt/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=177274959a98e5e74b350aa3071b1923b04f6579650cd05c1100640f3d23d5ba;

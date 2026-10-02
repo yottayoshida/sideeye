@@ -1,0 +1,4 @@
+codespell-base: docker exit 0 | explore exit 3: SETUP_ERROR -
+codespell-fix: docker exit 0 | explore exit 3: SETUP_ERROR -
+rubocop-base: docker exit 0 | explore exit 3: SETUP_ERROR -
+rubocop-fix: docker exit 0 | explore exit 3: SETUP_ERROR -

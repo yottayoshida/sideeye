@@ -1,0 +1,47 @@
+FIXED: /s/fix/codespell/a.txt
+  /s/fix/codespell/a.txt:2: reciever ==> receiver
+  /s/fix/codespell/a.txt:2: seperate ==> separate
+FIXED: /s/fix/codespell/b.txt
+  /s/fix/codespell/b.txt:2: teh ==> the
+  /s/fix/codespell/b.txt:2: occured ==> occurred
+FIXED: /s/fix/codespell/c.txt
+  /s/fix/codespell/c.txt:2: adress ==> address
+  /s/fix/codespell/c.txt:2: lenght ==> length
+falsify: a.txt lost MARKER-A (25 bytes)
+FIXED: /s/fix/codespell/a.txt
+  /s/fix/codespell/a.txt:2: reciever ==> receiver
+  /s/fix/codespell/a.txt:2: seperate ==> separate
+a.txt is empty
+FIXED: /s/fix/codespell/a.txt
+  /s/fix/codespell/a.txt:2: reciever ==> receiver
+  /s/fix/codespell/a.txt:2: seperate ==> separate
+FIXED: /s/fix/codespell/b.txt
+  /s/fix/codespell/b.txt:2: teh ==> the
+  /s/fix/codespell/b.txt:2: occured ==> occurred
+FIXED: /s/fix/codespell/c.txt
+  /s/fix/codespell/c.txt:2: adress ==> address
+  /s/fix/codespell/c.txt:2: lenght ==> length
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 6
+            after  open(/s/fix/codespell/a.txt)
+            before write(/s/fix/codespell/a.txt)
+path        a.txt
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 6 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 6 operations (1421 syscall lines examined, 93 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/work/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /w  (none declared: Sideeye's own)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/fix/codespell SIDEEYE_TRACE_PATH=/out/replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=ca5de524c0a5530254a6a65c018f9a951dd40c72e90ab32e34582cdc232a1885;

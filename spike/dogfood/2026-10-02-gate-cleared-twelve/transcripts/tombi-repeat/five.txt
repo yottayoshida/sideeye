@@ -1,0 +1,12 @@
+tombi 1.5.6 (aarch64-unknown-linux-musl)
+sideeye 1.7.0 (trace contract v18)
+preflight 1 exit 0: 1 file formatted
+preflight 2 exit 0: 1 file formatted
+preflight 3 exit 0: 1 file formatted
+preflight 4 exit 0: 1 file formatted
+preflight 5 exit 0: 1 file formatted
+explore 1 exit 1: FAIL - | 
+explore 2 exit 1: FAIL - | 
+explore 3 exit 1: FAIL - | 
+explore 4 exit 1: FAIL - | 
+explore 5 exit 1: FAIL - | 

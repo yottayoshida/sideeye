@@ -1,0 +1,14 @@
+box sideeye-sv170 sha256:e13bee48ab843a0d88a800af6040d0058df430a3253dc524750590e90c645626 created 2026-09-28T00:10:46.87660205Z
+alejandra: docker exit 0 | explore exit 2: UNKNOWN no_shim_marker|next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.|
+biome: docker exit 0 | explore exit 1: FAIL -|
+gofumpt: docker exit 0 | explore exit 2: UNKNOWN no_shim_marker|next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.|
+helm: docker exit 0 | explore exit 2: UNKNOWN no_shim_marker|next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.|
+jsonnetfmt: docker exit 0 | explore exit 2: UNKNOWN no_shim_marker|next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.|
+ktfmt: docker exit 0 | explore exit 1: FAIL -|
+oxfmt: docker exit 0 | explore exit 1: FAIL -|
+pg_format: docker exit 0 | explore exit 1: FAIL -|
+pint: docker exit 0 | explore exit 1: FAIL -|
+scalafmt: docker exit 0 | explore exit 1: FAIL -|
+tombi: docker exit 0 | explore exit 2: UNKNOWN no_shim_marker|next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.|
+yamlfmt: docker exit 0 | explore exit 2: UNKNOWN no_shim_marker|next_step: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.|
+host rc=0

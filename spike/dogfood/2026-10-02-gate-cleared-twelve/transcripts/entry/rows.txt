@@ -1,0 +1,6 @@
+ROW rumdl static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+entry rumdl docker rc=1
+ROW rumdl-nocache static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+entry rumdl-nocache docker rc=0
+ROW tombi-r1 static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+entry tombi-r1 docker rc=0
