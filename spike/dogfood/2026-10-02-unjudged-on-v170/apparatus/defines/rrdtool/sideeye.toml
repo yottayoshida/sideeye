@@ -1,0 +1,6 @@
+[world]
+state = "/s/rrdtool/state"
+
+[define]
+operation = "rrdtool update /s/rrdtool/state/t.rrd 1700000180:33"
+check     = "/ap/defines/rrdtool/check.sh"

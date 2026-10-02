@@ -1,0 +1,6 @@
+[world]
+state = "/s/cliff/repo"
+
+[define]
+operation = "git-cliff --unreleased --prepend CHANGELOG.md"
+cwd       = "/s/cliff/repo"

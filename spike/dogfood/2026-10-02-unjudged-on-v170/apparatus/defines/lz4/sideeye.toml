@@ -1,0 +1,6 @@
+[world]
+state = "/s/lz4/state"
+
+[define]
+operation = "lz4 -q -T2 --rm /s/lz4/state/f.bin"
+cwd       = "/s/lz4/state"

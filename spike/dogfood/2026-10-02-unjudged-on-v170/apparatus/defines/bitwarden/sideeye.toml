@@ -1,0 +1,6 @@
+[world]
+state = "/s/bitwarden/state"
+
+[define]
+operation = "env BITWARDENCLI_APPDATA_DIR=/s/bitwarden/state bw config server https://second.example.invalid"
+cwd       = "/s/bitwarden/state"

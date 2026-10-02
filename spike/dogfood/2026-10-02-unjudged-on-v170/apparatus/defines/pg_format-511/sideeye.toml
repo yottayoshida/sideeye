@@ -1,0 +1,6 @@
+[world]
+state = "/s/pg_format-511/proj"
+
+[define]
+operation = "perl -I/opt/pgf511/lib /opt/pgf511/pg_format -i a.sql"
+cwd       = "/s/pg_format-511/proj"

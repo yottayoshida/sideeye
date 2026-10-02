@@ -1,0 +1,6 @@
+[world]
+state = "/s/zstd-userview3/state"
+
+[define]
+operation = "zstd -q --rm /s/zstd-userview3/state/f.bin"
+check     = "/ap/defines/zstd-userview3/check.sh"

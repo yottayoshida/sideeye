@@ -1,0 +1,6 @@
+[world]
+state = "/s/oxfmt-071/proj"
+
+[define]
+operation = "/opt/oxfmt071/node_modules/.bin/oxfmt a.js"
+cwd       = "/s/oxfmt-071/proj"
