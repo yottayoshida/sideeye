@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/evidence",
+  "evidence_version": 1,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "target": {"operation": "terraform fmt", "state_root": "/s/terraform/proj"},
+  "exhibit": "earliest",
+  "crash_point": 5,
+  "crash_points_total": 6,
+  "boundary": {"after_op": "write", "after_path": "/s/terraform/proj/main.tf", "before_op": "truncate", "before_path": "/s/terraform/proj/main.tf"},
+  "invariant": "built-in atomicity, and the checker",
+  "subject": "main.tf",
+  "observed": "holding neither the old nor the new content",
+  "consequence": [
+    {"path": "main.tf", "before": {"kind": "file", "size": 135}, "completed": {"kind": "file", "size": 86}, "crashed": {"kind": "file", "size": 135}, "pre_existing": true, "declared_scratch": false, "old_bytes_elsewhere": "yes", "old_bytes_at": "main.tf3036084420"},
+    {"path": "main.tf3036084420", "before": null, "completed": null, "crashed": {"kind": "file", "size": 135}, "pre_existing": false, "declared_scratch": false, "old_bytes_elsewhere": "not_applicable", "old_bytes_at": ""}
+  ],
+  "consequence_truncated": false,
+  "checker": {"configured": true, "failed": true, "diagnostic": "terraform cannot parse main.tf"},
+  "replay": "sideeye replay /out/work/cases/000001.json --observe supervised",
+  "case": "/out/work/cases/000001.json",
+  "recovery": {"result": "not_configured"},
+  "caveats": []
+}

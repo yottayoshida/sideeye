@@ -1,0 +1,7 @@
+[world]
+state = "/s/terraform/proj"
+
+[define]
+operation = "terraform fmt"
+cwd       = "/s/terraform/proj"
+check     = "/ap/defines/terraform-shrink/check.sh"

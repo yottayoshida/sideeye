@@ -1,0 +1,55 @@
+Terraform v1.18.0-dev
+$ wc -c main.tf; cat main.tf
+135 main.tf
+variable "a" {
+        default   =   "x"
+        type      =    string
+}
+
+locals {
+            b   =   var.a
+            c   =   "y"
+}
+$ strace -f -o /dev/null -e trace=ftruncate -e inject=ftruncate:signal=KILL terraform fmt; echo "exit $?"
+main.tf
+Killed
+exit 137
+$ ls -lA
+total 8
+-rw-r--r-- 1 root root 135 Oct  2 04:23 main.tf
+-rw------- 1 root root 135 Oct  2 04:23 main.tf1004291491
+$ cat main.tf
+variable "a" {
+  default = "x"
+  type    = string
+}
+
+locals {
+  b = var.a
+  c = "y"
+}
+         b   =   var.a
+            c   =   "y"
+}
+$ terraform fmt -write=false -list=false main.tf > /dev/null; echo "parse exit $?"
+╷
+│ Error: Argument or block definition required
+│ 
+│   on main.tf line 12:
+│   12: }
+│ 
+│ An argument or block definition is required here.
+╵
+
+parse exit 2
+$ for f in main.tf?*; do [ -e "$f" ] && { wc -c "$f"; cat "$f"; }; done
+135 main.tf1004291491
+variable "a" {
+        default   =   "x"
+        type      =    string
+}
+
+locals {
+            b   =   var.a
+            c   =   "y"
+}
