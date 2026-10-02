@@ -1,5 +1,5 @@
 # Every tombi 1.5.6 run of 2026-10-02 under --observe supervised, read back from the engine's
-# own output files: the verdict line and, for a FAIL, where. One line per run.
+# own output files (apparatus/tombi-tally.py). One line per run, then the totals.
 
 ## the gate's preflight --twice
 entry.sh: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
@@ -28,7 +28,8 @@ twenty-17: PREFLIGHT  recording accepted — 3 state-changing operation(s) obser
 twenty-18: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
 twenty-19: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
 twenty-20: PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
-preflight totals: 26 runs; {'PREFLIGHT  recording accepted — 3 state-changing operation(s) observed': 26}
+preflight totals: 26 runs
+  26 x PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
 
 ## explore
 run.sh-first: UNKNOWN  multiple_threads_detected
@@ -72,13 +73,16 @@ explore totals: 36 runs
   1 x UNKNOWN multiple_threads_detected
 
 ## replays of the ten FAILs found through run.sh (two each)
-run.sh-1: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
-run.sh-2: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
-run.sh-3: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
-run.sh-4: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
-run.sh-5: replay 1 exit 1: FAIL - | replay 2 exit 2: UNKNOWN multiple_threads_detected | evidence exit 0
-run.sh-6: replay 1 exit 1: FAIL - | replay 2 exit 2: UNKNOWN multiple_threads_detected | evidence exit 0
-run.sh-7: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
-run.sh-8: replay 1 exit 1: FAIL - | replay 2 exit 2: UNKNOWN multiple_threads_detected | evidence exit 0
-run.sh-9: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
-run.sh-10: replay 1 exit 1: FAIL - | replay 2 exit 1: FAIL - | evidence exit 0
+run.sh-1: replay 1: FAIL - | replay 2: FAIL -
+run.sh-2: replay 1: FAIL - | replay 2: FAIL -
+run.sh-3: replay 1: FAIL - | replay 2: FAIL -
+run.sh-4: replay 1: FAIL - | replay 2: FAIL -
+run.sh-5: replay 1: FAIL - | replay 2: UNKNOWN multiple_threads_detected
+run.sh-6: replay 1: FAIL - | replay 2: UNKNOWN multiple_threads_detected
+run.sh-7: replay 1: FAIL - | replay 2: FAIL -
+run.sh-8: replay 1: FAIL - | replay 2: UNKNOWN multiple_threads_detected
+run.sh-9: replay 1: FAIL - | replay 2: FAIL -
+run.sh-10: replay 1: FAIL - | replay 2: FAIL -
+replay totals: 20 runs
+  17 x FAIL -
+  3 x UNKNOWN multiple_threads_detected

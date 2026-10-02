@@ -5,8 +5,9 @@ gate and were not explored, and on rumdl with the step its refusal named. **Twel
 PASS.** Eleven of the FAILs are one shape — the file being rewritten is cut to zero bytes before
 the new bytes are written, and the old bytes are nowhere; the twelfth, gofumpt, leaves a file
 that is neither old nor new with the original whole in a backup beside it. Every FAIL was
-replayed twice by `run.sh`; every verdict is `oracle_verified`. No define carries a checker, so
-each verdict is the built-in rule's (`SELECTION.md`).
+replayed twice by `run.sh` and reproduced both times — except tombi's, where 17 of 20 replays
+reproduced and 3 refused (below). Every PASS and FAIL is `oracle_verified`. No define carries a
+checker, so each verdict is the built-in rule's (`SELECTION.md`).
 
 Two of the twelve were reported upstream, helm and tombi (below). Two upstream fixes were
 measured in the same sitting, each beside its parent commit: both close the window this project
@@ -31,7 +32,7 @@ it): the rewritten file before the operation, after it completed, and in the fai
 | pg_format 5.6 | default | FAIL 1 of 3 | 2 of 2, after `open`, before `write` | 29 → 49; **0** | 0 bytes, exit 153 |
 | pint 1.32.1 | default | FAIL 1 of 3 | 2 of 2, after `open`, before `write` | 39 → 45; **0** | **not reproduced this way**: the bytes it had before, exit 153 — PHP dies writing the phar's own temporary file under the system temporary directory, and `a.php` is never opened for writing (`transcripts/pint-ulimit.txt`) |
 | scalafmt 3.11.5 | default | FAIL 1 of 4 | 3 of 3, after `truncate`, before `write` | 55 → 61; **0** | 0 bytes, exit 153 |
-| tombi 1.5.6 | supervised | FAIL 1 of 4 in 35 of 36 explores; UNKNOWN `multiple_threads_detected` in 1 (below; `transcripts/tombi-repeat/all-runs.txt`) | 3 of 3, after `truncate`, before `write`, in all 35 | 36 → 37; **0** | 0 bytes, exit 153 |
+| tombi 1.5.6 | supervised | FAIL 1 of 4 in 35 of 36 explores and in 17 of 20 replays; UNKNOWN `multiple_threads_detected` in the other 1 and 3 (below; `transcripts/tombi-repeat/all-runs.txt`) | 3 of 3, after `truncate`, before `write`, in all 35 | 36 → 37; **0** | 0 bytes, exit 153 |
 | yamlfmt 0.21.0 | supervised | FAIL 1 of 3 | 2 of 2, after `open`, before `write` | 46 → 36; **0** | 0 bytes, exit 1 |
 
 The failing world is one crash point in each: the kill lands in the single gap between cutting
@@ -40,8 +41,9 @@ user's list of chart repositories, and the kubectl row of 2026-09-28 is its shap
 
 tombi's row stands on more than one run. Its first run through `run.sh` is the refusal
 (`transcripts/tombi-r1/`); the replays for 1.5.6 are those of the ten later runs through
-`run.sh`, two each, all FAIL, of which the first is kept whole
-(`transcripts/tombi-repeat/run-sh-1/`).
+`run.sh`, two each. The first of the ten is kept whole (`transcripts/tombi-repeat/run-sh-1/`,
+both replays FAIL), and so are the replays of the three runs whose second replay refused
+(`run-sh-5/`, `run-sh-6/`, `run-sh-8/`).
 
 **The last column was measured twice, and the first measurement was wrong in its exit codes.**
 `ulimit.sh` first sent the tool's output to a regular file inside the limited shell, where the
@@ -68,38 +70,48 @@ detail to supervised, as on 2026-09-28. The prediction had written "static, supe
 each of the six without saying the bare name would not get there — the same step, missed a
 second time.
 
-## tombi: one refusal in thirty-six
+## tombi: four refusals in fifty-six supervised runs
 
 tombi's first supervised explore refused: `multiple_threads_detected`, two thread ids of the one
 process having written the judged directory in an explored world, `open` on one and `truncate`
 on the other (`transcripts/tombi-r1/supervised.txt`). The 2026-09-28 gate had accepted tombi
 under supervised, so it was put through that gate again and then repeated
 (`apparatus/tombi-repeat.sh`, `transcripts/tombi-repeat/`, `transcripts/entry/rows.txt`). Every
-count below is read back from the engine's own output file for that run, one line per run, in
-`transcripts/tombi-repeat/all-runs.txt`:
+count below is read back from the engine's own output files, one line per run, by
+`apparatus/tombi-tally.py` into `transcripts/tombi-repeat/all-runs.txt`:
 
 - the gate's `preflight --twice` under supervised: `recording accepted`, 3 operations, in 26 of
   26 (once through `entry.sh`, then 5, then 20);
 - the explore under supervised: FAIL 1 of 4 at crash point 3 of 3 in 35 of 36 — 25 of 25 run
-  directly, 10 of 11 through `run.sh`, the one refusal being the first run of all. Each of the
-  ten FAILs through `run.sh` was replayed twice, all FAIL.
+  directly, 10 of 11 through `run.sh`, the one refusal being the first run of all;
+- the replays of the ten FAILs found through `run.sh`, two each: FAIL in 17 of 20, and
+  `multiple_threads_detected` in 3 — the second replay of the fifth, sixth and eighth runs, each
+  naming two thread ids, an `open` and a `truncate` or a `truncate` and a `write`
+  (`transcripts/tombi-repeat/run-sh-5/`, `-6/`, `-8/`).
+
+So of 56 explores and replays under supervised, 52 judged and 4 refused; the 26 preflights never
+refused. The first write-up of this section said the twenty replays all FAILed. They had been
+tallied and the tally was not read to its end; the second review read it.
 
 Two of those passes have no script of their own in `apparatus/`. The pass of five was
 `tombi-repeat.sh` as first written, with `1 2 3 4 5` where it now says `$(seq 1 20)`; its
 output is `five.txt`. The ten through `run.sh` were a loop typed on the host, `host.sh <a fresh
-out directory> tombi-r1` ten times; `through-run-sh.txt` is each run's `summary.txt`.
+out directory> tombi-r1` ten times; `through-run-sh.txt` is each run's `summary.txt` followed by
+its replay lines.
 
 The refusal is the engine's rule as written: under supervised nothing orders two writing
-threads, so it refuses. It was also rare enough here that the gate did not meet it in
-twenty-six preflights. What was measured is one target and one refusal: tombi was judged on 35
-runs and refused on one, and nothing in a single run says which kind of run it was. Whether
-other tools that write from a runtime's thread pool do the same was not measured. Not filed
-against Sideeye: a refusal is not a wrong verdict.
+threads, so it refuses. What was measured is one target: tombi was judged on 52 of 56 runs and
+refused on 4, and nothing in a single run says which kind of run it was — a FAIL found on one
+run did not reproduce on a replay three times in twenty, not because the window closed but
+because the engine could not order the writers that time. Whether other tools that write from a
+runtime's thread pool do the same was not measured. Not filed against Sideeye: a refusal is not
+a wrong verdict.
 
 `../README.md`'s sunset for the ordering rule asks whether the screen ever says measurable and
-the engine then refuses in a phase the preflight ran. This is that case once in thirty-six, by a
-rule the preflight does ask; the rule is not deleted on one occurrence, and the count is here
-for the next reader who meets a second.
+the engine then refuses in a phase the preflight ran. This is that case — once in thirty-six
+explores and three times in twenty replays — by a rule the preflight does ask and did not trip
+in twenty-six tries. One target is not grounds to delete the rule; the counts are here for the
+next reader who meets a second.
 
 ## rumdl
 
@@ -122,7 +134,7 @@ a `.a.md.rumdl-tmp.<pid>.0` is left (`transcripts/ulimit.txt`).
   open, cut, write and are; helm was read as `repositories.yaml` rewritten in place and is.
 - **rumdl: predicted FAIL, is PASS.** The gate half held (accepted with `--no-cache`).
 - **Not predicted:** that the six static images would stop on the bare name, and that tombi
-  would be refused once.
+  would be refused at all — once in 36 explores and three times in 20 replays.
 
 Twelve of thirteen verdicts is a weak result about the predictor: 2026-09-28 had already shown
 six of six in this shape, and the operation count at the gate is nearly the answer.
@@ -215,8 +227,9 @@ nothing false. One line in tombi's is loose and stays as posted: "opened read-wr
 
 Whether each target has released since the version measured
 (`transcripts/receipts/after-the-fail.txt`): tombi and biome have, and their latest releases
-were measured (`transcripts/latest/`, each asset's sha256 against the digest GitHub publishes in
-`assets.txt`). oxfmt (0.71.0), pg_format (5.7 to 5.11) and the PHP-CS-Fixer inside pint (two
+were measured (`transcripts/latest/`; `assets.txt` there holds each asset's sha256 against the digest GitHub
+publishes, and the sha256 of the tombi binary unpacked from its tarball, which is the one
+`host.txt` printed for the binary that ran). oxfmt (0.71.0), pg_format (5.7 to 5.11) and the PHP-CS-Fixer inside pint (two
 releases past the bundled one) have too, and **were not measured**: for those three, "the same
 writer on the default branch" is a reading of source. For the other seven the measured version
 is the latest release.
@@ -256,7 +269,17 @@ the two that were filed.
   fixes). And `report-evidence.sh` passed strace `-P <absolute path>`, which does not match an
   `openat` given a relative name, so the open was missing from what it printed; nothing in
   either report quotes those lines, and the re-run picks lines by the file's name and shows the
-  truncating `openat` for helm and the read-write `openat`, `ftruncate` and `write` for tombi.
+  truncating `openat` for helm and the read-write `openat`, `ftruncate` and `write` for tombi
+  (the `write`'s return value is on a line without the name, which that filter drops).
+- **The redirect that was wrong in `ulimit.sh` is in two earlier runs' probes, and their records
+  do not lean on what it distorts.** `2026-09-16-outside-git/apparatus/probe-ulimit.sh` (aws-cli,
+  neovim, jbang, pyenv), `probe-shada-large.sh` there, and the Bun leg of
+  `2026-09-16-crossed-walls/apparatus/probe-ulimit.sh` send the tool's output to a regular file
+  inside the limited shell. It shows: aws-cli's exit reads 120 in that probe's transcript and 255
+  in `report-repro.txt`, which leaves stdout alone and is what the upstream report quotes. Those
+  runs' `RESULTS.md` files quote the size the target file was left at, which the redirect does
+  not touch, and not the exit codes (searched for the 120). Read, not re-measured: the 2026-09-16
+  boxes are gone. Not filed.
 - **The refusal and the `processes` line of the same report read as if they disagree.** tombi's
   refusal names two thread ids that wrote in an explored world; the `processes` line under it
   says one thread id of the subject wrote the judged directory
