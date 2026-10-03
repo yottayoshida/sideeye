@@ -1,7 +1,7 @@
 # Results — 2026-10-03 user-data
 
-Twenty targets in four rounds of five (`SELECTION.md`), each explored once by `apparatus/run.sh`
-in a box of its own with **the released v1.7.0** (`apparatus/explore.sh`; engine lines in
+Twenty targets in four rounds of five (`SELECTION.md`) — the rounds are the slate's grouping, not the order they ran in (`transcripts/explore-batch-*.txt` has the order) — each explored by `apparatus/run.sh`
+in a box of its own with **the released v1.7.0** (hcloud twice, below) (`apparatus/explore.sh`; engine lines in
 `transcripts/explore/<t>/engine.txt`). Default mode first; a static target's `no_shim_marker` named
 `--observe supervised` and was followed, podman's `oracle_missed_operation` named
 `--observe syscalls` and was followed. Every FAIL was replayed twice (both FAIL) and its evidence
@@ -20,7 +20,7 @@ lack.
 | doing 2.1.124 `now` | **FAIL** 1/3, crash point 2 of 2 | `doing.md` opened `O_TRUNC`, killed before the write | not filed: doing copies the file to its backup directory **before** truncating it (`transcripts/probe-doing-backup-order.txt`), so `doing undo` restores it |
 | mapshaper 0.7.72 `-o force` | **FAIL** 5/11, first at crash point 2 of 10 | `a.shp` opened truncating, killed before its write: 0 bytes beside the untouched `.shx` and `.dbf`. The report itemises only the earliest of the five violating worlds | **filed, [mbloch/mapshaper#706](https://github.com/mbloch/mapshaper/issues/706)** |
 | hcloud 1.69.0 `context use` | **FAIL** 1/3, crash point 2 of 2 (supervised) | `cli.toml` opened truncating | not filed: API tokens a user re-issues from the console — 2026-09-28's kubectl reason. Measured twice: the first seed's placeholder tokens had a real token's length, so they were shortened and the gate and explore re-run; same verdict |
-| talosctl 1.14.2 `config context` | **FAIL** 1/3, crash point 2 of 2 (supervised) | `fileutils.WriteSecret`: `chmod` then `os.WriteFile` on the talosconfig | not filed — see below |
+| talosctl 1.14.2 `config context` | **FAIL** 1/3, crash point 2 of 2 (supervised) | the talosconfig opened truncating; at talos `main` (`3663614`) the writer is `fileutils.WriteSecret` → `os.WriteFile`. The measured 1.14.2 run recorded no permission write | not filed — see below |
 
 ## Round 2
 
@@ -47,7 +47,7 @@ lack.
 | target | verdict | where | report |
 |---|---|---|---|
 | bzip3 1.5.4 `-e --rm` | **PASS** 5/5 (4 crash points) | `a.log.bz3` written and `fsync`ed, then `a.log` unlinked | — |
-| dotter 0.13.5 `deploy -f` | **UNKNOWN `kill_did_not_land`** (supervised, 8 worlds of 10 crash points) | the call sequence varied between worlds — ccache's wall on 2026-10-02 | — |
+| dotter 0.13.5 `deploy -f` | **UNKNOWN `kill_did_not_land`** (supervised, 8 worlds of 10 crash points) | the report: "a world was asked to die before a given operation and did not". It counted 4 violations among the 8 worlds before refusing, and 4 `fchmod`/`fchmodat` writes; preflight accepted both recorded runs at 10 operations. The cause was not measured — restore resetting modes is as plausible as a varying sequence | — |
 | luarocks 3.13.0 `config` | **FAIL** 1/5, crash point 4 of 4 | `config-5.4.lua` opened truncating | not filed: a settings file a user rewrites in a line |
 | minikube 1.39.0 `config set` | **FAIL** 1/3, crash point 2 of 2 (supervised) | `config.json` opened truncating | not filed, as luarocks |
 | kustomize 5.8.2 `edit set image` | **FAIL** 1/3, crash point 2 of 2 (supervised) | `kustomization.yaml` opened truncating | not filed: under version control |
@@ -58,8 +58,9 @@ lack.
 
 The owner asked that only critical findings go upstream and that they be discussed first. Critical
 was read as 2026-09-07 read it: the bytes are gone and nothing gives them back. After the explores,
-four findings were put to the owner with that reading, and the owner chose all four, then approved
-each text verbatim:
+four findings were put to the owner with that reading. The owner chose all four, then — talosctl's
+tracker turning out to ask for no AI-generated explanation — approved three texts verbatim and chose
+not to file the fourth:
 
 | finding | why critical | filed |
 |---|---|---|
@@ -68,9 +69,9 @@ each text verbatim:
 | DwarFS `--recompress -f` onto its own input destroys it | found in a plain run, no crash: the image is gone the first time a user tries it | [mhx/dwarfs#388](https://github.com/mhx/dwarfs/issues/388) |
 | talosctl empties the talosconfig | the client certificate and key for every context; without the cluster's secrets bundle, a user is locked out | **not filed** — see below |
 
-Each was reproduced with no crash before it was written up, `ulimit -f 0` standing in for the
-failed write (`transcripts/ulimit-repro.txt`): notesmd-cli 51 → 0 bytes, nushell 53 → 0, mapshaper
-`a.shp` 184 → 0, talosctl 3,086 → 0 and `talosctl config contexts` then fails `error reading config:
+Each was reproduced with no crash before it was written up. DwarFS needs nothing: its loss is a plain
+run. For the others `ulimit -f 0` stood in for the failed write (`transcripts/ulimit-repro.txt`):
+notesmd-cli 51 → 0 bytes, mapshaper `a.shp` 184 → 0, talosctl 3,086 → 0 (and nushell, not put forward, 53 → 0) and `talosctl config contexts` then fails `error reading config:
 EOF`. Each cites the writer at a named commit read in a shallow clone: notesmd-cli `0b6f10f`
 (`Note.UpdateLinks`, `os.WriteFile`), mapshaper `8e8a24e` (`cli.writeFileSync` from
 `mapshaper-file-export.mjs`), DwarFS v0.15.8 `75140c4` (`open_output_binary` at line 1276 before
@@ -101,3 +102,6 @@ here).
 - notesmd-cli's gate refused `multiple_threads_detected` in 2 of 5 runs; the explore that judged it
   happened to be accepted. A rerun may refuse.
 - No power loss, no torn writes (samtools' PASS depends on the second).
+- The funnel counts DwarFS as an explored, judged FAIL (its filing has no stage that is not an engine
+  counterexample; the row's note says so), so `docs/outcome-funnel.md` shows 13 new FAILs to this
+  record's 12.

@@ -39,7 +39,8 @@ earlier run found most FAILs in, and the class whose FAILs were least worth fili
 | 6 — infrastructure state and credentials | 14 | 14 | 0 | `transcripts/fresh-screen-6.txt` |
 | 7 — credential configs, torrents, translations | 17 | 15 | 2 | `transcripts/fresh-screen-7.txt` |
 
-190 distinct names. The match is `fresh.sh`'s, deliberately loose (a short name such as `nb`, `f2`
+190 names as written — 189 ignoring case, and a few pairs (talos/talosctl, tofu/opentofu,
+dwarfs/mkdwarfs) are one tool under two names. The match is `fresh.sh`'s, deliberately loose (a short name such as `nb`, `f2`
 or `sd` reads seen from any ledger line that contains it), and a false seen costs a candidate.
 
 Rules 1 and 2 (≥1,000 stars, a push since 2026-04-03), by `gh api repos/<r>`
@@ -164,7 +165,8 @@ a time (01:51–03:26Z). The later ones were started as two parallel loops, whic
 rate limit: six of the slate's transcripts broke (`BROKEN`; the broken ones are kept as
 `*.prescan.txt.rate-limited`) and were re-run one at a time, 04:19–04:51Z. doctl's and argocd's scans
 were stopped before they started: both had left at the gate by then. kubectx's and podman's explores ran at 04:03Z,
-**before** their first clean pre-scan (04:45Z and 04:51Z). Neither scan hit the operation's write
+**before** their first clean pre-scan (started 04:41Z and 04:45Z, finished 04:45Z and 04:51Z by the
+loop's own log). Neither scan hit the operation's write
 shape, so the veto would not have fired; the order is recorded because rule 14 asks for it, not
 because it changed an outcome.
 
