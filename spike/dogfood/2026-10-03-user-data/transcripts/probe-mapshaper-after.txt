@@ -1,0 +1,10 @@
+v20.19.2
+  5 a.cpg
+107 a.dbf
+132 a.prj
+  0 a.shp
+124 a.shx
+368 total
+    at importContent (/usr/local/lib/node_modules/mapshaper/mapshaper.js:50809:17)
+    at importDatasetsFromContent (/usr/local/lib/node_modules/mapshaper/mapshaper.js:50882:42)
+    at _importDatasetsFromFile (/usr/local/lib/node_modules/mapshaper/mapshaper.js:51387:12)

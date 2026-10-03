@@ -1,0 +1,2 @@
+static: /opt/py/bin/pybabel: Python script, ASCII text executable
+next: sideeye explore --state /s/babel --cwd "/s/babel" --operation "pybabel update -i messages.pot -d translations" \

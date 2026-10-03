@@ -1,0 +1,513 @@
+== novelty pre-scan: djcb/mu
+== date: 2026-10-03T02:11:51Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          41 hit(s) (all listed)
+      #2942 open 2026-08-12 mu4e: guard modeline truncate-string-to-width against NS DnD crash
+      #2952 closed 2026-09-14 mu4e main-view crashes with CJK bookmark names: wholenump, -4 (length vs string-width)
+      #2953 merged 2026-09-14 mu4e--main-redraw: use string-width for aligning item names
+      #2882 closed 2025-10-23 [mu bug] Crash when using CLD2 on indexing
+      #2874 closed 2025-09-25 [mu4e bug] emails don't display if there is an error parsing HTML
+      #2638 closed 2024-02-28 [mu bug] `mu` binary built using `make` crashes on ARM64 MAC OS
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #2633 closed 2024-02-25 [mu bug] mu init --reinit-ing a DB from mu-1.10.8 results in a crash
+      #2567 closed 2023-10-08 Starting mu4e causes mu core dump after 1.11.17 
+      #2431 closed 2023-02-12 [mu bug] mu index crash on macos
+      #2517 closed 2023-07-11 [mu bug] terminate called after throwing an instance of 'std::bad_alloc'
+      #2469 closed 2023-04-05 `mu index` v 1.10.0 has a segmentation fault ~15% of time on macOS 13.3
+      #2433 closed 2023-02-15 expose API for removing lockfile (command line, also Emacs)
+      #2373 closed 2022-12-03 [mu bug] Segmentation fault in date field formatting
+      #2272 closed 2022-06-12 [mu bug] double free or corruption (!prev) crash on HEAD
+      #2252 closed 2022-05-09 [mu bug] musl: mu init (1.7.18) crashes with error: caught exception
+      #2256 closed 2022-05-12 [mu bug] mu index crashing with g_object_ref: assertion 'G_IS_OBJECT (object)' failed
+      #1984 closed 2021-04-22 mu crash during error printing
+      #2003 closed 2021-04-29 error in process sentinel: mu server process received signal 11
+      #98 closed 2012-11-26 nil key causes crash
+  corrupt        22 hit(s) (all listed)
+      #2849 closed 2025-05-15 [mu4e bug] mu4e corrupts attachments by converting CRLF -> LF if it thinks the attachment is plain text
+      #2689 closed 2024-04-13 [mu bug] mu 1.12.3 stops indexing mails
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #2692 closed 2024-04-14 [mu4e bug] Unable to send message with empty body
+      #2498 closed 2023-06-07 [mu4e bug] mu4e-view-headers-prev, mu4e-headers-view-message caused misplaced folded thread overlay
+      #2598 closed 2023-11-18 mu4e-contacts.el issue
+      #2487 closed 2023-05-08 Attempt to delete minibuffer or sole ordinary window (take 2)
+      #2272 closed 2022-06-12 [mu bug] double free or corruption (!prev) crash on HEAD
+      #2252 closed 2022-05-09 [mu bug] musl: mu init (1.7.18) crashes with error: caught exception
+      #2176 closed 2021-11-03 [mu4e rfe] an alternative solution for `mail-header-separator`
+      #2039 closed 2021-06-17 When using thread-folding marking a message corrupt the underlying overlay
+      #1335 closed 2018-11-02 mu index runs really slow on openbsd
+      #1862 closed 2020-12-16 Sometimes hangs at the "Loading message..." stage.
+      #1853 closed 2020-12-05 [MSYS2] mu index never finishes
+      #99 closed 2012-11-26 compose hook corrupts pointer position
+      #413 closed 2014-04-21 test failure
+      #964 closed 2016-12-03 mu: no matches for search expression (4) -- for size search with leading digit of lower bound bigger than leading digit of upper bound
+      #862 closed 2016-06-08 Attachments with CJK filename will not be saved/opened properly in mu4e
+      #880 closed 2016-07-11 Spam message → unresponsive Emacs
+      #1621 closed 2020-03-19 mu server seems to pong a corrupted version of the ping
+  corruption     6 hit(s) (all listed)
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #2514 closed 2023-07-10 [mu bug] errors creeping into the xapian database
+      #2272 closed 2022-06-12 [mu bug] double free or corruption (!prev) crash on HEAD
+      #2252 closed 2022-05-09 [mu bug] musl: mu init (1.7.18) crashes with error: caught exception
+      #787 closed 2016-02-01 Error trying to make mu4e
+      #1621 closed 2020-03-19 mu server seems to pong a corrupted version of the ping
+  truncated      8 hit(s) (all listed)
+      #2792 closed 2024-12-06 Following mu4e-org link before mu4e has been used causes confusing errors
+      #2626 closed 2024-01-27 [mu4e bug] mu4e-headers-view-message signals pixel-fill-region error
+      #1998 closed 2021-04-26 Resizing large images no longer works
+      #1144 closed 2017-10-29 Attachments with spaces cannot be handled
+      #919 closed 2016-09-12 mu4e exceeds the number of allowed Lisp variable bindings
+      #1601 closed 2020-02-29 compile error:  relocation truncated to fit: R_X86_64_PC32 against undefined symbol `uuid_generate'
+      #1284 merged 2018-07-09 Perform threading calculation on related set instead of entire result.
+      #1529 closed 2019-12-20 Whitelist underscores if replying to mailing-list
+  truncate       37 hit(s) (all listed)
+      #2942 open 2026-08-12 mu4e: guard modeline truncate-string-to-width against NS DnD crash
+      #2923 closed 2026-04-30 [mu4e bug] clicking on gnus link buttons returns mm-handle-filename: Wrong type argument: listp, Accept/Decline/Tentative
+      #2792 closed 2024-12-06 Following mu4e-org link before mu4e has been used causes confusing errors
+      #2754 closed 2024-09-03 [mu4e bug] headers-truncate wrong-type-argument number-or-marker-p nil
+      #1821 closed 2020-10-23 Showing body snippets in headers view: add summary field to database?
+      #2626 closed 2024-01-27 [mu4e bug] mu4e-headers-view-message signals pixel-fill-region error
+      #2410 closed 2023-01-14 [mu bug] mu find --format=plain --fields "x" truncates output lines to 79 characters
+      #2332 merged 2022-09-07 m4e: remove disruptive characters from header fields
+      #677 closed 2015-10-13 Better alignment when using fancy symbols
+      #2089 closed 2021-08-15 [mu4e bug] mu 1.6.1 emacs interface very slow
+      #2294 closed 2022-07-05 error in process filter: or: Wrong type argument: characterp, \,[mu4e bug]
+      #1355 closed 2019-01-03 How about prettier colors in the headers view?
+      #1998 closed 2021-04-26 Resizing large images no longer works
+      #78 closed 2012-10-16 add option to (not) truncate-lines?
+      #446 closed 2014-06-20 Could not build from git on debian wheezy
+      #259 closed 2013-08-19 mu segfaults on OSX 10.8.4
+      #394 closed 2014-03-16 emacs hangs in mu4e headers view with an email with a very large subject
+      #812 closed 2016-02-29 "Sum of sizes of old and new window don't fit" when jumping to maildir
+      #1057 closed 2017-03-27 Customise fringe indicators when `mu4e-compose-format-flowed` is `t`
+      #1144 closed 2017-10-29 Attachments with spaces cannot be handled
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2928 closed 2026-05-23 [mu4e rfe] Empty trash on demand
+      #2907 closed 2026-03-27 Emails get sent with line breaks
+      #2888 closed 2025-11-28 `test-basic-mfind` in `mu-scm-test` is flaky
+      #2887 closed 2025-11-10 [mu4e bug] mu Server leaves temporary directory in $TMPDIR/`/tmp`
+      #2874 closed 2025-09-25 [mu4e bug] emails don't display if there is an error parsing HTML
+      #2869 closed 2025-09-03 [misc] wide-reply, multiple CC headers sent
+      #2851 merged 2025-05-25 mu4e-notification: ignore dbus errors
+      #2201 closed 2022-01-14 mu cfind produces seemingly incomplete results
+      #2814 closed 2025-02-02 mu4e-resize-linked-headers-window: fix empty when-let* body
+      #2865 closed 2025-08-13 [mu4e bug] Some messages are missing in threaded view
+      #2812 closed 2025-01-28 [mu4e bug] mu reports normally 2 unread messages, mu4e reports them but doesn't display them
+      #2790 closed 2024-12-04 mu find --format=links results in 'error: path must not be empty'
+      #2786 merged 2024-11-13 mu4e-actions: ensure empty tag removal on message retagging.
+      #2748 closed 2024-08-23 [mu4e bug] "replied" flag is not set after sending a reply
+      #2802 closed 2025-01-03 [guile] The message body is duplicated for MIME messages
+      #2826 closed 2025-03-05 mu index does not find messages
+      #2749 merged 2024-08-26 lib: use time_t_max for empty datetime
+      #2755 merged 2024-09-04 Replace zero-width spaces in man pages with an empty string.
+      #2792 closed 2024-12-06 Following mu4e-org link before mu4e has been used causes confusing errors
+      #1136 closed 2017-10-13 Shouldn't set flag T after moving to trash
+  atomic         2 hit(s) (all listed)
+      #2365 closed 2022-11-14 [mu bug] Term splitting borks regular expression search
+      #789 closed 2016-02-04 Attempt to delete minibuffer or sole ordinary window
+  atomically     1 hit(s) (all listed)
+      #2365 closed 2022-11-14 [mu bug] Term splitting borks regular expression search
+  interrupted    2 hit(s) (all listed)
+      #2579 closed 2023-10-30 [mu4e bug] severe: marking and moving messages in trash deletes message from filesystem
+      #1827 closed 2020-11-09 Opening a message is stuck loading.
+  interrupt      13 hit(s) (all listed)
+      #2579 closed 2023-10-30 [mu4e bug] severe: marking and moving messages in trash deletes message from filesystem
+      #1055 closed 2017-03-22 mu4e-update-interval makes unread messages header view very hard to use
+      #2388 closed 2022-12-27 [mu4e rfe] Make indexing not block reading
+      #2098 closed 2021-08-19 [mu4e rfe] Some interface when waiting for mu4e main
+      #1887 closed 2021-01-04 Fix 'mu4e-interrupt-update-mail alias definition
+      #1893 closed 2021-01-09 3rd argument required in define-obsolete-function-alias
+      #1688 closed 2020-05-10 Wrong email context during compose-mail 
+      #1907 closed 2021-01-20 Eager macro-expansion failure: (wrong-number-of-arguments (3 . 4) 2)
+      #1920 closed 2021-02-01 Wrong number of arguments: (3 . 4), 2
+      #1827 closed 2020-11-09 Opening a message is stuck loading.
+      #1829 closed 2020-11-09 `error` message in mu4e-org-store-link
+      #1749 closed 2020-07-06 New multi-threaded indexer hangs and has a race on quit
+      #991 closed 2016-12-23 mu4e: add mu4e-update-timeout
+  sigkill        2 hit(s) (all listed)
+      #2198 closed 2022-01-05 mu server does not quit after leaving mu4e with Q
+      #991 closed 2016-12-23 mu4e: add mu4e-update-timeout
+  sigint         7 hit(s) (all listed)
+      #2615 closed 2023-12-24 mu index: cannot dec transaction-level
+      #2198 closed 2022-01-05 mu server does not quit after leaving mu4e with Q
+      #8 closed 2012-03-23 I can not run mu index when mu4e/mu-server
+      #1749 closed 2020-07-06 New multi-threaded indexer hangs and has a race on quit
+      #1130 closed 2017-09-24 mu_store_new_writable: xapian error 'Expected block 4 to be level 1, not 0' (11)
+      #285 merged 2013-10-08 Allow stopping update process (SIGINT)
+      #991 closed 2016-12-23 mu4e: add mu4e-update-timeout
+  ctrl-c         10 hit(s) (all listed)
+      #2198 closed 2022-01-05 mu server does not quit after leaving mu4e with Q
+      #1852 closed 2020-12-04 Autotools cannot find Readline
+      #522 closed 2014-11-25 multipart email displayed incorrectly
+      #392 closed 2014-03-12 mu4e-sent-messages-behavior & org-mu4e-compose-org-mode
+      #1113 closed 2017-08-03 Names with punctuation chars couldn't be searched for
+      #1399 closed 2019-03-27 Occasional test failure: ERROR:test-mu-maildir.c:440:assert_matches_regexp: assertion failed
+      #1477 closed 2019-09-04 Draft emails are indexed with Dec 31, 1969 (unix epoch)
+      #1641 closed 2020-04-13 Build fails on Mac OS
+      #390 closed 2014-03-05 mu munging subject lines
+      #422 merged 2014-05-06 lib/mu-str.c: squash white space ctrl chars to spaces (#390)
+  power          7 hit(s) (all listed)
+      #2943 merged 2026-08-14 mu: sort children of a thread based on their own date only
+      #2136 closed 2021-09-21 [mu4e rfe] A hook to process new messages upon receiving them
+      #1820 closed 2020-10-22 Allow mu-init to accept multiple maildir locations via multiple -m's
+      #1794 closed 2020-08-30 Header Mode: Move Down is Laggy, but Move Up is not
+      #2096 closed 2021-08-18 [mu4e bug] Date header field is not set to message submission time (violates RFC 5322)
+      #1932 closed 2021-02-18 mu4e can't delete messages that contain certain characters
+      #1278 closed 2018-06-30 mu4e: extend "reply to all/sender only" with "reply to mailing list"
+  outage         1 hit(s) (all listed)
+      #2808 open 2025-01-15 Email forwarded via Office 365 does not include new text and has extra attachment (mime issue?)
+  ENOSPC         0 hit(s)
+  disk           38 hit(s) (all listed)
+      #2849 closed 2025-05-15 [mu4e bug] mu4e corrupts attachments by converting CRLF -> LF if it thinks the attachment is plain text
+      #2819 closed 2025-02-22 Improve performance of index cleanup: use readdir(3), not access(2)
+      #2774 closed 2024-10-21 [mu bug] postlist.glass grew to half a terabyte due to "DatabaseError: leaf key < left dividing key in level above"
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #2741 closed 2024-08-13 [mu4e bug] mu loses track of messages marked as (un)read in mu4e
+      #2737 closed 2024-08-04 [mu/mu4e bug] updates made via mu4e not visible to external mu queries anymore
+      #2610 closed 2023-12-08 Different emails found between 'mu find ...' and `(mu4e--server-call-mu `(find...))` on changing flags on emails
+      #2517 closed 2023-07-11 [mu bug] terminate called after throwing an instance of 'std::bad_alloc'
+      #2173 closed 2021-11-01 [mu4e rfe] allow users to download inline images/attachments
+      #2472 closed 2023-04-13 [mu4e bug] mu does not update the index when called from emacs
+      #2503 closed 2023-06-15 [mu4e bug] Multiline subject field is being shown
+      #2344 merged 2022-10-06 Added windows(MSYS2) support
+      #1620 closed 2020-03-19 decrypt-move messages
+      #2098 closed 2021-08-19 [mu4e rfe] Some interface when waiting for mu4e main
+      #866 closed 2016-06-09 Add action for removing attachments 
+      #2089 closed 2021-08-15 [mu4e bug] mu 1.6.1 emacs interface very slow
+      #2053 closed 2021-07-22 [mu4e bug]   mu4e-error-handler: Error 102: failed to move message: cannot read /home/zw963/Maildir/gmail/INBOX
+      #2177 closed 2021-11-04 [mu4e bug] Default value of MIME separator breaks sync with Protonmail
+      #2176 closed 2021-11-03 [mu4e rfe] an alternative solution for `mail-header-separator`
+      #1794 closed 2020-08-30 Header Mode: Move Down is Laggy, but Move Up is not
+  partial        13 hit(s) (all listed)
+      #2946 closed 2026-09-04 emacs31 and address completion
+      #2944 closed 2026-08-19 how to handle special characters in search
+      #1897 closed 2021-01-12 How an alias (~/.mailrc) can appear in the completion list of the To:/Cc:/Bcc: headers ?
+      #2584 closed 2023-11-03 [mu4e bug] mu4e-compose-dont-reply-to-self broken
+      #2461 closed 2023-04-03 [mu bug] Wrong parsing of base64-encoded subjects
+      #2091 closed 2021-08-16 [mu4e rfe] Add support for storing emails in postresql
+      #1373 closed 2019-01-31 Duplicate draft messages
+      #1842 closed 2020-11-25 C-h b doesn't work in mu4e:view mode
+      #484 closed 2014-10-11 mu4e From: address is ignored
+      #466 closed 2014-08-22 Mu crash after selecting unread mails.
+      #1029 closed 2017-02-13 Recipient completion with Ivy erases previous buffer contents 
+      #1665 closed 2020-04-29 global-mode-string does not stay local after using mu4e-org-open
+      #1973 closed 2021-04-11 How to make mu4e, mbsync, and keepassx-cli working together?
+  incomplete     20 hit(s) (all listed)
+      #2201 closed 2022-01-14 mu cfind produces seemingly incomplete results
+      #75 closed 2012-10-15 add thread fold/unfold
+      #2817 closed 2025-02-19 lsp
+      #2723 closed 2024-07-10 [misc] [mu4e] [documentation] Incomplete sentence on section `5.6.2 MIME-part actions`
+      #2768 closed 2024-10-06 mu4e-view-save-attachments fails with error "Wrong type argument: char-or-string-p, nil"
+      #2497 closed 2023-06-07 mu4e-thread-message-folded-p: fix moving above first fold overlay
+      #2247 closed 2022-05-05 [mu4e rfe] Improved treatment of received  attachments (specifically MS Outlook signature attachments)
+      #1349 closed 2018-12-21 Duplicate messages in Gmail messes up thread view
+      #2319 closed 2022-08-10 [mu4e bug] The header title is not complete when the title contains both CJK and English characters
+      #2135 closed 2021-09-15 Prevent bad bug report
+      #25 closed 2012-06-06 Incomplete Installation instructions
+      #601 closed 2015-03-25 Unable to search for subjects containing hyphens
+      #633 closed 2015-07-01 Search term of i: puts mu daemon into a 100% CPU busy loop
+      #468 closed 2014-09-05 Communication problem between Emacs and mu under Windows
+      #1007 closed 2017-01-06 Incomplete doc string 
+      #1449 closed 2019-07-18 mu4e creates PGP/MIME messages that appear broken to enigmail
+      #1765 closed 2020-07-21 Build failure on macOS Catalinea
+      #168 closed 2013-03-17 recursive maildir support
+      #65 merged 2012-09-08 Add and fix up type declarations for custom variables
+      #178 merged 2013-03-31 Recursive maildirs
+  dataloss       0 hit(s)
+  recover        8 hit(s) (all listed)
+      #2960 closed 2026-09-23 [mu4e bug] Reply splits sender into To/Cc when display name has a comma and non-ASCII characters
+      #2843 closed 2025-04-22 [RFE] mu4e-jump-to-maildir default behavior
+      #1291 closed 2018-07-13 Add custom variable mu4e-hide-main-view-buffer
+      #48 closed 2012-08-21 Unknown bookmark causes error
+      #1549 closed 2020-01-23 Restrict memory usage on old machines
+      #1576 closed 2020-02-20 Emails from certain senders cause mu4e headers view to crash Emacs GTK
+      #1361 closed 2019-01-12 GTK error crashes emacs when replying/forwarding email
+      #871 merged 2016-06-21 [FIX] references header dropped bug
+  recovery       3 hit(s) (all listed)
+      #2937 closed 2026-07-20 [mu4e bug] Cannot flush emails in the queue because one file is missing
+      #1361 closed 2019-01-12 GTK error crashes emacs when replying/forwarding email
+      #1862 closed 2020-12-16 Sometimes hangs at the "Loading message..." stage.
+  rollback       0 hit(s)
+  resume         11 hit(s) (all listed)
+      #2724 closed 2024-07-11 [mu4e rfe] Adding mailing list commands
+      #2502 closed 2023-06-11 [mu4e rfe] set "Date" header of sent mail to time of composing, not sending when resuming editing
+      #2600 closed 2023-11-19 mu4e-message-kill-buffer doesn't restore previous window configuration
+      #1302 closed 2018-08-16 Bug: update timer can kill the update buffer for the next update
+      #2567 closed 2023-10-08 Starting mu4e causes mu core dump after 1.11.17 
+      #1280 closed 2018-07-02 mu server: add ID to requests to make them stateless
+      #2297 closed 2022-07-06 [mu4e bug] completions don't work with eudc
+      #812 closed 2016-02-29 "Sum of sizes of old and new window don't fit" when jumping to maildir
+      #1538 closed 2020-01-04 mu: the database is empty (19)
+      #1479 closed 2019-09-06 Draft messages not removed after sending
+      #1562 closed 2020-01-29 Update bookmarks status from main buffer
+  half-written   2 hit(s) (all listed)
+      #2089 closed 2021-08-15 [mu4e bug] mu 1.6.1 emacs interface very slow
+      #776 closed 2016-01-22 [FR] Contexts: Change From and signature on switch
+  wipe           4 hit(s) (all listed)
+      #2382 closed 2022-12-17 mu4e--main-view forces full frame window
+      #2058 closed 2021-07-28 [mu bug] `mu index` with 1.6 does always report 0 messages
+      #1999 closed 2021-04-26 mu4e-update-index isn't indexing mail folder
+      #1935 closed 2021-02-21 Request/offer to include docs on gmail, mbsync, trash delete in configuration docs
+  wipes          0 hit(s)
+  erase          35 hit(s) (all listed)
+      #2282 closed 2022-06-28 [mu4e bug] error in process filter: Symbol’s function definition is void: mu4e-view
+      #2603 closed 2023-11-23 [mu4e bug] Reference leak from last reply to forwarded message
+      #2497 closed 2023-06-07 mu4e-thread-message-folded-p: fix moving above first fold overlay
+      #2444 closed 2023-03-25 [misc/code change discussion] Remove special characters from query before handing it to Xapian
+      #2562 closed 2023-09-29 [mu4e bug] mark to "delete" using "d" moves the mail to archive
+      #2432 closed 2023-02-12 [mu4e bug] Undefined symbol docid on 1.8
+      #2331 closed 2022-09-06 [mu bug] Mu misses Evolution mail nested maildir format
+      #2294 closed 2022-07-05 error in process filter: or: Wrong type argument: characterp, \,[mu4e bug]
+      #2089 closed 2021-08-15 [mu4e bug] mu 1.6.1 emacs interface very slow
+      #677 closed 2015-10-13 Better alignment when using fancy symbols
+      #2226 closed 2022-03-28 [mu4e bug] Error 105: invalid property name ('')
+      #1823 closed 2020-10-28 Bad encoding in mu4e-view with `mu4e~view-gnus`
+      #1940 closed 2021-03-05 Emacs 27.1 + mu4e  Undefined variables
+      #502 closed 2014-10-22 [mac os 10.9, mu4e] find return nothing
+      #505 closed 2014-10-26 include-related works on mu, not mu4e
+      #336 closed 2013-12-30 "No matching messages found" when using mbsync maildir
+      #453 closed 2014-07-15 Editing drafts doesn't work anymore.
+      #1014 closed 2017-01-16 Take subject line into consideration when threading (feature request)
+      #1022 closed 2017-02-06 error in process filter: cond: Error 3: indexing failed
+      #1104 closed 2017-07-12 mu4e-message-at-point fails during mu4e-view-mode-hook functions
+  erasing        2 hit(s) (all listed)
+      #1014 closed 2017-01-16 Take subject line into consideration when threading (feature request)
+      #1577 closed 2020-02-20 error in process sentinel: mu4e~proc-sentinel: mu server process received signal 6
+  erased         3 hit(s) (all listed)
+      #925 closed 2016-10-14 mu4e-hide-index-messages still erases minibuffer
+      #1029 closed 2017-02-13 Recipient completion with Ivy erases previous buffer contents 
+      #1403 merged 2019-04-12 Allow to reply to icalendar invitations
+  destroy        12 hit(s) (all listed)
+      #2912 closed 2026-04-01 [mu4e bug] Multiple composition frames created programmatically often do not close correctly
+      #824 closed 2016-03-26 Deleting a message from mu4e-view destroys other windows
+      #2305 closed 2022-07-23 mu4e fails to recognize any calendar invitations
+      #2332 merged 2022-09-07 m4e: remove disruptive characters from header fields
+      #2372 merged 2022-11-29 Multiple buffer support and standardised window and buffer handling
+      #1966 closed 2021-04-06 Viewing messages in a browser
+      #259 closed 2013-08-19 mu segfaults on OSX 10.8.4
+      #346 closed 2014-01-15 Unit test failure
+      #332 closed 2013-12-26 mu oddness on mac 10.9
+      #762 closed 2016-01-12 The recent aad5708 commit destroyed code/diagram formatting in the manual
+      #1781 closed 2020-08-07 Multipart mime messages leak buffers when mu4e-view-use-gnus is set to t.
+      #986 merged 2016-12-19 POC: Respect format=flowed and delsp=yes for viewing plain-text messages
+  destroys       4 hit(s) (all listed)
+      #2912 closed 2026-04-01 [mu4e bug] Multiple composition frames created programmatically often do not close correctly
+      #824 closed 2016-03-26 Deleting a message from mu4e-view destroys other windows
+      #2332 merged 2022-09-07 m4e: remove disruptive characters from header fields
+      #2305 closed 2022-07-23 mu4e fails to recognize any calendar invitations
+  overwrite      19 hit(s) (all listed)
+      #2117 closed 2021-08-30 Saving Message to PDF with Attachment Names
+      #1136 closed 2017-10-13 Shouldn't set flag T after moving to trash
+      #2638 closed 2024-02-28 [mu bug] `mu` binary built using `make` crashes on ARM64 MAC OS
+      #2113 closed 2021-08-26 [mu4e bug] Original message date no more taken into account in citation line
+      #863 closed 2016-06-08 problem with bad filenames with mu extract
+      #1620 closed 2020-03-19 decrypt-move messages
+      #2090 closed 2021-08-16 [mu4e bug] mu4e-view-save-attachments directly overwrite files with the same name
+      #17 closed 2012-04-30 Problem with config on OS X 10.7.3
+      #290 closed 2013-10-11 mu4e silently fails to overwrite when trying to save an attached file
+      #206 closed 2013-05-07 Make it possible to disable the message in the minibuffer when index/mails are updated
+      #929 closed 2016-10-16 mu4e eats display-time-mode
+      #1078 closed 2017-05-12 mu4e clobbering ido
+      #1225 closed 2018-04-12 Wrong charset when signing and encrypting mail
+      #1373 closed 2019-01-31 Duplicate draft messages
+      #1723 closed 2020-06-11 any interest in setting up a GitHub action to run the tests?
+      #1810 closed 2020-10-08 Forwarded E-mail in OWA flagged es 'replied' in mu
+      #678 merged 2015-10-14 Fix propertizing body with mu4e-view-body-face.
+      #652 closed 2015-08-16 Prevent mu4e messages from overwriting information in the echo area
+      #1278 closed 2018-06-30 mu4e: extend "reply to all/sender only" with "reply to mailing list"
+  clobber        10 hit(s) (all listed)
+      #1051 closed 2017-03-20 `mu4e-compose-resend` clobbers multipart/mixed mail
+      #703 closed 2015-11-21 The setting for changing the user-agent doesn't work, you have to clobber the function
+      #760 closed 2016-01-09 global-mode-string
+      #971 closed 2016-12-10 mu4e sets a lisp variable named "##" on first launch
+      #974 closed 2016-12-11 Prompt for a file or directory in `mu4e-view-save-attachment-multi`
+      #902 closed 2016-08-08 mu4e-view-toggle-html is clobbered by the mu4e-view-html-plaintext-ratio-heuristic
+      #1078 closed 2017-05-12 mu4e clobbering ido
+      #1427 closed 2019-05-19 "Match data clobbered by buffer modification hooks"
+      #891 closed 2016-07-27 Fix kill ring clobbering by get mail filter
+      #1685 merged 2020-05-09 Make mu4e~view-message available to mu4e-view-mode-hooks.
+  blank          27 hit(s) (all listed)
+      #2805 closed 2025-01-10 [mu bug]GMime not properly handling multi-line MIME-encoded Subject headers when using g_mime_message_get_subject()
+      #2865 closed 2025-08-13 [mu4e bug] Some messages are missing in threaded view
+      #2694 closed 2024-04-15 [mu4e bug]
+      #2618 closed 2024-01-04 [mu4e bug] Can't search for messages with subjects that include a hyphen "-" character
+      #2052 closed 2021-07-18 [mu4e rfe] More flexible reply options
+      #2451 closed 2023-03-29 "loading..." make everything very jumpy
+      #2434 closed 2023-02-15 [rfe] "half-cooked" mode for `mu extract` for attachment-names
+      #2335 closed 2022-09-14 [mu4e bug] Byte-compilation errors with recent emacs master due to wrong `cl-case` usages
+      #2243 closed 2022-05-01 [mu4e bug] From/To entry sometimes missing in headers
+      #2257 closed 2022-05-12 mu4e oldview 
+      #2226 closed 2022-03-28 [mu4e bug] Error 105: invalid property name ('')
+      #1988 closed 2021-04-25 [mu4e rfe] Warn in case of no subject
+      #1994 closed 2021-04-26 messages with similar but distinct References headers being threaded together
+      #73 closed 2012-10-10 args-out-of-range on viewing HTML mail
+      #506 closed 2014-10-27 Embed images using mu4e
+      #441 closed 2014-06-10 Cannot send empty messages
+      #442 closed 2014-06-10 Cannot send empty messages
+      #908 closed 2016-08-16 Problems with displaying filled paragraphs (mu4e-fill-paragraph)
+      #1209 closed 2018-03-18 mu4e initial search slow...
+      #1244 closed 2018-05-25 Extra empty line at the beginning of messages
+  unreadable     10 hit(s) (all listed)
+      #2819 closed 2025-02-22 Improve performance of index cleanup: use readdir(3), not access(2)
+      #2805 closed 2025-01-10 [mu bug]GMime not properly handling multi-line MIME-encoded Subject headers when using g_mime_message_get_subject()
+      #1129 closed 2017-09-21 Add a `mu4e-query-filter-function` to pre-process internal queries
+      #538 closed 2014-12-09 bad multipart mail display
+      #278 closed 2013-09-27 --include-unreadable is described in the documentation of mu find but not implemented.
+      #1262 closed 2018-06-13 mu4e-view-use-gnus: some messages have character decoding problems
+      #1590 closed 2020-02-25 Can't open .eml attachments
+      #1225 closed 2018-04-12 Wrong charset when signing and encrypting mail
+      #1300 closed 2018-08-16 view-gnus: Add "Maildir" + fix decoding & highlighting issues
+      #1375 merged 2019-02-02 mu4e: properly display messages in the draft folder (with gnus)
+  garbage        9 hit(s) (all listed)
+      #2788 closed 2024-11-26 [mu4e bug] Base64 multipart body decoding failing in compose mode 
+      #2756 closed 2024-09-08 [mu bug] mu compilation error
+      #2097 closed 2021-08-19 warn about invalid dates such as date:yesterday
+      #2218 closed 2022-02-28 mu4e - symbol's value as variable is void : m
+      #1311 closed 2018-08-26 mu4e: Don't descend in maildirs when recursively getting maildirs
+      #332 closed 2013-12-26 mu oddness on mac 10.9
+      #418 closed 2014-04-27 MIME garbage at end of composed messages
+      #224 merged 2013-05-26 Allow the customization of the plaintext / html length ratio
+      #634 merged 2015-07-02 Fix call to c_str() that sometimes dumps core on OpenBSD i386-current
+  mangled        4 hit(s) (all listed)
+      #2960 closed 2026-09-23 [mu4e bug] Reply splits sender into To/Cc when display name has a comma and non-ASCII characters
+      #1525 closed 2019-12-12 mu4e~draft-remove-mail-header-separator
+      #1738 closed 2020-06-26 mu4e shows more messages than are in a folder
+      #871 merged 2016-06-21 [FIX] references header dropped bug
+  contents       94 hit(s) (all listed)
+      #2959 open 2026-09-22 [mu4e bug] After marking email as read in message view (vertical split), quitting makes cursor jump to different email than the highlighted one
+      #2624 open 2024-01-20 `mu4e` on windows with `mu` in WSL
+      #2946 closed 2026-09-04 emacs31 and address completion
+      #2936 closed 2026-07-06 [RFE] reply to multiple messages -- with implementation suggestion
+      #2920 closed 2026-04-17 [mu4e bug] `mu4e-search-rerun` in message view constrains `mu4e-headers-next/prev` to neighbouring emails only
+      #2896 closed 2026-01-04 [RFE] Add original message's attached patches inline when composing a reply
+      #2748 closed 2024-08-23 [mu4e bug] "replied" flag is not set after sending a reply
+      #2822 merged 2025-02-22 Call file-readable-p only on non-remote files
+      #2815 closed 2025-02-09 [RFE] support for mu4e over tramp
+      #2826 closed 2025-03-05 mu index does not find messages
+      #2258 closed 2022-05-13 Normalize newlines on messages
+      #2604 closed 2023-11-26 [mu4e rfe] Display Email Content in notification
+      #2662 closed 2024-03-14 [mu4e bug] reply to sender with accented character
+      #2652 merged 2024-03-02 More man page fixes
+      #2756 closed 2024-09-08 [mu bug] mu compilation error
+      #2623 closed 2024-01-19 [mu4e rfe] Support List-Unsubscribe header
+      #2620 closed 2024-01-11 [mu4e rfe] Email addresses in CC/BCC/To headers should be nicely formatted instead of relying of the raw values
+      #1819 closed 2020-10-20 mu4e-icalendar "wrong-type-argument char-or-string-p nil" error
+      #2247 closed 2022-05-05 [mu4e rfe] Improved treatment of received  attachments (specifically MS Outlook signature attachments)
+      #2565 closed 2023-10-04 [mu4e bug] "Recursive load" error while bytecompiling .elc
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2960 closed 2026-09-23 [mu4e bug] Reply splits sender into To/Cc when display name has a comma and non-ASCII characters
+      #2117 closed 2021-08-30 Saving Message to PDF with Attachment Names
+      #2924 closed 2026-05-11 [mu4e bug] Flush queued mail not shown in mu4e-main when using msmtp
+      #2910 closed 2026-03-31 [mu4e bug] mu4e--view-defun-mark-for void in 1.14
+      #2888 closed 2025-11-28 `test-basic-mfind` in `mu-scm-test` is flaky
+      #2887 closed 2025-11-10 [mu4e bug] mu Server leaves temporary directory in $TMPDIR/`/tmp`
+      #2874 closed 2025-09-25 [mu4e bug] emails don't display if there is an error parsing HTML
+      #327 closed 2013-12-17 Feature request: don't include signature by default.
+      #2852 closed 2025-05-28 [RFE] Disentangle two meanings of 'header'
+      #2848 closed 2025-05-11 [mu4e bug] marginalia treats Mu4e bookmarks as Emacs bookmarks
+      #2832 closed 2025-03-26 [mu bug] test-mu-store.cc:517:void test_store_circular_symlink(): assertion failed (n++ <= 25): (26 <= 25)
+      #2842 closed 2025-04-15 [mu4e bug] Warning (emacs): Value ‘((:name "Flagged messages"...))’ for variable ‘mu4e-bookmarks’ does not match its type "(repeat (plist))
+      #2827 closed 2025-03-06 mu4e-action-git-apply-patch uses the wrong git command
+      #2825 closed 2025-03-04 [RFE] Use alert.el for communication
+      #2813 closed 2025-01-28 [mu4e bug] font-lock-update removes font-locking
+      #2804 closed 2025-01-07 [RFE] equivalent of --include-related for mu query
+      #2784 closed 2024-11-07 [mu4e bug] No encrypted flag for more Outlook S/MIME message types
+      #2600 closed 2023-11-19 mu4e-message-kill-buffer doesn't restore previous window configuration
+      #1136 closed 2017-10-13 Shouldn't set flag T after moving to trash
+      #2763 closed 2024-09-23 [mu4e bug] Wrong timestamp for drafts with discarded edits
+  unclean        1 hit(s) (all listed)
+      #2433 closed 2023-02-15 expose API for removing lockfile (command line, also Emacs)
+  shutdown       4 hit(s) (all listed)
+      #2201 closed 2022-01-14 mu cfind produces seemingly incomplete results
+      #2433 closed 2023-02-15 expose API for removing lockfile (command line, also Emacs)
+      #546 closed 2014-12-18 mu index slow
+      #1852 closed 2020-12-04 Autotools cannot find Readline
+  reboot         5 hit(s) (all listed)
+      #2737 closed 2024-08-04 [mu/mu4e bug] updates made via mu4e not visible to external mu queries anymore
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #2554 closed 2023-09-15 Emails being sent while still in draft
+      #2505 closed 2023-06-22 error: failed to create database dir /home/martin/.cache/mu/xapian: Permission denied
+      #1052 closed 2017-03-21 Update-interval doesn't work
+  disk+full      9 hit(s) (all listed)
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #2089 closed 2021-08-15 [mu4e bug] mu 1.6.1 emacs interface very slow
+      #2098 closed 2021-08-19 [mu4e rfe] Some interface when waiting for mu4e main
+      #866 closed 2016-06-09 Add action for removing attachments 
+      #1973 closed 2021-04-11 How to make mu4e, mbsync, and keepassx-cli working together?
+      #425 closed 2014-05-13 mu4e saves encrypted mails as plaintext into the drafts folder
+      #163 closed 2013-03-13 mu4e: Opening headers view is slow with show-threads and include-related
+      #606 closed 2015-04-17 Automatically process new mail
+      #18 closed 2012-05-06 Add --quick to index
+  data+loss      5 hit(s) (all listed)
+      #2140 closed 2021-09-24 [mu4e bug] mu4e-compose-context-switch does not change draft folder (MessageID is not saved)
+      #1620 closed 2020-03-19 decrypt-move messages
+      #1949 closed 2021-03-16 No sent folder set with mails initiated by clicking on a mail address in some header with current master
+      #1941 closed 2021-03-10 Gnus("news") setup
+      #1621 closed 2020-03-19 mu server seems to pong a corrupted version of the ping
+  partial+write  3 hit(s) (all listed)
+      #2091 closed 2021-08-16 [mu4e rfe] Add support for storing emails in postresql
+      #484 closed 2014-10-11 mu4e From: address is ignored
+      #466 closed 2014-08-22 Mu crash after selecting unread mails.
+  crash+safe     3 hit(s) (all listed)
+      #2952 closed 2026-09-14 mu4e main-view crashes with CJK bookmark names: wholenump, -4 (length vs string-width)
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #1858 closed 2020-12-13 Deal with Emacs auto-saves and Emacs backups somehow when composing messages?
+  atomic+write   0 hit(s)
+  lock+file      30 hit(s) (all listed)
+      #2947 closed 2026-09-08 [RFE] Time for change-based indexing
+      #2815 closed 2025-02-09 [RFE] support for mu4e over tramp
+      #1518 closed 2019-12-03 Database is locked by another process
+      #2756 closed 2024-09-08 [mu bug] mu compilation error
+      #2706 closed 2024-05-14 [mu bug] Repeated database corruption
+      #2714 closed 2024-06-15 [mu4e bug] Garbled headers when editing a saved msg with no body
+      #1052 closed 2017-03-21 Update-interval doesn't work
+      #2517 closed 2023-07-11 [mu bug] terminate called after throwing an instance of 'std::bad_alloc'
+      #1055 closed 2017-03-22 mu4e-update-interval makes unread messages header view very hard to use
+      #2505 closed 2023-06-22 error: failed to create database dir /home/martin/.cache/mu/xapian: Permission denied
+      #2503 closed 2023-06-15 [mu4e bug] Multiline subject field is being shown
+      #2144 closed 2021-09-27 [mu bug] Failed to open glass revision file for reading
+      #2089 closed 2021-08-15 [mu4e bug] mu 1.6.1 emacs interface very slow
+      #2272 closed 2022-06-12 [mu bug] double free or corruption (!prev) crash on HEAD
+      #2198 closed 2022-01-05 mu server does not quit after leaving mu4e with Q
+      #2145 closed 2021-09-28 [mu4e bug] mu does not update the index after some time
+      #2056 closed 2021-07-25 [misc] [mu4e] Tip: `user-mail-address' ('???@gmail.com') is not part of mu's addresses; add it with 'mu init                         --my-address='
+      #2084 closed 2021-08-11 [mu4e bug] mu4e-index-lazy-check is too lazy in v1.6 (was not the case with v1.4)
+      #932 closed 2016-10-25 [mu4e] Display different colors for different citation levels in the composing buffer, like the viewing buffer
+      #340 closed 2014-01-05 Cannot `mu add` while `mu server` is running
+  write+failure  6 hit(s) (all listed)
+      #516 closed 2014-11-21 Add `mu4e-headers-next-unread`
+      #466 closed 2014-08-22 Mu crash after selecting unread mails.
+      #228 closed 2013-05-27 Bug: /bin/bash: mu4e-about.org: No such file or directory build failure
+      #840 closed 2016-05-01 compile binaries using the mingw-w64 tool chain
+      #1852 closed 2020-12-04 Autotools cannot find Readline
+      #913 merged 2016-08-26 perl: Integrate the mup interface from https://github.com/StAlphonsos/mup
+  file+contents  56 hit(s) (all listed)
+      #2624 open 2024-01-20 `mu4e` on windows with `mu` in WSL
+      #2946 closed 2026-09-04 emacs31 and address completion
+      #2815 closed 2025-02-09 [RFE] support for mu4e over tramp
+      #2822 merged 2025-02-22 Call file-readable-p only on non-remote files
+      #2826 closed 2025-03-05 mu index does not find messages
+      #2756 closed 2024-09-08 [mu bug] mu compilation error
+      #2662 closed 2024-03-14 [mu4e bug] reply to sender with accented character
+      #2652 merged 2024-03-02 More man page fixes
+      #2623 closed 2024-01-19 [mu4e rfe] Support List-Unsubscribe header
+      #1819 closed 2020-10-20 mu4e-icalendar "wrong-type-argument char-or-string-p nil" error
+      #2247 closed 2022-05-05 [mu4e rfe] Improved treatment of received  attachments (specifically MS Outlook signature attachments)
+      #2565 closed 2023-10-04 [mu4e bug] "Recursive load" error while bytecompiling .elc
+      #2555 closed 2023-09-17 Connect `mu4e` on windows to `mu` in WSL
+      #2350 closed 2022-10-16 building mu 1.8.10 on macOS - error "Recursive load"
+      #2321 closed 2022-08-18 [mu4e bug] Getting "Invalid face attribute :inherit mu4e-header-key-face [12 times]" with Flyspell hooked.
+      #706 closed 2015-11-23 Insert signature above previous message, instead below?
+      #866 closed 2016-06-09 Add action for removing attachments 
+      #2257 closed 2022-05-12 mu4e oldview 
+      #2177 closed 2021-11-04 [mu4e bug] Default value of MIME separator breaks sync with Protonmail
+      #2192 closed 2021-12-20 [mu4e bug]
+
+== 51 terms run; 46 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

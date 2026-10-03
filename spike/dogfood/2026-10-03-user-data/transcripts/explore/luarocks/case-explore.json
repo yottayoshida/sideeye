@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/luarocks",
+    "operation": "luarocks config --scope user rocks_trees.1.root /s/luarocks/tree",
+    "cwd": "/s/luarocks",
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 4,
+  "prefix_hash": "72d4728374ad5456",
+  "after_class": "open",
+  "after_path": "/s/luarocks/config-5.4.lua",
+  "before_class": "write",
+  "before_path": "/s/luarocks/config-5.4.lua",
+  "violation": "hybrid"
+}

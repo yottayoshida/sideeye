@@ -1,0 +1,2 @@
+static: /opt/bin/nu: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=b292c2238caaad01b3c3924358ff49cffb14bd8f, for GNU/Linux 3.7.0, not stripped
+next: sideeye explore --state /s/nushell --cwd "/s/nushell-in" --operation "nu -n /s/nushell-in/edit.nu" \

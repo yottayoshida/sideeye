@@ -1,0 +1,6 @@
+[world]
+state = "/s/mapshaper"
+
+[define]
+operation = "mapshaper /s/mapshaper/a.shp -each x=n*10 -o force"
+cwd       = "/s/mapshaper"

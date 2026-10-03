@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/minikube/.minikube/config",
+    "operation": "/opt/bin/minikube config set memory 6144",
+    "cwd": "/s/minikube",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/minikube/.minikube/config/config.json",
+  "before_class": "write",
+  "before_path": "/s/minikube/.minikube/config/config.json",
+  "violation": "hybrid"
+}

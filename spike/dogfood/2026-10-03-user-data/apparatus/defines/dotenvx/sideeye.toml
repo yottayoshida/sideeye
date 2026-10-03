@@ -1,0 +1,6 @@
+[world]
+state = "/s/dotenvx"
+
+[define]
+operation = "dotenvx encrypt -f /s/dotenvx/.env"
+cwd       = "/s/dotenvx"

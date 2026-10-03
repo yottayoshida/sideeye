@@ -1,0 +1,4 @@
+static: /opt/bin/doctl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=US6NfkJXnUGVW42tMddL/S3vaK2f5Ah4ZYON98Xyi/glebI2JeA-Q3EKBpZFhF/qxO0E_YnFP-9s9pGsoNn, BuildID[sha1]=5b249a98806556ce94a82ec8841e98d41d41cd3c, with debug_info, not stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.

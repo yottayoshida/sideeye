@@ -1,0 +1,94 @@
+ROW perl static=0 preflight_rc=0 gate=0 detail=accepted, 6 operations
+EXIT perl 0
+ROW kakoune static=0 preflight_rc=0 gate=0 detail=accepted, 4 operations
+EXIT kakoune 0
+ROW samtools static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT samtools 0
+ROW upx static=1 preflight_rc=2 gate=DEFINE detail=SUPERVISED; define: recording_run_failed
+EXIT upx 3
+ROW bzip3 static=0 preflight_rc=0 gate=0 detail=accepted, 4 operations
+EXIT bzip3 0
+ROW hexapdf static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT hexapdf 1
+ROW mapshaper static=0 preflight_rc=0 gate=0 detail=accepted, 10 operations
+EXIT mapshaper 0
+ROW nushell static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT nushell 0
+ROW kustomize static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT kustomize 0
+ROW zlua static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT zlua 1
+ROW doing static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT doing 0
+ROW notesmd static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations
+EXIT notesmd 0
+ROW dotdrop static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT dotdrop 1
+ROW dotter static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 10 operations
+EXIT dotter 0
+ROW mu static=0 preflight_rc=2 gate=DEFINE detail=define: recording_run_failed
+EXIT mu 3
+ROW dotenvx static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT dotenvx 1
+ROW gocryptfs static=0 preflight_rc=2 gate=1 detail=wall: child_process_detected
+EXIT gocryptfs 1
+ROW mu static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT mu 1
+ROW kubectx static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 8 operations
+EXIT kubectx 0
+ROW tofu static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT tofu 1
+ROW flatpak static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT flatpak 1
+ROW podman static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT podman 0
+ROW hexapdf static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT hexapdf 1
+ROW zlua static=0 preflight_rc=0 gate=0 detail=accepted, 5 operations
+EXIT zlua 0
+ROW electrum static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT electrum 1
+ROW transmission static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT transmission 0
+ROW hcloud static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT hcloud 0
+ROW doctl static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT doctl 1
+ROW argocd static=1 preflight_rc=2 gate=DEFINE detail=SUPERVISED; define: recording_run_failed
+EXIT argocd 3
+ROW kubecm static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT kubecm 0
+ROW minikube static=1 preflight_rc=1 gate=1 detail=SUPERVISED; byte-repeatability: --twice found different bytes
+EXIT minikube 1
+ROW babel static=0 preflight_rc=0 gate=0 detail=accepted, 6 operations
+EXIT babel 0
+ROW minikube static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT minikube 0
+ROW luarocks static=0 preflight_rc=0 gate=0 detail=accepted, 4 operations
+EXIT luarocks 0
+ROW bibtex-tidy static=0 preflight_rc=2 gate=DEFINE detail=define: recording_run_failed
+EXIT bibtex-tidy 3
+ROW bibtex-tidy static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT bibtex-tidy 1
+ROW talosctl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT talosctl 0
+ROW talosctl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT talosctl 0
+ROW notesmd static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT notesmd 1
+ROW kubectx static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 8 operations
+EXIT kubectx 0
+ROW kustomize static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT kustomize 0
+ROW dotter static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 10 operations
+EXIT dotter 0
+ROW hcloud static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT hcloud 0
+ROW kubecm static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT kubecm 0
+ROW minikube static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT minikube 0
+ROW talosctl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT talosctl 0
+ROW hcloud static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT hcloud 0

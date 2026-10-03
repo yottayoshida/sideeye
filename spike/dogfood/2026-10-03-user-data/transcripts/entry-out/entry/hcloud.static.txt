@@ -1,0 +1,4 @@
+static: /opt/bin/hcloud: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=on3oSFOSg11hFLkLqbYZ/1Pn-b5EH9ude8HM_8j21/amayQBuUgj7mZj05ZvTH/BQkOikFH18FvUnldm1lt, BuildID[sha1]=9b655f6bda7004c1fbcf7fa30e3eb60f3cb4ef15, stripped
+default mode: rc 2; no_shim_marker
+default next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+next: sideeye explore --state /s/hcloud --cwd "/s/hcloud" --operation "/opt/bin/hcloud context use work" \

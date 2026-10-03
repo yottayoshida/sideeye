@@ -1,0 +1,491 @@
+== novelty pre-scan: samtools/samtools
+== date: 2026-10-03T02:17:06Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          86 hit(s) (all listed)
+      #1066 open 2019-06-17 seg fault when converting sam/bam to cram
+      #1008 open 2019-02-15 Option to limit markdup memory usage
+      #611 open 2016-09-16 sort errors out with SEGV
+      #64 open 2013-08-01 Samtools merge - chromsome ordering matters
+      #613 open 2016-09-23 CRAM bug cause immediate segfault on sort
+      #549 open 2016-03-23 bam -> cram conversion: Segmentation fault (core dumped).
+      #1320 open 2020-10-05 Missing output from samtools fastq
+      #1811 open 2023-03-16 Environment-dependent samtools view error (invalid BGZF header) with remote GCS BAM
+      #2127 closed 2024-10-12 Heap Buffer Overflow in samtools merge within trans_tbl_add_sq function
+      #2263 closed 2025-09-17 After running samtools, the featureCounts command crashed.
+      #2269 merged 2025-10-06 updated to make consensus work with sam.gz along with threads and ite…
+      #2256 closed 2025-09-10 Unable to run samtools on x86-64-v2 microarchitecture level - illegal instruction
+      #731 merged 2017-10-25 Optionally mark supplementary alignments of duplicates as duplicates.
+      #2128 merged 2024-10-14 Fix samtools merge crash on BAM files with malformed headers
+      #2118 closed 2024-09-24 Automatically generate indexes after extracting sequences with faidx (--write-index)
+      #2142 closed 2024-11-15 faidx --write-index invalid free with process substitution regions
+      #2191 closed 2025-02-24 Reheader causes sort to fail but quickcheck passes
+      #2063 closed 2024-05-30 Segmentation fault on some CRAMs (but not all) when extracting reads over particular sets of intervals with multi-region iterator
+      #2076 closed 2024-07-09 Segmentation fault when running `samtools coverage --excl-flags 1540`
+      #1957 merged 2023-12-21 fix for stat crash on invalid reference file
+  corrupt        65 hit(s) (all listed)
+      #363 open 2015-03-15 Adds tests for and fixes handling of corrupted and truncated BAMs
+      #624 open 2016-11-24 File to open *.sorted.bam file
+      #1110 open 2019-09-23 Retrieving region "*" fails for BAM file accessed via AWS S3 HTTP but not locally
+      #2363 closed 2026-08-10 mpileup: use-after-free of the reference buffer corrupts reference bases at the tail of a reference (regression in 1.23.2)
+      #2354 closed 2026-07-24 Samtools checksum changes output between 1.23.1 and 1.24
+      #2127 closed 2024-10-12 Heap Buffer Overflow in samtools merge within trans_tbl_add_sq function
+      #2277 closed 2025-10-17 CRAM CIGAR extends beyond slice reference extents Failure to decode slice
+      #2255 closed 2025-08-22 Incorrect output from mpileup
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2200 closed 2025-03-17 no mc tag
+      #2182 closed 2025-02-11 corrutped bam file
+      #2191 closed 2025-02-24 Reheader causes sort to fail but quickcheck passes
+      #2037 closed 2024-04-21 problems when merging BAM files of archaic samples
+      #2032 merged 2024-04-17 Avoid tview buffer overflow for positions with ≥14 digits
+      #1934 merged 2023-11-06 Add samtools split -d TAG option
+      #1927 closed 2023-10-18 Samtools index terminates prematurely without error
+      #1923 closed 2023-09-27 samtools view: "Numerical result out of range"
+      #1892 closed 2023-07-26 Bam2fq error
+      #1918 closed 2023-09-22 Querying of HTTPS data via `samtools` v1.18/`htslib` v1.18 hangs
+      #1861 closed 2023-06-22 `samtools merge --write-index` (`.csi`) results in `Invalid file pointer` in rare cases whereas `samtools index` (`.bai`) fixes the problem
+  corruption     22 hit(s) (all listed)
+      #363 open 2015-03-15 Adds tests for and fixes handling of corrupted and truncated BAMs
+      #2363 closed 2026-08-10 mpileup: use-after-free of the reference buffer corrupts reference bases at the tail of a reference (regression in 1.23.2)
+      #2127 closed 2024-10-12 Heap Buffer Overflow in samtools merge within trans_tbl_add_sq function
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2147 merged 2024-11-20 fix to use proper offset in faidx allocidx
+      #1935 closed 2023-11-08 BAM Sequencing Integrity Hash
+      #1815 closed 2023-03-24 E::bgzf_read_block Error
+      #1832 closed 2023-04-19 samtools index error
+      #1744 closed 2022-11-01 Making consensus error - malloc(): smallbin double linked list corrupted
+      #1652 closed 2022-05-04 mpileup error messages
+      #1748 closed 2022-11-04 Cram to bam - potential for a cleanly truncated bam
+      #1593 closed 2022-02-05 samtools depth output incomplete
+      #101 closed 2013-12-03 samtools treats many errors as EOF, silently hiding problems
+      #362 closed 2015-03-11 `samtools index` silently fails to detect corrupted BAM files and `samtools view` reports them as truncated rather than corrupted
+      #495 closed 2015-11-27 samtools sort crashes
+      #523 closed 2016-02-04 Default samtools sort temp-prefix leads to data corruption when reading from stdin
+      #755 closed 2018-01-05 samtools view <region> breaks when accessing private BAM file on Google Cloud 
+      #718 closed 2017-09-07 samtools mpileup error: "free() malloc() memory corruption"
+      #785 closed 2018-03-07 quickcheck exiting with code 0 for truncated bams
+      #1057 closed 2019-05-30 Silent crash/error on samtools index
+  truncated      90 hit(s) (all listed)
+      #363 open 2015-03-15 Adds tests for and fixes handling of corrupted and truncated BAMs
+      #1110 open 2019-09-23 Retrieving region "*" fails for BAM file accessed via AWS S3 HTTP but not locally
+      #627 open 2017-01-09 `flagstat` apparently doesn't check for EOF
+      #735 open 2017-11-03 Using global options reference with command index
+      #857 open 2018-05-28 Can't get remote reference for CRAM with --enable-plugins
+      #622 open 2016-11-10 uncompressed bam output of cat/rmdup command
+      #638 open 2017-02-13 mpileup reports different RAW depths between v1.3 and v1.2
+      #661 open 2017-04-10 Bug: BAM->SAM without new line terminated header
+      #2336 closed 2026-05-20 samtools view on a cram stored in a google bucket fails randomly
+      #2316 merged 2026-03-19 feat: Add --move-umi-to-tag option to samtools markdup to extract UMI from QNAME and add to RX tag.
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2206 closed 2025-04-07 [E::aux_parse] unrecognized type 'e' samtools sort: truncated file. Aborting
+      #2180 closed 2025-02-01 samtools sort: truncated file.
+      #2202 closed 2025-03-19 Errors in samtools sort and bgzip when processing samtools view output
+      #2161 closed 2024-12-24 samtools fasta/fastq problem
+      #2191 closed 2025-02-24 Reheader causes sort to fail but quickcheck passes
+      #2102 closed 2024-08-21 samtools fastq with -T option to extract methylation tag generates truncated fastq header.  
+      #2116 closed 2024-09-18 Fixes to quality plots with fwd & rev reads
+      #993 closed 2018-12-19 [E::sam_parse1] missing SAM header 
+      #2151 closed 2024-11-25 samtools index issue
+  truncate       96 hit(s) (all listed)
+      #363 open 2015-03-15 Adds tests for and fixes handling of corrupted and truncated BAMs
+      #1110 open 2019-09-23 Retrieving region "*" fails for BAM file accessed via AWS S3 HTTP but not locally
+      #2388 open 2026-09-24 stats: count duplicates for the same records as "sequences"; include isize 0 in the SD
+      #627 open 2017-01-09 `flagstat` apparently doesn't check for EOF
+      #735 open 2017-11-03 Using global options reference with command index
+      #857 open 2018-05-28 Can't get remote reference for CRAM with --enable-plugins
+      #622 open 2016-11-10 uncompressed bam output of cat/rmdup command
+      #661 open 2017-04-10 Bug: BAM->SAM without new line terminated header
+      #638 open 2017-02-13 mpileup reports different RAW depths between v1.3 and v1.2
+      #2336 closed 2026-05-20 samtools view on a cram stored in a google bucket fails randomly
+      #2316 merged 2026-03-19 feat: Add --move-umi-to-tag option to samtools markdup to extract UMI from QNAME and add to RX tag.
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2206 closed 2025-04-07 [E::aux_parse] unrecognized type 'e' samtools sort: truncated file. Aborting
+      #2180 closed 2025-02-01 samtools sort: truncated file.
+      #2202 closed 2025-03-19 Errors in samtools sort and bgzip when processing samtools view output
+      #2191 closed 2025-02-24 Reheader causes sort to fail but quickcheck passes
+      #2161 closed 2024-12-24 samtools fasta/fastq problem
+      #2102 closed 2024-08-21 samtools fastq with -T option to extract methylation tag generates truncated fastq header.  
+      #2116 closed 2024-09-18 Fixes to quality plots with fwd & rev reads
+      #993 closed 2018-12-19 [E::sam_parse1] missing SAM header 
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2375 open 2026-08-31 mpileup + Varscan2 issue samtools 1.24
+      #622 open 2016-11-10 uncompressed bam output of cat/rmdup command
+      #2359 open 2026-08-05 [merge] fix primary alignment flag
+      #1110 open 2019-09-23 Retrieving region "*" fails for BAM file accessed via AWS S3 HTTP but not locally
+      #871 open 2018-06-14 Add view -X flag to drop all aux tags
+      #661 open 2017-04-10 Bug: BAM->SAM without new line terminated header
+      #2337 closed 2026-06-09 compilation allowed when version.sh permission denied leading to empty VN tags
+      #619 open 2016-10-21 samtools mpileup gives inconsistent results with different depth limits
+      #2358 merged 2026-08-03 Make samtools view --unmap and --unoutput work together
+      #2352 closed 2026-07-21 samtools view -@ N over S3 drops all reads
+      #2329 merged 2026-04-23 changes for biobambam2 compatible checksum file merging
+      #1569 open 2021-12-22 standardize I/O nomenclature across all tools?
+      #2342 merged 2026-06-16 Ensure PACKAGE_VERSION is set in the Makefile
+      #2085 merged 2024-07-23 Fix read length plot for limited variation data.
+      #2363 closed 2026-08-10 mpileup: use-after-free of the reference buffer corrupts reference bases at the tail of a reference (regression in 1.23.2)
+      #2305 merged 2026-02-12 Fix ubsan warning in threaded consensus pileup mode
+      #2237 closed 2025-07-14 samtools fasta/q does not compress based on filename
+      #2179 closed 2025-01-29 samtools (sort|cat|view|..?) fails on empty input
+      #2018 closed 2024-04-03 mpileup returns different reference sequence for different bam given same input bed and fasta
+      #2190 closed 2025-02-20 How does the length filter expression work with missing qualities
+  atomic         3 hit(s) (all listed)
+      #1903 closed 2023-08-09 samtools stats occasionally fails to read FASTA index file it generates
+      #1609 closed 2022-03-07 Errors while converting CRAM to paired fastq files
+      #1242 closed 2020-05-10 What to take in consideration when running samtools depth in parallel or concurrently?
+  atomically     1 hit(s) (all listed)
+      #1903 closed 2023-08-09 samtools stats occasionally fails to read FASTA index file it generates
+  interrupted    2 hit(s) (all listed)
+      #1928 open 2023-10-19 Bit for bit recovery of original fastq files
+      #1748 closed 2022-11-04 Cram to bam - potential for a cleanly truncated bam
+  interrupt      4 hit(s) (all listed)
+      #1928 open 2023-10-19 Bit for bit recovery of original fastq files
+      #2127 closed 2024-10-12 Heap Buffer Overflow in samtools merge within trans_tbl_add_sq function
+      #1748 closed 2022-11-04 Cram to bam - potential for a cleanly truncated bam
+      #1206 closed 2020-03-08 Samtools Sort Failure: Repeating Samtools Sort without Re-Running BWA Mem?
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #909 closed 2018-08-01 markdup eats own heap
+      #1344 closed 2020-11-20 Convert BAM file to fast file - Error
+  power          3 hit(s) (all listed)
+      #2326 merged 2026-04-20 Change nquals from 256 to 257 for samtools stats.
+      #2256 closed 2025-09-10 Unable to run samtools on x86-64-v2 microarchitecture level - illegal instruction
+      #842 closed 2018-05-09 mpileup gives some insertions with "=" at the end
+  outage         0 hit(s)
+  ENOSPC         2 hit(s) (all listed)
+      #2049 closed 2024-05-10 samtools sort incorrectly reports ENOSPC error from fdatasync while writing temporary outputs as "error closing output file"
+      #470 closed 2015-09-21 Lack of error checking in bam_sort.c means running out of disk space does not produce an error return
+  disk           63 hit(s) (all listed)
+      #1131 open 2019-11-07 Concurence issue?
+      #831 open 2018-04-25 samtools sort setting memory requirement
+      #1660 open 2022-05-26 `samtools faidx` fails to retrieve large scaffolds
+      #891 open 2018-07-11 samtools sort number of threads in reading phase
+      #613 open 2016-09-23 CRAM bug cause immediate segfault on sort
+      #2354 closed 2026-07-24 Samtools checksum changes output between 1.23.1 and 1.24
+      #520 open 2016-02-01 samtools sort -n moves two mates of a same read apart
+      #2283 closed 2025-11-18 Impact of the UR field on CRAM
+      #2212 closed 2025-04-22 Allow for checking if CRAM stores all the information from the BAM, for verification.
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2189 closed 2025-02-20 SAM file size discrepancy: Windows disk space vs actual size
+      #2199 closed 2025-03-14 In-place SAM/BAM reheadering on Linux with `FALLOC_FL_COLLAPSE_RANGE` and `FALLOC_FL_INSERT_RANGE`
+      #2138 closed 2024-11-04 merging from 2 files and 80 in-memory blocks...
+      #2151 closed 2024-11-25 samtools index issue
+      #2105 closed 2024-08-26 Is minhash really sorted by coordinate?
+      #2158 closed 2024-12-16 samtools collate syntax has confusing documentation / options cannot seem to be space-separated
+      #1327 closed 2020-10-21 can not get the bam files using pipeline bwa mem | samtools view -Sb
+      #723 closed 2017-09-16 How to extract embedded reference from CRAM file?
+      #603 closed 2016-08-14 samtools sort fails when using too many tmp files
+      #1914 closed 2023-09-14 Any plans to use lz4 to compress temporary files?
+  partial        26 hit(s) (all listed)
+      #2308 open 2026-02-14 Add support for single-end FASTQ imports with CASAVA tags for BC auxtag
+      #1259 open 2020-05-27 Error closing
+      #2359 open 2026-08-05 [merge] fix primary alignment flag
+      #1110 open 2019-09-23 Retrieving region "*" fails for BAM file accessed via AWS S3 HTTP but not locally
+      #815 open 2018-04-04 samtools idxstats 
+      #2328 merged 2026-04-23 Stats: check before and after region  with --target-regions
+      #2298 closed 2026-01-20 Simultaneous sort by reference and by read Id
+      #2245 closed 2025-08-06 Hints/optimization recommendations for sorting a huge sam file
+      #2191 closed 2025-02-24 Reheader causes sort to fail but quickcheck passes
+      #1870 closed 2023-06-28 bam2fq duplicated portions of reads with full read in output as well
+      #1884 closed 2023-07-19 samtools quickcheck fails to detect missing EOF in a bam file
+      #1540 merged 2021-11-04 Fixes the documentation for mpileup --output-BP-5.
+      #1517 merged 2021-10-06 Add new `samtools head` command
+      #1419 closed 2021-04-22 Samtools coverage histogram not viewed properly
+      #1420 closed 2021-04-22 samtools cat SIGSEGV
+      #1388 closed 2021-03-01 samtools-collate takes a nap during work time
+      #374 closed 2015-04-03 samtools depth - output for zero-coverage positions
+      #104 closed 2013-12-06 Sub man pages for subcommands
+      #523 closed 2016-02-04 Default samtools sort temp-prefix leads to data corruption when reading from stdin
+      #1139 closed 2019-11-18  samtools mepielup extact the reads which pass one point
+  incomplete     30 hit(s) (all listed)
+      #650 open 2017-03-06 In the tar-ball release, make check is incomplete.
+      #59 open 2013-07-10 tabix: add a warning if internet connection falls in the middle of a download
+      #1030 open 2019-03-27 implant `calcs` method for generating `cs` tag?
+      #2350 merged 2026-07-11 Add shared helper for samtools @PG lines; fix reset/rmdup provenance
+      #2354 closed 2026-07-24 Samtools checksum changes output between 1.23.1 and 1.24
+      #2185 closed 2025-02-14 Make the "[bam_sort_core] merging from 0 files and 16 in-memory blocks..." message disappear
+      #2184 closed 2025-02-14 samtools index after samtools sort exits with non-zero code
+      #2104 closed 2024-08-23 v19.2/v20 : "samtools view -L  " incomplete output for  BED with nested targets
+      #2107 merged 2024-08-28 Fix bed_index_core() handling of overlapping entries
+      #723 closed 2017-09-16 How to extract embedded reference from CRAM file?
+      #2049 closed 2024-05-10 samtools sort incorrectly reports ENOSPC error from fdatasync while writing temporary outputs as "error closing output file"
+      #1934 merged 2023-11-06 Add samtools split -d TAG option
+      #1941 closed 2023-11-15 samtools view: error reading file ".." input/output error
+      #1847 closed 2023-05-19 samtools import produces incomplete bam using large fastq
+      #1900 merged 2023-08-07 Sort name ascii2
+      #1775 closed 2023-01-04 Reading cram files becomes extremely slow when no reference file is provided. 
+      #1748 closed 2022-11-04 Cram to bam - potential for a cleanly truncated bam
+      #1593 closed 2022-02-05 samtools depth output incomplete
+      #1472 closed 2021-07-23 "Incomplete aux field" error in samtools sort with version 1.11.0 but not in 1.9
+      #888 closed 2018-07-06 failed to make
+  dataloss       0 hit(s)
+  recover        7 hit(s) (all listed)
+      #1201 closed 2020-02-25 bug when downsampling twice with the same seed
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2262 closed 2025-09-17 Consider UMIs in samtools import
+      #2182 closed 2025-02-11 corrutped bam file
+      #1057 closed 2019-05-30 Silent crash/error on samtools index
+      #1349 closed 2020-12-08 -r, --region REG        region in which pileup is generated      the region  can‘t more than 536M
+      #631 closed 2017-01-30 Added delete flag to merge, to unlink input bams as they are read
+  recovery       3 hit(s) (all listed)
+      #1928 open 2023-10-19 Bit for bit recovery of original fastq files
+      #1767 merged 2022-12-10 Reset
+      #1133 closed 2019-11-08 Improved error recovery in faidx write_output()
+  rollback       1 hit(s) (all listed)
+      #2117 closed 2024-09-23 markdup error with updated samtools
+  resume         5 hit(s) (all listed)
+      #977 open 2018-11-09 Recognisable exit status for 'Failed to populate reference'
+      #2336 closed 2026-05-20 samtools view on a cram stored in a google bucket fails randomly
+      #2158 closed 2024-12-16 samtools collate syntax has confusing documentation / options cannot seem to be space-separated
+      #1195 closed 2020-02-13 Can samtools resume an aborted sort?
+      #1254 closed 2020-05-21 Trouble reading SRA CRAM files
+  half-written   5 hit(s) (all listed)
+      #2187 closed 2025-02-17 samtools stats only checksums half the quality values
+      #1744 closed 2022-11-01 Making consensus error - malloc(): smallbin double linked list corrupted
+      #1323 merged 2020-10-12 Fastq import via "samtools import" (renamed)
+      #615 closed 2016-10-07 sort and index
+      #675 closed 2017-05-04 ability to sort/merge by tag 
+  wipe           3 hit(s) (all listed)
+      #857 open 2018-05-28 Can't get remote reference for CRAM with --enable-plugins
+      #1469 closed 2021-07-22 add option to samtools view to unmap aligned reads rather than remove them
+      #651 merged 2017-03-09 Stop samtools configure from always trying to configure htslib
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        19 hit(s) (all listed)
+      #748 open 2017-12-04 Add fastaref subcommand.
+      #520 open 2016-02-01 samtools sort -n moves two mates of a same read apart
+      #2274 merged 2025-10-14 Add missing sam_global_args_free calls.
+      #2269 merged 2025-10-06 updated to make consensus work with sam.gz along with threads and ite…
+      #2067 merged 2024-06-05 faidx with bgzf compressed output
+      #1800 closed 2023-03-03 Excessive memory usage on samtools merge
+      #1767 merged 2022-12-10 Reset
+      #1398 merged 2021-03-16 Add a check for multi-ref BED files in ampliconclip & ampliconstats.
+      #411 closed 2015-06-22 samtools merge -c and -p options not working as expected?
+      #478 closed 2015-10-17 Phred-scaled strand bias P-value based on INFO/ADF,INFO/ADR
+      #297 closed 2014-09-17 sam vs bam vs tam vs ARGH
+      #158 closed 2014-02-19 samtools view memory leak
+      #178 closed 2014-03-18 mpileup genotype likelihood calculation fails with CIGAR operators = and X
+      #1101 closed 2019-09-06 Samtools MarkDups does not mark optical duplicates
+      #1057 closed 2019-05-30 Silent crash/error on samtools index
+      #1293 closed 2020-07-29 Error occurs when using multithreads
+      #675 closed 2017-05-04 ability to sort/merge by tag 
+      #674 closed 2017-05-04 Added -T option for fastq 
+      #1156 merged 2019-12-18 Add support for multi-region merge
+  destroys       0 hit(s)
+  overwrite      28 hit(s) (all listed)
+      #1569 open 2021-12-22 standardize I/O nomenclature across all tools?
+      #1774 closed 2022-12-16 Samtools failed to read header of sam file
+      #2255 closed 2025-08-22 Incorrect output from mpileup
+      #2163 closed 2025-01-04 samtools is unable to change sample name
+      #2158 closed 2024-12-16 samtools collate syntax has confusing documentation / options cannot seem to be space-separated
+      #1758 closed 2022-11-10 split: use custom tag
+      #1922 merged 2023-09-27 Bamstats read length histogram plot feature.
+      #1852 closed 2023-05-29 in-place reheadering doesn't follow CRAM standard?
+      #1779 merged 2023-01-16 Speed up optical duplicate checking.
+      #1791 closed 2023-02-13 mpileup seem to ignore the flags passed to --ff
+      #1775 closed 2023-01-04 Reading cram files becomes extremely slow when no reference file is provided. 
+      #1674 merged 2022-07-05 Enable `samtools index` to index multiple alignment files at once
+      #1431 merged 2021-05-11 Added a few primary only entries for clarity.
+      #1035 closed 2019-04-11 samtools sort  fails if there are existing tmp files
+      #1493 closed 2021-09-02 Samtools view with regions argument outputs a different number of sequences when outputting to stdout or to file
+      #1437 closed 2021-05-27 samtools hangs when using a named pipe
+      #1404 merged 2021-03-30 add support for addreplacerg when RG ID exist in origin bam
+      #1438 closed 2021-05-27 Replace fopen with stat for file exists check.
+      #703 closed 2017-07-17 bam2fq not working properly at samtools 1.5?
+      #856 closed 2018-05-25 addreplacerg overwrite_all doesn't overwrite the old RG tags
+  clobber        9 hit(s) (all listed)
+      #815 open 2018-04-04 samtools idxstats 
+      #1609 closed 2022-03-07 Errors while converting CRAM to paired fastq files
+      #1510 merged 2021-10-04 Sort temporary file improvements
+      #432 closed 2015-07-11 `samtools sort` clobbers temporary files if "misusing" `-T`
+      #1341 closed 2020-11-15 Conversion of CRAM files with lossy_names=1 to FASTQ files for realignment
+      #1042 merged 2019-04-24 Samtools fastq -o option and other fixes.
+      #490 closed 2015-11-23 Use O_EXCL when writing temporary merge files
+      #441 merged 2015-07-27 Remove `samtools sort` legacy usage [Fixes #418,#356,#349,#295]
+      #530 merged 2016-02-10 Made samtools sort notice when it clobbers other sorts.
+  blank          21 hit(s) (all listed)
+      #1320 open 2020-10-05 Missing output from samtools fastq
+      #996 open 2019-01-02 sam to bam memory constraint
+      #149 open 2014-02-17 Reference sequence name ambiguities.
+      #1175 open 2020-01-23 Samtools view --no-PG default should be more nuanced
+      #2334 merged 2026-05-14 Update parameter long-hand name of -X in samtools stats
+      #2213 merged 2025-04-22 Miscellaneous tidy ups
+      #496 closed 2015-12-01 Suggestion: optional output for zero-coverage positions in samtools mpileup
+      #1717 closed 2022-09-14 Samtools ampliconclip hard clip not giving same results as soft clip
+      #1625 merged 2022-03-25 Collected minor manual page formatting improvements
+      #1627 closed 2022-03-29 bam -> cram Problems with fasta header
+      #265 closed 2014-08-09 [Question] Should `samtools merge` merge all @CO fields?
+      #157 closed 2014-02-19 samtools mpileup on empty sequences causes an illegal memory access
+      #1082 closed 2019-07-29 samtools mpileup giving incomplete output
+      #1065 closed 2019-06-11 samtools-1.6 and 1.9: plot-bamstats generates broken gnuplot script
+      #1010 closed 2019-02-19 Missing input argument and SGE interaction
+      #1011 closed 2019-02-20 Bam indexing error-the samtools index command for just 1 chromosome is also not working in this case, the following error is showing [E::hts_idx_push] Region 536871288..536871299 cannot be stored in a bai index. Try using a csi index with min_shift = 14, n_lvls >= 6 samtools index: failed to create index for P2R1R2_aln_sorted.bam": Numerical result out of range.
+      #1111 closed 2019-09-24 Incorrect BAM?
+      #1146 closed 2019-11-29 Different read count and base quality between samtools version (mpileup)
+      #1188 closed 2020-02-04 Improve documentation of bedcov input files
+      #894 merged 2018-07-13 Split manpages
+  unreadable     5 hit(s) (all listed)
+      #1845 closed 2023-05-17 samtools mpileup giving inconsistent pileup output with -r option
+      #1810 closed 2023-03-16 error in samtools sort: truncated file. 
+      #1406 closed 2021-03-30 Samtools fails to produce VCF
+      #692 closed 2017-06-15 Fatal error when make samtools-1.4.1
+      #1102 closed 2019-09-07 A question in install, thanks a lot
+  garbage        5 hit(s) (all listed)
+      #2363 closed 2026-08-10 mpileup: use-after-free of the reference buffer corrupts reference bases at the tail of a reference (regression in 1.23.2)
+      #2032 merged 2024-04-17 Avoid tview buffer overflow for positions with ≥14 digits
+      #1387 closed 2021-02-27 [fai_build_core] different line length in sequence 
+      #328 closed 2014-12-04 samtools sort errors do not exit with non-zero exit code
+      #474 closed 2015-10-03 samtools faidx returns an incorrect result when two sequences have the same ID
+  mangled        1 hit(s) (all listed)
+      #1499 closed 2021-09-14 samtools view problem
+  contents       40 hit(s) (all listed)
+      #2388 open 2026-09-24 stats: count duplicates for the same records as "sequences"; include isize 0 in the SD
+      #1175 open 2020-01-23 Samtools view --no-PG default should be more nuanced
+      #2094 open 2024-08-06 Suggest: add warning when filename extension and file content mismatch
+      #1320 open 2020-10-05 Missing output from samtools fastq
+      #612 open 2016-09-18 Tests fail on armhf
+      #1050 open 2019-05-13 fixmate removes "read paired" flag
+      #1110 open 2019-09-23 Retrieving region "*" fails for BAM file accessed via AWS S3 HTTP but not locally
+      #1149 open 2019-12-07 Compiling error in v1.10 - undefined reference to symbol 'keypad'
+      #1017 open 2019-03-02 fixmate - help not clear that input can be SAM
+      #661 open 2017-04-10 Bug: BAM->SAM without new line terminated header
+      #2127 closed 2024-10-12 Heap Buffer Overflow in samtools merge within trans_tbl_add_sq function
+      #2303 closed 2026-02-09 Curses library issues when compiling samtools
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2212 closed 2025-04-22 Allow for checking if CRAM stores all the information from the BAM, for verification.
+      #2244 closed 2025-08-04 samtools index `--threads` error
+      #2166 closed 2025-01-13 error reading file xxx.sam
+      #2154 closed 2024-11-29 Casava tag lost during import/fastq with cram but not bam.
+      #2151 closed 2024-11-25 samtools index issue
+      #2125 merged 2024-10-11 faidx/fqidx indexes along with output creation
+      #1871 closed 2023-06-28 Samtools merge reduces size of original bam files
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2383 open 2026-09-15 Add option to remove @SQ references when filtering to a target region with samtools view
+      #661 open 2017-04-10 Bug: BAM->SAM without new line terminated header
+      #2388 open 2026-09-24 stats: count duplicates for the same records as "sequences"; include isize 0 in the SD
+      #2387 merged 2026-09-24 Relax the --barcode-name regex.
+      #871 open 2018-06-14 Add view -X flag to drop all aux tags
+      #956 open 2018-09-27 Deprecate/remove targetcut and phase subcommands from samtools
+      #1654 open 2022-05-06 samtools 1.15 become very slow when I set maxcnt to 8,000,000
+      #2359 open 2026-08-05 [merge] fix primary alignment flag
+      #2232 open 2025-06-26 BED-filtering and non-primary alignments
+      #51 open 2013-05-22 Error message improvement (in general)
+      #1144 open 2019-11-26 Add ability to generate custom tags e.g. RX tag for UMIs by parsing read names
+      #857 open 2018-05-28 Can't get remote reference for CRAM with --enable-plugins
+      #735 open 2017-11-03 Using global options reference with command index
+      #662 open 2017-04-11 duplicate reads interpretation issue
+      #2374 open 2026-08-28 samtools consensus uses so much memory it is unable to complete
+      #480 open 2015-10-26 mpileup multithread
+      #2380 closed 2026-09-09 Samtools markdup --move-umi-to-tag
+      #1329 open 2020-10-23 Inconsistent MAPQ values reported by 'view' when MAPQ is masked off
+      #1008 open 2019-02-15 Option to limit markdup memory usage
+      #304 open 2014-09-30 Regression tests fail on ARM
+  unclean        2 hit(s) (all listed)
+      #2127 closed 2024-10-12 Heap Buffer Overflow in samtools merge within trans_tbl_add_sq function
+      #2254 merged 2025-09-04 Add Replace RG check exit and add some comments
+  shutdown       2 hit(s) (all listed)
+      #1293 closed 2020-07-29 Error occurs when using multithreads
+      #1137 closed 2019-11-17 Core dump
+  reboot         1 hit(s) (all listed)
+      #1206 closed 2020-03-08 Samtools Sort Failure: Repeating Samtools Sort without Re-Running BWA Mem?
+  disk+full      13 hit(s) (all listed)
+      #520 open 2016-02-01 samtools sort -n moves two mates of a same read apart
+      #2283 closed 2025-11-18 Impact of the UR field on CRAM
+      #2158 closed 2024-12-16 samtools collate syntax has confusing documentation / options cannot seem to be space-separated
+      #1941 closed 2023-11-15 samtools view: error reading file ".." input/output error
+      #1630 merged 2022-04-05 Add barcode handling to markdup.
+      #1732 closed 2022-10-11 Add pipelining in Samtools-Sort
+      #1703 merged 2022-08-25 bug fix: template coordinate sort when merging in memory
+      #1605 merged 2022-02-27 Sort template coordinate
+      #930 closed 2018-08-26 [bam_sort_core] merging from xx files.. [bam_merge_core] '.bam' is truncated. Continue anyway.
+      #1347 closed 2020-11-26 MD5 cache vs -T
+      #254 closed 2014-07-22 We found that samtools sort would not error on disk full
+      #255 closed 2014-07-22 We found that samtools sort would not error on disk full
+      #253 closed 2014-07-21 Samtools sort multi-threaded does not error properly when disk writes fail.
+  data+loss      15 hit(s) (all listed)
+      #549 open 2016-03-23 bam -> cram conversion: Segmentation fault (core dumped).
+      #1569 open 2021-12-22 standardize I/O nomenclature across all tools?
+      #2352 closed 2026-07-21 samtools view -@ N over S3 drops all reads
+      #2212 closed 2025-04-22 Allow for checking if CRAM stores all the information from the BAM, for verification.
+      #2259 closed 2025-09-12 Consider UMIs in samtools fastq
+      #2256 closed 2025-09-10 Unable to run samtools on x86-64-v2 microarchitecture level - illegal instruction
+      #2122 merged 2024-10-08 Add "samtools checksum" command. Needs htslib#1850
+      #1788 closed 2023-01-28 samtools markup mark incompatible alignment(different CIGAR) as duplicates
+      #800 closed 2018-03-19 samtools idxstats shows zero reads
+      #2059 closed 2024-05-23 samtools view with -L, -M and --fetch-pairs doing full CRAM traversal
+      #542 closed 2016-02-24 [main_samview] failed to write the SAM header
+      #1206 closed 2020-03-08 Samtools Sort Failure: Repeating Samtools Sort without Re-Running BWA Mem?
+      #1237 closed 2020-05-04 samtools 1.10 incompatibility with @RG header section
+      #1167 closed 2020-01-12 CRAM compression not documented properly
+      #631 closed 2017-01-30 Added delete flag to merge, to unlink input bams as they are read
+  partial+write  4 hit(s) (all listed)
+      #815 open 2018-04-04 samtools idxstats 
+      #2359 open 2026-08-05 [merge] fix primary alignment flag
+      #1870 closed 2023-06-28 bam2fq duplicated portions of reads with full read in output as well
+      #1393 closed 2021-03-13 segfault merge operation
+  crash+safe     2 hit(s) (all listed)
+      #613 open 2016-09-23 CRAM bug cause immediate segfault on sort
+      #1605 merged 2022-02-27 Sort template coordinate
+  atomic+write   1 hit(s) (all listed)
+      #1609 closed 2022-03-07 Errors while converting CRAM to paired fastq files
+  lock+file      7 hit(s) (all listed)
+      #641 open 2017-02-21 Problem Converting BAM to SAM on to Amazon-S3 Using Samtools
+      #1822 closed 2023-03-29 samtools: /home/administrator/miniconda3/envs/breakseq/bin/../lib/libtinfow.so.6: no version information available (required by samtools)
+      #636 closed 2017-02-10 samtools-1.3 sort creates way too many tmp files
+      #679 closed 2017-05-08 rerun autoreconf in 1.4.1 release tarball
+      #786 closed 2018-03-09 Occasional failure when converting CRAM to BAM
+      #1206 closed 2020-03-08 Samtools Sort Failure: Repeating Samtools Sort without Re-Running BWA Mem?
+      #1290 closed 2020-07-26 Is it safe for multiple samtools processes to download to a shared hts-ref cache?
+  write+failure  31 hit(s) (all listed)
+      #1131 open 2019-11-07 Concurence issue?
+      #1979 open 2024-02-01 Merge alignments into existing BAM/CRAM/SAM
+      #2350 merged 2026-07-11 Add shared helper for samtools @PG lines; fix reset/rmdup provenance
+      #2325 closed 2026-04-17 [E::cram_decode_seq] CRAM CIGAR extends beyond slice reference extents
+      #2277 closed 2025-10-17 CRAM CIGAR extends beyond slice reference extents Failure to decode slice
+      #2179 closed 2025-01-29 samtools (sort|cat|view|..?) fails on empty input
+      #2202 closed 2025-03-19 Errors in samtools sort and bgzip when processing samtools view output
+      #2067 merged 2024-06-05 faidx with bgzf compressed output
+      #2049 closed 2024-05-10 samtools sort incorrectly reports ENOSPC error from fdatasync while writing temporary outputs as "error closing output file"
+      #1934 merged 2023-11-06 Add samtools split -d TAG option
+      #1776 merged 2023-01-04 Add CRAM_OPT_REQUIRED_FIELDS option for view -c.
+      #1800 closed 2023-03-03 Excessive memory usage on samtools merge
+      #1767 merged 2022-12-10 Reset
+      #1609 closed 2022-03-07 Errors while converting CRAM to paired fastq files
+      #1542 merged 2021-11-09 Add new `view --fetch-pairs` option
+      #1368 merged 2021-02-03 [release] News update for the next release (1.12)
+      #1388 closed 2021-03-01 samtools-collate takes a nap during work time
+      #432 closed 2015-07-11 `samtools sort` clobbers temporary files if "misusing" `-T`
+      #280 closed 2014-08-19 mpileup tests fail due to <X> vs X
+      #618 closed 2016-10-19 Reheader bams in place
+  file+contents  33 hit(s) (all listed)
+      #2388 open 2026-09-24 stats: count duplicates for the same records as "sequences"; include isize 0 in the SD
+      #1175 open 2020-01-23 Samtools view --no-PG default should be more nuanced
+      #2094 open 2024-08-06 Suggest: add warning when filename extension and file content mismatch
+      #1320 open 2020-10-05 Missing output from samtools fastq
+      #1050 open 2019-05-13 fixmate removes "read paired" flag
+      #1110 open 2019-09-23 Retrieving region "*" fails for BAM file accessed via AWS S3 HTTP but not locally
+      #1017 open 2019-03-02 fixmate - help not clear that input can be SAM
+      #1149 open 2019-12-07 Compiling error in v1.10 - undefined reference to symbol 'keypad'
+      #661 open 2017-04-10 Bug: BAM->SAM without new line terminated header
+      #2127 closed 2024-10-12 Heap Buffer Overflow in samtools merge within trans_tbl_add_sq function
+      #2303 closed 2026-02-09 Curses library issues when compiling samtools
+      #2212 closed 2025-04-22 Allow for checking if CRAM stores all the information from the BAM, for verification.
+      #693 closed 2017-06-19 Container header CRC32 failure
+      #2244 closed 2025-08-04 samtools index `--threads` error
+      #2166 closed 2025-01-13 error reading file xxx.sam
+      #2151 closed 2024-11-25 samtools index issue
+      #2154 closed 2024-11-29 Casava tag lost during import/fastq with cram but not bam.
+      #2125 merged 2024-10-11 faidx/fqidx indexes along with output creation
+      #1871 closed 2023-06-28 Samtools merge reduces size of original bam files
+      #1832 closed 2023-04-19 samtools index error
+
+== 51 terms run; 42 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

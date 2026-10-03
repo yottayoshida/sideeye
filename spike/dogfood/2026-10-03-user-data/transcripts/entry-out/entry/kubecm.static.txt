@@ -1,0 +1,4 @@
+static: /opt/bin/kubecm: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=4026f50c59ff690e8e60e7b904d0e8a5ce6eec2a, stripped
+default mode: rc 2; no_shim_marker
+default next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+next: sideeye explore --state /s/kubecm --cwd "/s/kubecm" --operation "/opt/bin/kubecm delete staging --config /s/kubecm/config" \

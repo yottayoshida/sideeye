@@ -1,0 +1,17 @@
+fresh argocd 
+fresh cheat 
+fresh hcloud 
+fresh kubecm 
+fresh nvm 
+fresh scaleway 
+SEEN starship spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:119
+fresh transmission 
+fresh conda 
+SEEN hatch funnel:77
+fresh minikube 
+fresh pybabel 
+fresh skaffold 
+fresh terraform-docs 
+fresh siderolabs 
+fresh talos 
+fresh talosctl 

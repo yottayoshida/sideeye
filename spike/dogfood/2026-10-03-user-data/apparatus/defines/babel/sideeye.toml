@@ -1,0 +1,6 @@
+[world]
+state = "/s/babel"
+
+[define]
+operation = "pybabel update -i messages.pot -d translations"
+cwd       = "/s/babel"

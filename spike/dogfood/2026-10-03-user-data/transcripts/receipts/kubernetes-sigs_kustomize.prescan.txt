@@ -1,0 +1,527 @@
+== novelty pre-scan: kubernetes-sigs/kustomize
+== date: 2026-10-03T02:43:56Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          21 hit(s) (all listed)
+      #6210 closed 2026-08-04 v5.8.x release binaries built with go1.24.0 carry the critical arm64 GC miscompilation (golang/go#71932) — please rebuild with Go >= 1.24.1
+      #6209 closed 2026-08-01 Guard the empty-file case when loading CRDs
+      #6184 merged 2026-07-10 fix: do not panic on an invalid image name regexp
+      #5078 closed 2023-03-07 ValueAddTransformer crashes w/ stack overflow under Windows if target value contains / as path separator
+      #3710 closed 2021-03-09 Enable kustomize to effectively combine multiple kustomizations
+      #5154 closed 2023-05-02 invalid memory address or nil pointer dereference when using patches
+      #202 closed 2018-07-26 Ordering of output results
+      #4619 merged 2022-05-05 install_kustomize: support linux/aarch64, with fallback to old behavior
+      #4575 closed 2022-04-09 Not work with remote repo
+      #903 closed 2019-03-22 feature request: job name based on hash like config/secret
+      #3358 closed 2020-12-15 `kustomize build` panics if the comment contains multibyte characters
+      #3639 closed 2021-02-26 kustomize crashes on the current (v0.21.0) tekton release manifest yaml
+      #3489 closed 2021-01-20 Kustomize "multiple matches" failure since kustomize/v3.9.2
+      #1364 closed 2019-07-18 Not found browser_download
+      #253 closed 2018-08-14 Kustomize crashes when a resource file is not found
+      #843 closed 2019-03-02 json quoting error in configMapGenerator
+      #396 closed 2018-10-02 patchJson6902YAML crash
+      #585 closed 2018-11-29 Possible to use a (private) repo that's not on Github?
+      #2434 closed 2020-05-04 Index out of range setting image
+      #2796 merged 2020-08-03 Order PersistentVolume before Deployment
+  corrupt        15 hit(s) (all listed)
+      #6140 open 2026-05-06 Strategic merge patch inherits base YAML string tag, corrupting integer values on IntOrString fields
+      #6192 open 2026-07-19 fix(kyaml): correctly handle patches with a partial compound merge key
+      #6089 open 2026-03-07 File content merging in config map generator
+      #6190 merged 2026-07-17 chore: refactor read scheme to openapi from kubernetes api definition
+      #6050 closed 2026-01-26 [WIP] feat: add option to merge file content in configmaps/secrets
+      #947 closed 2019-04-05 Line breaks on long strings with spaces
+      #4773 merged 2022-08-25 run openapi tests with other krusty tests
+      #4867 merged 2022-11-14 Allow `kustomize localize` to process directories
+      #903 closed 2019-03-22 feature request: job name based on hash like config/secret
+      #3872 closed 2021-05-04 Kustomize corrupts lines with line breaks
+      #3852 closed 2021-04-29 Remote Resource + OpenAPI -> CRD patches overwrite instead of merge (schema ignored)
+      #2191 closed 2020-02-07 Bug in the Base64 encoding
+      #2125 closed 2020-01-17 kustomize 3.5.4 configMapGenerator deletes newlines
+      #1650 closed 2019-10-17 Homebrew bottle for MacOS Catalina installs invalid executable
+      #1376 closed 2019-07-20 FEAT: add json file support #1375
+  corruption     3 hit(s) (all listed)
+      #6287 open 2026-09-22 fix: preserve hash lines in block scalars as content
+      #6210 closed 2026-08-04 v5.8.x release binaries built with go1.24.0 carry the critical arm64 GC miscompilation (golang/go#71932) — please rebuild with Go >= 1.24.1
+      #3852 closed 2021-04-29 Remote Resource + OpenAPI -> CRD patches overwrite instead of merge (schema ignored)
+  truncated      45 hit(s) (all listed)
+      #6284 open 2026-09-18 build(deps): bump go.opentelemetry.io/otel/sdk from 1.44.0 to 1.45.0 in /hack
+      #6245 merged 2026-09-02 build(deps-dev): bump browserslist from 4.19.3 to 4.28.8 in /site
+      #6203 merged 2026-07-27 build(deps-dev): bump postcss from 8.4.31 to 8.5.23 in /site
+      #6244 merged 2026-09-02 build(deps): bump google.golang.org/grpc from 1.82.1 to 1.83.1 in /hack
+      #6204 closed 2026-07-27 build(deps): bump github.com/getkin/kin-openapi from 0.139.0 to 0.144.0 in /hack
+      #6222 merged 2026-08-10 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #6199 merged 2026-07-25 build(deps): bump google.golang.org/grpc from 1.80.0 to 1.82.1 in /hack
+      #6202 merged 2026-07-27 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+      #6181 merged 2026-07-06 build(deps): bump dorny/paths-filter from 4.0.1 to 4.0.2
+      #6143 closed 2026-05-08 build(deps): bump github.com/gohugoio/hugo from 0.159.2 to 0.161.0 in /hack
+      #6168 closed 2026-06-20 build(deps): bump github.com/gohugoio/hugo from 0.159.2 to 0.163.3 in /hack
+      #6132 closed 2026-04-24 build(deps-dev): bump postcss from 8.4.31 to 8.5.10 in /site
+      #6160 closed 2026-06-08 build(deps): bump actions/checkout from 6.0.2 to 6.0.3
+      #6170 merged 2026-06-22 build(deps): bump actions/checkout from 6.0.2 to 7.0.0
+      #6115 closed 2026-04-03 build(deps): bump github.com/gohugoio/hugo from 0.120.4 to 0.159.2 in /hack
+      #6098 closed 2026-03-19 build(deps): bump google.golang.org/grpc from 1.70.0 to 1.79.3 in /hack
+      #6100 merged 2026-03-25 build(deps-dev): bump picomatch from 2.3.1 to 2.3.2 in /site
+      #6120 closed 2026-04-08 build(deps): bump go.opentelemetry.io/otel/sdk from 1.40.0 to 1.43.0 in /hack
+      #5399 closed 2023-10-19 Kustomize logo is sketchy on kustomize.io top banner... and where can i find the logo svg ?
+      #6097 merged 2026-03-16 build(deps): bump dorny/paths-filter from 3 to 4
+  truncate       52 hit(s) (all listed)
+      #6284 open 2026-09-18 build(deps): bump go.opentelemetry.io/otel/sdk from 1.44.0 to 1.45.0 in /hack
+      #6266 merged 2026-09-13 build(deps): bump golang.org/x/text from 0.41.0 to 0.42.0
+      #6245 merged 2026-09-02 build(deps-dev): bump browserslist from 4.19.3 to 4.28.8 in /site
+      #6203 merged 2026-07-27 build(deps-dev): bump postcss from 8.4.31 to 8.5.23 in /site
+      #6244 merged 2026-09-02 build(deps): bump google.golang.org/grpc from 1.82.1 to 1.83.1 in /hack
+      #6204 closed 2026-07-27 build(deps): bump github.com/getkin/kin-openapi from 0.139.0 to 0.144.0 in /hack
+      #6222 merged 2026-08-10 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #6199 merged 2026-07-25 build(deps): bump google.golang.org/grpc from 1.80.0 to 1.82.1 in /hack
+      #6202 merged 2026-07-27 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+      #6181 merged 2026-07-06 build(deps): bump dorny/paths-filter from 4.0.1 to 4.0.2
+      #6143 closed 2026-05-08 build(deps): bump github.com/gohugoio/hugo from 0.159.2 to 0.161.0 in /hack
+      #6168 closed 2026-06-20 build(deps): bump github.com/gohugoio/hugo from 0.159.2 to 0.163.3 in /hack
+      #6132 closed 2026-04-24 build(deps-dev): bump postcss from 8.4.31 to 8.5.10 in /site
+      #6160 closed 2026-06-08 build(deps): bump actions/checkout from 6.0.2 to 6.0.3
+      #6170 merged 2026-06-22 build(deps): bump actions/checkout from 6.0.2 to 7.0.0
+      #6115 closed 2026-04-03 build(deps): bump github.com/gohugoio/hugo from 0.120.4 to 0.159.2 in /hack
+      #6098 closed 2026-03-19 build(deps): bump google.golang.org/grpc from 1.70.0 to 1.79.3 in /hack
+      #6100 merged 2026-03-25 build(deps-dev): bump picomatch from 2.3.1 to 2.3.2 in /site
+      #6120 closed 2026-04-08 build(deps): bump go.opentelemetry.io/otel/sdk from 1.40.0 to 1.43.0 in /hack
+      #5399 closed 2023-10-19 Kustomize logo is sketchy on kustomize.io top banner... and where can i find the logo svg ?
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5944 open 2025-07-16 feat: add Windows support by handling empty path case in PathSplit function
+      #6282 open 2026-09-17 fix: update nameReferences for unknown cluster-scoped CRDs
+      #6154 open 2026-05-17 fix: detect nil list items in RNode
+      #6211 open 2026-08-04 fix: preserve resolved scalar type for replacement-created fields
+      #6200 open 2026-07-25 fix: make `edit add label` generate the labels field instead of deprecated commonLabels
+      #6161 open 2026-06-12 Builtin name reference transformer config should include Gateway `certificateRefs`
+      #6209 closed 2026-08-01 Guard the empty-file case when loading CRDs
+      #6159 open 2026-06-02 api/krusty: add SuppressDeprecationWarnings option to suppress lib warnings
+      #6155 open 2026-05-19 Add OCI helm charts digest pinning
+      #6300 open 2026-09-29 Strategic merge patches cost O(n²) each: `resWrangler.ApplySmPatch` re-appends every resource with a linear duplicate-ID scan
+      #6260 open 2026-09-08 fix: pull helm charts atomically to survive concurrent kustomize builds
+      #6128 open 2026-04-17 fix(api/types): map HelmChartArgs.ReleaseNamespace -> HelmChart.Namespace
+      #6247 open 2026-09-03 feat(loader): oci:// remote resources (pull only)
+      #5140 open 2023-04-19 Make the `apiVersion` and `kind` fields mandatory in Kustomization/Component v1
+      #5819 open 2024-12-03 allow using helmChart without repo URL
+      #5042 open 2023-02-09 Custom Resources with a Kind Ending in "List" are Silently Ignored
+      #6269 closed 2026-09-13 fix: return error for invalid --output in version command
+      #6270 closed 2026-09-14 test: add direct coverage for kyaml resource matchers
+      #6271 closed 2026-09-14 test: add coverage for the load restrictor flag validation
+      #6283 closed 2026-09-17 fix(helm): allow inflating charts without values.yaml
+  atomic         11 hit(s) (all listed)
+      #6260 open 2026-09-08 fix: pull helm charts atomically to survive concurrent kustomize builds
+      #4401 open 2022-01-19 Helm support: long term plan
+      #6000 open 2025-10-22 Statefulset volumeClaimTemplates labels not properly merged after patch
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #5766 closed 2024-09-18 Regression in 5.4.0+: "Error: could not merge values: wrong node kind: expected MappingNode but got SequenceNode"
+      #1009 closed 2019-04-23 support for common labels that don't get set on selectors
+      #4558 merged 2022-03-30 Proposal: Replacements and Patch value in the structured data
+      #3443 closed 2021-01-12 kustomize get compile error when using github.com/swaggo
+      #4495 closed 2022-02-25 "$patch: delete" not working as expected
+      #3602 closed 2021-02-13 kustomize and github.com/swaggo dependency conflict
+      #1631 merged 2019-10-14 Replacement poc
+  atomically     2 hit(s) (all listed)
+      #6260 open 2026-09-08 fix: pull helm charts atomically to survive concurrent kustomize builds
+      #4495 closed 2022-02-25 "$patch: delete" not working as expected
+  interrupted    2 hit(s) (all listed)
+      #821 closed 2019-02-25 kustomize re-orders config causing fail when crd or admission webhook used
+      #2201 closed 2020-02-13 Kustomize not clearing /tmp folder
+  interrupt      5 hit(s) (all listed)
+      #5470 open 2023-12-02 extend Kustomization resource with sibling to helmGlobals, helmCharts, with (?helmHealth?) to await resources for state
+      #4658 closed 2022-05-31 How to properly override helmChart values using overlays?
+      #5292 closed 2023-08-24 Provide feature that compatible to work with OCI repository because chart  in OCI repository will not fetched by kustomization it is interrupting to follow standard process
+      #2201 closed 2020-02-13 Kustomize not clearing /tmp folder
+      #821 closed 2019-02-25 kustomize re-orders config causing fail when crd or admission webhook used
+  sigkill        2 hit(s) (all listed)
+      #100 closed 2018-06-12 Use gometalinter in pre-commit to improve code quality
+      #2201 closed 2020-02-13 Kustomize not clearing /tmp folder
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          11 hit(s) (all listed)
+      #641 open 2018-12-17 Kustomize doesn't support metadata.generateName
+      #3655 closed 2021-03-01 Cached git cloner
+      #4789 merged 2022-09-09 Replacements should throw errors on invalid targets
+      #2034 closed 2020-01-06 commonLabels altering podSelector.matchLabels
+      #4680 closed 2022-06-15 [Question] Multiples repositories using same base (remote)
+      #4671 closed 2022-06-08 Code struct for each kustomization field
+      #4797 closed 2022-09-15 Implement `kustomize localize` localization layer
+      #1553 closed 2019-09-21 Using overlay-provided secrets in a base
+      #1792 merged 2019-11-13 Add support to choose 'chartRelease' and 'chartVersion' while kustomizing remote helm charts
+      #1594 closed 2019-10-07 add replacements field
+      #2777 merged 2020-07-25 adds test for issue#2767
+  outage         5 hit(s) (all listed)
+      #1113 closed 2019-05-23 Set variable from command line
+      #4950 closed 2022-12-28 Manipulate list items with patch
+      #2734 closed 2020-07-18 patchStrategicMerge elides null and {}
+      #3381 closed 2020-12-21 CI & Release Process
+      #567 closed 2018-11-21 Allow setting name to "*" for bulk editing
+  ENOSPC         0 hit(s)
+  disk           59 hit(s) (all listed)
+      #6232 open 2026-08-19 feat: add rooted io/fs adapter
+      #6260 open 2026-09-08 fix: pull helm charts atomically to survive concurrent kustomize builds
+      #6293 open 2026-09-24 kustomize localize generates file names that Windows cannot create
+      #6155 open 2026-05-19 Add OCI helm charts digest pinning
+      #6241 closed 2026-08-31 Helm flag injection via `helmCharts[].releaseName` leads to client-side arbitrary code execution
+      #6123 closed 2026-04-13 feat(helm): add --helm-dependency-update to run helm dependency update
+      #6129 closed 2026-04-17 build(deps): bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0 in /hack
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #5979 closed 2025-09-05 Malformed resources YAML entry silently resolves to wrong directory (../../shared/prod) instead of erroring
+      #5843 closed 2025-01-15 Kustomize considers apiVersion a part of object ID, but it is not
+      #5425 closed 2023-10-30 perf: Add full program benchmark for kustomize build
+      #2985 closed 2020-09-15 Feature request: read from stdin as a resource
+      #5152 closed 2023-04-28 Securely pass credentials to a Containerized KRM
+      #970 closed 2019-04-12 resources: support remote files
+      #5649 closed 2024-04-08 Kustomize patches does not work correctly with my deployment 
+      #5512 merged 2024-01-19 Fix running docs site with docker
+      #3492 closed 2021-01-20 Introduce a ReplacementTransformer to replace the vars feature.
+      #5328 merged 2023-09-13 fix failed tests are depends on external container images
+      #5094 closed 2023-03-17 It seems like kustomize is unable to use a helm binary that is installed by snap
+      #5048 merged 2023-02-16 Remove Log Assignment to Stdout
+  partial        50 hit(s) (all listed)
+      #6192 open 2026-07-19 fix(kyaml): correctly handle patches with a partial compound merge key
+      #5988 open 2025-09-29 Severe performance degradation when enabling resource tracking
+      #6270 closed 2026-09-14 test: add direct coverage for kyaml resource matchers
+      #6191 closed 2026-07-19 fix(kyaml): correctly handle patches with a partial compound merge key
+      #5113 open 2023-03-29 Better error message when patch is the wrong type?
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #6028 closed 2025-11-29 replacements in structured data ignore options (delimiter/index)
+      #6131 closed 2026-04-24 build(deps): bump go.opentelemetry.io/otel from 1.40.0 to 1.41.0 in /hack
+      #5915 closed 2025-05-20 Update golangci to v2
+      #4379 closed 2022-01-11 patches should throw error on missing targets
+      #5616 closed 2024-03-18 Replacement inbetween
+      #3492 closed 2021-01-20 Introduce a ReplacementTransformer to replace the vars feature.
+      #5540 closed 2024-02-14 git retrieval failures (such as a timeout) are not reported in certain scenarios
+      #5546 merged 2024-02-19 build(deps): bump actions/checkout from 3 to 4
+      #5447 merged 2023-11-14 Add generator kustomization references
+      #5082 merged 2023-03-07 perf: MakeDefaultConfig once
+      #5081 closed 2023-03-07 perf: Improve resmap.Append performance by using map lookup
+      #2034 closed 2020-01-06 commonLabels altering podSelector.matchLabels
+      #5009 merged 2023-01-30 Warn against partial releases
+      #4949 merged 2022-12-28 add check that kustomization is empty
+  incomplete     21 hit(s) (all listed)
+      #6108 open 2026-03-28 fix(helm): Set namespace on templates that does not contain a namespace
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #6099 closed 2026-03-24 feat: add mergeKeys field for ad-hoc CRD list merge keys
+      #5789 closed 2024-10-16 Show dependencies of a kustomization
+      #5742 closed 2024-08-08 Kustomize Helm plugin not work with nested charts
+      #5751 merged 2024-08-19 Add `--helm-debug` Flag to Kustomize for Enhanced Helm Debugging
+      #4617 closed 2022-05-04 kustomize version output incomplete when building from source
+      #1696 closed 2019-10-25 Overlay configs for custom generators do not override base configs
+      #4838 closed 2022-10-20 handle generateName as a replacement of name in ObjectMeta v1
+      #4797 closed 2022-09-15 Implement `kustomize localize` localization layer
+      #4709 merged 2022-07-14 migrate site content: contributing docs
+      #4299 merged 2021-11-20 [Doc] Improve `nameReference`  docs, examples and builtin references.
+      #4164 closed 2021-09-02 Configuration-Value nameSuffix is ignored
+      #3188 closed 2020-11-05 TestHelmChartInflationGenerator failing on fresh clone
+      #267 closed 2018-08-19 Support variables in ingress resources
+      #67 closed 2018-06-08 Variable reference support is incomplete
+      #253 closed 2018-08-14 Kustomize crashes when a resource file is not found
+      #2846 closed 2020-08-14 No version specified in the documentation
+      #2172 merged 2020-02-03 Several improvements on crawler
+      #1535 closed 2019-09-13 Need to rerun make generate-code when changing a built-in plugin
+  dataloss       0 hit(s)
+  recover        22 hit(s) (all listed)
+      #6163 closed 2026-06-15 install_kustomize.sh occasionally fails
+      #5128 closed 2023-04-13 Regex support in ReplacementTransformer broken.
+      #4769 closed 2022-08-23 hack/install_kustomize.sh fails intermittently
+      #5190 closed 2023-06-05 Fix install_kustomize.sh
+      #5074 merged 2023-03-03 Only strip surrounding quotes if there are at least two characters.
+      #4867 merged 2022-11-14 Allow `kustomize localize` to process directories
+      #4417 closed 2022-01-24 not able to install 3.2.0, 3.2.1, 3.2.2, 3.2.3 on windows
+      #4268 closed 2021-11-05 install_kustomize.sh returns ./kustomize_v*_linux_amd64.tar.gz: Cannot open: No such file or directory
+      #4334 merged 2021-12-08 Handle HTTP error codes in file loader
+      #4159 closed 2021-08-31 Cannot install via install_kustomize.sh
+      #3605 closed 2021-02-15 `kustomize build` cause the panic with non-ASCII characters
+      #3358 closed 2020-12-15 `kustomize build` panics if the comment contains multibyte characters
+      #3890 closed 2021-05-11 make test-unit-kustomize-api fails on macOS
+      #3895 closed 2021-05-13 kustomize cfg fmt: Panic on parsing emoji in files.
+      #3888 merged 2021-05-11 Remove delegation to RNode in Resource
+      #3417 closed 2021-01-05 kyaml panics on non-ASCII character comments
+      #927 closed 2019-03-28 macOS lint tasks fails in CI
+      #3196 closed 2020-11-09 install_kustomize.sh Pulls ARM instead of AMD64
+      #3486 closed 2021-01-20 Strategic Merge Patch doesn't seem to handle character other than basic ascii
+      #3137 closed 2020-10-23 Regression: git resource urls not reliably parsed
+  recovery       1 hit(s) (all listed)
+      #4867 merged 2022-11-14 Allow `kustomize localize` to process directories
+  rollback       12 hit(s) (all listed)
+      #5470 open 2023-12-02 extend Kustomization resource with sibling to helmGlobals, helmCharts, with (?helmHealth?) to await resources for state
+      #6183 open 2026-07-08 Automate the multi-module release with release-all.sh
+      #4455 closed 2022-02-07 Kustomize build fails pulling remote resource on GitHub with 404
+      #3102 merged 2020-10-15 changed port merge key back to containerPort
+      #1631 merged 2019-10-14 Replacement poc
+      #163 closed 2018-07-12 request nameSuffix to add suffix to resource names
+      #1203 closed 2019-06-19 Kustomize 2.1.0 causes SIGSEV
+      #1215 closed 2019-06-20 Adding the configmap/secret hash into the annotation of itself
+      #1497 closed 2019-09-04 [question] should kustomize support version managed and just generate part of config? 
+      #3111 closed 2020-10-16 Merge ContainerPort ports field using containerPort,protocol tuple
+      #692 closed 2019-01-11 remove SecretGenerator due to security concern
+      #760 merged 2019-02-03 add secret and configmap generator plugins
+  resume         5 hit(s) (all listed)
+      #6183 open 2026-07-08 Automate the multi-module release with release-all.sh
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #5430 merged 2023-11-04 fix: handle empty namespace as default
+      #4785 closed 2022-09-02 Issue-4292: ConfigMaps items are generated with random order
+      #1039 closed 2019-05-02 use transformer plugin to update fields which can't be done easily otherwise
+  half-written   4 hit(s) (all listed)
+      #119 open 2018-06-18 globbing/wildcards in "resources" field
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #4120 closed 2021-08-16 How to replace a variable in a template 
+      #5616 closed 2024-03-18 Replacement inbetween
+  wipe           3 hit(s) (all listed)
+      #6095 open 2026-03-13 chore: build kustomize binary into _output/ directory
+      #6099 closed 2026-03-24 feat: add mergeKeys field for ad-hoc CRD list merge keys
+      #1379 merged 2019-07-21 Update Namespace and Name simultaneously
+  wipes          1 hit(s) (all listed)
+      #6095 open 2026-03-13 chore: build kustomize binary into _output/ directory
+  erase          5 hit(s) (all listed)
+      #6087 merged 2026-03-05  Reject ambiguous resource paths with inner ".." to prevent silent misresolution
+      #5383 merged 2023-10-14 Add common Tasks to documentation
+      #4757 closed 2022-08-12 Add an extra kind of patch application condition to workround JSON patch limitations
+      #4494 merged 2022-02-25 Preserve scalar types when using the replacement filter
+      #3166 merged 2020-11-02 Defer openAPI cleanup
+  erasing        2 hit(s) (all listed)
+      #4757 closed 2022-08-12 Add an extra kind of patch application condition to workround JSON patch limitations
+      #4494 merged 2022-02-25 Preserve scalar types when using the replacement filter
+  erased         0 hit(s)
+  destroy        6 hit(s) (all listed)
+      #5912 closed 2025-05-18 network policy rules are incorrectly updated with kustomization labels
+      #5862 closed 2025-02-16 Replacement with regex support for selectors
+      #5419 closed 2023-10-25 Migrate to go-yaml fork
+      #4119 closed 2021-08-15 edit set with more than 125 characters renders invalid yaml
+      #3873 closed 2021-05-04 kio.LocalPackageReadWriter should provide file system abstraction
+      #4073 merged 2021-07-16 Feature: Add edit set annotation
+  destroys       1 hit(s) (all listed)
+      #5912 closed 2025-05-18 network policy rules are incorrectly updated with kustomization labels
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6146 open 2026-05-12 kyaml merge2: `$patch` directives on list elements ignored with `ListPrepend`
+      #6108 open 2026-03-28 fix(helm): Set namespace on templates that does not contain a namespace
+      #5110 open 2023-03-24 Allow custom merge keys?
+      #5955 closed 2025-08-06 secretGenerator overwrites existing stringData on merge
+      #6147 open 2026-05-12 kyaml: fix `$patch` directives ignored with `ListPrepend` merge
+      #6245 merged 2026-09-02 build(deps-dev): bump browserslist from 4.19.3 to 4.28.8 in /site
+      #5271 open 2023-08-17 Concurrency issues with Helm generator - archive already exists
+      #6265 open 2026-09-11 fix: apply $patch: replace to list elements when patch lists are prepended
+      #6058 open 2026-02-04 Kustomize 5.8.0 no longer add namespaces to resources in helm charts without explicit namespace
+      #6268 closed 2026-09-13 build(deps): bump golang.org/x/mod from 0.40.0 to 0.41.0
+      #6190 merged 2026-07-17 chore: refactor read scheme to openapi from kubernetes api definition
+      #6256 merged 2026-09-04 build(deps): bump golang.org/x/sys from 0.45.0 to 0.47.0
+      #6266 merged 2026-09-13 build(deps): bump golang.org/x/text from 0.41.0 to 0.42.0
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #6165 closed 2026-06-15 fix: Add automatic toolchain downloads to release workflow
+      #6229 merged 2026-08-17 build(deps): bump software.sslmate.com/src/go-pkcs12 from 0.7.0 to 0.7.2 in /hack
+      #6251 merged 2026-09-04 build(deps): bump github.com/go-errors/errors from 1.4.2 to 1.5.1
+      #6261 merged 2026-09-09 build(deps): bump google.golang.org/grpc from 1.83.1 to 1.83.2 in /hack
+      #6259 closed 2026-09-06 build(deps): bump sigs.k8s.io/yaml from 1.5.0 to 1.6.0
+      #3205 open 2020-11-10 Enable globbing in "resources" field of kustomization.yaml
+  clobber        8 hit(s) (all listed)
+      #6192 open 2026-07-19 fix(kyaml): correctly handle patches with a partial compound merge key
+      #6191 closed 2026-07-19 fix(kyaml): correctly handle patches with a partial compound merge key
+      #1439 closed 2019-08-10 patchesJson6902 add annotation
+      #4603 closed 2022-04-22 Kustomize is not merging configmaps instead is clobbering with the overlay content
+      #4065 merged 2021-07-13 option for origin data as annotation
+      #2615 closed 2020-06-18 Consolidate release process for modules in this repo
+      #558 closed 2018-11-19 Multiple protocols are clobbered when rendering ports
+      #3228 closed 2020-11-13 [Question] Is a var required when names are ambiguous?
+  blank          97 hit(s) (all listed)
+      #6278 closed 2026-09-16 WrapErrorWithFile always produces a blank file path and index
+      #6304 open 2026-09-30 fix: make ConfigMap output deterministic
+      #6294 open 2026-09-25 feat: preserve explicit YAML document start markers
+      #6285 open 2026-09-20 fix: explain non-string inline patch errors
+      #6277 closed 2026-09-15 fix: stop double indexing annotations in WrapErrorWithFile
+      #6224 open 2026-08-13 fix: support legacy release downloads
+      #5140 open 2023-04-19 Make the `apiVersion` and `kind` fields mandatory in Kustomization/Component v1
+      #6226 closed 2026-08-14 fix: stop duplicating block-scalar lines that look like comments
+      #4481 open 2022-02-21 "kustomize edit set image" is too opinionated about the formatting and moves comments around
+      #6286 closed 2026-09-21 fix: preserve strategic merge container order
+      #6243 closed 2026-09-01 Fix typos in cfg docs and CONTRIBUTING
+      #6231 closed 2026-08-18 fix(kyaml): avoid copying scalar style when tags differ (Fixes #6140)
+      #6227 closed 2026-08-15 Fix silent failure of kustomize version with invalid output format
+      #6216 closed 2026-08-07 Feature #6054: Add excludeLabelSelector to PrefixTransformer and SuffixTransformer
+      #6207 closed 2026-07-30 Update/Fix: docs/kustomize-plugin-home
+      #6206 closed 2026-07-30 Update/Fix: docs/replacement-transformer
+      #6214 closed 2026-08-06 Fix kyaml merge2: $patch directives ignored with ListPrepend
+      #6215 closed 2026-08-07 Fix #6166: Support --enable-helm in localize command
+      #6213 closed 2026-08-06 Add Gateway certificateRefs to nameReference config
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+  unreadable     0 hit(s)
+  garbage        11 hit(s) (all listed)
+      #5894 open 2025-04-22 feat: `emitStringData` boolean for secretGenerator
+      #119 open 2018-06-18 globbing/wildcards in "resources" field
+      #4569 closed 2022-04-05 Openapi parsing performance improvements
+      #1806 closed 2019-11-16 left-over configmap with configMapGenerator
+      #4820 merged 2022-10-06 preallocate memory
+      #4761 closed 2022-08-14 NIL Pointer Dereference Panic in Replacements Transformer
+      #242 closed 2018-08-09 GC issues with kustomize-based workflows
+      #4793 closed 2022-09-12 performance: Alter makeResIds.go's PrevIds to use a targeted APIVersion retrieval
+      #4419 closed 2022-01-25 Cannot override ConfigMap entries that were defined in a patch
+      #2392 closed 2020-04-21  delete the inventory transformer and related docs
+      #263 merged 2018-08-15 Add garbage collection KEP link
+  mangled        5 hit(s) (all listed)
+      #4954 merged 2023-01-04 Iteration on parseHostSpec refactor
+      #4173 closed 2021-09-09 [Question] Is there any other way to reference the same base in two overlays without using namePrefix or nameSuffix? reference to #4104
+      #4168 closed 2021-09-05 ConfigMapGenerator mangles bash script
+      #3195 closed 2020-11-09 Mangled manifests with env with valueFrom:fieldRef fieldPath
+      #3085 merged 2020-10-11 Add kustomize edit add/remove transformer command #3053
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6309 open 2026-10-01 fix: use uncompressed json for openapi schema definition
+      #6292 open 2026-09-24 fix: write "/" paths from kustomize on Windows
+      #5925 open 2025-06-09 fileloader: Add support for query parameters
+      #5878 open 2025-03-19 Utilize x-kubernetes-list-type and x-kubernetes-list-map-keys annotations
+      #4752 open 2022-08-09 patchesStrategicMerge is not working for service of single port but multiple protocols.
+      #4338 open 2021-12-09 Consolidate kustomize documentation
+      #4845 open 2022-11-01 Double quotes removed from strings
+      #6089 open 2026-03-07 File content merging in config map generator
+      #6183 open 2026-07-08 Automate the multi-module release with release-all.sh
+      #6209 closed 2026-08-01 Guard the empty-file case when loading CRDs
+      #6058 open 2026-02-04 Kustomize 5.8.0 no longer add namespaces to resources in helm charts without explicit namespace
+      #3205 open 2020-11-10 Enable globbing in "resources" field of kustomization.yaml
+      #6178 closed 2026-06-29 Backport workflow-hardening fix (excessive-permissions) to 5 release branches
+      #4613 open 2022-04-29 OpenAPI field should support merging
+      #6222 merged 2026-08-10 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #2803 open 2020-08-06 option to specify path for kustomize edit
+      #6194 closed 2026-07-20 kyaml/openapi: replace the embedded Kubernetes schema with precomputed patch metadata
+      #5422 open 2023-10-27 Researching performance degradation (and improvement) over a number of releases
+      #6099 closed 2026-03-24 feat: add mergeKeys field for ad-hoc CRD list merge keys
+      #6138 merged 2026-05-02 bump k8s.io/kube-openapi, drop github.com/mailru/easyjson
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6292 open 2026-09-24 fix: write "/" paths from kustomize on Windows
+      #6294 open 2026-09-25 feat: preserve explicit YAML document start markers
+      #119 open 2018-06-18 globbing/wildcards in "resources" field
+      #6312 open 2026-10-02 Document strong guidelines/convetions on how to organize kustomize definitions
+      #6303 open 2026-09-30 Establish a single authoritative documentation source and clearly mark legacy documentation
+      #6265 open 2026-09-11 fix: apply $patch: replace to list elements when patch lists are prepended
+      #4292 open 2021-11-16 ConfigMaps items are generated with random order
+      #4338 open 2021-12-09 Consolidate kustomize documentation
+      #6054 open 2026-02-02 Add exclude support for PrefixTransformer and SuffixTransformer
+      #6128 open 2026-04-17 fix(api/types): map HelmChartArgs.ReleaseNamespace -> HelmChart.Namespace
+      #6200 open 2026-07-25 fix: make `edit add label` generate the labels field instead of deprecated commonLabels
+      #6260 open 2026-09-08 fix: pull helm charts atomically to survive concurrent kustomize builds
+      #3974 open 2021-06-09 Docs site should integrate Kustomize repo examples
+      #4121 open 2021-08-16 Better document field/feature availability across Kustomize versions
+      #3205 open 2020-11-10 Enable globbing in "resources" field of kustomization.yaml
+      #5706 open 2024-05-23 Document KUSTOMIZE_PLUGIN_HOME
+      #5988 open 2025-09-29 Severe performance degradation when enabling resource tracking
+      #6127 open 2026-04-17 docs(plugin): document KUSTOMIZE_PLUGIN_HOME and plugin-home resolution
+      #4517 open 2022-03-14 [Feature request] Replacements value in the structured data.
+      #4481 open 2022-02-21 "kustomize edit set image" is too opinionated about the formatting and moves comments around
+  unclean        2 hit(s) (all listed)
+      #4978 merged 2023-01-13 Localize helm fields
+      #2774 closed 2020-07-24 Pre-submit should fail on PRs that span modules.
+  shutdown       1 hit(s) (all listed)
+      #4212 closed 2021-09-28 Error during expansion of "!!merge <<:" anchor tags
+  reboot         1 hit(s) (all listed)
+      #5152 closed 2023-04-28 Securely pass credentials to a Containerized KRM
+  disk+full      20 hit(s) (all listed)
+      #6129 closed 2026-04-17 build(deps): bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0 in /hack
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #5425 closed 2023-10-30 perf: Add full program benchmark for kustomize build
+      #5512 merged 2024-01-19 Fix running docs site with docker
+      #5328 merged 2023-09-13 fix failed tests are depends on external container images
+      #5048 merged 2023-02-16 Remove Log Assignment to Stdout
+      #4867 merged 2022-11-14 Allow `kustomize localize` to process directories
+      #4677 merged 2022-06-14 Move demandDirectoryRoot into kyaml/filesys
+      #4489 merged 2022-02-25 fix containerized function mounts issue
+      #2480 merged 2020-05-14 Add annotation for opting out of formatting
+      #4267 merged 2021-11-04 Proposal: Option for transformer annotations 
+      #2339 closed 2020-04-06 More extensible kustomize merging support
+      #3979 closed 2021-06-10 Option to retain resource object origin data as a label
+      #3925 merged 2021-05-25 Fully specify KRM Functions Spec and graduate it to v1.
+      #1251 closed 2019-06-25 Support composition in kustomize
+      #3744 merged 2021-03-23 Do no require exec/go plugin home to use fn plugins
+      #995 merged 2019-04-19 Remove local load restrictions.
+      #1374 merged 2019-07-19 fix: windows builds
+      #1496 closed 2019-09-03 fix: windows tests
+      #2874 closed 2020-08-21 WIP: Implement search(replace) command
+  data+loss      8 hit(s) (all listed)
+      #6192 open 2026-07-19 fix(kyaml): correctly handle patches with a partial compound merge key
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #6191 closed 2026-07-19 fix(kyaml): correctly handle patches with a partial compound merge key
+      #119 open 2018-06-18 globbing/wildcards in "resources" field
+      #2962 closed 2020-09-10 How can I do a patch / merge on a ConfigMap with configMapGenerator with a yaml file as the source?
+      #5152 closed 2023-04-28 Securely pass credentials to a Containerized KRM
+      #4004 closed 2021-06-17 DO NOT MERGE: demonstrate required changes for yaml update
+      #2240 closed 2020-02-28 #2148: replaces hard coded list of associative keys with openapi lookup
+  partial+write  7 hit(s) (all listed)
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #3492 closed 2021-01-20 Introduce a ReplacementTransformer to replace the vars feature.
+      #4219 closed 2021-10-04 helmChartInflationGenerator: Support multiple helm values files
+      #4590 merged 2022-04-19 Proposal for new command "kustomize localize"
+      #3820 merged 2021-04-20 Make fsNode handle correctly consecutive reads and writes
+      #1111 merged 2019-05-23 Improvment var and varRefs handling
+      #2714 closed 2020-07-13 [WIP] Upgrade command for cfg
+  crash+safe     3 hit(s) (all listed)
+      #3710 closed 2021-03-09 Enable kustomize to effectively combine multiple kustomizations
+      #843 closed 2019-03-02 json quoting error in configMapGenerator
+      #2434 closed 2020-05-04 Index out of range setting image
+  atomic+write   4 hit(s) (all listed)
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #1009 closed 2019-04-23 support for common labels that don't get set on selectors
+      #4558 merged 2022-03-30 Proposal: Replacements and Patch value in the structured data
+      #1631 merged 2019-10-14 Replacement poc
+  lock+file      17 hit(s) (all listed)
+      #5271 open 2023-08-17 Concurrency issues with Helm generator - archive already exists
+      #119 open 2018-06-18 globbing/wildcards in "resources" field
+      #6092 closed 2026-03-12 test(generators): add regression tests for deterministic ConfigMap key ordering
+      #5407 closed 2023-10-20 Consider using local credentials for helm to support private oci-based helm charts
+      #5434 closed 2023-11-09 helm: remove HELM_CONFIG_HOME default tmp value
+      #5742 closed 2024-08-08 Kustomize Helm plugin not work with nested charts
+      #4967 merged 2023-01-10 fix: add lock for kubernetesOpenAPIVersion
+      #5320 merged 2023-09-07 small fixes
+      #5167 merged 2023-05-10 kustomize: Add support for OCI based helm repos
+      #4824 closed 2022-10-10 api: data race when calling `Kustomizer.Run()` from multiple goroutines
+      #4640 closed 2022-05-13 Flaky integration tests
+      #4576 merged 2022-04-11 Bump actions/setup-go from 2 to 3
+      #4354 closed 2021-12-28 Unexpected behavior and output when using configMapGenerator with helmCharts or helmChartInflationGenerator  
+      #4210 merged 2021-09-27 fix issue with getting openapi schema from components
+      #2954 closed 2020-09-08 unknown field "$setElementOrder/containers" & "$setElementOrder/env"
+      #257 merged 2018-08-14 Add dependency: github.com/hashicorp/go-getter
+      #278 closed 2018-08-23 add kustomize.sh wrapper
+  write+failure  37 hit(s) (all listed)
+      #6265 open 2026-09-11 fix: apply $patch: replace to list elements when patch lists are prepended
+      #6247 open 2026-09-03 feat(loader): oci:// remote resources (pull only)
+      #6263 merged 2026-09-09 fix: report an error when the fetched openapi schema is not JSON
+      #5436 open 2023-11-10 Remove duplicate label behavior: commonLabels vs labels.includeSelectors
+      #6210 closed 2026-08-04 v5.8.x release binaries built with go1.24.0 carry the critical arm64 GC miscompilation (golang/go#71932) — please rebuild with Go >= 1.24.1
+      #119 open 2018-06-18 globbing/wildcards in "resources" field
+      #2052 open 2020-01-09 kustomize vars - enhance or replace?
+      #3205 open 2020-11-10 Enable globbing in "resources" field of kustomization.yaml
+      #5771 merged 2024-09-27 fix: Allow patches with empty files with multiple newlines or comments
+      #5655 closed 2024-04-12 fix: close dir
+      #5444 closed 2023-11-14 kustomize edit add replacement
+      #5682 merged 2024-04-26 fix: include label in templates when adding by cli
+      #189 closed 2018-07-21 configMapGenerator should allow directories as input, like kubectl
+      #5544 merged 2024-02-18 Run kustomize build with kustomize localize and add a no-verify flag.
+      #1009 closed 2019-04-23 support for common labels that don't get set on selectors
+      #5152 closed 2023-04-28 Securely pass credentials to a Containerized KRM
+      #5236 merged 2023-07-07 Fix name in a configMapRef missing hash #5047
+      #970 closed 2019-04-12 resources: support remote files
+      #4019 merged 2021-06-30 Make ordering configurable
+      #4797 closed 2022-09-15 Implement `kustomize localize` localization layer
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6309 open 2026-10-01 fix: use uncompressed json for openapi schema definition
+      #6292 open 2026-09-24 fix: write "/" paths from kustomize on Windows
+      #5925 open 2025-06-09 fileloader: Add support for query parameters
+      #5878 open 2025-03-19 Utilize x-kubernetes-list-type and x-kubernetes-list-map-keys annotations
+      #4752 open 2022-08-09 patchesStrategicMerge is not working for service of single port but multiple protocols.
+      #6089 open 2026-03-07 File content merging in config map generator
+      #4845 open 2022-11-01 Double quotes removed from strings
+      #3205 open 2020-11-10 Enable globbing in "resources" field of kustomization.yaml
+      #6183 open 2026-07-08 Automate the multi-module release with release-all.sh
+      #6209 closed 2026-08-01 Guard the empty-file case when loading CRDs
+      #4613 open 2022-04-29 OpenAPI field should support merging
+      #6058 open 2026-02-04 Kustomize 5.8.0 no longer add namespaces to resources in helm charts without explicit namespace
+      #2803 open 2020-08-06 option to specify path for kustomize edit
+      #6178 closed 2026-06-29 Backport workflow-hardening fix (excessive-permissions) to 5 release branches
+      #6222 merged 2026-08-10 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #5422 open 2023-10-27 Researching performance degradation (and improvement) over a number of releases
+      #6138 merged 2026-05-02 bump k8s.io/kube-openapi, drop github.com/mailru/easyjson
+      #6099 closed 2026-03-24 feat: add mergeKeys field for ad-hoc CRD list merge keys
+      #6030 closed 2025-11-29 replace entire doc with structured data
+      #4335 closed 2021-12-08 Support helm authentication for helm chart repositories.
+
+== 51 terms run; 45 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

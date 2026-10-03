@@ -1,0 +1,2 @@
+static: /usr/local/bin/bzip3: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=4271428ff300ecac1d725f60367b48b7935f8d86, for GNU/Linux 3.7.0, with debug_info, not stripped
+next: sideeye explore --state /s/bzip3 --cwd "/s/bzip3" --operation "bzip3 -e --rm a.log" \

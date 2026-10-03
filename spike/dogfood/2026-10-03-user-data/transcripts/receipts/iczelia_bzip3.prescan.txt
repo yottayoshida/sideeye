@@ -1,0 +1,152 @@
+== novelty pre-scan: iczelia/bzip3
+== date: 2026-10-03T02:54:01Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          14 hit(s) (all listed)
+      #178 merged 2026-09-07 Fix build CI (currently broken for Clang on armv6)
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+      #140 closed 2024-12-09 Decoding a Certain Block Causes a Buffer Overrun on memset
+      #120 closed 2023-12-19 bz3_compress crash on img0.jpg file
+      #41 closed 2022-08-03 Compression levels mapping
+      #107 closed 2023-07-11 AddressSanitizer: heap-buffer-overflow 
+      #92 closed 2023-03-22 multiple crashes from fuzzing
+      #108 closed 2023-08-01 The CRC used in bzip3 is not the CRC-32C model
+      #97 closed 2023-03-27 heap-buffer-overflow in bz3_decompress()
+      #101 closed 2023-04-13 bzip3-x86_64 crashing on Windows 7
+      #14 closed 2022-05-12 Fuzzing with afl quickly reveals dozens of bugs
+      #86 closed 2023-01-16 Endianness issues
+      #95 closed 2023-03-23 A crafted bz3 archive hangs the process
+      #9 closed 2022-05-11 Crashes in memcpy when decompressing fuzzed files
+  corrupt        3 hit(s) (all listed)
+      #175 closed 2026-07-22 bz3_compress: last block size is 0 when in_size is a multiple of block_size (silent data loss)
+      #115 closed 2023-10-14 bz3_compress() error in compression
+      #76 closed 2022-11-13 Failed to decode a block: CRC32 check failed
+  corruption     1 hit(s) (all listed)
+      #105 closed 2023-05-20 Failed to decode a block: CRC32 check failed
+  truncated      7 hit(s) (all listed)
+      #145 open 2024-12-15 Roadmap for v1.6.0
+      #175 closed 2026-07-22 bz3_compress: last block size is 0 when in_size is a multiple of block_size (silent data loss)
+      #186 merged 2026-09-09 Bump actions/download-artifact from 4 to 8
+      #184 merged 2026-09-09 Bump actions/checkout from 3 to 7
+      #185 merged 2026-09-09 Bump softprops/action-gh-release from 1 to 3
+      #183 merged 2026-09-09 Bump actions/upload-artifact from 4 to 7
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+  truncate       9 hit(s) (all listed)
+      #145 open 2024-12-15 Roadmap for v1.6.0
+      #175 closed 2026-07-22 bz3_compress: last block size is 0 when in_size is a multiple of block_size (silent data loss)
+      #186 merged 2026-09-09 Bump actions/download-artifact from 4 to 8
+      #184 merged 2026-09-09 Bump actions/checkout from 3 to 7
+      #185 merged 2026-09-09 Bump softprops/action-gh-release from 1 to 3
+      #183 merged 2026-09-09 Bump actions/upload-artifact from 4 to 7
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+      #140 closed 2024-12-09 Decoding a Certain Block Causes a Buffer Overrun on memset
+      #62 closed 2022-10-26 ./configure running twice
+  empty          7 hit(s) (all listed)
+      #185 merged 2026-09-09 Bump softprops/action-gh-release from 1 to 3
+      #169 merged 2025-08-18 autoconf: Define extra_cflags variable
+      #155 closed 2025-03-01 bz3cat does not work with stdin
+      #69 merged 2022-10-29 Set rpath in the Makefile
+      #12 merged 2022-05-11 Re-tool build using autotools
+      #35 closed 2022-07-09 Suggestion: add fflush when encode/decode complete
+      #8 closed 2022-05-10 Makefile tweaks
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          3 hit(s) (all listed)
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+      #144 merged 2024-12-13 Improve Fuzzing, Enforce Sufficient Buffer Size on Decompress, Calc Memory Usage
+      #41 closed 2022-08-03 Compression levels mapping
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #152 open 2025-02-10 No such file or directory (Unicode chars)
+      #145 open 2024-12-15 Roadmap for v1.6.0
+  partial        0 hit(s)
+  incomplete     4 hit(s) (all listed)
+      #166 closed 2025-08-15 Building `1.5.3` on FreeBSD
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+      #116 closed 2023-10-14 'VERSION' of library
+      #107 closed 2023-07-11 AddressSanitizer: heap-buffer-overflow 
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #175 closed 2026-07-22 bz3_compress: last block size is 0 when in_size is a multiple of block_size (silent data loss)
+      #162 merged 2025-04-29 main.c: never trust malloc
+      #115 closed 2023-10-14 bz3_compress() error in compression
+      #105 closed 2023-05-20 Failed to decode a block: CRC32 check failed
+      #76 closed 2022-11-13 Failed to decode a block: CRC32 check failed
+  recovery       1 hit(s) (all listed)
+      #185 merged 2026-09-09 Bump softprops/action-gh-release from 1 to 3
+  rollback       1 hit(s) (all listed)
+      #81 closed 2023-01-07 Flat namespace on newer macOS
+  resume         1 hit(s) (all listed)
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+  half-written   1 hit(s) (all listed)
+      #144 merged 2024-12-13 Improve Fuzzing, Enforce Sufficient Buffer Size on Decompress, Calc Memory Usage
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      4 hit(s) (all listed)
+      #186 merged 2026-09-09 Bump actions/download-artifact from 4 to 8
+      #185 merged 2026-09-09 Bump softprops/action-gh-release from 1 to 3
+      #183 merged 2026-09-09 Bump actions/upload-artifact from 4 to 7
+      #184 merged 2026-09-09 Bump actions/checkout from 3 to 7
+  clobber        0 hit(s)
+  blank          1 hit(s) (all listed)
+      #12 merged 2022-05-11 Re-tool build using autotools
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #169 merged 2025-08-18 autoconf: Define extra_cflags variable
+  mangled        0 hit(s)
+  contents       3 hit(s) (all listed)
+      #145 open 2024-12-15 Roadmap for v1.6.0
+      #147 closed 2024-12-16 include/yarg.h:90:11: warning: ignoring return value of ‘asprintf’ declared with attribute ‘warn_unused_result’
+      #71 merged 2022-10-31 fix compiler warnings, %ld to %llu
+  in-place       9 hit(s) (all listed)
+      #164 merged 2025-08-09 CMake: Disable pthreads by default on Windows & !MinGW.
+      #128 closed 2024-01-13 Present the license clearly
+      #109 merged 2023-08-01 Fixed shift direction for crc32sum()
+      #14 closed 2022-05-12 Fuzzing with afl quickly reveals dozens of bugs
+      #78 closed 2022-11-15 ignore compress level options
+      #69 merged 2022-10-29 Set rpath in the Makefile
+      #13 closed 2022-05-12 Release process needs 2 more steps
+      #3 closed 2022-05-10 bzip2 and bzip3 licence incompatibility
+      #22 closed 2022-05-14 Release problems
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      2 hit(s) (all listed)
+      #175 closed 2026-07-22 bz3_compress: last block size is 0 when in_size is a multiple of block_size (silent data loss)
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      2 hit(s) (all listed)
+      #144 merged 2024-12-13 Improve Fuzzing, Enforce Sufficient Buffer Size on Decompress, Calc Memory Usage
+      #52 merged 2022-09-10 flockfile/funlockfile for WIN32
+  write+failure  5 hit(s) (all listed)
+      #174 closed 2026-06-14 bz3_decompress rejects valid streams produced by bz3_compress on incompressible data (BZ3_ERR_MALFORMED_HEADER)
+      #106 closed 2023-05-23 data integrity failure on truncated stream
+      #97 closed 2023-03-27 heap-buffer-overflow in bz3_decompress()
+      #85 closed 2023-01-13 Write error: Inappropriate ioctl for device when decompressing
+      #53 closed 2022-10-03 Unable to decompress original file with length between 57 and 64
+  file+contents  2 hit(s) (all listed)
+      #145 open 2024-12-15 Roadmap for v1.6.0
+      #147 closed 2024-12-16 include/yarg.h:90:11: warning: ignoring return value of ‘asprintf’ declared with attribute ‘warn_unused_result’
+
+== 51 terms run; 23 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

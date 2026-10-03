@@ -1,0 +1,2 @@
+static: /usr/local/bin/kak: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=79691f242253613ebb6868a5371e0697c322bea3, for GNU/Linux 3.7.0, with debug_info, not stripped
+next: sideeye explore --state /s/kakoune --cwd "/s/kakoune" --operation "kak -n -f ggiX<esc> a.txt b.txt" \

@@ -1,0 +1,13 @@
+total 4
+-rw-r--r-- 1 root root 2048 Oct  3 03:51 photos.dwarfs
+check before rc=0
+compressed filesystem: 0/0 blocks/0 B written, using 14.95 MiB of RAM
+ERROR: dwarfs::runtime_error: [filesystem_parser.cpp:298] no filesystem found
+rc=0
+total 0
+-rw-r--r-- 1 root root 0 Oct  3 03:51 photos.dwarfs
+dwarfs::runtime_error: [filesystem_parser.cpp:298] no filesystem found
+--- without -f:
+compressed filesystem: 0/0 blocks/0 B written, using 14.61 MiB of RAM
+total 4
+-rw-r--r-- 1 root root 2048 Oct  3 03:51 photos.dwarfs

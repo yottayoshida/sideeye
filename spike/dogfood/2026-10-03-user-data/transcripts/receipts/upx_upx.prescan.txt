@@ -1,0 +1,544 @@
+== novelty pre-scan: upx/upx
+== date: 2026-10-03T02:27:33Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18917 open 2026-09-18 Signal 6 (SIGABRT), code -1 when executing packed Aarch64 ELF object
+      #18931 open 2026-10-02 Compressed 32-bit DSOs crash on pre-6.3 Android/Linux kernels after `memfd_create`
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #18913 closed 2026-09-08 upx compressed executable crashes
+      #18910 closed 2026-09-04 PE64 Crash on GetProcesAddress() failure
+      #18926 closed 2026-09-28 UPX-compressed EXE/DLL files can cause crashes on Windows/ARM64
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #18916 closed 2026-09-18 InternalError: undefined symbol 'my_memcpy' referenced on AArch64 shared library
+      #104 open 2017-05-24 Debug Directory in Win32 PE
+      #18906 closed 2026-08-27 UPX does not decompress correctly bun bundles with bun 1.4.0
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #18901 closed 2026-08-17 upx 5.0.0 and newer packed binaries segfault on linux WSL1
+      #18902 closed 2026-08-18 Random SIGSEGV (exit code 139) on AWS EKS (m-series, Bottlerocket) with Go binary compressed using --best --lzma
+      #18860 closed 2026-05-29 UPX compressed Golang program crashes/panics on LicheePi 4A (riscv64)
+      #18924 closed 2026-09-26 --android-shlib: packed x86_64 .so kills the app at load (amd64 stub traps when /proc/self/auxv is unreadable)
+      #18892 closed 2026-07-06 Programs compiled by FreePascal 3.x.y for DOS do not work after UPX compression
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+      #18863 merged 2026-06-08 CP/M-86: reject u_file_size larger than u_len in unpack
+      #18855 closed 2026-05-18 pefile: keep PETLSHAK for DLLs to preserve loader-assigned TLS index
+      #18848 closed 2026-04-12 Memcpy-param-overlap (Memory Corruption) in UPX PE64 Import Processing
+  corrupt        68 hit(s) (all listed)
+      #18852 closed 2026-05-08 riscv64: preserve e_flags to prevent CantUnpack
+      #18860 closed 2026-05-29 UPX compressed Golang program crashes/panics on LicheePi 4A (riscv64)
+      #18872 merged 2026-06-18 fix: reserve LC_CODE_SIGNATURE space for arm64 macOS Mach-O binaries
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #964 closed 2026-03-20 unpack ELF: unchecked xct_off or yct_off
+      #963 closed 2026-03-20 unpack ELF: unchecked relocation of DT_INIT_ARRAY
+      #911 closed 2025-04-25 After upx on linux arm64 , Segmentation fault
+      #913 closed 2025-05-07 LZMA: CantPackException: corrupted file; details: size <= max_size
+      #869 closed 2025-01-24 CantPackException: corrupted file - but file does not seem corrupt at all
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #918 closed 2025-07-05 UPX 5.0.1 and Alpine Linux
+      #874 closed 2025-01-31 fuzzed Mach_commands confuse unpacker
+      #889 closed 2025-02-28 Linux ix86 upx 5.0.0 segfaults on runtime
+      #910 closed 2025-04-21 Segmentation fault for special golang binary on android_arm64 with upx5.0.0
+      #862 closed 2024-12-12 bad memory reference while decompressing fuzzed input
+      #907 closed 2025-04-09 v5.0.0 compressed binary segfaults on ppc32
+      #809 closed 2024-04-14 UPX corrupts hard drive file system!
+      #799 closed 2024-03-27 Buffer overflow when unpacking malicious ELF file
+      #778 closed 2024-01-26 4.0.2 and later versions corrupts some win32 DLLs (e.g. chrome.dll) after compression
+  corruption     15 hit(s) (all listed)
+      #18848 closed 2026-04-12 Memcpy-param-overlap (Memory Corruption) in UPX PE64 Import Processing
+      #893 closed 2025-03-06 GUARD_CF Error on C# Console Application
+      #963 closed 2026-03-20 unpack ELF: unchecked relocation of DT_INIT_ARRAY
+      #964 closed 2026-03-20 unpack ELF: unchecked xct_off or yct_off
+      #886 closed 2025-02-28 ELF x86-64 Linux compressed: Arithmetic overflow while reading bundle.
+      #862 closed 2024-12-12 bad memory reference while decompressing fuzzed input
+      #443 closed 2020-12-18 upx not work for aarch64  build by golang ?
+      #533 closed 2021-10-31 Poor compression ratio + fail to launch for .net ReadyToRun executables...
+      #706 closed 2023-09-04 Option to update a target in-place instead of using unlink/rename 
+      #633 closed 2022-11-26 Arithmetic overflow while reading bundle
+      #655 closed 2023-03-06 CantPackException: bad DT_{0x5} = 0xa000 (beyond EOF), CantUnpackException: header corrupted 4
+      #397 closed 2020-07-25 I/O failure reading contents of the bundle, on MacOS
+      #91 closed 2017-04-21 upx-3.93 -d cannot decompress its own files
+      #131 closed 2017-10-06 Stack corruption depending of the number of environment variables (ARMv7)
+      #352 closed 2020-03-21 Return of "CantPackException: size of Load Configuration directory unexpected"
+  truncated      18 hit(s) (all listed)
+      #953 open 2026-01-15 upx 5.0.2 - Help message truncated
+      #18930 merged 2026-10-01 win64/arm64: complete long branching support
+      #251 closed 2019-02-20 Missing exception class and message on 64bit builds when using madexcept.
+      #910 closed 2025-04-21 Segmentation fault for special golang binary on android_arm64 with upx5.0.0
+      #446 closed 2021-01-02 macho/arm64 incorrect executable header after compression
+      #712 closed 2023-09-20 ELF ::canUnpack() should detect truncated compressed file
+      #754 closed 2024-01-03 build(deps): bump crate-ci/typos from 1.16.26 to 1.17.0
+      #744 closed 2023-12-13 build(deps): bump crate-ci/typos from 1.16.23 to 1.16.25
+      #722 merged 2023-10-18 build(deps): bump crate-ci/typos from 1.16.19 to 1.16.20
+      #745 closed 2023-12-13 build(deps): bump actions/stale from 8 to 9
+      #746 closed 2023-12-13 build(deps): bump github/codeql-action from 2 to 3
+      #707 merged 2023-09-06 build(deps): bump actions/checkout from 3 to 4
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+      #640 closed 2022-12-21 build(deps): bump actions/stale from 6 to 7
+      #4 closed 2016-09-15 UPX is way, way broken by Darwin 16 / OS X Sierra.
+      #124 closed 2017-09-14 Help!
+      #200 closed 2018-04-20 CantPackException: need DT_INIT on Rust executable for MIPS
+      #377 closed 2020-05-23 Allow compression of 1.5GB executables on >32 bit targets
+  truncate       23 hit(s) (all listed)
+      #953 open 2026-01-15 upx 5.0.2 - Help message truncated
+      #18930 merged 2026-10-01 win64/arm64: complete long branching support
+      #251 closed 2019-02-20 Missing exception class and message on 64bit builds when using madexcept.
+      #18872 merged 2026-06-18 fix: reserve LC_CODE_SIGNATURE space for arm64 macOS Mach-O binaries
+      #910 closed 2025-04-21 Segmentation fault for special golang binary on android_arm64 with upx5.0.0
+      #446 closed 2021-01-02 macho/arm64 incorrect executable header after compression
+      #841 closed 2024-07-30 CVE-2024-3209 report
+      #834 closed 2024-06-28 CantPackException: bad DT_GNU_HASH n_bucket=0x1  n_bitmask=0x1  len=0x20  r=6
+      #712 closed 2023-09-20 ELF ::canUnpack() should detect truncated compressed file
+      #754 closed 2024-01-03 build(deps): bump crate-ci/typos from 1.16.26 to 1.17.0
+      #744 closed 2023-12-13 build(deps): bump crate-ci/typos from 1.16.23 to 1.16.25
+      #722 merged 2023-10-18 build(deps): bump crate-ci/typos from 1.16.19 to 1.16.20
+      #745 closed 2023-12-13 build(deps): bump actions/stale from 8 to 9
+      #746 closed 2023-12-13 build(deps): bump github/codeql-action from 2 to 3
+      #273 closed 2019-05-17 CantPackException: writable shared sections not supported
+      #707 merged 2023-09-06 build(deps): bump actions/checkout from 3 to 4
+      #683 closed 2023-07-08 UPX compressed binaries don't work with qemu-8
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+      #640 closed 2022-12-21 build(deps): bump actions/stale from 6 to 7
+      #4 closed 2016-09-15 UPX is way, way broken by Darwin 16 / OS X Sierra.
+  empty          66 hit(s) (all listed)
+      #18923 closed 2026-09-26 CantPackException: TLS empty region
+      #18908 closed 2026-08-31 [ELF] Premature EOF when an empty segment is sitting in other's segment file space
+      #18905 closed 2026-08-24 Can't pack exe erorrs, CantPackException: bad tls
+      #437 open 2020-12-03 [PINNED] False positive antivirus alerts of official UPX releases
+      #18924 closed 2026-09-26 --android-shlib: packed x86_64 .so kills the app at load (amd64 stub traps when /proc/self/auxv is unreadable)
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #959 closed 2026-03-03 Prototype: Add zstd compression support for Linux ELF binaries
+      #861 closed 2024-12-09 empty api documentation.
+      #912 closed 2025-04-26 UPX 5 and kernel 4.10.12
+      #857 closed 2024-11-02 improve internal / dev documentation
+      #904 closed 2025-03-23 upx5.devel - Trace/breakpoint trap on mipsel
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #907 closed 2025-04-09 v5.0.0 compressed binary segfaults on ppc32
+      #901 closed 2025-03-20 segfault running on armv7l (--brute, ultra-brute, --lzma)
+      #910 closed 2025-04-21 Segmentation fault for special golang binary on android_arm64 with upx5.0.0
+      #865 closed 2024-12-15 About "IOException: file is too large"
+      #821 closed 2024-05-08 upx missing __get_entropy while loading by MemoryModule
+      #834 closed 2024-06-28 CantPackException: bad DT_GNU_HASH n_bucket=0x1  n_bitmask=0x1  len=0x20  r=6
+      #771 closed 2024-01-19 bad elf_find_table_size() of empty table
+      #817 closed 2024-05-01 git-e2163d+ failed with 'CantPackException: MemBuffer invalid array index 0 (0 bytes)' message at some ARM EABI5 binaries
+  atomic         6 hit(s) (all listed)
+      #18872 merged 2026-06-18 fix: reserve LC_CODE_SIGNATURE space for arm64 macOS Mach-O binaries
+      #878 closed 2025-02-07 Upx compressed x86_64 binaries segfault on macos 15.4 (aarch64) under emulation in docker
+      #671 closed 2023-05-02 duckdb cannot execute in termux after upx
+      #687 closed 2023-07-19 upx-4.0.2-armeb_linux/upx hangs when running under qemu-armeb
+      #441 closed 2020-12-15 [alpine linux][3.12][aarch64] crash when testing built upx package 3.96
+      #370 closed 2020-04-16 Android armeabi *.so crash after upx compress
+  atomically     0 hit(s)
+  interrupted    3 hit(s) (all listed)
+      #911 closed 2025-04-25 After upx on linux arm64 , Segmentation fault
+      #837 closed 2024-07-09 Using upx compressed so on Android platform, apk crashes when running
+      #680 closed 2023-06-30 upx@4.0.1 dlopen failed: .dynamic section has invalid offset on Android platform
+  interrupt      16 hit(s) (all listed)
+      #911 closed 2025-04-25 After upx on linux arm64 , Segmentation fault
+      #897 closed 2025-03-13 v5.0.0 compressed armv7l bash binary crashes on boot
+      #837 closed 2024-07-09 Using upx compressed so on Android platform, apk crashes when running
+      #328 closed 2020-01-07 UPX stub modification win32.pe.S
+      #687 closed 2023-07-19 upx-4.0.2-armeb_linux/upx hangs when running under qemu-armeb
+      #680 closed 2023-06-30 upx@4.0.1 dlopen failed: .dynamic section has invalid offset on Android platform
+      #351 closed 2020-03-13 Program compressed with upx 3.96 crashes on arm64
+      #378 closed 2020-05-23 [bug]heap buffer overflow in PackLinuxElf32::invert_pt_dynamic at p_lx_elf.cpp:1688
+      #379 closed 2020-05-23 [bug] heap buffer overflow in PackLinuxElf64::invert_pt_dynamic at p_lx_elf.cpp:5239
+      #380 closed 2020-05-23 [bug] multi heap buffer overflows in get_le32()
+      #473 closed 2021-03-22 upx devel branch can not compress mips32 .so file
+      #331 closed 2020-01-13 SIGFPE divide by zero in PackLinuxElf64::invert_pt_dynamic at p_lx_elf.cpp:5108
+      #518 closed 2021-08-12 Please support efi file as target
+      #252 closed 2019-02-21 several Segmentation faults
+      #200 closed 2018-04-20 CantPackException: need DT_INIT on Rust executable for MIPS
+      #339 closed 2020-01-30 Compressed mipsel binaries hang with upx 3.96
+  sigkill        3 hit(s) (all listed)
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #424 open 2020-11-13 UPX compressed application fails to start on latest macOS release: Big Sur 11.01
+      #4 closed 2016-09-15 UPX is way, way broken by Darwin 16 / OS X Sierra.
+  sigint         6 hit(s) (all listed)
+      #249 closed 2019-02-09 UPX renders /proc/self/exe useless on some systems 
+      #837 closed 2024-07-09 Using upx compressed so on Android platform, apk crashes when running
+      #687 closed 2023-07-19 upx-4.0.2-armeb_linux/upx hangs when running under qemu-armeb
+      #351 closed 2020-03-13 Program compressed with upx 3.96 crashes on arm64
+      #504 closed 2021-05-22 upx-3.96-mipsel_linux can not work
+      #342 closed 2020-02-03 MIPS is broken in 3.96
+  ctrl-c         6 hit(s) (all listed)
+      #18913 closed 2026-09-08 upx compressed executable crashes
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #680 closed 2023-06-30 upx@4.0.1 dlopen failed: .dynamic section has invalid offset on Android platform
+      #504 closed 2021-05-22 upx-3.96-mipsel_linux can not work
+      #573 closed 2022-04-09 UPX failing to compress anything
+  power          17 hit(s) (all listed)
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+      #954 closed 2026-01-16 DLL CantUnpackException
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #295 closed 2019-08-06 Support Zstd compression support
+      #841 closed 2024-07-30 CVE-2024-3209 report
+      #813 closed 2024-04-21 CI failure for powerpc32
+      #834 closed 2024-06-28 CantPackException: bad DT_GNU_HASH n_bucket=0x1  n_bitmask=0x1  len=0x20  r=6
+      #788 closed 2024-02-17 zig-cc mips CI failure
+      #706 closed 2023-09-04 Option to update a target in-place instead of using unlink/rename 
+      #737 closed 2023-11-20 arm64-linux: 4.0.2 and newer crash on Oracle Cloud VM
+      #626 closed 2022-11-16 macho/ppc64 does not work
+      #473 closed 2021-03-22 upx devel branch can not compress mips32 .so file
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+      #571 closed 2022-03-19 Segmentation fault on ppc64le after running compressed binary
+      #17 closed 2016-10-13 Request to add Linux on System Z (s390x) support
+      #124 closed 2017-09-14 Help!
+      #373 closed 2020-04-18 Consider using lgtm.com, codacy.com and sonarcloud.io
+  outage         1 hit(s) (all listed)
+      #938 closed 2025-10-29 README.SRC needs updating
+  ENOSPC         0 hit(s)
+  disk           31 hit(s) (all listed)
+      #18902 closed 2026-08-18 Random SIGSEGV (exit code 139) on AWS EKS (m-series, Bottlerocket) with Go binary compressed using --best --lzma
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #18858 closed 2026-05-27 UPX can compress, but not decompress (-d) a Linux x86_64 ELF file with exactly 18 program headers
+      #893 closed 2025-03-06 GUARD_CF Error on C# Console Application
+      #295 closed 2019-08-06 Support Zstd compression support
+      #959 closed 2026-03-03 Prototype: Add zstd compression support for Linux ELF binaries
+      #885 closed 2025-02-25 UPX 4.2.4 compress little more than UPX 5.0.0 using --lzma, Windows version
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #902 closed 2025-03-20 upx5 on kernel 3.14 SIGSEGV
+      #837 closed 2024-07-09 Using upx compressed so on Android platform, apk crashes when running
+      #809 closed 2024-04-14 UPX corrupts hard drive file system!
+      #289 closed 2019-07-26 Cannot pack perl PAR::Packer executables
+      #795 closed 2024-03-14 Add option to override CantPackException: file is too small
+      #736 closed 2023-11-17 Cannot open swap file c:\cwsdpmi.swp
+      #738 closed 2023-11-27 Recommended environment information for Win32 and other. Feedback welcome.
+      #750 closed 2023-12-23 Permission problem when rebuilding stubs using podman
+      #671 closed 2023-05-02 duckdb cannot execute in termux after upx
+      #633 closed 2022-11-26 Arithmetic overflow while reading bundle
+      #358 closed 2020-04-01 iOS Support
+      #619 closed 2022-11-05 X64 program decompress crashed
+  partial        25 hit(s) (all listed)
+      #867 open 2025-01-07 Increase UPX_RSIZE_MAX for commands -l (list), -t (test), -d (de-compress)
+      #18908 closed 2026-08-31 [ELF] Premature EOF when an empty segment is sitting in other's segment file space
+      #18897 closed 2026-07-28 [bug/feature request] cosmocc executables can't be compressed.
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #295 closed 2019-08-06 Support Zstd compression support
+      #924 closed 2025-08-14 Performance difference between binary and self-built version
+      #750 closed 2023-12-23 Permission problem when rebuilding stubs using podman
+      #688 closed 2023-07-25 UPX crashes with SIGILL when compressing ARM static PIE
+      #683 closed 2023-07-08 UPX compressed binaries don't work with qemu-8
+      #378 closed 2020-05-23 [bug]heap buffer overflow in PackLinuxElf32::invert_pt_dynamic at p_lx_elf.cpp:1688
+      #379 closed 2020-05-23 [bug] heap buffer overflow in PackLinuxElf64::invert_pt_dynamic at p_lx_elf.cpp:5239
+      #380 closed 2020-05-23 [bug] multi heap buffer overflows in get_le32()
+      #596 closed 2022-08-31 Mistaken supported platform, `powerpc64le-darwin.macho`
+      #632 closed 2022-11-24 heap-buffer-overflow in PackTmt::pack
+      #473 closed 2021-03-22 upx devel branch can not compress mips32 .so file
+      #332 closed 2020-01-13 heap-buffer-overflow in PackLinuxElf64::canPack() at p_lx_elf.cpp:2385
+      #128 closed 2017-10-02 Invalid Pointer Read in PackLinuxElf64::unpack()
+      #120 closed 2017-09-12 upx fails to compress alpine linux getconf
+      #132 closed 2017-10-07 Invalid Pointer Read in PeFile32::pack0()
+      #129 closed 2017-10-03 Stack-buffer-overflow Read  in get_le32(void const*)
+  incomplete     11 hit(s) (all listed)
+      #810 open 2024-04-17 upx 4.2.2 - Manual page is missing standard OPTIONS section to list all options
+      #946 closed 2025-12-10 Memory Leak in PeFile::Resource::convert() when processing PE resources
+      #861 closed 2024-12-09 empty api documentation.
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #901 closed 2025-03-20 segfault running on armv7l (--brute, ultra-brute, --lzma)
+      #625 closed 2022-11-14 UPX compressed amd64 so file cannot run normally
+      #700 closed 2023-08-26 Compressed armv7 lib crashes on all Android versions
+      #244 closed 2019-01-21 Maybe submit? https://github.com/google/oss-fuzz
+      #286 closed 2019-07-19 Integer-overflow in function getElfSections at p_vmlinx.cpp:119
+      #265 closed 2019-04-09 arm64-v8a so dlopen crash
+      #243 closed 2019-01-16 Segfault on Android when loading library
+  dataloss       0 hit(s)
+  recover        18 hit(s) (all listed)
+      #18931 open 2026-10-02 Compressed 32-bit DSOs crash on pre-6.3 Android/Linux kernels after `memfd_create`
+      #18872 merged 2026-06-18 fix: reserve LC_CODE_SIGNATURE space for arm64 macOS Mach-O binaries
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #864 closed 2024-12-13 Fix bug #863
+      #875 closed 2025-01-31 unpacker recovery after fuzzing
+      #889 closed 2025-02-28 Linux ix86 upx 5.0.0 segfaults on runtime
+      #897 closed 2025-03-13 v5.0.0 compressed armv7l bash binary crashes on boot
+      #902 closed 2025-03-20 upx5 on kernel 3.14 SIGSEGV
+      #762 closed 2024-01-10 More care when recovering from slid b_info
+      #673 closed 2023-05-10 clickhouse after upx chksum error in termux
+      #712 closed 2023-09-20 ELF ::canUnpack() should detect truncated compressed file
+      #683 closed 2023-07-08 UPX compressed binaries don't work with qemu-8
+      #108 closed 2017-06-14 UPX License Violation?
+      #5 closed 2016-09-20 Compressed bash-4.4 having problems running xmalloc
+      #189 closed 2018-03-14 Decompressed windows executable crashes (due to empty relocation table)
+      #403 closed 2020-08-24 Feature Request: Any plan to FAT Binary / Universal Binary for Windows ?
+      #390 closed 2020-07-23 Segmentation fault in PackLinuxElf32::elf_lookup(char const*)  of /src/p_lx_elf.cpp
+      #263 closed 2019-04-07 Using upx for ramdisk binaries
+  recovery       18 hit(s) (all listed)
+      #18878 merged 2026-06-20 bound disp probes in macho canUnpack folded-stub recovery
+      #18886 closed 2026-06-25 upx -d reports checksum error
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #925 closed 2025-08-16 [ppc64/ppc64le] upx-5.0.x itself and/or upx-compressed binaries crash with SIGTRAP
+      #875 closed 2025-01-31 unpacker recovery after fuzzing
+      #889 closed 2025-02-28 Linux ix86 upx 5.0.0 segfaults on runtime
+      #907 closed 2025-04-09 v5.0.0 compressed binary segfaults on ppc32
+      #735 closed 2023-11-13 UPX v5.0.0 Task List
+      #706 closed 2023-09-04 Option to update a target in-place instead of using unlink/rename 
+      #684 closed 2023-07-08 UPX v4.1.0 Task List
+      #635 closed 2022-12-02 Unpack failed ELF x86-64 "CantUnpackException: corrupt b_info"
+      #630 closed 2022-11-23 MacOS malware file won't unpack
+      #359 closed 2020-04-02 upx.exe 3.96 quarantined / compression issues
+      #108 closed 2017-06-14 UPX License Violation?
+      #345 closed 2020-02-24 Catalina "System Integrity Protection" killing applications packed by upx
+      #579 closed 2022-05-31 MacOS sample does not unpack (analysis help)
+      #4 closed 2016-09-15 UPX is way, way broken by Darwin 16 / OS X Sierra.
+  rollback       1 hit(s) (all listed)
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+  resume         16 hit(s) (all listed)
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #295 closed 2019-08-06 Support Zstd compression support
+      #838 closed 2024-07-11 compressed file hangs on launch (4KB pagesize)
+      #904 closed 2025-03-23 upx5.devel - Trace/breakpoint trap on mipsel
+      #901 closed 2025-03-20 segfault running on armv7l (--brute, ultra-brute, --lzma)
+      #912 closed 2025-04-26 UPX 5 and kernel 4.10.12
+      #788 closed 2024-02-17 zig-cc mips CI failure
+      #555 closed 2022-01-05 Consider releasing macOS binaries
+      #680 closed 2023-06-30 upx@4.0.1 dlopen failed: .dynamic section has invalid offset on Android platform
+      #378 closed 2020-05-23 [bug]heap buffer overflow in PackLinuxElf32::invert_pt_dynamic at p_lx_elf.cpp:1688
+      #379 closed 2020-05-23 [bug] heap buffer overflow in PackLinuxElf64::invert_pt_dynamic at p_lx_elf.cpp:5239
+      #380 closed 2020-05-23 [bug] multi heap buffer overflows in get_le32()
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+      #524 closed 2021-09-07 How to keep the /tmp/upx????? file after executing the compression and not delete it until the end of the run
+      #488 closed 2021-04-08 rebuild stub  failed at xstrip.py
+      #355 closed 2020-03-31 Compression of object files
+  half-written   3 hit(s) (all listed)
+      #650 open 2023-02-21 New executable format: win64/arm64
+      #251 closed 2019-02-20 Missing exception class and message on 64bit builds when using madexcept.
+      #683 closed 2023-07-08 UPX compressed binaries don't work with qemu-8
+  wipe           6 hit(s) (all listed)
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #735 closed 2023-11-13 UPX v5.0.0 Task List
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+      #75 closed 2017-03-17 Packed, and then unpacked EXE crashes
+      #136 closed 2017-10-19 Crashed with error : Extended attributes (EA) are inherent
+  wipes          2 hit(s) (all listed)
+      #735 closed 2023-11-13 UPX v5.0.0 Task List
+      #75 closed 2017-03-17 Packed, and then unpacked EXE crashes
+  erase          9 hit(s) (all listed)
+      #140 open 2017-10-28 Missing executable's info
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #295 closed 2019-08-06 Support Zstd compression support
+      #907 closed 2025-04-09 v5.0.0 compressed binary segfaults on ppc32
+      #735 closed 2023-11-13 UPX v5.0.0 Task List
+      #249 closed 2019-02-09 UPX renders /proc/self/exe useless on some systems 
+      #571 closed 2022-03-19 Segmentation fault on ppc64le after running compressed binary
+      #480 closed 2021-04-01 "Hello World" go program crashes on i686 with Segmentation Fault
+      #212 closed 2018-07-25 New release
+  erasing        1 hit(s) (all listed)
+      #212 closed 2018-07-25 New release
+  erased         3 hit(s) (all listed)
+      #140 open 2017-10-28 Missing executable's info
+      #735 closed 2023-11-13 UPX v5.0.0 Task List
+      #571 closed 2022-03-19 Segmentation fault on ppc64le after running compressed binary
+  destroy        6 hit(s) (all listed)
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+      #909 closed 2025-04-16 UPX removes CETCOMPAT flag from Windows EXE
+      #861 closed 2024-12-09 empty api documentation.
+      #918 closed 2025-07-05 UPX 5.0.1 and Alpine Linux
+      #337 closed 2020-01-28 Virus warning on Windows 64
+      #402 closed 2020-08-22 The pe structure is destroyed after x32 dll is compressed
+  destroys       1 hit(s) (all listed)
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+  overwrite      37 hit(s) (all listed)
+      #650 open 2023-02-21 New executable format: win64/arm64
+      #18917 open 2026-09-18 Signal 6 (SIGABRT), code -1 when executing packed Aarch64 ELF object
+      #140 open 2017-10-28 Missing executable's info
+      #826 open 2024-05-23 Make progress bar on Termux work like Windows
+      #104 open 2017-05-24 Debug Directory in Win32 PE
+      #18892 closed 2026-07-06 Programs compiled by FreePascal 3.x.y for DOS do not work after UPX compression
+      #18854 closed 2026-05-18 win32/pe: UPX-packed DLL with implicit TLS gets _tls_index=0 (PETLSHAK omitted for DLLs)
+      #18855 closed 2026-05-18 pefile: keep PETLSHAK for DLLs to preserve loader-assigned TLS index
+      #924 closed 2025-08-14 Performance difference between binary and self-built version
+      #295 closed 2019-08-06 Support Zstd compression support
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #876 closed 2025-02-05 Regression: CantPackException: bad DT_STRSZ error for ARM binary modified with patchelf
+      #910 closed 2025-04-21 Segmentation fault for special golang binary on android_arm64 with upx5.0.0
+      #289 closed 2019-07-26 Cannot pack perl PAR::Packer executables
+      #706 closed 2023-09-04 Option to update a target in-place instead of using unlink/rename 
+      #753 closed 2024-01-03 build(deps): bump ilammy/msvc-dev-cmd from 1.12.1 to 1.13.0
+      #754 closed 2024-01-03 build(deps): bump crate-ci/typos from 1.16.26 to 1.17.0
+      #744 closed 2023-12-13 build(deps): bump crate-ci/typos from 1.16.23 to 1.16.25
+      #722 merged 2023-10-18 build(deps): bump crate-ci/typos from 1.16.19 to 1.16.20
+      #745 closed 2023-12-13 build(deps): bump actions/stale from 8 to 9
+  clobber        5 hit(s) (all listed)
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+      #788 closed 2024-02-17 zig-cc mips CI failure
+      #207 closed 2018-05-18 Double free ( memory clobbered ) in PackLinuxElf64::unpack
+      #504 closed 2021-05-22 upx-3.96-mipsel_linux can not work
+      #544 closed 2021-12-09 throwInternalError in mem.cpp
+  blank          6 hit(s) (all listed)
+      #939 closed 2025-11-01 stubtools support for riscv64
+      #861 closed 2024-12-09 empty api documentation.
+      #535 closed 2021-11-02 App built with Electron and later compressed with UPX doesn't run on Windows 10
+      #845 closed 2024-08-29 EXCEPTION_ACCESS_VIOLATION
+      #410 closed 2020-10-27 CantPackException: PT_NOTE 0xa71cc above stub
+      #488 closed 2021-04-08 rebuild stub  failed at xstrip.py
+  unreadable     4 hit(s) (all listed)
+      #18924 closed 2026-09-26 --android-shlib: packed x86_64 .so kills the app at load (amd64 stub traps when /proc/self/auxv is unreadable)
+      #671 closed 2023-05-02 duckdb cannot execute in termux after upx
+      #390 closed 2020-07-23 Segmentation fault in PackLinuxElf32::elf_lookup(char const*)  of /src/p_lx_elf.cpp
+      #396 closed 2020-07-24 Segmentation fault in PackLinuxElf64::adjABS of p_lx_elf.cpp
+  garbage        16 hit(s) (all listed)
+      #18910 closed 2026-09-04 PE64 Crash on GetProcesAddress() failure
+      #18858 closed 2026-05-27 UPX can compress, but not decompress (-d) a Linux x86_64 ELF file with exactly 18 program headers
+      #911 closed 2025-04-25 After upx on linux arm64 , Segmentation fault
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #559 closed 2022-02-05 GraalVM: Compressed Windows Application shows no output
+      #763 closed 2024-01-10 Unpacking ELF requires e_phnum at least 2
+      #682 closed 2023-07-07 An assertion error occurred in the MemBuffer class at line 202 in the file upx-devel/src/util/membuffer.cpp. in the upx 4.0.2 .
+      #655 closed 2023-03-06 CantPackException: bad DT_{0x5} = 0xa000 (beyond EOF), CantUnpackException: header corrupted 4
+      #49 closed 2017-01-09 Compressed MFC120.DLL with UPX 3.92 doesn't work in Windows XP
+      #124 closed 2017-09-14 Help!
+      #131 closed 2017-10-06 Stack corruption depending of the number of environment variables (ARMv7)
+      #186 closed 2018-03-07 Certain arbitrary changes to code results in UPX compression slowing execution of application to a crawl.
+      #200 closed 2018-04-20 CantPackException: need DT_INIT on Rust executable for MIPS
+      #414 closed 2020-11-03 AddressSanitizer: heap-buffer-overflow in PackHeader::fillPackHeader
+      #223 closed 2018-09-19 newest version still unusable for executes created by Embarcadero RAD Studio
+      #68 closed 2017-02-27 Powerpc64le support for -fpie binaries
+  mangled        3 hit(s) (all listed)
+      #18846 closed 2026-03-31 XSPAN for maintainers of UPX
+      #841 closed 2024-07-30 CVE-2024-3209 report
+      #837 closed 2024-07-09 Using upx compressed so on Android platform, apk crashes when running
+  contents       98 hit(s) (all listed)
+      #870 open 2025-01-29 How to preserve a specific named section
+      #18917 open 2026-09-18 Signal 6 (SIGABRT), code -1 when executing packed Aarch64 ELF object
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #650 open 2023-02-21 New executable format: win64/arm64
+      #104 open 2017-05-24 Debug Directory in Win32 PE
+      #424 open 2020-11-13 UPX compressed application fails to start on latest macOS release: Big Sur 11.01
+      #18907 closed 2026-08-27 Produced PE file after using upx "-d" having 0's in OriginalFirstThunk
+      #18903 closed 2026-08-20 ELF packers do not preserve file overlays( like Android so)
+      #18871 closed 2026-06-17 UPX signed files
+      #18847 closed 2026-04-10 Compressed .exe has different behavior
+      #18908 closed 2026-08-31 [ELF] Premature EOF when an empty segment is sitting in other's segment file space
+      #18872 merged 2026-06-18 fix: reserve LC_CODE_SIGNATURE space for arm64 macOS Mach-O binaries
+      #18868 merged 2026-06-15 bounds-check export table RVAs in PeFile::Export::convert
+      #18860 closed 2026-05-29 UPX compressed Golang program crashes/panics on LicheePi 4A (riscv64)
+      #18858 closed 2026-05-27 UPX can compress, but not decompress (-d) a Linux x86_64 ELF file with exactly 18 program headers
+      #893 closed 2025-03-06 GUARD_CF Error on C# Console Application
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #251 closed 2019-02-20 Missing exception class and message on 64bit builds when using madexcept.
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #18845 closed 2026-03-31 Problem with compressing the executable file built by Bun.js
+  in-place       81 hit(s) (all listed)
+      #650 open 2023-02-21 New executable format: win64/arm64
+      #18884 open 2026-06-24 building lzma stubs is a headache
+      #953 open 2026-01-15 upx 5.0.2 - Help message truncated
+      #104 open 2017-05-24 Debug Directory in Win32 PE
+      #18903 closed 2026-08-20 ELF packers do not preserve file overlays( like Android so)
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #424 open 2020-11-13 UPX compressed application fails to start on latest macOS release: Big Sur 11.01
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+      #251 closed 2019-02-20 Missing exception class and message on 64bit builds when using madexcept.
+      #18859 merged 2026-05-28 Add support for CP/M-86 CMD
+      #18858 closed 2026-05-27 UPX can compress, but not decompress (-d) a Linux x86_64 ELF file with exactly 18 program headers
+      #893 closed 2025-03-06 GUARD_CF Error on C# Console Application
+      #959 closed 2026-03-03 Prototype: Add zstd compression support for Linux ELF binaries
+      #295 closed 2019-08-06 Support Zstd compression support
+      #964 closed 2026-03-20 unpack ELF: unchecked xct_off or yct_off
+      #911 closed 2025-04-25 After upx on linux arm64 , Segmentation fault
+      #937 closed 2025-10-14 Can I use UPX as a library to load other programs via the buffer?
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #861 closed 2024-12-09 empty api documentation.
+      #601 closed 2022-09-23 UPX produces Bad executable on macOS Monterey 12.6 arm64
+  unclean        0 hit(s)
+  shutdown       2 hit(s) (all listed)
+      #18910 closed 2026-09-04 PE64 Crash on GetProcesAddress() failure
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+  reboot         4 hit(s) (all listed)
+      #750 closed 2023-12-23 Permission problem when rebuilding stubs using podman
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+      #605 closed 2022-10-05 linux/amd64 compressed exe crashes
+      #441 closed 2020-12-15 [alpine linux][3.12][aarch64] crash when testing built upx package 3.96
+  disk+full      3 hit(s) (all listed)
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #837 closed 2024-07-09 Using upx compressed so on Android platform, apk crashes when running
+  data+loss      3 hit(s) (all listed)
+      #18906 closed 2026-08-27 UPX does not decompress correctly bun bundles with bun 1.4.0
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #213 closed 2018-07-31 Packing fails with CantPackException: mem_size 2 on the linked dll
+  partial+write  5 hit(s) (all listed)
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #295 closed 2019-08-06 Support Zstd compression support
+      #683 closed 2023-07-08 UPX compressed binaries don't work with qemu-8
+      #632 closed 2022-11-24 heap-buffer-overflow in PackTmt::pack
+      #473 closed 2021-03-22 upx devel branch can not compress mips32 .so file
+  crash+safe     12 hit(s) (all listed)
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #18848 closed 2026-04-12 Memcpy-param-overlap (Memory Corruption) in UPX PE64 Import Processing
+      #947 closed 2025-12-10 Heap Buffer Overflow in PackLinuxElf64::generateElfHdr
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #706 closed 2023-09-04 Option to update a target in-place instead of using unlink/rename 
+      #2 closed 2016-09-15 UPX seems to strip some necessary information
+      #425 closed 2020-11-17 AddressSanitizer: SEGV on unknown address (from upx_strlen)
+      #417 closed 2020-11-06 SEGV in p_mach.cpp
+      #4 closed 2016-09-15 UPX is way, way broken by Darwin 16 / OS X Sierra.
+      #188 closed 2018-03-09 why rebuildTls is do nothing
+      #186 closed 2018-03-07 Certain arbitrary changes to code results in UPX compression slowing execution of application to a crawl.
+  atomic+write   1 hit(s) (all listed)
+      #687 closed 2023-07-19 upx-4.0.2-armeb_linux/upx hangs when running under qemu-armeb
+  lock+file      10 hit(s) (all listed)
+      #952 closed 2025-12-22 [Linux/arm64] Runtime crash (exit 127) when Environment Variables are large
+      #862 closed 2024-12-12 bad memory reference while decompressing fuzzed input
+      #446 closed 2021-01-02 macho/arm64 incorrect executable header after compression
+      #788 closed 2024-02-17 zig-cc mips CI failure
+      #687 closed 2023-07-19 upx-4.0.2-armeb_linux/upx hangs when running under qemu-armeb
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+      #2 closed 2016-09-15 UPX seems to strip some necessary information
+      #605 closed 2022-10-05 linux/amd64 compressed exe crashes
+      #142 closed 2017-11-03 ‘invalid ELF header’ on Android 8.0 (Oreo)
+      #248 closed 2019-02-06 several busybox applets do not spawn from internal shell when compressed with upx
+  write+failure  27 hit(s) (all listed)
+      #18901 closed 2026-08-17 upx 5.0.0 and newer packed binaries segfault on linux WSL1
+      #18898 closed 2026-07-30 linux/arm: packed binary segfaults at startup when the executable LOAD segment's `p_filesz` is an exact multiple of the page size — works only in 4.2.4, regressed in 5.0.0, still broken in 5.2.0
+      #18917 open 2026-09-18 Signal 6 (SIGABRT), code -1 when executing packed Aarch64 ELF object
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #18872 merged 2026-06-18 fix: reserve LC_CODE_SIGNATURE space for arm64 macOS Mach-O binaries
+      #18845 closed 2026-03-31 Problem with compressing the executable file built by Bun.js
+      #909 closed 2025-04-16 UPX removes CETCOMPAT flag from Windows EXE
+      #921 closed 2025-07-24 UPX  v5.0.2 and kernel
+      #880 closed 2025-02-08 Using mimalloc for UPX will cause a crash on Windows11 platform
+      #907 closed 2025-04-09 v5.0.0 compressed binary segfaults on ppc32
+      #912 closed 2025-04-26 UPX 5 and kernel 4.10.12
+      #886 closed 2025-02-28 ELF x86-64 Linux compressed: Arithmetic overflow while reading bundle.
+      #862 closed 2024-12-12 bad memory reference while decompressing fuzzed input
+      #837 closed 2024-07-09 Using upx compressed so on Android platform, apk crashes when running
+      #808 closed 2024-04-10 run failed on arm32 page_size 32k
+      #681 closed 2023-07-05 UPX fails on AMD64 PIE produced by GCC from assembly
+      #721 closed 2023-10-18 Packed binaries exit with code 127 in isolated Linux namespace/chroot
+      #687 closed 2023-07-19 upx-4.0.2-armeb_linux/upx hangs when running under qemu-armeb
+      #683 closed 2023-07-08 UPX compressed binaries don't work with qemu-8
+      #220 closed 2018-09-12 arm64-v8a so crash after compression
+  file+contents  91 hit(s) (all listed)
+      #18917 open 2026-09-18 Signal 6 (SIGABRT), code -1 when executing packed Aarch64 ELF object
+      #870 open 2025-01-29 How to preserve a specific named section
+      #650 open 2023-02-21 New executable format: win64/arm64
+      #612 open 2022-10-25 UPX compressed arm64/amd64/x86_64 executable crashes on macOS Ventura 13.0
+      #104 open 2017-05-24 Debug Directory in Win32 PE
+      #424 open 2020-11-13 UPX compressed application fails to start on latest macOS release: Big Sur 11.01
+      #18907 closed 2026-08-27 Produced PE file after using upx "-d" having 0's in OriginalFirstThunk
+      #18908 closed 2026-08-31 [ELF] Premature EOF when an empty segment is sitting in other's segment file space
+      #154 open 2017-12-05 Windows 64-bit executable crashes with "Access denied" - Windows 10, UPX 3.91 and 3.94
+      #18903 closed 2026-08-20 ELF packers do not preserve file overlays( like Android so)
+      #18871 closed 2026-06-17 UPX signed files
+      #18847 closed 2026-04-10 Compressed .exe has different behavior
+      #18870 closed 2026-06-16 UPX 5.2.0 packed arm64-v8a shared library crashes with SIGTRAP in /memfd:upx on Android
+      #18872 merged 2026-06-18 fix: reserve LC_CODE_SIGNATURE space for arm64 macOS Mach-O binaries
+      #251 closed 2019-02-20 Missing exception class and message on 64bit builds when using madexcept.
+      #893 closed 2025-03-06 GUARD_CF Error on C# Console Application
+      #18860 closed 2026-05-29 UPX compressed Golang program crashes/panics on LicheePi 4A (riscv64)
+      #18868 merged 2026-06-15 bounds-check export table RVAs in PeFile::Export::convert
+      #18858 closed 2026-05-27 UPX can compress, but not decompress (-d) a Linux x86_64 ELF file with exactly 18 program headers
+      #18845 closed 2026-03-31 Problem with compressing the executable file built by Bun.js
+
+== 51 terms run; 47 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

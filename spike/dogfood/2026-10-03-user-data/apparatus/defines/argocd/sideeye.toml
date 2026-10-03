@@ -1,0 +1,6 @@
+[world]
+state = "/s/argocd"
+
+[define]
+operation = "argocd context work --config /s/argocd/config"
+cwd       = "/s/argocd"

@@ -1,0 +1,23 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   home/xapian/docdata.glass (content differs)
+difference   home/xapian/postlist.glass (content differs)
+
+cwd          /s/mu-in
+atomicity    18 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): home/xapian/docdata.glass
+oracle       agreed on 23 operations (495 syscall lines examined, 122 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2008 ms apart differed under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

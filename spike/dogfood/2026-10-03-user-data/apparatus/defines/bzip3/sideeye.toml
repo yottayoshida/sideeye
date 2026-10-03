@@ -1,0 +1,6 @@
+[world]
+state = "/s/bzip3"
+
+[define]
+operation = "bzip3 -e --rm a.log"
+cwd       = "/s/bzip3"

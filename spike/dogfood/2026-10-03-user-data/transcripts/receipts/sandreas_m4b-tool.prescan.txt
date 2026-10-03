@@ -1,0 +1,241 @@
+== novelty pre-scan: sandreas/m4b-tool
+== date: 2026-10-03T03:33:44Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          7 hit(s) (all listed)
+      #268 closed 2025-01-12 Existing metadata.json file from audiobookshelf produces Error: "Call to a member function getStart() on array" 
+      #200 closed 2022-10-06 an error occured, that has not been caught
+      #172 closed 2022-01-30 SHA256 mismatch
+      #113 closed 2020-12-28 crash issue with merging
+      #123 closed 2021-02-01 Feature Request: support nero chapter format (formerly: Issues with playback of m4b files)
+      #32 closed 2019-04-25 ChapterTitleBuilder.php crash
+      #26 closed 2019-02-24 homebrew options for ffmpeg in readme deprecated
+  corrupt        6 hit(s) (all listed)
+      #239 open 2023-05-09 Corrupt files when merging many mp3 files
+      #164 closed 2021-11-25 checksum calculation failed - invalid output
+      #163 closed 2021-11-25 cannot read metadata: failed to save key (cacheitem.php)
+      #130 closed 2021-04-01 Merge no-conversion producing corrupt m4b
+      #25 closed 2019-02-22 MIME type of merge files set as "video/mp4"
+      #19 closed 2018-12-17 How to add custom ffmpeg options
+  corruption     0 hit(s)
+  truncated      5 hit(s) (all listed)
+      #247 open 2023-10-22 Implicit conversion from float to int loses precision (Parser/SilenceParser.php line 61)
+      #171 open 2022-01-22 Multiple dependency errors after brew upgrade
+      #287 open 2026-04-18 Bump phpunit/phpunit from 9.6.21 to 12.5.22
+      #286 closed 2026-01-28 Bump phpunit/phpunit from 9.6.21 to 9.6.33
+      #224 closed 2023-02-19 [Question] Are there any conditions where combine or merging would change audio play durations?
+  truncate       6 hit(s) (all listed)
+      #247 open 2023-10-22 Implicit conversion from float to int loses precision (Parser/SilenceParser.php line 61)
+      #171 open 2022-01-22 Multiple dependency errors after brew upgrade
+      #287 open 2026-04-18 Bump phpunit/phpunit from 9.6.21 to 12.5.22
+      #286 closed 2026-01-28 Bump phpunit/phpunit from 9.6.21 to 9.6.33
+      #224 closed 2023-02-19 [Question] Are there any conditions where combine or merging would change audio play durations?
+      #156 closed 2021-09-27 m4b-tool doesn't convert on RPi
+  empty          31 hit(s) (all listed)
+      #277 open 2025-03-17 Trying to manually edit chapters with chapters.txt
+      #153 open 2021-08-31 macos chapter splitting problem
+      #204 open 2022-10-27 docker on Windows
+      #67 open 2020-01-05 cannot read metadata, file  does not exist
+      #288 closed 2026-06-14 Filenaming Scheme for Use of Sub-Chapters?
+      #109 open 2020-12-05 Just the last 10 files are used when merging an Audiobook with 42 files
+      #270 closed 2025-01-26 Hours and minutes are mixed up?
+      #264 closed 2024-09-07 Call to a member function getStart() on array
+      #135 closed 2021-06-01 Merged file is incorrect length
+      #14 closed 2018-06-05 Could not convert…
+      #192 closed 2022-08-02 Merge missing Cover.jpg and Chapters
+      #114 closed 2020-12-30 Feature Request: Support for Overdrive Chapters (mp3, Tag with XML)
+      #158 closed 2021-10-16 Silently reindexes chapters
+      #133 closed 2021-05-17 Docker build fails on M1 Mac
+      #115 closed 2021-01-07 MP3 files are being added 2 times.
+      #134 closed 2021-05-20 ffmpeg warning (homebrew)
+      #144 closed 2021-06-29 deleteTemporaryFiles not cleaning up --no-conversion created dir
+      #146 closed 2021-07-16 ffmpeg version 4.0.0 is required
+      #17 merged 2018-11-26 Properly set description meta tags
+      #21 closed 2018-12-29 Add support for chapter thumbnails
+  atomic         2 hit(s) (all listed)
+      #159 closed 2021-10-28 ERROR while building docker container with podman: unsatisfiable constraints:   fdk-aac-dev (missing):     required by: world[fdk-aac-dev]
+      #133 closed 2021-05-17 Docker build fails on M1 Mac
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #23 closed 2019-02-07 Merge multiple m4b files without transcoding?
+  power          7 hit(s) (all listed)
+      #221 open 2023-02-18 Windows install instructions ?
+      #240 open 2023-05-22 Difficult to intall
+      #205 open 2022-11-02 Start chapter at the end of silence?
+      #269 closed 2025-01-15 Merge to m4b creates video track with "mjpeg, 1x1"
+      #246 closed 2023-10-15 ffmpeg version 4.0.0 or higher is required
+      #208 closed 2022-12-11 Directly copy audio input into output (mp3 to m4b) (Overdrive)
+      #188 closed 2022-07-16 Issue with the split command and PHP_OS_FAMILY
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           15 hit(s) (all listed)
+      #153 open 2021-08-31 macos chapter splitting problem
+      #185 open 2022-06-14 How to use FFmpeg filters (such as deesser)
+      #109 open 2020-12-05 Just the last 10 files are used when merging an Audiobook with 42 files
+      #263 open 2024-08-23 Cannot extract chapters
+      #270 closed 2025-01-26 Hours and minutes are mixed up?
+      #264 closed 2024-09-07 Call to a member function getStart() on array
+      #192 closed 2022-08-02 Merge missing Cover.jpg and Chapters
+      #188 closed 2022-07-16 Issue with the split command and PHP_OS_FAMILY
+      #115 closed 2021-01-07 MP3 files are being added 2 times.
+      #126 closed 2021-02-13 Recommended workflow for merging audiobooks from disks?
+      #131 closed 2021-04-21 Mac Bug: `could not convert ./._Disk 01 - Track 01.flac...`
+      #17 merged 2018-11-26 Properly set description meta tags
+      #72 closed 2020-02-28 [question] Re-use batch-pattern fields
+      #52 closed 2019-09-26 Symlinks are ignored
+      #43 closed 2019-08-28 Output of batch-pattern is a just ".m4b"  
+  partial        1 hit(s) (all listed)
+      #232 open 2023-03-07 Audiobooks with multiple folders
+  incomplete     7 hit(s) (all listed)
+      #217 open 2023-01-30 install using brew Error: m4b-tool: SHA256 mismatch 
+      #287 open 2026-04-18 Bump phpunit/phpunit from 9.6.21 to 12.5.22
+      #172 closed 2022-01-30 SHA256 mismatch
+      #114 closed 2020-12-30 Feature Request: Support for Overdrive Chapters (mp3, Tag with XML)
+      #145 closed 2021-07-16 Error installing on Mac with Brew
+      #136 closed 2021-06-03 Failure to build on OSX following directions SHA mismatch
+      #110 closed 2020-12-14 Error installing on mac
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       1 hit(s) (all listed)
+      #197 closed 2022-09-24 "Could not convert..." using docker image
+  resume         0 hit(s)
+  half-written   1 hit(s) (all listed)
+      #198 open 2022-09-28 Max file size
+  wipe           1 hit(s) (all listed)
+      #109 open 2020-12-05 Just the last 10 files are used when merging an Audiobook with 42 files
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      24 hit(s) (all listed)
+      #153 open 2021-08-31 macos chapter splitting problem
+      #185 open 2022-06-14 How to use FFmpeg filters (such as deesser)
+      #287 open 2026-04-18 Bump phpunit/phpunit from 9.6.21 to 12.5.22
+      #286 closed 2026-01-28 Bump phpunit/phpunit from 9.6.21 to 9.6.33
+      #264 closed 2024-09-07 Call to a member function getStart() on array
+      #14 closed 2018-06-05 Could not convert…
+      #200 closed 2022-10-06 an error occured, that has not been caught
+      #197 closed 2022-09-24 "Could not convert..." using docker image
+      #133 closed 2021-05-17 Docker build fails on M1 Mac
+      #192 closed 2022-08-02 Merge missing Cover.jpg and Chapters
+      #163 closed 2021-11-25 cannot read metadata: failed to save key (cacheitem.php)
+      #115 closed 2021-01-07 MP3 files are being added 2 times.
+      #120 closed 2021-01-28 Output file Is almost 39 hours long
+      #88 closed 2020-06-22 merge mp3 with multiple dots fails
+      #62 merged 2019-12-02 Bump symfony/cache from 4.3.6 to 4.3.8
+      #21 closed 2018-12-29 Add support for chapter thumbnails
+      #27 closed 2019-03-03 Parameter --no-conversion deletes and overwrites files without warning or interaction
+      #36 closed 2019-05-21 Error when merging files that have no cover
+      #72 closed 2020-02-28 [question] Re-use batch-pattern fields
+      #118 closed 2021-01-18 Could not load musicbrainz record for id: 1d255b6c-8c89-41e0-a245-04904031caa0
+  clobber        0 hit(s)
+  blank          2 hit(s) (all listed)
+      #52 closed 2019-09-26 Symlinks are ignored
+      #45 closed 2019-08-30 Feature Request: Import/export just opf and cover.jpg without merge
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #68 closed 2020-01-06 Out of memory exception with Docker image
+  mangled        0 hit(s)
+  contents       18 hit(s) (all listed)
+      #67 open 2020-01-05 cannot read metadata, file  does not exist
+      #268 closed 2025-01-12 Existing metadata.json file from audiobookshelf produces Error: "Call to a member function getStart() on array" 
+      #189 closed 2022-07-17 Issue with the split command
+      #181 closed 2022-04-28 Setting alias getting a ":$(id was unexpected at this time." error
+      #114 closed 2020-12-30 Feature Request: Support for Overdrive Chapters (mp3, Tag with XML)
+      #156 closed 2021-09-27 m4b-tool doesn't convert on RPi
+      #133 closed 2021-05-17 Docker build fails on M1 Mac
+      #69 closed 2020-02-10 chapters --merge-similar fails due to php permission error
+      #116 closed 2021-01-12 chapters derived from silence
+      #119 closed 2021-01-26 Add chapters from File
+      #72 closed 2020-02-28 [question] Re-use batch-pattern fields
+      #112 closed 2020-12-23 macOS: Trait 'M4bTool\Audio\Traits\CacheAdapterTrait' not found
+      #77 closed 2020-04-26 chapters fails due to php permission error
+      #56 closed 2019-11-14 Get error "Input is not a file" using docker image 
+      #63 closed 2019-12-04 merging m4bs not working on windows
+      #75 closed 2020-03-20 Trying to execute docker build and got ERROR: unsatisfiable constraints
+      #113 closed 2020-12-28 crash issue with merging
+      #71 closed 2020-02-12 Converting mp3 to mp3 (with/out --no-conversion) chapters misaligned
+  in-place       27 hit(s) (all listed)
+      #271 open 2025-02-11 Building with Nix fails
+      #207 open 2022-11-22 Allowed memory size exhausted - RuneList.php
+      #265 open 2024-11-11 box.phar is not compatible with latest PHP 8.3
+      #121 open 2021-02-01 Feature request: loudness normalization / volume change
+      #171 open 2022-01-22 Multiple dependency errors after brew upgrade
+      #263 open 2024-08-23 Cannot extract chapters
+      #67 open 2020-01-05 cannot read metadata, file  does not exist
+      #270 closed 2025-01-26 Hours and minutes are mixed up?
+      #258 closed 2024-05-04 Deprecation warnings running php v8?
+      #135 closed 2021-06-01 Merged file is incorrect length
+      #149 closed 2021-08-02 REQUEST: Add `narrator` and `publisher` options for metadata fields
+      #200 closed 2022-10-06 an error occured, that has not been caught
+      #208 closed 2022-12-11 Directly copy audio input into output (mp3 to m4b) (Overdrive)
+      #190 closed 2022-07-27 --batch-pattern not being accepted
+      #193 closed 2022-08-09 Question: How is bitrate/samplerate determined?
+      #156 closed 2021-09-27 m4b-tool doesn't convert on RPi
+      #158 closed 2021-10-16 Silently reindexes chapters
+      #133 closed 2021-05-17 Docker build fails on M1 Mac
+      #9 closed 2018-04-15 No audio/file does not play
+      #33 closed 2019-04-25 [feature request] performance improvements / multithreading / parallel execution
+  unclean        1 hit(s) (all listed)
+      #19 closed 2018-12-17 How to add custom ffmpeg options
+  shutdown       1 hit(s) (all listed)
+      #171 open 2022-01-22 Multiple dependency errors after brew upgrade
+  reboot         1 hit(s) (all listed)
+      #67 open 2020-01-05 cannot read metadata, file  does not exist
+  disk+full      7 hit(s) (all listed)
+      #263 open 2024-08-23 Cannot extract chapters
+      #270 closed 2025-01-26 Hours and minutes are mixed up?
+      #192 closed 2022-08-02 Merge missing Cover.jpg and Chapters
+      #115 closed 2021-01-07 MP3 files are being added 2 times.
+      #131 closed 2021-04-21 Mac Bug: `could not convert ./._Disk 01 - Track 01.flac...`
+      #72 closed 2020-02-28 [question] Re-use batch-pattern fields
+      #43 closed 2019-08-28 Output of batch-pattern is a just ".m4b"  
+  data+loss      4 hit(s) (all listed)
+      #27 closed 2019-03-03 Parameter --no-conversion deletes and overwrites files without warning or interaction
+      #54 closed 2019-10-06 Unable to generate chapters when merging files
+      #52 closed 2019-09-26 Symlinks are ignored
+      #64 closed 2019-12-09 Genre separator is escaped
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      3 hit(s) (all listed)
+      #236 merged 2023-04-09 Package as a Nix flake to fix problems with dependencies
+      #112 closed 2020-12-23 macOS: Trait 'M4bTool\Audio\Traits\CacheAdapterTrait' not found
+      #48 closed 2019-09-23 Commit composer.lock file
+  write+failure  2 hit(s) (all listed)
+      #287 open 2026-04-18 Bump phpunit/phpunit from 9.6.21 to 12.5.22
+      #149 closed 2021-08-02 REQUEST: Add `narrator` and `publisher` options for metadata fields
+  file+contents  17 hit(s) (all listed)
+      #67 open 2020-01-05 cannot read metadata, file  does not exist
+      #268 closed 2025-01-12 Existing metadata.json file from audiobookshelf produces Error: "Call to a member function getStart() on array" 
+      #189 closed 2022-07-17 Issue with the split command
+      #156 closed 2021-09-27 m4b-tool doesn't convert on RPi
+      #114 closed 2020-12-30 Feature Request: Support for Overdrive Chapters (mp3, Tag with XML)
+      #181 closed 2022-04-28 Setting alias getting a ":$(id was unexpected at this time." error
+      #133 closed 2021-05-17 Docker build fails on M1 Mac
+      #69 closed 2020-02-10 chapters --merge-similar fails due to php permission error
+      #112 closed 2020-12-23 macOS: Trait 'M4bTool\Audio\Traits\CacheAdapterTrait' not found
+      #116 closed 2021-01-12 chapters derived from silence
+      #119 closed 2021-01-26 Add chapters from File
+      #113 closed 2020-12-28 crash issue with merging
+      #72 closed 2020-02-28 [question] Re-use batch-pattern fields
+      #77 closed 2020-04-26 chapters fails due to php permission error
+      #56 closed 2019-11-14 Get error "Input is not a file" using docker image 
+      #63 closed 2019-12-04 merging m4bs not working on windows
+      #71 closed 2020-02-12 Converting mp3 to mp3 (with/out --no-conversion) chapters misaligned
+
+== 51 terms run; 27 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

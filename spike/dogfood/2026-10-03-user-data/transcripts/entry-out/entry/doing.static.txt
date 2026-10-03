@@ -1,0 +1,2 @@
+static: /usr/local/bin/doing: Ruby script, ASCII text executable
+next: sideeye explore --state /s/doing --cwd "/s/doing-in" --operation "doing now wrote the quarterly notes" \

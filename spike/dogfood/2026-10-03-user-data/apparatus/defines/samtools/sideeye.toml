@@ -1,0 +1,6 @@
+[world]
+state = "/s/samtools"
+
+[define]
+operation = "samtools reheader -i /s/samtools-in/new.hdr /s/samtools/a.cram"
+cwd       = "/s/samtools-in"

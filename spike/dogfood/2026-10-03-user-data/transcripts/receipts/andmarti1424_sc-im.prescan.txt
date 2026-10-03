@@ -1,0 +1,299 @@
+== novelty pre-scan: andmarti1424/sc-im
+== date: 2026-10-03T01:51:12Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          53 hit(s) (all listed)
+      #996 open 2026-05-29 Crash when executing ccopy
+      #868 open 2024-03-02 Date Function Causes Segmentation Fault Crash
+      #937 open 2025-02-04 Deleting a sheet referenced in current sheet causes sc-im to crash.
+      #983 open 2026-01-20 [Bug] Global-buffer-overflow (Read Underflow) in yylex at src/lex.c:119
+      #982 open 2026-01-20 [Bug] Heap-use-after-free in delete_reference (called by destroy_vertex) during cell redefinition
+      #981 open 2026-01-20 [Bug] Heap-use-after-free in GraphIsReachable during dependency check (GraphAddEdge)
+      #980 open 2026-01-20 [Bug] Heap-use-after-free in All_vertexs_of_edges_visited during file load
+      #979 open 2026-01-20 [Bug] Stack-buffer-overflow in ui_sc_msg via unsafe vsprintf usage
+      #823 open 2023-07-08 Conditional colour formatting
+      #638 open 2021-11-29 Segmentation Fault when using @ston(@ext(...)) [0.8.3]
+      #605 open 2021-09-04 sc-im seems to change the color of the underlying terminal even after it is closed
+      #1009 closed 2026-07-23 Fix segmentation fault when using LUA files
+      #922 closed 2024-11-26 Crash on invalid filename
+      #884 closed 2024-08-13 aligning a selection of cell's cause crash (on NixOS)
+      #960 closed 2025-08-19 [BUG] Core dumped for buffer overflow when pressing keys `go a0<CR>`, with a space
+      #865 closed 2024-02-16 Insert Column causes SegFault. - =@sum(B40:ZZ40)
+      #920 merged 2024-11-25 fix crashes in replace (from recent patch) and sevaluate (issue #919)
+      #892 closed 2024-08-24 Segmentation fault when loading a xlsx created with openpyxl
+      #820 closed 2023-06-20 Opening an exported markdown file segfaults
+      #878 closed 2024-06-30 Assigning empty label in date field will cause segfault
+  corrupt        7 hit(s) (all listed)
+      #983 open 2026-01-20 [Bug] Global-buffer-overflow (Read Underflow) in yylex at src/lex.c:119
+      #1002 merged 2026-07-12 Fix corrupted cellcolor fg on save for the first defined custom color
+      #979 open 2026-01-20 [Bug] Stack-buffer-overflow in ui_sc_msg via unsafe vsprintf usage
+      #605 open 2021-09-04 sc-im seems to change the color of the underlying terminal even after it is closed
+      #856 closed 2023-11-30 Memory leaks froze my pc
+      #698 closed 2022-03-23 Copy/Paste from select mode causes crash
+      #684 closed 2022-02-18 Multi-Sheet Functionality Gone After Switching To Latest Stable Release
+  corruption     1 hit(s) (all listed)
+      #983 open 2026-01-20 [Bug] Global-buffer-overflow (Read Underflow) in yylex at src/lex.c:119
+  truncated      5 hit(s) (all listed)
+      #643 open 2021-12-08 Support escaped double-quotes.
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+      #200 closed 2017-09-08 Support entering content wider that COLS
+      #240 closed 2018-03-20 Clipboard paste cmd variable not updated
+      #239 closed 2018-03-20 Problem setting "DEFAULT_PASTE_FROM_CLIPBOARD_CMD" setting in homebrew SC-IM
+  truncate       19 hit(s) (all listed)
+      #643 open 2021-12-08 Support escaped double-quotes.
+      #1010 closed 2026-07-31 Demonstrate Basic Config File
+      #404 open 2020-05-02 String expressions don't interpret sequences of escaped control characters correctly
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+      #605 open 2021-09-04 sc-im seems to change the color of the underlying terminal even after it is closed
+      #807 closed 2023-04-16 syntax error :load
+      #778 closed 2023-01-29 Cannot set import_delimited_as_text configuration variable?
+      #734 closed 2022-08-26 Invalid row format error reported on folded text columns
+      #697 closed 2022-03-22 Nocurses stuck
+      #583 closed 2021-06-19 sc-im reads xlsx files with unexpected behavior
+      #200 closed 2017-09-08 Support entering content wider that COLS
+      #498 closed 2021-02-25 sc-im not installing due to missing file
+      #491 closed 2021-02-23 Update homebrew formulae: 1) enable xlsx format, 2) truncate not available in help docs, so something is broken
+      #489 closed 2021-02-23 Bug: having set truncate in scimrc still shows asterisks for cells with more text than cell size
+      #547 closed 2021-05-08 Help screen color is not applied correctly.
+      #314 closed 2019-02-13 Show part of column when column content exceeds column size
+      #354 merged 2019-09-10 Option to truncate cells rather than showing asterisks
+      #240 closed 2018-03-20 Clipboard paste cmd variable not updated
+      #239 closed 2018-03-20 Problem setting "DEFAULT_PASTE_FROM_CLIPBOARD_CMD" setting in homebrew SC-IM
+  empty          57 hit(s) (all listed)
+      #970 open 2025-09-12 sc.a2colrow returns weird values
+      #996 open 2026-05-29 Crash when executing ccopy
+      #866 open 2024-02-18 Pressing X Triggers Lua Function
+      #905 open 2024-10-16 fig segfault in xlsx file
+      #343 open 2019-07-20 Overlap doesn't use cellcolor for entire cell
+      #860 open 2024-01-04 Frozen(ish) - Can't Quit
+      #652 open 2022-01-12 Value of string expression disappeared everytime opening the documents
+      #759 open 2022-10-22 ANSI codes output to stderr
+      #767 open 2022-11-09 Entire Window Flashing
+      #451 open 2020-09-11 Operate or range over all valid cells in a column or row
+      #868 open 2024-03-02 Date Function Causes Segmentation Fault Crash
+      #254 open 2018-05-10 Allow for local external scripts
+      #16 open 2015-02-07 user defined variables
+      #764 closed 2022-11-05 Running sc-im examples/sc/sheets/a.sc shows "syntax error"
+      #356 closed 2019-09-24 Any way to enter greek symbols like Vim's digraphs?
+      #878 closed 2024-06-30 Assigning empty label in date field will cause segfault
+      #892 closed 2024-08-24 Segmentation fault when loading a xlsx created with openpyxl
+      #862 closed 2024-01-11 All colors get reset to defaults after 'gf'
+      #783 merged 2023-02-17 Make passing a file on command line consistent with :load with regards to loading configuration
+      #762 closed 2022-10-30 Segfault possibly caused by empty cell
+  atomic         1 hit(s) (all listed)
+      #711 open 2022-04-27 Move range
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #760 open 2022-10-25 Request: Add "cq" command
+  interrupt      1 hit(s) (all listed)
+      #760 open 2022-10-25 Request: Add "cq" command
+  sigkill        0 hit(s)
+  sigint         3 hit(s) (all listed)
+      #998 open 2026-06-14 "Illegal numeric expression" bug with previously working spreadsheet
+      #826 closed 2023-07-10 Ctrl-C should switch to Normal mode from anything.
+      #330 closed 2019-05-04 Black screens and missing rows
+  ctrl-c         12 hit(s) (all listed)
+      #998 open 2026-06-14 "Illegal numeric expression" bug with previously working spreadsheet
+      #860 open 2024-01-04 Frozen(ish) - Can't Quit
+      #962 open 2025-08-29 `nnoremap "<C-m>"` does not work
+      #356 closed 2019-09-24 Any way to enter greek symbols like Vim's digraphs?
+      #826 closed 2023-07-10 Ctrl-C should switch to Normal mode from anything.
+      #873 closed 2024-06-13 `nnoremap "C-k"`  requiring multiple presses to execute
+      #753 closed 2022-10-20 quit if ctrl-C is pressed multiple time or too many errors
+      #737 closed 2022-09-02 can not map <C-q> to ":cellcolor" function 
+      #330 closed 2019-05-04 Black screens and missing rows
+      #103 closed 2016-11-26 redo and scroll down map to same keys (<Ctrl-f>)
+      #131 closed 2017-02-11 Some basic use questions
+      #213 closed 2017-11-29 Automatically refresh the screen after suspend
+  power          8 hit(s) (all listed)
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+      #553 closed 2021-05-10 Bug/improvement: Differentiate between CELL_NEGATIVE, and negative result of EXPRESSION
+      #460 closed 2020-10-26 SC-IM on Windows
+      #814 closed 2023-05-08 Fix issue #784, exposes row and column of calling cell in @lua script
+      #419 closed 2020-06-14 Feature Request: Autosave
+      #223 closed 2017-12-10 headers / footers - freeze multiple ranges
+      #200 closed 2017-09-08 Support entering content wider that COLS
+      #363 merged 2019-11-08 Update file.c
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #16 open 2015-02-07 user defined variables
+      #6 merged 2014-11-04 some fixes in format()
+  partial        4 hit(s) (all listed)
+      #488 open 2021-02-23 Add a configuration option like vim to show keys pressed to form a command (set showcmd), and a option so partial commands don't timeout
+      #991 open 2026-03-28 Error: 'struct zip_stat' has no member named 'size'
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+      #218 closed 2017-12-10 NULL pointers issue when reading formulas from some XLSX files
+  incomplete     6 hit(s) (all listed)
+      #282 closed 2018-08-15 Addition of a build system generator
+      #326 closed 2019-04-01 is visual mode re/maping implemented?
+      #491 closed 2021-02-23 Update homebrew formulae: 1) enable xlsx format, 2) truncate not available in help docs, so something is broken
+      #94 closed 2016-10-15 :color not working
+      #219 closed 2017-12-10 segmentation fault on changing color
+      #38 closed 2015-11-07 priority of exponential and unary minus operators
+  dataloss       0 hit(s)
+  recover        4 hit(s) (all listed)
+      #638 open 2021-11-29 Segmentation Fault when using @ston(@ext(...)) [0.8.3]
+      #590 closed 2021-07-02 How to use theme file?
+      #519 merged 2021-03-20 many improvements to the config facility and usage
+      #27 closed 2015-06-18 Undo does not undo 'copies'
+  recovery       3 hit(s) (all listed)
+      #983 open 2026-01-20 [Bug] Global-buffer-overflow (Read Underflow) in yylex at src/lex.c:119
+      #981 open 2026-01-20 [Bug] Heap-use-after-free in GraphIsReachable during dependency check (GraphAddEdge)
+      #76 closed 2016-06-13 install: /usr/bin/scim: Operation not permitted
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #213 closed 2017-11-29 Automatically refresh the screen after suspend
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #742 closed 2022-10-03 How to select and sum a range?
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #610 closed 2021-10-02 Build err on mac M1 silicone
+      #213 closed 2017-11-29 Automatically refresh the screen after suspend
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        2 hit(s) (all listed)
+      #982 open 2026-01-20 [Bug] Heap-use-after-free in delete_reference (called by destroy_vertex) during cell redefinition
+      #564 merged 2021-05-19 more fix/optimization to the display code
+  destroys       0 hit(s)
+  overwrite      13 hit(s) (all listed)
+      #625 open 2021-11-14 With libxls support, sc-im breaks .xls files on write, while .xlsx files are OK
+      #254 open 2018-05-10 Allow for local external scripts
+      #744 closed 2022-10-06 Inadvertent conflicting saves to same file should be prevented
+      #319 closed 2019-02-27 Triggers are not saved to the file
+      #508 closed 2021-02-27 Adding ston to depgraph breaks Lua interface
+      #367 closed 2019-12-05 Support for lua 5.3
+      #484 merged 2021-02-16 Add full XDG Base Specification compliance
+      #218 closed 2017-12-10 NULL pointers issue when reading formulas from some XLSX files
+      #391 merged 2020-02-10 read stdin after file loading
+      #416 merged 2020-06-03 Avoid using `&&` in Makefile
+      #63 closed 2016-03-31 hard crash `:help` when unable to find help page
+      #171 closed 2017-04-07 .csv file can be rewritten with .sc formatted content.
+      #230 closed 2017-12-30 Precision lost writing CSV files
+  clobber        1 hit(s) (all listed)
+      #251 merged 2018-05-01 Don't clobber startup message w/ err opening file
+  blank          19 hit(s) (all listed)
+      #998 open 2026-06-14 "Illegal numeric expression" bug with previously working spreadsheet
+      #593 open 2021-07-12 @if with string expressions not functioning as expected
+      #860 open 2024-01-04 Frozen(ish) - Can't Quit
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+      #627 closed 2021-11-17 Bug: sc-im doesn't respect terminal background and is blinking
+      #704 closed 2022-04-09 'sk'/'sh' mappings don't work?
+      #648 closed 2022-01-05 Highlight current column & row like conoline.vim
+      #613 closed 2021-10-09 Custom Keybindings Work, But Cause Syntax Error at Startup
+      #402 closed 2020-04-29 Incorrect colors; can't read online help
+      #457 closed 2020-10-16 Cursor position adds empty rows or columns to csv files
+      #485 closed 2021-02-23 Apple Silicon macOS xlsx file opens as a blank file
+      #493 closed 2021-02-23 Check the extension user is trying to write to, and at least warn
+      #287 closed 2018-08-17 Problem with valueize on cells that point to other cells containing sums when the source data is deleted
+      #467 closed 2020-11-26 can't save xlsx
+      #13 closed 2015-02-06 add selecting column
+      #68 closed 2016-04-11 Header fields get stacked in large CSV
+      #99 closed 2016-11-10 copy to system clipboard
+      #239 closed 2018-03-20 Problem setting "DEFAULT_PASTE_FROM_CLIPBOARD_CMD" setting in homebrew SC-IM
+      #15 closed 2015-02-07 odd input in search '/' in help's pager
+  unreadable     2 hit(s) (all listed)
+      #942 open 2025-03-09 default colour scheme unreadable with my xterm's and tmux's default black-on-white
+      #402 closed 2020-04-29 Incorrect colors; can't read online help
+  garbage        4 hit(s) (all listed)
+      #823 open 2023-07-08 Conditional colour formatting
+      #1002 merged 2026-07-12 Fix corrupted cellcolor fg on save for the first defined custom color
+      #66 closed 2016-04-06 Rendering issues
+      #213 closed 2017-11-29 Automatically refresh the screen after suspend
+  mangled        1 hit(s) (all listed)
+      #172 closed 2017-04-23 A few file-loading-related formatting issues
+  contents       42 hit(s) (all listed)
+      #970 open 2025-09-12 sc.a2colrow returns weird values
+      #767 open 2022-11-09 Entire Window Flashing
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+      #865 closed 2024-02-16 Insert Column causes SegFault. - =@sum(B40:ZZ40)
+      #857 closed 2023-12-01 Compilation error   ld: warning: creating DT_TEXTREL in a PIE
+      #687 closed 2022-03-01 Mouse select broken (macOS)
+      #724 merged 2022-06-28 Pass cell contents correctly when following links
+      #688 closed 2022-03-01 `:ccopy` on an over-full cell copies the ***'s instead of the cell contents
+      #698 closed 2022-03-23 Copy/Paste from select mode causes crash
+      #704 closed 2022-04-09 'sk'/'sh' mappings don't work?
+      #590 closed 2021-07-02 How to use theme file?
+      #635 closed 2021-11-22 sc.colrow2a has arguments reversed
+      #610 closed 2021-10-02 Build err on mac M1 silicone
+      #603 closed 2021-09-02 [BUG] Colour themes are broken in Tmux in WSL terminal
+      #629 closed 2021-11-17 Bug: Using @lua results in segmentation fault (crash)
+      #391 merged 2020-02-10 read stdin after file loading
+      #448 closed 2020-09-10 When overlap is set, display of oversized strings becomes sensitive to individual cell justification
+      #489 closed 2021-02-23 Bug: having set truncate in scimrc still shows asterisks for cells with more text than cell size
+      #497 closed 2021-02-24 Incorrect results of numeric expressions, adding 0 makes them evaluate correctly 
+      #496 closed 2021-02-24 Lua interface issue sc.lquery requires two carriage returns, and picks value before the second one
+  in-place       49 hit(s) (all listed)
+      #836 open 2023-09-15 K_FMT and S_FMT are the same ?
+      #254 open 2018-05-10 Allow for local external scripts
+      #686 open 2022-03-01 Create debian package with fpm
+      #652 open 2022-01-12 Value of string expression disappeared everytime opening the documents
+      #638 open 2021-11-29 Segmentation Fault when using @ston(@ext(...)) [0.8.3]
+      #410 closed 2020-05-14 Newlines within values in CSV identified as row separation.
+      #896 closed 2024-10-05 fix for subtotal issue #813
+      #814 closed 2023-05-08 Fix issue #784, exposes row and column of calling cell in @lua script
+      #749 closed 2022-10-19 freezecol can't be used in sc file
+      #256 closed 2018-05-14 Multiple Sheets
+      #627 closed 2021-11-17 Bug: sc-im doesn't respect terminal background and is blinking
+      #670 closed 2022-01-24 Can't remap horizontal scrolling
+      #651 closed 2022-01-09 Request for help: how do I sum all cells selected in visual mode (sorry)?
+      #607 closed 2021-09-16 Import external data into cell?
+      #225 closed 2017-12-18 remap to accentuated characters
+      #341 closed 2019-07-10 Pasting text in a range of cells and vim-like macros
+      #476 closed 2021-01-10 Not installing?
+      #492 closed 2021-02-23 Keymapping Challenges
+      #506 closed 2021-02-27 Clarification on color categories
+      #541 closed 2021-04-21 @if does not allow string result expressions
+  unclean        1 hit(s) (all listed)
+      #4 closed 2014-11-04 screen is not cleaned when exiting
+  shutdown       1 hit(s) (all listed)
+      #724 merged 2022-06-28 Pass cell contents correctly when following links
+  reboot         1 hit(s) (all listed)
+      #856 closed 2023-11-30 Memory leaks froze my pc
+  disk+full      0 hit(s)
+  data+loss      2 hit(s) (all listed)
+      #908 open 2024-10-29 Data loss without warning when editing a file with > 2^16 rows 
+      #606 closed 2021-09-16 Saving an ODS file results in it being re-written to an sc-im file
+  partial+write  1 hit(s) (all listed)
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+  crash+safe     1 hit(s) (all listed)
+      #605 open 2021-09-04 sc-im seems to change the color of the underlying terminal even after it is closed
+  atomic+write   0 hit(s)
+  lock+file      4 hit(s) (all listed)
+      #744 closed 2022-10-06 Inadvertent conflicting saves to same file should be prevented
+      #261 closed 2018-05-26 color issue with locked cells
+      #81 closed 2016-07-15 Freeze rows & columns
+      #213 closed 2017-11-29 Automatically refresh the screen after suspend
+  write+failure  1 hit(s) (all listed)
+      #15 closed 2015-02-07 odd input in search '/' in help's pager
+  file+contents  23 hit(s) (all listed)
+      #767 open 2022-11-09 Entire Window Flashing
+      #769 open 2022-12-27 Cannot work out correct format for entering date data.
+      #865 closed 2024-02-16 Insert Column causes SegFault. - =@sum(B40:ZZ40)
+      #857 closed 2023-12-01 Compilation error   ld: warning: creating DT_TEXTREL in a PIE
+      #698 closed 2022-03-23 Copy/Paste from select mode causes crash
+      #704 closed 2022-04-09 'sk'/'sh' mappings don't work?
+      #590 closed 2021-07-02 How to use theme file?
+      #610 closed 2021-10-02 Build err on mac M1 silicone
+      #603 closed 2021-09-02 [BUG] Colour themes are broken in Tmux in WSL terminal
+      #629 closed 2021-11-17 Bug: Using @lua results in segmentation fault (crash)
+      #391 merged 2020-02-10 read stdin after file loading
+      #329 closed 2019-04-18 securely evaluate a string as function
+      #417 closed 2020-06-04 Segmentation fault opening xlsx file
+      #489 closed 2021-02-23 Bug: having set truncate in scimrc still shows asterisks for cells with more text than cell size
+      #497 closed 2021-02-24 Incorrect results of numeric expressions, adding 0 makes them evaluate correctly 
+      #61 closed 2016-03-19 Plain text export function
+      #72 closed 2016-06-05 Cell type when importing from CSV
+      #108 closed 2016-12-11 Segfault on circular references
+      #260 closed 2018-05-26 reference issue at start
+      #244 closed 2018-03-22 Copying with `ca` or `p` does not recalculate formulas [Question]
+
+== 51 terms run; 38 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

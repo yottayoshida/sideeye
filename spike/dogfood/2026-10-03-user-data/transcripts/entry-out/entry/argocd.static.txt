@@ -1,0 +1,4 @@
+static: /opt/bin/argocd: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=X7pDynDz72SgWwsftGoB/tgvJ4mn1oZENpL5rdV8-/P1eEw1FciGOTYATC5Y1P/rTWQiXw2IUZe5f8kQBtX, BuildID[sha1]=997e3f4e1557cf98fb52e7c2fc52e178975879ea, with debug_info, not stripped
+default mode: rc 2; no_shim_marker
+default next: Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.
+next: Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.

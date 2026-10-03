@@ -1,0 +1,6 @@
+[world]
+state = "/s/transmission"
+
+[define]
+operation = "transmission-edit -a https://tracker2.example.invalid/announce /s/transmission/linux-isos.torrent"
+cwd       = "/s/transmission-in"

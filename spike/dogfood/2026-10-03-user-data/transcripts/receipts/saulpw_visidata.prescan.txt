@@ -1,0 +1,483 @@
+== novelty pre-scan: saulpw/visidata
+== date: 2026-10-03T01:55:58Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          49 hit(s) (all listed)
+      #3204 open 2026-08-16 [vds] save a column type only when it can be loaded back #3175
+      #3207 merged 2026-08-20 [color-] prevent early crash on colorless terminals like vt100
+      #3206 closed 2026-08-18 COLOR_PAIRS-1 crash while opening
+      #3199 merged 2026-08-15 [dedupe-] don't crash on unhashable typed values #3196
+      #3121 merged 2026-05-31 [join] don't crash on unhashable keycol values  #3099
+      #3154 closed 2026-06-27 [sysopen-help] command now throws PosixPath error
+      #3120 merged 2026-05-31 [path-] add closed/close/flush to RepeatFile  #3097
+      #3017 merged 2026-03-14 fix parquet add-row crash
+      #1927 closed 2023-06-20 [getattrdeep-] remove unnecessary check
+      #3057 merged 2026-04-06 [history_palette] defer fuzzymatch to navigation entry
+      #2932 closed 2026-01-05 "repeat-input-selected" cmd soft crashes visidata
+      #2777 closed 2025-06-14 Invalid cmds in .visidatarc not caught at startup, results in crash on attempted usage
+      #2914 closed 2025-12-17 `visidata` since commit `260b685` crashes with `AttributeError: 'VisiData' object has no attribute 'numTimeouts'`
+      #2863 merged 2025-09-15 Fixed bug when connecting to MySQL with no password
+      #2851 merged 2025-08-31 Bugfix to fix Visidata crash on startup on NetBSD (and probably other *BSD) wscons tty consoles, which do not expose "mousemask" in their system curses implementations.
+      #2741 merged 2025-04-28 [sidebar- mainloop-] put bounds on coords for scr height 1
+      #2740 closed 2025-04-28 exits 255 when resized to height=1
+      #2384 closed 2024-04-17 system crash opening large (compressed) file
+      #2513 closed 2024-09-02 Column using slow function as expr causes extreme slowness
+      #2440 closed 2024-07-06 visidata thinks ODS spreadsheets have 16K columns, 1M rows, uses all my memory and crashes
+  corrupt        14 hit(s) (all listed)
+      #3155 closed 2026-06-27 cached columns block undo of edit-cell commands
+      #3005 merged 2026-03-06 Fix nested freq table dive-selected corrupting source chain
+      #2637 closed 2024-12-15 [macros]  Macro metadata and more
+      #2787 closed 2025-06-15 [macros] Deleting macros causes corruption to the macro.jsonl file
+      #2244 merged 2024-01-10 [undo-] prevent undo of command that created sheet
+      #2240 merged 2024-01-07 [csv] handle more dialect parameters from Sniffer
+      #1575 closed 2022-10-27 terminal is corrupted when replaying a save that requires confirmation
+      #2040 closed 2023-10-02 Bug: flickering confirm dialog box
+      #1964 closed 2023-07-19 loading large sheets is occasionally slow and nonresponsive
+      #1529 closed 2022-09-16 Exception with `entry_points().get('visidata.plugins', [])` upon startup
+      #1392 closed 2022-06-06 Right-to-Left text displayed in incorrect column
+      #1159 closed 2021-10-21 [develop] Updating *.gz files corrupts archives
+      #1072 closed 2021-08-15 [save] Saving a file without a saver saves to tsv by default.
+      #56 closed 2017-06-22 VisiData gets stuck loading files containing NULL bytes
+  corruption     9 hit(s) (all listed)
+      #3146 open 2026-06-17 Cell value duplications in sheets with duplicate column names
+      #2990 merged 2026-02-20 [pyobj-] define-command: pass test and handle empty input
+      #2637 closed 2024-12-15 [macros]  Macro metadata and more
+      #2861 merged 2025-09-13 feature: highlight patterns like vim's hlsearch
+      #2819 merged 2025-07-26 [macro] fix macro corruption when saving via putChanges
+      #2787 closed 2025-06-15 [macros] Deleting macros causes corruption to the macro.jsonl file
+      #2295 merged 2024-02-04 [selection] add commands to sort selected rows
+      #2263 closed 2024-01-19 save as csv actually saves tsv when file existing file extension is CSV, i.e.  uppercase - PR available #2269
+      #759 closed 2020-10-29 [async] Sheet corruption within VisiData due to commands running on partially completed async tasks
+  truncated      27 hit(s) (all listed)
+      #2905 open 2025-11-22 [graph-][TUI-] Moved axis labels to top, as title
+      #3204 open 2026-08-16 [vds] save a column type only when it can be loaded back #3175
+      #3158 closed 2026-06-30 Error when reading NoneType value from Parquet file
+      #2806 closed 2025-07-04 getDisplayValue() gives incorrect widths for collections
+      #3016 merged 2026-03-14 Add Column.getFullDisplayValue() for untruncated display values
+      #2861 merged 2025-09-13 feature: highlight patterns like vim's hlsearch
+      #2316 closed 2024-02-15 Log file inside zip file erroneously guessed as "tar" instead of text
+      #2881 closed 2025-10-10 Native Graph: Fixed axes, Seaborn Graph: added Title, axes
+      #2847 closed 2025-08-18 [question] simple playback .vdj file to auto-expand all column widths
+      #2783 merged 2025-06-15 [npy-] fix bug truncating cols wider than window
+      #2214 closed 2023-12-31 show number of lines in truncator
+      #2287 closed 2024-02-02 [memory] shorten cells too wide to fit in prompt
+      #1958 merged 2023-07-12 [graph] fix legend display of full-width characters
+      #2031 closed 2023-09-21 New column type: URL
+      #1849 closed 2023-04-13 fixed width saver truncates data if columns are not fully expanded
+      #1786 closed 2023-03-04 [sidebar] UI issues
+      #1353 closed 2022-04-12 [v2.9] _curses.error: curses function returned NULL
+      #319 closed 2019-07-23 Canvas graph labels are truncated
+      #711 closed 2020-09-28 Expressions run on truncated data instead of full field
+      #313 closed 2019-07-13 Provide a way to limit the maximum number of columns created by the fixed format
+  truncate       46 hit(s) (all listed)
+      #2928 open 2026-01-01 active sheet gets pushed off crowded statusbar
+      #2905 open 2025-11-22 [graph-][TUI-] Moved axis labels to top, as title
+      #3204 open 2026-08-16 [vds] save a column type only when it can be loaded back #3175
+      #3158 closed 2026-06-30 Error when reading NoneType value from Parquet file
+      #2806 closed 2025-07-04 getDisplayValue() gives incorrect widths for collections
+      #412 closed 2019-11-27 visidata v2.-1dev (but not v1.5.2) flickers when run through emacs term-mode 
+      #2908 merged 2025-11-27 [statusbar-] make lstatus_max truncation preserve vd markup
+      #3016 merged 2026-03-14 Add Column.getFullDisplayValue() for untruncated display values
+      #2941 merged 2026-01-12 fix width and coordinate calculations for data containing markup
+      #2861 merged 2025-09-13 feature: highlight patterns like vim's hlsearch
+      #2316 closed 2024-02-15 Log file inside zip file erroneously guessed as "tar" instead of text
+      #2881 closed 2025-10-10 Native Graph: Fixed axes, Seaborn Graph: added Title, axes
+      #2783 merged 2025-06-15 [npy-] fix bug truncating cols wider than window
+      #2807 merged 2025-07-04 [column-] for collection cols, improve getMaxWidth and getDisplayValue
+      #2667 merged 2025-01-07 [cliptext-] clipstr() to width 1: truncate chars having width > 1
+      #2847 closed 2025-08-18 [question] simple playback .vdj file to auto-expand all column widths
+      #2733 merged 2025-04-21 [cliptext-] clipstr: fix handling of iterators, prepare for grapheme cluster changes
+      #2662 merged 2025-01-03 [input-] fix editline() for characters having screen width > 1
+      #2214 closed 2023-12-31 show number of lines in truncator
+      #2287 closed 2024-02-02 [memory] shorten cells too wide to fit in prompt
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3219 open 2026-09-05 dedupe and FreqTable group cells differently
+      #3220 open 2026-09-08 [tests] avoid non-universal grep option
+      #3186 open 2026-07-20 [arrow] load IPC streaming format from stdin  #3184
+      #3184 open 2026-07-17 The arrow IPC loader does not accept stdin
+      #3231 open 2026-10-02 [sheets] free sheets deleted from gS or quit with Q  #<gS> #<Q> #<cli…
+      #3146 open 2026-06-17 Cell value duplications in sheets with duplicate column names
+      #3085 closed 2026-05-16 tsv drops empty lines, csv keeps them
+      #3229 merged 2026-09-22 [docs] fix graph page asciinema player for v3
+      #2570 open 2024-10-16 Feature request: Live updating plots
+      #3058 merged 2026-04-06 [threads-] remove unnecessary subtraction of empty set
+      #3151 merged 2026-06-22 [csv] skip blank lines  #3085
+      #3060 merged 2026-04-08 [open-] on opening empty cell, fail instead of opening DirSheet
+      #3111 closed 2026-05-28 [status] statusHistory displays mutating values, instead of permanent strings
+      #3116 merged 2026-05-29 [terminal-] hide Alt+[Shift+I as no-op binding on chooser
+      #3098 closed 2026-05-22 join is done using display value, not cell value
+      #2990 merged 2026-02-20 [pyobj-] define-command: pass test and handle empty input
+      #3069 merged 2026-04-23 [mouse-] prevent error on clicks right of the last col
+      #3139 merged 2026-06-10 Apply -f filetype per-path, never globally
+      #3020 merged 2026-03-14 exec-sql: query names, types, edit-sql, SheetsSheet query column
+      #3048 closed 2026-03-27 Add macOS terminfo environment bootstrap for standalone Python builds
+  atomic         3 hit(s) (all listed)
+      #2826 merged 2025-07-31 make asynccache/addcol-shell thread-safe, and runnable in macros and replay
+      #1009 closed 2021-06-14 save: atomic file save
+      #237 closed 2018-12-29 [Loader] Frictionless Data Packages
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #759 closed 2020-10-29 [async] Sheet corruption within VisiData due to commands running on partially completed async tasks
+  interrupt      4 hit(s) (all listed)
+      #3103 open 2026-05-22 [addcol-shell-throttled]. Add a new command addcol-shell-throttled.
+      #3095 merged 2026-05-22 [canvas-] in render, cancel render_async
+      #1878 closed 2023-04-29 [sort] failure when interrupting a sort with another sort
+      #759 closed 2020-10-29 [async] Sheet corruption within VisiData due to commands running on partially completed async tasks
+  sigkill        0 hit(s)
+  sigint         2 hit(s) (all listed)
+      #1453 closed 2022-07-31 [develop] Github Actions is attempting to save `-nosave` tests
+      #972 closed 2021-05-05 [windows] AttributeError: module 'signal' has no attribute 'SIGTSTP'
+  ctrl-c         84 hit(s) (all listed)
+      #3176 open 2026-07-06 visidata.org/man 404s now
+      #3103 open 2026-05-22 [addcol-shell-throttled]. Add a new command addcol-shell-throttled.
+      #3157 merged 2026-06-29 [tests] automate manual-tests items and v3.4 new features
+      #1366 closed 2022-05-04 How do you delete columns?
+      #2938 closed 2026-01-10 [html] cancelling HTML sheet loading gives error
+      #2971 closed 2026-02-09 Cannot replay commands
+      #2932 closed 2026-01-05 "repeat-input-selected" cmd soft crashes visidata
+      #2948 closed 2026-01-21 Excel colorizer out of range error
+      #2848 closed 2025-08-22 Ctrl+G command does not appear in menu / list of all commands
+      #2823 merged 2025-07-28 [input-] handle resizes during input or cell edit
+      #2720 closed 2025-03-13 Can't copy cell contents in VSCode ssh connection
+      #2267 closed 2024-01-23 visidata silently fails under Windows with Python 3.12 (3.11 fine)
+      #2119 closed 2023-11-17 Pressing " to filter selected rows does not work. Instead I get the error. No command for CTL_PADENTER
+      #2356 closed 2024-03-20 Allow specifying on CLI the number of lines to load from a file
+      #1474 closed 2022-08-12 [colorizer] Show positive / negative numbers in green / red
+      #2443 merged 2024-07-09 [grep-] add loader for output of grep/ripgrep
+      #2262 closed 2024-01-19 vd command does not work/exist for Windows
+      #2370 merged 2024-04-04 [status-] decrease latency of status() when other threads run
+      #1068 closed 2021-08-02 Suggest performance improvements here
+      #2295 merged 2024-02-04 [selection] add commands to sort selected rows
+  power          15 hit(s) (all listed)
+      #3035 open 2026-03-19 add native duckdb loader with tests
+      #2941 merged 2026-01-12 fix width and coordinate calculations for data containing markup
+      #2964 merged 2026-02-04 [llm] add Anthropic Claude integration for column analysis  #2947
+      #2943 closed 2026-01-14 add fourier transform to `Data` menu
+      #2817 merged 2025-07-24 [test-] allow parallel tests in test.sh with -j
+      #2618 merged 2024-11-30 [errors-] add sysopen-error command to view vd source code in editor
+      #2443 merged 2024-07-09 [grep-] add loader for output of grep/ripgrep
+      #2021 closed 2023-09-05 [debugging] Prefix the plugin name to status messages
+      #349 closed 2019-09-04 Add option to guess at column types
+      #845 closed 2020-12-19 [expand] Expand as a table (eaat)
+      #172 closed 2018-07-20 [www] Create favicon for visidata.org
+      #141 closed 2018-04-17 Add support for Undo
+      #572 closed 2020-05-25 [cmdlog] Replay .vd but with different sources
+      #659 closed 2020-08-09 [expr] Add a shortcut name for the current column in expressions.
+      #53 merged 2017-06-12 Add basic Sphinx support and document the process
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           28 hit(s) (all listed)
+      #2571 open 2024-10-16 open-syspaste doesn't handle CR LF line endings for TSV pastes
+      #2570 open 2024-10-16 Feature request: Live updating plots
+      #2721 merged 2025-03-13 Changes referenced in #2719 and #2676
+      #2557 closed 2024-10-13 [xlsx] Not able to read data from file that is not local and no errors are reported
+      #2449 closed 2024-07-11 [question] vdsql duckdb in memory
+      #1805 closed 2023-03-13 Add read-only flag
+      #1068 closed 2021-08-02 Suggest performance improvements here
+      #2392 merged 2024-04-26 [main-] fix rare duplication of replay cmds
+      #2213 closed 2023-12-31 [csv] load % not working for csv on disk
+      #2272 closed 2024-01-26 [tsv] add CLI option to use NUL as delimiter
+      #1916 closed 2023-06-08 [zip] open Parquet files from inside an archive
+      #2053 merged 2023-10-13 [parquet] add parquet writer [#2044]
+      #1184 closed 2021-11-08 Allow opening .csv.gz, .tsv.gz, etc. from URLs
+      #2024 closed 2023-09-11 Adding rows to a join sheet
+      #1768 closed 2023-02-27 [save_filetype] when save_filetype is set, you cannot gY as any other filetype on the DirSheet
+      #1945 merged 2023-07-02 [sqlite-] prevent creation of ./- file when reading from stdin
+      #1009 closed 2021-06-14 save: atomic file save
+      #1704 closed 2023-01-27 Row of nulls in csv that came from csvbase
+      #1622 closed 2022-12-14 Aborting Read Of SQLite Database with WAL Leaves wal and shm Files
+      #955 closed 2021-04-18 [wishlist modify] autosave feature
+  partial        17 hit(s) (all listed)
+      #3177 closed 2026-07-12 [] tab completion (or equivalent) in file open prompt
+      #3025 merged 2026-03-15 Show fuzzy input history palette
+      #2861 merged 2025-09-13 feature: highlight patterns like vim's hlsearch
+      #2182 closed 2023-12-20 More sensible and legible autocomplete order
+      #2822 merged 2025-07-28 [palette-] scroll matches with PageUp/PageDown
+      #2384 closed 2024-04-17 system crash opening large (compressed) file
+      #2116 merged 2023-11-17 [zip] fix recursion error fetching remote zipfile
+      #2015 closed 2023-08-30 Join should work with the typed values, not the display values
+      #2031 closed 2023-09-21 New column type: URL
+      #2035 closed 2023-09-26 Bug: cannot read .vds with expression column
+      #1009 closed 2021-06-14 save: atomic file save
+      #1816 closed 2023-03-23 Project dependencies may have API risk issues
+      #1817 closed 2023-03-23 Project dependencies may have API risk issues
+      #1058 closed 2021-07-26 [loader-json] Columns with __ are duplicated for each row when --clean-names is True
+      #1015 closed 2021-06-16 case insensitive search in C-h help to find things more easily
+      #385 closed 2019-11-07 xlsx plugin produces bad column in [develop]
+      #759 closed 2020-10-29 [async] Sheet corruption within VisiData due to commands running on partially completed async tasks
+  incomplete     18 hit(s) (all listed)
+      #2624 open 2024-12-03 Can't do select-expr while reload-modified is active
+      #3048 closed 2026-03-27 Add macOS terminfo environment bootstrap for standalone Python builds
+      #2990 merged 2026-02-20 [pyobj-] define-command: pass test and handle empty input
+      #2999 merged 2026-02-24 Batch test execution: ~5x speedup by running all tests in a single process
+      #2729 closed 2025-03-31 light theme is outdated (incomplete)
+      #2745 merged 2025-05-05 [input-] speed up pasting long strings into line editor
+      #2338 merged 2024-03-04 [cmdpalette-] fix incomplete command list from race condition
+      #2219 closed 2024-01-01 Unintuitive command selection in palette
+      #2089 closed 2023-10-27 [vds] hidden columns used in expressions not saved in .vds export
+      #1991 closed 2023-08-09 Screen doesn't refresh after sorting
+      #1245 closed 2021-12-17 Narrow terminals/wide headings  garble/hide status line info
+      #1443 closed 2022-07-26 v2.9: Switch from .vd to .vdj for cmdlogs appears to be incomplete
+      #1285 closed 2022-02-12 other currencies for a columns
+      #151 closed 2018-05-29 Incomplete file loads when accessed from external disk drive
+      #401 closed 2019-11-19 Saving CSV data is broken: all values replaced with visidata.column.Column
+      #329 closed 2019-08-11 Incomplete descriptions in commands.tsv
+      #630 closed 2020-07-12 [deferred delete] Deferred delete doesn't delete all files requested
+      #759 closed 2020-10-29 [async] Sheet corruption within VisiData due to commands running on partially completed async tasks
+  dataloss       0 hit(s)
+  recover        8 hit(s) (all listed)
+      #3035 open 2026-03-19 add native duckdb loader with tests
+      #3123 merged 2026-06-02 [xml-] make parser use recover=True by default
+      #2038 closed 2023-09-28 TSV is not just a tab-delimited CSV
+      #1415 closed 2022-06-26 [] Better save defaults when manipulating files
+      #1696 closed 2023-01-23 [sheets] cursorDisplay for the sheet's own cursorDisplay crashes in Python 3.8.0 through 3.9.9
+      #1457 closed 2022-08-06 Add options + code that allows a user to specify the format of expanded column names [pyobj]
+      #174 closed 2018-07-23 [menu] Can the menu system be removed?
+      #141 closed 2018-04-17 Add support for Undo
+  recovery       1 hit(s) (all listed)
+      #1696 closed 2023-01-23 [sheets] cursorDisplay for the sheet's own cursorDisplay crashes in Python 3.8.0 through 3.9.9
+  rollback       0 hit(s)
+  resume         10 hit(s) (all listed)
+      #3103 open 2026-05-22 [addcol-shell-throttled]. Add a new command addcol-shell-throttled.
+      #2309 open 2024-02-12 have opening `vds` file start with recorded sheet, not with VdsIndexSheet
+      #2316 closed 2024-02-15 Log file inside zip file erroneously guessed as "tar" instead of text
+      #2443 merged 2024-07-09 [grep-] add loader for output of grep/ripgrep
+      #2266 closed 2024-01-23 [undo] can't undo some threaded commands
+      #1964 closed 2023-07-19 loading large sheets is occasionally slow and nonresponsive
+      #1319 closed 2022-03-07 Input mysteriously stopped working
+      #899 closed 2021-02-14 [SuspendCurses] Suspending(ctrl-Z)/resuming(fg) while vd is in SuspendCurses has issues
+      #141 closed 2018-04-17 Add support for Undo
+      #262 merged 2019-03-12 Add an option to disable sorted keys when saving to JSON
+  half-written   3 hit(s) (all listed)
+      #3152 closed 2026-06-23 [open] -f filetype overrides url scheme dispatch  #3126
+      #3176 open 2026-07-06 visidata.org/man 404s now
+      #377 closed 2019-10-22 globalCommand example not working
+  wipe           4 hit(s) (all listed)
+      #3012 closed 2026-03-12 Binding Conflict: 'sbs' results in "duplicate prefix" error when 's' and 'sb' act as leaders
+      #1679 closed 2023-01-15 [sql] pressing 'Shift+Q' in a subsheet loses the sheet for full session
+      #1358 closed 2022-04-21 Improve sqlite reload behavior: remember column settings
+      #141 closed 2018-04-17 Add support for Undo
+  wipes          1 hit(s) (all listed)
+      #1679 closed 2023-01-15 [sql] pressing 'Shift+Q' in a subsheet loses the sheet for full session
+  erase          19 hit(s) (all listed)
+      #3092 closed 2026-05-20 Include matplotlib sixel backend to provide high resolution plots within the terminal.
+      #2856 merged 2025-09-07 [graph-] accept refline input for case of multiple xcols
+      #2580 closed 2024-10-21 [save] save-sheet handles empty input incorrectly
+      #2489 merged 2024-08-06 [canvas-] draw lines at user-defined x or y
+      #2274 closed 2024-01-28 [input] screen flickers in edit-cell
+      #2245 closed 2024-01-10 [docs-] add list of pip packages needed for tests
+      #2275 merged 2024-01-29 [tsv-] let options set NUL delimiters
+      #1959 closed 2023-07-15 Current HEAD zsh-completion.py needs option_aliases update
+      #1991 closed 2023-08-09 Screen doesn't refresh after sorting
+      #1009 closed 2021-06-14 save: atomic file save
+      #919 closed 2021-03-08 Undo commit
+      #1816 closed 2023-03-23 Project dependencies may have API risk issues
+      #1817 closed 2023-03-23 Project dependencies may have API risk issues
+      #175 closed 2018-08-03 Characters that take up two character widths result in unintuitive editing behaviour
+      #150 closed 2018-05-20 feature request: create a .visidatarc file from option sheet
+      #376 closed 2019-10-19 Cells with embedded newlines display well but export badly
+      #464 closed 2020-02-07 [batch] AttributeError in batch replay
+      #251 closed 2019-02-07 addcol-new fails in batch mode
+      #640 closed 2020-07-22 [v2.-4dev] Issues with sliding columns
+  erasing        2 hit(s) (all listed)
+      #2856 merged 2025-09-07 [graph-] accept refline input for case of multiple xcols
+      #2489 merged 2024-08-06 [canvas-] draw lines at user-defined x or y
+  erased         1 hit(s) (all listed)
+      #175 closed 2018-08-03 Characters that take up two character widths result in unintuitive editing behaviour
+  destroy        6 hit(s) (all listed)
+      #3063 closed 2026-04-12 [shell] fix double-quoting in addcol-shell
+      #2818 merged 2025-07-25 [reload] run reload_rows one at a time
+      #1896 merged 2023-05-14 [graph] fix various edge cases
+      #22 closed 2017-05-25 Save (not save as)
+      #401 closed 2019-11-19 Saving CSV data is broken: all values replaced with visidata.column.Column
+      #846 closed 2020-12-19 [nested values] Provide more control over formatting nested values
+  destroys       3 hit(s) (all listed)
+      #3063 closed 2026-04-12 [shell] fix double-quoting in addcol-shell
+      #2818 merged 2025-07-25 [reload] run reload_rows one at a time
+      #1896 merged 2023-05-14 [graph] fix various edge cases
+  overwrite      54 hit(s) (all listed)
+      #3176 open 2026-07-06 visidata.org/man 404s now
+      #3204 open 2026-08-16 [vds] save a column type only when it can be loaded back #3175
+      #1242 closed 2021-12-12 Need some way to save different type than file extension
+      #2967 merged 2026-02-06 [test] fix invalid overwrite values to y/n
+      #3139 merged 2026-06-10 Apply -f filetype per-path, never globally
+      #3014 merged 2026-03-13 Confirm before saving with wrong filetype; add confirm option
+      #3157 merged 2026-06-29 [tests] automate manual-tests items and v3.4 new features
+      #3025 merged 2026-03-15 Show fuzzy input history palette
+      #2286 closed 2024-02-01 Review how we configure of which format to save in
+      #2966 closed 2026-02-04 Fix pandas loader selection/dup behavior
+      #2864 closed 2025-09-17 clarify the difference between internal and system clipboad in the command names
+      #2968 merged 2026-02-06 Pr fix pandas loader bugs 2960
+      #2999 merged 2026-02-24 Batch test execution: ~5x speedup by running all tests in a single process
+      #2837 merged 2025-08-10 fix path problems in archive files
+      #2839 merged 2025-08-11 fix blank output after exiting confirm via Esc
+      #2580 closed 2024-10-21 [save] save-sheet handles empty input incorrectly
+      #1805 closed 2023-03-13 Add read-only flag
+      #2244 merged 2024-01-10 [undo-] prevent undo of command that created sheet
+      #2263 closed 2024-01-19 save as csv actually saves tsv when file existing file extension is CSV, i.e.  uppercase - PR available #2269
+      #2120 closed 2023-11-17 How do I use the confirm dialog?
+  clobber        7 hit(s) (all listed)
+      #3172 merged 2026-07-03 [undo-] make suppressUndo per-thread #3165
+      #3014 merged 2026-03-13 Confirm before saving with wrong filetype; add confirm option
+      #2667 merged 2025-01-07 [cliptext-] clipstr() to width 1: truncate chars having width > 1
+      #2757 merged 2025-05-20 windows-curses is no longer needed with conpty
+      #2130 closed 2023-11-20 New binding for `help-hint` clobbered `menu-help`
+      #1358 closed 2022-04-21 Improve sqlite reload behavior: remember column settings
+      #598 merged 2020-06-17 Add VS Code devcontainer settings
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3087 open 2026-05-16 [html] reorder columns of HtmlTablesSheet
+      #3146 open 2026-06-17 Cell value duplications in sheets with duplicate column names
+      #3212 open 2026-08-27 Problems reading tar contents - cannot open files or wrong content shown
+      #3189 open 2026-07-24 Missing man page in v3.4 homebrew install
+      #3176 open 2026-07-06 visidata.org/man 404s now
+      #3151 merged 2026-06-22 [csv] skip blank lines  #3085
+      #3226 closed 2026-09-10 [feat-req] : add renumber-sheets
+      #3085 closed 2026-05-16 tsv drops empty lines, csv keeps them
+      #3116 merged 2026-05-29 [terminal-] hide Alt+[Shift+I as no-op binding on chooser
+      #3078 closed 2026-05-08 [shell] fix addcol-shell double-quoting and broken pipe operators (#3026)
+      #2996 merged 2026-02-21 [fixed-] split columns based on header positions
+      #3063 closed 2026-04-12 [shell] fix double-quoting in addcol-shell
+      #3048 closed 2026-03-27 Add macOS terminfo environment bootstrap for standalone Python builds
+      #3049 closed 2026-03-27 Normalize Ghostty TERM before curses initialization
+      #2626 closed 2024-12-04 Allow octants in plots
+      #3047 closed 2026-03-27 Aggregate cache is not invalidated on sheet/type mutations
+      #1606 closed 2022-11-18 Docs:How do I replay cmdlogs on arbitrary files?
+      #2839 merged 2025-08-11 fix blank output after exiting confirm via Esc
+      #2826 merged 2025-07-31 make asynccache/addcol-shell thread-safe, and runnable in macros and replay
+      #2837 merged 2025-08-10 fix path problems in archive files
+  unreadable     7 hit(s) (all listed)
+      #2988 open 2026-02-19 High-contrast fallback for "Automatic" xlsx text colors
+      #2758 merged 2025-05-24 [threads-] catch error trying to start a second profiler
+      #2729 closed 2025-03-31 light theme is outdated (incomplete)
+      #2342 closed 2024-03-05 [vds] saving sheet with no rows makes following sheets unreadable
+      #2287 closed 2024-02-02 [memory] shorten cells too wide to fit in prompt
+      #1699 closed 2023-01-24 Feature request: Allow specifying ticks in GraphSheet
+      #149 closed 2018-05-20 Impossible to read the selected record row, when it is just selected
+  garbage        8 hit(s) (all listed)
+      #3212 open 2026-08-27 Problems reading tar contents - cannot open files or wrong content shown
+      #3139 merged 2026-06-10 Apply -f filetype per-path, never globally
+      #2089 closed 2023-10-27 [vds] hidden columns used in expressions not saved in .vds export
+      #1991 closed 2023-08-09 Screen doesn't refresh after sorting
+      #1357 closed 2022-04-20 [bug/feature] stop all async* when vd.run returns
+      #918 closed 2021-03-06 Clarify the difference between float and currency format types
+      #37 closed 2017-05-31 Handle over-large input files gracefully
+      #212 closed 2018-11-22 Does the "q" command delete the current saved sheet?
+  mangled        2 hit(s) (all listed)
+      #3090 merged 2026-05-19 [shell] fix addcol-shell $col quoting and pipe operators (#3026)
+      #350 closed 2019-09-06 Crash (stack overflow) with self-referential column expressions
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3213 open 2026-08-27 Archive bad read contents
+      #3212 open 2026-08-27 Problems reading tar contents - cannot open files or wrong content shown
+      #3176 open 2026-07-06 visidata.org/man 404s now
+      #3112 closed 2026-05-28 cells holding None do not give True when compared for equality to None
+      #3111 closed 2026-05-28 [status] statusHistory displays mutating values, instead of permanent strings
+      #3148 closed 2026-06-20 [hide-col] When hiding the last column the current column ends up on the first hidden col rather than the last unhidden col
+      #2959 merged 2026-01-31 [palette-] prevent interpretation of markup in go-col-name
+      #2806 closed 2025-07-04 getDisplayValue() gives incorrect widths for collections
+      #2986 closed 2026-02-18 [] Please provide a keystroke / command to move to the cell below during editing instead of shift + Down arrow
+      #2985 closed 2026-02-18 Default column width is changing after adding rows
+      #2978 closed 2026-02-12 [question] S3 compatible access
+      #2861 merged 2025-09-13 feature: highlight patterns like vim's hlsearch
+      #2805 closed 2025-07-02 [editor-] sysedit-cell: edit unprintable values as binary
+      #2798 closed 2025-06-20 foot terminal emulator interprets Alt+h as è instead of <M-h>
+      #2970 closed 2026-02-09 Some way (visidata --show-info?) to display info for bug tracking
+      #2500 closed 2024-08-24 Feature request: Text-editing conveniences when editing a cell
+      #2815 merged 2025-07-23 prevent output of raw characters to terminal
+      #2835 merged 2025-08-06 [sheets-] on reload, fetch fresh data for URLs
+      #2750 closed 2025-05-11 [column-] fix rjust padding for wide chars in numeric col
+      #2765 merged 2025-06-04 [misc-] fix undo editing cells in unusual columns
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3203 open 2026-08-16 [sheets] keep SettableColumn values on deepcopied rows #3174
+      #2928 open 2026-01-01 active sheet gets pushed off crowded statusbar
+      #2767 open 2025-06-08 Feature request: Add option to use 0-based indexing everywhere
+      #2616 open 2024-11-29 Improve the manipulation of nested data structures
+      #2947 open 2026-01-17 Feature request: querying LLMs with visidata cells input
+      #3188 closed 2026-07-23 [join-] concat keeps native rowdef of source sheets  #3187
+      #3020 merged 2026-03-14 exec-sql: query names, types, edit-sql, SheetsSheet query column
+      #3127 closed 2026-06-05 use "visidata" prefix for temp files/dirs
+      #3140 merged 2026-06-10 [sheets-] add command to change precision displayed for floats
+      #3078 closed 2026-05-08 [shell] fix addcol-shell double-quoting and broken pipe operators (#3026)
+      #3090 merged 2026-05-19 [shell] fix addcol-shell $col quoting and pipe operators (#3026)
+      #3039 closed 2026-03-21 drag column separator with mouse to resize previous column
+      #3044 merged 2026-03-25 drag column separator to resize previous column
+      #3050 merged 2026-03-27 [freqtbl-] only start new threads for large or complex bins
+      #2861 merged 2025-09-13 feature: highlight patterns like vim's hlsearch
+      #2591 closed 2024-10-31 [installation] Add instructions for how to use VisiData with UV
+      #2931 closed 2026-01-05 screen redraw anomaly after idle timeout
+      #2286 closed 2024-02-01 Review how we configure of which format to save in
+      #1606 closed 2022-11-18 Docs:How do I replay cmdlogs on arbitrary files?
+      #2908 merged 2025-11-27 [statusbar-] make lstatus_max truncation preserve vd markup
+  unclean        1 hit(s) (all listed)
+      #56 closed 2017-06-22 VisiData gets stuck loading files containing NULL bytes
+  shutdown       0 hit(s)
+  reboot         3 hit(s) (all listed)
+      #1259 closed 2022-01-04 Menus not rendering as expected
+      #1532 closed 2022-09-20 Possible Memory Leak
+      #551 closed 2020-05-09 [wishlist] Save session state exactly
+  disk+full      2 hit(s) (all listed)
+      #2721 merged 2025-03-13 Changes referenced in #2719 and #2676
+      #151 closed 2018-05-29 Incomplete file loads when accessed from external disk drive
+  data+loss      8 hit(s) (all listed)
+      #3043 merged 2026-03-24 Fix fixed-width loader for right-justified headers
+      #2175 closed 2023-12-16 [save] .vds is the VisiData internal save format
+      #1576 closed 2022-10-27 [json] saving a file discards columns that contain only null values
+      #1850 merged 2023-04-13 [graph] fix data on edges being drawn offscreen
+      #1415 closed 2022-06-26 [] Better save defaults when manipulating files
+      #1457 closed 2022-08-06 Add options + code that allows a user to specify the format of expanded column names [pyobj]
+      #955 closed 2021-04-18 [wishlist modify] autosave feature
+      #331 closed 2019-08-12 Fixed format can truncate data, but not strip spaces.
+  partial+write  3 hit(s) (all listed)
+      #1009 closed 2021-06-14 save: atomic file save
+      #1816 closed 2023-03-23 Project dependencies may have API risk issues
+      #1817 closed 2023-03-23 Project dependencies may have API risk issues
+  crash+safe     1 hit(s) (all listed)
+      #3120 merged 2026-05-31 [path-] add closed/close/flush to RepeatFile  #3097
+  atomic+write   3 hit(s) (all listed)
+      #2826 merged 2025-07-31 make asynccache/addcol-shell thread-safe, and runnable in macros and replay
+      #1009 closed 2021-06-14 save: atomic file save
+      #237 closed 2018-12-29 [Loader] Frictionless Data Packages
+  lock+file      6 hit(s) (all listed)
+      #1587 closed 2022-11-05 Python 3.11 released with builtin toml support.
+      #1808 closed 2023-03-18 [develop] VisiData occassionally gets stuck when importing `requests`
+      #735 closed 2020-10-18 [loader] Add a toml loader
+      #172 closed 2018-07-20 [www] Create favicon for visidata.org
+      #100 closed 2018-01-04 Bottleneck in freezing/summarizing computed columns?
+      #728 merged 2020-10-14 Fix HDF5 loader
+  write+failure  7 hit(s) (all listed)
+      #3203 open 2026-08-16 [sheets] keep SettableColumn values on deepcopied rows #3174
+      #3204 open 2026-08-16 [vds] save a column type only when it can be loaded back #3175
+      #2999 merged 2026-02-24 Batch test execution: ~5x speedup by running all tests in a single process
+      #2990 merged 2026-02-20 [pyobj-] define-command: pass test and handle empty input
+      #2826 merged 2025-07-31 make asynccache/addcol-shell thread-safe, and runnable in macros and replay
+      #2435 closed 2024-06-29 [playback] choking on column name
+      #2142 closed 2023-11-27 [macros] Macros/Macros sheet loading is broken
+  file+contents  76 hit(s) (all listed)
+      #3212 open 2026-08-27 Problems reading tar contents - cannot open files or wrong content shown
+      #3176 open 2026-07-06 visidata.org/man 404s now
+      #2806 closed 2025-07-04 getDisplayValue() gives incorrect widths for collections
+      #2798 closed 2025-06-20 foot terminal emulator interprets Alt+h as è instead of <M-h>
+      #2970 closed 2026-02-09 Some way (visidata --show-info?) to display info for bug tracking
+      #2500 closed 2024-08-24 Feature request: Text-editing conveniences when editing a cell
+      #2765 merged 2025-06-04 [misc-] fix undo editing cells in unusual columns
+      #2575 closed 2024-10-19 Derived transposed sheet cells do not keep source column type
+      #2719 closed 2025-03-10 Easy fix for missing `vd` on Windows
+      #2720 closed 2025-03-13 Can't copy cell contents in VSCode ssh connection
+      #2557 closed 2024-10-13 [xlsx] Not able to read data from file that is not local and no errors are reported
+      #2582 closed 2024-10-22 Replaying a cmdlog where input is read from stdin fails
+      #2449 closed 2024-07-11 [question] vdsql duckdb in memory
+      #2513 closed 2024-09-02 Column using slow function as expr causes extreme slowness
+      #2481 closed 2024-07-31 About config display option and regex filters
+      #1805 closed 2023-03-13 Add read-only flag
+      #2287 closed 2024-02-02 [memory] shorten cells too wide to fit in prompt
+      #2486 closed 2024-08-05 Menu rendering glitches on macOS
+      #322 closed 2019-07-23 Request for human-friendly .visidatarc template
+      #1259 closed 2022-01-04 Menus not rendering as expected
+
+== 51 terms run; 44 returned hits, 4 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

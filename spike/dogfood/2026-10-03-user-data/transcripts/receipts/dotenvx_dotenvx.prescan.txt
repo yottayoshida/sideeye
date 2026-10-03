@@ -1,0 +1,257 @@
+== novelty pre-scan: dotenvx/dotenvx
+== date: 2026-10-03T02:57:56Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          5 hit(s) (all listed)
+      #851 merged 2026-06-20 publish as named binaries
+      #466 closed 2024-11-26 error code: `[WRONG_PRIVATE_KEY]`
+      #568 closed 2025-04-15 Bug - dotenvx run command crashes on PowerShell when passing an argument
+      #301 closed 2024-07-04 Vercel not picking up env variables with sveltekit
+      #254 merged 2024-06-19 Bump ws from 8.16.0 to 8.17.1
+  corrupt        3 hit(s) (all listed)
+      #783 closed 2026-04-10 --format eval corrupts values containing $ or backticks
+      #784 closed 2026-04-10 feat: add --format eval-singlequotes and --format eval-export
+      #841 merged 2026-06-18 next support
+  corruption     1 hit(s) (all listed)
+      #783 closed 2026-04-10 --format eval corrupts values containing $ or backticks
+  truncated      5 hit(s) (all listed)
+      #824 merged 2026-05-28 Bump uuid and @tapjs/processinfo
+      #240 closed 2024-05-29 $ (dollar) signs not handled properly in env var values
+      #386 closed 2024-09-27 dotenvx get MY_VAR doesn't show anything
+      #254 merged 2024-06-19 Bump ws from 8.16.0 to 8.17.1
+      #51 merged 2024-01-27 Bump got and update-notifier
+  truncate       5 hit(s) (all listed)
+      #824 merged 2026-05-28 Bump uuid and @tapjs/processinfo
+      #240 closed 2024-05-29 $ (dollar) signs not handled properly in env var values
+      #386 closed 2024-09-27 dotenvx get MY_VAR doesn't show anything
+      #254 merged 2024-06-19 Bump ws from 8.16.0 to 8.17.1
+      #51 merged 2024-01-27 Bump got and update-notifier
+  empty          39 hit(s) (all listed)
+      #993 closed 2026-09-28 Decrypt inherited environment variables without loading dotenv files
+      #877 merged 2026-07-09 permit empty value on `set`
+      #964 closed 2026-09-10 `dotenvx run` rewrites arguments after nested `--`, causing the wrong executable to run
+      #876 closed 2026-07-09 set: MISSING_VALUE error when explicitly setting an empty string value
+      #768 closed 2026-03-26 fix: correct default value interpolation for empty strings
+      #937 merged 2026-08-05 Bump brace-expansion from 5.0.8 to 5.0.9
+      #864 closed 2026-07-02 error code: `[MISSING_VALUE]`
+      #765 closed 2026-03-26 Default values - not working per docs
+      #707 closed 2025-11-26 Exclude .env.example from dotenvx check via precommit extension
+      #706 closed 2025-11-24 Add @dotenvx-skip inline comment directive
+      #434 closed 2024-11-11 dotenvx run doesn't run under powershell
+      #697 closed 2025-11-06 Fix: test error in decryptKeyValue.js
+      #776 closed 2026-04-05 Feature: command-based resolution for .env.keys decryption keys
+      #364 closed 2024-08-31 How to inject dotenvx env variables for vscode debug(launch configuration)
+      #687 closed 2025-10-17 `dotenvx ext precommit` false negative after .env file has been commited
+      #673 closed 2025-09-12 Missing a way to say "load this .env and give me the result, in isolation".
+      #606 closed 2025-06-12 Incorrect documentation about the interpolation
+      #607 merged 2025-06-12 Add comprehensive interpolation syntax documentation to README
+      #541 closed 2025-03-04 Blank line disappeared after encrypting empty value
+      #542 merged 2025-03-04 Fix blank line disappearing after encrypting empty value
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #693 closed 2025-10-29 feature: ✨ new "lock" and "unlock" feature
+  sigkill        3 hit(s) (all listed)
+      #798 merged 2026-04-21 respect sigint
+      #188 closed 2024-04-23 Handle `SIGTERM` and exit 
+      #131 closed 2024-03-19 --env-file flag collision for node 20
+  sigint         8 hit(s) (all listed)
+      #798 merged 2026-04-21 respect sigint
+      #730 closed 2026-01-21 dotenvx terminates process before SIGINT handler completes
+      #402 merged 2024-10-13 if SIGTERM or SIGINT sent don't bubble wrapped error
+      #394 closed 2024-10-10 Unexpected error message printed on exit
+      #385 closed 2024-09-24 Does not forward process kill signal to Node.js application
+      #188 closed 2024-04-23 Handle `SIGTERM` and exit 
+      #17 merged 2023-12-22 SIGINT
+      #142 closed 2024-03-27 Postgres Official Image fails to launch with `dotenvx run -- postgres`
+  ctrl-c         3 hit(s) (all listed)
+      #468 closed 2024-11-26 "dotenvx set key" without providing value should ask for input to avoid secret value being stored in shell history
+      #385 closed 2024-09-24 Does not forward process kill signal to Node.js application
+      #188 closed 2024-04-23 Handle `SIGTERM` and exit 
+  power          6 hit(s) (all listed)
+      #526 closed 2025-02-10 📃 dotenvx whitepaper
+      #433 closed 2024-11-08 Variable expansion/interpolation bugs (depth and self-reference)
+      #493 closed 2024-12-16 Do not regenerate `PUBLIC_KEY` if `DOTENV_PUBLIC_KEY` exists
+      #152 closed 2024-04-01 introduce a `dotenvx settings` or `dotenvx config` command to control confStore settings for power users
+      #60 merged 2024-02-06 default expansion 🌱
+      #189 closed 2024-04-23 Add new encrypted variable without ability to decrypt
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           8 hit(s) (all listed)
+      #712 closed 2025-12-04 feat: add GPG and YubiKey encryption support
+      #747 closed 2026-03-12 Integrations with other password keeper
+      #537 closed 2025-02-26 Where should the `.env.keys` file/private key be kept?
+      #836 merged 2026-06-15 move optional `login` into cli
+      #776 closed 2026-04-05 Feature: command-based resolution for .env.keys decryption keys
+      #686 closed 2025-10-14 added simple query to request ENV and value from the user in the 'set……' command if they do not provide one themselves
+      #556 closed 2025-03-30 Transparent migration from existing workflow
+      #174 merged 2024-04-10 add support for .env.[env].local
+  partial        3 hit(s) (all listed)
+      #816 closed 2026-05-18 Support privacy-safe env inspection (show last N chars) for AI workflows
+      #839 merged 2026-06-16 `dotenvx keypair` 
+      #518 closed 2025-01-30 More elegant way of determining environments rather than via the DOTENV_PRIVATE_KEY_<ENV> itself or tips on how?
+  incomplete     2 hit(s) (all listed)
+      #433 closed 2024-11-08 Variable expansion/interpolation bugs (depth and self-reference)
+      #329 closed 2024-08-13 possible `tinyexec` issue
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #259 closed 2024-06-22 🏆 dotenvx pro
+  recovery       1 hit(s) (all listed)
+      #259 closed 2024-06-22 🏆 dotenvx pro
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #394 closed 2024-10-10 Unexpected error message printed on exit
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #788 closed 2026-04-14 Fix/windows tests
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #228 closed 2024-05-21 Some secrets being erased when they are set since last update. 
+      #76 closed 2024-02-14 bump update-notifier to fix vulnerability
+  erasing        0 hit(s)
+  erased         2 hit(s) (all listed)
+      #228 closed 2024-05-21 Some secrets being erased when they are set since last update. 
+      #76 closed 2024-02-14 bump update-notifier to fix vulnerability
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      20 hit(s) (all listed)
+      #980 merged 2026-09-21 dotenvx protect
+      #807 closed 2026-05-09 dotenv rotate does not check wether it has write permission before overwriting the .env file
+      #896 closed 2026-07-15 Add instructions and potentially a command for updating dotenvx
+      #940 merged 2026-08-07 Bump js-yaml from 4.3.0 to 4.3.1
+      #999 merged 2026-09-29 Bump ip-address from 10.3.1 to 10.7.2
+      #937 merged 2026-08-05 Bump brace-expansion from 5.0.8 to 5.0.9
+      #870 merged 2026-07-02 Bump sigstore from 4.1.0 to 4.1.1
+      #858 merged 2026-06-30 Bump @sigstore/core from 3.2.0 to 3.2.1
+      #809 merged 2026-05-12 Bump ip-address from 10.1.0 to 10.2.0
+      #824 merged 2026-05-28 Bump uuid and @tapjs/processinfo
+      #685 closed 2025-10-10 Environment variable precedence with '--convention=nextjs' is not being respected for encrypted .env.local files
+      #301 closed 2024-07-04 Vercel not picking up env variables with sveltekit
+      #502 closed 2024-12-29 Load order for .env.*.[extended] files.. - use `-f` flags in order you desire
+      #268 closed 2024-06-26 Bug: Command substitution overwrites/overloads machine env
+      #345 closed 2024-08-21 preserve comments with `dotenvx ext genexample`
+      #296 closed 2024-07-01 add `--stdout` flag to `dotenvx encrypt`
+      #449 merged 2024-11-18 Bump cross-spawn from 7.0.3 to 7.0.6
+      #254 merged 2024-06-19 Bump ws from 8.16.0 to 8.17.1
+      #50 merged 2024-01-27 Bump follow-redirects from 1.15.3 to 1.15.5
+      #51 merged 2024-01-27 Bump got and update-notifier
+  clobber        0 hit(s)
+  blank          15 hit(s) (all listed)
+      #799 closed 2026-04-22 fix(parse): unescape escaped single quotes in single-quoted values
+      #784 closed 2026-04-10 feat: add --format eval-singlequotes and --format eval-export
+      #806 merged 2026-05-06 Handle duplicate key (with different values) workflows
+      #798 merged 2026-04-21 respect sigint
+      #714 merged 2025-12-10 Make Docker documentation base image agnostic
+      #774 merged 2026-04-02 better encrypt and decrypt experience
+      #746 merged 2026-03-11 preparing ops pks
+      #720 merged 2025-12-29 add optional step after encrypt - `dotenvx ops backup`
+      #541 closed 2025-03-04 Blank line disappeared after encrypting empty value
+      #542 merged 2025-03-04 Fix blank line disappearing after encrypting empty value
+      #577 closed 2025-05-02 Is FOO= considered a "set" value?
+      #603 closed 2025-06-03 fix: check only staged files for precommit hook
+      #386 closed 2024-09-27 dotenvx get MY_VAR doesn't show anything
+      #373 closed 2024-09-04 Decrypt: Exit with non-zero exit code on failure
+      #358 closed 2024-08-27 Treat encrypted envrionment vars as empty if key is not provided
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       21 hit(s) (all listed)
+      #980 merged 2026-09-21 dotenvx protect
+      #999 merged 2026-09-29 Bump ip-address from 10.3.1 to 10.7.2
+      #845 merged 2026-06-19 bundle deps for @dotenvx/next-env
+      #738 closed 2026-02-18 Option to automatically decrypt environment variables that have already been passed
+      #824 merged 2026-05-28 Bump uuid and @tapjs/processinfo
+      #259 closed 2024-06-22 🏆 dotenvx pro
+      #679 closed 2025-09-23 Fix encrypted values being injected when decryption fails on macOS
+      #301 closed 2024-07-04 Vercel not picking up env variables with sveltekit
+      #512 closed 2025-01-22 calling set(NAME, VALUE, {path}) does not write output to env files
+      #488 closed 2024-12-12 BUG: combining variable expansion with command substitution
+      #416 closed 2024-10-22 Can't read environment variables in `@cloudflare/next-on-pages`
+      #433 closed 2024-11-08 Variable expansion/interpolation bugs (depth and self-reference)
+      #508 merged 2025-01-10 Add `config` package entrypoint
+      #241 closed 2024-05-29 dotenvx run, flag to pass through the private key
+      #207 closed 2024-05-10 make `precommit` tool smarter to check an encrypted `.env` file does NOT have any unencrypted values in it
+      #179 closed 2024-04-16 add `dotenvx status` command
+      #276 closed 2024-06-29 error: MODULE_NOT_FOUND
+      #41 closed 2024-01-23 team sharing
+      #329 closed 2024-08-13 possible `tinyexec` issue
+      #46 closed 2024-01-25 Not Loading .env
+  in-place       40 hit(s) (all listed)
+      #983 merged 2026-09-22 events
+      #647 closed 2025-07-19 add traversal option
+      #537 closed 2025-02-26 Where should the `.env.keys` file/private key be kept?
+      #431 closed 2024-11-05 Proposal: Use `export` to mark unencrypted values as safe
+      #741 closed 2026-03-02 Better support for duplicate file names // Environment support
+      #518 closed 2025-01-30 More elegant way of determining environments rather than via the DOTENV_PRIVATE_KEY_<ENV> itself or tips on how?
+      #746 merged 2026-03-11 preparing ops pks
+      #744 closed 2026-03-05 dotenvx for opencode
+      #687 closed 2025-10-17 `dotenvx ext precommit` false negative after .env file has been commited
+      #684 closed 2025-10-09 What is the advantage of having the .env file encrypted when there is a key file with the private key right next to it?
+      #557 closed 2025-04-01 Using env keys with the same namespace in a monorepo
+      #660 closed 2025-08-07 dotenvx is requesting permission to run commands on Deno
+      #673 closed 2025-09-12 Missing a way to say "load this .env and give me the result, in isolation".
+      #609 closed 2025-06-16 Documentation: need clear explanation of the cascading and defaulting behavior
+      #610 closed 2025-06-17 Process.env not updating when editing .env and rerunning dotenvx
+      #615 closed 2025-06-21 option creation failed due to '-fk' in option flags '-fk, --env-keys-file <path>'
+      #603 closed 2025-06-03 fix: check only staged files for precommit hook
+      #556 closed 2025-03-30 Transparent migration from existing workflow
+      #508 merged 2025-01-10 Add `config` package entrypoint
+      #209 closed 2024-05-15 support specifying path to `.env.keys` file
+  unclean        0 hit(s)
+  shutdown       4 hit(s) (all listed)
+      #730 closed 2026-01-21 dotenvx terminates process before SIGINT handler completes
+      #789 closed 2026-04-16 pre-commit-hook: dotenvx bash script fails
+      #798 merged 2026-04-21 respect sigint
+      #142 closed 2024-03-27 Postgres Official Image fails to launch with `dotenvx run -- postgres`
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #776 closed 2026-04-05 Feature: command-based resolution for .env.keys decryption keys
+  data+loss      1 hit(s) (all listed)
+      #787 closed 2026-04-14 encrypt: error when private key is absent from .env.keys instead of silently encrypting
+  partial+write  1 hit(s) (all listed)
+      #518 closed 2025-01-30 More elegant way of determining environments rather than via the DOTENV_PRIVATE_KEY_<ENV> itself or tips on how?
+  crash+safe     1 hit(s) (all listed)
+      #466 closed 2024-11-26 error code: `[WRONG_PRIVATE_KEY]`
+  atomic+write   0 hit(s)
+  lock+file      9 hit(s) (all listed)
+      #921 closed 2026-07-23 [Feature] saving decryption key in Bitwarden
+      #693 closed 2025-10-29 feature: ✨ new "lock" and "unlock" feature
+      #712 closed 2025-12-04 feat: add GPG and YubiKey encryption support
+      #762 closed 2026-03-21 Fix lockfile
+      #518 closed 2025-01-30 More elegant way of determining environments rather than via the DOTENV_PRIVATE_KEY_<ENV> itself or tips on how?
+      #806 merged 2026-05-06 Handle duplicate key (with different values) workflows
+      #774 merged 2026-04-02 better encrypt and decrypt experience
+      #685 closed 2025-10-10 Environment variable precedence with '--convention=nextjs' is not being respected for encrypted .env.local files
+      #416 closed 2024-10-22 Can't read environment variables in `@cloudflare/next-on-pages`
+  write+failure  2 hit(s) (all listed)
+      #980 merged 2026-09-21 dotenvx protect
+      #895 closed 2026-07-15 catchAndLog mislabels read-permission errors as FILE_NOT_WRITABLE
+  file+contents  18 hit(s) (all listed)
+      #980 merged 2026-09-21 dotenvx protect
+      #845 merged 2026-06-19 bundle deps for @dotenvx/next-env
+      #738 closed 2026-02-18 Option to automatically decrypt environment variables that have already been passed
+      #259 closed 2024-06-22 🏆 dotenvx pro
+      #679 closed 2025-09-23 Fix encrypted values being injected when decryption fails on macOS
+      #301 closed 2024-07-04 Vercel not picking up env variables with sveltekit
+      #512 closed 2025-01-22 calling set(NAME, VALUE, {path}) does not write output to env files
+      #488 closed 2024-12-12 BUG: combining variable expansion with command substitution
+      #416 closed 2024-10-22 Can't read environment variables in `@cloudflare/next-on-pages`
+      #433 closed 2024-11-08 Variable expansion/interpolation bugs (depth and self-reference)
+      #508 merged 2025-01-10 Add `config` package entrypoint
+      #241 closed 2024-05-29 dotenvx run, flag to pass through the private key
+      #329 closed 2024-08-13 possible `tinyexec` issue
+      #207 closed 2024-05-10 make `precommit` tool smarter to check an encrypted `.env` file does NOT have any unencrypted values in it
+      #179 closed 2024-04-16 add `dotenvx status` command
+      #41 closed 2024-01-23 team sharing
+      #276 closed 2024-06-29 error: MODULE_NOT_FOUND
+      #189 closed 2024-04-23 Add new encrypted variable without ability to decrypt
+
+== 51 terms run; 32 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

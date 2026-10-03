@@ -1,0 +1,144 @@
+== novelty pre-scan: amadvance/snapraid
+== date: 2026-10-03T03:22:40Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          5 hit(s) (all listed)
+      #68 closed 2026-10-01 15.0rc2: Snapshots not located properly
+      #52 closed 2026-05-29 v14.5: Segfaults during scan on musl/Alpine with deep directory trees (stack overflow in scan_sub)
+      #55 closed 2026-06-15 Segmentation fault + io_reader_thread: Assertion
+      #32 closed 2026-02-25 Fix NULL deref and WEXITSTATUS misuse in devprobe(), reject trailing commas in scomma()
+      #25 closed 2025-03-27 Added feature to limit disk IO bandwidth 
+  corrupt        0 hit(s)
+  corruption     1 hit(s) (all listed)
+      #31 closed 2026-02-03 Implemented force-realloc-tail option for sync
+  truncated      0 hit(s)
+  truncate       0 hit(s)
+  empty          7 hit(s) (all listed)
+      #67 open 2026-09-29 15.0rc2: Touch fails on renamed files with zero sub-seconds
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #68 closed 2026-10-01 15.0rc2: Snapshots not located properly
+      #34 closed 2026-03-19 Fix dead-code strtod/strtoul checks, fd leaks on error paths, and a typo
+      #37 closed 2026-03-31 v14.0: regression: directory include rules no longer match files inside directories, causing content file data loss
+      #31 closed 2026-02-03 Implemented force-realloc-tail option for sync
+      #29 merged 2025-12-09 Add structured log output for status command to enable ASCII-free parsing
+  atomic         1 hit(s) (all listed)
+      #68 closed 2026-10-01 15.0rc2: Snapshots not located properly
+  atomically     0 hit(s)
+  interrupted    2 hit(s) (all listed)
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #46 open 2026-05-01 BCacheFS support
+  interrupt      3 hit(s) (all listed)
+      #46 open 2026-05-01 BCacheFS support
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #58 closed 2026-06-22 task snapraid:2097 blocked
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          3 hit(s) (all listed)
+      #55 closed 2026-06-15 Segmentation fault + io_reader_thread: Assertion
+      #32 closed 2026-02-25 Fix NULL deref and WEXITSTATUS misuse in devprobe(), reject trailing commas in scomma()
+      #16 closed 2023-10-13 Add debug output to understand calculation of failure probability (FP)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           23 hit(s) (all listed)
+      #46 open 2026-05-01 BCacheFS support
+      #56 open 2026-06-15 Make SMART Commands Safe for USB Enclosures with the JMicron JMS561 Bridge
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #62 open 2026-07-30 [Feature Request] Full ReFS 128-bit inode support
+      #67 open 2026-09-29 15.0rc2: Touch fails on renamed files with zero sub-seconds
+      #68 closed 2026-10-01 15.0rc2: Snapshots not located properly
+      #63 closed 2026-08-08 Snapraid `devices`, `probe`, and `smart` fail with error: `Failed to dereference device '0:56'`
+      #49 open 2026-05-09 Not searching for smartctl via PATH breaks NixOS
+      #50 closed 2026-05-17 Documentation: FAQ - Replace data disk - needs more details
+      #64 closed 2026-08-10 Share your performance measurements (snapraid -T)
+      #55 closed 2026-06-15 Segmentation fault + io_reader_thread: Assertion
+      #58 closed 2026-06-22 task snapraid:2097 blocked
+      #52 closed 2026-05-29 v14.5: Segfaults during scan on musl/Alpine with deep directory trees (stack overflow in scan_sub)
+      #39 closed 2026-04-04 v14.1: Make check fails on Arch Linux
+      #30 closed 2026-01-30 Implemented "parity" command to report all files which blocks the parity shrink after sync
+      #10 closed 2019-11-30 allow speed-test (-T) for other than 8 disks
+      #29 merged 2025-12-09 Add structured log output for status command to enable ASCII-free parsing
+      #17 closed 2023-10-13 Stick to the SMART values mentioned in the FAQ for failure probability calculation
+      #16 closed 2023-10-13 Add debug output to understand calculation of failure probability (FP)
+      #28 closed 2025-12-08 POC: SnapRAID API ?
+  partial        0 hit(s)
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #66 closed 2026-08-22 Forcing check and fix commands to brute-force -i folder
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #56 open 2026-06-15 Make SMART Commands Safe for USB Enclosures with the JMicron JMS561 Bridge
+      #64 closed 2026-08-10 Share your performance measurements (snapraid -T)
+      #46 open 2026-05-01 BCacheFS support
+  recovery       5 hit(s) (all listed)
+      #46 open 2026-05-01 BCacheFS support
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #64 closed 2026-08-10 Share your performance measurements (snapraid -T)
+      #68 closed 2026-10-01 15.0rc2: Snapshots not located properly
+      #25 closed 2025-03-27 Added feature to limit disk IO bandwidth 
+  rollback       2 hit(s) (all listed)
+      #49 open 2026-05-09 Not searching for smartctl via PATH breaks NixOS
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+  resume         1 hit(s) (all listed)
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      1 hit(s) (all listed)
+      #49 open 2026-05-09 Not searching for smartctl via PATH breaks NixOS
+  clobber        0 hit(s)
+  blank          1 hit(s) (all listed)
+      #31 closed 2026-02-03 Implemented force-realloc-tail option for sync
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #52 closed 2026-05-29 v14.5: Segfaults during scan on musl/Alpine with deep directory trees (stack overflow in scan_sub)
+  mangled        1 hit(s) (all listed)
+      #66 closed 2026-08-22 Forcing check and fix commands to brute-force -i folder
+  contents       1 hit(s) (all listed)
+      #49 open 2026-05-09 Not searching for smartctl via PATH breaks NixOS
+  in-place       6 hit(s) (all listed)
+      #56 open 2026-06-15 Make SMART Commands Safe for USB Enclosures with the JMicron JMS561 Bridge
+      #46 open 2026-05-01 BCacheFS support
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #49 open 2026-05-09 Not searching for smartctl via PATH breaks NixOS
+      #68 closed 2026-10-01 15.0rc2: Snapshots not located properly
+      #31 closed 2026-02-03 Implemented force-realloc-tail option for sync
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      9 hit(s) (all listed)
+      #62 open 2026-07-30 [Feature Request] Full ReFS 128-bit inode support
+      #46 open 2026-05-01 BCacheFS support
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+      #63 closed 2026-08-08 Snapraid `devices`, `probe`, and `smart` fail with error: `Failed to dereference device '0:56'`
+      #49 open 2026-05-09 Not searching for smartctl via PATH breaks NixOS
+      #52 closed 2026-05-29 v14.5: Segfaults during scan on musl/Alpine with deep directory trees (stack overflow in scan_sub)
+      #30 closed 2026-01-30 Implemented "parity" command to report all files which blocks the parity shrink after sync
+      #29 merged 2025-12-09 Add structured log output for status command to enable ASCII-free parsing
+      #28 closed 2025-12-08 POC: SnapRAID API ?
+  data+loss      1 hit(s) (all listed)
+      #37 closed 2026-03-31 v14.0: regression: directory include rules no longer match files inside directories, causing content file data loss
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      2 hit(s) (all listed)
+      #58 closed 2026-06-22 task snapraid:2097 blocked
+      #30 closed 2026-01-30 Implemented "parity" command to report all files which blocks the parity shrink after sync
+  write+failure  1 hit(s) (all listed)
+      #41 open 2026-04-09 Btrfs subvolumes/snapshots, UUID and file move detection
+  file+contents  1 hit(s) (all listed)
+      #49 open 2026-05-09 Not searching for smartctl via PATH breaks NixOS
+
+== 51 terms run; 23 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

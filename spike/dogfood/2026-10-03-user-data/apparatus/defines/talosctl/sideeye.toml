@@ -1,0 +1,6 @@
+[world]
+state = "/s/talos"
+
+[define]
+operation = "/opt/bin/talosctl --talosconfig /s/talos/config config context work"
+cwd       = "/s/talos-in"

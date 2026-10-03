@@ -1,0 +1,337 @@
+== novelty pre-scan: python-babel/babel
+== date: 2026-10-03T04:30:29Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          31 hit(s) (all listed)
+      #1347 open 2026-09-17 Don't crash on a blank PO-Revision-Date/POT-Creation-Date header
+      #1311 open 2026-08-10 Don't crash on blank PO-Revision-Date/POT-Creation-Date headers
+      #1293 open 2026-07-18 Don't crash on blank PO-Revision-Date / POT-Creation-Date headers
+      #1190 open 2025-02-13 `pybabel extract` crashes when it encounters a byte string
+      #1298 open 2026-07-29 fix(extract): skip bytes literals in _parse_python_string (#1190)
+      #1312 open 2026-08-10 Fix: In babel/messages/catalog.py Catalog._set_mime_headers(), the...
+      #715 open 2020-06-04 Pybabel should raise an error when it encounters f-strings
+      #1258 open 2026-02-21 Handle blank PO-Revision-Date and POT-Creation-Date headers
+      #1259 open 2026-02-22 Skip byte strings in extract_python instead of crashing
+      #439 open 2016-08-15 pybabel extract behaviour
+      #1310 merged 2026-07-31 Add support for other systemic aliases specified in CLDR `root.xml`
+      #1317 closed 2026-08-16 Ignore blank PO-Revision-Date/POT-Creation-Date header values
+      #1278 closed 2026-06-09 decode message context to str in read_mo
+      #1101 merged 2024-07-17 Allow parsing .po files that have an extant but empty Language header
+      #990 closed 2023-03-15 Crash with double-slashes in /etc/localtime on Python 3.9
+      #1164 merged 2025-01-08 Improve handling for `locale=None`
+      #1141 merged 2024-10-19 Make seconds optional in `parse_time` time formats
+      #769 closed 2020-12-12 Use try-catch block in order to handle extracting f-strings
+      #915 merged 2022-10-31 Use `ast` instead of `eval` for string extraction
+      #869 merged 2022-04-29 Add support for `b` and `B` period symbols in time format
+  corrupt        11 hit(s) (all listed)
+      #1272 open 2026-05-11 harden localedata loading with restricted unpickler
+      #1293 open 2026-07-18 Don't crash on blank PO-Revision-Date / POT-Creation-Date headers
+      #1287 closed 2026-06-27 fix: prevent Hebrew locale from corrupting subsequent locale formatting
+      #1234 closed 2025-10-14 Hebrew Locale Corrupts Subsequent Locale Formatting
+      #1294 closed 2026-07-28 Fix locale data cross-contamination via shared, mutated alias caches
+      #1274 closed 2026-05-24 fix(localedata): don't memoize resolved aliases into shared parent data
+      #1263 closed 2026-04-02 Fix standalone month alias cache leakage
+      #1105 merged 2024-07-22 Enclose white spaces in references
+      #653 closed 2019-07-10 mt.dat permission denied when installing
+      #776 closed 2021-03-24 Cannot install Babel
+      #593 closed 2018-06-25 Local Packages missing on install
+  corruption     1 hit(s) (all listed)
+      #1234 closed 2025-10-14 Hebrew Locale Corrupts Subsequent Locale Formatting
+  truncated      6 hit(s) (all listed)
+      #1052 merged 2023-12-22 Fix for #832
+      #932 merged 2022-11-17 Fix compact singular formats and patterns with no numbers
+      #45 closed 2013-08-07 Test failures with non-English locales
+      #75 closed 2014-01-06 Test failure with enabled warnings
+      #467 closed 2017-01-11 Regular expression flags warning in Python 3.6
+      #338 merged 2016-02-01 Fix #325 Support more format for timezone
+  truncate       13 hit(s) (all listed)
+      #478 open 2017-03-10 Currency normalization
+      #1052 merged 2023-12-22 Fix for #832
+      #932 merged 2022-11-17 Fix compact singular formats and patterns with no numbers
+      #930 merged 2022-11-13 Cast number to Decimal in _get_compact_format
+      #909 merged 2022-10-17 Add support for compact decimal formats
+      #45 closed 2013-08-07 Test failures with non-English locales
+      #75 closed 2014-01-06 Test failure with enabled warnings
+      #90 closed 2014-04-24 Bypass number rounding
+      #467 closed 2017-01-11 Regular expression flags warning in Python 3.6
+      #338 merged 2016-02-01 Fix #325 Support more format for timezone
+      #494 merged 2017-04-20 Decimal quantization
+      #410 merged 2016-05-29 Allow full control on Decimal behaviour
+      #102 closed 2014-07-04 Fix of losses of significant zeros in DateTimeFormat.format_frac_seconds()
+  empty          58 hit(s) (all listed)
+      #1351 open 2026-09-18 Fill empty plural translations in pybabel merge compendiums
+      #1273 open 2026-05-22 messages: skip untranslated plural messages when writing MO files
+      #530 open 2017-09-19 Pluralized messages with empty singular form are skipped and confounded
+      #1348 open 2026-09-18 Preserve nonconsecutive repeated comment lines
+      #665 open 2019-10-07 Can not initialize a catalog from a template with an empty string value for "Language" header
+      #1330 open 2026-08-25 Fix update() fuzzy matching for messages sharing a msgid across contexts
+      #697 open 2020-03-11 Compiled .mo files are using msgids for empty translations of ngettext entries, instead of allowing fallback
+      #1339 open 2026-09-09 Fix fuzzy status of headerless PO catalogs
+      #1347 open 2026-09-17 Don't crash on a blank PO-Revision-Date/POT-Creation-Date header
+      #1350 open 2026-09-18 extract: Warn when skipping an f-string with substitutions
+      #1344 open 2026-09-16 Clarify directory and filename wildcards in extraction mappings
+      #1269 open 2026-04-27 Ignore blank PO revision dates
+      #1311 open 2026-08-10 Don't crash on blank PO-Revision-Date/POT-Creation-Date headers
+      #1279 open 2026-06-13 Handle invalid plural index in msgstr[...] instead of raising ValueError (#1209)
+      #779 open 2021-04-18 Feature request: Add option for Extract to write a default msgstr
+      #1258 open 2026-02-21 Handle blank PO-Revision-Date and POT-Creation-Date headers
+      #118 open 2014-11-10 Wrong pofile syntax leads to IndexError
+      #666 open 2019-10-07 Ignore 'Language' header in PO-templates
+      #792 open 2021-06-09 Improved javascript template string expression extracting
+      #566 open 2018-03-25 Warns on commented out lines in po files
+  atomic         5 hit(s) (all listed)
+      #1334 open 2026-08-29 fix(issue #1219): Exception raised if the revision date is blank
+      #1333 closed 2026-08-29 fix(issue #1219): Exception raised if the revision date is blank
+      #211 closed 2015-09-10 Formatting of negative babel.util.FixedOffsetTimezone offsets
+      #210 merged 2015-09-10 Add format_timedelta(format='narrow') support
+      #324 merged 2016-01-12 Support extraction by filename as well as directory
+  atomically     0 hit(s)
+  interrupted    3 hit(s) (all listed)
+      #857 closed 2022-04-20 2.10.0: pytest is failing because unknown `en` locale
+      #750 closed 2020-11-07 2.8.0: test suite is failing
+      #747 closed 2020-10-30 tests fail with pytest 6
+  interrupt      4 hit(s) (all listed)
+      #989 open 2023-03-13 Extraction in js template strings fails
+      #857 closed 2022-04-20 2.10.0: pytest is failing because unknown `en` locale
+      #750 closed 2020-11-07 2.8.0: test suite is failing
+      #747 closed 2020-10-30 tests fail with pytest 6
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #401 closed 2016-05-03 Hang when extracting messages
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #371 open 2016-04-02 Apply demorgan's laws to simplify load code
+      #140 open 2015-01-26 Allow multiple arguments for same keyword
+      #309 open 2015-12-30 Validate Locale parameter formats while constructing
+      #305 open 2015-12-29 Make Locale objects immutable and cache them
+      #465 open 2017-01-10 Reverse get_global('windows_zone_mapping') to avoid data loss. Fixes #464
+      #743 open 2020-10-15 CommentHandling: add support for #| and extend handling #~ comments 
+      #80 open 2014-02-11 Don't determine python-format flag implicitly
+      #84 open 2014-03-05 Add support for loading data files from inside zips or wheels.
+      #863 closed 2022-04-23 Addressing problems raised in sphinx_issues #10104
+      #694 closed 2020-02-11 Improve extract performance via ignoring directory early during os.walk
+      #1159 merged 2024-12-05 Add tzdata as dev dependency and sync with tox.ini
+      #203 merged 2015-08-16 Fix the loading of the currency format types
+      #434 closed 2016-07-15 Use pytz.FixedOffset instead of babel.util.FixedOffsetTimezone
+      #304 closed 2015-12-29 Intern the CLDR's Windows Zone Map
+      #758 closed 2020-11-17 added Bengali(Bangladesh) to the locale aliases
+      #681 merged 2019-12-31 Fix amalgamation
+      #834 merged 2022-01-27 Improve date/time parsing
+      #843 merged 2022-02-23 Prefer setuptools imports to distutils imports
+      #448 closed 2016-09-28 Fix for Issue #442
+      #841 closed 2022-02-14 catalog.py: Fixing header by adding semicolon
+  outage         1 hit(s) (all listed)
+      #292 merged 2015-12-20 Upgrade to CLDR 28
+  ENOSPC         0 hit(s)
+  disk           8 hit(s) (all listed)
+      #1326 open 2026-08-18 Add a --check mode to the extract command
+      #799 open 2021-08-20 Two <BLANKLINE> in generated PO EOFs
+      #174 closed 2015-07-30 Locale.parse('zh_CN') raises a TypeError on Babel 2.0 with Python 3.3 and 3.4.
+      #620 closed 2019-01-03 localedata.locale_identifiers is slow
+      #622 closed 2019-01-15 Different week day ordering between Python 2 and 3
+      #361 merged 2016-03-02 Parsing of mixed-cased locale ID.
+      #615 closed 2018-12-21 localedata.py: Do disk lookup once
+      #614 closed 2018-12-21 localedata.py: Do disk lookup once
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #432 open 2016-07-14 babel.dates.parse_date() doesn't allow you to specify a format/pattern
+      #371 open 2016-04-02 Apply demorgan's laws to simplify load code
+      #140 open 2015-01-26 Allow multiple arguments for same keyword
+      #309 open 2015-12-30 Validate Locale parameter formats while constructing
+      #305 open 2015-12-29 Make Locale objects immutable and cache them
+      #465 open 2017-01-10 Reverse get_global('windows_zone_mapping') to avoid data loss. Fixes #464
+      #988 open 2023-03-12 Tests fail on days when EST/EDT swap happens
+      #904 open 2022-09-12 Provide a list of current ISO 3166 country codes?
+      #84 open 2014-03-05 Add support for loading data files from inside zips or wheels.
+      #1102 merged 2024-07-18 Allow use of importlib.metadata for finding entrypoints
+      #654 closed 2019-07-15 Extract messes up file names with whitespace
+      #203 merged 2015-08-16 Fix the loading of the currency format types
+      #304 closed 2015-12-29 Intern the CLDR's Windows Zone Map
+      #447 closed 2016-09-22 adding directory_filter arg to customized ignored dirs
+      #448 closed 2016-09-28 Fix for Issue #442
+      #219 merged 2015-09-10 FixedOffsetTimezone: fix display of negative offsets
+      #606 closed 2018-10-17 unorderable types in write_po
+      #127 merged 2014-12-05 Use currency fraction information
+      #119 merged 2014-11-12 Fix odict's pop method
+      #122 closed 2014-11-22 Added territory-language import from CLDR.
+  incomplete     6 hit(s) (all listed)
+      #1221 open 2025-07-22 Extract parametrized gettext from javascript files
+      #543 open 2017-11-21 Support for Chinese region subtags
+      #40 closed 2013-07-28 pybabel extract --no-wrap feature doesn't work (pybabel 1.2)
+      #53 closed 2013-09-03 messages not extracted from folders starting with _ or .
+      #126 closed 2014-12-04 support.Translations.load to load exact match
+      #660 closed 2019-07-26 Number spelling based on the CLDR's RBNF rules
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #566 open 2018-03-25 Warns on commented out lines in po files
+  recovery       1 hit(s) (all listed)
+      #396 merged 2016-04-25 jslexer.py: Change jsx_tag regex again
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #422 closed 2016-06-22 Language tag is not read from .po header
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      11 hit(s) (all listed)
+      #1086 open 2024-05-18 `extract` overwrites existing template, and `update` comments unused
+      #989 open 2023-03-13 Extraction in js template strings fails
+      #1067 open 2024-03-14 pybabel extract command from CLI only respects the first argument passed into keywords
+      #1313 open 2026-08-12 Fix extract_messages dry-run behavior
+      #1330 open 2026-08-25 Fix update() fuzzy matching for messages sharing a msgid across contexts
+      #666 open 2019-10-07 Ignore 'Language' header in PO-templates
+      #1161 merged 2024-12-09 Implementation of msgcat and msgmerge utilities from GNU gettext
+      #1294 closed 2026-07-28 Fix locale data cross-contamination via shared, mutated alias caches
+      #1132 merged 2024-09-23 Fix the way obsolete messages are stored
+      #785 merged 2021-05-07 Implement `--init-missing` option for `pybabel update`
+      #114 closed 2014-10-12 Number Spelling
+  clobber        1 hit(s) (all listed)
+      #352 open 2016-02-21 `babel update` should not rewrite the catalog's comment header
+  blank          30 hit(s) (all listed)
+      #1269 open 2026-04-27 Ignore blank PO revision dates
+      #1347 open 2026-09-17 Don't crash on a blank PO-Revision-Date/POT-Creation-Date header
+      #1334 open 2026-08-29 fix(issue #1219): Exception raised if the revision date is blank
+      #1311 open 2026-08-10 Don't crash on blank PO-Revision-Date/POT-Creation-Date headers
+      #1293 open 2026-07-18 Don't crash on blank PO-Revision-Date / POT-Creation-Date headers
+      #1258 open 2026-02-21 Handle blank PO-Revision-Date and POT-Creation-Date headers
+      #1219 open 2025-07-08 Exception raised if the revision date is blank
+      #1222 open 2025-07-26 Handle blank or malformed PO-Revision-Date in .po file headers
+      #1333 closed 2026-08-29 fix(issue #1219): Exception raised if the revision date is blank
+      #1317 closed 2026-08-16 Ignore blank PO-Revision-Date/POT-Creation-Date header values
+      #799 open 2021-08-20 Two <BLANKLINE> in generated PO EOFs
+      #1306 open 2026-07-30 Support CLDR 48 relative date formats
+      #1264 open 2026-04-10 Try to hold `_cache_lock` less in `load()`
+      #1232 open 2025-09-28 Rule based number formatting
+      #1322 merged 2026-08-17 Unfold class-based test cases
+      #1318 merged 2026-08-17 catalog: Keep explicitly declared plural forms without a locale
+      #1305 merged 2026-07-30 mofile: decode context (and optimize with partition)
+      #1310 merged 2026-07-31 Add support for other systemic aliases specified in CLDR `root.xml`
+      #1302 merged 2026-07-30 CLDR 48.2
+      #1299 merged 2026-07-30 Memoize resolved locale data per instance, share LocaleDataDicts
+  unreadable     1 hit(s) (all listed)
+      #369 merged 2016-03-19 Add unit and compound unit formatting
+  garbage        1 hit(s) (all listed)
+      #1034 open 2023-10-11 Extraction check for CI integration
+  mangled        2 hit(s) (all listed)
+      #1325 open 2026-08-17 fix(catalog): fix PYTHON_FORMAT regex false positives for percentage text
+      #920 closed 2022-11-01 Issue with importing `format_compact_decimal` (Babel 2.11.0)
+  contents       20 hit(s) (all listed)
+      #989 open 2023-03-13 Extraction in js template strings fails
+      #104 open 2014-07-08 CLDR import issue
+      #140 open 2015-01-26 Allow multiple arguments for same keyword
+      #1125 open 2024-09-12 extract: "Deeply nested" gettext calls aren't extracted
+      #344 open 2016-02-10 Allow overriding of CLDR
+      #1196 merged 2025-03-04 Keep translator comments next to the translation function call
+      #1128 closed 2024-09-19 Advice - just use .po files?
+      #890 closed 2022-06-17 How to get msgstr and msgid at the same time?
+      #1199 closed 2025-03-15 Redesign load_po to use Lex/Yacc state transitions style, to ease 
+      #1007 merged 2023-06-08 Allow alternative space characters as group separator when parsing numbers
+      #822 closed 2021-12-16 website reflects docs for 2.7.0, not current
+      #802 closed 2021-09-05 2.9.1: pytest is failing
+      #757 closed 2020-11-11 Tests fail in a non-UTC timezone
+      #776 closed 2021-03-24 Cannot install Babel
+      #269 merged 2015-10-02 Add a format_list function
+      #248 closed 2015-09-22 Empty Commit
+      #198 closed 2015-08-06 GAE optimisation
+      #200 merged 2015-08-07 Improve odict performance by making key search O(1)
+      #114 closed 2014-10-12 Number Spelling
+      #691 merged 2020-01-27 Fix unicode printing error on Python 2 without TTY.
+  in-place       57 hit(s) (all listed)
+      #1325 open 2026-08-17 fix(catalog): fix PYTHON_FORMAT regex false positives for percentage text
+      #1301 open 2026-07-30 Select the compact pattern from the rounded value
+      #901 open 2022-08-21 Format ordinal numbers
+      #1267 open 2026-04-21 To improve VCS compatibility, don't enforce formatting paradigm
+      #567 open 2018-03-29 Babel date conjugation in Latvian
+      #1271 open 2026-05-09 Fix Locale subclass __str__ issue
+      #1270 open 2026-05-09 Fixed normalize() not wrapping msgstr that exceeds width when keyword prefix is included.
+      #902 open 2022-08-31 pybabel extract: Extract pgettext with dynamic or default context (msgctxt) 
+      #1151 open 2024-11-17 Check pofile string delimiters
+      #961 open 2023-01-25 Make LocaleDataDict Generic
+      #806 open 2021-09-10 ISO Week Bug in January 1993
+      #933 open 2022-11-24 time formatting against a fixed date
+      #1146 open 2024-11-05 Changed get_week_number() to fix a problem with the locale en_AU
+      #454 open 2016-10-25 Allow definition of custom locales
+      #777 open 2021-04-02 Parse settings from pyproject.toml
+      #35 open 2013-07-27 python-format flag incorrectly forced on all extractors
+      #1232 open 2025-09-28 Rule based number formatting
+      #1161 merged 2024-12-09 Implementation of msgcat and msgmerge utilities from GNU gettext
+      #562 closed 2018-03-01 Support all gettext variants in extract's DEFAULT_KEYWORDS
+      #1174 merged 2025-01-16 Remove u string prefix from docs
+  unclean        1 hit(s) (all listed)
+      #344 open 2016-02-10 Allow overriding of CLDR
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #615 closed 2018-12-21 localedata.py: Do disk lookup once
+  data+loss      2 hit(s) (all listed)
+      #465 open 2017-01-10 Reverse get_global('windows_zone_mapping') to avoid data loss. Fixes #464
+      #1222 open 2025-07-26 Handle blank or malformed PO-Revision-Date in .po file headers
+  partial+write  12 hit(s) (all listed)
+      #203 merged 2015-08-16 Fix the loading of the currency format types
+      #606 closed 2018-10-17 unorderable types in write_po
+      #119 merged 2014-11-12 Fix odict's pop method
+      #153 closed 2015-03-31 Add __hash__ to Locale.
+      #315 merged 2016-01-03 Territory languages
+      #336 merged 2016-01-28 Fix #266 Points newcomers to easy bugs in the documentation
+      #338 merged 2016-02-01 Fix #325 Support more format for timezone
+      #188 merged 2015-08-05 Avoid incompatible *.dat files between Python 2 and 3
+      #386 merged 2016-04-11 Fix CLI command usage regressions
+      #114 closed 2014-10-12 Number Spelling
+      #110 merged 2014-09-06 Support 'Language' header field of PO files
+      #585 merged 2018-06-04 numbers: implement currency formatting with long display names.
+  crash+safe     3 hit(s) (all listed)
+      #715 open 2020-06-04 Pybabel should raise an error when it encounters f-strings
+      #1310 merged 2026-07-31 Add support for other systemic aliases specified in CLDR `root.xml`
+      #915 merged 2022-10-31 Use `ast` instead of `eval` for string extraction
+  atomic+write   0 hit(s)
+  lock+file      5 hit(s) (all listed)
+      #1264 open 2026-04-10 Try to hold `_cache_lock` less in `load()`
+      #305 open 2015-12-29 Make Locale objects immutable and cache them
+      #1250 closed 2026-02-03 ImportError: cannot import name 'number_re' from 'babel.numbers' since 2.18.0
+      #1299 merged 2026-07-30 Memoize resolved locale data per instance, share LocaleDataDicts
+      #1254 merged 2026-02-12 Cache validity of a locale name
+  write+failure  15 hit(s) (all listed)
+      #1326 open 2026-08-18 Add a --check mode to the extract command
+      #1339 open 2026-09-09 Fix fuzzy status of headerless PO catalogs
+      #1294 closed 2026-07-28 Fix locale data cross-contamination via shared, mutated alias caches
+      #1305 merged 2026-07-30 mofile: decode context (and optimize with partition)
+      #1318 merged 2026-08-17 catalog: Keep explicitly declared plural forms without a locale
+      #1299 merged 2026-07-30 Memoize resolved locale data per instance, share LocaleDataDicts
+      #1261 closed 2026-03-12 fix(mofile): decode msgctxt to str in read_mo
+      #1161 merged 2024-12-09 Implementation of msgcat and msgmerge utilities from GNU gettext
+      #1244 merged 2026-01-07 Reuse InitCatalog's guts in UpdateCatalog
+      #1240 merged 2025-12-25 Convert Unittest testcases with setup/teardown to fixtures
+      #802 closed 2021-09-05 2.9.1: pytest is failing
+      #757 closed 2020-11-11 Tests fail in a non-UTC timezone
+      #45 closed 2013-08-07 Test failures with non-English locales
+      #75 closed 2014-01-06 Test failure with enabled warnings
+      #114 closed 2014-10-12 Number Spelling
+  file+contents  16 hit(s) (all listed)
+      #989 open 2023-03-13 Extraction in js template strings fails
+      #140 open 2015-01-26 Allow multiple arguments for same keyword
+      #104 open 2014-07-08 CLDR import issue
+      #1125 open 2024-09-12 extract: "Deeply nested" gettext calls aren't extracted
+      #344 open 2016-02-10 Allow overriding of CLDR
+      #1196 merged 2025-03-04 Keep translator comments next to the translation function call
+      #1128 closed 2024-09-19 Advice - just use .po files?
+      #1199 closed 2025-03-15 Redesign load_po to use Lex/Yacc state transitions style, to ease 
+      #802 closed 2021-09-05 2.9.1: pytest is failing
+      #757 closed 2020-11-11 Tests fail in a non-UTC timezone
+      #776 closed 2021-03-24 Cannot install Babel
+      #269 merged 2015-10-02 Add a format_list function
+      #198 closed 2015-08-06 GAE optimisation
+      #200 merged 2015-08-07 Improve odict performance by making key search O(1)
+      #114 closed 2014-10-12 Number Spelling
+      #691 merged 2020-01-27 Fix unicode printing error on Python 2 without TTY.
+
+== 51 terms run; 34 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

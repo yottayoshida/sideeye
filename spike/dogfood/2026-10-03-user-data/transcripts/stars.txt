@@ -1,0 +1,106 @@
+AtomicParsley	wez/atomicparsley	767	2024-12-04	false	true	C++
+brename	shenwei356/brename	301	2025-08-29	false	true	Go
+comictagger	comictagger/comictagger	837	2026-09-28	false	true	Python
+klog	jotaen/klog	686	2026-09-17	false	false	Go
+notesmd-cli	Yakitrak/notesmd-cli	1591	2026-10-02	false	true	Go
+organize	tfeldmann/organize	3158	2026-09-28	false	true	Python
+patchelf	NixOS/patchelf	4270	2026-10-01	false	true	C
+phockup	ivandokov/phockup	1012	2024-05-06	false	true	Python
+rdfind	pauldreik/rdfind	1313	2026-07-25	false	true	C++
+rnr	ismaelgv/rnr	597	2026-03-21	false	true	Rust
+rsgain	complexlogic/rsgain	703	2026-09-16	false	true	C++
+upx	upx/upx	17916	2026-10-02	false	true	C++
+z.lua	skywind3000/z.lua	3149	2026-08-10	false	true	Lua
+elodie	jmathai/elodie	1507	2026-02-15	false	true	Python
+dnote	dnote/dnote	3087	2026-07-25	false	true	Go
+{"message":"Not Found","documentation_url":"https://docs.github.com/rest/repos/repos#get-a-repository","status":"404"}jdupes	jbruchon/jdupes	ERR
+imgp	jarun/imgp	1092	2026-08-16	false	true	Python
+ect	fhanau/Efficient-Compression-Tool	746	2026-08-30	false	true	C
+leanify	JayXon/Leanify	853	2026-06-05	false	true	C++
+image_optim	toy/image_optim	1550	2026-09-27	false	true	Ruby
+tageditor	Martchus/tageditor	891	2026-07-31	false	true	C++
+rcm	thoughtbot/rcm	3265	2025-05-23	false	true	Perl
+dotdrop	deadc0de6/dotdrop	1953	2026-09-29	false	true	Python
+dotter	SuperCuber/dotter	2015	2026-07-13	false	true	Rust
+czkawka	qarmin/czkawka	33863	2026-09-16	false	true	Fluent
+hardlink	util-linux/util-linux	3235	2026-10-02	false	true	C
+osync	deajan/osync	997	2026-08-17	false	true	Shell
+backintime	bit-team/backintime	2672	2026-09-23	false	true	Python
+trashy	oberblastmeister/trashy	531	2024-01-19	false	true	Rust
+rip	nivekuil/rip	1738	2024-04-08	false	true	Rust
+bartib	nikolassv/bartib	849	2026-03-25	false	true	Rust
+doing	ttscoff/doing	1295	2026-07-27	false	true	Ruby
+hstr	dvorka/hstr	4459	2026-09-16	false	true	C
+jump	gsamokovarov/jump	1947	2026-09-21	false	true	Go
+mu	djcb/mu	1717	2026-10-02	false	true	C++
+kustomize	kubernetes-sigs/kustomize	12176	2026-10-03	false	true	Go
+jpeg-archive	danielgtaylor/jpeg-archive	1183	2025-03-03	false	true	C
+scour	scour-project/scour	878	2024-08-16	false	true	Python
+tuckr	RaphGL/Tuckr	487	2026-08-01	false	true	Rust
+passage	FiloSottile/passage	1196	2024-08-30	false	true	Shell
+mail-deduplicate	kdeldycke/mail-deduplicate	201	2026-10-02	false	true	Python
+duperemove	markfasheh/duperemove	1013	2025-10-11	false	true	C
+loudgain	Moonbase59/loudgain	232	2024-07-29	false	true	C
+mp3gain	Sound-Linux-More/mp3gain	12	2019-04-07	false	true	C
+puddletag	puddletag/puddletag	639	2026-03-30	false	true	Python
+obsidian-export	zoni/obsidian-export	1336	2026-10-02	false	true	Rust
+kakoune	mawww/kakoune	11082	2026-10-02	false	true	C++
+sc-im	andmarti1424/sc-im	5700	2026-09-24	false	true	C
+visidata	saulpw/visidata	9313	2026-09-29	false	true	Python
+samtools	samtools/samtools	1964	2026-10-02	false	true	C
+electrum	spesmilo/electrum	8608	2026-10-01	false	true	Python
+pubs	pubs/pubs	292	2024-06-01	false	true	Python
+bibtex-tidy	FlamingTempura/bibtex-tidy	1126	2026-09-17	false	true	TeX
+fastmod	facebookincubator/fastmod	1931	2026-07-28	false	true	Rust
+comby	comby-tools/comby	2681	2026-06-08	false	true	OCaml
+scooter	thomasschafer/scooter	1297	2026-09-28	false	true	Rust
+harsh	wakatara/harsh	244	2026-06-04	false	true	Go
+totp-cli	yitsushi/totp-cli	377	2026-08-25	false	true	Go
+caesium	Lymphatus/caesium-clt	568	2026-09-16	false	true	Rust
+brotli	google/brotli	14903	2026-10-01	false	true	TypeScript
+lrzip	ckolivas/lrzip	704	2026-09-21	false	true	C
+bzip3	iczelia/bzip3	1517	2026-09-09	false	true	C
+cookcli	cooklang/cookcli	1399	2026-10-02	false	true	Rust
+taskbook	klaudiosinani/taskbook	9349	2025-11-03	false	true	JavaScript
+ambr	dalance/amber	953	2026-09-23	false	true	Rust
+csvq	mithrandie/csvq	1626	2024-07-25	false	true	Go
+dotenvx	dotenvx/dotenvx	5825	2026-10-02	false	true	JavaScript
+ejson	Shopify/ejson	1480	2026-10-01	false	true	Go
+hexapdf	gettalong/hexapdf	1382	2026-09-22	false	true	Ruby
+luarocks	luarocks/luarocks	3739	2026-09-02	false	true	Lua
+mapshaper	mbloch/mapshaper	4185	2026-10-02	false	true	JavaScript
+nbconvert	jupyter/nbconvert	1939	2026-09-14	false	true	Python
+nimble	nim-lang/nimble	1405	2026-10-02	false	true	Nim
+nushell	nushell/nushell	40612	2026-10-02	false	true	Rust
+perl	Perl/perl5	2332	2026-10-02	false	true	Perl
+snapraid	amadvance/snapraid	2583	2026-10-02	false	true	C
+ip7z/7zip	4048	2026-09-04	true	C++
+plougher/squashfs-tools	931	2026-08-22	true	C
+{"message":"Not Found","documentation_url":"https://docs.github.com/rest/repos/repos#get-a-repository","status":"404"}gh: Not Found (HTTP 404)
+sandreas/m4b-tool	1573	2026-04-18	true	PHP
+rfjakob/gocryptfs	4621	2026-10-01	true	Go
+johnwhitington/cpdf-source	279	2026-10-02	true	OCaml
+ahmetb/kubectx	20027	2026-08-02	true	Go
+opentofu/opentofu	30363	2026-10-02	true	Go
+digitalocean/doctl	3454	2026-10-01	true	Go
+podman-container-tools/podman	32987	2026-10-02	true	Go
+trentm/json	1561	2024-01-23	true	JavaScript
+pulumi/pulumi	25763	2026-10-03	true	Go
+mhx/dwarfs	2610	2026-10-02	true	C++
+smallstep/cli	4335	2026-09-28	true	Go
+flatpak/flatpak	5080	2026-09-29	true	C
+sunny0826/kubecm	1145	2026-09-21	true	Go
+argoproj/argo-cd	24319	2026-10-02	true	Go
+hetznercloud/cli	1825	2026-10-02	true	Go
+scaleway/scaleway-cli	999	2026-10-02	true	Go
+starship/starship	60127	2026-10-01	true	Rust
+transmission/transmission	15262	2026-09-04	true	C++
+nvm-sh/nvm	95247	2026-09-30	true	Shell
+cheat/cheat	13471	2026-05-19	true	Go
+kubernetes/minikube	32167	2026-09-28	true	Go
+GoogleContainerTools/skaffold	15896	2026-10-01	true	Go
+python-babel/babel	1469	2026-09-22	true	Python
+pypa/hatch	7238	2026-09-20	true	Python
+terraform-docs/terraform-docs	4828	2026-09-02	true	Go
+conda/conda	7522	2026-10-02	true	Python
+siderolabs/talos	11287	2026-10-02	true	Go

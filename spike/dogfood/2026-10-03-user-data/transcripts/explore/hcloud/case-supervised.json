@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/hcloud",
+    "operation": "/opt/bin/hcloud context use work",
+    "cwd": "/s/hcloud",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/hcloud/cli.toml",
+  "before_class": "write",
+  "before_path": "/s/hcloud/cli.toml",
+  "violation": "hybrid"
+}

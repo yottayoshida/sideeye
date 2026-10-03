@@ -1,0 +1,6 @@
+[world]
+state = "/s/nushell"
+
+[define]
+operation = "nu -n /s/nushell-in/edit.nu"
+cwd       = "/s/nushell-in"

@@ -1,0 +1,52 @@
+SEEN asdf spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:124
+SEEN borg target-classes:31
+SEEN dasel spike/dogfood/2026-09-06-userview-2/SELECTION.md:43
+SEEN dvc target-classes:30
+SEEN exiftool b2-exclusions:125
+SEEN exiv2 funnel:32
+SEEN eyeD3 b2-candidates:92
+SEEN f2 b2-targets:6
+SEEN fdupes b2-exclusions:76
+SEEN gifsicle b2-exclusions:83
+SEEN hledger unknown-rate-exclusions:12
+SEEN jhead spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:123
+SEEN jpegoptim b2-exclusions:107
+SEEN jrnl unknown-rate-exclusions:28
+SEEN khal target-classes:27
+SEEN khard unknown-rate-exclusions:30
+SEEN kid3 b2-exclusions:115
+SEEN kopia spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:126
+SEEN mise target-classes:54
+SEEN nb funnel:103
+SEEN opustags b2-exclusions:157
+SEEN pdfcpu spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:126
+SEEN pigz b2-exclusions:170
+SEEN pngquant b2-exclusions:174
+SEEN rclone b2-exclusions:191
+SEEN restic b2-exclusions:193
+SEEN rsnapshot b2-exclusions:196
+SEEN sd funnel:46
+SEEN sops spike/dogfood/2026-09-06-userview-2/SELECTION.md:44
+SEEN tidy b2-exclusions:216
+SEEN unison target-classes:12
+SEEN xz funnel:68
+SEEN yq b2-exclusions:239
+SEEN zk spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:122
+SEEN zoxide funnel:91
+fresh AtomicParsley 
+fresh brename 
+fresh comictagger 
+fresh dnote 
+fresh elodie 
+fresh jdupes 
+fresh klog 
+fresh notesmd-cli 
+fresh organize 
+fresh patchelf 
+fresh phockup 
+fresh rdfind 
+fresh rnr 
+fresh rsgain 
+fresh tagger 
+fresh upx 
+fresh z.lua 

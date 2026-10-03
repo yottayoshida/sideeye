@@ -1,0 +1,8 @@
+total 4
+-rwxr-xr-x 1 root root 60 Oct  3 03:43 prog
+/usr/bin/strace: exec: Permission denied
+UNKNOWN  recording_run_failed
+         the second observed run exited 1 where 0 was expected, although the first run of the same command succeeded: the two runs cannot be compared
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+total 4
+-rw-r--r-- 1 root root 60 Oct  3 03:43 prog

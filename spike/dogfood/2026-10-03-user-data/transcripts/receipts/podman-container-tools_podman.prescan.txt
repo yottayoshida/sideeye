@@ -1,0 +1,1039 @@
+== novelty pre-scan: podman-container-tools/podman
+== date: 2026-10-03T04:45:00Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29808 open 2026-09-19 Fix : Make Volume Units persistent to prevent container crashes
+      #28925 open 2026-06-12 Auto-update (and rollback?) failed for a fredy container crash
+      #29411 open 2026-08-06 macOS/libkrun: gvproxy SIGKILLed under load (Podman Desktop proven responsible; second unidentified killer) — machine left "running" but dead
+      #29872 open 2026-10-01 Update module github.com/shirou/gopsutil/v4 to v4.26.9
+      #29820 open 2026-09-22 filters: do not index an empty container command
+      #29397 open 2026-08-05 libpod: fix format string argument order, store cleanup leak, and avoid panic in WaitForConditionWithInterval
+      #28145 open 2026-02-24 Podman machine will not operate as root
+      #28958 closed 2026-06-18 krunkit crash on macos 26.5.1
+      #14684 open 2022-06-21 [FEATURE REQUEST]: podman machine debugging helper
+      #13779 open 2022-04-05 podman hangs when sending large amounts of data on stdout
+      #25896 open 2025-04-16 `podman kube play` does not respect `size=` attribute to `io.podman.annotations.userns` annotation
+      #15527 open 2022-08-29 Powershell completion stopped worked
+      #26066 open 2025-05-04 Healthcheck with quadlets in rootless mode - connection refused
+      #21748 open 2024-02-19 Segfault in unshare when using an authenticated proxy under Windows 10
+      #20839 open 2023-11-29 TMPDIR isn't used for committing containers when connecting to a remote Podman service
+      #29803 closed 2026-09-19 libpod: move per-container pasta process to conmon scope
+      #29016 merged 2026-06-23 fix cleanupExecBundle locking and some more exec releated cleanups 
+      #29582 open 2026-08-19 `pasta` and `conmon` processes are sometimes left in calling process' control group
+      #29604 closed 2026-08-20 Security: Prevent API DoS via unbounded memory read in manifests handler
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #29386 open 2026-08-03 bug: --volume src:dst:mode parser corrupts destination path when src == dst (6.0.2)
+      #19585 open 2023-08-10 Corrupted image when pulling by multiple instances
+      #29733 open 2026-09-08 libpod: switch sqlite state backend to WAL mode
+      #27128 open 2025-09-20 Running Kube in Podman is difficult or impossible.
+      #28439 open 2026-04-03 podman machine start reports success on macOS Apple Silicon, but VM falls into emergency mode with Ignition/fsck root UUID errors
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #17802 open 2023-03-15 quay flake: 502 Bad Gateway
+      #20564 open 2023-11-01  podman machine set --disk-size doesn't seem to reflect on containers
+      #17193 open 2023-01-23 copying system image from manifest list: writing/storing blob: happened during read: unexpected EOF
+      #29011 merged 2026-06-23 Write quadlet units to temporary files and rename
+      #29082 closed 2026-06-30 Unable to login to Azure container Registry using a JWT
+      #29594 merged 2026-08-19 hack/swagger-check: check routes registered on subrouters
+      #29362 closed 2026-07-31 rootless: fix heap overflow in get_cmd_line_args when /proc/self/cmdline lacks the trailing NUL
+      #29646 open 2026-08-26 podman run --rm can deadlock with its own `container cleanup`, permanently wedging the per-UID SHM lock
+      #29796 merged 2026-09-18 Update module google.golang.org/grpc to v1.84.0
+      #16882 open 2022-12-19 [btrfs] Sporadic Found incomplete layer error results in broken container engine
+      #29361 closed 2026-07-31 rootless preexec: heap overflow in get_cmd_line_args when /proc/self/cmdline lacks the trailing NUL
+      #29004 closed 2026-06-22 podman quadlet install -r may cause broken generated systemd units
+      #29229 closed 2026-07-20 Podman Quadlets Install Replace Results In File Corruption
+  corruption     86 hit(s) (all listed)
+      #29733 open 2026-09-08 libpod: switch sqlite state backend to WAL mode
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #29732 closed 2026-09-08 libpod/sqlite: enable WAL mode and cap connection pool to fix state DB corruption
+      #28496 open 2026-04-13 podman generated coredump in a stress env when creating nested containers.
+      #19017 open 2023-06-27 SQLite backend places the db file in a wrong directory.
+      #29386 open 2026-08-03 bug: --volume src:dst:mode parser corrupts destination path when src == dst (6.0.2)
+      #29229 closed 2026-07-20 Podman Quadlets Install Replace Results In File Corruption
+      #26803 open 2025-08-11 inconsistent behavior for nested containers and podman run
+      #25886 open 2025-04-15 Launching many containers in parallel produces: Error: saving container $containerid state: beginning container $containerid save transaction: database is locked
+      #29594 merged 2026-08-19 hack/swagger-check: check routes registered on subrouters
+      #29471 closed 2026-08-12 pkg/specgen: fix volume string splitting for destination drive letter
+      #27574 closed 2025-11-20 [WIP] Fix race condition in concurrent artifact additions
+      #26844 closed 2025-08-16 Multistage containerfile not running with Podman Quadlet
+      #28277 closed 2026-03-12 hijackWriteErrorAndClose use in podman service is unsound
+      #21810 open 2024-02-25 Error: copying system image from manifest list: trying to reuse blob */diff: no such file or directory
+      #27660 merged 2025-12-02 [v5.8] Add migration code for BoltDB to SQLite
+      #26968 closed 2025-09-02 locking issue in podman healtcheck
+      #26524 merged 2025-06-27 Add basic locking to Libartifact
+      #26496 merged 2025-06-23 [v5.2-rhel] Skip layer digests for podman system check --quick
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29848 open 2026-09-28 Concurrent create with --userns=keep-id over the API sometimes produces a truncated ID mapping (start fails on ping_group_range)
+      #21914 open 2024-03-01 Long k8s-file logs are truncated on 'podman logs --follow' output of stopped container
+      #29767 open 2026-09-13 Add support for --output to podman build --remote
+      #29636 open 2026-08-24 libpod: delay volume unmount in Export() until stream Close()
+      #11688 open 2021-09-22 cannot assign device path with colon
+      #21678 open 2024-02-15 MacOS Volume Mapping
+      #19143 open 2023-07-06 container event `Attributes` mixes unrelated namespaces and scopes
+      #29578 open 2026-08-18 libpod: flush HTTP attach buffer before closing connection
+      #29508 closed 2026-08-13 pkg/trust: parseUids can panic on malformed GPG uid/pub lines
+      #18318 open 2023-04-24 Cannot use Kubernetes healthcheck probes without certain executables (tcpSocket/nc, httpGet/curl) inside the container
+      #29274 merged 2026-07-25 Remove unnecessary length check for container hostname ID
+      #17986 open 2023-03-30 Windows bind support for UNC WSL paths
+      #29528 merged 2026-08-15 hack/ci: do not swallow apiv2 failures
+      #28897 merged 2026-06-10 image scp: preserve usernames containing an "@"
+      #29598 closed 2026-08-20 test/system: fail loudly when _prefetch cannot fetch or load an image
+      #29796 merged 2026-09-18 Update module google.golang.org/grpc to v1.84.0
+      #19815 open 2023-08-31 libpod-conmon delays shutdown
+      #28595 closed 2026-04-28 warn when LookupAllKeyVal silently truncates a value at unquoted whitespace
+      #29396 closed 2026-08-05 Cannot build image on macOS through podman machine
+      #27179 closed 2025-09-27 pasta: HTTP downloads get truncated (UrBackup web UI). slirp4netns works fine.
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29848 open 2026-09-28 Concurrent create with --userns=keep-id over the API sometimes produces a truncated ID mapping (start fails on ping_group_range)
+      #21914 open 2024-03-01 Long k8s-file logs are truncated on 'podman logs --follow' output of stopped container
+      #29733 open 2026-09-08 libpod: switch sqlite state backend to WAL mode
+      #29767 open 2026-09-13 Add support for --output to podman build --remote
+      #29636 open 2026-08-24 libpod: delay volume unmount in Export() until stream Close()
+      #21678 open 2024-02-15 MacOS Volume Mapping
+      #19143 open 2023-07-06 container event `Attributes` mixes unrelated namespaces and scopes
+      #11688 open 2021-09-22 cannot assign device path with colon
+      #29578 open 2026-08-18 libpod: flush HTTP attach buffer before closing connection
+      #29274 merged 2026-07-25 Remove unnecessary length check for container hostname ID
+      #20564 open 2023-11-01  podman machine set --disk-size doesn't seem to reflect on containers
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #29508 closed 2026-08-13 pkg/trust: parseUids can panic on malformed GPG uid/pub lines
+      #28595 closed 2026-04-28 warn when LookupAllKeyVal silently truncates a value at unquoted whitespace
+      #29291 closed 2026-07-25 Fix deferred event emission on failed container update
+      #29732 closed 2026-09-08 libpod/sqlite: enable WAL mode and cap connection pool to fix state DB corruption
+      #29373 closed 2026-08-02 Quadlet: allow configuring name template for secondary units
+      #18318 open 2023-04-24 Cannot use Kubernetes healthcheck probes without certain executables (tcpSocket/nc, httpGet/curl) inside the container
+      #29497 merged 2026-08-13 [v5.8] Backport the quadlet replace fix
+      #29432 merged 2026-08-08 libpod/events: use filepath.Dir for filesystem path
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29820 open 2026-09-22 filters: do not index an empty container command
+      #29609 open 2026-08-20 Rootless explicit single-ID mapping produces empty intermediate OCI root
+      #27720 open 2025-12-08 Volume permissions of empty volumes not persisted
+      #29507 open 2026-08-13 Fix empty detach keys being interpreted as default detach keys
+      #28193 open 2026-03-04 podman --remote exec ignores empty detach keys
+      #21741 open 2024-02-19 remote exec: empty output
+      #29862 open 2026-09-30 Compat API /containers/{id}/json reports placeholder bridge network instead of attached user-defined networks (rootless, 6.1.0)
+      #29210 open 2026-07-17 [Docker Compatibility] Endpoint /images/json will return empty body with status code 200 if `digests` is specified
+      #23023 open 2024-06-17 unlinkat directory not empty on commit (rootless)
+      #17957 open 2023-03-28 e2e: podman system reset: unlinkat: directory not empty
+      #29839 open 2026-09-25 quadlet: discover template instances from drop-in directories
+      #29866 open 2026-09-30 fix: populate network settings in container inspect when network stat…
+      #18902 open 2023-06-15 Podman run `--group-entry` substitution `$GROUPNAME` and  `$USERLIST` values empty
+      #29636 open 2026-08-24 libpod: delay volume unmount in Export() until stream Close()
+      #29761 merged 2026-09-11 compat: Omit empty Created field from GET /images/{id}/json
+      #29670 open 2026-08-28 Tthe data is not transferred from the init container to the application (regular) container on the volume.
+      #28441 open 2026-04-03 IP address following the "--gateway" argument in pasta_options fails to parse
+      #13092 open 2022-01-31 Container creation expects field "Destination" under "Mounts", API doc says "Target"
+      #29649 merged 2026-08-26 libpod(refactor): optimize directory empty check
+      #29397 open 2026-08-05 libpod: fix format string argument order, store cleanup leak, and avoid panic in WaitForConditionWithInterval
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29170 open 2026-07-10 `podman exec --user` does not initialize supplementary groups in rootful container
+      #29457 closed 2026-08-11 pkg/machine: retry atomic config rename on Windows to fix access denied flake
+      #25641 open 2025-03-21 Set default architecture (without passing --platform)?
+      #29011 merged 2026-06-23 Write quadlet units to temporary files and rename
+      #13808 open 2022-04-07 DO NOT MERGE: buildah vendor treadmill
+      #28873 open 2026-06-05 windows machine rename machine config flake
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #29004 closed 2026-06-22 podman quadlet install -r may cause broken generated systemd units
+      #29525 merged 2026-08-14 exec: forward signals to the exec session's process group
+      #28214 merged 2026-03-06 feat: implement volume rename functionality
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #27785 open 2025-12-16 Podman fails to run container with userns=keep-id
+      #29803 closed 2026-09-19 libpod: move per-container pasta process to conmon scope
+      #28100 merged 2026-02-16 pkg/bindings: add dial-stdio fallback for SSH connections
+      #28335 merged 2026-03-20 refactor: podman quadlet sub-command
+      #28312 closed 2026-03-17 Containers crash with SIGILL on Apple M4/M5 Macs due to SME2 CPU features
+      #27980 merged 2026-01-29 fix(quadlet): correct replace behavior and prevent duplicates in .app files
+      #29182 merged 2026-07-13 Update module github.com/mattn/go-sqlite3 to v1.14.48
+      #26846 closed 2025-08-16 WIP: volume protection by pinning
+  atomically     24 hit(s) (all listed)
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #29004 closed 2026-06-22 podman quadlet install -r may cause broken generated systemd units
+      #28214 merged 2026-03-06 feat: implement volume rename functionality
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #26846 closed 2025-08-16 WIP: volume protection by pinning
+      #24048 merged 2024-09-23 CI: make systemd tests parallel-safe (*)
+      #23755 closed 2024-08-26 Quadlet support symlinked subdirectory
+      #23331 closed 2024-07-18 race: completion: Top layer ... not found ... storage may be corrupted
+      #18575 closed 2023-05-15 --replace should work with dependent containers.
+      #21857 merged 2024-02-28 machine config: make write atomic
+      #21592 merged 2024-02-09 Refactor machine decompress.go
+      #14412 closed 2022-05-30 resolv.conf inside container does not get updated when it changes on host
+      #18011 closed 2023-04-02 podman-machine-default.json gets corrupted on improper Windows shutdown
+      #12854 closed 2022-01-14 robustness: podman image list fails with `Error: error locating item named "manifest" for image with ID "xxx"`
+      #18035 merged 2023-04-03 Update podman to use atomic container and machine config updates
+      #6016 merged 2020-04-28 v2, podman: fix create and entrypoint tests
+      #15366 closed 2022-08-17 additionalimagestores: how to update shared imagestore directory (image addition/removal)
+      #11886 merged 2021-10-07 Unit files: Use actual installed path for podman
+      #8559 closed 2020-12-02 2.2.0 regression: can't create service when /root/ is write protected
+      #18657 merged 2023-05-22 Added the "--out" parameter and fixed an issue with "--noout" which prevented stdout from being written to.
+  interrupted    73 hit(s) (all listed)
+      #29880 open 2026-10-02 podman machine start hangs forever on its final ssh check and leaves "Starting":true
+      #14791 open 2022-06-30 Resume where left off after `podman pull` fails due to missing space
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #23943 open 2024-09-12 "podman volume rm" behaviour
+      #16882 open 2022-12-19 [btrfs] Sporadic Found incomplete layer error results in broken container engine
+      #16214 open 2022-10-18 Dangling/unreferenced layers on incomplete pull
+      #28318 open 2026-03-18 `machine start` signal handler orphans VM by calling os.Exit(1) without cleanup
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #28991 merged 2026-06-19 Fix signal handling during machine start on macOS
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #25670 open 2025-03-25 Randomly-Generated Names are not as Helpful as they could be
+      #13779 open 2022-04-05 podman hangs when sending large amounts of data on stdout
+      #29323 closed 2026-07-28 Goroutine and FD leak in REST API HTTPAttach due to dropped request context
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #28514 closed 2026-04-15 Docker hangs waiting for podman daemon to tell it to die
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #28929 merged 2026-06-13 Update dependency pytest to v9.1.0
+      #27943 closed 2026-01-23 [Bug] Container Graph Race Condition
+      #20733 closed 2023-11-21 Documentation for podman build inconsistent with actual behaviour
+      #28169 closed 2026-02-28 x86 rustc docker image fails with SIGSEGV in podman on macos aarch64
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16214 open 2022-10-18 Dangling/unreferenced layers on incomplete pull
+      #29880 open 2026-10-02 podman machine start hangs forever on its final ssh check and leaves "Starting":true
+      #28318 open 2026-03-18 `machine start` signal handler orphans VM by calling os.Exit(1) without cleanup
+      #26171 open 2025-05-21 Machine start from script
+      #14791 open 2022-06-30 Resume where left off after `podman pull` fails due to missing space
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #23943 open 2024-09-12 "podman volume rm" behaviour
+      #16882 open 2022-12-19 [btrfs] Sporadic Found incomplete layer error results in broken container engine
+      #29342 closed 2026-07-29 Goroutine leak in StartGenericAppleVM during podman machine start
+      #28991 merged 2026-06-19 Fix signal handling during machine start on macOS
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #27949 open 2026-01-24 "podman ps" and "podman info" hang indefinitiely (while podman is starting some container)
+      #25670 open 2025-03-25 Randomly-Generated Names are not as Helpful as they could be
+      #13779 open 2022-04-05 podman hangs when sending large amounts of data on stdout
+      #29279 merged 2026-07-25 libpod: do not fail prune when build container is already gone
+      #29323 closed 2026-07-28 Goroutine and FD leak in REST API HTTPAttach due to dropped request context
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #28728 closed 2026-05-18 Limit number of concurrent uploads
+      #27901 closed 2026-01-13 Fix Restart Issue with Pasta Networking Driver
+  sigkill        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29411 open 2026-08-06 macOS/libkrun: gvproxy SIGKILLed under load (Podman Desktop proven responsible; second unidentified killer) — machine left "running" but dead
+      #19038 open 2023-06-28 podman system prune sometimes fails or podman stop doesn't wait for containers to stop
+      #26008 open 2025-04-29 podman-restart kills processes after reboot
+      #29822 open 2026-09-22 API service returns 500 "unable to open a handle to the library" on the first journald log read after a container teardown in the same process
+      #23737 open 2024-08-24 container restart fails when using pasta + port publish
+      #19815 open 2023-08-31 libpod-conmon delays shutdown
+      #28242 open 2026-03-10 Add list command to pod command --help
+      #29646 open 2026-08-26 podman run --rm can deadlock with its own `container cleanup`, permanently wedging the per-UID SHM lock
+      #29577 closed 2026-08-18 test/e2e: skip terminated build prune test for remote
+      #28868 open 2026-06-05 e2e: podman system prune --build clean up after terminated build flaky
+      #28318 open 2026-03-18 `machine start` signal handler orphans VM by calling os.Exit(1) without cleanup
+      #24487 open 2024-11-07 All podman functions hang after attempting to stop container
+      #29625 open 2026-08-22 podman constantly redownload
+      #28360 open 2026-03-25 Problem with stopping mysql 8
+      #29276 closed 2026-07-25 Libpod/compat API RestartContainer defaults to 0 second timeout, overriding container StopTimeout
+      #29295 merged 2026-07-25 Respect container StopTimeout in container restart REST APIs
+      #28991 merged 2026-06-19 Fix signal handling during machine start on macOS
+      #27713 open 2025-12-08 Fails to start quadlet with pass driver: "no such secret" (exit code 126)
+      #28963 merged 2026-06-18 Freeze container during live checkpoint for consistency
+      #27901 closed 2026-01-13 Fix Restart Issue with Pasta Networking Driver
+  sigint         67 hit(s) (all listed)
+      #26171 open 2025-05-21 Machine start from script
+      #28318 open 2026-03-18 `machine start` signal handler orphans VM by calling os.Exit(1) without cleanup
+      #20324 open 2023-08-20 storage.conf mishandling with zfs storage driver
+      #28502 closed 2026-04-14 podman build should warn about surviving processes after cancellation on podman machine
+      #27210 closed 2025-10-01 [macOS][ARM] podman run does not show a prompt emulating Arch Linux (amd64)
+      #27180 closed 2025-09-28 ctrl-c only shows ^C, not quit in containers
+      #24416 closed 2024-10-30 Podman machine gets stuck in STARTING state if interrupted during startup
+      #26727 merged 2025-07-31 feat(exec): Add --no-session flag for improved performance
+      #26373 closed 2025-06-12 Manpages: `podman network rm` missing example with `--time` option
+      #26581 closed 2025-07-07 rootlessport is still used instead of pasta when running  a container connected to a bridge network.
+      #25832 merged 2025-04-08 Handle machine start state when sent a signal
+      #24496 merged 2024-11-07 kube SIGINT system test: fix race in timeout handling
+      #26035 closed 2025-05-01 PublishPort with not-yet-started podman-bridge IP fails with bind: cannot assign requested address
+      #24655 merged 2024-11-22 Mount volumes before copying into a container
+      #23050 closed 2024-06-19 quadlet: add Container-spec StopSignal mapping to podman --stop-signal
+      #23735 closed 2024-08-24 Repeatedly connecting to port on host.docker.internal hangs if the server quits and restarts
+      #22654 merged 2024-05-09 [CI:DOCS] Improvements to make validatepr
+      #23271 merged 2024-07-14 test: podman system service doesn't leak mount on termination
+      #21767 closed 2024-02-20 Data corruption on "down" with podman kube play
+      #24012 closed 2024-09-18 Racy systemd integration with RestrictAddressFamilies option
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #26199 open 2025-05-26 bug(shell): `ctrl+c` in `podman machine ssh` shell on windows is acting weird
+      #29625 open 2026-08-22 podman constantly redownload
+      #28318 open 2026-03-18 `machine start` signal handler orphans VM by calling os.Exit(1) without cleanup
+      #27423 open 2025-11-01 `podman wait` doesn't always distinguish "exited" "stopped" "created" as different conditions
+      #26171 open 2025-05-21 Machine start from script
+      #25143 open 2025-01-28 `podman system prune -a` and `podman info` very slow
+      #22756 open 2024-05-20 engine.detach_keys is not used correctly with podman compose
+      #29785 open 2026-09-16 Bug report: intermittent `host.containers.internal` forwarding timeout on rootful macOS Podman machines
+      #25896 open 2025-04-16 `podman kube play` does not respect `size=` attribute to `io.podman.annotations.userns` annotation
+      #14527 open 2022-06-08 Add podman play kube --build support for podman remotes
+      #29493 closed 2026-08-13 events: fix goroutine leak with until flag in file backend
+      #25666 open 2025-03-24 `podman run` cannot mount folder on virtual drive
+      #29499 merged 2026-08-13 events: fix goroutine leak when using --until with dropped contexts
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #17234 open 2023-01-26 [Bug]: Podman commands sometimes run for extremely long time
+      #16541 open 2022-11-17 --userns=keep-id storage-chown-by-maps kills machine with large images
+      #21306 open 2024-01-19 podman run: Failed to write input to service
+      #23055 open 2024-06-20 Podman doesn't use a local image in `FROM` in Dockerfile/Containerfile
+      #20379 open 2023-10-17 Running docker compose leads to docker socket unvailable and WSL stuck
+      #29573 closed 2026-08-18 Podman no longer works when the CMD.EXE session is closed
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25811 open 2025-04-06 resoure saver (like docker-desktop)
+      #24660 open 2024-11-23 Podman containers on Windows cannot connect to the host via localhost
+      #19437 open 2023-07-30 Extend `Chowning Volume Mounts` (`:U`) to Allow Custom Ownership Specification
+      #29516 closed 2026-08-14 ci: add govulncheck job
+      #26462 open 2025-06-18 Add support for `.secret` Systemd units to Quadlet
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #15527 open 2022-08-29 Powershell completion stopped worked
+      #28396 closed 2026-03-28 compat: populate IPRange in IPAM config when listing networks
+      #29084 closed 2026-06-30 libkrun: macOS resource limits cause periodic VM reboots (~every 60 min)
+      #19815 open 2023-08-31 libpod-conmon delays shutdown
+      #27125 open 2025-09-19 Container network not reachable - Recv failure: Connection reset by peer
+      #15976 open 2022-09-28 `systemctl reboot` inside podman machine clears volume mounts
+      #8136 open 2020-10-25 Support running Windows Containers on linux
+      #20567 closed 2023-11-02 After forced shutdown, the image tag will be lost.
+      #27279 open 2025-10-13 gvproxy cpu high on Mac M3
+      #13006 open 2022-01-25 Support Qemu accelerated podman machine on Windows hosts
+      #27991 closed 2026-01-30 fix(deps): update module github.com/containers/conmon to v2.2.0+incompatible
+      #27413 merged 2025-10-30 Fix user namespace validation for containers in pods
+      #28180 open 2026-03-02 Pasta: ping fails inside LXC Container
+      #27502 closed 2025-11-11 Container fail with "Port(s) already bound: 80: Permission denied"
+  outage         40 hit(s) (all listed)
+      #24258 open 2024-10-14 CI: 700 build private registry test: handle fedoraproject outages
+      #17999 open 2023-03-31 w/ GitLab Registry: "invalid status code from registry 404"
+      #23625 closed 2024-08-14 pull --all-tags : confusing documentation
+      #29646 open 2026-08-26 podman run --rm can deadlock with its own `container cleanup`, permanently wedging the per-UID SHM lock
+      #28662 merged 2026-05-07 Support artifacts emitting events
+      #23224 closed 2024-07-08 Support idmap for image volume mounts
+      #27285 closed 2025-10-13 el10 : sigstore verification fail on images missing `sigstore` annotations
+      #23107 closed 2024-06-26 TmpFS gets dirty with `exit` files
+      #12905 merged 2022-01-18 [CI:DOCS] Restore OSX cross-build task
+      #24662 closed 2024-11-24 containers not cleaned after host reboot (containers stuck in "Created" state)
+      #24614 closed 2024-11-19 Latest version of Podman available for RHEL 9 fails when trying to run container on disconnected host
+      #22720 closed 2024-05-15 [packit] Propose downstream failed for release v5.1.0-rc1
+      #21800 closed 2024-02-23 API documentation error
+      #22269 merged 2024-04-05 [v4.0-rhel] Bump Buildah to v1.24.7
+      #21766 merged 2024-02-20 CI: fix search-test flakes
+      #22655 closed 2024-05-09 podman inspect returns Error: unexpected end of JSON input
+      #20792 closed 2023-11-27 fix(deps): update module golang.org/x/sys to v0.15.0 - autoclosed
+      #20031 merged 2023-09-19 Makefile equiv Powershell script
+      #4406 closed 2019-10-31 Docs are missing from GitHub site?
+      #12520 merged 2021-12-06 Backport CVE-2021-4024 fix to RHEL branch
+  ENOSPC         32 hit(s) (all listed)
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #28393 open 2026-03-27 [WIP] podman: propagate user namespace mappings to image pull
+      #25849 open 2025-04-10 Let 'start' optionally return the process ID of the container's entry point
+      #28404 closed 2026-03-29 fix(image): surface ENOSPC immediately on podman image load
+      #18375 open 2023-04-27 Can't set graphRoot and runRoot via configuration
+      #26197 closed 2025-05-25 `podman image load` fails with `Error: payload does not match any of the supported image formats:` on a system with low disk space
+      #20203 open 2023-09-29 --imagestore is not enough for building/publishing images
+      #21810 open 2024-02-25 Error: copying system image from manifest list: trying to reuse blob */diff: no such file or directory
+      #25317 closed 2025-02-13 Unable to remove container image or container or  start container when host FS is full
+      #22880 merged 2024-06-03 test/e2e: use local skopeo not image
+      #22831 merged 2024-05-29 CI: mount tmpfs for container storage
+      #21239 closed 2024-01-12 podman image scp fails due to ENOSPC on the remote server below /tmp without any error msg
+      #23952 closed 2024-09-13 conmon error when using podman v5.2.2 (rootless)
+      #12233 merged 2021-11-09 shm_lock: Handle ENOSPC better in AllocateSemaphore
+      #2071 merged 2019-01-03 vendor in new containers/storage
+      #12937 closed 2022-01-20 RFE: --read-only: add sub-option to make /dev readonly as well
+      #9825 closed 2021-03-26 podman commit stores intermediate data in /var/tmp regardless of TMPDIR
+      #11730 closed 2021-09-24 improve error message on `podman load` with disk full
+      #10876 closed 2021-07-07 podman doesn't handle filesystem-full situations gracefully
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #29367 open 2026-08-01 fix(exec): inherit precreate hook changes in exec sessions
+      #25890 open 2025-04-16 Increase Machine Disk Size has no effect
+      #28767 open 2026-05-25 `podman machine`: fail `init` / `set --disk-size` when size exceeds available host storage
+      #27559 open 2025-11-18 Missing --group-add in "podman pod create"?
+      #29733 open 2026-09-08 libpod: switch sqlite state backend to WAL mode
+      #27183 open 2025-09-28 Bootc disk build fails on a rootful Podman machine when the host's root user container storage is mounted.
+      #20564 open 2023-11-01  podman machine set --disk-size doesn't seem to reflect on containers
+      #29347 open 2026-07-30 Podman exec build wrong enviroment
+      #28857 open 2026-06-04 machine: design doc for uncompressed image cache
+      #29480 open 2026-08-12 User mode networking WSL instance is never removed
+      #29402 open 2026-08-06 Random errors on macOS 26.6: unable to connect to Podman socket: failed to connect: ssh: handshake failed: EOF
+      #27282 open 2025-10-13 Status date is "292 years ago"
+      #29856 open 2026-09-29 Wrong file ownership in rootless container export created with --userns=keep-id
+      #28342 open 2026-03-22 Add support for `--output` to `podman build --remote`
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #29081 open 2026-06-30 pkg/kube/quadlet: add podman kube quadlet subcommand
+      #11688 open 2021-09-22 cannot assign device path with colon
+      #21255 open 2024-01-14 Podman doesn't update device major/minor number on machine reboot
+      #28439 open 2026-04-03 podman machine start reports success on macOS Apple Silicon, but VM falls into emergency mode with Ignition/fsck root UUID errors
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29641 open 2026-08-25 podman image rm - concurrent with shared layers: build fails unpacking its own layer
+      #24878 open 2024-12-19 [BUG] Podman REST API return a list of containers with partial/missing "Mounts" attribute values
+      #24027 open 2024-09-21 volume rm require exact name
+      #14791 open 2022-06-30 Resume where left off after `podman pull` fails due to missing space
+      #29500 open 2026-08-13 fix(api): bound how long a client may take to send request headers
+      #24307 open 2024-10-17 Container restore fails due to rootfsImageID mismatch
+      #28978 merged 2026-06-19 docs: clarify partial vs lazy pulling of images
+      #23943 open 2024-09-12 "podman volume rm" behaviour
+      #24947 closed 2025-01-06 [docs] Distinguish between lazy pulling and partial pulling
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #29796 merged 2026-09-18 Update module google.golang.org/grpc to v1.84.0
+      #28658 open 2026-05-06 Proposal for support for runtime composefs validation
+      #29598 closed 2026-08-20 test/system: fail loudly when _prefetch cannot fetch or load an image
+      #28713 merged 2026-05-15 test: Add API test for partial pull with pullProgress flag
+      #29265 open 2026-07-24 LFX Mentorship Program: Agentic CI Flake Categorization and Analysis
+      #20203 open 2023-09-29 --imagestore is not enough for building/publishing images
+      #29608 closed 2026-08-20 hack/ci/logcollector: collect all network diagnostics even if one fails
+      #28177 closed 2026-03-02 Flake: Podman logs [It] podman logs partial log lines: *
+      #25410 open 2025-02-27 Unable to authenticate in compose with redirected registry
+      #29398 closed 2026-08-05 podman events --filter volume=<id> silently drops events (inconsistent with other filters)
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25697 open 2025-03-26 Fix incomplete Mounts attributes
+      #16214 open 2022-10-18 Dangling/unreferenced layers on incomplete pull
+      #24571 open 2024-11-14 pod checkpoint/restore - incomplete restore?
+      #16882 open 2022-12-19 [btrfs] Sporadic Found incomplete layer error results in broken container engine
+      #29275 open 2026-07-25 Fix podman exec --detach-keys help text
+      #26383 open 2025-06-12 Add a way to enable builtkit in podman compose
+      #23703 open 2024-08-21 Support for ssh common args when podman service connects to a destination
+      #25143 open 2025-01-28 `podman system prune -a` and `podman info` very slow
+      #29273 open 2026-07-25 podman exec --detach-keys help text is inconsistent with run/attach and omits comma-separated sequences
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #26283 open 2025-06-05 podman compose on windows doesn't use VPN's DNS server
+      #18904 open 2023-06-15 Podman fails to recognize HEALTHCHECK in certain BuildKit images
+      #23023 open 2024-06-17 unlinkat directory not empty on commit (rootless)
+      #29136 merged 2026-07-07 docs: improve docs on relabelling options of `--mount`
+      #29436 closed 2026-08-09 [macOS arm64] v6.0.2 release pkg matches GitHub digest but pkgutil reports invalid signature
+      #29483 closed 2026-08-12 quadlet: handle missing HOME in rootless configuration lookup
+      #25862 closed 2025-04-12 podman pull locks and holds podman run
+      #17514 closed 2023-02-15 [Docs] podman-systemd.unit man page errors
+      #28834 closed 2026-06-01 Pasta fails to start when IPv6 is completely disabled (no kernel module loaded) - "L4 socket: Address family not supported by protocol"
+      #28570 merged 2026-04-23 Use netavark create when creating networks 
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #29402 open 2026-08-06 Random errors on macOS 26.6: unable to connect to Podman socket: failed to connect: ssh: handshake failed: EOF
+      #19995 open 2023-09-15 User mode networking fails after a while
+      #20466 open 2023-10-24 Provide ability to access console / tty of podman machine via socket
+      #24938 open 2025-01-04 podman breaks if user account is renamed, cryptic error "database static dir ... does not match our static dir", fix is difficult
+      #29757 open 2026-09-11 # `image_default_format` is documented but has no consumer
+      #23447 open 2024-07-30 libpod: Drop checks for paths in sqlite+boltdb
+      #19017 open 2023-06-27 SQLite backend places the db file in a wrong directory.
+      #21683 open 2024-02-15 Error: database storage graph driver "" does not match our storage graph driver "overlay": database configuration mismatch
+      #29419 open 2026-08-06 Rootless Quadlet network cleanup fails during systemd user manager shutdown
+      #29765 merged 2026-09-13 machine: clean up orphaned gvproxy and win-sshproxy when starting Windows machines
+      #28074 open 2026-02-11 compat build: dockerfile path can escape build context
+      #28820 merged 2026-06-01 machine: escape % as %% in proxy values written to systemd unit conf
+      #28227 merged 2026-03-09 [v5.8] fix automatic migration bug
+      #28692 merged 2026-05-12 api: emit aux trailer with manifest digest on image push
+      #29664 closed 2026-08-27 Compat API: attach to an exited container resets its state and destroys the recorded exit code
+      #26118 open 2025-05-12 rootless networking error on container startup since upgrade to F42
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #28396 closed 2026-03-28 compat: populate IPRange in IPAM config when listing networks
+      #22121 open 2024-03-21 [5.0.0 osx] Unable to start the podman machine with osx Monterey
+  recovery       41 hit(s) (all listed)
+      #29646 open 2026-08-26 podman run --rm can deadlock with its own `container cleanup`, permanently wedging the per-UID SHM lock
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #28033 open 2026-02-05 Podman artifact pull leaves the previous local artifact around, without a name, breaking assumptions that artifacts are named
+      #29419 open 2026-08-06 Rootless Quadlet network cleanup fails during systemd user manager shutdown
+      #28075 closed 2026-02-11 --secret type=env,target= mapping lost after --restart=on-failure triggers
+      #25968 closed 2025-04-24 Don't use `Red Hat` in the installation folder name on Windows
+      #27600 closed 2025-11-24 Podman with docker-compose does not set selinux labels
+      #27502 closed 2025-11-11 Container fail with "Port(s) already bound: 80: Permission denied"
+      #16406 closed 2022-11-04 Unable to pull and verify images signed with a GPG *subkey* ("None of the signatures were accepted")
+      #26577 merged 2025-07-06 feat: Add Podman artifact support to Go bindings and remote clients
+      #25121 closed 2025-01-25 podman machine start hangs on macOS (x86_64)
+      #23162 merged 2024-07-02 pkg/machine/e2e: improve timeout handling
+      #23156 closed 2024-07-01 Every podman command returns "Error: scanning container state row: sql: Scan error on column index 1, name JSON: converting NULL to string is unsupported"
+      #21262 merged 2024-01-16 Add a net health recovery service to qemu machines
+      #21276 merged 2024-01-17 [v4.9] Add a net health recovery service to qemu machines
+      #21161 merged 2024-01-04 machine: Enable console autologin by default
+      #21325 merged 2024-01-22 Podman v4.9.0: Release notes and final cherry-picks
+      #22016 closed 2024-03-11 left-over files from deleting a frozen container
+      #20902 closed 2023-12-04 podman-4.8.0: "Rolling back transaction to validate database'
+      #3088 closed 2019-05-08 Inconsistent state recovery
+  rollback       80 hit(s) (all listed)
+      #28925 open 2026-06-12 Auto-update (and rollback?) failed for a fredy container crash
+      #29733 open 2026-09-08 libpod: switch sqlite state backend to WAL mode
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #27282 open 2025-10-13 Status date is "292 years ago"
+      #28318 open 2026-03-18 `machine start` signal handler orphans VM by calling os.Exit(1) without cleanup
+      #24095 open 2024-09-28 podman auto-update(.service) fails for containers in user directory. 
+      #29732 closed 2026-09-08 libpod/sqlite: enable WAL mode and cap connection pool to fix state DB corruption
+      #28189 closed 2026-03-04 `podman volume rename`
+      #28214 merged 2026-03-06 feat: implement volume rename functionality
+      #17193 open 2023-01-23 copying system image from manifest list: writing/storing blob: happened during read: unexpected EOF
+      #13582 open 2022-03-21 'podman pull' no simple way to check if newer image was pulled
+      #28991 merged 2026-06-19 Fix signal handling during machine start on macOS
+      #27025 merged 2025-09-09 feat: Implement autoupdate endpoint in libpod REST API
+      #27628 closed 2025-11-28 Add support to migrate data in boltdb to sqlite
+      #24970 open 2025-01-08 host.containers.internal non functional when host address changes
+      #29377 closed 2026-08-03 Port Forwarding to 127.0.0.1 on Windows Host not working
+      #25650 merged 2025-03-21 [v4.2.0-rhel] Adjust x/text, x/tools, and x/net versions
+      #25317 closed 2025-02-13 Unable to remove container image or container or  start container when host FS is full
+      #26473 closed 2025-06-19 SElinux denial with pasta when using non-default network
+      #25349 closed 2025-02-18 Windows silent installation issue for 5.4.0
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14791 open 2022-06-30 Resume where left off after `podman pull` fails due to missing space
+      #29837 open 2026-09-25 WSL systemd support
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #29625 open 2026-08-22 podman constantly redownload
+      #29265 open 2026-07-24 LFX Mentorship Program: Agentic CI Flake Categorization and Analysis
+      #28345 closed 2026-03-23 podman machine: enable hypervisor time sync (--timesync) for vfkit and krunkit on macOS
+      #28527 merged 2026-04-16 machine: add vfkit timesync device for Apple VMs
+      #28439 open 2026-04-03 podman machine start reports success on macOS Apple Silicon, but VM falls into emergency mode with Ignition/fsck root UUID errors
+      #29031 closed 2026-06-24 Failing DNS inside compose?
+      #24605 closed 2024-11-19 Not able to run podman inside unprivileged container in CI/CD  pipeline where shared runners on K8S Cluster- UBUNTU -24 container
+      #24487 open 2024-11-07 All podman functions hang after attempting to stop container
+      #27816 closed 2025-12-22 Podman ssh connection lost after some time on Mac (Apple M4)
+      #13006 open 2022-01-25 Support Qemu accelerated podman machine on Windows hosts
+      #28521 closed 2026-04-16 Podman Crun not found: invalid argument SSSD/Ldap user
+      #27933 merged 2026-01-21 [v4.2.0-rhel] Backport fixes for cve-2025-52881 cve-2025-58183 cve-2025-47913 cve-2025-65637 cve-2025-47913
+      #20418 closed 2023-10-19 podman-restart.service Does Not Restart "unless-stopped" Containers
+      #28180 open 2026-03-02 Pasta: ping fails inside LXC Container
+      #25792 closed 2025-04-04 test: Fix expected output for pause/unpause with runc
+      #26608 closed 2025-07-10 Can't use rootless with unprivileged overlayfs
+  half-written   24 hit(s) (all listed)
+      #29500 open 2026-08-13 fix(api): bound how long a client may take to send request headers
+      #28801 merged 2026-05-27 cmd, commit: change --pause default to true
+      #3761 open 2019-08-08 podman image digest showing incorrect value in some cases
+      #27980 merged 2026-01-29 fix(quadlet): correct replace behavior and prevent duplicates in .app files
+      #26507 closed 2025-06-24 Quadlet - new unit type .login
+      #26111 merged 2025-05-12 feat: Add OCI Artifact support to the Podman REST API
+      #23686 closed 2024-08-20 High pasta and rootlessport CPU load
+      #22909 merged 2024-06-05 test/system: speed up basic_{setup,teardown}()
+      #20177 merged 2023-09-27 Podman machine hyperv
+      #9840 merged 2021-03-27 Cirrus: Make use of shared get_ci_vm container
+      #15487 merged 2022-08-25 Compat API image remove events now have 'delete' status
+      #13191 merged 2022-02-09 Modify /etc/resolv.conf when connecting/disconnecting
+      #8599 merged 2020-12-04 Repeat system pruning until there is nothing removed
+      #13663 closed 2022-03-25 podman: play kube: replace and/or down option not working with api
+      #6614 closed 2020-06-16 Follow logs using event channel
+      #16205 closed 2022-10-17 Two copies of the image references parser included
+      #12954 closed 2022-01-20 --read-write-tmpfs=false should set /dev/* tmpfs to readonly
+      #12429 merged 2021-11-27 podman image scp never enter podman user NS
+      #17187 closed 2023-01-23 [Bug]: The podman container update command doesn't seem to work.
+      #2548 closed 2019-03-05 podman pod top on pod test on Ubuntu
+  wipe           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #26872 open 2025-08-20 No clear upgrade path for WSL
+      #28393 open 2026-03-27 [WIP] podman: propagate user namespace mappings to image pull
+      #28582 open 2026-04-25 Podman Rootless Containers no longer function. Similar to #24025 but any address
+      #23583 open 2024-08-12 [Docs] Adding Missing features to docs 
+      #25670 open 2025-03-25 Randomly-Generated Names are not as Helpful as they could be
+      #22803 open 2024-05-24 Some images result in the error: copying system image from manifest list: writing blob: adding layer with blob: processing tar file(container ID 1000 cannot be mapped to a host ID): exit status 1
+      #28946 merged 2026-06-16 Makefile: improve make help and add testing guide
+      #18375 open 2023-04-27 Can't set graphRoot and runRoot via configuration
+      #27766 merged 2025-12-13 Improve OOMKilled Visibility
+      #20203 open 2023-09-29 --imagestore is not enough for building/publishing images
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #26823 open 2025-08-14 Delete run directory after reboot
+      #21810 open 2024-02-25 Error: copying system image from manifest list: trying to reuse blob */diff: no such file or directory
+      #27694 closed 2025-12-05 Fix(quadlet): Ensure .app application file is removed by quadlet rm --all (#27647)
+      #20962 closed 2023-12-10 Restart unless-stopped containers with podman-restart.service
+      #24570 closed 2024-11-14 After starting a podman machine on Windows WSL with podman 5.2.5 - Error: unable to connect to Podman socket: failed to connect
+      #25504 merged 2025-03-07 Fix `podman system reset` deletes the `podman.sock`
+      #13708 closed 2022-03-30 Relax /sys/dev/block restrictions for volumes and devices
+      #25337 closed 2025-02-16 With a btrfs root, bind mounts put all data in the overlay instead of in the volume
+  wipes          31 hit(s) (all listed)
+      #18375 open 2023-04-27 Can't set graphRoot and runRoot via configuration
+      #20203 open 2023-09-29 --imagestore is not enough for building/publishing images
+      #21810 open 2024-02-25 Error: copying system image from manifest list: trying to reuse blob */diff: no such file or directory
+      #20563 closed 2023-11-01 --db-backend considered harmful
+      #23952 closed 2024-09-13 conmon error when using podman v5.2.2 (rootless)
+      #20070 closed 2023-09-20 Quadlet does not remove anonymous volumes on service stop
+      #4086 merged 2019-09-23 Force a CNI Delete on refreshing containers
+      #6545 closed 2020-06-09 [WIP] Implement pod-network-reload
+      #8571 merged 2020-12-03 Implement pod-network-reload
+      #16524 closed 2022-11-15 Podman for Windows install on Enterprise Image - Not fully installing
+      #3551 merged 2019-07-10 Fix memory leak with exit files
+      #18780 closed 2023-06-02 `rootless_storage_path` migration issue
+      #1447 closed 2018-09-12 Mounting /sys fails with latest podman
+      #14859 closed 2022-07-07 podman-remote wait: Error getting exit code from DB: no such exit code
+      #2692 closed 2019-03-18 podman logs -f [multi] : incomplete output (nonroot only?)
+      #11890 merged 2021-10-07 libpod: deduplicate ports in db
+      #10894 merged 2021-07-09 podman pod create --pid flag
+      #9392 closed 2021-02-15 build arguments behave as empty in podman build 
+      #3243 closed 2019-05-31 podman running as a container failed in mac os x
+      #5986 closed 2020-04-26 Unable to start containers after a forced shutdown
+  erase          47 hit(s) (all listed)
+      #18196 open 2023-04-14 Podman pull not decrypting the image unless I explicitly specify the key-provider
+      #21974 open 2024-03-07 podman-remote run --cidfile results in files deleted on container host
+      #22898 open 2024-06-04 podman pull does not use https_proxy when using podman machine, but will use on linux
+      #29697 closed 2026-09-02 Release Pipeline Validation failed
+      #4123 open 2019-09-26 rootless podman supports  credHelper
+      #27179 closed 2025-09-27 pasta: HTTP downloads get truncated (UrBackup web UI). slirp4netns works fine.
+      #26507 closed 2025-06-24 Quadlet - new unit type .login
+      #26330 merged 2025-06-09 Add support for `podman quadlet`
+      #24517 closed 2024-11-09 crun-0:1.18.1-1.fc41.x86_64 causes issues with rootles --device integration
+      #23519 merged 2024-08-06 update c/common to add some netns cleanup fixes
+      #23626 closed 2024-08-15 Recursive env-var replacement not performed for `Image=...` of the `[Container]` section
+      #23147 closed 2024-06-30 Podman user mode breaks because homed changes uid on different host
+      #21064 closed 2023-12-20 Unable to test podman on mac with provider applehv due to vfkit missing
+      #21670 merged 2024-02-15 applehv: Rosetta support
+      #18330 closed 2023-04-24 `podman machine rm` for QEMU provider removed connections before confirmation
+      #6935 closed 2020-07-10 Podman v2 no longer allows clearing of entrypoint on the command line
+      #7813 closed 2020-09-28 Managing unit files
+      #6271 merged 2020-05-19 V2 API Version Support
+      #6553 merged 2020-06-10 --replace for containers and pods
+      #11264 closed 2021-08-18 `podman generate systemd` service file fails to start container
+  erasing        9 hit(s) (all listed)
+      #27179 closed 2025-09-27 pasta: HTTP downloads get truncated (UrBackup web UI). slirp4netns works fine.
+      #26507 closed 2025-06-24 Quadlet - new unit type .login
+      #24517 closed 2024-11-09 crun-0:1.18.1-1.fc41.x86_64 causes issues with rootles --device integration
+      #23519 merged 2024-08-06 update c/common to add some netns cleanup fixes
+      #2435 merged 2019-02-25 Cirrus: Add BATS package for all platforms
+      #2692 closed 2019-03-18 podman logs -f [multi] : incomplete output (nonroot only?)
+      #15840 closed 2022-09-16 Allow setting sign-passphrase directly
+      #14936 closed 2022-07-14 Podman Upgrade caused issues with containers
+      #4511 closed 2019-11-14 macos: podman cannot be opened because the developer cannot be verified
+  erased         19 hit(s) (all listed)
+      #18196 open 2023-04-14 Podman pull not decrypting the image unless I explicitly specify the key-provider
+      #21974 open 2024-03-07 podman-remote run --cidfile results in files deleted on container host
+      #22898 open 2024-06-04 podman pull does not use https_proxy when using podman machine, but will use on linux
+      #4123 open 2019-09-26 rootless podman supports  credHelper
+      #26330 merged 2025-06-09 Add support for `podman quadlet`
+      #23626 closed 2024-08-15 Recursive env-var replacement not performed for `Image=...` of the `[Container]` section
+      #23147 closed 2024-06-30 Podman user mode breaks because homed changes uid on different host
+      #21064 closed 2023-12-20 Unable to test podman on mac with provider applehv due to vfkit missing
+      #18330 closed 2023-04-24 `podman machine rm` for QEMU provider removed connections before confirmation
+      #6553 merged 2020-06-10 --replace for containers and pods
+      #15858 closed 2022-09-19 podman system reset --force destroy machine
+      #4240 closed 2019-10-11 A command to factory reset a Podman installation
+      #8524 closed 2020-12-01 podman-2.2.0_rc2 & later: '--rm' option isn't removing exited containers?
+      #6935 closed 2020-07-10 Podman v2 no longer allows clearing of entrypoint on the command line
+      #17187 closed 2023-01-23 [Bug]: The podman container update command doesn't seem to work.
+      #5914 closed 2020-04-21 userns=keep-id gives "OCI runtime permission denied error"
+      #6801 closed 2020-06-27 podman-2.0.0 (and previous) generate large numbers of untagged containers
+      #13376 merged 2022-02-28 Update to F36 CI VM Images + Testing netavark/aardvark-dns
+      #14878 closed 2022-07-09 Several permission issues when running podman rootless on Debian 11 Bullseye
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29808 open 2026-09-19 Fix : Make Volume Units persistent to prevent container crashes
+      #20547 open 2023-10-31 Using Podman as docker substitute with terraform does not work as expected
+      #29664 closed 2026-08-27 Compat API: attach to an exited container resets its state and destroys the recorded exit code
+      #29582 open 2026-08-19 `pasta` and `conmon` processes are sometimes left in calling process' control group
+      #19844 open 2023-09-04 Podman does not mount `--secret` env variables correctly
+      #29767 open 2026-09-13 Add support for --output to podman build --remote
+      #23217 open 2024-07-06 Feature Request - Pin Podman Volumes to be Ignored when Pruning
+      #24093 open 2024-09-28 UDev rule based usb devices are not handled correctly after replugging
+      #28467 open 2026-04-08 Value of $XDG_RUNTIME_DIR persists across reboots
+      #25176 open 2025-01-31 can't create an anonymous volume with nocopy option
+      #29493 closed 2026-08-13 events: fix goroutine leak with until flag in file backend
+      #23967 open 2024-09-16 macos: podman fails to mount folders from another partition: statfs ... no such file or directory
+      #28658 open 2026-05-06 Proposal for support for runtime composefs validation
+      #29658 merged 2026-08-27 Add design doc for handling unnamed artifact orphans
+      #29491 closed 2026-08-13 Goroutine leak in event logger when using `--until` with dropped contexts
+      #23411 open 2024-07-26 Stopping Quadlet - ExecStop overwrites custom settings
+      #25511 open 2025-03-09 [RFE] Network mode equivalent to libvirt's hostdev.
+      #28478 merged 2026-04-09 Rootless bridge: preserve source IPs via pesto/pasta
+      #19899 open 2023-09-08 podman machine alignment with bootc install
+      #29043 closed 2026-06-25 Podman machine rootless connection fails due to `storage.conf` permissions in FCOS image
+  destroys       14 hit(s) (all listed)
+      #29808 open 2026-09-19 Fix : Make Volume Units persistent to prevent container crashes
+      #29664 closed 2026-08-27 Compat API: attach to an exited container resets its state and destroys the recorded exit code
+      #20547 open 2023-10-31 Using Podman as docker substitute with terraform does not work as expected
+      #28126 closed 2026-02-20 docs: add tutorial for running podman on macOS startup with launchd
+      #28521 closed 2026-04-16 Podman Crun not found: invalid argument SSSD/Ldap user
+      #19775 merged 2023-08-28 e2e: fix race condition (kube play + logs)
+      #20132 merged 2023-09-25 Change log level for health_check
+      #11061 merged 2021-07-27 command: migrate doesn't move process to cgroup
+      #10442 closed 2021-05-24 Error: OCI runtime error: error creating systemd unit `libpod-sha.scope`: got `failed`
+      #18074 merged 2023-04-05 e2e tests: fix racy flakes
+      #14317 closed 2022-05-23 Make these directories adjustable through podman conf files
+      #19092 merged 2023-07-03 auto update: fix usage of --authfile
+      #5002 closed 2020-01-28 podman generate systemd service files fail for rootless pods
+      #11384 closed 2021-09-01 `podman stop` returns before removing a container started with `--rm`
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23411 open 2024-07-26 Stopping Quadlet - ExecStop overwrites custom settings
+      #24191 open 2024-10-07 TZ environment variable from image overwrites timezone defined in containers.conf
+      #17237 open 2023-01-26 [Feature]: Keep image architecture stable when using --arch
+      #25386 open 2025-02-23 Support combining `--net=container:` and `--dns` flags
+      #28187 open 2026-03-03 journald log driver: support --log-opt labels to promote container labels as structured journal fields
+      #28997 open 2026-06-21 make pull-policy=newer finally working
+      #18430 open 2023-05-03 cli: `--volumepath` is not functional when backend is initialized.
+      #21019 open 2023-12-14 `PortMappings can only be used with Bridge, slirp4netns, or pasta networking` when using `Network=private` with pod
+      #24318 open 2024-10-19 Default podman-machine-default on Windows missing default `seccomp.json`?
+      #15838 open 2022-09-16 Allow configuring the gpg program used for signing & verification
+      #29752 closed 2026-09-10 pkg/api/handlers/libpod: quadlets multipart differs from manifests
+      #14264 open 2022-05-16 Allow podman run against specgen json
+      #16940 open 2022-12-25 Rootless `kube play` creates new network in bridge mode instead of using default slirp4netns
+      #16263 open 2022-10-23 Linux ssh-agent not working?
+      #27481 open 2025-11-09 feat(kube play): flag to specify resources (pods, secrets, volumes) labels #26450 
+      #18075 open 2023-04-05 Support local volumes with a lifetime longer than that of the podman host
+      #23153 open 2024-07-01 user's feedback when starting a machine if rosetta is not installed
+      #23447 open 2024-07-30 libpod: Drop checks for paths in sqlite+boltdb
+      #28658 open 2026-05-06 Proposal for support for runtime composefs validation
+      #26621 open 2025-07-12 podman pull for different platforms replaces images
+  clobber        62 hit(s) (all listed)
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #28504 closed 2026-04-14 Quadlets running in LXC containers can leak netns
+      #27883 merged 2026-01-09 [v4.9-rhel] CVE-2025-47913, bump to x/crypto v0.43.0
+      #27987 merged 2026-01-29 [v4.4.1-rhel] Bump runc to 1.2.9, Buildah to v1.29.6
+      #14536 closed 2022-06-08 build with --squash-all + --timestamp clobbers timestamps in preexisting layers
+      #24336 merged 2024-10-22 fix(deps): update module github.com/opencontainers/runc to v1.2.0
+      #24486 closed 2024-11-06 Podman and Docker network problem on Fedora 41 - no internet access from rootfull podman containers
+      #23081 merged 2024-06-24 CI: logformatter: link to correct PR base
+      #18001 closed 2023-03-31 Support mixed TTY on STD FDs
+      #22988 merged 2024-06-12 [skip-ci] GHA: Send release notification mail
+      #21362 merged 2024-01-25 [v4.9] [CI:BUILD] rpm: use go-rpm-macros on RHEL 10
+      #21499 merged 2024-02-03 Fixed `podman-mac-helper uninstall` to remove docker.sock symlink
+      #20847 merged 2023-11-30 Copy past golang/expansion form ks8.io/kubernetes
+      #20998 merged 2023-12-13 CI: systests: safer isolation in registry & tests
+      #20902 closed 2023-12-04 podman-4.8.0: "Rolling back transaction to validate database'
+      #19379 closed 2023-07-26 podman system connection clobbers /etc/containers/containers.conf
+      #20691 merged 2023-11-14 Implement bare-metal Mac M1 podman-machine testing
+      #8740 closed 2020-12-16 podman search: --list-tags clobbers --format
+      #14863 closed 2022-07-08 Cirrus: new API clobbers past (flake) runs
+      #7852 closed 2020-09-30 run files under /tmp can be clobbered by systemd.tmpfiles
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29875 open 2026-10-01 docs: check missing prompts in man-page examples
+      #16263 open 2022-10-23 Linux ssh-agent not working?
+      #29095 open 2026-07-01 Problem with dollar signs in labels - `podman build --label 'test=$something' .`
+      #29830 merged 2026-09-24 Update dependency golangci/golangci-lint to v2.14.0
+      #21289 open 2024-01-18 Provide option to bypass auto proxy environment handling.  Especially for machine itself.
+      #29825 merged 2026-09-23 quadlet: resolve symlinks to find drop-ins in target unit directory
+      #29384 closed 2026-08-03 Add MANPAGE_SYNTAX.md rule checks to man-page-checker
+      #18318 open 2023-04-24 Cannot use Kubernetes healthcheck probes without certain executables (tcpSocket/nc, httpGet/curl) inside the container
+      #29824 closed 2026-09-23 fix: resolve unit file symlinks and deduplicate dropin search paths
+      #26143 closed 2025-05-15 Using extra_hosts results in blank /etc/resolv.conf in the container.
+      #29479 merged 2026-08-12 events: add missing Copy status to StringToStatus
+      #21198 open 2024-01-08 Image ID not consistent between Podman and Docker in image history
+      #26283 open 2025-06-05 podman compose on windows doesn't use VPN's DNS server
+      #15121 open 2022-07-29 Windows ssh-agent not working?
+      #27666 open 2025-12-03 Failed to remove secrets(driver=pass) when inspected storages no longer exist.
+      #29444 closed 2026-08-10 build: add --no-cache-filter flag for per-stage cache control
+      #28196 merged 2026-03-04 fix CLI help example indentation
+      #28395 closed 2026-03-27 Fixes: #28374 de-deuplicated quiet option (docs)
+      #8193 closed 2020-10-29 Alternate port_handler that keeps the source ip for user-defined rootless networks
+      #28401 merged 2026-03-29 fix(artifact): show :latest tag in ls output when no explicit tag given
+  unreadable     66 hit(s) (all listed)
+      #25118 open 2025-01-25 Add a new secrets driver with support for encryption using different encrypters
+      #28638 merged 2026-05-04 Update module google.golang.org/grpc to v1.81.0
+      #29219 closed 2026-07-20 feat(quadlet): add SocketActivationPort — systemd socket activation for containers and pods
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #28364 closed 2026-03-26 --device does not preserve group ownership in rootless --userns=keep-id
+      #28525 closed 2026-04-16 Cirrus CI replacement
+      #27271 merged 2025-10-10 Podman6: Remove cgroupsv1
+      #26476 merged 2025-06-20 update podman-machine-start with examples for --no-info and --quiet
+      #25233 closed 2025-02-05 Podman Error pulling candidate and Error: reading blob sha256
+      #23317 closed 2024-07-18 podman ps: output unreadable with many exposed ports
+      #25441 closed 2025-03-03 ERRO[0000] +(UNHANDLED LOGLEVEL) &imagebuilder.Step
+      #25007 merged 2025-01-13 Zstd:chunked podman-side tests
+      #24337 merged 2024-10-22 ps: fix display of exposed ports
+      #23451 merged 2024-07-30 System tests: leak_test: readable output
+      #22972 merged 2024-06-12 refactor(build): improve err when file specified by -f does not exist
+      #23030 merged 2024-06-18 cirrus.yml: implement skips based on source changes
+      #21459 merged 2024-01-31 [skip-ci] Make leak-detection readable by humans
+      #20983 closed 2023-12-11 [CI:DOCS] move footnotes on divisive language to exactly where divisive language is used
+      #21185 merged 2024-01-06 Replace strings.SplitN with strings.Cut
+      #13595 merged 2022-03-22 Fix unreadable netavark logs
+  garbage        66 hit(s) (all listed)
+      #27209 open 2025-10-01 Support for `unused-for` filter for pruning
+      #29483 closed 2026-08-12 quadlet: handle missing HOME in rootless configuration lookup
+      #29526 closed 2026-08-14 Performance: Replace `strings.ToLower() ==` with `strings.EqualFold()` to prevent unnecessary allocations
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #29415 closed 2026-08-06 libpod: fix PruneBuildContainers early return and size overflow
+      #20203 open 2023-09-29 --imagestore is not enough for building/publishing images
+      #27980 merged 2026-01-29 fix(quadlet): correct replace behavior and prevent duplicates in .app files
+      #29001 closed 2026-06-22 Unable to image mount from additionalimagestores
+      #27279 open 2025-10-13 gvproxy cpu high on Mac M3
+      #29143 merged 2026-07-08 Update module golang.org/x/crypto to v0.52.0 [SECURITY]
+      #21810 open 2024-02-25 Error: copying system image from manifest list: trying to reuse blob */diff: no such file or directory
+      #27553 merged 2025-11-18 fix(deps): update module google.golang.org/grpc to v1.77.0
+      #23882 closed 2024-09-05 CI flake: head /dev/kmsg: EIO
+      #25614 closed 2025-03-18 CI: podman machine DeferCleanup callback error because file is being used by another process.
+      #24601 merged 2024-11-18 Support (m)TLS API Socket
+      #26265 merged 2025-06-02 chore(deps): update dependency pytest to v8.4.0
+      #24426 merged 2024-10-30 [v4.9-rhel] libpod: bind ports before network setup
+      #23452 closed 2024-07-30 Garbage cleanup
+      #24405 closed 2024-10-29 builder-jammy-tiny fails to build spring-boot native jar: permission denied
+      #23616 closed 2024-08-14 podman 5.2.0 does not close connections properly on MacOS
+  mangled        13 hit(s) (all listed)
+      #29601 merged 2026-08-20 podman exec: align --detach-keys help text with run, start, and attach
+      #28409 closed 2026-03-30 [Quadlet] HealthCmd fails with shell metacharacters — systemd INI parser mangles values before shell execution
+      #27125 open 2025-09-19 Container network not reachable - Recv failure: Connection reset by peer
+      #24946 closed 2025-01-06 Error: unable to connect to Podman socket illegal base64 data at input byte 372
+      #22320 closed 2024-04-09 Container creation fails when connected to VPN
+      #19641 merged 2023-08-16 document available secret drivers
+      #339 closed 2018-02-15 Added atomic-registries and iptables to install.md
+      #10255 merged 2021-05-06 [CI:DOCS] Stop conversion of `--` into en dash
+      #42 closed 2017-11-14 Add docker transport to push image before final failure
+      #5335 closed 2020-02-26 podman fails setting forward rules
+      #17922 closed 2023-03-24 With Pasta, Infrastructure container entry doesn't manifest
+      #18011 closed 2023-04-02 podman-machine-default.json gets corrupted on improper Windows shutdown
+      #1149 closed 2018-07-24 LABELs split across mutliple lines in Dockerfile are handled incorrectly
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29875 open 2026-10-01 docs: check missing prompts in man-page examples
+      #29754 open 2026-09-10 Kube play: preserve memory-backed emptyDir data after init containers exit
+      #25015 open 2025-01-15 unable to start machine on M4 based MacOS system
+      #28342 open 2026-03-22 Add support for `--output` to `podman build --remote`
+      #24644 open 2024-11-21 IID not written when using docker CLI
+      #28857 open 2026-06-04 machine: design doc for uncompressed image cache
+      #18375 open 2023-04-27 Can't set graphRoot and runRoot via configuration
+      #26685 open 2025-07-24 podman save --compress  does not include tag and name
+      #27626 open 2025-11-28 Rootless podman in Kubernetes with NFS additionalImageStore doesn't work
+      #23943 open 2024-09-12 "podman volume rm" behaviour
+      #29670 open 2026-08-28 Tthe data is not transferred from the init container to the application (regular) container on the volume.
+      #27802 open 2025-12-18 host.containers.internal only bound to one address
+      #25154 open 2025-01-29 checkpoint log not available on failure
+      #29414 closed 2026-08-06 events: logNeedsRotation uses rune count instead of byte length for content size calculation
+      #20868 open 2023-12-01 additionalimagestores: Set ownership at create time, rather than chmod'ing after
+      #24307 open 2024-10-17 Container restore fails due to rootfsImageID mismatch
+      #27228 open 2025-10-03 podman manifest create --all parameter is ineffective
+      #21741 open 2024-02-19 remote exec: empty output
+      #16585 open 2022-11-22 Add support for --follow-link option in podman cp 
+      #28038 open 2026-02-06 Can no longer base an image on a local image
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19017 open 2023-06-27 SQLite backend places the db file in a wrong directory.
+      #29838 open 2026-09-25 Support per-user rootless Quadlets by username: /etc/containers/systemd/user/<username>
+      #29757 open 2026-09-11 # `image_default_format` is documented but has no consumer
+      #29733 open 2026-09-08 libpod: switch sqlite state backend to WAL mode
+      #28242 open 2026-03-10 Add list command to pod command --help
+      #29081 open 2026-06-30 pkg/kube/quadlet: add podman kube quadlet subcommand
+      #25868 open 2025-04-13 feat: Add stopsignal to container lifecycle field in podspec
+      #28993 open 2026-06-20 RUN --mount=type=bind scripts are not executable when podman remote API daemon stages build context on a noexec filesystem
+      #24184 open 2024-10-07 images/create: handle tag/digest if Tag specified
+      #29599 open 2026-08-20 compat stats: fix system_cpu_usage, precpu_stats, and CPU% docs
+      #29767 open 2026-09-13 Add support for --output to podman build --remote
+      #29386 open 2026-08-03 bug: --volume src:dst:mode parser corrupts destination path when src == dst (6.0.2)
+      #28211 open 2026-03-06 incorrect use of ImageCopyTmpDir()
+      #21379 open 2024-01-26 Document setup instructions for applehv pre-release testing with Docker Desktop and Testcontainers
+      #28877 open 2026-06-07 Fix volume plugin lazy init
+      #25386 open 2025-02-23 Support combining `--net=container:` and `--dns` flags
+      #25849 open 2025-04-10 Let 'start' optionally return the process ID of the container's entry point
+      #23215 open 2024-07-06 quadlet creates invalid unit file name for templated network
+      #24385 open 2024-10-27 WSL: podman compose secrets does not work
+      #19939 open 2023-09-12 Allow specifying a guest OS in `podman machine init`.
+  unclean        47 hit(s) (all listed)
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #25270 open 2025-02-09 FreeBSD14.2 Podman 5.2.5_2 error on push to docker hub: error: writing blob: patch .. happened during read: digest did not match, expected ..
+      #23504 open 2024-08-05 Podman does not remove the overlay storage when the systemd service is restarted during reboot or shutdown (still in v5.1.1)
+      #28047 open 2026-02-08 [macos] gvproxy listens to ports of exited containers
+      #23411 open 2024-07-26 Stopping Quadlet - ExecStop overwrites custom settings
+      #25295 closed 2025-02-11 Semantics of `--transient-store` with `volume`s are unclear and inconsistent
+      #28202 merged 2026-03-05 Podman6: Vendor update w/o CNI + additional cleanups
+      #28109 merged 2026-02-17 Make libpod return error status code on failure to pull image
+      #25001 closed 2025-01-13 fix(deps): update module github.com/cyphar/filepath-securejoin to v0.4.1 - autoclosed
+      #23790 closed 2024-08-28 Failed to start podman-clean-transient.service: Unit boot-complete.target not found.
+      #25153 closed 2025-01-29 D-in-D with VSCode remote development is broken on 5.3.2
+      #22984 closed 2024-06-12 System boot hangs indefinitely on unclean shutdown with transient mode
+      #26469 closed 2025-06-19 Podman 5.5.1-1 segfaults when dealing with lockfiles
+      #21463 closed 2024-01-31 Fails to initialize machine "SSH key already exists"
+      #21767 closed 2024-02-20 Data corruption on "down" with podman kube play
+      #22407 closed 2024-04-17 Dangling Network / aardvark-dns / Container host file causes DNS Resolution Failure Switching between Valid and Invalid IP Address
+      #21093 closed 2023-12-27 Podman does not remove the overlay storage when the systemd service is restarted during reboot or shutdown
+      #9824 closed 2021-03-26 podman errors after unclean shutdown
+      #15469 merged 2022-08-24 APIv2 test cleanup
+      #16908 merged 2022-12-21 When in transient store mode, use rundir for bundlepath
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29419 open 2026-08-06 Rootless Quadlet network cleanup fails during systemd user manager shutdown
+      #19815 open 2023-08-31 libpod-conmon delays shutdown
+      #29397 open 2026-08-05 libpod: fix format string argument order, store cleanup leak, and avoid panic in WaitForConditionWithInterval
+      #28767 open 2026-05-25 `podman machine`: fail `init` / `set --disk-size` when size exceeds available host storage
+      #19995 open 2023-09-15 User mode networking fails after a while
+      #19233 open 2023-07-13 Docker Desktop cannot start if the docker_engine named pipe created by podman before it starts
+      #25157 open 2025-01-29 Support for sidecars in `kube play`
+      #27282 open 2025-10-13 Status date is "292 years ago"
+      #16214 open 2022-10-18 Dangling/unreferenced layers on incomplete pull
+      #23504 open 2024-08-05 Podman does not remove the overlay storage when the systemd service is restarted during reboot or shutdown (still in v5.1.1)
+      #25811 open 2025-04-06 resoure saver (like docker-desktop)
+      #27949 open 2026-01-24 "podman ps" and "podman info" hang indefinitiely (while podman is starting some container)
+      #23207 open 2024-07-05 Startup of podman-restart conflicts with podman-kube template if both are used
+      #29474 closed 2026-08-12 Starting a machine on Windows fails when there is a gvproxy/win-sshproxy orphan
+      #22975 open 2024-06-12 Cannot ssh into machine with networkingMode=mirrored
+      #21289 open 2024-01-18 Provide option to bypass auto proxy environment handling.  Especially for machine itself.
+      #24660 open 2024-11-23 Podman containers on Windows cannot connect to the host via localhost
+      #24798 open 2024-12-09 Podman Becomes Unresponsive During Test Execution on Windows
+      #28231 open 2026-03-10 windows 5.8.0 podman commands "run" "info" "pull" do not work
+      #28318 open 2026-03-18 `machine start` signal handler orphans VM by calling os.Exit(1) without cleanup
+  reboot         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #26823 open 2025-08-14 Delete run directory after reboot
+      #28467 open 2026-04-08 Value of $XDG_RUNTIME_DIR persists across reboots
+      #26008 open 2025-04-29 podman-restart kills processes after reboot
+      #29813 open 2026-09-22 Support health condition for container dependencies (--requires)
+      #15976 open 2022-09-28 `systemctl reboot` inside podman machine clears volume mounts
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #21255 open 2024-01-14 Podman doesn't update device major/minor number on machine reboot
+      #19081 open 2023-07-01 RFE: Command to alias to docker.sock without requiring podman-machine reboot
+      #29419 open 2026-08-06 Rootless Quadlet network cleanup fails during systemd user manager shutdown
+      #29411 open 2026-08-06 macOS/libkrun: gvproxy SIGKILLed under load (Podman Desktop proven responsible; second unidentified killer) — machine left "running" but dead
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #28877 open 2026-06-07 Fix volume plugin lazy init
+      #17877 open 2023-03-21 [Feature] Hidden WSL2 install on Windows
+      #27829 open 2025-12-26 Pods fail to start due to "Error: creating container storage: the container name "pod_name-pod-infra" is already in use" after every host reboot
+      #23207 open 2024-07-05 Startup of podman-restart conflicts with podman-kube template if both are used
+      #14514 open 2022-06-07 Update notification for the update of the podman machine image
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #23504 open 2024-08-05 Podman does not remove the overlay storage when the systemd service is restarted during reboot or shutdown (still in v5.1.1)
+      #19815 open 2023-08-31 libpod-conmon delays shutdown
+      #16156 open 2022-10-13 Feature request: preserve container images across podman machine recreation
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #28857 open 2026-06-04 machine: design doc for uncompressed image cache
+      #27282 open 2025-10-13 Status date is "292 years ago"
+      #29856 open 2026-09-29 Wrong file ownership in rootless container export created with --userns=keep-id
+      #28439 open 2026-04-03 podman machine start reports success on macOS Apple Silicon, but VM falls into emergency mode with Ignition/fsck root UUID errors
+      #27592 open 2025-11-23 Total reclaimed space reports nonsensical value
+      #29625 open 2026-08-22 podman constantly redownload
+      #21208 open 2024-01-09 machine/applehv: Switch to NVMe by default
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #29284 open 2026-07-25 rootless container quadlet files do not  load anymore from ~/.config/containers/systemd  on Fedora 44
+      #29639 open 2026-08-25 podman machine init fails to pull machine-os artifact on Windows: "The system cannot find the path specified" (reproduced on 6.0.2 and 5.8.6)
+      #19899 open 2023-09-08 podman machine alignment with bootc install
+      #16214 open 2022-10-18 Dangling/unreferenced layers on incomplete pull
+      #17746 open 2023-03-12 Creating a network bridge fails with ':' (colon) character in name
+      #26547 open 2025-07-01 CI: wsl machine flakes
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #20634 open 2023-11-08 Throughput reported by 'podman push' is too high
+      #22121 open 2024-03-21 [5.0.0 osx] Unable to start the podman machine with osx Monterey
+      #25864 open 2025-04-12 Add systemd service and timer for running 'podman image prune -a'
+      #24307 open 2024-10-17 Container restore fails due to rootfsImageID mismatch
+  data+loss      93 hit(s) (all listed)
+      #29130 open 2026-07-05 Podman network fails dns randomly
+      #26438 open 2025-06-15 ping 8.8.8.8 fails when using bridge network
+      #17288 open 2023-01-30 network flakes: other
+      #16342 open 2022-10-29 No retry on temporary failure in network name resolution
+      #6265 open 2020-05-17 Signed image save
+      #29664 closed 2026-08-27 Compat API: attach to an exited container resets its state and destroys the recorded exit code
+      #29120 closed 2026-07-04 Error User-selected graph driver "overlay" overwritten by graph driver "btrfs" from database
+      #27487 closed 2025-11-10 "Connection refused" using rootful podman and trying to access the host via `host.containers.internal`
+      #28219 closed 2026-03-09 rootless container and pasta network performance is very bad with podman 5.8
+      #23984 closed 2024-09-17 Default route confusion when using multiple `--network` options with `macvlan` and `bridge` networks
+      #27284 merged 2025-10-13 Add a new Windows installer supporting both user and machine scopes
+      #27216 closed 2025-10-02 Huge Performance Difference Importing MySQL Dump: Docker vs Podman on macOS
+      #26198 closed 2025-05-25 container started with podman compose can't resolve dns names of others container in the same network
+      #25179 merged 2025-01-31 Create `--append` flag to add file to existing artifact using `podman artifact add` command
+      #20661 closed 2023-11-12 Support subpath paths for -v or --mount
+      #24277 merged 2024-10-15 api: Move close function in condition body
+      #15986 closed 2022-09-29 podman custom dns resolving bad address on and off on MAC
+      #21767 closed 2024-02-20 Data corruption on "down" with podman kube play
+      #22653 closed 2024-05-09 Host unreachable from container with bridge network on Podman v5
+      #22852 closed 2024-05-30 'podman stop' does not thoroughly clean up, resulting in 'the container name \"autotests\" is already in use'
+  partial+write  76 hit(s) (all listed)
+      #24027 open 2024-09-21 volume rm require exact name
+      #29500 open 2026-08-13 fix(api): bound how long a client may take to send request headers
+      #28658 open 2026-05-06 Proposal for support for runtime composefs validation
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #29796 merged 2026-09-18 Update module google.golang.org/grpc to v1.84.0
+      #29598 closed 2026-08-20 test/system: fail loudly when _prefetch cannot fetch or load an image
+      #22753 open 2024-05-20 Podman is not able to create containers  with additional image store.
+      #29608 closed 2026-08-20 hack/ci/logcollector: collect all network diagnostics even if one fails
+      #20203 open 2023-09-29 --imagestore is not enough for building/publishing images
+      #24000 open 2024-09-18 .buildkit_qemu_emulator: operation not supported
+      #20379 open 2023-10-17 Running docker compose leads to docker socket unvailable and WSL stuck
+      #21810 open 2024-02-25 Error: copying system image from manifest list: trying to reuse blob */diff: no such file or directory
+      #22554 open 2024-04-30 Podman is unable to write to AWS EFS (NFS) when used as additional file storage
+      #28801 merged 2026-05-27 cmd, commit: change --pause default to true
+      #16882 open 2022-12-19 [btrfs] Sporadic Found incomplete layer error results in broken container engine
+      #28813 closed 2026-05-29 staged image pull with composefs flaky
+      #28335 merged 2026-03-20 refactor: podman quadlet sub-command
+      #26444 closed 2025-06-16 libpod: add `pullprogress` to /libpod/images/pull
+      #27262 merged 2025-10-09 Fix flaky sysctl completion by handling /proc/sys errors gracefully
+      #27660 merged 2025-12-02 [v5.8] Add migration code for BoltDB to SQLite
+  crash+safe     35 hit(s) (all listed)
+      #29808 open 2026-09-19 Fix : Make Volume Units persistent to prevent container crashes
+      #29803 closed 2026-09-19 libpod: move per-container pasta process to conmon scope
+      #13006 open 2022-01-25 Support Qemu accelerated podman machine on Windows hosts
+      #28929 merged 2026-06-13 Update dependency pytest to v9.1.0
+      #27466 closed 2025-11-07 Update module github.com/opencontainers/selinux to v1.13.0 [SECURITY] - autoclosed
+      #27448 closed 2025-11-05 Update module github.com/opencontainers/runc to v1.3.3 [SECURITY] - autoclosed
+      #26971 merged 2025-09-03 Fix a locking bug in that could cause a double-unlock
+      #25179 merged 2025-01-31 Create `--append` flag to add file to existing artifact using `podman artifact add` command
+      #26265 merged 2025-06-02 chore(deps): update dependency pytest to v8.4.0
+      #25974 closed 2025-04-24 Podman.exe needs massive amounts of memory
+      #23384 merged 2024-07-24 CI: enable root user namespaces
+      #20420 merged 2023-10-19 Refactor machine socket mapping
+      #17473 closed 2023-02-10 Implement Unix domain socket support for VLAN
+      #7384 closed 2020-08-19 `podman stop $cid1 $cid2` successfully stops both but sometimes errors that $cid2 does not exist
+      #11074 merged 2021-07-29 auto-update: simple rollback
+      #8692 merged 2020-12-11 [CI:DOCS] Cleanup CNI Networks on reboot
+      #16792 closed 2022-12-09 Windows won't boot (!?) after installing podman.
+      #11886 merged 2021-10-07 Unit files: Use actual installed path for podman
+      #11028 merged 2021-07-23 Bump github.com/containers/image/v5 from 5.13.2 to 5.14.0
+      #1015 closed 2018-06-27 changes to allow for darwin compilation
+  atomic+write   >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25641 open 2025-03-21 Set default architecture (without passing --platform)?
+      #29011 merged 2026-06-23 Write quadlet units to temporary files and rename
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #29004 closed 2026-06-22 podman quadlet install -r may cause broken generated systemd units
+      #28803 merged 2026-05-27 fix: Handle healthcheck log corruption gracefully
+      #29803 closed 2026-09-19 libpod: move per-container pasta process to conmon scope
+      #29525 merged 2026-08-14 exec: forward signals to the exec session's process group
+      #27785 open 2025-12-16 Podman fails to run container with userns=keep-id
+      #28100 merged 2026-02-16 pkg/bindings: add dial-stdio fallback for SSH connections
+      #26846 closed 2025-08-16 WIP: volume protection by pinning
+      #29182 merged 2026-07-13 Update module github.com/mattn/go-sqlite3 to v1.14.48
+      #28335 merged 2026-03-20 refactor: podman quadlet sub-command
+      #27980 merged 2026-01-29 fix(quadlet): correct replace behavior and prevent duplicates in .app files
+      #25209 merged 2025-02-03 test/e2e: improve write/removeConf()
+      #25179 merged 2025-01-31 Create `--append` flag to add file to existing artifact using `podman artifact add` command
+      #24400 merged 2024-10-29 libpod: report cgroups deleted during Stat() call
+      #21857 merged 2024-02-28 machine config: make write atomic
+      #23331 closed 2024-07-18 race: completion: Top layer ... not found ... storage may be corrupted
+      #23162 merged 2024-07-02 pkg/machine/e2e: improve timeout handling
+      #18575 closed 2023-05-15 --replace should work with dependent containers.
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29532 open 2026-08-15 libpod: report locks that DeallocateAllLocks failed to remove
+      #29641 open 2026-08-25 podman image rm - concurrent with shared layers: build fails unpacking its own layer
+      #16784 open 2022-12-08  Refreshing container <containerID>: error acquiring lock 0 for container <containerID>: file exists
+      #29646 open 2026-08-26 podman run --rm can deadlock with its own `container cleanup`, permanently wedging the per-UID SHM lock
+      #29163 open 2026-07-09 Slower startup time with concurrent podman run
+      #29733 open 2026-09-08 libpod: switch sqlite state backend to WAL mode
+      #29636 open 2026-08-24 libpod: delay volume unmount in Export() until stream Close()
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #27949 open 2026-01-24 "podman ps" and "podman info" hang indefinitiely (while podman is starting some container)
+      #28983 open 2026-06-19 Add --pidfile flag to podman start
+      #29813 open 2026-09-22 Support health condition for container dependencies (--requires)
+      #16119 open 2022-10-11 Error: failed to open 16384 locks in /libpod_rootless_lock_1000: numerical result out of range
+      #27921 open 2026-01-19 Podman inoperable without writable $HOME
+      #28439 open 2026-04-03 podman machine start reports success on macOS Apple Silicon, but VM falls into emergency mode with Ignition/fsck root UUID errors
+      #1911 open 2018-12-01 feature: Per-image pull locking for bandwidth efficiency
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #20868 open 2023-12-01 additionalimagestores: Set ownership at create time, rather than chmod'ing after
+      #29732 closed 2026-09-08 libpod/sqlite: enable WAL mode and cap connection pool to fix state DB corruption
+      #25886 open 2025-04-15 Launching many containers in parallel produces: Error: saving container $containerid state: beginning container $containerid save transaction: database is locked
+      #26739 open 2025-08-03 podman not working on WSL (Docker Desktop/Podman Desktop on Windows)
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29721 open 2026-09-04 sqlite state DB corrupts under sustained container churn: "database disk image is malformed"
+      #28870 open 2026-06-05 [CI] Add /retrigger PR comment command
+      #26389 open 2025-06-12 System tests: export env vars for host distro, release and skip a test on rawhide
+      #29767 open 2026-09-13 Add support for --output to podman build --remote
+      #18540 open 2023-05-11 ginkgo tests EPIC
+      #29397 open 2026-08-05 libpod: fix format string argument order, store cleanup leak, and avoid panic in WaitForConditionWithInterval
+      #28658 open 2026-05-06 Proposal for support for runtime composefs validation
+      #23615 open 2024-08-14 CI: podman logs k8s-file never seeing output
+      #29690 merged 2026-09-01 test/system: Update test to handle new error message from runc 1.5.0
+      #14616 open 2022-06-16  Feature Request: recover from partially pulled layer (network error, NOT out out of disk space) without restarting
+      #28033 open 2026-02-05 Podman artifact pull leaves the previous local artifact around, without a name, breaking assumptions that artifacts are named
+      #23815 open 2024-08-30 podman build fails to pick up secrets from file in Windows
+      #25641 open 2025-03-21 Set default architecture (without passing --platform)?
+      #27623 open 2025-11-28 test/system: Fix the IPv6 address mismatch error
+      #13967 open 2022-04-22 cannot `podman rm` after reboot with fs full
+      #29639 open 2026-08-25 podman machine init fails to pull machine-os artifact on Windows: "The system cannot find the path specified" (reproduced on 6.0.2 and 5.8.6)
+      #29803 closed 2026-09-19 libpod: move per-container pasta process to conmon scope
+      #28180 open 2026-03-02 Pasta: ping fails inside LXC Container
+      #29765 merged 2026-09-13 machine: clean up orphaned gvproxy and win-sshproxy when starting Windows machines
+      #29651 merged 2026-08-26 test/utils: fix BeValidJSON and remove IsJSONOutputValid
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29875 open 2026-10-01 docs: check missing prompts in man-page examples
+      #24644 open 2024-11-21 IID not written when using docker CLI
+      #28342 open 2026-03-22 Add support for `--output` to `podman build --remote`
+      #25015 open 2025-01-15 unable to start machine on M4 based MacOS system
+      #18375 open 2023-04-27 Can't set graphRoot and runRoot via configuration
+      #28857 open 2026-06-04 machine: design doc for uncompressed image cache
+      #26685 open 2025-07-24 podman save --compress  does not include tag and name
+      #16585 open 2022-11-22 Add support for --follow-link option in podman cp 
+      #27626 open 2025-11-28 Rootless podman in Kubernetes with NFS additionalImageStore doesn't work
+      #20868 open 2023-12-01 additionalimagestores: Set ownership at create time, rather than chmod'ing after
+      #28439 open 2026-04-03 podman machine start reports success on macOS Apple Silicon, but VM falls into emergency mode with Ignition/fsck root UUID errors
+      #24826 open 2024-12-12 checkpoint rootfs diff is wasteful
+      #27228 open 2025-10-03 podman manifest create --all parameter is ineffective
+      #25154 open 2025-01-29 checkpoint log not available on failure
+      #29109 open 2026-07-03 Rootless overlay-on-btrfs: post-reboot state refresh spends ~30-90s in per-file unlinkat() removing a --rm container's layer, blocking the first podman command
+      #23815 open 2024-08-30 podman build fails to pick up secrets from file in Windows
+      #21741 open 2024-02-19 remote exec: empty output
+      #29670 open 2026-08-28 Tthe data is not transferred from the init container to the application (regular) container on the volume.
+      #26823 open 2025-08-14 Delete run directory after reboot
+      #28467 open 2026-04-08 Value of $XDG_RUNTIME_DIR persists across reboots
+
+== 51 terms run; 50 returned hits, 28 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

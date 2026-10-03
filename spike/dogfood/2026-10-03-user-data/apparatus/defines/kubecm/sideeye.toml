@@ -1,0 +1,6 @@
+[world]
+state = "/s/kubecm"
+
+[define]
+operation = "/opt/bin/kubecm delete staging --config /s/kubecm/config"
+cwd       = "/s/kubecm"

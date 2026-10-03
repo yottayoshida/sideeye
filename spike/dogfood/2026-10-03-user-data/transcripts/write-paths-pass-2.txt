@@ -1,0 +1,23 @@
+=== perl (perl -i -pe s/foo/bar/ a.txt b.txt)
+openat(AT_FDCWD, "XXaxrY9Z", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4
+write(4, "alpha bar\nbeta bar\ngamma\n", 25) = 25
+renameat(5, "XXaxrY9Z", 5, "a.txt") = 0
+openat(AT_FDCWD, "XXxOpjA3", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4
+write(4, "delta bar\nepsilon\n", 18) = 18
+renameat(5, "XXxOpjA3", 5, "b.txt") = 0
+=== bzip3 (bzip3 -e --rm a.log)
+openat(AT_FDCWD, "a.log.bz3", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4
+write(4, "BZ3v1\0\0\0\1\263\6\0\0\252\365\0\0\222[y\210\353\227\0\0\0\365}4\20l\351"..., 1732) = 1732
+fsync(4)                          = 0
+unlinkat(AT_FDCWD, "a.log", 0)    = 0
+=== babel (pybabel update -i messages.pot -d translations)
+openat(AT_FDCWD, "translations/ja/LC_MESSAGES/tmpmessages.po", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3
+write(3, "\nmsgid \"\"\nmsgstr \"\"\n\"Project-Id-"..., 586) = 586
+renameat(AT_FDCWD, "translations/ja/LC_MESSAGES/tmpmessages.po", AT_FDCWD, "translations/ja/LC_MESSAGES/messages.po") = 0
+openat(AT_FDCWD, "translations/fr/LC_MESSAGES/tmpmessages.po", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3
+write(3, "\nmsgid \"\"\nmsgstr \"\"\n\"Project-Id-"..., 553) = 553
+renameat(AT_FDCWD, "translations/fr/LC_MESSAGES/tmpmessages.po", AT_FDCWD, "translations/fr/LC_MESSAGES/messages.po") = 0
+=== samtools (samtools reheader -i /s/samtools-in/new.hdr /s/samtools/a.cram)
+openat(AT_FDCWD, "/s/samtools/a.cram", O_RDWR) = 3
+write(3, "\35\1\0\0\0\0\0\0\0\0\1\1\0?\227#\177\1\0\0\200\327\201\205\37\213\10\0\0\0\0\0"..., 302) = 302
+fdatasync(3)                      = 0

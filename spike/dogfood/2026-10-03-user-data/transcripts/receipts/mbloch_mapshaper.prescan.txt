@@ -1,0 +1,265 @@
+== novelty pre-scan: mbloch/mapshaper
+== date: 2026-10-03T03:06:41Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          10 hit(s) (all listed)
+      #374 open 2019-10-21 crashes on empty geojson collection provided for dissolving or erasing
+      #632 closed 2024-04-04 Javascript error related to polygon editing causes GUI to crash
+      #56 closed 2014-09-17 Crash caused by stripe segment id assignment failure
+      #23 closed 2013-12-05 Crash when using --precision 500
+      #180 closed 2017-03-30 exporting json with attributes
+      #160 closed 2017-01-18 Error writing SVGs of simplified map
+      #254 closed 2018-01-10 Missing path data when using simplify on applyCommands
+      #317 closed 2018-12-26 allow fields parameter in lines command to not crash for geometries without this property
+      #356 closed 2019-09-05 Unable to handle the countries-110m.json file from `topojson/world-atlas`
+      #19 closed 2013-11-17 --keep-shapes leads to crash
+  corrupt        10 hit(s) (all listed)
+      #137 open 2016-07-16 Add shape clipping to the -proj command
+      #640 open 2024-05-04 Problem in drawing polygon and importing snapshot file
+      #360 open 2019-09-27 DBF or zip files greater than 4GB
+      #682 closed 2025-07-21 Problems with Erase and Clip When Used on Small Elements
+      #59 closed 2014-09-30 dbf: (header) record length mismatch
+      #9 closed 2013-07-10 mapshaper --shp-test regularly fails
+      #192 closed 2017-07-04 Clipping a large SHP file breaks on `Cannot read property 'reduce' of null`
+      #338 closed 2019-05-08 exporting simplified geojson data to topojson is broken
+      #432 closed 2020-08-18 geojson file seems to get corrupted when processed in mapshaper
+      #44 closed 2014-04-06 feature request: set precision on export rather than import
+  corruption     3 hit(s) (all listed)
+      #519 closed 2021-12-10 Parsing of some shape files triggers "Shapefile contains an out-of-sequence record. Possible data corruption -- bailing." error
+      #15 closed 2013-10-29 Full support for Shapefile .dbf files
+      #141 closed 2016-08-30 Mapshaper outputs empty `geometries` array
+  truncated      9 hit(s) (all listed)
+      #445 open 2020-10-21 Saving stroke-width in dbf file
+      #566 open 2022-12-06 Bump qs from 6.9.3 to 6.11.0
+      #562 closed 2022-10-11 Bump @xmldom/xmldom from 0.8.2 to 0.8.3
+      #564 closed 2022-11-30 Bump @xmldom/xmldom from 0.8.2 to 0.8.4
+      #514 closed 2021-11-15 Import doesn't work on mapshaper.org for ESRI File Geodb format
+      #66 closed 2014-12-19 Handle duplicate field names in .dbf and csv files
+      #139 closed 2016-07-31 Attribute names limited to 10 characters when saving dbf files
+      #266 closed 2018-03-28 Add warnings when DBF output changes field names or data values
+      #293 closed 2018-08-03 Export Failed for an unknown reason
+  truncate       13 hit(s) (all listed)
+      #445 open 2020-10-21 Saving stroke-width in dbf file
+      #360 open 2019-09-27 DBF or zip files greater than 4GB
+      #566 open 2022-12-06 Bump qs from 6.9.3 to 6.11.0
+      #564 closed 2022-11-30 Bump @xmldom/xmldom from 0.8.2 to 0.8.4
+      #562 closed 2022-10-11 Bump @xmldom/xmldom from 0.8.2 to 0.8.3
+      #514 closed 2021-11-15 Import doesn't work on mapshaper.org for ESRI File Geodb format
+      #66 closed 2014-12-19 Handle duplicate field names in .dbf and csv files
+      #83 closed 2015-07-24 Save as Geojson loses local formatting
+      #101 closed 2015-10-14 Don't truncate console history after selecting a previous command
+      #103 closed 2015-10-26 add ability to target dimensions / file size / vertex count
+      #139 closed 2016-07-31 Attribute names limited to 10 characters when saving dbf files
+      #266 closed 2018-03-28 Add warnings when DBF output changes field names or data values
+      #293 closed 2018-08-03 Export Failed for an unknown reason
+  empty          36 hit(s) (all listed)
+      #587 open 2023-05-13 Join nearest point to empty polygon
+      #374 open 2019-10-21 crashes on empty geojson collection provided for dissolving or erasing
+      #640 open 2024-05-04 Problem in drawing polygon and importing snapshot file
+      #398 open 2020-02-03 Unable to convert kilometers to unknown coordinates issue
+      #212 open 2017-09-04 Improve simplify documentation about coefficients
+      #693 closed 2026-05-15 GeoJSON processing - other data in GeoJSON file not being preserved
+      #662 closed 2024-10-03 `-merge-layers` makes separate files when source layers have null geometries
+      #688 closed 2026-01-04 svg groups?
+      #660 closed 2024-09-15 Error on "properties":null where "properties":{} is expected
+      #644 closed 2024-05-21 filter-slivers remove-empty bug
+      #656 closed 2024-09-07 -o geojson-type=FeatureCollection bug?
+      #643 closed 2024-05-18 Bug: copy as GeoJSON doesn't copy GeoJSON
+      #579 closed 2023-04-19 producing bad output
+      #541 closed 2022-05-07 Joining on DBF sometimes results in 0 length char output
+      #465 closed 2021-02-24 dissolve2 terminates with exception if dataset is empty
+      #461 closed 2021-01-25 Fails to read really big geojson file
+      #517 closed 2021-12-09 Problem with parsing of some .prj WKT strings
+      #494 closed 2021-07-22 Error in skiping shape when shape.isNull == true
+      #466 closed 2021-03-02 Add alternative featurecollection reader
+      #94 closed 2015-09-03 Null/empty values should be editable in the attribute inspector
+  atomic         1 hit(s) (all listed)
+      #694 merged 2026-05-19 Add --watch flag to mapshaper-gui for live file reloading
+  atomically     0 hit(s)
+  interrupted    2 hit(s) (all listed)
+      #483 open 2021-05-12 Add support for interrupted projections
+      #92 closed 2015-08-16 Document projection command
+  interrupt      2 hit(s) (all listed)
+      #483 open 2021-05-12 Add support for interrupted projections
+      #92 closed 2015-08-16 Document projection command
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          5 hit(s) (all listed)
+      #639 open 2024-04-24 topojson files in power bi
+      #181 open 2017-04-06 Export map to image file e.g. .jpg
+      #585 closed 2023-05-10 Exporting Maps Colored using Classify to ArcGIS, Power BI, etc. 
+      #435 closed 2020-08-26 City Boundary in County Dissolved Post Merging Layers
+      #399 closed 2020-02-19 convert .shp to topojson display issues in power bi
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           9 hit(s) (all listed)
+      #546 open 2022-06-01 some features are lost when -clean
+      #358 open 2019-09-14 output > 2GB terminates with an error
+      #699 merged 2026-06-18 Support importing zipped datasets from stdin
+      #631 open 2024-04-02 Error on simplifying GeoJSON file
+      #694 merged 2026-05-19 Add --watch flag to mapshaper-gui for live file reloading
+      #603 closed 2023-10-02 Can't run multiple -each commands on large files
+      #95 closed 2015-09-14 Use applyCommands on two objects (eg., with clip, erase, etc)
+      #159 closed 2017-01-16 Is it possible to pass buffer directly to MapShapper programmatically?
+      #262 closed 2018-03-16 Apparent data loss in shapefile conversion from geojson?
+  partial        5 hit(s) (all listed)
+      #289 open 2018-07-14 partial build is possible?
+      #224 open 2017-10-26 Feature request: Filter features by intersection with another layer
+      #126 closed 2016-04-26 Show a base map in the GUI
+      #26 closed 2013-12-09 Add functions for filtering and dividing layers
+      #117 closed 2016-02-27 syntax to merge or dissolve selected polygons, but retain others, in web console?
+  incomplete     2 hit(s) (all listed)
+      #564 closed 2022-11-30 Bump @xmldom/xmldom from 0.8.2 to 0.8.4
+      #206 closed 2017-08-08 Unable to create new field
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #606 open 2023-11-02 msx/snapshort format without history
+      #482 closed 2021-05-10 Are the points inside a polygon ?
+  recovery       0 hit(s)
+  rollback       1 hit(s) (all listed)
+      #395 open 2019-12-24 Preventing incorrect topology on simplification
+  resume         1 hit(s) (all listed)
+      #168 closed 2017-02-10 Feature Request; NDJSON & ElasticSearch exporter/Bulk exporter
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          22 hit(s) (all listed)
+      #455 open 2020-12-19 Not able to use -erase properly
+      #542 open 2022-05-09 -erase command warns on guessing DBF encoding needlessly
+      #374 open 2019-10-21 crashes on empty geojson collection provided for dissolving or erasing
+      #88 open 2015-08-15 Command to remove splinter polygons
+      #400 open 2020-02-29 filter-islands removing single ring polygons
+      #224 open 2017-10-26 Feature request: Filter features by intersection with another layer
+      #458 open 2020-12-28 Clean Polygons & add gap areas to a specific layer
+      #586 open 2023-05-10 Is it possible to combine overlapping layers and preserve holes?
+      #682 closed 2025-07-21 Problems with Erase and Clip When Used on Small Elements
+      #665 closed 2024-11-29 Can I use mapshaper in a React vite app?
+      #594 closed 2023-07-14 Is there a way to use a polygon as it was a blade?
+      #497 closed 2021-07-25 erase broken with collection of overlapping polygons
+      #486 closed 2021-05-18  Problem cleaning with a polygon inside another but with a shared border
+      #52 closed 2014-08-06 New clip and erase commands
+      #95 closed 2015-09-14 Use applyCommands on two objects (eg., with clip, erase, etc)
+      #119 closed 2016-03-17 Make runParsedCommands public
+      #120 closed 2016-03-30 need examples for cleanup, unjoined, unmatched flags
+      #118 closed 2016-03-04 Erase option is missing Rhode Island
+      #149 closed 2016-11-09 Work on tools for cleaning up messy polygons
+      #276 closed 2018-05-16 Add a more convenient way to inset one polygon layer into another
+  erasing        6 hit(s) (all listed)
+      #374 open 2019-10-21 crashes on empty geojson collection provided for dissolving or erasing
+      #88 open 2015-08-15 Command to remove splinter polygons
+      #224 open 2017-10-26 Feature request: Filter features by intersection with another layer
+      #497 closed 2021-07-25 erase broken with collection of overlapping polygons
+      #118 closed 2016-03-04 Erase option is missing Rhode Island
+      #337 closed 2019-05-03 Incorrect polygon erasure
+  erased         4 hit(s) (all listed)
+      #400 open 2020-02-29 filter-islands removing single ring polygons
+      #374 open 2019-10-21 crashes on empty geojson collection provided for dissolving or erasing
+      #682 closed 2025-07-21 Problems with Erase and Clip When Used on Small Elements
+      #337 closed 2019-05-03 Incorrect polygon erasure
+  destroy        1 hit(s) (all listed)
+      #682 closed 2025-07-21 Problems with Erase and Clip When Used on Small Elements
+  destroys       0 hit(s)
+  overwrite      21 hit(s) (all listed)
+      #566 open 2022-12-06 Bump qs from 6.9.3 to 6.11.0
+      #694 merged 2026-05-19 Add --watch flag to mapshaper-gui for live file reloading
+      #656 closed 2024-09-07 -o geojson-type=FeatureCollection bug?
+      #647 closed 2024-07-04 [join] TypeError in expression [max=max(value)]: max is not a function
+      #548 closed 2022-06-23 Bump shell-quote from 1.7.2 to 1.7.3
+      #559 closed 2022-09-30 Bump d3-color from 2.0.0 to 3.1.0
+      #562 closed 2022-10-11 Bump @xmldom/xmldom from 0.8.2 to 0.8.3
+      #564 closed 2022-11-30 Bump @xmldom/xmldom from 0.8.2 to 0.8.4
+      #537 closed 2022-03-28 Bump ansi-regex from 3.0.0 to 3.0.1
+      #528 closed 2022-01-27 Bump cached-path-relative from 1.0.2 to 1.1.0
+      #535 closed 2022-03-24 Bump minimist from 1.2.5 to 1.2.6
+      #491 closed 2021-06-11 Bump glob-parent from 5.1.1 to 5.1.2
+      #55 closed 2014-09-02 Allow overwriting of output files
+      #82 closed 2015-07-17 Shapefile to geojson conversion
+      #206 closed 2017-08-08 Unable to create new field
+      #280 closed 2018-05-23 Add support to mapshaper-gui for saving files outside the Downloads folder
+      #481 closed 2021-05-06 Bump underscore from 1.10.2 to 1.12.1
+      #473 closed 2021-03-15 Bump elliptic from 6.5.3 to 6.5.4
+      #428 closed 2020-07-30 Bump elliptic from 6.5.2 to 6.5.3
+      #387 closed 2019-12-01 Bump open from 0.0.5 to 7.0.0
+  clobber        0 hit(s)
+  blank          3 hit(s) (all listed)
+      #379 open 2019-11-07 -filter-fields with not existing field
+      #628 closed 2024-03-08 Point layers and data layers do not show up
+      #570 closed 2023-01-05 After last update I can no longer import shapefiles
+  unreadable     0 hit(s)
+  garbage        4 hit(s) (all listed)
+      #49 closed 2014-06-19 Error on loading large shapefile: SCRIPT5022: BinArray constructor takes...
+      #54 closed 2014-08-30 Error: Unable to allocate ArrayBuffer.
+      #129 closed 2016-05-02 Error trying to parse large JSON
+      #18 closed 2013-11-15 Problems running mapshaper under Ubuntu 13.10
+  mangled        0 hit(s)
+  contents       11 hit(s) (all listed)
+      #673 closed 2025-04-15 How can I use the Nodejs API input params?
+      #603 closed 2023-10-02 Can't run multiple -each commands on large files
+      #126 closed 2016-04-26 Show a base map in the GUI
+      #517 closed 2021-12-09 Problem with parsing of some .prj WKT strings
+      #15 closed 2013-10-29 Full support for Shapefile .dbf files
+      #98 closed 2015-10-02 Connection with OpenLayers 3
+      #99 closed 2015-10-05 GeometryCollection wrapper on simplify json file causing load failure on Qgis
+      #133 closed 2016-05-31 Serialize property objects as JSON
+      #159 closed 2017-01-16 Is it possible to pass buffer directly to MapShapper programmatically?
+      #252 closed 2018-01-02 Embedding mapshaper in another site
+      #396 closed 2020-01-08 How to keep the original filename on merge & --split
+  in-place       34 hit(s) (all listed)
+      #303 open 2018-09-12 point-text option in -style to provide text tag symbol as point
+      #463 open 2021-02-20 What is the proper way for "drop polyline layer if present"
+      #646 open 2024-06-23 -require local script file vs. npm package 
+      #209 open 2017-08-31 Skip zip file creation in web UI export?
+      #645 open 2024-06-20 Template expressions and object literals
+      #546 open 2022-06-01 some features are lost when -clean
+      #325 open 2019-01-14 Better documentation
+      #22 open 2013-11-22 Prevent polygons from degenerating into little triangles (option)
+      #609 open 2023-11-08 `dots` with `per-dot` can bias downward the number of dots in small categories
+      #694 merged 2026-05-19 Add --watch flag to mapshaper-gui for live file reloading
+      #376 closed 2019-10-23 turn line into an area (extrude buffer along it)
+      #635 closed 2024-04-12 Sticky hand
+      #605 closed 2023-10-22 Uncaught (in promise) Error: Each LinearRing of a Polygon must have 4 or more Positions.
+      #603 closed 2023-10-02 Can't run multiple -each commands on large files
+      #125 closed 2016-04-18 Polygon geometry should always be a (closed) linear ring
+      #608 closed 2023-11-07 `run` command that imports the return value
+      #578 closed 2023-04-13 fix import path of geojson-common
+      #539 closed 2022-04-14 Possible to return -info in applyCommands?
+      #126 closed 2016-04-26 Show a base map in the GUI
+      #513 closed 2021-11-11 More random colors needed!
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         1 hit(s) (all listed)
+      #466 closed 2021-03-02 Add alternative featurecollection reader
+  disk+full      0 hit(s)
+  data+loss      4 hit(s) (all listed)
+      #472 closed 2021-03-13 Orthographic and perspective projections completely hide polygons going over the horizon
+      #453 closed 2020-12-16 fix GeoJSONReader: reset buffer size
+      #262 closed 2018-03-16 Apparent data loss in shapefile conversion from geojson?
+      #278 closed 2018-05-17 Warn if a many-to-one join causes data loss
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   1 hit(s) (all listed)
+      #694 merged 2026-05-19 Add --watch flag to mapshaper-gui for live file reloading
+  lock+file      0 hit(s)
+  write+failure  1 hit(s) (all listed)
+      #631 open 2024-04-02 Error on simplifying GeoJSON file
+  file+contents  10 hit(s) (all listed)
+      #673 closed 2025-04-15 How can I use the Nodejs API input params?
+      #603 closed 2023-10-02 Can't run multiple -each commands on large files
+      #126 closed 2016-04-26 Show a base map in the GUI
+      #517 closed 2021-12-09 Problem with parsing of some .prj WKT strings
+      #15 closed 2013-10-29 Full support for Shapefile .dbf files
+      #98 closed 2015-10-02 Connection with OpenLayers 3
+      #99 closed 2015-10-05 GeometryCollection wrapper on simplify json file causing load failure on Qgis
+      #159 closed 2017-01-16 Is it possible to pass buffer directly to MapShapper programmatically?
+      #252 closed 2018-01-02 Embedding mapshaper in another site
+      #396 closed 2020-01-08 How to keep the original filename on merge & --split
+
+== 51 terms run; 30 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

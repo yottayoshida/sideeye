@@ -1,0 +1,2 @@
+static: /opt/py/bin/dotdrop: Python script, ASCII text executable
+next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.

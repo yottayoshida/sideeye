@@ -1,0 +1,2 @@
+static: /usr/bin/transmission-edit: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=7496b54d17c820da7bf3c051496dea21cff5f3ee, for GNU/Linux 3.7.0, stripped
+next: sideeye explore --state /s/transmission --cwd "/s/transmission-in" --operation "transmission-edit -a https://tracker2.example.invalid/announce /s/transmission/linux-isos.torrent" \

@@ -1,0 +1,365 @@
+== novelty pre-scan: thomasschafer/scooter
+== date: 2026-10-03T02:49:21Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          7 hit(s) (all listed)
+      #401 closed 2026-06-01 Safeguard your users!
+      #301 merged 2025-12-26 Add multiline searching
+      #375 merged 2026-04-19 feat: add colour on empty search
+      #199 merged 2025-08-08 Pull out core functionality
+      #157 merged 2025-06-02 Add `--no-tui` mode
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+      #153 merged 2025-05-26 Add `--print-results` and `--immediate` flags
+  corrupt        6 hit(s) (all listed)
+      #289 merged 2025-12-01 Bump insta from 1.44.1 to 1.44.3
+      #301 merged 2025-12-26 Add multiline searching
+      #255 merged 2025-10-13 Bump regex from 1.11.3 to 1.12.2
+      #115 merged 2025-05-11 Bump tempfile from 3.19.0 to 3.19.1
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+      #157 merged 2025-06-02 Add `--no-tui` mode
+  corruption     9 hit(s) (all listed)
+      #423 closed 2026-07-04 Bump the cargo-minor-and-patch group across 1 directory with 4 updates
+      #425 closed 2026-07-11 Bump the cargo-minor-and-patch group across 1 directory with 6 updates
+      #325 merged 2026-01-19 Bump insta from 1.46.0 to 1.46.1
+      #330 merged 2026-02-02 Bump insta from 1.46.1 to 1.46.3
+      #427 closed 2026-07-17 Bump the cargo-minor-and-patch group across 1 directory with 11 updates
+      #428 closed 2026-07-18 Bump the cargo-minor-and-patch group across 1 directory with 12 updates
+      #429 merged 2026-07-25 Bump the cargo-minor-and-patch group across 1 directory with 13 updates
+      #313 merged 2026-01-12 Add keybinding to toggle hidden files
+      #253 merged 2025-10-11 Add optional line wrapping
+  truncated      33 hit(s) (all listed)
+      #432 merged 2026-07-26 Bump syn from 2.0.118 to 3.0.3
+      #414 closed 2026-06-22 Bump ratatui from 0.30.0 to 0.30.2
+      #421 closed 2026-06-27 Bump the cargo-minor-and-patch group with 2 updates
+      #423 closed 2026-07-04 Bump the cargo-minor-and-patch group across 1 directory with 4 updates
+      #422 merged 2026-07-04 Bump the github-actions group with 2 updates
+      #425 closed 2026-07-11 Bump the cargo-minor-and-patch group across 1 directory with 6 updates
+      #418 closed 2026-06-24 Bump the cargo-minor-and-patch group with 4 updates
+      #427 closed 2026-07-17 Bump the cargo-minor-and-patch group across 1 directory with 11 updates
+      #428 closed 2026-07-18 Bump the cargo-minor-and-patch group across 1 directory with 12 updates
+      #429 merged 2026-07-25 Bump the cargo-minor-and-patch group across 1 directory with 13 updates
+      #417 closed 2026-06-24 Bump the github-actions group with 5 updates
+      #380 merged 2026-04-20 Bump tokio from 1.51.1 to 1.52.1
+      #366 merged 2026-03-30 Bump insta from 1.46.3 to 1.47.1
+      #350 merged 2026-02-23 Bump steel-derive from 0.6.0 to 0.8.2
+      #347 merged 2026-02-23 Bump steel-core from 0.7.0 to 0.8.2
+      #302 closed 2025-12-29 Bump ratatui from 0.29.0 to 0.30.0
+      #360 merged 2026-03-09 Bump tokio from 1.49.0 to 1.50.0
+      #333 merged 2026-02-05 Bump time from 0.3.41 to 0.3.47
+      #330 merged 2026-02-02 Bump insta from 1.46.1 to 1.46.3
+      #314 merged 2026-01-12 Bump tokio from 1.48.0 to 1.49.0
+  truncate       38 hit(s) (all listed)
+      #432 merged 2026-07-26 Bump syn from 2.0.118 to 3.0.3
+      #414 closed 2026-06-22 Bump ratatui from 0.30.0 to 0.30.2
+      #421 closed 2026-06-27 Bump the cargo-minor-and-patch group with 2 updates
+      #423 closed 2026-07-04 Bump the cargo-minor-and-patch group across 1 directory with 4 updates
+      #422 merged 2026-07-04 Bump the github-actions group with 2 updates
+      #425 closed 2026-07-11 Bump the cargo-minor-and-patch group across 1 directory with 6 updates
+      #418 closed 2026-06-24 Bump the cargo-minor-and-patch group with 4 updates
+      #427 closed 2026-07-17 Bump the cargo-minor-and-patch group across 1 directory with 11 updates
+      #428 closed 2026-07-18 Bump the cargo-minor-and-patch group across 1 directory with 12 updates
+      #429 merged 2026-07-25 Bump the cargo-minor-and-patch group across 1 directory with 13 updates
+      #417 closed 2026-06-24 Bump the github-actions group with 5 updates
+      #369 merged 2026-04-06 Bump similar from 2.7.0 to 3.0.0
+      #380 merged 2026-04-20 Bump tokio from 1.51.1 to 1.52.1
+      #366 merged 2026-03-30 Bump insta from 1.46.3 to 1.47.1
+      #350 merged 2026-02-23 Bump steel-derive from 0.6.0 to 0.8.2
+      #347 merged 2026-02-23 Bump steel-core from 0.7.0 to 0.8.2
+      #302 closed 2025-12-29 Bump ratatui from 0.29.0 to 0.30.0
+      #360 merged 2026-03-09 Bump tokio from 1.49.0 to 1.50.0
+      #333 merged 2026-02-05 Bump time from 0.3.41 to 0.3.47
+      #288 merged 2025-11-26 Speed up rendering of long lines
+  empty          56 hit(s) (all listed)
+      #227 open 2025-09-11 [Feature] Configurable focus behavior when opening Scooter via cmdline
+      #432 merged 2026-07-26 Bump syn from 2.0.118 to 3.0.3
+      #375 merged 2026-04-19 feat: add colour on empty search
+      #443 merged 2026-09-12 Bump the cargo-minor-and-patch group with 3 updates
+      #424 merged 2026-07-10 Add EventChannels::try_recv; fix open-in-editor panic with no results
+      #435 merged 2026-08-01 Bump fancy-regex from 0.18.0 to 0.19.0
+      #436 merged 2026-08-08 Bump the cargo-minor-and-patch group across 1 directory with 5 updates
+      #386 closed 2026-05-05 Use all the floorspace
+      #441 merged 2026-08-29 Bump the cargo-minor-and-patch group across 1 directory with 5 updates
+      #447 merged 2026-09-26 Support files that aren't UTF-8, such as Latin-1
+      #397 merged 2026-05-11 Bump tokio from 1.52.2 to 1.52.3
+      #382 merged 2026-04-27 Bump fancy-regex from 0.17.0 to 0.18.0
+      #368 merged 2026-04-06 Bump tokio from 1.50.0 to 1.51.0
+      #301 merged 2025-12-26 Add multiline searching
+      #331 merged 2026-02-02 Bump clap from 4.5.54 to 4.5.56
+      #363 merged 2026-03-16 Bump tempfile from 3.26.0 to 3.27.0
+      #425 closed 2026-07-11 Bump the cargo-minor-and-patch group across 1 directory with 6 updates
+      #294 closed 2025-12-13 Accidental Replacemant Risk
+      #332 merged 2026-02-03 Bump bytes from 1.10.1 to 1.11.1
+      #427 closed 2026-07-17 Bump the cargo-minor-and-patch group across 1 directory with 11 updates
+  atomic         12 hit(s) (all listed)
+      #429 merged 2026-07-25 Bump the cargo-minor-and-patch group across 1 directory with 13 updates
+      #382 merged 2026-04-27 Bump fancy-regex from 0.17.0 to 0.18.0
+      #357 merged 2026-03-04 Avoid searching again when toggling escape sequences
+      #428 closed 2026-07-18 Bump the cargo-minor-and-patch group across 1 directory with 12 updates
+      #307 merged 2026-01-03 Fix permissions being incorrectly set when replacing in files
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #221 merged 2025-09-08 Bump log from 0.4.27 to 0.4.28
+      #270 merged 2025-10-31 Move to Rust 2024 and 1.91
+      #146 merged 2025-05-23 Improve cancellation of search and replace operations
+      #147 merged 2025-05-23 Add stats to replacement-in-progress screen
+      #157 merged 2025-06-02 Add `--no-tui` mode
+      #189 merged 2025-07-20 Show search results automatically beneath search fields
+  atomically     3 hit(s) (all listed)
+      #382 merged 2026-04-27 Bump fancy-regex from 0.17.0 to 0.18.0
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #147 merged 2025-05-23 Add stats to replacement-in-progress screen
+  interrupted    1 hit(s) (all listed)
+      #146 merged 2025-05-23 Improve cancellation of search and replace operations
+  interrupt      2 hit(s) (all listed)
+      #313 merged 2026-01-12 Add keybinding to toggle hidden files
+      #146 merged 2025-05-23 Improve cancellation of search and replace operations
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+  ctrl-c         11 hit(s) (all listed)
+      #210 closed 2025-08-20 Configurable keybindings
+      #293 closed 2025-12-13 Search Cancellation
+      #266 merged 2025-10-22 Add configurable keybindings
+      #281 closed 2025-11-13 Key mapping message on ESC doesn't show mapping
+      #282 merged 2025-11-15 Use overridden quit keymap in deprecation popup
+      #253 merged 2025-10-11 Add optional line wrapping
+      #199 merged 2025-08-08 Pull out core functionality
+      #189 merged 2025-07-20 Show search results automatically beneath search fields
+      #90 merged 2025-03-28 Add CmdLine args
+      #179 merged 2025-07-05 Pull out text field functionality
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+  power          2 hit(s) (all listed)
+      #343 open 2026-02-18 [Feature] Search only (no replacement)
+      #189 merged 2025-07-20 Show search results automatically beneath search fields
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           4 hit(s) (all listed)
+      #301 merged 2025-12-26 Add multiline searching
+      #71 closed 2025-02-03 Windows: Failed to persist temporary File: The system cannot move the file to differnt disk drive. (Os error 17)
+      #145 merged 2025-05-23 Extract replacement functionality
+      #266 merged 2025-10-22 Add configurable keybindings
+  partial        11 hit(s) (all listed)
+      #409 merged 2026-06-15 Bump insta from 1.47.2 to 1.48.0
+      #423 closed 2026-07-04 Bump the cargo-minor-and-patch group across 1 directory with 4 updates
+      #425 closed 2026-07-11 Bump the cargo-minor-and-patch group across 1 directory with 6 updates
+      #427 closed 2026-07-17 Bump the cargo-minor-and-patch group across 1 directory with 11 updates
+      #428 closed 2026-07-18 Bump the cargo-minor-and-patch group across 1 directory with 12 updates
+      #429 merged 2026-07-25 Bump the cargo-minor-and-patch group across 1 directory with 13 updates
+      #301 merged 2025-12-26 Add multiline searching
+      #249 closed 2025-10-09 Scooter 0.8.0 failes to build via AUR
+      #252 merged 2025-10-09 Add snacks.nvim config
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+  incomplete     2 hit(s) (all listed)
+      #375 merged 2026-04-19 feat: add colour on empty search
+      #144 merged 2025-05-22 Read files in parallel to improve search speed
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #301 merged 2025-12-26 Add multiline searching
+      #90 merged 2025-03-28 Add CmdLine args
+  recovery       1 hit(s) (all listed)
+      #294 closed 2025-12-13 Accidental Replacemant Risk
+  rollback       0 hit(s)
+  resume         43 hit(s) (all listed)
+      #447 merged 2026-09-26 Support files that aren't UTF-8, such as Latin-1
+      #375 merged 2026-04-19 feat: add colour on empty search
+      #345 merged 2026-02-19 Add editor_open command quoting
+      #301 merged 2025-12-26 Add multiline searching
+      #194 merged 2025-08-01 Remove path from scooter-core import, and bump to 0.6.0
+      #226 merged 2025-09-10 Update Nvim ToggleTerm info
+      #190 merged 2025-07-28 Fix line number colour when highlighted
+      #185 merged 2025-07-13 scooter is available in stable channel
+      #184 merged 2025-07-13 Bump version to 0.5.4
+      #180 merged 2025-07-07 Update steel-core version
+      #177 merged 2025-06-27 Highlight line num in different colour
+      #169 merged 2025-06-12 Remove unneeded readme contents
+      #165 merged 2025-06-10 Improve directory parsing
+      #161 merged 2025-06-09 Bump version to v0.5.3
+      #166 merged 2025-06-11 Update no-tui info in readme
+      #149 merged 2025-05-25 Bump version to v0.5.2
+      #158 merged 2025-06-03 Fix clippy warnings
+      #171 merged 2025-06-13 Add NetBSD
+      #170 merged 2025-06-12 Add fastmod to benchmark
+      #168 merged 2025-06-12 Allow files in directory arg
+  half-written   1 hit(s) (all listed)
+      #199 merged 2025-08-08 Pull out core functionality
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #294 closed 2025-12-13 Accidental Replacemant Risk
+      #313 merged 2026-01-12 Add keybinding to toggle hidden files
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #145 merged 2025-05-23 Extract replacement functionality
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #432 merged 2026-07-26 Bump syn from 2.0.118 to 3.0.3
+      #439 closed 2026-08-22 Bump similar from 3.1.2 to 3.2.0 in the cargo-minor-and-patch group
+      #446 merged 2026-09-26 Bump the cargo-minor-and-patch group with 3 updates
+      #442 merged 2026-09-05 Bump the cargo-minor-and-patch group with 2 updates
+      #434 closed 2026-08-01 Bump toml from 1.1.3+spec-1.1.0 to 1.1.4+spec-1.1.0 in the cargo-minor-and-patch group
+      #438 merged 2026-08-15 Bump the cargo-minor-and-patch group with 3 updates
+      #445 merged 2026-09-19 Bump the cargo-minor-and-patch group with 4 updates
+      #443 merged 2026-09-12 Bump the cargo-minor-and-patch group with 3 updates
+      #405 merged 2026-06-02 Bump unicode-segmentation from 1.13.2 to 1.13.3
+      #412 closed 2026-06-22 Bump syn from 2.0.117 to 2.0.118
+      #413 closed 2026-06-22 Bump quote from 1.0.45 to 1.0.46
+      #415 closed 2026-06-22 Bump log from 0.4.32 to 0.4.33
+      #444 merged 2026-09-12 Bump the github-actions group with 2 updates
+      #441 merged 2026-08-29 Bump the cargo-minor-and-patch group across 1 directory with 5 updates
+      #436 merged 2026-08-08 Bump the cargo-minor-and-patch group across 1 directory with 5 updates
+      #406 merged 2026-06-15 Bump log from 0.4.31 to 0.4.32
+      #411 closed 2026-06-22 Bump itertools from 0.14.0 to 0.15.0
+      #435 merged 2026-08-01 Bump fancy-regex from 0.18.0 to 0.19.0
+      #316 merged 2026-01-12 Bump toml from 0.9.10+spec-1.1.0 to 0.9.11+spec-1.1.0
+      #414 closed 2026-06-22 Bump ratatui from 0.30.0 to 0.30.2
+  clobber        2 hit(s) (all listed)
+      #252 merged 2025-10-09 Add snacks.nvim config
+      #226 merged 2025-09-10 Update Nvim ToggleTerm info
+  blank          5 hit(s) (all listed)
+      #386 closed 2026-05-05 Use all the floorspace
+      #137 merged 2025-05-19 Bump clap from 4.5.32 to 4.5.38
+      #253 merged 2025-10-11 Add optional line wrapping
+      #143 merged 2025-05-20 Open editor with `e`, add deprecation popup to `o`
+      #167 merged 2025-06-11 Extract frep functionality
+  unreadable     2 hit(s) (all listed)
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #199 merged 2025-08-08 Pull out core functionality
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       20 hit(s) (all listed)
+      #343 open 2026-02-18 [Feature] Search only (no replacement)
+      #420 merged 2026-06-25 Harden CI workflow permissions
+      #447 merged 2026-09-26 Support files that aren't UTF-8, such as Latin-1
+      #356 merged 2026-03-03 Only include first-level headings in generated README contents
+      #369 merged 2026-04-06 Bump similar from 2.7.0 to 3.0.0
+      #346 merged 2026-02-22 Add scoop to readme
+      #301 merged 2025-12-26 Add multiline searching
+      #307 merged 2026-01-03 Fix permissions being incorrectly set when replacing in files
+      #169 merged 2025-06-12 Remove unneeded readme contents
+      #304 merged 2025-12-29 Bump fancy-regex from 0.15.0 to 0.17.0
+      #199 merged 2025-08-08 Pull out core functionality
+      #259 merged 2025-10-14 Add package output to flake (and swap to fenix from oxalica)
+      #83 merged 2025-03-14 Add table of contents to readme
+      #171 merged 2025-06-13 Add NetBSD
+      #252 merged 2025-10-09 Add snacks.nvim config
+      #157 merged 2025-06-02 Add `--no-tui` mode
+      #249 closed 2025-10-09 Scooter 0.8.0 failes to build via AUR
+      #266 merged 2025-10-22 Add configurable keybindings
+      #147 merged 2025-05-23 Add stats to replacement-in-progress screen
+      #154 merged 2025-05-30 Add benchmark
+  in-place       25 hit(s) (all listed)
+      #392 open 2026-05-05 No navigation screens
+      #447 merged 2026-09-26 Support files that aren't UTF-8, such as Latin-1
+      #432 merged 2026-07-26 Bump syn from 2.0.118 to 3.0.3
+      #375 merged 2026-04-19 feat: add colour on empty search
+      #360 merged 2026-03-09 Bump tokio from 1.49.0 to 1.50.0
+      #313 merged 2026-01-12 Add keybinding to toggle hidden files
+      #300 merged 2025-12-26 Refactor app state
+      #283 merged 2025-11-24 Add --editor-command flag
+      #301 merged 2025-12-26 Add multiline searching
+      #246 merged 2025-10-06 Bump regex from 1.11.2 to 1.11.3
+      #206 merged 2025-08-18 Bump rayon from 1.10.0 to 1.11.0
+      #204 closed 2025-08-18 Suggestion - replacement confirmation keybinding
+      #209 merged 2025-08-19 Verify crates.io installation before publishing
+      #138 merged 2025-05-19 Bump tempfile from 3.19.1 to 3.20.0
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+      #170 merged 2025-06-12 Add fastmod to benchmark
+      #167 merged 2025-06-11 Extract frep functionality
+      #168 merged 2025-06-12 Allow files in directory arg
+      #145 merged 2025-05-23 Extract replacement functionality
+      #199 merged 2025-08-08 Pull out core functionality
+  unclean        0 hit(s)
+  shutdown       5 hit(s) (all listed)
+      #360 merged 2026-03-09 Bump tokio from 1.49.0 to 1.50.0
+      #189 merged 2025-07-20 Show search results automatically beneath search fields
+      #313 merged 2026-01-12 Add keybinding to toggle hidden files
+      #182 merged 2025-07-07 Bump tokio from 1.45.1 to 1.46.1
+      #266 merged 2025-10-22 Add configurable keybindings
+  reboot         0 hit(s)
+  disk+full      3 hit(s) (all listed)
+      #301 merged 2025-12-26 Add multiline searching
+      #266 merged 2025-10-22 Add configurable keybindings
+      #145 merged 2025-05-23 Extract replacement functionality
+  data+loss      3 hit(s) (all listed)
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #144 merged 2025-05-22 Read files in parallel to improve search speed
+      #266 merged 2025-10-22 Add configurable keybindings
+  partial+write  5 hit(s) (all listed)
+      #301 merged 2025-12-26 Add multiline searching
+      #427 closed 2026-07-17 Bump the cargo-minor-and-patch group across 1 directory with 11 updates
+      #428 closed 2026-07-18 Bump the cargo-minor-and-patch group across 1 directory with 12 updates
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+  crash+safe     6 hit(s) (all listed)
+      #375 merged 2026-04-19 feat: add colour on empty search
+      #301 merged 2025-12-26 Add multiline searching
+      #199 merged 2025-08-08 Pull out core functionality
+      #157 merged 2025-06-02 Add `--no-tui` mode
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+      #153 merged 2025-05-26 Add `--print-results` and `--immediate` flags
+  atomic+write   4 hit(s) (all listed)
+      #357 merged 2026-03-04 Avoid searching again when toggling escape sequences
+      #428 closed 2026-07-18 Bump the cargo-minor-and-patch group across 1 directory with 12 updates
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #146 merged 2025-05-23 Improve cancellation of search and replace operations
+  lock+file      44 hit(s) (all listed)
+      #447 merged 2026-09-26 Support files that aren't UTF-8, such as Latin-1
+      #424 merged 2026-07-10 Add EventChannels::try_recv; fix open-in-editor panic with no results
+      #441 merged 2026-08-29 Bump the cargo-minor-and-patch group across 1 directory with 5 updates
+      #402 merged 2026-06-02 Bump serial_test from 3.4.0 to 3.5.0
+      #409 merged 2026-06-15 Bump insta from 1.47.2 to 1.48.0
+      #419 merged 2026-06-24 Combine safe Dependabot updates
+      #417 closed 2026-06-24 Bump the github-actions group with 5 updates
+      #381 merged 2026-04-23 Bump version to 0.9.1
+      #352 merged 2026-02-27 Improve multiline diff preview performance and cache behavior
+      #353 merged 2026-02-28 Bump version to 0.9.0
+      #301 merged 2025-12-26 Add multiline searching
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #315 merged 2026-01-12 Bump serial_test from 3.2.0 to 3.3.1
+      #287 merged 2025-11-24 Bump version to 0.8.4
+      #288 merged 2025-11-26 Speed up rendering of long lines
+      #275 merged 2025-11-06 Bump version to 0.8.3
+      #259 merged 2025-10-14 Add package output to flake (and swap to fenix from oxalica)
+      #265 merged 2025-10-20 Bump frep-core version to 0.1.7
+      #251 merged 2025-10-09 Bump version to 0.8.1
+      #258 merged 2025-10-14 Add no-stdin flag
+  write+failure  11 hit(s) (all listed)
+      #447 merged 2026-09-26 Support files that aren't UTF-8, such as Latin-1
+      #301 merged 2025-12-26 Add multiline searching
+      #357 merged 2026-03-04 Avoid searching again when toggling escape sequences
+      #327 merged 2026-02-01 Add TypeScript highlighting and other common formats
+      #295 merged 2025-12-13 Pull in frep-core lib
+      #214 merged 2025-08-27 Add option to read from stdin + write to stdout
+      #313 merged 2026-01-12 Add keybinding to toggle hidden files
+      #215 merged 2025-08-29 Fix release workflow issues
+      #176 merged 2025-06-24 Tidy up replace interface
+      #182 merged 2025-07-07 Bump tokio from 1.45.1 to 1.46.1
+      #199 merged 2025-08-08 Pull out core functionality
+  file+contents  17 hit(s) (all listed)
+      #343 open 2026-02-18 [Feature] Search only (no replacement)
+      #447 merged 2026-09-26 Support files that aren't UTF-8, such as Latin-1
+      #420 merged 2026-06-25 Harden CI workflow permissions
+      #356 merged 2026-03-03 Only include first-level headings in generated README contents
+      #369 merged 2026-04-06 Bump similar from 2.7.0 to 3.0.0
+      #346 merged 2026-02-22 Add scoop to readme
+      #301 merged 2025-12-26 Add multiline searching
+      #307 merged 2026-01-03 Fix permissions being incorrectly set when replacing in files
+      #259 merged 2025-10-14 Add package output to flake (and swap to fenix from oxalica)
+      #199 merged 2025-08-08 Pull out core functionality
+      #252 merged 2025-10-09 Add snacks.nvim config
+      #171 merged 2025-06-13 Add NetBSD
+      #266 merged 2025-10-22 Add configurable keybindings
+      #249 closed 2025-10-09 Scooter 0.8.0 failes to build via AUR
+      #157 merged 2025-06-02 Add `--no-tui` mode
+      #147 merged 2025-05-23 Add stats to replacement-in-progress screen
+      #154 merged 2025-05-30 Add benchmark
+
+== 51 terms run; 37 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

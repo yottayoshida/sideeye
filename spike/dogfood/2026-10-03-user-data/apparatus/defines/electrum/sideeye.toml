@@ -1,0 +1,6 @@
+[world]
+state = "/s/electrum"
+
+[define]
+operation = "electrum --offline -D /s/electrum -w /s/electrum/wallets/default_wallet setlabel bc1qpu8p9cz3nna0qlaw86v39ljxarwy7fgmc0fter groceries"
+cwd       = "/s/electrum-in"

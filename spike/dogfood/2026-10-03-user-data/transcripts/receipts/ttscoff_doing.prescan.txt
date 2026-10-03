@@ -1,0 +1,132 @@
+== novelty pre-scan: ttscoff/doing
+== date: 2026-10-03T02:08:26Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          7 hit(s) (all listed)
+      #195 open 2026-07-27 Bump json from 2.9.1 to 2.19.9
+      #183 merged 2025-11-28 Fix some more crashes
+      #182 merged 2025-11-24 Fix crash (undefined boldwhite)
+      #134 closed 2022-02-21 Latest update causing crash
+      #79 closed 2016-01-19 synonyms not working in autotag feature
+      #36 closed 2014-03-31 Crashing: "undefined method `[]' for nil:NilClass (NoMethodError)"
+      #87 merged 2016-03-15 Fix crashes when adding and/or replacing notes with "doing note -e"
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      6 hit(s) (all listed)
+      #195 open 2026-07-27 Bump json from 2.9.1 to 2.19.9
+      #190 merged 2026-04-18 Bump rexml from 3.3.9 to 3.4.2
+      #178 closed 2024-10-28 Bump rexml from 3.3.6 to 3.3.9
+      #177 merged 2024-08-22 Bump rexml from 3.3.3 to 3.3.6
+      #174 merged 2024-08-02 Bump rexml from 3.2.6 to 3.3.3
+      #171 closed 2024-05-16 Bump rexml from 3.2.6 to 3.2.8
+  truncate       6 hit(s) (all listed)
+      #195 open 2026-07-27 Bump json from 2.9.1 to 2.19.9
+      #190 merged 2026-04-18 Bump rexml from 3.3.9 to 3.4.2
+      #178 closed 2024-10-28 Bump rexml from 3.3.6 to 3.3.9
+      #177 merged 2024-08-22 Bump rexml from 3.3.3 to 3.3.6
+      #174 merged 2024-08-02 Bump rexml from 3.2.6 to 3.3.3
+      #171 closed 2024-05-16 Bump rexml from 3.2.6 to 3.2.8
+  empty          7 hit(s) (all listed)
+      #188 closed 2026-04-14 plugin_path / command_path with ~ in config.yml creates stray directories in cwd
+      #4 closed 2014-03-16 Enhancement: -e flag for creating an entry with $EDITOR
+      #15 closed 2014-03-17 `doing later` errors out
+      #17 closed 2014-03-18 Filter by tags
+      #46 closed 2014-04-25 Using mutated vowels / german 'umlauts' clears doing file
+      #38 closed 2014-04-03 Changing the date format results in no results for "doing show"
+      #66 closed 2015-03-11 Fix autotag error when doingrc does not contain an entry
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #39 closed 2014-04-03 Add duration information 
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        0 hit(s)
+  incomplete     3 hit(s) (all listed)
+      #150 closed 2022-05-25 [FEATURE REQUEST] add support for i[:flagged] in markdown export
+      #86 closed 2016-03-12 --back error with 1.0.8pre
+      #32 closed 2014-03-24 Non-done tasks are archived
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         2 hit(s) (all listed)
+      #180 closed 2025-03-17 [FEATURE REQUEST] Time budgets
+      #148 closed 2022-05-17 [BUG] Using `doing select` to Resume/Repeat an entry fails silently
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #46 closed 2014-04-25 Using mutated vowels / german 'umlauts' clears doing file
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #46 closed 2014-04-25 Using mutated vowels / german 'umlauts' clears doing file
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      14 hit(s) (all listed)
+      #195 open 2026-07-27 Bump json from 2.9.1 to 2.19.9
+      #194 merged 2026-06-30 Bump yard from 0.9.42 to 0.9.44
+      #189 merged 2026-04-17 Bump yard from 0.9.36 to 0.9.42
+      #190 merged 2026-04-18 Bump rexml from 3.3.9 to 3.4.2
+      #178 closed 2024-10-28 Bump rexml from 3.3.6 to 3.3.9
+      #177 merged 2024-08-22 Bump rexml from 3.3.3 to 3.3.6
+      #174 merged 2024-08-02 Bump rexml from 3.2.6 to 3.3.3
+      #171 closed 2024-05-16 Bump rexml from 3.2.6 to 3.2.8
+      #168 merged 2024-03-25 Bump rdoc from 6.3.3 to 6.3.4.1
+      #167 merged 2024-03-01 Bump yard from 0.9.35 to 0.9.36
+      #166 merged 2024-02-28 Bump yard from 0.9.34 to 0.9.35
+      #160 merged 2023-02-25 Bump golang.org/x/sys from 0.0.0-20210630005230-0f9fa26af87c to 0.1.0 in /lib/helpers/fzf
+      #159 merged 2023-02-23 Bump golang.org/x/text from 0.3.6 to 0.3.8 in /lib/helpers/fzf
+      #122 closed 2021-09-16 Bump rdoc from 6.2.1 to 6.3.2
+  clobber        0 hit(s)
+  blank          4 hit(s) (all listed)
+      #195 open 2026-07-27 Bump json from 2.9.1 to 2.19.9
+      #141 closed 2022-05-05 Editor switch (-e, --editor) not adding note when BBEdit is set as EDITOR
+      #1 closed 2014-03-16 "doing config" outputs "sh: : command not found" 
+      #36 closed 2014-03-31 Crashing: "undefined method `[]' for nil:NilClass (NoMethodError)"
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       5 hit(s) (all listed)
+      #148 closed 2022-05-17 [BUG] Using `doing select` to Resume/Repeat an entry fails silently
+      #133 closed 2022-02-15 doing completion errors
+      #21 closed 2014-03-18 doing 0.2.0 testing
+      #46 closed 2014-04-25 Using mutated vowels / german 'umlauts' clears doing file
+      #37 closed 2014-03-31 Crashing: doing archive 1 "error: stack level too deep"
+  in-place       4 hit(s) (all listed)
+      #143 closed 2022-05-09 Cmd doing config list does not detect configuration file
+      #52 closed 2014-08-12 Day One + doing integration
+      #4 closed 2014-03-16 Enhancement: -e flag for creating an entry with $EDITOR
+      #94 merged 2018-05-25 fixing deprecation warning. test-unit gem
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      0 hit(s)
+  write+failure  2 hit(s) (all listed)
+      #148 closed 2022-05-17 [BUG] Using `doing select` to Resume/Repeat an entry fails silently
+      #128 closed 2021-11-23 [BUG] on WSL: running doing select generates an error
+  file+contents  5 hit(s) (all listed)
+      #148 closed 2022-05-17 [BUG] Using `doing select` to Resume/Repeat an entry fails silently
+      #133 closed 2022-02-15 doing completion errors
+      #21 closed 2014-03-18 doing 0.2.0 testing
+      #46 closed 2014-04-25 Using mutated vowels / german 'umlauts' clears doing file
+      #37 closed 2014-03-31 Crashing: doing archive 1 "error: stack level too deep"
+
+== 51 terms run; 15 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,894 @@
+== novelty pre-scan: nushell/nushell
+== date: 2026-10-03T03:10:56Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18736 open 2026-07-26 Fix crash on circular import reached through a `..` path
+      #9470 open 2023-06-18 Random Crash
+      #12348 open 2024-03-31 nu crashes (panic) when running `su`
+      #18840 open 2026-08-14 External commands in `hinter.closure` can intermittently crash Nushell with an `I/O error`
+      #16387 open 2025-08-08 Crashes on Unicode filename
+      #16973 open 2025-11-03 'sys users' crashes nu on FreeBSD
+      #13462 open 2024-07-26 table command printing multiline with unicode crash
+      #13117 open 2024-06-10 Crash in Ptyxis when calling `help commands`
+      #13927 open 2024-09-25 input list crashes on MacOS when resizing terminal
+      #13037 open 2024-06-03 export-env: panic (but no crash): missing block
+      #10854 open 2023-10-27 cd into a Paragon Software Linux Filesystem Crashes
+      #13201 open 2024-06-21 Auto complete starts up many carapace processes until computer crashes
+      #11335 open 2023-12-14 [crash report] segfault or stackoverflow on `extern run-external ["ls"]`
+      #9417 open 2023-06-12 Off-by-One Access in engine_state.rs?
+      #18936 open 2026-08-30 fix(kill): decode taskkill output lossily instead of hard-erroring
+      #14729 open 2025-01-03 Nushell 0.101.0 pipeline crashes with `terminated by SIGKILL` on very large file
+      #9871 open 2023-07-31 Windows - Changing into directory by omitting `cd` results in instant crash `exit code 0x65`
+      #7703 open 2023-01-07 Windows Terminal: Nushell crashes when running `open` to open a non-UTF-8 text file
+      #17466 open 2026-02-01 Using `ls` builtin within `par-each` leads to stack overflow
+      #6428 open 2022-08-27 Chocolatey bug: Nu crash 4294967295 with Ctrl+C when stopping Node process under VS Code's terminal (Windows)
+  corrupt        47 hit(s) (all listed)
+      #14244 open 2024-11-03 History database gets corrupted on clearing
+      #17179 open 2025-12-15 ^[[72;28R[ prefix in every command sometimes
+      #7039 open 2022-11-06 Avoid crashing on error sometimes: more control over the failure mechanism
+      #18591 open 2026-07-13 Spurious `MallocStackLogging` diagnostics when running any command
+      #19054 merged 2026-09-20 fixes for unified/completions in general
+      #12276 open 2024-03-24 History processing function
+      #16148 open 2025-07-10 Poll / refresh data from closure in `explore`
+      #16229 open 2025-07-22 Output type annotations should be enforced at runtime
+      #17652 open 2026-02-25 Add sudo support to aliases
+      #14368 open 2024-11-17 strange problem when querying history with `open $nu.history-path | query db` that causes db corruption
+      #12587 open 2024-04-19 Cannot cd to rclone mounted Drive (FUSE/user filesystem)
+      #19053 closed 2026-09-19 Sourced menu: the Tab after a partial completion replaces the wrong span (bits r → bits ror o)
+      #19076 open 2026-09-23 MCP: Added allowed-hosts and allowed-origins flags
+      #18868 merged 2026-08-20 Completor Fixes
+      #12004 open 2024-02-28 ls with recursive glob pattern can output empty results
+      #17498 open 2026-02-05 Termux startup I/O error: Function not implemented (os error 38)
+      #18925 merged 2026-08-28 docs(nuon): add a specification of the NUON format
+      #18738 merged 2026-07-26 Add a `nu-dap` crate and `nu --dap`: a Debug Adapter Protocol server for Nushell
+      #18334 merged 2026-06-03 non-blocking completions
+      #17808 closed 2026-03-15 --help output for external commands is corrupted by nushell's parser
+  corruption     16 hit(s) (all listed)
+      #14368 open 2024-11-17 strange problem when querying history with `open $nu.history-path | query db` that causes db corruption
+      #11523 open 2024-01-11 `from xml` & `to xml` lose XML namespace information
+      #12530 open 2024-04-16 Ought to be able to disable sqlite WAL mode for history
+      #8553 open 2023-03-21 panick because of `SqliteFailure` and `DatabaseCorrupt`
+      #18868 merged 2026-08-20 Completor Fixes
+      #19054 merged 2026-09-20 fixes for unified/completions in general
+      #8054 open 2023-02-12 Support values larger than `i64`
+      #17580 merged 2026-02-18 fix(ls): escape control characters in filenames to prevent terminal corruption
+      #16845 closed 2025-10-10 PoC PR: Add editing capabilities via buffer_editor to nu-explore
+      #14008 merged 2024-10-05 update osc_633 string escaping
+      #11429 closed 2023-12-27 `into sqlite` INSERT is based on column order rather than name
+      #4315 closed 2022-02-03 [bug] `split` produces bogus results
+      #7010 merged 2022-11-05 Make json require string and pass around metadata
+      #4494 closed 2022-02-16 Corruption of history.txt on Windows
+      #3916 merged 2021-08-13 Rustyline bug fixes
+      #3910 closed 2021-08-09 history.txt file messed up
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5144 open 2022-04-09 stdout sometimes truncated
+      #9164 open 2023-05-11 Output is sometimes truncated when scrolling/resizing the terminal window
+      #19087 open 2026-09-25 fix(nuon): error on a duration head that overflows
+      #13601 open 2024-08-12 column width heuristic
+      #15020 open 2025-02-06 Add a config option to make `explore` wrap text fields.
+      #11950 open 2024-02-23 Nushell is printing (or asking to print) escape sequences
+      #10630 open 2023-10-06 allow multiline type annotations
+      #6831 open 2022-10-20 Add `table -w MAX` argument (or similar)
+      #17292 open 2026-01-05 Add customization of explore keybinds and display options
+      #10888 open 2023-10-30 Cell wrapping breaks links
+      #15689 open 2025-05-04 query xml plugin: allow structured queries with multiple xpaths
+      #4580 open 2022-02-21 Improve `gstat` tags reporting
+      #18930 closed 2026-08-29 `idx search` silently caps at 200 matches per file; `--limit` is quantised to 200 and cannot raise it
+      #11148 open 2023-11-24 Don't display directory junctions with ls command on Windows
+      #18966 closed 2026-09-04 Table cell still wrapping when using `methodology: "truncating"` in `$env.config.table.trim`
+      #13570 open 2024-08-08 output sometimes flash and disappear
+      #11434 open 2023-12-29 Recursive `difference` of table data
+      #6101 open 2022-07-23 ps command fails silently in linux due to "Too many open files"
+      #7368 open 2022-12-06 changing default `display_output` hook disable `ls_colors`
+      #19068 merged 2026-09-23 build(deps): bump taiki-e/install-action from 2.87.12 to 2.87.17
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5144 open 2022-04-09 stdout sometimes truncated
+      #19035 open 2026-09-16 Infinite memory allocation when `print` runs inside a streaming closure with a zero-width terminal
+      #18979 merged 2026-09-07 fix table truncating vs wrapping
+      #9164 open 2023-05-11 Output is sometimes truncated when scrolling/resizing the terminal window
+      #19007 merged 2026-09-10 fix nested table after wrapping/truncating changes
+      #13601 open 2024-08-12 column width heuristic
+      #8241 open 2023-02-27 Add autocompletion to select columns to show when there isn't much space 
+      #6831 open 2022-10-20 Add `table -w MAX` argument (or similar)
+      #16379 open 2025-08-07 List column width logic produces unreadable output
+      #16302 open 2025-07-30 Add ability to have structured data types in readline's menu
+      #17292 open 2026-01-05 Add customization of explore keybinds and display options
+      #15020 open 2025-02-06 Add a config option to make `explore` wrap text fields.
+      #18966 closed 2026-09-04 Table cell still wrapping when using `methodology: "truncating"` in `$env.config.table.trim`
+      #11950 open 2024-02-23 Nushell is printing (or asking to print) escape sequences
+      #9892 open 2023-08-01 Significant loss of precision with `duration` literals using a float
+      #10630 open 2023-10-06 allow multiline type annotations
+      #13141 open 2024-06-13 Completion menu visually broken with candidates longer than terminal width
+      #18930 closed 2026-08-29 `idx search` silently caps at 200 matches per file; `--limit` is quantised to 200 and cannot raise it
+      #8184 open 2023-02-23 dataframes error: Value not supported in nushell: duration[ms]
+      #10888 open 2023-10-30 Cell wrapping breaks links
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19134 open 2026-10-02 `ListMenu` runs `Completer::complete` twice when the query is empty
+      #18962 open 2026-09-03 length, columns, is-empty: propagate error values from streams
+      #14463 open 2024-11-28 can't sum empty lists
+      #17605 open 2026-02-19 `transpose --as-record` returns empty list when input is empty list
+      #18426 open 2026-06-17 integer underflow on insert into an empty list
+      #18110 open 2026-04-24 `ls` behaves weirdly when spreading an empty list
+      #19015 open 2026-09-11 where: more convenience handling nothing
+      #17154 open 2025-12-12 [MCP] ENV_CONVERSIONS is empty by default
+      #11573 open 2024-01-18 Warn when loading empty mod.nu
+      #9438 open 2023-06-14 Empty history with sqlite file_format
+      #16425 open 2025-08-13 No highlighting for empty string interpolation in the REPL
+      #11164 open 2023-11-27 compact --empty doesn't work on columns
+      #11898 open 2024-02-19 Allow `rename` to handle possibly-empty columns
+      #11544 open 2024-01-16 Empty list prints when nesting `each` blocks
+      #10119 open 2023-08-25 Confusing behavior of pipes with empty elements
+      #6606 open 2022-09-23 ls with globbing sometimes produces aberrant empty records
+      #19110 open 2026-09-29 `flatten --all` (no column) still drops a value when an inner-table field collides with a later top-level column
+      #12004 open 2024-02-28 ls with recursive glob pattern can output empty results
+      #11736 open 2024-02-04 Field access on empty record leads to "Unclosed delimiter"
+      #18624 open 2026-07-16 Incorrect boolean `and` operator
+  atomic         58 hit(s) (all listed)
+      #17160 open 2025-12-13 [MCP] Self-sufficient nushell for remote AI coding sessions
+      #12653 open 2024-04-24 `rm --trash` errors
+      #17334 open 2026-01-12 Nushell hits 99% CPU usage on macOS when closed via a Zsh wrapper function
+      #8904 open 2023-04-16 `nushell_failed_spanned`: could not find name for this command
+      #19018 closed 2026-09-13 fix: don't panic when --help is forwarded to a script's main
+      #19021 merged 2026-09-13 feat(mkdir): add --fail-if-exists flag to error on existing directory
+      #18902 closed 2026-08-25 `XDG_CONFIG_HOME` no longer allows a UID without a home directory to have config files
+      #18218 merged 2026-05-16 append ...rest
+      #6952 closed 2022-10-30 Deprecate `ignore`
+      #18138 merged 2026-04-29 build(deps): bump fancy-regex from 0.17.0 to 0.18.0
+      #15110 closed 2025-02-13 Prompt doesn't replace $HOME with a tilde on Fedora Atomic spins
+      #12624 closed 2024-04-22 Use `ecow::EcoVec` for `Record` internals
+      #15753 merged 2025-05-14 build(deps): bump tempfile from 3.15.0 to 3.20.0
+      #15344 closed 2025-03-19 build(deps): bump tempfile from 3.15.0 to 3.19.0
+      #15296 closed 2025-03-12 build(deps): bump tempfile from 3.15.0 to 3.18.0
+      #15349 merged 2025-03-19 Remove `nu-glob`'s dependency on `nu-protocol`
+      #15423 closed 2025-03-26 build(deps): bump tempfile from 3.15.0 to 3.19.1
+      #15967 closed 2025-06-14 Adding `rustls` killed installing & upgrading Nu with all features
+      #15010 merged 2025-02-05 build(deps): bump bytes from 1.9.0 to 1.10.0
+      #11696 closed 2024-01-31 Background jobs
+  atomically     3 hit(s) (all listed)
+      #19018 closed 2026-09-13 fix: don't panic when --help is forwarded to a script's main
+      #18138 merged 2026-04-29 build(deps): bump fancy-regex from 0.17.0 to 0.18.0
+      #11696 closed 2024-01-31 Background jobs
+  interrupted    51 hit(s) (all listed)
+      #19142 open 2026-10-03 unclean program exit causes nushell throw "This operation was interrupted" on the next command run
+      #18989 open 2026-09-08 Handle to background job is dropped if `$env.PROMPT` closure is exited prematurely
+      #13653 open 2024-08-20 Ctrl+C does not cancel after I tried to edit the command with nvim
+      #7154 open 2022-11-17 `ctrl+c` does not terminate all `par-each` instances
+      #13927 open 2024-09-25 input list crashes on MacOS when resizing terminal
+      #12028 open 2024-03-01 CTRL+C Interrupt against do -i { sleep 1sec } has strange behavior
+      #8175 open 2023-02-23 Keeping C-c pressed breaks the prompt
+      #8828 open 2023-04-09 ctrl + c multiple times produces weird behaviour
+      #14799 open 2025-01-11 Execution continues without waiting for child processes which aren't collected or drained
+      #8166 open 2023-02-22 [Feature request] Add integrated ^watch alternative
+      #18090 closed 2026-04-22 `try/finally` does not run `finally` block when script is interrupted with Ctrl+C
+      #18738 merged 2026-07-26 Add a `nu-dap` crate and `nu --dap`: a Debug Adapter Protocol server for Nushell
+      #18155 merged 2026-05-03 make ctrl-c works with try..finally while running script
+      #17245 merged 2025-12-27 Value::List and Value::Range can be interrupted when piping to other commands.
+      #13394 closed 2024-07-17 the catch block doesn't run when script is interrupted by the user
+      #15805 closed 2025-05-23 `continue` in each loop - Reopening Schrodinger's continue works but doesn't #8878
+      #16929 closed 2025-10-26 I/O error with `input list` when resizing the window
+      #17507 merged 2026-02-06 Allow Ctrl+C to interrupt HTTP requests
+      #2731 closed 2020-11-05 Ability to capture command output for later use
+      #12121 closed 2024-03-08 Tee command not work.
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19142 open 2026-10-03 unclean program exit causes nushell throw "This operation was interrupted" on the next command run
+      #18989 open 2026-09-08 Handle to background job is dropped if `$env.PROMPT` closure is exited prematurely
+      #12028 open 2024-03-01 CTRL+C Interrupt against do -i { sleep 1sec } has strange behavior
+      #13653 open 2024-08-20 Ctrl+C does not cancel after I tried to edit the command with nvim
+      #7154 open 2022-11-17 `ctrl+c` does not terminate all `par-each` instances
+      #11379 open 2023-12-20 Killed processes can seemingly break stdin after nushell decides to move on
+      #13927 open 2024-09-25 input list crashes on MacOS when resizing terminal
+      #12129 open 2024-03-08 consistent pattern to ensure pipelines are responsive / interactive
+      #8016 open 2023-02-09 Stream elements are buffered indefinitely if `STREAM_PAGE_SIZE` isn't reached
+      #14799 open 2025-01-11 Execution continues without waiting for child processes which aren't collected or drained
+      #8828 open 2023-04-09 ctrl + c multiple times produces weird behaviour
+      #6428 open 2022-08-27 Chocolatey bug: Nu crash 4294967295 with Ctrl+C when stopping Node process under VS Code's terminal (Windows)
+      #8175 open 2023-02-23 Keeping C-c pressed breaks the prompt
+      #13946 open 2024-09-28 Inconsistent behavior between Ctrl+N and Down keybindings
+      #7149 open 2022-11-16 `load-env` very flaky & yields unexpected results
+      #14658 open 2024-12-22 Confusing documentation for `print` command
+      #8360 open 2023-03-08 Support `trap`
+      #6617 open 2022-09-26 Line execution exits inconsistently
+      #3953 open 2021-08-21 Nushell dealbreakers from twitter
+      #18195 merged 2026-05-13 mkdir: don't interrupt when error happened
+  sigkill        13 hit(s) (all listed)
+      #14729 open 2025-01-03 Nushell 0.101.0 pipeline crashes with `terminated by SIGKILL` on very large file
+      #11316 open 2023-12-13 Handle `from xml` for very large datasets
+      #18081 merged 2026-04-21 handle `kill -0` as signal shorthand and update PID handling
+      #17614 closed 2026-02-21 100% 1 thread
+      #11696 closed 2024-01-31 Background jobs
+      #10021 merged 2023-08-16 Restore initial foreground process group on exit
+      #9096 closed 2023-05-04 Issue compiling nu
+      #8083 closed 2023-02-15 The history is not persisted upon `kill -TERM`
+      #5988 closed 2022-07-07 report error when process immediately terminates with a signal
+      #5330 closed 2022-04-26 --features=extra Build fails with "error: failed to run custom build command for `memchr v2.4.1`"
+      #3145 closed 2021-03-08 Erlang REPL crashes nushell
+      #485 closed 2019-08-27 ARM support
+      #1737 closed 2020-05-09 Nushell does not allow for negative numbers after flags
+  sigint         22 hit(s) (all listed)
+      #11379 open 2023-12-20 Killed processes can seemingly break stdin after nushell decides to move on
+      #8360 open 2023-03-08 Support `trap`
+      #8175 open 2023-02-23 Keeping C-c pressed breaks the prompt
+      #15947 open 2025-06-11 External processes in background jobs do not terminate
+      #15312 open 2025-03-14 Nushell hangs/freezes and outputs ANSI escape sequence (request cursor position) to the buffer
+      #14026 open 2024-10-07 external freezes when call multiple times inside a loop
+      #14799 open 2025-01-11 Execution continues without waiting for child processes which aren't collected or drained
+      #8016 open 2023-02-09 Stream elements are buffered indefinitely if `STREAM_PAGE_SIZE` isn't reached
+      #17642 closed 2026-02-24 ctrl+c does not terminate error outputs
+      #18090 closed 2026-04-22 `try/finally` does not run `finally` block when script is interrupted with Ctrl+C
+      #17215 closed 2025-12-22 Processes running longer than 45 seconds fail to return to command prompt
+      #17199 merged 2025-12-17 fix the mcp ctrl-c bug
+      #17196 closed 2025-12-17 Ctrl+C during a long command exits shell entirely when MCP feature is in build
+      #15124 closed 2025-02-16 `input --default 'value'` errors from CTRL+C with `I/O error` / `SIGINT` instead of falling back to default
+      #15140 merged 2025-02-19 check signals in `nu-glob` and `ls`
+      #10724 closed 2023-10-15 feat: add `trap` command for handling signals
+      #2461 closed 2020-08-30 Using Ctrl-C to cancel program ends Nushell process
+      #10150 merged 2023-08-29 refactor input command
+      #8159 merged 2023-02-21 interrupt `input` command with Ctrl + C
+      #6584 merged 2022-09-19 Foreground process group management, again
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8828 open 2023-04-09 ctrl + c multiple times produces weird behaviour
+      #7154 open 2022-11-17 `ctrl+c` does not terminate all `par-each` instances
+      #12026 open 2024-02-29 opening a locked sql does not respond to ctrl-c
+      #12028 open 2024-03-01 CTRL+C Interrupt against do -i { sleep 1sec } has strange behavior
+      #18938 open 2026-08-31 Add `commandline get-selection` command
+      #13653 open 2024-08-20 Ctrl+C does not cancel after I tried to edit the command with nvim
+      #12233 open 2024-03-19 Implement the same behavior for Ctrl-W and Ctrl-Y as bash shell
+      #6428 open 2022-08-27 Chocolatey bug: Nu crash 4294967295 with Ctrl+C when stopping Node process under VS Code's terminal (Windows)
+      #14346 open 2024-11-15 Windows Terminal, nushell cannot copy line with text selection.
+      #9266 open 2023-05-23 Nushell is not robust to malformed plugins
+      #18153 open 2026-05-03 fix: operator precedence bug: `&` has higher precedence than `|` in Rust
+      #9078 open 2023-05-01 nushell breaks after exiting elixir's shell iex
+      #16909 open 2025-10-21 Fix `job unfreeze` giving false negative when trying to unfreeze after killing the most recent job
+      #12129 open 2024-03-08 consistent pattern to ensure pipelines are responsive / interactive
+      #5542 open 2022-05-14 Add progress bar support
+      #15378 open 2025-03-21 "__keybindings_loaded"="true" error, when switching to nu from another shell
+      #14799 open 2025-01-11 Execution continues without waiting for child processes which aren't collected or drained
+      #16489 open 2025-08-21 If the terminal is accepting intput, nushell errors cause a locked state
+      #11379 open 2023-12-20 Killed processes can seemingly break stdin after nushell decides to move on
+      #8175 open 2023-02-23 Keeping C-c pressed breaks the prompt
+  power          73 hit(s) (all listed)
+      #13166 open 2024-06-17 `highlight_resolved_externals` slows down typing in `nushell` when computer is switched from AC to battery power
+      #11165 open 2023-11-27 User defined records and sumtypes
+      #15434 open 2025-03-27 ssh client based on russh
+      #5388 open 2022-05-01 More datatypes
+      #8241 open 2023-02-27 Add autocompletion to select columns to show when there isn't much space 
+      #11108 open 2023-11-20 A proper type system for Nu
+      #17477 open 2026-02-03 `detect columns` needs `--ignore-box-chars` even if input has no box characters
+      #6617 open 2022-09-26 Line execution exits inconsistently
+      #18825 merged 2026-08-12 build(deps): bump bytesize from 2.4.0 to 2.7.0
+      #549 open 2019-08-31 Three ideas for the future of nushell
+      #16082 open 2025-07-01 Adjust `http get`, `http post`, etc to wrap `curl`
+      #9281 open 2023-05-24 Allow remote imports
+      #8054 open 2023-02-12 Support values larger than `i64`
+      #13944 open 2024-09-27 Exponential algorithmic complexity on parsing nested brackets
+      #5552 open 2022-05-16 Any way to expand alias?
+      #18749 closed 2026-07-28 Strange "Can't convert to string" error when using `$record | math sum` or `$record | math avg` or `$record | math stddev`
+      #17524 closed 2026-02-08 Polars Pivot --aggregate  flag Error
+      #17385 closed 2026-01-19 nux: Nushell task runner that runs exported Nu functions in modules
+      #16789 merged 2025-10-02 Add syntax for simple completions from const lists
+      #15638 closed 2025-04-25 Support `printf`-compatible pattern in `format pattern`
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19092 open 2026-09-26 Clear sqlite history with SQL instead of deleting the file
+      #11966 open 2024-02-25 `into sqlite` should return a database object, not write on disk
+      #11040 open 2023-11-13 `du` does not return the actual disk usage
+      #10513 open 2023-09-27 Cannot navigate to directory mounted from disk (Windows)
+      #18929 open 2026-08-29 `idx`: persistent index for short-lived `nu` processes (subprocess / agent tooling use case)
+      #17498 open 2026-02-05 Termux startup I/O error: Function not implemented (os error 38)
+      #13085 open 2024-06-06 More consistent database commands
+      #18894 open 2026-08-24 Keep structured pipeline data across nested `nu` and shebang scripts
+      #12992 open 2024-05-29 sys special devices
+      #18183 open 2026-05-11 fix(ls): show dot directory name in `ls .*` output
+      #12657 open 2024-04-24 Dedicated mime guess command
+      #9871 open 2023-07-31 Windows - Changing into directory by omitting `cd` results in instant crash `exit code 0x65`
+      #14244 open 2024-11-03 History database gets corrupted on clearing
+      #9287 open 2023-05-25 Nushell does not start in read-only file system
+      #19019 open 2026-09-13 `du` counts hard-linked files once per path, so both size columns over-report
+      #10963 open 2023-11-05 Panic at startup if history file is not writable
+      #10610 open 2023-10-04 Process substitution/`<(expr)`-like syntax
+      #6630 open 2022-09-28 Nu doesn't suggest argument, but command after writing a command (tried on sys)
+      #10987 open 2023-11-07 macos m1 segmentation fault sys command
+      #8450 open 2023-03-14 standard library: a roadmap
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19134 open 2026-10-02 `ListMenu` runs `Completer::complete` twice when the query is empty
+      #15974 open 2025-06-15 Open quotes disable custom completion
+      #14152 open 2024-10-23 tab completion on suggestions stuck on the second element
+      #19053 closed 2026-09-19 Sourced menu: the Tab after a partial completion replaces the wrong span (bits r → bits ror o)
+      #18933 open 2026-08-30 impl Hash for Value and inner types in nu-protocol
+      #19022 open 2026-09-13 completions: merge different aliases of same flag
+      #8078 open 2023-02-14 Autocomplete using tab doesn't fully respect the entered keyword
+      #19054 merged 2026-09-20 fixes for unified/completions in general
+      #13201 open 2024-06-21 Auto complete starts up many carapace processes until computer crashes
+      #5421 open 2022-05-03 Prefix completion in suggestion menu.
+      #16278 open 2025-07-27 `tee`ing a list of rows resulting from `each` output breaks output echo
+      #8826 open 2023-04-09 Auto-complete suggestion doesn't get added to the input string
+      #9041 open 2023-04-28 mv can partially move directories
+      #12652 open 2024-04-24 Missing flag arguments error when aliasing a extern command
+      #15076 open 2025-02-10 NuShell fails to list any files with `**/` when encountering any inaccessible directories
+      #11251 open 2023-12-06 Using Tab while Tab complete is open
+      #7149 open 2022-11-16 `load-env` very flaky & yields unexpected results
+      #15402 open 2025-03-24 Bare words with quotes are confusing
+      #17552 open 2026-02-12 Tab should not select a completion option if tab caused it to be filled without ambiguous characters to a full match
+      #13887 open 2024-09-21 More options for `range` (multi-ranges, reject range) and `select`/`reject` (range of columns)
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17960 open 2026-04-01 Inconsistent parsing of incomplete keyword commands, e.g. `if` VS `try`
+      #17959 open 2026-04-01 Inconsistent parsing of incomplete redirection tokens, like `ls o>` VS `ps o>`
+      #9065 open 2023-04-30 IPv6 LL addresses with link suffix (%eth0) don't work
+      #12652 open 2024-04-24 Missing flag arguments error when aliasing a extern command
+      #11899 open 2024-02-19 find command adds colors to result also in scripts
+      #5558 open 2022-05-16 Sourcing a file with an unterminated block enters multiline mode
+      #7479 open 2022-12-14 Let's figure out how we want `&&` and `||` to work
+      #16537 open 2025-08-28 Confusing error can occur when trying to rename a custom command with a parse error present
+      #14697 open 2024-12-30 Duplicated errors with `nu --ide-check`
+      #14659 open 2024-12-22 Feature Request: Enhance `help` Command to Display Full Help Content for Aliased Commands
+      #17472 open 2026-02-01 Some unsupported input errors don't affect the exit code
+      #17552 open 2026-02-12 Tab should not select a completion option if tab caused it to be filled without ambiguous characters to a full match
+      #17162 open 2025-12-13 [MCP] Interactive commands freeze indefinitely
+      #12350 open 2024-03-31 Inconsistent string parsing
+      #18079 open 2026-04-20 separate plugin protocol version from nushell version
+      #11957 open 2024-02-24 Smarter auto-complete built-in
+      #18666 merged 2026-07-19 fix(parser): restore scopes before interpolation fallback
+      #18930 closed 2026-08-29 `idx search` silently caps at 200 matches per file; `--limit` is quantised to 200 and cannot raise it
+      #16315 open 2025-08-01 rename fails if table has empty records, but only if using --columns flag
+      #3728 open 2021-07-03 Introduce Syntax Plugins for Vim and Emacs
+  dataloss       0 hit(s)
+  recover        49 hit(s) (all listed)
+      #4471 open 2022-02-14 nushell should never (or rarely) panic
+      #14368 open 2024-11-17 strange problem when querying history with `open $nu.history-path | query db` that causes db corruption
+      #11686 open 2024-01-30 `hide`, `alias`, and `def` should not allow built-ins/keywords as arguments
+      #11818 open 2024-02-09 Ability to delete/hide variables
+      #8553 open 2023-03-21 panick because of `SqliteFailure` and `DatabaseCorrupt`
+      #9248 open 2023-05-20 Don't have enough information in catch closure to do complete error handling.
+      #6061 open 2022-07-16 Consistent parallel commands
+      #15286 open 2025-03-11 Consistent serialization of values to output formats
+      #11950 open 2024-02-23 Nushell is printing (or asking to print) escape sequences
+      #18812 merged 2026-08-10 Lex quotes inside interpolated string subexpressions
+      #10679 open 2023-10-11 Paths as Datatype
+      #9536 closed 2023-06-26 Support quoting all strings in `to yaml`
+      #15091 closed 2025-02-11 `http` commands should include the response body in errors
+      #18458 merged 2026-06-24 build(deps): bump rmcp from 1.7.0 to 1.8.0
+      #18037 closed 2026-04-14 Regression: string arguments containing JSON are double-encoded when passed to nu scripts
+      #14305 closed 2024-11-11 Add parse-time constant `$NU_CURRENT_FILE`
+      #14763 merged 2025-01-06 small, backwards compatible enhancements to std
+      #16151 merged 2025-07-10 Add warning when using history isolation with non-SQLite history format
+      #15408 merged 2025-03-24 Fix highlighting of aliases to external commands
+      #6001 closed 2022-07-10 reloading a module and triggering a completion in the same line causes panic
+  recovery       26 hit(s) (all listed)
+      #11842 open 2024-02-12 `rm --trash` should be the default behavior
+      #16116 open 2025-07-05 Allow `from json --objects` to handle json values which are not newline delimited.
+      #8553 open 2023-03-21 panick because of `SqliteFailure` and `DatabaseCorrupt`
+      #13210 open 2024-06-23 Startup/config files should continue-on-error by default
+      #14368 open 2024-11-17 strange problem when querying history with `open $nu.history-path | query db` that causes db corruption
+      #18710 closed 2026-07-24 broken symlink for config.nu prevents nushell from starting entirely
+      #18757 closed 2026-07-29 build(deps): bump lean_string from 0.6.0 to 0.7.0
+      #17595 merged 2026-02-18 add `--timeout` flag to `input listen`
+      #16470 merged 2025-08-19 Update PLATFORM_SUPPORT to mention loongarch limitations
+      #16455 merged 2025-08-17 Fix loongarch64 builds for rust 1.87.0
+      #12629 merged 2024-04-23 overhaul shell_integration to enable individual control over ansi escape sequences
+      #14698 merged 2024-12-30 more closure serialization
+      #14628 closed 2024-12-19 Environment variable 'PATH' not found Windows 10
+      #13751 merged 2024-09-01 Use `IntoValue` in config code
+      #12779 merged 2024-05-06 Implement PWD recovery
+      #13610 merged 2024-08-13 Fallback to extension-based content type detection when parsing `Content-Type` header fails
+      #11699 closed 2024-01-31 Prevent Commands from killing nushell on panic
+      #12760 merged 2024-05-04 Fix trailing slash in PWD set by `cd`
+      #11810 merged 2024-02-08 Remove `Record::from_raw_cols_vals_unchecked`
+      #12262 merged 2024-03-22 Fix circular source causing Nushell to crash
+  rollback       15 hit(s) (all listed)
+      #18960 open 2026-09-02 Reject excessively nested input instead of overflowing the parser stack
+      #9132 open 2023-05-08 `empty list` should not be displayed in `each` loop while running in script mode 
+      #17831 merged 2026-03-18 build(deps): bump winreg from 0.55.0 to 0.56.0
+      #14546 closed 2024-12-09 Feature-PWD-per-drive 2.0
+      #17140 closed 2025-12-10 build(deps): bump rstest from 0.23.0 to 0.26.1
+      #14608 merged 2024-12-17 Doc file fixes
+      #14411 merged 2024-11-22 Feature: PWD-per-drive to facilitate working on multiple drives at Windows
+      #11695 merged 2024-01-31 rollback polars 0.37.0
+      #11102 merged 2023-11-20 Bump winreg from 0.51.0 to 0.52.0
+      #11049 closed 2023-11-14 Make `history --clear` more robust
+      #11417 merged 2023-12-24 Bump sqlparser from 0.39.0 to 0.41.0
+      #11221 closed 2023-12-04 Bump sqlparser from 0.36.1 to 0.40.0
+      #9453 merged 2023-06-16 Command to get individual keys
+      #6232 merged 2022-08-05 Allow using the system's copy of zstd for Polars
+      #2235 merged 2020-07-21 Revert "hopefully the final fix for history (#2222)"
+  resume         30 hit(s) (all listed)
+      #5740 open 2022-06-08 How to run a second command when the first command fails? e.g., `tmux attach || tmux`
+      #11379 open 2023-12-20 Killed processes can seemingly break stdin after nushell decides to move on
+      #15196 open 2025-02-26 Unfreeze jobs in the background
+      #11270 open 2023-12-08 Cyclic stream of data
+      #15200 open 2025-02-26 Spawn an external process into the background
+      #7305 open 2022-12-01 Type check `++` to block appending lists to tables which results in a heterogeneous list
+      #14822 open 2025-01-13 Missing essential features + other suggestions
+      #18556 closed 2026-07-09 Fix and optimize path completion traversal
+      #19025 merged 2026-09-14 the tui family of commands
+      #18771 closed 2026-07-23 Interactive commands like fzf in external completer closure dont work after the non-blocking completion change
+      #14546 closed 2024-12-09 Feature-PWD-per-drive 2.0
+      #11218 closed 2023-12-03 Consolidating filters
+      #16720 closed 2025-09-20 Fix: Ensure `job unfreeze` skips killed jobs and resumes the latest surviving frozen job
+      #15389 closed 2025-03-23 Backgrounded `config nu` editor jobs do not appear in `job list` so cannot be foregrounded
+      #14048 closed 2024-10-10 `overlay use` changes directory when activating the overlay
+      #14883 merged 2025-01-21 Jobs
+      #4564 closed 2022-02-20 implementation special variables and background jobs?
+      #247 closed 2019-08-03 Background tasks
+      #13741 merged 2024-08-31 Fix handling of stopped TUI applications on unix
+      #3276 closed 2021-04-07 Cannot forward options with `...rest`
+  half-written   16 hit(s) (all listed)
+      #11100 open 2023-11-19 Files with Non-UTF8 characters are simply ignored in `ls`
+      #7991 open 2023-02-06 clearing the history breaks `nushell`
+      #19061 open 2026-09-21 Which `record` commands do we need?
+      #10100 open 2023-08-23 config: history files should be stored in $XDG_STATE_HOME
+      #9373 closed 2023-06-06 scripts can't operate as part of a pipeline
+      #7579 closed 2022-12-23 `ls` glob and `glob` glob behave differently.
+      #13532 merged 2024-08-03 Add multipart/form-data uploads
+      #14249 merged 2024-11-04 Load `default_env.nu`/`default_config.nu` before user `env.nu`/`config.nu`
+      #11337 closed 2023-12-15 Enable system package manager to install modules such as completions in system managed paths
+      #10440 closed 2023-09-20 history: change default to sqlite and isolate history
+      #6886 closed 2022-10-24 Don't save history for commands starting with a space
+      #10557 closed 2023-09-30 Allow filesystem commands to access files with glob metachars in name
+      #8325 closed 2023-03-05 `cp` progress bar - cleaner version
+      #9648 closed 2023-07-10 Create `Record` type to reduce code duplication
+      #6786 closed 2022-10-17 New use_domterm_features config option. If set generate html table.
+      #290 closed 2019-08-15 Release #3 - Completions
+  wipe           17 hit(s) (all listed)
+      #11713 open 2024-02-02 Backticked strings getting unexpectedly executed as external commands
+      #15715 open 2025-05-07 Allow stor commands to derive table structure automatically
+      #17831 merged 2026-03-18 build(deps): bump winreg from 0.55.0 to 0.56.0
+      #16972 closed 2025-11-03 nu-complete help info
+      #7790 closed 2023-01-18 History: sync_on_enter: false doesn't record history at all
+      #9403 closed 2023-06-10 Migration to sqlite history
+      #13623 closed 2024-08-14 `touch` doesn't handle glob properly
+      #12008 merged 2024-02-28 Allow clear command to clear terminal's history
+      #11849 merged 2024-02-13 Add ConfigDirNotFound error
+      #10831 merged 2023-10-25 fix: preserve path when completing intermediate directory
+      #7608 merged 2022-12-26 Fix `save` error handling
+      #4265 closed 2022-01-18 If user uninstall nushell, it should self-destruct all configs. And if user reinstall nushell, it should just work without throwing error.
+      #5550 merged 2022-05-16 CI: bust caches
+      #3830 closed 2021-07-24 Broken config error should also tell the path to the config
+      #3721 closed 2021-07-01 Can't find `config.toml` if there's an error in `config.toml`
+      #3840 closed 2021-07-25 WIP on #3085 - silencing "command failed" diagnostic
+      #446 closed 2019-08-26 Disable annoying bell sound on error
+  wipes          0 hit(s)
+  erase          42 hit(s) (all listed)
+      #19126 open 2026-09-30 fix(parser): Raise an error when encountering multiple default variab…
+      #16909 open 2025-10-21 Fix `job unfreeze` giving false negative when trying to unfreeze after killing the most recent job
+      #9456 open 2023-06-16 saving the content of a file modified inline with `to text` erases the content
+      #9715 open 2023-07-17 Multi-line prompt breaks macOS Terminal prompt marks
+      #18800 closed 2026-08-07 Commandline is erased/redrawn during completions
+      #16229 open 2025-07-22 Output type annotations should be enforced at runtime
+      #11818 open 2024-02-09 Ability to delete/hide variables
+      #14243 open 2024-11-03 rm -i -f Behavior in Nushell
+      #18573 merged 2026-07-11 Add `completions.persistent_menus` config option
+      #16227 open 2025-07-22 `return` prevents checking the output type
+      #18396 merged 2026-06-12 Support reedline's verb-based edit commands in keybindings (Reedlines #1100)
+      #5597 open 2022-05-20 fish-like abbreviations
+      #18829 merged 2026-08-13 chore(reedline): bump to latest reedline commit 6b9115d
+      #19013 merged 2026-09-11 chore: bump reedline to 436f17b
+      #18223 closed 2026-05-17 Ctrl+C erases current commandline (regression in 0.112)
+      #8060 open 2023-02-12 Reduce accidental dependency duplication
+      #14997 merged 2025-02-03 make `echo` const
+      #15369 merged 2025-03-20 feat: Use reedline for input implementation
+      #5031 closed 2022-03-30 Block parameter types are ignored
+      #10690 closed 2023-10-11 Autocomplete does not quote `String` filepaths when using external completers
+  erasing        12 hit(s) (all listed)
+      #19126 open 2026-09-30 fix(parser): Raise an error when encountering multiple default variab…
+      #16909 open 2025-10-21 Fix `job unfreeze` giving false negative when trying to unfreeze after killing the most recent job
+      #9715 open 2023-07-17 Multi-line prompt breaks macOS Terminal prompt marks
+      #18573 merged 2026-07-11 Add `completions.persistent_menus` config option
+      #15369 merged 2025-03-20 feat: Use reedline for input implementation
+      #5031 closed 2022-03-30 Block parameter types are ignored
+      #14164 closed 2024-10-24 Dynamic `overlay use`
+      #10387 closed 2023-09-16 use stdin instead of crossterm::event::read
+      #6984 merged 2022-11-02 [MVP][WIP] `less` like pager
+      #10831 merged 2023-10-25 fix: preserve path when completing intermediate directory
+      #4307 closed 2022-02-04 Better way of detecting environment variable existence
+      #6904 merged 2022-10-25 fix: ✨ "saner" default for mv
+  erased         14 hit(s) (all listed)
+      #18800 closed 2026-08-07 Commandline is erased/redrawn during completions
+      #16229 open 2025-07-22 Output type annotations should be enforced at runtime
+      #9456 open 2023-06-16 saving the content of a file modified inline with `to text` erases the content
+      #8060 open 2023-02-12 Reduce accidental dependency duplication
+      #18223 closed 2026-05-17 Ctrl+C erases current commandline (regression in 0.112)
+      #10690 closed 2023-10-11 Autocomplete does not quote `String` filepaths when using external completers
+      #15967 closed 2025-06-14 Adding `rustls` killed installing & upgrading Nu with all features
+      #13507 merged 2024-08-01 Fix internal panic for `query web`
+      #11907 closed 2024-02-20 0.90.1 regression: alt+d throws an error message
+      #12492 closed 2024-04-12 Issues installing in Termux guest proot-distro alias of Debian
+      #7951 closed 2023-02-03 FTBFS when compiling tests
+      #7354 merged 2022-12-05 `++=` appendAssign operator (#7346)
+      #6077 closed 2022-07-19 Placeholder for plugin data
+      #3587 closed 2021-06-09 path is lost? from within nu.exe running inside of nu.exe
+  destroy        13 hit(s) (all listed)
+      #5296 open 2022-04-22 mv can destroy data
+      #11819 open 2024-02-09 `history --clear` should be "more safe"
+      #18809 merged 2026-08-10 fix(stor): reject a missing file in stor import instead of discarding the in-memory database
+      #14712 closed 2024-12-31 nushell v0.101.0 introduces environmental variables which destroy righthand shell prompt's previous state
+      #15138 merged 2025-02-18 Fix table wrap emojie
+      #12783 merged 2024-05-06 Pass `Stack` ref to `Completer::fetch`
+      #6886 closed 2022-10-24 Don't save history for commands starting with a space
+      #10831 merged 2023-10-25 fix: preserve path when completing intermediate directory
+      #7931 closed 2023-02-01 Rename files / folders
+      #9347 closed 2023-06-03 `url parse | url join` doesn't roundtrip when there is no query string
+      #4407 closed 2022-02-10 Add number of threads to `par-each`
+      #2824 closed 2020-12-26 Pipe from string list to rm
+      #7087 closed 2022-11-10 Check for WRAP_PROMPT_XXX in environment
+  destroys       2 hit(s) (all listed)
+      #18809 merged 2026-08-10 fix(stor): reject a missing file in stor import instead of discarding the in-memory database
+      #2824 closed 2020-12-26 Pipe from string list to rm
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16303 open 2025-07-30 Menu's marker overwrites readline mode inidcator
+      #14413 open 2024-11-22 bad command overwrites with the standard library
+      #10873 open 2023-10-29 Assigning a List to a Mutable Table's Column - Currently Writes List to every Cell - should it overwrite the Column?
+      #14409 open 2024-11-21 `rm` removes write-protected files
+      #8344 open 2023-03-07 History suggestion and autocompletion broken after chezmoi prompts
+      #12599 open 2024-04-20 Bug in `save` under certain circumstances
+      #15533 open 2025-04-09 Stop polluting the environment
+      #14406 open 2024-11-21 `$in` cannot be spread sometimes because "it is not a list"
+      #7371 open 2022-12-06 Refactor the default configuration
+      #14823 open 2025-01-13 Nushell does not work in IntelliJ integrated terminal + remote gateway
+      #8360 open 2023-03-08 Support `trap`
+      #13048 open 2024-06-04 str join fails with garbled output
+      #10789 open 2023-10-20 Repeated flags for custom commands
+      #18079 open 2026-04-20 separate plugin protocol version from nushell version
+      #11801 open 2024-02-08 Module declaration conflicts?
+      #7550 open 2022-12-21 Some strange behave around `save`, `def` and `each` .
+      #14682 open 2024-12-27 Introspectable alternative to $env.config.menus/keybindings
+      #18907 merged 2026-08-26 build(deps): bump tango-bench from 0.7.2 to 0.8.0
+      #18828 merged 2026-08-13 fix(config): match unnamed keybindings by the key they bind
+      #18790 closed 2026-08-05 With `run-internal` flags meant for the said internal does not get recognised.
+  clobber        24 hit(s) (all listed)
+      #13322 open 2024-07-08 `cp` globbing resolves hidden files that `ls` does not
+      #18790 closed 2026-08-05 With `run-internal` flags meant for the said internal does not get recognised.
+      #18465 merged 2026-06-24 fix(compile): clone `$in` register for binary-op RHS to avoid clobbering LHS (#18323)
+      #18461 closed 2026-06-24 fix(compile): clone `$in` register for binary-op RHS to avoid clobbering LHS (#18323)
+      #7941 open 2023-02-02 nushell doesnt inherit /etc/locale.conf when used as a login shell
+      #19119 merged 2026-09-30 build(deps): bump mq-markdown from 0.8.4 to 0.9.1
+      #11225 closed 2023-12-04 `mv` silently overwrites files
+      #11950 open 2024-02-23 Nushell is printing (or asking to print) escape sequences
+      #17039 merged 2025-11-17 --dry on mktemp
+      #16821 merged 2025-10-07 feat: add custom metadata support and HTTP response metadata
+      #6739 closed 2022-10-15 `~` doesn't seem to work with `cp` when inside a string variable
+      #14076 closed 2024-10-13 Data loss: New `history import` command clobbers existing history
+      #14371 merged 2024-11-18 update uutils crates
+      #10822 merged 2023-10-23 Initial implementation of umv from uutils
+      #9463 closed 2023-06-17 use uutils uu_cp and uu_mv
+      #11814 closed 2024-02-09 0.90.1 build failure
+      #11455 closed 2023-12-31 For internal commands, do not attempt to glob expand if the file path is wrapped in quotes.
+      #9716 closed 2023-07-17 Flag to print default `env.nu` or `config.nu`
+      #8333 merged 2023-03-06 Put a lock around `cargo build` invocations for plugin tests
+      #7196 closed 2022-11-22 Change the `rm.always_trash` default in config.nu to `true` for safety
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17982 open 2026-04-04 Evaluate math expressions as arithmetic regardless of blank space
+      #9122 open 2023-05-06 option to ignore blank lines with `uniq`
+      #19106 open 2026-09-28 Update CI artifact uploading
+      #19044 open 2026-09-17 test(config): compare canonical paths in `test_default_config_path`
+      #19139 open 2026-10-02 Allow `TZ_VARIANTS` in `into datetime --timezone`
+      #19121 open 2026-09-30 Fix http response body error message for some content-type
+      #18933 open 2026-08-30 impl Hash for Value and inner types in nu-protocol
+      #18686 open 2026-07-21 fix: don't tint unstyled prompts with default colors
+      #18938 open 2026-08-31 Add `commandline get-selection` command
+      #18805 open 2026-08-09 feat: forward flags correctly in run-internal dynamic dispatch
+      #18079 open 2026-04-20 separate plugin protocol version from nushell version
+      #19126 open 2026-09-30 fix(parser): Raise an error when encountering multiple default variab…
+      #19100 merged 2026-09-27 feat(tui): `--border` and `$env.config.tui.border_type` pick border lines by `table --theme` name
+      #19073 open 2026-09-23 fix(into-duration): reject duplicate hh:mm:ss
+      #19079 open 2026-09-23 fix: keep the exit code of `exit` inside `each`
+      #13240 open 2024-06-26 ctrl-o creates duplicate items in Windows
+      #8213 open 2023-02-25 ≈20 new lines and a new prompt inserted on start
+      #19075 open 2026-09-23 fix(into-duration): into duration overflow
+      #11477 open 2024-01-03 A command to remove indentations in multiline strings
+      #18898 open 2026-08-25 fix(parser): preserve precision for whole-number filesize and duration literals
+  unreadable     21 hit(s) (all listed)
+      #16379 open 2025-08-07 List column width logic produces unreadable output
+      #18594 open 2026-07-13 Long (128 chars) filename deforms `ls` output
+      #14188 open 2024-10-28 Allow | as a separator for list/table literals
+      #18961 merged 2026-09-03 ide: report file read failures from --ide-check
+      #549 open 2019-08-31 Three ideas for the future of nushell
+      #18556 closed 2026-07-09 Fix and optimize path completion traversal
+      #18925 merged 2026-08-28 docs(nuon): add a specification of the NUON format
+      #18377 merged 2026-06-09 Make `Debug` for `Value` more compact by default
+      #17495 merged 2026-02-04 build(deps): bump git2 from 0.20.0 to 0.20.4
+      #14310 merged 2024-11-11 make `ls` return "Permission denied" for CWD instead of empty results
+      #11464 closed 2024-01-02 Disable term colors when it's not supported
+      #13802 merged 2024-09-07 Refactor config updates
+      #6416 closed 2022-08-25 Logging session history as structured data
+      #11535 merged 2024-01-14 Add shift +  navigation functionality through reedline
+      #6886 closed 2022-10-24 Don't save history for commands starting with a space
+      #5428 closed 2022-05-03 ansi escape leakage on windows
+      #9194 closed 2023-05-14 Change the LS_COLOUR for the type column
+      #3956 closed 2021-08-22 Tree format for communication between utils
+      #5028 closed 2022-03-30 Readable (ANSI compatible) colors by default
+      #1187 closed 2020-01-10 options/flags for ts-json to format its output
+  garbage        80 hit(s) (all listed)
+      #16757 open 2025-09-26 Incorrect parsing of keyword arguments in erroneous internal calls
+      #18592 open 2026-07-13 `into duration` overflows on large values (panic in debug, silent wrap in release)
+      #17960 open 2026-04-01 Inconsistent parsing of incomplete keyword commands, e.g. `if` VS `try`
+      #16448 open 2025-08-16 Don't show banner on parsing errors
+      #7308 open 2022-12-01 Remove instances of `Span::unknown()` where possible
+      #17959 open 2026-04-01 Inconsistent parsing of incomplete redirection tokens, like `ls o>` VS `ps o>`
+      #15652 open 2025-04-27 `nu-highlight` should be aware of local defs
+      #10618 open 2023-10-05 importing non-existing subcommand from module is possible
+      #8703 open 2023-04-01 refactor the default and the valid `color_config`
+      #19054 merged 2026-09-20 fixes for unified/completions in general
+      #6502 open 2022-09-06 Don't keep duplicate entries in history file
+      #13570 open 2024-08-08 output sometimes flash and disappear
+      #18593 closed 2026-07-13 Fix overflow panic in `into duration` on large values
+      #17473 open 2026-02-02 nushell over FTDI gets systematically stuck
+      #17932 merged 2026-03-30 fix(parser, highlighter): more consistent and accurate parsing/highlighting for erroneous pipe tokens.
+      #18369 closed 2026-06-08 some extra char in commandline
+      #17917 merged 2026-03-28 detect lexer-stage errors at highlighting
+      #17957 closed 2026-04-01 Lossy parsing of pipe tokens at the end of input, like `foo |`
+      #14923 closed 2025-01-27 Add completions for commands with a predetermined set of accepted values.
+      #17705 closed 2026-03-03 0.111.0: Issue with "lines" Command on Windows with lines containing "\r\n"
+  mangled        12 hit(s) (all listed)
+      #9027 open 2023-04-28 mangled command name in `view source` after import
+      #18509 closed 2026-07-02 Add `to ini` to the formats plugin
+      #16114 closed 2025-07-05 Align `from xlsx` closer to `from tsv` when handling headers.
+      #15848 closed 2025-05-29 Using an external command without `^` incorrectly treat an argument as a path
+      #12895 merged 2024-05-17 Fix the way the output of `table` is printed in `print()`
+      #10908 closed 2023-11-01 String script args with parenthesis are mangled
+      #11912 closed 2024-02-21 run-external is expanding globs (but shouldn't on Windows) with no way to opt out
+      #11029 closed 2023-11-11 Rust backtrace output is mangled in Nushell
+      #10804 merged 2023-10-21 Remove registry clean_string hack
+      #7838 merged 2023-01-23 Bump miette from 5.3.0 to 5.5.0
+      #6399 closed 2022-08-24 External command parameters get mangled
+      #1005 closed 2019-11-24 Starship - Prompt is mangled
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4293 open 2021-12-04 Add overlay contents to `scope overlays`
+      #13400 open 2024-07-18 find command fails to find CJK contents
+      #10027 open 2023-08-16 `open --raw` with multiple files splits contents into chunks of 8KB
+      #18358 open 2026-06-06 nushell ps is missing the time field, cpu is always zero, and possibly missing some processes?
+      #6598 open 2022-09-22 Press several `enter` let Terminal page down, then can't scroll up by using mouse wheel (no contents) or lost some contents
+      #18777 open 2026-08-03 Improve `format pattern` errors
+      #11734 open 2024-02-04 source inside a script will not be executed at the second run
+      #5799 open 2022-06-15 Current working directory hint in addition to history complete
+      #19086 open 2026-09-25 ast --flatten leaves out the braces, => and , of a match block
+      #10546 open 2023-09-29 Parse password-encrypted excel files
+      #16537 open 2025-08-28 Confusing error can occur when trying to rename a custom command with a parse error present
+      #903 open 2019-11-01 Table commands - complete list
+      #9133 open 2023-05-08 directory module behaves inconsistently with `main` command
+      #12599 open 2024-04-20 Bug in `save` under certain circumstances
+      #11824 open 2024-02-10 Contain internal commands in subcommand
+      #16891 open 2025-10-17 Suggestion: paste/clipboard command
+      #14306 open 2024-11-11 Implement `cp -l` flag to create hardlinks in a file heirarchy
+      #16388 open 2025-08-08 Nushell hangs on filename with Unicode character and uses lots of RAM
+      #15085 open 2025-02-11 `ls -s other-directory` wrong colors for directories
+      #5959 open 2022-07-05 Support external completions with `-longoption`
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19092 open 2026-09-26 Clear sqlite history with SQL instead of deleting the file
+      #18777 open 2026-08-03 Improve `format pattern` errors
+      #19085 merged 2026-09-25 fix(completions): expand alias heads in `place.command`, keep completer warnings off the menu
+      #19107 open 2026-09-29 fix(bytes remove): keep input unchanged when --end pattern is not found
+      #19079 open 2026-09-23 fix: keep the exit code of `exit` inside `each`
+      #18734 open 2026-07-26 feat(config)!: move prompt indicators to $env.config.prompt
+      #18642 open 2026-04-07 The addition of a repaint prompt function
+      #19087 open 2026-09-25 fix(nuon): error on a duration head that overflows
+      #18029 open 2026-04-13 catch-all / vararg in type declarations for Records and Tables
+      #18853 open 2026-08-17 `group-by --to-table` keep original types
+      #7027 open 2022-11-06 Move the complete file to /usr/share/nu  or other place
+      #17990 open 2026-04-06 The addition of a repaint prompt function
+      #15197 open 2025-02-26 Suspend internal commands
+      #6021 open 2022-07-12 Record destructuring 
+      #7308 open 2022-12-01 Remove instances of `Span::unknown()` where possible
+      #12963 open 2024-05-24 Use Span IDs instead of Spans
+      #6276 open 2022-08-09 can't find comprensive documentation of nu invocation and command-line switches
+      #13240 open 2024-06-26 ctrl-o creates duplicate items in Windows
+      #11763 open 2024-02-06 Completion on const variable
+      #17504 open 2026-02-06 Add a Homograph Detection like Tirith
+  unclean        2 hit(s) (all listed)
+      #19142 open 2026-10-03 unclean program exit causes nushell throw "This operation was interrupted" on the next command run
+      #2640 merged 2020-10-06 Add pretty flag to `to md`
+  shutdown       24 hit(s) (all listed)
+      #5660 open 2022-05-27 support zsh style startup/shutdown files and env vars
+      #19142 open 2026-10-03 unclean program exit causes nushell throw "This operation was interrupted" on the next command run
+      #18012 open 2026-04-11 history.sqlite3-wal is not deleted when the last nushell session ends
+      #8360 open 2023-03-08 Support `trap`
+      #17552 open 2026-02-12 Tab should not select a completion option if tab caused it to be filled without ambiguous characters to a full match
+      #18435 closed 2026-06-18 Language server crashing: "Header must provide a Content-Length property"
+      #16911 closed 2025-10-21 feat(plugins): add EvalClosureCloned for concurrent plugin to engine calls
+      #17507 merged 2026-02-06 Allow Ctrl+C to interrupt HTTP requests
+      #17790 closed 2026-03-13 proxy variables don't work with http commands
+      #17161 merged 2025-12-13 feat(mcp): add HTTP streaming transport and cancellation support
+      #16138 closed 2025-07-09 build(deps): bump tokio from 1.45.0 to 1.46.1
+      #15419 merged 2025-03-26 build(deps): bump tokio from 1.43.0 to 1.44.1
+      #14202 closed 2024-10-29 Commands are evaluated in backtick string arguments to externals
+      #12921 merged 2024-05-21 Rewrite run_external.rs
+      #5755 closed 2022-06-11 alias sudo bug
+      #10941 merged 2023-11-03 Implement LSP Text Document Synchronization
+      #11049 closed 2023-11-14 Make `history --clear` more robust
+      #10021 merged 2023-08-16 Restore initial foreground process group on exit
+      #6055 closed 2022-07-15 `login.nu` don't work.
+      #5772 closed 2022-06-13 External completion could cause a significant slowness
+  reboot         23 hit(s) (all listed)
+      #7414 open 2022-12-09 Can't log in after making this the default shell on OpenSUSE MicroOS
+      #18929 open 2026-08-29 `idx`: persistent index for short-lived `nu` processes (subprocess / agent tooling use case)
+      #8900 open 2023-04-16 "path exists" problem with disconnected network mounted drive 
+      #10060 open 2023-08-19 shebangs in windows
+      #17473 open 2026-02-02 nushell over FTDI gets systematically stuck
+      #4103 closed 2021-10-31 How to source .profile etc
+      #16512 closed 2025-08-26 Custom environment variables from Linux PAM system are not recognized
+      #6339 closed 2022-08-17 Freeze after some commands after upgrade to 0.67.0 
+      #11699 closed 2024-01-31 Prevent Commands from killing nushell on panic
+      #11317 merged 2023-12-13 Fix piping output logic
+      #10232 merged 2023-09-05 Fix memory consumption of into sqlite
+      #10858 closed 2023-10-28 Alias executed on shell load if it contains 'doas'
+      #6055 closed 2022-07-15 `login.nu` don't work.
+      #9799 closed 2023-07-25 windows installer: upgrade "ended prematurely because of an error"
+      #9218 closed 2023-05-17 Pasting into Terminal entirely broken since 0.80.0 (Example: GPG Passphrase Paste)
+      #4981 closed 2022-03-26 Isolate history between instances [for sqlite history]
+      #8368 merged 2023-03-09 add `dirs` command to std lib
+      #8511 merged 2023-03-18 FEATURE: write better errors for `error make` and complete the doc
+      #7617 closed 2022-12-27 Erroneous text in `ls` table
+      #3699 closed 2021-06-27 Nu breaks X11 login
+  disk+full      36 hit(s) (all listed)
+      #18929 open 2026-08-29 `idx`: persistent index for short-lived `nu` processes (subprocess / agent tooling use case)
+      #9287 open 2023-05-25 Nushell does not start in read-only file system
+      #8450 open 2023-03-14 standard library: a roadmap
+      #10610 open 2023-10-04 Process substitution/`<(expr)`-like syntax
+      #14368 open 2024-11-17 strange problem when querying history with `open $nu.history-path | query db` that causes db corruption
+      #14843 open 2025-01-16 No output from `ls` in custom commands
+      #18790 closed 2026-08-05 With `run-internal` flags meant for the said internal does not get recognised.
+      #18005 merged 2026-04-09 feat(streaming): stream CSV/TSV output through 'save' and fail fast on schema drift implements #14338
+      #16344 closed 2025-08-03 `ls` builtin omits file type in permissions field (e.g. missing "d" for directories)
+      #12397 closed 2024-04-04 `glob` gets blocked globally
+      #2731 closed 2020-11-05 Ability to capture command output for later use
+      #18090 closed 2026-04-22 `try/finally` does not run `finally` block when script is interrupted with Ctrl+C
+      #19025 merged 2026-09-14 the tui family of commands
+      #9051 closed 2023-04-29 `table` should be able to detect structure from plaintext input
+      #9373 closed 2023-06-06 scripts can't operate as part of a pipeline
+      #7863 closed 2023-01-26 redefining internal commands used to work, now I can't get this one to work.
+      #15873 merged 2025-06-02 Make `parse` simple patterns ignore fields with placeholder (`_`)
+      #15725 closed 2025-05-08 Table width calculation panic
+      #8433 closed 2023-03-13 Properties of custom commands
+      #6662 closed 2022-10-04 Display commands list concisely by default
+  data+loss      38 hit(s) (all listed)
+      #19107 open 2026-09-29 fix(bytes remove): keep input unchanged when --end pattern is not found
+      #5008 open 2022-03-28 dfr to-df and back to table
+      #9187 open 2023-05-13 Enable history isolation per default
+      #6583 open 2022-09-19 Confusing error when attempting to `mv` change directory name case on case insensitive filesystems
+      #10096 open 2023-08-22 Multi-line / Block / Inline Comments
+      #13210 open 2024-06-23 Startup/config files should continue-on-error by default
+      #18928 closed 2026-08-29 `length`, `columns` and `is-empty` silently consume error streams (gap after #16738)
+      #17778 open 2026-03-11 Allow case-sensitive environment variable setting
+      #18925 merged 2026-08-28 docs(nuon): add a specification of the NUON format
+      #18380 merged 2026-06-10 build(deps): bump sysinfo from 0.38.4 to 0.39.3
+      #17041 closed 2025-11-18 In-memory stor drops statements if used between jobs
+      #18738 merged 2026-07-26 Add a `nu-dap` crate and `nu --dap`: a Debug Adapter Protocol server for Nushell
+      #13271 closed 2024-06-29 `flatten` does not rename conflicting column if parent's conflicting column appears after column to be flattened
+      #18090 closed 2026-04-22 `try/finally` does not run `finally` block when script is interrupted with Ctrl+C
+      #17715 closed 2026-03-04 `try/finally` runs `finally` block before external command completes
+      #17647 merged 2026-02-25 build(deps): bump calamine from 0.32.0 to 0.33.0
+      #16769 closed 2025-09-28 Another bizarre "variable not found" case
+      #17808 closed 2026-03-15 --help output for external commands is corrupted by nushell's parser
+      #16324 closed 2025-08-02 Refactor(step 2): change PipelineData from enum to struct
+      #14076 closed 2024-10-13 Data loss: New `history import` command clobbers existing history
+  partial+write  19 hit(s) (all listed)
+      #18933 open 2026-08-30 impl Hash for Value and inner types in nu-protocol
+      #12652 open 2024-04-24 Missing flag arguments error when aliasing a extern command
+      #17941 merged 2026-03-31 Add `commandline complete` to invoke nushell completions
+      #8413 closed 2023-03-12 "Data cannot be accessed with a cell path" when searching by file size
+      #12624 closed 2024-04-22 Use `ecow::EcoVec` for `Record` internals
+      #9617 closed 2023-07-06 can't use sudo with nix
+      #15077 closed 2025-02-10 Missing symlinks on directories completion on cd
+      #11696 closed 2024-01-31 Background jobs
+      #11922 closed 2024-02-21 Panic when completing with `..`
+      #12448 merged 2024-04-07 Local socket mode and foreground terminal control for plugins
+      #11911 merged 2024-02-21 Bidirectional communication and streams for plugins
+      #10380 closed 2023-09-15 Parser crashes when variable name in let expression is missing
+      #10884 merged 2023-10-30 Improve case insensitivity consistency
+      #9642 closed 2023-07-10 中英文混合路径中文字符乱码
+      #9220 closed 2023-05-17 How do I use both shell built-in open and macOS open functionality?
+      #7923 closed 2023-01-31 The format of $env.config has recently changed, and several options have been grouped into sub-records...
+      #7059 closed 2022-11-08 Make `$env.config` access produce a record describing the full state of EngineState.config
+      #6983 merged 2022-11-02 Grouped config commands better (closes #6911)
+      #6209 closed 2022-08-02 Autocomplete trailing dots
+  crash+safe     19 hit(s) (all listed)
+      #17466 open 2026-02-01 Using `ls` builtin within `par-each` leads to stack overflow
+      #9417 open 2023-06-12 Off-by-One Access in engine_state.rs?
+      #18105 closed 2026-04-23 fix(nu-table): prevent panic on zero-width Unicode characters
+      #15587 closed 2025-04-17 floating point exception (core dumped)  nu -c "http get https://google.com"
+      #16292 merged 2025-07-29 fix(parser): empty span of unbalanced delimiter
+      #15104 closed 2025-02-12 regression: out of memory when rendering a table view with a cell containing certain strings
+      #13324 closed 2024-07-09 `recursion_limit` not respected
+      #13296 merged 2024-07-04 don't show result in error make examples
+      #12090 closed 2024-03-06 Crash on completion for an alias
+      #10381 closed 2023-09-15 Reduce use of unchecked indexing in parser code
+      #13269 closed 2024-06-29 `detect columns --guess` panics when encountering `…` in 2 subsequent rows
+      #11693 closed 2024-01-31 Clear command should clear everything
+      #13118 closed 2024-06-10 nushell panicing and requires killing it
+      #12262 merged 2024-03-22 Fix circular source causing Nushell to crash
+      #11654 merged 2024-01-28 Allow for stacks to have parents
+      #10558 merged 2023-09-30 fix panic caused by `ls \\.\pipe`
+      #11289 merged 2023-12-11 Allow spreading arguments to commands
+      #10844 closed 2023-10-26 make `exec` cross-platform experiment
+      #7657 merged 2023-01-02 Recursion def
+  atomic+write   17 hit(s) (all listed)
+      #17334 open 2026-01-12 Nushell hits 99% CPU usage on macOS when closed via a Zsh wrapper function
+      #17160 open 2025-12-13 [MCP] Self-sufficient nushell for remote AI coding sessions
+      #8904 open 2023-04-16 `nushell_failed_spanned`: could not find name for this command
+      #18902 closed 2026-08-25 `XDG_CONFIG_HOME` no longer allows a UID without a home directory to have config files
+      #18218 merged 2026-05-16 append ...rest
+      #12624 closed 2024-04-22 Use `ecow::EcoVec` for `Record` internals
+      #11696 closed 2024-01-31 Background jobs
+      #15967 closed 2025-06-14 Adding `rustls` killed installing & upgrading Nu with all features
+      #13181 merged 2024-06-19 feat: make ctrlc available to plugins
+      #12492 closed 2024-04-12 Issues installing in Termux guest proot-distro alias of Debian
+      #11911 merged 2024-02-21 Bidirectional communication and streams for plugins
+      #11384 merged 2023-12-21 Fix an infinite loop if the input stream and output stream are the same
+      #6886 closed 2022-10-24 Don't save history for commands starting with a space
+      #11049 closed 2023-11-14 Make `history --clear` more robust
+      #7951 closed 2023-02-03 FTBFS when compiling tests
+      #7923 closed 2023-01-31 The format of $env.config has recently changed, and several options have been grouped into sub-records...
+      #7240 closed 2022-11-25 Redirection: Avoid blocking when err+out> redirects too much stderr message
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19140 open 2026-10-02 feat: winnow-parser experimental option: parse with the nu-winnow-parser front end
+      #17334 open 2026-01-12 Nushell hits 99% CPU usage on macOS when closed via a Zsh wrapper function
+      #12026 open 2024-02-29 opening a locked sql does not respond to ctrl-c
+      #10459 open 2023-09-21 Ignore flock not implemented error
+      #16497 open 2025-08-23 open sqlite databse as read only
+      #15941 open 2025-06-11 Add a `defer` keyword
+      #14244 open 2024-11-03 History database gets corrupted on clearing
+      #11829 open 2024-02-11 `nu-highlight` string execution
+      #12015 open 2024-02-29 The mv command performs a copy even if the source and destination are on the same device.
+      #17498 open 2026-02-05 Termux startup I/O error: Function not implemented (os error 38)
+      #12530 open 2024-04-16 Ought to be able to disable sqlite WAL mode for history
+      #18985 merged 2026-09-08 fix(nix): bump rust-overlay so the 1.96.1 toolchain resolves
+      #15004 open 2025-02-04 Shell creation fails on "I/O error: Permission denied (os error 13)"
+      #16510 open 2025-08-26 `--help` flag of wrapped and `extern` commands take priority over external `--help` flag
+      #8553 open 2023-03-21 panick because of `SqliteFailure` and `DatabaseCorrupt`
+      #15152 open 2025-02-21 `open` auto-convert with whole filename
+      #9281 open 2023-05-24 Allow remote imports
+      #9417 open 2023-06-12 Off-by-One Access in engine_state.rs?
+      #16075 open 2025-06-30 Command completions: Match by component, respect exact matches
+      #18297 open 2026-05-27 Nushell 1.0
+  write+failure  62 hit(s) (all listed)
+      #9287 open 2023-05-25 Nushell does not start in read-only file system
+      #15624 open 2025-04-23 Porting `printf`
+      #10624 open 2023-10-06 Inconsistent error handling
+      #18850 closed 2026-08-17 `nu --help` prints ansi escape sequence even when stdout is not tty
+      #18738 merged 2026-07-26 Add a `nu-dap` crate and `nu --dap`: a Debug Adapter Protocol server for Nushell
+      #18387 merged 2026-06-10 http: use the response body for the error message
+      #18216 merged 2026-05-16 Fix running tests for only `nu-cli`
+      #18613 closed 2026-07-15 Allow a background job to update the prompt while the line editor is active
+      #15091 closed 2025-02-11 `http` commands should include the response body in errors
+      #18688 merged 2026-07-22 build(deps): bump actions/setup-python from 6 to 7
+      #17581 merged 2026-02-18 fix: use write_all instead of eprintln! to avoid double-panic on stderr teardown
+      #17506 merged 2026-02-06 fix: pin libc and interprocess to fix cross-platform build failures
+      #17728 merged 2026-03-05 Add testbin "bins" to nushell help
+      #18219 merged 2026-05-16 add support for kdl format
+      #14546 closed 2024-12-09 Feature-PWD-per-drive 2.0
+      #17770 closed 2026-03-11 build(deps): bump the uutils group with 8 updates
+      #17543 closed 2026-02-11 build(deps): bump the uutils group with 8 updates
+      #17484 closed 2026-02-04 build(deps): bump the uutils group with 8 updates
+      #16079 merged 2025-07-01 fix(engine, type-system)!: enforce assignment type annotations at runtime
+      #16196 merged 2025-07-17 Add `-h/--help` flag to testbin
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10027 open 2023-08-16 `open --raw` with multiple files splits contents into chunks of 8KB
+      #18777 open 2026-08-03 Improve `format pattern` errors
+      #11734 open 2024-02-04 source inside a script will not be executed at the second run
+      #10546 open 2023-09-29 Parse password-encrypted excel files
+      #16537 open 2025-08-28 Confusing error can occur when trying to rename a custom command with a parse error present
+      #12599 open 2024-04-20 Bug in `save` under certain circumstances
+      #9133 open 2023-05-08 directory module behaves inconsistently with `main` command
+      #11824 open 2024-02-10 Contain internal commands in subcommand
+      #14306 open 2024-11-11 Implement `cp -l` flag to create hardlinks in a file heirarchy
+      #11062 open 2023-11-15 When opened a non-UTF-8 file, the UTF-8 file cannot be open
+      #7703 open 2023-01-07 Windows Terminal: Nushell crashes when running `open` to open a non-UTF-8 text file
+      #10454 open 2023-09-21 `save` closed pipe before stream end
+      #11254 open 2023-12-07 Unclosed string breaks `overlay use`
+      #10100 open 2023-08-23 config: history files should be stored in $XDG_STATE_HOME
+      #11801 open 2024-02-08 Module declaration conflicts?
+      #13322 open 2024-07-08 `cp` globbing resolves hidden files that `ls` does not
+      #16388 open 2025-08-08 Nushell hangs on filename with Unicode character and uses lots of RAM
+      #14412 open 2024-11-22 use of std log functionality in 0.99 and 0.100 version of nushell is broken
+      #13717 open 2024-08-28 cp -r behaves differently when target_dir is empty or not
+      #15085 open 2025-02-11 `ls -s other-directory` wrong colors for directories
+
+== 51 terms run; 47 returned hits, 15 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

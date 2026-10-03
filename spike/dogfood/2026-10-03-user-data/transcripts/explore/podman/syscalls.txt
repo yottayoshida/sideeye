@@ -1,0 +1,13 @@
+PASS  7/7 explored worlds satisfied the built-in atomicity invariant
+      explored 7 worlds (crash points 6 + 1 baseline)
+      expected status: 0
+      atomicity: 3 path(s) judged pre-or-post
+      oracle: agreed on 6 operations (633 syscall lines examined, 57 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+      metadata: 1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process in the recording; a thread was created in an explored world; the shim recorded 8 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+      not tested: power loss, torn writes, concurrent processes
+      cwd: /s/podman
+sideeye: json sha256=ac5c434f4431dfec1a89f3fb7a8bfe140b3b18ee883ceee6b1c90df85941ed9e;

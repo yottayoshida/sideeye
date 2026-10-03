@@ -1,0 +1,13 @@
+PASS  5/5 explored worlds satisfied the built-in atomicity invariant
+      explored 5 worlds (crash points 4 + 1 baseline)
+      expected status: 0
+      atomicity: 0 path(s) judged pre-or-post
+      oracle: agreed on 4 operations (109 syscall lines examined, 27 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+      cwd: /s/bzip3
+sideeye: json sha256=f372da74930cc4c1c21f78341a1cd8e6759ad395eeab5010548ac8ce8afe0512;

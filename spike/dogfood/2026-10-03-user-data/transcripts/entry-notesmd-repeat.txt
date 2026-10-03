@@ -1,0 +1,3 @@
+ROW notesmd static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations
+ROW notesmd static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+ROW notesmd static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations

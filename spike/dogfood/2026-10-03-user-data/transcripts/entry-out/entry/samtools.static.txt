@@ -1,0 +1,2 @@
+static: /usr/local/bin/samtools: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=1929f1bae0c708c33cc14c758194e33273e40e59, for GNU/Linux 3.7.0, with debug_info, not stripped
+next: sideeye explore --state /s/samtools --cwd "/s/samtools-in" --operation "samtools reheader -i /s/samtools-in/new.hdr /s/samtools/a.cram" \

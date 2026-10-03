@@ -1,0 +1,6 @@
+[world]
+state = "/s/perl"
+
+[define]
+operation = "perl -i -pe s/foo/bar/ a.txt b.txt"
+cwd       = "/s/perl"

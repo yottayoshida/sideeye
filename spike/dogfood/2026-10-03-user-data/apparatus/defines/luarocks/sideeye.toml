@@ -1,0 +1,6 @@
+[world]
+state = "/s/luarocks"
+
+[define]
+operation = "luarocks config --scope user rocks_trees.1.root /s/luarocks/tree"
+cwd       = "/s/luarocks"

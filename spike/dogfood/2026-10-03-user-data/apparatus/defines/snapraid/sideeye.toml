@@ -1,0 +1,6 @@
+[world]
+state = "/s/snapraid"
+
+[define]
+operation = "snapraid -c /s/snapraid-in/snapraid.conf sync"
+cwd       = "/s/snapraid-in"
