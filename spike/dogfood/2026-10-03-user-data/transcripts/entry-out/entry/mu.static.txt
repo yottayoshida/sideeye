@@ -1,0 +1,2 @@
+static: /usr/bin/mu: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=97401d768b54542650c9ffc7528ac7f8364b6b8f, for GNU/Linux 3.7.0, stripped
+next: pin or relocate what differs, then re-run this command;

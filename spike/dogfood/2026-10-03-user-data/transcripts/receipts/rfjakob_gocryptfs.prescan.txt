@@ -1,0 +1,550 @@
+== novelty pre-scan: rfjakob/gocryptfs
+== date: 2026-10-03T03:28:40Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          33 hit(s) (all listed)
+      #1033 closed 2026-09-01 Directory corruption after fsync on directory containing subdirectory if system crashes
+      #765 open 2023-07-16 Feature: support overlayfs on top of a gocryptfs mount
+      #373 open 2019-03-11 Mac: Folder Icons "icon?" leads to error
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #1031 closed 2026-08-26 Slab memory leak after repeatedly creating and removing directories (>10 MB/min under high load)
+      #429 closed 2019-10-18 Cannot delete corrupted directory
+      #887 closed 2025-01-01 Question: crash safety of gocryptfs?
+      #893 closed 2025-01-19 mariadb crashing since 2.5.0
+      #880 closed 2024-11-19 Crashes at GocryptfsVolume_native_1list_1dir+64
+      #929 closed 2025-06-15 git test suite t9300-fast-import.sh failure
+      #56 closed 2016-10-26 Panic in xfstests generic/075
+      #15 closed 2016-01-04 Mac OS X support
+      #869 closed 2024-09-10 Feature Request: Encrypt file in-place
+      #815 closed 2023-12-29 Fedora Silverblue deletig folder content!
+      #789 closed 2023-09-15 `gocryptfs -speed` panics on go1.21
+      #430 closed 2019-10-18 go-fuse: Unimplemented opcode POLL
+      #561 closed 2021-04-06 QA: Mount Reverse with ability to choose between encrypted and plaintext names?
+      #145 closed 2017-10-17 Panic on readling some file.
+      #52 closed 2016-10-22 Feature request: Splitt encrypted files into configurable chunks
+      #48 closed 2016-10-15 gocryptfs keeps crashing
+  corrupt        69 hit(s) (all listed)
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #532 open 2020-12-11 CIFS/SMB: Read error due to assumed corrupt block with all-zero nonce
+      #873 open 2024-10-18 Feature request: optional added file extension in -plaintextnames mode
+      #1024 closed 2026-08-11 Truncating file after writing at least 4096 bytes results in corrupt block and I/O error
+      #948 open 2025-07-19 Feature: Option to pass-through Xattrs (like "com.dropbox.ignored") to the cipher file
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #1029 closed 2026-08-17 fusefrontend: take ContentLock for truncate through node.Setattr
+      #1033 closed 2026-09-01 Directory corruption after fsync on directory containing subdirectory if system crashes
+      #429 closed 2019-10-18 Cannot delete corrupted directory
+      #1010 closed 2026-05-30 corrupt block #0: cipher: message authentication failed
+      #990 closed 2026-01-18 When using reserve mode, what happens during backup decryption if --deterministic-names is not used and gocryptfs.diriv is corrupted during storage?
+      #961 closed 2025-09-22 Corrupt extended attributes?
+      #993 closed 2026-01-29 macOS copy error
+      #971 closed 2025-11-01 gocryptfs problem with  Elasticsearch 5.x storage
+      #972 closed 2025-11-02 [samba] gocryptfs v2.4.0 did not correctly delete 17'000 small files
+      #960 closed 2025-09-09 All files gone
+      #951 closed 2025-07-23 cipherSize 30: incomplete last block after upgrade to 2.6.0
+      #905 closed 2025-04-05 invalid entry -  bad message - padding too long
+      #929 closed 2025-06-15 git test suite t9300-fast-import.sh failure
+      #887 closed 2025-01-01 Question: crash safety of gocryptfs?
+  corruption     28 hit(s) (all listed)
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #1033 closed 2026-09-01 Directory corruption after fsync on directory containing subdirectory if system crashes
+      #812 open 2023-12-08 Test failures on Fedora 39: TestFileHoleCopy, TestAccessVirtualDirIV
+      #959 open 2025-09-08 documentation: specify mount guarantees when mounting the same cipherdir to multiple locations
+      #39 open 2016-09-27 Feature Request: Propagate File Locks to the Backing Files
+      #373 open 2019-03-11 Mac: Folder Icons "icon?" leads to error
+      #1027 closed 2026-08-15 fusefrontend: reuse readdir names for READDIRPLUS
+      #532 open 2020-12-11 CIFS/SMB: Read error due to assumed corrupt block with all-zero nonce
+      #429 closed 2019-10-18 Cannot delete corrupted directory
+      #770 closed 2023-07-17 Protect file content, metadata and directory structure from malicious modifications
+      #905 closed 2025-04-05 invalid entry -  bad message - padding too long
+      #887 closed 2025-01-01 Question: crash safety of gocryptfs?
+      #837 closed 2024-04-03 question regarding GOCRYPTFS_BAD_NAME behavior in case of file content corruption
+      #841 closed 2024-04-17 REPRODUCIBLE: gocryptfs reverse generating files that gocryptfs can't decrypt?
+      #862 closed 2024-08-16 poor write performance over cifs
+      #257 closed 2018-08-16 Opportunistic compression?
+      #19 closed 2016-03-14 Feature Request: Reverse Mode
+      #483 closed 2020-05-23 CIFS throws EINTR and ENOENT errors
+      #191 closed 2018-01-07 [Feature Request] Add the ability to check and fix the errors in gocryptfs file system
+      #549 closed 2021-02-25 Corrupt files and folder when gocryptfs cipherdir is synchronised via Syncthing
+  truncated      14 hit(s) (all listed)
+      #1021 merged 2026-07-20 build(deps): bump actions/setup-go from 6 to 7
+      #1015 merged 2026-06-22 build(deps): bump actions/checkout from 6 to 7
+      #966 closed 2025-10-03 Endless loading when samba 3.6.25 reads a large gocryptfs folder
+      #961 closed 2025-09-22 Corrupt extended attributes?
+      #979 merged 2025-11-24 build(deps): bump actions/checkout from 5 to 6
+      #969 merged 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #956 merged 2025-08-26 build(deps): bump actions/checkout from 4 to 5
+      #958 merged 2025-09-08 build(deps): bump actions/setup-go from 5 to 6
+      #942 merged 2025-07-16 build(deps): bump actions/checkout from 3 to 4
+      #943 merged 2025-07-16 build(deps): bump actions/setup-go from 3 to 5
+      #929 closed 2025-06-15 git test suite t9300-fast-import.sh failure
+      #56 closed 2016-10-26 Panic in xfstests generic/075
+      #550 closed 2021-03-07 Data lost when root file system is full
+      #304 closed 2018-12-31 fsck logic to skip holes mixes up ciphertext and plaintext offsets
+  truncate       30 hit(s) (all listed)
+      #1029 closed 2026-08-17 fusefrontend: take ContentLock for truncate through node.Setattr
+      #1024 closed 2026-08-11 Truncating file after writing at least 4096 bytes results in corrupt block and I/O error
+      #1021 merged 2026-07-20 build(deps): bump actions/setup-go from 6 to 7
+      #1015 merged 2026-06-22 build(deps): bump actions/checkout from 6 to 7
+      #998 closed 2026-02-13 FreeBSD support
+      #966 closed 2025-10-03 Endless loading when samba 3.6.25 reads a large gocryptfs folder
+      #961 closed 2025-09-22 Corrupt extended attributes?
+      #979 merged 2025-11-24 build(deps): bump actions/checkout from 5 to 6
+      #914 closed 2025-05-12 MacOS: Apps complain they cannot save existing documents starting with v2.5.0
+      #969 merged 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #956 merged 2025-08-26 build(deps): bump actions/checkout from 4 to 5
+      #958 merged 2025-09-08 build(deps): bump actions/setup-go from 5 to 6
+      #942 merged 2025-07-16 build(deps): bump actions/checkout from 3 to 4
+      #56 closed 2016-10-26 Panic in xfstests generic/075
+      #943 merged 2025-07-16 build(deps): bump actions/setup-go from 3 to 5
+      #929 closed 2025-06-15 git test suite t9300-fast-import.sh failure
+      #15 closed 2016-01-04 Mac OS X support
+      #19 closed 2016-03-14 Feature Request: Reverse Mode
+      #736 closed 2023-05-03 ecryptfs: git clone + build: undefined
+      #550 closed 2021-03-07 Data lost when root file system is full
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #708 open 2023-01-09 macOS: rm: cannot remove 'foo': Directory not empty
+      #806 open 2023-11-18 macos: can't remove empty directory, ._gocryptfs.diriv problem
+      #373 open 2019-03-11 Mac: Folder Icons "icon?" leads to error
+      #928 open 2025-06-13 git test suite t7063-status-untracked-cache.sh failure
+      #665 open 2022-06-23 Migration path to deterministic file name version
+      #1031 closed 2026-08-26 Slab memory leak after repeatedly creating and removing directories (>10 MB/min under high load)
+      #1027 closed 2026-08-15 fusefrontend: reuse readdir names for READDIRPLUS
+      #556 open 2021-03-25 gocryptfs on macOS BigSur, Apple M1
+      #1023 closed 2026-08-10 Descriptor opened with `O_SYNC` flag cannot be used for write operations if file was unlinked
+      #361 open 2019-02-02 support lightweight copy (e.g. CoW in Btrfs)
+      #1024 closed 2026-08-11 Truncating file after writing at least 4096 bytes results in corrupt block and I/O error
+      #108 open 2017-05-21 Feature Request: Fully-deterministic AES-SIV mode
+      #357 closed 2019-01-21 mount point must be empty?
+      #868 closed 2024-09-10 Feature Request: Show `btime`
+      #1026 closed 2026-08-15 Directory listings are much slower than the backing store
+      #429 closed 2019-10-18 Cannot delete corrupted directory
+      #1016 closed 2026-06-22 Allow a 2-in-1 -init ... -mount command line
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #451 closed 2020-02-01 Root cannot change file ownership
+      #790 closed 2023-09-19 TestDirectMount, TestForceOwner fail: fusermount requires user_allow_other in fuse.conf
+  atomic         11 hit(s) (all listed)
+      #965 open 2025-09-28 arm64: extremely low performance in `reverse` mode
+      #950 closed 2025-07-20 Fix macos file saving problem by implementing RENAME_EXCHANGE flag
+      #912 closed 2025-05-05 gocryptfs no longer builds on 32-bit
+      #998 closed 2026-02-13 FreeBSD support
+      #892 closed 2025-01-17 [Debian gocryptfs 2.3-1] Intermittent "Operation not permitted" errors when rsync'ing to a gocryptfs mount
+      #887 closed 2025-01-01 Question: crash safety of gocryptfs?
+      #697 closed 2022-10-26 Request: if run as uid 0 in unpriv userns, use mount instead of fusermount
+      #585 closed 2021-07-27 macOS uses inode number 1 on exFAT
+      #528 closed 2020-11-30 Allow limiting file size in crypt dir
+      #52 closed 2016-10-22 Feature request: Splitt encrypted files into configurable chunks
+      #265 closed 2018-10-06 Added option for autounmount
+  atomically     1 hit(s) (all listed)
+      #998 closed 2026-02-13 FreeBSD support
+  interrupted    10 hit(s) (all listed)
+      #1027 closed 2026-08-15 fusefrontend: reuse readdir names for READDIRPLUS
+      #993 closed 2026-01-29 macOS copy error
+      #776 closed 2023-07-31 `ctlsock: bind: address already in use` after interrupted password input
+      #483 closed 2020-05-23 CIFS throws EINTR and ENOENT errors
+      #607 closed 2021-09-27 Command to "upgrade" the algorithm of existing cipher directory
+      #577 closed 2021-06-09 fsck: unPad16 error: Padding too long
+      #507 closed 2020-09-14 fsstress on CIFS is unhappy
+      #459 closed 2020-03-08 lazy unmount fails to finish
+      #268 closed 2018-10-12 fsck direct file fix
+      #269 closed 2018-10-12 fsck autofix
+  interrupt      18 hit(s) (all listed)
+      #1027 closed 2026-08-15 fusefrontend: reuse readdir names for READDIRPLUS
+      #620 open 2021-11-22 rclone vfs - cache cleanup leads to error "Device not configured (os error 6)"
+      #993 closed 2026-01-29 macOS copy error
+      #62 closed 2016-11-12 Add support for reflinks under linux
+      #776 closed 2023-07-31 `ctlsock: bind: address already in use` after interrupted password input
+      #862 closed 2024-08-16 poor write performance over cifs
+      #742 closed 2023-05-16 Phenomenally slow write performace (< 2MB/sec) on MooseFS
+      #483 closed 2020-05-23 CIFS throws EINTR and ENOENT errors
+      #607 closed 2021-09-27 Command to "upgrade" the algorithm of existing cipher directory
+      #578 closed 2021-06-13 writer: Write/Writev failed, err: 2=no such file or directory. opcode: INTERRUPT
+      #577 closed 2021-06-09 fsck: unPad16 error: Padding too long
+      #430 closed 2019-10-18 go-fuse: Unimplemented opcode POLL
+      #507 closed 2020-09-14 fsstress on CIFS is unhappy
+      #459 closed 2020-03-08 lazy unmount fails to finish
+      #322 closed 2019-01-05 xfstests generic/273 failure
+      #268 closed 2018-10-12 fsck direct file fix
+      #269 closed 2018-10-12 fsck autofix
+      #458 closed 2020-03-08 fuse_request_end: kernel tried to execute NX-protected page
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #776 closed 2023-07-31 `ctlsock: bind: address already in use` after interrupted password input
+  ctrl-c         4 hit(s) (all listed)
+      #15 closed 2016-01-04 Mac OS X support
+      #776 closed 2023-07-31 `ctlsock: bind: address already in use` after interrupted password input
+      #742 closed 2023-05-16 Phenomenally slow write performace (< 2MB/sec) on MooseFS
+      #213 closed 2018-02-20 macOS (Error code -36) while copying
+  power          14 hit(s) (all listed)
+      #1033 closed 2026-09-01 Directory corruption after fsync on directory containing subdirectory if system crashes
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #429 closed 2019-10-18 Cannot delete corrupted directory
+      #908 closed 2025-04-12 Cannot open my encrypted folders: v2 microarchitecture support
+      #887 closed 2025-01-01 Question: crash safety of gocryptfs?
+      #869 closed 2024-09-10 Feature Request: Encrypt file in-place
+      #600 closed 2021-09-09 Files emptied after power loss
+      #562 closed 2021-04-14 DIRECT_IO not supported
+      #452 closed 2020-02-06 Feature Request: encryption primitives for devices without AES cpu instructions
+      #273 closed 2018-11-09 exclude in reverse-mode with regex
+      #237 closed 2018-05-24 https://nuetzlich.net/gocryptfs site is down?
+      #445 closed 2020-01-02 How robust is this tool?
+      #500 closed 2020-09-02 Reverse-engineering the password is IN the encrypted directory.
+      #94 merged 2017-03-25 Further explain the use of 'scryptn' parameter
+  outage         1 hit(s) (all listed)
+      #429 closed 2019-10-18 Cannot delete corrupted directory
+  ENOSPC         2 hit(s) (all listed)
+      #395 closed 2019-04-17 "No space left" errors on Btrfs
+      #550 closed 2021-03-07 Data lost when root file system is full
+  disk           74 hit(s) (all listed)
+      #618 open 2021-10-30 Discrepancy between speed test and real-world speeds when running locally
+      #766 open 2023-07-16 Changing a password doesn't make any sense for seciurity
+      #812 open 2023-12-08 Test failures on Fedora 39: TestFileHoleCopy, TestAccessVirtualDirIV
+      #1025 closed 2026-08-13 Feature request: Transparent compression
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #1027 closed 2026-08-15 fusefrontend: reuse readdir names for READDIRPLUS
+      #1022 closed 2026-07-21 fusefrontend: expose birth time via statx
+      #158 open 2017-11-15 Feature Request: Reverse mode without deterministic initialization vectors
+      #556 open 2021-03-25 gocryptfs on macOS BigSur, Apple M1
+      #23 closed 2016-05-08 Go crypto faster than OpenSSL on AES-NI systems
+      #1006 closed 2026-05-04 Feature Request: Ability to save/restore session
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #429 closed 2019-10-18 Cannot delete corrupted directory
+      #949 closed 2025-07-20 Fix macos filename encoding
+      #395 closed 2019-04-17 "No space left" errors on Btrfs
+      #850 closed 2024-06-06 MacOS: Can't delete diacritically named files (NFC unicode form)
+      #817 closed 2024-01-14 Feature request: export files directly to disk (without FUSE mount)
+      #936 closed 2025-07-12 Fix macos filename encoding (obsolete PR) 
+      #951 closed 2025-07-23 cipherSize 30: incomplete last block after upgrade to 2.6.0
+      #62 closed 2016-11-12 Add support for reflinks under linux
+  partial        7 hit(s) (all listed)
+      #158 open 2017-11-15 Feature Request: Reverse mode without deterministic initialization vectors
+      #850 closed 2024-06-06 MacOS: Can't delete diacritically named files (NFC unicode form)
+      #942 merged 2025-07-16 build(deps): bump actions/checkout from 3 to 4
+      #15 closed 2016-01-04 Mac OS X support
+      #156 closed 2017-11-09 Failures using gocryptfs-on-NFS as ElasticSearch snapshot store
+      #71 closed 2017-01-09 ACD (Amazon Cloud Drive) with rclone mount does not work
+      #311 closed 2019-01-03 Allocate FUSE call reserves 18 bytes too much disk space
+  incomplete     12 hit(s) (all listed)
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #951 closed 2025-07-23 cipherSize 30: incomplete last block after upgrade to 2.6.0
+      #892 closed 2025-01-17 [Debian gocryptfs 2.3-1] Intermittent "Operation not permitted" errors when rsync'ing to a gocryptfs mount
+      #215 closed 2018-03-04 fuse / inotify support incomplete
+      #600 closed 2021-09-09 Files emptied after power loss
+      #542 closed 2021-01-27 ACLs not working in allow_other mode?
+      #22 closed 2016-04-19 prealloc failed: operation not supported
+      #194 closed 2018-01-12 Enable mounting to "/Volumes" on macOS
+      #219 closed 2018-03-20 Decryption not possible on different device
+      #356 closed 2019-01-18 -ctlsock: Buffer size not restored on JSON unmarshal error
+      #198 closed 2018-01-27 added usage of reverse mode to README
+      #301 merged 2018-12-29 nametransform: Delete incomplete longname files on error.
+  dataloss       0 hit(s)
+  recover        36 hit(s) (all listed)
+      #1011 open 2026-05-30 Feature: gocryptfs-xray -decrypt-paths / -encrypt-paths of names that don't currently exist
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #961 closed 2025-09-22 Corrupt extended attributes?
+      #998 closed 2026-02-13 FreeBSD support
+      #753 closed 2023-06-03 Decrypt filenames from reverse mount without gocryptfs.diriv
+      #456 closed 2020-03-01 recover from missing or corrupt  gocryptfs.diriv
+      #846 closed 2024-05-16 Logger keeps from umounting: target is busy.
+      #816 closed 2024-01-10 I can't access the contents of my encrypted files
+      #841 closed 2024-04-17 REPRODUCIBLE: gocryptfs reverse generating files that gocryptfs can't decrypt?
+      #671 closed 2022-07-10 Folder is empty after mounted.
+      #600 closed 2021-09-09 Files emptied after power loss
+      #191 closed 2018-01-07 [Feature Request] Add the ability to check and fix the errors in gocryptfs file system
+      #151 closed 2017-11-01 directory iv may be lost when using cloud sync apps
+      #577 closed 2021-06-09 fsck: unPad16 error: Padding too long
+      #546 closed 2021-02-09 Failed to unmarshal config file
+      #538 closed 2021-01-04 "invalid entry, bad message" when trying to open a folder
+      #52 closed 2016-10-22 Feature request: Splitt encrypted files into configurable chunks
+      #138 closed 2017-08-20 What happens if gocryptfs.diriv is deleted or corrupt?
+      #58 closed 2016-11-04 gocryptfs.diriv what is this 
+  recovery       24 hit(s) (all listed)
+      #948 open 2025-07-19 Feature: Option to pass-through Xattrs (like "com.dropbox.ignored") to the cipher file
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #572 open 2021-06-05 Feature request : support for multiple fido2 devices 
+      #914 closed 2025-05-12 MacOS: Apps complain they cannot save existing documents starting with v2.5.0
+      #182 closed 2017-12-05 Docker / Alpine support?
+      #841 closed 2024-04-17 REPRODUCIBLE: gocryptfs reverse generating files that gocryptfs can't decrypt?
+      #456 closed 2020-03-01 recover from missing or corrupt  gocryptfs.diriv
+      #781 closed 2023-08-24 Safest way to change password for volume
+      #706 closed 2023-01-06 gocryptfs -init returned 'fatal error: runtime: out of memory' when using '-scryptn' option with values 24 and above
+      #191 closed 2018-01-07 [Feature Request] Add the ability to check and fix the errors in gocryptfs file system
+      #604 closed 2021-09-16 decrypt using the masterkey is not showing up the files
+      #491 closed 2020-07-30 Error: "cp: preserving permissions for ‘....’: Permission denied"
+      #559 closed 2021-03-26 Include the --dumpmasterkey option into gocryptfs instead of gocryptfs-xray
+      #45 closed 2016-10-09 mount using /etc/fstab
+      #152 closed 2017-11-05 Is decoding for the xray tool still planned?
+      #135 closed 2017-08-04 Read password from stdin
+      #262 closed 2018-09-18 Compatibility issues with gvfs mountpoints
+      #261 closed 2018-09-06 Trezor does not work
+      #208 closed 2018-02-08 Recovery from corrupt block
+      #359 closed 2019-01-26 Encryted garbage with sudo
+  rollback       3 hit(s) (all listed)
+      #337 closed 2019-01-10 Rmdir does not preserve SUID/SGID/sticky bits
+      #411 closed 2019-08-14 Permission denied errors on vboxsf
+      #9 closed 2015-12-09 disable new filename encryption (diriv)
+  resume         9 hit(s) (all listed)
+      #916 open 2025-05-22 Idle time possibly being reset when machine is suspended
+      #764 open 2023-07-04 [Performance] Very slow performance when run gocryptfs over CIFS/SSHFS
+      #877 closed 2024-11-16 gocryptfs is unable to follow symlinks present on another fuse mount
+      #647 closed 2022-03-20 Prevent writing to mountpoint if it is not mounted by gocryptfs
+      #630 closed 2022-01-02 Unable to write regular files in gocryptfs folder mounted via FTP
+      #607 closed 2021-09-27 Command to "upgrade" the algorithm of existing cipher directory
+      #459 closed 2020-03-08 lazy unmount fails to finish
+      #262 closed 2018-09-18 Compatibility issues with gvfs mountpoints
+      #312 closed 2019-01-03 rsync: readdir: Invalid argument (22) in reverse mode with rsync --force
+  half-written   5 hit(s) (all listed)
+      #395 closed 2019-04-17 "No space left" errors on Btrfs
+      #17 closed 2016-01-05 Revert GCM to 96 bit nonces
+      #712 closed 2023-02-12 Slow write speed with nfs
+      #452 closed 2020-02-06 Feature Request: encryption primitives for devices without AES cpu instructions
+      #112 closed 2017-05-25 ReadDirIVAt: wanted 16 bytes, got 0. Returning EINVAL. OpenDir: invalid argument
+  wipe           12 hit(s) (all listed)
+      #620 open 2021-11-22 rclone vfs - cache cleanup leads to error "Device not configured (os error 6)"
+      #1016 closed 2026-06-22 Allow a 2-in-1 -init ... -mount command line
+      #556 open 2021-03-25 gocryptfs on macOS BigSur, Apple M1
+      #892 closed 2025-01-17 [Debian gocryptfs 2.3-1] Intermittent "Operation not permitted" errors when rsync'ing to a gocryptfs mount
+      #585 closed 2021-07-27 macOS uses inode number 1 on exFAT
+      #222 closed 2018-03-30 Question: Why AES-GCM instead of AES-CTR + HMAC?
+      #211 closed 2018-02-13 Insufficient protection of secret information?
+      #213 closed 2018-02-20 macOS (Error code -36) while copying
+      #358 closed 2019-01-23 Unexpected directory unmount after 3-10 seconds | Netdata.io incompatibility?
+      #434 closed 2019-11-03 stickybit and multiple groups behaviour : wrong File ownership with v1.6.1 and file creation impossible with v1.7-2
+      #292 merged 2018-12-26 configfile: Explicitly wipe scrypt derived key after decrypting/encrypting master key.
+      #243 closed 2018-06-07 Added support of (open)hardware cryptographic module "Trezor One"
+  wipes          1 hit(s) (all listed)
+      #222 closed 2018-03-30 Question: Why AES-GCM instead of AES-CTR + HMAC?
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        6 hit(s) (all listed)
+      #620 open 2021-11-22 rclone vfs - cache cleanup leads to error "Device not configured (os error 6)"
+      #1016 closed 2026-06-22 Allow a 2-in-1 -init ... -mount command line
+      #908 closed 2025-04-12 Cannot open my encrypted folders: v2 microarchitecture support
+      #456 closed 2020-03-01 recover from missing or corrupt  gocryptfs.diriv
+      #19 closed 2016-03-14 Feature Request: Reverse Mode
+      #90 closed 2017-03-11 defuse.ca Security Audit Results
+  destroys       0 hit(s)
+  overwrite      30 hit(s) (all listed)
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #108 open 2017-05-21 Feature Request: Fully-deterministic AES-SIV mode
+      #1018 merged 2026-07-10 build(deps): bump golang.org/x/crypto from 0.45.0 to 0.52.0
+      #1021 merged 2026-07-20 build(deps): bump actions/setup-go from 6 to 7
+      #1015 merged 2026-06-22 build(deps): bump actions/checkout from 6 to 7
+      #1001 merged 2026-03-02 build(deps): bump actions/upload-artifact from 6 to 7
+      #954 closed 2025-08-11 Document could not be saved on Mac with gocryptfs volume
+      #975 closed 2025-11-20 build(deps): bump golang.org/x/crypto from 0.33.0 to 0.45.0
+      #983 merged 2025-12-15 build(deps): bump actions/upload-artifact from 5 to 6
+      #979 merged 2025-11-24 build(deps): bump actions/checkout from 5 to 6
+      #969 merged 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #958 merged 2025-09-08 build(deps): bump actions/setup-go from 5 to 6
+      #909 closed 2025-04-15 build(deps): bump golang.org/x/crypto from 0.33.0 to 0.35.0
+      #956 merged 2025-08-26 build(deps): bump actions/checkout from 4 to 5
+      #943 merged 2025-07-16 build(deps): bump actions/setup-go from 3 to 5
+      #942 merged 2025-07-16 build(deps): bump actions/checkout from 3 to 4
+      #883 closed 2024-12-11 build(deps): bump golang.org/x/crypto from 0.18.0 to 0.31.0
+      #781 closed 2023-08-24 Safest way to change password for volume
+      #813 closed 2023-12-18 build(deps): bump golang.org/x/crypto from 0.14.0 to 0.17.0
+      #715 closed 2023-03-07 build(deps): bump golang.org/x/crypto from 0.0.0-20210817164053-32db794688a5 to 0.1.0
+  clobber        1 hit(s) (all listed)
+      #813 closed 2023-12-18 build(deps): bump golang.org/x/crypto from 0.14.0 to 0.17.0
+  blank          5 hit(s) (all listed)
+      #1000 open 2026-02-28 Feature Request: Ordered Include/Exclude Filter Rules for Reverse Mode (`-filter-from`)
+      #995 closed 2026-02-07 O symlink
+      #926 closed 2025-06-05 Issues building on Ubuntu-24.04 - build-without-openssl.bash: error: compiled binary is not static
+      #929 closed 2025-06-15 git test suite t9300-fast-import.sh failure
+      #648 merged 2022-03-31 Fix reverse gocryptfs.conf access on macOS
+  unreadable     4 hit(s) (all listed)
+      #538 closed 2021-01-04 "invalid entry, bad message" when trying to open a folder
+      #22 closed 2016-04-19 prealloc failed: operation not supported
+      #63 closed 2016-11-19 on btrfs, gocryptfs is significantly slower than encfs
+      #490 closed 2020-07-20 Possible Master Key Issue / Caching?
+  garbage        18 hit(s) (all listed)
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #961 closed 2025-09-22 Corrupt extended attributes?
+      #929 closed 2025-06-15 git test suite t9300-fast-import.sh failure
+      #852 closed 2024-06-07 Empty stdin in mkinitcpio hook
+      #287 closed 2018-12-18 Passfile and Extpass is used as both old and new password when changing password
+      #736 closed 2023-05-03 ecryptfs: git clone + build: undefined
+      #577 closed 2021-06-09 fsck: unPad16 error: Padding too long
+      #92 closed 2017-03-15 Poor read performance with network backend
+      #538 closed 2021-01-04 "invalid entry, bad message" when trying to open a folder
+      #127 closed 2017-07-15 DirIV cache is too inefficient in some cases
+      #238 closed 2018-05-26 unstable with ocamlfuse?
+      #116 closed 2017-06-01 Performance issues - multi core?
+      #211 closed 2018-02-13 Insufficient protection of secret information?
+      #213 closed 2018-02-20 macOS (Error code -36) while copying
+      #359 closed 2019-01-26 Encryted garbage with sudo
+      #391 closed 2019-04-08 Error when using gocryptfs from bash_profile
+      #234 closed 2018-05-07 xattr: removed base64-encoding of values
+      #413 closed 2019-08-28 Make one timer rather than a timer each iteration.
+  mangled        0 hit(s)
+  contents       59 hit(s) (all listed)
+      #1011 open 2026-05-30 Feature: gocryptfs-xray -decrypt-paths / -encrypt-paths of names that don't currently exist
+      #939 open 2025-07-15 feat: add -takeout, -list commands
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #556 open 2021-03-25 gocryptfs on macOS BigSur, Apple M1
+      #239 closed 2018-05-27 android/mobile version?
+      #1009 closed 2026-05-26 Reverse mode with --config does not create a plaintext config file
+      #357 closed 2019-01-21 mount point must be empty?
+      #993 closed 2026-01-29 macOS copy error
+      #968 closed 2025-10-12 Encrypt /home. Good idea?
+      #951 closed 2025-07-23 cipherSize 30: incomplete last block after upgrade to 2.6.0
+      #15 closed 2016-01-04 Mac OS X support
+      #877 closed 2024-11-16 gocryptfs is unable to follow symlinks present on another fuse mount
+      #603 closed 2021-09-16 File name length problem
+      #816 closed 2024-01-10 I can't access the contents of my encrypted files
+      #804 closed 2023-11-15 Protection against active adversaries, Mallory case
+      #845 closed 2024-05-14 Decrypt to folder
+      #837 closed 2024-04-03 question regarding GOCRYPTFS_BAD_NAME behavior in case of file content corruption
+      #815 closed 2023-12-29 Fedora Silverblue deletig folder content!
+      #456 closed 2020-03-01 recover from missing or corrupt  gocryptfs.diriv
+      #761 closed 2023-06-28 /etc/fstab entry for macos?
+  in-place       46 hit(s) (all listed)
+      #108 open 2017-05-21 Feature Request: Fully-deterministic AES-SIV mode
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #532 open 2020-12-11 CIFS/SMB: Read error due to assumed corrupt block with all-zero nonce
+      #556 open 2021-03-25 gocryptfs on macOS BigSur, Apple M1
+      #1009 closed 2026-05-26 Reverse mode with --config does not create a plaintext config file
+      #996 closed 2026-02-09 enable falloc on btrfs if CoW is disabled
+      #34 closed 2016-09-13 any libpam-gocryptfs
+      #7 closed 2015-11-02 decrypt just one file without having to download the entire folder?
+      #936 closed 2025-07-12 Fix macos filename encoding (obsolete PR) 
+      #15 closed 2016-01-04 Mac OS X support
+      #869 closed 2024-09-10 Feature Request: Encrypt file in-place
+      #865 closed 2024-09-01 Preserve birth date
+      #849 closed 2024-05-25 How may root check whether a Gocryptfs mount point exists (when in use)?
+      #845 closed 2024-05-14 Decrypt to folder
+      #456 closed 2020-03-01 recover from missing or corrupt  gocryptfs.diriv
+      #50 closed 2016-10-18 gocryptfs.conf in cloud
+      #663 closed 2022-06-03 How to setup gocryptfs systemd unit automatically without having to use a password file?
+      #585 closed 2021-07-27 macOS uses inode number 1 on exFAT
+      #156 closed 2017-11-09 Failures using gocryptfs-on-NFS as ElasticSearch snapshot store
+      #558 closed 2021-03-26 gocryptfs reverse on ZFS problem
+  unclean        1 hit(s) (all listed)
+      #1033 closed 2026-09-01 Directory corruption after fsync on directory containing subdirectory if system crashes
+  shutdown       3 hit(s) (all listed)
+      #1033 closed 2026-09-01 Directory corruption after fsync on directory containing subdirectory if system crashes
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #540 closed 2021-01-14 when docker image shutdown, mounted directly doesn't unmount properly, transport endpoint is not connected
+  reboot         16 hit(s) (all listed)
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #1006 closed 2026-05-04 Feature Request: Ability to save/restore session
+      #914 closed 2025-05-12 MacOS: Apps complain they cannot save existing documents starting with v2.5.0
+      #15 closed 2016-01-04 Mac OS X support
+      #893 closed 2025-01-19 mariadb crashing since 2.5.0
+      #649 closed 2022-04-01 file permissions unclear after upgrading debian
+      #492 closed 2020-08-03 pam_mount not automounting my encrypted folder on server reboot
+      #623 closed 2021-12-06 Broken tests on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #550 closed 2021-03-07 Data lost when root file system is full
+      #150 closed 2017-10-31 Reverse view mounted under the plaintext directory encrypts recursively
+      #139 closed 2017-08-24 MacOS: No Files in Listing of Cipher Directory in Reverse Mode
+      #385 closed 2019-03-26 gocryptfs.conf no such file or directory
+      #281 closed 2018-12-07 Question about automounting (passwordless)
+      #458 closed 2020-03-08 fuse_request_end: kernel tried to execute NX-protected page
+      #432 closed 2019-10-24 Logging corrections...
+  disk+full      12 hit(s) (all listed)
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #158 open 2017-11-15 Feature Request: Reverse mode without deterministic initialization vectors
+      #1027 closed 2026-08-15 fusefrontend: reuse readdir names for READDIRPLUS
+      #949 closed 2025-07-20 Fix macos filename encoding
+      #395 closed 2019-04-17 "No space left" errors on Btrfs
+      #936 closed 2025-07-12 Fix macos filename encoding (obsolete PR) 
+      #62 closed 2016-11-12 Add support for reflinks under linux
+      #15 closed 2016-01-04 Mac OS X support
+      #241 closed 2018-05-28 Best practices and intended use write up
+      #545 closed 2021-02-07 Qu: Performance comparison cryptographic file systems
+      #569 closed 2021-05-30 Far too high RSS memory consumption (memory leak?) with gocryptfs
+      #367 closed 2019-02-16 Support wildcards in reverse mode --exclude
+  data+loss      11 hit(s) (all listed)
+      #748 open 2023-05-20 [Question] Is there a way to use FIDO2 AND have a passwd as fallback?
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #373 open 2019-03-11 Mac: Folder Icons "icon?" leads to error
+      #1009 closed 2026-05-26 Reverse mode with --config does not create a plaintext config file
+      #905 closed 2025-04-05 invalid entry -  bad message - padding too long
+      #887 closed 2025-01-01 Question: crash safety of gocryptfs?
+      #456 closed 2020-03-01 recover from missing or corrupt  gocryptfs.diriv
+      #19 closed 2016-03-14 Feature Request: Reverse Mode
+      #589 closed 2021-08-01 Debian package is old
+      #195 closed 2018-01-17 Solution for Directory IV Poisoning
+      #445 closed 2020-01-02 How robust is this tool?
+  partial+write  5 hit(s) (all listed)
+      #158 open 2017-11-15 Feature Request: Reverse mode without deterministic initialization vectors
+      #15 closed 2016-01-04 Mac OS X support
+      #156 closed 2017-11-09 Failures using gocryptfs-on-NFS as ElasticSearch snapshot store
+      #71 closed 2017-01-09 ACD (Amazon Cloud Drive) with rclone mount does not work
+      #311 closed 2019-01-03 Allocate FUSE call reserves 18 bytes too much disk space
+  crash+safe     4 hit(s) (all listed)
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #15 closed 2016-01-04 Mac OS X support
+      #48 closed 2016-10-15 gocryptfs keeps crashing
+      #279 closed 2018-12-01 [newbie] gocryptfs could be mounted on cloud by 2 or more users simutaneously?
+  atomic+write   3 hit(s) (all listed)
+      #998 closed 2026-02-13 FreeBSD support
+      #892 closed 2025-01-17 [Debian gocryptfs 2.3-1] Intermittent "Operation not permitted" errors when rsync'ing to a gocryptfs mount
+      #697 closed 2022-10-26 Request: if run as uid 0 in unpriv userns, use mount instead of fusermount
+  lock+file      38 hit(s) (all listed)
+      #39 open 2016-09-27 Feature Request: Propagate File Locks to the Backing Files
+      #329 open 2019-01-06 Avoid possible race-conditions related to openWriteOnlyFile
+      #1029 closed 2026-08-17 fusefrontend: take ContentLock for truncate through node.Setattr
+      #158 open 2017-11-15 Feature Request: Reverse mode without deterministic initialization vectors
+      #263 open 2018-09-23 fsck: option to delete or repair corrupt files
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #754 closed 2023-06-05 Support for Parallel File Systems
+      #983 merged 2025-12-15 build(deps): bump actions/upload-artifact from 5 to 6
+      #15 closed 2016-01-04 Mac OS X support
+      #56 closed 2016-10-26 Panic in xfstests generic/075
+      #893 closed 2025-01-19 mariadb crashing since 2.5.0
+      #257 closed 2018-08-16 Opportunistic compression?
+      #712 closed 2023-02-12 Slow write speed with nfs
+      #566 closed 2021-05-02 pam_mount: Volume is not mounted at login time: password prompt never appears
+      #599 closed 2021-09-07 [Feature request] Exclude file creation against patterns in forward mode
+      #191 closed 2018-01-07 [Feature Request] Add the ability to check and fix the errors in gocryptfs file system
+      #156 closed 2017-11-09 Failures using gocryptfs-on-NFS as ElasticSearch snapshot store
+      #145 closed 2017-10-17 Panic on readling some file.
+      #184 closed 2017-12-07 reverse mode eats up file descriptors in a hurry
+      #177 closed 2017-11-26 Race-conditions related to PreserveOwner allow to set owner/group of arbitrary files when using plaintextnames
+  write+failure  12 hit(s) (all listed)
+      #1029 closed 2026-08-17 fusefrontend: take ContentLock for truncate through node.Setattr
+      #532 open 2020-12-11 CIFS/SMB: Read error due to assumed corrupt block with all-zero nonce
+      #998 closed 2026-02-13 FreeBSD support
+      #15 closed 2016-01-04 Mac OS X support
+      #600 closed 2021-09-09 Files emptied after power loss
+      #322 closed 2019-01-05 xfstests generic/273 failure
+      #112 closed 2017-05-25 ReadDirIVAt: wanted 16 bytes, got 0. Returning EINVAL. OpenDir: invalid argument
+      #134 closed 2017-08-03 encrypted (home)dir at login with gdm and SELinux
+      #262 closed 2018-09-18 Compatibility issues with gvfs mountpoints
+      #411 closed 2019-08-14 Permission denied errors on vboxsf
+      #275 closed 2018-11-19 gcfs: unable to access mount: No such file or directory
+      #500 closed 2020-09-02 Reverse-engineering the password is IN the encrypted directory.
+  file+contents  53 hit(s) (all listed)
+      #1011 open 2026-05-30 Feature: gocryptfs-xray -decrypt-paths / -encrypt-paths of names that don't currently exist
+      #939 open 2025-07-15 feat: add -takeout, -list commands
+      #625 open 2021-12-09 Multiple test failures on MacOS 12 (Monterey) Apple Silicon M1 Max
+      #556 open 2021-03-25 gocryptfs on macOS BigSur, Apple M1
+      #239 closed 2018-05-27 android/mobile version?
+      #1009 closed 2026-05-26 Reverse mode with --config does not create a plaintext config file
+      #993 closed 2026-01-29 macOS copy error
+      #968 closed 2025-10-12 Encrypt /home. Good idea?
+      #951 closed 2025-07-23 cipherSize 30: incomplete last block after upgrade to 2.6.0
+      #15 closed 2016-01-04 Mac OS X support
+      #603 closed 2021-09-16 File name length problem
+      #877 closed 2024-11-16 gocryptfs is unable to follow symlinks present on another fuse mount
+      #816 closed 2024-01-10 I can't access the contents of my encrypted files
+      #804 closed 2023-11-15 Protection against active adversaries, Mallory case
+      #837 closed 2024-04-03 question regarding GOCRYPTFS_BAD_NAME behavior in case of file content corruption
+      #815 closed 2023-12-29 Fedora Silverblue deletig folder content!
+      #456 closed 2020-03-01 recover from missing or corrupt  gocryptfs.diriv
+      #761 closed 2023-06-28 /etc/fstab entry for macos?
+      #595 closed 2021-08-19 macOS, -reverse mode, fs.Mount failed: read-only file system
+      #699 closed 2022-12-01 The vault opens with any value in -masterkey
+
+== 51 terms run; 44 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

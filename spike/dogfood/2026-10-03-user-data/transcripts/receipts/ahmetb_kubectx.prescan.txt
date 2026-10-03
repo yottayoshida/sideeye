@@ -1,0 +1,191 @@
+== novelty pre-scan: ahmetb/kubectx
+== date: 2026-10-03T04:41:05Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #353 merged 2022-04-09 Add support to publish Snaps using goreleaser
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      13 hit(s) (all listed)
+      #503 merged 2026-06-28 chore(deps): bump actions/cache from 5 to 6
+      #506 merged 2026-07-19 chore(deps): bump actions/setup-go from 6 to 7
+      #505 merged 2026-07-19 chore(deps): bump actions/checkout from 4 to 7
+      #502 merged 2026-06-21 chore(deps): bump actions/checkout from 6 to 7
+      #494 merged 2026-04-12 chore(deps): bump dependabot/fetch-metadata from 2 to 3
+      #463 merged 2026-03-08 chore(deps): bump actions/cache from 4 to 5
+      #483 merged 2026-03-15 chore(deps): bump actions/checkout from 4 to 6
+      #469 merged 2026-03-08 chore(deps): bump sigs.k8s.io/kustomize/kyaml from 0.16.0 to 0.21.1
+      #464 merged 2026-03-08 chore(deps): bump rajatjindal/krew-release-bot from 0.0.38 to 0.0.51
+      #482 merged 2026-03-15 chore(deps): bump actions/github-script from 7 to 8
+      #465 merged 2026-03-08 chore(deps): bump actions/setup-go from 2 to 6
+      #467 merged 2026-03-08 chore(deps): bump goreleaser/goreleaser-action from 2 to 7
+      #471 merged 2026-03-08 chore(deps): bump github.com/fatih/color from 1.9.0 to 1.18.0
+  truncate       13 hit(s) (all listed)
+      #503 merged 2026-06-28 chore(deps): bump actions/cache from 5 to 6
+      #506 merged 2026-07-19 chore(deps): bump actions/setup-go from 6 to 7
+      #505 merged 2026-07-19 chore(deps): bump actions/checkout from 4 to 7
+      #502 merged 2026-06-21 chore(deps): bump actions/checkout from 6 to 7
+      #494 merged 2026-04-12 chore(deps): bump dependabot/fetch-metadata from 2 to 3
+      #463 merged 2026-03-08 chore(deps): bump actions/cache from 4 to 5
+      #483 merged 2026-03-15 chore(deps): bump actions/checkout from 4 to 6
+      #469 merged 2026-03-08 chore(deps): bump sigs.k8s.io/kustomize/kyaml from 0.16.0 to 0.21.1
+      #464 merged 2026-03-08 chore(deps): bump rajatjindal/krew-release-bot from 0.0.38 to 0.0.51
+      #482 merged 2026-03-15 chore(deps): bump actions/github-script from 7 to 8
+      #465 merged 2026-03-08 chore(deps): bump actions/setup-go from 2 to 6
+      #467 merged 2026-03-08 chore(deps): bump goreleaser/goreleaser-action from 2 to 7
+      #471 merged 2026-03-08 chore(deps): bump github.com/fatih/color from 1.9.0 to 1.18.0
+  empty          22 hit(s) (all listed)
+      #480 merged 2026-03-09 fix: skip fzf launch when no contexts exist
+      #481 merged 2026-03-09 fix: skip fzf launch in kubens when no contexts exist in kubeconfig
+      #489 merged 2026-03-23 Support multiple kubeconfig files (KUBECONFIG=file1:file2:file3)
+      #259 closed 2020-08-18 Add message when no contexts are found in kubeconfig
+      #412 merged 2023-12-24 Migrate to kyaml
+      #485 closed 2026-03-21 Error since update v0.10.0 with multiple kubeconfig file
+      #469 merged 2026-03-08 chore(deps): bump sigs.k8s.io/kustomize/kyaml from 0.16.0 to 0.21.1
+      #12 closed 2017-10-12 [Idea] make it possible to use different contexts/namespaces in multiple shells
+      #185 closed 2019-11-28 Allow to unset the current-context (-u?)
+      #353 merged 2022-04-09 Add support to publish Snaps using goreleaser
+      #324 closed 2021-09-30 feat: pre-select stuff with fzf
+      #299 merged 2021-05-27 stop using XDG_CACHE_HOME as home directory
+      #57 closed 2018-06-22 TERM=vt100 causing empty output
+      #37 merged 2018-04-04 Allow for '/' in context name
+      #28 closed 2018-02-21 Get current context with -c
+      #46 merged 2018-05-18 Allow deleting multiple contexts at once
+      #95 merged 2018-10-30 [REVIEW] Proposal to fix subshell error handling
+      #143 closed 2019-04-05 Adaptative height for choice
+      #113 merged 2018-12-25 Complete tests for kubectx
+      #117 merged 2019-01-03 add more cli tests for kubens
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         4 hit(s) (all listed)
+      #423 closed 2024-06-18 kubectx specific fzf options
+      #307 closed 2021-07-19 kubectx and fzf on windows problem
+      #130 closed 2019-02-07 Proposal: Automatically select the namespace if there is only one option after fuzzy search
+      #113 merged 2018-12-25 Complete tests for kubectx
+  power          1 hit(s) (all listed)
+      #390 closed 2023-07-05 feat(tmux): add support for fzf-tmux in interactive mode
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           3 hit(s) (all listed)
+      #12 closed 2017-10-12 [Idea] make it possible to use different contexts/namespaces in multiple shells
+      #282 closed 2021-01-20 sudo apt install kubectx not working 2021
+      #293 closed 2021-03-01 store the new context name
+  partial        4 hit(s) (all listed)
+      #331 closed 2021-11-15 Added hability to switch to a context using a partial name
+      #334 closed 2021-11-24 Display fzf when provided with an invalid context
+      #71 closed 2018-08-17 Add fzf support for interactive search
+      #162 closed 2019-07-20 Fuzzy-set if given name is not an exact match
+  incomplete     1 hit(s) (all listed)
+      #400 closed 2023-08-16 [Go] kubens not working with in-cluster config
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #135 closed 2019-03-18 Accidental delete kubernetes context leaves residuals in kube config
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #12 closed 2017-10-12 [Idea] make it possible to use different contexts/namespaces in multiple shells
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        2 hit(s) (all listed)
+      #63 closed 2018-07-12 Kubectx switching removes heptio user from config file
+      #85 closed 2018-09-07 Add merge/import command
+  destroys       0 hit(s)
+  overwrite      30 hit(s) (all listed)
+      #511 open 2026-08-31 kubectx change indent of yaml file (osx arm)
+      #508 merged 2026-07-26 chore(deps): bump github.com/mattn/go-isatty from 0.0.23 to 0.0.24
+      #507 merged 2026-07-19 chore(deps): bump github.com/mattn/go-isatty from 0.0.22 to 0.0.23
+      #506 merged 2026-07-19 chore(deps): bump actions/setup-go from 6 to 7
+      #498 merged 2026-05-03 chore(deps): bump github.com/mattn/go-isatty from 0.0.21 to 0.0.22
+      #493 merged 2026-04-12 chore(deps): bump actions/github-script from 8 to 9
+      #503 merged 2026-06-28 chore(deps): bump actions/cache from 5 to 6
+      #495 merged 2026-04-12 chore(deps): bump github.com/mattn/go-isatty from 0.0.20 to 0.0.21
+      #496 merged 2026-04-19 chore(deps): bump the kubernetes group with 2 updates
+      #502 merged 2026-06-21 chore(deps): bump actions/checkout from 6 to 7
+      #505 merged 2026-07-19 chore(deps): bump actions/checkout from 4 to 7
+      #486 merged 2026-03-22 chore(deps): bump the kubernetes group with 2 updates
+      #494 merged 2026-04-12 chore(deps): bump dependabot/fetch-metadata from 2 to 3
+      #470 merged 2026-03-08 chore(deps): bump github.com/mattn/go-isatty from 0.0.14 to 0.0.20
+      #472 merged 2026-03-08 chore(deps): bump github.com/google/go-cmp from 0.5.9 to 0.7.0
+      #466 merged 2026-03-08 chore(deps): bump the kubernetes group with 2 updates
+      #468 merged 2026-03-08 chore(deps): bump samuelmeuli/action-snapcraft from 1 to 3
+      #487 merged 2026-03-22 chore(deps): bump github.com/fatih/color from 1.18.0 to 1.19.0
+      #469 merged 2026-03-08 chore(deps): bump sigs.k8s.io/kustomize/kyaml from 0.16.0 to 0.21.1
+      #464 merged 2026-03-08 chore(deps): bump rajatjindal/krew-release-bot from 0.0.38 to 0.0.51
+  clobber        0 hit(s)
+  blank          1 hit(s) (all listed)
+      #386 closed 2023-05-31 blank issue
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #135 closed 2019-03-18 Accidental delete kubernetes context leaves residuals in kube config
+  mangled        1 hit(s) (all listed)
+      #223 closed 2020-05-18 Colored output does not work in Windows
+  contents       7 hit(s) (all listed)
+      #229 open 2020-05-26 [Go] kubens not resolving file paths relative to config file
+      #488 closed 2026-03-23 Error when using running external auth scripts
+      #467 merged 2026-03-08 chore(deps): bump goreleaser/goreleaser-action from 2 to 7
+      #378 closed 2022-12-29 Issue with X509 Certificates in multiple config Files and switch between Clusters
+      #32 merged 2018-03-10 Example installation steps on Linux
+      #37 merged 2018-04-04 Allow for '/' in context name
+      #163 merged 2019-07-20 Disable preview when fuzzy-finding
+  in-place       29 hit(s) (all listed)
+      #402 open 2023-08-24 Allow customizing path to KUBECTX and KUBENS_DIR
+      #250 open 2020-06-26 Implement kubectx completion subcommand
+      #499 open 2026-05-12 kubens 0.11.0 on MacOS does not change the active namespace
+      #229 open 2020-05-26 [Go] kubens not resolving file paths relative to config file
+      #485 closed 2026-03-21 Error since update v0.10.0 with multiple kubeconfig file
+      #307 closed 2021-07-19 kubectx and fzf on windows problem
+      #432 closed 2024-11-25 Add filtering contexts
+      #426 closed 2024-07-16 Go Toolchain Version Does Not Exist
+      #353 merged 2022-04-09 Add support to publish Snaps using goreleaser
+      #407 closed 2023-11-22 Homebrew install makes kubectx slow
+      #115 closed 2018-12-28 Proposal: write kubectx/kubens in Go
+      #201 closed 2020-04-08 How to add multiple configs in kubectx
+      #352 closed 2022-03-28 Add support for Snap
+      #284 closed 2021-01-22 kubens doesn't support clusters using SOCKS5 'proxy-url'
+      #2 closed 2017-05-02 Add command-line integration tests with bats
+      #50 closed 2018-05-29 Fish completions install incorrectly through homebrew
+      #194 closed 2020-02-27 Add specific list target for user with fzf installed
+      #190 closed 2020-01-30 Feature request: Add passthrough of `--context` to kubens
+      #191 closed 2020-01-31 kubectx prints context name on a weird black background
+      #251 closed 2020-06-28 Some notice on /etc/zsh/zshrc
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #353 merged 2022-04-09 Add support to publish Snaps using goreleaser
+  atomic+write   0 hit(s)
+  lock+file      3 hit(s) (all listed)
+      #503 merged 2026-06-28 chore(deps): bump actions/cache from 5 to 6
+      #211 closed 2020-04-30 [Go] does not work with multiple kubeconfig files (e.g. KUBECONFIG=c1:c2)
+      #151 closed 2019-05-21 erro: open: *.lock: file exists
+  write+failure  2 hit(s) (all listed)
+      #2 closed 2017-05-02 Add command-line integration tests with bats
+      #95 merged 2018-10-30 [REVIEW] Proposal to fix subshell error handling
+  file+contents  7 hit(s) (all listed)
+      #229 open 2020-05-26 [Go] kubens not resolving file paths relative to config file
+      #488 closed 2026-03-23 Error when using running external auth scripts
+      #467 merged 2026-03-08 chore(deps): bump goreleaser/goreleaser-action from 2 to 7
+      #378 closed 2022-12-29 Issue with X509 Certificates in multiple config Files and switch between Clusters
+      #32 merged 2018-03-10 Example installation steps on Linux
+      #37 merged 2018-04-04 Allow for '/' in context name
+      #163 merged 2019-07-20 Disable preview when fuzzy-finding
+
+== 51 terms run; 22 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

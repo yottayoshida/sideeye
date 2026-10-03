@@ -1,0 +1,100 @@
+== novelty pre-scan: skywind3000/z.lua
+== date: 2026-10-03T02:32:52Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          3 hit(s) (all listed)
+      #218 merged 2025-05-16 Make `z -i` and `z -I` with no arguments be interactive.
+      #189 merged 2023-08-31 Support '|' in path
+      #7 merged 2019-01-18 Fish shell support
+  corrupt        1 hit(s) (all listed)
+      #189 merged 2023-08-31 Support '|' in path
+  corruption     0 hit(s)
+  truncated      0 hit(s)
+  truncate       0 hit(s)
+  empty          11 hit(s) (all listed)
+      #234 open 2026-06-26 Powershell is unable to initialise z.lua when the path exceeds 4096 characters
+      #140 open 2021-07-10 Lose order of the completions problem
+      #27 open 2019-02-04 Avoid polluting $HOME by following XDG Base Directory Specification
+      #194 open 2023-12-04 z foo cmd not working
+      #193 closed 2023-11-30 .zlua file is always empty
+      #55 closed 2019-02-25 enter fzf with no query
+      #46 closed 2019-02-14 [suggestion] cold start issue
+      #103 closed 2020-04-24 [FR]希望可以添加 HOOK_AFTER_JUMP 选项
+      #12 closed 2019-02-01 Not work in bash
+      #7 merged 2019-01-18 Fish shell support
+      #14 merged 2019-02-01 fix: no more lua_XXXXXX temp files
+  atomic         1 hit(s) (all listed)
+      #58 closed 2019-02-28 Compatibility with fzf z integration
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #45 closed 2019-02-14 Omit the backtrace mesage when hitting Ctrl-c in interactive selection mode
+  power          3 hit(s) (all listed)
+      #179 merged 2023-05-04 fix potential compatibilty issue for some fish shell versions and add…
+      #23 merged 2019-02-03 [=] change variable name of LuaExe and LuaScript
+      #22 merged 2019-02-02 [+] Powershell support
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           1 hit(s) (all listed)
+      #197 open 2023-12-28 lua进程不关闭
+  partial        0 hit(s)
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       1 hit(s) (all listed)
+      #94 closed 2020-03-05 command not found: compdef
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      0 hit(s)
+  clobber        0 hit(s)
+  blank          4 hit(s) (all listed)
+      #225 open 2025-09-04 FAQ `zii` code broken
+      #27 open 2019-02-04 Avoid polluting $HOME by following XDG Base Directory Specification
+      #46 closed 2019-02-14 [suggestion] cold start issue
+      #51 closed 2019-02-20 sort the path in the list 
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       1 hit(s) (all listed)
+      #115 closed 2020-08-10 powershell 7 不能切换目录
+  in-place       7 hit(s) (all listed)
+      #27 open 2019-02-04 Avoid polluting $HOME by following XDG Base Directory Specification
+      #213 open 2025-01-31 cannot get ranger_zlua.py working
+      #181 merged 2023-05-17 Clink changes
+      #157 merged 2022-06-14 docs: added warning for powershell users
+      #52 closed 2019-02-21 The number of entries in the list of `z -I .` shouldn't be fixed
+      #51 closed 2019-02-20 sort the path in the list 
+      #15 closed 2019-02-01 z -i doesn't work in fish shell
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #180 closed 2023-05-08 Looking for ~/.local/bin/lua
+  reboot         1 hit(s) (all listed)
+      #144 open 2021-10-13 Keep history after reboot
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      0 hit(s)
+  write+failure  0 hit(s)
+  file+contents  0 hit(s)
+
+== 51 terms run; 13 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

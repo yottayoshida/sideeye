@@ -1,0 +1,33 @@
+== notesmd before:
+ 27 ./vault/index.md
+ 24 ./vault/projects/alpha.md
+ 51 ./vault/daily/2026-10-01.md
+exit=1 
+   after:
+27 ./vault/index.md
+24 ./vault/projects/alpha-2026.md
+ 0 ./vault/daily/2026-10-01.md
+== nushell before:
+53 ./a.json
+bash: line 3:    40 File size limit exceeded( cd $cwd && ulimit -f 0 && $op ) > /tmp/o 2>&1
+exit=153 
+   after:
+0 ./a.json
+== mapshaper before:
+184 ./a.shp
+132 ./a.prj
+124 ./a.shx
+107 ./a.dbf
+  5 ./a.cpg
+exit=1 
+   after:
+  0 ./a.shp
+132 ./a.prj
+124 ./a.shx
+107 ./a.dbf
+  5 ./a.cpg
+3086 /s/talos/config
+error writing config: write /s/talos/config: file too large
+exit=1
+0 /s/talos/config
+error reading config: EOF

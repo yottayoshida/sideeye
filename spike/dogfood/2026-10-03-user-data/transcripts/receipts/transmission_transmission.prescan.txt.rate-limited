@@ -1,0 +1,5 @@
+== novelty pre-scan: transmission/transmission
+== date: 2026-10-03T04:03:59Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> BROKEN hit(s)
+  BROKEN the search path errored - every zero below would be meaningless

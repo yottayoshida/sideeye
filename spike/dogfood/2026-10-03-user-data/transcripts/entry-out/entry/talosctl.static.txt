@@ -1,0 +1,4 @@
+static: /opt/bin/talosctl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=SqGQha-kWER6H3yGp5o6/V1cKfOon_mm74Cla3N_R/_0PQh7GLcFtRRkXHweZZ/cvFivKEcch2WB_eN1X_F, BuildID[sha1]=e934637598781a8c2e415975d9264e7683c58776, stripped
+default mode: rc 2; no_shim_marker
+default next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+next: sideeye explore --state /s/talos --cwd "/s/talos-in" --operation "/opt/bin/talosctl --talosconfig /s/talos/config config context work" \

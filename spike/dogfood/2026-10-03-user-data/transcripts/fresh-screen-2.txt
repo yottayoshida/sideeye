@@ -1,0 +1,48 @@
+SEEN MP4Box b2-exclusions:91
+SEEN advancecomp b2-candidates:3
+SEEN dotbot spike/dogfood/2026-09-05-userview/SELECTION.md:57
+SEEN edir target-classes:118
+SEEN fclones b2-exclusions:75
+SEEN gpac target-classes:74
+SEEN mackup spike/dogfood/2026-09-05-userview/SELECTION.md:60
+SEEN mmv b2-candidates:176
+SEEN quodlibet spike/dogfood/2026-09-06-userview-2/SELECTION.md:35
+SEEN rmlint b2-exclusions:194
+fresh Efficient-Compression-Tool 
+fresh Leanify 
+fresh backintime 
+fresh bartib 
+fresh beancount-import 
+fresh budget 
+fresh czkawka 
+fresh djcb 
+fresh doing 
+fresh dotdrop 
+fresh dotter 
+fresh duperemove 
+fresh exifrename 
+fresh gnucash 
+fresh gsamokovarov 
+fresh hardlink 
+fresh hstr 
+fresh image_optim 
+fresh imgp 
+fresh jpeg-archive 
+fresh kustomize 
+fresh leanify 
+fresh ledger-autosync 
+fresh loudgain 
+fresh mail-deduplicate 
+fresh mp3gain 
+fresh nivekuil 
+fresh obsidian-export 
+fresh operon 
+fresh osync 
+fresh passage 
+fresh puddletag 
+fresh rcm 
+fresh scour 
+fresh shntool 
+fresh tageditor 
+fresh trashy 
+fresh tuckr 

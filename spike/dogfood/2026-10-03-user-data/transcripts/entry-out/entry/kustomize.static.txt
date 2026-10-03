@@ -1,0 +1,4 @@
+static: /opt/bin/kustomize: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=dcRjSQygI3s1UzTnV8ax/ea8wvsGmsv80O-nZpi9n/8piE3CIKgR1mOju-FkuH/BkTak_YuDaumiZ_4dYPk, BuildID[sha1]=d265f52d6799627713ba6cd684bef642d649fe07, stripped
+default mode: rc 2; no_shim_marker
+default next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+next: sideeye explore --state /s/kustomize --cwd "/s/kustomize" --operation "/opt/bin/kustomize edit set image nginx=nginx:1.27.1" \

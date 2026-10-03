@@ -1,0 +1,6 @@
+[world]
+state = "/s/podman"
+
+[define]
+operation = "podman system connection default work"
+cwd       = "/s/podman"

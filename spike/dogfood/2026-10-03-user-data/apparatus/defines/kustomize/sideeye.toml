@@ -1,0 +1,6 @@
+[world]
+state = "/s/kustomize"
+
+[define]
+operation = "/opt/bin/kustomize edit set image nginx=nginx:1.27.1"
+cwd       = "/s/kustomize"

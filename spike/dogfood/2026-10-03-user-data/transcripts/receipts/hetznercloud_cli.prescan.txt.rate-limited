@@ -1,0 +1,180 @@
+== novelty pre-scan: hetznercloud/cli
+== date: 2026-10-03T04:01:37Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          10 hit(s) (all listed)
+      #1424 merged 2026-06-06 deps: update module github.com/jedib0t/go-pretty/v6 to v6.8.1
+      #1487 open 2026-09-15 deps: update github actions
+      #1442 merged 2026-06-28 deps: update dependency jdx/mise to v2026.6.14
+      #1350 merged 2026-03-03 deps: update dependency jdx/mise to v2026.3.3
+      #1392 merged 2026-04-24 deps: update dependency jdx/mise to v2026.5.2
+      #1345 merged 2026-02-27 deps: update dependency jdx/mise to v2026.3.0
+      #1287 merged 2025-12-19 deps: update dependency jdx/mise to v2025.12.12
+      #1079 merged 2025-06-14 deps: update apricote/releaser-pleaser action to v0.6.0
+      #469 merged 2023-04-13 fix: crash on server create with missing server type
+      #401 closed 2022-08-06 primary-ip list -o json causes crash
+  corrupt        2 hit(s) (all listed)
+      #1345 merged 2026-02-27 deps: update dependency jdx/mise to v2026.3.0
+      #736 merged 2024-04-19 feat: new configuration system, config subcommand
+  corruption     2 hit(s) (all listed)
+      #1323 merged 2026-01-30 deps: update dependency jdx/mise to v2026.2.1
+      #1345 merged 2026-02-27 deps: update dependency jdx/mise to v2026.3.0
+  truncated      16 hit(s) (all listed)
+      #1487 open 2026-09-15 deps: update github actions
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1467 merged 2026-08-15 deps: update github actions
+      #1455 merged 2026-07-15 deps: update dependency jdx/mise to v2026.7.12
+      #1456 merged 2026-07-15 deps: update github actions
+      #1428 merged 2026-06-07 deps: update dependency jdx/mise to v2026.6.11
+      #1356 merged 2026-03-07 deps: update dependency jdx/mise to v2026.3.8
+      #1386 merged 2026-04-10 deps: update dependency jdx/mise to v2026.4.19
+      #1363 merged 2026-03-13 deps: update dependency jdx/mise to v2026.4.7
+      #1287 merged 2025-12-19 deps: update dependency jdx/mise to v2025.12.12
+      #793 merged 2024-06-26 fix: debug log is truncated if it already exists
+      #763 closed 2024-05-23 bug: debug log is truncated if it already exists
+      #804 merged 2024-07-04 chore(main): release 1.45.0
+      #821 merged 2024-07-23 deps: update module github.com/hetznercloud/hcloud-go/v2 to v2.11.0
+      #440 closed 2023-02-15 Bump github.com/prometheus/client_golang from 1.11.0 to 1.11.1
+  truncate       20 hit(s) (all listed)
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1488 merged 2026-09-22 deps: update dependency github:goreleaser/goreleaser to v2.18.2
+      #1469 merged 2026-08-17 deps: update module github.com/stretchr/testify to v1.12.0
+      #1487 open 2026-09-15 deps: update github actions
+      #1455 merged 2026-07-15 deps: update dependency jdx/mise to v2026.7.12
+      #1456 merged 2026-07-15 deps: update github actions
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1467 merged 2026-08-15 deps: update github actions
+      #1428 merged 2026-06-07 deps: update dependency jdx/mise to v2026.6.11
+      #1356 merged 2026-03-07 deps: update dependency jdx/mise to v2026.3.8
+      #1386 merged 2026-04-10 deps: update dependency jdx/mise to v2026.4.19
+      #1363 merged 2026-03-13 deps: update dependency jdx/mise to v2026.4.7
+      #1287 merged 2025-12-19 deps: update dependency jdx/mise to v2025.12.12
+      #793 merged 2024-06-26 fix: debug log is truncated if it already exists
+      #763 closed 2024-05-23 bug: debug log is truncated if it already exists
+      #804 merged 2024-07-04 chore(main): release 1.45.0
+      #821 merged 2024-07-23 deps: update module github.com/hetznercloud/hcloud-go/v2 to v2.11.0
+      #736 merged 2024-04-19 feat: new configuration system, config subcommand
+      #647 merged 2023-12-19 deps: update module golang.org/x/crypto to v0.17.0 [security]
+      #440 closed 2023-02-15 Bump github.com/prometheus/client_golang from 1.11.0 to 1.11.1
+  empty          65 hit(s) (all listed)
+      #1487 open 2026-09-15 deps: update github actions
+      #1139 open 2025-08-29 Add generic filters for all resources
+      #1471 closed 2026-08-23 firewall add-rule does not enforce required source-ips/destination-ips for the chosen direction
+      #1495 merged 2026-09-29 deps: update dependency github:golangci/golangci-lint to v2.14.0
+      #436 open 2023-01-27  Improve command usage descriptions (continued from staled #108)
+      #1488 merged 2026-09-22 deps: update dependency github:goreleaser/goreleaser to v2.18.2
+      #1457 merged 2026-07-17 feat: add api command
+      #1452 merged 2026-07-10 deps: update dependency github:goreleaser/goreleaser to v2.17.0
+      #1455 merged 2026-07-15 deps: update dependency jdx/mise to v2026.7.12
+      #1456 merged 2026-07-15 deps: update github actions
+      #1424 merged 2026-06-06 deps: update module github.com/jedib0t/go-pretty/v6 to v6.8.1
+      #1442 merged 2026-06-28 deps: update dependency jdx/mise to v2026.6.14
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1428 merged 2026-06-07 deps: update dependency jdx/mise to v2026.6.11
+      #1386 merged 2026-04-10 deps: update dependency jdx/mise to v2026.4.19
+      #1392 merged 2026-04-24 deps: update dependency jdx/mise to v2026.5.2
+      #1387 merged 2026-04-15 deps: update dependency github:goreleaser/goreleaser to v2.15.4
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1467 merged 2026-08-15 deps: update github actions
+      #1314 merged 2026-01-16 deps: update module github.com/hetznercloud/hcloud-go/v2 to v2.35.0
+  atomic         9 hit(s) (all listed)
+      #1466 closed 2026-08-04 refactor!: harden CLI architecture and delivery
+      #1442 merged 2026-06-28 deps: update dependency jdx/mise to v2026.6.14
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1467 merged 2026-08-15 deps: update github actions
+      #1455 merged 2026-07-15 deps: update dependency jdx/mise to v2026.7.12
+      #1456 merged 2026-07-15 deps: update github actions
+      #1428 merged 2026-06-07 deps: update dependency jdx/mise to v2026.6.11
+      #1323 merged 2026-01-30 deps: update dependency jdx/mise to v2026.2.1
+      #821 merged 2024-07-23 deps: update module github.com/hetznercloud/hcloud-go/v2 to v2.11.0
+  atomically     3 hit(s) (all listed)
+      #1455 merged 2026-07-15 deps: update dependency jdx/mise to v2026.7.12
+      #1456 merged 2026-07-15 deps: update github actions
+      #1428 merged 2026-06-07 deps: update dependency jdx/mise to v2026.6.11
+  interrupted    4 hit(s) (all listed)
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1487 open 2026-09-15 deps: update github actions
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1467 merged 2026-08-15 deps: update github actions
+  interrupt      4 hit(s) (all listed)
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1487 open 2026-09-15 deps: update github actions
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1467 merged 2026-08-15 deps: update github actions
+  sigkill        1 hit(s) (all listed)
+      #1328 merged 2026-02-05 deps: update dependency jdx/mise to v2026.2.21
+  sigint         1 hit(s) (all listed)
+      #1466 closed 2026-08-04 refactor!: harden CLI architecture and delivery
+  ctrl-c         4 hit(s) (all listed)
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1467 merged 2026-08-15 deps: update github actions
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1287 merged 2025-12-19 deps: update dependency jdx/mise to v2025.12.12
+  power          5 hit(s) (all listed)
+      #675 merged 2024-01-16 feat: group subcommands in command help
+      #57 closed 2018-01-15 Consider asking for confirmation when deleting resources
+      #290 closed 2020-12-22 Check snapshot status before server start
+      #273 closed 2020-09-02 hcloud server ssh wait
+      #249 closed 2020-06-30 hcloud commands fail frequently because of server errors
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           32 hit(s) (all listed)
+      #1407 open 2026-05-14 percent calculation of server change-type is a way off - stuck at 80%
+      #1105 open 2025-07-22 `server change-type` behavior is inconsistent with the console
+      #1481 closed 2026-09-08 Missing "firewalls" in the desribe server command
+      #1487 open 2026-09-15 deps: update github actions
+      #1380 merged 2026-04-07 fix: invalid goreleaser artifacts name for signing step
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1340 merged 2026-02-24 feat: add default location column to server type table
+      #1369 merged 2026-03-24 fix: do not print server types locations that are unavailable (deprecation)
+      #1345 merged 2026-02-27 deps: update dependency jdx/mise to v2026.3.0
+      #1392 merged 2026-04-24 deps: update dependency jdx/mise to v2026.5.2
+      #1323 merged 2026-01-30 deps: update dependency jdx/mise to v2026.2.1
+      #834 closed 2024-08-09 hcloud apt install doesnt work
+      #1167 closed 2025-09-25 Newly-created volume is reported to have a status of `creating`
+      #819 closed 2024-07-16 issue with creating context in interactive mode (hcloud: context create is an interactive command)
+      #800 merged 2024-06-28 fix: correctly print disk sizes on 32bit systems
+      #801 merged 2024-07-01 chore(main): release 1.44.2
+      #791 closed 2024-06-26 Deleting protected resources fails quietly 
+      #709 merged 2024-03-07 docs: improve command usage documentation
+      #642 closed 2023-12-15 fix: Allow multiple --type flags for metrics commands
+      #638 closed 2023-12-14 fix: integer fields are displayed as floats when using `describe` with `o=yaml`
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1496 open 2026-10-02 feat(load-balancer): add health check diagnostic details
+      #1435 open 2026-06-15 feat(server): add screenshot command
+      #710 open 2024-03-07 feat!: remove deprecated backup window flag
+      #1485 merged 2026-09-14 feat(image): print deprecated Image information
+      #1491 merged 2026-09-24 feat(network): implement list-members command
+      #1498 merged 2026-10-02 test(e2e): remove datacenter test
+      #1482 merged 2026-09-10 fix(server): missing firewalls in describe
+      #1494 merged 2026-09-24 chore(main): release v1.69.0
+      #1492 merged 2026-09-24 test: only print stderr logs within test output boundaries
+      #1493 merged 2026-09-24 fix(primary-ip): add fallback for unknown assignee types
+      #1479 merged 2026-09-04 docs(setup): use location instead of datacenter list
+      #1478 merged 2026-09-04 docs: add headers and review
+      #1488 merged 2026-09-22 deps: update dependency github:goreleaser/goreleaser to v2.18.2
+      #1463 merged 2026-07-29 chore(main): release v1.68.0
+      #1461 merged 2026-07-24 feat: print deprecated Load Balancer Type information
+      #1438 merged 2026-06-19 refactor(base): rename Experimental to Configure
+      #1460 merged 2026-07-21 feat: remove datacenter property from server and primary_ip
+      #1445 merged 2026-07-02 feat: add http-timeout option
+      #1446 merged 2026-07-02 chore(main): release v1.67.0
+      #1449 closed 2026-07-06 feat: remove datacenter property from server and primary_ip
+  incomplete     8 hit(s) (all listed)
+      #1468 merged 2026-08-15 deps: update dependency jdx/mise to v2026.8.4
+      #1467 merged 2026-08-15 deps: update github actions
+      #1371 closed 2026-03-24 test failure with 1.62.0
+      #1486 merged 2026-09-15 deps: update dependency jdx/mise to v2026.9.11
+      #1455 merged 2026-07-15 deps: update dependency jdx/mise to v2026.7.12
+      #1456 merged 2026-07-15 deps: update github actions
+      #1386 merged 2026-04-10 deps: update dependency jdx/mise to v2026.4.19
+      #1328 merged 2026-02-05 deps: update dependency jdx/mise to v2026.2.21
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+HTTP 403: API rate limit exceeded for user ID 214414092. If you reach out to GitHub Support for help, please include the request ID D3E7:1C7472:183616:1E1D42:6AC07EA6 and timestamp 2026-10-03 04:03:51 UTC. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service) (https://api.github.com/search/issues?advanced_search=true&page=1&per_page=20&q=%28+recover+%29+repo%3Ahetznercloud%2Fcli)
+  BROKEN the search errored on term 'recovery' - the scan is incomplete

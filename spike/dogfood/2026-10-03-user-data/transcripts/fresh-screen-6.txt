@@ -1,0 +1,14 @@
+fresh doctl 
+fresh kubectx 
+fresh kubens 
+fresh kubeswitch 
+fresh m4b-tool 
+fresh opentofu 
+fresh podman 
+fresh pulumi 
+fresh tofu 
+fresh trentm 
+fresh dwarfs 
+fresh flatpak 
+fresh mkdwarfs 
+fresh smallstep 

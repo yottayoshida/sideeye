@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/kubectx",
+    "operation": "/opt/bin/kubectx staging",
+    "cwd": "/s/kubectx-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 8,
+  "prefix_hash": "d5256dbb45ab4561",
+  "after_class": "truncate",
+  "after_path": "/s/kubectx/config",
+  "before_class": "write",
+  "before_path": "/s/kubectx/config",
+  "violation": "hybrid"
+}

@@ -1,0 +1,112 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 332474dac29c44e391d03f425bca210bbcbc59354d9759f5ce8fd27889988a04
+build: the page's (working tree)    sha256 332474dac29c44e391d03f425bca210bbcbc59354d9759f5ce8fd27889988a04
+build: the page's at tag v1.7.0     sha256 b7bf4ec778bc31111a523ac09f714000691a1f894bcc628cc5ed4a4aa2ae119f
+build: NOTE the page's installer has moved since v1.7.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 8.67kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/18] FROM docker.io/library/debian:trixie-slim@sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132
+#4 resolve docker.io/library/debian:trixie-slim@sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 3/18] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#6 CACHED
+
+#7 [10/18] RUN gem install --no-document doing -v 2.1.124 > /tmp/gem-doing.log 2>&1; echo "gem doing exit: $?"; tail -2 /tmp/gem-doing.log
+#7 CACHED
+
+#8 [12/18] RUN npm install -g --no-fund --no-audit @dotenvx/dotenvx@2.32.4 mapshaper@0.7.72 > /tmp/npm.log 2>&1; echo "npm exit: $?"; tail -2 /tmp/npm.log
+#8 CACHED
+
+#9 [14/18] COPY install-sideeye.sh /opt/install-sideeye.sh
+#9 CACHED
+
+#10 [ 6/18] RUN set -u; mkdir -p /opt/bin /tmp/dl; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/Yakitrak/notesmd-cli/releases/download/v0.3.7/notesmd-cli_0.3.7_linux_arm64.tar.gz notesmd.tgz;     get $gh/qarmin/czkawka/releases/download/12.0.2/linux_czkawka_cli_arm64 czkawka_cli;     get $gh/upx/upx/releases/download/v5.2.1/upx-5.2.1-arm64_linux.tar.xz upx.txz;     get $gh/NixOS/patchelf/releases/download/0.19.2/patchelf-0.19.2-aarch64.tar.gz patchelf.tgz;     get $gh/SuperCuber/dotter/releases/download/v0.13.5/dotter-linux-arm64-musl dotter;     get $gh/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.8.2/kustomize_v5.8.2_linux_arm64.tar.gz kustomize.tgz;     get $gh/thomasschafer/scooter/releases/download/v0.9.1/scooter-v0.9.1-aarch64-unknown-linux-musl.tar.gz scooter.tgz;     get https://raw.githubusercontent.com/skywind3000/z.lua/1.8.26/z.lua z.lua;     ls -l /tmp/dl
+#10 CACHED
+
+#11 [ 8/18] RUN set -u; mkdir -p /tmp/src; cd /tmp/src; gh=https://github.com;     b() { name=$1; shift; ( set -e; "$@" ) > /tmp/build-$name.log 2>&1 && echo "BUILT $name" || { echo "FAILED $name"; tail -5 /tmp/build-$name.log; }; };     b rdfind sh -c "curl -fsSL $gh/pauldreik/rdfind/releases/download/releases%2F1.8.0/rdfind-1.8.0.tar.gz | tar xz && cd rdfind-1.8.0 && ./configure --prefix=/usr/local && make -j4 && make install";     b hstr sh -c "curl -fsSL $gh/dvorka/hstr/releases/download/v3.2/hstr-3.2.0-tarball.tgz | tar xz && cd $(ls -d hstr*/ | head -1) && ./configure --prefix=/usr/local && make -j4 && make install";     b samtools sh -c "curl -fsSL $gh/samtools/samtools/releases/download/1.24/samtools-1.24.tar.bz2 | tar xj && cd samtools-1.24 && ./configure --prefix=/usr/local --without-curses --disable-libcurl && make -j4 && make install";     b bzip3 sh -c "curl -fsSL $gh/iczelia/bzip3/releases/download/1.5.4/bzip3-1.5.4.tar.gz | tar xz && cd bzip3-1.5.4 && ./configure --prefix=/usr/local && make -j4 && make install && ldconfig";     b sc-im sh -c "curl -fsSL $gh/andmarti1424/sc-im/archive/refs/tags/v0.8.5.tar.gz | tar xz && cd sc-im-0.8.5/src && make -j4 prefix=/usr/local && make install prefix=/usr/local";     b brotli sh -c "curl -fsSL $gh/google/brotli/archive/refs/tags/v1.2.0.tar.gz | tar xz && cd brotli-1.2.0 && cmake -S . -B out -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local && cmake --build out -j4 && cmake --install out && ldconfig";     b kakoune sh -c "curl -fsSL $gh/mawww/kakoune/releases/download/v2026.05.21/kakoune-2026.05.21.tar.bz2 | tar xj && cd kakoune-2026.05.21 && make -j4 && make install PREFIX=/usr/local";     true
+#11 CACHED
+
+#12 [ 9/18] RUN python3 -m venv /opt/py     && /opt/py/bin/pip install --no-cache-dir          visidata==3.4 dotdrop==1.17.0 > /tmp/pip.log 2>&1;     echo "pip exit: $?"; tail -2 /tmp/pip.log
+#12 CACHED
+
+#13 [ 4/18] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#13 CACHED
+
+#14 [ 2/18] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config autoconf automake cmake bison
+#14 CACHED
+
+#15 [15/18] RUN sh /opt/install-sideeye.sh v1.7.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#15 CACHED
+
+#16 [13/18] RUN set -u; cd /tmp/src;     ( curl -fsSL https://github.com/amadvance/snapraid/releases/download/v14.10/snapraid-14.10.tar.gz | tar xz && cd snapraid-14.10 && ./configure --prefix=/usr/local && make -j4 && make install ) > /tmp/build-snapraid.log 2>&1 && echo "BUILT snapraid" || { echo "FAILED snapraid"; tail -5 /tmp/build-snapraid.log; };     curl -fsSL -o /tmp/dl/nu.tgz https://github.com/nushell/nushell/releases/download/0.116.0/nu-0.116.0-aarch64-unknown-linux-gnu.tar.gz       && mkdir -p /tmp/dl/x-nu && tar xzf /tmp/dl/nu.tgz -C /tmp/dl/x-nu       && install -m 755 "$(find /tmp/dl/x-nu -type f -name nu | head -1)" /opt/bin/nu && echo "OK nu" || echo "MISSING nu"
+#16 CACHED
+
+#17 [ 5/18] RUN for p in nodejs npm ruby ruby-dev lua5.4 nettle-dev libncurses-dev libreadline-dev zlib1g-dev libbz2-dev              liblzma-dev libsecp256k1-dev libjpeg-dev libxml2-dev libzip-dev jpegoptim optipng              maildir-utils util-linux busybox-static; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#17 CACHED
+
+#18 [11/18] RUN gem install --no-document hexapdf -v 1.11.0 > /tmp/gem-hexapdf.log 2>&1; echo "gem hexapdf exit: $?"; tail -2 /tmp/gem-hexapdf.log
+#18 CACHED
+
+#19 [ 7/18] RUN set -u; cd /tmp/dl;     for t in notesmd patchelf kustomize scooter; do mkdir -p x-$t && tar xzf $t.tgz -C x-$t && echo "untar $t: ok" || echo "untar $t: FAILED"; done;     mkdir -p x-upx && tar xJf upx.txz -C x-upx && echo "untar upx: ok";     for b in czkawka_cli dotter; do install -m 755 $b /opt/bin/$b; done;     install -m 644 z.lua /opt/bin/z.lua;     for n in notesmd-cli patchelf kustomize scooter upx; do       f=$(find /tmp/dl/x-* -type f -name "$n" | head -1);       [ -n "$f" ] && install -m 755 "$f" /opt/bin/$n && echo "bin $n <- $f" || echo "bin $n: NOT FOUND";     done; ls -l /opt/bin
+#19 CACHED
+
+#20 [16/18] RUN "$(cat /install.path)" version
+#20 CACHED
+
+#21 [17/18] RUN v() { n=$1; shift; timeout -k 2 10 "$@" </dev/null >/tmp/v.out 2>&1; echo "$n: $(head -1 /tmp/v.out) (rc $?)"; }; {       v sideeye "$(cat /install.path)" version; v visidata vd --version; v dotdrop dotdrop --version;       v doing doing --version; v notesmd-cli notesmd-cli --version; v upx upx --version;       v dotter dotter --version; v kustomize kustomize version; v scooter scooter --version;       v z.lua lua5.4 /opt/bin/z.lua --version; v rdfind rdfind -v; v samtools samtools --version;       v bzip3 bzip3 --version; v sc-im sc-im --version; v kakoune kak -version; v mu mu --version;       v snapraid snapraid --version; v nu nu --version; v dotenvx dotenvx --version;       v mapshaper mapshaper --version; v hexapdf hexapdf version; v perl perl -e 'print $^V';       } > /versions.txt; cat /versions.txt
+#21 1.010 sideeye: sideeye 1.7.0 (trace contract v18) (rc 0)
+#21 1.010 visidata: saul.pw/VisiData v3.4 (rc 0)
+#21 1.010 dotdrop: 1.17.0 (rc 0)
+#21 1.010 doing: [93m> [0m Config directory created at /root/.config/doing[0m (rc 0)
+#21 1.010 notesmd-cli: notesmd-cli version v0.3.7 (rc 0)
+#21 1.010 upx: upx 5.2.1 (rc 0)
+#21 1.010 dotter: dotter 0.13.5 (rc 0)
+#21 1.010 kustomize: v5.8.2 (rc 0)
+#21 1.010 scooter: scooter 0.9.1 (rc 0)
+#21 1.010 z.lua:  (rc 0)
+#21 1.010 rdfind: This is rdfind version 1.8.0 (rc 0)
+#21 1.010 samtools: samtools 1.24 (rc 0)
+#21 1.010 bzip3: bzip3 1.5.4 (rc 0)
+#21 1.010 sc-im: sc-im - version 0.8.5 (rc 255)
+#21 1.010 kakoune: Kakoune 2026.05.21 (rc 0)
+#21 1.010 mu: version 1.12.9 (rc 0)
+#21 1.010 snapraid: SnapRAID CLI v14.10 by Andrea Mazzoleni, https://www.snapraid.it (rc 0)
+#21 1.010 nu: 0.116.0 (rc 0)
+#21 1.010 dotenvx: 2.32.4 (rc 0)
+#21 1.010 mapshaper: 0.7.72 (rc 0)
+#21 1.010 hexapdf: hexapdf 1.11.0 (rc 0)
+#21 1.010 perl: v5.40.1 (rc 0)
+#21 DONE 1.0s
+
+#22 [18/18] WORKDIR /w
+#22 DONE 0.0s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 16.5s done
+#23 exporting manifest sha256:4a8ca86cc88c1bc43c497e4c886851547e1a9af132a14d9c475028d5fd640101 done
+#23 exporting config sha256:6684c0a0ecf09fc07ccc676e5db3b5f15ab1ebaa94e6a144b12e607b017b3f2a done
+#23 exporting attestation manifest sha256:25e2286fc222a720d96dfb0ebe823eeb3f1f586e63dc97f2236c1ad912148ba4 done
+#23 exporting manifest list sha256:97b719aef4a0bb77fc0c0a07beacb0339b1fd47906a48ed5c9fc03298fa699d6 done
+#23 naming to docker.io/library/sideeye-ud1003:latest done
+#23 unpacking to docker.io/library/sideeye-ud1003:latest
+#23 unpacking to docker.io/library/sideeye-ud1003:latest 8.0s done
+#23 DONE 24.6s
+build: sideeye-ud1003 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+rc=0

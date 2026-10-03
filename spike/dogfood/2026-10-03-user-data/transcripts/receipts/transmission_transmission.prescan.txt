@@ -1,0 +1,834 @@
+== novelty pre-scan: transmission/transmission
+== date: 2026-10-03T04:35:08Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9114 open 2026-09-25 Update to 4.1.3 crashes the app
+      #9100 open 2026-09-03 Crash in `tr_u8path` on opening a torrent
+      #8765 open 2026-04-10 Crash when adding UPnP port mapping
+      #7073 open 2024-08-22 Crash on macOS when filtering the search (Conflicting constraints detected)
+      #6317 open 2023-11-30 Nightly #9466 crash in libtransmission::BufferReader
+      #8500 open 2026-02-14 Crashes with Mac OS 11.7.11
+      #8908 open 2026-06-12 new crash "pure virtual method called terminate called without an active exception"
+      #7393 open 2025-01-15 crash when opening a URL in transmission-gtk
+      #8361 open 2026-02-04 4.1.0 crashes on startup on Win 7 SP1
+      #8661 open 2026-03-07 Crash at the end of `[Torrent updateTorrents:self.fTorrents]`
+      #7681 open 2025-08-21 Transmission WebUI becomes unresponsive, and then Transmission crashes on quit.
+      #8762 open 2026-04-09 Transmission 4.1.1 crashing on macos?
+      #8920 open 2026-06-15 fix: keep tr_peerMsgs alive within io callbacks
+      #8474 open 2026-02-13 Transmision Sponaneouly Quits - No Crash - Just Find It No Longer Open & Running
+      #5353 open 2023-04-04 Can no longer rename a torrent on initial opening (crashes)
+      #8645 open 2026-03-03 [Crash] v4.1.1.0 - Exception 0xc0000409 in ucrtbase.dll on Windows 10
+      #8693 open 2026-03-16 4.1.1 crashes macOS 13.4 (22F66) on Intel MacBook Pro (x86-64)
+      #8143 open 2026-01-15 fix: undefined behavior in `tr_strbuf`
+      #8715 open 2026-03-20 fix: use-after-free in tr_peerMsgsImpl peerIo callbacks
+      #8739 open 2026-03-29 "Move Data File to…" on a torrent containing >4GB files doesn't give an error moving to FAT32 disks
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9050 open 2026-08-20 fix: report the error when an existing file can't be opened
+      #9000 open 2026-07-17 4.0.x -> 4.1.x resume incompatibility can remap and corrupt torrents containing zero-length files
+      #5324 open 2023-03-29 Deceiving clients with corrupted v2 root hash
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #9105 open 2026-09-09 Caching behavior
+      #9002 open 2026-07-18 fix: migrate 4.0.x resume data for torrents with zero-length files
+      #5747 open 2023-07-07 Downloaded nearly 20GB of a 11MB torrent
+      #7424 open 2025-01-28 Transmission-remote cannot add file with whitespace in name
+      #7373 open 2025-01-06 Fixed #251 by detection of conflicts in the same directory
+      #9062 merged 2026-08-22 macOS: fix magnet links corrupted when pasted into main window
+      #6579 open 2024-02-06 Downloads don't progress beyond some point; keep jumping back
+      #9064 merged 2026-08-22 macOS: fix magnet links corrupted when pasted into main window (#9062)
+      #6154 open 2023-10-24 No information during local data verification
+      #8903 open 2026-06-10 Transmission 4.2.1 freezes on quit and magnet links no longer start downloads on macOS Monterey
+      #8791 open 2026-05-05 Corruption of certain .resume files being encountered on transmission-daemon 4.1.1 (56442e2929)
+      #6105 open 2023-10-13 feat: Show "Session Upload" per torrent in GTK, Qt, remote clients
+      #8401 open 2026-02-07 4.1.0 on macOS beachballs / has higher CPU use than 4.0.6
+      #6194 open 2023-11-02 fix: supporting empty files
+      #458 open 2017-12-20 Support for Bittorrent v2 (bep 0052)
+      #3387 open 2022-07-01 Add support for padding files and extended file attributes (bep 0047)
+  corruption     62 hit(s) (all listed)
+      #8791 open 2026-05-05 Corruption of certain .resume files being encountered on transmission-daemon 4.1.1 (56442e2929)
+      #8183 open 2026-01-21 4.1.0-beta Unexpected completion percentage drop after verification
+      #8401 open 2026-02-07 4.1.0 on macOS beachballs / has higher CPU use than 4.0.6
+      #9002 open 2026-07-18 fix: migrate 4.0.x resume data for torrents with zero-length files
+      #9000 open 2026-07-17 4.0.x -> 4.1.x resume incompatibility can remap and corrupt torrents containing zero-length files
+      #6105 open 2023-10-13 feat: Show "Session Upload" per torrent in GTK, Qt, remote clients
+      #6026 closed 2023-09-21 Lots of corruptions in 4.0.4
+      #8990 closed 2026-07-11 fix: git hygiene and cross-platform portability improvements
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #4178 merged 2022-11-15 fix corruption: torrentVerify on completion
+      #8723 closed 2026-03-23 "0 of 1 transfer"
+      #6389 closed 2023-12-16 [Feature Request / Corruption Bug] Support for warning for torrents downloading same file
+      #4240 closed 2022-11-25 No Percentage While Checking Files
+      #2261 closed 2021-12-02 Add option to skip hash check
+      #6796 closed 2024-04-16 Downloaded data not saved
+      #4511 closed 2023-01-01 Crash on macos when clicking on the torrent 4.0.0-beta.2
+      #7873 closed 2025-12-04 Icons are almost totally missing on Transmission 4.1.0-beta.4 using Windows 11
+      #4003 closed 2022-10-21 New Magnets Find No Peers Seed Connections
+      #7118 closed 2024-09-13 Reproducible hang on Windows 11 with 4.1.0-dev (1593b993ad)
+      #6691 closed 2024-03-14 Progress Bar Not Registering Progress, Forced to Run Verify Local Data to Check if File is Complete
+  truncated      32 hit(s) (all listed)
+      #6605 open 2024-02-14 transmission-qt button labels unreadable
+      #8754 open 2026-04-03 Incorrect validation for updated files
+      #1687 open 2021-05-08 Status Bar layout issue: at very high throughput, the unit value disappears occasionally due to proportional numbers and an undersized bounding box
+      #2377 open 2022-01-03 Download stops at 99.9%, after recheck is back to 90.9% on very large (1TB+) torrent with many small files
+      #6579 open 2024-02-06 Downloads don't progress beyond some point; keep jumping back
+      #6512 open 2024-01-08 Transmission accessibility. Better representation in torrent properties dialog.
+      #743 closed 2018-10-14 windows build instruction outdate
+      #8155 closed 2026-01-16 [SessionTest] `tr_web` effectively always given a deadline of 0 seconds on shutdown
+      #2574 merged 2022-02-04 Support binding the RPC to a Unix socket on *nix platforms
+      #7014 merged 2024-07-26 fix: make name and hash readable
+      #122 closed 2016-12-19 Error: Unable to save resume file: File name too long
+      #6520 merged 2024-01-12 Make `SqueezeLabel` [more] accessible
+      #5771 merged 2023-07-12 Fix web ui start/pause icon size
+      #4459 closed 2022-12-24 Execution Time in macOS Statistics is truncated
+      #4697 closed 2023-01-31 Googletest warnings
+      #5020 closed 2023-02-23 Burst of "no bencoded data to parse (84)" errors after restart of 4.0.1
+      #5749 closed 2023-07-07 build(deps-dev): bump stylelint from 14.16.1 to 15.10.1 in /web
+      #4712 closed 2023-02-03 ERR utils.cc:78 "couldn't read /path/to/infohash.resume: No such file or directory"
+      #4646 closed 2023-01-23 build(deps): bump node-forge and webpack-dev-server in /web
+      #4649 closed 2023-01-23 build(deps): bump glob-parent and webpack-dev-server in /web
+  truncate       66 hit(s) (all listed)
+      #9115 open 2026-09-28 Search box truncation
+      #6605 open 2024-02-14 transmission-qt button labels unreadable
+      #9050 open 2026-08-20 fix: report the error when an existing file can't be opened
+      #9072 open 2026-08-26 fix: report the real error when a file can't be opened (4.1.x)
+      #8754 open 2026-04-03 Incorrect validation for updated files
+      #1687 open 2021-05-08 Status Bar layout issue: at very high throughput, the unit value disappears occasionally due to proportional numbers and an undersized bounding box
+      #2377 open 2022-01-03 Download stops at 99.9%, after recheck is back to 90.9% on very large (1TB+) torrent with many small files
+      #9095 open 2026-09-01 feat: support x.pe peer addresses in magnet links
+      #8808 open 2026-05-25 Route UDP announces through SOCKS5 proxy via UDP ASSOCIATE
+      #6579 open 2024-02-06 Downloads don't progress beyond some point; keep jumping back
+      #1639 open 2021-03-10 Qt client: Add download path filter
+      #3387 open 2022-07-01 Add support for padding files and extended file attributes (bep 0047)
+      #2311 open 2021-12-14 "Filename too long" on some torrents
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #5747 open 2023-07-07 Downloaded nearly 20GB of a 11MB torrent
+      #6512 open 2024-01-08 Transmission accessibility. Better representation in torrent properties dialog.
+      #8378 merged 2026-02-05 Update rpc-spec.md
+      #743 closed 2018-10-14 windows build instruction outdate
+      #8155 closed 2026-01-16 [SessionTest] `tr_web` effectively always given a deadline of 0 seconds on shutdown
+      #8121 closed 2026-01-12 refactor: remove SqueezeLabel
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8311 open 2026-02-01 Filter bar "Error" item always empty
+      #9026 open 2026-08-03 fix: parse magnet links that carry an empty authority (#9020)
+      #6194 open 2023-11-02 fix: supporting empty files
+      #9109 open 2026-09-17 Preferences checkboxes have large invisible clickable areas
+      #1775 open 2021-09-01 Torrents with empty info names get modified
+      #8050 open 2026-01-03 [RPC] empty directory path request should result in error
+      #7644 open 2025-07-12 Torrent data breaks after downloading if torrent contains empty file
+      #9047 open 2026-08-20 fix: don't let expendable web tasks stall session shutdown
+      #8691 open 2026-03-15 fix(web): Dismiss inspector when no torrents are selected
+      #8995 open 2026-07-15 [Bug] Qt GUI Properties: Switching between torrents leaks peer list entries into other torrents
+      #9000 open 2026-07-17 4.0.x -> 4.1.x resume incompatibility can remap and corrupt torrents containing zero-length files
+      #8997 open 2026-07-15 Transmsion 4.1.3 is slow to quit or hangs
+      #7893 open 2025-12-07 In-app update appears broken in macOS
+      #7293 open 2024-12-13 ctrl-a, ctrl-u app keyboard shortcuts conflict with GTK widget shortcuts
+      #9072 open 2026-08-26 fix: report the real error when a file can't be opened (4.1.x)
+      #5690 open 2023-06-29 That pesky blank File dialog
+      #9095 open 2026-09-01 feat: support x.pe peer addresses in magnet links
+      #5163 open 2023-03-06 No peers on torrent added automatically
+      #5546 open 2023-05-20 Magnet link groups loose their group color once activated
+      #6426 open 2023-12-23 free-space RPC improvements
+  atomic         25 hit(s) (all listed)
+      #8441 open 2026-02-11 warn on unknown lists and dicts in .torrent
+      #8244 open 2026-01-28 Support for non-blocking Torrent Relocations
+      #6194 open 2023-11-02 fix: supporting empty files
+      #8986 closed 2026-07-11 fix: replace unsafe signal() with sigaction() across codebase
+      #8329 closed 2026-02-02 segfault when torrent file is missing 'pieces'
+      #7794 closed 2025-11-10 Use transmission/libevent.git
+      #6774 merged 2024-04-07 build with -latomic on platforms that need it
+      #7752 closed 2025-10-31 Deadlock on session lock with current `main`
+      #7543 merged 2025-04-03 feat: Introduce PowerManager on macOS
+      #7307 closed 2024-12-16 4.1.0 beta 1 on macOS 15.2: IPv6 error
+      #6987 merged 2024-07-12 Consume early pad a/b, improve handshake tests
+      #7339 merged 2024-12-27 fix: speed limits did not work below 16KiB/s
+      #6918 merged 2024-06-14 fix: crash in `tr_torrent::VerifyMediator::on_verify_done()`
+      #6614 merged 2024-02-17 refactor: store peer info objects in shared pointers
+      #5172 closed 2023-03-07 perf: reducing the usage of is_looping_mutex_
+      #6064 closed 2023-10-02 nothing happens after verify torrent
+      #6237 merged 2023-11-10 refactor: directly check if announcers are idle instead of using a stop counter
+      #5734 merged 2023-07-05 perf: faster get peer candidates
+      #3302 closed 2022-06-15 [macOS] Raise minimum supported target to 10.13
+      #5329 merged 2023-03-30 Fix UDP can't connect warnings and add IP cache on the way
+  atomically     2 hit(s) (all listed)
+      #8244 open 2026-01-28 Support for non-blocking Torrent Relocations
+      #5172 closed 2023-03-07 perf: reducing the usage of is_looping_mutex_
+  interrupted    9 hit(s) (all listed)
+      #9119 open 2026-10-01 Preference file damaged after content disk got full. After restart are no content files shown, but seeding works.
+      #7175 closed 2024-10-16 Downloaded more that is shown in the Transmission
+      #4178 merged 2022-11-15 fix corruption: torrentVerify on completion
+      #820 closed 2019-01-20 Please Verify Local Data! Piece #xxx is corrupt
+      #6364 merged 2023-12-11 fix: sometimes stuck magnet metadata transfer
+      #5881 closed 2023-08-08 assertion failed in tr_swarm::remove_peer(): 'assertion failed: port_empty
+      #4010 merged 2022-10-23 macOS fix a potential hang when updating the blocklist
+      #2736 closed 2022-03-04 Linux crash on head - malloc error
+      #934 closed 2019-06-25 BUG:Transmission WEB can't be visited via IPV6
+  interrupt      23 hit(s) (all listed)
+      #9119 open 2026-10-01 Preference file damaged after content disk got full. After restart are no content files shown, but seeding works.
+      #858 open 2019-03-08 Feature Request: Filter by Drive (easy pause torrents with data on specific drives)
+      #8522 open 2026-02-15 automatic legacy codepage to UTF8 conversion
+      #882 open 2019-04-16 save settings.json when settings change, rather than at shutdown
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #7175 closed 2024-10-16 Downloaded more that is shown in the Transmission
+      #4178 merged 2022-11-15 fix corruption: torrentVerify on completion
+      #7283 closed 2024-12-10 Data lost when docker killed and downloaded to buffer
+      #820 closed 2019-01-20 Please Verify Local Data! Piece #xxx is corrupt
+      #6364 merged 2023-12-11 fix: sometimes stuck magnet metadata transfer
+      #5952 closed 2023-08-31 Download speeds have decreased
+      #5881 closed 2023-08-08 assertion failed in tr_swarm::remove_peer(): 'assertion failed: port_empty
+      #5176 merged 2023-03-08 fix: remove interest strategy code that could make dl speeds oscillate up & down
+      #4010 merged 2022-10-23 macOS fix a potential hang when updating the blocklist
+      #3429 closed 2022-07-10 Corruption of downloaded torrent file
+      #2705 closed 2022-02-24 3.00+ nightlies have an extended quit time
+      #423 closed 2017-10-23 transmission-daemon may crash when exiting
+      #1479 closed 2020-10-25 Pause and resume "Checking existing data" interrupts process
+      #1084 closed 2019-12-23 Error: No error - torrent stopped
+      #2369 closed 2021-12-31 Buggy behavior with transmission-gtk and debian-11.1.0-amd64-netinst.iso.torrent
+  sigkill        6 hit(s) (all listed)
+      #6026 closed 2023-09-21 Lots of corruptions in 4.0.4
+      #7055 closed 2024-08-11 transmission-daemon just quits without any messages or signal.
+      #6338 closed 2023-12-05 macOS app fails to quit
+      #793 closed 2018-12-27 arm7h: Timeout only when authentication is enabled and other weird behaviours
+      #5007 closed 2023-02-23 after 4.0.1 upgrade, some torrents think they are magnets and try to re-fetch metainfo
+      #1492 closed 2020-10-31 macOS 10.15.7: transmission-daemon with occasional crashes
+  sigint         3 hit(s) (all listed)
+      #8957 open 2026-06-29 ux quirks
+      #8986 closed 2026-07-11 fix: replace unsafe signal() with sigaction() across codebase
+      #7055 closed 2024-08-11 transmission-daemon just quits without any messages or signal.
+  ctrl-c         19 hit(s) (all listed)
+      #7023 open 2024-07-29 Too many open files. Aborted (core dumped)
+      #7095 closed 2024-09-02 fix: restore peer ID on resume (#7035)
+      #5627 closed 2023-06-15 Build error: third-party/fmt/include/fmt/core.h: error: expected unqualified-id before '>=' token
+      #5733 closed 2023-07-05 Buggy behavior with transmission-gtk in latest commit 2a9c30a61
+      #861 closed 2019-03-19 transmission-qt disables open folder for localhost daemon connections
+      #5317 closed 2023-03-28 Ctrl-V Copy-Paste Keyboard Shortcut is Broken
+      #5663 closed 2023-06-23 main crash in FavIconCache::mark_site_as_scraped
+      #4924 closed 2023-02-17 100% cpu, probably infinit loop in Cache::flushOldest
+      #4387 closed 2022-12-17 Transmission-gtk not accessible anymore after minimized to tray area
+      #4829 closed 2023-02-11 alt-i keyboard shortcut for torrent inspector doesn't work
+      #4399 closed 2022-12-18 with many torrents: slow interface (GTK|QT) (mainly moving location)
+      #423 closed 2017-10-23 transmission-daemon may crash when exiting
+      #439 closed 2017-11-14 Keyboard Shortcut for "Copy Magnet Link to Clipboard" Ctrl+C
+      #3242 closed 2022-06-09 transmission consistently stops responding and no 'make uninstall'
+      #3536 closed 2022-07-28 Huge memory leak in conflicting torrent situation
+      #728 closed 2018-10-02 Transmission-daemon 2.92 slow performance with large torrent
+      #409 closed 2017-09-27 transmission-cli shutdown crash under adversary condition
+      #3055 closed 2022-05-05 Memory leaks transmission-daemon 3.00
+      #772 closed 2018-11-30 third-party/libevent need update
+  power          81 hit(s) (all listed)
+      #8297 open 2026-01-31 macOS client no longer prevents sleep when Low Power Mode is enabled
+      #6436 open 2023-12-25 consider having a way to let power users edit default / compact torrent rendering
+      #866 open 2019-03-29 Better error messages when setting piece size of transmission-create
+      #5805 open 2023-07-18 [Feature Request] To aid migration to Transmission, user can specify multiple locations where seeded files are
+      #858 open 2019-03-08 Feature Request: Filter by Drive (easy pause torrents with data on specific drives)
+      #4562 open 2023-01-08 [ Feature request ] - Import existing files in a torrent download
+      #996 open 2019-09-02 Tracker whitelist
+      #6271 closed 2023-11-19 Prevent computer from sleeping only when not using battery power option
+      #6425 open 2023-12-22  feature: set priority per tracker (for all torrents, including new)
+      #6710 open 2024-03-17 Rule-based automatic torrent management in the WebUI
+      #7373 open 2025-01-06 Fixed #251 by detection of conflicts in the same directory
+      #5625 open 2023-06-15 Transmission failed to quit after hanging with all torrents saying zeroK
+      #287 open 2017-05-23 Transmission process sometimes keeps running after exit (Windows 64-bit)
+      #7681 open 2025-08-21 Transmission WebUI becomes unresponsive, and then Transmission crashes on quit.
+      #6105 open 2023-10-13 feat: Show "Session Upload" per torrent in GTK, Qt, remote clients
+      #3387 open 2022-07-01 Add support for padding files and extended file attributes (bep 0047)
+      #2538 open 2022-01-30 Use Weblate for translations
+      #47 open 2016-09-30 Support webrtc for webtorrent clients
+      #4267 open 2022-11-28 Qt: Add trackerview
+      #6839 open 2024-05-11 Perhaps transmission-create may encounter some issues when creating a torrent for large files.
+  outage         8 hit(s) (all listed)
+      #5747 open 2023-07-07 Downloaded nearly 20GB of a 11MB torrent
+      #8378 merged 2026-02-05 Update rpc-spec.md
+      #8062 closed 2026-01-05 Corrupt torrent status on hard reboot
+      #5960 merged 2023-09-01 fix: transmission-remote -l regression
+      #6214 merged 2023-11-05 !build: turning Qt6 MACOS_SUPPORT_MINIMUM up to 11
+      #5945 merged 2023-08-28 refactor: tidy up announcer code
+      #5947 merged 2023-08-29 perf: improve web ui responsiveness
+      #3456 merged 2022-07-16 Add ready-made RPC wrappers
+  ENOSPC         6 hit(s) (all listed)
+      #8806 open 2026-05-24 Track remaining LocalData work for safe nonblocking torrent relocation
+      #8244 open 2026-01-28 Support for non-blocking Torrent Relocations
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #1447 merged 2020-09-13 configure anti brute force
+      #2367 closed 2021-12-30 Corrupt download after running out of disk space and resuming
+      #1707 merged 2021-05-21 refactor: qt deprecations, pt 1
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #9119 open 2026-10-01 Preference file damaged after content disk got full. After restart are no content files shown, but seeding works.
+      #9010 open 2026-07-27 fix: avoid blocking macOS UI thread on tr_torrentStat() during disk writes
+      #5064 open 2023-02-26 Parallel torrent verification for torrents on disks
+      #9105 open 2026-09-09 Caching behavior
+      #8902 open 2026-06-10 [Feature Request] Stop allocating unselected files and implement fast non-zeroing preallocation on Windows
+      #9100 open 2026-09-03 Crash in `tr_u8path` on opening a torrent
+      #8994 open 2026-07-14 fix: make tr_torrentStat() non-blocking off the session thread
+      #8959 open 2026-06-30 strange behavior with zero-sized files
+      #7710 open 2025-09-25 [New Feature] Display disk size & free space on transmission web client
+      #6240 open 2023-11-10 Transmission removes files on disks when close/open the client
+      #8928 open 2026-06-17 File operations make the UI tread freeze
+      #9050 open 2026-08-20 fix: report the error when an existing file can't be opened
+      #3344 open 2022-06-24 Feature request: Add torrent file with know existing location on disk
+      #8739 open 2026-03-29 "Move Data File to…" on a torrent containing >4GB files doesn't give an error moving to FAT32 disks
+      #8841 open 2026-05-28 BEP 47 basic padding file non persistence
+      #8244 open 2026-01-28 Support for non-blocking Torrent Relocations
+      #5984 open 2023-09-08 Downloaded go into void when incomplete-dir has a trailing slash?
+      #1835 open 2021-09-25 [2.94, 3.00] "No space left on device" makes torrent actions fail
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7716 open 2025-10-01 Partial file selection not working properly
+      #6513 open 2024-01-08 Provide configuration to specify Partial File Suffix
+      #290 open 2017-05-24 Unselected files are downloaded anyway
+      #951 open 2019-07-19 [Feature request] Keep track of "last known highest percentage available"...
+      #5245 open 2023-03-17 consider using iconv in libtransmission after all
+      #6333 open 2023-12-04 Can't easily choose which drive to use when creating new download
+      #8332 open 2026-02-03 files don't start downloading after being toggled from "don't download" to "download"
+      #8987 open 2026-07-11 fix: redact the salted RPC password from the debug log
+      #6955 open 2024-06-26 Only update upload activity when torrent is fully downloaded
+      #8398 open 2026-02-06 Add SOCKS5 proxy support
+      #6045 open 2023-09-28 Support relative path for incomplete dir
+      #3344 open 2022-06-24 Feature request: Add torrent file with know existing location on disk
+      #8701 open 2026-03-18 Fix #7452: Prevent script-torrent-done from triggering twice
+      #8984 open 2026-07-11 Fix quit hangs during UPnP gateway validation
+      #7490 open 2025-03-13 GTK UI freezes with VK_ERROR_OUT_OF_DEVICE_MEMORY
+      #3813 open 2022-09-11 Allow grouping of Torrents in the Web UI
+      #8935 open 2026-06-22 Torrent stuck at 99.9X%
+      #5575 open 2023-06-03 feature request: two properties for torrent location :incomplete and complete
+      #8791 open 2026-05-05 Corruption of certain .resume files being encountered on transmission-daemon 4.1.1 (56442e2929)
+      #8233 merged 2026-01-27 refactor: shuffle peers before pumping
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7678 open 2025-08-19 Set location of incomplete torrent
+      #6045 open 2023-09-28 Support relative path for incomplete dir
+      #8046 open 2026-01-02 Lag in progress indicator and incomplete download
+      #9092 open 2026-08-31 web: show Finished for complete paused torrents
+      #834 open 2019-02-13 RPC doesnt expose incomplete-dir info for torrents
+      #6046 open 2023-09-28 Ability to skip incomplete directory per-torrent
+      #9120 open 2026-10-01 All torrents listed as "unknown": error on loading web user interface
+      #6129 open 2023-10-18 Allow to define the incomplete folder also per group
+      #5575 open 2023-06-03 feature request: two properties for torrent location :incomplete and complete
+      #5984 open 2023-09-08 Downloaded go into void when incomplete-dir has a trailing slash?
+      #399 open 2017-09-06 Folders are created for disabled preferences, e.g. watchdir and incomplete-dir
+      #8875 open 2026-06-06 feat: relocate completed torrents on a background thread
+      #8957 open 2026-06-29 ux quirks
+      #8742 open 2026-03-30 async file IO TODO tasks
+      #1473 open 2020-10-19 transmission-remote --watch-dir
+      #8050 open 2026-01-03 [RPC] empty directory path request should result in error
+      #8166 open 2026-01-18 web: status "Finished" for complete paused torrents
+      #4219 open 2022-11-21 Don't check paused (or never started) torrents for completion, or equivalent
+      #6333 open 2023-12-04 Can't easily choose which drive to use when creating new download
+      #6513 open 2024-01-08 Provide configuration to specify Partial File Suffix
+  dataloss       0 hit(s)
+  recover        33 hit(s) (all listed)
+      #9073 open 2026-08-27 Recover deleted files downloading?
+      #9081 open 2026-08-28 TransmissionBT forum signup not working
+      #7073 open 2024-08-22 Crash on macOS when filtering the search (Conflicting constraints detected)
+      #7750 open 2025-10-30 Interface glitch when adding torrent from magnet
+      #8981 open 2026-07-08 [Bug] Torrents stall permanently after network disconnection/reconnection on macOS Tahoe
+      #6644 open 2024-02-25 Unable to simultaneously satisfy constraints
+      #8791 open 2026-05-05 Corruption of certain .resume files being encountered on transmission-daemon 4.1.1 (56442e2929)
+      #5163 open 2023-03-06 No peers on torrent added automatically
+      #5625 open 2023-06-15 Transmission failed to quit after hanging with all torrents saying zeroK
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #7692 closed 2025-09-07 Windows UI not opening
+      #8217 closed 2026-01-25 4.1.0b5: filter bar issues
+      #8062 closed 2026-01-05 Corrupt torrent status on hard reboot
+      #8108 closed 2026-01-10 problems with RPC and torrent socket binding
+      #354 closed 2017-07-29 Option to force-clear resume metadata and redownload
+      #6994 closed 2024-07-13 cannot restart single-file torrent with "lost" local data
+      #6718 merged 2024-03-20 feat: allow port forwarding state to recover from error
+      #6803 closed 2024-04-22 `Too many open files` blocks transmission from responding 
+      #6813 closed 2024-04-27 Suggested order of merging ready-to-merge PRs + Transmission 4.0.6 release
+  recovery       13 hit(s) (all listed)
+      #9078 open 2026-08-27 fix: retry failed torrent queue saves
+      #9002 open 2026-07-18 fix: migrate 4.0.x resume data for torrents with zero-length files
+      #5163 open 2023-03-06 No peers on torrent added automatically
+      #7719 open 2025-10-05 feat(web): add paste and drag-and-drop of .torrents to web ui
+      #9000 open 2026-07-17 4.0.x -> 4.1.x resume incompatibility can remap and corrupt torrents containing zero-length files
+      #8401 open 2026-02-07 4.1.0 on macOS beachballs / has higher CPU use than 4.0.6
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #7058 closed 2024-08-12 Transmission project is abandoned?
+      #83 closed 2016-11-08 Easier recovery from temporarily missing data files ("No data found!")
+      #6277 merged 2023-11-22 refactor: pause torrent after verifying if files disappeared
+      #5126 merged 2023-03-02 Use bundled deps for GHA build from tarball on Mac
+      #1357 closed 2020-07-11 TransmissionMac 3.00 Hangs Unresponsive on Pause >2000 torrents
+      #2429 closed 2022-01-17 Cannot connect to https trackers on macOS
+  rollback       25 hit(s) (all listed)
+      #7249 open 2024-11-17 feat: recolor progressbar for web client
+      #6579 open 2024-02-06 Downloads don't progress beyond some point; keep jumping back
+      #8791 open 2026-05-05 Corruption of certain .resume files being encountered on transmission-daemon 4.1.1 (56442e2929)
+      #7717 closed 2025-10-01 WD EX2 Ultra - Transmission Error: 400 Bad Request
+      #7317 closed 2024-12-21 feat: torrent list highlight color rollback
+      #6590 merged 2024-02-09 build: fix building on macOS 10.14.6, 10.15.7 and 11.7
+      #6055 merged 2023-10-01 Fails with an error if data removal was not possible
+      #6272 closed 2023-11-20 rollback 5791
+      #6364 merged 2023-12-11 fix: sometimes stuck magnet metadata transfer
+      #5529 merged 2023-05-14 refactor: restore part of Buffer::reserve_space()
+      #4877 merged 2023-02-13 Bump bundled libutp to rollback anonymous unions fix
+      #3889 merged 2022-10-07 Rollback #3871
+      #4223 closed 2022-11-22 rollback "refactor: incremental announcer refactor pt. 2 (#4214)"
+      #4347 closed 2022-12-11 Fixed crash when pausing with partial rollback of refactor tr_peer_socket ~ tr_peerIo.
+      #4784 closed 2023-02-09 Downloads tangibly slower
+      #5671 merged 2023-06-27 perf: in cache, flush biggest contiguous blocks
+      #4231 merged 2022-11-24 Fix building on macOS Mojave
+      #3976 merged 2022-10-17 Change progress bar color depending on torrent state
+      #4227 merged 2022-11-23 fix: eta display in GTK client details dialog
+      #3922 closed 2022-10-09 feat: Align active filter macos (round 2)
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9105 open 2026-09-09 Caching behavior
+      #9002 open 2026-07-18 fix: migrate 4.0.x resume data for torrents with zero-length files
+      #9000 open 2026-07-17 4.0.x -> 4.1.x resume incompatibility can remap and corrupt torrents containing zero-length files
+      #4889 open 2023-02-14 GUI: resume all transfers pauses transfers
+      #8981 open 2026-07-08 [Bug] Torrents stall permanently after network disconnection/reconnection on macOS Tahoe
+      #8701 open 2026-03-18 Fix #7452: Prevent script-torrent-done from triggering twice
+      #4966 open 2023-02-20 [feature] Ability to pause / resume all torrents in a group
+      #623 open 2018-05-15 Feature request: Prevent auto-resume of downloads upon app launch. 
+      #7798 open 2025-11-10 Feature Request: Add pause/resume capability on a group level
+      #9095 open 2026-09-01 feat: support x.pe peer addresses in magnet links
+      #8791 open 2026-05-05 Corruption of certain .resume files being encountered on transmission-daemon 4.1.1 (56442e2929)
+      #5385 open 2023-04-13 T 4.0.2 & 4.0.3 macOS "Unable to save resume file / Can't Get File too many open files (24)
+      #8483 open 2026-02-13 macOS. Configure proper cell reuse in torrents table view
+      #8778 open 2026-04-28 Add Networking Binding (app-wide, and per torrent)
+      #834 open 2019-02-13 RPC doesnt expose incomplete-dir info for torrents
+      #8102 open 2026-01-10 unify the seed-ratio keys
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #550 open 2018-03-11 On Sierra, "Use Small Size" doesn't work for Pause/Resume buttons (they stay the same)
+      #8972 open 2026-07-05 Refactor macOS Controller into focused services
+      #858 open 2019-03-08 Feature Request: Filter by Drive (easy pause torrents with data on specific drives)
+  half-written   14 hit(s) (all listed)
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #9032 merged 2026-08-04 fix: unify GUI launch delegation
+      #9029 closed 2026-08-03 feat: hold a lock on the session's config dir
+      #9022 merged 2026-08-02 feat: detect when another Transmission is using the same config dir
+      #9016 closed 2026-08-01 fix: connect to a running Qt client instead of starting one
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #2538 open 2022-01-30 Use Weblate for translations
+      #1815 open 2021-09-17 excessive dns requests
+      #7873 closed 2025-12-04 Icons are almost totally missing on Transmission 4.1.0-beta.4 using Windows 11
+      #6554 closed 2024-01-27 Needs a really important improvement: free disk space protection
+      #5992 merged 2023-09-11 run peerMgrPeerStats in session thread
+      #2909 closed 2022-04-13 Issues with webseed torrents
+      #108 closed 2016-12-12 [macOS] 'Move Data File' should execute on separate thread and give the user some feedback
+      #3409 merged 2022-07-04 macOS internationalization of xibs
+  wipe           18 hit(s) (all listed)
+      #6579 open 2024-02-06 Downloads don't progress beyond some point; keep jumping back
+      #7373 open 2025-01-06 Fixed #251 by detection of conflicts in the same directory
+      #4618 open 2023-01-19 Port closed after a few days on M1 mac
+      #7277 merged 2024-12-04 refactor: offload icons from HTMLdoc to JavaScript for icon deployment
+      #6515 closed 2024-01-10 [peer-mgr] Allocate more peers to downloading torrents
+      #5261 closed 2023-03-20 Transfer performance remains significantly degraded in 4.0.x compared to 3.0.0
+      #354 closed 2017-07-29 Option to force-clear resume metadata and redownload
+      #870 closed 2019-04-02 'seed time' not saved between sessions
+      #155 closed 2017-01-26 feat: save queue order between sessions
+      #6917 merged 2024-06-14 fix: various pex flag bugs and cleanup
+      #5708 closed 2023-07-01 [fixed] transmission-gtk 4.0.3 crash on start on macOS: glibmm-ERROR **: unhandled exception (type std::exception) in signal handler
+      #6227 closed 2023-11-09 Old .msi installs AutoKMS and then Windows 10 Pro remote access is granted to attackers.
+      #4713 closed 2023-02-03 Crash to desktop when deleting torrent+file on Windows 11
+      #3716 closed 2022-08-26 #8271 Verify Local Data Wipes Out [Deletes] Entire Data File *previously completed
+      #3054 closed 2022-05-05 Build #7908 (earlier?) erases all custom group name labels, colors d3e1c83c9b
+      #2434 closed 2022-01-18 Information lost upon restart in macOS nightlies
+      #2772 closed 2022-03-15 Transmission nightly build forgets group assignments
+      #2397 merged 2022-01-14 refactor: replace tr_info with tr_torrent_metainfo
+  wipes          4 hit(s) (all listed)
+      #7373 open 2025-01-06 Fixed #251 by detection of conflicts in the same directory
+      #870 closed 2019-04-02 'seed time' not saved between sessions
+      #6917 merged 2024-06-14 fix: various pex flag bugs and cleanup
+      #3716 closed 2022-08-26 #8271 Verify Local Data Wipes Out [Deletes] Entire Data File *previously completed
+  erase          38 hit(s) (all listed)
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #7293 open 2024-12-13 ctrl-a, ctrl-u app keyboard shortcuts conflict with GTK widget shortcuts
+      #4874 open 2023-02-13 feat: autofetch magnet metadata when adding a magnet.
+      #9096 merged 2026-09-01 refactor: collapse is_martian_addr() into is_valid_for_peers()
+      #5747 open 2023-07-07 Downloaded nearly 20GB of a 11MB torrent
+      #2538 open 2022-01-30 Use Weblate for translations
+      #8710 merged 2026-03-19 fix: do not use std::erase_if() in C++17 code
+      #8007 closed 2025-12-25 Bad formed json response
+      #8884 merged 2026-06-07 feat: add BEP 55 uTP hole punching
+      #6895 closed 2024-06-05 peers retained in swarm non-randomly, by IP-address numerical order
+      #5261 closed 2023-03-20 Transfer performance remains significantly degraded in 4.0.x compared to 3.0.0
+      #8333 merged 2026-02-03 reject .torrent files with missing info:[pieces] key
+      #1460 closed 2020-09-28 Queue position is not saved in the .resume file between sessions
+      #122 closed 2016-12-19 Error: Unable to save resume file: File name too long
+      #6718 merged 2024-03-20 feat: allow port forwarding state to recover from error
+      #6614 merged 2024-02-17 refactor: store peer info objects in shared pointers
+      #6907 merged 2024-06-10 bump miniupnpc to 2.2.8
+      #6709 merged 2024-03-16 bumping libdeflate/small/utfcpp to newer versions
+      #6833 closed 2024-05-08 Crash in TR_ASSERT(now >= latest)
+      #6230 merged 2023-11-09 refactor: thread-safe `lru-cache` and `tr_open_files`
+  erasing        1 hit(s) (all listed)
+      #4874 open 2023-02-13 feat: autofetch magnet metadata when adding a magnet.
+  erased         9 hit(s) (all listed)
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #6895 closed 2024-06-05 peers retained in swarm non-randomly, by IP-address numerical order
+      #1460 closed 2020-09-28 Queue position is not saved in the .resume file between sessions
+      #6907 merged 2024-06-10 bump miniupnpc to 2.2.8
+      #5801 merged 2023-07-17 feat: split connectable and non-connectable pool
+      #5755 merged 2023-07-08 perf: avoid copying/moving elements in peer candidate list
+      #5753 closed 2023-07-08 perf: avoid copying/moving elements in peer candidate list
+      #2878 closed 2022-04-04 Crash in tr_clientForId()
+      #1160 closed 2020-03-26 Device not configured
+  destroy        63 hit(s) (all listed)
+      #9110 open 2026-09-19 fix(gtk): prevent clipping on first context menu opening
+      #8715 open 2026-03-20 fix: use-after-free in tr_peerMsgsImpl peerIo callbacks
+      #8597 open 2026-02-23 unreasonable growing memory usage
+      #8984 open 2026-07-11 Fix quit hangs during UPnP gateway validation
+      #8908 open 2026-06-12 new crash "pure virtual method called terminate called without an active exception"
+      #8806 open 2026-05-24 Track remaining LocalData work for safe nonblocking torrent relocation
+      #8632 open 2026-02-27 fix: add timeout to session shutdown to prevent deadlock on quit
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #8875 open 2026-06-06 feat: relocate completed torrents on a background thread
+      #8808 open 2026-05-25 Route UDP announces through SOCKS5 proxy via UDP ASSOCIATE
+      #6561 open 2024-01-30 feat: support SSL for rpc server with libevent_openssl
+      #8910 merged 2026-06-12 fix: add checks for `socket_`
+      #8505 merged 2026-02-14 fix: cache `[Torrent hashString]`
+      #4053 merged 2022-10-30 refactor: decouple session settings from the session class
+      #8060 merged 2026-01-04 refactor: put libutp behind BSD-like abstraction
+      #1910 closed 2021-10-09 macOS - Crash on "Rename File ..." at the end of the download
+      #8090 closed 2026-01-09 Crash: Heap buffer overflow on `tr_isTorrent`
+      #7514 merged 2025-03-22 feat:add raw PeerID to RPC interface
+      #5943 closed 2023-08-25 magnet stuck at 50% metadata
+      #7485 closed 2025-03-11 "possibly dangling reference" in new 4.1b2 proxy handling
+  destroys       6 hit(s) (all listed)
+      #8808 open 2026-05-25 Route UDP announces through SOCKS5 proxy via UDP ASSOCIATE
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #8910 merged 2026-06-12 fix: add checks for `socket_`
+      #7247 merged 2024-11-16 Fixing bug in new torrent options dialog
+      #4205 closed 2022-11-16 Asynchronous DNS Lookup Functionality Breaks Network Connectivity
+      #3673 closed 2022-08-18 transmission absolutely destroys my disk space by spamming the log file
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #882 open 2019-04-16 save settings.json when settings change, rather than at shutdown
+      #8479 open 2026-02-13 Decide what to do with nightly builds
+      #8183 open 2026-01-21 4.1.0-beta Unexpected completion percentage drop after verification
+      #3344 open 2022-06-24 Feature request: Add torrent file with know existing location on disk
+      #6317 open 2023-11-30 Nightly #9466 crash in libtransmission::BufferReader
+      #173 open 2017-02-07 "download directory path is not absolute" is inconsistent
+      #2252 open 2021-11-30 Bad examples in manpages for adding multiple, or all torrents in a directory
+      #7373 open 2025-01-06 Fixed #251 by detection of conflicts in the same directory
+      #6818 open 2024-04-28 File Chooser not available for selecting Destination folder when adding a torrent in a remote session.
+      #5062 open 2023-02-26 macOS client freezes when it tries to play "download completed" sound
+      #8658 merged 2026-03-05 fix: don't overwrite `*_enabled` if `preferred_transports` is not in `settings.json`
+      #9029 closed 2026-08-03 feat: hold a lock on the session's config dir
+      #9022 merged 2026-08-02 feat: detect when another Transmission is using the same config dir
+      #9017 closed 2026-08-01 feat: hold a lock on the session's config dir
+      #8495 merged 2026-02-14 security: sanitise CTRL characters in filenames on all systems
+      #8657 merged 2026-03-05 fix: don't overwrite `*_enabled` if `preferred_transports` is not in `settings.json`
+      #8647 closed 2026-03-04 Rename Torrent should detect filesystem conflicts
+      #8702 closed 2026-03-18 Port status shows 'Closed' despite working manual port forwarding
+      #8465 closed 2026-02-12 disallow control characters 0x01-0x1F in torrent 'name' & 'path'
+      #8643 closed 2026-03-03 Transmission using utp, even when its disabled in the config.
+  clobber        7 hit(s) (all listed)
+      #9095 open 2026-09-01 feat: support x.pe peer addresses in magnet links
+      #8984 open 2026-07-11 Fix quit hangs during UPnP gateway validation
+      #6389 closed 2023-12-16 [Feature Request / Corruption Bug] Support for warning for torrents downloading same file
+      #8884 merged 2026-06-07 feat: add BEP 55 uTP hole punching
+      #8399 closed 2026-02-06 4.1.0 duplicates download announce events
+      #6407 merged 2023-12-18 add user presets to .gitignore
+      #2725 closed 2022-03-02 Transmission nightly builds should use different file name & identifier from regular
+  blank          58 hit(s) (all listed)
+      #5690 open 2023-06-29 That pesky blank File dialog
+      #4207 open 2022-11-17 Accessibility and Usability Issues With VoiceOver On Mac OS
+      #7970 open 2025-12-20 transmission-qt: Remember the last used directory for "File > Open..."
+      #6877 open 2024-05-31 Inspector Window Doesn’t Show Peers While Upload Is Active
+      #9083 open 2026-08-28 peer-msgs: cap peer-wire message length at 1 MiB
+      #638 open 2018-06-02 Feature request: Ability to choose the upper folder name
+      #6878 open 2024-05-31 IPv6-only network seems to cause outgoing tracker connections and port test (and potentially DHT) to not work properly
+      #8041 closed 2026-01-01 Clicking blank areas in Torrent Inspector does not focus the pop-up
+      #8792 merged 2026-05-06 Notes: Torrent inspector click issues resolved for macOS app
+      #8817 merged 2026-05-26 feat: accommodate empty but valid blocklists
+      #8096 merged 2026-01-09 fix: rebind udp sockets on bind-address change
+      #1289 closed 2020-05-31 [Windows] Folders icons not appearing
+      #5443 closed 2023-04-24 doesn't save some of multiple torrents' options (when editing then saving)
+      #7215 closed 2024-10-31 transmission flashes up window then hides 
+      #4566 closed 2023-01-09 4.0.0-beta 3 does not show icon in torrent list for single file torrents that have existing icons on Windows 11
+      #7325 closed 2024-12-23 4.10 beta 1: Filter panel spontaneously disappears after few hours
+      #7403 closed 2025-01-20 Transmission is not working
+      #7610 closed 2025-06-08 Tracker questions and problems
+      #7156 closed 2024-10-05 transmission-daemon on Ubuntu 24.04 LTS or 24.10 on Docker fails to respect ENV variable: TRANSMISSION_WEB_HOME
+      #5684 closed 2023-06-29 macOS GUI foo, er a regressions
+  unreadable     15 hit(s) (all listed)
+      #6605 open 2024-02-14 transmission-qt button labels unreadable
+      #8467 open 2026-02-12 Selected torrent with an error is unreadable when Transmission does not have focus
+      #7983 open 2025-12-22 transmission-qt: Percent is not visible in compact view when a row is selected
+      #1639 open 2021-03-10 Qt client: Add download path filter
+      #9038 open 2026-08-06 Feature request: peer-port-file setting so the peer port can follow a VPN's forwarded port
+      #7006 closed 2024-07-23 make files in .config/transmission-daemon/ group readable
+      #5757 closed 2023-07-09 Dark Mode: Colours make descriptive texts impossible to read
+      #4983 closed 2023-02-22 Web UI hover text for torrent options is unreadable on dark mode
+      #3834 closed 2022-09-21 Web client text unreadable in dark mode
+      #3762 closed 2022-09-05 Web interface is unreadable on iOS Safari and desktop Firefox
+      #1534 closed 2020-11-24 Set text to green when seeding torrent in transmission-gtk
+      #3893 closed 2022-10-07 4.0.0-beta.1 webui text in preferences is unreadably close to background color
+      #2988 closed 2022-04-25 Transmission's copy of the .torrent and .resume files should include a fragment of the torrent name
+      #2301 closed 2021-12-11 Multiple issues with Web-UI in current Git head
+      #2218 merged 2021-11-24 fix: GTK client's log window should honor dark mode
+  garbage        26 hit(s) (all listed)
+      #9085 open 2026-08-29 fix: false negative on `send(2)` error
+      #8033 open 2025-12-29 disallow "recently_active" for torrent_set ?
+      #8711 merged 2026-03-19 Fix #8111: reject trailing garbage in RPC URL
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #2538 open 2022-01-30 Use Weblate for translations
+      #8111 closed 2026-01-10 RPC url accepts trailing garbage
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #8174 merged 2026-01-20 refactor: add `tr_strv_to_utf8_nsstring()`
+      #579 closed 2018-04-15 Please ignore the padding files inserted by BitComet Client in torrent.
+      #8884 merged 2026-06-07 feat: add BEP 55 uTP hole punching
+      #7865 closed 2025-12-02 refactor: different request timeout behaviour based on connected peers
+      #6882 closed 2024-06-01 peers2 and peer2-6 in resume files, incompat with earlier Transmission
+      #6460 closed 2023-12-30 [torrent.cc] The right operand of '<' is a garbage value
+      #313 closed 2017-06-21 transmission-daemon extreemly high memory usage
+      #3494 closed 2022-07-21 [linux] transmission-daemon 3.0.0 memory growth over time.
+      #5285 merged 2023-03-23 fix: The right operand of '<' is a garbage value
+      #5786 closed 2023-07-14 fix local peer discovery
+      #5006 merged 2023-02-23 fix: TR_TIME_LOCALTIME contained garbage when calling a script
+      #5233 merged 2023-03-15 fix: generate peer-id on launch
+      #4064 merged 2022-11-01 Fix set_version "The left operand of '&' is a garbage value"
+  mangled        5 hit(s) (all listed)
+      #9064 merged 2026-08-22 macOS: fix magnet links corrupted when pasted into main window (#9062)
+      #9062 merged 2026-08-22 macOS: fix magnet links corrupted when pasted into main window
+      #6982 closed 2024-07-09 Web UI returns "401: Unauthorized"
+      #2564 closed 2022-02-02 refactor: Replace ToS with DSCP
+      #2140 closed 2021-11-13 [macOS] Build errors with Xcode 13.1
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7152 open 2024-10-03 Group torrents by identical contents
+      #9100 open 2026-09-03 Crash in `tr_u8path` on opening a torrent
+      #6087 open 2023-10-07 Seed Ratio is being tracked from torrent size, not downloaded data
+      #8959 open 2026-06-30 strange behavior with zero-sized files
+      #1734 open 2021-06-29 Display number of files and folders on GENERAL section
+      #1742 open 2021-07-19 TRANSMISSION_WEB_HOME not set in nightly macOS builds
+      #8797 open 2026-05-11 Fix macOS pasteboard magnet URL handling
+      #8673 open 2026-03-10 GTK client: torrent content (file list) not shown when adding magnet link via 'Open URL' dialog
+      #4966 open 2023-02-20 [feature] Ability to pause / resume all torrents in a group
+      #9038 open 2026-08-06 Feature request: peer-port-file setting so the peer port can follow a VPN's forwarded port
+      #5027 open 2023-02-24 In the Russian localization, if there is free space does not go to the horizontal mode
+      #7504 open 2025-03-19 UI Regression: Groups: the disclosure triangle hitbox for "No group" is too small, or was shifted.  Triangle works for all other groups.
+      #8872 open 2026-06-05 Dark theme gone since the upgrade to v4.1.2
+      #7681 open 2025-08-21 Transmission WebUI becomes unresponsive, and then Transmission crashes on quit.
+      #6794 open 2024-04-15 Magnet auto add conflict with default folder set as "Same as torrent"
+      #3651 open 2022-08-16 option to disable TLS verification
+      #3605 open 2022-08-10 Add an option to transmission-edit to convert hybrid torrent files with v1 and v2 data to plain old v1 file
+      #5614 open 2023-06-12 Ability to force the creation of a folder
+      #8903 open 2026-06-10 Transmission 4.2.1 freezes on quit and magnet links no longer start downloads on macOS Monterey
+      #6317 open 2023-11-30 Nightly #9466 crash in libtransmission::BufferReader
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8983 open 2026-07-09 Raise Xcode minimum version to 16.0 and convert groups to folders
+      #9070 open 2026-08-24 Choose where to save opened .torrent files
+      #9107 open 2026-09-15 fix: don't expose RPC session id via CORS (port #8938 to main)
+      #8984 open 2026-07-11 Fix quit hangs during UPnP gateway validation
+      #8139 open 2026-01-15 only send announces when global_address() is available
+      #6769 open 2024-04-04 Use `XDG_DATA_HOME` and `XDG_STATE_HOME`
+      #8978 open 2026-07-07 feat(macOS): add "Sort by Ratio" as a top-level sort mode
+      #968 open 2019-08-05 [Feature Request] Manually Specify Public IP
+      #7045 open 2024-08-06 transmission-remote JSON output problem
+      #8466 open 2026-02-12 Check host validity in url schemes
+      #1285 open 2020-05-30 Qt client: expose download progress in the torrents list to screen readers
+      #3485 open 2022-07-20 Transmission WebUI does not use the (default) sort-mode from settings.json
+      #9005 open 2026-07-21 can't view the torrents i have that extend past my screen with auto resize on
+      #4858 open 2023-02-12 feat: support auto-complete remote paths in thin-client mode
+      #4811 open 2023-02-11 move nonessential libtransmission features to a supporting library
+      #8400 open 2026-02-07 feat(web): Add option to sort files alphabetically
+      #5332 open 2023-03-31 No hamburger menu with global menus and HUD, no way to access any preferences
+      #8143 open 2026-01-15 fix: undefined behavior in `tr_strbuf`
+      #8016 open 2025-12-26 transmission window does not open on screen. Downloads but no control possible as no interface
+      #6710 open 2024-03-17 Rule-based automatic torrent management in the WebUI
+  unclean        4 hit(s) (all listed)
+      #9038 open 2026-08-06 Feature request: peer-port-file setting so the peer port can follow a VPN's forwarded port
+      #7730 closed 2025-10-20 settings.json set to zero bytes
+      #4054 closed 2022-10-31 Build transmission-app using a clean checkout
+      #2125 closed 2021-11-10 [macOS] 3.0.0+: Crash after unclean exit
+  shutdown       92 hit(s) (all listed)
+      #9047 open 2026-08-20 fix: don't let expendable web tasks stall session shutdown
+      #8632 open 2026-02-27 fix: add timeout to session shutdown to prevent deadlock on quit
+      #882 open 2019-04-16 save settings.json when settings change, rather than at shutdown
+      #8997 open 2026-07-15 Transmsion 4.1.3 is slow to quit or hangs
+      #8984 open 2026-07-11 Fix quit hangs during UPnP gateway validation
+      #8879 open 2026-06-07 Transmission-gtk v4.1.1 failing to load on Xubuntu 26.04 (IGP: AMD Radeon): DRI3 error
+      #8841 open 2026-05-28 BEP 47 basic padding file non persistence
+      #7065 open 2024-08-16 Add quitting indicator to Transmission main window
+      #4903 open 2023-02-15 "peer-port" in settings.json file differs from the one being showed in Web client or transmission-remote GUI
+      #9058 merged 2026-08-21 fix: lost wakeup that could hang tr_web shutdown (#9001)
+      #8244 open 2026-01-28 Support for non-blocking Torrent Relocations
+      #8183 open 2026-01-21 4.1.0-beta Unexpected completion percentage drop after verification
+      #9001 merged 2026-07-18 fix: lost wakeup that could hang tr_web shutdown
+      #7642 open 2025-07-11 Stall on quit
+      #8806 open 2026-05-24 Track remaining LocalData work for safe nonblocking torrent relocation
+      #9038 open 2026-08-06 Feature request: peer-port-file setting so the peer port can follow a VPN's forwarded port
+      #16 open 2016-08-31 sign releases, e.g. with PGP
+      #8113 merged 2026-01-11 perf: faster tests
+      #6442 closed 2023-12-27 Incorrect shutdown in Windows
+      #8679 merged 2026-03-11 daemon: avoid periodic stats.json rewrites while idle
+  reboot         61 hit(s) (all listed)
+      #3822 open 2022-09-16 add `--sort` command-line option to transmission-remote
+      #8981 open 2026-07-08 [Bug] Torrents stall permanently after network disconnection/reconnection on macOS Tahoe
+      #8632 open 2026-02-27 fix: add timeout to session shutdown to prevent deadlock on quit
+      #5860 open 2023-08-02 Issue with network share mount point
+      #8401 open 2026-02-07 4.1.0 on macOS beachballs / has higher CPU use than 4.0.6
+      #8778 open 2026-04-28 Add Networking Binding (app-wide, and per torrent)
+      #5067 open 2023-02-26 4.0.1 GTK wayland client has wrong wmclass
+      #5625 open 2023-06-15 Transmission failed to quit after hanging with all torrents saying zeroK
+      #7681 open 2025-08-21 Transmission WebUI becomes unresponsive, and then Transmission crashes on quit.
+      #327 open 2017-07-08 feat: remember sort order between sessions
+      #7202 open 2024-10-26  Transmission for Mac (and probably not only) doesn't seem to open ports (also says "port closed" in Network settings)
+      #8865 closed 2026-06-03 permission denied on readable configuration after update
+      #5385 open 2023-04-13 T 4.0.2 & 4.0.3 macOS "Unable to save resume file / Can't Get File too many open files (24)
+      #6655 closed 2024-03-02 Lost Default Public Trackers after reboot
+      #8062 closed 2026-01-05 Corrupt torrent status on hard reboot
+      #3285 open 2022-06-13 All trackers get connection failed
+      #103 closed 2016-12-03 Transmission Daemon fails to start / fails to start during install
+      #7215 closed 2024-10-31 transmission flashes up window then hides 
+      #7066 closed 2024-08-16 All network connections close down including VNC
+      #2307 closed 2021-12-13 Tracker and transfer not equal
+  disk+full      85 hit(s) (all listed)
+      #9119 open 2026-10-01 Preference file damaged after content disk got full. After restart are no content files shown, but seeding works.
+      #9105 open 2026-09-09 Caching behavior
+      #8902 open 2026-06-10 [Feature Request] Stop allocating unselected files and implement fast non-zeroing preallocation on Windows
+      #9050 open 2026-08-20 fix: report the error when an existing file can't be opened
+      #9010 open 2026-07-27 fix: avoid blocking macOS UI thread on tr_torrentStat() during disk writes
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #8841 open 2026-05-28 BEP 47 basic padding file non persistence
+      #1835 open 2021-09-25 [2.94, 3.00] "No space left on device" makes torrent actions fail
+      #5277 open 2023-03-22 Preallocation setting is not working on Windows
+      #8244 open 2026-01-28 Support for non-blocking Torrent Relocations
+      #8875 open 2026-06-06 feat: relocate completed torrents on a background thread
+      #5747 open 2023-07-07 Downloaded nearly 20GB of a 11MB torrent
+      #290 open 2017-05-24 Unselected files are downloaded anyway
+      #3387 open 2022-07-01 Add support for padding files and extended file attributes (bep 0047)
+      #5797 open 2023-07-15 All downloads stopped after one 'File name too long' error.
+      #7716 open 2025-10-01 Partial file selection not working properly
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #7390 open 2025-01-14 cannot rename torrent name with special characters on web ui
+      #9000 open 2026-07-17 4.0.x -> 4.1.x resume incompatibility can remap and corrupt torrents containing zero-length files
+      #8632 open 2026-02-27 fix: add timeout to session shutdown to prevent deadlock on quit
+  data+loss      27 hit(s) (all listed)
+      #5153 open 2023-03-05 Data loss: excluded files start downloading, after 4.0 upgrade
+      #7132 open 2024-09-22 Mac OS Finder tags deleted when data files moved by Transmission
+      #858 open 2019-03-08 Feature Request: Filter by Drive (easy pause torrents with data on specific drives)
+      #3695 open 2022-08-22 Moving a single-file torrent into a directory which contains a symlink to it removes the original file
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #5648 open 2023-06-20 UI consistency: Have WebUI, Qt and GTK clients follow same progressbar color scheme as Mac client?
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #5385 open 2023-04-13 T 4.0.2 & 4.0.3 macOS "Unable to save resume file / Can't Get File too many open files (24)
+      #1815 open 2021-09-17 excessive dns requests
+      #2538 open 2022-01-30 Use Weblate for translations
+      #7530 closed 2025-03-31 [Looking for input] Remove the app-layer filesystem cache
+      #7366 closed 2025-01-03 Backport relevant fixes to v3
+      #8062 closed 2026-01-05 Corrupt torrent status on hard reboot
+      #7307 closed 2024-12-16 4.1.0 beta 1 on macOS 15.2: IPv6 error
+      #7474 closed 2025-03-07 Remote Session Download Directory Overwrites Local Session Settings in Transmission-Qt
+      #4849 closed 2023-02-12 [Mac] Performance Regression v4.0.0 vs v3.0.0
+      #5098 closed 2023-03-01 transmission-daemon 4.0.1 not recognizing already download files by 3.x, re-downloads, refusing to verify...
+      #4975 merged 2023-02-21 build: set /utf-8 flag when using MSVC
+      #3508 closed 2022-07-22 [Transmission 3.00+ (c50da43ae0)] moves all torrent locations to /home/user
+      #5003 closed 2023-02-23 Transfer performance remains significantly degraded in 4.0.1 compared to 3.0.0
+  partial+write  16 hit(s) (all listed)
+      #8398 open 2026-02-06 Add SOCKS5 proxy support
+      #6045 open 2023-09-28 Support relative path for incomplete dir
+      #5575 open 2023-06-03 feature request: two properties for torrent location :incomplete and complete
+      #47 open 2016-09-30 Support webrtc for webtorrent clients
+      #6112 open 2023-10-15 feat: add verify option for transmission-show
+      #7530 closed 2025-03-31 [Looking for input] Remove the app-layer filesystem cache
+      #4795 merged 2023-02-10 feat: sequential download
+      #579 closed 2018-04-15 Please ignore the padding files inserted by BitComet Client in torrent.
+      #5261 closed 2023-03-20 Transfer performance remains significantly degraded in 4.0.x compared to 3.0.0
+      #7272 closed 2024-12-02 RPi 4 performance question
+      #122 closed 2016-12-19 Error: Unable to save resume file: File name too long
+      #6917 merged 2024-06-14 fix: various pex flag bugs and cleanup
+      #6909 closed 2024-06-10 failure to consume BT messages just after handshake
+      #6055 merged 2023-10-01 Fails with an error if data removal was not possible
+      #4505 closed 2023-01-01 to continue firefox partial downloads
+      #2630 closed 2022-02-15 Password authentication stopped working on Arch Linux ARM package
+  crash+safe     32 hit(s) (all listed)
+      #8661 open 2026-03-07 Crash at the end of `[Torrent updateTorrents:self.fTorrents]`
+      #8908 open 2026-06-12 new crash "pure virtual method called terminate called without an active exception"
+      #5062 open 2023-02-26 macOS client freezes when it tries to play "download completed" sound
+      #6335 open 2023-12-04 ui: use reverse-DNS scheme for identifiers
+      #8401 open 2026-02-07 4.1.0 on macOS beachballs / has higher CPU use than 4.0.6
+      #8494 closed 2026-02-14 Crash in [FileNameCellView updateColors]
+      #7530 closed 2025-03-31 [Looking for input] Remove the app-layer filesystem cache
+      #8465 closed 2026-02-12 disallow control characters 0x01-0x1F in torrent 'name' & 'path'
+      #8475 merged 2026-02-13 refactor: migrate to Madler's crc32c
+      #7948 merged 2025-12-17 fix: race condition in `tr_torrentStat()`
+      #8090 closed 2026-01-09 Crash: Heap buffer overflow on `tr_isTorrent`
+      #7307 closed 2024-12-16 4.1.0 beta 1 on macOS 15.2: IPv6 error
+      #7413 closed 2025-01-25 transmission-daemon core dump
+      #7442 closed 2025-02-14 transmission-gtk constantly crashes with "Broken pipe" error while downloading particular torrent
+      #7035 closed 2024-08-01 libcurl 8.9.1 causes abrupt exit due to SIGPIPE
+      #6987 merged 2024-07-12 Consume early pad a/b, improve handshake tests
+      #6813 closed 2024-04-27 Suggested order of merging ready-to-merge PRs + Transmission 4.0.6 release
+      #1876 closed 2021-10-02 LetsEncrypt / DST Root CA X3 expiration: some trackers fail to connect on Mac.
+      #1353 closed 2020-07-09 printf() fmt string translation errors cause Transmission to crash
+      #4433 closed 2022-12-21 Keyboard Navigation In The Torrent Table Crashes The Mac OS Client
+  atomic+write   5 hit(s) (all listed)
+      #6194 open 2023-11-02 fix: supporting empty files
+      #7307 closed 2024-12-16 4.1.0 beta 1 on macOS 15.2: IPv6 error
+      #7339 merged 2024-12-27 fix: speed limits did not work below 16KiB/s
+      #5734 merged 2023-07-05 perf: faster get peer candidates
+      #5329 merged 2023-03-30 Fix UDP can't connect warnings and add IP cache on the way
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9010 open 2026-07-27 fix: avoid blocking macOS UI thread on tr_torrentStat() during disk writes
+      #8902 open 2026-06-10 [Feature Request] Stop allocating unselected files and implement fast non-zeroing preallocation on Windows
+      #1060 open 2019-11-22 [bug] BTRFS subvolumes are treated as different filesystems, hurting the performance of moving a torrent
+      #7696 open 2025-09-12 Transmission for macOS: After running for a few hours, issues keep mounting
+      #6335 open 2023-12-04 ui: use reverse-DNS scheme for identifiers
+      #8522 open 2026-02-15 automatic legacy codepage to UTF8 conversion
+      #6818 open 2024-04-28 File Chooser not available for selecting Destination folder when adding a torrent in a remote session.
+      #9095 open 2026-09-01 feat: support x.pe peer addresses in magnet links
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #255 open 2017-04-28 Qt client should disallow multiple application instances using the same configuration directory
+      #5385 open 2023-04-13 T 4.0.2 & 4.0.3 macOS "Unable to save resume file / Can't Get File too many open files (24)
+      #5067 open 2023-02-26 4.0.1 GTK wayland client has wrong wmclass
+      #8474 open 2026-02-13 Transmision Sponaneouly Quits - No Crash - Just Find It No Longer Open & Running
+      #7171 open 2024-10-15 Show location for each peer
+      #4618 open 2023-01-19 Port closed after a few days on M1 mac
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #6112 open 2023-10-15 feat: add verify option for transmission-show
+      #9029 closed 2026-08-03 feat: hold a lock on the session's config dir
+      #9022 merged 2026-08-02 feat: detect when another Transmission is using the same config dir
+      #9064 merged 2026-08-22 macOS: fix magnet links corrupted when pasted into main window (#9062)
+  write+failure  52 hit(s) (all listed)
+      #9049 open 2026-08-20 fix: keep failed disk writes from wedging the cache or passing silently
+      #9078 open 2026-08-27 fix: retry failed torrent queue saves
+      #9050 open 2026-08-20 fix: report the error when an existing file can't be opened
+      #9072 open 2026-08-26 fix: report the real error when a file can't be opened (4.1.x)
+      #8806 open 2026-05-24 Track remaining LocalData work for safe nonblocking torrent relocation
+      #8398 open 2026-02-06 Add SOCKS5 proxy support
+      #8808 open 2026-05-25 Route UDP announces through SOCKS5 proxy via UDP ASSOCIATE
+      #8093 open 2026-01-09 Could not connect to tracker
+      #8908 open 2026-06-12 new crash "pure virtual method called terminate called without an active exception"
+      #9000 open 2026-07-17 4.0.x -> 4.1.x resume incompatibility can remap and corrupt torrents containing zero-length files
+      #338 open 2017-07-19 Bind to an interface
+      #8050 open 2026-01-03 [RPC] empty directory path request should result in error
+      #6335 open 2023-12-04 ui: use reverse-DNS scheme for identifiers
+      #2462 open 2022-01-19 feature: nonblocking disk IO
+      #8912 merged 2026-06-13 ci: support visual studio 2026
+      #6512 open 2024-01-08 Transmission accessibility. Better representation in torrent properties dialog.
+      #2538 open 2022-01-30 Use Weblate for translations
+      #8060 merged 2026-01-04 refactor: put libutp behind BSD-like abstraction
+      #8241 closed 2026-01-28 perf: cache properties from tr_torrentView()
+      #6952 closed 2024-06-26 Suggested order of merging pull requests toward Transmission 4.1.0 Beta
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9100 open 2026-09-03 Crash in `tr_u8path` on opening a torrent
+      #8959 open 2026-06-30 strange behavior with zero-sized files
+      #9038 open 2026-08-06 Feature request: peer-port-file setting so the peer port can follow a VPN's forwarded port
+      #1734 open 2021-06-29 Display number of files and folders on GENERAL section
+      #8673 open 2026-03-10 GTK client: torrent content (file list) not shown when adding magnet link via 'Open URL' dialog
+      #8872 open 2026-06-05 Dark theme gone since the upgrade to v4.1.2
+      #5614 open 2023-06-12 Ability to force the creation of a folder
+      #3605 open 2022-08-10 Add an option to transmission-edit to convert hybrid torrent files with v1 and v2 data to plain old v1 file
+      #6087 open 2023-10-07 Seed Ratio is being tracked from torrent size, not downloaded data
+      #7681 open 2025-08-21 Transmission WebUI becomes unresponsive, and then Transmission crashes on quit.
+      #7399 open 2025-01-17 feat: disallow downloading of files based on file suffix
+      #6513 open 2024-01-08 Provide configuration to specify Partial File Suffix
+      #6965 open 2024-07-01 .part stays in file names after they're done
+      #3651 open 2022-08-16 option to disable TLS verification
+      #8903 open 2026-06-10 Transmission 4.2.1 freezes on quit and magnet links no longer start downloads on macOS Monterey
+      #7373 open 2025-01-06 Fixed #251 by detection of conflicts in the same directory
+      #6335 open 2023-12-04 ui: use reverse-DNS scheme for identifiers
+      #458 open 2017-12-20 Support for Bittorrent v2 (bep 0052)
+      #3387 open 2022-07-01 Add support for padding files and extended file attributes (bep 0047)
+      #8398 open 2026-02-06 Add SOCKS5 proxy support
+
+== 51 terms run; 50 returned hits, 12 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

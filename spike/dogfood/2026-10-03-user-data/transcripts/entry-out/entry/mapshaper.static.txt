@@ -1,0 +1,2 @@
+static: /usr/local/bin/mapshaper: Node.js script executable, ASCII text
+next: sideeye explore --state /s/mapshaper --cwd "/s/mapshaper" --operation "mapshaper /s/mapshaper/a.shp -each x=n*10 -o force" \

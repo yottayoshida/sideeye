@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/notes",
+    "operation": "/opt/bin/notesmd-cli move projects/alpha projects/alpha-2026 --vault vault",
+    "cwd": "/s/notes-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 5,
+  "prefix_hash": "5edc4d73b61b3235",
+  "after_class": "open",
+  "after_path": "/s/notes/vault/daily/2026-10-01.md",
+  "before_class": "write",
+  "before_path": "/s/notes/vault/daily/2026-10-01.md",
+  "violation": "hybrid"
+}

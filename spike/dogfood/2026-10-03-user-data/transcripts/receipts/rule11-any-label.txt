@@ -1,0 +1,51 @@
+== spesmilo/electrum (label (any label, asked for: the bug label held too few))
+#10998 2026-09-27 comments=0 first_project_reply=none
+#10995 2026-09-24 comments=0 first_project_reply=none
+#10989 2026-09-23 comments=1 first_project_reply=MEMBER 2026-09-25
+#10986 2026-09-22 comments=1 first_project_reply=MEMBER 2026-09-22
+#10978 2026-09-16 comments=1 first_project_reply=none
+#10977 2026-09-16 comments=0 first_project_reply=none
+#10969 2026-09-14 comments=0 first_project_reply=none
+#10968 2026-09-13 comments=0 first_project_reply=none
+#10950 2026-09-08 comments=1 first_project_reply=none
+#10949 2026-09-08 comments=3 first_project_reply=MEMBER 2026-09-10
+== iczelia/bzip3 (label (any label, asked for: the bug label held too few))
+#189 2026-09-25 comments=0 first_project_reply=none
+#188 2026-09-22 comments=6 first_project_reply=OWNER 2026-09-22
+#187 2026-09-16 comments=1 first_project_reply=CONTRIBUTOR 2026-09-16
+#180 2026-09-07 comments=0 first_project_reply=none
+#179 2026-09-07 comments=3 first_project_reply=OWNER 2026-09-08
+#177 2026-09-07 comments=12 first_project_reply=OWNER 2026-09-08
+#176 2026-09-07 comments=3 first_project_reply=OWNER 2026-09-07
+#175 2026-07-22 comments=1 first_project_reply=OWNER 2026-07-22
+#174 2026-06-14 comments=1 first_project_reply=OWNER 2026-06-14
+#173 2026-04-30 comments=0 first_project_reply=none
+== Yakitrak/notesmd-cli (label (any label, asked for: the bug label held too few))
+#134 2026-08-27 comments=1 first_project_reply=OWNER 2026-08-27
+#129 2026-06-20 comments=2 first_project_reply=OWNER 2026-06-20
+#125 2026-05-03 comments=1 first_project_reply=OWNER 2026-05-04
+#124 2026-04-18 comments=1 first_project_reply=OWNER 2026-04-26
+#119 2026-03-28 comments=0 first_project_reply=none
+#117 2026-03-18 comments=3 first_project_reply=OWNER 2026-03-21
+#114 2026-03-15 comments=2 first_project_reply=OWNER 2026-03-15
+#113 2026-03-14 comments=2 first_project_reply=OWNER 2026-03-15
+#110 2026-03-11 comments=1 first_project_reply=OWNER 2026-03-12
+#109 2026-03-11 comments=1 first_project_reply=OWNER 2026-03-12
+== pauldreik/rdfind (label (any label, asked for: the bug label held too few))
+#215 2026-06-23 comments=0 first_project_reply=none
+#214 2026-06-13 comments=0 first_project_reply=none
+#203 2026-02-10 comments=1 first_project_reply=OWNER 2026-02-11
+#202 2026-01-12 comments=0 first_project_reply=none
+#201 2026-01-12 comments=1 first_project_reply=OWNER 2026-02-14
+#199 2025-10-20 comments=1 first_project_reply=OWNER 2026-02-14
+#198 2025-09-12 comments=2 first_project_reply=OWNER 2026-02-14
+#193 2025-03-22 comments=2 first_project_reply=OWNER 2026-02-14
+#192 2025-03-22 comments=1 first_project_reply=OWNER 2026-02-14
+#191 2025-03-22 comments=1 first_project_reply=OWNER 2026-02-14
+== Shopify/ejson (label (any label, asked for: the bug label held too few))
+#238 2026-02-26 comments=1 first_project_reply=none
+#226 2025-12-11 comments=1 first_project_reply=CONTRIBUTOR 2026-01-14
+#223 2025-11-26 comments=0 first_project_reply=none
+#207 2025-07-09 comments=0 first_project_reply=none
+#175 2024-10-30 comments=4 first_project_reply=CONTRIBUTOR 2024-10-30
+#170 2024-08-21 comments=0 first_project_reply=none

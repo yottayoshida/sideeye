@@ -1,0 +1,6 @@
+[world]
+state = "/s/hcloud"
+
+[define]
+operation = "/opt/bin/hcloud context use work"
+cwd       = "/s/hcloud"

@@ -1,0 +1,15 @@
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /opt/bin/talosctl: it names no interpreter, so it is statically linked and no preloaded library can reach it; on Linux 5.19 or later, on aarch64 or x86_64, --observe supervised counts it from outside the process instead
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/talos-in
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: the shim never announced itself in this run, so nothing observed process boundaries
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=96d638799d57f7a2c4291923a930ecad00b744fc142ee23fcfd112598d2112a9;

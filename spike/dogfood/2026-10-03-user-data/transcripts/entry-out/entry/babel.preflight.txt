@@ -1,0 +1,23 @@
+updating catalog translations/ja/LC_MESSAGES/messages.po based on messages.pot
+updating catalog translations/fr/LC_MESSAGES/messages.po based on messages.pot
+updating catalog translations/ja/LC_MESSAGES/messages.po based on messages.pot
+updating catalog translations/fr/LC_MESSAGES/messages.po based on messages.pot
+PREFLIGHT  recording accepted — 6 state-changing operation(s) observed
+
+cwd          /s/babel
+atomicity    8 path(s) judged pre-or-post
+oracle       agreed on 6 operations (2319 syscall lines examined, 742 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2007 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/babel --cwd "/s/babel" --operation "pybabel update -i messages.pot -d translations" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

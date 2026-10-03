@@ -1,0 +1,6 @@
+[world]
+state = "/s/dotdrop"
+
+[define]
+operation = "dotdrop install -f -c /s/dotdrop-in/config.yaml -p host"
+cwd       = "/s/dotdrop-in"

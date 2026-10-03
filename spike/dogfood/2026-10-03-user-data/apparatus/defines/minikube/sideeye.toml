@@ -1,0 +1,6 @@
+[world]
+state = "/s/minikube/.minikube/config"
+
+[define]
+operation = "/opt/bin/minikube config set memory 6144"
+cwd       = "/s/minikube"

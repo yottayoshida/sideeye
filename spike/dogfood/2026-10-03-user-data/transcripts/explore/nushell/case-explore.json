@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/nushell",
+    "operation": "nu -n /s/nushell-in/edit.nu",
+    "cwd": "/s/nushell-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 3,
+  "prefix_hash": "a0e3434d4e02de36",
+  "after_class": "open",
+  "after_path": "/s/nushell/a.json",
+  "before_class": "write",
+  "before_path": "/s/nushell/a.json",
+  "violation": "hybrid"
+}

@@ -1,0 +1,2 @@
+static: /usr/local/bin/luarocks: Lua script, ASCII text executable
+next: sideeye explore --state /s/luarocks --cwd "/s/luarocks" --operation "luarocks config --scope user rocks_trees.1.root /s/luarocks/tree" \

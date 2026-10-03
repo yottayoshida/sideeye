@@ -1,0 +1,79 @@
+=== samtools 2026-10-03T04:02:41Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== doing 2026-10-03T04:02:41Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== mapshaper 2026-10-03T04:02:55Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== kakoune 2026-10-03T04:02:59Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== nushell 2026-10-03T04:02:59Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== notesmd 2026-10-03T04:03:00Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+followed: the no_shim_marker detail names --observe supervised
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== kubectx 2026-10-03T04:03:01Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+followed: the no_shim_marker detail names --observe supervised
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== perl 2026-10-03T04:03:02Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== zlua 2026-10-03T04:03:02Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== podman 2026-10-03T04:03:02Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 0: PASS -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 0: PASS -
+=== bzip3 2026-10-03T04:03:03Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== dotter 2026-10-03T04:03:03Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN kill_did_not_land
+explore exit 2: UNKNOWN no_shim_marker
+next_step: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+followed: the no_shim_marker detail names --observe supervised
+explore --observe supervised exit 2: UNKNOWN kill_did_not_land
+=== kustomize 2026-10-03T04:03:03Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+followed: the no_shim_marker detail names --observe supervised
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

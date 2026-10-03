@@ -1,0 +1,15 @@
+upx: /s/upx/prog: CantPackException: file not executable; try 'chmod +x'
+UNKNOWN  recording_run_failed
+         the second observed run exited 1 where 0 was expected, although the first run of the same command succeeded: the two runs cannot be compared
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+cwd         /s/upx
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

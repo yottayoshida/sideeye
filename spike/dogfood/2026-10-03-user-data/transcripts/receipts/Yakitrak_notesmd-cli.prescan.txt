@@ -1,0 +1,159 @@
+== novelty pre-scan: Yakitrak/notesmd-cli
+== date: 2026-10-03T02:01:07Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #10 closed 2023-03-16 `obs move` tries to change files inside of `.` folders
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      8 hit(s) (all listed)
+      #107 closed 2026-03-08 Bug: Content silently truncated at ampersand (&) characters in --content flag
+      #132 merged 2026-07-20 chore(deps): bump actions/setup-go from 6 to 7
+      #133 merged 2026-08-24 chore(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1 in the go-dependencies group
+      #130 merged 2026-06-22 chore(deps): bump actions/checkout from 4 to 7
+      #102 closed 2026-03-04 chore(deps): bump actions/checkout from 4 to 6
+      #104 merged 2026-03-04 chore(deps): bump golangci/golangci-lint-action from 6 to 9
+      #103 merged 2026-03-04 chore(deps): bump actions/setup-go from 5 to 6
+      #105 merged 2026-03-04 chore(deps): bump the go-dependencies group with 3 updates
+  truncate       8 hit(s) (all listed)
+      #133 merged 2026-08-24 chore(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1 in the go-dependencies group
+      #107 closed 2026-03-08 Bug: Content silently truncated at ampersand (&) characters in --content flag
+      #132 merged 2026-07-20 chore(deps): bump actions/setup-go from 6 to 7
+      #130 merged 2026-06-22 chore(deps): bump actions/checkout from 4 to 7
+      #102 closed 2026-03-04 chore(deps): bump actions/checkout from 4 to 6
+      #104 merged 2026-03-04 chore(deps): bump golangci/golangci-lint-action from 6 to 9
+      #103 merged 2026-03-04 chore(deps): bump actions/setup-go from 5 to 6
+      #105 merged 2026-03-04 chore(deps): bump the go-dependencies group with 3 updates
+  empty          15 hit(s) (all listed)
+      #135 merged 2026-09-01 fix: create destination directory when moving a note
+      #101 closed 2026-03-03 feat: add validate command for note quality checking
+      #80 closed 2026-02-08 search tags
+      #94 merged 2026-02-23 feat(search-content): add non-interactive output modes
+      #97 closed 2026-02-27 Feature Request: Add `list-vaults` command to discover registered Obsidian vaults
+      #63 closed 2025-12-27 PR03 (pr-03-delete): Delete: safer UX, prompts, and incoming-link warning
+      #77 closed 2026-02-04 [BUG] search-content command fails or returns no results
+      #49 closed 2025-08-16 add support for frontmatter operations
+      #73 merged 2026-01-31 add `list` command to display vault contents
+      #64 closed 2025-12-27 PR04a (pr-04a-settings): Settings: improve defaults + preferences workflows
+      #65 closed 2025-12-27 PR04b (pr-04b-append): Append: richer capture workflow (timestamp + formatting)
+      #61 closed 2025-12-27 PR01 (pr-01-ux): UX: improve CLI help, prompts, and ergonomics
+      #105 merged 2026-03-04 chore(deps): bump the go-dependencies group with 3 updates
+      #19 closed 2023-06-21 Support for generating day notes (Obsidian Calendar, and Template / Templater plugins)
+      #10 closed 2023-03-16 `obs move` tries to change files inside of `.` folders
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           5 hit(s) (all listed)
+      #86 closed 2026-02-14 create command uses Obsidian URI scheme even without --open flag
+      #90 merged 2026-02-17 feat: filesystem-first create command and default open-type config
+      #83 closed 2026-02-13 Make `create` command work without Obsidian open & expand CLI configuration
+      #72 closed 2026-01-31 Feature Request: Add list command to explore vault directory structure
+      #47 merged 2025-08-08 fix: prevent unnecessary file timestamp updates
+  partial        0 hit(s)
+  incomplete     3 hit(s) (all listed)
+      #107 closed 2026-03-08 Bug: Content silently truncated at ampersand (&) characters in --content flag
+      #64 closed 2025-12-27 PR04a (pr-04a-settings): Settings: improve defaults + preferences workflows
+      #56 merged 2025-12-09 feat: custom editor flag
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      18 hit(s) (all listed)
+      #136 merged 2026-09-14 chore(deps): bump golang.org/x/term from 0.45.0 to 0.46.0 in the go-dependencies group
+      #131 merged 2026-07-13 chore(deps): bump golang.org/x/term from 0.44.0 to 0.45.0 in the go-dependencies group
+      #128 merged 2026-06-15 chore(deps): bump golang.org/x/term from 0.43.0 to 0.44.0 in the go-dependencies group
+      #107 closed 2026-03-08 Bug: Content silently truncated at ampersand (&) characters in --content flag
+      #132 merged 2026-07-20 chore(deps): bump actions/setup-go from 6 to 7
+      #133 merged 2026-08-24 chore(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1 in the go-dependencies group
+      #83 closed 2026-02-13 Make `create` command work without Obsidian open & expand CLI configuration
+      #127 merged 2026-05-11 chore(deps): bump golang.org/x/term from 0.42.0 to 0.43.0 in the go-dependencies group
+      #121 merged 2026-04-13 chore(deps): bump golang.org/x/term from 0.41.0 to 0.42.0 in the go-dependencies group
+      #54 closed 2025-12-03 Bug: create command fails silently and doesn't write files to vault
+      #116 merged 2026-03-16 chore(deps): bump golang.org/x/term from 0.31.0 to 0.41.0 in the go-dependencies group
+      #130 merged 2026-06-22 chore(deps): bump actions/checkout from 4 to 7
+      #90 merged 2026-02-17 feat: filesystem-first create command and default open-type config
+      #51 closed 2025-08-18 Unwanted double new line inserted
+      #104 merged 2026-03-04 chore(deps): bump golangci/golangci-lint-action from 6 to 9
+      #103 merged 2026-03-04 chore(deps): bump actions/setup-go from 5 to 6
+      #102 closed 2026-03-04 chore(deps): bump actions/checkout from 4 to 6
+      #105 merged 2026-03-04 chore(deps): bump the go-dependencies group with 3 updates
+  clobber        0 hit(s)
+  blank          14 hit(s) (all listed)
+      #76 merged 2026-02-04 added scanning of paths for flatpak & snap install
+      #74 merged 2026-01-31 add section flag to open command
+      #73 merged 2026-01-31 add `list` command to display vault contents
+      #67 merged 2026-01-08 fix: add path traversal validation to prevent vault escape
+      #69 merged 2026-01-15 feat: add `--mentions` flag to `print` command
+      #63 closed 2025-12-27 PR03 (pr-03-delete): Delete: safer UX, prompts, and incoming-link warning
+      #59 merged 2025-12-21 feat: frontmatter view and edit commands
+      #56 merged 2025-12-09 feat: custom editor flag
+      #64 closed 2025-12-27 PR04a (pr-04a-settings): Settings: improve defaults + preferences workflows
+      #65 closed 2025-12-27 PR04b (pr-04b-append): Append: richer capture workflow (timestamp + formatting)
+      #53 merged 2025-10-18 fix: replace flaky URI construction test by comparing parameters instead of strings
+      #61 closed 2025-12-27 PR01 (pr-01-ux): UX: improve CLI help, prompts, and ergonomics
+      #58 merged 2025-12-21 fix: update path-based wikilinks and markdown links when moving notes
+      #20 closed 2023-06-26 Setting default vault for Obsidian flatpak installation
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       8 hit(s) (all listed)
+      #73 merged 2026-01-31 add `list` command to display vault contents
+      #117 closed 2026-03-18 ”list-vaults“ means “lists all registered Obsidian vaults”, but no command show how resgister vault
+      #75 closed 2026-02-03 Feature Request: Non-interactive mode for search-content command
+      #69 merged 2026-01-15 feat: add `--mentions` flag to `print` command
+      #72 closed 2026-01-31 Feature Request: Add list command to explore vault directory structure
+      #59 merged 2025-12-21 feat: frontmatter view and edit commands
+      #64 closed 2025-12-27 PR04a (pr-04a-settings): Settings: improve defaults + preferences workflows
+      #47 merged 2025-08-08 fix: prevent unnecessary file timestamp updates
+  in-place       4 hit(s) (all listed)
+      #65 closed 2025-12-27 PR04b (pr-04b-append): Append: richer capture workflow (timestamp + formatting)
+      #61 closed 2025-12-27 PR01 (pr-01-ux): UX: improve CLI help, prompts, and ergonomics
+      #31 merged 2024-06-29 Fix #28: The name of the command, obs, clashes with that for OBS Studio.
+      #27 closed 2024-03-10 every command opens the note in Obsidian
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      2 hit(s) (all listed)
+      #118 closed 2026-03-27 feat: add Nix flake support and instructions
+      #64 closed 2025-12-27 PR04a (pr-04a-settings): Settings: improve defaults + preferences workflows
+  write+failure  1 hit(s) (all listed)
+      #107 closed 2026-03-08 Bug: Content silently truncated at ampersand (&) characters in --content flag
+  file+contents  8 hit(s) (all listed)
+      #117 closed 2026-03-18 ”list-vaults“ means “lists all registered Obsidian vaults”, but no command show how resgister vault
+      #73 merged 2026-01-31 add `list` command to display vault contents
+      #75 closed 2026-02-03 Feature Request: Non-interactive mode for search-content command
+      #72 closed 2026-01-31 Feature Request: Add list command to explore vault directory structure
+      #69 merged 2026-01-15 feat: add `--mentions` flag to `print` command
+      #59 merged 2025-12-21 feat: frontmatter view and edit commands
+      #64 closed 2025-12-27 PR04a (pr-04a-settings): Settings: improve defaults + preferences workflows
+      #47 merged 2025-08-08 fix: prevent unnecessary file timestamp updates
+
+== 51 terms run; 13 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

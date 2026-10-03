@@ -1,0 +1,6 @@
+[world]
+state = "/s/doing"
+
+[define]
+operation = "doing now wrote the quarterly notes"
+cwd       = "/s/doing-in"

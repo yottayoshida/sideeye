@@ -1,0 +1,68 @@
+== novelty pre-scan: ahmetb/kubectx
+== date: 2026-10-03T04:02:50Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #353 merged 2022-04-09 Add support to publish Snaps using goreleaser
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      13 hit(s) (all listed)
+      #503 merged 2026-06-28 chore(deps): bump actions/cache from 5 to 6
+      #506 merged 2026-07-19 chore(deps): bump actions/setup-go from 6 to 7
+      #505 merged 2026-07-19 chore(deps): bump actions/checkout from 4 to 7
+      #502 merged 2026-06-21 chore(deps): bump actions/checkout from 6 to 7
+      #494 merged 2026-04-12 chore(deps): bump dependabot/fetch-metadata from 2 to 3
+      #463 merged 2026-03-08 chore(deps): bump actions/cache from 4 to 5
+      #483 merged 2026-03-15 chore(deps): bump actions/checkout from 4 to 6
+      #469 merged 2026-03-08 chore(deps): bump sigs.k8s.io/kustomize/kyaml from 0.16.0 to 0.21.1
+      #464 merged 2026-03-08 chore(deps): bump rajatjindal/krew-release-bot from 0.0.38 to 0.0.51
+      #482 merged 2026-03-15 chore(deps): bump actions/github-script from 7 to 8
+      #465 merged 2026-03-08 chore(deps): bump actions/setup-go from 2 to 6
+      #467 merged 2026-03-08 chore(deps): bump goreleaser/goreleaser-action from 2 to 7
+      #471 merged 2026-03-08 chore(deps): bump github.com/fatih/color from 1.9.0 to 1.18.0
+  truncate       13 hit(s) (all listed)
+      #503 merged 2026-06-28 chore(deps): bump actions/cache from 5 to 6
+      #506 merged 2026-07-19 chore(deps): bump actions/setup-go from 6 to 7
+      #505 merged 2026-07-19 chore(deps): bump actions/checkout from 4 to 7
+      #502 merged 2026-06-21 chore(deps): bump actions/checkout from 6 to 7
+      #494 merged 2026-04-12 chore(deps): bump dependabot/fetch-metadata from 2 to 3
+      #463 merged 2026-03-08 chore(deps): bump actions/cache from 4 to 5
+      #483 merged 2026-03-15 chore(deps): bump actions/checkout from 4 to 6
+      #469 merged 2026-03-08 chore(deps): bump sigs.k8s.io/kustomize/kyaml from 0.16.0 to 0.21.1
+      #464 merged 2026-03-08 chore(deps): bump rajatjindal/krew-release-bot from 0.0.38 to 0.0.51
+      #482 merged 2026-03-15 chore(deps): bump actions/github-script from 7 to 8
+      #465 merged 2026-03-08 chore(deps): bump actions/setup-go from 2 to 6
+      #467 merged 2026-03-08 chore(deps): bump goreleaser/goreleaser-action from 2 to 7
+      #471 merged 2026-03-08 chore(deps): bump github.com/fatih/color from 1.9.0 to 1.18.0
+  empty          22 hit(s) (all listed)
+      #480 merged 2026-03-09 fix: skip fzf launch when no contexts exist
+      #481 merged 2026-03-09 fix: skip fzf launch in kubens when no contexts exist in kubeconfig
+      #489 merged 2026-03-23 Support multiple kubeconfig files (KUBECONFIG=file1:file2:file3)
+      #259 closed 2020-08-18 Add message when no contexts are found in kubeconfig
+      #412 merged 2023-12-24 Migrate to kyaml
+      #485 closed 2026-03-21 Error since update v0.10.0 with multiple kubeconfig file
+      #469 merged 2026-03-08 chore(deps): bump sigs.k8s.io/kustomize/kyaml from 0.16.0 to 0.21.1
+      #12 closed 2017-10-12 [Idea] make it possible to use different contexts/namespaces in multiple shells
+      #185 closed 2019-11-28 Allow to unset the current-context (-u?)
+      #353 merged 2022-04-09 Add support to publish Snaps using goreleaser
+      #324 closed 2021-09-30 feat: pre-select stuff with fzf
+      #299 merged 2021-05-27 stop using XDG_CACHE_HOME as home directory
+      #57 closed 2018-06-22 TERM=vt100 causing empty output
+      #37 merged 2018-04-04 Allow for '/' in context name
+      #28 closed 2018-02-21 Get current context with -c
+      #46 merged 2018-05-18 Allow deleting multiple contexts at once
+      #95 merged 2018-10-30 [REVIEW] Proposal to fix subshell error handling
+      #143 closed 2019-04-05 Adaptative height for choice
+      #113 merged 2018-12-25 Complete tests for kubectx
+      #117 merged 2019-01-03 add more cli tests for kubens
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  BROKEN the search errored on term 'ctrl-c' - the scan is incomplete

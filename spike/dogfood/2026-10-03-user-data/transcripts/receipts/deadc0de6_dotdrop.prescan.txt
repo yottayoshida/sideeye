@@ -1,0 +1,224 @@
+== novelty pre-scan: deadc0de6/dotdrop
+== date: 2026-10-03T02:36:14Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          19 hit(s) (all listed)
+      #340 closed 2022-01-24 [bug] Config parsing crashes with profile variables and multiple config import
+      #341 merged 2022-01-27 fix: report error on double config import
+      #321 merged 2021-10-05 Remove the need for pandoc
+      #316 closed 2021-07-13 [bug] Impignore option causes Dotdrop to crash.
+      #320 closed 2021-09-28 Python3: command not found! / Set default python command
+      #3 merged 2017-05-03 Support for symlinking dotfiles
+      #136 merged 2019-05-08 Parse refactoring
+      #31 merged 2018-05-02 fixed crash when dst directory of symlink doesn't exist
+      #29 closed 2018-05-01 Fix path calculation
+      #1 closed 2017-03-09 compare functionality dies with special character
+      #5 closed 2017-05-19 Hidden directory breaks compare
+      #30 closed 2018-05-02 Install doesn't create directories for symlinks
+      #241 closed 2020-06-21 [Help] Even with upignore, dotdrop still copies the ignored folders to the dotfiles
+      #246 closed 2020-07-01 [bug] Included profile from imported variable doesn't carry over profile variables
+      #280 closed 2020-11-02 [bug] Removal from a profile without dotfiles key throws KeyError: 'dotfiles'
+      #265 closed 2020-10-05 [bug] problems with link_children
+      #266 closed 2020-10-05 [bug] 
+      #204 closed 2020-01-19 [bug] user-defined filters not working in imported config files
+      #165 closed 2019-06-17 [bug] `dotfiles` key in profile
+  corrupt        1 hit(s) (all listed)
+      #42 closed 2018-06-05 Running `dotdrop compare` after import is confused by Windows line endings
+  corruption     0 hit(s)
+  truncated      1 hit(s) (all listed)
+      #363 closed 2022-09-01 [bug] link_children use template linking method when there are no templating
+  truncate       1 hit(s) (all listed)
+      #363 closed 2022-09-01 [bug] link_children use template linking method when there are no templating
+  empty          43 hit(s) (all listed)
+      #432 merged 2024-01-26 fix #431 - directory not ignored with negative pattern
+      #443 closed 2024-10-21 [Help] Managing public and private dotfiles with files with the same name but different content, and not both have some files
+      #455 closed 2024-12-14 Docs list gencfg command, but isn't in latest stable release
+      #447 closed 2024-10-23 [bug] tmp directory not cleaned up after running tests
+      #396 closed 2023-08-05 [bug] `application/javascript` files treated as binary file
+      #363 closed 2022-09-01 [bug] link_children use template linking method when there are no templating
+      #158 closed 2019-06-10 installer: link_children links deep files
+      #343 closed 2022-02-26 [feature] TOML configuration file support
+      #335 closed 2021-11-17 [bug] When Running Import Dotdrop Rewrites the Entire Yaml Config File Removing '---' and Empty lines
+      #337 closed 2021-12-06 [bug] Can't seem to ignore vim folders
+      #314 closed 2021-06-30 [feature] don't install empty directories
+      #326 closed 2021-10-10 [bug] `config.create` forced to "true" for `dotdrop install --temp`
+      #336 closed 2021-11-17 [bug]  Failed to find Source file when using import_configs
+      #303 closed 2021-03-08 [help] create variable in actions?
+      #77 merged 2018-12-29 Feature link_children
+      #65 closed 2018-11-14 Implement interpolation of current profile in config.yaml src paths
+      #136 merged 2019-05-08 Parse refactoring
+      #29 closed 2018-05-01 Fix path calculation
+      #30 closed 2018-05-02 Install doesn't create directories for symlinks
+      #70 closed 2018-12-01 [BUG/SUGGESTION] Symlinking to dotdrop.sh causes dotdrop to use submodule as working directory
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #320 closed 2021-09-28 Python3: command not found! / Set default python command
+  power          4 hit(s) (all listed)
+      #404 closed 2023-09-07 [feature] ability to merge hash variables on includes
+      #65 closed 2018-11-14 Implement interpolation of current profile in config.yaml src paths
+      #50 closed 2018-07-16 Feature request: specifying files to ignore when defining a directory dotfile
+      #81 closed 2019-01-17 [Feature request] Allow per profile variables
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           5 hit(s) (all listed)
+      #490 open 2026-09-29 [feature] Add option to confirm changes before applying them
+      #443 closed 2024-10-21 [Help] Managing public and private dotfiles with files with the same name but different content, and not both have some files
+      #136 merged 2019-05-08 Parse refactoring
+      #175 closed 2019-07-08 Update functionality stopped working
+      #180 closed 2019-07-28 [feature] remove all dotdrop backups
+  partial        2 hit(s) (all listed)
+      #221 closed 2020-04-14 [bug] Recover on simple `config.yaml` errors
+      #90 closed 2019-02-26 [Feature request] Variables in separate yaml
+  incomplete     1 hit(s) (all listed)
+      #134 merged 2019-05-07 hotfix for incomplete comparison
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #174 closed 2019-07-01 [bug] dotdrop v0.26.1 deleted my ~/.config/
+      #221 closed 2020-04-14 [bug] Recover on simple `config.yaml` errors
+  recovery       2 hit(s) (all listed)
+      #41 closed 2018-06-05 Allow not dropping `.` prefix when importing
+      #90 closed 2019-02-26 [Feature request] Variables in separate yaml
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #4 closed 2017-05-08 How to update tracked dotfiles?
+      #176 closed 2019-07-09 [help] Help with nested directories with link: link_children
+      #174 closed 2019-07-01 [bug] dotdrop v0.26.1 deleted my ~/.config/
+  erasing        3 hit(s) (all listed)
+      #4 closed 2017-05-08 How to update tracked dotfiles?
+      #176 closed 2019-07-09 [help] Help with nested directories with link: link_children
+      #174 closed 2019-07-01 [bug] dotdrop v0.26.1 deleted my ~/.config/
+  erased         0 hit(s)
+  destroy        2 hit(s) (all listed)
+      #130 closed 2019-05-03 import_configs NoneType exception
+      #174 closed 2019-07-01 [bug] dotdrop v0.26.1 deleted my ~/.config/
+  destroys       0 hit(s)
+  overwrite      31 hit(s) (all listed)
+      #469 closed 2026-05-18 [bug] Variable value selected from last included profile, even
+      #443 closed 2024-10-21 [Help] Managing public and private dotfiles with files with the same name but different content, and not both have some files
+      #442 closed 2024-09-24 [help] dump/load Gnome's dconf settings
+      #437 closed 2024-07-14 [bug] env-var. DOTDROP_WORKDIR does not work
+      #202 merged 2020-01-19 Fix diff order
+      #45 closed 2018-06-08 When de-linking a file, first remove the symlink
+      #27 closed 2018-04-23 [Feature request] Git integration
+      #66 closed 2018-11-18 vimrc jinja2 not processed?
+      #60 closed 2018-09-27 Should I always use absolute path when import dotfiles?
+      #63 closed 2018-10-23  update failed, do manually: [Errno 21] Is a directory
+      #151 closed 2019-06-04 [pattern] Append
+      #179 closed 2019-07-23 [bug] `IsADirectoryError` when installing a directory with showdiff
+      #71 closed 2018-12-05 support update transformations
+      #194 closed 2019-11-09 [feature] Profile-scoped `import_variables`
+      #110 closed 2019-03-27 config.link_by_default not only for importing
+      #175 closed 2019-07-08 Update functionality stopped working
+      #172 closed 2019-06-24 [bug] Installing a dotfile via symlinking reports it being installed every time
+      #182 closed 2019-08-13 [bug] `install` show diffs against template files
+      #197 closed 2019-12-14 [bug] update directory not add the execuate permission of new file.
+      #101 closed 2019-03-10 How to update a saved folder?
+  clobber        0 hit(s)
+  blank          2 hit(s) (all listed)
+      #65 closed 2018-11-14 Implement interpolation of current profile in config.yaml src paths
+      #47 closed 2018-06-15 Support uninstall
+  unreadable     1 hit(s) (all listed)
+      #286 closed 2020-11-07 [feature] Robust permissions handling
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       21 hit(s) (all listed)
+      #473 closed 2026-06-06 [bug] Dotdrop update checks files within symlinks
+      #467 closed 2026-05-13 [bug] "include" loop detection disallows DAGs
+      #447 closed 2024-10-23 [bug] tmp directory not cleaned up after running tests
+      #443 closed 2024-10-21 [Help] Managing public and private dotfiles with files with the same name but different content, and not both have some files
+      #418 closed 2023-11-12 Directory ignore pattern not working in upignore [bug] 
+      #358 closed 2022-08-18 [bug] TypeError: Dotfile.__init__() got an unexpected keyword argument 'impignore'
+      #314 closed 2021-06-30 [feature] don't install empty directories
+      #336 closed 2021-11-17 [bug]  Failed to find Source file when using import_configs
+      #77 merged 2018-12-29 Feature link_children
+      #164 closed 2019-06-17 Unexpanded variables
+      #136 merged 2019-05-08 Parse refactoring
+      #1 closed 2017-03-09 compare functionality dies with special character
+      #75 closed 2018-12-26 workdir should handle a relative path
+      #174 closed 2019-07-01 [bug] dotdrop v0.26.1 deleted my ~/.config/
+      #182 closed 2019-08-13 [bug] `install` show diffs against template files
+      #114 closed 2019-03-29 Initial config file missing when not installing as a submodule
+      #234 closed 2020-05-29 [bug] dotdrop update --show-patch  have different file permissions with origin file
+      #260 closed 2020-09-24 [bug] module 'dotdrop' has no attribute 'main'
+      #281 closed 2020-11-04 [bug] default value of ignoreempty is true contrary to documentation
+      #233 closed 2020-05-28 [bug] nested directory replication
+  in-place       31 hit(s) (all listed)
+      #486 open 2026-09-17 [feature] Add option to group related dotfiles
+      #416 merged 2023-09-24 Ignore virtual envs in pylint checks in check-syntax.sh
+      #404 closed 2023-09-07 [feature] ability to merge hash variables on includes
+      #298 merged 2020-12-31 New feature: Negative ignore patterns
+      #383 closed 2023-04-09 [feature] Allow for templating in nested variables
+      #362 closed 2022-08-31 [help] evalutation of dynamic variables
+      #354 closed 2022-06-02 Unexpected 'nolink' behavior with neovim and packer [help]
+      #340 closed 2022-01-24 [bug] Config parsing crashes with profile variables and multiple config import
+      #314 closed 2021-06-30 [feature] don't install empty directories
+      #202 merged 2020-01-19 Fix diff order
+      #118 merged 2019-04-22 Import config
+      #162 merged 2019-06-17 [bug] Variables not expanded in profile actions
+      #164 closed 2019-06-17 Unexpanded variables
+      #13 closed 2017-10-17 Access environment variables inside templates
+      #83 closed 2019-02-01 Feature Request - Action Requirements
+      #70 closed 2018-12-01 [BUG/SUGGESTION] Symlinking to dotdrop.sh causes dotdrop to use submodule as working directory
+      #128 closed 2019-05-01 [Refactoring] External config
+      #149 closed 2019-05-30 [feature] Misc features
+      #113 closed 2019-03-28 [feature] ability to import entire profile
+      #108 closed 2019-03-23 Default config.yaml file location is not an absolute path
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         1 hit(s) (all listed)
+      #275 closed 2020-10-21 [bug] 
+  disk+full      0 hit(s)
+  data+loss      1 hit(s) (all listed)
+      #174 closed 2019-07-01 [bug] dotdrop v0.26.1 deleted my ~/.config/
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #241 closed 2020-06-21 [Help] Even with upignore, dotdrop still copies the ignored folders to the dotfiles
+  atomic+write   0 hit(s)
+  lock+file      6 hit(s) (all listed)
+      #307 closed 2021-04-16 [help]  ignored  message
+      #202 merged 2020-01-19 Fix diff order
+      #241 closed 2020-06-21 [Help] Even with upignore, dotdrop still copies the ignored folders to the dotfiles
+      #135 closed 2019-05-08 [dev] Pipfile
+      #268 closed 2020-10-08 [help] Possible to symlink on *nix and copy on window machines?
+      #90 closed 2019-02-26 [Feature request] Variables in separate yaml
+  write+failure  1 hit(s) (all listed)
+      #303 closed 2021-03-08 [help] create variable in actions?
+  file+contents  21 hit(s) (all listed)
+      #473 closed 2026-06-06 [bug] Dotdrop update checks files within symlinks
+      #467 closed 2026-05-13 [bug] "include" loop detection disallows DAGs
+      #443 closed 2024-10-21 [Help] Managing public and private dotfiles with files with the same name but different content, and not both have some files
+      #447 closed 2024-10-23 [bug] tmp directory not cleaned up after running tests
+      #418 closed 2023-11-12 Directory ignore pattern not working in upignore [bug] 
+      #358 closed 2022-08-18 [bug] TypeError: Dotfile.__init__() got an unexpected keyword argument 'impignore'
+      #336 closed 2021-11-17 [bug]  Failed to find Source file when using import_configs
+      #314 closed 2021-06-30 [feature] don't install empty directories
+      #77 merged 2018-12-29 Feature link_children
+      #164 closed 2019-06-17 Unexpanded variables
+      #136 merged 2019-05-08 Parse refactoring
+      #1 closed 2017-03-09 compare functionality dies with special character
+      #75 closed 2018-12-26 workdir should handle a relative path
+      #174 closed 2019-07-01 [bug] dotdrop v0.26.1 deleted my ~/.config/
+      #182 closed 2019-08-13 [bug] `install` show diffs against template files
+      #114 closed 2019-03-29 Initial config file missing when not installing as a submodule
+      #234 closed 2020-05-29 [bug] dotdrop update --show-patch  have different file permissions with origin file
+      #260 closed 2020-09-24 [bug] module 'dotdrop' has no attribute 'main'
+      #281 closed 2020-11-04 [bug] default value of ignoreempty is true contrary to documentation
+      #233 closed 2020-05-28 [bug] nested directory replication
+
+== 51 terms run; 26 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

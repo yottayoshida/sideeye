@@ -1,0 +1,136 @@
+== novelty pre-scan: pauldreik/rdfind
+== date: 2026-10-03T02:04:30Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          0 hit(s)
+  corrupt        1 hit(s) (all listed)
+      #161 open 2024-09-22 Hung?
+  corruption     0 hit(s)
+  truncated      0 hit(s)
+  truncate       0 hit(s)
+  empty          3 hit(s) (all listed)
+      #191 open 2025-03-22 Feature request - only check for duplicates in relative paths
+      #186 closed 2025-02-10 ./testcases/largefilesupport.sh fails for 1.7
+      #1 closed 2018-04-07 Control minimum file size
+  atomic         1 hit(s) (all listed)
+      #104 open 2022-04-05 Please make atomic the links (hard or symbolic) replacement
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #99 closed 2022-02-23 Change the terms 'remove' and 'eliminate' to 'skip' (avoid confusion with candidate list)
+  power          1 hit(s) (all listed)
+      #133 closed 2023-05-22 [report] rdfind measured performance on (large) HDD
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           19 hit(s) (all listed)
+      #156 open 2024-04-02 rdfind hangs up ubuntu 22.04
+      #194 open 2025-05-11 Accept sizes with k/M/G/T/E suffixes.
+      #166 open 2024-12-12 This should never happen FIXME! solution for macOS
+      #51 open 2020-05-15 recursion limit exceeded running on smb mounts
+      #134 open 2023-05-22 `-minsize 100M` is parsed as `-minsize 100` without a peep
+      #108 open 2022-05-26 Fails to create correct equivalence classes over hard links
+      #161 open 2024-09-22 Hung?
+      #114 closed 2022-08-23 Do not eliminate candidates using first/last bytes for smaller files.
+      #118 closed 2022-09-15 Disable checksum filtering
+      #195 closed 2025-06-04 Add option to partially hash files
+      #133 closed 2023-05-22 [report] rdfind measured performance on (large) HDD
+      #122 closed 2022-10-13 Add -min-file-size option
+      #178 closed 2025-01-22 add buffersize argument to rdfind
+      #177 closed 2025-01-13 add buffersize argument to rdfind
+      #167 closed 2025-01-08 add xxHash checksum and fix a comparison bug
+      #148 closed 2024-01-16 prevent recalculations for hardlinked files
+      #113 closed 2022-08-22 Ways to speed up rdfind runs: Parallelization
+      #99 closed 2022-02-23 Change the terms 'remove' and 'eliminate' to 'skip' (avoid confusion with candidate list)
+      #66 closed 2021-02-05 There should be a way to make relative symlinks
+  partial        3 hit(s) (all listed)
+      #195 closed 2025-06-04 Add option to partially hash files
+      #29 closed 2019-06-28 Allow setting SomeByteSize for first/last bytes checks
+      #53 closed 2020-07-17 NTFS support
+  incomplete     1 hit(s) (all listed)
+      #130 open 2023-02-28 Read arbitrary number of directory/file paths from standard input or a file
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #27 open 2019-05-21 Restrict By File Extention
+      #133 closed 2023-05-22 [report] rdfind measured performance on (large) HDD
+  recovery       1 hit(s) (all listed)
+      #133 closed 2023-05-22 [report] rdfind measured performance on (large) HDD
+  rollback       1 hit(s) (all listed)
+      #28 closed 2019-05-28 Added test for older Ubuntu distros which lack AX_CXX_COMPILE_STDCXX macro
+  resume         1 hit(s) (all listed)
+      #48 open 2020-04-14 Restart rdfind job on interuption.
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        2 hit(s) (all listed)
+      #106 closed 2022-04-24 ls could be destroyed by tests
+      #162 closed 2024-11-11 static linking against libnettle
+  destroys       0 hit(s)
+  overwrite      2 hit(s) (all listed)
+      #190 closed 2025-03-14 Add '-progress' option. Closes #30
+      #159 closed 2024-08-31 Add '-progress' option. Closes #30
+  clobber        0 hit(s)
+  blank          0 hit(s)
+  unreadable     1 hit(s) (all listed)
+      #32 open 2019-09-07 Assertion failure from Dirlist.cc::handlepossiblefile on unreadable subdirectory
+  garbage        1 hit(s) (all listed)
+      #178 closed 2025-01-22 add buffersize argument to rdfind
+  mangled        0 hit(s)
+  contents       6 hit(s) (all listed)
+      #141 closed 2023-10-07 Faster hashes
+      #37 closed 2019-10-25 Mention in man page that directories are recursed
+      #29 closed 2019-06-28 Allow setting SomeByteSize for first/last bytes checks
+      #114 closed 2022-08-23 Do not eliminate candidates using first/last bytes for smaller files.
+      #30 closed 2019-07-24 Optionally show progress bar
+      #126 closed 2022-11-23 Is rdfind safe for sha1 (or other) checksum collisions?
+  in-place       10 hit(s) (all listed)
+      #27 open 2019-05-21 Restrict By File Extention
+      #130 open 2023-02-28 Read arbitrary number of directory/file paths from standard input or a file
+      #73 open 2021-04-21 rename 'remove' to 'exclude' when referring to candidate list
+      #56 open 2020-08-10 Compilation error:  ‘symlink’ was not declared in this scope
+      #92 closed 2021-11-21 Yet another feature request - screen potential duplicates based on file size
+      #146 closed 2023-12-12 Fix dashes in man page
+      #53 closed 2020-07-17 NTFS support
+      #8 closed 2018-10-15 Improve documentation and error handling of -dryrun
+      #35 closed 2019-10-04 Running with option -makehardlinks true is not idempotent
+      #34 closed 2019-09-18 tell rdfind to store results.txt in a different location
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         1 hit(s) (all listed)
+      #161 open 2024-09-22 Hung?
+  disk+full      5 hit(s) (all listed)
+      #156 open 2024-04-02 rdfind hangs up ubuntu 22.04
+      #166 open 2024-12-12 This should never happen FIXME! solution for macOS
+      #51 open 2020-05-15 recursion limit exceeded running on smb mounts
+      #113 closed 2022-08-22 Ways to speed up rdfind runs: Parallelization
+      #66 closed 2021-02-05 There should be a way to make relative symlinks
+  data+loss      1 hit(s) (all listed)
+      #23 closed 2019-05-04 Support filtering by file size to allow parallelization of workloads and smaller job sizes
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      1 hit(s) (all listed)
+      #151 open 2024-01-23 fixme error message - This should never happen. 
+  write+failure  1 hit(s) (all listed)
+      #178 closed 2025-01-22 add buffersize argument to rdfind
+  file+contents  6 hit(s) (all listed)
+      #141 closed 2023-10-07 Faster hashes
+      #37 closed 2019-10-25 Mention in man page that directories are recursed
+      #29 closed 2019-06-28 Allow setting SomeByteSize for first/last bytes checks
+      #114 closed 2022-08-23 Do not eliminate candidates using first/last bytes for smaller files.
+      #30 closed 2019-07-24 Optionally show progress bar
+      #126 closed 2022-11-23 Is rdfind safe for sha1 (or other) checksum collisions?
+
+== 51 terms run; 24 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

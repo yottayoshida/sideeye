@@ -1,0 +1,2 @@
+static: /usr/bin/perl: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=a0becdf0316c80988510d7c3f12706f3187d5711, for GNU/Linux 3.7.0, stripped
+next: sideeye explore --state /s/perl --cwd "/s/perl" --operation "perl -i -pe s/foo/bar/ a.txt b.txt" \

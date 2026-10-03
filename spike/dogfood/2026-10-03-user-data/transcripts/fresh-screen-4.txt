@@ -1,0 +1,19 @@
+SEEN jupytext b2-exclusions:111
+SEEN nbstripout b2-exclusions:139
+SEEN par2cmdline b2-exclusions:165
+SEEN pyenv funnel:79
+SEEN rbenv spike/dogfood/2026-09-21-release-path/SELECTION.md:87
+SEEN typos b2-exclusions:221
+fresh csvq 
+fresh dotenvx 
+fresh ejson 
+fresh gnucash 
+fresh hexapdf 
+fresh luarocks 
+fresh mapshaper 
+fresh nbconvert 
+fresh nimble 
+fresh nushell 
+fresh perl5 
+fresh snapraid 
+fresh timetrace 

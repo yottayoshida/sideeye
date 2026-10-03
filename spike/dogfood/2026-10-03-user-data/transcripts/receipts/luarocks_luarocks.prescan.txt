@@ -1,0 +1,370 @@
+== novelty pre-scan: luarocks/luarocks
+== date: 2026-10-03T04:14:16Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          41 hit(s) (all listed)
+      #1194 open 2020-05-19 --lua-version 5.1 crash on homebrew with sudo
+      #492 open 2016-02-01 Adds 'shell' command.
+      #1831 open 2025-09-16 [lua-5.1] error during writing manifest
+      #1920 closed 2026-08-19 FreeBSD luarocks51 error
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #1825 merged 2025-08-19 fix: prevent crash when fs_use_modules is activated and LuaFileSystem already installed is too old
+      #1819 closed 2025-08-13 crashes when trying to install lyaml (per-user installation, not system)
+      #1800 closed 2025-06-06 attempt to call method 'type' (a nil value)
+      #1599 merged 2024-02-19 fix(lint): don't crash when missing description
+      #1427 closed 2022-07-20 Crash when invoking `test` with `--prepare` flag
+      #1477 closed 2022-12-17 Rockspec that relies on externa library crashes luarocks
+      #1627 merged 2024-02-29 fix: don't try to lock when using --pack-binary-rock
+      #1550 merged 2023-12-04 Fix crash when using --tree on musl
+      #1549 closed 2023-12-04 Crash when using --tree on musl
+      #1460 closed 2022-11-19 Invalid value `(nil)`  at index 1 for table `concat`
+      #1419 merged 2022-05-18 avoid crash if variables.LUA* are unset
+      #1418 closed 2022-05-18 Running `luarocks` without arguments on windows right after installation causes the program to crash
+      #1252 closed 2020-12-27 Crash when using a malformed --lua-version
+      #347 closed 2015-04-10 Bug: attempt to index local 'typetbl'
+      #369 closed 2015-05-11 Checks in fetch.load_local_rockspec
+  corrupt        8 hit(s) (all listed)
+      #1918 merged 2026-08-15 improve failure message to help user
+      #54 closed 2012-01-30 LR is not CTRL+C friendly
+      #28 closed 2011-06-27 Fails to pack some large rocks when lzlib is installed
+      #240 closed 2014-03-13 Switch over to HTTPS
+      #142 closed 2013-08-30 LuaRocks complains about missing `doc` directory when installing a rock
+      #535 closed 2016-04-03 Warning: Failed loading manifest for /home/werner/.luarocks/lib/luarocks/rocks: /home/werner/.luarocks/lib/luarocks/rocks/manifest: No such file or directory
+      #1095 closed 2019-09-23 attempt to index a nil value (local 'package_entry')
+      #679 closed 2017-03-07 Attempt to fix build problems on windows. (Discovered when trying to: luarocks install luafilesystem)
+  corruption     3 hit(s) (all listed)
+      #1885 merged 2026-06-04 makedist: fix rockspec tag update producing invalid Lua
+      #54 closed 2012-01-30 LR is not CTRL+C friendly
+      #240 closed 2014-03-13 Switch over to HTTPS
+  truncated      2 hit(s) (all listed)
+      #88 closed 2012-08-16 Changes MACOSX_DEPLOYMENT_TARGET to 10.5
+      #135 closed 2013-06-24 path: escape spaces from `luarocks path` to work with eval
+  truncate       2 hit(s) (all listed)
+      #88 closed 2012-08-16 Changes MACOSX_DEPLOYMENT_TARGET to 10.5
+      #135 closed 2013-06-24 path: escape spaces from `luarocks path` to work with eval
+  empty          71 hit(s) (all listed)
+      #1886 open 2026-06-14 [string "src/luarocks/manif/writer.lua"]:139: bad argument #1 to 'sort' (table expected, got string)
+      #1650 open 2024-03-17 Support applying patches created with `diff -Naur`
+      #1467 open 2022-11-30 Creating rock_manifest from luarocks-admin command
+      #930 open 2018-10-06 Some problems with bat file on Windows
+      #1493 open 2023-03-20 "luarocks build --pack-binary-rock": Possibility to disable install_default_docs or allow for single doc files
+      #1804 open 2025-06-19 Is it possible to install a rock from anywhere in the local file system?
+      #1235 open 2020-10-26 git repository names ending with .lua confuse LuaRocks
+      #1773 open 2025-03-16 LuaRocks wont compile on Termux
+      #604 open 2016-08-21 Copy dir content on Windows
+      #712 open 2017-06-28 Static build #GSoC
+      #1860 open 2026-02-21 Install `activate` convenience script and symlink to Lua interpreter like Python `venv`
+      #1906 merged 2026-08-07 fix(ci): use `-L` flag with `curl` to follow redirects
+      #1731 open 2024-12-29 `No existing manifest. Attempting to rebuild` error during `luarocks --verbose test foo-scm-1.rockspec --prepare` command
+      #961 open 2019-01-29 attempt to concatenate a nil value
+      #266 open 2014-05-27 Requirement files
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #1859 closed 2026-02-15 [docs] Fix LUA_LIBDIR handling in example Makefile
+      #1760 open 2025-02-27 Installation, links, documentation to installation, how to install on Windows is a very painful experience
+      #1900 closed 2026-07-19 '$(LUADIR)' in install_command resolves correctly, but is printed wrong
+      #1858 merged 2026-02-10 Bump lua-zlib from 1.2 to 1.4 as part of Lua 5.5 support
+  atomic         4 hit(s) (all listed)
+      #569 open 2016-06-08 Feature request: "revision" field in rockspecs
+      #54 closed 2012-01-30 LR is not CTRL+C friendly
+      #104 closed 2012-10-14 luarocks 2.0.11 does not work under Windows
+      #1238 closed 2020-11-15 MACOSX_DEPLOYMENT_TARGET misconfiguration on macOS 11.0.1
+  atomically     1 hit(s) (all listed)
+      #54 closed 2012-01-30 LR is not CTRL+C friendly
+  interrupted    2 hit(s) (all listed)
+      #1189 closed 2020-05-04 fix bug ssl/https.lua:66: interrupted!
+      #732 merged 2017-09-26 read just one line when checking md5
+  interrupt      3 hit(s) (all listed)
+      #619 closed 2016-09-29 Install shortcut for user manifests
+      #1189 closed 2020-05-04 fix bug ssl/https.lua:66: interrupted!
+      #732 merged 2017-09-26 read just one line when checking md5
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         4 hit(s) (all listed)
+      #1567 open 2024-02-16 Linkage error on windows with mingw32 compiler (when compiling C source libraries)
+      #708 closed 2017-05-30 Unable to use Luarocks with MingW-64 build Lua 5.3.4 
+      #54 closed 2012-01-30 LR is not CTRL+C friendly
+      #104 closed 2012-10-14 luarocks 2.0.11 does not work under Windows
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #958 open 2019-01-24 Update install.bat
+      #623 open 2016-10-06 [WIP] Add source.revision
+      #712 open 2017-06-28 Static build #GSoC
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #1797 closed 2025-05-30 Can't install any rocks, getting a "main function has more than 65536 constants" error
+      #1699 merged 2024-07-25 Update pe-parser to version v0.6
+      #428 closed 2015-09-27 luarocks path doesn't include local path (luarocks 2.2.2)
+      #1318 closed 2021-07-07 The "--tree" parameter affects path and cpath
+      #1419 merged 2022-05-18 avoid crash if variables.LUA* are unset
+      #1355 merged 2021-09-21 fix check_external_dependency_at
+      #1251 closed 2020-12-19 Add DragonFly BSD support and a fix for OpenBSD
+      #748 closed 2017-12-01 Beginnings of a public LuaRocks API
+      #1375 merged 2021-12-13 fix deployment on non-wrapped binaries
+      #1396 merged 2022-02-17 tests: remove Travis CI, add Github Actions
+      #1390 merged 2022-01-20 [fix] The misleading `--pin` option
+      #1358 merged 2021-10-13 respect existing LUALIB if given
+      #1364 merged 2021-11-04 Makes a variable local
+      #1035 merged 2019-06-18 Use argparse for command line argument parsing
+      #1321 merged 2021-08-10 upload: support uploading pre-packaged .src.rock files
+      #1314 merged 2021-06-05 Added prepare flag in test command
+  outage         2 hit(s) (all listed)
+      #1448 open 2022-10-08 Sanatize user data before writing it into the manifest
+      #248 closed 2014-04-23 luarocks timeout
+  ENOSPC         0 hit(s)
+  disk           11 hit(s) (all listed)
+      #1822 open 2025-08-19 Broken package: lsqlite3
+      #1793 open 2025-05-04 Newly installed Luarocks will not run under new Cygwin
+      #960 closed 2019-01-28 stop storing binaries in version control
+      #643 closed 2016-11-01 How do i verify PGP signature for luarocks tarballs?
+      #737 closed 2017-10-08 Breadth-first search of external dependencies.
+      #199 closed 2013-12-11 Install does not update the correct manifest
+      #901 closed 2018-08-22 Installing LuaRocks 3.0.x as root results in a warning
+      #1037 closed 2019-06-18 error exit status 1
+      #1027 closed 2019-06-04 Advice to speed up nix luarocks updater
+      #155 closed 2013-09-26 Make LR self contained (Windows only)
+      #830 merged 2018-06-24 Tests: add unit tests for build.builtin
+  partial        29 hit(s) (all listed)
+      #129 open 2013-04-30 Add custom compilation flags
+      #623 open 2016-10-06 [WIP] Add source.revision
+      #22 open 2011-01-04 Need a luarocks upgrade command to upgrade installed rocks
+      #712 open 2017-06-28 Static build #GSoC
+      #1852 open 2026-01-08 Segfault when using Lua 5.5 + LuaRocks 3.13.0
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #1797 closed 2025-05-30 Can't install any rocks, getting a "main function has more than 65536 constants" error
+      #1243 closed 2020-12-10 upload error
+      #1168 closed 2020-03-14 luarocks config --json won't work, even if JSON library is installed
+      #1487 closed 2023-02-01 Allow combining `upload` with `--local`
+      #234 closed 2014-02-17 Suggestion: Don't force expectation of a specific directory name in the unpacked archive.
+      #281 closed 2014-09-03 Default to a higher minimum OS X version.
+      #628 merged 2016-10-12 Fix manif.find_{current,next}_provider returning "untracked" incorrectly
+      #635 merged 2016-10-26 Make rock name arguments case insensitive
+      #641 merged 2016-10-29 Get rid of repeated missing deps checks
+      #638 merged 2016-10-28 Remove packages without manifest rebuild
+      #637 merged 2016-10-28 Fix absolute path detection on Windows
+      #654 merged 2016-11-13 Split out luarocks.vers from luarocks.deps
+      #644 merged 2016-11-01 Fix conflict resolution on deploy/remove w.r.t. C/Lua modules with same name
+      #631 merged 2016-10-19 Fix conflict resolution
+  incomplete     17 hit(s) (all listed)
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #781 open 2018-03-30 Any way to get the C header dependencies for installing rocks via LuaRocks in a package?
+      #1826 open 2025-08-20 [luarocks 3.12 regression] Fails to apply patches
+      #257 open 2014-05-15 [Suggestion] Windows Directory Paths
+      #1805 closed 2025-06-19 Running luarocks install as a user without a HOME directory still triggers the LuaRocks error: "main function has more than 65536 constants".
+      #559 closed 2016-05-22 On OSX cannot upload as "needs a json library"
+      #1510 closed 2023-05-27 Make instructions in script match documents
+      #1443 closed 2022-09-18 "Failed producing checksum: no MD5 checker tool available, please install md5sum, openssl or md5 in your system" but a md5 checker is installed.
+      #1476 closed 2022-12-12 Rockspec build with cmake and -G Ninja flag failed
+      #1035 merged 2019-06-18 Use argparse for command line argument parsing
+      #1289 merged 2021-03-16 Fix issue with old manifests, more thorough checking
+      #386 closed 2015-06-17 How to determine the current version?
+      #41 closed 2011-08-31 Config file not found
+      #625 closed 2016-10-06 Installing over an existing installation may delete site_config.lua
+      #735 closed 2017-10-04 Site-local luarocks/core/site_config_5_2.lua file not found. Incomplete installation?
+      #1070 closed 2019-08-29 Addon (`cmd/external`) broken by 3.2.0
+      #223 merged 2014-01-16 show --modules will output one module per line
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #754 closed 2017-12-21 Problem to install luarocks
+      #774 closed 2018-03-08 Handle broken site_config
+  recovery       0 hit(s)
+  rollback       3 hit(s) (all listed)
+      #1167 open 2020-03-12 lua-resty-jwt Failes to install. 
+      #1101 merged 2019-10-18 repos: rollback on installation failure
+      #1213 merged 2020-08-01 Add the `--no-install` option to the `make` command
+  resume         2 hit(s) (all listed)
+      #1798 closed 2025-06-02 feat: allow loading json manifest
+      #1486 closed 2023-01-24 Install error: callable.c:1237:38: error: too few arguments to function call, expected 4, have 3
+  half-written   2 hit(s) (all listed)
+      #1797 closed 2025-05-30 Can't install any rocks, getting a "main function has more than 65536 constants" error
+      #1762 merged 2025-03-08 feature: Windows CI was ported from AppVeyor to GitHub
+  wipe           5 hit(s) (all listed)
+      #1413 open 2022-04-25 [Windows] Documentation for minor quirky edge case in Windows
+      #1880 open 2026-05-04 luarocks unconditionally installs build_dependencies using its own lua version, regardless of --lua-version, breaks install
+      #403 closed 2015-06-28 multi-lua install on Windows
+      #94 closed 2012-09-22 installing luarock installs dependencies, but does not build them
+      #530 closed 2016-03-28 Placing luarocks.bat in $prefix\bin on Windows?
+  wipes          1 hit(s) (all listed)
+      #1413 open 2022-04-25 [Windows] Documentation for minor quirky edge case in Windows
+  erase          2 hit(s) (all listed)
+      #452 closed 2015-11-12 Exported LUA_PATH overrides system defaults.
+      #651 closed 2016-11-10 "Permission denied" and "No results matching query were found" errors when using luarocks with torch
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      41 hit(s) (all listed)
+      #129 open 2013-04-30 Add custom compilation flags
+      #1668 open 2024-04-25 Non-root "Luarocks install" should suggest --local installation
+      #339 open 2015-03-26 Extra command line options for luarocks make is needed.
+      #1822 open 2025-08-19 Broken package: lsqlite3
+      #141 open 2013-08-30 LuaRocks should handle file ownership conflicts
+      #384 open 2015-06-10 Add version-specific overrides, similar to platform-specific overrides
+      #1922 open 2026-09-02 chore(deps): bump luarocks/gh-actions-lua from 13 to 14 in the github-actions group
+      #1491 open 2023-03-11 Security issue with installed executable scripts
+      #1852 open 2026-01-08 Segfault when using Lua 5.5 + LuaRocks 3.13.0
+      #1860 open 2026-02-21 Install `activate` convenience script and symlink to Lua interpreter like Python `venv`
+      #779 open 2018-03-17 Luarocks on Cygwin building .so libraries/modules but may need to be .dll?
+      #1187 open 2020-05-03 Luarocks does not work after installing
+      #1912 merged 2026-08-12 chore(deps): bump luarocks/gh-actions-lua from 12 to 13 in the github-actions group
+      #1797 closed 2025-05-30 Can't install any rocks, getting a "main function has more than 65536 constants" error
+      #1786 merged 2025-04-23 Avoid overrwriting CMake variables from rockspec
+      #1749 closed 2025-02-21 Modified previous fix for issue #719, to make the code much neat and maintainable
+      #1540 closed 2023-10-29 concurrent access to luarocks cache trigger "Failed loading manifest for https://luarocks.org: Error loading file"
+      #1682 closed 2024-06-04 `local_by_default=true` breaks project rocks tree detection
+      #428 closed 2015-09-27 luarocks path doesn't include local path (luarocks 2.2.2)
+      #1496 closed 2023-03-26 Copy command missing `-r` flag
+  clobber        3 hit(s) (all listed)
+      #1622 merged 2024-02-28 feat: better error message when lacking permissions
+      #314 closed 2015-02-20 "chmod: invalid mode" error when installing rocks
+      #452 closed 2015-11-12 Exported LUA_PATH overrides system defaults.
+  blank          10 hit(s) (all listed)
+      #1794 open 2025-05-06 command 'init' requires exclusive write access to /usr/local
+      #1359 open 2021-10-17 Installing several rocks using luarocks with only one command line
+      #1747 open 2025-02-20 Fix lua version variable issue #719
+      #466 open 2015-12-14 Use lua-http for http operations if installed
+      #1844 merged 2025-12-07 support Lua 5.5
+      #1704 closed 2024-08-17 Why Luarocks user experience is so bad?
+      #1618 merged 2024-02-27 fix: on windows environment variables are passed with trailing space
+      #1397 merged 2022-03-06 update Codecov uploader
+      #425 closed 2015-09-16 Certain rockspecs create blank files
+      #400 merged 2015-06-26 'config' command does not have a help message
+  unreadable     1 hit(s) (all listed)
+      #1743 closed 2025-02-16 The docs for installation on Windows need to be rewritten.
+  garbage        9 hit(s) (all listed)
+      #1845 open 2025-12-13 luarocks doesn't install anything.
+      #1743 closed 2025-02-16 The docs for installation on Windows need to be rewritten.
+      #1748 closed 2025-02-21 An "extra verbose" mode
+      #515 closed 2016-03-11 Luarocks always fails when I try to install a package
+      #429 closed 2015-10-05 LDFLAGS ?
+      #616 closed 2016-09-25 Extra 's in luarocks issued path
+      #713 closed 2017-06-29 Upgrade wget.exe application
+      #963 closed 2019-02-07 Single quotes in `luarocks paths`. Why?
+      #886 merged 2018-08-10 Add function to open doc files to the API.
+  mangled        0 hit(s)
+  contents       52 hit(s) (all listed)
+      #1789 open 2025-04-28 [FR] new source.type == "none"
+      #1834 open 2025-10-01 write_rockspec writes incompatible rockspec
+      #907 open 2018-08-27 Binary rocks for multiple Lua versions
+      #622 open 2016-10-06 'luarocks' is not recognized as an internal or external command
+      #948 open 2018-12-12 Difficulty writing pure-Lua rock
+      #1669 open 2024-05-06 luarocks-admin add AWS S3
+      #604 open 2016-08-21 Copy dir content on Windows
+      #466 open 2015-12-14 Use lua-http for http operations if installed
+      #1830 open 2025-09-14 unable to install any package that requires compilation on Windows
+      #1194 open 2020-05-19 --lua-version 5.1 crash on homebrew with sudo
+      #1822 open 2025-08-19 Broken package: lsqlite3
+      #1860 open 2026-02-21 Install `activate` convenience script and symlink to Lua interpreter like Python `venv`
+      #779 open 2018-03-17 Luarocks on Cygwin building .so libraries/modules but may need to be .dll?
+      #1853 merged 2026-01-08 docs(rockspec-format): `source.dir` can be omitted if inferrable from archive content
+      #1058 closed 2019-07-18 LuaRocks 3.1.3 Windows Warning: Could not find a Lua 5.3 interpreter in your PATH
+      #1808 merged 2025-06-27 feat: automate the creation of a pull request to update LuaRocks version on gh-actions-luarocks
+      #1580 merged 2024-02-17 fix(build): add some validation to the build table
+      #675 closed 2017-02-06 luarocks told me to report this
+      #611 closed 2016-09-09 Use versioned manifest file.
+      #1682 closed 2024-06-04 `local_by_default=true` breaks project rocks tree detection
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #778 open 2018-03-14 luarocks does not put things in expected places?
+      #662 open 2016-12-31 Site config for defaults.external_deps_dirs ?
+      #1869 open 2026-03-19 `fs.is_tool_available` can't find `.bat` tools on Windows
+      #961 open 2019-01-29 attempt to concatenate a nil value
+      #1520 open 2023-07-07 Improve Unclear Installation Instructions for Unix on Wiki - Include Major Package Managers
+      #1822 open 2025-08-19 Broken package: lsqlite3
+      #1793 open 2025-05-04 Newly installed Luarocks will not run under new Cygwin
+      #1491 open 2023-03-11 Security issue with installed executable scripts
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #257 open 2014-05-15 [Suggestion] Windows Directory Paths
+      #1860 open 2026-02-21 Install `activate` convenience script and symlink to Lua interpreter like Python `venv`
+      #1501 open 2023-04-07 Luarocks installation on Windows + busted
+      #1760 open 2025-02-27 Installation, links, documentation to installation, how to install on Windows is a very painful experience
+      #1902 closed 2026-07-20 fix(command): print deploy paths instead of staging paths in install_command output
+      #1826 open 2025-08-20 [luarocks 3.12 regression] Fails to apply patches
+      #779 open 2018-03-17 Luarocks on Cygwin building .so libraries/modules but may need to be .dll?
+      #1889 closed 2026-07-04 ci: Add lua v5.5 to the test matrix
+      #1726 closed 2024-12-06 Luarocks depends on compa53 or lua>=5.3 for .tar.gz archives
+      #1787 closed 2025-04-24 Problem: On installation of  `tree-sitter-cli` via luarocks - failed copying tree-sitter.exe on Windows
+      #1854 merged 2026-01-15 Improve flexibility around vendored libraries
+  unclean        0 hit(s)
+  shutdown       2 hit(s) (all listed)
+      #1733 merged 2025-01-05 fix: Fix upload command to include the src.rock file as a second parameter
+      #813 merged 2018-06-05 Test core.util.show_table
+  reboot         3 hit(s) (all listed)
+      #1277 closed 2021-01-28 Dynamically detect libdir on Linux
+      #414 closed 2015-07-24 I cound't able to use luarocks with lua 5.3
+      #929 closed 2018-10-05 luarocks doesn't find lua5.3-dev package
+  disk+full      2 hit(s) (all listed)
+      #155 closed 2013-09-26 Make LR self contained (Windows only)
+      #830 merged 2018-06-24 Tests: add unit tests for build.builtin
+  data+loss      1 hit(s) (all listed)
+      #1618 merged 2024-02-27 fix: on windows environment variables are passed with trailing space
+  partial+write  4 hit(s) (all listed)
+      #712 open 2017-06-28 Static build #GSoC
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #1797 closed 2025-05-30 Can't install any rocks, getting a "main function has more than 65536 constants" error
+      #281 closed 2014-09-03 Default to a higher minimum OS X version.
+  crash+safe     0 hit(s)
+  atomic+write   1 hit(s) (all listed)
+      #54 closed 2012-01-30 LR is not CTRL+C friendly
+  lock+file      34 hit(s) (all listed)
+      #1679 open 2024-05-30 Integrity Hash in lock file
+      #1666 open 2024-04-20 Unable to do download manifests, files, etc etc
+      #1501 open 2023-04-07 Luarocks installation on Windows + busted
+      #1162 open 2020-03-02 Understanding structure of Rocks
+      #1194 open 2020-05-19 --lua-version 5.1 crash on homebrew with sudo
+      #1835 open 2025-10-06 Failed to install xml2lua with luarocks
+      #1668 open 2024-04-25 Non-root "Luarocks install" should suggest --local installation
+      #509 open 2016-03-04 How to override cache variables on a cmake rock?
+      #1886 open 2026-06-14 [string "src/luarocks/manif/writer.lua"]:139: bad argument #1 to 'sort' (table expected, got string)
+      #1818 open 2025-08-10 bard argument but got "nil"
+      #1826 open 2025-08-20 [luarocks 3.12 regression] Fails to apply patches
+      #1923 open 2026-09-25 bug: incorrect source.dir existence check
+      #1900 closed 2026-07-19 '$(LUADIR)' in install_command resolves correctly, but is printed wrong
+      #1816 closed 2025-07-30 LuaRocks 3.12.2 fails to install pinned package version (same package version works without pinning)
+      #1874 closed 2026-03-31 --pin flag conflicts with VM-provided Lua on LuaJIT (OpenResty)
+      #1757 merged 2025-02-24 Add vendored lua compat53
+      #1805 closed 2025-06-19 Running luarocks install as a user without a HOME directory still triggers the LuaRocks error: "main function has more than 65536 constants".
+      #1810 closed 2025-06-28 luarocks install broken - `main function has more than 65536 constants` - luarocks not working over GitHub actions
+      #1704 closed 2024-08-17 Why Luarocks user experience is so bad?
+      #1662 closed 2024-04-08 luarocks.lock in cwd not respected by `luarocks install`
+  write+failure  14 hit(s) (all listed)
+      #823 open 2018-06-17 First steps to allowing rock/rockspec URLs as dependencies, incomplete
+      #712 open 2017-06-28 Static build #GSoC
+      #952 open 2018-12-25 Warning: Failed searching manifest: Failed fetching manifest - Failed downloading manifest
+      #1760 open 2025-02-27 Installation, links, documentation to installation, how to install on Windows is a very painful experience
+      #779 open 2018-03-17 Luarocks on Cygwin building .so libraries/modules but may need to be .dll?
+      #1844 merged 2025-12-07 support Lua 5.5
+      #1808 merged 2025-06-27 feat: automate the creation of a pull request to update LuaRocks version on gh-actions-luarocks
+      #1618 merged 2024-02-27 fix: on windows environment variables are passed with trailing space
+      #428 closed 2015-09-27 luarocks path doesn't include local path (luarocks 2.2.2)
+      #403 closed 2015-06-28 multi-lua install on Windows
+      #764 closed 2018-02-03 luarocks ignores external_deps_dirs ?
+      #749 closed 2017-12-04 Luarocks does not work under wine
+      #243 merged 2014-03-26 prepare luarocks for lua 5.3
+      #1230 closed 2020-09-29 Add support for MSYS2 + Mingw-w64
+  file+contents  45 hit(s) (all listed)
+      #622 open 2016-10-06 'luarocks' is not recognized as an internal or external command
+      #907 open 2018-08-27 Binary rocks for multiple Lua versions
+      #948 open 2018-12-12 Difficulty writing pure-Lua rock
+      #604 open 2016-08-21 Copy dir content on Windows
+      #1830 open 2025-09-14 unable to install any package that requires compilation on Windows
+      #1822 open 2025-08-19 Broken package: lsqlite3
+      #1194 open 2020-05-19 --lua-version 5.1 crash on homebrew with sudo
+      #466 open 2015-12-14 Use lua-http for http operations if installed
+      #779 open 2018-03-17 Luarocks on Cygwin building .so libraries/modules but may need to be .dll?
+      #1860 open 2026-02-21 Install `activate` convenience script and symlink to Lua interpreter like Python `venv`
+      #1853 merged 2026-01-08 docs(rockspec-format): `source.dir` can be omitted if inferrable from archive content
+      #1058 closed 2019-07-18 LuaRocks 3.1.3 Windows Warning: Could not find a Lua 5.3 interpreter in your PATH
+      #1682 closed 2024-06-04 `local_by_default=true` breaks project rocks tree detection
+      #611 closed 2016-09-09 Use versioned manifest file.
+      #675 closed 2017-02-06 luarocks told me to report this
+      #905 closed 2018-08-26 Luarocks can't install library 
+      #1287 closed 2021-03-09 Why is luarocks saying : Error: unknown option '-e' when installing luacheck...?
+      #667 closed 2017-01-21 luarocks fails to install LuaFileSystem 
+      #1554 closed 2023-12-11 Lua modules installed twice times
+      #1525 closed 2023-08-09 Add missing `-R` flag to `cp` command in `fs.copy()`
+
+== 51 terms run; 39 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

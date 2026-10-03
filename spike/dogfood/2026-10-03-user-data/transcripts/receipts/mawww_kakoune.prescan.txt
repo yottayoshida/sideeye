@@ -1,0 +1,664 @@
+== novelty pre-scan: mawww/kakoune
+== date: 2026-10-03T02:22:12Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5407 open 2025-11-07 [BUG][CRASH] Crash with backtrace
+      #5236 open 2024-09-18 [BUG][CRASH] 
+      #5006 open 2023-10-25 [BUG][CRASH] 
+      #4528 open 2022-02-02 [BUG][CRASH] Occasional crashes when reloading file mounted with SSHFS
+      #4012 open 2021-01-06 Scrolling big file crash
+      #4472 open 2021-12-13 [BUG][CRASH] kak -f / execute-keys crash given random sequence of keys
+      #4500 open 2022-01-13 [BUG][CRASH] On buffer quit
+      #5351 open 2025-06-28 [BUG][CRASH] perl: command not found
+      #3543 open 2020-06-04 Kakoune crash on high load / high memory usage
+      #4462 open 2021-12-08 [BUG][CRASH] SIGSEGV when using kak-lsp and zls
+      #4762 open 2022-10-20 [BUG][CRASH] Segfault when completing blocks in `kakrc` when built on MinGW
+      #5528 open 2026-07-29 Support running kakoune without a controlling /dev/tty terminal
+      #5406 open 2025-10-23 [BUG][CRASH] libc++abi: terminating due to uncaught exception of type Kakoune::runtime_error
+      #3667 open 2020-08-19 [builtin-terminal-ui] Crash when typing in the middle of a prompt command that has completion
+      #4455 open 2021-11-27 Added indent-guide highlighter for displaying whitespace indentation levels.
+      #1630 open 2017-10-12 Add support for Uppercase registers with extending behavior
+      #3987 open 2020-12-24 Kakoune doesn't handle SIGBUS with memory-mapped files
+      #2462 open 2018-09-30 Segfault / uncaught exception on hooks with delete-buffer
+      #5531 closed 2026-08-10 [BUG][CRASH] segfault on `.` after `i<a-;>.<esc>`
+      #4363 open 2021-09-20 Global command and response fifos
+  corrupt        14 hit(s) (all listed)
+      #5325 open 2025-05-09 [BUG] jump/grep breaks on filenames with colons
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #2021 open 2018-04-30 Persistent Undo
+      #5338 closed 2025-06-06 [BUG][CRASH] Crash during window construction
+      #5220 closed 2024-08-17 [BUG][CRASH] Signal: 11 (SEGV)
+      #5155 closed 2024-04-24 [BUG] Backspace occasionally behaves like Delete
+      #4894 merged 2023-05-11 Fix debug keys output for shift/ctrl modified mouse events
+      #3669 closed 2020-08-19 Pipe handles newlines improperly
+      #3506 closed 2020-05-25 [builtin-terminal-ui] Artifact on click
+      #2917 merged 2019-05-22 Protocol fix and a refactor
+      #3915 closed 2020-11-26 SIGSEGV (Address boundary error)
+      #2129 closed 2018-06-16 inside parenthesis block, results in corrupted selection
+      #3705 closed 2020-09-02 [builtin-terminal-ui] Screen corruption in PuTTY
+      #3192 closed 2019-11-11 User modes corrupt ModeChange parameter
+  corruption     13 hit(s) (all listed)
+      #5335 open 2025-05-31 [BUG] Potential Integer Overflow in config_directory() via Unchecked HOME Environment Variable
+      #5120 closed 2024-03-13 [BUG][CRASH] Non-interactive Kakoune session crashes with 'double free or corruption' on a particular dataset/command sequence
+      #5173 closed 2024-05-11 [BUG] Tests failing on OpenBSD
+      #4647 closed 2022-06-24 [BUG][CRASH] set-face global FaceName default,+b,@PrimaryCursor causes crash
+      #4079 closed 2021-02-28 [builtin-terminal-ui] macOS Terminal.app fails to ignore "synchronised update" escapes
+      #3705 closed 2020-09-02 [builtin-terminal-ui] Screen corruption in PuTTY
+      #4042 closed 2021-01-31 Crash when spelling after writing file
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #350 closed 2015-08-02 uncaught exception
+      #847 closed 2016-10-08 Double free when deleting a buffer in its own `BufNew` hook
+      #733 closed 2016-07-13 Random crash on selection manipulation
+      #3335 closed 2020-02-02 Weird redraw failures when using gnome-terminal + tmux
+      #3426 closed 2020-03-22 [builtin-terminal-ui]: Display corruption
+  truncated      19 hit(s) (all listed)
+      #4113 open 2021-03-21 Windows installation
+      #3987 open 2020-12-24 Kakoune doesn't handle SIGBUS with memory-mapped files
+      #2019 open 2018-04-29 Limitations of the JSON UI
+      #5031 merged 2023-11-16 changelog: escape `{` as `\\{`  in version notes
+      #2155 closed 2018-06-23 Protect against buffer overflows and unchecked string truncations
+      #4431 closed 2021-11-10 pwd: Add a new command that prints out the server's current working directory
+      #2257 closed 2018-07-26 Support large strings in info box
+      #1047 closed 2016-12-20 Fix shell path detection
+      #2076 merged 2018-05-24 Fix truncated message in lint.kak
+      #2812 closed 2019-03-27 write_buffer_to_fd(): write the whole file at once
+      #123 closed 2014-05-13 menu completion should not be truncated
+      #159 closed 2014-06-02 clippy is truncated when window size too small !
+      #1023 closed 2016-12-18 3 bugs about "addhl column"
+      #1165 closed 2017-01-29 Use options for info boxes in the submaps (user, view, goto, etc)
+      #1981 closed 2018-04-01 Cygwin build error 
+      #2178 closed 2018-07-01 Spurious golint-kak linting errors
+      #2460 closed 2018-09-30 Store revision
+      #2932 closed 2019-05-28 When disk is full, Kakoune crashes and truncates file, potentially losing data
+      #2843 closed 2019-04-09 Format not working correctly
+  truncate       29 hit(s) (all listed)
+      #4113 open 2021-03-21 Windows installation
+      #4791 open 2022-11-19 Don't add missing newline at EOF
+      #3987 open 2020-12-24 Kakoune doesn't handle SIGBUS with memory-mapped files
+      #2019 open 2018-04-29 Limitations of the JSON UI
+      #2021 open 2018-04-30 Persistent Undo
+      #2147 closed 2018-06-23 kak always writes files with a newline at the end
+      #5031 merged 2023-11-16 changelog: escape `{` as `\\{`  in version notes
+      #2155 closed 2018-06-23 Protect against buffer overflows and unchecked string truncations
+      #4638 closed 2022-06-09 [BUG] Tooltip layer blocks the view
+      #4431 closed 2021-11-10 pwd: Add a new command that prints out the server's current working directory
+      #2257 closed 2018-07-26 Support large strings in info box
+      #1047 closed 2016-12-20 Fix shell path detection
+      #2076 merged 2018-05-24 Fix truncated message in lint.kak
+      #2541 merged 2018-10-30 Truncate incomplete debug command docstring
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #2625 merged 2018-12-08 Reimplemented ctags-search command
+      #2812 closed 2019-03-27 write_buffer_to_fd(): write the whole file at once
+      #123 closed 2014-05-13 menu completion should not be truncated
+      #159 closed 2014-06-02 clippy is truncated when window size too small !
+      #662 closed 2016-04-25 The `tag` command doesn't take the path of the current tags file into account
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4845 open 2023-02-14 [BUG] %reg{} expands to an empty value instead of nothing when the register is empty
+      #2244 open 2018-07-23 Empty list does not expand to nothing
+      #3315 open 2020-01-24 <a-Z> does not work with empty registers
+      #3808 open 2020-10-14 search history is restored even with empty -save-regs
+      #1169 open 2017-01-30 <a-j> command should not append spaces for empty lines
+      #919 open 2016-11-08 Newline after an empty c-family // comment line removes the comment
+      #2013 open 2018-04-24 Cursor moves right using \Q and (?i) with empty search input
+      #3986 open 2020-12-23 `execute-keys` in `WinCreate` hook adds empty entry to the `:` register
+      #1872 open 2018-02-23 kak_client is empty when executing from a WinSetOption global hook
+      #804 open 2016-09-14 Select the empty lines preceeding a paragraph upon selecting it with `<a-a>` when at the EOF
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5401 open 2025-10-15 [BUG] `gd` and `gu` do not interact correctly with counts
+      #3892 open 2020-11-17 Weird scrolloff behavior
+      #2070 open 2018-05-22 [Suggestion] modelinefmt changes
+      #4215 open 2021-06-03 Replace has inconsistent selection behavior
+      #3374 open 2020-02-18 <a-Z> should always prompt for a combining operator.
+      #2523 open 2018-10-25 RawKey hook misses the key in case of Runtime Error
+      #4546 open 2022-02-11 Add a select rectangle command
+      #1127 open 2017-01-11 [Feature] User defined as-you-type command-line completers
+      #4389 open 2021-10-17 Undocumented differences between number and letter registers
+  atomic         17 hit(s) (all listed)
+      #5401 open 2025-10-15 [BUG] `gd` and `gu` do not interact correctly with counts
+      #2749 open 2019-02-21 Add C highlighter to C++/Obj-C buffers
+      #5004 merged 2023-10-22 rc tools patch/git: commands to apply selected lines
+      #5225 closed 2024-09-03 [REQUEST] Allow git-apply to stage/reverse hunk at cursor.
+      #5032 closed 2023-11-17 [BUG] Windows Terminal `keep pipe:y`
+      #4516 merged 2022-01-26 Git blame wrapper: Pass blame flags all at once
+      #4079 closed 2021-02-28 [builtin-terminal-ui] macOS Terminal.app fails to ignore "synchronised update" escapes
+      #4432 closed 2021-11-10 [BUG] JSON UI only shows stdin when connecting to an existing session
+      #3506 closed 2020-05-25 [builtin-terminal-ui] Artifact on click
+      #2636 merged 2018-12-15 rc c-family: Correct missing highlighting and types for C11
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #3357 merged 2020-02-09 src: Allow `:write-all` to use -atomic, fix usage
+      #3718 merged 2020-09-07 Update commands.asciidoc
+      #218 closed 2014-07-27 [PULL]Modified: cpp.kak,file.cc, Makefile; Renamed: s/kakrc/kakrc.default/
+      #2682 closed 2019-01-09 problem using options in shell tests
+      #3827 closed 2020-10-21 Add a switch to specify the write method for :write
+      #3482 closed 2020-05-15 [builtin-terminal-ui] Support the iTerm2 "synchronised updates" feature
+  atomically     2 hit(s) (all listed)
+      #3506 closed 2020-05-25 [builtin-terminal-ui] Artifact on click
+      #3718 merged 2020-09-07 Update commands.asciidoc
+  interrupted    9 hit(s) (all listed)
+      #4903 open 2023-05-21 Allow canceling buffer highlighting
+      #3525 open 2020-05-31 Side-effect on shell expansions exiting with a non-null return code
+      #4897 closed 2023-05-13 Cancel regex search on Control-C
+      #4410 closed 2021-10-29 [BUG][CRASH] command_fifo fast re-opening crashes kakoune
+      #4208 merged 2021-05-24 Fix highlighting of indented bullet text
+      #537 merged 2015-12-20 Use a wrapper for sigaction instead of signal
+      #3732 merged 2020-09-14 fix justfile highlighter
+      #1590 closed 2017-09-25 Request for clarification on how backup files work.
+      #2177 closed 2018-07-01 Killing a server with connected clients results in a non-zero exit code
+  interrupt      20 hit(s) (all listed)
+      #4909 open 2023-05-24 Allow to customize interrupt keys
+      #4903 open 2023-05-21 Allow canceling buffer highlighting
+      #5107 open 2024-02-26 Enable remapping of Ctrl-C and Ctrl-G
+      #3525 open 2020-05-31 Side-effect on shell expansions exiting with a non-null return code
+      #5317 open 2025-04-19 Add short key names
+      #3362 open 2020-02-10 src: Handle errors with -f more consistently
+      #2019 open 2018-04-29 Limitations of the JSON UI
+      #5359 closed 2025-07-18 [BUG] Kakoune fails to start up if the working directory begins with a doubled slash
+      #4897 closed 2023-05-13 Cancel regex search on Control-C
+      #3271 closed 2019-12-23 Request for C# syntax highlighting and autocomplete
+      #4410 closed 2021-10-29 [BUG][CRASH] command_fifo fast re-opening crashes kakoune
+      #4138 closed 2021-04-09 Faces for fancy underline variations
+      #4208 merged 2021-05-24 Fix highlighting of indented bullet text
+      #537 merged 2015-12-20 Use a wrapper for sigaction instead of signal
+      #3732 merged 2020-09-14 fix justfile highlighter
+      #236 closed 2014-11-21 kakoune blocks UI while processing
+      #1590 closed 2017-09-25 Request for clarification on how backup files work.
+      #2031 closed 2018-05-07 Shift Insert doesn’t work anymore
+      #2177 closed 2018-07-01 Killing a server with connected clients results in a non-zero exit code
+      #3112 closed 2019-09-28 Hangs after opening
+  sigkill        5 hit(s) (all listed)
+      #5408 open 2025-11-07 Prevent ctags process stacking on stucked .tags.kaklock folder
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #1590 closed 2017-09-25 Request for clarification on how backup files work.
+      #3528 closed 2020-06-01 .xyz.kak.3nG8VI files after session quit
+  sigint         23 hit(s) (all listed)
+      #5143 open 2024-04-14 [REQUEST] make <c-c> capturable with RawKey hook
+      #4909 open 2023-05-24 Allow to customize interrupt keys
+      #1818 open 2018-01-27 Add <c-s> prompt command to turn in select mode
+      #5408 open 2025-11-07 Prevent ctags process stacking on stucked .tags.kaklock folder
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #5460 closed 2026-03-16 go comandos
+      #4907 closed 2023-05-24 Suppress false positive error when <c-g> is pressed during shell execution
+      #3751 closed 2020-09-20 Control-C does not cancel some shells running backgrounded eval to fifo buffer
+      #3974 closed 2020-12-22 `kak -d` doesn't handle SIGINT
+      #4286 closed 2021-08-03 Cannot start the editor in a pseudo TTY environment
+      #3832 closed 2020-10-23 kak -d not working
+      #2521 closed 2018-10-24 rc: Replace occurrences of `setsid`
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #229 closed 2014-08-03 Completers (minor enhancements)
+      #236 closed 2014-11-21 kakoune blocks UI while processing
+      #174 closed 2014-06-29 ^c should unselect selected buffer
+      #221 closed 2014-07-27 Control-c (or Escape) in normal mode to stop macro recording?
+      #463 closed 2015-11-03 `:new` doesn't work in `tmux` on OS X
+      #797 closed 2016-09-08 Allow Ctrl+C to quit command line mode
+  ctrl-c         83 hit(s) (all listed)
+      #5107 open 2024-02-26 Enable remapping of Ctrl-C and Ctrl-G
+      #3623 open 2020-07-28 Ctrl+Alt+C or Ctrl+C does not work
+      #5232 open 2024-09-08 [BUG] Some control characters cannot be entered, even using raw insert
+      #4019 open 2021-01-10 Can we get <c-.>, <c-,> to work?
+      #5165 open 2024-05-03 Adding keybinding for `<c-/>` does not work 
+      #67 open 2014-02-20 modal editing in command mode
+      #4499 open 2022-01-12 urxvt terminal emulator message `committed change n` 
+      #4238 open 2021-06-20 Extended key reporting mode is not disabled on kitty terminal
+      #2742 open 2019-02-17 map global insert <c-c> does not work
+      #2047 open 2018-05-15 Add <c-f> in prompt mode to insert default value
+      #4825 open 2023-01-09 [BUG] Slow path autocompletion can lock up editor
+      #3950 open 2020-12-14 Allow cancelling highlighting on huge buffers
+      #5279 open 2025-01-22 [REQUEST] Manual trigger of `completers`
+      #1517 open 2017-07-27 `<pageup>` doesn't scroll all the way up with wrapped lines
+      #4498 open 2022-01-12 xclip yanking pasting line spaces and write 
+      #4834 open 2023-02-01 [BUG] <s-tab> does not work with wezterm
+      #4616 open 2022-05-17 Backspace key does not register under Xterm
+      #5510 closed 2026-06-04 [BUG] Not returning shell prompt when quitting an empty file with kak-lsp installed
+      #2019 open 2018-04-29 Limitations of the JSON UI
+      #2209 closed 2018-07-12 Distinguish "<c-i> and <tab>", "<c-j> and <ret>"
+  power          23 hit(s) (all listed)
+      #3309 open 2020-01-20 kakoune learning game, app, interactive tutorial, books and video
+      #1991 open 2018-04-05 Autoload behavior update
+      #4742 open 2022-09-23 [REQUEST] Hook for text insertion and deletion
+      #3543 open 2020-06-04 Kakoune crash on high load / high memory usage
+      #2626 open 2018-12-10 Invert `!` and <a-!>
+      #4445 open 2021-11-18 [REQUEST] Allow more customization of the status line
+      #4152 open 2021-04-18 [POC] Shared scopes. Initial implementation of shared scopes for hooks
+      #67 open 2014-02-20 modal editing in command mode
+      #5099 open 2024-02-06 Add tree-sitter based highlighter
+      #153 open 2014-05-28 investigate 'kakdiff'
+      #1507 closed 2017-07-15 Listing and selecting buffers and files (e.g. NERDTree)
+      #5193 closed 2024-06-19 introduce jump_pattern option
+      #4783 closed 2022-11-18 Stop breaking users workflows on a whimp
+      #561 closed 2016-01-21 Move some scripts to an `extra` repository
+      #1846 merged 2018-02-13 Add trim_selections primitive
+      #2012 merged 2018-04-23 Change client default name: "unnamed0" → "client0"
+      #1267 merged 2017-03-07 Increase modelinefmt configuration power
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #1590 closed 2017-09-25 Request for clarification on how backup files work.
+      #1383 closed 2017-05-17 [Discussion]: introducing %lua{ } expansions?
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           49 hit(s) (all listed)
+      #4791 open 2022-11-19 Don't add missing newline at EOF
+      #1641 open 2017-10-19 Notify the user when the file underlying an open buffer was removed
+      #3438 open 2020-03-30 rc doc: Implement a `doc-search` command
+      #4554 open 2022-02-15 [REQUEST] have reload optionally show you a diff which you can fixup
+      #4703 open 2022-08-08 [QUESTION] Is it possible to see the last `\n` of a file ?
+      #3987 open 2020-12-24 Kakoune doesn't handle SIGBUS with memory-mapped files
+      #1911 open 2018-03-07 src: Allow the `buffer` command to jump to line/column
+      #3354 open 2020-02-09 Preserve register values when merging new ones
+      #5006 open 2023-10-25 [BUG][CRASH] 
+      #4528 open 2022-02-02 [BUG][CRASH] Occasional crashes when reloading file mounted with SSHFS
+      #4556 open 2022-02-18 Prune hidden files when loading autoload
+      #4999 open 2023-10-17 [REQUEST] a write-switch command
+      #2671 open 2018-12-30 proof of concept implementation for parallel pipes.
+      #4437 open 2021-11-13 Dired directory with file permissions listed
+      #4627 open 2022-05-24 Arch Linux Arm 2021-11 unable to refresh screen with unknown characters
+      #5367 open 2025-08-01 [BUG] %val{buffile} returns bufname not pipe name for fifo pipes
+      #2147 closed 2018-06-23 kak always writes files with a newline at the end
+      #5220 closed 2024-08-17 [BUG][CRASH] Signal: 11 (SEGV)
+      #5145 closed 2024-04-16 [BUG] Garbage instead of Cyrillic text when connecting to Kakoune server launched as a daemon using `launchd`
+      #5049 closed 2023-12-07 [REQUEST] Make homemade git buffers actionable with <ret>
+  partial        26 hit(s) (all listed)
+      #2298 open 2018-08-11 rc c-family: Show a menu to list alternative files
+      #3362 open 2020-02-10 src: Handle errors with -f more consistently
+      #3510 open 2020-05-27 Add default tabstop and max width for rust
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #5099 open 2024-02-06 Add tree-sitter based highlighter
+      #5163 open 2024-04-27 [QUESTION] Cursor up/down navigation in soft-wrapped text (gj/gk in Vim)
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5507 merged 2026-06-02 Document behaviour of `\z` zero-width-assertion.
+      #3644 closed 2020-08-05 Multi-line replace ranges end up cutting off visible lines from the buffer
+      #5021 merged 2023-11-11 Fix spurious incremental search when incsearch=false
+      #805 closed 2016-09-15 Autosave Question
+      #5081 merged 2024-01-13 rc tools ctags/man: rationalize sorting of completion candidates
+      #5114 closed 2024-03-06 A few questions on X removal
+      #5035 merged 2023-11-18 ranked match: prefer input order over alphabetical order for user-specified completions
+      #5136 closed 2024-04-07 [REQUEST] Incremental buffer synchronisation with coprocess (unidirectional) 
+      #4558 merged 2022-02-18 Fix elvish highlighter
+      #3429 closed 2020-03-23 [builtin-terminal-ui] Screen flickering
+      #4200 closed 2021-05-16 Add %val{bufstr} with buffer content as a string
+      #4092 merged 2021-03-08 Performance improvements for update-option and set-option
+      #2882 merged 2019-04-26 Automatic insert completion using ctags
+  incomplete     23 hit(s) (all listed)
+      #5063 open 2023-12-16 Option to override environment variables in child processes
+      #4636 open 2022-06-06 kak clipboard functionalities like Pico 
+      #5460 closed 2026-03-16 go comandos
+      #2147 closed 2018-06-23 kak always writes files with a newline at the end
+      #4610 merged 2022-05-08 Work around incomplete std::to_chars() support in libstdc++ 10
+      #4457 closed 2021-11-29 Add syntax highlighting for `git-revise`
+      #1192 closed 2017-02-05 Improve show_matching highlighter
+      #2642 closed 2018-12-18 Consider retiring the `ncurses_wheel_up_button` and `ncurses_wheel_down_button` UI options
+      #2826 closed 2019-03-30 Run default shell if terminal is given no arguments
+      #1898 closed 2018-03-03 Support extended function keys F13-F63
+      #1271 closed 2017-03-09 Extend python higlighter
+      #2541 merged 2018-10-30 Truncate incomplete debug command docstring
+      #1369 merged 2017-05-15 Remove ad-hoc rules in kakrc highlighter
+      #3256 merged 2019-12-13 Improve Haskell syntax highlighting some more
+      #3613 merged 2020-07-22 fix shell fi always deindenting after newline
+      #920 closed 2016-11-08 can't build on gentoo
+      #974 closed 2016-12-14 building on macOS
+      #978 closed 2016-12-14 Can't build on Ubuntu 14.04.5
+      #880 closed 2016-10-18 Question: possibility of implementing GDB plugin.
+      #1037 closed 2016-12-19 In kak movement docs?
+  dataloss       0 hit(s)
+  recover        17 hit(s) (all listed)
+      #5559 open 2026-09-27 feat(rc/kotlin): highlight generics argument lists and recover type names before <
+      #3543 open 2020-06-04 Kakoune crash on high load / high memory usage
+      #4932 open 2023-06-22 [BUG] 
+      #2718 open 2019-02-01 Push selection to jump list for cursor movements with count
+      #5150 open 2024-04-23 [REQUEST] add more details to `:debug mappings` and/or provide an additional command that shows all bindings
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5040 merged 2023-11-24 Skip output synchronization query when explicitly disabled
+      #4668 closed 2022-07-11 Assign janet group to janet.kak global hooks
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #3519 merged 2020-05-29 rc lint: Remove the concept of "enabling" linting
+      #3634 merged 2020-08-01 rc: Fix Ruby indent/insert hooks
+      #473 closed 2015-11-06 Closed server instances don't recover the names of the previously named clients
+      #419 closed 2015-10-03 Noob questions
+      #1590 closed 2017-09-25 Request for clarification on how backup files work.
+      #1309 closed 2017-04-01 have esc after insert keep the cursor in place, no matter what?
+      #1157 closed 2017-01-24 Freeze when editing a big file
+      #3019 closed 2019-07-12 Use $XDG_RUNTIME_DIR
+  recovery       8 hit(s) (all listed)
+      #1609 closed 2017-10-02 [META] Kakoune internals access API
+      #4987 closed 2023-09-23 [BUG] Delay while getting out of insert mode?
+      #249 closed 2015-02-10 Advertise Kakoune
+      #250 closed 2015-02-13 2 separate kak instances should cooperate when editing the same file(s)
+      #419 closed 2015-10-03 Noob questions
+      #785 closed 2016-09-02 Enable persisting history
+      #1935 closed 2018-03-16 Feature Request: Optionally delimit expansion blocks with `{begin,sh} … end` (as in lua/ruby/ada).
+      #74 closed 2014-02-27 Session recovery support after quitting
+  rollback       3 hit(s) (all listed)
+      #3116 closed 2019-09-30 src: Serve a virtual filesystem via 9P to interact with Kakoune programmatically
+      #1540 closed 2017-08-24 Syntax highliting for SQL
+      #3410 closed 2020-03-16 Compile form source: `make` didn't worked
+  resume         29 hit(s) (all listed)
+      #1877 open 2018-02-24 Handle zero data returned by `read()`
+      #3907 open 2020-11-23 Kakoune does not fork server to background at server session startup
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5416 closed 2025-11-30 [BUG] repaint screen issues after job resume (fg command on bash)
+      #2965 closed 2019-06-13 WinDisplay hook not triggered when the client resumes from ^Z
+      #5105 closed 2024-02-25 Improve ergonomics of multiple grep/git buffers
+      #5155 closed 2024-04-24 [BUG] Backspace occasionally behaves like Delete
+      #4605 closed 2022-05-05 [BUG] command/response fifo hangs when data passed is too large
+      #3069 closed 2019-08-27 Issues to the latest suspend commit `cb26478`
+      #537 merged 2015-12-20 Use a wrapper for sigaction instead of signal
+      #2434 merged 2018-09-25 expansions.asciidoc: Rewrite to make Kakoune syntax the primary reference
+      #2733 merged 2019-02-12 Fix wording used in test runner
+      #457 merged 2015-11-02 Patch to build on FreeBSD
+      #483 closed 2015-11-16 Client switch when resuming a client "converted to client mode only"
+      #423 closed 2015-10-08 Multiple redrawing issues when the window is resized on i3
+      #425 closed 2015-10-09 Buffer reload popup not drawn automatically when continuing kak
+      #429 closed 2015-10-11 Redrawing is sometimes done improperly when the process is resumed after a pause
+      #435 closed 2015-10-13 Uncaught exception when typing into the command prompt after resuming the process
+      #1414 closed 2017-06-03 Execute another shell program in the foreground
+      #1580 closed 2017-09-20 A (insert at end of line) not moving to end of line
+  half-written   9 hit(s) (all listed)
+      #5211 open 2024-08-04 Add -quote argument to kakoune
+      #2019 open 2018-04-29 Limitations of the JSON UI
+      #5460 closed 2026-03-16 go comandos
+      #5127 closed 2024-03-23 [BUG] Selecting a regex doesn't work sometimes
+      #2835 closed 2019-04-04 Org-mode language support
+      #1767 closed 2017-12-12 kakrc: Load files sorted by name
+      #449 closed 2015-10-28 Make the object selection feature smarter
+      #660 closed 2016-04-17 Handle external reads on stdin (sudo etc)
+      #811 closed 2016-09-19 Wrong cursor movement around CJK characters
+  wipe           5 hit(s) (all listed)
+      #1463 merged 2017-06-23 rc formatter: Make sure the formatter returned successfully
+      #218 closed 2014-07-27 [PULL]Modified: cpp.kak,file.cc, Makefile; Renamed: s/kakrc/kakrc.default/
+      #1357 closed 2017-05-11 Format wipes buffer on error with formatcmd
+      #1460 closed 2017-06-20 Bad performance when running 'set -add' on all buffers
+      #2976 closed 2019-06-15 gocode is not maintained
+  wipes          1 hit(s) (all listed)
+      #1357 closed 2017-05-11 Format wipes buffer on error with formatcmd
+  erase          48 hit(s) (all listed)
+      #5471 open 2026-04-09 Add viewport info to JSON UI draw message
+      #5063 open 2023-12-16 Option to override environment variables in child processes
+      #4215 open 2021-06-03 Replace has inconsistent selection behavior
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #4616 open 2022-05-17 Backspace key does not register under Xterm
+      #2021 open 2018-04-30 Persistent Undo
+      #4500 open 2022-01-13 [BUG][CRASH] On buffer quit
+      #1122 open 2017-01-10 Add a tutorial like `vimtutor`
+      #5460 closed 2026-03-16 go comandos
+      #4664 merged 2022-07-10 Make Shift+Backspace erase a character in insert mode
+      #5259 closed 2024-12-03 [BUG] Pasting at the end of a FIFO buffer changes behaviour in scroll mode
+      #5076 closed 2024-01-10 [REGRESSION] An empty string as RE replaces/overwrites/erases current content of the search register
+      #5155 closed 2024-04-24 [BUG] Backspace occasionally behaves like Delete
+      #3840 closed 2020-10-26 How to select and copy everthing from prompt to system clipboard
+      #4277 closed 2021-07-23 Select the data inserted by the `p` and `P` primitives
+      #4559 closed 2022-02-21 [BUG] pipe bc make the content dissapear
+      #4339 closed 2021-09-10 Visual glitches in the Termux app for Android when running v2021.08.28, even on a linux server
+      #3912 merged 2020-11-24 Distinguish <c-h> and Backspace on terminals where that is possible.
+      #3863 closed 2020-11-03 Distinguish <c-h> and Backspace on terminals where that is possible.
+      #3506 closed 2020-05-25 [builtin-terminal-ui] Artifact on click
+  erasing        3 hit(s) (all listed)
+      #1122 open 2017-01-10 Add a tutorial like `vimtutor`
+      #4559 closed 2022-02-21 [BUG] pipe bc make the content dissapear
+      #633 closed 2016-03-15 The `-f` option arbitrarily adds newlines in CLI mode
+  erased         9 hit(s) (all listed)
+      #4215 open 2021-06-03 Replace has inconsistent selection behavior
+      #5460 closed 2026-03-16 go comandos
+      #3840 closed 2020-10-26 How to select and copy everthing from prompt to system clipboard
+      #3506 closed 2020-05-25 [builtin-terminal-ui] Artifact on click
+      #383 closed 2015-08-23 kakoune and fzf
+      #633 closed 2016-03-15 The `-f` option arbitrarily adds newlines in CLI mode
+      #1038 closed 2016-12-19 equivalent of vim's expandtab
+      #1427 closed 2017-06-08 Add confirmation messages in status bar when text is deleted or changed (like yanked 2 selections to register ")
+      #3455 closed 2020-04-26 Prompt and Menu mode fails under Tmux on MacOS
+  destroy        17 hit(s) (all listed)
+      #4500 open 2022-01-13 [BUG][CRASH] On buffer quit
+      #2397 open 2018-09-17 'BufSetOption' is executed twice when an option is set in 'BufCreate'
+      #3542 open 2020-06-04 non-default hooks?
+      #5114 closed 2024-03-06 A few questions on X removal
+      #2113 closed 2018-06-08 [WIP] ghcid.kak: Simple ghcid integration
+      #4935 merged 2023-06-24 map: fail if key is currently executing
+      #3128 closed 2019-10-09 Allow scrolling past the main cursor in the view mode
+      #3683 closed 2020-08-27 Support NetBSD Curses
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #3173 merged 2019-11-02 src: Some recommended fixes from cppcheck
+      #672 closed 2016-05-11 Several crashes when trying to execute the `man` command in a `WinResize` hook
+      #1301 closed 2017-03-29 Command mode?
+      #1552 closed 2017-09-01 Killing terminal of one kak instance results in other clients dying
+      #2682 closed 2019-01-09 problem using options in shell tests
+      #2370 closed 2018-09-08 can't open file in /etc/systemd
+      #2906 closed 2019-05-14 Buffer overflow on client disconnect
+      #2830 closed 2019-04-01 WinClosed hook does not trigger when quitting
+  destroys       0 hit(s)
+  overwrite      54 hit(s) (all listed)
+      #1399 open 2017-05-26 Discussion: merge default configuration with user autoload/ folder
+      #4437 open 2021-11-13 Dired directory with file permissions listed
+      #673 open 2016-05-12 Allow the `WinResize` hook to be called farther apart in time from the last callback
+      #5177 open 2024-05-14 [REQUEST] revert f26d4ea4 for putting tmux into background again
+      #4093 open 2021-03-09 Show diff between files across write operations 
+      #4102 open 2021-03-12 No Hook available for prompts on opening a file
+      #1720 open 2017-11-22 gg causes capture group to be lost
+      #4406 open 2021-10-26 [REQUEST] Different touch on mimicing Vim's local marks and uppercase registers
+      #2044 open 2018-05-14 new-line can lose paste-buffer
+      #4791 open 2022-11-19 Don't add missing newline at EOF
+      #5367 open 2025-08-01 [BUG] %val{buffile} returns bufname not pipe name for fifo pipes
+      #453 open 2015-11-01 code folding
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #153 open 2014-05-28 investigate 'kakdiff'
+      #2194 closed 2018-07-07 Work with kitty on a xterm protocol extension to use terminal's *native* multiple cursors (to enable different cursor shapes and blinking)
+      #2904 closed 2019-05-13 Suppressing "this is a *scratch* buffer" message
+      #4725 merged 2022-09-01 Allow to undo and redo selection changes
+      #4149 merged 2021-04-17 Add `*-insert` hooks for automatic comment insertion
+      #4787 merged 2022-11-19 Print OS error when ":write -force" fails to change permissions
+      #4756 merged 2022-10-16 Allow to put switches after :write's positional argument
+  clobber        11 hit(s) (all listed)
+      #3354 open 2020-02-09 Preserve register values when merging new ones
+      #5367 open 2025-08-01 [BUG] %val{buffile} returns bufname not pipe name for fifo pipes
+      #3686 open 2020-08-28 Documentation for fundamental concepts
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #3116 closed 2019-09-30 src: Serve a virtual filesystem via 9P to interact with Kakoune programmatically
+      #5115 closed 2024-03-07 How to imitate p and P behavior for clipboard paste
+      #914 closed 2016-11-03 Terminal palette gets clobbered
+      #785 closed 2016-09-02 Enable persisting history
+      #1175 closed 2017-02-01 Provide default behavior for <a-c> and <a-d>
+      #2216 closed 2018-07-16 `prompt`'s command gets executed after subsequent command
+  blank          72 hit(s) (all listed)
+      #1338 open 2017-04-26 Spurious whitespace at cursor position on blank line
+      #3688 open 2020-08-28 Indentation and Tab handling — Through hooks does not work after non blank characters.
+      #4193 open 2021-05-12 Kakoune shows only blank when launched with `tmux split-window` with colorscheme solarized-dark-termcolors
+      #4049 open 2021-02-06 `wrap -word -indent -width 80` wraps incorrectly
+      #3228 open 2019-11-25 Git commit message editing features
+      #4483 open 2021-12-30 [BUG] b doesn't work after CRLF
+      #4360 open 2021-09-17 Mapping menus show the escaped form of the keys
+      #3726 open 2020-09-12 kak reading from file descriptor fails
+      #4546 open 2022-02-11 Add a select rectangle command
+      #2254 open 2018-07-25 Add an option to highlight only trailing whitespace
+      #4257 open 2021-07-09 barely any emoji work in kakoune on macos from nixpkgs
+      #2405 open 2018-09-19 Add a syntax for indented strings
+      #4741 open 2022-09-21 [BUG] rust indentation hates unmatched parentheses in strings.
+      #4699 open 2022-08-03 Add desktop entry
+      #4627 open 2022-05-24 Arch Linux Arm 2021-11 unable to refresh screen with unknown characters
+      #1517 open 2017-07-27 `<pageup>` doesn't scroll all the way up with wrapped lines
+      #4425 open 2021-11-05 Expand the `new`/`terminal` API
+      #4689 open 2022-07-28 [BUG] kakoune used in aerc cause redrawing issue
+      #5416 closed 2025-11-30 [BUG] repaint screen issues after job resume (fg command on bash)
+      #2727 closed 2019-02-07 Add some indication on top and bottom that there are addtional cursors not in the view.
+  unreadable     11 hit(s) (all listed)
+      #5231 open 2024-09-08 Highlight ASCII control characters unambiguously
+      #4184 open 2021-05-03 Easy way to know which is the main selection in %val{selections}
+      #3554 open 2020-06-14 Default theme's colour constrast is kinda bad.
+      #5171 closed 2024-05-09 [BUG] 2024.05.09 tests failing on Alpine Linux
+      #2862 closed 2019-04-18 Provide colors to create faces based on current color scheme
+      #2835 closed 2019-04-04 Org-mode language support
+      #916 merged 2016-11-07 Update go keywords
+      #1572 merged 2017-09-14 rc perl: Don't highlight regex, fix string escapes
+      #3846 closed 2020-10-27 Add a shebang filetype detection hook
+      #723 closed 2016-07-03 clang format
+      #2046 closed 2018-05-14 [RFC] command line parsing overhaul
+  garbage        11 hit(s) (all listed)
+      #5463 closed 2026-03-21 Please remove #slopware LLM commits and disallow their inclusion
+      #5214 closed 2024-08-11 [BUG] Numpad/Keypad numbers produce garbage
+      #4945 merged 2023-07-06 Allow map/unmap during mapping execution
+      #5145 closed 2024-04-16 [BUG] Garbage instead of Cyrillic text when connecting to Kakoune server launched as a daemon using `launchd`
+      #4935 merged 2023-06-24 map: fail if key is currently executing
+      #680 closed 2016-05-24 Unable to `cd` from an %sh scope
+      #1156 closed 2017-01-24 Nesting exec inside on-key causes... garbage arguments?
+      #1816 closed 2018-01-27 Disable mouse events while suspended
+      #2778 closed 2019-03-10 Mouse not working on xfce4-terminal
+      #3087 closed 2019-09-17 I/O not working properly in Mac OS in latest builds
+      #3414 closed 2020-03-17 builtin-terminal-ui: SEGV
+  mangled        8 hit(s) (all listed)
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #1912 closed 2018-03-07 Support more keys with shift modifiers.
+      #457 merged 2015-11-02 Patch to build on FreeBSD
+      #1436 closed 2017-06-13 Fix the code to be unambiguous with C++17
+      #1111 closed 2017-01-06 Unexpected behavior when inserting newline in comment
+      #1829 closed 2018-02-03 Using a unicode character as string delimiter
+      #1710 closed 2017-11-19 Cursor off screen after goto end with wrapped lines
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5274 open 2025-01-16 [BUG] :e <directory>
+      #3989 open 2020-12-27 JSON-RPC interaction with running client(s)
+      #4498 open 2022-01-12 xclip yanking pasting line spaces and write 
+      #5401 open 2025-10-15 [BUG] `gd` and `gu` do not interact correctly with counts
+      #4497 open 2022-01-12 system clipboard integration with newlines and  other characters
+      #3622 open 2020-07-28 Fix missing quotation marks.
+      #2482 open 2018-10-08 ranges highlighter tries to split a multi-byte UTF-8 character
+      #3935 open 2020-12-14 Built-in clipboard integration
+      #4406 open 2021-10-26 [REQUEST] Different touch on mimicing Vim's local marks and uppercase registers
+      #2360 open 2018-09-04 Rename buffer to file when saving
+      #2905 open 2019-05-14 'quit' does not apply immediately
+      #5328 open 2025-05-14 [REQUEST] Expose `%val{buffer_display_width}` and `%val{split_line}` expansions
+      #2725 open 2019-02-06 Feedback when playing a macro
+      #4016 open 2021-01-08 rc clipboard: Support system clipboard ineractions
+      #1630 open 2017-10-12 Add support for Uppercase registers with extending behavior
+      #3185 open 2019-11-09 Inconsistent window redraws in st
+      #2336 open 2018-08-25 rc lint: Evaluate `lintcmd` directly
+      #1986 open 2018-04-02 Add regex-replace highlighter to replace sections by regex
+      #1273 open 2017-03-09 Show keys in the status line while recording macros.
+      #1432 open 2017-06-11 `:new edit` doesn't work with filenames containing spaces
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4977 open 2023-09-11 Add <C-e> and <C-y> to scroll one line at a time
+      #4416 open 2021-10-30 [REQUEST] access env vars from kakrc
+      #3854 open 2020-10-29 Use the right tabstop when converting to spaces
+      #1294 open 2017-03-24 add :restart command
+      #5447 open 2026-02-18 [REQUEST] `expand_unprintable` option
+      #1820 open 2018-01-29 Highlighting relatively to window
+      #4764 open 2022-10-26 [QUESTION] highlighting after * comments out the remainder code
+      #5509 open 2026-06-04 [REQUEST] treat multiple args to info as new line each
+      #4507 open 2022-01-17 [BUG] Markup returned from expansions is not parsed in the modeline
+      #5340 open 2025-06-07 [BUG] show-matching highlighter matches across code and strings
+      #894 open 2016-10-26 Using 'O' (shit-o) to insert line above is not taking the current line's indentation into account
+      #4613 open 2022-05-11 [BUG] Autocomplete of paths containing whitespace is broken
+      #4312 open 2021-08-25 possibly resolve #1122
+      #4230 open 2021-06-15 Document `--` somewhere.
+      #2452 open 2018-09-29 src: Allow single-word expansions to have surrounding whitespace
+      #2151 open 2018-06-23 Feature request: make normal mode agnostic of keyboard layout
+      #2517 open 2018-10-23 Something like `undojoin`
+      #4043 open 2021-02-02 Scrollable info box？
+      #3607 open 2020-07-19 Last modified buffer
+      #3350 open 2020-02-07 Generic command to add shell prelude
+  unclean        0 hit(s)
+  shutdown       4 hit(s) (all listed)
+      #3354 open 2020-02-09 Preserve register values when merging new ones
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #1540 closed 2017-08-24 Syntax highliting for SQL
+      #3242 closed 2019-12-04 100% CPU usage after terminal dies
+  reboot         5 hit(s) (all listed)
+      #5367 open 2025-08-01 [BUG] %val{buffile} returns bufname not pipe name for fifo pipes
+      #1594 closed 2017-09-26 CPU usage at 100%
+      #3019 closed 2019-07-12 Use $XDG_RUNTIME_DIR
+      #3528 closed 2020-06-01 .xyz.kak.3nG8VI files after session quit
+      #74 closed 2014-02-27 Session recovery support after quitting
+  disk+full      10 hit(s) (all listed)
+      #4627 open 2022-05-24 Arch Linux Arm 2021-11 unable to refresh screen with unknown characters
+      #5145 closed 2024-04-16 [BUG] Garbage instead of Cyrillic text when connecting to Kakoune server launched as a daemon using `launchd`
+      #2828 closed 2019-03-31 Incorrect instructions re: eslint and kakoune in docs
+      #4263 merged 2021-07-13 Feature: In `git diff` buffer navigate to exact source line by pressing `<ret>` within a hunk 
+      #561 closed 2016-01-21 Move some scripts to an `extra` repository
+      #953 merged 2016-12-12 editorconfig, fix indent options and add whitespaces ones
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #1540 closed 2017-08-24 Syntax highliting for SQL
+      #2178 closed 2018-07-01 Spurious golint-kak linting errors
+      #2932 closed 2019-05-28 When disk is full, Kakoune crashes and truncates file, potentially losing data
+  data+loss      3 hit(s) (all listed)
+      #4365 open 2021-09-21 src: Handle removal of files linked to buffers
+      #2982 open 2019-06-18 % should not move cursor
+      #864 closed 2016-10-12 Incoherence with the `range-faces` descriptor end column index
+  partial+write  10 hit(s) (all listed)
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #3510 open 2020-05-27 Add default tabstop and max width for rust
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #5099 open 2024-02-06 Add tree-sitter based highlighter
+      #5163 open 2024-04-27 [QUESTION] Cursor up/down navigation in soft-wrapped text (gj/gk in Vim)
+      #805 closed 2016-09-15 Autosave Question
+      #4200 closed 2021-05-16 Add %val{bufstr} with buffer content as a string
+      #953 merged 2016-12-12 editorconfig, fix indent options and add whitespaces ones
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #1935 closed 2018-03-16 Feature Request: Optionally delimit expansion blocks with `{begin,sh} … end` (as in lua/ruby/ada).
+  crash+safe     3 hit(s) (all listed)
+      #2021 open 2018-04-30 Persistent Undo
+      #672 closed 2016-05-11 Several crashes when trying to execute the `man` command in a `WinResize` hook
+      #3226 closed 2019-11-24 Tests not passed with default Fedora build flags
+  atomic+write   7 hit(s) (all listed)
+      #5032 closed 2023-11-17 [BUG] Windows Terminal `keep pipe:y`
+      #4516 merged 2022-01-26 Git blame wrapper: Pass blame flags all at once
+      #4432 closed 2021-11-10 [BUG] JSON UI only shows stdin when connecting to an existing session
+      #3827 closed 2020-10-21 Add a switch to specify the write method for :write
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #3357 merged 2020-02-09 src: Allow `:write-all` to use -atomic, fix usage
+      #2682 closed 2019-01-09 problem using options in shell tests
+  lock+file      20 hit(s) (all listed)
+      #4102 open 2021-03-12 No Hook available for prompts on opening a file
+      #2846 open 2019-04-09 Command to break out of locked user-mode
+      #5408 open 2025-11-07 Prevent ctags process stacking on stucked .tags.kaklock folder
+      #4579 open 2022-04-05 [BUG] Can't create session ids with a dot in their name
+      #3703 open 2020-09-02 src: Implement display-line selectors for `g`/`G`
+      #5459 merged 2026-03-15 git.kak: improve "git commit" wrapper
+      #2759 closed 2019-03-01 Scratch buffer contents is lost by accident
+      #5460 closed 2026-03-16 go comandos
+      #3116 closed 2019-09-30 src: Serve a virtual filesystem via 9P to interact with Kakoune programmatically
+      #4417 closed 2021-11-01 make test fails on OpenBSD
+      #5173 closed 2024-05-11 [BUG] Tests failing on OpenBSD
+      #2844 closed 2019-04-09 View mode movement restricted by cursor placement
+      #3360 closed 2020-02-10 FEATURE REQUEST:Second navigation: A setting option for remapping 'hjkl'(←↓↑→) to 'jkil'(←↓↑→)
+      #3618 closed 2020-07-26 kakoune daemon without forking?
+      #4402 closed 2021-10-24 [REQUEST] Allow Refusal to Open a File That's Already Open in Another Session 
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+      #250 closed 2015-02-13 2 separate kak instances should cooperate when editing the same file(s)
+      #436 closed 2015-10-14 Alt-Commands conflict with special character insertion.
+      #3112 closed 2019-09-28 Hangs after opening
+      #3096 closed 2019-09-20 Pipfile types not recognised by default
+  write+failure  6 hit(s) (all listed)
+      #5561 open 2026-09-29 [REQUEST] Streaming LLM completions into Kakoune rc/tools/llm.kak
+      #5556 closed 2026-09-24 [REQUEST] Streaming LLM completions in Kakoune
+      #5459 merged 2026-03-15 git.kak: improve "git commit" wrapper
+      #3973 merged 2020-12-22 src: Catch “kill exceptions”’cleanly
+      #4248 closed 2021-06-29 Proper `if` support in kakscript
+      #2683 closed 2019-01-10 Caching shell token expansion proof of concept
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3989 open 2020-12-27 JSON-RPC interaction with running client(s)
+      #4498 open 2022-01-12 xclip yanking pasting line spaces and write 
+      #4497 open 2022-01-12 system clipboard integration with newlines and  other characters
+      #2360 open 2018-09-04 Rename buffer to file when saving
+      #2482 open 2018-10-08 ranges highlighter tries to split a multi-byte UTF-8 character
+      #2905 open 2019-05-14 'quit' does not apply immediately
+      #1432 open 2017-06-11 `:new edit` doesn't work with filenames containing spaces
+      #4437 open 2021-11-13 Dired directory with file permissions listed
+      #2336 open 2018-08-25 rc lint: Evaluate `lintcmd` directly
+      #2690 open 2019-01-14 jsx syntax highlighting breaks when text and react element are not separated by space
+      #2352 open 2018-09-02 Pug/Jade: use JS and CSS highlighter for script/style tags
+      #4636 open 2022-06-06 kak clipboard functionalities like Pico 
+      #4389 open 2021-10-17 Undocumented differences between number and letter registers
+      #2582 open 2018-11-19 Load selections from highlighter
+      #4528 open 2022-02-02 [BUG][CRASH] Occasional crashes when reloading file mounted with SSHFS
+      #5096 open 2024-01-29 [BUG] comment-line sometimes does not comment filetype=sh
+      #3376 open 2020-02-19 kakrc:1: 'def' wrong argument count
+      #2536 open 2018-10-29 [Feature request] replace-regex highlighter
+      #1122 open 2017-01-10 Add a tutorial like `vimtutor`
+      #4880 open 2023-04-22 [REQUEST] a way to write data to stdout when connecting to an existing session
+
+== 51 terms run; 46 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

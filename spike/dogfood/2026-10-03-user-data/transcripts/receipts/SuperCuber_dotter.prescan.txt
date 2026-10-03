@@ -1,0 +1,198 @@
+== novelty pre-scan: SuperCuber/dotter
+== date: 2026-10-03T02:40:18Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          3 hit(s) (all listed)
+      #55 open 2021-03-10 [BUG] Dotter depends on configuration too much when undeploying
+      #82 merged 2021-08-23 Fix serialization of FileTarget
+      #54 closed 2021-03-10 [BUG] Unable to handle binary files
+  corrupt        1 hit(s) (all listed)
+      #104 closed 2022-07-14 [FEATURE(S)] Conditional includes and multiple caches
+  corruption     2 hit(s) (all listed)
+      #22 open 2020-11-07 Bugs arising from encoding one logical operation as two operations
+      #157 closed 2023-12-21 [FEATURE] Add a release target for `x86_64-pc-windows-gnu`
+  truncated      2 hit(s) (all listed)
+      #185 closed 2024-09-06 Bump gix-path from 0.10.10 to 0.10.11
+      #111 merged 2023-01-06 Bump tokio from 1.19.2 to 1.20.3
+  truncate       2 hit(s) (all listed)
+      #185 closed 2024-09-06 Bump gix-path from 0.10.10 to 0.10.11
+      #111 merged 2023-01-06 Bump tokio from 1.19.2 to 1.20.3
+  empty          22 hit(s) (all listed)
+      #220 open 2026-08-09 fix: exclude cache and .git from watch filter (fixes #196)
+      #175 open 2024-06-27 [FEATURE] 
+      #125 open 2023-05-15 [FEATURE] dotter init should be recursive
+      #214 open 2026-04-22 Add `copy` deployment type with checksum-based caching
+      #22 open 2020-11-07 Bugs arising from encoding one logical operation as two operations
+      #225 closed 2026-08-10 feat: add machine selection for local configs
+      #192 closed 2025-01-12 [BUG] Failed to parse template Template error: invalid handlebars syntax: expected trailing_tilde_to_omit_whitespace
+      #165 merged 2024-02-25 Append new/unknown packages from included files
+      #161 closed 2024-01-06 [BUG] Moving file outside of folder creates error
+      #173 merged 2024-06-09 adding global variable to enable symlinks by default if type not specified
+      #146 closed 2023-09-03 [FEATURE] Import command
+      #79 closed 2021-07-19 Add copy target type
+      #93 closed 2022-03-21 Failed to deploy
+      #67 closed 2021-05-28 [FEATURE] Undeploy git submodules
+      #60 closed 2021-03-21 Sourcing Environment Variables From Hooks
+      #33 closed 2020-12-04 [FEATURE] Add flag to skip confirmation of removing empty dirs
+      #15 closed 2020-09-30 [FEATURE] Init command
+      #17 closed 2020-10-01 [BUG] Missing variables in templates aren't reported
+      #7 closed 2020-07-31 Switch templating engine to handlebars
+      #6 closed 2020-07-31 Implement new caching structure
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          1 hit(s) (all listed)
+      #64 closed 2021-05-19 Merge variable tables instead of bailing
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           3 hit(s) (all listed)
+      #214 open 2026-04-22 Add `copy` deployment type with checksum-based caching
+      #51 open 2021-01-30 [FEATURE] Read-only rendered files
+      #192 closed 2025-01-12 [BUG] Failed to parse template Template error: invalid handlebars syntax: expected trailing_tilde_to_omit_whitespace
+  partial        1 hit(s) (all listed)
+      #191 merged 2024-12-01 feat: handlebars 6
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #218 open 2026-08-08 [BUG] Refuse to deploy a template onto its own source
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      30 hit(s) (all listed)
+      #200 open 2025-04-23 [FEATURE] Configure overwrite for symbolic targets
+      #219 open 2026-08-08 Refuse to deploy a template onto its own source
+      #193 open 2025-01-22 [FEATURE] Offer to lauch a merge tool when throwing error beacuse target contents were changed
+      #214 open 2026-04-22 Add `copy` deployment type with checksum-based caching
+      #231 open 2026-09-12 Add copy target type
+      #185 closed 2024-09-06 Bump gix-path from 0.10.10 to 0.10.11
+      #192 closed 2025-01-12 [BUG] Failed to parse template Template error: invalid handlebars syntax: expected trailing_tilde_to_omit_whitespace
+      #161 closed 2024-01-06 [BUG] Moving file outside of folder creates error
+      #183 merged 2024-09-03 Bump gix-path from 0.10.9 to 0.10.10
+      #164 closed 2024-02-10 [FEATURE] Support binary files
+      #167 merged 2024-03-04 Bump mio from 0.8.10 to 0.8.11
+      #158 closed 2023-12-21 Bump unsafe-libyaml from 0.2.9 to 0.2.10
+      #154 merged 2023-12-15 Bump zerocopy from 0.7.30 to 0.7.31
+      #141 merged 2023-08-08 Allow passing variables defined by `assign` to `include_template`.
+      #117 merged 2023-03-19 feat: diff source with destination on conflict
+      #91 closed 2022-02-11 Show difference between source and destination file
+      #39 closed 2020-12-23 Not able to deploy dotfile containing vim foldmarkers
+      #113 merged 2023-02-04 Bump tokio from 1.20.3 to 1.20.4
+      #111 merged 2023-01-06 Bump tokio from 1.19.2 to 1.20.3
+      #79 closed 2021-07-19 Add copy target type
+  clobber        0 hit(s)
+  blank          10 hit(s) (all listed)
+      #174 open 2024-06-19 Are the complex templates read from local.toml overwritten the global one by default?
+      #220 open 2026-08-09 fix: exclude cache and .git from watch filter (fixes #196)
+      #223 open 2026-08-09 Dedup dotter toml with decl macros
+      #219 open 2026-08-08 Refuse to deploy a template onto its own source
+      #222 open 2026-08-09 Create dotter.toml
+      #206 open 2025-12-18 Recursive is off by default for symbolic folders
+      #221 closed 2026-08-09 Nit: Have automatic template detection warn in the same way as symlink detection
+      #224 closed 2026-08-09 Dedup dotter toml with just uhh a function
+      #225 closed 2026-08-10 feat: add machine selection for local configs
+      #121 closed 2023-04-24 Is there a quick way to flat source directory when linking to target directory
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       21 hit(s) (all listed)
+      #193 open 2025-01-22 [FEATURE] Offer to lauch a merge tool when throwing error beacuse target contents were changed
+      #230 open 2026-09-11 [FEATURE] Support configurable recursion depth for directory targets
+      #103 open 2022-06-27 [BUG] Dotter doesn't elevate if it can't read a directory
+      #22 open 2020-11-07 Bugs arising from encoding one logical operation as two operations
+      #176 open 2024-07-08 [BUG] Not creating directory symbolic  
+      #221 closed 2026-08-09 Nit: Have automatic template detection warn in the same way as symlink detection
+      #185 closed 2024-09-06 Bump gix-path from 0.10.10 to 0.10.11
+      #161 closed 2024-01-06 [BUG] Moving file outside of folder creates error
+      #139 closed 2023-07-29 [FEATURE]  create home-brew tap for MacOS
+      #94 merged 2022-03-25 add options for disabling recursion
+      #137 closed 2023-07-28 "data did not match any variant of untagged enum FileTargetOuterRepr"
+      #117 merged 2023-03-19 feat: diff source with destination on conflict
+      #91 closed 2022-02-11 Show difference between source and destination file
+      #79 closed 2021-07-19 Add copy target type
+      #99 closed 2022-06-09 [FEATURE] Private information storage in config files
+      #83 closed 2021-08-26 [BUG] Included file `windows.toml` can't use more specific key to override
+      #54 closed 2021-03-10 [BUG] Unable to handle binary files
+      #60 closed 2021-03-21 Sourcing Environment Variables From Hooks
+      #15 closed 2020-09-30 [FEATURE] Init command
+      #26 closed 2020-11-11 [FEATURE] Multiple local.toml
+  in-place       18 hit(s) (all listed)
+      #223 open 2026-08-09 Dedup dotter toml with decl macros
+      #228 open 2026-09-08 [FEATURE] Support loading variables from dotenv files
+      #222 open 2026-08-09 Create dotter.toml
+      #51 open 2021-01-30 [FEATURE] Read-only rendered files
+      #184 open 2024-09-06 Can you use hashes in templates? 
+      #120 open 2023-04-05 [FEATURE] Allow use of variables within others in the TOML
+      #112 closed 2023-01-09 Add config command
+      #94 merged 2022-03-25 add options for disabling recursion
+      #146 closed 2023-09-03 [FEATURE] Import command
+      #118 merged 2023-03-25 Generate completions at compile-time
+      #42 closed 2021-01-03 [FEATURE] Hooks
+      #79 closed 2021-07-19 Add copy target type
+      #85 closed 2021-10-05 [FEATURE] Ideas for making it easier to work with systemd files
+      #57 closed 2021-03-14 [FEATURE]  Inherenting pre_deploy.sh environment variables
+      #47 closed 2021-01-09 [BUG] No elevation of privileges when overwriting existing files belonging to root
+      #15 closed 2020-09-30 [FEATURE] Init command
+      #14 closed 2020-09-20 Rethink logging levels
+      #6 closed 2020-07-31 Implement new caching structure
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         1 hit(s) (all listed)
+      #13 closed 2020-09-05 Failed to deploy, invalid type
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      7 hit(s) (all listed)
+      #219 open 2026-08-08 Refuse to deploy a template onto its own source
+      #223 open 2026-08-09 Dedup dotter toml with decl macros
+      #176 open 2024-07-08 [BUG] Not creating directory symbolic  
+      #222 open 2026-08-09 Create dotter.toml
+      #66 open 2021-05-22 [FEATURE] Don't ask for an elevation if nothing has changed
+      #224 closed 2026-08-09 Dedup dotter toml with just uhh a function
+      #27 closed 2020-11-18 [BUG] Cargo.lock needs to be added
+  write+failure  2 hit(s) (all listed)
+      #112 closed 2023-01-09 Add config command
+      #118 merged 2023-03-25 Generate completions at compile-time
+  file+contents  21 hit(s) (all listed)
+      #193 open 2025-01-22 [FEATURE] Offer to lauch a merge tool when throwing error beacuse target contents were changed
+      #230 open 2026-09-11 [FEATURE] Support configurable recursion depth for directory targets
+      #103 open 2022-06-27 [BUG] Dotter doesn't elevate if it can't read a directory
+      #22 open 2020-11-07 Bugs arising from encoding one logical operation as two operations
+      #176 open 2024-07-08 [BUG] Not creating directory symbolic  
+      #221 closed 2026-08-09 Nit: Have automatic template detection warn in the same way as symlink detection
+      #185 closed 2024-09-06 Bump gix-path from 0.10.10 to 0.10.11
+      #161 closed 2024-01-06 [BUG] Moving file outside of folder creates error
+      #139 closed 2023-07-29 [FEATURE]  create home-brew tap for MacOS
+      #94 merged 2022-03-25 add options for disabling recursion
+      #137 closed 2023-07-28 "data did not match any variant of untagged enum FileTargetOuterRepr"
+      #117 merged 2023-03-19 feat: diff source with destination on conflict
+      #91 closed 2022-02-11 Show difference between source and destination file
+      #79 closed 2021-07-19 Add copy target type
+      #99 closed 2022-06-09 [FEATURE] Private information storage in config files
+      #83 closed 2021-08-26 [BUG] Included file `windows.toml` can't use more specific key to override
+      #60 closed 2021-03-21 Sourcing Environment Variables From Hooks
+      #54 closed 2021-03-10 [BUG] Unable to handle binary files
+      #15 closed 2020-09-30 [FEATURE] Init command
+      #26 closed 2020-11-11 [FEATURE] Multiple local.toml
+
+== 51 terms run; 18 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

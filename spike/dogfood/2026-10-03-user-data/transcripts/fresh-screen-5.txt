@@ -1,0 +1,9 @@
+SEEN 7zip b2-exclusions:31
+SEEN 7zz b2-exclusions:31
+fresh cpdf 
+fresh duplicacy 
+fresh gocryptfs 
+fresh m4b-tool 
+fresh mksquashfs 
+fresh squashfs 
+fresh tone 

@@ -1,0 +1,13 @@
+PASS  7/7 explored worlds satisfied the built-in atomicity invariant
+      explored 7 worlds (crash points 6 + 1 baseline)
+      expected status: 0
+      atomicity: 2 path(s) judged pre-or-post
+      oracle: agreed on 6 operations (191 syscall lines examined, 73 in scope of the judged state), witness strace
+      metadata: 2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+      cwd: /s/perl
+sideeye: json sha256=157b64d2e7de3a40d657704e018b0b759c1f60e9fe1644fabde66083942a1aa9;

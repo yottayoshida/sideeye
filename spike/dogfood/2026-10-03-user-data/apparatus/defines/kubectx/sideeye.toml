@@ -1,0 +1,6 @@
+[world]
+state = "/s/kubectx"
+
+[define]
+operation = "/opt/bin/kubectx staging"
+cwd       = "/s/kubectx-in"

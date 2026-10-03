@@ -1,0 +1,21 @@
+✔ Switched to context "staging".
+✔ Switched to context "staging".
+PREFLIGHT  recording accepted — 8 state-changing operation(s) observed
+
+cwd          /s/kubectx-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 8 operations (132 syscall lines examined, 18 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 4 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2002 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/kubectx --cwd "/s/kubectx-in" --operation "/opt/bin/kubectx staging" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

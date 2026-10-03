@@ -1,0 +1,61 @@
+PLAIN bzip3 exit=0 state=changed  ()
+PLAIN doing exit=0 state=changed  (>      Backup: backup directory created at /s/doing-in/backups)
+PLAIN dotdrop exit=0 state=changed  (2 dotfile(s) installed.)
+PLAIN dotenvx exit=0 state=changed  (◈ encrypted (/s/dotenvx/.env))
+PLAIN dotter exit=0 state=changed  ([ WARN] Creating template "gitconfig" -> "/s/dotter/home/.gitconfig" but target file alrea)
+PLAIN gocryptfs exit=9 state=unchanged  (got empty Password from stdin)
+PLAIN hexapdf exit=0 state=changed  ()
+PLAIN kakoune exit=0 state=changed  (X)
+PLAIN kustomize exit=0 state=changed  ()
+PLAIN mapshaper exit=0 state=changed  ([o] Wrote a.prj)
+PLAIN mu exit=0 state=changed  (/s/mu/Maildir/archive/cur/1001.msg:2,)
+PLAIN notesmd exit=0 state=changed  (to /s/notes/vault/projects/alpha-2026.md)
+PLAIN nushell exit=0 state=changed  ()
+PLAIN perl exit=0 state=changed  ()
+PLAIN samtools exit=0 state=changed  ()
+PLAIN snapraid seed-failed: 
+PLAIN upx exit=0 state=changed  (Packed 1 file.)
+PLAIN zlua exit=0 state=changed  ()
+PLAIN snapraid seed-failed: 
+PLAIN gocryptfs exit=0 state=changed  (Password changed.)
+PLAIN kubectx exit=0 state=changed  (✔ Switched to context "staging".)
+PLAIN tofu exit=0 state=changed  (Successfully removed 1 resource instance(s).)
+PLAIN dwarfs exit=1 state=changed  (ERROR: dwarfs::runtime_error: [filesystem_parser.cpp:298] no filesystem found)
+PLAIN flatpak exit=0 state=changed  ()
+PLAIN podman exit=0 state=changed  ()
+PLAIN electrum seed-failed: Seed or key not recognized
+PLAIN transmission exit=0 state=changed  (Changed 1 files)
+PLAIN hcloud exit=0 state=changed  ()
+PLAIN doctl exit=0 state=changed  (Now using context [work] by default)
+PLAIN argocd exit=20 state=unchanged  ({"level":"fatal","msg":"config file has incorrect permission flags -rw-r--r--, change the )
+PLAIN kubecm exit=0 state=changed  ()
+PLAIN minikube exit=0 state=changed  (! These changes will take effect upon a minikube delete and then a minikube start)
+PLAIN babel exit=0 state=changed  (updating catalog translations/fr/LC_MESSAGES/messages.po based on messages.pot)
+Error: Wallet file not found.
+Type 'electrum create' to create a new wallet, or provide a path to a wallet with the -w option
+PLAIN electrum exit=0 state=changed  ()
+PLAIN argocd exit=20 state=changed  ({"level":"fatal","msg":"open /s/aux/home/.config/argocd/.prev-ctx: no such file or directo)
+PLAIN argocd exit=0 state=changed  (Switched to context 'work')
+PLAIN minikube exit=0 state=changed  (! These changes will take effect upon a minikube delete and then a minikube start)
+{
+    "cpus": 4,
+    "driver": "docker",
+    "memory": "6144"
+}PLAIN luarocks exit=0 state=changed  (	/s/luarocks/config-5.4.lua)
+PLAIN bibtex-tidy exit=1 state=unchanged  (Invalid key for merge option: "refs.bib")
+rocks_servers = {
+   "https://luarocks.org"
+}
+rocks_trees = {
+   {
+      name = "user",
+      root = "/s/aux/home/.luarocks"
+   },
+PLAIN bibtex-tidy exit=1 state=unchanged  (--modify/-m is only valid when specifying input files)
+PLAIN bibtex-tidy exit=0 state=changed  (Done. Successfully tidied 2 entries.)
+PLAIN talosctl exit=0 state=unchanged  ()
+context: work
+contexts:
+    home:
+    work:
+PLAIN talosctl exit=0 state=changed  ()

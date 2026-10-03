@@ -1,0 +1,21 @@
+=== perl (perl -i -pe s/foo/bar/ a.txt b.txt)
+=== bzip3 (bzip3 -e --rm a.log)
+=== babel (pybabel update -i messages.pot -d translations)
+=== transmission (transmission-edit -a https://tracker2.example.invalid/announce /s/transmission/linux-isos.torrent)
+openat(AT_FDCWD, "/s/transmission/linux-isos.torrent.tmp.JbWXX1", O_RDWR|O_CREAT|O_EXCL, 0600) = 3
+renameat(AT_FDCWD, "/s/transmission/linux-isos.torrent.tmp.JbWXX1", AT_FDCWD, "/s/transmission/linux-isos.torrent") = 0
+write(1, "/s/transmission/linux-isos.torre"..., 129) = 129
+=== samtools (samtools reheader -i /s/samtools-in/new.hdr /s/samtools/a.cram)
+openat(AT_FDCWD, "/s/samtools/a.cram", O_RDWR) = 3
+=== podman (podman system connection default work)
+openat(AT_FDCWD, "/s/podman/config/containers/podman-connections.json.lock", O_RDWR|O_CREAT|O_CLOEXEC, 0644) = 3
+openat(AT_FDCWD, "/s/podman/config/containers/podman-connections.json.lock", O_RDWR|O_CREAT|O_CLOEXEC, 0644) = 3
+openat(AT_FDCWD, "/s/podman/config/containers/.tmp-podman-connections.json1333264554", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 6
+renameat(AT_FDCWD, "/s/podman/config/containers/.tmp-podman-connections.json1333264554", AT_FDCWD, "/s/podman/config/containers/podman-connections.jso
+=== zlua (lua5.4 /opt/bin/z.lua --add /s/zlua-dirs/projects)
+renameat(AT_FDCWD, "/s/zlua-dirs/notes/", AT_FDCWD, "/s/zlua-dirs/notes/") = 0
+renameat(AT_FDCWD, "/s/zlua-dirs/projects/", AT_FDCWD, "/s/zlua-dirs/projects/") = 0
+renameat(AT_FDCWD, "/s/zlua-dirs/projects/", AT_FDCWD, "/s/zlua-dirs/projects/") = 0
+openat(AT_FDCWD, "/s/zlua/zlua.db.1790812800arcFR8aa", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4
+write(4, "/s/zlua-dirs/notes|12|1790000000"..., 88) = 88
+renameat(AT_FDCWD, "/s/zlua/zlua.db.1790812800arcFR8aa", AT_FDCWD, "/s/zlua/zlua.db") = 0

@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 5 state-changing operation(s) observed
+
+cwd          /s/zlua-dirs
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 5 operations (210 syscall lines examined, 18 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/zlua --cwd "/s/zlua-dirs" --operation "lua5.4 /opt/bin/z.lua --add /s/zlua-dirs/projects" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.7.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

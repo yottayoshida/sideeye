@@ -1,0 +1,33 @@
+SEEN augeas b2-exclusions:38
+SEEN certbot b2-exclusions:59
+SEEN crudini b2-exclusions:68
+SEEN flac funnel:48
+SEEN gdal b2-candidates:110
+SEEN gnupg b2-exclusions:88
+SEEN icalendar blind-hunt3-taint:21
+SEEN logrotate b2-exclusions:131
+SEEN neomutt b2-exclusions:140
+SEEN todoman target-classes:25
+SEEN weechat b2-exclusions:234
+fresh ambr 
+fresh bibtex-tidy 
+fresh brotli 
+fresh bzip3 
+fresh caesium 
+fresh comby 
+fresh cookcli 
+fresh electrum 
+fresh fastmod 
+fresh harsh 
+fresh kakoune 
+fresh lrzip 
+fresh ogr2ogr 
+fresh ogrinfo 
+fresh pubs 
+fresh samtools 
+fresh sc-im 
+fresh scooter 
+fresh sqlcipher 
+fresh taskbook 
+fresh totp-cli 
+fresh visidata 

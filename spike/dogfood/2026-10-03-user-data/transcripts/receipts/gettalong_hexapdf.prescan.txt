@@ -1,0 +1,259 @@
+== novelty pre-scan: gettalong/hexapdf
+== date: 2026-10-03T03:02:18Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          13 hit(s) (all listed)
+      #433 closed 2026-06-30 Feature request: detect/clamp out-of-range annotation /Rect (≈±FLT_MAX) during validation or optimization
+      #429 closed 2026-06-03 Issue "Box didn't fit" crash on Rich Text table cells exceeding page height
+      #430 closed 2026-06-17 FontTrueType: no Unicode fallback for subset fonts with embedded SFNT font file but no ToUnicode CMap
+      #191 closed 2022-09-11 OpenType fonts not supported (subsetting)?
+      #417 closed 2026-04-03 TrueType subsetting crashes with `NoMethodError` in `HexaPDF::Font::TrueType::Subsetter#add_glyph_components`
+      #409 closed 2026-03-03 write crashes with NoMethodError when trailer Info is a non-dictionary object
+      #414 closed 2026-03-12 Processor#paint_xobject passes Page object as original_resources instead of Resources dict
+      #296 closed 2024-03-26 AcroForm flatten error when appearance directory is a stream
+      #184 closed 2022-05-28 Fuzzer + various crashes
+      #183 closed 2022-05-19 ArgumentError: wrong number of arguments (given 9, expected 7)
+      #171 closed 2022-01-10 Use Safe Navigation on XObject Resources in prune_page_resources
+      #157 closed 2021-10-21 Setting nil as field value of a single line text field value crashes
+      #35 closed 2018-05-10 Puma SegFault in predictor.rb:172
+  corrupt        13 hit(s) (all listed)
+      #428 closed 2026-06-03 Fix NoMethodError when page tree Kids contains non-page objects
+      #427 closed 2026-06-03 NoMethodError when page tree Kids contains non-page object
+      #409 closed 2026-03-03 write crashes with NoMethodError when trailer Info is a non-dictionary object
+      #408 closed 2026-03-03 BIG2Globals stream reference lost after open/write cycle
+      #346 closed 2025-02-02 External Signing
+      #329 closed 2024-09-19 Digital Signature Versioning
+      #303 closed 2024-05-17 HexaPDF Fails to Detect Pages in a PDF Document
+      #297 closed 2024-03-30 Invalid data for decryption, need 32 + 16*n bytes, probably parser error
+      #290 closed 2024-02-26 Remove digital certificate
+      #162 closed 2021-11-03 Error: "Problem while decoding Flate encoded stream: incorrect header check"
+      #142 closed 2021-06-11 Fixed infinite loop due unclosed array/dictionary in corrupted PDFs
+      #51 closed 2018-12-20 Unexpected error: HexaPDF::MalformedPDFError
+      #74 closed 2019-07-05 Editable PDF problem
+  corruption     1 hit(s) (all listed)
+      #142 closed 2021-06-11 Fixed infinite loop due unclosed array/dictionary in corrupted PDFs
+  truncated      2 hit(s) (all listed)
+      #387 closed 2025-11-17 Invallid signature results in “no implicit conversion of Symbol into String (TypeError)” when accessing signature details
+      #163 closed 2021-11-15 Odd behaviour with value layout of AcroForm TextField
+  truncate       6 hit(s) (all listed)
+      #387 closed 2025-11-17 Invallid signature results in “no implicit conversion of Symbol into String (TypeError)” when accessing signature details
+      #370 closed 2025-05-19 Validation Error: Sorted tree leaf node contains odd number of entries
+      #306 closed 2024-06-05 Infinite loop in `HexaPDF::Document.open(file)`
+      #252 closed 2023-07-10 Can't set value for ChoiceList that has an array of array as option_items
+      #163 closed 2021-11-15 Odd behaviour with value layout of AcroForm TextField
+      #89 closed 2019-10-31 Alignment of fields with same name across documents not always respected after documents are combined
+  empty          42 hit(s) (all listed)
+      #429 closed 2026-06-03 Issue "Box didn't fit" crash on Rich Text table cells exceeding page height
+      #397 closed 2025-12-19 NoMethodError in TextField#create_appearances when widget is not properly wrapped
+      #389 closed 2025-11-26 SystemStackError: stack level too deep - Circular Reference in AcroForm Fields
+      #376 closed 2025-08-05 Add option to maintain original field names when using :merge_acro_form task
+      #385 closed 2025-09-27 Perhaps one or two small improvements for "hexapdf images", as a first-time user of that specific subcommand
+      #371 closed 2025-05-27 Can I use font.on_missing_glyph to simply drop/remove the problematic glyph?
+      #349 closed 2025-03-08 Trying to understand and deal with "No Unicode mapping"
+      #367 closed 2025-05-12 PDF/A task fails when CreateDate is a blank string
+      #316 closed 2024-07-18 Box doesn't fit on empty page (HexaPDF::Error)
+      #135 closed 2021-03-29 Encryption and Permissions
+      #298 closed 2024-04-04 TextField calculation
+      #262 closed 2023-09-14 general usage question: control of content flow inside column box
+      #253 closed 2023-07-18 Merging removes access to AcroForm
+      #237 closed 2023-03-01 AES initialization vector length must be 128 bit (HexaPDF::EncryptionError)
+      #187 closed 2022-07-14 Digital signature operation from external Library 
+      #211 closed 2022-11-25 `acro_form.flatten` stops flattening annotations once a page has no `:Annot`-key
+      #210 closed 2022-11-25 "undefined method `width` for nil:NilClass" when running `acro_form.validate`
+      #208 closed 2022-11-21 Default appearance-state for check_box fields?
+      #207 closed 2022-11-17 TextLayout raises "No font set" for leading and double newlines
+      #193 closed 2022-09-22 Error "Invalid index into object stream given" when adding a file to a PDF 
+  atomic         1 hit(s) (all listed)
+      #429 closed 2026-06-03 Issue "Box didn't fit" crash on Rich Text table cells exceeding page height
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #184 closed 2022-05-28 Fuzzer + various crashes
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #184 closed 2022-05-28 Fuzzer + various crashes
+  ctrl-c         0 hit(s)
+  power          3 hit(s) (all listed)
+      #77 closed 2019-09-14 Example of linklayer
+      #309 closed 2024-06-18 [Documentation  / Suggestion] Add FAQ-style entries to hexapdf
+      #135 closed 2021-03-29 Encryption and Permissions
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           6 hit(s) (all listed)
+      #56 closed 2019-01-24 Return a PDF file without saving to disk
+      #285 closed 2024-01-31 Output is non-deterministic
+      #252 closed 2023-07-10 Can't set value for ChoiceList that has an array of array as option_items
+      #37 closed 2018-06-01 How to remove a section of text?
+      #189 closed 2022-08-17 Digitally signed pdf, issue with signature when reloading / persisting to StringIO
+      #194 closed 2022-09-22 Do we have mechanism to read PDF S3 URL?
+  partial        7 hit(s) (all listed)
+      #430 closed 2026-06-17 FontTrueType: no Unicode fallback for subset fonts with embedded SFNT font file but no ToUnicode CMap
+      #397 closed 2025-12-19 NoMethodError in TextField#create_appearances when widget is not properly wrapped
+      #349 closed 2025-03-08 Trying to understand and deal with "No Unicode mapping"
+      #334 closed 2024-10-18 NoMethodError for nil when accessing stream in a PDF's content streams
+      #319 closed 2024-07-27 Reduce string memory usage on Tokenizer#prepare_string_scanner
+      #203 closed 2022-10-27 Issue with utf-8 character in filled form field after flattening acro_form
+      #154 closed 2021-10-05 Error: "Widget of radio button doesn't define unique name for on state"
+  incomplete     2 hit(s) (all listed)
+      #431 closed 2026-06-17 fix: extract text from TrueType fonts with no ToUnicode CMap and no Encoding
+      #65 closed 2019-04-16 Rotating pages
+  dataloss       0 hit(s)
+  recover        9 hit(s) (all listed)
+      #430 closed 2026-06-17 FontTrueType: no Unicode fallback for subset fonts with embedded SFNT font file but no ToUnicode CMap
+      #146 closed 2021-08-11 Could not reconstruct malformed PDF because trailer was not found?
+      #37 closed 2018-06-01 How to remove a section of text?
+      #125 closed 2021-01-08 Getting error 'Invalid number of entries in field Widths'
+      #142 closed 2021-06-11 Fixed infinite loop due unclosed array/dictionary in corrupted PDFs
+      #46 closed 2018-09-03 TypeError: class or module required
+      #18 closed 2017-09-12 Extract text
+      #51 closed 2018-12-20 Unexpected error: HexaPDF::MalformedPDFError
+      #112 closed 2020-07-30  HexaPDF::Error Color space 'Pattern' not found in the resources
+  recovery       2 hit(s) (all listed)
+      #142 closed 2021-06-11 Fixed infinite loop due unclosed array/dictionary in corrupted PDFs
+      #112 closed 2020-07-30  HexaPDF::Error Color space 'Pattern' not found in the resources
+  rollback       0 hit(s)
+  resume         3 hit(s) (all listed)
+      #35 closed 2018-05-10 Puma SegFault in predictor.rb:172
+      #119 closed 2020-11-25 <NoMethodError: undefined method `oid' for nil:NilClass>
+      #34 closed 2018-05-07 Add CCITTFaxDecode save to tiff
+  half-written   1 hit(s) (all listed)
+      #240 closed 2023-03-21 1641 Fibers created by hexapdf per iteration for yjit-bench benchmark
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #434 closed 2026-07-15 Higher-level API for importing pages at the target document's page size
+      #249 closed 2023-06-27 AcroForm fields position breaks after filling with HexaPDF
+  erasing        1 hit(s) (all listed)
+      #434 closed 2026-07-15 Higher-level API for importing pages at the target document's page size
+  erased         0 hit(s)
+  destroy        2 hit(s) (all listed)
+      #324 closed 2024-08-15 Invalid Certificate
+      #128 closed 2021-02-04 Font rendering is destroyed in version `0.14.2`
+  destroys       0 hit(s)
+  overwrite      7 hit(s) (all listed)
+      #405 closed 2026-02-17 Adding angle brackets instead of parentheses in a dictionary contents value
+      #37 closed 2018-06-01 How to remove a section of text?
+      #175 closed 2022-02-08 How to edit/remove the PDF Producer?
+      #163 closed 2021-11-15 Odd behaviour with value layout of AcroForm TextField
+      #126 closed 2021-01-28 Simply copying existing page to new PDF?
+      #28 closed 2018-03-29 Background image
+      #115 closed 2020-08-19 Form value not visible until field was clicked
+  clobber        1 hit(s) (all listed)
+      #184 closed 2022-05-28 Fuzzer + various crashes
+  blank          16 hit(s) (all listed)
+      #435 closed 2026-07-23 CRLF line endings producing an extra blank line
+      #408 closed 2026-03-03 BIG2Globals stream reference lost after open/write cycle
+      #399 closed 2026-01-05 Outline PDF is blank in Chrome on macOS
+      #398 closed 2026-01-05 fix missing plural
+      #367 closed 2025-05-12 PDF/A task fails when CreateDate is a blank string
+      #178 closed 2022-02-28 Unexplained conversion from space character to non-breaking space character (nbsp)
+      #163 closed 2021-11-15 Odd behaviour with value layout of AcroForm TextField
+      #137 closed 2021-04-15 "No Unicode mapping"
+      #20 closed 2017-11-07 HexaPDF via Sidekiq Segmentation Fault
+      #18 closed 2017-09-12 Extract text
+      #117 closed 2020-09-11 Content processor show_text NoMethodError for NilClass
+      #86 closed 2019-10-17 pdf readonly form fields not visibly filled in when pdf is opened in Acrobat Reader
+      #97 closed 2019-12-28 Adding images to PDFs in sidekiq causes memory build up
+      #98 closed 2020-02-13 Strange behavior
+      #110 closed 2020-06-12 Nil password issue with NitroPDF
+      #73 closed 2019-06-18 [Question] How to render a text on rotated pages?
+  unreadable     0 hit(s)
+  garbage        4 hit(s) (all listed)
+      #146 closed 2021-08-11 Could not reconstruct malformed PDF because trailer was not found?
+      #103 closed 2020-04-23 Memory leak when importing
+      #97 closed 2019-12-28 Adding images to PDFs in sidekiq causes memory build up
+      #21 closed 2017-11-30 Closing font file loaded through HexaPDF::FontLoader::FromFile
+  mangled        1 hit(s) (all listed)
+      #369 closed 2025-05-14 How to best deal with broken timestamps?
+  contents       56 hit(s) (all listed)
+      #405 closed 2026-02-17 Adding angle brackets instead of parentheses in a dictionary contents value
+      #414 closed 2026-03-12 Processor#paint_xobject passes Page object as original_resources instead of Resources dict
+      #419 closed 2026-04-26 Document#import drops catalog-level OCProperties, surfacing previously-hidden OCG content
+      #406 closed 2026-02-18 Smart text extraction with positioning
+      #394 closed 2025-12-18 Memory Growth When Processing Large PDFs
+      #387 closed 2025-11-17 Invallid signature results in “no implicit conversion of Symbol into String (TypeError)” when accessing signature details
+      #342 closed 2025-01-08 Examples or Documentation for Text Annotations?
+      #370 closed 2025-05-19 Validation Error: Sorted tree leaf node contains odd number of entries
+      #334 closed 2024-10-18 NoMethodError for nil when accessing stream in a PDF's content streams
+      #309 closed 2024-06-18 [Documentation  / Suggestion] Add FAQ-style entries to hexapdf
+      #302 closed 2024-05-02  HexaPDF::Content::Processor  undefined method `glyph_scaling_factor'
+      #135 closed 2021-03-29 Encryption and Permissions
+      #276 closed 2023-12-07 Strange behaviour with rescue retry
+      #274 closed 2023-11-13 No Method Error with Problem PDF After Passing Validation
+      #259 closed 2023-09-02 Undefined method `color_space` when using Page to initialize `HexaPDF::Content::Processor`
+      #247 closed 2023-05-10  `undefined method 'glyph_scaling_factor'`
+      #37 closed 2018-06-01 How to remove a section of text?
+      #187 closed 2022-07-14 Digital signature operation from external Library 
+      #224 closed 2023-01-12 ArgumentError of "utc_offset out of range"
+      #227 closed 2023-02-16 Error detecting page box 
+  in-place       37 hit(s) (all listed)
+      #420 closed 2026-05-01 Emit hex-string from `serialize_string`?
+      #419 closed 2026-04-26 Document#import drops catalog-level OCProperties, surfacing previously-hidden OCG content
+      #388 closed 2025-11-18 [Documentation] Perhaps it could be considered to extend the description of HexaPDF::Composer
+      #372 closed 2025-05-28 [Proposal] Make at: more flexible, by adding a top-left-at (starting at the top left of a page).
+      #77 closed 2019-09-14 Example of linklayer
+      #135 closed 2021-03-29 Encryption and Permissions
+      #295 closed 2024-03-19 In a list containing sub-items, sub-items fitted into a new column or page are bulleted erroneously
+      #282 closed 2024-01-19 rotate image signature in acro_form
+      #268 closed 2023-09-29 font.on_missing_glyph and emojis
+      #269 closed 2023-10-06 Rotating .pdf files via hexapdf
+      #37 closed 2018-06-01 How to remove a section of text?
+      #257 closed 2023-08-08 Color differences when flattening an acro_form
+      #240 closed 2023-03-21 1641 Fibers created by hexapdf per iteration for yjit-bench benchmark
+      #118 closed 2020-11-21 Please resolve conflicting statements about license. 
+      #215 closed 2022-11-30 using `.rotate(0, flatten: true)` on a filled form looses text in form fields
+      #204 closed 2022-10-29 Advice related to dimensions 
+      #197 closed 2022-10-11 [Feature suggestion] Numbering pages via hexapdf
+      #193 closed 2022-09-22 Error "Invalid index into object stream given" when adding a file to a PDF 
+      #203 closed 2022-10-27 Issue with utf-8 character in filled form field after flattening acro_form
+      #192 closed 2022-09-16 FrozenError: can't modify frozen String: "" in serializer.
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  2 hit(s) (all listed)
+      #203 closed 2022-10-27 Issue with utf-8 character in filled form field after flattening acro_form
+      #154 closed 2021-10-05 Error: "Widget of radio button doesn't define unique name for on state"
+  crash+safe     2 hit(s) (all listed)
+      #157 closed 2021-10-21 Setting nil as field value of a single line text field value crashes
+      #35 closed 2018-05-10 Puma SegFault in predictor.rb:172
+  atomic+write   0 hit(s)
+  lock+file      5 hit(s) (all listed)
+      #264 closed 2023-09-18 Dealing with page rotation
+      #125 closed 2021-01-08 Getting error 'Invalid number of entries in field Widths'
+      #7 closed 2016-11-03 undefined method `[]' for #<HexaPDF::Object [12, 0] value=[:Pattern, :DeviceRGB]>
+      #82 closed 2019-10-07 Raise on invalid 'settings'
+      #119 closed 2020-11-25 <NoMethodError: undefined method `oid' for nil:NilClass>
+  write+failure  1 hit(s) (all listed)
+      #144 closed 2021-07-05 Type1 encoding has no codepoint for lslash
+  file+contents  33 hit(s) (all listed)
+      #405 closed 2026-02-17 Adding angle brackets instead of parentheses in a dictionary contents value
+      #394 closed 2025-12-18 Memory Growth When Processing Large PDFs
+      #387 closed 2025-11-17 Invallid signature results in “no implicit conversion of Symbol into String (TypeError)” when accessing signature details
+      #342 closed 2025-01-08 Examples or Documentation for Text Annotations?
+      #370 closed 2025-05-19 Validation Error: Sorted tree leaf node contains odd number of entries
+      #334 closed 2024-10-18 NoMethodError for nil when accessing stream in a PDF's content streams
+      #302 closed 2024-05-02  HexaPDF::Content::Processor  undefined method `glyph_scaling_factor'
+      #274 closed 2023-11-13 No Method Error with Problem PDF After Passing Validation
+      #37 closed 2018-06-01 How to remove a section of text?
+      #187 closed 2022-07-14 Digital signature operation from external Library 
+      #224 closed 2023-01-12 ArgumentError of "utc_offset out of range"
+      #227 closed 2023-02-16 Error detecting page box 
+      #194 closed 2022-09-22 Do we have mechanism to read PDF S3 URL?
+      #184 closed 2022-05-28 Fuzzer + various crashes
+      #204 closed 2022-10-29 Advice related to dimensions 
+      #193 closed 2022-09-22 Error "Invalid index into object stream given" when adding a file to a PDF 
+      #189 closed 2022-08-17 Digitally signed pdf, issue with signature when reloading / persisting to StringIO
+      #168 closed 2021-12-09 Question about reading text from PDFs with custom font encoding
+      #160 closed 2021-10-26 No Gemfile causes conflicting gem activations
+      #145 closed 2021-08-02 Can't set bleedbox
+
+== 51 terms run; 32 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

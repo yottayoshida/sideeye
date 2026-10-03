@@ -1,0 +1,10 @@
+14    openat(AT_FDCWD, "/s/doing/doing.md", O_RDONLY|O_CLOEXEC) = 5
+14    openat(AT_FDCWD, "/s/doing/doing.md", O_RDONLY|O_CLOEXEC) = 5
+14    openat(AT_FDCWD, "/s/doing-in/backups/2026-10-03_04.03.51___doing.md", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0100644) = 6
+14    openat(AT_FDCWD, "/s/doing-in/backups", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 5
+14    openat(AT_FDCWD, "/s/doing-in/backups", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 5
+14    openat(AT_FDCWD, "/s/doing/doing.md", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+total 12
+drwxr-xr-x 2 root root 4096 Oct  3 04:03 .
+drwxr-xr-x 3 root root 4096 Oct  3 04:03 ..
+-rw-r--r-- 1 root root  163 Oct  3 04:03 2026-10-03_04.03.51___doing.md

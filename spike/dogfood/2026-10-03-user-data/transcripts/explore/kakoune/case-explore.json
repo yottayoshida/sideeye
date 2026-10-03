@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.7.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/kakoune",
+    "operation": "kak -n -f ggiX<esc> a.txt b.txt",
+    "cwd": "/s/kakoune",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 4,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/kakoune/a.txt",
+  "before_class": "write",
+  "before_path": "/s/kakoune/a.txt",
+  "violation": "hybrid"
+}

@@ -1,0 +1,887 @@
+== novelty pre-scan: siderolabs/talos
+== date: 2026-10-03T04:24:17Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14015 open 2026-08-11 Bug: ext-nvidia-cdi-gen crash loops with "empty device edits" on VMware vDGA passthrough (A100 SXM4 / HGX)
+      #13630 open 2026-06-22 Worker kernel crash on HPE MR408i-o Gen11 (megaraid_sas) after 1.11->1.12 upgrade
+      #13192 open 2026-04-23 Silent reboot without kernel panic or pstore entry on AMD EPYC bare metal — sp5100-tco watchdog suspected
+      #14243 closed 2026-09-04 kube-controller-manager and kube-apiserver crash
+      #14338 closed 2026-09-10 KubeClusterConfig migration panics machined via unguarded ClusterConfig.Endpoint() in K8sServiceAccountConfig()
+      #13769 open 2026-07-15 [darwin/arm64] local `talosctl cluster create qemu` regressed in `v1.13.1` after `kexec` was re-enabled on arm64
+      #14256 merged 2026-09-04 chore: use the host page cache for the QEMU cluster disks
+      #14143 merged 2026-08-25 fix: handle Akamai/Linode metadata without IPv6
+      #13863 open 2026-07-23 Recurring kernel memory corruption on AMD workers with Intel E810 NICs
+      #12988 closed 2026-03-17 Kernel 6.18.15-talos (Talos v1.12.5) triggers a UBSAN out-of-bounds
+      #14344 merged 2026-09-10 fix: tighten the validation of v1alpha1 configs vs. migration
+      #14089 merged 2026-08-20 feat: impl. ContainerRuntimeController
+      #14029 closed 2026-08-13 arm64 ISO boot fails on UTM with "Synchronous Exception" from v1.14.0-beta.0 onwards
+      #13968 merged 2026-08-06 fix: recover router advertisement sender panics
+      #13732 closed 2026-07-08 Prevent CTRL+ALT+DEL restart key combo on Talos
+      #14155 merged 2026-08-26 feat: Talos Containers can connect to machined
+      #13690 merged 2026-07-01 fix: print link status changes
+      #13879 closed 2026-07-27 UEFI automatic key enrollment failed during the SecureBoot with custom keys
+      #12735 closed 2026-02-06 Can't boot openstack VM with v1.12
+      #13657 merged 2026-06-25 fix: `cli.md` codeblocks
+  corrupt        66 hit(s) (all listed)
+      #14146 open 2026-08-26 talosctl upgrade to v1.13.9 leaves a metal node unbootable from firmware (sd-boot/UKI)
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #13946 closed 2026-08-04 Corrupted container image content and spontaneous reboots due to failing install disk
+      #13692 closed 2026-07-02 Talos Linux does not shutdown when triggered from a Hyper-V VM shutdown request
+      #14056 merged 2026-08-16 fix: truncate files replaced by system extensions
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #13209 open 2026-04-25 Cannot boot on a Raspberry Pi 4 if image is written to USB mass storage device on Windows
+      #14414 merged 2026-09-21 feat: add VirtualMachineConfig.disks
+      #14426 merged 2026-09-21 feat: add LVFS metadata parsing and PKCS7 verification
+      #13786 merged 2026-07-17 fix: zero MD superblock via block wipe on destroy
+      #13404 merged 2026-05-21 fix: update etcd experimental args
+      #12267 closed 2025-11-23 Talos Cluster unstable
+      #13002 closed 2026-03-19 Incorrect Routing IP/CIDR's in Tailscale
+      #13261 merged 2026-05-01 fix: deadlock in the makefs ext4 with populated source
+      #8016 closed 2023-12-01 Structured `/var`
+      #12557 closed 2026-01-08 New Talos Images don't boot at OCI
+      #13115 closed 2026-04-14 feat(ci): add aws arm64 pipelines
+      #12542 closed 2026-01-06 kube-apiserver, etcd issue - transport: Error while dialing: dial tcp: lookup localhost: operation was canceled
+      #12646 closed 2026-01-22 IPv6 only etcd config options malformed since v1.12.2
+      #10470 closed 2025-03-05 Image check for upgrade fails, talos still continues and corrupts partition
+  corruption     35 hit(s) (all listed)
+      #13863 open 2026-07-23 Recurring kernel memory corruption on AMD workers with Intel E810 NICs
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #14243 closed 2026-09-04 kube-controller-manager and kube-apiserver crash
+      #13209 open 2026-04-25 Cannot boot on a Raspberry Pi 4 if image is written to USB mass storage device on Windows
+      #14414 merged 2026-09-21 feat: add VirtualMachineConfig.disks
+      #13232 closed 2026-04-28 Cold boot fails with FSCONFIG_CMD_CREATE failed: invalid argument on squashfs mount after clean shutdown - Dell Optiplex 7060 Micro / Samsung MZFLV256HCHP NVMe
+      #13936 closed 2026-08-02 Rebooting one node correlates with a different node spontaneously rebooting (4/4 reproductions, root cause unidentified)
+      #13396 merged 2026-05-20 feat: implement support for btrfs user volumes
+      #13496 closed 2026-06-02 frequent / intermittent reboots triggered by kernel __page_table_check_zero
+      #11210 closed 2025-06-12 Cannot upgrade to 1.10.4
+      #12403 closed 2025-12-12 refactor: small improvement in launch_linux.go
+      #11417 closed 2025-07-23 KernelModuleSpecController repeatedly fails to load intel_idle on Intel Comet Lake, causing containerd segfaults and complete node failure
+      #7978 closed 2023-11-22 Support for rpi_5
+      #11377 merged 2025-07-15 docs: add release notes about v3.6.x bug
+      #11101 closed 2025-05-26 Memory leak in `/sbin/init`
+      #9353 closed 2024-09-22 Resetting a single bare metal node using preserve settings fails due to "corruption" on /dev/nvme0n1p6
+      #9496 closed 2024-10-12 CRI fails to start
+      #8292 closed 2024-02-09 xfs corruption, but no xfs_repair
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13118 open 2026-04-15 AMD SEV-SNP does not work on talos 1.12, on AWS, with the official images
+      #14149 merged 2026-08-26 feat: discover bmc over local ipmi interface
+      #13006 closed 2026-03-19 Max Size of Kernel Command Line doesn't match documentation
+      #14426 merged 2026-09-21 feat: add LVFS metadata parsing and PKCS7 verification
+      #10045 open 2024-12-25 chore: update dependencies
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #13946 closed 2026-08-04 Corrupted container image content and spontaneous reboots due to failing install disk
+      #14099 closed 2026-08-20 feat: load config patches from an http(s) URL
+      #13428 merged 2026-05-25 fix: reset QEMU UEFI variable store when disk is wiped
+      #11650 closed 2025-08-22 Document VLAN interface name truncation
+      #12162 closed 2025-11-07 Kernel parameter line truncated at under 4k chars (regression)
+      #11826 closed 2025-09-12 DHCP Option 15 search domain includes null byte (\0), not truncated by Talos
+      #6750 closed 2023-01-17 Worker node role can't be set
+      #12406 merged 2025-12-12 feat: rootless imager
+      #13097 closed 2026-04-08 chore: update module github.com/aws/aws-sdk-go-v2/service/s3 to v1.97.3 [security] - autoclosed
+      #8268 closed 2024-02-06 talosctl apply-configdiff exposes raw secrets
+      #9565 closed 2024-10-24 Talos Secureboot ISO doesn't adhere to spec
+      #9365 closed 2024-09-24 LVMActivationController fails repeatedly with exit status 5
+      #1257 closed 2019-10-09 baremetal installs with `bootloader:false` do not work
+      #8332 closed 2024-02-17 When kube proxy is set to ipvs mode, it will conflict with Service externel IP.
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14056 merged 2026-08-16 fix: truncate files replaced by system extensions
+      #13118 open 2026-04-15 AMD SEV-SNP does not work on talos 1.12, on AWS, with the official images
+      #14149 merged 2026-08-26 feat: discover bmc over local ipmi interface
+      #13006 closed 2026-03-19 Max Size of Kernel Command Line doesn't match documentation
+      #14426 merged 2026-09-21 feat: add LVFS metadata parsing and PKCS7 verification
+      #10045 open 2024-12-25 chore: update dependencies
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #14120 merged 2026-08-24 backports: release 1.14
+      #13946 closed 2026-08-04 Corrupted container image content and spontaneous reboots due to failing install disk
+      #14099 closed 2026-08-20 feat: load config patches from an http(s) URL
+      #11650 closed 2025-08-22 Document VLAN interface name truncation
+      #13428 merged 2026-05-25 fix: reset QEMU UEFI variable store when disk is wiped
+      #13256 closed 2026-04-30 imager: Ext4() deadlocks when source-directory tar exceeds pipe buffer (pkg/makefs/ext4.go)
+      #13876 merged 2026-07-24 feat: support route imports between BGP instances
+      #13387 closed 2026-05-19 feat(machined): live-grow partition and XFS filesystem when backing disk is expanded
+      #12162 closed 2025-11-07 Kernel parameter line truncated at under 4k chars (regression)
+      #13326 merged 2026-05-11 feat: backports 1.13
+      #11826 closed 2025-09-12 DHCP Option 15 search domain includes null byte (\0), not truncated by Talos
+      #6750 closed 2023-01-17 Worker node role can't be set
+      #12406 merged 2025-12-12 feat: rootless imager
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14015 open 2026-08-11 Bug: ext-nvidia-cdi-gen crash loops with "empty device edits" on VMware vDGA passthrough (A100 SXM4 / HGX)
+      #14170 open 2026-08-28 feat: filter destination IPs of incoming packets
+      #14311 open 2026-09-09 An existing MD array loses its status when one disk disappears
+      #14412 closed 2026-09-20 fix: tolerate an empty hostname in the container platform
+      #14339 open 2026-09-10 feat: report MDArrayStatus for MD arrays with no RAIDArrayConfig
+      #14275 merged 2026-09-07 fix: #14263 empty searchDomains is dropped on merge
+      #13192 open 2026-04-23 Silent reboot without kernel panic or pstore entry on AMD EPYC bare metal — sp5100-tco watchdog suspected
+      #13752 open 2026-07-13 feat(machined): add IPv6-only support for Scaleway platform
+      #13824 closed 2026-07-21 imager --insecure treats empty image cache as configured
+      #14135 closed 2026-08-25 `talosctl gen config` generates talosconfig with empty endpoints
+      #12152 open 2025-11-06 Improve `talos upgrade` command
+      #14475 closed 2026-09-26 `talosctl gen config` generates invalid worker configurations in v1.14
+      #14209 merged 2026-09-01 fix: treat desired roles empty as error in Talos API access
+      #14410 open 2026-09-19 fix: re-enroll stale tpm keyslot after unlock with another key
+      #14092 open 2026-08-20 EPHEMERAL volume locator matches a partition inside a nested guest disk image (LINSTOR/LVM), node never boots
+      #12968 open 2026-03-15 Unexpected software-triggered node reboot. Reason [0x00080800]
+      #14504 closed 2026-09-30 fix: remove user volume mount point directory on unmount
+      #14489 merged 2026-09-28 test: avoid racing CPU scaling sysfs writes
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #14477 closed 2026-09-27 fix: update containerd and preserve default OCI path tests
+  atomic         31 hit(s) (all listed)
+      #14541 open 2026-10-01 feat: Content Library locks actively referenced files
+      #14221 open 2026-09-02 ConfigMap-style volumes and matching container mounts
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #13222 open 2026-04-28 System containerd pulls amd64 images on arm64 SBC (Orange Pi 5+, Talos v1.13.0)
+      #14548 merged 2026-10-02 feat: rework route configuration
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14010 merged 2026-08-10 fix: size the receive/send buffers for nftables netlink
+      #13679 merged 2026-06-30 fix: flaky tests
+      #14499 merged 2026-09-29 feat: provision VM disk from iso (content library)
+      #13807 closed 2026-07-20 SELinux permissive-mode AVC denials from cilium-agent writing to /run/cilium/state (pod_t vs run_t)
+      #12938 merged 2026-03-10 feat: implement routing rules support
+      #12748 closed 2026-02-08 talos 1.12.3 not booting up on rpi 5 (D0 stepping, Rev 1.1)
+      #11338 closed 2025-07-10 test: adjust coverage mode
+      #8426 closed 2024-03-12 Ability to run Talos in ram without installing it to disk, ephemeral style.
+      #10291 closed 2025-02-04 Unable to use MetalLB load balancer for TalosOS v1.9.3
+      #11296 closed 2025-07-02 shrink Talos binaries by following deadcode issues
+      #9762 merged 2024-11-19 refactor: optimize flags and SetLabel
+      #6888 closed 2023-02-27 Control plane static pod does not generate due to race condition
+      #8120 merged 2023-12-29 feat: implement local caching dns server
+      #8671 closed 2024-04-29 chore: update node docker tag to v22 - autoclosed
+  atomically     8 hit(s) (all listed)
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14548 merged 2026-10-02 feat: rework route configuration
+      #14499 merged 2026-09-29 feat: provision VM disk from iso (content library)
+      #12938 merged 2026-03-10 feat: implement routing rules support
+      #8120 merged 2023-12-29 feat: implement local caching dns server
+      #5943 merged 2022-07-19 feat: allow running only one sequence at a time
+      #1037 merged 2019-08-17 chore: Make installer script more robust
+  interrupted    9 hit(s) (all listed)
+      #14532 open 2026-10-01 CPU partitioning: policy reconciliation
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #13864 merged 2026-07-23 fix: preserve container tasks across CRI restarts
+      #14396 merged 2026-09-17 feat: ContentLibrary{Config,Status} and controller
+      #13743 open 2026-07-10 Unable to mount multipath SAN (FC) device as Longhorn data disk in Talos using UserVolumeConfig or ExistingVolumeConfig
+      #12234 closed 2025-11-16 SwapVolumeConfig on system disk causes boot failure
+      #13744 closed 2026-07-11 auditd: receive loop exits permanently on first transient netlink error (EINTR/EAGAIN check uses && instead of ||); kernel audit falls back to printk and floods dmesg
+      #12519 merged 2025-12-30 feat(imager): populate filesystems with root owned files.
+      #4559 merged 2021-11-18 feat: add ULA prefix for SideroLink
+  interrupt      46 hit(s) (all listed)
+      #14532 open 2026-10-01 CPU partitioning: policy reconciliation
+      #14320 open 2026-09-09 Add scheduled MD consistency checks and persistent results
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #14314 open 2026-09-09 Replacing an attached failed MD member can request array growth
+      #14477 closed 2026-09-27 fix: update containerd and preserve default OCI path tests
+      #13863 open 2026-07-23 Recurring kernel memory corruption on AMD workers with Intel E810 NICs
+      #13864 merged 2026-07-23 fix: preserve container tasks across CRI restarts
+      #14396 merged 2026-09-17 feat: ContentLibrary{Config,Status} and controller
+      #13743 open 2026-07-10 Unable to mount multipath SAN (FC) device as Longhorn data disk in Talos using UserVolumeConfig or ExistingVolumeConfig
+      #12234 closed 2025-11-16 SwapVolumeConfig on system disk causes boot failure
+      #13744 closed 2026-07-11 auditd: receive loop exits permanently on first transient netlink error (EINTR/EAGAIN check uses && instead of ||); kernel audit falls back to printk and floods dmesg
+      #13267 merged 2026-05-01 feat: add host-namespace debug profile
+      #12748 closed 2026-02-08 talos 1.12.3 not booting up on rpi 5 (D0 stepping, Rev 1.1)
+      #11570 closed 2025-08-14 Kernel Warning? "memcpy: detected field-spanning write"
+      #11694 closed 2025-08-28 [Feature Request] Support multiple --service-account-issuer flags for zero-downtime endpoint migration
+      #11417 closed 2025-07-23 KernelModuleSpecController repeatedly fails to load intel_idle on Intel Comet Lake, causing containerd segfaults and complete node failure
+      #12519 merged 2025-12-30 feat(imager): populate filesystems with root owned files.
+      #10760 closed 2025-04-20 Upgrading to 1.10.0-beta0 duplicated all the nodes with new names
+      #8935 closed 2024-06-24 Cluster crashing due to network errors on e1000e
+      #9852 closed 2024-11-30 Inconsistent first boot with Proxmox 
+  sigkill        21 hit(s) (all listed)
+      #14212 open 2026-09-01 machined EtcdSnapshot has no timeout — a stalled etcd reader hangs the stream indefinitely with no log output
+      #14296 closed 2026-09-08 Extension services that provide block devices are stopped and killed before their consumers
+      #14186 merged 2026-08-31 feat: add host extension pre-shutdown hooks
+      #14405 closed 2026-09-17 fix: bound the wait for services to stop on shutdown
+      #14499 merged 2026-09-29 feat: provision VM disk from iso (content library)
+      #13622 closed 2026-06-20 OOMController orphans containerd-shim-runc-v2 processes when SIGKILLing pod sandbox cgroups, causing a self-sustaining OOM storm (v1.13.3)
+      #14404 closed 2026-09-17 Shutdown sequence never finishes when a service does not stop: stopServices ends with an unbounded wait, so the node never powers off
+      #13704 closed 2026-07-04 Include the devmapper snapshotter in the bundled containerd
+      #13246 closed 2026-04-30 copy.fail vulnerability patching
+      #12526 closed 2025-12-31 The OOM killer was incorrectly triggered in Talos v1.12.0
+      #10712 closed 2025-04-11 userspace OOM handler
+      #11747 merged 2025-09-03 feat: add a userspace OOM controller
+      #9625 closed 2024-11-03 Ability to force reboot
+      #9582 closed 2024-10-27 Reboot and reset both hang when k8s API endpoint cannot be reached during bootstrap
+      #9838 merged 2024-11-29 fix: multiple small fixes for service runners
+      #4603 closed 2021-11-27 shutdown via ACPI  broken
+      #8751 closed 2024-05-16 Bare-metal nodes not rebooting properly in Talos 1.7.0+
+      #1064 merged 2019-08-26 feat: perform upgrades via container
+      #1406 merged 2019-11-03 fix: send SIGKILL to hanging containers
+      #446 merged 2019-03-09 Add docker-os build-target, Kubeadm.ExtraArgs, and a dev Makefile
+  sigint         14 hit(s) (all listed)
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #14451 merged 2026-09-23 feat: add option to SecurityProfileConfig to ignore Ctrl-Alt-Del
+      #13750 merged 2026-07-13 fix: provide correct handler for Ctrl-Alt-Delete sequence
+      #13801 merged 2026-07-20 backports: for v1.13.7
+      #13732 closed 2026-07-08 Prevent CTRL+ALT+DEL restart key combo on Talos
+      #13283 merged 2026-05-05 refactor: talosctl - propagate cmd context throughout, properly terminate on SIGINT
+      #10048 closed 2024-12-26 udev events are not caught
+      #6016 closed 2022-08-03 talosctl returning zero exit code on connection error or SIGINT
+      #7261 closed 2023-05-22 Building UEFI ISO for UKI
+      #6879 merged 2023-02-22 feat: move dashboard package & run it in tty2
+      #5487 merged 2022-05-03 fix: talosctl exits with error if gen option and --input-dir flags are combined
+      #4978 closed 2022-02-14 chore: bump github.com/containerd/containerd from 1.6.0-rc.2 to 1.6.0-rc.4
+      #693 merged 2019-05-29 feat(osctl): handle ^C by aborting context
+      #1724 closed 2020-01-07 fix: catch SIGINT and SIGTERM
+  ctrl-c         19 hit(s) (all listed)
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #14505 merged 2026-09-30 feat: add hypervisor VM serial console streaming
+      #13759 closed 2026-07-14 Talos 1.13.5 and 1.13.6, k8s 1.36.2, Omni 1.9.1 - etcd stuck in "preparing"
+      #14087 closed 2026-08-20 arm64 kernel built without `CONFIG_ARM_SMMU_V3_SVA`, CUDA cannot initialize on GB10 (DGX Spark)
+      #9848 merged 2024-11-29 feat: add filesystem scrubbing controller
+      #13283 merged 2026-05-05 refactor: talosctl - propagate cmd context throughout, properly terminate on SIGINT
+      #13267 merged 2026-05-01 feat: add host-namespace debug profile
+      #12726 closed 2026-02-04 eBPF verifier REG INVARIANTS VIOLATION with Cilium on Talos 1.12.x (kernel 6.18.x)
+      #9582 closed 2024-10-27 Reboot and reset both hang when k8s API endpoint cannot be reached during bootstrap
+      #9852 closed 2024-11-30 Inconsistent first boot with Proxmox 
+      #9441 closed 2024-10-04 upgrade-k8s hangs at "waiting for kubelet restart"
+      #7222 closed 2023-05-16 Cannot connect to kubernetes api after install with vmware-amd64.ova
+      #7964 closed 2023-11-18 [TALOS Quickstart ] Certificate problem
+      #6976 closed 2023-03-20 `upgrade-k8s` hangs at restarting kubelet
+      #7043 closed 2023-04-02 v1.4.0-alpha.4 unable to load nvidia module
+      #6796 closed 2023-01-27 upgrade-k8s fails, or hangs, when VIP used as endpoint
+      #7123 closed 2023-04-22 upgrade to 1.4.0 leads to kernel module load issues (virtio, arm64)
+      #4755 merged 2021-12-30 feat: inject platform network configuration as network resources
+      #693 merged 2019-05-29 feat(osctl): handle ^C by aborting context
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14552 open 2026-10-03 Crowdsec for Talos
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14479 merged 2026-09-28 feat: add VirtualMachineStatus resource
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #14410 open 2026-09-19 fix: re-enroll stale tpm keyslot after unlock with another key
+      #11597 open 2025-08-15 static discovery input
+      #14146 open 2026-08-26 talosctl upgrade to v1.13.9 leaves a metal node unbootable from firmware (sd-boot/UKI)
+      #14518 merged 2026-09-30 fix: gate libvirt dial on virtqemud readiness
+      #12831 open 2026-02-20 Feature: Labels / Annotations on console screen?  Auto labeling?
+      #12968 open 2026-03-15 Unexpected software-triggered node reboot. Reason [0x00080800]
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #14405 closed 2026-09-17 fix: bound the wait for services to stop on shutdown
+      #14404 closed 2026-09-17 Shutdown sequence never finishes when a service does not stop: stopServices ends with an unbounded wait, so the node never powers off
+      #13726 merged 2026-07-07 feat: support disk SMART config and status
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+      #14522 closed 2026-09-30 VMware: guestinfo unreadable on Secure Boot VMs since v1.14.1 (lockdown=integrity blocks iopl)
+      #13907 merged 2026-07-29 fix: hold the darwin vmnet bridge open for the network lifetime
+      #14487 merged 2026-09-28 feat: impl. hypervisor network tap
+      #13946 closed 2026-08-04 Corrupted container image content and spontaneous reboots due to failing install disk
+  outage         25 hit(s) (all listed)
+      #14295 open 2026-09-08 Supported native NTP poll cap for bounded UTC uncertainty
+      #14539 merged 2026-10-01 fix: correct handling of DHCP changing address
+      #14372 merged 2026-09-14 backports: v1.14.1
+      #14176 merged 2026-08-31 feat: add KubeSpan peer endpoint filters
+      #13160 closed 2026-04-20 KubeSpan connection broken after network outage
+      #11865 closed 2025-09-21 Talos v1.11.1 boot hang with "EFI_RNG_PROTOCOL unavailable" on macOS Lima/Tart virtualization
+      #10384 closed 2025-02-15 Feature Request: Providing disk encryption keys via talosctl during node startup
+      #9527 closed 2024-10-18 Add option to upgrade only control-plane nodes in talosctl upgrade-k8s command
+      #13473 closed 2026-05-29 v1.13.3: RenderConfigsStaticPodController panics with "cannot deep copy int" when scheduler config contains integer fields
+      #13481 closed 2026-06-01 fix: recreate dns server and listeners on host DNS runner restart
+      #13486 merged 2026-06-01 fix: recreate dns server and listeners on host DNS runner restart
+      #10212 closed 2025-01-23 Support Image Cache when netbooting
+      #12080 closed 2025-10-26 After shutdown and restore - no pods are being created
+      #11244 closed 2025-06-21 KubeSpan incorrectly intercepts public IP traffic causing Cilium networking failures
+      #10138 closed 2025-01-15 [feature] Configurable node and endpoint grouping
+      #8927 closed 2024-06-20 Intermittent Loss of Private IP Address on Hetzner Cloud Nodes
+      #11219 closed 2025-06-15 Cannot Pull from talos image factory
+      #9736 closed 2024-11-16 Log delivery stops after cluster reboot
+      #10086 closed 2025-01-03 Talos doesn't send its previous IP in the DHCPDISCOVER packet
+      #7000 closed 2023-03-24 Talos shall support upgrades without pulling image at the upgrade phase
+  ENOSPC         5 hit(s) (all listed)
+      #14216 closed 2026-09-02 kubelet stuck in restart loop with `ENOSPC` on bind mount (`/var/mnt/SDS`)
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #13697 closed 2026-07-02 XFS system volumes are formatted small and grown, producing 100+ tiny allocation groups; expose mkfs options or format at final size
+      #13704 closed 2026-07-04 Include the devmapper snapshotter in the bundled containerd
+      #13053 closed 2026-03-29 kubelet extraMounts bind mount fails with ENOSPC on kubelet restart (rshared propagation not cleaned up)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14511 open 2026-09-30 Provision blank disk
+      #14082 open 2026-08-19 support live disk expansion (partition/disk)
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14441 open 2026-09-23 multipath disks: hide children devices
+      #14084 open 2026-08-19 live disk expansion: LVM
+      #13874 open 2026-07-24 feat: support live disk expansion
+      #14083 open 2026-08-19 live disk expansion: encrypted volumes
+      #14541 open 2026-10-01 feat: Content Library locks actively referenced files
+      #14311 open 2026-09-09 An existing MD array loses its status when one disk disappears
+      #13754 open 2026-07-13 Add hardware OPAL (SED) disk encryption support
+      #11459 open 2025-07-29 clean up UKIs based on disk free
+      #14092 open 2026-08-20 EPHEMERAL volume locator matches a partition inside a nested guest disk image (LINSTOR/LVM), node never boots
+      #14283 open 2026-09-08 virtual machine configuration
+      #13814 open 2026-07-21 docs: no documented way to relocate an install to a different disk without physical access — hidden `talosctl wipe disk --skip-volume-check` is the only remote path
+      #11317 open 2025-07-06 Support full RAM-only netboot (without disk installation)
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+      #14312 open 2026-09-09 MD status cannot distinguish an idle degraded array from a healthy one
+      #14285 open 2026-09-08 integration test: MVP of VMs
+      #14284 open 2026-09-08 virtual machine controllers
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14318 open 2026-09-09 Define degraded boot support for LVM RAID volumes
+      #14317 open 2026-09-09 LVM RAID needs per-LV health reporting and a supported repair operation
+      #14470 merged 2026-09-25 feat: handle the change in kubelet's CPU and memory policies
+      #14007 merged 2026-08-10 fix: keep host DNS enabled for partial machine config
+      #14316 closed 2026-09-09 LVM provisioning can stop retrying after a transient failure
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #12594 open 2026-01-14 fix: use network config from config-drive even when user_data is missing
+      #14325 merged 2026-09-09 fix: drop logical links if they no longer declare as logical
+      #14395 merged 2026-09-17 fix: retry transient LVM reconciliation failures
+      #14451 merged 2026-09-23 feat: add option to SecurityProfileConfig to ignore Ctrl-Alt-Del
+      #14459 closed 2026-09-24 Kubelet crashloop after updating reservedSystemCPUs with strict CPU reservation
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #13708 open 2026-07-05 akamai: dual-homed (public + VPC) nodes install a competing default route via the internet-less VPC gateway
+      #14515 closed 2026-09-30 Formatting issue while creating UserVolume with LVM
+      #14149 merged 2026-08-26 feat: discover bmc over local ipmi interface
+      #14009 merged 2026-08-10 test: fix the flakiness in image pull in provision-3 pipeline
+      #14344 merged 2026-09-10 fix: tighten the validation of v1alpha1 configs vs. migration
+      #14176 merged 2026-08-31 feat: add KubeSpan peer endpoint filters
+      #13951 closed 2026-08-04 Embedded config missing required fields hard-fails instead of falling through to maintenance mode
+  incomplete     56 hit(s) (all listed)
+      #14318 open 2026-09-09 Define degraded boot support for LVM RAID volumes
+      #14357 merged 2026-09-11 fix: guard against nil config document slices
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #13708 open 2026-07-05 akamai: dual-homed (public + VPC) nodes install a competing default route via the internet-less VPC gateway
+      #14172 closed 2026-08-29 feat(machined): fall back to sysfs for processor topology when SMBIOS is thin
+      #13118 open 2026-04-15 AMD SEV-SNP does not work on talos 1.12, on AWS, with the official images
+      #14267 merged 2026-09-07 feat: update containerd to 2.3.5
+      #14454 merged 2026-09-24 feat: place virtual machines in a Talos-owned cgroup partition
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+      #13951 closed 2026-08-04 Embedded config missing required fields hard-fails instead of falling through to maintenance mode
+      #14060 merged 2026-08-17 backports: for v1.13.9
+      #14171 closed 2026-08-29 hardware.Processor: fall back to /sys/devices/system/cpu when SMBIOS core/thread/speed data is missing
+      #13127 closed 2026-04-15 Talos 1.14: Talos Enterprise / Image Factory
+      #13827 closed 2026-07-22 TPM encryption window can close before user volume statuses are created
+      #9550 closed 2024-10-22 Talos tries (and fails) to apply invalid file patches
+      #12337 closed 2025-12-04 Theme: Talos 1.13 Enterprise Talos
+      #13445 closed 2026-05-26 1.13.3 fails to start control plane static pods
+      #12110 closed 2025-10-31 Talos conflicting with AWS ENI CIlium configuration
+      #13337 merged 2026-05-12 release(v1.13.2): prepare release
+      #12572 merged 2026-01-09 fix: handle correctly incomplete RegistryTLSConfig
+  dataloss       2 hit(s) (all listed)
+      #14427 merged 2026-09-21 feat: Content Library `upload` digest verification
+      #9805 merged 2024-11-26 Update local-storage.md
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14532 open 2026-10-01 CPU partitioning: policy reconciliation
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #14315 open 2026-09-09 A transient MD activation failure has no scheduled retry
+      #14305 open 2026-09-09 Talos mdarraystatus stale
+      #14320 open 2026-09-09 Add scheduled MD consistency checks and persistent results
+      #14319 open 2026-09-09 Provide LVM metadata export, off-node archives, and restore
+      #12642 open 2026-01-22 Interactive LUKS unlock for encrypted Talos nodes
+      #14373 open 2026-09-14 boot: a service stuck in Waiting causes a silent FATAL reboot loop after 70m, and the error names no service
+      #14212 open 2026-09-01 machined EtcdSnapshot has no timeout — a stalled etcd reader hangs the stream indefinitely with no log output
+      #14227 closed 2026-09-02 upgrade-k8s advances kubelet upgrades before control-plane static pods recover
+      #13344 open 2026-05-13 Mark LUKS keyslots as "don't touch" with Volumes
+      #12152 open 2025-11-06 Improve `talos upgrade` command
+      #13968 merged 2026-08-06 fix: recover router advertisement sender panics
+      #8688 open 2024-05-02 Support external etcd
+      #14495 merged 2026-09-29 fix: VirtualMachineDomainStatus ctrl must use OpenPersistent
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #14146 open 2026-08-26 talosctl upgrade to v1.13.9 leaves a metal node unbootable from firmware (sd-boot/UKI)
+      #10980 closed 2025-05-09 static pods don't recover after containerd SIGHUP
+      #12210 closed 2025-11-13 1.12 machineconfig patch issues
+      #14002 closed 2026-08-10 sd-boot upgrade preserves persistent default instead of manually selected boot entry
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14532 open 2026-10-01 CPU partitioning: policy reconciliation
+      #14312 open 2026-09-09 MD status cannot distinguish an idle degraded array from a healthy one
+      #14319 open 2026-09-09 Provide LVM metadata export, off-node archives, and restore
+      #12642 open 2026-01-22 Interactive LUKS unlock for encrypted Talos nodes
+      #14315 open 2026-09-09 A transient MD activation failure has no scheduled retry
+      #14314 open 2026-09-09 Replacing an attached failed MD member can request array growth
+      #14320 open 2026-09-09 Add scheduled MD consistency checks and persistent results
+      #14295 open 2026-09-08 Supported native NTP poll cap for bounded UTC uncertainty
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #14203 merged 2026-09-01 feat: add NFS external volume support
+      #14395 merged 2026-09-17 fix: retry transient LVM reconciliation failures
+      #14316 closed 2026-09-09 LVM provisioning can stop retrying after a transient failure
+      #14305 open 2026-09-09 Talos mdarraystatus stale
+      #13257 open 2026-04-30 v1.13.0: bond0 unreachable after migrating from legacy machine.network.interfaces to multi-doc BondConfig (ICMP Redirect Host loop, kernel local table missing entry)
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #14338 closed 2026-09-10 KubeClusterConfig migration panics machined via unguarded ClusterConfig.Endpoint() in K8sServiceAccountConfig()
+      #14371 merged 2026-09-14 feat: containers support in talosctl dashboard
+      #13864 merged 2026-07-23 fix: preserve container tasks across CRI restarts
+  rollback       67 hit(s) (all listed)
+      #14061 open 2026-08-17 Update `talosctl rollback` to wait for ready state
+      #14079 open 2026-08-19 feat: update `talosctl rollback` to wait for ready state
+      #14295 open 2026-09-08 Supported native NTP poll cap for bounded UTC uncertainty
+      #14343 closed 2026-09-10 apply-config with dry_run=true cancels a pending --mode=try rollback
+      #14549 merged 2026-10-02 fix: roll back stacked try configs to the config before the first try
+      #12152 open 2025-11-06 Improve `talos upgrade` command
+      #14345 merged 2026-09-10 Fix dry-run confirmation of try-mode config
+      #14050 merged 2026-08-14 fix: support try mode apply without prior config
+      #14003 merged 2026-08-10 fix: preserve selected sd-boot entry on upgrade
+      #13354 open 2026-05-14 RawVolumeConfig with LUKS + LVM stacking fails to teardown during shutdown/upgrade: "mapped device is still in use"
+      #14002 closed 2026-08-10 sd-boot upgrade preserves persistent default instead of manually selected boot entry
+      #12988 closed 2026-03-17 Kernel 6.18.15-talos (Talos v1.12.5) triggers a UBSAN out-of-bounds
+      #13579 closed 2026-06-13 Intel Macs hang booting Talos v1.13.x+ fresh images
+      #14260 closed 2026-09-05 v1.14.0: nodes booting from a USB disk land in maintenance mode — `WaitForUSB` no longer waits since `usb-storage`/`uas` became modules
+      #14404 closed 2026-09-17 Shutdown sequence never finishes when a service does not stop: stopServices ends with an unbounded wait, so the node never powers off
+      #12733 closed 2026-02-05 feat: enable restarting precreated qemu cluster
+      #13461 merged 2026-05-28 refactor: update talosctl commands to stop using WithNodes
+      #13557 merged 2026-06-10 feat: drop apply config method reboot
+      #13627 closed 2026-06-21 LVM support in 1.14.0-alpha1 appears to infinitely scan volumes, causing iSCSI volumes to hog network
+      #14000 closed 2026-08-09 Upgrading to v1.13.8 leaves state in EPHEMERAL that permanently breaks Longhorn volume attach; only a partition wipe clears it
+  resume         15 hit(s) (all listed)
+      #13630 open 2026-06-22 Worker kernel crash on HPE MR408i-o Gen11 (megaraid_sas) after 1.11->1.12 upgrade
+      #14371 merged 2026-09-14 feat: containers support in talosctl dashboard
+      #13552 merged 2026-06-09 fix: increment time epoch on wall-clock jump when time sync is disabled
+      #10384 closed 2025-02-15 Feature Request: Providing disk encryption keys via talosctl during node startup
+      #11315 closed 2025-07-05 Talos Node Freezes for extended period (Kernel still responsive)
+      #10309 closed 2025-02-07 Bandwidth throttling
+      #10349 closed 2025-02-12 OS Installer Fails to Set Correct Default Boot Option on UEFI Systems with NVMe Drive
+      #10355 merged 2025-02-12 Update getting-started.md
+      #9837 closed 2024-11-29 Talos 1.8.3 advertising virtual MAC addresses
+      #7382 closed 2023-06-16 Support "Orange Pi 5" (rk3588s)
+      #6298 closed 2022-09-19 crash on encrypting the partition
+      #4741 closed 2021-12-27 chore: bump github.com/aws/aws-sdk-go from 1.42.23 to 1.42.25 in /hack/cloud-image-uploader
+      #4257 closed 2021-09-20 chore: bump github.com/aws/aws-sdk-go from 1.40.41 to 1.40.45 in /hack/cloud-image-uploader
+      #3545 closed 2021-04-27 chore: bump github.com/gdamore/tcell/v2 from 2.2.0 to 2.2.1
+      #3960 closed 2021-07-19 chore: bump github.com/containerd/containerd from 1.5.2 to 1.5.3
+  half-written   3 hit(s) (all listed)
+      #13908 merged 2026-07-30 fix: restore the systemd-timesync best-sample check in spike detection
+      #14000 closed 2026-08-09 Upgrading to v1.13.8 leaves state in EPHEMERAL that permanently breaks Longhorn volume attach; only a partition wipe clears it
+      #12619 open 2026-01-18 Regression: BIOS boot detection broken, when booting via iPXE
+  wipe           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13796 open 2026-07-20 feat: support system volume wiping
+      #10679 open 2025-04-08 Volume wipe s/without/with/g reboot
+      #13814 open 2026-07-21 docs: no documented way to relocate an install to a different disk without physical access — hidden `talosctl wipe disk --skip-volume-check` is the only remote path
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #13967 open 2026-08-06 talos new upgrade flow with grubUseUKICmdline: false does not take machine.install.extraKernelArgs into grub.cfg in legacy boot
+      #12152 open 2025-11-06 Improve `talos upgrade` command
+      #14425 open 2026-09-21 feat: sign Windows talosctl binary
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #13581 open 2026-06-14 new command: talosctl machine reprovision
+      #14410 open 2026-09-19 fix: re-enroll stale tpm keyslot after unlock with another key
+      #14399 closed 2026-09-17 Talos install fails when install disk is member of a raid device
+      #14092 open 2026-08-20 EPHEMERAL volume locator matches a partition inside a nested guest disk image (LINSTOR/LVM), node never boots
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+      #14515 closed 2026-09-30 Formatting issue while creating UserVolume with LVM
+      #14459 closed 2026-09-24 Kubelet crashloop after updating reservedSystemCPUs with strict CPU reservation
+      #14470 merged 2026-09-25 feat: handle the change in kubelet's CPU and memory policies
+      #14146 open 2026-08-26 talosctl upgrade to v1.13.9 leaves a metal node unbootable from firmware (sd-boot/UKI)
+      #14313 merged 2026-09-09 feat: support partitions on device mapper devices
+  wipes          35 hit(s) (all listed)
+      #10679 open 2025-04-08 Volume wipe s/without/with/g reboot
+      #13814 open 2026-07-21 docs: no documented way to relocate an install to a different disk without physical access — hidden `talosctl wipe disk --skip-volume-check` is the only remote path
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #14399 closed 2026-09-17 Talos install fails when install disk is member of a raid device
+      #14156 merged 2026-08-26 refactor: log filter stays enabled on enter press
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+      #13758 merged 2026-07-14 fix: flaky tests
+      #14008 merged 2026-08-10 feat: run full md boot integration suite
+      #8314 closed 2024-02-13 fstrim and monitoring for disks
+      #10980 closed 2025-05-09 static pods don't recover after containerd SIGHUP
+      #12053 closed 2025-10-20 Need a way to fully wipe talos from boot menu
+      #12100 closed 2025-10-29 change talosctl reset --system-labels-to-wipe to wipe partitions
+      #7287 closed 2023-05-28 Split dns on talos machine config
+      #12207 merged 2025-11-12 feat: drop partitions on reset with system partitions wipe
+      #11119 closed 2025-05-29 `talosctl reset` hangs quite often, even if the node is shutdown already
+      #10917 closed 2025-05-06 Option to wipe user volume/disk at installation time
+      #8367 closed 2024-02-26 Volume Management
+      #9529 closed 2024-10-20 Can not boot Talos 1.8.*
+      #8993 closed 2024-07-08 `talosctl -n <ip> reset` On RaspberryPi Wipes Firmware
+      #9417 closed 2024-10-01 Implement update-ca-certificates for Talos, so own CA + Omni works correctly.
+  erase          17 hit(s) (all listed)
+      #13436 merged 2026-05-25 test: skip UEFI vars wipe if TPM is enabled
+      #13034 merged 2026-03-24 test: fix the flakes in tests with trusted roots
+      #12491 closed 2025-12-25 Talos reset should wipe partition headers before device headers
+      #12053 closed 2025-10-20 Need a way to fully wipe talos from boot menu
+      #12090 closed 2025-10-28 change `talosctl reset --system-labels-to-wipe` to wipe partitions
+      #12097 closed 2025-10-29 Talos 1.11.3 fails to start on Proxmox via ClusterAPI due to missing network connectivity ("network is unreachable")
+      #11778 closed 2025-09-08 Cannot use RawVolume to configure ceph-disk as Documented
+      #10883 closed 2025-05-04 Unable to install 1.10.0 using Interactive Installer
+      #9786 closed 2024-11-22 Cannot boot talos 1.8.3
+      #10999 closed 2025-05-13 Upgrade to 1.10.1 fails
+      #11093 closed 2025-05-23 [SBC/rk1] can't upgrade from v1.10.1 => v1.10.2
+      #10097 closed 2025-01-07 1.9.1 installer creates invalid/unbootable GPT partition table
+      #8367 closed 2024-02-26 Volume Management
+      #7857 closed 2023-10-14 Bootloop when a new NVMe device is added with secure boot
+      #4377 merged 2021-10-14 docs: add nocloud documentation
+      #562 merged 2019-04-22 feat(init): implement graceful shutdown of 'init'
+      #2373 merged 2020-07-29 test: update qemu/firecracker provisioners
+  erasing        2 hit(s) (all listed)
+      #12053 closed 2025-10-20 Need a way to fully wipe talos from boot menu
+      #2373 merged 2020-07-29 test: update qemu/firecracker provisioners
+  erased         5 hit(s) (all listed)
+      #13436 merged 2026-05-25 test: skip UEFI vars wipe if TPM is enabled
+      #13034 merged 2026-03-24 test: fix the flakes in tests with trusted roots
+      #12491 closed 2025-12-25 Talos reset should wipe partition headers before device headers
+      #10999 closed 2025-05-13 Upgrade to 1.10.1 fails
+      #7857 closed 2023-10-14 Bootloop when a new NVMe device is added with secure boot
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14285 open 2026-09-08 integration test: MVP of VMs
+      #14284 open 2026-09-08 virtual machine controllers
+      #14314 open 2026-09-09 Replacing an attached failed MD member can request array growth
+      #13530 open 2026-06-06 [Feature] Agentic development
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #12968 open 2026-03-15 Unexpected software-triggered node reboot. Reason [0x00080800]
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #13786 merged 2026-07-17 fix: zero MD superblock via block wipe on destroy
+      #13581 open 2026-06-14 new command: talosctl machine reprovision
+      #14399 closed 2026-09-17 Talos install fails when install disk is member of a raid device
+      #13840 merged 2026-07-23 fix: teardown ephemeral mount request during reset
+      #13827 closed 2026-07-22 TPM encryption window can close before user volume statuses are created
+      #13803 closed 2026-07-20 fix: support persistent volumemount requests for services
+      #13907 merged 2026-07-29 fix: hold the darwin vmnet bridge open for the network lifetime
+      #13633 closed 2026-06-22 ImageCacheConfigController does not clean up resources when cache is disabled
+      #13879 closed 2026-07-27 UEFI automatic key enrollment failed during the SecureBoot with custom keys
+      #12513 closed 2025-12-29 implement zram support
+      #14145 merged 2026-08-26 fix: create LVM physical volumes on the decrypted device
+      #14289 merged 2026-09-08 feat: report LLDP neighbors on physical links
+  destroys       11 hit(s) (all listed)
+      #12968 open 2026-03-15 Unexpected software-triggered node reboot. Reason [0x00080800]
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #13907 merged 2026-07-29 fix: hold the darwin vmnet bridge open for the network lifetime
+      #14145 merged 2026-08-26 fix: create LVM physical volumes on the decrypted device
+      #13827 closed 2026-07-22 TPM encryption window can close before user volume statuses are created
+      #14000 closed 2026-08-09 Upgrading to v1.13.8 leaves state in EPHEMERAL that permanently breaks Longhorn volume attach; only a partition wipe clears it
+      #12423 closed 2025-12-15 talosctl cluster -h is missing create sub command
+      #12427 merged 2025-12-16 docs: fix the talosctl cluster create help output
+      #10411 closed 2025-02-24 multus interface doesnt have internet connectivity, destroys the worker node if i follow all the steps and use 'eth0' as interfaces on machineconfig patch
+      #5479 closed 2022-05-02 chore: bump github.com/vmware/govmomi from 0.27.4 to 0.28.0
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14542 open 2026-10-01 Lock actively referenced library contents
+      #14485 merged 2026-09-28 fix: don't overwrite currently booted on upgrade for GRUB
+      #14340 open 2026-09-10 DHCP NTP Options should be included in the NTP pool
+      #14541 open 2026-10-01 feat: Content Library locks actively referenced files
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #14266 open 2026-09-06 SELinux enforcing: one domain for every pod, so any rule added for one workload applies to all
+      #14210 merged 2026-09-01 fix: filter out passed metadata in API proxying
+      #14515 closed 2026-09-30 Formatting issue while creating UserVolume with LVM
+      #13209 open 2026-04-25 Cannot boot on a Raspberry Pi 4 if image is written to USB mass storage device on Windows
+      #14499 merged 2026-09-29 feat: provision VM disk from iso (content library)
+      #14519 closed 2026-09-30 DHCPv4 requests the previous address instead of the offered address after renewal rejection
+      #14244 merged 2026-09-04 backports: release 1.12
+      #13869 closed 2026-07-23 test: avoid control plane static pod suite race
+      #14148 merged 2026-08-26 feat: add KmsgLogConfig extraTags support
+      #14249 merged 2026-09-04 fix: restrict generated configuration file permissions
+      #14404 closed 2026-09-17 Shutdown sequence never finishes when a service does not stop: stopServices ends with an unbounded wait, so the node never powers off
+      #14026 merged 2026-08-12 fix: data race in Never condition closures
+      #14122 merged 2026-08-24 feat: impl. ContainerStatusController and dependsOn.containers
+      #14056 merged 2026-08-16 fix: truncate files replaced by system extensions
+      #10899 closed 2025-05-05 ETCD encryption configuration
+  clobber        8 hit(s) (all listed)
+      #13209 open 2026-04-25 Cannot boot on a Raspberry Pi 4 if image is written to USB mass storage device on Windows
+      #14145 merged 2026-08-26 fix: create LVM physical volumes on the decrypted device
+      #13876 merged 2026-07-24 feat: support route imports between BGP instances
+      #12854 closed 2026-02-24 Copying from Image cache serve to local registry
+      #7590 merged 2023-08-09 refactor: docgen and config examples
+      #4755 merged 2021-12-30 feat: inject platform network configuration as network resources
+      #1122 merged 2019-09-07 test(ci): Add aws for e2e and conformance targets
+      #2661 merged 2020-10-21 feat: encode comments as part of talosctl generated configs
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14511 open 2026-09-30 Provision blank disk
+      #14283 open 2026-09-08 virtual machine configuration
+      #14517 open 2026-09-30 feat: add NVMe firmware flashing and dispatch registry
+      #14425 open 2026-09-21 feat: sign Windows talosctl binary
+      #14541 open 2026-10-01 feat: Content Library locks actively referenced files
+      #14414 merged 2026-09-21 feat: add VirtualMachineConfig.disks
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #13625 open 2026-06-20 fix: allow CNI SELinux runtime operations
+      #13953 open 2026-08-04 chore: test shared inmem watch buffer
+      #12873 open 2026-03-01 feat: add --cidr-v6 flag for custom IPv6 prefix in QEMU provisioner
+      #13374 open 2026-05-18 feat: add declarative NFTables NAT config documents
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14538 merged 2026-10-01 fix: image verification test
+      #14526 merged 2026-10-01 fix: make GenerateClientConfiguration API work in K8s-less mode
+      #14539 merged 2026-10-01 fix: correct handling of DHCP changing address
+      #14549 merged 2026-10-02 fix: roll back stacked try configs to the config before the first try
+      #14547 merged 2026-10-02 fix: clean up mountpoints on unmount
+      #14525 merged 2026-10-01 test(ci): add hypervisor short pipeline
+      #14508 merged 2026-09-30 fix: networking on azure (and might fix some other platforms)
+  unreadable     10 hit(s) (all listed)
+      #14522 closed 2026-09-30 VMware: guestinfo unreadable on Secure Boot VMs since v1.14.1 (lockdown=integrity blocks iopl)
+      #13428 merged 2026-05-25 fix: reset QEMU UEFI variable store when disk is wiped
+      #11885 closed 2025-09-24 Add U-Boot Support for Radxa Rock 5B/5T NVMe Boot
+      #8413 closed 2024-03-08 talosctl dashboard is unusable when using a light theme/background
+      #9980 closed 2024-12-17 Talos cannot read some Kubernetes APIs after K8s v1.32.0
+      #7749 closed 2023-09-13 talosctl disks --insecure --nodes x.x.x.x --endpoints x.x.x.x returns nothing 
+      #6413 closed 2022-10-17 chore: bump github.com/fsnotify/fsnotify from 1.5.4 to 1.6.0
+      #5235 closed 2022-03-29 Update config.toml for syntax highlighting and copy buttons
+      #1917 merged 2020-02-28 feat: allow for persistence of config data
+      #2061 merged 2020-04-24 refactor: improve machined
+  garbage        30 hit(s) (all listed)
+      #6928 open 2023-03-08 provide a way to get coredumps
+      #14243 closed 2026-09-04 kube-controller-manager and kube-apiserver crash
+      #14168 merged 2026-08-28 feat: adopt ImageGCController for containers
+      #13946 closed 2026-08-04 Corrupted container image content and spontaneous reboots due to failing install disk
+      #13177 merged 2026-04-21 fix: watch kubelet's kubeconfig and time out for cache sync
+      #9848 merged 2024-11-29 feat: add filesystem scrubbing controller
+      #10585 closed 2025-03-23 Unexpected behavior at network configuration
+      #12284 closed 2025-11-27 ghcr.io installer tags v1.12.0-beta.0 missing/invalid for linux/amd64
+      #12267 closed 2025-11-23 Talos Cluster unstable
+      #11775 closed 2025-09-06 Talos node stuck in rebooting (or shutting down) state
+      #11015 closed 2025-05-14 chore: add cross-platform copatible disk probing to qemu
+      #8820 closed 2024-05-29 Talos v1.6.6 - Storage goes invalid after we apply ZFS extension
+      #11795 closed 2025-09-10 Fresh cluster with Talos v1.11.x with Kubernetes v1.34.0 fails to start control plane
+      #9837 closed 2024-11-29 Talos 1.8.3 advertising virtual MAC addresses
+      #4686 closed 2021-12-14 profiling: go-blockdevice excessive allocations and meta loading
+      #9489 merged 2024-10-11 feat: remove wrapperd and launch processes directly
+      #7874 closed 2023-10-19 Implement GOMEMLIMIT in managed manifests corresponding to resources.limits.memory
+      #981 closed 2019-08-11 osctl cp treats everything as a directory
+      #7875 merged 2023-10-19 feat: Add GOMEMLIMIT to k8s templates
+      #8095 closed 2023-12-20 chore: update module github.com/containerd/containerd to v1.7.11 [security] - autoclosed
+  mangled        1 hit(s) (all listed)
+      #11650 closed 2025-08-22 Document VLAN interface name truncation
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14542 open 2026-10-01 Lock actively referenced library contents
+      #14221 open 2026-09-02 ConfigMap-style volumes and matching container mounts
+      #11930 open 2025-10-01 Support incrementally adding more images to static repository
+      #12618 open 2026-01-17 talosctl upgrade-k8s ignores machine/kubelet/clusterDNS configuration
+      #13938 open 2026-08-02 SELinux: directory created on a tmpfs emptyDir gets incorrect label
+      #14470 merged 2026-09-25 feat: handle the change in kubelet's CPU and memory policies
+      #10199 open 2025-01-22 Distributed Image Cache
+      #14271 closed 2026-09-07 initial cut of the Content Library
+      #14394 open 2026-09-16 `KubeAPIServerConfig` is missing `extraVolumes` from the deprecated `.cluster.apiServer`
+      #13717 closed 2026-07-06 refactor inline extra manifests
+      #14018 closed 2026-08-11 fix: run overlay installer in sd-boot image
+      #14207 merged 2026-09-01 fix: allow CSI volumes to be mounted with an SELinux context
+      #14218 merged 2026-09-02 feat: add USB LAN78XX drivers to the rootfs
+      #14159 merged 2026-08-27 fix: hostns etc mount
+      #14219 merged 2026-09-02 fix: harden the code around kubelet's client certificate handling
+      #14182 closed 2026-08-31 SELinux: `mount -o context=` on a CSI volume is denied `filesystem { relabelto relabelfrom }`
+      #14027 merged 2026-08-12 fix: render absolute CRI registry TLS paths
+      #12377 closed 2025-12-10 Embedding maintenance mode config via data partition in .iso
+      #14195 closed 2026-08-31 `metal-iso` config volume on the boot USB stick is never discovered: volume discovery stops at the iso9660 signature and never enumerates the hybrid ISO's GPT partitions
+      #12860 closed 2026-02-26 Bug: talosctl pcap returns incoming packets without vlan tags
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14454 merged 2026-09-24 feat: place virtual machines in a Talos-owned cgroup partition
+      #14410 open 2026-09-19 fix: re-enroll stale tpm keyslot after unlock with another key
+      #14319 open 2026-09-09 Provide LVM metadata export, off-node archives, and restore
+      #13581 open 2026-06-14 new command: talosctl machine reprovision
+      #13475 open 2026-05-30 Add support for ipv6-only clusters on scaleway
+      #11317 open 2025-07-06 Support full RAM-only netboot (without disk installation)
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #8365 open 2024-02-26 Segment Support
+      #13468 open 2026-05-29 Add link selector to `EthernetConfig` to apply ethtool settings to multiple links matching criteria
+      #14266 open 2026-09-06 SELinux enforcing: one domain for every pod, so any rule added for one workload applies to all
+      #13521 open 2026-06-04 Allow KubeSpan WireGuard listen port to be configured via machine.network.kubespan
+      #14154 open 2026-08-26 Block layer: a single device-layering relation would avoid per-consumer special cases
+      #14070 open 2026-08-18 NetworkRuleConfig cannot express port-less protocols: ICMP rules are rejected and ESP cannot be permitted
+      #9635 open 2024-11-04 SELinux validity checks
+      #14163 closed 2026-08-27 `v1.14.0-beta.0 cannot be upgraded in place: installer's MachineService/Version call is denied with PermissionDenied after a 5s deadline (exit code 4)`
+      #14394 open 2026-09-16 `KubeAPIServerConfig` is missing `extraVolumes` from the deprecated `.cluster.apiServer`
+      #14503 merged 2026-09-30 fix: route gap when a BGP route switches from one next hop to ECMP
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #13938 open 2026-08-02 SELinux: directory created on a tmpfs emptyDir gets incorrect label
+      #14336 closed 2026-09-10 fix: do not panic validating a null machine.network.interfaces entry
+  unclean        10 hit(s) (all listed)
+      #14547 merged 2026-10-02 fix: clean up mountpoints on unmount
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #13411 closed 2026-05-21 Pods stuck terminating and new pods fail to start after unclean node reboot — KillPodSandbox DeadlineExceeded + "name is reserved"
+      #13600 merged 2026-06-17 fix: cgroups cleanup
+      #13570 merged 2026-06-11 fix: shutdown in e2e-docker-short
+      #13746 closed 2026-07-12 OOM handler: documents don't match code, and Rook/Ceph deployment design
+      #10116 merged 2025-01-10 fix: extfs repair and resize
+      #8115 closed 2023-12-26 Unable to get Talos working with IPv6
+      #5437 closed 2022-04-25 run `xfs_repair` on corrupted xfs partitions
+      #5511 closed 2022-05-09 Local containerized Talos single node setup fails to start after an ungraceful shutdown [v1.0.0]
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14281 open 2026-09-08 Xenion: virtual machine lifecycle
+      #14105 open 2026-08-21 Talos-managed LVM on top of LUKS RawVolume is not deactivated on shutdown
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #13354 open 2026-05-14 RawVolumeConfig with LUKS + LVM stacking fails to teardown during shutdown/upgrade: "mapped device is still in use"
+      #14373 open 2026-09-14 boot: a service stuck in Waiting causes a silent FATAL reboot loop after 70m, and the error names no service
+      #14405 closed 2026-09-17 fix: bound the wait for services to stop on shutdown
+      #14305 open 2026-09-09 Talos mdarraystatus stale
+      #14404 closed 2026-09-17 Shutdown sequence never finishes when a service does not stop: stopServices ends with an unbounded wait, so the node never powers off
+      #14186 merged 2026-08-31 feat: add host extension pre-shutdown hooks
+      #11317 open 2025-07-06 Support full RAM-only netboot (without disk installation)
+      #13692 closed 2026-07-02 Talos Linux does not shutdown when triggered from a Hyper-V VM shutdown request
+      #14547 merged 2026-10-02 fix: clean up mountpoints on unmount
+      #14454 merged 2026-09-24 feat: place virtual machines in a Talos-owned cgroup partition
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #13118 open 2026-04-15 AMD SEV-SNP does not work on talos 1.12, on AWS, with the official images
+      #13961 merged 2026-08-05 fix: wait for router advertisement senders on shutdown
+      #14395 merged 2026-09-17 fix: retry transient LVM reconciliation failures
+      #13971 merged 2026-08-06 fix: avoid small panics
+      #14152 closed 2026-08-26 Potential kube-apiserver downtime during the upgrade-k8s scheduler phase
+  reboot         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12968 open 2026-03-15 Unexpected software-triggered node reboot. Reason [0x00080800]
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #14157 open 2026-08-26 fix: deactivate LVM VGs on teardown of backing volumes
+      #13682 open 2026-07-01 ntp: Restore clock frequency after reboot
+      #14373 open 2026-09-14 boot: a service stuck in Waiting causes a silent FATAL reboot loop after 70m, and the error names no service
+      #13706 open 2026-07-04 Rewording of node tracking message during reboot
+      #14304 open 2026-09-09 APIs to manage VM state
+      #10679 open 2025-04-08 Volume wipe s/without/with/g reboot
+      #14367 open 2026-09-14 machine config $delete patches cause transient errors in Omni
+      #14079 open 2026-08-19 feat: update `talosctl rollback` to wait for ready state
+      #14410 open 2026-09-19 fix: re-enroll stale tpm keyslot after unlock with another key
+      #14082 open 2026-08-19 support live disk expansion (partition/disk)
+      #14146 open 2026-08-26 talosctl upgrade to v1.13.9 leaves a metal node unbootable from firmware (sd-boot/UKI)
+      #14305 open 2026-09-09 Talos mdarraystatus stale
+      #14327 open 2026-09-09 Talos firmware management
+      #13769 open 2026-07-15 [darwin/arm64] local `talosctl cluster create qemu` regressed in `v1.13.1` after `kexec` was re-enabled on arm64
+      #13192 open 2026-04-23 Silent reboot without kernel panic or pstore entry on AMD EPYC bare metal — sp5100-tco watchdog suspected
+      #13354 open 2026-05-14 RawVolumeConfig with LUKS + LVM stacking fails to teardown during shutdown/upgrade: "mapped device is still in use"
+      #13207 open 2026-04-24 ETCD connection leak causes infinite upgrade retry loop in single node clusters
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11317 open 2025-07-06 Support full RAM-only netboot (without disk installation)
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #14082 open 2026-08-19 support live disk expansion (partition/disk)
+      #14092 open 2026-08-20 EPHEMERAL volume locator matches a partition inside a nested guest disk image (LINSTOR/LVM), node never boots
+      #13814 open 2026-07-21 docs: no documented way to relocate an install to a different disk without physical access — hidden `talosctl wipe disk --skip-volume-check` is the only remote path
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+      #14339 open 2026-09-10 feat: report MDArrayStatus for MD arrays with no RAIDArrayConfig
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14173 open 2026-08-29 bug: v1.13.9 to v1.14.0-rc.2 upgrade fails with openfs failed: FSCONFIG_CMD_CREATE failed: no data available
+      #14455 merged 2026-09-24 test: fix the md-boot pipeline
+      #14499 merged 2026-09-29 feat: provision VM disk from iso (content library)
+      #12619 open 2026-01-18 Regression: BIOS boot detection broken, when booting via iPXE
+      #14276 merged 2026-09-07 chore: support correctly various disk types for the system disk
+      #14150 closed 2026-08-26 Talos installation on device-mapper-backed disks is not currently possible
+      #14370 merged 2026-09-14 fix: extend the USB settle code for more code paths
+      #10199 open 2025-01-22 Distributed Image Cache
+      #14260 closed 2026-09-05 v1.14.0: nodes booting from a USB disk land in maintenance mode — `WaitForUSB` no longer waits since `usb-storage`/`uas` became modules
+      #14008 merged 2026-08-10 feat: run full md boot integration suite
+      #13704 closed 2026-07-04 Include the devmapper snapshotter in the bundled containerd
+      #14145 merged 2026-08-26 fix: create LVM physical volumes on the decrypted device
+  data+loss      36 hit(s) (all listed)
+      #14411 open 2026-09-20 Retain existing storage under `/var/lib/` from v1.13 when migrating to v1.14
+      #12152 open 2025-11-06 Improve `talos upgrade` command
+      #13759 closed 2026-07-14 Talos 1.13.5 and 1.13.6, k8s 1.36.2, Omni 1.9.1 - etcd stuck in "preparing"
+      #13936 closed 2026-08-02 Rebooting one node correlates with a different node spontaneously rebooting (4/4 reproductions, root cause unidentified)
+      #12617 closed 2026-01-17 `portmap` does not configure SNAT
+      #13156 closed 2026-04-20 add support for `btrfs` filesystem
+      #13343 closed 2026-05-13 Talos calls `luksRemoveKey` on other keyslots with UserVolumeConfigs
+      #13529 merged 2026-06-05 feat: add declarative LVM logical volume provisioning
+      #13746 closed 2026-07-12 OOM handler: documents don't match code, and Rook/Ceph deployment design
+      #13934 closed 2026-08-01 Upgrade hangs indefinitely after unmountPodMounts on Rook-Ceph CSI RBD (v1.13.4 -> v1.13.7); none of SafeUnmount's timeout log lines are emitted
+      #12054 closed 2025-10-21 Cilium Egress Gateway not working - unable to make outbound requests
+      #13745 closed 2026-07-12 Kata pods silently lose all ingress (sch_fq horizon_drop) when packet timestamping is active
+      #12530 closed 2026-01-01 Setup resource types and proto for lvm support 
+      #10384 closed 2025-02-15 Feature Request: Providing disk encryption keys via talosctl during node startup
+      #12675 closed 2026-01-27 talosctl upgrade stuck with "validating image..." on single-node cluster  when not using --force. (Oracle Cloud ARM Instance)
+      #12787 closed 2026-02-13 [v1.11.x] Multi-document machine config documents hidden from talosctl edit/get mc
+      #11909 closed 2025-09-29 Talos fails to boot after reboot
+      #11727 closed 2025-09-01 Support Wiping a disk with LVM at installation time
+      #11417 closed 2025-07-23 KernelModuleSpecController repeatedly fails to load intel_idle on Intel Comet Lake, causing containerd segfaults and complete node failure
+      #8367 closed 2024-02-26 Volume Management
+  partial+write  25 hit(s) (all listed)
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #14515 closed 2026-09-30 Formatting issue while creating UserVolume with LVM
+      #14371 merged 2026-09-14 feat: containers support in talosctl dashboard
+      #13863 open 2026-07-23 Recurring kernel memory corruption on AMD workers with Intel E810 NICs
+      #7183 closed 2023-05-05 Add write/delete to API
+      #13261 merged 2026-05-01 fix: deadlock in the makefs ext4 with populated source
+      #13214 merged 2026-04-27 feat: auto-enroll SecureBoot keys for disk images
+      #13203 closed 2026-04-24 Bonding Config with Talos v1.12.6
+      #8079 closed 2023-12-16 Talos `v1.6.0` Creates A Bunch Of Extra Interfaces
+      #4806 closed 2022-01-17 chore: bump cloud.google.com/go/compute from 0.1.0 to 1.0.0
+      #960 merged 2019-08-08 fix(machined): Clean up installation process
+      #1235 merged 2019-10-04 feat: use bootkube for cluster creation
+      #549 merged 2019-04-16 feat: detect if an install has already occurred
+      #562 merged 2019-04-22 feat(init): implement graceful shutdown of 'init'
+      #569 merged 2019-04-25 feat(osctl): add df command
+      #583 merged 2019-04-27 fix(osd): read log files only on write events
+      #658 merged 2019-05-15 refactor(init): Allow kubeadm init on controlplane
+      #761 merged 2019-06-22 feat: add support for upgrading init nodes
+      #1671 merged 2019-12-18 refactor: osctl code cleanup, no functional changes
+  crash+safe     14 hit(s) (all listed)
+      #14344 merged 2026-09-10 fix: tighten the validation of v1alpha1 configs vs. migration
+      #14155 merged 2026-08-26 feat: Talos Containers can connect to machined
+      #13879 closed 2026-07-27 UEFI automatic key enrollment failed during the SecureBoot with custom keys
+      #12890 closed 2026-03-05 NfTablesChainController crashes with `EINVAL` when firewall rule produces IP range ending at 255.255.255.255
+      #9068 closed 2024-07-26 Fix docs and references on mayastore storage
+      #12786 closed 2026-02-12 ExtensionServiceConfig environment and configFiles not injected into extension service container (v1.12.3)
+      #9848 merged 2024-11-29 feat: add filesystem scrubbing controller
+      #11120 closed 2025-05-29 Update ceph-with-rook.md
+      #8671 closed 2024-04-29 chore: update node docker tag to v22 - autoclosed
+      #9269 closed 2024-09-03 Bare-Metal: Multiple Kernel panics 
+      #3054 closed 2021-01-29 Talos not working with Proxmox. Memory overloads on boot and does not release for a long time. 
+      #7123 closed 2023-04-22 upgrade to 1.4.0 leads to kernel module load issues (virtio, arm64)
+      #562 merged 2019-04-22 feat(init): implement graceful shutdown of 'init'
+      #2553 merged 2020-09-23 feat: add ApplyConfiguration API
+  atomic+write   10 hit(s) (all listed)
+      #14147 merged 2026-08-26 fix: write the uploaded etcd snapshot atomically
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14010 merged 2026-08-10 fix: size the receive/send buffers for nftables netlink
+      #13807 closed 2026-07-20 SELinux permissive-mode AVC denials from cilium-agent writing to /run/cilium/state (pod_t vs run_t)
+      #12748 closed 2026-02-08 talos 1.12.3 not booting up on rpi 5 (D0 stepping, Rev 1.1)
+      #6888 closed 2023-02-27 Control plane static pod does not generate due to race condition
+      #8120 merged 2023-12-29 feat: implement local caching dns server
+      #8671 closed 2024-04-29 chore: update node docker tag to v22 - autoclosed
+      #225 merged 2018-11-21 Add support for installing to a device
+      #1807 merged 2020-01-22 feat(networkd): Add health api
+  lock+file      80 hit(s) (all listed)
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #14541 open 2026-10-01 feat: Content Library locks actively referenced files
+      #13743 open 2026-07-10 Unable to mount multipath SAN (FC) device as Longhorn data disk in Talos using UserVolumeConfig or ExistingVolumeConfig
+      #14202 merged 2026-09-01 fix: validate received kubeconfig
+      #14145 merged 2026-08-26 fix: create LVM physical volumes on the decrypted device
+      #13910 closed 2026-07-30 ext-iscsid fails on v1.14.0-beta.0 ("openfs failed ... FSCONFIG_CMD_CREATE failed: invalid argument"), machine stays at STAGE: Booting forever
+      #14499 merged 2026-09-29 feat: provision VM disk from iso (content library)
+      #13597 merged 2026-06-17 fix: stop the log persistence and close all files on shutdown
+      #13780 merged 2026-07-16 feat: support reboot and sync for remote provisioner
+      #12377 closed 2025-12-10 Embedding maintenance mode config via data partition in .iso
+      #13826 merged 2026-07-22 fix: volume mount race (third attempt) around service restart
+      #13892 merged 2026-07-28 feat: support experimental k8s-less and etcd-less mode
+      #8862 closed 2024-06-04 nfsmount.conf nolock option ignored when using democratic-csi nfs support
+      #13463 merged 2026-05-28 feat: update pkgs, tools, Go dependencies
+      #13615 merged 2026-06-19 feat: isolate cri, kubelet and pods in a sandbox namespace
+      #13934 closed 2026-08-01 Upgrade hangs indefinitely after unmountPodMounts on Rook-Ceph CSI RBD (v1.13.4 -> v1.13.7); none of SafeUnmount's timeout log lines are emitted
+      #13267 merged 2026-05-01 feat: add host-namespace debug profile
+      #13387 closed 2026-05-19 feat(machined): live-grow partition and XFS filesystem when backing disk is expanded
+      #13437 merged 2026-05-25 fix: ignore cgroups with zero rank in OOM handler
+      #10384 closed 2025-02-15 Feature Request: Providing disk encryption keys via talosctl during node startup
+  write+failure  70 hit(s) (all listed)
+      #14310 open 2026-09-09 MD monitor events might not reach the refresh callback
+      #14162 open 2026-08-27 # XFS EPHEMERAL force-shutdown under container churn on v1.13.9 - possibly related to the AG geometry fixed in #13828 for 1.14
+      #13802 open 2026-07-20 fix(talosctl): uncordon nodes when a drain fails
+      #13332 open 2026-05-12 AF_PACKET raw ARP send fails with ENOBUFS on VLAN netdev over 802.3ad bond when interface is unnumbered or IPv4LL-addressed
+      #14457 open 2026-09-24 feat: add disk encryption recovery key
+      #13192 open 2026-04-23 Silent reboot without kernel panic or pstore entry on AMD EPYC bare metal — sp5100-tco watchdog suspected
+      #12619 open 2026-01-18 Regression: BIOS boot detection broken, when booting via iPXE
+      #14490 open 2026-09-28 Node hangs indefinitely at boot splash after unexplained live freeze (Lenovo ThinkCentre M710q, AMI firmware) — only resolved by full reinstall
+      #13938 open 2026-08-02 SELinux: directory created on a tmpfs emptyDir gets incorrect label
+      #14503 merged 2026-09-30 fix: route gap when a BGP route switches from one next hop to ECMP
+      #12505 open 2025-12-28 Netcup Root Server (KVM): UEFI install ok, first boot reports “system disk not found”
+      #14274 merged 2026-09-07 fix: notify about link alias changes
+      #14219 merged 2026-09-02 fix: harden the code around kubelet's client certificate handling
+      #14010 merged 2026-08-10 fix: size the receive/send buffers for nftables netlink
+      #13744 closed 2026-07-11 auditd: receive loop exits permanently on first transient netlink error (EINTR/EAGAIN check uses && instead of ||); kernel audit falls back to printk and floods dmesg
+      #14244 merged 2026-09-04 backports: release 1.12
+      #14021 closed 2026-08-12 RegistryTLSConfig renders a relative CA path in hosts.toml
+      #13863 open 2026-07-23 Recurring kernel memory corruption on AMD workers with Intel E810 NICs
+      #14371 merged 2026-09-14 feat: containers support in talosctl dashboard
+      #14041 closed 2026-08-14 talosctl upgrade of control-plane node fails silently if VIP is attached to that node
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14221 open 2026-09-02 ConfigMap-style volumes and matching container mounts
+      #12618 open 2026-01-17 talosctl upgrade-k8s ignores machine/kubelet/clusterDNS configuration
+      #14394 open 2026-09-16 `KubeAPIServerConfig` is missing `extraVolumes` from the deprecated `.cluster.apiServer`
+      #13938 open 2026-08-02 SELinux: directory created on a tmpfs emptyDir gets incorrect label
+      #14271 closed 2026-09-07 initial cut of the Content Library
+      #14207 merged 2026-09-01 fix: allow CSI volumes to be mounted with an SELinux context
+      #14218 merged 2026-09-02 feat: add USB LAN78XX drivers to the rootfs
+      #14159 merged 2026-08-27 fix: hostns etc mount
+      #14219 merged 2026-09-02 fix: harden the code around kubelet's client certificate handling
+      #14182 closed 2026-08-31 SELinux: `mount -o context=` on a CSI volume is denied `filesystem { relabelto relabelfrom }`
+      #14027 merged 2026-08-12 fix: render absolute CRI registry TLS paths
+      #14150 closed 2026-08-26 Talos installation on device-mapper-backed disks is not currently possible
+      #12377 closed 2025-12-10 Embedding maintenance mode config via data partition in .iso
+      #14499 merged 2026-09-29 feat: provision VM disk from iso (content library)
+      #14195 closed 2026-08-31 `metal-iso` config volume on the boot USB stick is never discovered: volume discovery stops at the iso9660 signature and never enumerates the hybrid ISO's GPT partitions
+      #14058 closed 2026-08-16 ExternalVolumeConfig virtiofs mount fails trying to chmod the mount when using UTM on macOS
+      #13889 merged 2026-07-28 fix: allow* directory-backed volumes in v1alpha1 Reset API
+      #12860 closed 2026-02-26 Bug: talosctl pcap returns incoming packets without vlan tags
+      #12957 closed 2026-03-12 Can't get Dual Stack to work
+      #13513 merged 2026-06-04 feat: implement support bundle encryption
+
+== 51 terms run; 51 returned hits, 19 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,773 @@
+== novelty pre-scan: spesmilo/electrum
+== date: 2026-10-03T03:54:42Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10969 open 2026-09-14 AttributeError: 'ElectrumWindow' object has no attribute 'closing_warning_callbacks'
+      #6625 open 2020-10-01 Big TX history causing crash & freezes
+      #11006 open 2026-09-28 commands: clear error for malformed decimal CLI arguments
+      #5335 open 2019-05-12 Electrum has crash periodically 
+      #10499 open 2026-02-27 AssertionError: 
+      #10771 open 2026-07-26 KeyError: 'wallet_type'
+      #7576 open 2021-11-24 Electrum crashed on Mac quite often
+      #7319 open 2021-05-26 Electrum crashes when importing private keys
+      #5728 open 2019-10-26 qt channel details: KeyError for self.keyname_rows[fro].pop(payment_hash)
+      #8815 open 2024-01-16 wizard.is_last_view: AssertionError for empty view
+      #7985 open 2022-09-21 zbar crashes when seeing multiple qr codes in image
+      #10252 open 2025-10-01 AssertionError: 
+      #8782 open 2023-12-28 QETxDetails.update: AssertionError for db.get_transaction(self._txid) missing tx
+      #10602 open 2026-04-23 Crash on Mac OS v11.7.11 "BigSur" from v4.6.0 onwards
+      #7126 open 2021-03-21 AttributeError: 'NoneType' object has no attribute 'add'
+      #9478 open 2025-01-24 crash when swap_manager init times out
+      #5557 open 2019-08-12 Crash when trying to use Cosigner pool
+      #10713 open 2026-06-28 MemoryError: 
+      #10302 open 2025-11-06 Corrupt wallet file after macOS specific shutdown crash
+      #8856 open 2024-01-29 KeyError: 'wallet_type'
+  corrupt        84 hit(s) (all listed)
+      #10302 open 2025-11-06 Corrupt wallet file after macOS specific shutdown crash
+      #7612 open 2021-12-28 Cannot export private keys because one of them is corrupt
+      #3803 open 2018-01-31 Electrum can't differentiate between corrupt wallets and incorrect password
+      #4364 open 2018-05-13 Corrupted WIF key but with valid base58 checksum in Imported Wallet
+      #9012 open 2024-04-17 "found by wizard but not here"
+      #4353 open 2018-05-09 InvalidPassword: Incorrect password
+      #6030 open 2020-03-11 Electrum daemon hangs when >15000 addresses in a wallet
+      #6349 open 2020-07-07 wallet db: failing upgrade convert_version_24
+      #8065 open 2022-11-14 Electrum Anymore refuse Paid "ERROR PASSWORD" i don't have any password
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #6496 open 2020-08-09 Problems showing address on coldcard with multisig wallet
+      #8880 open 2024-02-09 Wallet file corruption detected. SEED Phrase Contain Different Addresses
+      #10765 merged 2026-07-21 json_db: set_modified after removing incomplete data
+      #5999 open 2020-02-27 Add proper header to storage (to expose some data before decryption)
+      #8117 open 2023-01-04 ValueError: Single '}' encountered in format string
+      #3452 open 2017-12-06 Electrum for Windows 3.0.2 keeps renaming my wallet file
+      #4874 open 2018-11-27 Dependencies may be an attack vector
+      #4949 open 2018-12-20 InternalAddressCorruption: Wallet file corruption detected. Please restore your wallet from seed, and compare the addresses in both files
+      #6537 open 2020-08-27 InternalAddressCorruption: Wallet file corruption detected. Please restore your wallet from seed, and compare the addresses in both files
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+  corruption     61 hit(s) (all listed)
+      #6537 open 2020-08-27 InternalAddressCorruption: Wallet file corruption detected. Please restore your wallet from seed, and compare the addresses in both files
+      #8880 open 2024-02-09 Wallet file corruption detected. SEED Phrase Contain Different Addresses
+      #10004 open 2025-07-03 BitcoinException: Invalid length for extended key: 21
+      #4949 open 2018-12-20 InternalAddressCorruption: Wallet file corruption detected. Please restore your wallet from seed, and compare the addresses in both files
+      #10302 open 2025-11-06 Corrupt wallet file after macOS specific shutdown crash
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #10416 open 2026-01-16 AttributeError: 'Contacts' object has no attribute 'alias_info'
+      #4515 open 2018-07-07 SerializationError: unpack_from requires a buffer of at least 4 bytes
+      #9052 open 2024-05-14 Exception: public key could not be parsed or is invalid
+      #3803 open 2018-01-31 Electrum can't differentiate between corrupt wallets and incorrect password
+      #5038 open 2019-01-28 Electrum 3.2.3: "Incorrect Password" when manual typing, works fine when pasting from clipboard
+      #7555 open 2021-11-06 Address multisig details show wrong public key
+      #6700 open 2020-10-29 Error connecting to electrs server via secure connection
+      #7482 open 2021-09-03 Error when cosigning transaction: SSLCertVerificationError
+      #5163 open 2019-02-26 silent failures on read-only file system. user should be warned
+      #7516 open 2021-09-27 Huge delay signing with Ledger Nano S
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+      #5670 open 2019-10-01 Electrum does not connect to server. dns issue.
+      #10415 closed 2026-01-15 qml: temporary corruption of QEDaemon.singlePassword
+      #10580 closed 2026-04-14 sweep tx not claimed after channel force close when config option use_change == false
+  truncated      26 hit(s) (all listed)
+      #4692 open 2018-09-05 truncated amount when pasted
+      #6253 open 2020-06-22 user interface only has satoshi precision (msat truncated to sat, rounding)
+      #10302 open 2025-11-06 Corrupt wallet file after macOS specific shutdown crash
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #6494 open 2020-08-09 PSBT created for transaction mismatch on derivation path
+      #10937 closed 2026-09-07 Unhandled exception in parse_bip21_URI for crafted lightning parameter in bitcoin: URI
+      #10699 open 2026-06-11 tests: refactor the Qt test harness to support running QObject's within a QCoreApplication
+      #9609 closed 2025-03-07 i cannot send fund
+      #10775 merged 2026-07-28 jsondb: handle structural json characters in data during recovery
+      #10544 merged 2026-03-24 Lazy trampoline
+      #7136 closed 2021-03-25 normal swap failure
+      #10553 merged 2026-03-26 ci: add claude code pr security review
+      #10557 closed 2026-03-27 build(deps): bump ecdsa from 0.19.1 to 0.19.2 in /contrib/deterministic-build
+      #10551 closed 2026-03-26 build(deps): bump requests from 2.32.3 to 2.33.0 in /contrib/deterministic-build
+      #10453 merged 2026-01-29 wallet: estimate base tx feerate based on original base tx size
+      #10560 closed 2026-03-28 build(deps): bump cryptography from 45.0.3 to 46.0.6 in /contrib/deterministic-build
+      #10035 closed 2025-07-16 output of 'tap to thow seed extension' on android is truncated
+      #8199 closed 2023-02-08 build(deps): bump cryptography from 38.0.3 to 39.0.1 in /contrib/deterministic-build
+      #8287 merged 2023-03-30 qt network dialog: use icon for selected server, instead of "*"
+      #7770 closed 2022-04-20 Invalid normalization of exchange rate
+  truncate       43 hit(s) (all listed)
+      #4692 open 2018-09-05 truncated amount when pasted
+      #6253 open 2020-06-22 user interface only has satoshi precision (msat truncated to sat, rounding)
+      #10302 open 2025-11-06 Corrupt wallet file after macOS specific shutdown crash
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #6494 open 2020-08-09 PSBT created for transaction mismatch on derivation path
+      #10937 closed 2026-09-07 Unhandled exception in parse_bip21_URI for crafted lightning parameter in bitcoin: URI
+      #10699 open 2026-06-11 tests: refactor the Qt test harness to support running QObject's within a QCoreApplication
+      #10586 open 2026-04-17 millisat precision
+      #10766 closed 2026-07-23 json_db.maybe_load_incomplete_data incorrectly assumes no control characters inside json keys/values
+      #9609 closed 2025-03-07 i cannot send fund
+      #10765 merged 2026-07-21 json_db: set_modified after removing incomplete data
+      #10775 merged 2026-07-28 jsondb: handle structural json characters in data during recovery
+      #10544 merged 2026-03-24 Lazy trampoline
+      #7136 closed 2021-03-25 normal swap failure
+      #10553 merged 2026-03-26 ci: add claude code pr security review
+      #10557 closed 2026-03-27 build(deps): bump ecdsa from 0.19.1 to 0.19.2 in /contrib/deterministic-build
+      #10451 merged 2026-01-28 history export: make fees bitcoin, add unittest, rm unconf tx
+      #10551 closed 2026-03-26 build(deps): bump requests from 2.32.3 to 2.33.0 in /contrib/deterministic-build
+      #10453 merged 2026-01-29 wallet: estimate base tx feerate based on original base tx size
+      #10560 closed 2026-03-28 build(deps): bump cryptography from 45.0.3 to 46.0.6 in /contrib/deterministic-build
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8815 open 2024-01-16 wizard.is_last_view: AssertionError for empty view
+      #6331 open 2020-07-04 EmptyLabel: A DNS label is empty.
+      #11012 open 2026-10-03 keystore: do not store private keys rejected by import_private_keys
+      #5626 open 2019-09-08 Add option not to subscribe to already used old addresses (empty&used)
+      #10987 merged 2026-09-22 transaction: treat native segwit input with non-empty witness as complete
+      #10792 open 2026-08-03 QML wallet search followup
+      #10952 open 2026-09-09 descriptor: reduce tr() keys to x-only for taproot expansion
+      #8965 open 2024-03-20 Cannot estimate fees without recipient address
+      #9478 open 2025-01-24 crash when swap_manager init times out
+      #10745 open 2026-07-09 contrib/osx: add native arm64 (Apple Silicon) build support
+      #10868 open 2026-08-18 Request the passphrase through the interface when the device prompts for it.
+      #4621 open 2018-08-09 Module-level internationalized strings always return the english value
+      #7370 open 2021-06-27 In CLI mode, is_synchronized should never return true if connected is false
+      #10986 closed 2026-09-22 PSBT inputs finalized by Bitcoin Core are not considered complete
+      #1917 open 2016-08-31 Thoughts on new passphrase feature
+      #6000 open 2020-02-28 create a send tx failed
+      #2143 open 2017-02-02 No warning if wallet is not protected with password upon creation
+      #7244 open 2021-04-25 Feature-Request: Add a way to direct send BC from private keys
+      #4260 open 2018-04-14 OSError: [Errno 22] Invalid argument: 'C:\\Users\\iebadrani\\AppData\\Roaming\\Electrum\\cache\\BitcoinAverage_EUR'
+      #9925 open 2025-06-09 change plugins keyfile path to XDG Base Directory spec
+  atomic         18 hit(s) (all listed)
+      #10756 open 2026-07-16 Taproot swaps
+      #8661 open 2023-10-27 Incorrect Password v4.4.6 win10
+      #10401 open 2026-01-08 add support for LevelDB
+      #10513 open 2026-03-06 Allow configuring the number of confs required for lightning channels
+      #9675 merged 2025-03-26 plugin: implement Nostr Wallet Connect (NIP47) plugin
+      #2721 closed 2017-08-09 Make config file writes atomic
+      #2068 closed 2016-12-06 2.7.12 disappearing wallets
+      #8493 merged 2023-06-19 partial-writes using jsonpatch
+      #7594 merged 2021-12-10 Produce packager-friendly tarballs
+      #1234 merged 2015-05-23 Prevent race with two electrum instances on same wallet.
+      #2901 closed 2017-09-20 Added fiat currency alongside bitcoin quantity in transaction dialog
+      #5835 closed 2019-12-11 Restructure storage db
+      #4554 closed 2018-07-16 docker: capture full build context into image
+      #1638 closed 2016-01-17 daemon creation is racy
+      #1422 closed 2015-08-25 Electrum 2.4.4 impossible send bitcoins
+      #2719 closed 2017-08-09 electrum write config file every second
+      #4841 closed 2018-11-11 Cannot get unused change address over RPC
+      #6529 closed 2020-08-23 Calling payto too frequently results in same transactions broadcasted multiple times
+  atomically     1 hit(s) (all listed)
+      #8661 open 2023-10-27 Incorrect Password v4.4.6 win10
+  interrupted    6 hit(s) (all listed)
+      #10282 merged 2025-10-28 util: cleanup asyncio event loop after stopping
+      #8560 merged 2023-08-01 new wizard Qt desktop client
+      #8041 merged 2022-10-28 Modify Ledger plugin to support the new bitcoin app v2.1.0
+      #3007 closed 2017-10-07 I forgot to press save when requesting.
+      #4202 closed 2018-03-30 USBErrorNotSupported: LIBUSB_ERROR_NOT_SUPPORTED [-12]
+      #5420 closed 2019-06-11 using Trezor on Windows 10, getting LIBUSB_ERROR_ACCESS
+  interrupt      11 hit(s) (all listed)
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+      #10282 merged 2025-10-28 util: cleanup asyncio event loop after stopping
+      #8560 merged 2023-08-01 new wizard Qt desktop client
+      #8041 merged 2022-10-28 Modify Ledger plugin to support the new bitcoin app v2.1.0
+      #4944 closed 2018-12-19 Increase timeout when using --oneserver and --server
+      #507 closed 2013-12-20 Master key should be seeded with blocking entropy sources
+      #1690 closed 2016-02-28 FX quotes interrupt a signing in tx_dialog and invalidate it
+      #1106 closed 2015-03-24 Electrum hangs if closed with no Internet connection
+      #3007 closed 2017-10-07 I forgot to press save when requesting.
+      #2158 closed 2017-02-09 tag more information about parent transactions
+      #5420 closed 2019-06-11 using Trezor on Windows 10, getting LIBUSB_ERROR_ACCESS
+  sigkill        3 hit(s) (all listed)
+      #9885 merged 2025-06-01 Replace config GUI_LAST_WALLET with CURRENT_WALLET
+      #1106 closed 2015-03-24 Electrum hangs if closed with no Internet connection
+      #1931 closed 2016-09-19 KeyError in addr_history_response
+  sigint         2 hit(s) (all listed)
+      #9885 merged 2025-06-01 Replace config GUI_LAST_WALLET with CURRENT_WALLET
+      #1106 closed 2015-03-24 Electrum hangs if closed with no Internet connection
+  ctrl-c         24 hit(s) (all listed)
+      #2594 open 2017-07-11 can copy&paste new generated seed
+      #6555 open 2020-09-04 entire computer locks up
+      #4176 open 2018-03-25 KeyboardInterrupt: 
+      #9217 closed 2024-09-29 address copied from qt receive tab differs from address shown in qr code
+      #8951 closed 2024-03-14 Notes are not saved after abnormal termination
+      #8370 closed 2023-04-30 docker build is not working
+      #7997 closed 2022-10-02 maybe include `glibc` in appimage, for better(?) compatibility
+      #7602 closed 2021-12-21 Unable to run the build scripts on Jenkins
+      #6878 closed 2020-12-22 Button to Send to address pasted from clipboard.
+      #6643 merged 2020-10-10 Handle KeyboardInterrupt in Python Console
+      #481 merged 2013-11-30 Improve keyboard usability in Qt GUI
+      #4258 merged 2018-04-13 qt: allow copying receiving address using ctrl-c
+      #934 closed 2014-11-23 Electrum on Wheezy (no KDE/Gnome) refuses to load the GUI
+      #197 closed 2013-04-17 Transaction details is no longer copyable.
+      #1525 closed 2015-10-29 Command-line: Wallet balance is not updated after sent transaction and fails on second tx
+      #1478 closed 2015-10-13 Electrum fails to start on openSUSE 13.2
+      #2058 closed 2016-11-27 Android: please confirm required Android version 2.3 - other requirements?
+      #2035 closed 2016-11-12 Watch only bitcoin address copy paste minor bug
+      #2384 closed 2017-05-04 Ctrl+s crashes `electrum  --gui=text` in Termux
+      #2129 closed 2017-01-22 Ctrl-C should not be a shortcut
+  power          79 hit(s) (all listed)
+      #6016 open 2020-03-04 implement advanced wallet option: multiple xpubs, mixed script types, and similar (maybe with output script descriptors)
+      #6566 open 2020-09-09 Windows build-time dependency on Wine is unfortunate
+      #8369 open 2023-04-29 KeyError: 'autoconnect'
+      #5375 open 2019-05-23 Console "tab" for Android app
+      #8472 open 2023-06-05 Server connection windows doesn't make it easy to connect to own server.
+      #8726 open 2023-12-04 wallet: make gap limit for change configurable
+      #8688 open 2023-11-13 No Releases shown on GitHub
+      #9252 open 2024-10-16 Allow disabling of BIP69 on transaction send window
+      #8040 open 2022-10-27 Qt AddressList: mark address if some coins are frozen
+      #5999 open 2020-02-27 Add proper header to storage (to expose some data before decryption)
+      #8035 open 2022-10-24 document disabling utxo_freeze_threshold
+      #5715 open 2019-10-18 Need a way to represent a cosigner: (xfp, derivation prefix, xpub, script type)
+      #10583 open 2026-04-17 Question About Potential Single ElectrumX Cluster with Identical TLS CN
+      #5578 open 2019-08-23 Server banners are "attacker-controlled" arbitrary text. Might be used for phishing.
+      #10568 merged 2026-04-03 verifier.py: fix CVE-2012-2459: reject left-sibling duplicates
+      #10622 merged 2026-04-30 lnpeer: clean-up channel_type and enforce all newly opened channels use anchors
+      #7928 closed 2022-08-11 InvalidChecksum: calculated 5df6e0e2, found 00
+      #10505 merged 2026-03-03 plugins: nwc: sync with spec, fix some bugs
+      #6594 open 2020-09-15 StorageReadWriteError: [Errno 2] No such file or directory: '/data/data/org.electrum.electrum/files/data/wallets/ED/46.tmptest.6638'
+      #6710 closed 2020-11-03 Android: Allow manually editing fee rates and selecting the fee method directly on fee menu pop-up (custom fee, qml)
+  outage         1 hit(s) (all listed)
+      #10908 open 2026-08-28 swapserver: reverse swap with funded-but-unspent lockup is never claimed after locktime expiry — server forfeits the onchain amount and warns once per block forever
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6799 open 2020-12-01 OperationalError: disk I/O error
+      #8086 open 2022-11-28 DatabaseError: database disk image is malformed
+      #10693 open 2026-06-07 New storage api
+      #9514 open 2025-02-01 “Delete wallet” does not delete the content of the wallet from disk
+      #10998 open 2026-09-27 Imported_KeyStore: private keys rejected as "not implemented type" are still persisted in the keystore
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+      #10401 open 2026-01-08 add support for LevelDB
+      #5435 open 2019-06-18 What are Electrum requirements for MacOS?
+      #10908 open 2026-08-28 swapserver: reverse swap with funded-but-unspent lockup is never claimed after locktime expiry — server forfeits the onchain amount and warns once per block forever
+      #4788 open 2018-10-21 TypeError: Object of type 'Decimal' is not JSON serializable
+      #3855 open 2018-02-06 Receive requests not persisting in wallet
+      #2595 open 2017-07-11 access to ledger still available after closing wallet
+      #5627 open 2019-09-09 Handle exceptions raised when saving wallet file
+      #7265 open 2021-05-01 Build macOS binary (.app/.dmg) from GNU/Linux; so that we no longer need a dedicated macbook just for building for OSX
+      #8397 open 2023-05-06 Implementing Keyfiles
+      #8661 open 2023-10-27 Incorrect Password v4.4.6 win10
+      #7969 open 2022-09-05 GnuPG integration for password-less wallet protection
+      #6488 open 2020-08-07 [Android-REQ]: Allow testnet in Android
+      #5912 open 2020-01-26 Feature request: Sync from local node with BIP157 filters (BIP158, neutrino)
+      #4180 open 2018-03-25 Suggestion: Add multiple wallet support in single Electrum instance
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10679 open 2026-06-02 qml history list refresh bug: for incoming LN payment, only partial amount is shown
+      #6232 open 2020-06-13 Considering (partial?) removal of OpenAlias support. Comment here if you use it.
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+      #10339 open 2025-12-02 New encrypted wallet file header:
+      #10693 open 2026-06-07 New storage api
+      #10645 open 2026-05-12 qt: avoid unchanged wallet list rebuilds
+      #10387 open 2025-12-25 RuntimeError: Unexpected magic characters
+      #7389 open 2021-07-05 Feature request: Add import partially signed tx file for android
+      #8979 open 2024-03-28 [Bug Report] [Android] Labels don't get saved unless app is closed with back button
+      #5999 open 2020-02-27 Add proper header to storage (to expose some data before decryption)
+      #10401 open 2026-01-08 add support for LevelDB
+      #5627 open 2019-09-09 Handle exceptions raised when saving wallet file
+      #8860 open 2024-01-31 AttributeError: 'NoneType' object has no attribute 'get_password_for_storage_encryption'
+      #7440 open 2021-08-02 Bitbox02 PaytoMany - Bitbox02Exception: error code: 101, Invalid Input
+      #5694 open 2019-10-10 implement output script descriptors
+      #6720 open 2020-11-08 ValueError: non-hexadecimal number found in fromhex() arg at position 7
+      #7293 open 2021-05-12 USBErrorNoDevice: LIBUSB_ERROR_NO_DEVICE [-4]
+      #5715 open 2019-10-18 Need a way to represent a cosigner: (xfp, derivation prefix, xpub, script type)
+      #6584 open 2020-09-13 unable to pipe binary .psbt file to electrum signtransaction command (UnicodeDecodeError)
+      #8093 open 2022-12-06 Non-initiator channels
+  incomplete     49 hit(s) (all listed)
+      #10968 open 2026-09-13 Android multisig wallet details appear to show only one seed
+      #4780 open 2018-10-16 WalletFileException: Incomplete wallet files cannot be upgraded.
+      #1930 open 2016-09-18 Notify if wallet balance could be incomplete due to utxo limit or backlog history
+      #10339 open 2025-12-02 New encrypted wallet file header:
+      #10584 open 2026-04-17 AssertionError: 
+      #10986 closed 2026-09-22 PSBT inputs finalized by Bitcoin Core are not considered complete
+      #10765 merged 2026-07-21 json_db: set_modified after removing incomplete data
+      #2573 open 2017-06-30 Electrum cli JSON-RPC notification 
+      #7265 open 2021-05-01 Build macOS binary (.app/.dmg) from GNU/Linux; so that we no longer need a dedicated macbook just for building for OSX
+      #10766 closed 2026-07-23 json_db.maybe_load_incomplete_data incorrectly assumes no control characters inside json keys/values
+      #10528 merged 2026-03-16 swaps: improve SwapServerDialog, provider CLI, bugfixes
+      #10542 closed 2026-03-24 "verified" callbacks are executed with incomplete TxMinedInfo before "new_transaction" callbacks
+      #10958 merged 2026-09-09 build: update some dependencies
+      #10473 closed 2026-02-09 Fix #8856: Prevent KeyError in wizard navigation methods
+      #8542 closed 2023-07-19 Man Page
+      #9900 closed 2025-06-03 Feature: Add Silent Payment sending support
+      #9943 closed 2025-06-12 error in sending money from the wallet
+      #9958 merged 2025-06-15 address_synchronizer: add a cache in front of get_utxos()
+      #9746 closed 2025-04-17 feat: add manual history fetching mode
+      #9204 closed 2024-09-18 Android: does not show existing seed extension word
+  dataloss       3 hit(s) (all listed)
+      #10612 merged 2026-04-27 lnutil: bolt 12 LnFeatures changes
+      #8814 merged 2024-01-15 lnpeer.reestablish_channel: fix some timing issues for dataloss case
+      #6958 closed 2021-01-21 Lightning nodeid() returns a different value for each wallet seed restore
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4787 open 2018-10-21 Please help to recover the wallet
+      #3880 open 2018-02-10 Help recovering history/bitcoins from Electrum wallet
+      #10735 open 2026-07-02 open_channel: funding tx broadcast fails when connected server rejects the recoverable-channels OP_RETURN
+      #7157 open 2021-03-31 Recoverable channels without OP_RETURN using ecdsa nonce hiding
+      #6537 open 2020-08-27 InternalAddressCorruption: Wallet file corruption detected. Please restore your wallet from seed, and compare the addresses in both files
+      #10339 open 2025-12-02 New encrypted wallet file header:
+      #6487 open 2020-08-07 [Android-REQ]: Add "import" button in the wallets dialog to allow import from external storage wallet files
+      #8661 open 2023-10-27 Incorrect Password v4.4.6 win10
+      #8093 open 2022-12-06 Non-initiator channels
+      #9096 open 2024-06-17 wallet with 2fa  the seed in wallet menu does not shown
+      #8935 open 2024-03-08 Is there a way to improve Lightning support for hardware wallets?
+      #8235 open 2023-03-07 Automated BIP39 Recovery for hardware wallets
+      #10047 open 2025-07-18 Funds automatically disappear from your balance
+      #10588 open 2026-04-18 qml: allow entering key-origin info when importing a master key -> basic hardware wallet support
+      #7214 open 2021-04-15 BIP39 seed words/mnemonic not stored in wallet file
+      #9728 open 2025-04-11 supporting silent payments (bip352)
+      #8530 open 2023-07-10 help: channel opening and closing in cooperative
+      #8035 open 2022-10-24 document disabling utxo_freeze_threshold
+      #6860 open 2020-12-17 Invalid BIP39 seed phrases allowed
+      #7412 open 2021-07-17 Trezor Wallet recovery problem 
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10978 open 2026-09-16 [Feature]: Import BIP39 recovery phrase via SeedQR for Electrum Mobile
+      #9964 open 2025-06-16 timelock_recovery: open issues
+      #7412 open 2021-07-17 Trezor Wallet recovery problem 
+      #8235 open 2023-03-07 Automated BIP39 Recovery for hardware wallets
+      #10710 open 2026-06-25 Add ownership and simple extra data to reserved addresses.
+      #9166 open 2024-08-19 Beware of SCAMs! "funds recovery", "help centers", "live support" are all scams
+      #10797 open 2026-08-04 Use “BIP39 Passphrase” consistently when restoring BIP39 seeds
+      #6465 open 2020-08-03 libsecp256k1 library found but it was built without required module (--enable-module-recovery)
+      #10908 open 2026-08-28 swapserver: reverse swap with funded-but-unspent lockup is never claimed after locktime expiry — server forfeits the onchain amount and warns once per block forever
+      #10869 open 2026-08-18 [question] deprecate unsupported hardware wallets?
+      #10263 open 2025-10-06 Timelock Recovery Plugin using Ledger unnecessarily shows the address of the funds that remain on the same wallet.
+      #10130 open 2025-08-13 AssertionError: 
+      #7449 open 2021-08-09 Lightning backup QR code needs a bit more explanation
+      #7687 open 2022-03-01 GUI Dialog - Warning about BIP39
+      #7535 open 2021-10-15 IndexError: list index out of range
+      #10895 open 2026-08-25 Qml wizard warn wrong electrum seed
+      #6016 open 2020-03-04 implement advanced wallet option: multiple xpubs, mixed script types, and similar (maybe with output script descriptors)
+      #10972 merged 2026-09-14 qt/qml: labels to require opt-in to rich text
+      #4987 open 2019-01-03 Electrum error on Raspberry Pi
+      #10775 merged 2026-07-28 jsondb: handle structural json characters in data during recovery
+  rollback       4 hit(s) (all listed)
+      #11012 open 2026-10-03 keystore: do not store private keys rejected by import_private_keys
+      #10119 closed 2025-08-11 [4.6.1][CLI] Missing arguments for onchain_history cli cmd
+      #2463 closed 2017-05-29 Transaction rejected by our node. Reason: Transaction is trying to double spend. Input 0 is already spent.
+      #3186 closed 2017-11-02 v3 Error loading default wallet: "byte must be in range(0, 256)"
+  resume         17 hit(s) (all listed)
+      #6697 open 2020-10-28 Enable Electrum to handle big wallets and bad connections with incremental sync
+      #8456 open 2023-05-29 Network does not update balances after macOS sleeps
+      #5489 open 2019-07-05 Wallet sync issues (large wallet cannot sync with own server)
+      #10908 open 2026-08-28 swapserver: reverse swap with funded-but-unspent lockup is never claimed after locktime expiry — server forfeits the onchain amount and warns once per block forever
+      #10858 closed 2026-08-17 swapserver nostr announcement PoW miner: worker returns the builtin hash, gen_nostr_ann_pow can discard the winning nonce, result stored unvalidated
+      #9262 closed 2024-10-19 Introducing Electrum Guru on Gurubase.io
+      #8560 merged 2023-08-01 new wizard Qt desktop client
+      #7986 merged 2022-09-22 New approach to implement new wallet wizard
+      #7394 closed 2021-07-06 gpg signature verification on web site https://electrum.org/#download is giving "Bad signature"
+      #5572 closed 2019-08-19 Kivy installwizard back button fix2
+      #5534 merged 2019-07-27 gui/kivy: fix installwizard back button behaviour
+      #1755 closed 2016-04-09 No way to cancel the multi-sig wallet generation wizard on fresh install
+      #2058 closed 2016-11-27 Android: please confirm required Android version 2.3 - other requirements?
+      #4404 closed 2018-06-04 Interference when using two Trezors
+      #3438 closed 2017-12-04 Application closes by accepting blank Terms of Service of a incompletely created wallet
+      #5083 closed 2019-02-06 Tails Latest Version 3.12 and Electrum 3.1.3 with Server/Scam/Warnings etc etc
+      #5098 closed 2019-02-10 On Android: allow bruteforcing own PIN to the wallet
+  half-written   4 hit(s) (all listed)
+      #10811 merged 2026-08-06 swaps: re-bundle_payments on startup
+      #8263 closed 2023-03-18 transaction without my participation
+      #4649 merged 2018-08-21 change prng, add warning against encrypting multiple secrets
+      #5683 closed 2019-10-06 P2PKH-P2SH unhardened derivation unexpected addresses
+  wipe           56 hit(s) (all listed)
+      #7264 open 2021-04-30 feature request: add option on Android to wipe pinned SSL certificates
+      #6030 open 2020-03-11 Electrum daemon hangs when >15000 addresses in a wallet
+      #7314 open 2021-05-21 Error: Electrum cannot pair with your TREZOR-T
+      #5310 open 2019-05-04 Stuck with Electrum and Trezor one
+      #6541 open 2020-08-28 in wallet with many hardware cosigners, pairing order should be smarter (pairing error, keystore, sign_transaction, multisig) 
+      #6625 open 2020-10-01 Big TX history causing crash & freezes
+      #10685 closed 2026-06-04 [QML] New Wallet Creation Blocked if the User Needs to Preserve a Wallet File with Forgotten Password
+      #10658 merged 2026-05-20 wallet: cache paid-invoice keys to fix GUI freeze after broadcast
+      #9890 closed 2025-06-02 .
+      #8705 closed 2023-11-24 There should be a way to export private keys on mobile
+      #6351 closed 2020-07-07 AttributeError: 'NoneType' object has no attribute 'set_address'
+      #9019 closed 2024-04-20 my payment has been stuck all day i cancelled payment i sent payment forward ,all failed to return coin or complete payment still stuck 
+      #7424 closed 2021-07-20 redraw window before raising GoBack, fix Back button handling on some windows
+      #8226 closed 2023-02-23 my wallet disappears all the balance I put in it immediately
+      #7681 closed 2022-02-25 create chmod aware of XDG_RUNTIME_DIR
+      #7779 closed 2022-04-24 KeepKey Out of Range Crash
+      #5759 closed 2019-11-15 Electrum cannot pair when more Trezors have same labels
+      #4968 closed 2018-12-26 when broadcasting transaction, error message from server is displayed as is
+      #5183 closed 2019-03-08 Electrum 4.0.0 : Serious Error !!!
+      #2739 closed 2017-08-12 Can't Restore Trezor from Written Seed
+  wipes          3 hit(s) (all listed)
+      #5759 closed 2019-11-15 Electrum cannot pair when more Trezors have same labels
+      #1299 closed 2015-06-17 Labels broken in 2.3.2
+      #2208 closed 2017-02-27 Security issue: electrum handling of 25th wallet seed (for trezor) eliminates deniability
+  erase          18 hit(s) (all listed)
+      #7531 open 2021-10-10 new to electrum version 4.1.5 - connection issues.
+      #6425 open 2020-07-20 Coin selector usability - changes since 4.0.1
+      #6780 open 2020-11-25 Exported PSBT contains incorrect xpubs
+      #6594 open 2020-09-15 StorageReadWriteError: [Errno 2] No such file or directory: '/data/data/org.electrum.electrum/files/data/wallets/ED/46.tmptest.6638'
+      #4110 open 2018-03-12 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\miner0\\AppData\\Roaming\\Electrum\\wallets\\MULTISIGNATUREWALLET2/3.tmp.1724'
+      #9610 closed 2025-03-07 .
+      #3353 closed 2017-11-22 Can't open Electrum 3.0.2 (win10)
+      #714 closed 2014-06-08 Scatter and Bulk Sign feature
+      #2295 merged 2017-03-14 Enter password once for initial setup of an erased device
+      #4470 merged 2018-06-28 Support for new hardware wallet: Coldcard
+      #1108 closed 2015-03-25 electrum 2.0.2 erases wallet file
+      #2155 closed 2017-02-08 Problem with password/seed after 1st time installation of Electrum
+      #1816 closed 2016-05-29 Electrum dont open on Windows 7
+      #3208 closed 2017-11-03 Error "Private keys sweep"
+      #3414 closed 2017-11-29 Need Help After Losing Information
+      #3377 closed 2017-11-26 Digital Bitbox: in wizard, some message dialogs are not drawn
+      #5881 closed 2020-01-09 Notify never stop to send notification (same status, null included) even after confirmation
+      #4902 closed 2018-12-07 digitalbitbox fails to initialize (create new seed): Invalid command
+  erasing        2 hit(s) (all listed)
+      #3353 closed 2017-11-22 Can't open Electrum 3.0.2 (win10)
+      #4470 merged 2018-06-28 Support for new hardware wallet: Coldcard
+  erased         8 hit(s) (all listed)
+      #7531 open 2021-10-10 new to electrum version 4.1.5 - connection issues.
+      #6425 open 2020-07-20 Coin selector usability - changes since 4.0.1
+      #6780 open 2020-11-25 Exported PSBT contains incorrect xpubs
+      #9610 closed 2025-03-07 .
+      #2295 merged 2017-03-14 Enter password once for initial setup of an erased device
+      #3414 closed 2017-11-29 Need Help After Losing Information
+      #5881 closed 2020-01-09 Notify never stop to send notification (same status, null included) even after confirmation
+      #4902 closed 2018-12-07 digitalbitbox fails to initialize (create new seed): Invalid command
+  destroy        49 hit(s) (all listed)
+      #10701 open 2026-06-12 qml: apply fixes for strongly held references in PyQt python wrappers
+      #10723 open 2026-07-01 QML send change to lightning
+      #7511 open 2021-09-24 Hostile Electrum servers are a reality, address this
+      #3418 open 2017-11-30 [Suggestion] Verify private keys internally before use
+      #10753 merged 2026-07-14 swaps: destroy swap transport on failed initialization
+      #9992 open 2025-06-27 qml: let user finalize forward swap onchain tx before initiating swap
+      #9408 open 2025-01-08 Please provide 32-bit Appimage (for i386 hardware wallets)
+      #3956 open 2018-02-21 Hanging "Please wait" window
+      #10737 merged 2026-07-03 hw_wallet: fix crash on exit if device unpairing fails
+      #6555 open 2020-09-04 entire computer locks up
+      #9252 open 2024-10-16 Allow disabling of BIP69 on transaction send window
+      #10894 merged 2026-08-25 qt/qml: handle RuntimeError when accessing deleted QObject
+      #10586 open 2026-04-17 millisat precision
+      #6594 open 2020-09-15 StorageReadWriteError: [Errno 2] No such file or directory: '/data/data/org.electrum.electrum/files/data/wallets/ED/46.tmptest.6638'
+      #10485 merged 2026-02-19 p4a rebase, use ndk28 and qt6.10
+      #10140 merged 2025-08-15 wallet: enable/disable_keystore: some more fixes and tests
+      #10072 merged 2025-07-22 android: don't keep adding BarcodeScannerView instances to contentFrame when starting camera
+      #8934 closed 2024-03-08 add wallet rename functionality, and add to qml client
+      #9561 closed 2025-02-14 Error: could not find paymentrequest_pb2.py. Create it with 'contrib/generate_payreqpb2.sh'
+      #9715 merged 2025-04-08 gui: Add option to show warnings on wallet close, add warning for swaps
+  destroys       6 hit(s) (all listed)
+      #3418 open 2017-11-30 [Suggestion] Verify private keys internally before use
+      #9408 open 2025-01-08 Please provide 32-bit Appimage (for i386 hardware wallets)
+      #10737 merged 2026-07-03 hw_wallet: fix crash on exit if device unpairing fails
+      #8295 closed 2023-04-05 qml: reverse swap seems to be triggered multiple times
+      #2208 closed 2017-02-27 Security issue: electrum handling of 25th wallet seed (for trezor) eliminates deniability
+      #4814 closed 2018-10-29 Showing unsigned transaction as signed
+  overwrite      50 hit(s) (all listed)
+      #4966 open 2018-12-24 Qt pay-to-many (batching) with QR code scanning
+      #6349 open 2020-07-07 wallet db: failing upgrade convert_version_24
+      #3452 open 2017-12-06 Electrum for Windows 3.0.2 keeps renaming my wallet file
+      #6541 open 2020-08-28 in wallet with many hardware cosigners, pairing order should be smarter (pairing error, keystore, sign_transaction, multisig) 
+      #10811 merged 2026-08-06 swaps: re-bundle_payments on startup
+      #10852 merged 2026-08-14 lightning: fix anchor channel backup
+      #10544 merged 2026-03-24 Lazy trampoline
+      #10423 merged 2026-01-19 qml: fix: allow opening passwordless wallets
+      #10557 closed 2026-03-27 build(deps): bump ecdsa from 0.19.1 to 0.19.2 in /contrib/deterministic-build
+      #10560 closed 2026-03-28 build(deps): bump cryptography from 45.0.3 to 46.0.6 in /contrib/deterministic-build
+      #10540 closed 2026-03-23 build(deps): bump cbor2 from 5.6.5 to 5.9.0 in /contrib/deterministic-build
+      #10551 closed 2026-03-26 build(deps): bump requests from 2.32.3 to 2.33.0 in /contrib/deterministic-build
+      #8199 closed 2023-02-08 build(deps): bump cryptography from 38.0.3 to 39.0.1 in /contrib/deterministic-build
+      #9710 merged 2025-04-07 config: Raise instead of overwriting the config file on syntax error
+      #6748 closed 2020-11-19 windows nsis installer should detect if electrum is running (setup/installer exe)
+      #9966 merged 2025-06-16 block windows installer if Electrum is still running
+      #9629 merged 2025-03-13 Allow plugins to register CLI commands 
+      #8741 merged 2023-12-12 add labels_received callback and update labels even when set for item
+      #8255 closed 2023-03-17 When exporting wallet history, Use the name of the wallet in the suggested file name
+      #8183 closed 2023-02-03 distutils is deprecated and will not work in Python 3.12
+  clobber        3 hit(s) (all listed)
+      #11012 open 2026-10-03 keystore: do not store private keys rejected by import_private_keys
+      #2079 closed 2016-12-17 Ledger new ui and mobile 2fa validation
+      #648 closed 2014-04-11 Installtion Instructions Don't Work for Tails Linux
+  blank          82 hit(s) (all listed)
+      #3472 open 2017-12-07 Text GUI does not calculate dynamic fees
+      #6432 open 2020-07-22 Display scaling issue for some elements only (high DPI)
+      #7362 open 2021-06-23 The password/encryption dialog when creating a new wallet is a bit confusing, and too relaxed about requiring a password.
+      #7468 open 2021-08-23 Can't create default wallet from public key with no password on Android
+      #5090 open 2019-02-09 Wallet slow to populate tx history on startup (Qt). Large wallet; takes several minutes
+      #5944 open 2020-02-10 Fraudulent transaction along with the correct one(Ledger Nano S + Electrum)
+      #10795 closed 2026-08-04 Trailing whitespace on blank comment lines in wordlist/portuguese.txt's license header
+      #8574 open 2023-08-13 Read QR code from screen not working on macOS
+      #10588 open 2026-04-18 qml: allow entering key-origin info when importing a master key -> basic hardware wallet support
+      #10928 closed 2026-09-04 [Regression][Windows][Camera] QR camera preview severely stutters since Electrum 4.6.x; 4.5.8 is smooth on the same hardware
+      #10789 merged 2026-08-02 coldcard: fix get_soft_device_id() discarding its return value
+      #10380 closed 2025-12-19 Apple M4 iMac - Internal Camera Glitches with Electrum 4.6.2 using OS Tahoe 26.2
+      #1069 closed 2015-03-08 Can't send BTC from 2.0 in OS X 10.10.2
+      #10454 closed 2026-01-30 [4.7.0 PC] The 'Addresses' tab is blank for watch-only imported addresses wallets
+      #10727 merged 2026-07-01 build: update some dependencies, all over
+      #10408 closed 2026-01-14 Fiat historical rates don't automatically update for new transactions.
+      #6808 open 2020-12-04 RuntimeError: wrapped C/C++ object of type TOS has been deleted
+      #5086 open 2019-02-07 JavaException: JVM exception occurred: ContentServiceNeither user 15010239 nor current process has android.permission.INTERACT_ACROSS_USERS_FULL or android.permission.INTERACT_ACROSS_USERS
+      #8542 closed 2023-07-19 Man Page
+      #10128 merged 2025-08-13 fix: psbt_nostr: don't save tx without txid
+  unreadable     4 hit(s) (all listed)
+      #10302 open 2025-11-06 Corrupt wallet file after macOS specific shutdown crash
+      #6432 open 2020-07-22 Display scaling issue for some elements only (high DPI)
+      #4772 closed 2018-10-13 Added OpenCAP alias support
+      #2983 merged 2017-10-04 Adjust colors if dark color scheme is used
+  garbage        39 hit(s) (all listed)
+      #10948 open 2026-09-08 descriptor: reject trailing characters after the closing parenthesis
+      #10701 open 2026-06-12 qml: apply fixes for strongly held references in PyQt python wrappers
+      #8358 open 2023-04-27 qml: pyqtSlots which return a result are returning garbage when an exception occurs, resulting in unpredictable behavior
+      #9005 open 2024-04-14 Close Lightning channel before is was signed and lost btc
+      #10699 open 2026-06-11 tests: refactor the Qt test harness to support running QObject's within a QCoreApplication
+      #7544 open 2021-10-24 Taproot support?
+      #6889 open 2020-12-27 Crash on exit (PyQt, Qt, abnormal termination, quit, segfault, SIGSEGV)
+      #10586 open 2026-04-17 millisat precision
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+      #6594 open 2020-09-15 StorageReadWriteError: [Errno 2] No such file or directory: '/data/data/org.electrum.electrum/files/data/wallets/ED/46.tmptest.6638'
+      #10415 closed 2026-01-15 qml: temporary corruption of QEDaemon.singlePassword
+      #10072 merged 2025-07-22 android: don't keep adding BarcodeScannerView instances to contentFrame when starting camera
+      #10011 merged 2025-07-05 i18n: syntax-check translations at runtime
+      #9902 merged 2025-06-03 base64.b64decode: always set validate=True
+      #9608 merged 2025-03-05 asyncio: hold our own strong refs for tasks and futures
+      #8325 closed 2023-04-20 SLIP-19 ownership proofs
+      #4501 closed 2018-07-04 kivy: app.wallet is None on status.kv
+      #6219 merged 2020-06-08 Automated BIP39 Recovery (scan derivation paths, automatic, restore)
+      #8536 merged 2023-07-14 fix sweeping chan after local force-close using cb
+      #8365 closed 2023-04-28 electrum 4.4.0-4.4.2 not working with legacy ledger bitcoin app (pre-2.1): `no sig for <compressed_pubkey>`
+  mangled        3 hit(s) (all listed)
+      #7201 closed 2021-04-11 Creating New Transaction With Earlier Transaction Unconfirmed
+      #6667 closed 2020-10-20 Wallet corrupted after converting from v4.0.4 to v2.8.3
+      #5056 closed 2019-02-02 "Security Update" phishing again
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4803 open 2018-10-26 Error reading wallet file (malformed contents)
+      #7498 open 2021-09-15 No such file or directory: '/Applications/Electrum.app/Contents/MacOS/mnemonic/wordlist/english.txt'
+      #11012 open 2026-10-03 keystore: do not store private keys rejected by import_private_keys
+      #10921 open 2026-09-02 PyInstaller/loader/pyimod02_importers.py:450: UserWarning: pkg_resources is deprecated as an API
+      #7866 open 2022-06-21 PermissionError: [Errno 1] Operation not permitted: '/Volumes/electrum-export-for-coldcard.txt'
+      #6550 open 2020-09-02 SyntaxError: invalid or missing encoding declaration for '/private/var/folders/n9/yr25m5sn46s51zz4jkxkcd740000gn/T/AppTranslocation/8A849B87-8161-494B-B48B-BCB92CDB81FE/d/Electrum.app/Contents/MacOS/run_electrum'
+      #8030 open 2022-10-20 electrum/www/pay is not a symlink in the tarball
+      #10477 open 2026-02-11 ledger_bitcoin.exception.errors.IncorrectDataError on MacOS
+      #7870 open 2022-06-29 Unable to sign TX built on top of a local-stored TX using Ledger Nano X
+      #10978 open 2026-09-16 [Feature]: Import BIP39 recovery phrase via SeedQR for Electrum Mobile
+      #7181 open 2021-04-05 AttributeError: 'Ledger_Client' object has no attribute 'dev'
+      #5999 open 2020-02-27 Add proper header to storage (to expose some data before decryption)
+      #3127 open 2017-10-26 [QT] network dialog: settings keep getting reverted while changing
+      #5503 open 2019-07-10 You can't open the application "Electrum" because it is not supported on this type of Mac.
+      #4966 open 2018-12-24 Qt pay-to-many (batching) with QR code scanning
+      #10261 open 2025-10-05 Android: password field not detected by autofill service
+      #7742 open 2022-03-26 [Bug] Electrum hangs and does not open on macOS Monterey 12.2
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #9178 open 2024-08-29  All my money has been stolen from Electrum
+      #6700 open 2020-10-29 Error connecting to electrs server via secure connection
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11012 open 2026-10-03 keystore: do not store private keys rejected by import_private_keys
+      #10952 open 2026-09-09 descriptor: reduce tr() keys to x-only for taproot expansion
+      #10636 open 2026-05-08 qml: allow hiding balances and amounts
+      #10730 open 2026-07-01 lnutil: make minimum channel funding amount configurable
+      #10401 open 2026-01-08 add support for LevelDB
+      #10799 merged 2026-08-05 qml/android: protect WIF keys from screenshots in more places
+      #3749 open 2018-01-20 Include CRT in Windows builds
+      #9406 open 2025-01-07 Electrum Lightning Network 
+      #7265 open 2021-05-01 Build macOS binary (.app/.dmg) from GNU/Linux; so that we no longer need a dedicated macbook just for building for OSX
+      #5950 open 2020-02-12 "Electrums" typo in lnpeer.py
+      #7743 open 2022-03-27 transaction not added to wallet history after broadcast (and a user might double-pay accidentally)
+      #3827 open 2018-02-02 Let me hide the tray icon
+      #4551 open 2018-07-14 Position in mempool inaccurate on decimal
+      #8676 open 2023-11-07 Only english support for the 'Coldcard Hardware Wallet Plugin'
+      #10992 merged 2026-09-24 qt: wizard: dedup seed validation rules
+      #10875 open 2026-08-20 qml: fix paying multi-output invoices
+      #8901 open 2024-02-19 Impossible to set custom default wallet path after #8609
+      #8035 open 2022-10-24 document disabling utxo_freeze_threshold
+      #10794 open 2026-08-03 add crandom.py, for our RNG, where we mix stuff with os.urandom
+      #10693 open 2026-06-07 New storage api
+  unclean        5 hit(s) (all listed)
+      #10811 merged 2026-08-06 swaps: re-bundle_payments on startup
+      #7594 merged 2021-12-10 Produce packager-friendly tarballs
+      #6198 merged 2020-06-03 enable streaming full UTXOs for all types of inputs
+      #1638 closed 2016-01-17 daemon creation is racy
+      #1063 closed 2015-03-05 issues running self-compiled versions on MacOSX
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11010 open 2026-09-30 qt: cleanup rich text filter on shutdown
+      #10907 open 2026-08-28 coop-close with LND leads to force-close
+      #10302 open 2025-11-06 Corrupt wallet file after macOS specific shutdown crash
+      #7650 open 2022-02-03 Freeze with "cannot schedule new futures after shutdown"
+      #6216 open 2020-06-06 Remote peer fails during shutdown because 'Feerange below minimum acceptable'
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #10963 merged 2026-09-11 plugin: nwc: fix stuck shutdown, followup #10689
+      #8127 open 2023-01-05 Scheduling runtime errors when executing get_history.py script
+      #10578 open 2026-04-10 backend support for 'close reason'
+      #4778 open 2018-10-15 Electrum 3.2.3 Linux Mint 18.3 Crash after some time opened
+      #8530 open 2023-07-10 help: channel opening and closing in cooperative
+      #7306 open 2021-05-18 Lightning channel stuck while opening due to low fee
+      #2842 open 2017-09-05 Electrum Daemon constantly crashing
+      #10892 closed 2026-08-25 lnpeer: rm early return in send_revoke_and_ack
+      #9048 open 2024-05-13 Lightning cooperative close fee control
+      #10737 merged 2026-07-03 hw_wallet: fix crash on exit if device unpairing fails
+      #10897 merged 2026-08-25 lnpeer: split can_update_ctx checks
+      #10861 merged 2026-08-17 lnpeer: drop support for legacy closing fee negotiation
+      #10859 merged 2026-08-17 util, swaps: fix nostr announcement PoW mining
+      #10877 merged 2026-08-20 swap server: simplify LN invoice payment
+  reboot         31 hit(s) (all listed)
+      #9126 open 2024-07-06 "Extra" electrum window remains open until machine reboots
+      #6138 open 2020-05-02 Does not start through the Cron
+      #3855 open 2018-02-06 Receive requests not persisting in wallet
+      #6030 open 2020-03-11 Electrum daemon hangs when >15000 addresses in a wallet
+      #7233 open 2021-04-23 Crash when opening a wallet file on an Apple M1
+      #4746 open 2018-09-30 The 3.2.3 version takes about 90 seconds to open on windows 10 !!
+      #5084 closed 2019-02-07 hacked sending money from electrum
+      #7633 merged 2022-01-19 Add support for the Blockstream Jade hww
+      #880 closed 2014-09-30 Add GreenAddress 2of3 recovery plugin
+      #2089 closed 2017-01-03 Digital Bitbox hardware wallet plugin
+      #3781 closed 2018-01-27 fine tuning the fix for 1-sat fees on ledger nano s
+      #4470 merged 2018-06-28 Support for new hardware wallet: Coldcard
+      #547 closed 2014-01-15 Installing
+      #656 closed 2014-04-14 Unable to use latest fees minimum
+      #507 closed 2013-12-20 Master key should be seeded with blocking entropy sources
+      #579 closed 2014-02-23 Unverified Transaction
+      #1521 closed 2015-10-27 UI Errors on Ubuntu 15.10
+      #2508 closed 2017-06-10 Cold Storage wallet reports "Server did not answer" after signing
+      #1352 closed 2015-07-08 blockchain unconfirmed.
+      #3161 closed 2017-10-31 ERROR:electrum:Error
+  disk+full      33 hit(s) (all listed)
+      #7265 open 2021-05-01 Build macOS binary (.app/.dmg) from GNU/Linux; so that we no longer need a dedicated macbook just for building for OSX
+      #10908 open 2026-08-28 swapserver: reverse swap with funded-but-unspent lockup is never claimed after locktime expiry — server forfeits the onchain amount and warns once per block forever
+      #3855 open 2018-02-06 Receive requests not persisting in wallet
+      #5912 open 2020-01-26 Feature request: Sync from local node with BIP157 filters (BIP158, neutrino)
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+      #6625 open 2020-10-01 Big TX history causing crash & freezes
+      #6778 open 2020-11-25 Architecture redesign
+      #10586 open 2026-04-17 millisat precision
+      #7850 closed 2022-06-09 Slow disk writes
+      #6485 closed 2020-08-07 OperationalError: disk I/O error
+      #9589 merged 2025-02-28 Timelock Recovery Extension
+      #8786 merged 2024-01-02 Restore ability to pass wallet in-memory
+      #8498 closed 2023-06-23 Failed to build Docker image for window
+      #7926 merged 2022-08-10 Improvement on reproducible builds by using Debian snapshots repository as base
+      #5183 closed 2019-03-08 Electrum 4.0.0 : Serious Error !!!
+      #4665 closed 2018-08-29 ValueError: non-hexadecimal number found in fromhex() arg at position 115876
+      #507 closed 2013-12-20 Master key should be seeded with blocking entropy sources
+      #7058 closed 2021-02-22 Cannot synchronize wallet with electrs (many transactions, status mismatch)
+      #5993 merged 2020-02-25 BitBox02 Electrum plugin support
+      #2208 closed 2017-02-27 Security issue: electrum handling of 25th wallet seed (for trezor) eliminates deniability
+  data+loss      28 hit(s) (all listed)
+      #6778 open 2020-11-25 Architecture redesign
+      #10785 closed 2026-07-31 [BUG] Funds from force-closed Lightning channel not swept after Electrum Mobile crash
+      #10811 merged 2026-08-06 swaps: re-bundle_payments on startup
+      #10852 merged 2026-08-14 lightning: fix anchor channel backup
+      #10535 merged 2026-03-20 remove bip70 support
+      #10493 merged 2026-02-23 lnpeer: don't try saving our own channel update as remote update
+      #10347 merged 2025-12-05 electrum refuses to exchange gossip with CLN nodes, due to missing feature OPTION_CHANNEL_TYPE_OPT
+      #9900 closed 2025-06-03 Feature: Add Silent Payment sending support
+      #8915 closed 2024-02-25 Accidentally lost funds on channel opening: Seeking Assistance
+      #9568 merged 2025-02-18 Ignore odd bits if even bit is set too in list_enabled_bits
+      #9370 closed 2024-12-17 "ModuleNotFoundError: No module named 'btchip'", however, it also won't let me install 'btchip'
+      #9367 closed 2024-12-16 .
+      #9364 closed 2024-12-15 .
+      #5084 closed 2019-02-07 hacked sending money from electrum
+      #5059 closed 2019-02-02 how do i get my money back from update scam 
+      #8263 closed 2023-03-18 transaction without my participation
+      #5064 closed 2019-02-04 I'm lose ~12 BTC ~ $42k, from an UPDATE SHOW ME ON 3.3.3 OFFICIAL !!!! my family going to dead
+      #5183 closed 2019-03-08 Electrum 4.0.0 : Serious Error !!!
+      #6520 closed 2020-08-18 Add support for Satochip hardware wallet
+      #507 closed 2013-12-20 Master key should be seeded with blocking entropy sources
+  partial+write  26 hit(s) (all listed)
+      #10693 open 2026-06-07 New storage api
+      #4823 open 2018-11-02 replace json on disk, with leveldb/sql/...? wallet file does not scale. partial writes
+      #10339 open 2025-12-02 New encrypted wallet file header:
+      #5627 open 2019-09-09 Handle exceptions raised when saving wallet file
+      #8979 open 2024-03-28 [Bug Report] [Android] Labels don't get saved unless app is closed with back button
+      #5999 open 2020-02-27 Add proper header to storage (to expose some data before decryption)
+      #7293 open 2021-05-12 USBErrorNoDevice: LIBUSB_ERROR_NO_DEVICE [-4]
+      #10401 open 2026-01-08 add support for LevelDB
+      #6625 open 2020-10-01 Big TX history causing crash & freezes
+      #7969 open 2022-09-05 GnuPG integration for password-less wallet protection
+      #10417 merged 2026-01-16 lnpeer: followup #10413
+      #10395 closed 2026-01-05 lnpeer: save received_mpp_htlcs after modifying ReceivedMPPStatue.htlcs
+      #10413 merged 2026-01-15 lnutil: change ReceivedMPPStatus.htlcs to frozenset, i.e. immutable
+      #10442 merged 2026-01-26 lnsweep: simplify maybe_reveal_preimage_for_htlc
+      #10027 closed 2025-07-14 wallet_db: add configvar for partial_writes, disable by default
+      #10031 merged 2025-07-15 wallet_db: add configvar for partial_writes, disable by default
+      #9746 closed 2025-04-17 feat: add manual history fetching mode
+      #8493 merged 2023-06-19 partial-writes using jsonpatch
+      #8951 closed 2024-03-14 Notes are not saved after abnormal termination
+      #8325 closed 2023-04-20 SLIP-19 ownership proofs
+  crash+safe     57 hit(s) (all listed)
+      #4260 open 2018-04-14 OSError: [Errno 22] Invalid argument: 'C:\\Users\\iebadrani\\AppData\\Roaming\\Electrum\\cache\\BitcoinAverage_EUR'
+      #4751 open 2018-10-03 PermissionError: [Errno 13] Permesso negato: '/home/walter/.electrum/cache/BitcoinAverage_EUR'
+      #9063 open 2024-05-22 AttributeError: 'NoneType' object has no attribute 'handler'
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #6597 open 2020-09-15 ValueError: not open
+      #10586 open 2026-04-17 millisat precision
+      #6625 open 2020-10-01 Big TX history causing crash & freezes
+      #4852 open 2018-11-14 PermissionError: [Errno 1] Operation not permitted: '/Users/admin/elec$.txn'
+      #10865 closed 2026-08-17 AuditPassError: authorized audit proof auditpass_1787006733 docs.electrum.org pass
+      #5446 open 2019-06-23 Archos Safe T cosigners broken in multisig wallets
+      #10693 open 2026-06-07 New storage api
+      #5546 open 2019-08-08 TypeError: list indices must be integers or slices, not NoneType
+      #10334 closed 2025-11-30 Trezor Safe 7 is not supported
+      #7742 open 2022-03-26 [Bug] Electrum hangs and does not open on macOS Monterey 12.2
+      #10737 merged 2026-07-03 hw_wallet: fix crash on exit if device unpairing fails
+      #10790 merged 2026-08-02 wallet:  move checks for {sign,verify,encrypt,decrypt}_message from UIs to wallet.py
+      #10858 closed 2026-08-17 swapserver nostr announcement PoW miner: worker returns the builtin hash, gen_nostr_ann_pow can discard the winning nonce, result stored unvalidated
+      #10958 merged 2026-09-09 build: update some dependencies
+      #6594 open 2020-09-15 StorageReadWriteError: [Errno 2] No such file or directory: '/data/data/org.electrum.electrum/files/data/wallets/ED/46.tmptest.6638'
+      #10340 merged 2025-12-02 android: implement biometric authentication (fingerprint)
+  atomic+write   7 hit(s) (all listed)
+      #8661 open 2023-10-27 Incorrect Password v4.4.6 win10
+      #10401 open 2026-01-08 add support for LevelDB
+      #10513 open 2026-03-06 Allow configuring the number of confs required for lightning channels
+      #2721 closed 2017-08-09 Make config file writes atomic
+      #8493 merged 2023-06-19 partial-writes using jsonpatch
+      #5835 closed 2019-12-11 Restructure storage db
+      #2719 closed 2017-08-09 electrum write config file every second
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9627 open 2025-03-11 RuntimeError: can't allocate lock
+      #10401 open 2026-01-08 add support for LevelDB
+      #10693 open 2026-06-07 New storage api
+      #8661 open 2023-10-27 Incorrect Password v4.4.6 win10
+      #4836 open 2018-11-09 Electrum takes several seconds to close in case of hanging DNS resolution
+      #3452 open 2017-12-06 Electrum for Windows 3.0.2 keeps renaming my wallet file
+      #4716 open 2018-09-14 KeyError in wallet.get_addr_utxo
+      #4874 open 2018-11-27 Dependencies may be an attack vector
+      #5446 open 2019-06-23 Archos Safe T cosigners broken in multisig wallets
+      #10730 open 2026-07-01 lnutil: make minimum channel funding amount configurable
+      #8214 open 2023-02-15 BridgeException: trezord: post/16 failed with code 400: other call in progress
+      #10586 open 2026-04-17 millisat precision
+      #5203 open 2019-03-16 nginx HTTPS reverse proxy causes the client to fail to connect to server in unintuitive way
+      #10737 merged 2026-07-03 hw_wallet: fix crash on exit if device unpairing fails
+      #10781 merged 2026-07-30 trezor: drop session after closing it
+      #6594 open 2020-09-15 StorageReadWriteError: [Errno 2] No such file or directory: '/data/data/org.electrum.electrum/files/data/wallets/ED/46.tmptest.6638'
+      #7516 open 2021-09-27 Huge delay signing with Ledger Nano S
+      #6614 open 2020-09-23 TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
+      #7022 open 2021-02-11 The Ledger plugin is currently broken for old Ledgers HW1 (can get account addresses, but Electrum hanging when signing a Tx)
+      #6784 closed 2020-11-26 OperationalError: database is locked
+  write+failure  28 hit(s) (all listed)
+      #5627 open 2019-09-09 Handle exceptions raised when saving wallet file
+      #6494 open 2020-08-09 PSBT created for transaction mismatch on derivation path
+      #10401 open 2026-01-08 add support for LevelDB
+      #10756 open 2026-07-16 Taproot swaps
+      #6700 open 2020-10-29 Error connecting to electrs server via secure connection
+      #7482 open 2021-09-03 Error when cosigning transaction: SSLCertVerificationError
+      #10958 merged 2026-09-09 build: update some dependencies
+      #10421 closed 2026-01-18 Skip write on read-only config file
+      #8915 closed 2024-02-25 Accidentally lost funds on channel opening: Seeking Assistance
+      #6748 closed 2020-11-19 windows nsis installer should detect if electrum is running (setup/installer exe)
+      #1700 closed 2016-03-02 [Android] Add to F-Droid
+      #8773 closed 2023-12-22 Bug
+      #8830 closed 2024-01-18 payment failure HTLC value sum would exceed max allowed
+      #8301 closed 2023-04-13 on `init_lightning`, `wallet.taskgroup` dies and never recovers
+      #6018 closed 2020-03-05 Windows Install: Camera Function not working (QR codes, zbar issue, scan, scanner)
+      #7101 closed 2021-03-12 Direct payment to trampoline node fails
+      #507 closed 2013-12-20 Master key should be seeded with blocking entropy sources
+      #4068 closed 2018-03-07 Android build: make apk doesn't work (Buildozer problem?)
+      #2854 closed 2017-09-08 Missing a versions.py file
+      #3955 closed 2018-02-21 AssertionError: 
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4803 open 2018-10-26 Error reading wallet file (malformed contents)
+      #7498 open 2021-09-15 No such file or directory: '/Applications/Electrum.app/Contents/MacOS/mnemonic/wordlist/english.txt'
+      #11012 open 2026-10-03 keystore: do not store private keys rejected by import_private_keys
+      #10921 open 2026-09-02 PyInstaller/loader/pyimod02_importers.py:450: UserWarning: pkg_resources is deprecated as an API
+      #7866 open 2022-06-21 PermissionError: [Errno 1] Operation not permitted: '/Volumes/electrum-export-for-coldcard.txt'
+      #8030 open 2022-10-20 electrum/www/pay is not a symlink in the tarball
+      #10477 open 2026-02-11 ledger_bitcoin.exception.errors.IncorrectDataError on MacOS
+      #7870 open 2022-06-29 Unable to sign TX built on top of a local-stored TX using Ledger Nano X
+      #7181 open 2021-04-05 AttributeError: 'Ledger_Client' object has no attribute 'dev'
+      #4966 open 2018-12-24 Qt pay-to-many (batching) with QR code scanning
+      #5999 open 2020-02-27 Add proper header to storage (to expose some data before decryption)
+      #7742 open 2022-03-26 [Bug] Electrum hangs and does not open on macOS Monterey 12.2
+      #6550 open 2020-09-02 SyntaxError: invalid or missing encoding declaration for '/private/var/folders/n9/yr25m5sn46s51zz4jkxkcd740000gn/T/AppTranslocation/8A849B87-8161-494B-B48B-BCB92CDB81FE/d/Electrum.app/Contents/MacOS/run_electrum'
+      #10301 open 2025-11-05 MacOS: Electrum always crashes on shutdown if started as detached daemon (electrum daemon -d)
+      #5503 open 2019-07-10 You can't open the application "Electrum" because it is not supported on this type of Mac.
+      #6700 open 2020-10-29 Error connecting to electrs server via secure connection
+      #9178 open 2024-08-29  All my money has been stolen from Electrum
+      #7628 open 2022-01-13 TrustedCoin service is broken - critical bug
+      #5163 open 2019-02-26 silent failures on read-only file system. user should be warned
+      #4250 open 2018-04-10 Exception: Electrum datadir does not exist. Was it deleted while running?
+
+== 51 terms run; 50 returned hits, 11 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

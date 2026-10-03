@@ -1,0 +1,1001 @@
+== novelty pre-scan: Perl/perl5
+== date: 2026-10-03T03:16:42Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 30 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #24892 open 2026-10-02 Fix boolean crashes in PERL_NO_COW builds
+      #11440 open 2011-06-13 Thread cloning crashes on deeply nested structures
+      #9650 open 2009-02-15 crash in PerlIOStdio_dup()
+      #8203 open 2005-11-10 many threads => various crashes
+      #12986 open 2013-05-22 Perl crash when run under AppVerifier
+      #6338 open 2003-02-26 exit()/exec() crashes Perl after fork
+      #13260 open 2013-09-15 Modifying @DB::dbline entries can crash perl
+      #24470 open 2026-06-12 Many "scalar" API functions (e.g. `sv_setpvn()`) crash on non-scalar SVs
+      #13596 open 2014-02-11 64-bit perl crash on SIGINT(2)
+      #8578 open 2006-08-30 embedding perl makes programs calling random() crash
+      #9288 open 2008-04-11 Crash Perl with binmode(STDERR, ':encoding(wildlybad)')
+      #18431 open 2020-12-21 crash caused by $_ conflict in signal handler
+      #20915 open 2023-03-09 refcount crash in binmode() if inappropriate LAYERs passed
+      #20494 open 2022-11-08 Another obscure regex crash (debug only it seems)
+      #13408 open 2013-11-10 tie *ARGV{SCALAR} + <> + undef *ARGV = crash, Perl_nextargv
+      #16882 open 2019-03-09 fatal undef warning in eval in sort crashes perl
+      #9053 open 2007-10-07 File descriptors leakage in PerlIO leads to program crash
+      #16729 open 2018-10-21 5.29.4 - re/subst.t crashes perl on 64-bit Windows
+      #24227 open 2026-02-21 Fix GH #19790: Reset `op_opt` in `gen_constant_list` failure path to prevent heap-buffer-overflow in `Perl_POPMARK`
+      #7772 open 2005-01-28 Bangline of /path/perl -w -CSD crashes writing DBM file
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4924 open 2002-01-28 @_ gets corrupted when F(@X) shortens @X
+      #11687 open 2011-10-06 ./Configure -Duserelocatableinc re-reading config.sh corrupts installbin
+      #9579 open 2008-11-27 perl5db.pl corrupts $SIG{__DIE__} in BEGIN blocks
+      #17052 open 2019-06-18 Regex stores wrong value in $1, $^N etc, thoroughly corrupting parsers
+      #24852 merged 2026-09-21 Add an epigraph to keywords.c and keywords.h
+      #7436 open 2004-07-24 Misleading error message from Storable
+      #14552 open 2015-03-01 my $x : attr is not treated as one argument
+      #18558 open 2021-02-11 Terminal display of pod L<text|verylonglink> should not be line-wrapped
+      #22659 open 2024-10-10 builtin.c cleanup+optimize+bloat
+      #2157 open 2000-06-30 coredump in map modifying input array
+      #22879 open 2025-01-01 util.c: Perl_my_cxt_init() dont round up/over allocate callers' structs
+      #11697 open 2011-10-14 seeking on bytes causes broken perl strings
+      #11133 open 2011-02-16 PerlIO::encoding infinite loop decoding invalid JIS data 
+      #18772 open 2021-05-08 Why does perl need internal CRT structures in Win32?
+      #23388 open 2025-06-27 Regexp memory corruption with large tries
+      #18431 open 2020-12-21 crash caused by $_ conflict in signal handler
+      #18645 open 2021-03-16 [feature] Fix behavior of &&, ||, // at list context
+      #13989 open 2014-07-16 pack propagates UTF8 strings
+      #16154 open 2017-09-17 Undocumented unaligned pointer error messages
+      #15759 open 2016-12-11 segfault in Perl_mg_magical (mg.c:144)
+  corruption     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23388 open 2025-06-27 Regexp memory corruption with large tries
+      #20580 open 2022-12-04 Memory corruption of $1 when assigning $1 to $_ inside regex embedded code block
+      #24874 open 2026-09-29   Avoid changing ccflags in /hints when changes intrp size  
+      #17618 open 2020-03-06 t/op/threads.t: unit test 10 frequently fails on threaded builds on NetBSD
+      #22880 open 2025-01-01 sv.h: struct body_details bodies_by_type is unreadable, add more comments
+      #23156 open 2025-03-25 op.c: slim down const_av_xsub const_sv_xsub XSUB.h: add GetXSTARG()
+      #13304 open 2013-09-23 PerlIO::via modules exhibit buffer leakage when READ doesn't touch $buffer
+      #11287 open 2011-04-29 Use of freed value in iteration at perlbug line 6
+      #23197 open 2025-04-15 regcomp_invlist.c -> S_invlist_trim -> SvPV_renew wasteful NOOP (bug demo, ! a PR)
+      #24845 closed 2026-09-21 Crash when using sort and Package::Stash's list_all_symbols
+      #23150 open 2025-03-22 Split PV typemap into mutable and immutable
+      #16939 open 2019-04-07 Assertion failure in S_ReANY
+      #15759 open 2016-12-11 segfault in Perl_mg_magical (mg.c:144)
+      #14327 open 2014-12-12 XS INTERFACE: token doesn't support calling conventions
+      #11375 open 2011-05-23 Bad putenv interaction between fakeroot and perl
+      #11780 open 2011-11-29 Data::Dumper will not correctly create eval-able code for self-referential structures
+      #11847 open 2012-01-05 anonymous sub with attribute in void parse context is ambiguous, should warn
+      #14611 open 2015-03-23 perl's times() support is messy, esp on Win32
+      #24047 open 2025-12-29 Storable.xs falsely claims Public API contract about SvTYPE() = SVt_NV & SvROK_on() & SvNOK_off()
+      #12484 open 2012-10-13 using bignum results in Math::BigInt->bdiv deviating from specified api
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18673 open 2021-03-31 Large operands are strangely clipped under "use integer"
+      #20027 open 2022-08-01 Class/package/subname related error messages do not curate their values properly resulting in confusion and possibly data flooding
+      #14536 open 2015-02-23 on Win32 exec LIST does not quote first argument
+      #13474 open 2013-12-17 gmtime and localtime offsets are misdetected on 32-bit big-endian
+      #17772 open 2020-05-07 regression: "substr outside of string" error no longer occurs
+      #24521 open 2026-07-01 prelim code to test sys_read loop replace
+      #15596 open 2016-09-10 array index constant folding uses signed bitwise arithmetic
+      #24511 open 2026-06-26 PerlIO UTF-8 Throughput Performance via pp_sysread
+      #21370 open 2023-08-13 bignum >= 0.51 breaks BigInt >>
+      #18489 open 2021-01-17 Installing perl on Windows 10, MSYS2: undefined reference to `init_os_extras'
+      #20399 open 2022-10-14 Setting $0 on macOS results in environment variables being included in the command name
+      #4924 open 2002-01-28 @_ gets corrupted when F(@X) shortens @X
+      #9316 open 2008-05-06 64-bit Integers -- inexact division gives odd result when is large
+      #19107 open 2021-09-08 Incorrect scoping of if statement
+      #20841 open 2023-02-21 Storing difference of pointers in I32
+      #17596 open 2020-02-29 A TODO test may leave files on the system after it's run
+      #24447 merged 2026-05-29 [COPY OF #24434] pp_accept: fix potential out-of-bounds read on oversized accept() addrlen
+      #9937 open 2009-10-29 The bignum module changes behavior of Math::BigInt::bdiv()
+      #24627 merged 2026-07-28 pp_ref_cmp - improve correctness of package name comparisons
+      #17106 open 2019-07-24 lib/warnings.t fails on Win32 with CFG=DebugFull
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16008 open 2017-06-09 scalar filehandle and truncate/seek
+      #8572 open 2006-08-26 PerlIO::scalar doesn't know how to truncate
+      #22707 open 2024-10-27 win32/vdir.h: SetDirA() silence truncate warnings+add long paths
+      #20027 open 2022-08-01 Class/package/subname related error messages do not curate their values properly resulting in confusion and possibly data flooding
+      #18673 open 2021-03-31 Large operands are strangely clipped under "use integer"
+      #11324 open 2011-05-09 Unpack character . lacks documentation
+      #20841 open 2023-02-21 Storing difference of pointers in I32
+      #14536 open 2015-02-23 on Win32 exec LIST does not quote first argument
+      #15596 open 2016-09-10 array index constant folding uses signed bitwise arithmetic
+      #16826 open 2019-01-24 Long error message, which writes a full content of variable supposed to be package name.
+      #21370 open 2023-08-13 bignum >= 0.51 breaks BigInt >>
+      #13474 open 2013-12-17 gmtime and localtime offsets are misdetected on 32-bit big-endian
+      #17772 open 2020-05-07 regression: "substr outside of string" error no longer occurs
+      #20399 open 2022-10-14 Setting $0 on macOS results in environment variables being included in the command name
+      #12227 open 2012-06-27 windows sysopen() fails to open file larger than 2**32 bytes
+      #16156 open 2017-09-19 Missing feature flag -D_GNU_SOURCE on Linux/musl
+      #9316 open 2008-05-06 64-bit Integers -- inexact division gives odd result when is large
+      #19472 open 2022-02-28 Many warnings reading empty in-memory file
+      #15033 open 2015-11-07 hexfp may lose 1-3 low order bits (most often, 1)
+      #23243 open 2025-05-02 Perl_repeatcpy() arg 4 "IV count" has overflow on 32b CPUs
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15404 open 2016-06-22 “local $!” erroneously restores empty value
+      #15359 open 2016-05-26 Deprecate (or change) /$empty_string/
+      #12839 open 2013-03-07 forbid empty parts in package names
+      #13401 open 2013-11-04 Unicode::UCD::num returns empty list
+      #19472 open 2022-02-28 Many warnings reading empty in-memory file
+      #17937 open 2020-07-04 bad readline() returns empty string; expected undef
+      #24893 open 2026-10-03 Fix getc setting errno at EOF
+      #19907 open 2022-06-30 s/// with empty pattern and non-constant replacement misbehavior
+      #23307 open 2025-05-19 POSIX::strftime() returns empty string if format contains UTF-8 characters
+      #24806 open 2026-09-10 Cwd::abs_path (aka Cwd:realpath) doesn't die as it should and fails to canonicalize right on trailing newline
+      #19119 open 2021-09-12 `sub BEGIN` is always visible on the symbol table with an empty body
+      #24669 open 2026-08-06 Clarify docs for File::Basename::fileparse()
+      #24778 merged 2026-08-31 multiconcat: empty target didn't clear NIOK flags
+      #24716 open 2026-08-16 Add a perlnewdist tool
+      #18579 open 2021-02-14 [doc] Behavior of the range operator '..' in list context needs (more) clarification
+      #24613 open 2026-07-26 getc: It is not possible to distinguish EOF condition and I/O error
+      #18747 open 2021-04-26 [doc] Document how !~ works in list context
+      #22205 open 2024-05-10 [doc] join with undef values
+      #24582 open 2026-07-20 Dynaloader.pm execs "push(@dl_library_path, $ENV{''});" on all Win32 Perls, related: $Config::Config{ldlibpthname}
+      #24105 open 2026-01-20 Modernize the PRNG used for `rand()` by using a `Configure` option
+  atomic         85 hit(s) (all listed)
+      #16634 open 2018-07-16 *MARK names in atomic groups
+      #9751 open 2009-05-28 Slowdown in 5.10.0 regexes with atomic patterns
+      #21787 open 2024-01-01 Look-behind successful match influences consecutive regex matches containing look-behind and atomic/possessive
+      #23532 open 2025-08-03 combine PL_strategy_* bools into 1 exported symbol
+      #21752 open 2023-12-26 [doc] [perlre] Possessive quantifier combined with non-greedy modifier X{min,max} would not reduce to X{min} in some cases
+      #21825 open 2024-01-12 (*ACCEPT) behavior when forward-matching and when backtracking
+      #22881 open 2025-01-01 pod/perlguts pod/perlhacktips - various updates and new content
+      #17806 open 2020-05-26 wrap_op_checker()/PL_check
+      #16645 open 2018-07-24 *COMMIT etc in subroutines
+      #16622 open 2018-07-12 Segfault on invalid script
+      #18134 open 2020-09-14 Support \K in lookarounds
+      #15889 open 2017-02-24 [PATCH] socket SOCK_CLOEXEC
+      #6995 open 2003-12-19 Locally defined signal handlers executed outside scope of eval block
+      #17074 open 2019-07-02 (*COMMIT) behaviour when inside a repeated group
+      #11458 open 2011-06-23 potential race condition when mixing signals and select()
+      #8670 open 2006-11-05 File::Spec strict mode - path components are just single components
+      #18897 open 2021-06-16 Regex matching backtracking verbs within subroutine calls is inconsistent
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #16366 open 2018-01-17 getcwd() fails to fail on Cygwin
+      #18756 open 2021-04-30 [EXPERIMENT] variable-length look-behind
+  atomically     11 hit(s) (all listed)
+      #17806 open 2020-05-26 wrap_op_checker()/PL_check
+      #15889 open 2017-02-24 [PATCH] socket SOCK_CLOEXEC
+      #18756 open 2021-04-30 [EXPERIMENT] variable-length look-behind
+      #24682 closed 2026-08-11 SIGSEGV in libperl.so Perl_hv_common()
+      #1005 closed 1999-12-29 perl 5.005_03 core dumps -- singal interrupt related
+      #13719 closed 2014-04-08 atomic replacement in lib/ during build
+      #328 closed 1999-08-03 -pi doesn't sanely handle write errors
+      #13566 closed 2014-01-30 [PATCH] speed up miniperl @INC searching, buildcustomize
+      #11892 closed 2012-01-23 PL_check is not thread-safe
+      #8478 closed 2006-06-09 sort with custom subname and prototype ($$) segfaults intermittently
+      #8689 closed 2006-11-22 Perl_op_clear is not thread-safe
+  interrupted    82 hit(s) (all listed)
+      #13040 open 2013-06-20 Can't run t/harness with a perl built for gprof
+      #17937 open 2020-07-04 bad readline() returns empty string; expected undef
+      #14407 open 2015-01-08 core tests need watchdog/timeout
+      #11458 open 2011-06-23 potential race condition when mixing signals and select()
+      #7251 open 2004-04-21 Manipulating hash in SIGCHLD handler causes "Segmentation fault"
+      #18431 open 2020-12-21 crash caused by $_ conflict in signal handler
+      #11414 open 2011-06-05 Perl 5.14 does not allow "internal" setting of $ENV{'PERL_SIGNALS'}
+      #7035 open 2004-01-13 alarm not working with Windows XP
+      #17564 open 2020-02-14 END blocks not executed after SIGINT interrupts blocked `flush()`.
+      #12178 open 2012-06-15 EAGAIN on fork failure is retried forever
+      #7556 open 2004-10-23 Perl doesn't support RAII, part 1 [patch included]
+      #14362 open 2014-12-23 Endless loop when using encoding layer on STDERR
+      #24786 closed 2026-09-01 BBC: Blead breaks App-Tarotplane-2.02
+      #6704 open 2003-08-15 Win32 pipe/fork or filehandle I/O deadlock bug
+      #11299 open 2011-05-03 op/sigdispatch.t fails alarm test 14 and gets killed
+      #6995 open 2003-12-19 Locally defined signal handlers executed outside scope of eval block
+      #10147 open 2010-02-10 perldoc -f alarm suggests example code that isn't safe against race conditions
+      #12680 open 2013-01-01 Blead build failure under Debian 6/PPC: io/eintr.t fails
+      #13142 closed 2013-07-31 print returning EINTR in 5.14
+      #1005 closed 1999-12-29 perl 5.005_03 core dumps -- singal interrupt related
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17564 open 2020-02-14 END blocks not executed after SIGINT interrupts blocked `flush()`.
+      #24171 open 2026-02-06 PPC0029 Attributes v2 (phase 1)
+      #13040 open 2013-06-20 Can't run t/harness with a perl built for gprof
+      #14407 open 2015-01-08 core tests need watchdog/timeout
+      #17937 open 2020-07-04 bad readline() returns empty string; expected undef
+      #11458 open 2011-06-23 potential race condition when mixing signals and select()
+      #23852 open 2025-10-16 OS signals delivered to wrong thread under load
+      #7556 open 2004-10-23 Perl doesn't support RAII, part 1 [patch included]
+      #7001 open 2003-12-22 re: Perl bug - SIGINT does not break through sleep
+      #13111 open 2013-07-18 Perl complains and dies on receiving a signal
+      #7251 open 2004-04-21 Manipulating hash in SIGCHLD handler causes "Segmentation fault"
+      #14221 open 2014-11-08 print returns error when succeed
+      #7035 open 2004-01-13 alarm not working with Windows XP
+      #12643 open 2012-12-13 print builtin is broken
+      #18431 open 2020-12-21 crash caused by $_ conflict in signal handler
+      #16006 open 2017-06-08 stack overflow in Perl_push_scope ()
+      #18654 open 2021-03-21 perl-5.32.1 cross compile x86_64 -> aarch64 crash
+      #11414 open 2011-06-05 Perl 5.14 does not allow "internal" setting of $ENV{'PERL_SIGNALS'}
+      #14362 open 2014-12-23 Endless loop when using encoding layer on STDERR
+      #13596 open 2014-02-11 64-bit perl crash on SIGINT(2)
+  sigkill        28 hit(s) (all listed)
+      #17326 open 2019-11-26 Document export tags in POSIX
+      #10186 open 2010-02-18 failed system() doesn't set $?
+      #6240 open 2003-01-22 $SIG{RTMIN} on gentoo
+      #11299 open 2011-05-03 op/sigdispatch.t fails alarm test 14 and gets killed
+      #12680 open 2013-01-01 Blead build failure under Debian 6/PPC: io/eintr.t fails
+      #16163 closed 2017-09-22 Document that various POSIX functions need an argument, unlike their core equivalents that use `$_`
+      #16583 closed 2018-06-09 Blead Breaks CPAN: BRUMMETT/Devel-hdb-0.23.tar.gz
+      #687 closed 1999-10-07 Can't get perl to work??
+      #3537 closed 2001-03-07 POSIX::sigaction has various problems
+      #11148 closed 2011-02-22 POSIX::isdigit() returns 1 for the empty string
+      #2091 closed 2000-06-14 Dynamic Loading on HP-UX 10.20 (PERL 5005_03)
+      #8847 closed 2007-03-26 Mass suicide occurs when running kill with an undefined value
+      #9330 closed 2008-05-14 IO::Seekable + POSIX -> constant subroutines redefined
+      #7630 closed 2004-11-30 BeOS specific Updates
+      #13088 closed 2013-07-06 [PATCH] fdac9c18 fix SIGZZERO typo in perldoc -f kill
+      #4496 closed 2001-10-10 perl installation problem
+      #4515 closed 2001-10-19 Perl timeout (eval{} + $SIG{'ALRM'} = sub {die()} + alarm()) fails
+      #17908 closed 2020-06-28 Builds fail on Minix since v5.31.6
+      #13962 closed 2014-06-30 perl5.18 segfault after wait() when system don't have much free memory
+      #10785 closed 2010-10-31 glibc detected *** /usr/bin/perl: corrupted double-linked list (was 5.10, is now 5.16.2)
+  sigint         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10373 open 2010-05-11 docs perlfunc system() and SIGINT
+      #13596 open 2014-02-11 64-bit perl crash on SIGINT(2)
+      #15303 open 2016-05-02 Sending SIGINT signal to script while inside close()
+      #7001 open 2003-12-22 re: Perl bug - SIGINT does not break through sleep
+      #17564 open 2020-02-14 END blocks not executed after SIGINT interrupts blocked `flush()`.
+      #10913 open 2010-12-21 Perl reports SIGINT handler "IGNORE" not defined in multi-threaded apps
+      #10908 open 2010-12-20 Perl reports refcnt_dec error and hangs when dying at SIGINT in File::Copy::copy
+      #17326 open 2019-11-26 Document export tags in POSIX
+      #12643 open 2012-12-13 print builtin is broken
+      #10618 open 2010-09-10 SIG_PENDING_DIE_COUNT _way_ too low
+      #6924 open 2003-11-13 make test blocked with Mingw & PERLIO=stdio :crlf
+      #12867 open 2013-03-21 Assigning number to %SIG should fail
+      #6573 open 2003-06-19 Losing signals using sigprocmask
+      #9759 open 2009-06-03 IPC::Open3 directs output incorrectly when STDOUT not connected to fd#1
+      #14362 open 2014-12-23 Endless loop when using encoding layer on STDERR
+      #7949 open 2005-06-03 kill($sig, $pid) does not work as documented on Win32
+      #6240 open 2003-01-22 $SIG{RTMIN} on gentoo
+      #13040 open 2013-06-20 Can't run t/harness with a perl built for gprof
+      #7556 open 2004-10-23 Perl doesn't support RAII, part 1 [patch included]
+      #23331 open 2025-05-26 5.41.13 thru EU::MM 7.72 breaks all i386 Win32 XS .dll  during linking if they add any extra "-lsome_c_lib"es
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #24662 open 2026-08-04 regen/embed.pl: Split list into two
+      #23682 open 2025-09-04 Fix two flaws in Configure
+      #23385 open 2025-06-27 Mro dot xs cleanup
+      #11692 open 2011-10-10 CTRL-C handler under Windows fails to terminate gracefully when invoked during an inner loop including a next LABEL to an outer loop.
+      #22019 open 2024-02-24 Missing right curly or square bracket wild goose chase
+      #11116 open 2011-02-07 On Win32, $? is wrong after `` takes a fatal signal
+      #7949 open 2005-06-03 kill($sig, $pid) does not work as documented on Win32
+      #7001 open 2003-12-22 re: Perl bug - SIGINT does not break through sleep
+      #24844 closed 2026-09-20 At v5.45.2-192-g5c89d29f27, lib/locale_threads.t: running time much greater on FreeBSD 
+      #13154 open 2013-08-07 "\c\" is a syntax error
+      #10373 open 2010-05-11 docs perlfunc system() and SIGINT
+      #21958 open 2024-02-08 ./Configure hangs during g++ configuration on OpenBSD
+      #12664 open 2012-12-22 G_KEEPERR clearing ERRSV in newer perl
+      #22478 open 2024-08-06 autodoc: Add an Index section
+      #6924 open 2003-11-13 make test blocked with Mingw & PERLIO=stdio :crlf
+      #13596 open 2014-02-11 64-bit perl crash on SIGINT(2)
+      #15303 open 2016-05-02 Sending SIGINT signal to script while inside close()
+      #14362 open 2014-12-23 Endless loop when using encoding layer on STDERR
+      #12643 open 2012-12-13 print builtin is broken
+      #10913 open 2010-12-21 Perl reports SIGINT handler "IGNORE" not defined in multi-threaded apps
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8859 open 2007-03-31 power-of two differences in minus operation
+      #23547 open 2025-08-07 Allow merge commits in GH pull requests
+      #15942 open 2017-04-04 segfault in S_mg_findext_flags()
+      #22665 open 2024-10-14 SV Arenas have duplicate sized pool slots
+      #11851 open 2012-01-07 [META] IO::Socket- and IO::Socket::INET-related issues
+      #7772 open 2005-01-28 Bangline of /path/perl -w -CSD crashes writing DBM file
+      #6882 open 2003-10-30 signal flags not restored
+      #5319 open 2002-04-11 no taint checks on symbolic references
+      #14579 open 2015-03-12 use strict "vars" causes B::Deparse to fully qualify sub references
+      #22718 open 2024-11-01 Add a new perlrun option "-j" which allows JSON parsing in line
+      #22655 open 2024-10-10 remove pointless SVPV mortal alloc in S_strip_spaces()/prototype parser
+      #19223 open 2021-11-08 v5.35.5 consumes significantly more memory than v5.35.4
+      #15915 open 2017-03-06 AddressSanitizer: SEGV on unknown address 0x602ddc052500 in S_incline 
+      #19441 open 2022-02-19 Add a tool which can clean up whitespace in a commit intelligently
+      #8153 open 2005-10-14 @_ autovivifies hash slices
+      #13400 open 2013-11-04 API to override prototype parsing
+      #22466 open 2024-08-05 5.40.0 onwards won't build Darwin fat binaries
+      #8572 open 2006-08-26 PerlIO::scalar doesn't know how to truncate
+      #15594 open 2016-09-08 Unexpected parsing behavior depending on number of parts in string concatination
+      #12360 open 2012-08-28 Pathological performance problem with RegExp engine
+  outage         6 hit(s) (all listed)
+      #1200 closed 2000-02-18 DynaLoader behavior w.r.t. LD_LIBRARY_PATH confuses me
+      #71 closed 1999-06-15 File::Path 1.04 bug (all perl5 core versions)
+      #13584 closed 2014-02-06 Unable to configure perl 5.8.8 on AIX 5.3 TL10
+      #11814 closed 2011-12-19 Carp is missing a dot
+      #12652 closed 2012-12-17 successful s///e clobbers $! on MSWin32
+      #9073 closed 2007-10-19 g suffix on string search (/.../g) can cause string corruption
+  ENOSPC         16 hit(s) (all listed)
+      #12783 open 2013-02-17 IO::Handle's error() method does not accurately reflect write errors
+      #8919 open 2007-06-01 print doesn't overwrite $!
+      #9436 open 2008-08-01 Implicit close()s are silently unchecked for error
+      #21187 closed 2023-07-01 close() no longer returns success after a failed read on a write-only filehandle
+      #16163 closed 2017-09-22 Document that various POSIX functions need an argument, unlike their core equivalents that use `$_`
+      #20103 merged 2022-08-17 only clear the stream error state in readline() for a good nextargv()
+      #4909 closed 2002-01-24 ENOSPC errors misreported
+      #10940 closed 2011-01-03 Carp::confess loses $! on Windows
+      #11148 closed 2011-02-22 POSIX::isdigit() returns 1 for the empty string
+      #13281 closed 2013-09-16 [PATCH] make win32_link and win32_rename raise ENOSPC and EDQUOT when appropriate
+      #14415 closed 2015-01-15 PerlIO::scalar write() at large file position writes to wrong location
+      #7025 closed 2004-01-09 Not OK: perl v5.8.3 +RC1 on i386-freebsd 4.8-stable (UNINSTALLED)
+      #11904 closed 2012-01-24 [PATCH] 0d4e79b Use cygwin_conv_path since cygwin-1.7 and support native utf-8 paths
+      #12652 closed 2012-12-17 successful s///e clobbers $! on MSWin32
+      #5328 closed 2002-04-16 'close' does not report failure when buffer flush fails
+      #11634 closed 2011-09-05 Incorrect math when reading a padded number from shared memory
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22699 open 2024-10-24 convert last small purpose of builtin.pm to C and NOOP require's I/O
+      #22670 open 2024-10-15 implement C_BP macro for throwing a C debugger breakpoint WIP
+      #18300 open 2020-11-06 performance: t/comp/utf.t
+      #23423 open 2025-07-11 DynaLoader.pm on Win32 bake in Config.pm (PERL_BUILD_EXPAND_CONFIG_VARS)
+      #14221 open 2014-11-08 print returns error when succeed
+      #21877 open 2024-01-23 regular expressions matching lines read from an in-memory scalar is extremely slow in cygwin/MSYS2 perls 
+      #24535 open 2026-07-05 Perl_hv_store is not defined on unthreaded perls
+      #14553 open 2015-03-02 compcv refcount (again)
+      #22667 open 2024-10-14 Fix huge inline bloat msvc sv inline h
+      #8149 open 2005-10-11 binmode() affects seek() and tell() ?
+      #23375 open 2025-06-17 win32_isatty() dont call a mostly failing syscall, NT->WIN err conv is slow
+      #22659 open 2024-10-10 builtin.c cleanup+optimize+bloat
+      #23483 open 2025-07-28 $^X is not full path when perl is searched in PATH on NetBSD and OpenBSD
+      #9954 open 2009-11-09 duff DATA segment in -e
+      #13611 open 2014-02-18 Perl Base Tests Fail on paths with Space
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #2233 open 2000-07-18 Cwd::getcwd doesn't work well with AFS
+      #16990 open 2019-05-05 Assertion failure in S_regmatch (regexec.c: 6493)
+      #23331 open 2025-05-26 5.41.13 thru EU::MM 7.72 breaks all i386 Win32 XS .dll  during linking if they add any extra "-lsome_c_lib"es
+      #22881 open 2025-01-01 pod/perlguts pod/perlhacktips - various updates and new content
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18966 open 2021-07-07 PerlIO::encoding, inconsistent handling of partial characters
+      #24521 open 2026-07-01 prelim code to test sys_read loop replace
+      #18468 open 2021-01-12 Full RELRO is lost when building shared objects
+      #16921 open 2019-04-03 t/op/taint.t fails test 846 on Windows
+      #18907 open 2021-06-18 [doc] PerlIO::encoding, error in documentation, FB_PERLQQ et.al.
+      #24503 open 2026-06-24 Improve perlclass POD - more information, better synopsis
+      #19544 open 2022-03-19 binmode with ':encoding(GBK)' makes 'die()/warn()' blocking
+      #8754 open 2007-01-29 DATA filehandle off on UTF16 source
+      #24511 open 2026-06-26 PerlIO UTF-8 Throughput Performance via pp_sysread
+      #18098 open 2020-08-29 DB::loadfile performs differently on threaded builds vs unthreaded
+      #24393 open 2026-04-26 fields collide if added after deriving a subclass
+      #15117 open 2016-01-04 [BUG] local PerlIO::encoding::fallback settings + encoding causing infinite loop
+      #15687 open 2016-10-27 heap-use-after-free in S_unshare_hek_or_pvn (hv.c:2857)
+      #9377 open 2008-06-13 File::Copy move() issue
+      #17831 open 2020-06-02 proof of concept/performance test for use float
+      #17028 open 2019-05-30 Remove vestiges of sfio I/O layer code
+      #12493 open 2012-10-14 PerlIO::encoding produces malformed utf8
+      #23532 open 2025-08-03 combine PL_strategy_* bools into 1 exported symbol
+      #16455 open 2018-03-08 Fwd: [rt.cpan.org #124716] Use after free in sv.c:4860
+      #16826 open 2019-01-24 Long error message, which writes a full content of variable supposed to be package name.
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17172 open 2019-10-04 docs for given incomplete
+      #22888 open 2025-01-05 `Data::Dumper` incomplete reference relationship
+      #12281 open 2012-07-18 illegalproto warnings are very incomplete
+      #20527 open 2022-11-19 incomplete pod2html/Pod::Html documentation on --htmldir 
+      #24356 open 2026-04-09 regen/regcharclass.pl: add 'bool' support
+      #24840 open 2026-09-18 evalbytes does not work with sourcefilters, contrary to what documentation implies
+      #23208 open 2025-04-19 dist/IO.xs remove a dTHX call
+      #17296 open 2019-11-12 Some dual-life modules do not have a bugtracker anymore
+      #24102 open 2026-01-19 Y2K38 documentation/fallback
+      #19375 open 2022-01-27 Consider throwing warnings when redefining a non existing sub
+      #16184 open 2017-10-05 perldoc synopsis is missing '-f'
+      #22205 open 2024-05-10 [doc] join with undef values
+      #24784 merged 2026-09-01 Add Config::DEBUGGING to test perl was built with DEBUGGING defined
+      #7725 open 2004-12-25 Testing for taint and utf8 on magic values
+      #5940 open 2002-09-19 PATCH: installperl
+      #17110 open 2019-07-25 wrong line number reported for sort subroutine? (Argument "a" isn't numeric in numeric comparison (<=>) at ... line ...)
+      #20599 open 2022-12-10 gv.c - move English.pm into gv_fetchpvn. See RFC 0014
+      #17831 open 2020-06-02 proof of concept/performance test for use float
+      #11972 open 2012-02-25 warnings FATAL => utf8 not working on PerlIO::encoding layer and open pragma
+      #12029 open 2012-03-31 stat() warns about unopened filehandle on tied handles
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21290 open 2023-07-25 make cannot reconstruct the 'lib' directory properly if files are deleted.
+      #22144 open 2024-04-15 File::Copy::copy does not set $! on error due to identical files
+      #17831 open 2020-06-02 proof of concept/performance test for use float
+      #15212 open 2016-03-02 Option to avoid __FILE__ variable containing relative path
+      #20426 open 2022-10-23 5.36.0 and VS2022 compile errors
+      #17802 open 2020-05-23 panic() function in core
+      #22120 open 2024-04-04 sv_setsv_cow: only succeed if sv_setsv() would also COW
+      #22118 open 2024-04-03 `builtin::stringify` does not document that its argument is in scalar context
+      #10194 open 2010-02-22 Failing regex test that dies with "panic: pp_match start/end pointers"
+      #16478 open 2018-03-26 Regexes which interpolate list elements incorrectly parsed
+      #15704 open 2016-11-11 open "-" doesn't use STDIN
+      #12250 open 2012-07-04 [META] seek and tell operate on bytes
+      #13307 open 2013-09-24 hash elem ref in @_ disappears
+      #8485 open 2006-06-16 Core dump on process exit / tie %SIG
+      #13517 open 2014-01-09 @DB::args inconsistently reflects changes to @_
+      #18796 open 2021-05-16 Two tests fail on MacOS 11.3.1 for 5.34.0 RC2
+      #20355 open 2022-09-27 IO::Socket fails with Bareword error 
+      #16729 open 2018-10-21 5.29.4 - re/subst.t crashes perl on 64-bit Windows
+      #15883 open 2017-02-21 Perl's open() has broken Unicode file name support
+      #13508 open 2014-01-06 Not OK: perl 5.18.2 +RC4 on cygwin-thread-multi-64int 1.7.25(0.27053) report 5.18.2-RC4 on cygwin (32bits)
+  recovery       51 hit(s) (all listed)
+      #22802 open 2024-11-30 Unacceptable handling of Configure failures with locales
+      #16032 open 2017-06-22 Segfault in Perl_cv_undef_flags
+      #14672 open 2015-04-25 null ptr deref -> Perl_cv_forget_slab (pad.c:500)
+      #14172 open 2014-10-19 parse_termexpr() reads past comma
+      #18796 open 2021-05-16 Two tests fail on MacOS 11.3.1 for 5.34.0 RC2
+      #13014 open 2013-06-04 dtrace sub-entry probe against lexical sub segfaults
+      #15548 open 2016-08-24 SV *Perl_cv_const_sv_or_av(const CV *const): Assertion `((svtype)((cv)->sv_flags & 0xff)) == SVt_PVCV || ((svtype)((cv)->sv_flags & 0xff)) == SVt_PVFM' failed (op.c:7926)
+      #13219 open 2013-09-02 require should not clobber $! and $^E on success
+      #24047 open 2025-12-29 Storable.xs falsely claims Public API contract about SvTYPE() = SVt_NV & SvROK_on() & SvNOK_off()
+      #24328 closed 2026-03-28 Add comprehensive stress tests for class inheritance and field handling
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #23083 merged 2025-03-05 sv_vcatpvfn_flags: Use utf8_to_uv
+      #23553 merged 2025-08-09 perlunicode: Add discussion about malformations
+      #14630 closed 2015-03-31 Perl_sv_clear: Assertion `((svtype)((sv)->sv_flags & 0xff)) != (svtype)0xff' failed (perl: sv.c:6537)
+      #1005 closed 1999-12-29 perl 5.005_03 core dumps -- singal interrupt related
+      #21526 merged 2023-09-26 perl.h: Turn mutex warning into a panic
+      #15913 closed 2017-03-06 AddressSanitizer: heap-use-after-free in Perl_yyparse
+      #18435 merged 2020-12-24 Improve GDBM_File
+      #857 closed 1999-11-15 Localization and goto()
+      #859 closed 1999-11-16 perl5.005_02: my_setenv() and Term::ReadLine::Gnu
+  rollback       23 hit(s) (all listed)
+      #16008 open 2017-06-09 scalar filehandle and truncate/seek
+      #5712 open 2002-07-11 /(?{CODE})?/
+      #24682 closed 2026-08-11 SIGSEGV in libperl.so Perl_hv_common()
+      #23306 open 2025-05-19 Warnings on exit when DBI handle is global variable and there is assignment from subroutine
+      #20739 open 2023-01-24 Add IO::Socket::SSL and Net::SSLeay to the Perl core
+      #16616 open 2018-07-09 Ancient Regex Regression
+      #23202 merged 2025-04-15 Dedicated SV copying code in place of Perl_sv_setsv_flags
+      #23151 closed 2025-03-23 Perl debugger: Argument "package SQL::Translator;\n" isn't numeric in numeric ne (!=) at
+      #22166 merged 2024-04-23 report an error when making an object of an incomplete class
+      #5713 closed 2002-07-11 local $#array isn't.
+      #9760 closed 2009-06-03 crash after exiting cpan
+      #13837 closed 2014-05-14 Bring a few lines in Tie-File.pm under 80 cols
+      #401 closed 1999-08-20 Re: [BUG DBI 1.13 and perl 5.005_60 vaguely unhappy together]
+      #403 closed 1999-08-20 Re: [BUG DBI 1.13 and perl 5.005_60 vaguely unhappy together]
+      #8844 closed 2007-03-22 Regexp Bus error
+      #14283 closed 2014-11-29 [PATCH] make more use of NOT_REACHED
+      #12405 closed 2012-09-13 Regular Expression matching in signal handler causes side-effects
+      #10479 closed 2010-07-08 5.13.1+ exception localisation hides $@ from destructors
+      #10881 closed 2010-12-06 PATCH: various small fixes, including \d, \s for locale
+      #13937 closed 2014-06-18 Bleadperl v5.21.0-366-g130c5df breaks ISHIGAKI/DBD-SQLite-1.42.tar.gz
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18093 open 2020-08-27 [feature] Coroutines in Perl
+      #24684 open 2026-08-11 Re-enabling the use of nm on Darwin
+      #23314 open 2025-05-21 PerlIO: don't set the error flag when reading on an EAGAIN
+      #23208 open 2025-04-19 dist/IO.xs remove a dTHX call
+      #10391 open 2010-05-18 pipe not closed properly
+      #22215 open 2024-05-14 make (*THEN) work - first draft
+      #18654 open 2021-03-21 perl-5.32.1 cross compile x86_64 -> aarch64 crash
+      #19020 open 2021-08-03 Under dash, Perl provides different results for $?
+      #20024 open 2022-08-01 MSWin: Some tests crash if perl is built with x64 gcc-12.1 && optimize level -O2 && threads support
+      #14911 open 2015-09-16 Possible problem with optimization of return at end of sub?
+      #12178 open 2012-06-15 EAGAIN on fork failure is retried forever
+      #9759 open 2009-06-03 IPC::Open3 directs output incorrectly when STDOUT not connected to fd#1
+      #9350 open 2008-05-27 IO on active pipes fails after ithread fork in 5.8.8
+      #23150 open 2025-03-22 Split PV typemap into mutable and immutable
+      #12663 open 2012-12-21 5.17.7 breaks rules of assignment
+      #8701 open 2006-12-04 perlio forget about buffering settings on EAGAIN
+      #11299 open 2011-05-03 op/sigdispatch.t fails alarm test 14 and gets killed
+      #14597 open 2015-03-17 SEGV in deep recursion with tied hash
+      #13040 open 2013-06-20 Can't run t/harness with a perl built for gprof
+      #14691 open 2015-05-05 Why are threads discouraged?
+  half-written   >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #24440 open 2026-05-25 Implement ?-> optional chaining operator (PPC0021)
+      #24451 open 2026-06-01 Add API `av_splice_simple()`
+      #14399 open 2015-01-05 substr in sub call doesn't respect lexical "no warnings"
+      #22699 open 2024-10-24 convert last small purpose of builtin.pm to C and NOOP require's I/O
+      #8701 open 2006-12-04 perlio forget about buffering settings on EAGAIN
+      #18521 open 2021-02-02 [feature] Drop support for Win32 platforms older than Windows Vista
+      #12540 open 2012-11-09 strptime() missing from POSIX
+      #23934 open 2025-11-16 [doc] Issues in perlrepository.1perl
+      #15218 open 2016-03-07 Encoding I/O Layer Difference on Windows
+      #12762 open 2013-02-08 Make bug reporting less onerous, especially for committers using gmail (like me!!!)
+      #11327 open 2011-05-09 more given nonsense: what's a topicalizer?
+      #12820 open 2013-02-27 git commit hook to prevent changes on left of merge
+      #6094 open 2002-11-23 @{undef} inconsistently strict
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #16597 open 2018-06-25 Evalulation order during concat changed
+      #12803 open 2013-02-20 sort in scalar context is undefined
+      #23406 open 2025-07-06 t/DynaLoader.t and DynaLoader::dl_unload_file() are SEGVing, are they right, or libperl is right and they are broken?
+      #16686 open 2018-09-08 Issues with thousands separators in perllocale
+      #15453 open 2016-07-17 MinGW.org builds - infnan and pack test failures due to LD handling
+      #11513 open 2011-07-19 Unicode readdir bugs 
+  wipe           90 hit(s) (all listed)
+      #11287 open 2011-04-29 Use of freed value in iteration at perlbug line 6
+      #14494 open 2015-02-11 Build failure on Win32 with gcc 4.7.2/4.8.1 from www.mingw.org
+      #22804 open 2024-12-01 [doc] perlcall/perlguts encourage obsolete call_method() / call_pv() and deny most of call_sv()'s API
+      #24396 merged 2026-04-28 Note (yyl_leftcurly) & restore (newATTRSUB_x) line numbers for anon subs
+      #22699 open 2024-10-24 convert last small purpose of builtin.pm to C and NOOP require's I/O
+      #9776 open 2009-06-24 segmentation fault modifying array ref during push
+      #22901 open 2025-01-09 perlembed demos has SEGV risks, ithreads + setjmp + PERL_SET_CONTEXT are too dangerous to use
+      #18371 closed 2020-11-30 line numbers in stack traces are incorrect when subs are declared nearby
+      #23406 open 2025-07-06 t/DynaLoader.t and DynaLoader::dl_unload_file() are SEGVing, are they right, or libperl is right and they are broken?
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #13860 open 2014-05-20 RFC/WIP replace Perl stack with self allocating/expanding (C-style) stack on Win32
+      #18902 closed 2021-06-17 Perl 5.34.0 build breaks on Darwin gcc4
+      #23561 merged 2025-08-10 Add limits to the size of the string repetition multiplier
+      #15861 closed 2017-02-04 "loadable library and perl binaries are mismatched" not informative
+      #23144 merged 2025-03-20 win32/perlhost.h: revert changes to SETUPEXCHANGE
+      #23202 merged 2025-04-15 Dedicated SV copying code in place of Perl_sv_setsv_flags
+      #22708 merged 2024-10-27 fix CHostPerl's class design & remove CHostPerl malloc-ed fnc vtbls bloat
+      #20967 merged 2023-03-25 t/harness - rework App::Prove::State setup to not warn and use customizable state file
+      #21187 closed 2023-07-01 close() no longer returns success after a failed read on a write-only filehandle
+      #20601 closed 2022-12-10 Build warning "warning: pointer ‘where’ may be used after ‘realloc’" in util.c
+  wipes          15 hit(s) (all listed)
+      #23144 merged 2025-03-20 win32/perlhost.h: revert changes to SETUPEXCHANGE
+      #22708 merged 2024-10-27 fix CHostPerl's class design & remove CHostPerl malloc-ed fnc vtbls bloat
+      #20967 merged 2023-03-25 t/harness - rework App::Prove::State setup to not warn and use customizable state file
+      #7403 closed 2004-07-03 splice generates undef?
+      #14790 closed 2015-07-03 S_gv_stashpvn_internal: Assertion `((svtype)((_gvgp)->sv_flags & 0xff)) == SVt_PVGV || ((svtype)((_gvgp)->sv_flags & 0xff)) == SVt_PVLV' failed (gv.c:1416)
+      #14901 closed 2015-09-11 miniperl PP glob/Perl_start_glob() wipes all of %ENV and perlglob.exe proc can't start on VC 2005/WinXP
+      #7959 closed 2005-06-08 local @a inside eval
+      #4153 closed 2001-06-29 Symbol::delete_package bug
+      #6038 closed 2002-10-28 lc(), uc() and ucfirst() broken inside utf8 regex
+      #13714 closed 2014-04-06 Makefile incorrect for make -j
+      #14624 closed 2015-03-28 Invalid handshake, static build, 5.21.6+, 32bit Linux, no threads, no debug
+      #13937 closed 2014-06-18 Bleadperl v5.21.0-366-g130c5df breaks ISHIGAKI/DBD-SQLite-1.42.tar.gz
+      #17154 closed 2019-09-17 Segfault (memory access violation) in Perl__invlist_intersection_maybe_complement_2nd in Perl 5.30.0
+      #4028 closed 2001-05-26 localized glob loses value when assigned to
+      #14374 closed 2014-12-28 [PATCH] makefile fixes for WinCE
+  erase          44 hit(s) (all listed)
+      #11420 open 2011-06-13 stash <-> @ISA circular ref
+      #16542 open 2018-05-01 [PATCH] remove Winsock lib dep and reentr.c from Win32 gcc miniperl
+      #9442 open 2008-08-07 PerlIO::via suggest pre-CLOSE method
+      #13569 open 2014-02-01 Math::BigInt->new() wrongly converts large floats
+      #11799 open 2011-12-11 Perl parser sometimes tolerates stray nulls, sometimes not
+      #10869 open 2010-12-01 [Bug Report] Bad \n convert, using UTF-16 on Win32
+      #22901 open 2025-01-09 perlembed demos has SEGV risks, ithreads + setjmp + PERL_SET_CONTEXT are too dangerous to use
+      #15861 closed 2017-02-04 "loadable library and perl binaries are mismatched" not informative
+      #11271 closed 2011-04-21 utf8-bracket support
+      #685 closed 1999-10-05 djgpp install problems
+      #4272 closed 2001-08-01 seg fault parsing perl script
+      #8978 closed 2007-07-28 perl segfaults when freeing deeply nested structures
+      #12375 closed 2012-09-04 Perl-516.1. Win32 build problem
+      #5968 closed 2002-10-01 Consultation required on possible Perl security issue
+      #13837 closed 2014-05-14 Bring a few lines in Tie-File.pm under 80 cols
+      #15047 closed 2015-11-13 [PATCH] add parallelness to win32/GNUmakefile
+      #1312 closed 2000-03-10 Not OK: Perl 5.6.0-RC1 on MSWin32-x86 (MSVC)
+      #1109 closed 2000-02-02 crash whith SWASHNEW call in utf8
+      #5268 closed 2002-03-19 STORE incorrectly invoked for local($_) on aliased tied array element
+      #2361 closed 2000-08-14 Not OK: perl v5.6.0 (6620) on MSWin32-x86 4.0 (UNINSTALLED)
+  erasing        4 hit(s) (all listed)
+      #15861 closed 2017-02-04 "loadable library and perl binaries are mismatched" not informative
+      #8978 closed 2007-07-28 perl segfaults when freeing deeply nested structures
+      #15118 closed 2016-01-04 [engineering.redhat.com #385443][CVE-2016-2381] security issue with multiple environment entries with the same name
+      #4340 closed 2001-08-22 h2ph produces files with syntax errors
+  erased         5 hit(s) (all listed)
+      #11420 open 2011-06-13 stash <-> @ISA circular ref
+      #13569 open 2014-02-01 Math::BigInt->new() wrongly converts large floats
+      #11799 open 2011-12-11 Perl parser sometimes tolerates stray nulls, sometimes not
+      #685 closed 1999-10-05 djgpp install problems
+      #14370 closed 2014-12-26 Bug in POSIX::strerror on 5.21.7
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2028 open 2000-05-30 DESTROY not called on code reference objects
+      #8199 open 2005-11-08 Shared hash destroyed too soon
+      #17111 open 2019-07-25 Blessed anonymous subroutines not reliably deterministically destroyed.
+      #7628 open 2004-11-30 Objects destroyed in the wrong order during global destruction
+      #13870 open 2014-05-22 DESTROY called twice on same object during global destruction.
+      #7768 open 2005-01-26 Interrelations of DESTROY and eval are not well documented
+      #15369 open 2016-05-27 Segfault due to stack overflow: 'sub UNIVERSAL::DESTROY{$e=bless[]}'
+      #15839 open 2017-01-26 Threads, shared memory, blessed objects fail to call ->DESTROY method
+      #17149 open 2019-09-09 Anonymous subroutines which are not closures are NOT deterministically destroyed.
+      #19107 open 2021-09-08 Incorrect scoping of if statement
+      #19022 open 2021-08-04 threads::shared is leaking the shared interpeter
+      #18461 open 2021-01-08 [feature] Make default typemap type-mismatch errors give the passed-in SV’s information
+      #15663 open 2016-10-16 gv.c:1492: HV *S_gv_stashsvpvn_cached(SV *, const char *, U32, I32): Assertion `PL_valid_types_IVX[((svtype)((_svivx)->sv_flags & 0xff)) & 0xf]' failed
+      #20929 open 2023-03-13 Hash::Util test will break Test::More if it fails
+      #8979 open 2007-07-30 Memory leak in tied Hash
+      #24503 open 2026-06-24 Improve perlclass POD - more information, better synopsis
+      #24868 open 2026-09-27 BBC: Blead Breaks Multiple Modules on DragonFly BSD and FreeBSD
+      #2027 open 2000-05-30 Code blessed where it shouldn't.
+      #15028 open 2015-11-03 Destruction happens too late when using an INIT block
+      #7137 open 2004-02-25 segfault when using a shared hash ref with ithreads
+  destroys       55 hit(s) (all listed)
+      #8723 open 2007-01-03 perldoc mangles dashes and quotes
+      #19767 open 2022-05-22 %+ is not dynamically-scoped
+      #22653 open 2024-10-10 SvUV() macro 100% of time calls Perl_sv_2uv_flags() because SvUOK_nog/Perl_sv_setuv/SVf_IVisUV
+      #9134 open 2007-11-29 [documentation] Hash::Util::FieldHash
+      #8199 open 2005-11-08 Shared hash destroyed too soon
+      #7140 open 2004-03-08 Lexical scoping of "my" quite odd in postfix loops
+      #7628 open 2004-11-30 Objects destroyed in the wrong order during global destruction
+      #9436 open 2008-08-01 Implicit close()s are silently unchecked for error
+      #24804 closed 2026-09-09 macOS: build failure with latest command line tools
+      #17601 closed 2020-03-01 Windows won't compile without threads
+      #20803 closed 2023-02-12 BBC: Blead Breaks IO::Async
+      #20178 closed 2022-08-28 Don't end up in global locale upon thread destruction
+      #15815 closed 2017-01-20 [PATCH] Make arguments to S_invlist_is_iterating and S_invlist_max be const
+      #18847 closed 2021-06-02 Perl Install 'make test' Dumps Core on FreeBSD
+      #872 closed 1999-11-18 IPC::Open3 calls die, not exit, on exec failure
+      #5679 closed 2002-06-26 5.8.0-RC2 segfault (combination of DESTROY, goto, delete)
+      #8978 closed 2007-07-28 perl segfaults when freeing deeply nested structures
+      #10329 closed 2010-04-20 [PATCH] Ignore the /UU directory that exists during ./Configure
+      #13208 closed 2013-08-28 $! returned with UTF-8 flag under UTF-8 locales only under 5.19.2+
+      #1597 closed 2000-03-29 [PATCH: 5.6.0]build tweaks for OS/390 (still a broken port though)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8919 open 2007-06-01 print doesn't overwrite $!
+      #19572 open 2022-03-30 [doc] Describe overwrite of system calls via implicit-sys
+      #16453 open 2018-03-08 PerlIO layer utf-16-le overwrites byte in filehandle backed by scalar
+      #24613 open 2026-07-26 getc: It is not possible to distinguish EOF condition and I/O error
+      #19571 open 2022-03-30 NO_XSLOCKS shouldn’t affect htons() et al. (Or should it?)
+      #19214 open 2021-10-28 sv.c: 94ee6ed79db introduced possible code maintainability issue
+      #19142 open 2021-09-17 local *_ does not localize special _ stat result filehandle
+      #17907 open 2020-06-28 readdir does not report an eventual error
+      #20538 open 2022-11-23 Collected issues related to @INC hooks.
+      #9381 open 2008-06-16 h2xs does not handle properly enum constants
+      #18830 open 2021-05-28 [doc] Re-consider use of "grandfather" as a verb
+      #7275 open 2004-04-30 eof() on non-blocking filehandle
+      #23506 open 2025-07-29 perl5db: fixes for issues related to overloads
+      #19907 open 2022-06-30 s/// with empty pattern and non-constant replacement misbehavior
+      #16312 open 2017-12-18 index() confused by tie side effects
+      #22956 merged 2025-01-30 Storable: use utf8_to_bytes_overwrite() if available
+      #15378 open 2016-05-31 [PATCH] Test to see if hash values are eagerly created
+      #20399 open 2022-10-14 Setting $0 on macOS results in environment variables being included in the command name
+      #17570 open 2020-02-18 On Windows system(1,...) redirects stdout and stderr losing O_APPEND flag
+      #16706 open 2018-09-29 [PATCH] Perl can't inherit from Tie::StdHash, Tie::StdArray, Tie::StdScalar without loading Tie::Hash, Tie::Array, Tie::Scalar
+  clobber        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12249 open 2012-07-04 Reopening filehandles can clobber PerlIO layers
+      #13219 open 2013-09-02 require should not clobber $! and $^E on success
+      #24697 merged 2026-08-12 I18N::LangTags::List: don't clobber $_ on load
+      #10454 open 2010-06-20 binmode (encoding) is not idempotent
+      #18431 open 2020-12-21 crash caused by $_ conflict in signal handler
+      #24883 open 2026-10-01 Encoding layers accumulate without bound on the standard filehandles when redirected and restored with open FH, '>&', ...
+      #17451 open 2018-04-19 Allow ->bind and ->connect with named arguments [rt.cpan.org #57671]
+      #13818 open 2014-05-10 Behavior difference in warning for overriding constant v.s. non-constant subroutines
+      #7366 open 2004-06-15 localizing $? loses exit status from die()
+      #13718 open 2014-04-08 SvPVX not fully duplicated
+      #10147 open 2010-02-10 perldoc -f alarm suggests example code that isn't safe against race conditions
+      #13244 open 2013-09-09 $! localisation broken by ref
+      #14681 open 2015-04-28 localizing $? causes exit() to ignore the argument passed to it
+      #20039 open 2022-08-04 BBC: perl-5.34.0 broke Path::Class (Windows only, AFAICT)
+      #11813 open 2011-12-19 PL_last_in_gv paradigm conflict
+      #10241 open 2010-03-20 *foo{SCALAR} autovivifies
+      #16616 open 2018-07-09 Ancient Regex Regression
+      #5835 open 2002-08-15 local($^W) does not work correctly
+      #15802 open 2017-01-11 Configure: Cross/to-scp duplicates targetdir when rerun
+      #10555 open 2010-08-18 [META] Regressions introduced by refactoring
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19441 open 2022-02-19 Add a tool which can clean up whitespace in a commit intelligently
+      #17070 open 2019-07-01 Win32: Use of // after a successful /(?{})/ results in strange effect
+      #15068 open 2015-12-03 Why is $Config{installsitescript} not populated?
+      #8736 open 2007-01-10 system/qx in thread uses wrong %ENV
+      #21054 open 2023-04-29 [doc] "perl" man page inconsistencies
+      #24358 open 2026-04-11 Shorten "perl --version" output
+      #4373 open 2001-09-04 clean up code handling various line endings in toke.c
+      #16972 open 2019-04-20 QA Notice: Package triggers severe warnings which indicate that it
+      #23385 open 2025-06-27 Mro dot xs cleanup
+      #16306 open 2017-12-15 In-place sort does not kill weak refs
+      #11799 open 2011-12-11 Perl parser sometimes tolerates stray nulls, sometimes not
+      #24316 merged 2026-03-23 perlpod.pod: remove empty paragraph in bullet
+      #24467 closed 2026-06-10 ExtUtils-ParseXS-3.61+:  CPP directives after MODULE in same paragraph mishandled
+      #24389 merged 2026-04-24 pp_unstack - set PL_curcop for better condition line number accuracy
+      #16815 open 2019-01-19 Carp.pm useless warning "Use of uninitialized value $error[1] in join or string"
+      #11873 open 2012-01-16 pp_ctl.c:PP(pp_formline) bugs with wide chars in caret fields
+      #11935 open 2012-02-04 '/e' regexp modifier is not recognized by re pragma
+      #24510 closed 2026-06-26 blead breaks Google::ProtocolBuffers::Dynamic
+      #8149 open 2005-10-11 binmode() affects seek() and tell() ?
+      #13023 open 2013-06-12 -Dusevmsdebug generates a DESRIP.MMS that doesn't work without "/macro=(__DEBUG__)"
+  unreadable     64 hit(s) (all listed)
+      #22880 open 2025-01-01 sv.h: struct body_details bodies_by_type is unreadable, add more comments
+      #21598 open 2023-10-26 stat() and hence -e fail on an unreadable file on Windows
+      #22651 open 2024-10-10 optimize/cleanup generate_uudmap.c
+      #20165 open 2022-08-26 error messages - do not repeat class names twice in our error messages
+      #23424 open 2025-07-11 op.c auto-use attributes.pm; newSVpvs("attributes") -> newSVpvs_share()
+      #9241 open 2008-03-04 File::Glob fails to set error
+      #11931 open 2012-02-04 Cwd's pure perl abs_path and its test disagree on what's ok
+      #15286 open 2016-04-22 stat.t build tests failing on some Cygwin
+      #11863 open 2012-01-13 eof() on write-only filehandle breaks it
+      #13305 open 2013-09-24 The cwd.t fail, ever
+      #14495 open 2015-02-11 searching @INC shouldn't abort on a permissions error
+      #17810 open 2020-05-27 Low precedence defined or - dor
+      #14836 open 2015-08-03 [PATCH] t/op/stat.t: skipping -r test is unneeded
+      #23261 open 2025-05-05 SV PV COW 255 doesn't support strings under 9 SvCUR() bytes long
+      #18489 open 2021-01-17 Installing perl on Windows 10, MSYS2: undefined reference to `init_os_extras'
+      #17894 open 2020-06-26 [feature] Types in Perl
+      #4106 closed 2001-06-19 close(STDOUT) does not wait on MS-Windows
+      #23265 merged 2025-05-07 openbsd: ensure we link to the built libperl.a, not the system libperl.a
+      #23805 closed 2025-10-04 "Computed gotos" not tested
+      #23554 merged 2025-08-09 Convert Perl utf16 to utf8 functions to macros
+  garbage        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19464 open 2022-02-26 is "foo" a number with trailing garbage?
+      #17533 open 2020-02-05 [feature] Provide a way to tell Perl not to close() a handle’s file descriptor
+      #15759 open 2016-12-11 segfault in Perl_mg_magical (mg.c:144)
+      #13474 open 2013-12-17 gmtime and localtime offsets are misdetected on 32-bit big-endian
+      #14539 open 2015-02-24 regex end of line match very slow
+      #8520 open 2006-07-12 Mortality of objects (e.g. %$_) passed as args... - bug or feature?
+      #22659 open 2024-10-10 builtin.c cleanup+optimize+bloat
+      #11133 open 2011-02-16 PerlIO::encoding infinite loop decoding invalid JIS data 
+      #11147 open 2011-02-22 unpack(C => ...) on string with UTF8 FLAG without <use bytes> may return value more than 255
+      #14597 open 2015-03-17 SEGV in deep recursion with tied hash
+      #22665 open 2024-10-14 SV Arenas have duplicate sized pool slots
+      #16793 open 2018-12-22 unexpected parsing of "pp $_[0]" into "$_->pp([0])"
+      #23351 open 2025-06-02 Issue with $PROGRAM_NAME (sudo + checksum verification)
+      #23748 open 2025-09-22 [doc] System call wrappers not documented
+      #20580 open 2022-12-04 Memory corruption of $1 when assigning $1 to $_ inside regex embedded code block
+      #7712 open 2004-12-16 Localized */ isnt observed by magic IO operator
+      #9134 open 2007-11-29 [documentation] Hash::Util::FieldHash
+      #8807 open 2007-02-28 NaNcytyping appears to have regressed and broken again in 5.8.8
+      #15559 open 2016-08-27 Perl should have a cycle detector
+      #20039 open 2022-08-04 BBC: perl-5.34.0 broke Path::Class (Windows only, AFAICT)
+  mangled        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16641 open 2018-07-20 caller has mangled file path for "./" but not ".\"
+      #17494 open 2020-01-19 Tie::File ruins UTF-8 encoded files [rt.cpan.org #96014]
+      #23925 open 2025-11-16 [doc] Issues in libnetcfg.1perl
+      #9632 open 2009-01-20 Perl 5.8.8 (Tainting) vulnerable to CWE-732 attacks
+      #14464 open 2015-02-02 Re: [rt.cpan.org #101876] losing string value of semi-numeric string
+      #16992 open 2019-05-09 Pod::Perldoc 3.2801 no longer includes the 'term' formatter class by default
+      #16245 open 2017-11-14 parameter predicates in signatures
+      #9674 open 2009-03-06 open() is not UTF-8-clean
+      #8723 open 2007-01-03 perldoc mangles dashes and quotes
+      #16459 open 2018-03-08 USE_CPLUSPLUS build broken in 5.27 blead and all 5.26 stables
+      #9316 open 2008-05-06 64-bit Integers -- inexact division gives odd result when is large
+      #13407 open 2013-11-09 anon sub attributes broken in debugger (perl -d)
+      #23601 merged 2025-08-19 perlfunc/split: fix mangled markup
+      #23964 closed 2025-11-26 pp_ctl.c: pp_goto: More unreachable code identified
+      #23958 closed 2025-11-24 pp_ctl.c: Unreachable code identified
+      #22112 closed 2024-03-31 perl -n mode eats trailing spaces in filenames
+      #23190 closed 2025-04-10 Try to force inlining of newSV_type (i -> I in embed.fnc)
+      #13396 closed 2013-11-04 perlpod not reading utf-8 on input (even when told to)
+      #22352 closed 2024-06-28 TEST 09_roundtrip.t fails in 5.40.0 RELEASE
+      #21529 merged 2023-09-26  perlclib: Add extensive advice for interfacing with libc
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17246 open 2019-11-03 Perl for Android Architecture
+      #24826 open 2026-09-16 BBC: Blead Breaks Feature::Compat::Defer
+      #24872 open 2026-09-29 Reading @- / @+ after a utf8 match is orders of magnitude slower than pos()
+      #22655 open 2024-10-10 remove pointless SVPV mortal alloc in S_strip_spaces()/prototype parser
+      #20708 open 2023-01-15 binmode $fh, ':unix' loses track of the FD
+      #20494 open 2022-11-08 Another obscure regex crash (debug only it seems)
+      #18796 open 2021-05-16 Two tests fail on MacOS 11.3.1 for 5.34.0 RC2
+      #24884 open 2026-10-01 A child created by open(FH, '|-') cannot read its STDIN if the parent read STDIN to EOF first
+      #13304 open 2013-09-23 PerlIO::via modules exhibit buffer leakage when READ doesn't touch $buffer
+      #22549 open 2024-08-29 PERL5OPT doesn't support spaces between switches and their args
+      #24005 open 2025-12-14 [doc] perldebguts: Do not mix perl internals and perl5db.pl features. This creates confusion.
+      #15257 open 2016-03-31 Let windows Perl programs call setvbuf on file handles
+      #7723 open 2004-12-25 reopen of STDIN doesn't flush input buffer
+      #17596 open 2020-02-29 A TODO test may leave files on the system after it's run
+      #22510 open 2024-08-14 Class methods can still be replaced outside the class
+      #17065 open 2019-06-28 MacOS X intermittent threads/t/blocks.t failure
+      #23941 open 2025-11-16 [doc] Issue in ptardiff.1perl
+      #17770 open 2020-05-03 Heredocs silently change literal \r\n's and \r's to \n
+      #23141 open 2025-03-19 [doc] "Check module versions" in Porting/release_managers_guide.pod makes no sense
+      #20399 open 2022-10-14 Setting $0 on macOS results in environment variables being included in the command name
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16304 open 2017-12-15 in-place sort retains blessedness
+      #16305 open 2017-12-15 in-place sort retains tiedness
+      #16308 open 2017-12-15 in-place sort retains readonlyness
+      #17569 open 2020-02-18 Strengthen weak refs when sorting in-place
+      #16306 open 2017-12-15 In-place sort does not kill weak refs
+      #8857 open 2007-03-31 in place editing of files does not work outside main loop
+      #16781 open 2018-12-03 in-place edit does not replace files during non-global cleanup
+      #13959 open 2014-06-27 In place replacement command changes symbolic links into files and always touches all files
+      #24880 open 2026-09-30 Use UNUSED() and DEBUG_ONLY() in function definitions
+      #24800 merged 2026-09-08 PERL_UNUSED_VAR should be PERL_UNUSED_ARG in places
+      #24171 open 2026-02-06 PPC0029 Attributes v2 (phase 1)
+      #24827 open 2026-09-16 BBC: Blead Breaks B::Utils
+      #24362 open 2026-04-12 Perlguts: standardize on the _argument_stack
+      #24503 open 2026-06-24 Improve perlclass POD - more information, better synopsis
+      #24105 open 2026-01-20 Modernize the PRNG used for `rand()` by using a `Configure` option
+      #23076 open 2025-03-05 hv.c: Macro to check an HV as being %ENV hash
+      #18128 open 2020-09-13 [doc] perliol
+      #24469 open 2026-06-12 Many code paths don't defend against `SVt_PVOBJ`
+      #20823 open 2023-02-19 perlre.pod - rework documentation of capture groups and backreferences
+      #23666 open 2025-09-01 File::Find could use a -maxdepth option
+  unclean        25 hit(s) (all listed)
+      #15392 open 2016-06-10 IO layer for STDERR not set
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #23371 merged 2025-06-13 pp_reverse - chunk-at-a-time string reversal
+      #20179 closed 2022-08-28 io_unix test leaves stray tmp file
+      #5705 closed 2002-07-09 Introduction on ADSL
+      #9543 closed 2008-10-26 A number of characters match both a posix class and its complement
+      #3438 closed 2001-02-19 Deleting stashes causes SEGVs
+      #5345 closed 2002-04-21 In DOS paths
+      #5346 closed 2002-04-21 W32.Elkern  removal tools
+      #10200 closed 2010-02-23 Storable considerably slower at storing coderefs
+      #4071 closed 2001-06-10 WIN32: fork and non-file handles
+      #5354 closed 2002-04-22 Guide to Windows Script Host
+      #5723 closed 2002-07-14 Home Page
+      #5709 closed 2002-07-10 A  nice game
+      #5711 closed 2002-07-11 Home Page
+      #12316 closed 2012-08-02 cond_signal does not wake up a thread
+      #9455 closed 2008-08-20 Inconsistent and wrong handling of 8th bit set chars with no locale
+      #8478 closed 2006-06-09 sort with custom subname and prototype ($$) segfaults intermittently
+      #12208 closed 2012-06-21 AIX Hints file change
+      #12247 closed 2012-07-04 package NAMESPACE manpage comments
+  shutdown       55 hit(s) (all listed)
+      #20389 open 2022-10-12 Double-exception `defer` collision loses information
+      #19022 open 2021-08-04 threads::shared is leaking the shared interpeter
+      #11604 open 2011-08-26 IO::Socket::INET does not appear to be thread safe
+      #12896 open 2013-04-04 Issues in haiku
+      #20739 open 2023-01-24 Add IO::Socket::SSL and Net::SSLeay to the Perl core
+      #23380 open 2025-06-21 [doc] parsing errors when generating perltoc from perlfunc
+      #13779 open 2014-04-28 ext/POSIX/t/wrappers.t fails when compiling on OpenLDAP user because of getgrgid() + fork() interaction
+      #16570 open 2018-05-28 [PATCH] cpan/Win32 add delay loading for GCC and VC
+      #15106 open 2015-12-28 strict refs doesn't catch symbolic bareword filehandles
+      #24549 closed 2026-07-09 t/io/socket.t: EBADF instead of EMFILE
+      #6983 open 2003-12-12 tieing stashes
+      #22985 merged 2025-02-10 util.c: fix goto &somesub in $SIG{__DIE__} handlers
+      #23144 merged 2025-03-20 win32/perlhost.h: revert changes to SETUPEXCHANGE
+      #21562 closed 2023-10-15 Locale 'Chinese (Simplified)_China.936' is unsupported
+      #20464 merged 2022-10-31 locale.c - add comments about PERL_DESTRUCT_LEVEL avoiding "leaks"
+      #20075 closed 2022-08-10 Embedding Perl into C throws 37 unresolved externals on Windows
+      #675 closed 1999-10-04 FW: Call Nr. 6583771 (!!! HELP !!!)
+      #239 closed 1999-07-27 No subject provided
+      #6121 closed 2002-12-05 5.8.0 'use English' and $MATCH bug
+      #9963 closed 2009-11-13 Perl interpreter exits when calling print on a closed socket
+  reboot         43 hit(s) (all listed)
+      #14233 open 2014-11-12 SIG_PENDING_DIE_COUNT kills program in new situation
+      #24416 closed 2026-05-10 Test SvUTF8 on Win32 wrappers under UTF-8 ACP
+      #24446 closed 2026-05-27 [Win32] Issue with threads::shared and rand
+      #23225 merged 2025-04-24 ParseXS: build an AST for each XSUB
+      #23579 closed 2025-08-15 [doc] perlhacktips: address sanitizer (asan) config doesn't work
+      #22588 closed 2024-09-12 How do I configure with ASAN?
+      #21562 closed 2023-10-15 Locale 'Chinese (Simplified)_China.936' is unsupported
+      #21135 closed 2023-06-01 Errno archname/osvers too strict.
+      #16427 closed 2018-02-21 Possibly memory leak when matching strings using pre-compiled regexes stored in hash key (perl >= v5.26)
+      #328 closed 1999-08-03 -pi doesn't sanely handle write errors
+      #5785 closed 2002-07-26 perl 5.6
+      #7596 closed 2004-11-16 Possible Bug
+      #13813 closed 2014-05-09 ASAN segfaults in lib/warnings.t
+      #7714 closed 2004-12-18 win32_msgwait runs forever with non-infinite timeout
+      #1145 closed 2000-02-05 Re: multi-threaded perl segfaults
+      #2370 closed 2000-08-15 [PATCH] INSTALL doesn't mention 64 bit support.
+      #11418 closed 2011-06-05 perl 5.12 consumes all the memory on: open FILE, '<', \*STDIN or die; <FILE>;
+      #16922 closed 2019-04-03 ext/XS-APItest/t/locale.t crashes on Windows after passing a couple tests
+      #10553 closed 2010-08-18 Regarding issues in Net::OpenSSH and IO::Tty (perl 5.8.4)
+      #12980 closed 2013-05-21 Large batch of typo fixes
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22699 open 2024-10-24 convert last small purpose of builtin.pm to C and NOOP require's I/O
+      #23483 open 2025-07-28 $^X is not full path when perl is searched in PATH on NetBSD and OpenBSD
+      #22667 open 2024-10-14 Fix huge inline bloat msvc sv inline h
+      #23375 open 2025-06-17 win32_isatty() dont call a mostly failing syscall, NT->WIN err conv is slow
+      #9429 open 2008-07-25 :perlio layer extra FLUSHes
+      #22662 open 2024-10-13 Newsvuvnviv taint api speedup
+      #23748 open 2025-09-22 [doc] System call wrappers not documented
+      #21877 open 2024-01-23 regular expressions matching lines read from an in-memory scalar is extremely slow in cygwin/MSYS2 perls 
+      #9436 open 2008-08-01 Implicit close()s are silently unchecked for error
+      #20749 open 2023-01-29 Multiple bugs in GNUMakefile
+      #22571 open 2024-09-04 [doc] Setting up PerlIO callbacks when embedding a Perl interpreter using C (before any `*.pm` modules were ever loaded or any Perl code executed)
+      #23406 open 2025-07-06 t/DynaLoader.t and DynaLoader::dl_unload_file() are SEGVing, are they right, or libperl is right and they are broken?
+      #24646 closed 2026-07-30 Unhelpful error message when loading mismatched XS modules
+      #23150 open 2025-03-22 Split PV typemap into mutable and immutable
+      #10492 open 2010-07-18 Using space as a separator in $Config{libpth} makes troubles
+      #17900 open 2020-06-26 Access file timestamps with subsecond resolution as integer
+      #24511 open 2026-06-26 PerlIO UTF-8 Throughput Performance via pp_sysread
+      #15883 open 2017-02-21 Perl's open() has broken Unicode file name support
+      #9040 open 2007-09-22 eval() of non-ASCII bytes under unicode_eval and unicode_strings doesn't give them Latin1 meanings
+      #16542 open 2018-05-01 [PATCH] remove Winsock lib dep and reentr.c from Win32 gcc miniperl
+  data+loss      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #24262 open 2026-03-09 Data::Dumper incorrectly identifies an NV as a string
+      #22653 open 2024-10-10 SvUV() macro 100% of time calls Perl_sv_2uv_flags() because SvUOK_nog/Perl_sv_setuv/SVf_IVisUV
+      #12801 open 2013-02-20 Perl5 doesn't distinguish "originally was a string" and "originally was a number" and doesn't let one control caching of stringification
+      #16417 open 2018-02-12 RFC on windows build status
+      #11697 open 2011-10-14 seeking on bytes causes broken perl strings
+      #16459 open 2018-03-08 USE_CPLUSPLUS build broken in 5.27 blead and all 5.26 stables
+      #20841 open 2023-02-21 Storing difference of pointers in I32
+      #23340 open 2025-05-30 Consistent I/O function error return values
+      #7489 open 2004-09-05 Dup DATA filehandle, lose initial data
+      #20745 open 2023-01-27 Where can I find the history of operators?
+      #18129 open 2020-09-13  Github Windows VMs, alarm() sometimes fails to fire at all during long-running regexes
+      #17900 open 2020-06-26 Access file timestamps with subsecond resolution as integer
+      #13149 open 2013-08-05 threads::shared never frees the shared space interpreter
+      #15155 open 2016-01-28 Dump dump
+      #24047 open 2025-12-29 Storable.xs falsely claims Public API contract about SvTYPE() = SVt_NV & SvROK_on() & SvNOK_off()
+      #16419 open 2018-02-13 File::Copy::copy() "works" when given a directory as a from parameter
+      #23391 open 2025-06-29 pp_ref() builtin_pp_reftype(): strlen()+Newx()+memcpy()->100% pre-made COWs
+      #18305 open 2020-11-09 Extend perlpodspec (and POD parsers) to allow escaping text
+      #24163 merged 2026-02-03 Create a new version of MAGIC; called Magic v2
+      #9553 open 2008-11-03 Inconsistent math with large numbers
+  partial+write  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18966 open 2021-07-07 PerlIO::encoding, inconsistent handling of partial characters
+      #18907 open 2021-06-18 [doc] PerlIO::encoding, error in documentation, FB_PERLQQ et.al.
+      #16921 open 2019-04-03 t/op/taint.t fails test 846 on Windows
+      #24511 open 2026-06-26 PerlIO UTF-8 Throughput Performance via pp_sysread
+      #15684 open 2016-10-26 heap-use-after-free in Perl_sv_setpv (sv.c:4990)
+      #17831 open 2020-06-02 proof of concept/performance test for use float
+      #23340 open 2025-05-30 Consistent I/O function error return values
+      #23532 open 2025-08-03 combine PL_strategy_* bools into 1 exported symbol
+      #16455 open 2018-03-08 Fwd: [rt.cpan.org #124716] Use after free in sv.c:4860
+      #12493 open 2012-10-14 PerlIO::encoding produces malformed utf8
+      #16322 open 2017-12-20 PERL-5.26.1 heap_use_after_free WRITE of size 1
+      #14093 open 2014-09-16 Error and warning IDs
+      #8149 open 2005-10-11 binmode() affects seek() and tell() ?
+      #15747 open 2016-12-04 heap-use-after-free Perl_sv_setpv_bufsize (sv.c:4956)
+      #16323 open 2017-12-20 PERL-5.26.1 heap_use_after_free WRITE of size 1
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #11697 open 2011-10-14 seeking on bytes causes broken perl strings
+      #21071 open 2023-05-02 Problem embedding Perl with -DPERL_NO_SHORT_NAMES
+      #11671 open 2011-09-26 Perl leaves broken UTF-8 in SVs whose UTF8 is set
+      #20749 open 2023-01-29 Multiple bugs in GNUMakefile
+  crash+safe     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13109 open 2013-07-16 Localizing %SIG in Safe.pm 2.{35,36,37} crashes POE::Wheel::Run ...
+      #24227 open 2026-02-21 Fix GH #19790: Reset `op_opt` in `gen_constant_list` failure path to prevent heap-buffer-overflow in `Perl_POPMARK`
+      #16022 open 2017-06-16 Perl arybase!XS_arybase__tie_it Type Confusion
+      #10704 open 2010-10-07 perl emits errors and warnings out of order
+      #17618 open 2020-03-06 t/op/threads.t: unit test 10 frequently fails on threaded builds on NetBSD
+      #17806 open 2020-05-26 wrap_op_checker()/PL_check
+      #9611 open 2009-01-02 SDBM_File attempts to double-free DB pointer when threads are cleaned up
+      #13596 open 2014-02-11 64-bit perl crash on SIGINT(2)
+      #20024 open 2022-08-01 MSWin: Some tests crash if perl is built with x64 gcc-12.1 && optimize level -O2 && threads support
+      #16348 open 2018-01-03 [PATCH] Sys::Syslog is not thread-safe (can segfault)
+      #15733 open 2016-11-25 Strange use of bareword after sort, despite 'use strict', and despite subroutine existing
+      #11780 open 2011-11-29 Data::Dumper will not correctly create eval-able code for self-referential structures
+      #16183 open 2017-10-04 -F and literal whitespace in the pattern
+      #16612 open 2018-07-06 'Exiting eval via next' when explicit label given
+      #13230 open 2013-09-05 PerlEmbed 5.14: sv_setsv(ERRSV, &PL_sv_undef); crashes on Linux
+      #8648 open 2006-10-26 gnu/linux (glibc) likely needs USE_PERL_SBRK
+      #11375 open 2011-05-23 Bad putenv interaction between fakeroot and perl
+      #24440 open 2026-05-25 Implement ?-> optional chaining operator (PPC0021)
+      #15935 open 2017-03-28 Exporter doesn't check that the exported symbols exist
+      #9776 open 2009-06-24 segmentation fault modifying array ref during push
+  atomic+write   39 hit(s) (all listed)
+      #23532 open 2025-08-03 combine PL_strategy_* bools into 1 exported symbol
+      #22881 open 2025-01-01 pod/perlguts pod/perlhacktips - various updates and new content
+      #15014 open 2015-10-28 malloc deadlock in unsafe signal handler
+      #6995 open 2003-12-19 Locally defined signal handlers executed outside scope of eval block
+      #22939 open 2025-01-23 perl -V being mockable is a security problem re: #21135 Errno archname/osvers too strict.
+      #16366 open 2018-01-17 getcwd() fails to fail on Cygwin
+      #22886 open 2025-01-05 hv_macro.h -> broken -> USE_UNALIGNED_PTR_DEREF & config.h -> unintelligible -> U32_ALIGNMENT_REQUIRED d_u32align
+      #8670 open 2006-11-05 File::Spec strict mode - path components are just single components
+      #18897 open 2021-06-16 Regex matching backtracking verbs within subroutine calls is inconsistent
+      #23351 open 2025-06-02 Issue with $PROGRAM_NAME (sudo + checksum verification)
+      #22571 open 2024-09-04 [doc] Setting up PerlIO callbacks when embedding a Perl interpreter using C (before any `*.pm` modules were ever loaded or any Perl code executed)
+      #23384 open 2025-06-27 meta-bug whiteboard MSVC turning on builtins memcpy memset memcmp strlen
+      #23406 open 2025-07-06 t/DynaLoader.t and DynaLoader::dl_unload_file() are SEGVing, are they right, or libperl is right and they are broken?
+      #24682 closed 2026-08-11 SIGSEGV in libperl.so Perl_hv_common()
+      #14725 open 2015-05-30 CvFILE on threaded, and gv_fetchfile on all perls, burn mad memory
+      #11443 open 2011-06-15 (*THEN) broken inside condition subpattern
+      #23021 closed 2025-02-22 Avoiding possible incompatible regexp features in future development
+      #23371 merged 2025-06-13 pp_reverse - chunk-at-a-time string reversal
+      #23144 merged 2025-03-20 win32/perlhost.h: revert changes to SETUPEXCHANGE
+      #22719 merged 2024-11-01 util.c: Perl_xs_handshake print API ver mismatch before interp mismatch
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17838 open 2020-06-04 [doc] flock needs extended perlport description
+      #14320 open 2014-12-10 every OS child procs hangs forever if there is a blocked flock() in a win32 psuedofork
+      #20929 open 2023-03-13 Hash::Util test will break Test::More if it fails
+      #11221 open 2011-03-31 win32_open/win32_popen deadlock
+      #2286 open 2000-07-31 attributes don't like .=
+      #13237 open 2013-09-07 unlocking in forked child is fragile
+      #17806 open 2020-05-26 wrap_op_checker()/PL_check
+      #14946 open 2015-09-28 Storable's tests do not run safely in parallel
+      #23643 open 2025-08-25 win32/vmem.h change emulated calloc() to OS/CRT's native calloc()
+      #10908 open 2010-12-20 Perl reports refcnt_dec error and hangs when dying at SIGINT in File::Copy::copy
+      #7556 open 2004-10-23 Perl doesn't support RAII, part 1 [patch included]
+      #8203 open 2005-11-10 many threads => various crashes
+      #8199 open 2005-11-08 Shared hash destroyed too soon
+      #9371 open 2008-06-10 Recursive multithreading causes massive amounts of context switches
+      #16622 open 2018-07-12 Segfault on invalid script
+      #7869 open 2005-04-11 Possible filedescriptor race condition in 5.8.3 and 5.8.6
+      #9672 open 2009-03-05 version perl 5.8.8 and above : threads + pipe command causes some deadlocks
+      #16229 open 2017-11-07 PL_keyword_plugin needs thread-safe wrap setter
+      #16348 open 2018-01-03 [PATCH] Sys::Syslog is not thread-safe (can segfault)
+      #17570 open 2020-02-18 On Windows system(1,...) redirects stdout and stderr losing O_APPEND flag
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19987 open 2022-07-23 build fails when building with PERL_NO_COW
+      #20376 open 2022-10-09 BBC: Blead breaks App-ClusterSSH-4.16
+      #12643 open 2012-12-13 print builtin is broken
+      #14493 open 2015-02-11 readline assert on SvOK_off(glob)
+      #23026 open 2025-02-25 read from append write only file handle breaks the following writes
+      #24868 open 2026-09-27 BBC: Blead Breaks Multiple Modules on DragonFly BSD and FreeBSD
+      #24755 open 2026-08-25 [5.45.2] lib/locale_threads.t failure on Cygwin threaded builds
+      #24858 open 2026-09-22 mktables: start as early as possible
+      #23340 open 2025-05-30 Consistent I/O function error return values
+      #8919 open 2007-06-01 print doesn't overwrite $!
+      #23342 open 2025-05-30 Make :utf8 an actually validating layer
+      #7487 open 2004-09-01 can't write open() wrapper without affecting how the FH is parsed
+      #20857 open 2023-02-26 Feature idea: s///g{} limit for g
+      #16589 open 2018-06-18 want way to change exit status from die
+      #24711 open 2026-08-15 Enabling thread local storage on Darwin
+      #17551 open 2020-02-09 “Filehandle … opened only for output” warning isn’t applying to revived FDs
+      #11299 open 2011-05-03 op/sigdispatch.t fails alarm test 14 and gets killed
+      #22662 open 2024-10-13 Newsvuvnviv taint api speedup
+      #15921 open 2017-04-07 Perl enters infinite loop with -d:Trace and binmode(STDERR, encoding(UTF-8))
+      #24722 open 2026-08-17 Add support for an ${^RNG} hook, along with support PCG randomization
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17246 open 2019-11-03 Perl for Android Architecture
+      #24884 open 2026-10-01 A child created by open(FH, '|-') cannot read its STDIN if the parent read STDIN to EOF first
+      #18796 open 2021-05-16 Two tests fail on MacOS 11.3.1 for 5.34.0 RC2
+      #24883 open 2026-10-01 Encoding layers accumulate without bound on the standard filehandles when redirected and restored with open FH, '>&', ...
+      #20708 open 2023-01-15 binmode $fh, ':unix' loses track of the FD
+      #23941 open 2025-11-16 [doc] Issue in ptardiff.1perl
+      #7723 open 2004-12-25 reopen of STDIN doesn't flush input buffer
+      #15257 open 2016-03-31 Let windows Perl programs call setvbuf on file handles
+      #13304 open 2013-09-23 PerlIO::via modules exhibit buffer leakage when READ doesn't touch $buffer
+      #22655 open 2024-10-10 remove pointless SVPV mortal alloc in S_strip_spaces()/prototype parser
+      #14254 open 2014-11-18 B::Deparse and #line 1 somefile
+      #22801 open 2024-11-30 Configure shouldn't send so much stuff to /dev/null
+      #16869 open 2019-03-03 Assertion failure in glob3 (bsd_glob.c:759)
+      #17770 open 2020-05-03 Heredocs silently change literal \r\n's and \r's to \n
+      #17596 open 2020-02-29 A TODO test may leave files on the system after it's run
+      #17065 open 2019-06-28 MacOS X intermittent threads/t/blocks.t failure
+      #23940 open 2025-11-16 [doc] Issue in ptar.1perl
+      #16043 open 2017-06-25 Add -P and -N switches that use <<>> instead of readline
+      #13416 open 2013-11-13 perl debugger doesn't respect "b subname" if the 1st line of the subroutine is "no warnings"
+      #18681 open 2021-04-03 optimization in av_extend_guts
+
+== 51 terms run; 50 returned hits, 31 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

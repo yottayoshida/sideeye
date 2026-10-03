@@ -1,0 +1,6 @@
+[world]
+state = "/s/kakoune"
+
+[define]
+operation = "kak -n -f ggiX<esc> a.txt b.txt"
+cwd       = "/s/kakoune"

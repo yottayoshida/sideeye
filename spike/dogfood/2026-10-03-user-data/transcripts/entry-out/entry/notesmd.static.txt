@@ -1,0 +1,4 @@
+static: /opt/bin/notesmd-cli: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=abf05eb55ddf54cbdd028fd6b3b5d9f3ef5cad92, stripped
+default mode: rc 2; no_shim_marker
+default next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+next: sideeye explore --state /s/notes --cwd "/s/notes-in" --operation "/opt/bin/notesmd-cli move projects/alpha projects/alpha-2026 --vault vault" \
