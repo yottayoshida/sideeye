@@ -1,0 +1,52 @@
+##### dokuwiki
+$ php /lab/dw/bin/dwpage.php commit -m first /lab/page.txt wiki:start
+/lab/page.txt > wiki:start
+rc=0
+$ php /lab/dw/bin/dwpage.php commit -m second /lab/page.txt wiki:start
+/lab/page.txt > wiki:start
+rc=0
+89a3d26849da  /lab/dw/data/attic/wiki/start.1791167288.txt.gz
+1b565217c8f4  /lab/dw/data/attic/wiki/start.1791167289.txt.gz
+5d5d4a2a8101  /lab/dw/data/deleted.files
+538fd1831b2c  /lab/dw/data/meta/_dokuwiki.changes
+538fd1831b2c  /lab/dw/data/meta/wiki/start.changes
+89caf176d242  /lab/dw/data/meta/wiki/start.meta
+##### oh-my-posh
+$ oh-my-posh config migrate --help
+
+Available Commands:
+  dsc         Manage Oh My Posh DSC (Desired State Configuration)
+  export      Export your config
+
+Flags:
+  -h, --help   help for config
+
+Global Flags:
+  -c, --config string   config file path
+      --plain           plain text output (no ANSI)
+      --trace           enable tracing
+
+Use "oh-my-posh config [command] --help" for more information about a command.
+rc=0
+$ oh-my-posh --config /lab/omp/theme.omp.json config migrate --write
+
+Global Flags:
+  -c, --config string   config file path
+      --plain           plain text output (no ANSI)
+      --trace           enable tracing
+
+Use "oh-my-posh config [command] --help" for more information about a command.
+
+rc=0
+5b3d84c56b8b  /lab/omp/theme.omp.json
+{"$schema":"https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json","version":1,"blocks":[{"type":"prompt","alignment":"left","segments":[{"type":"path","style":"plain","foreground":"#ffffff","properties":{"prefix":"","style":"folder"}}]}]}
+
+##### solvespace
+using /tmp/src/solvespace/test/group/translate_asy/normal_v22.slvs
+3eebc21e4d81  /lab/ss/part.slvs
+$ solvespace-cli regenerate /lab/ss/part.slvs
+Missing (absent) translation for group-name'#references'
+Missing (absent) translation for group-name'sketch-in-plane'
+Written '/lab/ss/part.slvs'.
+rc=0
+eaaef8291f96  /lab/ss/part.slvs

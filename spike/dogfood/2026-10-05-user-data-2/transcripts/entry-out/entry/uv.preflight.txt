@@ -1,0 +1,21 @@
+Removed credentials for alice@https://pkgs.example.internal/
+Removed credentials for alice@https://pkgs.example.internal/
+PREFLIGHT  recording accepted — 5 state-changing operation(s) observed
+
+cwd          /s/uv-in
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 5 operations (346 syscall lines examined, 26 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 1 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2012 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/uvd/uv/credentials --cwd "/s/uv-in" --operation "/opt/py/bin/uv auth logout https://pkgs.example.internal/simple --username alice" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

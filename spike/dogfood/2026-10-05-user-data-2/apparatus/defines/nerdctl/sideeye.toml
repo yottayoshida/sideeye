@@ -1,0 +1,6 @@
+[world]
+state = "/s/dc"
+
+[define]
+operation = "nerdctl logout registry.example.com"
+cwd       = "/s/dc-in"

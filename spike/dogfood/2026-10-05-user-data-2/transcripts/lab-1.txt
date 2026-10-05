@@ -1,0 +1,169 @@
+##### geth
+$ geth account new --keystore /lab/geth/ks --password /lab/geth/pw --lightkdf
+INFO [10-05|02:21:29.491] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+
+Your new key was generated
+
+Public address of the key:   0xbDeA1d1640eA645ca241fE20E35c1d7c41Dfa26A
+Path of the secret key file: /lab/geth/ks/UTC--2026-10-05T02-21-29.492341503Z--bdea1d1640ea645ca241fe20e35c1d7c41dfa26a
+
+- You can share your public address with anyone. Others need it to interact with you.
+- You must NEVER share the secret key with anyone! The key controls access to your funds!
+- You must BACKUP your key file! Without the key, it's impossible to access account funds!
+- You must REMEMBER your password! Without the password, it's impossible to decrypt the key!
+
+rc=0
+-rw------- 489 /lab/geth/ks/UTC--2026-10-05T02-21-29.492341503Z--bdea1d1640ea645ca241fe20e35c1d7c41dfa26a
+$ geth account update --keystore /lab/geth/ks --password /lab/geth/pw --lightkdf bdea1d1640ea645ca241fe20e35c1d7c41dfa26a
+
+   
+    --datadir value                     (default: /s/aux/home/.ethereum)   ($GETH_DATADIR)
+          Data directory for the databases and keystore
+
+   MISC
+
+   
+    --help, -h                          (default: false)                  
+          show help
+
+flag provided but not defined: -password
+rc=0
+-rw------- 489 /lab/geth/ks/UTC--2026-10-05T02-21-29.492341503Z--bdea1d1640ea645ca241fe20e35c1d7c41dfa26a
+##### monero
+$ monero-wallet-cli --offline --generate-new-wallet /lab/xmr/w --password pw --mnemonic-language English --use-english-language-names --log-file /lab/xmr/log exit
+your current session's state. Otherwise, you might need to synchronize 
+your wallet again (your wallet keys are NOT at risk in any case).
+
+
+NOTE: the following 25 words can be used to recover access to your wallet. Write them down and store them somewhere safe and secure. Please do not store them in your email or on file storage services outside of your immediate control.
+
+serving feel megabyte waffle jagged jogger jellyfish bakery
+unsafe enjoy jockey gnome hinder ruling afield unplugs
+unmask upbeat ankle victim kennel eden jubilee junk jubilee
+**********************************************************************
+If you are new to Monero, type "welcome" for a brief overview.
+Error: Unknown command: exit
+rc=0
+-rw------- 410274 /lab/xmr/w
+-rw------- 311 /lab/xmr/log
+-rw------- 1728 /lab/xmr/w.keys
+$ monero-wallet-cli --offline --wallet-file /lab/xmr/w --password pw --log-file /lab/xmr/log help
+This is the command line monero wallet. It needs to connect to a monero
+daemon to work correctly.
+WARNING: Do not reuse your Monero keys on another fork, UNLESS this fork has key reuse mitigations built in. Doing so will harm your privacy.
+
+Monero 'Fluorine Fermi' (v0.18.5.1-release)
+Logging to /lab/xmr/log
+Opened wallet: 42S495A2XwMh9Pwhxt9otNgoz8rW92htiUV85zLqJJwg8RrLABbUyNF5XtrXJC7tuxVsdbsxPcPv13zoZSYL6s7BURmfr1n
+**********************************************************************
+Use the "help" command to see a simplified list of available commands.
+Use "help all" to see the list of all available commands.
+Use "help <command>" to see a command's documentation.
+**********************************************************************
+
+Important commands:
+
+"welcome" - Show welcome message.
+"help all" - Show the list of all available commands.
+"help <command>" - Show a command's documentation.
+"apropos <keyword>" - Show commands related to a keyword.
+
+"wallet_info" - Show wallet main address and other info.
+"balance" - Show balance.
+"address all" - Show all addresses.
+"address new" - Create new subaddress.
+"transfer <address> <amount>" - Send XMR to an address.
+"show_transfers [in|out|pending|failed|pool]" - Show transactions.
+"sweep_all <address>" - Send whole balance to another wallet.
+"seed" - Show secret 25 words that can be used to recover this wallet.
+"refresh" - Synchronize wallet with the Monero network.
+"status" - Check current status of wallet.
+"version" - Check software version.
+"exit" - Exit wallet.
+
+"donate <amount>" - Donate XMR to the development team.
+
+rc=0
+$ monero-wallet-cli --offline --wallet-file /lab/xmr/w --password pw --log-file /lab/xmr/log set_description rent and savings
+This is the command line monero wallet. It needs to connect to a monero
+daemon to work correctly.
+WARNING: Do not reuse your Monero keys on another fork, UNLESS this fork has key reuse mitigations built in. Doing so will harm your privacy.
+
+Monero 'Fluorine Fermi' (v0.18.5.1-release)
+Logging to /lab/xmr/log
+Opened wallet: 42S495A2XwMh9Pwhxt9otNgoz8rW92htiUV85zLqJJwg8RrLABbUyNF5XtrXJC7tuxVsdbsxPcPv13zoZSYL6s7BURmfr1n
+**********************************************************************
+Use the "help" command to see a simplified list of available commands.
+Use "help all" to see the list of all available commands.
+Use "help <command>" to see a command's documentation.
+**********************************************************************
+rc=0
+-rw------- 410312 /lab/xmr/w
+-rw------- 933 /lab/xmr/log
+-rw------- 1728 /lab/xmr/w.keys
+$ monero-wallet-cli --offline --wallet-file /lab/xmr/w --password pw --log-file /lab/xmr/log get_description
+daemon to work correctly.
+WARNING: Do not reuse your Monero keys on another fork, UNLESS this fork has key reuse mitigations built in. Doing so will harm your privacy.
+
+Monero 'Fluorine Fermi' (v0.18.5.1-release)
+Logging to /lab/xmr/log
+Opened wallet: 42S495A2XwMh9Pwhxt9otNgoz8rW92htiUV85zLqJJwg8RrLABbUyNF5XtrXJC7tuxVsdbsxPcPv13zoZSYL6s7BURmfr1n
+**********************************************************************
+Use the "help" command to see a simplified list of available commands.
+Use "help all" to see the list of all available commands.
+Use "help <command>" to see a command's documentation.
+**********************************************************************
+description found: rent and savings
+rc=0
+##### steamguard
+$ steamguard -m /lab/sg list
+INFO reading manifest from /lab/sg
+alice
+rc=0
+$ steamguard -m /lab/sg -p correcthorse encrypt
+INFO reading manifest from /lab/sg
+ERROR Failed to deserialize the account. DeserializationFailed(Error { path: Path { segments: [] }, original: Error("missing field `steam_id`", line: 1, column: 565) })
+
+Caused by:
+    missing field `steam_id` at line 1 column 565
+rc=0
+-rw-r--r-- 211 /lab/sg/manifest.json
+-rw-r--r-- 566 /lab/sg/alice.maFile
+{"version":1,"entries":[{"filename":"alice.maFile","steam_id":76561198000000001,"account_name":"alice","encryption":null}],"keyring_id":null,"auto_confirm_market_transactions":false,"auto_confirm_trades":false}
+
+$ steamguard -m /lab/sg -p correcthorse code
+INFO reading manifest from /lab/sg
+ERROR Could not load accounts: Failed to deserialize the account. DeserializationFailed(Error { path: Path { segments: [] }, original: Error("missing field `steam_id`", line: 1, column: 565) })
+ERROR Failed to deserialize the account. DeserializationFailed(Error { path: Path { segments: [] }, original: Error("missing field `steam_id`", line: 1, column: 565) })
+
+Caused by:
+    missing field `steam_id` at line 1 column 565
+rc=0
+$ steamguard -m /lab/sg -p correcthorse decrypt
+INFO reading manifest from /lab/sg
+ERROR Could not load accounts: Failed to deserialize the account. DeserializationFailed(Error { path: Path { segments: [] }, original: Error("missing field `steam_id`", line: 1, column: 565) })
+ERROR Failed to deserialize the account. DeserializationFailed(Error { path: Path { segments: [] }, original: Error("missing field `steam_id`", line: 1, column: 565) })
+
+Caused by:
+    missing field `steam_id` at line 1 column 565
+rc=0
+-rw-r--r-- 211 /lab/sg/manifest.json
+-rw-r--r-- 566 /lab/sg/alice.maFile
+##### lighthouse
+$ lighthouse account validator modify --datadir /lab/lh disable --pubkey 0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c
+No logfile path provided, logging to file is disabled
+Running account manager for mainnet network
+validator-dir path: "/lab/lh/validators"
+Validator 0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c disabled
+
+Successfully modified validator_definitions.yml
+rc=0
+-rw-r--r-- 561 /lab/lh/validators/validator_definitions.yml
+- enabled: false
+  voting_public_key: 0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c
+  description: ''
+  type: local_keystore
+  voting_keystore_path: /lab/lh/validators/0xa99a/voting-keystore.json
+  voting_keystore_password: pw1
+- enabled: true
+  voting_public_key: 0xb89bebc699769726a318c8e9971bd3171297c61aea4a6578a7a4f94b547dcba5bac16a89108b6b6a1fe3695d1a874a0b

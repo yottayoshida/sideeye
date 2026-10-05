@@ -1,0 +1,4 @@
+k8sgpt-ai/k8sgpt stars=8217 pushed=2026-10-04 archived=false issues=true full=k8sgpt-ai/k8sgpt
+GitGuardian/ggshield stars=2001 pushed=2026-10-02 archived=false issues=true full=GitGuardian/ggshield
+localstack/localstack stars=65140 pushed=2026-03-23 archived=true issues=true full=localstack/localstack
+astral-sh/uv stars=90408 pushed=2026-10-05 archived=false issues=true full=astral-sh/uv

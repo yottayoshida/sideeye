@@ -1,0 +1,512 @@
+== novelty pre-scan: podman-container-tools/skopeo
+== date: 2026-10-05T03:42:52Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          21 hit(s) (all listed)
+      #2617 open 2025-05-30 proxy: Support convenient reads via additional image store
+      #2982 merged 2026-09-10 Update module google.golang.org/grpc to v1.83.2 [SECURITY]
+      #2958 merged 2026-08-13 RFC: Start using log/slog as the primary logging mechanism
+      #2847 merged 2026-04-10 OCPBUGS-81187: proxy: Verify *either* toplevel or target
+      #2630 closed 2025-06-20 Skopeo copy stuck
+      #2402 merged 2024-08-19 Add support for `--digestfile` for skopeo `sync`
+      #2323 closed 2024-05-09 fix(deps): update module github.com/containers/image/v5 to v5.30.1 - autoclosed
+      #1779 closed 2022-10-17 feature: Add --top-refs flag
+      #1620 closed 2022-04-11 fea(#1619): skopeo sync support use src or dest use oci format
+      #656 merged 2019-05-18 Skopeo crashes on any invalid transport
+      #436 closed 2017-10-20 Failed to inspect image with  invalid memory address or nil pointer dereference 
+      #742 merged 2019-10-15 Temporarily work around auth.json location confusion
+      #861 merged 2020-03-19 Bump github.com/containers/image/v5 from 5.2.1 to 5.3.0
+      #1477 closed 2021-10-07 Copy statistics
+      #906 merged 2020-05-04 Bump github.com/sirupsen/logrus from 1.5.0 to 1.6.0
+      #917 merged 2020-05-15 Update skopeo readme and man page
+      #1833 closed 2022-12-18 install.md: add Windows static build example
+      #329 closed 2017-04-21 skopeo copy from dir: to docker: causes failure
+      #756 merged 2019-11-01 Bump github.com/containers/buildah from 1.8.4 to 1.11.4
+      #763 merged 2019-11-13 Bump github.com/containers/buildah from 1.11.4 to 1.11.5
+  corrupt        14 hit(s) (all listed)
+      #1237 open 2021-03-31 skopeo sync: Support incremental updates to dir storage
+      #2930 open 2026-07-22 [Question] How can I centralise the blob info cache across multiple workers to enable ECR layer mounting?
+      #1854 closed 2023-01-13 force copying an image
+      #1466 closed 2021-09-30 skopeo sync aborts if any of the image tags has issues
+      #1122 closed 2020-12-03 Sync does not seem to make use of docker.io credentials
+      #1624 closed 2022-04-15 "size" is displayed blank after copying image to harbor registry
+      #1828 merged 2022-12-13 vendor: Bump golang.org/x/net to 4.0
+      #1530 closed 2021-12-28 how to cache  layer file when  `skopeo`  copy from docker reigstry to local dir?
+      #1218 closed 2021-03-03 standalone-verify fails with Error verifying signature: Unexpected GPG signature count 0 when no tty is allocated
+      #1441 merged 2021-09-14 Bump github.com/containers/common from 0.43.2 to 0.44.0
+      #1318 merged 2021-06-17 Bump github.com/containers/common from 0.39.0 to 0.40.0
+      #52 closed 2016-05-11 move libraries to pkgs
+      #274 closed 2016-12-13 Switch to use native go opengpg instead of cgo
+      #1762 closed 2022-09-30 Bump github.com/containers/common from 0.49.1 to 0.50.0
+  corruption     7 hit(s) (all listed)
+      #1237 open 2021-03-31 skopeo sync: Support incremental updates to dir storage
+      #2002 open 2023-05-20 Allow overriding registries.conf and registries.d paths
+      #2095 closed 2023-08-29 All images in quay.io show deleted
+      #1210 closed 2021-03-01 Bump github.com/containers/storage from 1.26.0 to 1.27.0
+      #2005 closed 2023-05-26 Allow pushing/pulling single blobs from registry
+      #1235 closed 2021-03-26 Bump github.com/containers/storage from 1.26.0 to 1.28.1
+      #52 closed 2016-05-11 move libraries to pkgs
+  truncated      19 hit(s) (all listed)
+      #2220 closed 2024-02-07 inspect: Go template not working well on some images
+      #2204 closed 2024-01-27 Using skopeo copy from Nix source to docker-daemon target produces no image
+      #757 merged 2019-11-01 Bump github.com/urfave/cli from 1.20.0 to 1.22.1
+      #756 merged 2019-11-01 Bump github.com/containers/buildah from 1.8.4 to 1.11.4
+      #913 merged 2020-05-14 Bump github.com/opencontainers/go-digest from 1.0.0-rc1 to 1.0.0
+      #1235 closed 2021-03-26 Bump github.com/containers/storage from 1.26.0 to 1.28.1
+      #1243 merged 2021-04-13 Bump github.com/containers/storage from 1.26.0 to 1.29.0
+      #1246 closed 2021-04-14 Bump github.com/containers/common from 0.34.0 to 0.36.0
+      #1275 closed 2021-05-07 Bump github.com/docker/docker from 20.10.3-0.20210216175712-646072ed6524+incompatible to 20.10.6+incompatible
+      #1304 merged 2021-06-03 Bump github.com/docker/docker from 20.10.6+incompatible to 20.10.7+incompatible
+      #1404 merged 2021-08-04 Bump github.com/docker/docker from 20.10.7+incompatible to 20.10.8+incompatible
+      #1527 merged 2021-12-15 Bump github.com/spf13/cobra from 1.2.1 to 1.3.0
+      #1775 merged 2022-10-12 Bump github.com/spf13/cobra from 1.5.0 to 1.6.0
+      #1590 merged 2022-03-11 Bump github.com/spf13/cobra from 1.3.0 to 1.4.0
+      #1686 merged 2022-06-21 Bump github.com/spf13/cobra from 1.4.0 to 1.5.0
+      #1541 merged 2022-01-20 Bump github.com/containers/storage from 1.37.0 to 1.38.0
+      #1762 closed 2022-09-30 Bump github.com/containers/common from 0.49.1 to 0.50.0
+      #1758 merged 2022-09-29 Bump github.com/containers/storage from 1.42.0 to 1.43.0
+      #1710 merged 2022-07-22 Bump github.com/containers/storage from 1.41.0 to 1.42.0
+  truncate       23 hit(s) (all listed)
+      #2961 merged 2026-08-17 Update module github.com/stretchr/testify to v1.12.0
+      #2751 closed 2025-11-18 Support `containers-storage:` with `sha256:` prefix
+      #2906 merged 2026-07-07 Update module golang.org/x/crypto to v0.52.0 [SECURITY]
+      #2220 closed 2024-02-07 inspect: Go template not working well on some images
+      #2188 closed 2024-01-02 chore(deps): update module golang.org/x/crypto to v0.17.0 [security] - autoclosed
+      #2204 closed 2024-01-27 Using skopeo copy from Nix source to docker-daemon target produces no image
+      #757 merged 2019-11-01 Bump github.com/urfave/cli from 1.20.0 to 1.22.1
+      #756 merged 2019-11-01 Bump github.com/containers/buildah from 1.8.4 to 1.11.4
+      #913 merged 2020-05-14 Bump github.com/opencontainers/go-digest from 1.0.0-rc1 to 1.0.0
+      #1235 closed 2021-03-26 Bump github.com/containers/storage from 1.26.0 to 1.28.1
+      #1243 merged 2021-04-13 Bump github.com/containers/storage from 1.26.0 to 1.29.0
+      #1246 closed 2021-04-14 Bump github.com/containers/common from 0.34.0 to 0.36.0
+      #1275 closed 2021-05-07 Bump github.com/docker/docker from 20.10.3-0.20210216175712-646072ed6524+incompatible to 20.10.6+incompatible
+      #1304 merged 2021-06-03 Bump github.com/docker/docker from 20.10.6+incompatible to 20.10.7+incompatible
+      #1404 merged 2021-08-04 Bump github.com/docker/docker from 20.10.7+incompatible to 20.10.8+incompatible
+      #1527 merged 2021-12-15 Bump github.com/spf13/cobra from 1.2.1 to 1.3.0
+      #1775 merged 2022-10-12 Bump github.com/spf13/cobra from 1.5.0 to 1.6.0
+      #1590 merged 2022-03-11 Bump github.com/spf13/cobra from 1.3.0 to 1.4.0
+      #1686 merged 2022-06-21 Bump github.com/spf13/cobra from 1.4.0 to 1.5.0
+      #1541 merged 2022-01-20 Bump github.com/containers/storage from 1.37.0 to 1.38.0
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2002 open 2023-05-20 Allow overriding registries.conf and registries.d paths
+      #2916 open 2026-07-15 ci: golangci-lint used via make tools instead of golangci-lint-action
+      #2227 open 2024-02-13 Skopeo sync does not sync Notation signatures
+      #2994 merged 2026-09-24 Update dependency golangci/golangci-lint to v2.14.0
+      #2979 merged 2026-09-07 README: state where skopeo officially comes from
+      #1309 open 2021-06-09 equivalent of docker history
+      #2982 merged 2026-09-10 Update module google.golang.org/grpc to v1.83.2 [SECURITY]
+      #823 open 2020-02-19 auth file logic should match podman's
+      #2884 closed 2026-05-30 feat: inspect: surface the image's Comment field
+      #2978 closed 2026-09-07 skopeo.org is an unaffiliated site presenting as the project home page; this repo sets no canonical URL
+      #2701 open 2025-09-05 `make test-integration` failed with `exec: "registry": executable file not found in $PATH`
+      #2974 merged 2026-09-02 Update module google.golang.org/grpc to v1.83.1 [SECURITY]
+      #2874 merged 2026-05-12 RUN-4630: copy: add platform-based filtering via --multi-arch flag
+      #2712 closed 2025-09-21 Blank passphrase not allowed on signing key
+      #2838 merged 2026-04-07 chore(deps): update module github.com/go-jose/go-jose/v4 to v4.1.4 [security]
+      #2892 merged 2026-06-08 Add support for manifest list signature removal and sparse manifest list stripping
+      #2720 merged 2025-10-03 Allow using sigstore keys with empty passphrases
+      #2906 merged 2026-07-07 Update module golang.org/x/crypto to v0.52.0 [SECURITY]
+      #2763 merged 2025-12-04 Packit: use `post-modifications` hook to update downstream TMT plan
+      #2731 merged 2025-10-27 Fix test-system and remove stale Makefile target
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2725 open 2025-10-17 Cirrus: use test-integration target
+      #2514 open 2025-02-11 Add log-level flag for skopeo
+      #463 open 2017-12-04 Document how to configure a registry to allow deleting images
+      #2960 merged 2026-08-17 ci: install golangci-lint via golangci-lint-action
+      #2619 merged 2025-06-03 Move RHEL branches to TMT
+      #2328 closed 2024-05-13 chore(deps): update dependency containers/automation_images to v20240513 - autoclosed
+      #2253 closed 2024-03-11 Skopeo copy job creates .kube/config directory structure failing Azure AKS  kubelogin convert-kubeconfig command
+      #202 merged 2016-09-13 Change atomic URI
+      #117 merged 2016-06-22 Add Atomic registry integration tests
+      #194 closed 2016-09-07 atomic type awkward
+      #639 merged 2019-04-24 Remove references to atomic
+      #430 closed 2017-10-11  Cannot inspect image from atomic transport
+      #209 closed 2016-09-17 "atomic" type needs registries.d config
+      #373 closed 2017-07-14 Add atomic transport type to standalone-sign
+      #43 merged 2016-05-02 Add Atomic Registry support for push and pull, and a new “copy” command
+      #157 merged 2016-08-10 Verify signatures on pull
+      #475 closed 2018-02-05 files landed when installing system container have `default_t` label
+      #185 merged 2016-09-01 Add --remove-signatures to (skopeo copy)
+      #235 closed 2016-10-19 'authorization required' error when trying to copy an image that does not exist
+      #530 closed 2018-07-30 skopeo doesn't take /etc/containers/registries.conf [registries.insecure] into account
+  atomically     0 hit(s)
+  interrupted    2 hit(s) (all listed)
+      #2400 closed 2024-08-15  proxy: Verify *either* toplevel or target
+      #2419 closed 2024-09-06 Is there a way to cache the complete layers for copy work
+  interrupt      8 hit(s) (all listed)
+      #2400 closed 2024-08-15  proxy: Verify *either* toplevel or target
+      #2608 merged 2025-05-20 fix(deps): update module github.com/containers/common to v0.63.0
+      #2584 closed 2025-04-17 fix(deps): update module github.com/containers/common to v0.63.0
+      #2419 closed 2024-09-06 Is there a way to cache the complete layers for copy work
+      #1007 closed 2020-08-10 Build in docker container not working
+      #1938 merged 2023-03-15 bump golang.org/x/net to v0.8.0
+      #1304 merged 2021-06-03 Bump github.com/docker/docker from 20.10.6+incompatible to 20.10.7+incompatible
+      #1011 closed 2020-08-11 fix #1009 do not fail on single image copy error
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #1603 merged 2022-03-24 Bump github.com/containers/storage from 1.38.2 to 1.39.0
+  ctrl-c         1 hit(s) (all listed)
+      #2878 open 2026-05-18 `experimental-image-proxy`: hangs indefinitely when CDN stalls mid-blob-download (FinishPipe deadlock)
+  power          8 hit(s) (all listed)
+      #2617 open 2025-05-30 proxy: Support convenient reads via additional image store
+      #2187 closed 2024-01-02 chore(deps): update module github.com/containerd/containerd to v1.7.11 [security] - autoclosed
+      #2140 merged 2023-10-30 chore(deps): update module github.com/docker/docker to v24.0.7+incompatible [security]
+      #27 closed 2016-03-23 Broken master CI
+      #426 merged 2017-09-26 Update image-tools, and remove the duplicate Sirupsen/logrus vendor
+      #572 merged 2018-12-13 vendor: use faster version instead compress/gzip
+      #1182 closed 2021-02-01 Error verifying signature: invalid reference format
+      #954 closed 2020-06-16 Skopeo copy from docker hub gets a different hash than using Docker pull
+  outage         6 hit(s) (all listed)
+      #2739 open 2025-11-10 tests: do not use registry.fedoraproject.org images
+      #2982 merged 2026-09-10 Update module google.golang.org/grpc to v1.83.2 [SECURITY]
+      #2493 merged 2025-01-10 systemtest: update quay.io registry image
+      #2080 merged 2023-08-15 fix(deps): update module github.com/containers/ocicrypt to v1.1.8
+      #422 merged 2017-09-20 fixing error checking due to update in make lint
+      #1767 merged 2022-10-02 Adds `--append-suffix` flag to sync command
+  ENOSPC         0 hit(s)
+  disk           57 hit(s) (all listed)
+      #2002 open 2023-05-20 Allow overriding registries.conf and registries.d paths
+      #2857 closed 2026-04-23 Idea: support for systemd’s mstack format
+      #1136 open 2020-12-17 RFE: create multi-arch manifests
+      #1785 closed 2022-10-20 sync to multiple registries
+      #2525 closed 2025-02-17 Very slow and redundant work: Copying blob ... skipped: already exists  (skopeo 1.9.3)
+      #2497 closed 2025-01-16 skopeo delete - multiarch image oci v1 not fully deleted (artifactory)
+      #2601 merged 2025-05-13 proxy: Add GetRawBlob
+      #2576 closed 2025-04-11 proxy: images with DockerV2Schema2MediaType produce incorrect config
+      #1854 closed 2023-01-13 force copying an image
+      #2508 merged 2025-01-31 fix(deps): update module github.com/containers/image/v5 to v5.34.0
+      #2308 merged 2024-04-24 CI VMs: bump to new versions with tmpfs /tmp
+      #2267 closed 2024-03-20 Will using the copy command save image information locally?
+      #2384 merged 2024-07-26 fix(deps): update module github.com/containers/storage to v1.55.0
+      #2185 closed 2023-12-28 Local disk usage spikes when using skopeo copy to transfer a large image tarball to a remote registry
+      #2247 closed 2024-03-05 Does skopeo supports loading local docker tar.gz file into remote registry?
+      #95 merged 2016-06-09 Card container_security_113 - Delete image support
+      #1806 closed 2022-11-08 general question about skopeo copy
+      #714 closed 2019-09-09 Why does Skopeo use so much memory when saving to local dir?
+      #1518 merged 2021-11-26 Stop test producing output in source directory
+      #814 merged 2020-02-06 Partial image encryption support
+  partial        29 hit(s) (all listed)
+      #2871 open 2026-05-08 skopeo inspect, on tag list failure, does not loudly highlight mirrors are not used for that
+      #1987 open 2023-05-02 RFC: copy: add --multi-arch=sparse:...
+      #823 open 2020-02-19 auth file logic should match podman's
+      #2508 merged 2025-01-31 fix(deps): update module github.com/containers/image/v5 to v5.34.0
+      #2450 closed 2024-11-07 fix(deps): update module github.com/containers/storage to v1.56.0 - autoclosed
+      #2332 closed 2024-05-19 fix(deps): update module github.com/containers/storage to v1.54.0 - autoclosed
+      #2248 merged 2024-03-05 fix(deps): update module github.com/containers/image/v5 to v5.30.0
+      #2243 merged 2024-03-04 fix(deps): update module github.com/containers/storage to v1.53.0
+      #814 merged 2020-02-06 Partial image encryption support
+      #1937 closed 2023-03-15 Partial skopeo copy
+      #1249 merged 2021-04-15 Travis -> Cirrus: validate, vendor, and test
+      #886 merged 2020-04-06 Bump to v0.2.0
+      #492 closed 2018-04-09 Minimum go version: Informative error message on build
+      #1889 closed 2023-02-01 Add option to `skopeo copy from-img oci-archive:destination.tar` to skip some layers in the destination
+      #247 closed 2016-11-14 Support managing manifests with foreign URLs
+      #1430 merged 2021-08-26 Bump github.com/containers/image/v5 from 5.15.2 to 5.16.0
+      #1429 closed 2021-08-26 Bump github.com/containers/storage from 1.34.1 to 1.35.0
+      #559 closed 2018-10-13 Add --daemon-host parameter to inspect
+      #1773 closed 2022-10-11 Check existing image layers when copying to docker daemon
+      #406 merged 2017-09-01 Simplify macOS builds
+  incomplete     16 hit(s) (all listed)
+      #2617 open 2025-05-30 proxy: Support convenient reads via additional image store
+      #2435 open 2024-10-08 Off-line verification of signatures against policy.json
+      #2882 closed 2026-05-29 skopeo copy --multi-arch with specific platforms fails with "blob unknown to registry" when manifest list contains other platforms
+      #2585 closed 2025-04-18 Support for `$XDG_CONFIG_HOME/containers/auth.json` undocumented in man pages
+      #2600 closed 2025-05-12 [do-not-merge] Print as much as we can in 'inspect' even for non-image artifacts.
+      #2494 merged 2025-01-14 fix(deps): update module github.com/containers/storage to v1.56.1
+      #2506 merged 2025-01-30 fix(deps): update module github.com/containers/storage to v1.57.0
+      #1918 closed 2023-02-17 Sync images with tags matching a semantic version constraint
+      #199 closed 2016-09-10 Possible to copy from local docker to OCI image?
+      #1607 merged 2022-03-28 Update skopeoimage/README.md that tags are v-prefixed
+      #1458 closed 2021-09-23 skopeo copy, using podman credentials, unauthorized
+      #1614 closed 2022-04-01 `brew install skopeo` failed on macOS BigSur
+      #412 merged 2017-09-08 update installing build dependencies
+      #1809 merged 2022-11-08 fix(deps): update module github.com/containers/storage to v1.44.0
+      #1603 merged 2022-03-24 Bump github.com/containers/storage from 1.38.2 to 1.39.0
+      #1334 merged 2021-06-24 Cirrus: Run checks directly on the host
+  dataloss       0 hit(s)
+  recover        8 hit(s) (all listed)
+      #2982 merged 2026-09-10 Update module google.golang.org/grpc to v1.83.2 [SECURITY]
+      #2878 open 2026-05-18 `experimental-image-proxy`: hangs indefinitely when CDN stalls mid-blob-download (FinishPipe deadlock)
+      #715 open 2019-09-10 Documentation does not mention Windows binary of Skopeo.
+      #1494 merged 2021-11-04 Cirrus: Fix only_if error
+      #1023 merged 2020-08-21 Bump github.com/containers/storage from 1.23.0 to 1.23.1
+      #559 closed 2018-10-13 Add --daemon-host parameter to inspect
+      #1404 merged 2021-08-04 Bump github.com/docker/docker from 20.10.7+incompatible to 20.10.8+incompatible
+      #469 closed 2018-01-12 skopeo inspect digest differs from docker images --digest
+  recovery       3 hit(s) (all listed)
+      #2617 open 2025-05-30 proxy: Support convenient reads via additional image store
+      #2435 open 2024-10-08 Off-line verification of signatures against policy.json
+      #1742 closed 2022-08-30 signature revokation support or approach
+  rollback       4 hit(s) (all listed)
+      #1978 closed 2023-04-21 Roll back module github.com/opencontainers/image-spec to v1.1.0-rc2 - autoclosed
+      #416 closed 2017-09-13 FATA[0001] can not copy docker://busybox:latest: manifest contains multiple images 
+      #932 merged 2020-05-28 [nix] Add nix derivation for static builds
+      #445 closed 2017-11-06 unable to copy image to docker daemon
+  resume         7 hit(s) (all listed)
+      #2599 open 2025-05-10 skopeo fails to copy with signature `COSIGN_DOCKER_MEDIA_TYPES=1`
+      #2549 closed 2025-03-17 skopeo emits warnings/fails when copying in a container build
+      #2400 closed 2024-08-15  proxy: Verify *either* toplevel or target
+      #2700 merged 2025-09-04 Packit/RPM: build with sequoia for f43+ and couple of other changes for distro conditionals and easier testing
+      #2419 closed 2024-09-06 Is there a way to cache the complete layers for copy work
+      #1213 closed 2021-03-02 [WIP - DO NOT MERGE] switch to cirrus
+      #841 closed 2020-03-08 runtime/cgo: pthread_create failed: Resource temporarily unavailable
+  half-written   1 hit(s) (all listed)
+      #1334 merged 2021-06-24 Cirrus: Run checks directly on the host
+  wipe           5 hit(s) (all listed)
+      #2892 merged 2026-06-08 Add support for manifest list signature removal and sparse manifest list stripping
+      #2458 merged 2024-11-12 Bump Skopeo to v1.17.0, c/common v0.61.0, c/image v5.33.0, c/storage v1.56.0
+      #2419 closed 2024-09-06 Is there a way to cache the complete layers for copy work
+      #312 closed 2017-02-21 vendor: update dependencies
+      #1758 merged 2022-09-29 Bump github.com/containers/storage from 1.42.0 to 1.43.0
+  wipes          1 hit(s) (all listed)
+      #2419 closed 2024-09-06 Is there a way to cache the complete layers for copy work
+  erase          5 hit(s) (all listed)
+      #1237 open 2021-03-31 skopeo sync: Support incremental updates to dir storage
+      #2864 closed 2026-04-30 [release-1.16] Bump Go Jose to 3.0.5 and 4.1.4, CVE-2026-34986
+      #1844 closed 2023-01-10 proxy: Add optional flags to `OpenImage`
+      #123 merged 2016-06-24 Build binary in a docker container
+      #1350 closed 2021-06-29 Man page validation: part 2 of 2
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #1844 closed 2023-01-10 proxy: Add optional flags to `OpenImage`
+  destroy        6 hit(s) (all listed)
+      #2847 merged 2026-04-10 OCPBUGS-81187: proxy: Verify *either* toplevel or target
+      #448 closed 2017-11-07 copy command shouldn't destroy destination on error
+      #1120 merged 2020-12-01 Update nix pin with `make nixpkgs`
+      #2029 merged 2023-06-29 proxy: Policy verification of OCI Image before pulling
+      #1477 closed 2021-10-07 Copy statistics
+      #659 merged 2019-05-20 systemtest - new set of BATS tests for RHEL8 gating
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1237 open 2021-03-31 skopeo sync: Support incremental updates to dir storage
+      #2178 open 2023-12-08 Add dry-run mode to copy skopeo-copy
+      #2660 open 2025-07-18 fix(sync): fix dry-run failing consecutive runs by creating directories in target dir
+      #2701 open 2025-09-05 `make test-integration` failed with `exec: "registry": executable file not found in $PATH`
+      #2818 closed 2026-03-07 [Proposed feature] Copy an image to a directory using the docker registry v2 structure.
+      #2721 closed 2025-10-08 ignore_chown_errors config in storage.conf is not respected
+      #2710 merged 2025-09-17 sync: honor CLI/global tls-verify unless YAML explicitly sets tls-verify
+      #2654 merged 2025-07-16 fixes to have test-*-local Makefile targets work
+      #2458 merged 2024-11-12 Bump Skopeo to v1.17.0, c/common v0.61.0, c/image v5.33.0, c/storage v1.56.0
+      #2402 merged 2024-08-19 Add support for `--digestfile` for skopeo `sync`
+      #2383 merged 2024-07-26 fix(deps): update module github.com/containers/image/v5 to v5.32.0
+      #2366 merged 2024-06-25 Bump github.com/hashicorp/go-retryablehttp from 0.7.6 to 0.7.7
+      #1620 closed 2022-04-11 fea(#1619): skopeo sync support use src or dest use oci format
+      #2187 closed 2024-01-02 chore(deps): update module github.com/containerd/containerd to v1.7.11 [security] - autoclosed
+      #29 merged 2016-03-30 Add ImageSource and ImageDestination abstractions
+      #233 merged 2016-10-12 add sigstore default configuration
+      #243 merged 2016-11-03 Add static compile target in Makefile
+      #781 merged 2019-12-06 Bump github.com/containers/storage from 1.15.1 to 1.15.2
+      #1224 merged 2021-03-11 [1.2] Bump c/storage to v1.24.8 and c/image to v5.10.5 for RHEL 8.4
+      #956 closed 2020-06-17 vendor github.com/containers/image/v5@v5.5.0
+  clobber        5 hit(s) (all listed)
+      #1237 open 2021-03-31 skopeo sync: Support incremental updates to dir storage
+      #2293 merged 2024-04-11 [release-1.9] Bump ocicrypt and go-jose CVE-2024-28180
+      #2093 merged 2023-08-28 Cirrus: Remove multi-arch skopeo image builds
+      #492 closed 2018-04-09 Minimum go version: Informative error message on build
+      #659 merged 2019-05-20 systemtest - new set of BATS tests for RHEL8 gating
+  blank          15 hit(s) (all listed)
+      #2994 merged 2026-09-24 Update dependency golangci/golangci-lint to v2.14.0
+      #2712 closed 2025-09-21 Blank passphrase not allowed on signing key
+      #2960 merged 2026-08-17 ci: install golangci-lint via golangci-lint-action
+      #2847 merged 2026-04-10 OCPBUGS-81187: proxy: Verify *either* toplevel or target
+      #2505 merged 2025-01-29 fix(deps): update module github.com/spf13/pflag to v1.0.6
+      #2416 closed 2024-09-02 Skopeo Tag v1.16.0 Manifest errors on pull-through with podman
+      #2402 merged 2024-08-19 Add support for `--digestfile` for skopeo `sync`
+      #1624 closed 2022-04-15 "size" is displayed blank after copying image to harbor registry
+      #1320 closed 2021-06-18 Fail to decrypt the image with PKCS7
+      #329 closed 2017-04-21 skopeo copy from dir: to docker: causes failure
+      #599 merged 2019-02-01 Add --quiet option to skopeo copy
+      #1142 merged 2020-12-23 fix creds sync from yaml
+      #757 merged 2019-11-01 Bump github.com/urfave/cli from 1.20.0 to 1.22.1
+      #1263 merged 2021-04-23 Added format parameter to sync command
+      #1334 merged 2021-06-24 Cirrus: Run checks directly on the host
+  unreadable     3 hit(s) (all listed)
+      #1750 merged 2022-09-12 default.yaml should have all options commented
+      #982 closed 2020-07-16 skopeo copy doesn't fail if --encryption-key is ignored
+      #254 merged 2016-11-25 use user/pass flags
+  garbage        11 hit(s) (all listed)
+      #463 open 2017-12-04 Document how to configure a registry to allow deleting images
+      #1432 open 2021-08-26 skopeo delete command deletes by reference even when we provide tag 
+      #715 open 2019-09-10 Documentation does not mention Windows binary of Skopeo.
+      #2906 merged 2026-07-07 Update module golang.org/x/crypto to v0.52.0 [SECURITY]
+      #2497 closed 2025-01-16 skopeo delete - multiarch image oci v1 not fully deleted (artifactory)
+      #1779 closed 2022-10-17 feature: Add --top-refs flag
+      #2187 closed 2024-01-02 chore(deps): update module github.com/containerd/containerd to v1.7.11 [security] - autoclosed
+      #95 merged 2016-06-09 Card container_security_113 - Delete image support
+      #456 merged 2017-11-19 Cleanup skopeo man page and README.md
+      #1068 merged 2020-10-08 Update README.md
+      #281 closed 2017-01-05 If image exists, skopeo copy should not repull image
+  mangled        1 hit(s) (all listed)
+      #412 merged 2017-09-08 update installing build dependencies
+  contents       95 hit(s) (all listed)
+      #2919 open 2026-07-15 Epic: GHA migration follow-up from skopeo-sandbox review
+      #2776 open 2025-12-28 Feature Request: Support `docker save` compatible archive format for k3s/containerd air-gap installations
+      #2463 open 2024-11-21 Unable to skopeo copy from multi platform oci-archive to registry.
+      #2725 open 2025-10-17 Cirrus: use test-integration target
+      #1237 open 2021-03-31 skopeo sync: Support incremental updates to dir storage
+      #2983 merged 2026-09-15 Release 1.24.1
+      #2930 open 2026-07-22 [Question] How can I centralise the blob info cache across multiple workers to enable ECR layer mounting?
+      #2875 merged 2026-05-14 Feat/download foreign layers
+      #1136 open 2020-12-17 RFE: create multi-arch manifests
+      #2945 merged 2026-08-05 Update dorny/paths-filter action to v4.0.3
+      #2857 closed 2026-04-23 Idea: support for systemd’s mstack format
+      #2701 open 2025-09-05 `make test-integration` failed with `exec: "registry": executable file not found in $PATH`
+      #2818 closed 2026-03-07 [Proposed feature] Copy an image to a directory using the docker registry v2 structure.
+      #2400 closed 2024-08-15  proxy: Verify *either* toplevel or target
+      #2751 closed 2025-11-18 Support `containers-storage:` with `sha256:` prefix
+      #2782 closed 2026-01-07 loading tar component manifest.json: file does not exist
+      #2747 merged 2025-11-17 skopeo inspect: support for sha512 images
+      #2708 closed 2025-09-12 Errors attempting to copy SOCI v2 indexed image
+      #2625 closed 2025-06-12 Feature: use ZIP for oci-archive
+      #2678 closed 2025-08-16 skopeo copy sets the wrong mediaType
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2170 open 2023-12-01 Are default-policy.json & default.yaml in wrong place? Shouldn't they be in containers/image?
+      #2899 open 2026-06-20 skopeo[.]org website
+      #2930 open 2026-07-22 [Question] How can I centralise the blob info cache across multiple workers to enable ECR layer mounting?
+      #823 open 2020-02-19 auth file logic should match podman's
+      #1283 open 2021-05-13 Skopeo inspect: provide --top-level about included architectures
+      #1829 open 2022-12-15 proxy: Add `OpenImageWithRequiredSignatures`
+      #1987 open 2023-05-02 RFC: copy: add --multi-arch=sparse:...
+      #2979 merged 2026-09-07 README: state where skopeo officially comes from
+      #2958 merged 2026-08-13 RFC: Start using log/slog as the primary logging mechanism
+      #2883 merged 2026-05-29 CI migration
+      #2870 closed 2026-05-06 copy: add --progress-interval for CI-compatible progress output
+      #2173 closed 2023-12-01 Moving default-policy.json and default.yaml to containers/image
+      #715 open 2019-09-10 Documentation does not mention Windows binary of Skopeo.
+      #2680 closed 2025-08-20 Error when mirroring from Harbor registry
+      #2818 closed 2026-03-07 [Proposed feature] Copy an image to a directory using the docker registry v2 structure.
+      #2714 merged 2025-09-24 skopeo: add `--require-signed`
+      #2686 closed 2025-08-27 skopeo 1.20.0 not copying layers.annotations when copying from containers-storage: to docker://
+      #2763 merged 2025-12-04 Packit: use `post-modifications` hook to update downstream TMT plan
+      #2746 merged 2025-11-17 Container libs vendor and Renovate config update
+      #2724 merged 2025-10-15 main: Add support for overriding HTTP User-Agent
+  unclean        7 hit(s) (all listed)
+      #2514 open 2025-02-11 Add log-level flag for skopeo
+      #2619 merged 2025-06-03 Move RHEL branches to TMT
+      #2182 closed 2023-12-19 Accept URI for Sigstore Signed Images
+      #161 merged 2016-08-11 add a source debug build
+      #52 closed 2016-05-11 move libraries to pkgs
+      #857 merged 2020-03-18 Use cobra in skopeo
+      #524 merged 2018-07-13 Introduce the sync command
+  shutdown       4 hit(s) (all listed)
+      #2878 open 2026-05-18 `experimental-image-proxy`: hangs indefinitely when CDN stalls mid-blob-download (FinishPipe deadlock)
+      #2847 merged 2026-04-10 OCPBUGS-81187: proxy: Verify *either* toplevel or target
+      #2549 closed 2025-03-17 skopeo emits warnings/fails when copying in a container build
+      #1809 merged 2022-11-08 fix(deps): update module github.com/containers/storage to v1.44.0
+  reboot         2 hit(s) (all listed)
+      #2549 closed 2025-03-17 skopeo emits warnings/fails when copying in a container build
+      #2282 closed 2024-04-04 authentication required for ECR repo
+  disk+full      13 hit(s) (all listed)
+      #2576 closed 2025-04-11 proxy: images with DockerV2Schema2MediaType produce incorrect config
+      #2601 merged 2025-05-13 proxy: Add GetRawBlob
+      #1854 closed 2023-01-13 force copying an image
+      #2508 merged 2025-01-31 fix(deps): update module github.com/containers/image/v5 to v5.34.0
+      #2384 merged 2024-07-26 fix(deps): update module github.com/containers/storage to v1.55.0
+      #2204 closed 2024-01-27 Using skopeo copy from Nix source to docker-daemon target produces no image
+      #532 closed 2018-08-08 skopeo copy containers-storage:... docker:... should deduplicate layers
+      #559 closed 2018-10-13 Add --daemon-host parameter to inspect
+      #1950 merged 2023-03-24 Verify signatures from a list of public keys
+      #643 closed 2019-04-29 Skopeo packaged for conda-forge
+      #1240 closed 2021-04-09 skopeo login may need write permissions to /run/containers
+      #1476 merged 2021-10-06 Add new `experimental-image-proxy` hidden command
+      #1350 closed 2021-06-29 Man page validation: part 2 of 2
+  data+loss      2 hit(s) (all listed)
+      #2504 closed 2025-01-28 docs: Update skopeo delete man page #2497
+      #1334 merged 2021-06-24 Cirrus: Run checks directly on the host
+  partial+write  6 hit(s) (all listed)
+      #1987 open 2023-05-02 RFC: copy: add --multi-arch=sparse:...
+      #2332 closed 2024-05-19 fix(deps): update module github.com/containers/storage to v1.54.0 - autoclosed
+      #1773 closed 2022-10-11 Check existing image layers when copying to docker daemon
+      #1445 closed 2021-09-15 Shuffle sync order
+      #1159 merged 2021-01-12 Set User-Agent to skopeo/$VERSION
+      #1533 closed 2022-01-03 copy: consider support cosign: verify image while pulling from source & sign image while copying to destination
+  crash+safe     0 hit(s)
+  atomic+write   16 hit(s) (all listed)
+      #463 open 2017-12-04 Document how to configure a registry to allow deleting images
+      #373 closed 2017-07-14 Add atomic transport type to standalone-sign
+      #127 merged 2016-06-28 cmd/skopeo: refactor layers command
+      #242 merged 2016-11-02 Fix skopeo layers and deprecate it
+      #413 merged 2017-09-08 Spruce up the README.md a bit
+      #456 merged 2017-11-19 Cleanup skopeo man page and README.md
+      #1135 closed 2020-12-15 it's confusing not to  implement the simple `pull` and `push` sub command 
+      #1489 closed 2021-10-29 Could we extract the content of some blobs copied by scopeo ?
+      #52 closed 2016-05-11 move libraries to pkgs
+      #560 closed 2018-10-13 copy: add null transport format to support signature verification
+      #393 closed 2017-08-04 Document blob digest / layer DiffID, (docker inspect) / (skopeo inspect) differences, and schema1 empty layers
+      #1334 merged 2021-06-24 Cirrus: Run checks directly on the host
+      #1306 closed 2021-06-07 add policy-verify option - policy and signature verification using signature stores
+      #402 closed 2017-08-28 Error while writing manifest image to destination
+      #465 closed 2017-12-06 standalone-verify failed to verify image signature
+      #1969 merged 2023-04-08 Update module github.com/containers/common to v0.52.0
+  lock+file      27 hit(s) (all listed)
+      #2878 open 2026-05-18 `experimental-image-proxy`: hangs indefinitely when CDN stalls mid-blob-download (FinishPipe deadlock)
+      #2930 open 2026-07-22 [Question] How can I centralise the blob info cache across multiple workers to enable ECR layer mounting?
+      #2952 merged 2026-08-12 ci: add zizmor workflow
+      #2549 closed 2025-03-17 skopeo emits warnings/fails when copying in a container build
+      #2652 closed 2025-07-14 Update module github.com/containers/storage to v1.59.0 - autoclosed
+      #2595 closed 2025-05-07 skopeo copy to Nexus Proxy Repository (404 Error)
+      #2490 closed 2025-01-08 FEATURE: Support static web hosting
+      #2508 merged 2025-01-31 fix(deps): update module github.com/containers/image/v5 to v5.34.0
+      #2450 closed 2024-11-07 fix(deps): update module github.com/containers/storage to v1.56.0 - autoclosed
+      #2332 closed 2024-05-19 fix(deps): update module github.com/containers/storage to v1.54.0 - autoclosed
+      #2384 merged 2024-07-26 fix(deps): update module github.com/containers/storage to v1.55.0
+      #2248 merged 2024-03-05 fix(deps): update module github.com/containers/image/v5 to v5.30.0
+      #619 closed 2019-03-20 WIP - detect copy operations by other processes
+      #406 merged 2017-09-01 Simplify macOS builds
+      #1809 merged 2022-11-08 fix(deps): update module github.com/containers/storage to v1.44.0
+      #974 merged 2020-07-10 Bump github.com/containers/storage from 1.20.2 to 1.21.0
+      #1471 merged 2021-10-05 Bump github.com/docker/docker from 20.10.8+incompatible to 20.10.9+incompatible
+      #2024 merged 2023-06-27 Update module github.com/containers/storage to v1.47.0
+      #1404 merged 2021-08-04 Bump github.com/docker/docker from 20.10.7+incompatible to 20.10.8+incompatible
+      #1045 merged 2020-09-15 Bump github.com/containers/image/v5 from 5.5.2 to 5.6.0
+  write+failure  31 hit(s) (all listed)
+      #2953 open 2026-08-12 `hack/validate-git-marks.sh` does not detect conflict markers
+      #2878 open 2026-05-18 `experimental-image-proxy`: hangs indefinitely when CDN stalls mid-blob-download (FinishPipe deadlock)
+      #2701 open 2025-09-05 `make test-integration` failed with `exec: "registry": executable file not found in $PATH`
+      #2589 closed 2025-04-30 feature: Add proper error reporting for `inspect`
+      #2400 closed 2024-08-15  proxy: Verify *either* toplevel or target
+      #2549 closed 2025-03-17 skopeo emits warnings/fails when copying in a container build
+      #2601 merged 2025-05-13 proxy: Add GetRawBlob
+      #2419 closed 2024-09-06 Is there a way to cache the complete layers for copy work
+      #2402 merged 2024-08-19 Add support for `--digestfile` for skopeo `sync`
+      #2384 merged 2024-07-26 fix(deps): update module github.com/containers/storage to v1.55.0
+      #2332 closed 2024-05-19 fix(deps): update module github.com/containers/storage to v1.54.0 - autoclosed
+      #2189 merged 2024-01-04 Adding support for semver filter in sync command 
+      #471 closed 2018-01-17 Copying certain images into ostree fail
+      #25 merged 2016-03-23 Signing
+      #160 merged 2016-08-11 fix dependencies
+      #1708 closed 2022-07-18 skopeo copy cannot retry when `dest` is a docker-archive
+      #1821 merged 2022-12-06 Cirrus: Update to F37 CI VM Images
+      #1066 merged 2020-10-07 add multi-arch build of upstream skopeo image via Travis
+      #1222 closed 2021-03-11 copy_test.go failures outside a specific container image in --privileged mode
+      #933 merged 2020-05-28 Retry skopeo inspect command
+  file+contents  52 hit(s) (all listed)
+      #2919 open 2026-07-15 Epic: GHA migration follow-up from skopeo-sandbox review
+      #2463 open 2024-11-21 Unable to skopeo copy from multi platform oci-archive to registry.
+      #2776 open 2025-12-28 Feature Request: Support `docker save` compatible archive format for k3s/containerd air-gap installations
+      #2930 open 2026-07-22 [Question] How can I centralise the blob info cache across multiple workers to enable ECR layer mounting?
+      #1237 open 2021-03-31 skopeo sync: Support incremental updates to dir storage
+      #1136 open 2020-12-17 RFE: create multi-arch manifests
+      #2945 merged 2026-08-05 Update dorny/paths-filter action to v4.0.3
+      #2701 open 2025-09-05 `make test-integration` failed with `exec: "registry": executable file not found in $PATH`
+      #2857 closed 2026-04-23 Idea: support for systemd’s mstack format
+      #2400 closed 2024-08-15  proxy: Verify *either* toplevel or target
+      #2782 closed 2026-01-07 loading tar component manifest.json: file does not exist
+      #2751 closed 2025-11-18 Support `containers-storage:` with `sha256:` prefix
+      #2549 closed 2025-03-17 skopeo emits warnings/fails when copying in a container build
+      #2747 merged 2025-11-17 skopeo inspect: support for sha512 images
+      #2625 closed 2025-06-12 Feature: use ZIP for oci-archive
+      #2683 closed 2025-08-23 skopeo sync with `--preserve-digest` does not behave as expected
+      #2568 closed 2025-04-05 Skopeo exports to ctr imports compatibility
+      #2437 closed 2024-10-10 writing blob: Size mismatch
+      #2422 closed 2024-09-11 Manifest not correct when `skopeo copy` decompresses zstd image layers
+      #2247 closed 2024-03-05 Does skopeo supports loading local docker tar.gz file into remote registry?
+
+== 51 terms run; 44 returned hits, 4 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

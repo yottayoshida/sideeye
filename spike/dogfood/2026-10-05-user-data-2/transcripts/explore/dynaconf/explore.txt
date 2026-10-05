@@ -1,0 +1,32 @@
+/opt/py/lib/python3.13/site-packages/dynaconf/cli.py:118: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+/opt/py/lib/python3.13/site-packages/dynaconf/cli.py:118: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+/opt/py/lib/python3.13/site-packages/dynaconf/cli.py:118: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+/opt/py/lib/python3.13/site-packages/dynaconf/cli.py:118: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/dyn/.secrets.toml)
+            before write(/s/dyn/.secrets.toml)
+path        .secrets.toml
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 2 operations (6366 syscall lines examined, 3736 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/dynaconf/work-explore/cases/000001.json
+replay      sideeye replay /out/dynaconf/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/dynaconf/work-explore/evidence/000001.json
+cwd         /s/dyn
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/dyn SIDEEYE_TRACE_PATH=/out/dynaconf/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=1ba0da01715f4a76b1da5d51314f4b9899d4009a089a70b31ae1e92b9006c619;

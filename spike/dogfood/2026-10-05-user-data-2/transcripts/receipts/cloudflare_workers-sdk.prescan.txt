@@ -1,0 +1,949 @@
+== novelty pre-scan: cloudflare/workers-sdk
+== date: 2026-10-05T04:29:36Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15768 open 2026-09-22 [miniflare] Hyperdrive proxy crashes the Node process when the client socket errors
+      #4919 open 2024-02-04 🐛 BUG: slow internet connection causes crashes
+      #16046 open 2026-10-02 [wrangler] createTestHarness: uncaught setTypeOfService EINVAL when close() follows listen()/reset()
+      #15809 open 2026-09-23 [Miniflare][Workflows] Completed instances retain file handles, eventually crashing workerd with “Too many open files”
+      #14945 open 2026-07-31 @cloudflare/vitest-pool-workers segfaults with 3+ real auxiliary Workers wired together (version-independent, minimal synthetic repro does not reproduce)
+      #15199 open 2026-08-15 [vite-plugin] WebSocket upgrade forwards Accept-Encoding gzip; Worker throw becomes undici JSON.parse crash
+      #15129 open 2026-08-11 [@cloudflare/vite-plugin] Dev server crashes at startup with `Missing field moduleType` when an Astro 7 project uses @astrojs/vue
+      #14916 open 2026-07-29 wrangler dev --local crashes the whole process on a recoverable D1 SQLITE_BUSY under concurrent writes (miniflare 4.20260722; regression from 4.20260714)
+      #14921 open 2026-07-29 fix(miniflare): surface D1 session commit token failures as recoverable D1 errors
+      #15451 open 2026-09-01 wrangler dev exits 1 mid-run on "Network connection lost." from ProxyWorker, and prints an empty `✘ [ERROR]`
+      #14949 open 2026-07-31 miniflare: uncaught AssertionError `typeHeader === "Promise"` in #parseAsyncResponse kills vite dev when calling a cross-process Durable Object over the dev registry
+      #10646 open 2025-09-14 Wrangler crashes and exits on a custom build error
+      #5111 open 2024-02-27 🐛 BUG: Prototype pollution leads to crash in wrangler
+      #14701 open 2026-07-15 [vite-plugin/miniflare] workerd heap grows on every server-file edit until OOM, then every request fails with `fetch failed` until manual restart
+      #15498 open 2026-09-03 Vitest run stalls indefinitely mid-suite after a workerd pool test file finishes, with no error output
+      #15203 open 2026-08-15 `wrangler dev` exits with "Error inside ProxyWorker / Network connection lost" on POST requests with a body when `assets` is configured
+      #15452 open 2026-09-01 `wrangler dev` exits with "Error inside ProxyWorker / Network connection lost" when an open WebSocket coexists with a ~5s HTTP request cadence
+      #15769 open 2026-09-22 [miniflare] Handle client socket errors in the Hyperdrive proxy
+      #14600 open 2026-07-08 `@cloudflare/vite-plugin`: AWS SDK v3 (≥ @aws-sdk/core 3.974) crashes in dev — subpath-barrel re-exports resolve to `undefined`
+      #15448 open 2026-09-01 fix(wrangler): keep `wrangler dev` alive when forwarding one request to the Worker fails
+  corrupt        98 hit(s) (all listed)
+      #10375 open 2025-08-14 Miniflare corrupts response when returning a compressed subrequest
+      #15889 open 2026-09-26 Secrets Store reveals secret
+      #14330 open 2026-06-17 [miniflare] fix: preserve multiple Set-Cookie headers on WebSocket 101 upgrade responses
+      #14887 open 2026-07-28 [workers-shared] _redirects/_headers rules with prefix-colliding placeholders are silently dropped
+      #16036 open 2026-10-02 [wrangler] Support temporary event accounts in R2 and Containers commands
+      #15640 open 2026-09-14 [wrangler] Categorise resolved current directory paths in telemetry
+      #15192 merged 2026-08-14 [wrangler] Fix kv bulk put corrupting binary values in local mode
+      #15378 closed 2026-08-26 D1 export silently corrupts INTEGER values outside JavaScript's safe range (and emits invalid SQL for ±Infinity)
+      #14145 open 2026-06-01 miniflare: WebSocket 101 upgrade response collapses multiple Set-Cookie headers
+      #15517 open 2026-09-05 [wrangler] Preserve D1 migration paths during redirected provisioning
+      #14658 merged 2026-07-11 Fix `wrangler dev` corrupting external hostnames in proxied headers
+      #13886 open 2026-05-11 Fix #13799 - Fix Svelte project init with Drizzle and/or Better Auth
+      #15871 merged 2026-09-25 [wrangler] Retry transient failures in workflows instances list and describe
+      #12774 closed 2026-03-05 R2 Data Catalog Iceberg table corrupted (50408) after Pipeline sink metadata commits silently stall
+      #13913 open 2026-05-13 [wrangler] Fix nested D1 migrations
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #15659 open 2026-09-15 fix(vite-plugin): don't destroy WebSockets owned by other upgrade listeners
+      #15492 closed 2026-09-03 [vitest-pool-workers] Fix import.meta.url source rewriting
+      #15702 merged 2026-09-17 WC-6008 [wrangler] previews: return proper error for --json
+      #15193 open 2026-08-14 Update autoconfig to automatically migrate supported Cloudflare Pages Functions projects to Workers
+  corruption     30 hit(s) (all listed)
+      #12217 open 2026-01-28 feat(wrangler): add multi-account profile support
+      #10375 open 2025-08-14 Miniflare corrupts response when returning a compressed subrequest
+      #8004 open 2025-02-03 [BUG] miniflare aggressively buffers responses
+      #15378 closed 2026-08-26 D1 export silently corrupts INTEGER values outside JavaScript's safe range (and emits invalid SQL for ±Infinity)
+      #15895 merged 2026-09-27 [C3] Bump @angular/create from 22.1.8 to 22.2.0 in /packages/create-cloudflare/src/frameworks
+      #15217 merged 2026-08-16 [C3] Bump @angular/create from 22.1.3 to 22.1.4 in /packages/create-cloudflare/src/frameworks
+      #12774 closed 2026-03-05 R2 Data Catalog Iceberg table corrupted (50408) after Pipeline sink metadata commits silently stall
+      #14989 merged 2026-08-03 [miniflare] Surface workerd fatal crash reports instead of filtering them out
+      #14658 merged 2026-07-11 Fix `wrangler dev` corrupting external hostnames in proxied headers
+      #13980 merged 2026-05-20 [miniflare] Recover from corrupted @puppeteer/browsers cache in launchBrowser
+      #14156 merged 2026-06-02 [wrangler] Add opt-in OS keychain storage for OAuth credentials
+      #14713 merged 2026-07-16 [vitest-pool-workers] Fix module fallback failure on non-ASCII workspace paths (Windows)
+      #14264 merged 2026-06-11 Suggest Cloudflare skills installation after commands instead of before
+      #14059 merged 2026-05-27 [wrangler] fix(kv): remove "Success!" from stdout in `kv bulk get`
+      #13841 merged 2026-05-07 chore(deps): bump the workerd-and-workers-types group with 2 updates
+      #14208 merged 2026-06-05 [C3] Bump create-next-app from 16.2.6 to 16.2.7 in /packages/create-cloudflare/src/frameworks
+      #13971 merged 2026-05-19 [miniflare] Improve error diagnostics in the Browser Run binding worker
+      #13568 closed 2026-04-16 [D1] `wrangler d1 migrations apply` does not sort migration files alphabetically (filesystem-dependent order)
+      #13891 closed 2026-05-12 vite-plugin: allow extending the WS-upgrade allowlist for custom preview origins (`hasSandboxOrigin` swallows `vite-hmr` upgrades for non-SDK URL shapes)
+      #14574 closed 2026-07-06 Introduce new CLIErrors and use them in the Wrangler type-generation src code
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15170 open 2026-08-13 [vite-plugin] Non-101 WebSocket upgrade responses are destroyed instead of delivered to the client in dev
+      #15103 open 2026-08-09 wrangler r2 bucket list silently returns only the first 20 buckets, with no cursor, warning, or --per-page
+      #14887 open 2026-07-28 [workers-shared] _redirects/_headers rules with prefix-colliding placeholders are silently dropped
+      #14694 open 2026-07-14 _redirects: dynamic-rule overflow silently drops rest of file; static/dynamic classification is order-dependent and unsurfaced
+      #11081 open 2025-10-24 Can't login with VPN `wrangler pages deploy`
+      #14822 open 2026-07-23 [workflows-shared] Add full step output retrieval to Workflows local explorer
+      #15936 open 2026-09-29 Test the public type surface of `@cloudflare/config`
+      #14242 open 2026-06-09 wrangler dev (containers): egress proxy-everything sidecars leak — not removed when a container is deleted
+      #7725 open 2025-01-10 🐛 BUG: miniflare.dispatchFetch() buffers streaming responses
+      #15279 open 2026-08-20 [vite-plugin] vite build can hang with remote bindings when Worker has no config path
+      #15205 open 2026-08-15 fix(vite-plugin): deliver non-101 responses on rejected WebSocket upgrades
+      #4373 open 2023-06-27 [Miniflare] Consider buffering all requests
+      #10375 open 2025-08-14 Miniflare corrupts response when returning a compressed subrequest
+      #15180 open 2026-08-13 Date objects in forwarded tail events arrive as strings in local dev
+      #15138 open 2026-08-11 [workflows] Local `deleteBatch()` always reports success, so failures are invisible
+      #15093 closed 2026-08-09 wrangler d1 execute --file silently merges statements after a compound statement closed with a lowercase `end;`
+      #15567 merged 2026-09-08 [local-explorer-ui][miniflare] Improve resending of emails from local explorer 
+      #15200 open 2026-08-15 [miniflare] Revive gzipped ERROR_STACK bodies in dispatchFetch
+      #15337 merged 2026-08-24 [local-explorer-ui] Add email view and sending emails to workers to the local explorer
+      #15042 closed 2026-08-05 Security issue that npm audit --force cannot fix
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15103 open 2026-08-09 wrangler r2 bucket list silently returns only the first 20 buckets, with no cursor, warning, or --per-page
+      #14822 open 2026-07-23 [workflows-shared] Add full step output retrieval to Workflows local explorer
+      #15170 open 2026-08-13 [vite-plugin] Non-101 WebSocket upgrade responses are destroyed instead of delivered to the client in dev
+      #14887 open 2026-07-28 [workers-shared] _redirects/_headers rules with prefix-colliding placeholders are silently dropped
+      #14694 open 2026-07-14 _redirects: dynamic-rule overflow silently drops rest of file; static/dynamic classification is order-dependent and unsurfaced
+      #11081 open 2025-10-24 Can't login with VPN `wrangler pages deploy`
+      #14242 open 2026-06-09 wrangler dev (containers): egress proxy-everything sidecars leak — not removed when a container is deleted
+      #15936 open 2026-09-29 Test the public type surface of `@cloudflare/config`
+      #7725 open 2025-01-10 🐛 BUG: miniflare.dispatchFetch() buffers streaming responses
+      #15279 open 2026-08-20 [vite-plugin] vite build can hang with remote bindings when Worker has no config path
+      #15200 open 2026-08-15 [miniflare] Revive gzipped ERROR_STACK bodies in dispatchFetch
+      #15205 open 2026-08-15 fix(vite-plugin): deliver non-101 responses on rejected WebSocket upgrades
+      #4373 open 2023-06-27 [Miniflare] Consider buffering all requests
+      #15180 open 2026-08-13 Date objects in forwarded tail events arrive as strings in local dev
+      #10375 open 2025-08-14 Miniflare corrupts response when returning a compressed subrequest
+      #15138 open 2026-08-11 [workflows] Local `deleteBatch()` always reports success, so failures are invisible
+      #15108 open 2026-08-09 [wrangler] Paginate R2 bucket listings
+      #7957 open 2025-01-29 🐛 BUG: npx wrangler deploy randomly fails on GitHub Runner
+      #10814 open 2025-09-29 TypeError: memory limit has been exceeded with inline data: URL
+      #15713 merged 2026-09-18 Define experimental Cloudflare configuration with a single default export
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15317 open 2026-08-22 Regression of #4562: `Error inside ProxyWorker` kills `wrangler dev`, and the printed error is empty
+      #15451 open 2026-09-01 wrangler dev exits 1 mid-run on "Network connection lost." from ProxyWorker, and prints an empty `✘ [ERROR]`
+      #13263 open 2026-04-04 DynamicWorkerExecutor RPC tool proxy returns empty objects in local dev (Miniflare)
+      #16030 open 2026-10-02 [wrangler][vite-plugin] Support protected Quick Tunnels
+      #15815 closed 2026-09-23 [autoconfig] Initialize empty cf projects with Vite
+      #15582 open 2026-09-09 Release recovery: retain pending non-npm deployments after tags are created
+      #16006 open 2026-10-01 [wrangler] Add Workers KV Instant mode to namespace list command
+      #15561 open 2026-09-08 Dashboard: generic "An unknown error has occurred" toast on Workers service page — GET /builds/builds?version_ids= returns 400 (code 12013)
+      #15750 open 2026-09-21 WC-6046 [wrangler] previews: previews onboarding fixups
+      #15452 open 2026-09-01 `wrangler dev` exits with "Error inside ProxyWorker / Network connection lost" when an open WebSocket coexists with a ~5s HTTP request cadence
+      #16053 open 2026-10-03 [config] infer process.env binding types
+      #16039 open 2026-10-02 fix: [codemods] preserve Worker targets during cf migration
+      #15108 open 2026-08-09 [wrangler] Paginate R2 bucket listings
+      #16047 open 2026-10-03 wrangler preview: `assets.not_found_handling: "404-page"` is ignored on Preview URLs (production honours it)
+      #16029 open 2026-10-02 [wrangler] Keep `wrangler preview --json` output parseable for Workers with static assets
+      #11032 open 2025-10-20 Config should be stored in ~/.config/wrangler/ , not ~/.config/.wrangler/ (as a hidden directory)
+      #15203 open 2026-08-15 `wrangler dev` exits with "Error inside ProxyWorker / Network connection lost" on POST requests with a body when `assets` is configured
+      #15200 open 2026-08-15 [miniflare] Revive gzipped ERROR_STACK bodies in dispatchFetch
+      #15979 open 2026-09-30 Workers Builds: a Worker connected from the dashboard gets a failing `wrangler preview` build on every non-production branch, with no way to turn it off
+      #16051 open 2026-10-03 [wrangler] Add --namespace and --repo-name for artifacts.repo queue subscriptions
+  atomic         47 hit(s) (all listed)
+      #15343 open 2026-08-24 Allow atomically setting a Worker's complete runtime env (vars + secrets) at deploy
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #14921 open 2026-07-29 fix(miniflare): surface D1 session commit token failures as recoverable D1 errors
+      #14846 open 2026-07-25 [wrangler] Add Codex Micro daemon
+      #14768 open 2026-07-20 [workflows-shared] Add cron scheduling wiring for Workflows
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #15637 closed 2026-09-14 [vite-plugin] Fix cloudflare:node server dispatch in Vite and Vitest
+      #15777 merged 2026-09-22 [workflows-shared] Support object-form createBatch in local development
+      #15855 merged 2026-09-24 Merge `main` into `vite-plugin-v2`
+      #14847 merged 2026-07-25 [workflows-shared] Emulate deterministic-ID uniqueness in the local Workflows binding
+      #15552 merged 2026-09-07 [miniflare] Fix the synchronous binding proxy desynchronising when its worker thread is preempted
+      #14723 merged 2026-07-16 [miniflare] Avoid email cleanup race
+      #15163 closed 2026-08-13 [wrangler] Fix local D1 migration parsing after CASE expressions
+      #14991 closed 2026-08-03 D1: 'wrangler d1 migrations apply --remote' fails with 'incomplete input: SQLITE_ERROR' on CRLF migration files containing triggers
+      #15430 closed 2026-08-30 Add files via upload
+      #15851 merged 2026-09-24 feat(codemods): add Wrangler-to-cf migration API
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #15378 closed 2026-08-26 D1 export silently corrupts INTEGER values outside JavaScript's safe range (and emits invalid SQL for ±Infinity)
+      #4272 closed 2023-10-24 🚀 Feature Request: "atomic" wrangler pages deployment
+      #14199 closed 2026-06-05 Prevent concurrent wrangler dev instances from fighting over the skills-install prompt
+  atomically     14 hit(s) (all listed)
+      #15343 open 2026-08-24 Allow atomically setting a Worker's complete runtime env (vars + secrets) at deploy
+      #15637 closed 2026-09-14 [vite-plugin] Fix cloudflare:node server dispatch in Vite and Vitest
+      #15777 merged 2026-09-22 [workflows-shared] Support object-form createBatch in local development
+      #14723 merged 2026-07-16 [miniflare] Avoid email cleanup race
+      #15855 merged 2026-09-24 Merge `main` into `vite-plugin-v2`
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #15163 closed 2026-08-13 [wrangler] Fix local D1 migration parsing after CASE expressions
+      #14199 closed 2026-06-05 Prevent concurrent wrangler dev instances from fighting over the skills-install prompt
+      #10068 closed 2025-07-25 Support Environment Variables/Secrets in `wrangler versions upload`
+      #12896 merged 2026-03-14 [wrangler] Attempts to reduce remote e2e test flakiness
+      #9342 closed 2025-05-22 Add support for versions in service bindings
+      #12570 merged 2026-02-16 feat(local-explorer-ui): Add data studio component contexts
+      #2733 closed 2023-02-15 🚀 Feature Request: D1 Transaction support
+      #323 closed 2022-01-25 Adopt miniflare's `mounts` approach for multi-worker publish
+  interrupted    26 hit(s) (all listed)
+      #16041 open 2026-10-02 [miniflare] Support single-object deletion in the Local Explorer R2 API
+      #15781 open 2026-09-22 [Miniflare] Reuse keep-alive connections for dispatchFetch()
+      #15939 open 2026-09-29 [workflows-shared] Cancel completed step timeout timers
+      #15986 open 2026-10-01 [autoconfig] Install Astro beta pair for cf targets
+      #15173 open 2026-08-13 [vite-plugin] vite build never exits when remoteBindings is enabled — remote proxy session is never disposed
+      #14294 open 2026-06-14 [wrangler] Add `wrangler compile` for self-hosting Workers on standalone workerd
+      #15199 open 2026-08-15 [vite-plugin] WebSocket upgrade forwards Accept-Encoding gzip; Worker throw becomes undici JSON.parse crash
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #15223 merged 2026-08-16 [workers-auth] Recover from a partially installed keyring native binding
+      #15253 merged 2026-08-18 Move a few more bits of triggers deploy into deploy-helpers
+      #14872 merged 2026-07-27 Add automatic update prompts for out-of-date Cloudflare agent skills
+      #14036 closed 2026-05-25 `maybeInstallCloudflareSkillsGlobally` writes banner to stdout in non-interactive non-CI shells, breaking JSON output
+      #14220 closed 2026-06-08 Fix skills-install prompt getting stuck with concurrent wrangler instances
+      #13980 merged 2026-05-20 [miniflare] Recover from corrupted @puppeteer/browsers cache in launchBrowser
+      #15175 merged 2026-08-13 Version Packages
+      #15250 merged 2026-08-18 Version Packages
+      #13637 merged 2026-04-22 feat(wrangler): quick tunnel support
+      #11368 closed 2025-11-20 `wrangler deploy` often fails with `fetch` errors
+      #13969 merged 2026-05-19 Version Packages
+      #10026 closed 2025-07-20 D1 binding removed from env after wrangler deploy despite correct toml config
+  interrupt      67 hit(s) (all listed)
+      #16041 open 2026-10-02 [miniflare] Support single-object deletion in the Local Explorer R2 API
+      #15939 open 2026-09-29 [workflows-shared] Cancel completed step timeout timers
+      #15781 open 2026-09-22 [Miniflare] Reuse keep-alive connections for dispatchFetch()
+      #16063 open 2026-10-04 fix(miniflare): don't block the main thread while the sync proxy worker starts
+      #15173 open 2026-08-13 [vite-plugin] vite build never exits when remoteBindings is enabled — remote proxy session is never disposed
+      #14904 open 2026-07-29 configure C3 experimental projects to use `@cloudflare/autoconfig` directly
+      #14843 open 2026-07-25 fix: remove punycode deprecation warning (DEP0040) on every wrangler invocation
+      #15031 open 2026-08-05 fix(miniflare): apply EXIF orientation in local Images binding and cf.image transforms
+      #15986 open 2026-10-01 [autoconfig] Install Astro beta pair for cf targets
+      #15157 open 2026-08-13 [wrangler] Add experimental Workers Observability tail
+      #14294 open 2026-06-14 [wrangler] Add `wrangler compile` for self-hosting Workers on standalone workerd
+      #15199 open 2026-08-15 [vite-plugin] WebSocket upgrade forwards Accept-Encoding gzip; Worker throw becomes undici JSON.parse crash
+      #15020 open 2026-08-04 [wrangler] Configure Next.js projects with vinext
+      #14838 merged 2026-07-24 [workers-auth] Spawn cloudflared asynchronously so ctrl+c can interrupt Access authorization
+      #15115 merged 2026-08-10 ci: mandatory - move Bonk to prod account endpoint
+      #14865 open 2026-07-26 [wrangler] Add --infer-origin-from-routes flag to opt out of route-based origin rewriting in local dev
+      #14892 open 2026-07-28 [autoconfig] Bump Next.js minimum versions & provide an automatic upgrade path
+      #15052 open 2026-08-06 update the age header when responding from cache
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #14643 open 2026-07-10 fix(wrangler): use `lstat` so the asset walker skips symlinks as intended
+  sigkill        28 hit(s) (all listed)
+      #15756 open 2026-09-21 [miniflare] Clean up Containers on shutdown
+      #14598 open 2026-07-08 [wrangler] fix: report non-zero exit code when killed by a signal (e.g. OOM)
+      #15595 closed 2026-09-10 [miniflare] Await workerd exit before local container cleanup
+      #16046 open 2026-10-02 [wrangler] createTestHarness: uncaught setTypeOfService EINVAL when close() follows listen()/reset()
+      #15242 merged 2026-08-17 [miniflare] Terminate workerd when the parent receives SIGHUP
+      #15085 closed 2026-08-07 `Miniflare.dispose()` can delay or skip `workerd` termination behind earlier cleanup awaits
+      #15317 open 2026-08-22 Regression of #4562: `Error inside ProxyWorker` kills `wrangler dev`, and the printed error is empty
+      #15252 merged 2026-08-18 fix(wrangler): keep `wrangler dev` alive when a proxied request to the UserWorker fails transiently
+      #15645 closed 2026-09-15 [vite-plugin] workerd dev server wedges in infinite JsRpc microtask loop at ~100% CPU (all plugin versions 1.44-1.54.9, macOS arm64)
+      #15316 merged 2026-08-22 [miniflare] Re-register a dev registry entry after the stale sweep removes it
+      #15001 closed 2026-08-03 EXPERIMENT (do not merge): BASELINE control for #15017 (pre-fix, pre-skip)
+      #9193 closed 2025-05-01 workerd orphan processes
+      #14462 merged 2026-06-29 [wrangler] Abort custom builds on dev teardown
+      #13872 closed 2026-05-09 Add startup sweep of orphan .wrangler/tmp/* dirs from abnormal exits
+      #13930 merged 2026-05-15 [wrangler] sweep stale .wrangler/tmp/* dirs at startup
+      #14199 closed 2026-06-05 Prevent concurrent wrangler dev instances from fighting over the skills-install prompt
+      #13674 merged 2026-04-25 [wrangler] Fix flaky container-rebuild-while-building test
+      #13931 merged 2026-05-15 Version Packages
+      #15169 merged 2026-08-13 Miniflare Shared Storage
+      #14305 merged 2026-06-15 [wrangler]  Improve asset upload performance with single-file uploads
+  sigint         43 hit(s) (all listed)
+      #15419 open 2026-08-29 Miniflare Browser Rendering leaves all but the first Chrome orphaned on direct SIGINT
+      #15431 open 2026-08-30 fix(miniflare): disable per-browser SIGINT/SIGHUP to allow full multi-session teardown (Closes #15419)
+      #15621 open 2026-09-12 [wrangler] help with silent success during large asset uploads
+      #15756 open 2026-09-21 [miniflare] Clean up Containers on shutdown
+      #14294 open 2026-06-14 [wrangler] Add `wrangler compile` for self-hosting Workers on standalone workerd
+      #15802 closed 2026-09-23 [workers-utils] Add child-process controller
+      #15242 merged 2026-08-17 [miniflare] Terminate workerd when the parent receives SIGHUP
+      #14222 merged 2026-06-08 Revert "Make Ctrl+C triggered during the skills-install prompt dismiss it permanently (#14172)"
+      #14838 merged 2026-07-24 [workers-auth] Spawn cloudflared asynchronously so ctrl+c can interrupt Access authorization
+      #14172 merged 2026-06-03 Make Ctrl+C triggered during the skills-install prompt dismiss it permanently
+      #14415 merged 2026-06-24 [wrangler] Improve `tail` resilience and shutdown behaviour
+      #14220 closed 2026-06-08 Fix skills-install prompt getting stuck with concurrent wrangler instances
+      #13893 merged 2026-05-12 [vite-plugin] Add cf-vite delegate binary with dev subcommand
+      #14036 closed 2026-05-25 `maybeInstallCloudflareSkillsGlobally` writes banner to stdout in non-interactive non-CI shells, breaking JSON output
+      #14184 merged 2026-06-04 [wrangler] Add cf-wrangler delegate entrypoint; remove @cloudflare/wrangler-bundler
+      #9193 closed 2025-05-01 workerd orphan processes
+      #12917 closed 2026-03-16 feat(wrangler): Add OSC 9;4 terminal progress bar support
+      #14434 closed 2026-06-26 [wrangler] Proactively refresh wrangler tail before server-side expiry
+      #13674 merged 2026-04-25 [wrangler] Fix flaky container-rebuild-while-building test
+      #14936 merged 2026-07-30 [wrangler] Serialize custom build watcher events to avoid concurrent runs
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15756 open 2026-09-21 [miniflare] Clean up Containers on shutdown
+      #4878 open 2024-01-30 🐛 BUG: Wrangler hangs on exit after the Workers runtime fails to start
+      #15621 open 2026-09-12 [wrangler] help with silent success during large asset uploads
+      #6562 open 2024-08-22 🐛 BUG: shutting down the dev server logs errors in console 
+      #11757 open 2025-12-25 Wrangler locks up and can't be killed when login fails in multi-project dev session
+      #11071 open 2025-10-23 Durable Object RPC ReadableStream cancel logs “Network connection lost” and later “IoContext”
+      #15419 open 2026-08-29 Miniflare Browser Rendering leaves all but the first Chrome orphaned on direct SIGINT
+      #14838 merged 2026-07-24 [workers-auth] Spawn cloudflared asynchronously so ctrl+c can interrupt Access authorization
+      #13799 open 2026-05-04 create-cloudflare v2.68.0 parse error
+      #12900 closed 2026-03-14 Remote bindings authorization hangs, ctrl+c cannot kill it
+      #14767 merged 2026-07-20 fix(create-cloudflare): commit spinner blocks GPG passphrase prompt on initial git commit
+      #15649 closed 2026-09-15 API template not appearing when passing --lang ts to create cloudflare
+      #15242 merged 2026-08-17 [miniflare] Terminate workerd when the parent receives SIGHUP
+      #14415 merged 2026-06-24 [wrangler] Improve `tail` resilience and shutdown behaviour
+      #14462 merged 2026-06-29 [wrangler] Abort custom builds on dev teardown
+      #14172 merged 2026-06-03 Make Ctrl+C triggered during the skills-install prompt dismiss it permanently
+      #14222 merged 2026-06-08 Revert "Make Ctrl+C triggered during the skills-install prompt dismiss it permanently (#14172)"
+      #14898 merged 2026-07-28 Version Packages
+      #14427 closed 2026-06-25 [wrangler] Proactively refresh `wrangler tail` before server-side expiry
+      #14220 closed 2026-06-08 Fix skills-install prompt getting stuck with concurrent wrangler instances
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15286 merged 2026-08-20 chore: remove legacy issue triage workflow
+      #15059 merged 2026-08-06 feat(flue): add initial flue issue triage agent
+      #14726 closed 2026-07-16 ci: add CI log analysis workflow and Flue agent
+      #3639 closed 2023-07-19 🐛 BUG: Wrangler chooses today's date as compatibility date instead of latest available, if none is specified by user
+      #15134 merged 2026-08-11 Configure workerd for FUSE when safe to do so
+      #13890 closed 2026-05-11 🐛 BUG: wrangler dev crashes with looping uncaught EMFILE rejection when assets directory exceeds watcher limit
+      #3621 closed 2023-07-17 🐛 BUG: Creating KV with --preview flag can't be used
+      #10697 closed 2025-09-18 Dev registry powered by remote bindings
+      #14720 merged 2026-07-16 [wrangler] Extract remote bindings into a package
+      #14872 merged 2026-07-27 Add automatic update prompts for out-of-date Cloudflare agent skills
+      #13511 merged 2026-04-15 Version Packages
+      #14036 closed 2026-05-25 `maybeInstallCloudflareSkillsGlobally` writes banner to stdout in non-interactive non-CI shells, breaking JSON output
+      #5497 closed 2024-04-03 🐛 BUG: dispatch namespace bindings not present in local dev
+      #14959 closed 2026-08-01 Returning an object in workflow step.do() emits jsrpc error
+      #13386 merged 2026-04-09 [wrangler] Make startup network requests non-blocking on slow connections
+      #12612 merged 2026-02-19 Version Packages
+      #12214 merged 2026-01-28 Use hook filters
+      #11435 merged 2025-11-26 Use `tail_url` to power Workers Playground logging
+      #12209 closed 2026-01-28 feat: Add OpenCode Issue Solver workflow
+      #12409 merged 2026-02-04 Potential fix for code scanning alert no. 217: Workflow does not contain permissions
+  outage         21 hit(s) (all listed)
+      #15541 open 2026-09-07 [remote-bindings] Retry proactive preview token refresh after a transient failure
+      #15922 open 2026-09-28 [Bug] Durable Objects Data Studio query/v2 returns HTTP 500 / code 10002 for a read-only SELECT
+      #15619 open 2026-09-12 Remote proxy session startup returns generic Error before RPC for two active private Workers
+      #15860 open 2026-09-25 Deployed Worker intermittently serves unbuilt source index.html + 404s on hashed assets, despite successful `wrangler deploy`
+      #15865 closed 2026-09-25 [wrangler] Workflow list and describe fail on transient API errors without retrying
+      #14647 merged 2026-07-10 [ci] Respond to issues with a triage report comment + labels
+      #15166 merged 2026-08-13 [ci] Publish packages in dependency-tier order with propagation gates
+      #14251 closed 2026-06-10 All deploys fail with HTTP 500 [code: 10013] for Workers with D1/DO bindings — account-wide, including legacy PUT path
+      #13770 merged 2026-05-01 [wrangler] Only show accounts available for the current login auth
+      #15826 closed 2026-09-24 feat(codemods): add Wrangler-to-cf CLI migration
+      #10637 closed 2025-09-12 Worker build fails because of an API call to /versions
+      #12928 merged 2026-03-16 [chrome-devtools-patches] Migrate deployment from Cloudflare Pages to Workers + Assets
+      #14872 merged 2026-07-27 Add automatic update prompts for out-of-date Cloudflare agent skills
+      #11336 closed 2025-11-19 how can i binding kv remote?
+      #2082 closed 2022-10-26 🚀 Feature Request: Add a keep_routes configuration option
+      #9547 closed 2025-06-10 Error: An unknown error has occurred. If this error persists, please file a report in workers-sdk
+      #9465 closed 2025-06-04 Cannot read properties of null (reading 'buckets')
+      #960 closed 2022-05-10 🐛 BUG: 'wrangler@2 pages publish' returns 504 or 503 failure
+      #2421 closed 2022-12-16 🐛 BUG: worker named "accounts" yields bizarre behavior
+      #2647 merged 2023-01-30 Add package lock
+  ENOSPC         5 hit(s) (all listed)
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #15333 closed 2026-08-24 Vite plugin dev server: repeated 304 module revalidation causes Chromium ERR_INSUFFICIENT_RESOURCES
+      #14264 merged 2026-06-11 Suggest Cloudflare skills installation after commands instead of before
+      #15826 closed 2026-09-24 feat(codemods): add Wrangler-to-cf CLI migration
+      #10481 closed 2025-08-28 Way to turn off watch mode in `wrangler dev`
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15362 open 2026-08-25 D1 binding reads stale schema despite correct on-disk data (vite dev, single entry worker)
+      #16050 open 2026-10-03 [miniflare] Give each Worker its own assets storage service
+      #13927 open 2026-05-15 Honor assetConfig.headers/redirects when no on-disk _headers/_redirects file is present
+      #14819 open 2026-07-23 Cache package dependency collection results to avoid redundant filesystem walks
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #15617 open 2026-09-12 [workers-utils] Stop the update check from recommending deprecated versions
+      #14359 open 2026-06-18 feat(autoconfig): emit cloudflare.config.ts for new Vite projects
+      #14344 open 2026-06-17 Wrangler types fails with SQLITE_IOERR_WRITE on Arch Linux during create-cloudflare scaffold
+      #14294 open 2026-06-14 [wrangler] Add `wrangler compile` for self-hosting Workers on standalone workerd
+      #15822 merged 2026-09-24 [deploy-helpers] Containers support for Worker Preview deployments in the Build Output
+      #15627 merged 2026-09-13 [C3] Bump create-next-app from 16.3.4 to 16.3.5 in /packages/create-cloudflare/src/frameworks
+      #15259 open 2026-08-19 Delay before asset upload starts
+      #13672 open 2026-04-24 containers: pullEgressInterceptorImage uses name:tag@digest form — docker drops the tag, workerd then fails to find the image
+      #13062 open 2026-03-25 [vitest-pool-workers] Fix require() resolving to ESM via "import" export condition
+      #15096 open 2026-08-09 [vitest-pool-workers] Cache only per-directory facts when classifying `.js` modules
+      #15856 merged 2026-09-24 Emit new Worker config for same-worker Workflows
+      #14826 open 2026-07-23 [wrangler] sortObjectRecursive throws TypeError on null inside an array
+      #13037 open 2026-03-24 vitest-pool-workers 0.13.x: require() resolves ESM instead of CJS for transitive deps (mimetext, mime-types via agents)
+      #14788 merged 2026-07-21 [wrangler] Fix grammar in container image-too-large error
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15904 open 2026-09-27 D1 REST API: are batch queries transactionally all-or-nothing?
+      #15558 open 2026-09-08 Harden Preview onboarding
+      #15842 open 2026-09-24 supported cleanup when getPlatformProxy remote binding startup fails before returning dispose
+      #15482 open 2026-09-03 [Pages] Deleted preview deployments still execute Functions from edge — orphaned hash hosts serve after API 404
+      #15388 merged 2026-08-27 Support partial manifests in build output
+      #15621 open 2026-09-12 [wrangler] help with silent success during large asset uploads
+      #15625 open 2026-09-12 deploy: config-file routes silently ignored for Workers declaring [assets] (no zone-routes API call; --routes CLI flag works)
+      #9040 open 2025-04-24 Miniflare cache refuses to store different status codes than the production environment
+      #14794 open 2026-07-21 feat(vitest-pool-workers): tolerate post-stop() socket error events when configured
+      #13952 open 2026-05-18 Cloudflare and Tanstack vite-plugins not working together
+      #15781 open 2026-09-22 [Miniflare] Reuse keep-alive connections for dispatchFetch()
+      #15582 open 2026-09-09 Release recovery: retain pending non-npm deployments after tags are created
+      #15946 merged 2026-09-29 fix(codemods): upgrade Wrangler and update lockfile in cf migrate
+      #15343 open 2026-08-24 Allow atomically setting a Worker's complete runtime env (vars + secrets) at deploy
+      #15259 open 2026-08-19 Delay before asset upload starts
+      #14768 open 2026-07-20 [workflows-shared] Add cron scheduling wiring for Workflows
+      #16011 open 2026-10-01 fix(wrangler): stop `wrangler delete` orphaning Container applications
+      #7725 open 2025-01-10 🐛 BUG: miniflare.dispatchFetch() buffers streaming responses
+      #15230 open 2026-08-16 Wrangler deploy repeatedly fails with write EPIPE on Workers Versions API after asset upload
+      #15773 open 2026-09-22 https://github.com/cloudflare/workers-sdk/issues/new/choose
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15314 open 2026-08-22 D1: server-side statement splitter matches trigger BEGIN case-sensitively, so lowercase 'begin' bodies fail d1 migrations apply --remote (refines #14991)
+      #15756 open 2026-09-21 [miniflare] Clean up Containers on shutdown
+      #16037 open 2026-10-02 [codemods] fix: infer Durable Object exports in cf migrate
+      #15690 open 2026-09-17 D1 /query rejects LF-only multi-statement SQL ending in an uppercase-BEGIN trigger
+      #15795 open 2026-09-23 [wrangler] Fix deploy rejecting already-applied Durable Object migration histories
+      #15108 open 2026-08-09 [wrangler] Paginate R2 bucket listings
+      #14416 open 2026-06-24 [wrangler] Add preview auto-provisioning for KV and R2
+      #15582 open 2026-09-09 Release recovery: retain pending non-npm deployments after tags are created
+      #14982 open 2026-08-02 [experimental] Preserve CommonJS module boundaries
+      #15266 open 2026-08-19 Restore major version protection after vitest mjor
+      #15748 open 2026-09-21 WC-6046 simplify preview onboarding
+      #15985 open 2026-10-01 Bump hono from 4.12.32 to 4.13.7 in /packages/auto-triage-bot
+      #16011 open 2026-10-01 fix(wrangler): stop `wrangler delete` orphaning Container applications
+      #15894 merged 2026-09-26 [codemods] Stop blocking Vite migrations on source maps
+      #13071 open 2026-03-26 [vitest-pool-workers] Allow `main: false` to disable automatic entrypoint import
+      #13936 open 2026-05-15 wrangler 4.89.1: container app registration for WfP user workers uses non-WfP API endpoint
+      #14991 closed 2026-08-03 D1: 'wrangler d1 migrations apply --remote' fails with 'incomplete input: SQLITE_ERROR' on CRLF migration files containing triggers
+      #15205 open 2026-08-15 fix(vite-plugin): deliver non-101 responses on rejected WebSocket upgrades
+      #15828 merged 2026-09-24 Version Packages
+      #15070 closed 2026-08-06 Access service-token headers can remain after environment credentials change
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14921 open 2026-07-29 fix(miniflare): surface D1 session commit token failures as recoverable D1 errors
+      #15520 open 2026-09-05 [wrangler] Remote Hyperdrive bindings under getPlatformProxy() never re-seed edge credentials, so a stale dev session never recovers
+      #15541 open 2026-09-07 [remote-bindings] Retry proactive preview token refresh after a transient failure
+      #15939 open 2026-09-29 [workflows-shared] Cancel completed step timeout timers
+      #15632 open 2026-09-13 [deploy-helpers] respect Retry-After during asset uploads
+      #14916 open 2026-07-29 wrangler dev --local crashes the whole process on a recoverable D1 SQLITE_BUSY under concurrent writes (miniflare 4.20260722; regression from 4.20260714)
+      #16036 open 2026-10-02 [wrangler] Support temporary event accounts in R2 and Containers commands
+      #15611 open 2026-09-11 [wrangler] Support named-only module Workers in dev
+      #15631 merged 2026-09-13 [deploy-helpers] recover asset upload concurrency after gateway errors
+      #15823 open 2026-09-24 [wrangler] Reloads postpone the preview-token refresh past the session TTL, and a failed refresh never retries
+      #15138 open 2026-08-11 [workflows] Local `deleteBatch()` always reports success, so failures are invisible
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #15223 merged 2026-08-16 [workers-auth] Recover from a partially installed keyring native binding
+      #15485 merged 2026-09-03 fix(miniflare): reject loopback bind failures during startup
+      #13936 open 2026-05-15 wrangler 4.89.1: container app registration for WfP user workers uses non-WfP API endpoint
+      #15582 open 2026-09-09 Release recovery: retain pending non-npm deployments after tags are created
+      #14792 merged 2026-07-21 Recover from workerd crashes in Miniflare
+      #8004 open 2025-02-03 [BUG] miniflare aggressively buffers responses
+      #14917 open 2026-07-29 SSR route hangs forever in dev when the route's first render is a notFound() (TanStack Start + @cloudflare/vite-plugin)
+      #4648 open 2023-12-20 🐛 BUG: wrangler user (read) scope missing after wrangler login --scopes
+  recovery       80 hit(s) (all listed)
+      #15582 open 2026-09-09 Release recovery: retain pending non-npm deployments after tags are created
+      #16055 open 2026-10-04 [workers-auth] Add account-ID guidance for /memberships error 10001
+      #15781 open 2026-09-22 [Miniflare] Reuse keep-alive connections for dispatchFetch()
+      #15541 open 2026-09-07 [remote-bindings] Retry proactive preview token refresh after a transient failure
+      #15979 open 2026-09-30 Workers Builds: a Worker connected from the dashboard gets a failing `wrangler preview` build on every non-production branch, with no way to turn it off
+      #14701 open 2026-07-15 [vite-plugin/miniflare] workerd heap grows on every server-file edit until OOM, then every request fails with `fetch failed` until manual restart
+      #16036 open 2026-10-02 [wrangler] Support temporary event accounts in R2 and Containers commands
+      #16038 open 2026-10-02 Support caller-specific messaging for Wrangler and cf
+      #15774 open 2026-09-22 D1 migration initialization returns HTTP 403 / code 7403 while read-only queries succeed with OAuth d1:write
+      #15947 merged 2026-09-29 fix(codemods): upgrade Vite plugin during Wrangler-to-cf migration
+      #15801 merged 2026-09-23 [deploy-helpers] Remove Cloudflare SDK dependency
+      #11469 open 2025-11-29 esbuild using non-negligible CPU time when nothing is happening
+      #14512 open 2026-07-01 [wrangler] Add bulk Pages deployment deletes
+      #15485 merged 2026-09-03 fix(miniflare): reject loopback bind failures during startup
+      #15631 merged 2026-09-13 [deploy-helpers] recover asset upload concurrency after gateway errors
+      #15721 closed 2026-09-20 [Workers Builds] bamboo-old-house: preview/* filters rejected and migrated preview settings mismatch the dashboard
+      #13442 open 2026-04-12 Sandbox SDK: startProcess stream controller closes prematurely, killing agent processes
+      #15223 merged 2026-08-16 [workers-auth] Recover from a partially installed keyring native binding
+      #15104 closed 2026-08-09 URGENT – Unauthorized Domain Transfer and Misuse – synasworld.com – Report #23155341
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+  rollback       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15904 open 2026-09-27 D1 REST API: are batch queries transactionally all-or-nothing?
+      #2262 open 2022-11-22 🐛 BUG: Pages deployment tail (maybe) fails on last deployment if rolled back
+      #15879 open 2026-09-25 [miniflare] Reuse and retire Hyperdrive proxy listeners
+      #15967 closed 2026-09-30 Cloudflare Pages: new Direct Upload deployments return 503 from Pages Functions while previous deployment remains healthy
+      #15658 merged 2026-09-15 [wrangler] Add Durable Objects hibernation timeout option
+      #14465 merged 2026-06-29 Support workflow terminate rollback
+      #14318 merged 2026-06-16 (workflows): update rollback context types
+      #15473 closed 2026-09-02 Local Explorer Workflows status endpoint diverges from the production API request schema
+      #15483 merged 2026-09-03 [miniflare] Align workflow status endpoint schema with production
+      #15607 merged 2026-09-11 Version Packages
+      #15867 merged 2026-09-25 Version Packages
+      #13983 merged 2026-05-20 [workflows] Add Workflow rollback support
+      #14603 merged 2026-07-08 Version Packages
+      #13759 open 2026-04-30 WIP: Migrate interactive prompts to @clack/prompts
+      #16002 closed 2026-10-01 With `cloudflare.config.ts`, most commands refuse `--x-new-config`, and without the flag they read an ancestor wrangler config instead
+      #15319 closed 2026-08-22 Workers static assets: `run_worker_first: true` not honored in production — asset layer serves 404.html for a prefix instead of invoking the Worker
+      #14535 merged 2026-07-03 Support dynamic retry delays for Workflow steps in local dev
+      #14331 merged 2026-06-17 Bump the workerd-and-workers-types group across 1 directory with 2 updates
+      #15721 closed 2026-09-20 [Workers Builds] bamboo-old-house: preview/* filters rejected and migrated preview settings mismatch the dashboard
+      #15441 merged 2026-08-31 Add workflow event subscription to local workflow engine
+  resume         68 hit(s) (all listed)
+      #15939 open 2026-09-29 [workflows-shared] Cancel completed step timeout timers
+      #15632 open 2026-09-13 [deploy-helpers] respect Retry-After during asset uploads
+      #16056 open 2026-10-04 vitest-pool-workers: a Workflow waiting on a short timer (retry backoff) intermittently freezes the whole test isolate for ~300 s
+      #16046 open 2026-10-02 [wrangler] createTestHarness: uncaught setTypeOfService EINVAL when close() follows listen()/reset()
+      #4919 open 2024-02-04 🐛 BUG: slow internet connection causes crashes
+      #15871 merged 2026-09-25 [wrangler] Retry transient failures in workflows instances list and describe
+      #15617 open 2026-09-12 [workers-utils] Stop the update check from recommending deprecated versions
+      #15781 open 2026-09-22 [Miniflare] Reuse keep-alive connections for dispatchFetch()
+      #15582 open 2026-09-09 Release recovery: retain pending non-npm deployments after tags are created
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #15869 closed 2026-09-25 Codeowners Plus doesn't run on stacked PRs
+      #15788 open 2026-09-22 [Miniflare][Workflows] Completed steps leave timeout timers active, exhausting the 10,000-timer quota
+      #15809 open 2026-09-23 [Miniflare][Workflows] Completed instances retain file handles, eventually crashing workerd with “Too many open files”
+      #14641 open 2026-07-10 wrangler dev: steady ~5s request cadence phase-locks with kj's 5s keep-alive timeouts — POSTs intermittently fail with 503 "worker restarted mid-request" (worker never restarted)
+      #15657 merged 2026-09-15 Version Packages
+      #15473 closed 2026-09-02 Local Explorer Workflows status endpoint diverges from the production API request schema
+      #15235 closed 2026-08-17 [wrangler] Time out stalled asset uploads
+      #15028 merged 2026-08-05 [vite-plugin-cloudflare] Handle cancelled request bodies
+      #15594 closed 2026-09-10 [containers-shared] Stop container preparation after abort
+      #15387 closed 2026-08-27 versions upload: fail early on a pending Durable Object migration instead of round-tripping to API error 10211
+  half-written   22 hit(s) (all listed)
+      #15180 open 2026-08-13 Date objects in forwarded tail events arrive as strings in local dev
+      #14768 open 2026-07-20 [workflows-shared] Add cron scheduling wiring for Workflows
+      #14176 open 2026-06-04 Fix d1 execute rejecting SQL with BEGIN TRANSACTION in string data
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #16002 closed 2026-10-01 With `cloudflare.config.ts`, most commands refuse `--x-new-config`, and without the flag they read an ancestor wrangler config instead
+      #15451 open 2026-09-01 wrangler dev exits 1 mid-run on "Network connection lost." from ProxyWorker, and prints an empty `✘ [ERROR]`
+      #15387 closed 2026-08-27 versions upload: fail early on a pending Durable Object migration instead of round-tripping to API error 10211
+      #15713 merged 2026-09-18 Define experimental Cloudflare configuration with a single default export
+      #15203 open 2026-08-15 `wrangler dev` exits with "Error inside ProxyWorker / Network connection lost" on POST requests with a body when `assets` is configured
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #15223 merged 2026-08-16 [workers-auth] Recover from a partially installed keyring native binding
+      #14712 merged 2026-07-16 [miniflare] Support connect() on remote VPC Network bindings in local dev
+      #15256 merged 2026-08-18 [wrangler] Add --secrets-file and --var flags to wrangler preview
+      #15163 closed 2026-08-13 [wrangler] Fix local D1 migration parsing after CASE expressions
+      #15169 merged 2026-08-13 Miniflare Shared Storage
+      #15175 merged 2026-08-13 Version Packages
+      #14690 merged 2026-07-14 [codemod] Add migration CLI
+      #15172 merged 2026-08-13 feat(wrangler): add container support to worker previews
+      #14926 closed 2026-07-30 wrangler dev / pages dev  exits instead of recovering when Miniflare auto-restarts workerd (unsafeHandleRuntimeRestart not implemented by wrangler; regression in miniflare 4.20260722.0)
+      #10459 closed 2025-08-24 Issue uploading large number of small, static assets
+  wipe           32 hit(s) (all listed)
+      #15349 open 2026-08-25 Workers Builds: preview-trigger build variables are invisible in the dashboard and silently wiped when editing build config
+      #15362 open 2026-08-25 D1 binding reads stale schema despite correct on-disk data (vite dev, single entry worker)
+      #15889 open 2026-09-26 Secrets Store reveals secret
+      #15619 open 2026-09-12 Remote proxy session startup returns generic Error before RPC for two active private Workers
+      #14962 closed 2026-08-01 [miniflare] Local rate limit counters silently reset after ~10s of inactivity
+      #14961 merged 2026-08-01 [miniflare] De-flake rate limit tests at bucket boundaries
+      #15112 open 2026-08-10 [wrangler] Add metrics export configuration
+      #14735 merged 2026-07-17 [workflows] add individual and batch instance deletion
+      #14968 merged 2026-08-01 [miniflare] Persist local rate limit counters so they survive Durable Object eviction
+      #14995 merged 2026-08-03 [wrangler] add `connect` wrangler config section
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #14896 merged 2026-07-28 feat(c3): scaffold Next.js apps with vinext instead of OpenNext
+      #12936 merged 2026-03-17 Use Vite 8 for building the plugin and as the default for running tests
+      #12858 merged 2026-03-11 [vitest-pool-workers] add `disableRetryDelays()` to skip retry backoff delays in workflow tests
+      #13568 closed 2026-04-16 [D1] `wrangler d1 migrations apply` does not sort migration files alphabetically (filesystem-dependent order)
+      #4299 closed 2023-10-29 🚀 Feature Request: make temp file directory configurable
+      #13145 merged 2026-03-31 Add support for readable streams in workflows local dev
+      #14042 merged 2026-05-25 [wrangler] add --temporary deploy fallback for non-interactive auth
+      #9860 merged 2025-07-04 fix c3 cli e2e test on forks
+      #4226 merged 2023-10-18 C3: Relax empty directory check
+  wipes          7 hit(s) (all listed)
+      #15349 open 2026-08-25 Workers Builds: preview-trigger build variables are invisible in the dashboard and silently wiped when editing build config
+      #14962 closed 2026-08-01 [miniflare] Local rate limit counters silently reset after ~10s of inactivity
+      #14968 merged 2026-08-01 [miniflare] Persist local rate limit counters so they survive Durable Object eviction
+      #14735 merged 2026-07-17 [workflows] add individual and batch instance deletion
+      #13145 merged 2026-03-31 Add support for readable streams in workflows local dev
+      #9860 merged 2025-07-04 fix c3 cli e2e test on forks
+      #1318 closed 2022-06-21 🚀 Feature Request: Caching previous interactive choices
+  erase          16 hit(s) (all listed)
+      #6905 open 2024-10-07 🐛 BUG: `wrangler types` + DurableObjects + a build process + typescript
+      #15819 open 2026-09-24 Miniflare resets the connection when a Worker responds without reading the request body; workerd does this whenever the body crossed a service binding
+      #15961 closed 2026-09-30 [codemods] Fix generated environment callback types
+      #15694 merged 2026-09-17 [autoconfig] Fall back to installed dev server over 'npm run build'
+      #15573 open 2026-09-08 [wrangler] Include default module rules in generated types
+      #15506 merged 2026-09-04 Vite plugin v2 - Support child environments
+      #15121 merged 2026-08-10 [Miniflare] Accept Node.js global Request in proxied fetches
+      #15478 closed 2026-09-02 Guide setup of previews block
+      #15337 merged 2026-08-24 [local-explorer-ui] Add email view and sending emails to workers to the local explorer
+      #14718 merged 2026-07-16 Enable `@typescript-eslint/no-deprecated` linting rule for `vite-plugin-cloudflare`
+      #14968 merged 2026-08-01 [miniflare] Persist local rate limit counters so they survive Durable Object eviction
+      #15329 merged 2026-08-24 [wrangler] Add local Flagship development commands
+      #15480 merged 2026-09-02 CC-8364 Add top-level Durable Object-managed Containers
+      #14735 merged 2026-07-17 [workflows] add individual and batch instance deletion
+      #14872 merged 2026-07-27 Add automatic update prompts for out-of-date Cloudflare agent skills
+      #8210 closed 2025-02-20 🐛 BUG: Delete Classes Migration Failing
+  erasing        2 hit(s) (all listed)
+      #15819 open 2026-09-24 Miniflare resets the connection when a Worker responds without reading the request body; workerd does this whenever the body crossed a service binding
+      #8210 closed 2025-02-20 🐛 BUG: Delete Classes Migration Failing
+  erased         5 hit(s) (all listed)
+      #6905 open 2024-10-07 🐛 BUG: `wrangler types` + DurableObjects + a build process + typescript
+      #15694 merged 2026-09-17 [autoconfig] Fall back to installed dev server over 'npm run build'
+      #14718 merged 2026-07-16 Enable `@typescript-eslint/no-deprecated` linting rule for `vite-plugin-cloudflare`
+      #14735 merged 2026-07-17 [workflows] add individual and batch instance deletion
+      #14872 merged 2026-07-27 Add automatic update prompts for out-of-date Cloudflare agent skills
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15659 open 2026-09-15 fix(vite-plugin): don't destroy WebSockets owned by other upgrade listeners
+      #15654 open 2026-09-15 vite-plugin-cloudflare: dev server destroys WebSockets that don't announce a "vite" subprotocol
+      #15170 open 2026-08-13 [vite-plugin] Non-101 WebSocket upgrade responses are destroyed instead of delivered to the client in dev
+      #15775 open 2026-09-22 fix(vite-plugin): only answer or tear down WebSocket upgrades with exclusive ownership
+      #15205 open 2026-08-15 fix(vite-plugin): deliver non-101 responses on rejected WebSocket upgrades
+      #15201 open 2026-08-15 [vite-plugin] Drop Accept-Encoding on Worker WebSocket upgrades
+      #13020 open 2026-03-23 miniflare: old Pool not closed when runtime entry URL changes
+      #15768 open 2026-09-22 [miniflare] Hyperdrive proxy crashes the Node process when the client socket errors
+      #15769 open 2026-09-22 [miniflare] Handle client socket errors in the Hyperdrive proxy
+      #15198 open 2026-08-15 [miniflare] dispatchFetch JSON-parses gzip-encoded ERROR_STACK 500 bodies
+      #15448 open 2026-09-01 fix(wrangler): keep `wrangler dev` alive when forwarding one request to the Worker fails
+      #13442 open 2026-04-12 Sandbox SDK: startProcess stream controller closes prematurely, killing agent processes
+      #15199 open 2026-08-15 [vite-plugin] WebSocket upgrade forwards Accept-Encoding gzip; Worker throw becomes undici JSON.parse crash
+      #15429 open 2026-08-30 Worker-minted credentials for existing Artifacts repositories fail, while identical credentials work outside Workers
+      #15771 closed 2026-09-22 fix(vite-plugin): only answer or tear down WebSocket upgrades no other listener owns
+      #15770 closed 2026-09-22 fix(vite-plugin): only answer or tear down WebSocket upgrades no other listener owns
+      #15285 open 2026-08-20 [vite-plugin] server.ws: false leaves Vite HMR WebSocket upgrades hanging
+      #15799 closed 2026-09-23 [miniflare] Keep Hyperdrive client socket errors from crashing local dev
+      #15781 open 2026-09-22 [Miniflare] Reuse keep-alive connections for dispatchFetch()
+      #15200 open 2026-08-15 [miniflare] Revive gzipped ERROR_STACK bodies in dispatchFetch
+  destroys       25 hit(s) (all listed)
+      #15654 open 2026-09-15 vite-plugin-cloudflare: dev server destroys WebSockets that don't announce a "vite" subprotocol
+      #15659 open 2026-09-15 fix(vite-plugin): don't destroy WebSockets owned by other upgrade listeners
+      #15769 open 2026-09-22 [miniflare] Handle client socket errors in the Hyperdrive proxy
+      #15201 open 2026-08-15 [vite-plugin] Drop Accept-Encoding on Worker WebSocket upgrades
+      #15775 open 2026-09-22 fix(vite-plugin): only answer or tear down WebSocket upgrades with exclusive ownership
+      #15448 open 2026-09-01 fix(wrangler): keep `wrangler dev` alive when forwarding one request to the Worker fails
+      #13442 open 2026-04-12 Sandbox SDK: startProcess stream controller closes prematurely, killing agent processes
+      #15170 open 2026-08-13 [vite-plugin] Non-101 WebSocket upgrade responses are destroyed instead of delivered to the client in dev
+      #15799 closed 2026-09-23 [miniflare] Keep Hyperdrive client socket errors from crashing local dev
+      #15205 open 2026-08-15 fix(vite-plugin): deliver non-101 responses on rejected WebSocket upgrades
+      #15200 open 2026-08-15 [miniflare] Revive gzipped ERROR_STACK bodies in dispatchFetch
+      #15092 closed 2026-08-08 `vitest-pool-workers`: `createProxyPrototypeClass` re-wraps the shared prototype on every construction, making Durable Object property access quadratic and eventually throwing `RangeError`
+      #14862 merged 2026-07-26 [vite-plugin] Fix flaky WebSocket upgrade test and harden upgrade handler
+      #14968 merged 2026-08-01 [miniflare] Persist local rate limit counters so they survive Durable Object eviction
+      #14191 closed 2026-06-05 wrangler dev: InspectorProxyWorker leaks unboundedly when no DevTools client is attached, leading to latency creep and a silently dead dev server
+      #14081 merged 2026-05-28 Detect early workerd exit instead of hanging indefinitely
+      #13521 closed 2026-04-15 [miniflare] Close WebSocket servers during dispose
+      #12640 closed 2026-02-23 Add check for changeset formatting in the CI check workflow
+      #12945 merged 2026-03-18 Version Packages
+      #13975 closed 2026-05-19 add auth profiles to wrangler 
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15843 open 2026-09-24 [miniflare] Each setOptions() leaves the previous Hyperdrive proxy servers listening, also after dispose()
+      #10726 open 2025-09-22 wrangler command that offer to add to wrangler.jsonc don't respect existing binding to same resource - should they?
+      #15716 open 2026-09-18 [miniflare] dispatchFetch forces reset: true — one TCP connection (and one TIME_WAIT port) per request, causing ephemeral-port exhaustion in CI
+      #16007 open 2026-10-01 [Bug]: Python Worker package upload returns HTTP 500 / 10013, including submission from a hosted Worker
+      #15103 open 2026-08-09 wrangler r2 bucket list silently returns only the first 20 buckets, with no cursor, warning, or --per-page
+      #6905 open 2024-10-07 🐛 BUG: `wrangler types` + DurableObjects + a build process + typescript
+      #16038 open 2026-10-02 Support caller-specific messaging for Wrangler and cf
+      #9885 open 2025-07-08 Workers & Routes & SPAs - assets not resolving
+      #15750 open 2026-09-21 WC-6046 [wrangler] previews: previews onboarding fixups
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #13927 open 2026-05-15 Honor assetConfig.headers/redirects when no on-disk _headers/_redirects file is present
+      #15517 open 2026-09-05 [wrangler] Preserve D1 migration paths during redirected provisioning
+      #3160 open 2023-05-07 🐛 BUG: when trying to left join 2 tables that have same name columns - second column is not returned
+      #12818 open 2026-03-09 SQC-792 add .dev.vars env file support for hyperdrive binding
+      #15330 open 2026-08-24 [miniflare] Manage Flagship flags in Local Explorer
+      #16061 open 2026-10-04 [C3] Bump @tanstack/cli from 0.71.0 to 0.71.1 in /packages/create-cloudflare/src/frameworks
+      #16057 open 2026-10-04 [C3] Bump create-next-app from 16.3.6 to 16.3.8 in /packages/create-cloudflare/src/frameworks
+      #15471 merged 2026-09-02 [wrangler] Fix cf builds for root static projects
+      #15052 open 2026-08-06 update the age header when responding from cache
+      #15193 open 2026-08-14 Update autoconfig to automatically migrate supported Cloudflare Pages Functions projects to Workers
+  clobber        24 hit(s) (all listed)
+      #15542 merged 2026-09-07 [wrangler] Fix wrangler dev running the custom build command twice
+      #14616 merged 2026-07-08 [wrangler] Restrict name-ownership guard to Pages-to-Workers delegation
+      #15176 merged 2026-08-13 Stop workspace pnpm settings leaking into scaffolded installs
+      #14962 closed 2026-08-01 [miniflare] Local rate limit counters silently reset after ~10s of inactivity
+      #14965 merged 2026-08-01 [vite-plugin] De-flake the playground tests on Windows
+      #15246 merged 2026-08-17 [autoconfig] Add cf configuration target
+      #14084 merged 2026-05-28 Fix json serialization but in `mapWorkerMetadataBindings` and add missing unit tests
+      #14603 merged 2026-07-08 Version Packages
+      #14690 merged 2026-07-14 [codemod] Add migration CLI
+      #13965 closed 2026-05-19 fix(wrangler): strip BEGIN TRANSACTION from D1 remote file execute
+      #9001 closed 2025-04-17 In non-interactive mode, Wrangler uses first account in the list that you are signed in with — should it?
+      #15026 merged 2026-08-04 [wrangler] Allow containers to be attached to Durable Objects via `exports`
+      #13471 merged 2026-04-14 chore(local-explorer-ui): Add workflows behaviour tests
+      #14415 merged 2026-06-24 [wrangler] Improve `tail` resilience and shutdown behaviour
+      #14171 merged 2026-06-03 move deploy() and versionsUpload() to deploy-helpers
+      #14142 merged 2026-06-01 Version Packages
+      #3604 merged 2023-07-13 C3: offer eslint-plugin-next-on-pages
+      #5836 merged 2024-05-15 [C3] bump create-qwik from 1.4.5 to 1.5.4 in /packages/create-cloudflare/src/frameworks
+      #6968 closed 2024-10-15 fix: Workers DOM Clobbering gadget found in vite bundled scripts that leads xss
+      #5579 closed 2024-04-10 🚀 Feature Request: support deployments with dynamically generated wrangler.toml (or runtime config in another format)
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15841 open 2026-09-24 Python Workers: `wrangler dev` and `wrangler types` fail with blank `service core:user:: Uncaught Error` while loading Pyodide
+      #15956 open 2026-09-29 fix(deploy-helpers): ignore detached HEAD when inferring preview branches
+      #16015 open 2026-10-02 docs(config): add JSDoc descriptions for docs config explorer
+      #16049 open 2026-10-03 q.ai v3.1
+      #15939 open 2026-09-29 [workflows-shared] Cancel completed step timeout timers
+      #16029 open 2026-10-02 [wrangler] Keep `wrangler preview --json` output parseable for Workers with static assets
+      #15667 open 2026-09-16 [vitest-plugin] Fix background work and watch cleanup
+      #16042 open 2026-10-02 [fixtures] Fix import-npm setup on Windows
+      #15640 open 2026-09-14 [wrangler] Categorise resolved current directory paths in telemetry
+      #15981 open 2026-09-30 [build-output-utils] Reject symlinks when reading build output
+      #15810 open 2026-09-23 Fix Angular SPA asset directory detection for the application builder in autoconfig
+      #15573 open 2026-09-08 [wrangler] Include default module rules in generated types
+      #15288 open 2026-08-20 fix: skip mkdir when C3 parent dir already exists
+      #16041 open 2026-10-02 [miniflare] Support single-object deletion in the Local Explorer R2 API
+      #15993 open 2026-10-01 feat(vitest-plugin): require Vitest 5 and auto-detect Cloudflare config
+      #15615 open 2026-09-11 [wrangler] Support D1 jurisdiction in automatic provisioning
+      #16022 open 2026-10-02 [vite-plugin] preserve config identity for Vitest
+      #15613 open 2026-09-11 CC-8654 Make container image build output concise
+      #15698 open 2026-09-17 CC-8364 Support namespace-backed container instance listing
+      #15451 open 2026-09-01 wrangler dev exits 1 mid-run on "Network connection lost." from ProxyWorker, and prints an empty `✘ [ERROR]`
+  unreadable     15 hit(s) (all listed)
+      #15853 merged 2026-09-24 fix(codemods): handle migration edge cases
+      #15200 open 2026-08-15 [miniflare] Revive gzipped ERROR_STACK bodies in dispatchFetch
+      #14822 open 2026-07-23 [workflows-shared] Add full step output retrieval to Workflows local explorer
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #15713 merged 2026-09-18 Define experimental Cloudflare configuration with a single default export
+      #13599 merged 2026-04-19 SQC-813 support hyperdrive local dev sslmodes verify-ca / verify-full
+      #14156 merged 2026-06-02 [wrangler] Add opt-in OS keychain storage for OAuth credentials
+      #13161 merged 2026-04-01 chore(local-explorer-ui): Switch to Kumo color palette
+      #12288 merged 2026-01-29 [explorer] add the UI for the dev resource explorer
+      #9626 merged 2025-06-17 Support version upload for Python Workers
+      #6580 closed 2024-08-26 🐛 BUG: wrangler versions list (and possibly other commands) colors are unreadable on linux
+      #6629 closed 2024-09-04 Add Cloudflare Pipelines commands
+      #6312 merged 2024-07-22 [wrangler] Add experimental assets config and flag
+      #3801 merged 2023-08-22 pages: Add mechanism to handle API error codes
+      #29 closed 2021-11-17 Rationalizing Wrangler <> Pages
+  garbage        36 hit(s) (all listed)
+      #15708 open 2026-09-18 [workflows] Dispose RPC results and introspection modifiers
+      #15830 open 2026-09-24 Remote bindings: under wrangler dev, every object result of a JS RPC call needs dispose() because the proxy returns the Cap'n Web result
+      #15758 merged 2026-09-21 Version Packages
+      #15696 closed 2026-09-17 vitest-plugin: adminSecretsStore() returns an RPC stub that its type and example never dispose, so workerd warns "An RPC stub was not disposed properly"
+      #15706 merged 2026-09-18 [vitest-plugin] Declare the adminSecretsStore() result as disposable
+      #14703 open 2026-07-15 Resolve installed dependency versions from lockfiles instead of node_modules
+      #14806 merged 2026-07-22 [wrangler] Explain authentication required by remote bindings
+      #14890 closed 2026-07-28 [workers-shared] Fix _redirects/_headers rules silently dropped when placeholders share a prefix
+      #14774 closed 2026-07-20 Debug-log cleanup (cleanupOldLogFiles) re-stats every retained file on each invocation — breaks its own "never block startup" guarantee on high-frequency hosts
+      #14898 merged 2026-07-28 Version Packages
+      #14119 merged 2026-05-29 [wrangler][miniflare] Serve local R2 bucket objects publicly via /cdn-cgi/local/r2/public
+      #14535 merged 2026-07-03 Support dynamic retry delays for Workflow steps in local dev
+      #13817 merged 2026-05-05 run openapi generation and check diff in CI
+      #12917 closed 2026-03-16 feat(wrangler): Add OSC 9;4 terminal progress bar support
+      #14959 closed 2026-08-01 Returning an object in workflow step.do() emits jsrpc error
+      #14487 merged 2026-06-30 Version Packages
+      #14433 merged 2026-06-26 Version Packages
+      #12462 merged 2026-02-07 [miniflare] Add `purgeCache()` method to clear cache entries programmatically
+      #12583 closed 2026-02-17 fix: cleanup resources aggresively on vite-plugin
+      #11468 closed 2025-11-29 D1 execute --file crashes due to Please close FileHandle objects explicitly message
+  mangled        13 hit(s) (all listed)
+      #14330 open 2026-06-17 [miniflare] fix: preserve multiple Set-Cookie headers on WebSocket 101 upgrade responses
+      #14145 open 2026-06-01 miniflare: WebSocket 101 upgrade response collapses multiple Set-Cookie headers
+      #14577 closed 2026-07-06 🐛 BUG: wrangler dev corrupts external hostnames in `_redirects` Location headers (boundary-less substring host rewrite in ProxyWorker)
+      #14152 merged 2026-06-02 [vitest-pool-workers] Fix module resolution for paths with spaces
+      #14658 merged 2026-07-11 Fix `wrangler dev` corrupting external hostnames in proxied headers
+      #7025 closed 2024-10-18 🐛 BUG: wrangler dev --remote using interactive dev session in non-interactive terminal and ignores --show-interactive-dev-session=false
+      #6901 closed 2024-10-06 🐛 BUG: `minify` changes names of React components (`keepNames: true` fixes)
+      #2680 merged 2023-02-06 Use version language
+      #1323 merged 2022-06-21 Fix Pages directory resolution
+      #1254 closed 2022-06-14 🐛 BUG: kv:key put no longer able to upload binary files
+      #1307 merged 2022-06-20 Refactoring Pages code
+      #1284 merged 2022-06-17 Version Packages
+      #1249 merged 2022-06-13 Version Packages
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15920 open 2026-09-28 vitest-pool-workers: "Closing rpc while \"resolve\" was pending" when a Durable Object call starts at file teardown
+      #15343 open 2026-08-24 Allow atomically setting a Worker's complete runtime env (vars + secrets) at deploy
+      #15823 open 2026-09-24 [wrangler] Reloads postpone the preview-token refresh past the session TTL, and a failed refresh never retries
+      #15340 open 2026-08-24 Unable to Create a New Queue Subscription After Deleting the Previous One
+      #15369 open 2026-08-26 Bug: `wrangler auth create <profile>` never starts the OAuth callback server — login hangs forever
+      #15362 open 2026-08-25 D1 binding reads stale schema despite correct on-disk data (vite dev, single entry worker)
+      #15995 open 2026-10-01 Containers: constraints (regions/jurisdiction) for scheduling_policy "durable_object"
+      #15884 open 2026-09-26 wrangler dev fails with [code: 10013] on edge-preview when a remote dispatch_namespaces binding has an outbound worker
+      #16052 open 2026-10-03 Worker Previews: fetch() from a Worker to a Preview's custom domain returns "error code: 1053"
+      #15953 open 2026-09-29 Developer Platform Editor does not grant effective read access to D1/KV/R2 APIs unless Content Read-Only is also assigned
+      #16044 open 2026-10-02 vitest-pool-workers 0.22.0: bundled wrangler 4.124.0 rejects the Durable Object-managed `containers` config that current wrangler accepts
+      #15969 open 2026-09-30 [vite-plugin] Vitest fails at startup since 1.58.0: "There is already a server associated with the config."
+      #15900 open 2026-09-27 Workers Builds: preview check keeps failing for a deleted Worker after the repo is disconnected
+      #15940 open 2026-09-29 wrangler 4.143.0: published cli.d.ts imports modules that are not dependencies, so skipLibCheck: false fails
+      #15377 open 2026-08-26 miniflare@5.20260825.0-alpha publishes index.d.ts with missing ./shared import
+      #15774 open 2026-09-22 D1 migration initialization returns HTTP 403 / code 7403 while read-only queries succeed with OAuth d1:write
+      #15866 open 2026-09-25 [wrangler] Workflow instance pagination repeatedly fetches earlier pages, causing quadratic API requests
+      #14554 open 2026-07-04 [wrangler] Expand auto-config deploy flows to support express.js, index.html, containers
+      #15521 open 2026-09-05 Email Routing addresses: ["*@subdomain"] fails with code 2062 despite subdomain being enabled
+      #16032 open 2026-10-02 [miniflare] Hyperdrive proxy adds ~40 ms to every query with parameters
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15988 open 2026-10-01 [workers-auth] Show actionable OAuth challenge errors
+      #16038 open 2026-10-02 Support caller-specific messaging for Wrangler and cf
+      #15918 open 2026-09-28 ci: track ask-bonk main
+      #16022 open 2026-10-02 [vite-plugin] preserve config identity for Vitest
+      #16055 open 2026-10-04 [workers-auth] Add account-ID guidance for /memberships error 10001
+      #15987 open 2026-10-01 @cloudflare/config: add JSDoc descriptions for properties missing them in the docs config explorer
+      #15969 open 2026-09-30 [vite-plugin] Vitest fails at startup since 1.58.0: "There is already a server associated with the config."
+      #13840 open 2026-05-07 triggers.crons silently dropped when deploying with --dispatch-namespace (Workers for Platforms)
+      #15769 open 2026-09-22 [miniflare] Handle client socket errors in the Hyperdrive proxy
+      #14826 open 2026-07-23 [wrangler] sortObjectRecursive throws TypeError on null inside an array
+      #9755 open 2025-06-26 Container builds incompatible with podman
+      #15717 open 2026-09-18 [wrangler] `createTestHarness()` under Bun: `listen()` succeeds, then `server.fetch()` and every request to the returned URL hang forever with no error
+      #16001 open 2026-10-01 `versions upload` binds a Workflow it never creates, so `create()` fails with workflow.not_found until someone runs `deploy`
+      #16012 open 2026-10-02 [vitest-plugin] cloudflare.config.ts Durable Object binding to the Worker's own class fails: "no such service is defined"
+      #15900 open 2026-09-27 Workers Builds: preview check keeps failing for a deleted Worker after the repo is disconnected
+      #15334 open 2026-08-24 CFSQL-1294 be more faithful to sqlite's algorithm for printing newlines in export
+      #12133 open 2026-01-26 Move command arg sanitization allow list to command definition behaviours
+      #15181 open 2026-08-13 Restore Date and bigint values on forwarded tail events
+      #15180 open 2026-08-13 Date objects in forwarded tail events arrive as strings in local dev
+      #15068 open 2026-08-06 CLOUDFLARE_ENV does not select .env.<environment> / .dev.vars.<environment> files, but --env does
+  unclean        2 hit(s) (all listed)
+      #12894 merged 2026-03-13 Remove superfluous adjective from --json description
+      #2615 closed 2022-11-28 quiet mode for wrangler
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15756 open 2026-09-21 [miniflare] Clean up Containers on shutdown
+      #15667 open 2026-09-16 [vitest-plugin] Fix background work and watch cleanup
+      #15775 open 2026-09-22 fix(vite-plugin): only answer or tear down WebSocket upgrades with exclusive ownership
+      #14794 open 2026-07-21 feat(vitest-pool-workers): tolerate post-stop() socket error events when configured
+      #16022 open 2026-10-02 [vite-plugin] preserve config identity for Vitest
+      #15419 open 2026-08-29 Miniflare Browser Rendering leaves all but the first Chrome orphaned on direct SIGINT
+      #15659 open 2026-09-15 fix(vite-plugin): don't destroy WebSockets owned by other upgrade listeners
+      #15157 open 2026-08-13 [wrangler] Add experimental Workers Observability tail
+      #16008 open 2026-10-01 wrangler delete leaves the Containers application running and billing
+      #15695 open 2026-09-17 [vitest-plugin] Support Container tests
+      #15647 open 2026-09-15 [Vite plugin] Playground test can hang in Vite server.close() during teardown
+      #15498 open 2026-09-03 Vitest run stalls indefinitely mid-suite after a workerd pool test file finishes, with no error output
+      #15431 open 2026-08-30 fix(miniflare): disable per-browser SIGINT/SIGHUP to allow full multi-session teardown (Closes #15419)
+      #3696 open 2023-08-02 🐛 BUG: Wrangler throwing an error fails to clear port binding on exit
+      #15771 closed 2026-09-22 fix(vite-plugin): only answer or tear down WebSocket upgrades no other listener owns
+      #15802 closed 2026-09-23 [workers-utils] Add child-process controller
+      #15770 closed 2026-09-22 fix(vite-plugin): only answer or tear down WebSocket upgrades no other listener owns
+      #15939 open 2026-09-29 [workflows-shared] Cancel completed step timeout timers
+      #15758 merged 2026-09-21 Version Packages
+      #11071 open 2025-10-23 Durable Object RPC ReadableStream cancel logs “Network connection lost” and later “IoContext”
+  reboot         7 hit(s) (all listed)
+      #11771 merged 2025-12-30 Fix vitest watch with durable objects
+      #4413 merged 2023-11-09 startDevWorker Milestone 1 - Reboot
+      #9518 closed 2025-06-06 Vite plugin has race condition with HMR - `A hanging Promise was canceled.`
+      #2959 closed 2023-03-29 🐛 BUG: Failed to get worker definitions TypeError: fetch failed
+      #4175 closed 2023-10-13 startDevWorker Milestone 1 - Reboot
+      #3963 closed 2023-09-16 🐛 BUG: MiniflareCoreError - cant run `wrangler dev`
+      #2774 closed 2023-02-21 🐛 BUG: [pages:err] Error: Could not proxy request
+  disk+full      61 hit(s) (all listed)
+      #15362 open 2026-08-25 D1 binding reads stale schema despite correct on-disk data (vite dev, single entry worker)
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #15617 open 2026-09-12 [workers-utils] Stop the update check from recommending deprecated versions
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #14359 open 2026-06-18 feat(autoconfig): emit cloudflare.config.ts for new Vite projects
+      #14294 open 2026-06-14 [wrangler] Add `wrangler compile` for self-hosting Workers on standalone workerd
+      #15451 open 2026-09-01 wrangler dev exits 1 mid-run on "Network connection lost." from ProxyWorker, and prints an empty `✘ [ERROR]`
+      #15627 merged 2026-09-13 [C3] Bump create-next-app from 16.3.4 to 16.3.5 in /packages/create-cloudflare/src/frameworks
+      #14703 open 2026-07-15 Resolve installed dependency versions from lockfiles instead of node_modules
+      #15538 closed 2026-09-06 wrangler dev exits fatally on small R2 puts via --persist-to (regression in the 4.20260722+ workerd family; 4.112.0 clean) — same fatal mechanism as #14916 on the R2 path
+      #15333 closed 2026-08-24 Vite plugin dev server: repeated 304 module revalidation causes Chromium ERR_INSUFFICIENT_RESOURCES
+      #15559 closed 2026-09-08 🐛 BUG: `wrangler pages dev` returns 502 for static assets with non-ASCII characters in filename (ByteString error)
+      #15207 merged 2026-08-15 [wrangler] Log ProxyWorker request error details at debug level
+      #14587 merged 2026-07-07 [wrangler] Categorise deploy positional path in command telemetry
+      #15037 merged 2026-08-05 [miniflare] Reconcile dev registry entries instead of deleting and recreating them
+      #15272 merged 2026-08-19 [vitest-plugin] Add experimental `newConfig` option for `cloudflare.config.ts`
+      #15064 merged 2026-08-06 [miniflare] Add backend resources for email capture and storage
+      #14872 merged 2026-07-27 Add automatic update prompts for out-of-date Cloudflare agent skills
+      #12774 closed 2026-03-05 R2 Data Catalog Iceberg table corrupted (50408) after Pipeline sink metadata commits silently stall
+      #14420 closed 2026-06-25 wrangler types: add --x-new-config flag support
+  data+loss      41 hit(s) (all listed)
+      #15922 open 2026-09-28 [Bug] Durable Objects Data Studio query/v2 returns HTTP 500 / code 10002 for a read-only SELECT
+      #15103 open 2026-08-09 wrangler r2 bucket list silently returns only the first 20 buckets, with no cursor, warning, or --per-page
+      #15285 open 2026-08-20 [vite-plugin] server.ws: false leaves Vite HMR WebSocket upgrades hanging
+      #14694 open 2026-07-14 _redirects: dynamic-rule overflow silently drops rest of file; static/dynamic classification is order-dependent and unsurfaced
+      #15203 open 2026-08-15 `wrangler dev` exits with "Error inside ProxyWorker / Network connection lost" on POST requests with a body when `assets` is configured
+      #15229 open 2026-08-16 @cloudflare/vite-plugin dev: workerd outbound TLS ignores system CA store on NixOS
+      #15170 open 2026-08-13 [vite-plugin] Non-101 WebSocket upgrade responses are destroyed instead of delivered to the client in dev
+      #13913 open 2026-05-13 [wrangler] Fix nested D1 migrations
+      #14736 open 2026-07-17 vitest-pool-workers: every rejecting Durable Object RPC leaks one unhandled rejection, even when the test handles it
+      #15215 closed 2026-08-16 `wrangler types` emits `declare const Buffer: any` since v4.122.0, nullifying the `@types/node` Buffer interface
+      #15093 closed 2026-08-09 wrangler d1 execute --file silently merges statements after a compound statement closed with a lowercase `end;`
+      #14460 closed 2026-06-28 Large 64-bit integers (Snowflake IDs) lose precision in Wrangler CLI and Local Explorer
+      #14828 closed 2026-07-23 [miniflare] isCompressedByCloudflareFL does not normalise Content-Type case or whitespace
+      #14835 closed 2026-07-24 Miniflare KV `getWithMetadata` drops metadata for falsy values (`""`, `0`, `false`) — returns bare value instead of `{value, metadata}` wrapper
+      #14839 closed 2026-07-24 [workflows] Local waits retain pause listeners after completion
+      #15652 merged 2026-09-15 [local-explorer-ui] Adds the Cron Trigger group to the Local Explorer
+      #15035 closed 2026-08-05 [vite-plugin] Internal Workers collide in the shared dev registry across concurrent dev sessions
+      #9042 closed 2025-04-24 D1 export by Wrangler did not escape the literal `\n` properly
+      #14388 merged 2026-06-22 [wrangler] Don't error when find_additional_modules discovers a file matching a shadowed rule
+      #14354 merged 2026-06-18 move auto provisioning to deploy-helpers
+  partial+write  51 hit(s) (all listed)
+      #15625 open 2026-09-12 deploy: config-file routes silently ignored for Workers declaring [assets] (no zone-routes API call; --routes CLI flag works)
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #15230 open 2026-08-16 Wrangler deploy repeatedly fails with write EPIPE on Workers Versions API after asset upload
+      #15781 open 2026-09-22 [Miniflare] Reuse keep-alive connections for dispatchFetch()
+      #14916 open 2026-07-29 wrangler dev --local crashes the whole process on a recoverable D1 SQLITE_BUSY under concurrent writes (miniflare 4.20260722; regression from 4.20260714)
+      #15517 open 2026-09-05 [wrangler] Preserve D1 migration paths during redirected provisioning
+      #14768 open 2026-07-20 [workflows-shared] Add cron scheduling wiring for Workflows
+      #15249 open 2026-08-18 vite-plugin tail forwarding throws on a BigInt while the miniflare copy handles it
+      #14945 open 2026-07-31 @cloudflare/vitest-pool-workers segfaults with 3+ real auxiliary Workers wired together (version-independent, minimal synthetic repro does not reproduce)
+      #6227 open 2023-12-27 🐛 BUG: console.assert() is evaulated but does nothing when an assertion fails
+      #15826 closed 2026-09-24 feat(codemods): add Wrangler-to-cf CLI migration
+      #15713 merged 2026-09-18 Define experimental Cloudflare configuration with a single default export
+      #15112 open 2026-08-10 [wrangler] Add metrics export configuration
+      #15330 open 2026-08-24 [miniflare] Manage Flagship flags in Local Explorer
+      #15197 closed 2026-08-14 wrangler deploy --var NAME:VALUE does not override baked-in vars.NAME in config file (wrangler 4.123.0)
+      #15458 closed 2026-09-01 [test] Exercise package-size reporting against current main
+      #15223 merged 2026-08-16 [workers-auth] Recover from a partially installed keyring native binding
+      #14872 merged 2026-07-27 Add automatic update prompts for out-of-date Cloudflare agent skills
+      #14891 closed 2026-07-28 [vite-plugin] Nested copy of a CJS dependency escapes optimizeDeps and reaches workerd as raw `require` (same package works when hoisted)
+      #15202 closed 2026-08-15 wrangler dev workerd exits on EPIPE while writing captured stdout
+  crash+safe     53 hit(s) (all listed)
+      #16046 open 2026-10-02 [wrangler] createTestHarness: uncaught setTypeOfService EINVAL when close() follows listen()/reset()
+      #14921 open 2026-07-29 fix(miniflare): surface D1 session commit token failures as recoverable D1 errors
+      #14701 open 2026-07-15 [vite-plugin/miniflare] workerd heap grows on every server-file edit until OOM, then every request fails with `fetch failed` until manual restart
+      #15598 open 2026-09-10 Podonnell/preview onboarding
+      #14842 open 2026-07-25 🚀 Feature: support remote Hyperdrive bindings in local dev (raw TCP relay)
+      #15182 open 2026-08-13 Introduce --patch-existing-previews option to previews base-config commands
+      #14641 open 2026-07-10 wrangler dev: steady ~5s request cadence phase-locks with kj's 5s keep-alive timeouts — POSTs intermittently fail with 503 "worker restarted mid-request" (worker never restarted)
+      #14822 open 2026-07-23 [workflows-shared] Add full step output retrieval to Workflows local explorer
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #15658 merged 2026-09-15 [wrangler] Add Durable Objects hibernation timeout option
+      #14956 open 2026-07-31 Quiet down dev output: demote browser-made request logs, hide Vite internals
+      #15268 merged 2026-08-19 [miniflare] Simulate Flagship bindings locally
+      #14537 closed 2026-07-03 [miniflare] Key local rate limit counters by namespace_id
+      #15032 merged 2026-08-05 [wrangler] Fix modules-watch-stub injection when bundle:false (fixes …
+      #15385 merged 2026-08-27 Version Packages
+      #15108 open 2026-08-09 [wrangler] Paginate R2 bucket listings
+      #15040 merged 2026-08-05 [miniflare] Restrict dev registry registration to user workers
+      #14613 merged 2026-07-08 fix(create-cloudflare): pin h3 to ^1 in the Nuxt template so Cloudflare bindings work in dev with pnpm
+      #15478 closed 2026-09-02 Guide setup of previews block
+      #15076 closed 2026-08-07 [miniflare] Share local storage across processes
+  atomic+write   19 hit(s) (all listed)
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #14921 open 2026-07-29 fix(miniflare): surface D1 session commit token failures as recoverable D1 errors
+      #14768 open 2026-07-20 [workflows-shared] Add cron scheduling wiring for Workflows
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #14846 open 2026-07-25 [wrangler] Add Codex Micro daemon
+      #15855 merged 2026-09-24 Merge `main` into `vite-plugin-v2`
+      #15851 merged 2026-09-24 feat(codemods): add Wrangler-to-cf migration API
+      #14991 closed 2026-08-03 D1: 'wrangler d1 migrations apply --remote' fails with 'incomplete input: SQLITE_ERROR' on CRLF migration files containing triggers
+      #15430 closed 2026-08-30 Add files via upload
+      #15206 merged 2026-08-15 [miniflare] Recover from a partially downloaded Chrome install
+      #14847 merged 2026-07-25 [workflows-shared] Emulate deterministic-ID uniqueness in the local Workflows binding
+      #15609 merged 2026-09-11 Add dev/build support for Containers with experimental new config
+      #13272 closed 2026-04-04 Can't import an exported sql file generated by `wrangler d1 export` with `wranger d1 execute db` due to BEGIN_TRANSACTION
+      #14199 closed 2026-06-05 Prevent concurrent wrangler dev instances from fighting over the skills-install prompt
+      #12774 closed 2026-03-05 R2 Data Catalog Iceberg table corrupted (50408) after Pipeline sink metadata commits silently stall
+      #12419 closed 2026-02-05 Workflows report outcome: "exception" despite successful completion
+      #2410 closed 2022-12-14 🚀 Feature Request: Better deployment URL ergonomics
+      #5438 closed 2024-03-29 🚀 Feature Request: Allow turning off foreign key check while migrating database.
+      #2733 closed 2023-02-15 🚀 Feature Request: D1 Transaction support
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15985 open 2026-10-01 Bump hono from 4.12.32 to 4.13.7 in /packages/auto-triage-bot
+      #15136 open 2026-08-11 Fix concurrent process race on single-use refresh tokens
+      #14703 open 2026-07-15 Resolve installed dependency versions from lockfiles instead of node_modules
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #14461 open 2026-06-28 Invalid manifest: Manifest path must be URI encoded.
+      #15624 open 2026-09-12 deploy error
+      #15500 open 2026-09-03 [vitest-plugin] Support Vitest 5
+      #15889 open 2026-09-26 Secrets Store reveals secret
+      #14764 closed 2026-07-20 [benchmark] lock file resolution
+      #16054 open 2026-10-03 [autoconfig] approve required pnpm builds before installing
+      #14819 open 2026-07-23 Cache package dependency collection results to avoid redundant filesystem walks
+      #14641 open 2026-07-10 wrangler dev: steady ~5s request cadence phase-locks with kj's 5s keep-alive timeouts — POSTs intermittently fail with 503 "worker restarted mid-request" (worker never restarted)
+      #16036 open 2026-10-02 [wrangler] Support temporary event accounts in R2 and Containers commands
+      #14334 open 2026-06-17 [wrangler] Replace unmaintained blake3-wasm with hash-wasm
+      #14904 open 2026-07-29 configure C3 experimental projects to use `@cloudflare/autoconfig` directly
+      #15993 open 2026-10-01 feat(vitest-plugin): require Vitest 5 and auto-detect Cloudflare config
+      #15695 open 2026-09-17 [vitest-plugin] Support Container tests
+      #15205 open 2026-08-15 fix(vite-plugin): deliver non-101 responses on rejected WebSocket upgrades
+      #15617 open 2026-09-12 [workers-utils] Stop the update check from recommending deprecated versions
+      #15716 open 2026-09-18 [miniflare] dispatchFetch forces reset: true — one TCP connection (and one TIME_WAIT port) per request, causing ephemeral-port exhaustion in CI
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15774 open 2026-09-22 D1 migration initialization returns HTTP 403 / code 7403 while read-only queries succeed with OAuth d1:write
+      #15619 open 2026-09-12 Remote proxy session startup returns generic Error before RPC for two active private Workers
+      #15230 open 2026-08-16 Wrangler deploy repeatedly fails with write EPIPE on Workers Versions API after asset upload
+      #16010 open 2026-10-01 getPlatformProxy with remote D1 bindings returns error 1031 on edge-preview exchange
+      #16056 open 2026-10-04 vitest-pool-workers: a Workflow waiting on a short timer (retry backoff) intermittently freezes the whole test isolate for ~300 s
+      #16004 open 2026-10-01 @cloudflare/vite-plugin lowers `using` declarations at its es2024 build target on Vite 6, 7 and 8.2+
+      #15942 open 2026-09-29 Preview deployments drop secrets previously set on the Preview (wrangler preview / cf previews deploy)
+      #15827 open 2026-09-24 `wrangler deploy --name` does not rename Durable Object-managed Container applications
+      #15753 open 2026-09-21 On cross-request async work + unawaited background subrequests -> subsequent requests silently canceled
+      #15819 open 2026-09-24 Miniflare resets the connection when a Worker responds without reading the request body; workerd does this whenever the body crossed a service binding
+      #15971 open 2026-09-30 unable to login
+      #16001 open 2026-10-01 `versions upload` binds a Workflow it never creates, so `create()` fails with workflow.not_found until someone runs `deploy`
+      #14921 open 2026-07-29 fix(miniflare): surface D1 session commit token failures as recoverable D1 errors
+      #15842 open 2026-09-24 supported cleanup when getPlatformProxy remote binding startup fails before returning dispose
+      #15635 open 2026-09-14 miniflare 5.20260911.0-alpha: Response.clone() on a dispatchFetch response (DO-forwarded stream) throws "Body has already been consumed" although bodyUsed is false
+      #16025 open 2026-10-02 [containers-shared] Stop forwarding Docker CLI stderr from captured Docker commands
+      #16035 open 2026-10-02 [autoconfig] Approve required pnpm builds before installing Cloudflare packages
+      #15979 open 2026-09-30 Workers Builds: a Worker connected from the dashboard gets a failing `wrangler preview` build on every non-production branch, with no way to turn it off
+      #15089 open 2026-08-08 🐛 BUG: concurrent processes race the single-use refresh token (read → exchange → write is unlocked); a lost race kills the refresh chain until interactive re-login
+      #15462 open 2026-09-01 Remote D1 sequential queries leak established workerd sockets in local Vite development
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15343 open 2026-08-24 Allow atomically setting a Worker's complete runtime env (vars + secrets) at deploy
+      #15920 open 2026-09-28 vitest-pool-workers: "Closing rpc while \"resolve\" was pending" when a Durable Object call starts at file teardown
+      #15969 open 2026-09-30 [vite-plugin] Vitest fails at startup since 1.58.0: "There is already a server associated with the config."
+      #15809 open 2026-09-23 [Miniflare][Workflows] Completed instances retain file handles, eventually crashing workerd with “Too many open files”
+      #16044 open 2026-10-02 vitest-pool-workers 0.22.0: bundled wrangler 4.124.0 rejects the Durable Object-managed `containers` config that current wrangler accepts
+      #14554 open 2026-07-04 [wrangler] Expand auto-config deploy flows to support express.js, index.html, containers
+      #15940 open 2026-09-29 wrangler 4.143.0: published cli.d.ts imports modules that are not dependencies, so skipLibCheck: false fails
+      #15455 open 2026-09-01 CI: report package raw/gzip size deltas against the PR merge base
+      #15783 open 2026-09-22 Wrangler auto-config uses incorrect Angular build output directory
+      #15362 open 2026-08-25 D1 binding reads stale schema despite correct on-disk data (vite dev, single entry worker)
+      #15690 open 2026-09-17 D1 /query rejects LF-only multi-statement SQL ending in an uppercase-BEGIN trigger
+      #16035 open 2026-10-02 [autoconfig] Approve required pnpm builds before installing Cloudflare packages
+      #15624 open 2026-09-12 deploy error
+      #15797 open 2026-09-23 wrangler preview returns 10000 with an account-owned Workers Editor API token
+      #16046 open 2026-10-02 [wrangler] createTestHarness: uncaught setTypeOfService EINVAL when close() follows listen()/reset()
+      #15889 open 2026-09-26 Secrets Store reveals secret
+      #14176 open 2026-06-04 Fix d1 execute rejecting SQL with BEGIN TRANSACTION in string data
+      #16045 open 2026-10-02 vitest-pool-workers 0.22.0 pins miniflare 5.20260815.0-alpha with vulnerable undici 7.29.0 and sharp 0.35.2
+      #16012 open 2026-10-02 [vitest-plugin] cloudflare.config.ts Durable Object binding to the Worker's own class fails: "no such service is defined"
+      #3696 open 2023-08-02 🐛 BUG: Wrangler throwing an error fails to clear port binding on exit
+
+== 51 terms run; 50 returned hits, 20 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

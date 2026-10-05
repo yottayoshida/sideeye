@@ -1,0 +1,37 @@
+5e07599d22ff  /lab/fits/obs.fits
+$ fitscheck -k standard -w /lab/fits/obs.fits
+MISSING '/lab/fits/obs.fits' .. Checksum not found in HDU #0
+MISSING '/lab/fits/obs.fits' .. Datasum not found in HDU #0
+MISSING '/lab/fits/obs.fits' .. Checksum not found in HDU #1
+MISSING '/lab/fits/obs.fits' .. Datasum not found in HDU #1
+4 errors
+rc=0
+5e07599d22ff  /lab/fits/obs.fits
+$ fitscheck /lab/fits/obs.fits
+MISSING '/lab/fits/obs.fits' .. Checksum not found in HDU #0
+MISSING '/lab/fits/obs.fits' .. Datasum not found in HDU #0
+MISSING '/lab/fits/obs.fits' .. Checksum not found in HDU #1
+MISSING '/lab/fits/obs.fits' .. Datasum not found in HDU #1
+4 errors
+rc=0
+$ /usr/bin/python3 -m pymol -cq /lab/pm-in/make.pml
+ Executive: object "ala" created.
+ Executive: object "gly" created.
+PyMOL>fragment ala
+PyMOL>fragment gly
+PyMOL>save /lab/pm/model.pse
+ Save: Please wait -- writing session file...
+ Save: wrote "/lab/pm/model.pse".
+rc=0
+077d0e9a35bd  /lab/pm/model.pse
+$ /usr/bin/python3 -m pymol -cq /lab/pm/model.pse /lab/pm-in/edit.pml
+ Executive: Loading version 3.000000 session...
+ Setting: bg_rgb set to white.
+ Executive: Colored 10 atoms and 1 object.
+PyMOL>set bg_rgb, white
+PyMOL>color red, ala
+PyMOL>save /lab/pm/model.pse
+ Save: Please wait -- writing session file...
+ Save: wrote "/lab/pm/model.pse".
+rc=0
+2a15bdc32798  /lab/pm/model.pse

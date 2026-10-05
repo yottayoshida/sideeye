@@ -1,0 +1,137 @@
+fresh go-ethereum
+fresh ethkey
+SEEN  geth  target-classes:10
+SEEN  geth  b2-exclusions:3
+SEEN  geth  spike/dogfood/2026-09-21-release-path/SELECTION.md:71
+fresh foundry
+fresh shadow-maint
+fresh chpasswd
+fresh useradd
+fresh systemd
+fresh systemd-firstboot
+fresh sysusers
+SEEN  mackup  spike/dogfood/2026-09-05-userview/SELECTION.md:60
+SEEN  mackup  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  mackup  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  dotbot  spike/dogfood/2026-09-05-userview/SELECTION.md:57
+SEEN  dotbot  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  dotbot  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  jump  target-classes:120
+fresh gsamokovarov
+SEEN  weechat  b2-exclusions:266
+SEEN  weechat  spike/dogfood/2026-09-05-userview/SELECTION.md:80
+SEEN  weechat  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  weechat  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  irssi  b2-exclusions:119
+SEEN  irssi  spike/dogfood/2026-09-05-userview/SELECTION.md:90
+SEEN  irssi  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  irssi  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+fresh imap-backup
+fresh mblaze
+SEEN  offlineimap  b2-exclusions:179
+SEEN  offlineimap  b2-candidates:186
+SEEN  offlineimap  spike/dogfood/2026-09-06-userview-2/SELECTION.md:189
+fresh lieer
+fresh signal-cli
+fresh mlflow
+SEEN  dvc  target-classes:30
+SEEN  dvc  spike/dogfood/2026-09-21-release-path/SELECTION.md:55
+fresh kaggle
+fresh huggingface
+fresh simonw
+fresh crane
+fresh go-containerregistry
+fresh skopeo
+fresh oras
+fresh regctl
+fresh regclient
+fresh nerdctl
+fresh granted
+fresh saml2aws
+fresh aws-sso-util
+fresh awsume
+fresh aws-vault
+fresh doppler
+fresh infisical
+fresh jira-cli
+fresh Leanify
+fresh Efficient-Compression-Tool
+SEEN  zopfli  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:47
+fresh ffsubsync
+fresh alass
+fresh subliminal
+fresh operon
+SEEN  quodlibet  spike/dogfood/2026-09-06-userview-2/SELECTION.md:35
+SEEN  libarchive  target-classes:45
+SEEN  libarchive  b2-exclusions:143
+SEEN  libarchive  spike/dogfood/2026-09-06-userview-2/SELECTION.md:178
+SEEN  bsdtar  funnel:46
+SEEN  bsdtar  target-classes:45
+SEEN  bsdtar  b2-exclusions:143
+SEEN  bsdtar  spike/dogfood/2026-09-06-userview-2/SELECTION.md:178
+SEEN  bsdtar  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  xz  funnel:68
+SEEN  xz  target-classes:71
+SEEN  xz  b2-exclusions:268
+SEEN  xz  b2-candidates:281
+SEEN  xz  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:35
+fresh tukaani
+fresh zpaqfranz
+SEEN  ouch  funnel:74
+SEEN  ouch  target-classes:40
+SEEN  ouch  spike/dogfood/2026-09-05-userview/SELECTION.md:17
+SEEN  ouch  spike/dogfood/2026-09-06-userview-2/SELECTION.md:19
+SEEN  ouch  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:95
+SEEN  ouch  spike/dogfood/2026-09-16-outside-git/SELECTION.md:60
+SEEN  ouch  spike/dogfood/2026-09-16-userview-3/SELECTION.md:25
+SEEN  ouch  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:99
+SEEN  ouch  spike/dogfood/2026-10-02-unjudged-on-v170/SELECTION.md:38
+SEEN  pipx  b2-exclusions:199
+SEEN  pipx  spike/dogfood/2026-09-16-userview-3/SELECTION.md:97
+SEEN  pipx  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+fresh micromamba
+fresh mamba
+SEEN  composer  funnel:85
+SEEN  composer  target-classes:60
+SEEN  composer  b2-exclusions:69
+SEEN  composer  spike/dogfood/2026-09-16-userview-3/SELECTION.md:77
+SEEN  pnpm  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:125
+SEEN  yarn  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:125
+SEEN  bundler  target-classes:53
+SEEN  bundler  b2-exclusions:56
+SEEN  bundler  spike/dogfood/2026-09-06-userview-2/SELECTION.md:184
+SEEN  bundler  spike/dogfood/2026-09-11-past-walls/SELECTION.md:26
+SEEN  bundler  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:34
+SEEN  rubygems  spike/dogfood/2026-09-06-userview-2/SELECTION.md:184
+SEEN  rubygems  spike/dogfood/2026-10-03-user-data/SELECTION.md:85
+fresh vfox
+SEEN  proto  target-classes:23
+SEEN  proto  spike/dogfood/2026-09-05-userview/SELECTION.md:58
+SEEN  proto  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:83
+SEEN  proto  spike/authoring-cost/pool-atomic.txt:2
+fresh fnm
+fresh terragrunt
+fresh vagrant
+SEEN  git-crypt  b2-exclusions:98
+SEEN  git-crypt  spike/dogfood/2026-09-06-userview-2/SELECTION.md:269
+fresh git-lfs
+fresh datalad
+fresh prs
+fresh ripasso
+fresh kpcli
+SEEN  keepassxc  target-classes:169
+SEEN  keepassxc  b2-exclusions:128
+SEEN  keepassxc  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  keepassxc  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  gpscorrelate  b2-candidates:121
+SEEN  gpsbabel  b2-exclusions:105
+SEEN  gpsbabel  spike/dogfood/2026-09-16-userview-3/SELECTION.md:98
+SEEN  jhead  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:123
+fresh darktable
+fresh rawtherapee
+fresh immich
+fresh photoprism
+fresh osxphotos
+fresh betterbib
+fresh jabref
+fresh biber

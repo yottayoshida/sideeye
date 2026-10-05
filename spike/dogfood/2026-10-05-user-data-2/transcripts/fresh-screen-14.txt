@@ -1,0 +1,7 @@
+fresh vfox
+fresh version-fox
+fresh lima-vm
+fresh limactl
+fresh crc-org
+SEEN  kislyuk  spike/dogfood/2026-09-06-userview-2/SELECTION.md:51
+fresh tofuutils

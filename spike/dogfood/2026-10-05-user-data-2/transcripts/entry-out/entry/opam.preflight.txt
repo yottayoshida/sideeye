@@ -1,0 +1,21 @@
+[WARNING] Running as root is not recommended
+[WARNING] Running as root is not recommended
+PREFLIGHT  recording accepted — 5 state-changing operation(s) observed
+
+cwd          /s/opam-in
+atomicity    22 path(s) judged pre-or-post
+oracle       agreed on 5 operations (183 syscall lines examined, 59 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2008 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/opam --cwd "/s/opam-in" --operation "opam option jobs=3 --global" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

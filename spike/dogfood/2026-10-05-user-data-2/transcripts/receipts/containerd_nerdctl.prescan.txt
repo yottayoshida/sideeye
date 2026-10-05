@@ -1,0 +1,662 @@
+== novelty pre-scan: containerd/nerdctl
+== date: 2026-10-05T03:57:40Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          28 hit(s) (all listed)
+      #5047 open 2026-07-06 nerdctl  run slower than old version
+      #4365 closed 2025-06-24 [CI] CI runs should output containerd / buildkitd logs
+      #4945 merged 2026-05-29 fix(container): chunk mounts metadata to prevent max label size crash
+      #5073 merged 2026-07-16 compose: guard x-nerdctl-* extension type assertions
+      #5187 merged 2026-09-07 build(deps): bump the docker group across 1 directory with 3 updates
+      #4816 merged 2026-03-31 build(deps): bump github.com/klauspost/compress from 1.18.4 to 1.18.5
+      #4975 merged 2026-06-18 build(deps): bump the docker group across 1 directory with 3 updates
+      #4354 merged 2025-06-23 Hardening: internal/filesystem: prevent inode change on failure
+      #4202 merged 2025-05-06 [FIX] CNIEnv concurrency issue
+      #4236 merged 2025-05-09 build(deps): bump github.com/vishvananda/netlink from 1.3.1-0.20250303224720-0e7078ed04c8 to 1.3.1
+      #4375 merged 2025-06-25 build(deps): bump the docker group with 2 updates
+      #4131 merged 2025-04-18 build(deps): bump the docker group with 2 updates
+      #2785 merged 2024-02-01 Support systemd in containers with podman-style `--systemd` flag
+      #3433 closed 2024-09-17 Panic: `not a console`, follow-up to #3297
+      #3186 closed 2024-07-05 Flaky test list
+      #3345 closed 2024-08-22 Container create panic (index out of range) 
+      #3575 merged 2024-10-18 Separate lint + enable on other platforms
+      #3233 merged 2024-07-18 build(deps): bump github.com/containerd/containerd from 1.7.19 to 1.7.20 in the containerd group
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+      #3210 merged 2024-07-10 build(deps): bump github.com/containerd/typeurl/v2 from 2.1.1 to 2.2.0
+  corrupt        8 hit(s) (all listed)
+      #4279 open 2025-05-21 Epic: real-world experience migrating from docker to nerdctl
+      #5115 merged 2026-08-01 fix: image ls with a bare repository name should match all tags
+      #5130 merged 2026-08-07 feat(system): add nerdctl system df
+      #3810 merged 2025-01-11 Bump up github.com/containerd/go-cni to 1.1.12 and fix CI
+      #3343 closed 2024-08-22 Message too big using internal logging cause the process to block using stdout/stderr
+      #2590 merged 2023-10-23 build(deps): bump github.com/klauspost/compress from 1.17.1 to 1.17.2
+      #2159 merged 2023-04-05 build(deps): bump github.com/klauspost/compress from 1.16.3 to 1.16.4
+      #2138 merged 2023-03-28 build(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  corruption     7 hit(s) (all listed)
+      #5143 merged 2026-08-18 build(deps): bump github.com/containerd/containerd/v2 from 2.3.3 to 2.3.4
+      #4879 merged 2026-04-30 build(deps): bump github.com/klauspost/compress from 1.18.5 to 1.18.6
+      #3289 merged 2024-08-09 build(deps): bump github.com/containerd/accelerated-container-image from 1.1.5-0.20240712041225-3c4dd559fed4 to 1.2.0
+      #3056 merged 2024-06-04 build(deps): bump golang.org/x/net from 0.25.0 to 0.26.0
+      #2138 merged 2023-03-28 build(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+      #742 closed 2022-01-27 Error 401 when trying to pull images with containerd after successful login to AWS ECR
+      #438 merged 2021-10-15 build(deps): bump github.com/Microsoft/go-winio from 0.5.0 to 0.5.1
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3019 open 2024-05-18 image history issues
+      #5009 merged 2026-06-25 logging: write container output synchronously so final output  is not truncated
+      #5115 merged 2026-08-01 fix: image ls with a bare repository name should match all tags
+      #5233 merged 2026-09-28 build(deps): bump github.com/klauspost/compress from 1.20.0 to 1.20.1
+      #5116 merged 2026-08-01 test: use compose rm for run cleanup
+      #5231 merged 2026-09-25 build(deps): bump github.com/containerd/containerd/v2 from 2.4.0 to 2.4.1
+      #5147 merged 2026-08-19 feat(logging): add --log-file to persist nerdctl's own log
+      #5143 merged 2026-08-18 build(deps): bump github.com/containerd/containerd/v2 from 2.3.3 to 2.3.4
+      #4938 merged 2026-05-27 formatter: make ellipsis unicode safe
+      #5167 merged 2026-08-31 build(deps): bump github.com/containerd/containerd/api from 1.12.0-beta.0 to 1.12.0-rc.0 in the containerd group
+      #5142 merged 2026-08-18 build(deps): bump github.com/moby/sys/userns from 0.1.0 to 0.2.0 in the moby-sys group
+      #5187 merged 2026-09-07 build(deps): bump the docker group across 1 directory with 3 updates
+      #5189 merged 2026-09-07 build(deps): bump tags.cncf.io/container-device-interface from 1.1.1-0.20260720132747-49ac08dcf160 to 1.1.1
+      #5059 merged 2026-07-10 build(deps): bump github.com/containerd/containerd/v2 from 2.3.2 to 2.3.3
+      #4959 merged 2026-06-10 build(deps): bump golang.org/x/net from 0.55.0 to 0.56.0 in the golang-x group
+      #5016 merged 2026-06-26 build(deps): bump actions/cache from 6.0.0 to 6.1.0
+      #4985 merged 2026-06-19 build(deps): bump github.com/containerd/containerd/v2 from 2.3.1 to 2.3.2
+      #5000 merged 2026-06-23 build(deps): bump actions/cache from 5.0.5 to 6.0.0
+      #5089 merged 2026-07-20 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+      #4921 merged 2026-05-21 build(deps): bump github.com/containerd/containerd/v2 from 2.3.0 to 2.3.1
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5160 merged 2026-08-24 fix(image): truncate the output file of save and export
+      #5159 closed 2026-08-24 nerdctl save -o / export -o do not truncate an existing file
+      #3019 open 2024-05-18 image history issues
+      #5009 merged 2026-06-25 logging: write container output synchronously so final output  is not truncated
+      #5115 merged 2026-08-01 fix: image ls with a bare repository name should match all tags
+      #5233 merged 2026-09-28 build(deps): bump github.com/klauspost/compress from 1.20.0 to 1.20.1
+      #5116 merged 2026-08-01 test: use compose rm for run cleanup
+      #5231 merged 2026-09-25 build(deps): bump github.com/containerd/containerd/v2 from 2.4.0 to 2.4.1
+      #5147 merged 2026-08-19 feat(logging): add --log-file to persist nerdctl's own log
+      #5143 merged 2026-08-18 build(deps): bump github.com/containerd/containerd/v2 from 2.3.3 to 2.3.4
+      #4934 merged 2026-05-24 fix: handle long fractional Unix timestamps
+      #4938 merged 2026-05-27 formatter: make ellipsis unicode safe
+      #5167 merged 2026-08-31 build(deps): bump github.com/containerd/containerd/api from 1.12.0-beta.0 to 1.12.0-rc.0 in the containerd group
+      #5142 merged 2026-08-18 build(deps): bump github.com/moby/sys/userns from 0.1.0 to 0.2.0 in the moby-sys group
+      #5187 merged 2026-09-07 build(deps): bump the docker group across 1 directory with 3 updates
+      #5189 merged 2026-09-07 build(deps): bump tags.cncf.io/container-device-interface from 1.1.1-0.20260720132747-49ac08dcf160 to 1.1.1
+      #5059 merged 2026-07-10 build(deps): bump github.com/containerd/containerd/v2 from 2.3.2 to 2.3.3
+      #4959 merged 2026-06-10 build(deps): bump golang.org/x/net from 0.55.0 to 0.56.0 in the golang-x group
+      #5016 merged 2026-06-26 build(deps): bump actions/cache from 6.0.0 to 6.1.0
+      #4985 merged 2026-06-19 build(deps): bump github.com/containerd/containerd/v2 from 2.3.1 to 2.3.2
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4034 open 2025-03-24 fix: empty default snapshotter config for containerd namesapce default snapshotter label
+      #5228 open 2026-09-22 container cannot request other container when not set networks
+      #3219 open 2024-07-15 fix: restart lark loguri cause start failed
+      #4496 open 2025-08-31 Enable linters for `enforce-switch-style` & `redundant-test-main-exit`
+      #4892 open 2026-05-12 ci: fix test logs on linux
+      #2411 open 2023-08-02 [WIP]Fix the --runtime option of container create to support path
+      #2161 open 2023-04-06 [WIP] Support `container export` 
+      #3011 open 2024-05-16 nerdctl images displays the wrong image id
+      #5223 merged 2026-09-19 fix(top): handle stopped and paused containers correctly
+      #2254 open 2023-05-24 Nested volume mounting behaviour is not compatible with Docker
+      #3448 open 2024-09-21 [Tigron]: roadmap and tracking epic for work on test tooling
+      #5168 open 2026-09-01 feat(attach): support multiple concurrent attach sessions
+      #5217 merged 2026-09-17 mod/soigneur: fix the workflow filter
+      #5242 open 2026-10-02 build(deps): bump github.com/compose-spec/compose-go/v2 from 2.15.0 to 2.16.1
+      #4328 open 2025-06-19 Provenance flag is not handled correctly for boolean passed
+      #2160 open 2023-04-06 Windows: Ensure image VOLUME temp paths are well-formed.
+      #5132 merged 2026-08-08 fix: do not require CNI plugins for compose projects that avoid CNI
+      #5232 merged 2026-09-25 build(deps): bump github.com/containerd/accelerated-container-image from 1.4.4 to 1.4.5
+      #4109 closed 2025-04-15 Removing multiple running images is broken
+      #5088 merged 2026-07-20 pkg/identifiers: add tests for ValidateDockerCompat
+  atomic         34 hit(s) (all listed)
+      #4239 open 2025-05-11 Container remove (or create?) is not atomic and does break name unicity
+      #3413 open 2024-09-04 dockerConfigFile.GetCredentialsStore.Store faulty symlink resolution behavior
+      #5047 open 2026-07-06 nerdctl  run slower than old version
+      #3303 open 2024-08-13 [CI]: Disable test retries
+      #5159 closed 2026-08-24 nerdctl save -o / export -o do not truncate an existing file
+      #5043 merged 2026-07-05 mount: support the Docker v25 form of recursive read-only (RRO) mounts
+      #4296 closed 2025-05-26 [WIP]
+      #4539 merged 2025-10-13 build(deps): bump github.com/containerd/nydus-snapshotter from 0.15.4 to 0.15.5
+      #4334 closed 2025-06-20 [FIX]: revert atomic write for logs
+      #4308 merged 2025-06-06 internal/filesystem consolidation, part 2 
+      #4324 merged 2025-06-18 internal/filesystem consolidation, part 3 (no rename WriteFile, disaster recovery and rollbacks)
+      #4245 merged 2025-05-14 [REFACTOR]: consolidate filesystem ops into internal pkg
+      #4302 merged 2025-05-29 feat: Add healthcheck command in nerdctl
+      #4202 merged 2025-05-06 [FIX] CNIEnv concurrency issue
+      #4290 merged 2025-05-25 fix: allow containers to start using a large numbers of ports
+      #3556 closed 2024-10-16 CNIEnv concurrency issues
+      #3708 merged 2024-12-02 Fix permissions for resolv.conf and hosts
+      #3443 merged 2024-09-20 Enable other containers to join network namespace of the none network
+      #3362 merged 2024-08-24 Hardening lifecycle-state-store, name-store, and oci-hooks
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+  atomically     9 hit(s) (all listed)
+      #4239 open 2025-05-11 Container remove (or create?) is not atomic and does break name unicity
+      #5043 merged 2026-07-05 mount: support the Docker v25 form of recursive read-only (RRO) mounts
+      #4290 merged 2025-05-25 fix: allow containers to start using a large numbers of ports
+      #3362 merged 2024-08-24 Hardening lifecycle-state-store, name-store, and oci-hooks
+      #3151 merged 2024-06-26 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.2+incompatible
+      #3145 closed 2024-06-25 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.1+incompatible
+      #2602 merged 2023-10-26 build(deps): bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #2396 merged 2023-07-27 build(deps): bump github.com/containerd/containerd from 1.7.2 to 1.7.3
+      #2138 merged 2023-03-28 build(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  interrupted    11 hit(s) (all listed)
+      #4603 open 2025-11-13 fix: Ensure logs are not interrupted when disk is full
+      #4239 open 2025-05-11 Container remove (or create?) is not atomic and does break name unicity
+      #2572 open 2023-10-13 Container logs stop printing after restart with `restart: on-failure` set in compose
+      #5133 merged 2026-08-08 feat(push): support `--all-tags` to push all tags
+      #4324 merged 2025-06-18 internal/filesystem consolidation, part 3 (no rename WriteFile, disaster recovery and rollbacks)
+      #1421 closed 2022-10-09 Retrying failed/interruped commit gives error
+      #3556 closed 2024-10-16 CNIEnv concurrency issues
+      #1391 closed 2022-09-21 Failed to execute nerdctl commit commands at the same time
+      #3575 merged 2024-10-18 Separate lint + enable on other platforms
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+      #1272 closed 2022-07-29 cannot force multi same id images
+  interrupt      18 hit(s) (all listed)
+      #4603 open 2025-11-13 fix: Ensure logs are not interrupted when disk is full
+      #4239 open 2025-05-11 Container remove (or create?) is not atomic and does break name unicity
+      #2572 open 2023-10-13 Container logs stop printing after restart with `restart: on-failure` set in compose
+      #5118 merged 2026-08-02 feature: support to print snapshot info for container
+      #5133 merged 2026-08-08 feat(push): support `--all-tags` to push all tags
+      #4308 merged 2025-06-06 internal/filesystem consolidation, part 2 
+      #4324 merged 2025-06-18 internal/filesystem consolidation, part 3 (no rename WriteFile, disaster recovery and rollbacks)
+      #4189 merged 2025-05-03 [CI]: cleanup, breakout 5: separate jobs
+      #1421 closed 2022-10-09 Retrying failed/interruped commit gives error
+      #3556 closed 2024-10-16 CNIEnv concurrency issues
+      #2730 closed 2024-01-03 [Rootless] `nerdctl rm` fails when AppArmor is loaded: `error="unknown error after kill: runc did not terminate successfully: exit status 1: unable to signal init: permission denied\n: unknown"`
+      #4024 merged 2025-03-19 build(deps): bump the docker group with 2 updates
+      #1391 closed 2022-09-21 Failed to execute nerdctl commit commands at the same time
+      #3575 merged 2024-10-18 Separate lint + enable on other platforms
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+      #1272 closed 2022-07-29 cannot force multi same id images
+      #1468 merged 2022-10-27 Refactor `nerdctl logs` functionality to pkg/logging. 
+      #245 merged 2021-06-07 Bump github.com/docker/docker from 20.10.6+incompatible to 20.10.7+incompatible
+  sigkill        21 hit(s) (all listed)
+      #5174 open 2026-09-02 fix(kill): do not mark non-stop signals as an explicit stop
+      #5151 merged 2026-08-20 Fix foreground stdio deadlock when the internal logging process stops consuming
+      #5020 merged 2026-06-29 CI: update Ubuntu (26.04)
+      #5137 closed 2026-08-17 `nerdctl run` with attached stdio stops draining container stdout at ~72 KiB, deadlocking the container (nerdctl 2.3.5, containerd 2.3.3, Kata runtime-rs)
+      #4427 merged 2025-07-28 add healthcheck orchestration logic
+      #4637 merged 2025-12-05 fix: support tmpfs long syntax in compose volumes
+      #892 closed 2022-03-10 Occasionally nerdctl stop never exits
+      #3892 merged 2025-02-17 add signal option to container stop command
+      #4098 closed 2025-04-10 [SUID bit on `nerdctl`, with iptables >= 1.8.8] `plugin type=\"firewall\" failed (delete): could not initialize iptables protocol 0: could not get iptables version: exit status 111`
+      #2730 closed 2024-01-03 [Rootless] `nerdctl rm` fails when AppArmor is loaded: `error="unknown error after kill: runc did not terminate successfully: exit status 1: unable to signal init: permission denied\n: unknown"`
+      #3043 merged 2024-05-30 feat: support for --sig-proxy in run
+      #3147 closed 2024-06-26 `-test.kill-daemon` does not work on Ubuntu 24.04 (`Failed to kill unit containerd.service: Failed to send signal SIGKILL to auxiliary processes: Invalid argument\n`)
+      #3296 merged 2024-08-12 Kube on the CI
+      #3129 merged 2024-06-20 CI: update Ubuntu (24.04)
+      #2315 closed 2023-06-21 `nerdctl kill` container with restartPolicy behaviour is inconsistent with docker #2270
+      #1897 merged 2023-01-21 refactor: move stopContainer to containerutil
+      #1638 merged 2022-12-10 Fix bugs in compose stop and restart
+      #1468 merged 2022-10-27 Refactor `nerdctl logs` functionality to pkg/logging. 
+      #948 merged 2022-03-28 Support --init argument in nerdctl run command
+      #726 closed 2022-01-24 Fix `flag -t needs -i to be specified together` restriction; info: add `--mode=native`
+  sigint         14 hit(s) (all listed)
+      #5187 merged 2026-09-07 build(deps): bump the docker group across 1 directory with 3 updates
+      #4176 merged 2025-04-30 feat: add --no-stdin flag to container attach
+      #4219 closed 2025-05-08 [CI]: docker now fails (a lot) TestLogsWithStartContainer
+      #1421 closed 2022-10-09 Retrying failed/interruped commit gives error
+      #3678 closed 2024-11-18 `nerdctl compose` hangs in 2.0
+      #3262 closed 2024-07-30 nerdctl compose down should not forcefully kill the process
+      #3043 merged 2024-05-30 feat: support for --sig-proxy in run
+      #3309 merged 2024-08-13 build(deps): bump the docker group with 2 updates
+      #2935 merged 2024-04-12 build(deps): bump github.com/awslabs/soci-snapshotter from 0.4.1 to 0.6.0
+      #1686 closed 2022-12-26 feat: generate accessed files list for workload
+      #1269 merged 2022-07-28 Add the ability to inspect volume sizes
+      #973 closed 2022-04-10 nerdctl read from stdin will stuck forever.
+      #799 merged 2022-02-10 Bump github.com/containerd/containerd from 1.6.0-rc.3 to 1.6.0-rc.4
+      #797 merged 2022-02-08 Bump github.com/containerd/containerd from 1.6.0-rc.2 to 1.6.0-rc.3
+  ctrl-c         21 hit(s) (all listed)
+      #4899 open 2026-05-14 `nerdctl -d -t` detached containers immediately exit with code 3221225786 (0xc000013a) on Windows
+      #4233 open 2025-05-09 [LOGS]: logs are lost when detaching
+      #4176 merged 2025-04-30 feat: add --no-stdin flag to container attach
+      #4371 closed 2025-06-25 `nerdctl compose exec -it` blocked when starting second tty
+      #1868 closed 2023-01-17 Publishing of ports does not work on container restart.  (`msg="conflict with ID 7"`)
+      #4069 closed 2025-04-02 env_file doesn't work with profiles
+      #1421 closed 2022-10-09 Retrying failed/interruped commit gives error
+      #3678 closed 2024-11-18 `nerdctl compose` hangs in 2.0
+      #3043 merged 2024-05-30 feat: support for --sig-proxy in run
+      #3262 closed 2024-07-30 nerdctl compose down should not forcefully kill the process
+      #3151 merged 2024-06-26 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.2+incompatible
+      #3145 closed 2024-06-25 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.1+incompatible
+      #3084 closed 2024-06-12 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.0+incompatible
+      #1972 merged 2023-02-03 accept Ctrl-C in cri log viewer
+      #1956 closed 2023-01-30 `nerdctl --namespace=k8s.io logs -f CRICONTAINER` doesn't accept Ctrl-C
+      #1686 closed 2022-12-26 feat: generate accessed files list for workload
+      #1642 merged 2022-12-12 Support NewTerminal & Detached mode (nerdctl -t -d)
+      #666 closed 2022-01-05 nerdctl compose removes containers on termination (stop vs down)
+      #1245 merged 2022-07-19 use free subnet to create network
+      #1269 merged 2022-07-28 Add the ability to inspect volume sizes
+  power          9 hit(s) (all listed)
+      #4607 merged 2025-11-19 build(deps): bump github.com/cyphar/filepath-securejoin from 0.4.1 to 0.6.1
+      #4576 closed 2025-11-03 build(deps): bump github.com/cyphar/filepath-securejoin from 0.4.1 to 0.6.0
+      #4182 closed 2025-05-02 [CI]: gomodjail target catch-all issues
+      #2154 merged 2023-04-05 build(deps): bump github.com/docker/docker from 23.0.2+incompatible to 23.0.3+incompatible
+      #1457 merged 2022-10-20 Bump github.com/containerd/nydus-snapshotter from 0.3.0-rc.3 to 0.3.0
+      #1314 merged 2022-08-12 Bump github.com/containerd/nydus-snapshotter from 0.3.0-alpha.5 to 0.3.0-rc.1
+      #1359 merged 2022-09-06 Bump github.com/containerd/nydus-snapshotter from 0.3.0-rc.2 to 0.3.0-rc.3
+      #795 merged 2022-02-08 Add Windows Hostprocess flag
+      #276 merged 2021-07-05 Bump github.com/cyphar/filepath-securejoin from 0.2.2 to 0.2.3
+  outage         1 hit(s) (all listed)
+      #4520 open 2025-09-17 feat: add --skip-verify flag to nerdctl save command
+  ENOSPC         2 hit(s) (all listed)
+      #4603 open 2025-11-13 fix: Ensure logs are not interrupted when disk is full
+      #4012 merged 2025-03-17 go.mod: experimental integration of gomodjail (library sandbox)
+  disk           46 hit(s) (all listed)
+      #4603 open 2025-11-13 fix: Ensure logs are not interrupted when disk is full
+      #5168 open 2026-09-01 feat(attach): support multiple concurrent attach sessions
+      #2588 open 2023-10-22 nerdctl image save fails when discard_unpacked_layers=true is enabled
+      #4243 open 2025-05-13 [LOGS]: logs are unreliable and randomly miss data
+      #5130 merged 2026-08-07 feat(system): add nerdctl system df
+      #5047 open 2026-07-06 nerdctl  run slower than old version
+      #5093 merged 2026-07-22 feat(image): adopt Docker v29 output for images list
+      #669 open 2022-01-05 generate SBOM both SPDX and Cyclone DX formats based for container images and attach em by using cosign attach
+      #5092 merged 2026-07-21 feat(image): add --tree flag to image list
+      #5078 merged 2026-07-17 fix(network): stop injecting ipRange into the CNI config
+      #1259 open 2022-07-23 Container exit does not clear IP occupation
+      #5027 closed 2026-06-30 `nerdctl images`: adopt Docker v29 output
+      #5115 merged 2026-08-01 fix: image ls with a bare repository name should match all tags
+      #5125 merged 2026-08-06 fix(image): pin the image a container runs to its digest
+      #5043 merged 2026-07-05 mount: support the Docker v25 form of recursive read-only (RRO) mounts
+      #3764 open 2024-12-16 Converting image present in snapshotter fails
+      #4953 merged 2026-06-08 fix(network): allow inspecting pseudo networks
+      #4785 closed 2026-03-10 logs: wait for logging binary before reading log file
+      #4828 closed 2026-04-06 build(deps): bump github.com/Microsoft/hcsshim from 0.14.0-rc.1 to 0.15.0-rc.1
+      #4525 closed 2025-09-25 Regression: `<DATAROOT>/<ADDRHASH>/names/<NAMESPACE>` is accidentally created as `<DATAROOT>/<ADDRHASH>/<NAMESPACE>`
+  partial        19 hit(s) (all listed)
+      #5183 closed 2026-09-04 docs: update unimplemented Docker features list
+      #5188 merged 2026-09-07 build(deps): bump github.com/klauspost/compress from 1.19.2 to 1.20.0
+      #5207 closed 2026-09-14 Regression since v2.1.3: removing CRI containers fails on missing network annotations
+      #4809 merged 2026-03-27 docs: update list of unimplemented Docker features
+      #4882 merged 2026-05-01 docs: fix missing list prefix for --security-opt label entry
+      #4747 merged 2026-02-19 docs: update list of unimplemented Docker features
+      #3535 merged 2024-10-14 CI adjustments
+      #3459 merged 2024-09-23 build(deps): bump github.com/klauspost/compress from 1.17.9 to 1.17.10
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+      #3643 merged 2024-11-04 build(deps): bump actions/checkout from 4.2.1 to 4.2.2
+      #3243 merged 2024-07-23 build(deps): bump github.com/cyphar/filepath-securejoin from 0.3.0 to 0.3.1
+      #2528 merged 2023-09-22 build(deps): bump actions/checkout from 4.0.0 to 4.1.0
+      #2420 closed 2023-08-05 `nerdctl --help` is messed up with `nerdctl attach` caveats
+      #2355 merged 2023-07-05 feat: Add support for copying files in and out of stopped containers
+      #1407 merged 2022-10-03 Support argument `--mac-address` for nerdctl run command
+      #1452 merged 2022-10-18 Bump github.com/docker/docker from 20.10.19+incompatible to 20.10.20+incompatible
+      #1468 merged 2022-10-27 Refactor `nerdctl logs` functionality to pkg/logging. 
+      #796 closed 2022-02-08 multi-platform image unpacking layer is partial
+      #890 merged 2022-03-10 Bump github.com/spf13/cobra from 1.3.0 to 1.4.0
+  incomplete     21 hit(s) (all listed)
+      #5228 open 2026-09-22 container cannot request other container when not set networks
+      #3439 open 2024-09-19 Information: "Unable to fetch missing layers before tagging. If you try to save or push this image, it might fail."
+      #2295 open 2023-06-13 Do not throw error when original image was missing when committing a running container
+      #4496 open 2025-08-31 Enable linters for `enforce-switch-style` & `redundant-test-main-exit`
+      #3764 open 2024-12-16 Converting image present in snapshotter fails
+      #4075 open 2025-04-03 "diagnostics" command?
+      #5151 merged 2026-08-20 Fix foreground stdio deadlock when the internal logging process stops consuming
+      #5130 merged 2026-08-07 feat(system): add nerdctl system df
+      #4955 merged 2026-06-08 build(deps): bump the golang-x group with 5 updates
+      #4785 closed 2026-03-10 logs: wait for logging binary before reading log file
+      #4678 closed 2025-12-28 nerdctl on windows shows strange warning: failed to remove hosts file for container
+      #3417 closed 2024-09-06 [Proposal] design document for authentication rework
+      #4828 closed 2026-04-06 build(deps): bump github.com/Microsoft/hcsshim from 0.14.0-rc.1 to 0.15.0-rc.1
+      #4397 closed 2025-07-03 cmd/image: save command usage lacks required IMAGE argument documentation
+      #4166 merged 2025-04-25 [QOL]: enhance error information for failing logURI
+      #4302 merged 2025-05-29 feat: Add healthcheck command in nerdctl
+      #3323 merged 2024-08-17 Rewrite cp
+      #4244 closed 2025-05-14 nerdctl 2.1.1 pull fail with JFrog Artifactory 7.84
+      #827 closed 2022-02-19 Cannot commit and push container image from Kubernetes pods
+      #3415 closed 2024-09-05 Error nerdctl commit, "failed to create a tmp single-platform image..., content digest ... not found"
+  dataloss       0 hit(s)
+  recover        24 hit(s) (all listed)
+      #5202 open 2026-09-10 📌 Flaky test dashboard
+      #4279 open 2025-05-21 Epic: real-world experience migrating from docker to nerdctl
+      #5201 merged 2026-09-10 CI: publish a weekly flaky test dashboard ("Soigneur")
+      #4239 open 2025-05-11 Container remove (or create?) is not atomic and does break name unicity
+      #5234 merged 2026-09-28 build(deps): bump github.com/containerd/nydus-snapshotter from 0.15.16 to 0.16.0
+      #2940 open 2024-04-15 when I installed containerd with root user i can't run nerdctl with non-root user in a rootless mode  (`fork/exec /opt/cni/bin/bridge: permission denied`)
+      #4287 closed 2025-05-24 containerd-rootless-setuptool.sh install fails, journalctl:  msg="Failed to run CRI service" error="failed to set up NRI for CRI service: failed to start NRI interface: failed to create socket \"/var/run/nri/nri.sock\"...... bind: permission denied"
+      #4206 merged 2025-05-07 build(deps): bump github.com/containerd/containerd/v2 from 2.1.0-rc.0 to 2.1.0-rc.1
+      #3393 closed 2024-09-01 Proposal: introducing a nerdctl error package
+      #3648 closed 2024-11-06 `--net=host` prints `WARN[0000] failed to clean up container networking: [...] meta.json: no such file or directory` on exit
+      #4210 closed 2025-05-07 build(deps): bump github.com/containerd/containerd/api from 1.9.0-rc.0 to 1.9.0 in the containerd group
+      #3631 merged 2024-11-01 Add Infinity constant to enable windows tests with old busybox
+      #3279 merged 2024-08-06 fix: relax identifier limits
+      #686 closed 2022-01-10 [CentOS 7] cannot install containerd-rootless-setuptool.sh (`[ERROR] Needs systemd (systemctl --user)`)
+      #3202 closed 2024-07-08 why is not OCI type images tar package? when run nerdctl save -o <FILE_NAME> <IMAGE_NAME> 
+      #2714 closed 2023-12-20 nerdctl cannot commit stopped containers
+      #2019 merged 2023-02-16 build(deps): bump github.com/containerd/containerd from 1.7.0-beta.3 to 1.7.0-beta.4
+      #1411 merged 2022-10-04 Support --pid=container:xxx for `nerdctl run` cmd
+      #1639 closed 2022-12-11 Refactor the package structure in cmd/nerdctl
+      #197 merged 2021-04-29 Windows Part 2 - run windows containers
+  recovery       10 hit(s) (all listed)
+      #5234 merged 2026-09-28 build(deps): bump github.com/containerd/nydus-snapshotter from 0.15.16 to 0.16.0
+      #4239 open 2025-05-11 Container remove (or create?) is not atomic and does break name unicity
+      #2572 open 2023-10-13 Container logs stop printing after restart with `restart: on-failure` set in compose
+      #5137 closed 2026-08-17 `nerdctl run` with attached stdio stops draining container stdout at ~72 KiB, deadlocking the container (nerdctl 2.3.5, containerd 2.3.3, Kata runtime-rs)
+      #4662 merged 2025-12-18 build(deps): bump github.com/containerd/nydus-snapshotter from 0.15.9 to 0.15.10
+      #4324 merged 2025-06-18 internal/filesystem consolidation, part 3 (no rename WriteFile, disaster recovery and rollbacks)
+      #4245 merged 2025-05-14 [REFACTOR]: consolidate filesystem ops into internal pkg
+      #4254 closed 2025-05-15 [FIX]: ensure cleanup of cni config in case of failure in createRuntime
+      #4308 merged 2025-06-06 internal/filesystem consolidation, part 2 
+      #1639 closed 2022-12-11 Refactor the package structure in cmd/nerdctl
+  rollback       17 hit(s) (all listed)
+      #3570 open 2024-10-18 Multiple attach should be supported
+      #4324 merged 2025-06-18 internal/filesystem consolidation, part 3 (no rename WriteFile, disaster recovery and rollbacks)
+      #3962 merged 2025-03-03 [ci] rollback setup vagrant comment
+      #4245 merged 2025-05-14 [REFACTOR]: consolidate filesystem ops into internal pkg
+      #4308 merged 2025-06-06 internal/filesystem consolidation, part 2 
+      #1946 closed 2023-01-28 [Regression in v1.2.0] `nerdctl logs` exits silently for `nerdctl run` w/o `-d`
+      #3342 merged 2024-08-22 Rename rollback on error
+      #3831 merged 2025-01-22 Fix port forwarding not working for non-127.0.0.1 localhost in rootless
+      #3414 merged 2024-09-04 Fix test to workaround docker credstore symlink fault
+      #3344 merged 2024-08-22 Fix host networking issues and rename incidental issue
+      #3422 merged 2024-09-08 Prepare 1.7.x
+      #2615 merged 2023-10-31 build(deps): bump github.com/containerd/stargz-snapshotter/ipfs from 0.14.3 to 0.15.1
+      #2614 closed 2023-10-31 build(deps): bump github.com/containerd/stargz-snapshotter/estargz from 0.14.3 to 0.15.1
+      #2616 merged 2023-10-31 build(deps): bump github.com/containerd/stargz-snapshotter from 0.14.3 to 0.15.1
+      #1135 merged 2022-06-17 gopkg.in/yaml.v2 Denial of Service (DoS) [nerdctl is NOT affected by this CVE]
+      #1100 closed 2022-06-07 `--runtime=io.containerd.kata.v2 -v /foo:/mnt:ro`: `failed to create shim task: ENOENT: No such file or directory: unknown`
+      #157 closed 2021-04-06 mysql doesn't work: "Could not create unix socket lock file /var/run/mysqld/mysqld.sock.lock."
+  resume         9 hit(s) (all listed)
+      #2297 open 2023-06-13 reconstruct the content for newly committed image if compressed layers are missing
+      #5155 merged 2026-08-20 build(deps): bump github.com/Microsoft/hcsshim from 0.15.0-rc.3 to 0.15.0-rc.4
+      #5137 closed 2026-08-17 `nerdctl run` with attached stdio stops draining container stdout at ~72 KiB, deadlocking the container (nerdctl 2.3.5, containerd 2.3.3, Kata runtime-rs)
+      #3343 closed 2024-08-22 Message too big using internal logging cause the process to block using stdout/stderr
+      #3424 merged 2024-09-09 build(deps): bump the docker group with 2 updates
+      #2501 merged 2023-09-13 build(deps): bump github.com/containerd/nydus-snapshotter from 0.10.0 to 0.12.0
+      #204 closed 2021-05-08 nerdctl cannot restart the container
+      #288 closed 2021-07-13 Bump github.com/containerd/containerd from 1.5.2 to 1.5.3
+      #293 closed 2021-07-19 Bump github.com/containerd/containerd from 1.5.2 to 1.5.4
+  half-written   1 hit(s) (all listed)
+      #3362 merged 2024-08-24 Hardening lifecycle-state-store, name-store, and oci-hooks
+  wipe           2 hit(s) (all listed)
+      #3907 closed 2025-02-21 nerdctl run --net=host in rootful mode not working properly (not using `/etc/hosts` file from the host, since v2.0)
+      #1163 merged 2022-06-24 feat: makes nerdctl available to pull/run nydus images
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #2232 merged 2023-05-12 build(deps): bump github.com/containerd/accelerated-container-image from 0.6.3 to 0.6.4
+      #1642 merged 2022-12-12 Support NewTerminal & Detached mode (nerdctl -t -d)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        12 hit(s) (all listed)
+      #3488 open 2024-10-02 [rootless] bridge network degrading ending in failure to expose port
+      #458 open 2021-10-22 `nerdctl stop` should release rootless ports (OCI `poststop` event should be called on `nerdctl stop`)
+      #3253 open 2024-07-28 bridge network (?) appears to leave a bunch of dangling iptables rules
+      #3520 open 2024-10-08 nerdctl compose up stuck on creating container
+      #4999 merged 2026-06-23 feat: label-based filtering added to `nerdctl events`
+      #4062 merged 2025-03-31 [P0] Fix #3513 (`[MAJOR] content digest not found`)
+      #4255 merged 2025-05-16 fix: clean up iptables rules for stopped containers
+      #3952 closed 2025-02-28 CI: something wrong going on with pty tests
+      #3092 closed 2024-06-16 network appears to not be immediately available after a call to `network create`
+      #3771 merged 2024-12-16 Regression: relax error on network annotation read failure
+      #3159 closed 2024-07-01 Unremovable container (after volume gone missing)
+      #3132 closed 2024-06-20 `usedVolumes` (called in volume remove and prune)  can be raced by container creation, and other sources of racyness in volumes
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2667 open 2023-11-29 using volumes-from mount additional folders
+      #5242 open 2026-10-02 build(deps): bump github.com/compose-spec/compose-go/v2 from 2.15.0 to 2.16.1
+      #5243 merged 2026-10-02 build(deps): bump containerd/project-checks from 1.2.2 to 1.2.3
+      #3751 closed 2024-12-11 Support `push --all-tags` to push all tags
+      #5160 merged 2026-08-24 fix(image): truncate the output file of save and export
+      #5205 merged 2026-09-11 build(deps): bump github.com/containerd/nydus-snapshotter from 0.15.15 to 0.15.16
+      #5203 merged 2026-09-11 build(deps): bump golang.org/x/net from 0.58.0 to 0.59.0 in the golang-x group
+      #5193 merged 2026-09-08 build(deps): bump the golang-x group with 2 updates
+      #5186 merged 2026-09-07 build(deps): bump golang.org/x/crypto from 0.55.0 to 0.56.0 in the golang-x group
+      #5204 merged 2026-09-11 build(deps): bump github.com/moby/sys/userns from 0.2.0 to 0.2.1 in the moby-sys group
+      #5133 merged 2026-08-08 feat(push): support `--all-tags` to push all tags
+      #5234 merged 2026-09-28 build(deps): bump github.com/containerd/nydus-snapshotter from 0.15.16 to 0.16.0
+      #5177 merged 2026-09-02 build(deps): bump zizmorcore/zizmor-action from 0.6.2 to 0.6.3
+      #5220 merged 2026-09-18 build(deps): bump docker/setup-qemu-action from 4.3.0 to 4.4.0
+      #5231 merged 2026-09-25 build(deps): bump github.com/containerd/containerd/v2 from 2.4.0 to 2.4.1
+      #4993 merged 2026-06-22 feat(mount): support --mount type=image with image-subpath
+      #5221 merged 2026-09-18 build(deps): bump docker/setup-buildx-action from 4.3.0 to 4.4.0
+      #5222 merged 2026-09-18 build(deps): bump the docker group with 2 updates
+      #5124 merged 2026-08-04 build(deps): bump zizmorcore/zizmor-action from 0.6.1 to 0.6.2
+      #5233 merged 2026-09-28 build(deps): bump github.com/klauspost/compress from 1.20.0 to 1.20.1
+  clobber        3 hit(s) (all listed)
+      #3488 open 2024-10-02 [rootless] bridge network degrading ending in failure to expose port
+      #2160 open 2023-04-06 Windows: Ensure image VOLUME temp paths are well-formed.
+      #2709 merged 2023-12-18 build(deps): bump golang.org/x/crypto from 0.16.0 to 0.17.0
+  blank          40 hit(s) (all listed)
+      #4496 open 2025-08-31 Enable linters for `enforce-switch-style` & `redundant-test-main-exit`
+      #590 open 2021-12-02 nerdctl compose does not support tty: true?
+      #1152 open 2022-06-21 docker compose compatibility - use current shell env for variable substitution in docker-compose.yaml
+      #492 open 2021-11-02 `nerdctl start` cannot start containers in `Created` or `Exited` status  (`OCI runtime create failed: cannot allocate tty if runc will detach without setting console socket`)
+      #5168 open 2026-09-01 feat(attach): support multiple concurrent attach sessions
+      #5092 merged 2026-07-21 feat(image): add --tree flag to image list
+      #5151 merged 2026-08-20 Fix foreground stdio deadlock when the internal logging process stops consuming
+      #5128 merged 2026-08-07 fix(login): accept equivalent registry hosts in auth creds callback
+      #5129 merged 2026-08-07 feat: add volume-nocopy
+      #5098 merged 2026-07-24 fix: suppress spurious hostsstore NotFound warning on container removal
+      #5130 merged 2026-08-07 feat(system): add nerdctl system df
+      #5048 merged 2026-07-06 [healthcheck] optimize: reduce unnecessary function calls
+      #5013 merged 2026-06-26 test: remove redundant test lock pre-check
+      #5043 merged 2026-07-05 mount: support the Docker v25 form of recursive read-only (RRO) mounts
+      #4993 merged 2026-06-22 feat(mount): support --mount type=image with image-subpath
+      #4989 merged 2026-06-22 feat(run): allow -i and -d together when -t is set
+      #4999 merged 2026-06-23 feat: label-based filtering added to `nerdctl events`
+      #5024 merged 2026-06-30 feat(network): add --ipv4 to allow IPv6-only networks
+      #4953 merged 2026-06-08 fix(network): allow inspecting pseudo networks
+      #4927 merged 2026-05-22 image: align erofs raw/zstd convert behavior with containerd
+  unreadable     4 hit(s) (all listed)
+      #1039 open 2022-05-06 Logging drivers enhancement 
+      #5130 merged 2026-08-07 feat(system): add nerdctl system df
+      #3708 merged 2024-12-02 Fix permissions for resolv.conf and hosts
+      #1062 merged 2022-05-13 Implement journald logging driver
+  garbage        34 hit(s) (all listed)
+      #2234 open 2023-05-16 nerdctl system prune --all --force : not clearing the unused images 
+      #5191 merged 2026-09-08 fix(image): avoid dangling-ref name collision on rmi -f for running images
+      #4142 open 2025-04-20 [CI]: buildkit `Internal: not found`
+      #5127 closed 2026-08-07 fix(image): avoid dangling-ref name collision on `rmi -f` for running images
+      #3764 open 2024-12-16 Converting image present in snapshotter fails
+      #4858 closed 2026-04-20 build(deps): bump github.com/moby/moby/client from 0.4.0 to 0.4.1 in the docker group
+      #4859 merged 2026-04-20 build(deps): bump the docker group across 1 directory with 3 updates
+      #4588 merged 2025-11-06 build(deps): bump github.com/containerd/containerd/v2 from 2.2.0-rc.1 to 2.2.0
+      #4579 merged 2025-11-04 build(deps): bump github.com/containerd/containerd/v2 from 2.2.0-rc.0 to 2.2.0-rc.1
+      #4585 closed 2025-11-05 build(deps): bump github.com/containerd/containerd/api from 1.10.0-rc.0 to 1.10.0 in the containerd group
+      #4378 merged 2025-06-26 Enable setting DNS options through global nerdctl config
+      #4121 merged 2025-04-17 [Fix]: image delete in convert (#3510)
+      #1421 closed 2022-10-09 Retrying failed/interruped commit gives error
+      #4104 closed 2025-04-14 [CI]: content digest not found follow-up
+      #4182 closed 2025-05-02 [CI]: gomodjail target catch-all issues
+      #4048 merged 2025-03-27 [CI] Update golangci to v2
+      #4301 merged 2025-05-28 build(deps): bump the docker group with 2 updates
+      #4110 closed 2025-04-16 [DEBUGGING]: Kube commit-save flaky failures (#4106)
+      #2372 closed 2023-07-13 Unused unpacked snapshot left in content store after nerdctl system prune
+      #3543 merged 2024-10-15 Global compose lock
+  mangled        2 hit(s) (all listed)
+      #3771 merged 2024-12-16 Regression: relax error on network annotation read failure
+      #2587 merged 2023-10-22 Support for `nerdctl build` on Windows
+  contents       50 hit(s) (all listed)
+      #2705 open 2023-12-15 How can I read the contents of the USB dongle after restarting the container
+      #5065 open 2026-07-13 nerdctl run can't use the CimFS snapshotter on Windows (ctr can)
+      #2160 open 2023-04-06 Windows: Ensure image VOLUME temp paths are well-formed.
+      #2295 open 2023-06-13 Do not throw error when original image was missing when committing a running container
+      #2297 open 2023-06-13 reconstruct the content for newly committed image if compressed layers are missing
+      #2100 open 2023-03-14 Push requires `--all-platforms` to support the attestation content created by BuildKit >= 0.11
+      #4118 open 2025-04-17 [LEGACY] [CI]: ipfs /root/.ipfs/api not available
+      #5129 merged 2026-08-07 feat: add volume-nocopy
+      #5180 merged 2026-09-03 build(deps): bump github.com/containerd/go-cni from 1.1.13 to 1.1.14
+      #3604 open 2024-10-28 [nerdctl build] Set default output type=image
+      #4143 open 2025-04-20 [CI]: OCI runtime start failed: cannot start a container that has stopped: unknown
+      #4906 closed 2026-05-15 ci: declare workflow-level `contents: read` on 2 workflows
+      #5092 merged 2026-07-21 feat(image): add --tree flag to image list
+      #5201 merged 2026-09-10 CI: publish a weekly flaky test dashboard ("Soigneur")
+      #4704 merged 2026-01-16 feat: add support for container cp with tarballs
+      #4691 closed 2026-01-11 Feature Request: Support stdin/stdout streaming (-) in `nerdctl cp`
+      #4457 closed 2025-08-08 Support `nerdctl import`/`nerdctl image import` command
+      #4108 closed 2025-04-15 `nerdctl compose` does not support `dockerfile_inline`
+      #4405 merged 2025-07-08 Added --export command
+      #2268 closed 2023-05-31 Unable to build using existing k3s installation (`address        = "unix:///run/k3s/containerd/containerd.sock"` seems ignored)
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1604 open 2022-12-04 Fix `flag -t needs -i to be specified together` restriction in compose run
+      #5102 open 2026-07-25 feat(image): support --change on import
+      #5047 open 2026-07-06 nerdctl  run slower than old version
+      #3531 open 2024-10-12 Suggesting we rewrite (parts of) imgutil
+      #3668 open 2024-11-12 running rootful buildkitd inside a container in rootless mode: `runc run failed: no cgroup mount found in mountinfo`
+      #3380 open 2024-08-29 Facilitate usage of nerdctl as a library to build other clients  
+      #4517 open 2025-09-16 fix:ci panic because res=nil
+      #3856 open 2025-01-29 Consider removing cyphar filepath SecureJoin
+      #4276 open 2025-05-21 network `-opt parent` is not working rootless (failed to lookup master, link not found)
+      #4778 open 2026-03-06 fix: Add retry for systemd to startup before running exec
+      #1954 open 2023-01-30 Refactor the (container) run command flagging process
+      #901 open 2022-03-16 Enable no pivot with nerdctl
+      #3733 open 2024-12-05 [CI]: github cache is too aggressive on limiting requests (429)
+      #1470 open 2022-10-30 Logger: Support write to json file as the same time in fluent logger
+      #3167 open 2024-07-03 Successive calls to `client.Containers(ctx)` then `c.Labels` may fail with `ErrNotFound` (possibly other methods as well)
+      #2465 open 2023-08-31 Automatically start dhcp daemon in CNI_PATH
+      #325 open 2021-08-26 nerdctl ps slows down and errors with 350+ containers
+      #4666 open 2025-12-19 CI: containerd-sha is not verified (only affects tests)
+      #4474 open 2025-08-19 feature:support live-restore
+      #3019 open 2024-05-18 image history issues
+  unclean        3 hit(s) (all listed)
+      #4697 open 2026-01-13 nerdctl delete containers results in a large number of residual containerd-shim processes
+      #3855 merged 2025-01-28 build(deps): bump github.com/cyphar/filepath-securejoin from 0.4.0 to 0.4.1
+      #3814 merged 2025-01-13 build(deps): bump github.com/cyphar/filepath-securejoin from 0.3.6 to 0.4.0
+  shutdown       28 hit(s) (all listed)
+      #28 open 2020-12-10 Windows support
+      #4571 open 2025-10-31 [macOS + nerdbox] `nerdctl run` fails with `not implemented`
+      #4911 merged 2026-05-17 fix(healthcheck): release exec process resources after probe
+      #5059 merged 2026-07-10 build(deps): bump github.com/containerd/containerd/v2 from 2.3.2 to 2.3.3
+      #4839 merged 2026-04-09 build(deps): bump the golang-x group across 1 directory with 4 updates
+      #4921 merged 2026-05-21 build(deps): bump github.com/containerd/containerd/v2 from 2.3.0 to 2.3.1
+      #4314 merged 2025-06-12 build(deps): bump github.com/containerd/containerd/v2 from 2.1.1 to 2.1.2
+      #2337 closed 2023-06-29 fix: shutdown logger after container process exits
+      #4511 merged 2025-09-09 build(deps): bump the golang-x group across 1 directory with 6 updates
+      #2313 closed 2023-06-20 nerdctl does not log stdout if there is no newline
+      #4206 merged 2025-05-07 build(deps): bump github.com/containerd/containerd/v2 from 2.1.0-rc.0 to 2.1.0-rc.1
+      #4211 merged 2025-05-07 build(deps): bump github.com/containerd/containerd/v2 from 2.1.0-rc.1 to 2.1.0
+      #2785 merged 2024-02-01 Support systemd in containers with podman-style `--systemd` flag
+      #3444 merged 2024-09-20 build(deps): bump the docker group with 2 updates
+      #3362 merged 2024-08-24 Hardening lifecycle-state-store, name-store, and oci-hooks
+      #3262 closed 2024-07-30 nerdctl compose down should not forcefully kill the process
+      #3352 closed 2024-08-23 Container errors on restart
+      #3438 merged 2024-09-19 build(deps): bump the docker group with 2 updates
+      #2621 closed 2023-11-01 [Carry  2337]  shutdown logger after exit
+      #1658 closed 2022-12-15 'compose up' should start the containers in the dependency order
+  reboot         15 hit(s) (all listed)
+      #1874 open 2023-01-18 Wrong image reference is selected as the removal target
+      #2572 open 2023-10-13 Container logs stop printing after restart with `restart: on-failure` set in compose
+      #4993 merged 2026-06-22 feat(mount): support --mount type=image with image-subpath
+      #1048 open 2022-05-10 portmap：curl connection refused
+      #4960 merged 2026-06-11 fix(convertor): add overlaybd vsize option
+      #4287 closed 2025-05-24 containerd-rootless-setuptool.sh install fails, journalctl:  msg="Failed to run CRI service" error="failed to set up NRI for CRI service: failed to start NRI interface: failed to create socket \"/var/run/nri/nri.sock\"...... bind: permission denied"
+      #4012 merged 2025-03-17 go.mod: experimental integration of gomodjail (library sandbox)
+      #3906 closed 2025-02-20 build(deps): bump the docker group with 2 updates
+      #2933 closed 2024-04-12 Fails to start rootless container with bypass4netns after reboot: `failed to allocate for range 0: 10.4.1.3 has been allocated to default-XXXXXXX, duplicate allocation is not allowed`
+      #3350 closed 2024-08-23 [v2 regression] `nerdctl start` fails after restarting the host (`msg="failed to lock state dir: unable to unmarshall lifecycle data: unexpected end of JSON input"`)
+      #3352 closed 2024-08-23 Container errors on restart
+      #2286 closed 2023-06-09 nerdctl run -restart always do not automatically start after rebooting
+      #1350 closed 2022-09-03 Restart option "unless-stopped" and "on-failure" doesn't work for nerdctl compose
+      #1030 closed 2022-05-05 nerdctl run -p,portmap isn't running
+      #817 merged 2022-02-15 Fix Kata Containers networking support
+  disk+full      11 hit(s) (all listed)
+      #4603 open 2025-11-13 fix: Ensure logs are not interrupted when disk is full
+      #5168 open 2026-09-01 feat(attach): support multiple concurrent attach sessions
+      #5047 open 2026-07-06 nerdctl  run slower than old version
+      #5092 merged 2026-07-21 feat(image): add --tree flag to image list
+      #5078 merged 2026-07-17 fix(network): stop injecting ipRange into the CNI config
+      #4828 closed 2026-04-06 build(deps): bump github.com/Microsoft/hcsshim from 0.14.0-rc.1 to 0.15.0-rc.1
+      #3623 closed 2024-10-31 zstdchunked error deleting temp layers
+      #2764 closed 2024-01-19 build(deps): bump github.com/docker/docker from 24.0.7+incompatible to 25.0.0+incompatible
+      #1915 merged 2023-01-23 Bump github.com/docker/docker from 23.0.0-rc.2+incompatible to 23.0.0-rc.3+incompatible
+      #651 closed 2021-12-25 Use Afero as FileSystem Abstraction for nerdctl
+      #338 closed 2021-09-01 nerdctl run with `-v` option got stuck without any explicit errors
+  data+loss      3 hit(s) (all listed)
+      #4311 merged 2025-06-10 feat: add support for com.docker.network.bridge.enable_icc network option
+      #4182 closed 2025-05-02 [CI]: gomodjail target catch-all issues
+      #1674 closed 2022-12-21 hostname -i  command  incorrect record.
+  partial+write  2 hit(s) (all listed)
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+      #1468 merged 2022-10-27 Refactor `nerdctl logs` functionality to pkg/logging. 
+  crash+safe     4 hit(s) (all listed)
+      #4202 merged 2025-05-06 [FIX] CNIEnv concurrency issue
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+      #3151 merged 2024-06-26 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.2+incompatible
+      #3145 closed 2024-06-25 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.1+incompatible
+  atomic+write   21 hit(s) (all listed)
+      #5047 open 2026-07-06 nerdctl  run slower than old version
+      #3413 open 2024-09-04 dockerConfigFile.GetCredentialsStore.Store faulty symlink resolution behavior
+      #5159 closed 2026-08-24 nerdctl save -o / export -o do not truncate an existing file
+      #4334 closed 2025-06-20 [FIX]: revert atomic write for logs
+      #4324 merged 2025-06-18 internal/filesystem consolidation, part 3 (no rename WriteFile, disaster recovery and rollbacks)
+      #4245 merged 2025-05-14 [REFACTOR]: consolidate filesystem ops into internal pkg
+      #4302 merged 2025-05-29 feat: Add healthcheck command in nerdctl
+      #4308 merged 2025-06-06 internal/filesystem consolidation, part 2 
+      #4202 merged 2025-05-06 [FIX] CNIEnv concurrency issue
+      #4290 merged 2025-05-25 fix: allow containers to start using a large numbers of ports
+      #3556 closed 2024-10-16 CNIEnv concurrency issues
+      #3364 merged 2024-08-26 Add a generic abstraction for filesystem based stores
+      #3362 merged 2024-08-24 Hardening lifecycle-state-store, name-store, and oci-hooks
+      #3323 merged 2024-08-17 Rewrite cp
+      #3414 merged 2024-09-04 Fix test to workaround docker credstore symlink fault
+      #3151 merged 2024-06-26 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.2+incompatible
+      #3145 closed 2024-06-25 build(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.1+incompatible
+      #2602 merged 2023-10-26 build(deps): bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #2396 merged 2023-07-27 build(deps): bump github.com/containerd/containerd from 1.7.2 to 1.7.3
+      #2138 merged 2023-03-28 build(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  lock+file      60 hit(s) (all listed)
+      #3783 open 2024-12-20 [Cilium] Executing nerdctl run in k8 environment is stuck
+      #3554 open 2024-10-16 [LOGS]: TestReadRotatedLog fails on windows
+      #4884 open 2026-05-05 build(deps): bump github.com/fsnotify/fsnotify from 1.9.0 to 1.10.1
+      #4239 open 2025-05-11 Container remove (or create?) is not atomic and does break name unicity
+      #3303 open 2024-08-13 [CI]: Disable test retries
+      #1259 open 2022-07-23 Container exit does not clear IP occupation
+      #5160 merged 2026-08-24 fix(image): truncate the output file of save and export
+      #5009 merged 2026-06-25 logging: write container output synchronously so final output  is not truncated
+      #5043 merged 2026-07-05 mount: support the Docker v25 form of recursive read-only (RRO) mounts
+      #4798 merged 2026-03-18 build(deps): bump actions/cache from 5.0.3 to 5.0.4
+      #4362 merged 2025-06-24 Simplify healthcheck file handling + fix locking
+      #4655 merged 2025-12-12 build(deps): bump actions/cache from 5.0.0 to 5.0.1
+      #4256 merged 2025-05-16 [REFACTOR] Filesystem, part 2: revamp locks
+      #4308 merged 2025-06-06 internal/filesystem consolidation, part 2 
+      #4490 merged 2025-08-28 update gomodjail (0.1.3), Go (1.25), ...
+      #4302 merged 2025-05-29 feat: Add healthcheck command in nerdctl
+      #4245 merged 2025-05-14 [REFACTOR]: consolidate filesystem ops into internal pkg
+      #4202 merged 2025-05-06 [FIX] CNIEnv concurrency issue
+      #4052 merged 2025-03-28 feat: Add "Containers" propery in the "nerdctl network inspect" command.
+      #3556 closed 2024-10-16 CNIEnv concurrency issues
+  write+failure  50 hit(s) (all listed)
+      #5047 open 2026-07-06 nerdctl  run slower than old version
+      #4370 open 2025-06-24 Newly introduced tests that are flaky: what to do?
+      #1675 open 2022-12-21 `nerdctl push` interop issue with Harbor registry
+      #5168 open 2026-09-01 feat(attach): support multiple concurrent attach sessions
+      #3629 open 2024-04-30 Error: no image was built
+      #4185 open 2025-05-02 [CI]: TestRunBlkioSettingCgroupV2 appears non functioning on EL9 (linux 5?)
+      #2940 open 2024-04-15 when I installed containerd with root user i can't run nerdctl with non-root user in a rootless mode  (`fork/exec /opt/cni/bin/bridge: permission denied`)
+      #2572 open 2023-10-13 Container logs stop printing after restart with `restart: on-failure` set in compose
+      #5151 merged 2026-08-20 Fix foreground stdio deadlock when the internal logging process stops consuming
+      #5175 closed 2026-09-02 Restart-policy tests silently skip on containerd 2.x
+      #5201 merged 2026-09-10 CI: publish a weekly flaky test dashboard ("Soigneur")
+      #5147 merged 2026-08-19 feat(logging): add --log-file to persist nerdctl's own log
+      #5137 closed 2026-08-17 `nerdctl run` with attached stdio stops draining container stdout at ~72 KiB, deadlocking the container (nerdctl 2.3.5, containerd 2.3.3, Kata runtime-rs)
+      #5158 closed 2026-08-24 netutil: enable portMappings/dns capabilities on Windows nat plugin
+      #5130 merged 2026-08-07 feat(system): add nerdctl system df
+      #5042 merged 2026-07-04 run, exec: fix `-i` hanging when stdin reaches EOF during task creation
+      #4990 merged 2026-06-22 feat(mount): support --mount type=image
+      #4781 closed 2026-03-09 Fix foreground run to wait for logging binary before returning
+      #4367 closed 2025-06-24 [WIP]: Revamp CI reporting
+      #4405 merged 2025-07-08 Added --export command
+  file+contents  27 hit(s) (all listed)
+      #4118 open 2025-04-17 [LEGACY] [CI]: ipfs /root/.ipfs/api not available
+      #2160 open 2023-04-06 Windows: Ensure image VOLUME temp paths are well-formed.
+      #3604 open 2024-10-28 [nerdctl build] Set default output type=image
+      #5129 merged 2026-08-07 feat: add volume-nocopy
+      #4143 open 2025-04-20 [CI]: OCI runtime start failed: cannot start a container that has stopped: unknown
+      #5201 merged 2026-09-10 CI: publish a weekly flaky test dashboard ("Soigneur")
+      #4906 closed 2026-05-15 ci: declare workflow-level `contents: read` on 2 workflows
+      #4691 closed 2026-01-11 Feature Request: Support stdin/stdout streaming (-) in `nerdctl cp`
+      #4405 merged 2025-07-08 Added --export command
+      #2268 closed 2023-05-31 Unable to build using existing k3s installation (`address        = "unix:///run/k3s/containerd/containerd.sock"` seems ignored)
+      #3827 merged 2025-01-21 update Kubo (0.32.1)
+      #3711 merged 2024-12-02 update BuildKit (0.18.0), stargz-snapshotter (0.16.2)
+      #3317 closed 2024-08-16 Add log rotation and log size limits to the nerdctl.toml configuration file 
+      #2372 closed 2023-07-13 Unused unpacked snapshot left in content store after nerdctl system prune
+      #3798 closed 2025-01-07 nerdctl save generates different sha values for same set of images
+      #3318 merged 2024-08-16 Include init NetworkSettings within inspect response
+      #3267 closed 2024-07-31 build(deps): bump github.com/containerd/nydus-snapshotter from 0.13.13 to 0.13.14
+      #3269 merged 2024-08-02 build(deps): bump github.com/containerd/nydus-snapshotter from 0.13.13 to 0.14.0
+      #2323 closed 2023-06-22 Nerdctl EKS cluster 1.24 with compose
+      #1493 merged 2022-11-09 Bump github.com/ipfs/go-ipfs-files from 0.1.1 to 0.2.0
+
+== 51 terms run; 46 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

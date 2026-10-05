@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/rio",
+    "operation": "rio edit-info --crs EPSG:4326 --tag survey=2026 /s/rio/a.tif",
+    "cwd": "/s/rio-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 5,
+  "prefix_hash": "68aecca98566ffca",
+  "after_class": "write",
+  "after_path": "/s/rio/a.tif",
+  "before_class": "write",
+  "before_path": "/s/rio/a.tif",
+  "violation": "hybrid"
+}

@@ -1,0 +1,96 @@
+##### geth
+014ba1c09341  /lab/geth/ks/UTC--2026-10-05T02-22-19.810609471Z--a07320245fd848ad692e1413165c02b2f2522e13
+$ geth --password /lab/geth/pw account update --keystore /lab/geth/ks --lightkdf a07320245fd848ad692e1413165c02b2f2522e13
+INFO [10-05|02:22:19.906] Maximum peer count                       ETH=50 total=50
+INFO [10-05|02:22:19.907] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+Please give a NEW password. Do not forget this password.
+!! Unsupported terminal, password will be echoed.
+Password: 
+Fatal: Failed to read password: EOF
+rc=0
+$ geth account update --keystore /lab/geth/ks --lightkdf --password /lab/geth/pw a07320245fd848ad692e1413165c02b2f2522e13
+
+   MISC
+
+   
+    --help, -h                          (default: false)                  
+          show help
+
+flag provided but not defined: -password
+rc=0
+$ sh -c geth account update --help | grep -i -B1 -A2 pass
+   The account is saved in the newest version in encrypted format, you are prompted
+   for a password to unlock the account and another to save the updated file.
+
+   This same command can therefore be used to migrate an account of a deprecated
+   format to the newest format or change the password for an account.
+
+   For non-interactive use the password can be specified with the --password flag:
+
+       geth account update [options] <address>
+
+   Since only one password can be given, only format update can be performed,
+   changing your password is only possible interactively.
+
+
+rc=0
+014ba1c09341  /lab/geth/ks/UTC--2026-10-05T02-22-19.810609471Z--a07320245fd848ad692e1413165c02b2f2522e13
+##### monero
+cfeed864b944  /lab/xmr/w
+d6cebe3db232  /lab/xmr/w.keys
+$ monero-wallet-cli --offline --wallet-file /lab/xmr/w --password pw --log-file /lab/xmrlog/log set always-confirm-transfers 0
+Logging to /lab/xmrlog/log
+Opened wallet: 45kd9c1HZJZ3bZhTrDygpHFL2PrtZFNjHGRxebH1gA7oAwqUHyQVCWdN4YBFgsSNPmKLbqansxi5YccYAx7LfAisDpNGzTF
+**********************************************************************
+Use the "help" command to see a simplified list of available commands.
+Use "help all" to see the list of all available commands.
+Use "help <command>" to see a command's documentation.
+**********************************************************************
+Error: invalid password
+rc=0
+77dc8ff7da71  /lab/xmr/w
+d6cebe3db232  /lab/xmr/w.keys
+$ monero-wallet-cli --offline --wallet-file /lab/xmr/w --password pw --log-file /lab/xmrlog/log set
+export-format = binary
+show-wallet-name-when-locked = 0
+inactivity-lock-timeout = 90
+persistent-rpc-client-id = 0
+auto-mine-for-rpc-payment-threshold = -1
+credits-target = 0
+load-deprecated-formats = 0
+enable-multisig-experimental = 0
+rc=0
+##### steamguard
+$ steamguard -m /lab/sg code
+INFO reading manifest from /lab/sg
+ERROR NetworkFailure: Transport failed to make request: error sending request for url (https://api.steampowered.com/ITwoFactorService/QueryTime/v1)
+
+Caused by:
+    0: error sending request for url (https://api.steampowered.com/ITwoFactorService/QueryTime/v1)
+    1: client error (Connect)
+    2: dns error
+    3: failed to lookup address information: Temporary failure in name resolution
+rc=0
+$ steamguard -m /lab/sg -p correcthorse encrypt
+INFO reading manifest from /lab/sg
+INFO Saving manifest and accounts...
+rc=0
+-rw-r--r-- 212 /lab/sg/manifest.json
+-rw-r--r-- 576 /lab/sg/alice.maFile
+{"version":1,"entries":[{"filename":"alice.maFile","steam_id":76561198000000001,"account_name":"alice","encryption":{"scheme":"Argon2idAes256","iv":"pabC09bNGEPmww9aHoegHQ==","salt":"NHJxdbBs2eV2ZJhxQuQtiw=="}}]}
+$ steamguard -m /lab/sg -p correcthorse code
+INFO reading manifest from /lab/sg
+ERROR NetworkFailure: Transport failed to make request: error sending request for url (https://api.steampowered.com/ITwoFactorService/QueryTime/v1)
+
+Caused by:
+    0: error sending request for url (https://api.steampowered.com/ITwoFactorService/QueryTime/v1)
+    1: client error (Connect)
+    2: dns error
+    3: failed to lookup address information: Temporary failure in name resolution
+rc=0
+$ steamguard -m /lab/sg -p correcthorse decrypt
+INFO reading manifest from /lab/sg
+INFO Saving manifest and accounts...
+rc=0
+-rw-r--r-- 123 /lab/sg/manifest.json
+-rw-r--r-- 421 /lab/sg/alice.maFile

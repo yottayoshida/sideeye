@@ -1,0 +1,310 @@
+== novelty pre-scan: aliyun/aliyun-cli
+== date: 2026-10-05T06:15:33Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          40 hit(s) (all listed)
+      #512 open 2022-10-10 pager not work
+      #682 open 2023-04-12 Getting this error - context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+      #395 open 2021-11-29 Aliyun cs - "DescirbeWorkflow* option written incorrectly
+      #1242 open 2025-07-17 `aliyun version` and `aliyun --help` can not work if `~/.aliyun/config.json` is invalid.
+      #834 closed 2023-09-30 connection refused in termux 
+      #626 closed 2023-02-23 Unable to specify tag command line parameter
+      #1302 closed 2026-04-14 aliyun oss cp -e broken
+      #330 closed 2021-02-23 oss cp 使用-r的异常现象
+      #1250 closed 2025-08-08 ERROR: --proxy-host duplicated
+      #1178 closed 2025-01-25 Run `configure set --mode OIDC --sts-region <region>` does not take effect.
+      #1004 closed 2024-05-10 ROS not able to create resources that name contians hyphen
+      #420 closed 2022-04-11 ALB: AssociateAclsWithListener/DissociateAclsFromListener InvalidAclIds error 
+      #904 closed 2023-12-22 aliyun cli not working in Alibaba Cloud Linux  3.2104 LTS 64 bit
+      #736 closed 2023-06-20 Test failure in `3.0.167`
+      #557 closed 2022-11-24 Receive "The Stack (###) already exists" Error when running "aliyun ros CreateStack"
+      #508 merged 2022-10-06 Bump github.com/onsi/gomega from 1.20.2 to 1.21.1
+      #390 closed 2021-10-05 Local build fails to get aliyun-openapi-meta dep
+      #295 closed 2020-07-01 cp download error
+      #307 closed 2020-09-14 Bug report: DescribeCdnDomainConfigs --FunctionNames is not required
+      #322 closed 2021-01-02 Cannot create table store instance
+  corrupt        1 hit(s) (all listed)
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+  corruption     3 hit(s) (all listed)
+      #1441 closed 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1442 merged 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1349 merged 2026-06-10 feat(acrutil): extract shared binary manager and add diagnosis subcommand
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+      #1378 merged 2026-07-14 feat(mock): add response_body_size for controllable mock stdout size
+      #952 closed 2024-02-27 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.683
+      #951 closed 2024-02-26 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.681
+      #960 closed 2024-03-06 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.688
+      #953 closed 2024-02-28 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.684
+      #1259 closed 2025-08-28 build(deps): bump github.com/stretchr/testify from 1.10.0 to 1.11.1
+      #1258 closed 2025-08-26 build(deps): bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #912 closed 2023-12-28 Bump github.com/aliyun/aliyun-oss-go-sdk from 2.2.9+incompatible to 3.0.2+incompatible
+      #1163 merged 2024-12-19 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.72
+      #1162 closed 2024-12-18 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.71
+      #1161 closed 2024-12-12 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.68
+      #1159 closed 2024-12-11 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.66
+      #1158 closed 2024-12-06 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.65
+      #1154 closed 2024-12-03 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.63
+      #1151 closed 2024-11-28 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.60
+      #1150 closed 2024-11-27 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.59
+      #1149 closed 2024-11-26 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.56
+      #1147 closed 2024-11-22 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.54
+      #1145 closed 2024-11-19 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.53
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1448 merged 2026-09-16 feat: expose product endpoints and support cli-query in Help
+      #1432 merged 2026-09-07 fix: support RESTful PATCH and preserve complete dry-run bodies
+      #1425 merged 2026-09-01 feat: finalize unified help contracts and recovery hints
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+      #1378 merged 2026-07-14 feat(mock): add response_body_size for controllable mock stdout size
+      #952 closed 2024-02-27 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.683
+      #951 closed 2024-02-26 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.681
+      #960 closed 2024-03-06 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.688
+      #953 closed 2024-02-28 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.684
+      #1259 closed 2025-08-28 build(deps): bump github.com/stretchr/testify from 1.10.0 to 1.11.1
+      #1258 closed 2025-08-26 build(deps): bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #912 closed 2023-12-28 Bump github.com/aliyun/aliyun-oss-go-sdk from 2.2.9+incompatible to 3.0.2+incompatible
+      #1163 merged 2024-12-19 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.72
+      #1162 closed 2024-12-18 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.71
+      #1161 closed 2024-12-12 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.68
+      #1159 closed 2024-12-11 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.66
+      #1158 closed 2024-12-06 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.65
+      #1154 closed 2024-12-03 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.63
+      #1151 closed 2024-11-28 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.60
+      #1150 closed 2024-11-27 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.59
+  empty          50 hit(s) (all listed)
+      #1460 open 2026-09-28 fix: support JSON safety policy rules in environment overrides
+      #1458 closed 2026-09-20 fix: leading --force parsing and JSON safety policy compatibility
+      #1386 merged 2026-07-16 fix: ignore empty --mode so env credentials still apply
+      #1438 merged 2026-09-08 Fail closed when release asset download is incomplete
+      #1457 merged 2026-09-17 Preparing to release 3.5.1
+      #1391 merged 2026-07-17 fix: quote-aware External process_command parsing
+      #1373 merged 2026-07-09 feat(openapi): add --estimate-cost-context to pass PricingContext to quotes
+      #1385 merged 2026-07-16 fix(oss): honor profile endpoint and endpoint-type vpc
+      #1330 merged 2026-05-19 {Plugin} Support lang and profile from flag for plugin execution
+      #1258 closed 2025-08-26 build(deps): bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #1259 closed 2025-08-28 build(deps): bump github.com/stretchr/testify from 1.10.0 to 1.11.1
+      #1181 merged 2025-02-07 build(deps): bump golang.org/x/crypto from 0.32.0 to 0.33.0
+      #912 closed 2023-12-28 Bump github.com/aliyun/aliyun-oss-go-sdk from 2.2.9+incompatible to 3.0.2+incompatible
+      #856 closed 2023-11-01 Bump github.com/aliyun/aliyun-oss-go-sdk from 2.2.9+incompatible to 3.0.1+incompatible
+      #802 closed 2023-08-25 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.523
+      #800 closed 2023-08-24 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.522
+      #799 closed 2023-08-23 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.521
+      #798 closed 2023-08-22 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.517
+      #797 closed 2023-08-21 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.516
+      #811 closed 2023-09-01 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.536
+  atomic         6 hit(s) (all listed)
+      #1441 closed 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1442 merged 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+      #1349 merged 2026-06-10 feat(acrutil): extract shared binary manager and add diagnosis subcommand
+      #1308 closed 2026-04-21 aliyun mcp-proxy 的 double-unlock bug反馈
+      #271 closed 2020-04-17 aarch64 平台 test 失败
+  atomically     3 hit(s) (all listed)
+      #1441 closed 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1442 merged 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+  interrupted    0 hit(s)
+  interrupt      4 hit(s) (all listed)
+      #1352 open 2026-06-15 Feature Request: Resource Visibility, Security, Expiry, Cost Advisor, and Architecture Diagram Support in Alibaba Cloud CLI
+      #515 closed 2022-10-11 Bump github.com/onsi/gomega from 1.21.1 to 1.22.0
+      #517 merged 2022-10-12 Bump github.com/onsi/gomega from 1.21.1 to 1.22.1
+      #508 merged 2022-10-06 Bump github.com/onsi/gomega from 1.20.2 to 1.21.1
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #1347 closed 2026-06-05 aliyun-cli-buc plugin: login/info commands hang silently - missing buc_config.json documentation
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #189 open 2019-06-20 Separation filtering and formatting
+      #202 merged 2019-07-12 update CI script
+      #213 merged 2019-08-26 Release v3.0.24
+      #238 merged 2019-12-11 change appveyor url
+      #196 merged 2019-06-28 Release v3.0.19
+      #242 merged 2019-12-11 fix: flag `--retry-timeout` bug
+      #221 merged 2019-09-24 fix: Restful interface reported invalid url error
+      #205 merged 2019-07-22 V3.0.21
+      #194 merged 2019-06-26 correct help message of command `delete`
+      #283 merged 2020-05-13 feature: Automatic type recognition
+      #181 merged 2019-05-23 Support for adding custom UserAgent ID
+      #184 merged 2019-06-10 Forced calls to support different API styles
+      #305 merged 2020-08-18 Documented --output and --waiter in README.md
+      #455 closed 2022-07-18 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1674 to 1.61.1677
+      #454 closed 2022-07-15 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1674 to 1.61.1675
+      #453 merged 2022-07-13 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1639 to 1.61.1674
+      #451 closed 2022-07-11 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1639 to 1.61.1672
+      #448 closed 2022-07-04 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1639 to 1.61.1665
+      #447 closed 2022-07-01 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1639 to 1.61.1662
+      #446 closed 2022-06-30 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1639 to 1.61.1661
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           24 hit(s) (all listed)
+      #617 open 2023-02-16 aliyun-cli create encrypted system disk
+      #1352 open 2026-06-15 Feature Request: Resource Visibility, Security, Expiry, Cost Advisor, and Architecture Diagram Support in Alibaba Cloud CLI
+      #1351 open 2026-06-13 Feature Request: Billing and Cost Management Support in Alibaba Cloud CLI
+      #1390 merged 2026-07-17 fix(maxc): fall back when symlink creation fails on Windows
+      #1299 merged 2026-04-08 {Core} Add `aliyun upgrade` and configurable plugin index source and fix CloudSSO/OAuth one-off CLI flags persisting
+      #790 closed 2023-08-16 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.512
+      #784 closed 2023-08-15 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.511
+      #781 closed 2023-08-10 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.510
+      #780 closed 2023-08-09 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.509
+      #779 closed 2023-08-08 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.508
+      #777 closed 2023-08-03 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.506
+      #776 closed 2023-08-02 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.472 to 1.62.504
+      #715 closed 2023-05-24 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.191 to 1.62.342
+      #718 closed 2023-05-29 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.191 to 1.62.349
+      #717 closed 2023-05-26 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.191 to 1.62.348
+      #716 closed 2023-05-25 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.191 to 1.62.345
+      #620 closed 2023-02-17 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.11 to 1.62.174
+      #619 closed 2023-02-16 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.11 to 1.62.170
+      #616 closed 2023-02-15 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.11 to 1.62.169
+      #615 closed 2023-02-14 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.11 to 1.62.165
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1461 open 2026-09-29 fix: OAuth callback binding and add --no-browser login
+      #1353 open 2026-06-16 {Misc} Improve CLI help and error guidance for multi-style invocation
+      #1370 open 2026-07-03 Support dash-leading values for pending long flags
+      #1410 open 2026-08-24 feat(openapi): tell "confirmed free" apart from "cannot be quoted" in --estimate-cost
+      #189 open 2019-06-20 Separation filtering and formatting
+      #1069 open 2024-07-25 支持 XDG 目录标准
+      #1441 closed 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1442 merged 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1457 merged 2026-09-17 Preparing to release 3.5.1
+      #1260 open 2025-09-02 Add RISC-V Host Support
+      #1448 merged 2026-09-16 feat: expose product endpoints and support cli-query in Help
+      #1454 merged 2026-09-17 fix: enforce OSS safety and restore single-file entrypoint builds
+      #1436 closed 2026-09-08 fix(openapi): prevent dry-run body leaks
+      #1452 merged 2026-09-17 Codex/oss ai safety phase a
+      #1459 merged 2026-09-28 fix: preserve command targets with leading --force
+      #1451 closed 2026-09-17 V351 develop
+      #1453 merged 2026-09-17 feat: version AI error envelopes and document v3.5.1
+      #1411 merged 2026-08-25 Built-in plugin and AI MODE enhancement
+      #1458 closed 2026-09-20 fix: leading --force parsing and JSON safety policy compatibility
+      #1450 merged 2026-09-17 Codex/config exit safety docs v351
+  incomplete     3 hit(s) (all listed)
+      #1438 merged 2026-09-08 Fail closed when release asset download is incomplete
+      #1309 open 2026-04-21 [Advisory] aliyun CLI v3.3.9: abnormal aliyun-openapi-meta deletion — upgrade to v3.3.10
+      #1394 merged 2026-07-20 Improve invalid flag error with did-you-mean hints
+  dataloss       0 hit(s)
+  recover        4 hit(s) (all listed)
+      #1429 merged 2026-09-02 fix: prefer user input for API recovery search
+      #176 closed 2019-04-26 <fix>: load current configuration error
+      #347 closed 2021-05-26 test case panic
+      #279 closed 2020-05-08 release 3.0.41 test regression openapi
+  recovery       12 hit(s) (all listed)
+      #1434 open 2026-09-07 feat(trust): Design A builtin Root chain and recovery
+      #1429 merged 2026-09-02 fix: prefer user input for API recovery search
+      #1427 merged 2026-09-02 fix: refine help search and AI error recovery
+      #1425 merged 2026-09-01 feat: finalize unified help contracts and recovery hints
+      #1413 merged 2026-08-27 feat: optimize canonical help and AI recovery for agents
+      #1456 merged 2026-09-17 fix: camel RPC flat arrays and localized endpoint help
+      #1417 merged 2026-08-28 feat: unify Canonical product command tree and Help (Core Commands unchanged)
+      #1422 merged 2026-08-31 fix: consolidate canonical Help and local error behavior
+      #1411 merged 2026-08-25 Built-in plugin and AI MODE enhancement
+      #1448 merged 2026-09-16 feat: expose product endpoints and support cli-query in Help
+      #1418 closed 2026-08-28 fix: reject invalid product flags and tighten canonical Help
+      #1405 merged 2026-08-18 feat: add agentic JSON error envelope
+  rollback       11 hit(s) (all listed)
+      #1441 closed 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1442 merged 2026-09-10 Harden plugin installation with rollback, archive limits, and URL redaction
+      #1457 merged 2026-09-17 Preparing to release 3.5.1
+      #1092 closed 2024-08-20 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.2
+      #1091 closed 2024-08-19 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.1
+      #1093 closed 2024-08-21 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.4
+      #1094 closed 2024-08-22 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.5
+      #1095 closed 2024-08-23 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.0 to 1.63.7
+      #497 closed 2022-09-14 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1732 to 1.61.1771
+      #499 closed 2022-09-15 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1732 to 1.61.1774
+      #496 closed 2022-09-09 Bump github.com/aliyun/alibaba-cloud-sdk-go from 1.61.1732 to 1.61.1768
+  resume         1 hit(s) (all listed)
+      #1457 merged 2026-09-17 Preparing to release 3.5.1
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1273 open 2025-10-28 build(deps): bump github.com/aliyun/credentials-go from 1.4.7 to 1.4.8
+      #1269 open 2025-10-13 build(deps): bump github.com/alibabacloud-go/tea from 1.3.12 to 1.3.13
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+      #1270 open 2025-10-16 build(deps): bump github.com/alibabacloud-go/darabonba-openapi/v2 from 2.1.12 to 2.1.13
+      #1272 open 2025-10-22 build(deps): bump github.com/pierrec/lz4 from 2.6.0+incompatible to 2.6.1+incompatible
+      #1280 open 2025-11-20 build(deps): bump golang.org/x/crypto from 0.41.0 to 0.45.0
+      #1267 open 2025-10-08 build(deps): bump golang.org/x/crypto from 0.41.0 to 0.43.0
+      #1253 merged 2025-08-20 build(deps): bump github.com/alibabacloud-go/darabonba-openapi/v2 from 2.1.10 to 2.1.11
+      #1264 merged 2025-09-12 build(deps): bump github.com/alibabacloud-go/darabonba-openapi/v2 from 2.1.11 to 2.1.12
+      #961 merged 2024-03-06 build(deps): bump github.com/alibabacloud-go/darabonba-openapi/v2 from 2.0.5 to 2.0.6
+      #1238 merged 2025-07-10 build(deps): bump github.com/alibabacloud-go/darabonba-openapi/v2 from 2.1.7 to 2.1.8
+      #1251 merged 2025-08-12 build(deps): bump github.com/alibabacloud-go/darabonba-openapi/v2 from 2.1.8 to 2.1.10
+      #1182 merged 2025-02-07 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.63.85 to 1.63.86
+      #958 merged 2024-03-05 build(deps): bump github.com/alibabacloud-go/tea-utils/v2 from 2.0.4 to 2.0.5
+      #952 closed 2024-02-27 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.683
+      #951 closed 2024-02-26 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.681
+      #960 closed 2024-03-06 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.688
+      #953 closed 2024-02-28 build(deps): bump github.com/aliyun/alibaba-cloud-sdk-go from 1.62.610 to 1.62.684
+      #1263 closed 2025-09-11 build(deps): bump github.com/alibabacloud-go/tea from 1.3.11 to 1.3.12
+      #1261 closed 2025-09-08 build(deps): bump golang.org/x/crypto from 0.41.0 to 0.42.0
+  clobber        1 hit(s) (all listed)
+      #900 merged 2023-12-18 Bump golang.org/x/crypto from 0.16.0 to 0.17.0
+  blank          10 hit(s) (all listed)
+      #1404 open 2026-08-08 configure --mode OAuth hangs when 127.0.0.1:12345 is taken: detectPortUse probes the wildcard and the callback server listens on a different address family than the redirect_uri
+      #1398 merged 2026-07-23 fix: allow --profile with aliyun oss subcommands
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+      #1389 merged 2026-07-17 fix(esacli): harden exec override and shorthand flags
+      #1385 merged 2026-07-16 fix(oss): honor profile endpoint and endpoint-type vpc
+      #1394 merged 2026-07-20 Improve invalid flag error with did-you-mean hints
+      #1380 merged 2026-07-15 feat: integrate flow-cli into Aliyun CLI
+      #1362 merged 2026-06-24 Fix invisible API parameter names in help output (bold-black on dark terminals)
+      #1390 merged 2026-07-17 fix(maxc): fall back when symlink creation fails on Windows
+      #1391 merged 2026-07-17 fix: quote-aware External process_command parsing
+  unreadable     2 hit(s) (all listed)
+      #119 closed 2019-01-21 json pretty print option on cli output
+      #80 closed 2018-10-24 json output
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       2 hit(s) (all listed)
+      #1390 merged 2026-07-17 fix(maxc): fall back when symlink creation fails on Windows
+      #955 merged 2024-03-01 build(deps): bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+  in-place       4 hit(s) (all listed)
+      #1404 open 2026-08-08 configure --mode OAuth hangs when 127.0.0.1:12345 is taken: detectPortUse probes the wildcard and the callback server listens on a different address family than the redirect_uri
+      #1458 closed 2026-09-20 fix: leading --force parsing and JSON safety policy compatibility
+      #64 merged 2018-05-23 Fix issues with user.Current()
+      #284 closed 2020-05-14 Cannot get latest version: module contains a go.mod file, so module path should be github.com/aliyun/aliyun-cli/v3
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #1279 merged 2025-11-10 {mcp} Add MCP Proxy Server with OAuth Authentication
+  reboot         0 hit(s)
+  disk+full      3 hit(s) (all listed)
+      #617 open 2023-02-16 aliyun-cli create encrypted system disk
+      #1390 merged 2026-07-17 fix(maxc): fall back when symlink creation fails on Windows
+      #1299 merged 2026-04-08 {Core} Add `aliyun upgrade` and configurable plugin index source and fix CloudSSO/OAuth one-off CLI flags persisting
+  data+loss      0 hit(s)
+  partial+write  5 hit(s) (all listed)
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+      #1391 merged 2026-07-17 fix: quote-aware External process_command parsing
+      #1350 merged 2026-06-12 [feature] add rostran sub command
+      #1332 merged 2026-05-22 [Feature] Support MaxC CLI Sub Command
+      #1317 merged 2026-05-07 feat(appmanager): add appmanager subcommand with PyPI+OSS dual-source…
+  crash+safe     0 hit(s)
+  atomic+write   1 hit(s) (all listed)
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+  lock+file      1 hit(s) (all listed)
+      #1362 merged 2026-06-24 Fix invisible API parameter names in help output (bold-black on dark terminals)
+  write+failure  5 hit(s) (all listed)
+      #1387 merged 2026-07-17 fix: atomically write config.json via temp+rename
+      #1391 merged 2026-07-17 fix: quote-aware External process_command parsing
+      #1350 merged 2026-06-12 [feature] add rostran sub command
+      #1332 merged 2026-05-22 [Feature] Support MaxC CLI Sub Command
+      #1317 merged 2026-05-07 feat(appmanager): add appmanager subcommand with PyPI+OSS dual-source…
+  file+contents  2 hit(s) (all listed)
+      #1390 merged 2026-07-17 fix(maxc): fall back when symlink creation fails on Windows
+      #955 merged 2024-03-01 build(deps): bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+
+== 51 terms run; 31 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

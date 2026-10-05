@@ -1,0 +1,434 @@
+== novelty pre-scan: GitGuardian/ggshield
+== date: 2026-10-05T05:58:05Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          76 hit(s) (all listed)
+      #469 open 2023-02-02 `ggshield secret scan docker` fails with recent version of Docker
+      #1465 open 2026-09-10 build(deps): bump https://github.com/Woile/commitizen from v4.1.0 to 4.18.0
+      #1449 open 2026-09-05 ```typescript
+      #1463 open 2026-09-10 build(deps): bump https://github.com/ambv/black from 24.10.0 to 26.5.1
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1443 merged 2026-08-31 fix(packages): prune empty .dist-info dirs left by rpm upgrades
+      #1461 open 2026-09-10 build(deps): bump https://github.com/pycqa/isort from 5.13.2 to 9.0.1
+      #1444 merged 2026-08-31 fix(packages): make the rpm own its bundle directories
+      #1355 merged 2026-07-22 fix(ai-hooks): use native osascript for macOS secret notifications
+      #1554 open 2026-10-01 build(deps): bump virtualenv from 21.2.4 to 21.7.12
+      #1284 merged 2026-06-16 fix: don't crash when truststore setup fails (#1265)
+      #1055 open 2025-02-20 ggshield ignores users global git configuration file
+      #1375 merged 2026-08-03 fix(ai-hook): do not abandon the scan when a "cat" argument is not a path
+      #1373 closed 2026-07-30 ci: bump release build Python from 3.10 to 3.12
+      #1328 merged 2026-06-24 fix(install): harden install/uninstall scripts for non-interactive use
+      #1352 merged 2026-07-17 fix(ai-hooks): recognize Codex when transcript_path is null
+      #1346 merged 2026-07-03 fix(scan-pypi): fix pip not found and unsatisfied python requirement
+      #1339 merged 2026-06-28 fix(migration): improve deprecation message and migration command
+      #1312 merged 2026-06-22 fix(core): surface clear errors on non-JSON GitGuardian API responses
+      #1349 merged 2026-07-09 [AI] Improve server format support
+  corrupt        13 hit(s) (all listed)
+      #1261 open 2026-06-02 feat(ai): skip already-shipped agent activity via a local cursor
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1496 merged 2026-09-11 fix(ai-hook): replay the debounced verdict instead of falling silent
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1323 merged 2026-06-23 test: deflake the unit suite under pytest -n auto
+      #1377 merged 2026-08-03 perf(cli): import only the invoked command at startup
+      #1376 merged 2026-08-03 perf(ai-hook): cache clean scan verdicts to skip duplicate API calls
+      #1533 open 2026-09-21 build(deps): bump the uv-minor-patch group across 1 directory with 12 updates
+      #1476 closed 2026-09-10 build(deps): bump tomlkit from 0.13.3 to 0.15.1
+      #1518 closed 2026-09-16 build(deps): bump the uv-minor-patch group across 1 directory with 11 updates
+      #1492 closed 2026-09-11 build(deps): bump the uv-minor-patch group across 1 directory with 10 updates
+      #1017 merged 2024-11-20 Make functional tests faster
+      #155 closed 2021-12-16 Crash when scanning text files containing a `0` byte in it
+  corruption     1 hit(s) (all listed)
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+  truncated      49 hit(s) (all listed)
+      #1465 open 2026-09-10 build(deps): bump https://github.com/Woile/commitizen from v4.1.0 to 4.18.0
+      #1556 open 2026-10-02 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1463 open 2026-09-10 build(deps): bump https://github.com/ambv/black from 24.10.0 to 26.5.1
+      #1554 open 2026-10-01 build(deps): bump virtualenv from 21.2.4 to 21.7.12
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1546 open 2026-09-28 build(deps): bump astral-sh/setup-uv from 7.6.0 to 10.2.0
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1533 open 2026-09-21 build(deps): bump the uv-minor-patch group across 1 directory with 12 updates
+      #1553 open 2026-10-01 build(deps): bump pyjwt from 2.14.0 to 2.15.0
+      #1461 open 2026-09-10 build(deps): bump https://github.com/pycqa/isort from 5.13.2 to 9.0.1
+      #1484 merged 2026-09-10 ci: pin the release build container, track Rocky majors in smoke tests
+      #1507 closed 2026-09-14 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0 in the pre-commit-minor-patch group across 1 directory
+      #1516 merged 2026-09-16 build(deps): bump astral-sh/uv from 0.10.8 to 0.12.16
+      #1532 merged 2026-09-21 build(deps): bump codecov/codecov-action from 4.6.0 to 7.1.1
+      #1468 closed 2026-09-10 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0
+      #1498 closed 2026-09-11 build(deps): bump astral-sh/uv from 0.10.8 to 0.12.13
+      #1490 closed 2026-09-11 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1458 closed 2026-09-10 build(deps): bump astral-sh/setup-uv from 7.6.0 to 10.0.1
+      #1475 closed 2026-09-10 build(deps-dev): bump ty from 0.0.55 to 0.0.78
+      #1489 closed 2026-09-11 build(deps): bump the docker-minor-patch group with 2 updates
+  truncate       53 hit(s) (all listed)
+      #1465 open 2026-09-10 build(deps): bump https://github.com/Woile/commitizen from v4.1.0 to 4.18.0
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1556 open 2026-10-02 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1463 open 2026-09-10 build(deps): bump https://github.com/ambv/black from 24.10.0 to 26.5.1
+      #1554 open 2026-10-01 build(deps): bump virtualenv from 21.2.4 to 21.7.12
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1546 open 2026-09-28 build(deps): bump astral-sh/setup-uv from 7.6.0 to 10.2.0
+      #1533 open 2026-09-21 build(deps): bump the uv-minor-patch group across 1 directory with 12 updates
+      #1553 open 2026-10-01 build(deps): bump pyjwt from 2.14.0 to 2.15.0
+      #1461 open 2026-09-10 build(deps): bump https://github.com/pycqa/isort from 5.13.2 to 9.0.1
+      #1484 merged 2026-09-10 ci: pin the release build container, track Rocky majors in smoke tests
+      #1507 closed 2026-09-14 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0 in the pre-commit-minor-patch group across 1 directory
+      #1516 merged 2026-09-16 build(deps): bump astral-sh/uv from 0.10.8 to 0.12.16
+      #1532 merged 2026-09-21 build(deps): bump codecov/codecov-action from 4.6.0 to 7.1.1
+      #1468 closed 2026-09-10 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0
+      #1498 closed 2026-09-11 build(deps): bump astral-sh/uv from 0.10.8 to 0.12.13
+      #1490 closed 2026-09-11 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1458 closed 2026-09-10 build(deps): bump astral-sh/setup-uv from 7.6.0 to 10.0.1
+      #1475 closed 2026-09-10 build(deps-dev): bump ty from 0.0.55 to 0.0.78
+      #1489 closed 2026-09-11 build(deps): bump the docker-minor-patch group with 2 updates
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1443 merged 2026-08-31 fix(packages): prune empty .dist-info dirs left by rpm upgrades
+      #1449 open 2026-09-05 ```typescript
+      #1438 open 2026-08-26 feat(secret): ignore matches on configured regex patterns
+      #1364 open 2026-07-28 ci: add explicit GITHUB_TOKEN permission scopes to workflows
+      #1548 merged 2026-09-28 fix: size multiscan requests by their JSON-encoded length
+      #1444 merged 2026-08-31 fix(packages): make the rpm own its bundle directories
+      #1423 merged 2026-08-19 fix(ai): stop guessing the MCP server name VSCode leaves out
+      #1552 merged 2026-09-30 build(deps): bump pyjwt from 2.13.0 to 2.14.0
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1509 closed 2026-09-14 feat(secrets): add a repo scope shared by every worktree
+      #1429 merged 2026-08-19 fix(packaging): sign through Git for Windows bash, not the WSL launcher
+      #1486 merged 2026-09-10 fix(ai-hook): identify each agent by a field only it sends
+      #1375 merged 2026-08-03 fix(ai-hook): do not abandon the scan when a "cat" argument is not a path
+      #1055 open 2025-02-20 ggshield ignores users global git configuration file
+      #1425 merged 2026-08-19 fix(config): read the credential store only when a token is needed
+      #1357 merged 2026-07-22 fix(ai-hooks): scan MCP tool inputs for secrets (NHI-1845)
+      #1376 merged 2026-08-03 perf(ai-hook): cache clean scan verdicts to skip duplicate API calls
+      #555 open 2023-06-06 SSLEOFError when scanning a windows docker image
+      #1451 merged 2026-09-08 feat(ai-hook): add Junie CLI support
+  atomic         8 hit(s) (all listed)
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1542 merged 2026-09-25 test(install): cover Unix upgrade scenarios
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1523 merged 2026-09-18 feat(honeytoken): add kubeconfig honeytoken plant
+      #1323 merged 2026-06-23 test: deflake the unit suite under pytest -n auto
+      #1498 closed 2026-09-11 build(deps): bump astral-sh/uv from 0.10.8 to 0.12.13
+      #1489 closed 2026-09-11 build(deps): bump the docker-minor-patch group with 2 updates
+  atomically     1 hit(s) (all listed)
+      #1323 merged 2026-06-23 test: deflake the unit suite under pytest -n auto
+  interrupted    5 hit(s) (all listed)
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1446 merged 2026-09-03 fix(auth): let Ctrl+C abort the login callback wait on Windows
+      #1392 merged 2026-08-05 feat(packaging): one `ggshield` command — Rust dispatcher for the AI hook, Python for everything else
+      #1091 closed 2025-04-30 Stale dependency requirements are breaking the build on nixpkgs
+      #466 closed 2023-01-31 Error messages displayed and shell must be interrupted after using ggshield auth login on Ubuntu using Microsoft Edge as default browser
+  interrupt      10 hit(s) (all listed)
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1446 merged 2026-09-03 fix(auth): let Ctrl+C abort the login callback wait on Windows
+      #1392 merged 2026-08-05 feat(packaging): one `ggshield` command — Rust dispatcher for the AI hook, Python for everything else
+      #1091 closed 2025-04-30 Stale dependency requirements are breaking the build on nixpkgs
+      #417 closed 2022-11-08 pre-receive timeout is not precise enough
+      #466 closed 2023-01-31 Error messages displayed and shell must be interrupted after using ggshield auth login on Ubuntu using Microsoft Edge as default browser
+      #219 merged 2022-05-02 Allow to interrupt auth flow from auth server
+      #136 merged 2021-11-05 Never run standalone mode. fixes exit 1 on interrupt
+      #122 merged 2021-10-28 Add pre-receive timeout
+      #105 closed 2021-09-15 Pre-Push Commit Limit Documentation Mismatch
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #1446 merged 2026-09-03 fix(auth): let Ctrl+C abort the login callback wait on Windows
+  ctrl-c         5 hit(s) (all listed)
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1446 merged 2026-09-03 fix(auth): let Ctrl+C abort the login callback wait on Windows
+      #1512 merged 2026-09-14 perf: fetch metadata and token scopes concurrently
+      #1392 merged 2026-08-05 feat(packaging): one `ggshield` command — Rust dispatcher for the AI hook, Python for everything else
+      #466 closed 2023-01-31 Error messages displayed and shell must be interrupted after using ggshield auth login on Ubuntu using Microsoft Edge as default browser
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1259 merged 2026-06-01 feat(ai): collect agent activity
+      #1326 closed 2026-06-24 feat(machine): add `machine audit` to scan exposure and report posture
+      #307 merged 2022-07-20 chore: use ggshield 1.13.0
+      #308 merged 2022-07-21 Add a helper message for iac scan command
+      #298 merged 2022-07-15 Fix diff parser failing to extract filenames containing spaces
+      #295 merged 2022-07-11 Scan CI fixes
+      #262 closed 2022-06-08 Bring back support for GITGUARDIAN_API_URL
+      #300 merged 2022-07-18 Improvements to --debug
+      #288 merged 2022-07-07 fix: avoid output flood when scanning repo
+      #279 merged 2022-06-28 pre-commit fixes
+      #276 closed 2022-06-27 Update action.yml
+      #285 merged 2022-07-05 docs(iac): add readme for iac section
+      #302 merged 2022-07-19 Refresh test cassettes and adapt testing
+      #275 merged 2022-06-22 Upmerge main
+      #283 merged 2022-07-05 Fix ggshield secret scan repo crashes on repositories containing files with a 0 bytes in them
+      #290 merged 2022-07-07 Add --debug option
+      #274 merged 2022-06-22 Add command to update a configuration file to v2
+      #260 merged 2022-06-06 Workaround TestPreReceive::test_timeout flakiness (#192)
+      #266 merged 2022-06-15 Run tests on Python 3.10
+      #293 merged 2022-07-08 Merge main into iac
+  outage         2 hit(s) (all listed)
+      #1402 merged 2026-08-11 feat(ai-hook): recognize Mistral Vibe in the native hook
+      #1286 closed 2026-06-16 build(deps): bump pyjwt from 2.6.0 to 2.13.0
+  ENOSPC         0 hit(s)
+  disk           23 hit(s) (all listed)
+      #1440 open 2026-08-27 feat(machine): install the account's plugins during machine setup
+      #1555 merged 2026-10-01 fix(ai-hooks): stop Claude Code echoing a blocked prompt back
+      #1523 merged 2026-09-18 feat(honeytoken): add kubeconfig honeytoken plant
+      #1481 merged 2026-09-10 fix(ai-hook): report a Codex tool output as withheld, not leaked
+      #1268 open 2026-06-11 feat(auth): surface credential-store failures and add `ggshield auth status`
+      #1527 merged 2026-09-21 fix(install): detect and repair git hooks left by an older ggshield
+      #1482 merged 2026-09-10 fix(ai-hook): report a Vibe tool output as withheld, not leaked
+      #1505 closed 2026-09-14 feat(secrets): bring the secret manager engine, CLI and SDKs into ggshield
+      #1281 merged 2026-06-15 docs(honeytoken): make plant help summary a clean one-liner
+      #1358 merged 2026-07-23 fix(auth): serialize keyring reads to survive concurrent hook runs
+      #1326 closed 2026-06-24 feat(machine): add `machine audit` to scan exposure and report posture
+      #1384 merged 2026-08-04 fix(ai): submit AI discovery only when it actually changed
+      #1376 merged 2026-08-03 perf(ai-hook): cache clean scan verdicts to skip duplicate API calls
+      #1331 closed 2026-06-24 feat(machine): provision a machine-wide service-account token in setup
+      #1235 merged 2026-05-05 feat(plugin): install plugins from the GitGuardian platform
+      #1259 merged 2026-06-01 feat(ai): collect agent activity
+      #1216 merged 2026-04-23 feat: cache auth check api calls for `secret scan`s
+      #1183 merged 2026-03-03 feat(nhi,ai-agents): Add support for Cursor and Claude secrets hooks
+      #790 merged 2023-10-30 refactor(iac): change iac diff scan json output format
+      #616 merged 2023-07-06 alacombe/expl-187/Logout HMSL when calling GGshield auth logout
+  partial        15 hit(s) (all listed)
+      #133 open 2021-11-04 Input: Amazon S3
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1261 open 2026-06-02 feat(ai): skip already-shipped agent activity via a local cursor
+      #1485 closed 2026-09-10 feat(ai-hook): withhold a Cursor MCP response that holds a secret
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1321 merged 2026-06-23 ci: add codecov.yml to stop false project reds
+      #1382 merged 2026-08-04 fix(ai-hook): scan the range an agent reads, not the whole file
+      #908 merged 2024-06-06 fix(result): change naming to suit scannable
+      #899 merged 2024-05-28 Refactor: save lines in extended match and add censor method
+      #847 merged 2024-01-31 Refactor oauth code: simplify request handling
+      #682 merged 2023-08-10 chore(hmsl): improve error messages
+      #558 merged 2023-06-08 Subcommands in IaC scan: allow commit scan
+      #282 closed 2022-07-05 Refresh test cassettes
+      #154 merged 2021-12-10 Unbreak unit tests
+      #44 closed 2021-03-04 fix(ignore): ignore is compatible with old matches_ignore format
+  incomplete     10 hit(s) (all listed)
+      #1519 open 2026-09-18 fix(scan): fail when the API refused to scan
+      #1131 merged 2025-10-14 chore: Remove clearlinux from os package testing
+      #211 closed 2022-04-25 Verbose Isn't Verbose Enough To Help
+      #610 merged 2023-07-05 Improve handling of quota limit reached errors
+      #296 closed 2022-07-13 Getting 403:Quota limit reached error while scanning the repo
+      #280 merged 2022-06-30 feat(iac): handle exceptions more gracefully for IaC
+      #174 closed 2022-02-18 Crashed when scanning a big size docker image.
+      #222 merged 2022-05-04 fix: send verbose messages to stderr
+      #100 closed 2021-08-13 ggshield should handle merge commits
+      #90 merged 2021-07-13 fix(docker): handle incomplete docker config
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #1267 open 2026-06-11 Keyring migration fails silently when Keychain entry ACL doesn't match current binary (e.g. mise installs)
+      #1554 open 2026-10-01 build(deps): bump virtualenv from 21.2.4 to 21.7.12
+      #1500 merged 2026-09-11 fix(client): stop retrying POST requests that time out reading the response
+      #1218 merged 2026-04-27 fix(client): retry transient connection errors and 5xx responses
+      #1237 merged 2026-05-07 fix(client): scope retry policy by command
+  recovery       3 hit(s) (all listed)
+      #1268 open 2026-06-11 feat(auth): surface credential-store failures and add `ggshield auth status`
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1218 merged 2026-04-27 fix(client): retry transient connection errors and 5xx responses
+  rollback       0 hit(s)
+  resume         3 hit(s) (all listed)
+      #1261 open 2026-06-02 feat(ai): skip already-shipped agent activity via a local cursor
+      #1480 merged 2026-09-10 feat(ai-hook): withhold a Claude Code tool output that holds a secret
+      #1446 merged 2026-09-03 fix(auth): let Ctrl+C abort the login callback wait on Windows
+  half-written   1 hit(s) (all listed)
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+  wipe           2 hit(s) (all listed)
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1286 closed 2026-06-16 build(deps): bump pyjwt from 2.6.0 to 2.13.0
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #1268 open 2026-06-11 feat(auth): surface credential-store failures and add `ggshield auth status`
+      #1511 merged 2026-09-14 fix: disable `check-for-updates` by default for pre-receive and fix the cli flag
+      #695 merged 2023-08-17 Xblanchot/sca 940/improve sca diff output
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #1527 merged 2026-09-21 fix(install): detect and repair git hooks left by an older ggshield
+  destroys       0 hit(s)
+  overwrite      75 hit(s) (all listed)
+      #1267 open 2026-06-11 Keyring migration fails silently when Keychain entry ACL doesn't match current binary (e.g. mise installs)
+      #1528 open 2026-09-21 build(deps): bump python from 3.10.21-slim to 3.14.6-slim
+      #1557 open 2026-10-05 build(deps): bump dtolnay/rust-toolchain from 6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 to 7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      #1511 merged 2026-09-14 fix: disable `check-for-updates` by default for pre-receive and fix the cli flag
+      #1268 open 2026-06-11 feat(auth): surface credential-store failures and add `ggshield auth status`
+      #1546 open 2026-09-28 build(deps): bump astral-sh/setup-uv from 7.6.0 to 10.2.0
+      #1553 open 2026-10-01 build(deps): bump pyjwt from 2.14.0 to 2.15.0
+      #1547 closed 2026-09-28 build(deps): bump dtolnay/rust-toolchain from 6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 to 02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+      #1465 open 2026-09-10 build(deps): bump https://github.com/Woile/commitizen from v4.1.0 to 4.18.0
+      #1466 closed 2026-09-10 build(deps): bump dirs from 6.0.0 to 7.0.0 in /rust
+      #1463 open 2026-09-10 build(deps): bump https://github.com/ambv/black from 24.10.0 to 26.5.1
+      #1556 open 2026-10-02 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1303 merged 2026-06-18 feat(ai): send hook installation status
+      #1491 closed 2026-09-11 build(deps): bump https://github.com/rbubley/mirrors-prettier from v3.6.0 to 3.9.6
+      #1554 open 2026-10-01 build(deps): bump virtualenv from 21.2.4 to 21.7.12
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1467 closed 2026-09-10 build(deps-dev): bump tomli from 2.4.0 to 2.4.1
+      #1464 closed 2026-09-10 build(deps): bump https://github.com/PyCQA/flake8 from 7.1.1 to 7.3.0
+      #1381 merged 2026-08-04 native (Rust) ai-hook — ~320 ms → ~20 ms, no daemon
+      #1472 closed 2026-09-10 build(deps): bump toml from 1.1.4+spec-1.1.0 to 1.1.5+spec-1.1.0 in /rust
+  clobber        1 hit(s) (all listed)
+      #1287 merged 2026-06-16 feat(scripts): add ggshield install/uninstall scripts
+  blank          16 hit(s) (all listed)
+      #1463 open 2026-09-10 build(deps): bump https://github.com/ambv/black from 24.10.0 to 26.5.1
+      #1554 open 2026-10-01 build(deps): bump virtualenv from 21.2.4 to 21.7.12
+      #1494 merged 2026-09-11 build(deps): batch the verified dependency bumps
+      #1429 merged 2026-08-19 fix(packaging): sign through Git for Windows bash, not the WSL launcher
+      #1425 merged 2026-08-19 fix(config): read the credential store only when a token is needed
+      #1461 open 2026-09-10 build(deps): bump https://github.com/pycqa/isort from 5.13.2 to 9.0.1
+      #960 merged 2024-09-12 Add default behavior to ggshield secret ignore 
+      #211 closed 2022-04-25 Verbose Isn't Verbose Enough To Help
+      #641 merged 2023-07-21 feat(cmd): create ggshield sca scan ci command
+      #493 merged 2023-03-13 Improve error message when a user has no API key set
+      #508 merged 2023-04-12 Scan Docker images layer per layer
+      #296 closed 2022-07-13 Getting 403:Quota limit reached error while scanning the repo
+      #201 closed 2022-04-11 Blank state behavior is not clear
+      #203 merged 2022-04-13 Fix error message in blank state (#201)
+      #237 merged 2022-05-17 Fix command documentation and messages
+      #100 closed 2021-08-13 ggshield should handle merge commits
+  unreadable     7 hit(s) (all listed)
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1432 merged 2026-08-20 fix(ai-hook): never fail an event open over an unusable read path
+      #1425 merged 2026-08-19 fix(config): read the credential store only when a token is needed
+      #1410 closed 2026-08-17 fix(honeytoken): request the honeytokens:write scope by default
+      #1402 merged 2026-08-11 feat(ai-hook): recognize Mistral Vibe in the native hook
+      #547 merged 2023-05-29 Fix GitLab web UI output handler
+      #509 merged 2023-04-17 Cache Docker successful scans
+  garbage        2 hit(s) (all listed)
+      #1305 merged 2026-06-19 fix(auth): surface clear error on non-JSON token-claim response
+      #1392 merged 2026-08-05 feat(packaging): one `ggshield` command — Rust dispatcher for the AI hook, Python for everything else
+  mangled        2 hit(s) (all listed)
+      #1423 merged 2026-08-19 fix(ai): stop guessing the MCP server name VSCode leaves out
+      #1342 merged 2026-07-01 feat(scripts): offer to add the install dir to PATH instead of only printing it
+  contents       15 hit(s) (all listed)
+      #1364 open 2026-07-28 ci: add explicit GITHUB_TOKEN permission scopes to workflows
+      #1350 open 2026-07-12 Bug: Add explicit GITHUB_TOKEN permission scopes to workflows
+      #1556 open 2026-10-02 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1474 closed 2026-09-10 build(deps-dev): bump pyinstaller from 6.21.0 to 6.22.2
+      #1507 closed 2026-09-14 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0 in the pre-commit-minor-patch group across 1 directory
+      #1451 merged 2026-09-08 feat(ai-hook): add Junie CLI support
+      #1468 closed 2026-09-10 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0
+      #1490 closed 2026-09-11 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1319 merged 2026-06-23 docs: document the Windows MSI installer
+      #1259 merged 2026-06-01 feat(ai): collect agent activity
+      #820 merged 2023-12-19 Fix IAC scan all on subdirectories
+      #383 closed 2022-10-13 ggshield should not install its tests
+      #452 merged 2023-01-06 FIX: GGshield should not install its tests
+      #227 merged 2022-05-10 Introduce `secret scan`, deprecate `scan`
+      #52 closed 2021-04-24 Stack Trace If CWD Is Root
+  in-place       72 hit(s) (all listed)
+      #1261 open 2026-06-02 feat(ai): skip already-shipped agent activity via a local cursor
+      #1441 open 2026-08-27 fix(machine): report unavailable protections instead of failing
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1533 open 2026-09-21 build(deps): bump the uv-minor-patch group across 1 directory with 12 updates
+      #1485 closed 2026-09-10 feat(ai-hook): withhold a Cursor MCP response that holds a secret
+      #1496 merged 2026-09-11 fix(ai-hook): replay the debounced verdict instead of falling silent
+      #1443 merged 2026-08-31 fix(packages): prune empty .dist-info dirs left by rpm upgrades
+      #1456 merged 2026-09-09 build(docker): install Python dependencies from uv.lock
+      #1505 closed 2026-09-14 feat(secrets): bring the secret manager engine, CLI and SDKs into ggshield
+      #1527 merged 2026-09-21 fix(install): detect and repair git hooks left by an older ggshield
+      #1511 merged 2026-09-14 fix: disable `check-for-updates` by default for pre-receive and fix the cli flag
+      #1400 merged 2026-08-11 fix(ai-hook): never create incidents from the AI hook
+      #1367 merged 2026-07-28 test(api-status): stop pinning workspace id and scopes to recorded values
+      #1476 closed 2026-09-10 build(deps): bump tomlkit from 0.13.3 to 0.15.1
+      #1322 closed 2026-06-23 fix(ai): use the documented catch-all matcher for AI hooks
+      #1358 merged 2026-07-23 fix(auth): serialize keyring reads to survive concurrent hook runs
+      #1384 merged 2026-08-04 fix(ai): submit AI discovery only when it actually changed
+      #1329 merged 2026-06-24 fix(cli): fail fast with a clear message on Python < 3.9
+      #1326 closed 2026-06-24 feat(machine): add `machine audit` to scan exposure and report posture
+  unclean        1 hit(s) (all listed)
+      #68 closed 2021-05-20 Do not create ggshield cache in a CI environment
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      8 hit(s) (all listed)
+      #1440 open 2026-08-27 feat(machine): install the account's plugins during machine setup
+      #1555 merged 2026-10-01 fix(ai-hooks): stop Claude Code echoing a blocked prompt back
+      #1523 merged 2026-09-18 feat(honeytoken): add kubeconfig honeytoken plant
+      #1358 merged 2026-07-23 fix(auth): serialize keyring reads to survive concurrent hook runs
+      #1326 closed 2026-06-24 feat(machine): add `machine audit` to scan exposure and report posture
+      #1331 closed 2026-06-24 feat(machine): provision a machine-wide service-account token in setup
+      #1235 merged 2026-05-05 feat(plugin): install plugins from the GitGuardian platform
+      #1183 merged 2026-03-03 feat(nhi,ai-agents): Add support for Cursor and Claude secrets hooks
+  data+loss      1 hit(s) (all listed)
+      #899 merged 2024-05-28 Refactor: save lines in extended match and add censor method
+  partial+write  2 hit(s) (all listed)
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+  crash+safe     8 hit(s) (all listed)
+      #1055 open 2025-02-20 ggshield ignores users global git configuration file
+      #1355 merged 2026-07-22 fix(ai-hooks): use native osascript for macOS secret notifications
+      #1373 closed 2026-07-30 ci: bump release build Python from 3.10 to 3.12
+      #1312 merged 2026-06-22 fix(core): surface clear errors on non-JSON GitGuardian API responses
+      #1346 merged 2026-07-03 fix(scan-pypi): fix pip not found and unsatisfied python requirement
+      #1273 closed 2026-06-11 fix(config): run keyring probe in subprocess to survive segfaults
+      #1492 closed 2026-09-11 build(deps): bump the uv-minor-patch group across 1 directory with 10 updates
+      #465 merged 2023-01-31 Improve error management to better catch some git errors
+  atomic+write   5 hit(s) (all listed)
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1523 merged 2026-09-18 feat(honeytoken): add kubeconfig honeytoken plant
+      #1323 merged 2026-06-23 test: deflake the unit suite under pytest -n auto
+  lock+file      53 hit(s) (all listed)
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1449 open 2026-09-05 ```typescript
+      #1550 open 2026-09-29 build(deps): bump astral-sh/uv from 0.12.17 to 0.12.20
+      #1267 open 2026-06-11 Keyring migration fails silently when Keychain entry ACL doesn't match current binary (e.g. mise installs)
+      #1478 merged 2026-09-10 build(deps): pin the hatchling build backend to an exact version
+      #1505 closed 2026-09-14 feat(secrets): bring the secret manager engine, CLI and SDKs into ggshield
+      #1494 merged 2026-09-11 build(deps): batch the verified dependency bumps
+      #1504 closed 2026-09-14 refactor(rust): lay the Rust crates out as apps/ and packages/
+      #1509 closed 2026-09-14 feat(secrets): add a repo scope shared by every worktree
+      #1479 merged 2026-09-10 ci: pin the Cloudsmith CLI used by the release job
+      #1523 merged 2026-09-18 feat(honeytoken): add kubeconfig honeytoken plant
+      #1395 closed 2026-08-07 Add .gitattributes for consistent line endings
+      #1502 merged 2026-09-14 test(ai-hook): stop the notification test hijacking GG_CACHE_DIR
+      #1466 closed 2026-09-10 build(deps): bump dirs from 6.0.0 to 7.0.0 in /rust
+      #1358 merged 2026-07-23 fix(auth): serialize keyring reads to survive concurrent hook runs
+      #1529 merged 2026-09-21 build(deps): bump astral-sh/uv from 0.12.16 to 0.12.17
+      #1347 merged 2026-07-07 build(deps): bump tuf, vcrpy and pytest for security
+      #1399 merged 2026-08-09 fix(devx): let dev group unconditionally depend on tomli
+      #1498 closed 2026-09-11 build(deps): bump astral-sh/uv from 0.10.8 to 0.12.13
+      #1489 closed 2026-09-11 build(deps): bump the docker-minor-patch group with 2 updates
+  write+failure  37 hit(s) (all listed)
+      #1268 open 2026-06-11 feat(auth): surface credential-store failures and add `ggshield auth status`
+      #1243 open 2026-05-15 fix: atomic writes for cache and config files
+      #1391 open 2026-08-05 fix(ai-hook): say when an MCP tool call was not checked against policy
+      #1441 open 2026-08-27 fix(machine): report unavailable protections instead of failing
+      #1515 open 2026-09-15 feat(secrets): add the `ggshield secret` store verbs
+      #1502 merged 2026-09-14 test(ai-hook): stop the notification test hijacking GG_CACHE_DIR
+      #1267 open 2026-06-11 Keyring migration fails silently when Keychain entry ACL doesn't match current binary (e.g. mise installs)
+      #1503 merged 2026-09-14 test(ai-hook): take the process lock in the test that only reads the environment
+      #1523 merged 2026-09-18 feat(honeytoken): add kubeconfig honeytoken plant
+      #1527 merged 2026-09-21 fix(install): detect and repair git hooks left by an older ggshield
+      #1448 merged 2026-09-04 fix(auth): report the scopes login did not get
+      #1511 merged 2026-09-14 fix: disable `check-for-updates` by default for pre-receive and fix the cli flag
+      #1378 merged 2026-08-03 fix(auth): probe keyring availability with a read instead of a write
+      #1331 closed 2026-06-24 feat(machine): provision a machine-wide service-account token in setup
+      #1376 merged 2026-08-03 perf(ai-hook): cache clean scan verdicts to skip duplicate API calls
+      #1296 merged 2026-06-17 chore(ci): dump chocolatey.log on failed push
+      #1323 merged 2026-06-23 test: deflake the unit suite under pytest -n auto
+      #1406 merged 2026-08-12 build(deps): bump actions/setup-python from 6 to 7
+      #1275 merged 2026-06-12 fix(ai): make the AI hook resilient to auth failures
+      #1392 merged 2026-08-05 feat(packaging): one `ggshield` command — Rust dispatcher for the AI hook, Python for everything else
+  file+contents  13 hit(s) (all listed)
+      #1364 open 2026-07-28 ci: add explicit GITHUB_TOKEN permission scopes to workflows
+      #1556 open 2026-10-02 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1507 closed 2026-09-14 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0 in the pre-commit-minor-patch group across 1 directory
+      #1451 merged 2026-09-08 feat(ai-hook): add Junie CLI support
+      #1474 closed 2026-09-10 build(deps-dev): bump pyinstaller from 6.21.0 to 6.22.2
+      #1468 closed 2026-09-10 build(deps): bump https://github.com/python-jsonschema/check-jsonschema from 0.31.0 to 0.38.0
+      #1490 closed 2026-09-11 build(deps): bump the pre-commit-minor-patch group across 1 directory with 2 updates
+      #1259 merged 2026-06-01 feat(ai): collect agent activity
+      #820 merged 2023-12-19 Fix IAC scan all on subdirectories
+      #383 closed 2022-10-13 ggshield should not install its tests
+      #452 merged 2023-01-06 FIX: GGshield should not install its tests
+      #227 merged 2022-05-10 Introduce `secret scan`, deprecate `scan`
+      #52 closed 2021-04-24 Stack Trace If CWD Is Root
+
+== 51 terms run; 41 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

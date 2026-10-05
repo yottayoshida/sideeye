@@ -1,0 +1,4 @@
+static: /opt/bin/crictl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=mOox9_Y7c6h05ABnSSwO/7LYxBK7qR7ETvSTWrKut/gL2NbDU9T8NeHQatWzF7/sUD6e2cCikwFF8g5mAUB, BuildID[sha1]=9f7f5fc6a9f26f75f9ba3c876f5cf1a351fa67e9, with debug_info, not stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/cri --cwd "/s/cri-in" --operation "crictl --config /s/cri/crictl.yaml config --set timeout=10" \

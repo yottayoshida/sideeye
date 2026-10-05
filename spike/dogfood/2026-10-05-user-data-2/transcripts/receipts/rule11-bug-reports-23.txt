@@ -1,0 +1,11 @@
+== golang/go (label BugReport)
+#81966 2026-10-02 comments=4 first_project_reply=MEMBER 2026-10-02
+#81539 2026-09-15 comments=3 first_project_reply=CONTRIBUTOR 2026-09-18
+#81538 2026-09-15 comments=2 first_project_reply=CONTRIBUTOR 2026-09-20
+#81537 2026-09-15 comments=1 first_project_reply=CONTRIBUTOR 2026-10-04
+#81397 2026-09-08 comments=5 first_project_reply=CONTRIBUTOR 2026-09-08
+#81261 2026-09-01 comments=3 first_project_reply=CONTRIBUTOR 2026-09-01
+#80872 2026-08-13 comments=3 first_project_reply=CONTRIBUTOR 2026-08-18
+#80710 2026-08-04 comments=5 first_project_reply=CONTRIBUTOR 2026-08-04
+#80613 2026-07-28 comments=9 first_project_reply=CONTRIBUTOR 2026-07-28
+#80577 2026-07-27 comments=18 first_project_reply=CONTRIBUTOR 2026-07-27

@@ -1,0 +1,24 @@
+FAIL  1 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 4
+            after  write(/s/ntfs/vol.img)
+            before write(/s/ntfs/vol.img)
+path        vol.img
+observed    holding neither the old nor the new content
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 4 operations (204 syscall lines examined, 54 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/ntfslabel/work-syscalls/cases/000001.json
+replay      sideeye replay /out/ntfslabel/work-syscalls/cases/000001.json --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/ntfslabel/work-syscalls/evidence/000001.json
+cwd         /s/ntfs-in
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/ntfs SIDEEYE_TRACE_PATH=/out/ntfslabel/work-syscalls/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=0552c2dadd224c86a4aa56a007697c84ff6323190b296f04948f78ac84258020;

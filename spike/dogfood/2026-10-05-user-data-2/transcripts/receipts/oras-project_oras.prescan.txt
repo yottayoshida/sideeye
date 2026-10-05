@@ -1,0 +1,442 @@
+== novelty pre-scan: oras-project/oras
+== date: 2026-10-05T03:48:14Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          4 hit(s) (all listed)
+      #2197 open 2026-09-28 RFC: design for pulling a single blob to stdout (`oras pull --output -`)
+      #2125 closed 2026-08-05 panic: send on closed channel in progress messenger during oras copy
+      #1559 merged 2024-12-03 feat: improve the format of --debug logs
+      #187 merged 2020-10-27 Bump github.com/sirupsen/logrus from 1.4.2 to 1.7.0
+  corrupt        12 hit(s) (all listed)
+      #2190 closed 2026-09-24 oras pull leaves corrupted files after digest verification failure
+      #1791 open 2025-07-30 Support content integrity detection
+      #2149 merged 2026-09-01 build(deps): bump the github-actions group across 1 directory with 5 updates
+      #1888 closed 2025-10-30 Error: Error: invalid OCI Image Index: failed to decode index file: invalid character 'm' after object key
+      #1681 closed 2025-03-31 ORAS_CACHE_EXPIRY to handle cache efficiently
+      #1803 closed 2025-08-08 `oras check` draft design
+      #1300 closed 2024-03-20 pushing with multiple tags will corrupt `--format xxx` output
+      #1302 merged 2024-03-21 fix: discard tagging output when pushing with formatted output
+      #1295 merged 2024-03-18 feat: support `--format` in `manifest fetch` command
+      #1381 merged 2024-05-14 bump: tag and release ORAS CLI v1.2.0-rc.1
+      #754 closed 2023-01-17 `@digest` option in `oras manifest push` command seems unnecessary
+      #493 merged 2022-08-15 feat: support delete a blob from a remote registry
+  corruption     2 hit(s) (all listed)
+      #2061 merged 2026-05-25 feat(cp): add --force to handle partially-populated destinations
+      #1681 closed 2025-03-31 ORAS_CACHE_EXPIRY to handle cache efficiently
+  truncated      85 hit(s) (all listed)
+      #2200 merged 2026-09-29 build(deps): bump the github-actions group with 4 updates
+      #2186 merged 2026-09-22 build(deps): bump the github-actions group across 1 directory with 3 updates
+      #2172 merged 2026-09-15 build(deps): bump the github-actions group with 2 updates
+      #2140 merged 2026-08-25 build(deps): bump the github-actions group across 1 directory with 2 updates
+      #2135 merged 2026-08-18 build(deps): bump the github-actions group with 2 updates
+      #2130 merged 2026-08-17 build(deps): bump github.com/sirupsen/logrus from 1.9.4 to 1.10.0
+      #2128 merged 2026-08-11 build(deps): bump the github-actions group with 2 updates
+      #2120 merged 2026-07-21 build(deps): bump the github-actions group with 3 updates
+      #2117 merged 2026-07-20 build(deps): bump github/codeql-action/init from 4.37.0 to 4.37.1
+      #2116 merged 2026-07-20 build(deps): bump github/codeql-action/analyze from 4.37.0 to 4.37.1
+      #2124 merged 2026-08-04 build(deps): bump the github-actions group with 3 updates
+      #2122 merged 2026-07-28 build(deps): bump the github-actions group with 4 updates
+      #2098 closed 2026-07-06 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #2100 merged 2026-07-06 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #2109 merged 2026-07-10 build(deps): bump github/codeql-action/init from 4.36.3 to 4.37.0
+      #2149 merged 2026-09-01 build(deps): bump the github-actions group across 1 directory with 5 updates
+      #2110 merged 2026-07-10 build(deps): bump github/codeql-action/analyze from 4.36.3 to 4.37.0
+      #2068 merged 2026-06-08 build(deps): bump actions/checkout from 6.0.2 to 6.0.3
+      #2058 merged 2026-05-25 build(deps): bump codecov/codecov-action from 6.0.0 to 6.0.1
+      #2070 merged 2026-06-08 build(deps): bump codecov/codecov-action from 6.0.1 to 7.0.0
+  truncate       85 hit(s) (all listed)
+      #2200 merged 2026-09-29 build(deps): bump the github-actions group with 4 updates
+      #2186 merged 2026-09-22 build(deps): bump the github-actions group across 1 directory with 3 updates
+      #2172 merged 2026-09-15 build(deps): bump the github-actions group with 2 updates
+      #2140 merged 2026-08-25 build(deps): bump the github-actions group across 1 directory with 2 updates
+      #2135 merged 2026-08-18 build(deps): bump the github-actions group with 2 updates
+      #2130 merged 2026-08-17 build(deps): bump github.com/sirupsen/logrus from 1.9.4 to 1.10.0
+      #2128 merged 2026-08-11 build(deps): bump the github-actions group with 2 updates
+      #2120 merged 2026-07-21 build(deps): bump the github-actions group with 3 updates
+      #2117 merged 2026-07-20 build(deps): bump github/codeql-action/init from 4.37.0 to 4.37.1
+      #2116 merged 2026-07-20 build(deps): bump github/codeql-action/analyze from 4.37.0 to 4.37.1
+      #2124 merged 2026-08-04 build(deps): bump the github-actions group with 3 updates
+      #2122 merged 2026-07-28 build(deps): bump the github-actions group with 4 updates
+      #2098 closed 2026-07-06 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #2100 merged 2026-07-06 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #2109 merged 2026-07-10 build(deps): bump github/codeql-action/init from 4.36.3 to 4.37.0
+      #2149 merged 2026-09-01 build(deps): bump the github-actions group across 1 directory with 5 updates
+      #2110 merged 2026-07-10 build(deps): bump github/codeql-action/analyze from 4.36.3 to 4.37.0
+      #2068 merged 2026-06-08 build(deps): bump actions/checkout from 6.0.2 to 6.0.3
+      #2058 merged 2026-05-25 build(deps): bump codecov/codecov-action from 6.0.0 to 6.0.1
+      #2070 merged 2026-06-08 build(deps): bump codecov/codecov-action from 6.0.1 to 7.0.0
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2114 open 2026-07-18 Fall back to config media type for old-style artifact types
+      #2169 closed 2026-09-14 Metadata models report null instead of [] for empty lists (push referenceAsTags, pull files)
+      #2015 open 2026-03-26 Specification Deviation in Multi Arch Artifacts
+      #2031 open 2026-04-20 Support layer-level annotations via --annotation flag in oras push
+      #1327 open 2024-04-08 make image spec flag defaults to `v1.1`
+      #2083 open 2026-06-14 option: support layer-level annotations via --annotation flag
+      #2170 merged 2026-09-14 fix(display): report referenceAsTags as [] instead of null when untagged
+      #2219 open 2026-10-03 docs(e2e): correct test/e2e/README.md references
+      #2039 open 2026-04-25 Add flag to make manifest and tar reproducible
+      #2220 merged 2026-10-03 chore: drop dead .gitignore entries for the Docker e2e registry mounts
+      #1538 open 2024-11-21 Adding platform annotations in artifact manifests through `--artifact-platform`
+      #2171 merged 2026-09-14 test(display): split template repo handler tests to match source files
+      #2197 open 2026-09-28 RFC: design for pulling a single blob to stdout (`oras pull --output -`)
+      #2175 merged 2026-09-19 fix(display): report files as [] instead of null when a pull produces none
+      #2176 merged 2026-09-19 test(display): cover the metadata model types
+      #2151 open 2026-09-01 KEYS: removing keys breaks verification of past releases; make KEYS append-only and restore removed keys
+      #1464 open 2024-07-30 make `oras push` and `oras attach` reproducible
+      #2202 closed 2026-09-30 manifest fetch: incorrect format in --output - error message
+      #834 open 2023-02-24 Can pull referrer with oras pull without knowing the digest
+      #1207 open 2023-12-21 ORAS log is not matched with the result when pushing a file with multiple tags
+  atomic         19 hit(s) (all listed)
+      #2213 open 2026-10-02 ci: upload e2e coverage to codecov and restore the 75% project target
+      #2209 open 2026-10-02 ci: collect e2e coverage from the KinD test job
+      #2208 merged 2026-10-01 ci: remove Docker-based e2e test run
+      #2123 merged 2026-08-01 fix: route logger output to command stderr
+      #1694 closed 2025-04-16 unexpected error thrown when pushing to a registry without logging in
+      #1695 closed 2025-04-16 Original exception is swallowed when attach command's user has not correct permissions
+      #1659 closed 2025-03-14 compare and swap of inconsistently typed value into Value
+      #1790 merged 2025-07-23 feat: `oras backup` to backup artifacts to a directory or a tar
+      #1725 merged 2025-05-09 build(deps): bump oras.land/oras-go/v2 from 2.5.1-0.20250417082913-f7a6126986d9 to 2.6.0
+      #1724 merged 2025-05-09 build(deps): bump oras.land/oras-go/v2 from 2.5.0 to 2.6.0 in /test/e2e
+      #1113 merged 2023-09-11 feat: support progressed output in `blob push` and `blob get`
+      #1459 merged 2024-07-27 refactor: Move testutils to general location
+      #1168 merged 2023-11-03 fix: atomic bool for layer skipped during pulling
+      #1164 merged 2023-11-02 fix: avoid copy suggestion when only config is skipped
+      #1266 merged 2024-02-01 bump: tag and release ORAS CLI v1.2.0-beta.1
+      #861 merged 2023-03-07 feat!: improve debug log readability
+      #851 closed 2023-03-02 improve readability of registry debug logs
+      #639 merged 2022-10-11 test(e2e): add E2E testing utilities and sample specs
+      #100 merged 2019-05-04 migrate to gomodules
+  atomically     2 hit(s) (all listed)
+      #2213 open 2026-10-02 ci: upload e2e coverage to codecov and restore the 75% project target
+      #851 closed 2023-03-02 improve readability of registry debug logs
+  interrupted    2 hit(s) (all listed)
+      #1544 merged 2024-11-25 fix(ut): fix flaky console tests
+      #962 merged 2023-05-30 build(deps): bump github.com/onsi/ginkgo/v2 from 2.9.0 to 2.9.5 in /test/e2e
+  interrupt      3 hit(s) (all listed)
+      #1544 merged 2024-11-25 fix(ut): fix flaky console tests
+      #1443 merged 2024-07-11 refactor: Successor getting with separation of concerns
+      #962 merged 2023-05-30 build(deps): bump github.com/onsi/ginkgo/v2 from 2.9.0 to 2.9.5 in /test/e2e
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #353 closed 2022-02-16 Bump github.com/containerd/containerd from 1.5.9 to 1.6.0
+  ctrl-c         3 hit(s) (all listed)
+      #2194 merged 2026-09-25 fix: clean up partial pull output on failure
+      #2101 closed 2026-07-07 oras copy --from-oci-layout hangs indefinitely after push completes
+      #476 closed 2022-08-03 Command to push a blob to a remote registry
+  power          2 hit(s) (all listed)
+      #178 closed 2020-09-13 Simplify ORAS default experience
+      #67 closed 2019-04-15 Update example code
+  outage         0 hit(s)
+  ENOSPC         1 hit(s) (all listed)
+      #2140 merged 2026-08-25 build(deps): bump the github-actions group across 1 directory with 2 updates
+  disk           38 hit(s) (all listed)
+      #730 open 2022-12-21 Add ability to download/upload one or more resources to/from disk
+      #2222 open 2026-10-04 fix: limit manifest config fetch size
+      #2219 open 2026-10-03 docs(e2e): correct test/e2e/README.md references
+      #2018 open 2026-04-03 `oras pull --output-archive` option
+      #1945 open 2025-12-15 Support multiple `--platform` where appropriate
+      #2186 merged 2026-09-22 build(deps): bump the github-actions group across 1 directory with 3 updates
+      #2193 closed 2026-09-25 oras pull: leaves partial output after duplicate-name failure on multi-platform artifacts
+      #2190 closed 2026-09-24 oras pull leaves corrupted files after digest verification failure
+      #2140 merged 2026-08-25 build(deps): bump the github-actions group across 1 directory with 2 updates
+      #2172 merged 2026-09-15 build(deps): bump the github-actions group with 2 updates
+      #2200 merged 2026-09-29 build(deps): bump the github-actions group with 4 updates
+      #2098 closed 2026-07-06 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #2100 merged 2026-07-06 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #2109 merged 2026-07-10 build(deps): bump github/codeql-action/init from 4.36.3 to 4.37.0
+      #2110 merged 2026-07-10 build(deps): bump github/codeql-action/analyze from 4.36.3 to 4.37.0
+      #2046 merged 2026-05-04 build(deps): bump github/codeql-action from 4.35.2 to 4.35.3
+      #2069 merged 2026-06-08 build(deps): bump github/codeql-action from 4.36.0 to 4.36.2
+      #2057 merged 2026-05-25 build(deps): bump github/codeql-action from 4.35.5 to 4.36.0
+      #2053 merged 2026-05-18 build(deps): bump github/codeql-action from 4.35.4 to 4.35.5
+      #2049 merged 2026-05-11 build(deps): bump github/codeql-action from 4.35.3 to 4.35.4
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1400 open 2024-06-07 oras support for tempfile cleanups and partial artifacts cleanup
+      #2194 merged 2026-09-25 fix: clean up partial pull output on failure
+      #2222 open 2026-10-04 fix: limit manifest config fetch size
+      #2193 closed 2026-09-25 oras pull: leaves partial output after duplicate-name failure on multi-platform artifacts
+      #2205 open 2026-10-01 fix: validate format before special handling
+      #1951 open 2025-12-28 Feat add recursive directory support to push
+      #2002 open 2026-03-11 feat: migrate from oras-go v2 to v3
+      #2219 open 2026-10-03 docs(e2e): correct test/e2e/README.md references
+      #2208 merged 2026-10-01 ci: remove Docker-based e2e test run
+      #2220 merged 2026-10-03 chore: drop dead .gitignore entries for the Docker e2e registry mounts
+      #2216 merged 2026-10-03 ci: pin e2e-k8s.yml action refs to commit SHAs
+      #2218 merged 2026-10-03 fix: detect credentials in multiple JSON values
+      #2214 merged 2026-10-02 fix: generate coverage report in covhtml
+      #2207 merged 2026-10-01 chore: update golang.org/x/crypto
+      #2203 merged 2026-09-30 fix: correct manifest fetch format error
+      #2200 merged 2026-09-29 build(deps): bump the github-actions group with 4 updates
+      #2201 merged 2026-09-29 fix: clarify absolute path validation warning
+      #2196 merged 2026-09-28 test(errors): cover the CLI error type and its constructors
+      #2195 merged 2026-09-28 build(deps): bump github.com/onsi/gomega from 1.43.1 to 1.44.0 in /test/e2e
+      #2186 merged 2026-09-22 build(deps): bump the github-actions group across 1 directory with 3 updates
+  incomplete     3 hit(s) (all listed)
+      #916 open 2023-04-04 Incomplete output when copying
+      #1954 closed 2026-01-08 feat(copy): Support copying artifacts across multiple platforms.
+      #1778 merged 2025-07-08 docs: add scenario doc for Backup and Restore of OCI Artifacts and Images
+  dataloss       0 hit(s)
+  recover        7 hit(s) (all listed)
+      #2151 open 2026-09-01 KEYS: removing keys breaks verification of past releases; make KEYS append-only and restore removed keys
+      #2138 merged 2026-08-24 build(deps): bump github.com/sirupsen/logrus from 1.10.0 to 1.10.1
+      #2156 closed 2026-09-05 oras cp attributes destination "not found" errors to the source
+      #1778 merged 2025-07-08 docs: add scenario doc for Backup and Restore of OCI Artifacts and Images
+      #400 merged 2022-06-02 Use copy options in push and pull commands
+      #489 merged 2022-08-11 feat: support push a blob to a remote registry
+      #182 merged 2020-09-30 create pass-through writer and iowriter
+  recovery       4 hit(s) (all listed)
+      #1791 open 2025-07-30 Support content integrity detection
+      #1917 merged 2025-11-30 docs: add multi-repository backup and restore proposal
+      #1610 merged 2025-01-22 docs: backup and restore specification
+      #1767 merged 2025-07-03 docs: enrich the CLI design of oras backup and oras restore
+  rollback       5 hit(s) (all listed)
+      #2009 closed 2026-03-19 Guided ORAS install mission in KubeStellar Console
+      #2124 merged 2026-08-04 build(deps): bump the github-actions group with 3 updates
+      #337 closed 2021-11-10 Is it possible to push two files (same file ending) without it being tared?
+      #231 merged 2021-03-01 Bump github.com/docker/cli from 20.10.3+incompatible to 20.10.4+incompatible
+      #190 merged 2020-10-27 Bump github.com/containerd/containerd from 1.3.2 to 1.4.1
+  resume         4 hit(s) (all listed)
+      #346 open 2022-01-07 support `--output -` to pull to stdout
+      #142 closed 2019-11-04 How do I get the config via oras.Pull?
+      #225 closed 2021-02-22 default hybrid store on pull does not pass manifest and index through to ingester
+      #289 merged 2021-07-14 Bump github.com/containerd/containerd from 1.5.2 to 1.5.3
+  half-written   6 hit(s) (all listed)
+      #2189 merged 2026-09-24 test(display): cover the pulled-file model
+      #2175 merged 2026-09-19 fix(display): report files as [] instead of null when a pull produces none
+      #1464 open 2024-07-30 make `oras push` and `oras attach` reproducible
+      #2182 merged 2026-09-21 test(display): cover the raw content handlers
+      #2170 merged 2026-09-14 fix(display): report referenceAsTags as [] instead of null when untagged
+      #2173 closed 2026-09-16 Consider pushing the latest tag for the docker image
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #367 merged 2022-04-15 Upgrade login&logout commands to oras-go v2
+      #667 closed 2022-11-01 Use shorter commands by default
+      #675 closed 2022-11-07 feat!: use short command for deletion & add alias for fetch config
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #571 open 2022-09-15 append annotations instead of overwrite?
+      #2193 closed 2026-09-25 oras pull: leaves partial output after duplicate-name failure on multi-platform artifacts
+      #2039 open 2026-04-25 Add flag to make manifest and tar reproducible
+      #2194 merged 2026-09-25 fix: clean up partial pull output on failure
+      #2185 merged 2026-09-22 build(deps): bump library/alpine from 3.24.1 to 3.24.2
+      #2160 merged 2026-09-08 build(deps): bump library/golang from 1.27.0-alpine to 1.27.1-alpine
+      #2166 merged 2026-09-14 build(deps): bump golang.org/x/term from 0.45.0 to 0.46.0
+      #2162 merged 2026-09-09 build(deps): bump golang.org/x/sync from 0.22.0 to 0.23.0
+      #2139 merged 2026-08-25 build(deps): bump library/golang from 1.26.6-alpine to 1.27.0-alpine
+      #2134 merged 2026-08-18 build(deps): bump library/golang from 1.26.5-alpine to 1.26.6-alpine
+      #2179 merged 2026-09-21 build(deps): bump github.com/onsi/ginkgo/v2 from 2.32.2 to 2.33.0 in /test/e2e
+      #2146 merged 2026-08-31 build(deps): bump github.com/sirupsen/logrus from 1.10.1 to 1.10.2
+      #2129 merged 2026-08-14 build(deps): bump github.com/onsi/ginkgo/v2 from 2.32.0 to 2.32.1 in /test/e2e
+      #2195 merged 2026-09-28 build(deps): bump github.com/onsi/gomega from 1.43.1 to 1.44.0 in /test/e2e
+      #2107 merged 2026-07-10 build(deps): bump library/golang from 1.26.4-alpine to 1.26.5-alpine
+      #2138 merged 2026-08-24 build(deps): bump github.com/sirupsen/logrus from 1.10.0 to 1.10.1
+      #2130 merged 2026-08-17 build(deps): bump github.com/sirupsen/logrus from 1.9.4 to 1.10.0
+      #2103 merged 2026-07-09 build(deps): bump golang.org/x/sync from 0.21.0 to 0.22.0
+      #2115 merged 2026-07-20 build(deps): bump actions/setup-go from 6.5.0 to 7.0.0
+      #2086 closed 2026-06-15 build(deps): bump library/alpine from 3.23.4 to 3.24.0
+  clobber        3 hit(s) (all listed)
+      #2039 open 2026-04-25 Add flag to make manifest and tar reproducible
+      #1992 merged 2026-03-04 feat: add release automation script
+      #1228 closed 2024-01-03 manifest delete is leaking indexes when deleting client-managed referrer
+  blank          43 hit(s) (all listed)
+      #2002 open 2026-03-11 feat: migrate from oras-go v2 to v3
+      #2009 closed 2026-03-19 Guided ORAS install mission in KubeStellar Console
+      #1856 closed 2025-09-12 feat: add warning deduplicator
+      #1992 merged 2026-03-04 feat: add release automation script
+      #2174 merged 2026-09-18 fix: keep an index's own children out of its reported referrers
+      #2061 merged 2026-05-25 feat(cp): add --force to handle partially-populated destinations
+      #1954 closed 2026-01-08 feat(copy): Support copying artifacts across multiple platforms.
+      #1861 merged 2025-09-14 test: add test coverage for cmd/oras/internal/display/metadata/text/blob* handlers
+      #1950 merged 2025-12-26 test: add coverage for display content and json handlers
+      #1924 merged 2025-12-06 fix: Fallback to blob upload when cross-repo mount fails
+      #2038 merged 2026-04-23 chore(ci): pin GitHub Actions to full X.Y.Z version comments
+      #1850 closed 2025-09-11 chore: convert console output to creack/pty
+      #1886 closed 2025-10-27 feat: add stale exempt label
+      #1894 closed 2025-11-05 Add oras command to generate docs
+      #1795 closed 2025-08-05 Redundant blanks when pulling an image
+      #1827 merged 2025-08-22 fix: improve tty UX to avoid redundant blank
+      #1936 merged 2025-12-10 feat: add golangci-lint configuration with additional linters
+      #1825 closed 2025-08-22 Redundant blanks when back up an image to local
+      #1925 merged 2025-12-07 chore: add revive and fix lint errors
+      #1884 closed 2025-10-22 Add manifest tests
+  unreadable     4 hit(s) (all listed)
+      #2159 merged 2026-09-07 test(credential): fix TestNewStoreError failing on Windows
+      #2194 merged 2026-09-25 fix: clean up partial pull output on failure
+      #367 merged 2022-04-15 Upgrade login&logout commands to oras-go v2
+      #475 closed 2022-08-03 Command to fetch a blob from a remote registry
+  garbage        14 hit(s) (all listed)
+      #346 open 2022-01-07 support `--output -` to pull to stdout
+      #2061 merged 2026-05-25 feat(cp): add --force to handle partially-populated destinations
+      #1053 closed 2023-08-08 Support multi-arch image/artifact push
+      #1228 closed 2024-01-03 manifest delete is leaking indexes when deleting client-managed referrer
+      #762 closed 2023-01-20 support OCI image layout target in `oras manifest delete`
+      #761 closed 2023-01-20 support OCI image layout target in `oras blob delete`
+      #1259 merged 2024-01-31 build(deps): bump oras.land/oras-go/v2 from 2.3.1-0.20231026053328-062ed0e058f8 to 2.4.0 in /test/e2e
+      #1260 merged 2024-01-31 build(deps): bump oras.land/oras-go/v2 from 2.3.1-0.20240117093352-d8783fe25d71 to 2.4.0
+      #1078 merged 2023-08-24 bump: tag and release ORAS CLI v1.1.0-rc.2
+      #954 closed 2023-05-22 allow oras command to skip referrer index clean up
+      #692 closed 2022-11-17 feat: support oci layout target
+      #921 closed 2023-04-07 fix!: ignore cleanup error when attaching towards OCI 1.0 registry
+      #178 closed 2020-09-13 Simplify ORAS default experience
+      #296 closed 2021-08-13 Add Reference Type support 
+  mangled        0 hit(s)
+  contents       25 hit(s) (all listed)
+      #2045 open 2026-05-01 fix: recursive push → pull round-trip (#1951 follow-up)
+      #2006 open 2026-03-12 feat: adopt GitHub attestations for release artifact signing
+      #1537 open 2024-11-21 Support `--artifact-platform` in `oras attach`?
+      #1871 open 2025-09-26 Add recursive directory support
+      #2055 merged 2026-05-24 test: strengthen display handler test assertions
+      #1843 closed 2025-09-06 Add Ophis MCP Server integration to ORAS CLI
+      #1986 merged 2026-02-23 build(deps): bump goreleaser/goreleaser-action from 6 to 7
+      #1366 closed 2024-04-23 Add new commands to support uploading and downloading images
+      #1763 merged 2025-07-02 docs(spec): define output formats for oras repo commands
+      #1767 merged 2025-07-03 docs: enrich the CLI design of oras backup and oras restore
+      #1199 merged 2023-12-04 doc(spec): formatted ORAS CLI output
+      #178 closed 2020-09-13 Simplify ORAS default experience
+      #244 closed 2021-03-17 Improve wording to name "what" is being pushed
+      #796 closed 2023-02-10 OCI not able to push to ECR
+      #422 merged 2022-06-27 Update ghcr package action yaml
+      #475 closed 2022-08-03 Command to fetch a blob from a remote registry
+      #142 closed 2019-11-04 How do I get the config via oras.Pull?
+      #256 closed 2021-04-06 Create an ORAS Release Checklist
+      #336 closed 2021-11-10 oras pull doesn't pull content with oras artifacts
+      #20 closed 2019-01-02 Do not use []bytes for Contents field on Blob type
+  in-place       61 hit(s) (all listed)
+      #2213 open 2026-10-02 ci: upload e2e coverage to codecov and restore the 75% project target
+      #2039 open 2026-04-25 Add flag to make manifest and tar reproducible
+      #2015 open 2026-03-26 Specification Deviation in Multi Arch Artifacts
+      #1400 open 2024-06-07 oras support for tempfile cleanups and partial artifacts cleanup
+      #2151 open 2026-09-01 KEYS: removing keys breaks verification of past releases; make KEYS append-only and restore removed keys
+      #2083 open 2026-06-14 option: support layer-level annotations via --annotation flag
+      #2008 open 2026-03-18 feat: migrate ORAS CLI from oras-go v2 to v3
+      #2181 closed 2026-09-21 Tagged.Tags() sorts the shared slice under a read lock
+      #2174 merged 2026-09-18 fix: keep an index's own children out of its reported referrers
+      #2199 merged 2026-09-28 ci: replace action-publish with snapcraft CLI
+      #2042 merged 2026-04-27 fix(e2e): redact password values from test execution logs
+      #1954 closed 2026-01-08 feat(copy): Support copying artifacts across multiple platforms.
+      #1981 closed 2026-02-18 Encryption of layers
+      #1920 closed 2025-12-06 Migrate from deprecated `gopkg.in/yaml.v3` to `go.yaml.in/yaml/v3` maintained package
+      #1681 closed 2025-03-31 ORAS_CACHE_EXPIRY to handle cache efficiently
+      #822 merged 2023-02-16 docs: Add development environment section to readme
+      #1805 closed 2025-08-11 Please consider to provide a manpage
+      #800 merged 2023-02-10 feat: Add ability query tags for `oras repo tags` command
+      #1618 merged 2025-02-10 refactor: use handlers for `oras blob push` command
+      #1790 merged 2025-07-23 feat: `oras backup` to backup artifacts to a directory or a tar
+  unclean        1 hit(s) (all listed)
+      #639 merged 2022-10-11 test(e2e): add E2E testing utilities and sample specs
+  shutdown       1 hit(s) (all listed)
+      #233 merged 2021-03-05 Bump github.com/containerd/containerd from 1.4.3 to 1.4.4
+  reboot         0 hit(s)
+  disk+full      17 hit(s) (all listed)
+      #2222 open 2026-10-04 fix: limit manifest config fetch size
+      #2018 open 2026-04-03 `oras pull --output-archive` option
+      #2186 merged 2026-09-22 build(deps): bump the github-actions group across 1 directory with 3 updates
+      #730 open 2022-12-21 Add ability to download/upload one or more resources to/from disk
+      #2200 merged 2026-09-29 build(deps): bump the github-actions group with 4 updates
+      #2098 closed 2026-07-06 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #2100 merged 2026-07-06 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #2109 merged 2026-07-10 build(deps): bump github/codeql-action/init from 4.36.3 to 4.37.0
+      #2110 merged 2026-07-10 build(deps): bump github/codeql-action/analyze from 4.36.3 to 4.37.0
+      #2069 merged 2026-06-08 build(deps): bump github/codeql-action from 4.36.0 to 4.36.2
+      #2053 merged 2026-05-18 build(deps): bump github/codeql-action from 4.35.4 to 4.35.5
+      #2057 merged 2026-05-25 build(deps): bump github/codeql-action from 4.35.5 to 4.36.0
+      #1686 closed 2025-04-03 bug: discrepancy between reference parsing using oras
+      #1610 merged 2025-01-22 docs: backup and restore specification
+      #765 merged 2023-01-28 feat: support artifact discovering in OCI image layout
+      #1163 merged 2023-11-02 doc (spec): add error message guideline
+      #178 closed 2020-09-13 Simplify ORAS default experience
+  data+loss      3 hit(s) (all listed)
+      #2083 open 2026-06-14 option: support layer-level annotations via --annotation flag
+      #2191 merged 2026-09-24 feat(cp): support multiple platforms
+      #178 closed 2020-09-13 Simplify ORAS default experience
+  partial+write  31 hit(s) (all listed)
+      #2219 open 2026-10-03 docs(e2e): correct test/e2e/README.md references
+      #2194 merged 2026-09-25 fix: clean up partial pull output on failure
+      #2155 merged 2026-09-05 fix(ci): resolve licenserc go.mod path relative to config directory
+      #2174 merged 2026-09-18 fix: keep an index's own children out of its reported referrers
+      #2191 merged 2026-09-24 feat(cp): support multiple platforms
+      #2037 merged 2026-04-22 cmd/oras/root/attach: pass --annotation $config:* through to PackManifestOptions
+      #1820 closed 2025-08-20 Add AGENTS.md structured context for ORAS CLI development
+      #1850 closed 2025-09-11 chore: convert console output to creack/pty
+      #982 merged 2023-06-20 test: add unit test for error scenario in `internal/credential/store.go`
+      #1450 closed 2024-07-22 feat: PoC for multi arch image create/update
+      #1818 closed 2025-08-20 Promote "oras resolve" from Experimental to Preview
+      #1700 merged 2025-04-22 feat: oras manifest index: artifactType for index and child manifest descriptors
+      #1677 merged 2025-03-31 fix: discover handler errors for lint
+      #1839 merged 2025-09-03 bump: tag and release ORAS CLI v1.3.0
+      #1767 merged 2025-07-03 docs: enrich the CLI design of oras backup and oras restore
+      #1621 merged 2025-02-11 docs: add an enhancement proposal doc template
+      #1524 merged 2024-11-01 refactor(progress): generic progress tracking
+      #1113 merged 2023-09-11 feat: support progressed output in `blob push` and `blob get`
+      #1509 merged 2024-09-24 refactor: status, metadata and content handlers for `manifest index` commands
+      #1122 merged 2023-09-18 feat: support copying referrers for multi-arch images
+  crash+safe     1 hit(s) (all listed)
+      #1559 merged 2024-12-03 feat: improve the format of --debug logs
+  atomic+write   1 hit(s) (all listed)
+      #1113 merged 2023-09-11 feat: support progressed output in `blob push` and `blob get`
+  lock+file      11 hit(s) (all listed)
+      #2183 merged 2026-09-21 fix: fix concurrency in Tagged
+      #2189 merged 2026-09-24 test(display): cover the pulled-file model
+      #2194 merged 2026-09-25 fix: clean up partial pull output on failure
+      #2200 merged 2026-09-29 build(deps): bump the github-actions group with 4 updates
+      #1870 closed 2025-09-25 Support concurrent access to the oras cache
+      #1888 closed 2025-10-30 Error: Error: invalid OCI Image Index: failed to decode index file: invalid character 'm' after object key
+      #2035 merged 2026-04-20 build(deps): bump github/codeql-action from 4.34.1 to 4.35.2
+      #1402 merged 2024-06-11 chore: Update goreleaser to v6 and configuration to v2
+      #1375 merged 2024-05-06 refactor: No error return for print
+      #1202 closed 2023-12-13 oras pull should work against OCI layouts that have no tags but have no ambiguous manifests
+      #861 merged 2023-03-07 feat!: improve debug log readability
+  write+failure  20 hit(s) (all listed)
+      #2219 open 2026-10-03 docs(e2e): correct test/e2e/README.md references
+      #2008 open 2026-03-18 feat: migrate ORAS CLI from oras-go v2 to v3
+      #2155 merged 2026-09-05 fix(ci): resolve licenserc go.mod path relative to config directory
+      #2194 merged 2026-09-25 fix: clean up partial pull output on failure
+      #2174 merged 2026-09-18 fix: keep an index's own children out of its reported referrers
+      #2191 merged 2026-09-24 feat(cp): support multiple platforms
+      #2052 merged 2026-05-18 build(deps): bump github.com/onsi/ginkgo/v2 from 2.28.3 to 2.29.0 in /test/e2e
+      #2037 merged 2026-04-22 cmd/oras/root/attach: pass --annotation $config:* through to PackManifestOptions
+      #1820 closed 2025-08-20 Add AGENTS.md structured context for ORAS CLI development
+      #1850 closed 2025-09-11 chore: convert console output to creack/pty
+      #982 merged 2023-06-20 test: add unit test for error scenario in `internal/credential/store.go`
+      #1818 closed 2025-08-20 Promote "oras resolve" from Experimental to Preview
+      #1839 merged 2025-09-03 bump: tag and release ORAS CLI v1.3.0
+      #1700 merged 2025-04-22 feat: oras manifest index: artifactType for index and child manifest descriptors
+      #1469 closed 2024-08-06 improve error message of `oras cp`
+      #1677 merged 2025-03-31 fix: discover handler errors for lint
+      #1767 merged 2025-07-03 docs: enrich the CLI design of oras backup and oras restore
+      #1524 merged 2024-11-01 refactor(progress): generic progress tracking
+      #1577 merged 2024-12-09 bump: tag and release ORAS CLI v1.3.0-beta.1
+      #1163 merged 2023-11-02 doc (spec): add error message guideline
+  file+contents  19 hit(s) (all listed)
+      #2045 open 2026-05-01 fix: recursive push → pull round-trip (#1951 follow-up)
+      #2006 open 2026-03-12 feat: adopt GitHub attestations for release artifact signing
+      #1871 open 2025-09-26 Add recursive directory support
+      #2055 merged 2026-05-24 test: strengthen display handler test assertions
+      #1843 closed 2025-09-06 Add Ophis MCP Server integration to ORAS CLI
+      #1986 merged 2026-02-23 build(deps): bump goreleaser/goreleaser-action from 6 to 7
+      #1366 closed 2024-04-23 Add new commands to support uploading and downloading images
+      #1763 merged 2025-07-02 docs(spec): define output formats for oras repo commands
+      #1767 merged 2025-07-03 docs: enrich the CLI design of oras backup and oras restore
+      #1199 merged 2023-12-04 doc(spec): formatted ORAS CLI output
+      #178 closed 2020-09-13 Simplify ORAS default experience
+      #244 closed 2021-03-17 Improve wording to name "what" is being pushed
+      #796 closed 2023-02-10 OCI not able to push to ECR
+      #475 closed 2022-08-03 Command to fetch a blob from a remote registry
+      #142 closed 2019-11-04 How do I get the config via oras.Pull?
+      #256 closed 2021-04-06 Create an ORAS Release Checklist
+      #164 merged 2020-06-10 Readme content updates, prepping for OCI adoption
+      #21 merged 2019-01-03 push to / pull from content store
+      #108 merged 2019-08-09 New OCIStore
+
+== 51 terms run; 40 returned hits, 3 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

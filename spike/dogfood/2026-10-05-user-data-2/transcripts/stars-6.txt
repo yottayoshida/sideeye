@@ -1,0 +1,6 @@
+theskumar/python-dotenv stars=8892 pushed=2026-10-01 archived=false issues=true full=theskumar/python-dotenv
+dotenv-linter/dotenv-linter stars=2109 pushed=2026-02-05 archived=false issues=true full=dotenv-linter/dotenv-linter
+nosarthur/gita stars=1947 pushed=2026-07-06 archived=false issues=true full=nosarthur/gita
+minio/mc stars=3514 pushed=2025-11-20 archived=true issues=true full=minio/mc
+loft-sh/devpod stars=15250 pushed=2025-11-14 archived=false issues=true full=loft-sh/devpod
+home-assistant/core stars=91259 pushed=2026-10-05 archived=false issues=true full=home-assistant/core

@@ -1,0 +1,31 @@
+$ xmake g --network=private
+configure
+{
+    network = private
+    theme = default
+    proxy_pac = pac.lua
+}
+rc=0
+fb7642931e1e  /lab/xm/.xmake/xmake.conf
+== /lab/xm/.xmake/xmake.conf
+{
+    network = "private",
+    theme = "default",
+    proxy_pac = "pac.lua",
+    __version = "3.1.1"
+}$ xmake g --theme=plain
+configure
+{
+    network = private
+    proxy_pac = pac.lua
+    theme = plain
+}
+rc=0
+6cc25d90a052  /lab/xm/.xmake/xmake.conf
+== /lab/xm/.xmake/xmake.conf
+{
+    theme = "plain",
+    network = "private",
+    __version = "3.1.1",
+    proxy_pac = "pac.lua"
+}

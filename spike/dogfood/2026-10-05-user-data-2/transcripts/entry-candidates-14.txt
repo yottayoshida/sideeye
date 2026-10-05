@@ -1,0 +1,3 @@
+# Re-run 2026-10-05T07:06:40Z: the first entry-candidates-14.txt (firebase-tools) was overwritten by go's gate run, now entry-candidates-17.txt. Its first result, as the session printed it: ROW firebase static=0 preflight_rc=2 gate=1 detail=wall: child_touched_state_dir. This re-run also rewrote entry-out/entry/firebase.*
+ROW firebase static=0 preflight_rc=2 gate=1 detail=wall: child_touched_state_dir
+EXIT firebase 1

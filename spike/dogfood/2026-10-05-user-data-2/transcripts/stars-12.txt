@@ -1,0 +1,5 @@
+version-fox/vfox stars=3993 pushed=2026-10-04 archived=false issues=true full=version-fox/vfox
+lima-vm/lima stars=22027 pushed=2026-10-05 archived=false issues=true full=lima-vm/lima
+crc-org/crc stars=1389 pushed=2026-10-03 archived=false issues=true full=crc-org/crc
+kislyuk/yq stars=2988 pushed=2026-09-27 archived=false issues=true full=kislyuk/yq
+tofuutils/tenv stars=1446 pushed=2026-10-02 archived=false issues=true full=tofuutils/tenv

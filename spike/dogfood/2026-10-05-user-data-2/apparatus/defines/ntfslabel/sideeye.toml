@@ -1,0 +1,6 @@
+[world]
+state = "/s/ntfs"
+
+[define]
+operation = "ntfslabel /s/ntfs/vol.img NEWLABEL"
+cwd       = "/s/ntfs-in"

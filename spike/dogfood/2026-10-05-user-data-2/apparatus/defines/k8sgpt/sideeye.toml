@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/k8sgpt"
+
+[define]
+operation = "k8sgpt auth remove --backends openai"
+cwd       = "/s/k8sgpt-in"

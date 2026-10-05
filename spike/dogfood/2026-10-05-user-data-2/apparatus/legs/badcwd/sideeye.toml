@@ -1,0 +1,6 @@
+[world]
+state = "/s/leg-badcwd"
+
+[define]
+operation = "python3 /ap/toys/write2.py /s/leg-badcwd"
+cwd       = "/s/leg-badcwd-not-made"

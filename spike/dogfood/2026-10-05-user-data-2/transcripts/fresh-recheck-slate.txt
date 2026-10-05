@@ -1,0 +1,48 @@
+fresh solvespace
+fresh wp-cli
+fresh rasterio
+fresh goi18n
+SEEN  juju  target-classes:130
+SEEN  juju  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  juju  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  juju  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:3
+fresh pymol
+fresh i18n-tasks
+fresh dynaconf
+fresh stripe
+SEEN  tenv  funnel:211
+SEEN  tenv  target-classes:158
+SEEN  tenv  b2-exclusions:79
+SEEN  tenv  spike/dogfood/2026-10-03-user-data/SELECTION.md:133
+fresh gltfpack
+fresh wrangler
+fresh kaggle
+fresh velero
+fresh crictl
+fresh toybox
+SEEN  uv  funnel:117
+SEEN  uv  target-classes:69
+SEEN  uv  b2-exclusions:257
+SEEN  uv  cohort4-rejected:55
+SEEN  uv  spike/dogfood/2026-09-05-userview/SELECTION.md:43
+SEEN  uv  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  uv  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:110
+SEEN  uv  spike/dogfood/2026-09-16-threads-take-turns/SELECTION.md:18
+SEEN  uv  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  uv  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:44
+fresh gita
+fresh k8sgpt
+fresh kubeadm
+fresh sheldon
+SEEN  yt-dlp  cohort4-rejected:137
+fresh conan
+fresh skopeo
+fresh regctl
+SEEN  turbo  funnel:44
+SEEN  turbo  target-classes:48
+SEEN  turbo  b2-exclusions:145
+SEEN  turbo  spike/dogfood/2026-09-06-userview-2/SELECTION.md:264
+fresh wandb
+fresh platformio
+fresh nerdctl
+fresh oras

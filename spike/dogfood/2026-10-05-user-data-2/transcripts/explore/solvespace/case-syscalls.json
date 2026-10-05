@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/ss",
+    "operation": "solvespace-cli regenerate /s/ss/part.slvs",
+    "cwd": "/s/ss-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 16,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/ss/part.slvs",
+  "before_class": "write",
+  "before_path": "/s/ss/part.slvs",
+  "violation": "hybrid"
+}

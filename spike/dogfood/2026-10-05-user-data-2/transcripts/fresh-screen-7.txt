@@ -1,0 +1,14 @@
+SEEN  starship  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:119
+fresh stripe-cli
+fresh infracost
+SEEN  tenv  funnel:211
+SEEN  tenv  target-classes:158
+SEEN  tenv  b2-exclusions:79
+SEEN  tenv  spike/dogfood/2026-10-03-user-data/SELECTION.md:133
+fresh httpie
+fresh prefect
+fresh meltano
+fresh astropy
+fresh fitscheck
+fresh pymol
+fresh azure-cli

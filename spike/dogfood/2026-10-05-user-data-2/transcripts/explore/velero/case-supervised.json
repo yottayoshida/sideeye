@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/aux/home/.config/velero",
+    "operation": "velero client config set namespace=backups",
+    "cwd": "/s/velero-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/aux/home/.config/velero/config.json",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.config/velero/config.json",
+  "violation": "hybrid"
+}

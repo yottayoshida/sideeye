@@ -1,0 +1,6 @@
+[world]
+state = "/s/opam"
+
+[define]
+operation = "opam option jobs=3 --global"
+cwd       = "/s/opam-in"

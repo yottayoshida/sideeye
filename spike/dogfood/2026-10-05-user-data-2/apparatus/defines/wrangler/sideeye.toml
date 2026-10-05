@@ -1,0 +1,7 @@
+[world]
+state = "/s/aux/home/.config/.wrangler"
+
+[define]
+operation = "wrangler telemetry disable"
+cwd       = "/s/wrangler-in"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]

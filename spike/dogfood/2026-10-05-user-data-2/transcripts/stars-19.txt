@@ -1,0 +1,2 @@
+angular/angular-cli stars=27021 pushed=2026-10-03 archived=false issues=true full=angular/angular-cli
+vercel/turborepo stars=31171 pushed=2026-10-05 archived=false issues=true full=vercel/turborepo

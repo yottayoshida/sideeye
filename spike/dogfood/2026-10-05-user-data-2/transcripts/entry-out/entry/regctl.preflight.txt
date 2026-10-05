@@ -1,0 +1,23 @@
+time=2026-10-05T04:05:14.490Z level=WARN msg="Failed to ping registry, configuration still updated"
+failed to ping registry registry.example.com: Get "http://registry.example.com/v2/": dial tcp: lookup registry.example.com on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable
+time=2026-10-05T04:05:17.712Z level=WARN msg="Failed to ping registry, configuration still updated"
+failed to ping registry registry.example.com: Get "http://registry.example.com/v2/": dial tcp: lookup registry.example.com on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable
+PREFLIGHT  recording accepted — 5 state-changing operation(s) observed
+
+cwd          /s/regctl-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 5 operations (2196 syscall lines examined, 36 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 3177 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/aux/home/.regctl --cwd "/s/regctl-in" --operation "regctl registry set registry.example.com --tls disabled" --expect-status 1 \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

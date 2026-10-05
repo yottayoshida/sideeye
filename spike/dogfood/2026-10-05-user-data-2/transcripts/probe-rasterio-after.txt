@@ -1,0 +1,6 @@
+replay exit 1: FAIL  1 of 2 explored worlds violated an invariant
+state after the replay:
+  20714 /s/rio/a.tif
+$ rio info /s/rio/a.tif
+{"blockxsize": 100, "blockysize": 40, "bounds": [139.0, 35.0, 140.0, 36.0], "colorinterp": ["gray"], "count": 1, "crs": "EPSG:4326", "descriptions": [null], "driver": "GTiff", "dtype": "uint16", "height": 100, "indexes": [1], "interleave": "band", "lnglat": [139.5, 35.5], "mask_flags": [["all_valid"]], "nodata": null, "res": [0.01, 0.01], "shape": [100, 100], "tiled": false, "transform": [0.01, 0.0, 139.0, 0.0, -0.01, 36.0, 0.0, 0.0, 1.0], "units": [null], "width": 100}
+reader exit 0

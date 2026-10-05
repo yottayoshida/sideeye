@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/i18n/config/locales",
+    "operation": "i18n-tasks add-missing",
+    "cwd": "/s/i18n",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 4,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/i18n/config/locales/en.yml",
+  "before_class": "write",
+  "before_path": "/s/i18n/config/locales/en.yml",
+  "violation": "hybrid"
+}

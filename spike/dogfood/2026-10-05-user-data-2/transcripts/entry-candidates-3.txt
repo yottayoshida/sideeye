@@ -1,0 +1,8 @@
+ROW dotenv static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT dotenv 0
+ROW gita static=0 preflight_rc=0 gate=0 detail=accepted, 6 operations
+EXIT gita 0
+ROW homeassistant static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT homeassistant 1
+ROW azure-cli static=0 preflight_rc=0 gate=0 detail=accepted, 24 operations
+EXIT azure-cli 0

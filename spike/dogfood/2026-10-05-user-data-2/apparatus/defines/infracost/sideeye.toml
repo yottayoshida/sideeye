@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/infracost"
+
+[define]
+operation = "infracost configure set api_key ico-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+cwd       = "/s/infracost-in"

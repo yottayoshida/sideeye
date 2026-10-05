@@ -1,0 +1,414 @@
+== novelty pre-scan: stripe/stripe-cli
+== date: 2026-10-05T04:54:19Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          19 hit(s) (all listed)
+      #1707 open 2026-06-23 stripe projects <subcommand> panics: "cannot create context from nil parent" (nil ctx in runPluginCmd)
+      #1839 open 2026-07-24 coop: keep the agent pane open when the agent exits
+      #1946 open 2026-08-23 websocket.Client: close(c.send) races with SendMessage from read pump, panicking on shutdown
+      #1903 open 2026-08-13 coop: harden the launch path and make the no-tmux experience first-class
+      #1862 open 2026-07-30 coop: make the agent reliably wait for developer confirmation
+      #1736 closed 2026-07-03 fix: prevent panic on empty-string values in v2 JSON fixtures
+      #1775 merged 2026-07-10 coop: durability, lock resilience, and dead-code polish
+      #1710 merged 2026-06-23 Fix plugin subcommand stubs to pass executing command instead of parent
+      #1504 closed 2026-03-22 Bump buffer size for go-plugin
+      #1501 merged 2026-03-20 Show enum values and API types in resource command help
+      #714 open 2021-07-28 Stripe CLI running in docker container failing to reset connection
+      #389 closed 2020-02-25 Listen command stops working with i/o timeout
+      #1159 closed 2024-03-27 Docker container crashes when listening for webhooks
+      #755 closed 2021-09-28 Error/crash when specifying a top-level parameter override for stripe trigger
+      #800 merged 2021-12-13 decoupling playback from listen
+      #818 merged 2022-02-07 update playback to wait for goroutines to connect
+      #495 closed 2020-08-26 Install Error macOS 11.0.0 Beta 4
+      #486 merged 2020-07-15 Introduce a beta `playback` command
+      #136 merged 2019-08-28 Fix a panic crash if running open with no args
+  corrupt        5 hit(s) (all listed)
+      #2047 merged 2026-09-17 Check for a plugin upgrade at most once every few hours
+      #1878 merged 2026-08-05 Fix flaky winget install test by falling back to source reset
+      #1774 merged 2026-07-10 coop: medium correctness and UX fixes
+      #1661 merged 2026-06-11 Replace credential store: zalando/go-keyring with timeout + file fallback
+      #1458 merged 2026-03-05 allow installing some plugins without being logged in
+  corruption     1 hit(s) (all listed)
+      #1458 merged 2026-03-05 allow installing some plugins without being logged in
+  truncated      16 hit(s) (all listed)
+      #1563 open 2026-04-24 Plugin help output truncated due to SyncStdout race in CleanupAllClients
+      #1950 open 2026-08-25 config migration can write the backup through a symlink and overwrite an unrelated file
+      #1984 open 2026-09-02 Bump google.golang.org/grpc from 1.82.1 to 1.83.1
+      #1775 merged 2026-07-10 coop: durability, lock resilience, and dead-code polish
+      #1948 open 2026-08-24 Bump the actions group across 1 directory with 4 updates
+      #1827 closed 2026-07-22 Bump google.golang.org/grpc from 1.79.3 to 1.82.1
+      #1529 merged 2026-04-02 feat: populate flag descriptions from OpenAPI spec with ANSI Markdown rendering
+      #1921 closed 2026-08-18 Bump the actions group with 3 updates
+      #1501 merged 2026-03-20 Show enum values and API types in resource command help
+      #1438 closed 2026-02-10 Bump github.com/go-git/go-git/v5 from 5.14.0 to 5.16.5
+      #1292 closed 2025-01-22 Bump github.com/go-git/go-git/v5 from 5.12.0 to 5.13.0
+      #1095 merged 2023-07-05 Bump google.golang.org/grpc from 1.48.0 to 1.53.0
+      #1165 merged 2024-04-08 Bump google.golang.org/grpc from 1.53.0 to 1.56.3
+      #718 closed 2021-07-30 Fixture parameter value with environment variable is truncated
+      #38 closed 2019-07-17 WebSocket frame length too large
+      #34 merged 2019-07-16 Truncate body and headers in webhook responses
+  truncate       28 hit(s) (all listed)
+      #1580 open 2026-05-09 fix: plugin --help output truncation from stdio teardown race
+      #1563 open 2026-04-24 Plugin help output truncated due to SyncStdout race in CleanupAllClients
+      #1950 open 2026-08-25 config migration can write the backup through a symlink and overwrite an unrelated file
+      #1841 open 2026-07-24 coop: fix request-changes feedback submission in terminals without key disambiguation
+      #1565 open 2026-04-28 Improve output formatting for databases commands
+      #1967 merged 2026-08-27 Add release notes to automatic updates
+      #1984 open 2026-09-02 Bump google.golang.org/grpc from 1.82.1 to 1.83.1
+      #1825 merged 2026-07-22 coop: fix request changes feedback editor
+      #1775 merged 2026-07-10 coop: durability, lock resilience, and dead-code polish
+      #1932 merged 2026-08-19 Auto-install the directory plugin on first use
+      #1554 closed 2026-04-19 Improve CLI outputs for agentic use (incl. lower token consumption)
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+      #1948 open 2026-08-24 Bump the actions group across 1 directory with 4 updates
+      #1827 closed 2026-07-22 Bump google.golang.org/grpc from 1.79.3 to 1.82.1
+      #1529 merged 2026-04-02 feat: populate flag descriptions from OpenAPI spec with ANSI Markdown rendering
+      #1921 closed 2026-08-18 Bump the actions group with 3 updates
+      #1501 merged 2026-03-20 Show enum values and API types in resource command help
+      #1438 closed 2026-02-10 Bump github.com/go-git/go-git/v5 from 5.14.0 to 5.16.5
+      #1292 closed 2025-01-22 Bump github.com/go-git/go-git/v5 from 5.12.0 to 5.13.0
+      #1095 merged 2023-07-05 Bump google.golang.org/grpc from 1.48.0 to 1.53.0
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2025 open 2026-09-14 🚧 DO NOT MERGE YET: record which plugin releases read the v2 config layout
+      #1545 open 2026-04-14 fix: handle null values in fixture JSON parsing
+      #1447 open 2026-02-20 npx stripe fixtures doesn't report the country from the billing address
+      #1517 open 2026-03-26 feat: add auth_available and requires_confirmation to --dry-run output
+      #1813 open 2026-07-21 Add smoke_test_binaries.sh to validate plugin binaries pre-release 🪿✨
+      #872 open 2022-05-16 `listen --print-secret` prints its error message to `stdout`
+      #2070 merged 2026-09-22 Bound the update download, and refuse to stage what we cannot verify
+      #1206 open 2024-06-19 "Resend" for webhook events doesn't get forwarded to local listener
+      #1736 closed 2026-07-03 fix: prevent panic on empty-string values in v2 JSON fixtures
+      #1179 open 2024-05-04 stripe fixtures command does not read .env file
+      #2054 merged 2026-09-18 Record the v2 layout when creating a new config file
+      #1563 open 2026-04-24 Plugin help output truncated due to SyncStdout race in CleanupAllClients
+      #420 open 2020-04-10 `events resend --live` and webhook signature
+      #2053 merged 2026-09-18 Migrate profiles whose names collide with CLI settings
+      #1064 open 2023-04-28 Stripe CLI sends metadata fields that contain a dot as arrays
+      #2048 merged 2026-09-17 [sandboxes cli] improve management command UX
+      #1487 open 2026-03-15 Add plugin completion protocol
+      #1958 merged 2026-08-26 Add stripe agent report_usage telemetry command
+      #2066 merged 2026-09-21 [sandboxes cli] unify sandbox creation
+      #1519 open 2026-03-27 Support automatically updating plugins
+  atomic         14 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #1902 open 2026-08-13 coop: bundle a version-locked stripe-coop Agent Skill
+      #1960 merged 2026-08-26 Add config file migration to v1
+      #1769 merged 2026-07-09 autoupdate 3/3: Apply pending update and re-exec
+      #1823 merged 2026-07-22 coop: install pinned repo-scoped Stripe guidance
+      #1775 merged 2026-07-10 coop: durability, lock resilience, and dead-code polish
+      #1760 closed 2026-07-08 Add auto-update for curl-installed CLI binaries
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+      #1629 closed 2026-06-05 Add co-op mode: AI agent + human developer collaborative integration builder
+      #1080 merged 2023-05-24 Removes test of default editor passthrough from git
+      #1327 merged 2025-04-03 Add support for preview thin events in listen
+      #1326 merged 2025-04-02 Update dependencies
+      #1109 merged 2023-07-25 fix: restrict WriteConfigField to atomic writes
+      #984 closed 2022-10-07 Data race in TestLoginStatusFailsWhenLinksEmpty
+  atomically     1 hit(s) (all listed)
+      #1769 merged 2026-07-09 autoupdate 3/3: Apply pending update and re-exec
+  interrupted    3 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #2057 open 2026-09-18 Report the newest installed plugin version, not the first one found
+      #1823 merged 2026-07-22 coop: install pinned repo-scoped Stripe guidance
+  interrupt      8 hit(s) (all listed)
+      #1499 open 2026-03-20 terminal: preserve quickstart errors and detect interrupts robustly
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #2057 open 2026-09-18 Report the newest installed plugin version, not the first one found
+      #2033 merged 2026-09-15 Fix: Let Ctrl+C interrupt a plugin download
+      #1839 open 2026-07-24 coop: keep the agent pane open when the agent exits
+      #1823 merged 2026-07-22 coop: install pinned repo-scoped Stripe guidance
+      #851 open 2022-04-13 "Failed to connect to Stripe" when running "stripe listen"
+      #358 merged 2020-01-28 serve cmd
+  sigkill        2 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #1862 open 2026-07-30 coop: make the agent reliably wait for developer confirmation
+  sigint         3 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #760 closed 2021-09-30 How to use with start-server-and-test?
+      #26 merged 2019-07-12 Add terminal restoration on ctrl-c during interactive login to prevent hidden text
+  ctrl-c         33 hit(s) (all listed)
+      #1839 open 2026-07-24 coop: keep the agent pane open when the agent exits
+      #1946 open 2026-08-23 websocket.Client: close(c.send) races with SendMessage from read pump, panicking on shutdown
+      #2033 merged 2026-09-15 Fix: Let Ctrl+C interrupt a plugin download
+      #1519 open 2026-03-27 Support automatically updating plugins
+      #1707 open 2026-06-23 stripe projects <subcommand> panics: "cannot create context from nil parent" (nil ctx in runPluginCmd)
+      #890 open 2022-06-06 No prompt provided when ysing 'script apps create' in Git Bash, Windows 10
+      #851 open 2022-04-13 "Failed to connect to Stripe" when running "stripe listen"
+      #1894 merged 2026-08-11 Disable q quit keybind when command palette is open
+      #1925 merged 2026-08-19 Wait for reauth to complete, then print authorized contexts
+      #1987 merged 2026-09-02 Add Login rpc for plugins to call
+      #1701 merged 2026-06-19 10/12 Add co-op launcher and debug harness
+      #1577 merged 2026-05-07 Add stripe sandbox create and claim commands for agentic IDE onboarding
+      #1515 merged 2026-03-25 Add plugin install hints
+      #714 open 2021-07-28 Stripe CLI running in docker container failing to reset connection
+      #1386 closed 2025-11-06 The local Stripe CLI was started with forward to, but no events are being received.
+      #1155 merged 2024-03-14 cmd/listen: Exit when stdin is closed
+      #600 closed 2021-03-02 Stripe CLI is not receiving all events
+      #995 closed 2022-10-28 Cancel plugin commands with ctrl+c
+      #540 closed 2020-11-18 [blocked] Playback - Eject Cassette when CTRL+C is pressed
+      #433 closed 2020-04-27 Stripe connection failure with i/o timeout
+  power          6 hit(s) (all listed)
+      #1694 closed 2026-06-18 `npx @stripe/cli@latest` fails with `sh: stripe: command not found`
+      #1520 merged 2026-03-27 refactor: introduce self-describing OperationSpec via codegen
+      #942 merged 2022-08-12 Add ARCHITECTURE.md file
+      #993 closed 2022-10-24 exec /bin/stripe: exec format error when running v1.13.0 in a docker container
+      #733 closed 2021-08-18 http: no Host in request URL
+      #486 merged 2020-07-15 Introduce a beta `playback` command
+  outage         1 hit(s) (all listed)
+      #1237 merged 2024-09-05 fix: only trigger pager duty alert if install actually fails
+  ENOSPC         0 hit(s)
+  disk           9 hit(s) (all listed)
+      #1551 open 2026-04-17 Bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0
+      #1487 open 2026-03-15 Add plugin completion protocol
+      #2059 closed 2026-09-18 Stop reporting a failed plugin cleanup as a clean install
+      #1935 merged 2026-08-20 Migrate config.toml to the v2 layout
+      #1628 merged 2026-06-04 Improve plugin list to fetch from live API endpoint
+      #804 closed 2022-01-07 NPM package for stripe-cli?
+      #540 closed 2020-11-18 [blocked] Playback - Eject Cassette when CTRL+C is pressed
+      #573 closed 2021-01-21 Upgrade/Install on linux is b0rken
+      #532 merged 2020-11-06 Refactor the serialization system to correctly save human-readable yaml to file
+  partial        8 hit(s) (all listed)
+      #1959 merged 2026-08-26 Enforce min_core_version when installing a plugin
+      #1823 merged 2026-07-22 coop: install pinned repo-scoped Stripe guidance
+      #1528 merged 2026-03-31 Auto-discover trigger fixtures from embedded filesystem
+      #1536 closed 2026-04-07 fix: add release.mode append to prevent parallel GoReleaser race condition
+      #218 closed 2019-10-04 Creating issuing_authorization.* events 
+      #681 merged 2021-05-26 add payout created and updated to triggers
+      #615 merged 2021-03-17 Add format flag to listen cmd
+      #533 merged 2020-11-07 Display account info before resource command execution
+  incomplete     5 hit(s) (all listed)
+      #1482 open 2026-03-13 Pass CLI metadata to plugins via environment variables
+      #1453 merged 2026-03-04 Update the stripe plugin install <plugin> command to detect for and install a JS runtime
+      #418 closed 2020-04-06 Webhooks are being sent in incorrect order.
+      #317 closed 2019-11-19 Trigger checkout webhook with custom data
+      #197 merged 2019-09-25 Add more triggers for events
+  dataloss       0 hit(s)
+  recover        16 hit(s) (all listed)
+      #2069 merged 2026-09-22 Report auto-update check and failure status
+      #1946 open 2026-08-23 websocket.Client: close(c.send) races with SendMessage from read pump, panicking on shutdown
+      #2043 merged 2026-09-17 [sandboxes cli] fix OAuth sandbox deletion
+      #1887 merged 2026-08-10 Add categories to reported CLI errors
+      #1974 merged 2026-08-31 Add `stripe plugin uninstall --all` and document uninstalling
+      #1909 merged 2026-08-14 Report the host underneath agent_host_kind, and categorize claude-desktop-3p
+      #1774 merged 2026-07-10 coop: medium correctness and UX fixes
+      #1633 merged 2026-06-06 Harden coop command handoffs
+      #1629 closed 2026-06-05 Add co-op mode: AI agent + human developer collaborative integration builder
+      #1888 merged 2026-08-10 Capture agent host and self-reported agent identifiers in telemetry
+      #1504 closed 2026-03-22 Bump buffer size for go-plugin
+      #389 closed 2020-02-25 Listen command stops working with i/o timeout
+      #600 closed 2021-03-02 Stripe CLI is not receiving all events
+      #750 merged 2021-09-22 Updating resource tests to run with cmd.Execute instead of calling th…
+      #792 merged 2021-12-02 Show friendly message when API key is expired
+      #610 closed 2021-03-14 Flakey Playback test
+  recovery       14 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #1862 open 2026-07-30 coop: make the agent reliably wait for developer confirmation
+      #1902 open 2026-08-13 coop: bundle a version-locked stripe-coop Agent Skill
+      #2093 merged 2026-09-25 [sandboxes cli] use plural namespace with sandbox alias
+      #2114 merged 2026-09-30 [sandboxes cli] Clarify sandbox login guidance
+      #2048 merged 2026-09-17 [sandboxes cli] improve management command UX
+      #313 open 2019-11-14 Support webhook retries with Stripe CLI
+      #1835 merged 2026-07-24 coop: formalize agent protocol contract
+      #1667 closed 2026-06-12 Add co-op launcher and debug harness
+      #1669 closed 2026-06-12 Register co-op command and docs
+      #1652 merged 2026-06-09 Isolate keyring in sandbox command tests
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+      #1515 merged 2026-03-25 Add plugin install hints
+      #713 closed 2021-07-27 Checkout Abandoned Webhook
+  rollback       6 hit(s) (all listed)
+      #2093 merged 2026-09-25 [sandboxes cli] use plural namespace with sandbox alias
+      #1974 merged 2026-08-31 Add `stripe plugin uninstall --all` and document uninstalling
+      #1917 merged 2026-08-17 [sandboxes cli] List OAuth-authorized sandboxes through Access
+      #1629 closed 2026-06-05 Add co-op mode: AI agent + human developer collaborative integration builder
+      #1147 closed 2024-02-05 Offer a commit and rollback for events triggered by stripe cli in test 
+      #418 closed 2020-04-06 Webhooks are being sent in incorrect order.
+  resume         6 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #1862 open 2026-07-30 coop: make the agent reliably wait for developer confirmation
+      #2058 merged 2026-09-18 Expose resumable, non-blocking OAuth login RPCs to plugins
+      #1839 open 2026-07-24 coop: keep the agent pane open when the agent exits
+      #1826 merged 2026-07-22 Co-op: resume agents after late review decisions
+      #1632 merged 2026-06-06 Polish coop TUI interactions
+  half-written   1 hit(s) (all listed)
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+  wipe           4 hit(s) (all listed)
+      #1092 open 2023-07-02 Have the CLI Reuse and Cleanup the test data it creates (i.e. clean up your own mess)
+      #1937 merged 2026-08-20 Read and write both config.toml layouts in v1
+      #1536 closed 2026-04-07 fix: add release.mode append to prevent parallel GoReleaser race condition
+      #1509 merged 2026-03-23 fix: route live-mode keys to keyring and store account ID on interactive login
+  wipes          1 hit(s) (all listed)
+      #1509 merged 2026-03-23 fix: route live-mode keys to keyring and store account ID on interactive login
+  erase          3 hit(s) (all listed)
+      #2079 merged 2026-09-22 Report a plugin auto-upgrade once it has landed
+      #1862 open 2026-07-30 coop: make the agent reliably wait for developer confirmation
+      #779 merged 2021-11-02 Fix rendering bug where the spinner doesn't erase its loading message
+  erasing        1 hit(s) (all listed)
+      #1862 open 2026-07-30 coop: make the agent reliably wait for developer confirmation
+  erased         1 hit(s) (all listed)
+      #779 merged 2021-11-02 Fix rendering bug where the spinner doesn't erase its loading message
+  destroy        5 hit(s) (all listed)
+      #2025 open 2026-09-14 🚧 DO NOT MERGE YET: record which plugin releases read the v2 config layout
+      #1839 open 2026-07-24 coop: keep the agent pane open when the agent exits
+      #1261 open 2024-10-11 Would like stripe-cli to be usable for automation
+      #1034 closed 2023-02-22 [Docker] Striple CLI does not persist data between executions. (Possibly a question)
+      #672 closed 2021-05-18 Way to programmatically get webhook signing secret from Stripe listen?
+  destroys       3 hit(s) (all listed)
+      #2025 open 2026-09-14 🚧 DO NOT MERGE YET: record which plugin releases read the v2 config layout
+      #1839 open 2026-07-24 coop: keep the agent pane open when the agent exits
+      #1261 open 2024-10-11 Would like stripe-cli to be usable for automation
+  overwrite      43 hit(s) (all listed)
+      #1950 open 2026-08-25 config migration can write the backup through a symlink and overwrite an unrelated file
+      #924 open 2022-07-29 Stripe fixtures default API version overwrite support
+      #978 open 2022-09-22 Trigger payment for a given customer
+      #1118 open 2023-08-29 Changing Projects on the stripe CLI does not change the webhook secret.
+      #1978 open 2026-09-01 Refuse config migration backup writes through symlinks
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #2052 merged 2026-09-18 Don't auto-upgrade a plugin in a directory the user pointed us at
+      #1990 merged 2026-09-03 Apply auto update on Windows
+      #1551 open 2026-04-17 Bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0
+      #1984 open 2026-09-02 Bump google.golang.org/grpc from 1.82.1 to 1.83.1
+      #1728 merged 2026-07-01 Add `stripe agent setup` CLI command 
+      #1966 closed 2026-08-27 Add self-update for a curl-installed CLI
+      #1574 merged 2026-05-04 Refactor symlink protection for .env writes
+      #1827 closed 2026-07-22 Bump google.golang.org/grpc from 1.79.3 to 1.82.1
+      #1536 closed 2026-04-07 fix: add release.mode append to prevent parallel GoReleaser race condition
+      #1921 closed 2026-08-18 Bump the actions group with 3 updates
+      #1588 merged 2026-05-13 Bump github.com/go-git/go-billy/v5 from 5.8.0 to 5.9.0
+      #1524 merged 2026-03-30 Bump google.golang.org/grpc from 1.79.1 to 1.79.3
+      #1523 merged 2026-03-30 Bump github.com/go-git/go-git/v5 from 5.17.0 to 5.17.1
+      #1388 closed 2025-11-20 Bump golang.org/x/crypto from 0.36.0 to 0.45.0
+  clobber        0 hit(s)
+  blank          25 hit(s) (all listed)
+      #2025 open 2026-09-14 🚧 DO NOT MERGE YET: record which plugin releases read the v2 config layout
+      #1565 open 2026-04-28 Improve output formatting for databases commands
+      #2087 merged 2026-09-24 [sandboxes cli] explain common sandbox create failures
+      #2029 merged 2026-09-15 [sandboxes cli] implement OAuth sandbox creation
+      #2091 merged 2026-09-25 [sandboxes cli] support OAuth non-interactive creation
+      #1374 open 2025-10-02 New File Hash missing
+      #2066 merged 2026-09-21 [sandboxes cli] unify sandbox creation
+      #1808 merged 2026-07-20 [sandboxes cli] Match dashboard activation defaults for blank sandboxes
+      #2093 merged 2026-09-25 [sandboxes cli] use plural namespace with sandbox alias
+      #1756 merged 2026-07-08 [sandboxes cli] Implement stripe sandbox new: v2 CreateSandbox (copy + blank)
+      #1917 merged 2026-08-17 [sandboxes cli] List OAuth-authorized sandboxes through Access
+      #1463 open 2026-03-08 Parameterized triggers, and support for application_fee events
+      #1770 merged 2026-07-09 [sandboxes cli] Auto-resolve sandbox context in `stripe sandbox new`
+      #1778 merged 2026-07-10 Add `--stripe-account` selector to `sandbox new`, drop --replica-of
+      #2046 merged 2026-09-17 Add grok support to stripe agent setup
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+      #1594 merged 2026-05-20 Make plugin hint commands visible in `--help` for discoverability
+      #1721 merged 2026-06-29 Add dedicated plugin sections to stripe --help output
+      #1497 closed 2026-03-19 Fix: Stripe fixtures silently drops JSON null values
+      #1484 merged 2026-03-15 Add fish shell completion support
+  unreadable     1 hit(s) (all listed)
+      #1774 merged 2026-07-10 coop: medium correctness and UX fixes
+  garbage        0 hit(s)
+  mangled        1 hit(s) (all listed)
+      #147 merged 2019-09-07 Clean up listen command and output
+  contents       16 hit(s) (all listed)
+      #1262 open 2024-10-15 File download support
+      #2053 merged 2026-09-18 Migrate profiles whose names collide with CLI settings
+      #1273 open 2024-11-27 Stripe Deamon making a ton of processes
+      #1916 merged 2026-08-17 Harden GitHub Actions workflows against supply-chain attacks
+      #295 open 2019-11-06 `trigger` with customizable data
+      #1663 merged 2026-06-11 feat(cmd): add subcommand `docs` to browse docs.stripe.com
+      #36 closed 2019-07-16 Authenticating and then listening fails with 500
+      #547 closed 2020-11-25 docker and port mapping
+      #418 closed 2020-04-06 Webhooks are being sent in incorrect order.
+      #614 closed 2021-03-16 auto-create "required resources" on stripe sample create
+      #307 closed 2019-11-08 Listener receiving empty events
+      #67 merged 2019-07-31 Tweak OpenAPI spec embedding (again)
+      #91 merged 2019-08-12 Add log tailing to table of contents
+      #77 merged 2019-08-06 README updates for log tailing command
+      #30 merged 2019-07-15 Prepare cli installation for public release
+      #17 merged 2019-07-10 Update table of contents for login command
+  in-place       62 hit(s) (all listed)
+      #2060 merged 2026-09-19 Retry winget install test on a fresh runner instead of in-place
+      #1902 open 2026-08-13 coop: bundle a version-locked stripe-coop Agent Skill
+      #1234 open 2024-08-31 Data strings don't work in preview plugin
+      #2041 merged 2026-09-17 Remove release notes from auto-update output
+      #2076 merged 2026-09-22 Consolidate provider logic with helper functions
+      #2092 merged 2026-09-25 Add openclaw  support to `stripe agent setup`
+      #893 open 2022-06-11 Issues with issuing_authorization.request
+      #848 open 2022-04-05 testing webhook invoice.upcoming with stripe CLI results in "invoice.upcoming not supprted by stripe CLI"
+      #1707 open 2026-06-23 stripe projects <subcommand> panics: "cannot create context from nil parent" (nil ctx in runPluginCmd)
+      #2059 closed 2026-09-18 Stop reporting a failed plugin cleanup as a clean install
+      #1990 merged 2026-09-03 Apply auto update on Windows
+      #1982 merged 2026-09-01 fix(docs): restore telemetry and root pre-run for docs commands
+      #645 open 2021-04-27 Support Linuxbrew
+      #1932 merged 2026-08-19 Auto-install the directory plugin on first use
+      #1966 closed 2026-08-27 Add self-update for a curl-installed CLI
+      #1769 merged 2026-07-09 autoupdate 3/3: Apply pending update and re-exec
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+      #1768 merged 2026-07-09 autoupdate 2/3: Add version check and update marker
+      #1888 merged 2026-08-10 Capture agent host and self-reported agent identifiers in telemetry
+      #1675 merged 2026-06-15 2/12 Add co-op session store
+  unclean        0 hit(s)
+  shutdown       6 hit(s) (all listed)
+      #1946 open 2026-08-23 websocket.Client: close(c.send) races with SendMessage from read pump, panicking on shutdown
+      #1580 open 2026-05-09 fix: plugin --help output truncation from stdio teardown race
+      #1428 closed 2026-01-23 fix: limit concurrent webhook forwards to prevent goroutine leak (DOS-001)
+      #1221 merged 2024-07-25 Fixes shutdown deadlock in websocket client
+      #798 merged 2021-12-07 fix: deadlock when resetting connection
+      #656 closed 2021-05-05 Bintray repository is broken
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #1551 open 2026-04-17 Bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0
+  data+loss      1 hit(s) (all listed)
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+  partial+write  1 hit(s) (all listed)
+      #1823 merged 2026-07-22 coop: install pinned repo-scoped Stripe guidance
+  crash+safe     2 hit(s) (all listed)
+      #1946 open 2026-08-23 websocket.Client: close(c.send) races with SendMessage from read pump, panicking on shutdown
+      #389 closed 2020-02-25 Listen command stops working with i/o timeout
+  atomic+write   6 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #1775 merged 2026-07-10 coop: durability, lock resilience, and dead-code polish
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+      #1629 closed 2026-06-05 Add co-op mode: AI agent + human developer collaborative integration builder
+      #1109 merged 2023-07-25 fix: restrict WriteConfigField to atomic writes
+      #984 closed 2022-10-07 Data race in TestLoginStatusFailsWhenLinksEmpty
+  lock+file      11 hit(s) (all listed)
+      #2038 open 2026-09-16 Make OAuth device login resumable across process restarts
+      #1305 open 2025-02-14 Stripe apps CLI incompatible with monorepos
+      #1946 open 2026-08-23 websocket.Client: close(c.send) races with SendMessage from read pump, panicking on shutdown
+      #1862 open 2026-07-30 coop: make the agent reliably wait for developer confirmation
+      #1934 merged 2026-08-20 Read and write profile fields in both config.toml layouts
+      #1775 merged 2026-07-10 coop: durability, lock resilience, and dead-code polish
+      #1966 closed 2026-08-27 Add self-update for a curl-installed CLI
+      #1675 merged 2026-06-15 2/12 Add co-op session store
+      #1664 closed 2026-06-12 Add co-op domain model and blueprints
+      #1629 closed 2026-06-05 Add co-op mode: AI agent + human developer collaborative integration builder
+      #418 closed 2020-04-06 Webhooks are being sent in incorrect order.
+  write+failure  13 hit(s) (all listed)
+      #2025 open 2026-09-14 🚧 DO NOT MERGE YET: record which plugin releases read the v2 config layout
+      #420 open 2020-04-10 `events resend --live` and webhook signature
+      #1966 closed 2026-08-27 Add self-update for a curl-installed CLI
+      #1958 merged 2026-08-26 Add stripe agent report_usage telemetry command
+      #1774 merged 2026-07-10 coop: medium correctness and UX fixes
+      #1844 merged 2026-07-25 coop: rebuild the review UI around the step
+      #1629 closed 2026-06-05 Add co-op mode: AI agent + human developer collaborative integration builder
+      #1661 merged 2026-06-11 Replace credential store: zalando/go-keyring with timeout + file fallback
+      #1721 merged 2026-06-29 Add dedicated plugin sections to stripe --help output
+      #1119 closed 2023-08-29 Stripe CLI for trigger invoice.payment_failed does not pass customer parameter to the event
+      #486 merged 2020-07-15 Introduce a beta `playback` command
+      #599 merged 2021-02-21 Update to go1.16 and split releaser to separate builds on Linux, macOS, and Windows
+      #721 closed 2021-08-01 Stops forwarding events after a while
+  file+contents  9 hit(s) (all listed)
+      #1262 open 2024-10-15 File download support
+      #295 open 2019-11-06 `trigger` with customizable data
+      #1663 merged 2026-06-11 feat(cmd): add subcommand `docs` to browse docs.stripe.com
+      #547 closed 2020-11-25 docker and port mapping
+      #418 closed 2020-04-06 Webhooks are being sent in incorrect order.
+      #614 closed 2021-03-16 auto-create "required resources" on stripe sample create
+      #307 closed 2019-11-08 Listener receiving empty events
+      #67 merged 2019-07-31 Tweak OpenAPI spec embedding (again)
+      #30 merged 2019-07-15 Prepare cli installation for public release
+
+== 51 terms run; 45 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

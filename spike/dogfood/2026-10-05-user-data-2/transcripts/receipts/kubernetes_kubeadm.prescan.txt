@@ -1,0 +1,638 @@
+== novelty pre-scan: kubernetes/kubeadm
+== date: 2026-10-05T06:35:28Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2178 open 2020-06-10 change the kubelet service crash loop behavior
+      #3187 closed 2025-04-24 After kubeadm init kube-apiserver and etcd are in crash loop as they depend on each other
+      #3290 closed 2026-03-03 kubeadm blocks waiting for control plane during installation
+      #3274 closed 2026-01-06 docs: update kube-vip instructions for containerd and k8s v1.29+
+      #3294 closed 2026-03-17 [v1.34.2+] kubeadm init fails at upload-config when control plane endpoint is a load balancer
+      #3269 closed 2025-12-12 kubeadm should confirm that the new etcd peer has started before trying to promote it to a member
+      #3250 closed 2025-10-18 kubeadm join segfault
+      #1318 closed 2018-12-13 kubeadm upgrade apply phases
+      #3223 closed 2025-08-07 failure in -latest test jobs since 2025.08.06
+      #3186 closed 2025-04-24 listen-client-urls of second control plane node contains IP of first control plane node
+      #1890 closed 2019-11-06 kubeadm init times out with custom config file
+      #2271 closed 2020-08-31 make components on control-plane nodes point to the local API server endpoint
+      #3174 closed 2025-03-24 Apiserver healthcheck fails if anonymous-auth=false after enabling WaitForAllControlPlaneComponents
+      #2822 closed 2023-02-06 Consider if to enable protectKernelDefaults in kubelet by default
+      #2833 closed 2023-03-05 kubeadm init, before installing CNI, shows CrashLoopBackOff
+      #2759 closed 2022-09-21 liveness probe for etcd may cause database crash
+      #2778 merged 2022-11-04 kinder: use new kind base image
+      #2500 closed 2021-06-02 kubeadm init creates mysterious kubelet authentication problem, causing "Error writing Crisocket information for the control-plane node"
+      #3069 closed 2024-05-31 kubeadm 1.30.1 init fails in kubelet-check with timeout
+      #3100 closed 2024-08-22 Error when run kubeadm init
+  corrupt        18 hit(s) (all listed)
+      #3187 closed 2025-04-24 After kubeadm init kube-apiserver and etcd are in crash loop as they depend on each other
+      #3265 closed 2025-12-07 failing kinder e2e tests since midday of 6 dec 2025
+      #2676 closed 2022-03-28 etcd: add flag for checking member data consistency
+      #3262 closed 2025-11-26 kubeadm join phase control-plane-join etcd (Kubernetes v1.33+) - etcd manifest is not created
+      #3159 closed 2025-02-07 kubeadm 部署集群 etcd 启动失败，节点 ip a 查询为 30.172.66.173
+      #2957 closed 2023-11-07 kubeadm upgrade from v1.28.0 to v1.28.3 fails
+      #2750 closed 2022-08-26 fix rootless e2e tests
+      #3014 closed 2024-02-06 kubeadm requires kubelet.conf to use specific username, although kubelet doesn't require it
+      #2924 closed 2023-09-04 adjust the kubeadm / kubelet skew policy
+      #1380 closed 2019-02-01 kubeadm init fails
+      #2927 closed 2023-09-08 upgrade-1-28-latest and upgrade-addons-before-controlplane-1-28-latest failed
+      #2527 closed 2021-07-14 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #420 closed 2017-09-04 Investigate rollback options for upgrade
+      #1264 closed 2018-11-20 coredns fails with invalid kube-api endpoint
+      #1998 closed 2020-01-05 upgrades: make etcd backup consistent for single CP and HA
+      #2275 closed 2020-09-02 kubeadm join --control-plane to create HA setup killed the cluster
+      #2273 closed 2020-09-01 kubeadm upgrade ignores a configmap change in etcd's image repository if image has the same version
+      #1382 closed 2019-02-02 kubeadm panic during phase based init
+  corruption     7 hit(s) (all listed)
+      #3187 closed 2025-04-24 After kubeadm init kube-apiserver and etcd are in crash loop as they depend on each other
+      #2676 closed 2022-03-28 etcd: add flag for checking member data consistency
+      #2927 closed 2023-09-08 upgrade-1-28-latest and upgrade-addons-before-controlplane-1-28-latest failed
+      #1603 closed 2019-06-11 kubeadm timeout updating kube-scheduler static pod
+      #2275 closed 2020-09-02 kubeadm join --control-plane to create HA setup killed the cluster
+      #1082 closed 2018-08-29 kubelet won't restart after reboot - Unable to register node with API server: connection refused 
+      #1382 closed 2019-02-02 kubeadm panic during phase based init
+  truncated      11 hit(s) (all listed)
+      #2386 closed 2021-02-02 Cannot join control plane to existing cluster with automatic copy of certificates (1.18)
+      #3022 closed 2024-02-13 kubeadm on version 1.29.1 with upload-certs times out during the configMap POST
+      #2921 closed 2023-08-25 Wrong repository replacement when used --image-repository
+      #1031 closed 2018-08-02 runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+      #491 closed 2017-10-11 Dedicated etcd nodes
+      #392 closed 2017-08-15 kubeadm e2e jobs failing
+      #459 closed 2017-09-17 DNS unable to communicate with API - No route to host
+      #907 closed 2018-06-08 kubeadm init does not configure RBAC for configmaps correctly
+      #2205 closed 2020-06-30 kubernetes kube-proxy mode ipvs, nodeport missed
+      #2206 closed 2020-07-01 kubeadm v1.18.2 with crio version 1.18.2 failing to start master node from private repo on Centos7 / RH7
+      #2361 closed 2020-12-09 Docker 20.10 Not Currently Supported
+  truncate       14 hit(s) (all listed)
+      #3173 closed 2025-03-15 v1beta4 extraArgs duplicate values policy
+      #3262 closed 2025-11-26 kubeadm join phase control-plane-join etcd (Kubernetes v1.33+) - etcd manifest is not created
+      #2386 closed 2021-02-02 Cannot join control plane to existing cluster with automatic copy of certificates (1.18)
+      #3022 closed 2024-02-13 kubeadm on version 1.29.1 with upload-certs times out during the configMap POST
+      #2921 closed 2023-08-25 Wrong repository replacement when used --image-repository
+      #1031 closed 2018-08-02 runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+      #491 closed 2017-10-11 Dedicated etcd nodes
+      #392 closed 2017-08-15 kubeadm e2e jobs failing
+      #459 closed 2017-09-17 DNS unable to communicate with API - No route to host
+      #907 closed 2018-06-08 kubeadm init does not configure RBAC for configmaps correctly
+      #1302 closed 2018-12-05 No cloud provider specified  &  No api server defined - no events will be sent to API server.
+      #2205 closed 2020-06-30 kubernetes kube-proxy mode ipvs, nodeport missed
+      #2206 closed 2020-07-01 kubeadm v1.18.2 with crio version 1.18.2 failing to start master node from private repo on Centos7 / RH7
+      #2361 closed 2020-12-09 Docker 20.10 Not Currently Supported
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1393 open 2019-02-06 tracking issue for Windows support
+      #3313 closed 2026-06-08 v1.36.1 kubeadm init phase upload-certs --upload-certs hangs
+      #3251 closed 2025-10-23 kubeadm makes it difficult to override `kube-controller-manager --controllers`
+      #3110 closed 2024-09-12 [failing test] kubeadm-kinder-control-plane-kubelet-local-mode-latest "upgrade diff" action failing
+      #3279 closed 2026-01-08 kubeadm upgrade fails when kubeadm-flags.env has no flags
+      #3296 merged 2026-03-19 fix goroutine leak
+      #3270 closed 2025-12-12 kubelet started with standalone mode and not register node, is this an error?
+      #3250 closed 2025-10-18 kubeadm join segfault
+      #3075 closed 2024-06-17 kubeadm does not detect CRI if node does not have default route
+      #3244 closed 2025-09-24 Regression when upgrading worker nodes using kubeadm v1.34.1: could not remove the CRI socket annotation from Node: not found
+      #3214 closed 2025-06-18 CoreDNS deployment to be mounted with /etc/resolv.conf file from the host
+      #3260 closed 2025-11-21 kubeadm init failed
+      #324 closed 2017-06-28 Where does kubeadm take the proxy settings from?
+      #2792 closed 2022-12-13 error execution phase addon/coredns: unable to create a new DNS service: rpc error: code = Unknown desc = malformed header: missing HTTP content-type
+      #2863 closed 2023-04-21 Kubeadm: unit tests failed on server with multiple CRI endpoints
+      #2833 closed 2023-03-05 kubeadm init, before installing CNI, shows CrashLoopBackOff
+      #2869 closed 2023-05-02 kubeadm upgrade fails to backup the kubelet config file on a windows node
+      #3133 closed 2024-12-15 improve "kubeadm reset" kube-proxy cleanup
+      #3129 closed 2024-11-27 kubeadm re-reads kubeconfig in init phase bootstrap-token
+      #2770 closed 2022-10-17 kubeadm patch (type json - RFC 6902 conform) doesn't ensure path if not exists
+  atomic         15 hit(s) (all listed)
+      #1318 closed 2018-12-13 kubeadm upgrade apply phases
+      #3113 closed 2024-09-20 Upgrade failed when using patches directory
+      #2736 closed 2022-07-29 feat: `kubeadm init`  or `kubeadm join` should be atomic
+      #279 closed 2017-05-29 Document kubeadm usage with SELinux
+      #249 closed 2017-04-19 RFE: Update Dockerfile to support atomic install 
+      #6 closed 2016-11-22 kubeadm: preflight check false positives in CentOS 7
+      #107 closed 2017-01-10 SElinux experiences for who wants to know
+      #403 closed 2017-08-19 Remove the deprecated apiconfig phase package in v1.9
+      #318 closed 2017-06-23 automatically mount etcd certs volumes on k8s-apiserver container if set in MasterConfiguration file
+      #340 closed 2017-07-07 Implement different verbosity levels in kubeadm
+      #571 closed 2017-11-24 Graduate kubelet config to beta
+      #1392 closed 2019-02-06 kubeadm join atomically cordon new node
+      #925 closed 2018-06-15 AnnotateCRISocket cannot be invoked as a phase
+      #1658 closed 2019-07-09 Support upgrading an external, static-pod etcd cluster using `kubeadm upgrade`
+      #424 merged 2017-09-05 Update design doc with 1.8 features/changes
+  atomically     4 hit(s) (all listed)
+      #318 closed 2017-06-23 automatically mount etcd certs volumes on k8s-apiserver container if set in MasterConfiguration file
+      #571 closed 2017-11-24 Graduate kubelet config to beta
+      #1392 closed 2019-02-06 kubeadm join atomically cordon new node
+      #925 closed 2018-06-15 AnnotateCRISocket cannot be invoked as a phase
+  interrupted    3 hit(s) (all listed)
+      #3269 closed 2025-12-12 kubeadm should confirm that the new etcd peer has started before trying to promote it to a member
+      #277 closed 2017-05-24 Finding a solution for etcd
+      #1300 closed 2018-12-05 kubeadm reset success but this node ip still in kubeadm-config configmap
+  interrupt      9 hit(s) (all listed)
+      #3296 merged 2026-03-19 fix goroutine leak
+      #3269 closed 2025-12-12 kubeadm should confirm that the new etcd peer has started before trying to promote it to a member
+      #3024 closed 2024-02-16 etcd keeps getting killed 
+      #1153 closed 2018-10-03 Using kubeadm to init kubernetes 1.12.0 falied:node “xxx” not found
+      #277 closed 2017-05-24 Finding a solution for etcd
+      #779 closed 2018-04-30 Kubeadm init never finish
+      #1300 closed 2018-12-05 kubeadm reset success but this node ip still in kubeadm-config configmap
+      #1657 closed 2019-07-09 DNS service runs entirely on a single node
+      #2152 closed 2020-05-24 `serve_stale` option for coredns' cache
+  sigkill        1 hit(s) (all listed)
+      #2253 merged 2020-08-13 kinder: avoid orphaning child processes on task timeouts
+  sigint         1 hit(s) (all listed)
+      #413 closed 2017-08-25 apiserver fails to start because livenessprobe is too aggressive
+  ctrl-c         4 hit(s) (all listed)
+      #688 closed 2018-02-01 "kubeadm reset" hangs forever intermittently
+      #881 closed 2018-06-02 kubeadm init fails, etcd problem?
+      #2035 closed 2020-02-19 When running a single control plane node cluster, `kubeadm upgrade` hangs after printing `[addons] Applied essential addon: CoreDNS`
+      #1700 closed 2019-07-31 investigate a problem with the deletion of the upgrade prepull DaemonSet
+  power          82 hit(s) (all listed)
+      #1350 open 2019-01-15 CA rotation: controller-manager needs a separate ca.crt file
+      #1890 closed 2019-11-06 kubeadm init times out with custom config file
+      #3079 closed 2024-06-26 Kubeadm join not connected to specified apiservice
+      #2000 closed 2020-01-07 RFE: Constrained deployment scenarios (Edge)
+      #3102 closed 2024-08-27 Add support for using kubeadm without default route
+      #3069 closed 2024-05-31 kubeadm 1.30.1 init fails in kubelet-check with timeout
+      #3100 closed 2024-08-22 Error when run kubeadm init
+      #1380 closed 2019-02-01 kubeadm init fails
+      #3038 closed 2024-03-27 kubeadm init failed
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #1390 closed 2019-02-06 kubeadm init  “--apiserver-advertise-address=publicIP” not working, private IP works 1.13 version
+      #2567 closed 2021-09-10 Improvements for etcd liveness probes
+      #2712 closed 2022-06-22 [kubeadm reset] Failed to clear cluster data
+      #2697 closed 2022-05-19 Kubeadm 1.24.0 - system ENV vars are not passed to the crictl command
+      #2936 closed 2023-09-20 failed to pull image when images already exists in local
+      #2888 closed 2023-06-09 k8s control plane redundancy issue 
+      #338 closed 2017-07-06 Changing master IP address
+      #1092 closed 2018-09-04 kubeadm init error marking master: timed out waiting for the condition
+      #2559 closed 2021-08-24 Fresh install; kubeadm init fails with  'dial tcp 127.0.0.1:10248: connect: connection refused.'
+      #684 closed 2018-01-31 Kubeadm init blocks at "This might take a minute or longer if the control plane images have to be pulled
+  outage         11 hit(s) (all listed)
+      #3297 open 2026-03-26 kubeadm: single-control-plane stacked etcd upgrade can time out waiting for static pod hash change because verification requires apiserver (etcd unavailable/restarting)
+      #3033 closed 2024-02-29 kubeadm: keep dns resourceRequirements on upgrade
+      #1318 closed 2018-12-13 kubeadm upgrade apply phases
+      #3137 closed 2024-12-27 kubeadm upgrade ignores ClusterConfiguration.proxy.disabled field
+      #2612 closed 2021-11-25 kubeadm and external etcd init error  execution phase upload-config/kubelet: Error writing Crisocket information for the control-plane node: timed out waiting for the condition
+      #1672 closed 2019-07-16 Create a PodDisruptionBudget for CoreDNS
+      #669 closed 2018-01-23 kubeadm upgrade - etcd prepull image
+      #539 closed 2017-11-13 kubeadm refuses to upgrade if a node is unhealthy
+      #1347 closed 2019-01-10 cni & k8s upgrade
+      #1645 closed 2019-07-02 Recover a Self-hosted Kubeadm Kubernetes Cluster After Reboot -V1.15
+      #2321 closed 2020-10-08 Specify lifetime of certs in "/etc/kubernetes/pki/" (rather than 1 year default).
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3297 open 2026-03-26 kubeadm: single-control-plane stacked etcd upgrade can time out waiting for static pod hash change because verification requires apiserver (etcd unavailable/restarting)
+      #1681 open 2019-07-22 Define upgrade path for ComponentConfig
+      #3269 closed 2025-12-12 kubeadm should confirm that the new etcd peer has started before trying to promote it to a member
+      #2271 closed 2020-08-31 make components on control-plane nodes point to the local API server endpoint
+      #1924 closed 2019-11-18 do not annotate the Node CRI socket in the "init upload-config" phase
+      #2780 closed 2022-11-11 kubeadm add flag to enable parallel image pulling by default
+      #1601 closed 2019-06-11 handling of extraArgs which are allowed multiple times
+      #1318 closed 2018-12-13 kubeadm upgrade apply phases
+      #2104 closed 2020-04-09 Allow overwrite KubeletRunDirectory when init/join 
+      #3129 closed 2024-11-27 kubeadm re-reads kubeconfig in init phase bootstrap-token
+      #3126 merged 2024-11-18 Add e2e test for kubelet instance config
+      #1098 closed 2018-09-06 Implement a canonical way for getting the node name
+      #2318 closed 2020-09-30 [Roadmap] Improve kubeadm support for pluggable addons / operator driven addons
+      #3091 closed 2024-07-19 "kubeletconfiguration" patch target patches not respected on kubeadm join
+      #3032 merged 2024-02-28 kinder: add validation for YAML templated files before writing
+      #3087 closed 2024-07-05 infra/upload-config/kubeadm phase fails saying creating config-maps is forbidden with user "Kubernetes-admin"
+      #695 closed 2018-02-09 kubeadm init --service-cidr= validations are broken for IPv6 subnets
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #3019 closed 2024-02-11 CrashLoopBackOff
+      #1332 closed 2018-12-27 Can not retrieve logs or exec in non-master node'pods
+  partial        18 hit(s) (all listed)
+      #2603 closed 2021-11-11 skip image pull for addons that are skipped
+      #2020 closed 2020-02-06 Configurable sandbox (pause) image
+      #2111 closed 2020-04-22 resolvConf value ignored if systemd-resolved active - override value exhibits race condition between kubelet and systemd-networkd
+      #277 closed 2017-05-24 Finding a solution for etcd
+      #80 closed 2016-12-02 --data-dir of etcd should be '/var/lib/etcd  instead of '/var/etcd/data'
+      #278 closed 2017-05-25 document how to upgrade a non-selfhosted kubeadm cluster
+      #360 closed 2017-07-25 kubeadm 1.7.2 init blocks on waiting for control plane to be ready
+      #539 closed 2017-11-13 kubeadm refuses to upgrade if a node is unhealthy
+      #1295 closed 2018-12-03 add support for the OpenRC as init system
+      #814 closed 2018-05-15 kubeadm init/join CRI preflight check fails unnecessarily 
+      #353 closed 2017-07-21 kubeadm init hang up at 'Created API client, waiting for the control plane to become ready', but I'm not using systemd or selinux
+      #1086 closed 2018-08-29 CRI Installation Instructions
+      #2103 closed 2020-04-09 If possible, commands like 'kubeadm init phase' prefer to use the configuration stored in kube-system/kubeadm-config ConfigMap first
+      #2206 closed 2020-07-01 kubeadm v1.18.2 with crio version 1.18.2 failing to start master node from private repo on Centos7 / RH7
+      #2250 closed 2020-08-09 Node Archive and Restore
+      #1182 closed 2018-10-22 'kubeadm init --config <file>' does not apply 'mode: "ipvs"'
+      #1574 merged 2019-05-27 kinder: add unit tests for kubeadm config versions
+      #2253 merged 2020-08-13 kinder: avoid orphaning child processes on task timeouts
+  incomplete     26 hit(s) (all listed)
+      #3265 closed 2025-12-07 failing kinder e2e tests since midday of 6 dec 2025
+      #3269 closed 2025-12-12 kubeadm should confirm that the new etcd peer has started before trying to promote it to a member
+      #2738 closed 2022-08-03 external CA validations hardcode values of `kubelet-client-key` and `kubelet-client-certificate` incorrectly
+      #3029 closed 2024-02-27 Uploaded ClusterConfiguration depends on init phases
+      #1596 closed 2019-06-05 kubeadm join failed: unable to fetch the kubeadm-config ConfigMap
+      #2870 closed 2023-05-02 kubeadm upgrade PullImage failed: rpc error
+      #2587 closed 2021-10-08 Cleanup IPVS / iptables rules during `kubeadm reset`
+      #2163 closed 2020-06-04 add "kubeadm alpha certs generate-csr" and deprecate/remove "--csr-*" flags for kubeadm init
+      #2413 closed 2021-03-18 generate-csr should support worker nodes
+      #2512 closed 2021-06-22 Kubeadm init --dry-run doestn't work if using an external ca
+      #2449 closed 2021-04-15 kubeadm fails preflight check with customized /etc/containerd/config.toml
+      #564 closed 2017-11-22 kubeadm single node - kubelet, apiserver bind to localhost but mixed ipv4 and ipv6
+      #945 closed 2018-06-22 Support `kubeadm join` with a pre-existing client certificate
+      #1366 closed 2019-01-28 Fix failing unit tests
+      #1122 closed 2018-09-18 How to change certificates?
+      #1023 closed 2018-07-26 this might take a minute or longer if the control plane images have to be pulled
+      #1040 closed 2018-08-07 Develop a unified policy for command like flags vs config file options
+      #459 closed 2017-09-17 DNS unable to communicate with API - No route to host
+      #797 closed 2018-05-09 Incorrect sample commands/example in official documents for HA using kubeadm
+      #811 closed 2018-05-14 Package crictl in our debs/rpms so kubeadm can depend on it
+  dataloss       0 hit(s)
+  recover        76 hit(s) (all listed)
+      #3297 open 2026-03-26 kubeadm: single-control-plane stacked etcd upgrade can time out waiting for static pod hash change because verification requires apiserver (etcd unavailable/restarting)
+      #3294 closed 2026-03-17 [v1.34.2+] kubeadm init fails at upload-config when control plane endpoint is a load balancer
+      #3187 closed 2025-04-24 After kubeadm init kube-apiserver and etcd are in crash loop as they depend on each other
+      #2271 closed 2020-08-31 make components on control-plane nodes point to the local API server endpoint
+      #2957 closed 2023-11-07 kubeadm upgrade from v1.28.0 to v1.28.3 fails
+      #3090 closed 2024-07-10 Autogenerated kube-apiserver.yaml contains (dynamic) IPs
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #2759 closed 2022-09-21 liveness probe for etcd may cause database crash
+      #3092 closed 2024-07-23 kubeadm init "Status from runtime service failed" err="rpc error: code = Unknown desc = stat /proc/1087/ns/pid: permission denied: unknown"
+      #3023 closed 2024-02-15 make the temporary directory used for backing up static pod manifests during upgrade configurable
+      #2965 closed 2023-11-19 fix flaky test TestRetrieveValidatedConfigInfo
+      #2682 closed 2022-04-21 ETCD cluster unhealthy during kubeadm upgrade to v1.22.5
+      #2604 closed 2021-11-13 kubeadm unable to select an IP from default routes.
+      #2943 closed 2023-10-17 [Failing Test] failing kinder jobs at latest that call kubeadm reset
+      #2964 closed 2023-11-17 kubeadm upgrade error
+      #2927 closed 2023-09-08 upgrade-1-28-latest and upgrade-addons-before-controlplane-1-28-latest failed
+      #2867 closed 2023-04-27 Upgrade / downgrade function loses encryption-provider-config setting
+      #338 closed 2017-07-06 Changing master IP address
+      #2376 closed 2021-01-13 default the "cgroupDriver" setting of the kubelet to "systemd"
+      #2186 closed 2020-06-17 /var/lib/kubelet/pki/kubelet.crt not renewed with `kubeadm alpha certs renew all` 
+  recovery       25 hit(s) (all listed)
+      #2759 closed 2022-09-21 liveness probe for etcd may cause database crash
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #2682 closed 2022-04-21 ETCD cluster unhealthy during kubeadm upgrade to v1.22.5
+      #2426 closed 2021-03-31 migrate users away from CRI socket paths that don't have URL scheme
+      #2502 closed 2021-06-03 document some steps about kubelet client certs recovery
+      #2071 closed 2020-03-23 `kubeadm join --control-plane` not working for a restored cluster (waiting for the new etcd member to join the cluster)
+      #2250 closed 2020-08-09 Node Archive and Restore
+      #218 closed 2017-03-31 e2e tests using common CNI plugins 
+      #277 closed 2017-05-24 Finding a solution for etcd
+      #127 closed 2017-01-20 Follow-up selfhosting improvements
+      #130 closed 2017-01-23 kubeadm on arm64 hangs on [apiclient] Created API client, waiting for the control plane to become ready
+      #413 closed 2017-08-25 apiserver fails to start because livenessprobe is too aggressive
+      #651 closed 2018-01-08 Self-hosted kubeadm clusters should still store the manifests somewhere...
+      #360 closed 2017-07-25 kubeadm 1.7.2 init blocks on waiting for control plane to be ready
+      #711 closed 2018-02-24 Please document that self-hosted feature does not survive a reboot (v 1.9.3)
+      #546 closed 2017-11-16 Workarounds for the time before kubeadm HA becomes available
+      #587 closed 2017-12-04 kube-dns fails to start with - FailedCreatePodSandBox error
+      #353 closed 2017-07-21 kubeadm init hang up at 'Created API client, waiting for the control plane to become ready', but I'm not using systemd or selinux
+      #1645 closed 2019-07-02 Recover a Self-hosted Kubeadm Kubernetes Cluster After Reboot -V1.15
+      #1657 closed 2019-07-09 DNS service runs entirely on a single node
+  rollback       18 hit(s) (all listed)
+      #2682 closed 2022-04-21 ETCD cluster unhealthy during kubeadm upgrade to v1.22.5
+      #2468 closed 2021-05-03 Upgrade/apply fatal timeout 1.19.4 to 1.20.6
+      #335 closed 2017-07-03 JWS token not being created in cluster-info ConfigMap
+      #163 closed 2017-02-13 Multi-platform clusters
+      #190 closed 2017-03-02 kubeadm e2e testing
+      #278 closed 2017-05-25 document how to upgrade a non-selfhosted kubeadm cluster
+      #490 closed 2017-10-10 Support etcd upgrade in `kubeadm upgrade`
+      #740 closed 2018-03-28 Upgrading from 1.9.6 to 1.10.0 fails with timeout
+      #420 closed 2017-09-04 Investigate rollback options for upgrade
+      #624 closed 2017-12-25 Make the self-hosted upgrades rollback-able
+      #618 closed 2017-12-25 Better etcd snapshot/restore in the `kubeadm upgrade` logic
+      #489 closed 2017-10-10 RFE: backup manifest dir gets wiped after upgrade
+      #452 closed 2017-09-15 Support rollbacks from v1.9 to v1.8 with `kubeadm upgrade`
+      #1564 closed 2019-05-14 kubeadm upgrade does not apply etcd configuration changes
+      #1281 closed 2018-11-27 Selfhosting pivoting fails when using --store-certs-in-secrets
+      #1309 closed 2018-12-07 not able to pass properly specific configuration parameters to api server
+      #1658 closed 2019-07-09 Support upgrading an external, static-pod etcd cluster using `kubeadm upgrade`
+      #1687 closed 2019-07-25 Utilize client credentials from discovery file if present during join
+  resume         7 hit(s) (all listed)
+      #3297 open 2026-03-26 kubeadm: single-control-plane stacked etcd upgrade can time out waiting for static pod hash change because verification requires apiserver (etcd unavailable/restarting)
+      #2907 closed 2023-07-26 graduate WaitForAllControlPlaneComponents to GA
+      #2463 closed 2021-04-29 add API support for controlling various timeouts
+      #2833 closed 2023-03-05 kubeadm init, before installing CNI, shows CrashLoopBackOff
+      #422 closed 2017-09-05 DNS is not updated with new services
+      #489 closed 2017-10-10 RFE: backup manifest dir gets wiped after upgrade
+      #2462 closed 2021-04-29 Enable or disable featuregate in KubeletConfiguration
+  half-written   1 hit(s) (all listed)
+      #1318 closed 2018-12-13 kubeadm upgrade apply phases
+  wipe           11 hit(s) (all listed)
+      #2923 closed 2023-07-31 unmountKubeletDirectory should return err instead of nil if unmounting fails
+      #338 closed 2017-07-06 Changing master IP address
+      #13 closed 2016-11-22 Kubeadm init fails to create discovery or dns if connecting to existing ETCD
+      #278 closed 2017-05-25 document how to upgrade a non-selfhosted kubeadm cluster
+      #1331 closed 2018-12-26 kubeadm 1.13.1: kubeadm-join fails with --experimental-control-plane
+      #1162 closed 2018-10-08 CoreDNS Crashloop Error - 1.12.1
+      #489 closed 2017-10-10 RFE: backup manifest dir gets wiped after upgrade
+      #1011 closed 2018-07-20 kubeadm should warn about missing podSubnet/clusterCIDR
+      #2206 closed 2020-07-01 kubeadm v1.18.2 with crio version 1.18.2 failing to start master node from private repo on Centos7 / RH7
+      #2250 closed 2020-08-09 Node Archive and Restore
+      #2138 closed 2020-05-13 No way to recover failed master node
+  wipes          0 hit(s)
+  erase          5 hit(s) (all listed)
+      #1047 closed 2018-08-10 no master IPs were listed in storage, refusing to erase all endpoints for the kubernetes service
+      #1424 closed 2019-02-26 Coredns failed to list *v1.namespace!!!!
+      #814 closed 2018-05-15 kubeadm init/join CRI preflight check fails unnecessarily 
+      #1822 closed 2019-10-05 kubeadm reset breaks CNI for others
+      #1323 closed 2018-12-17 Apiserver can't start
+  erasing        0 hit(s)
+  erased         2 hit(s) (all listed)
+      #1424 closed 2019-02-26 Coredns failed to list *v1.namespace!!!!
+      #814 closed 2018-05-15 kubeadm init/join CRI preflight check fails unnecessarily 
+  destroy        29 hit(s) (all listed)
+      #591 closed 2017-12-11 kubectl log returns tls error
+      #2721 closed 2022-07-04 proposal: unify the way to cleanup the files for `kubeadm reset`
+      #2798 closed 2022-12-20 Etcd Encryption enabled by default during bootstrap
+      #2828 closed 2023-02-20 Kubernetes reset taking longer on version 1.26.1
+      #338 closed 2017-07-06 Changing master IP address
+      #2767 closed 2022-10-10 kube 1.25.2 init occur unable to create ConfigMap error
+      #2795 closed 2022-12-15 Kubeadm Reset
+      #581 closed 2017-11-30 how to renew the certificate when apiserver cert expired?
+      #2720 closed 2022-06-30 kubeadm: [reset] Pods cannot be removed after cluster is upgraded to 1.24
+      #1639 closed 2019-06-27 Kubeadm reset with Calico and Containerd
+      #2711 closed 2022-06-17 [kubeadm reset]some container removed fail
+      #335 closed 2017-07-03 JWS token not being created in cluster-info ConfigMap
+      #238 closed 2017-04-11 Allow e2e tests to use CI builds of control plane images
+      #13 closed 2016-11-22 Kubeadm init fails to create discovery or dns if connecting to existing ETCD
+      #211 closed 2017-03-28 Forbidden error when retrieving logs from non-master node's pods
+      #392 closed 2017-08-15 kubeadm e2e jobs failing
+      #1128 closed 2018-09-18 Improve kubeadm join preflight
+      #1154 closed 2018-10-03 Improve the UX on packages
+      #465 closed 2017-09-25 Starting Kubernetes on an Arch Linux VM using Kubeadm
+      #1264 closed 2018-11-20 coredns fails with invalid kube-api endpoint
+  destroys       1 hit(s) (all listed)
+      #581 closed 2017-11-30 how to renew the certificate when apiserver cert expired?
+  overwrite      46 hit(s) (all listed)
+      #3160 open 2025-02-07 release the v1 API
+      #3313 closed 2026-06-08 v1.36.1 kubeadm init phase upload-certs --upload-certs hangs
+      #3248 closed 2025-10-14 [kubeadm] Checking node providerID is consistent with existing node when joining
+      #2890 closed 2023-06-09 release v1beta4
+      #3244 closed 2025-09-24 Regression when upgrading worker nodes using kubeadm v1.34.1: could not remove the CRI socket annotation from Node: not found
+      #1601 closed 2019-06-11 handling of extraArgs which are allowed multiple times
+      #2104 closed 2020-04-09 Allow overwrite KubeletRunDirectory when init/join 
+      #3026 closed 2024-02-19 kubeadm upgrade should not overwrite --bind-address in kube-apiserver.yaml
+      #2759 closed 2022-09-21 liveness probe for etcd may cause database crash
+      #1390 closed 2019-02-06 kubeadm init  “--apiserver-advertise-address=publicIP” not working, private IP works 1.13 version
+      #338 closed 2017-07-06 Changing master IP address
+      #2713 closed 2022-06-23 kubeadm: configurable KubernetesVersion not respected during kubeadm join
+      #2111 closed 2020-04-22 resolvConf value ignored if systemd-resolved active - override value exhibits race condition between kubelet and systemd-networkd
+      #2870 closed 2023-05-02 kubeadm upgrade PullImage failed: rpc error
+      #2854 closed 2023-04-05 PodSecurity labels for required namespaces
+      #2856 closed 2023-04-08 in kubeadm kubectl didnot work correctly
+      #2334 closed 2020-10-24 fix some issues in the kubeadm HA etcd documentation
+      #2039 closed 2020-02-26 cir-socket flag for kubeadm init does not override config value
+      #2364 closed 2020-12-15 docker is required for container runtime even though I am using containerd
+      #2597 closed 2021-11-02 Cannot update cluster after changing container runtime from docker to cri-o
+  clobber        4 hit(s) (all listed)
+      #1091 closed 2018-09-03 Improvements to the handling of cluster addons
+      #1679 closed 2019-07-21 Only create manifest files if they do not already exist
+      #235 closed 2017-04-10 kubeadm should look for kubeconfig in pre-defined places
+      #1097 closed 2018-09-06 Use configmap locks on kubeadm-config before the update.
+  blank          22 hit(s) (all listed)
+      #3301 open 2026-04-05 add --peer-ca-file to apiserver manifest once UnknownVersionInteroperabilityProxy is locked
+      #3306 merged 2026-05-11 kinder: switch to testing kubelet-api-admin in super-admin workflow
+      #3298 merged 2026-03-27 .github: pin action sources to commits
+      #3296 merged 2026-03-19 fix goroutine leak
+      #3264 merged 2025-12-03 kinder: update workflows for 1.35
+      #3102 closed 2024-08-27 Add support for using kubeadm without default route
+      #3037 closed 2024-03-19 test: add support for OCI images
+      #2937 closed 2023-09-22 kubeadm init phase certs apiserver should not need to check CRI endpoints
+      #2376 closed 2021-01-13 default the "cgroupDriver" setting of the kubelet to "systemd"
+      #2849 closed 2023-03-28 Fix upgrade dry run
+      #2512 closed 2021-06-22 Kubeadm init --dry-run doestn't work if using an external ca
+      #1987 closed 2019-12-26 kubeadm init and kubeadm join auto-detects external and internal IPs incorrectly
+      #219 closed 2017-03-31 kubeadm e2e kubectl bug
+      #228 closed 2017-04-06 kubeadm init waiting for the control plane to become ready on CentOS 7.2 with kubeadm 1.6.1
+      #66 closed 2016-11-22 weave-net CrashLoopBackOff for the second node
+      #44 closed 2016-11-22 weave-net CrashLoopBackOff for the second node
+      #480 closed 2017-10-03 Individual control of preflight checks
+      #347 closed 2017-07-17 kubeadm join failing preflight checks
+      #1232 closed 2018-11-13 kubeadm controller-manager.conf files appear to be blank following stacked etcd official docs?
+      #465 closed 2017-09-25 Starting Kubernetes on an Arch Linux VM using Kubeadm
+  unreadable     0 hit(s)
+  garbage        47 hit(s) (all listed)
+      #2742 closed 2022-08-06 kubeadm: do not include --container-runtime= and --pod-infra-container-image in KUBELET_KUBEADM_ARGS
+      #2626 closed 2021-12-10 handle kubelet skew with and without dockershim support
+      #3265 closed 2025-12-07 failing kinder e2e tests since midday of 6 dec 2025
+      #3207 closed 2025-05-31 race condition in kubelet start when setup first control-plane node
+      #3069 closed 2024-05-31 kubeadm 1.30.1 init fails in kubelet-check with timeout
+      #1025 closed 2018-07-27 Image garbage collection failed once. Stats initialization may not have completed yet: failed to get imageFs info: unable to find data for container /
+      #2020 closed 2020-02-06 Configurable sandbox (pause) image
+      #3038 closed 2024-03-27 kubeadm init failed
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #1092 closed 2018-09-04 kubeadm init error marking master: timed out waiting for the condition
+      #3022 closed 2024-02-13 kubeadm on version 1.29.1 with upload-certs times out during the configMap POST
+      #2927 closed 2023-09-08 upgrade-1-28-latest and upgrade-addons-before-controlplane-1-28-latest failed
+      #2699 closed 2022-05-25 Error during kubeadm init - addon phase with coreDNS 
+      #2789 closed 2022-12-07 while upgrading to 1.25.4 kubelet does not start the new etcd pod
+      #2259 closed 2020-08-26 Setup control node on HA cluster hangs - upload CRI socket information
+      #2773 closed 2022-10-23 kubeadm init: Everything crash after  several CrashLoopBackOff, 
+      #2385 closed 2021-02-01 Create extra new containers after every reboot
+      #130 closed 2017-01-23 kubeadm on arm64 hangs on [apiclient] Created API client, waiting for the control plane to become ready
+      #503 closed 2017-10-19 Suggestion: Run kubeadm from docker via a new `kubeadm --chroot=$rootfs`
+      #149 closed 2017-02-08 Make the Garbage Collector work and make it remove the dummy Pod
+  mangled        1 hit(s) (all listed)
+      #1381 closed 2019-02-01 Overlap between kubeconfig phase and alpha kubeconfig command
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2367 open 2020-12-18 [Roadmap] Support node specific configuration
+      #1393 open 2019-02-06 tracking issue for Windows support
+      #3313 closed 2026-06-08 v1.36.1 kubeadm init phase upload-certs --upload-certs hangs
+      #3289 closed 2026-02-18 remove data_test.go files for various Data objects of phases
+      #2360 closed 2020-12-07 Support two-tier CA configuration
+      #3070 closed 2024-06-01 kinder: support patching OCI image tar archives
+      #3260 closed 2025-11-21 kubeadm init failed
+      #3225 closed 2025-08-08 Executing the "kubeadm reset" command erroneously cleared all data in the external etcd.
+      #3232 closed 2025-08-28 kubeadm v1.33 forces pause:3.8 instead of expected pause:3.10 during initialization, causing Pod startup failures
+      #3250 closed 2025-10-18 kubeadm join segfault
+      #3244 closed 2025-09-24 Regression when upgrading worker nodes using kubeadm v1.34.1: could not remove the CRI socket annotation from Node: not found
+      #3212 merged 2025-06-17 Add beta stage test for NodeLocalCRISocket feature gate
+      #2792 closed 2022-12-13 error execution phase addon/coredns: unable to create a new DNS service: rpc error: code = Unknown desc = malformed header: missing HTTP content-type
+      #3133 closed 2024-12-15 improve "kubeadm reset" kube-proxy cleanup
+      #3079 closed 2024-06-26 Kubeadm join not connected to specified apiservice
+      #1098 closed 2018-09-06 Implement a canonical way for getting the node name
+      #2781 closed 2022-11-13 Synced Server and CertificateAuthorityData from the cluster-info ConfigMap may not work
+      #2806 closed 2023-01-22 kubeadm init no flag for IPv6-only
+      #2739 closed 2022-08-03 `validateKubeConfig` ignores `CertificateAuthority` and only looks at `CertificateAuthorityData`
+      #1062 closed 2018-08-16 kubeadm complains about bridge-nf-call and ip_forward if not using docker runtime
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3325 open 2026-08-05 AllowAPIServerToAccessKubeletAPI is being called in the wrong place
+      #2902 open 2023-07-10 better management of mixing flags and config
+      #3300 open 2026-04-02 Add bindAddress for localAPIEndpoint
+      #2316 open 2020-09-30 [Roadmap] Create the kubeadm library
+      #1350 open 2019-01-15 CA rotation: controller-manager needs a separate ca.crt file
+      #2178 open 2020-06-10 change the kubelet service crash loop behavior
+      #1621 open 2019-06-19 Move Control Planes taint to kubelet config instead of markcontrolplane phase
+      #2805 open 2023-01-19 change kubeadm image url
+      #2367 open 2020-12-18 [Roadmap] Support node specific configuration
+      #1223 open 2018-11-09 use signed kubelet serving certificates
+      #3311 merged 2026-05-30 kinder: remove kubeadm v1beta3 introduce v1 (placeholder)
+      #3317 closed 2026-06-17 kubeadm: intermittent etcd-join failures may leave MemberPromote retry loop unaware of successful promotion
+      #3305 closed 2026-05-02 kubeadm upgrade with alternate auth
+      #3278 closed 2026-01-07 Mark-Control-Plane : Not retrying cause issue with Cluster-API
+      #3097 closed 2024-08-14 1.32: housekeeping tasks
+      #2653 closed 2022-02-09 add dry run e2e tests
+      #3047 closed 2024-04-22 1.31: housekeeping tasks
+      #3010 closed 2024-02-02 abnormal removal of etcd member during reset when has multiple network interface
+      #2890 closed 2023-06-09 release v1beta4
+      #1601 closed 2019-06-11 handling of extraArgs which are allowed multiple times
+  unclean        1 hit(s) (all listed)
+      #1366 closed 2019-01-28 Fix failing unit tests
+  shutdown       25 hit(s) (all listed)
+      #3260 closed 2025-11-21 kubeadm init failed
+      #3052 closed 2024-04-24 High Availability Considerations docs outdated
+      #2978 closed 2023-11-29 Support graceful kube-apiserver shutdown as part of "kubeadm reset" to better support removing control plane nodes from a cluster
+      #2500 closed 2021-06-02 kubeadm init creates mysterious kubelet authentication problem, causing "Error writing Crisocket information for the control-plane node"
+      #2991 closed 2024-01-08 kubeadm upgrade apply should stop kube-apiserver before updating etcd
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #581 closed 2017-11-30 how to renew the certificate when apiserver cert expired?
+      #1931 closed 2019-11-22 redesign the CoreDNS Pod Deployment in kubeadm
+      #2718 closed 2022-06-30 kubeadm stuck updating etcd static pod
+      #2609 closed 2021-11-22 [Feedback] Deployment with HAproxy failed with official guide
+      #255 closed 2017-04-24 (Weave) Kubeadm reset on node not restoring initial state.
+      #42 closed 2016-11-22 Cordon, drain and remove a node from the cluster when running kubeadm reset
+      #742 closed 2018-04-03 kubeadm init (offline mode) stuck on pulling images
+      #711 closed 2018-02-24 Please document that self-hosted feature does not survive a reboot (v 1.9.3)
+      #1432 closed 2019-03-01 kubeadm join is not fault tolerant to etcd endpoint failures
+      #881 closed 2018-06-02 kubeadm init fails, etcd problem?
+      #1645 closed 2019-07-02 Recover a Self-hosted Kubeadm Kubernetes Cluster After Reboot -V1.15
+      #1958 closed 2019-12-06 `kubeadm reset` does not delete the apiserver 
+      #1955 closed 2019-12-03 1.15 - kubeadm join --control-plane configures kubelet to connect to wrong apiserver
+      #1683 closed 2019-07-23 Single-node kubeadm lost after machine shutdown (bare-metal)
+  reboot         77 hit(s) (all listed)
+      #1223 open 2018-11-09 use signed kubelet serving certificates
+      #3052 closed 2024-04-24 High Availability Considerations docs outdated
+      #3238 closed 2025-09-17 kubeadm join fails intermittently on HA clusters due to local API server readiness (K8s 1.33 change)
+      #1541 closed 2019-04-27 Do not enable static pods on non-control plane nodes by default
+      #2563 closed 2021-09-08 NodeSwap feature supports in kubeadm
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #610 closed 2017-12-21 [ERROR Swap]: running with swap on is not supported. Please disable swap
+      #2546 closed 2021-08-16 kubelet service does not start failed to load Kubelet config file /var/lib/kubelet/config.yaml
+      #3017 closed 2024-02-07 kubeadm init or join fails when swap is active
+      #1062 closed 2018-08-16 kubeadm complains about bridge-nf-call and ip_forward if not using docker runtime
+      #1145 closed 2018-09-26 Problem with Init pod
+      #2352 closed 2020-11-16 Kubeadm 1.15.2 upgrade fails
+      #722 closed 2018-03-06 kubernetes pods stuck at containercreating
+      #684 closed 2018-01-31 Kubeadm init blocks at "This might take a minute or longer if the control plane images have to be pulled
+      #203 closed 2017-03-10 kubeadm should make the --node-ip option available
+      #581 closed 2017-11-30 how to renew the certificate when apiserver cert expired?
+      #1477 closed 2019-04-01 Running pre-flight checks hang
+      #2772 closed 2022-10-19 HA Kubernetes Install
+      #1124 closed 2018-09-18 kubeadm blocks on "waiting for the kubelet to boot up the control plane..." resolved in this instance by symlinking /run/resolvconf to /run/systemd/resolve
+      #1008 closed 2018-07-19 Kubernets kube-apiserver service not started after reboot system
+  disk+full      27 hit(s) (all listed)
+      #3126 merged 2024-11-18 Add e2e test for kubelet instance config
+      #1098 closed 2018-09-06 Implement a canonical way for getting the node name
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #2713 closed 2022-06-23 kubeadm: configurable KubernetesVersion not respected during kubeadm join
+      #684 closed 2018-01-31 Kubeadm init blocks at "This might take a minute or longer if the control plane images have to be pulled
+      #2628 closed 2021-12-18 "kubeadm" does not support full chain in ca.crt
+      #2511 merged 2021-06-19 Add e2e tests for rootless control-plane.
+      #1031 closed 2018-08-02 runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+      #2468 closed 2021-05-03 Upgrade/apply fatal timeout 1.19.4 to 1.20.6
+      #2710 closed 2022-06-15 fix patches-tasks: check in json style
+      #215 closed 2017-03-30 1.6.0 broke selinux again
+      #226 closed 2017-04-05 kubadm init v1.6.1 fails -> api-server uses wrong interface
+      #231 closed 2017-04-09 kubeadm init preflight check error - cannot unmarshal number into Go value of type bool
+      #256 closed 2017-04-27 kubeadm e2e tests should upload relevant master/node logs
+      #17 closed 2016-11-22 Document how to and provide scripts for running kubeadm in a container
+      #526 closed 2017-11-07 Tracking Issue: Concise outline for using cloud providers
+      #779 closed 2018-04-30 Kubeadm init never finish
+      #664 closed 2018-01-19 Using ip:port in kubeadm join command to render kubelet config and kube-proxy on node please
+      #1227 closed 2018-11-11 Marking the master by adding the taints 'error marking master: timed out waiting for the condition'
+      #484 closed 2017-10-04 Kubeadm fails to init a master with a cloud-config because apiserver can't read it
+  data+loss      8 hit(s) (all listed)
+      #3225 closed 2025-08-08 Executing the "kubeadm reset" command erroneously cleared all data in the external etcd.
+      #3106 closed 2024-09-05 In Kubernetes V1.30.2, is there any wat to migrate from stacked etcd to external etcd?
+      #1092 closed 2018-09-04 kubeadm init error marking master: timed out waiting for the condition
+      #684 closed 2018-01-31 Kubeadm init blocks at "This might take a minute or longer if the control plane images have to be pulled
+      #139 closed 2017-01-31 Issue with inter-host communication in a multi-host k8s cluster with Flannel
+      #504 closed 2017-10-20 kube-dns cannot connect to apiserver
+      #2182 closed 2020-06-12 Can not start cluster with IPv6 advertise address.
+      #1353 closed 2019-01-16 `kubeadm join` does not explicitly wait for etcd to have grown when joining secondary control plane
+  partial+write  7 hit(s) (all listed)
+      #2603 closed 2021-11-11 skip image pull for addons that are skipped
+      #278 closed 2017-05-25 document how to upgrade a non-selfhosted kubeadm cluster
+      #360 closed 2017-07-25 kubeadm 1.7.2 init blocks on waiting for control plane to be ready
+      #1295 closed 2018-12-03 add support for the OpenRC as init system
+      #353 closed 2017-07-21 kubeadm init hang up at 'Created API client, waiting for the control plane to become ready', but I'm not using systemd or selinux
+      #2250 closed 2020-08-09 Node Archive and Restore
+      #1182 closed 2018-10-22 'kubeadm init --config <file>' does not apply 'mode: "ipvs"'
+  crash+safe     8 hit(s) (all listed)
+      #2178 open 2020-06-10 change the kubelet service crash loop behavior
+      #3269 closed 2025-12-12 kubeadm should confirm that the new etcd peer has started before trying to promote it to a member
+      #1318 closed 2018-12-13 kubeadm upgrade apply phases
+      #2271 closed 2020-08-31 make components on control-plane nodes point to the local API server endpoint
+      #2991 closed 2024-01-08 kubeadm upgrade apply should stop kube-apiserver before updating etcd
+      #2000 closed 2020-01-07 RFE: Constrained deployment scenarios (Edge)
+      #1295 closed 2018-12-03 add support for the OpenRC as init system
+      #1097 closed 2018-09-06 Use configmap locks on kubeadm-config before the update.
+  atomic+write   4 hit(s) (all listed)
+      #279 closed 2017-05-29 Document kubeadm usage with SELinux
+      #107 closed 2017-01-10 SElinux experiences for who wants to know
+      #571 closed 2017-11-24 Graduate kubelet config to beta
+      #424 merged 2017-09-05 Update design doc with 1.8 features/changes
+  lock+file      50 hit(s) (all listed)
+      #3301 open 2026-04-05 add --peer-ca-file to apiserver manifest once UnknownVersionInteroperabilityProxy is locked
+      #3042 open 2024-04-05 Add kubelet instance configuration to configure CRI socket for each node
+      #2473 open 2021-05-10 run control-plane as non-root
+      #3098 closed 2024-08-15 kubeadm: add CRI timeout(s)
+      #1332 closed 2018-12-27 Can not retrieve logs or exec in non-master node'pods
+      #1692 closed 2019-07-29 Stop using system-level certificates directories (i.e. /etc/pki, /etc/ssl/certs, and /etc/ca-certificates directories)
+      #684 closed 2018-01-31 Kubeadm init blocks at "This might take a minute or longer if the control plane images have to be pulled
+      #2927 closed 2023-09-08 upgrade-1-28-latest and upgrade-addons-before-controlplane-1-28-latest failed
+      #581 closed 2017-11-30 how to renew the certificate when apiserver cert expired?
+      #1031 closed 2018-08-02 runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+      #1612 closed 2019-06-14 Dual-Stack support for Kubeadm
+      #2587 closed 2021-10-08 Cleanup IPVS / iptables rules during `kubeadm reset`
+      #2434 merged 2021-04-06 kinder: add a tool for automatic updates of e2e test config
+      #2789 closed 2022-12-07 while upgrading to 1.25.4 kubelet does not start the new etcd pod
+      #2457 closed 2021-04-22 Additional phases and subphases in kubeadm init/join
+      #2063 closed 2020-03-17 Does kubeadm support IPv6-only?
+      #574 closed 2017-11-27 "kubeadm join" does not add worker node to the cluster 
+      #2657 closed 2022-02-27 kubeadm init with external etcd nodes, kube-proxy pod log Can't determine this node's IP
+      #279 closed 2017-05-29 Document kubeadm usage with SELinux
+      #202 closed 2017-03-09 Specify node label on node join
+  write+failure  52 hit(s) (all listed)
+      #3324 open 2026-07-30 kubeadm: upgrade flakes when etcd rotates a WAL segment during the data-dir backup
+      #3281 closed 2026-01-10 kubeadm still writes deprecated --pod-infra-container-image flag to kubeadm-flags.env causing kubelet failure
+      #2271 closed 2020-08-31 make components on control-plane nodes point to the local API server endpoint
+      #2317 closed 2020-09-30 [Roadmap] Improve kubeadm support for declarative approaches/git-ops
+      #2762 closed 2022-09-26 Cannot regenerate apiserver certificate
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #2991 closed 2024-01-08 kubeadm upgrade apply should stop kube-apiserver before updating etcd
+      #1438 closed 2019-03-07 error execution phase upload-config/kubelet: Error writing Crisocket information for the control-plane node: timed out waiting for the condition
+      #2612 closed 2021-11-25 kubeadm and external etcd init error  execution phase upload-config/kubelet: Error writing Crisocket information for the control-plane node: timed out waiting for the condition
+      #2457 closed 2021-04-22 Additional phases and subphases in kubeadm init/join
+      #2163 closed 2020-06-04 add "kubeadm alpha certs generate-csr" and deprecate/remove "--csr-*" flags for kubeadm init
+      #2334 closed 2020-10-24 fix some issues in the kubeadm HA etcd documentation
+      #2468 closed 2021-05-03 Upgrade/apply fatal timeout 1.19.4 to 1.20.6
+      #2512 closed 2021-06-22 Kubeadm init --dry-run doestn't work if using an external ca
+      #1031 closed 2018-08-02 runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+      #2259 closed 2020-08-26 Setup control node on HA cluster hangs - upload CRI socket information
+      #1082 closed 2018-08-29 kubelet won't restart after reboot - Unable to register node with API server: connection refused 
+      #269 closed 2017-05-12 etcd pause container fails to start due to SELinux error on CoreOS
+      #174 closed 2017-02-16 Need preflight check for etcd version
+      #228 closed 2017-04-06 kubeadm init waiting for the control plane to become ready on CentOS 7.2 with kubeadm 1.6.1
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1393 open 2019-02-06 tracking issue for Windows support
+      #2367 open 2020-12-18 [Roadmap] Support node specific configuration
+      #3313 closed 2026-06-08 v1.36.1 kubeadm init phase upload-certs --upload-certs hangs
+      #3289 closed 2026-02-18 remove data_test.go files for various Data objects of phases
+      #2360 closed 2020-12-07 Support two-tier CA configuration
+      #3260 closed 2025-11-21 kubeadm init failed
+      #3070 closed 2024-06-01 kinder: support patching OCI image tar archives
+      #3250 closed 2025-10-18 kubeadm join segfault
+      #3225 closed 2025-08-08 Executing the "kubeadm reset" command erroneously cleared all data in the external etcd.
+      #3244 closed 2025-09-24 Regression when upgrading worker nodes using kubeadm v1.34.1: could not remove the CRI socket annotation from Node: not found
+      #3212 merged 2025-06-17 Add beta stage test for NodeLocalCRISocket feature gate
+      #2792 closed 2022-12-13 error execution phase addon/coredns: unable to create a new DNS service: rpc error: code = Unknown desc = malformed header: missing HTTP content-type
+      #3133 closed 2024-12-15 improve "kubeadm reset" kube-proxy cleanup
+      #3079 closed 2024-06-26 Kubeadm join not connected to specified apiservice
+      #1098 closed 2018-09-06 Implement a canonical way for getting the node name
+      #2781 closed 2022-11-13 Synced Server and CertificateAuthorityData from the cluster-info ConfigMap may not work
+      #2806 closed 2023-01-22 kubeadm init no flag for IPv6-only
+      #2739 closed 2022-08-03 `validateKubeConfig` ignores `CertificateAuthority` and only looks at `CertificateAuthorityData`
+      #1026 closed 2018-07-27 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #3029 closed 2024-02-27 Uploaded ClusterConfiguration depends on init phases
+
+== 51 terms run; 46 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

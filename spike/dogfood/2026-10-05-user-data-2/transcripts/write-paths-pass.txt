@@ -1,0 +1,53 @@
+=== nerdctl (nerdctl logout registry.example.com)
+openat(AT_FDCWD, "/s/dc/config.json2590484766", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4
+write(4, "{\n\t\"auths\": {\n\t\t\"ghcr.io\": {\n\t\t\t"..., 109) = 109
+renameat(AT_FDCWD, "/s/dc/config.json2590484766", AT_FDCWD, "/s/dc/config.json") = 0
+=== oras (oras logout --registry-config /s/oras/config.json registry.example.com)
+openat(AT_FDCWD, "/s/oras/oras_credstore_temp_2190635139", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4
+write(4, "{\n\t\"auths\": {\n\t\t\"ghcr.io\": {\n\t\t\t"..., 109) = 109
+renameat(AT_FDCWD, "/s/oras/oras_credstore_temp_2190635139", AT_FDCWD, "/s/oras/config.json") = 0
+=== regctl (regctl registry set registry.example.com --tls disabled)
+openat(AT_FDCWD, "/s/aux/home/.regctl/config.json841201416", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4
+write(4, "{\n  \"hosts\": {\n    \"ghcr.io\": {\n"..., 272) = 272
+renameat(AT_FDCWD, "/s/aux/home/.regctl/config.json841201416", AT_FDCWD, "/s/aux/home/.regctl/config.json") = 0
+unlinkat(AT_FDCWD, "/s/aux/home/.regctl/config.json841201416", 0) = -1 ENOENT (No such file or directory)
+unlinkat(AT_FDCWD, "/s/aux/home/.regctl/config.json841201416", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+=== skopeo (skopeo logout --authfile /s/sk/auth.json registry.example.com)
+openat(AT_FDCWD, "/s/sk/.tmp-auth.json1259258833", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3
+write(3, "{\n\t\"auths\": {\n\t\t\"ghcr.io\": {\n\t\t\t"..., 109) = 109
+fdatasync(3)                      = 0
+renameat(AT_FDCWD, "/s/sk/.tmp-auth.json1259258833", AT_FDCWD, "/s/sk/auth.json") = 0
+=== toybox (toybox sed -i s/foo/bar/ a.txt b.txt)
+openat(AT_FDCWD, "a.txtZnWUTT", O_RDWR|O_CREAT|O_EXCL, 0600) = 4
+write(4, "alpha bar\n", 10)       = 10
+write(4, "beta bar\n", 9)         = 9
+write(4, "gamma\n", 6)            = 6
+renameat(AT_FDCWD, "a.txtZnWUTT", AT_FDCWD, "a.txt") = 0
+openat(AT_FDCWD, "b.txtiiDeV1", O_RDWR|O_CREAT|O_EXCL, 0600) = 4
+write(4, "delta bar\n", 10)       = 10
+write(4, "epsilon\n", 8)          = 8
+renameat(AT_FDCWD, "b.txtiiDeV1", AT_FDCWD, "b.txt") = 0
+=== yt-dlp (yt-dlp --enable-file-urls --download-archive /s/yt/archive.txt -o /s/yt-out/%(title)s.%(ext)s file:///s/yt-in/clip.mp4)
+openat(AT_FDCWD, "/s/yt/archive.txt", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0666) = 4
+write(4, "generic clip\n", 13)    = 13
+=== conan (conan remote disable conancenter)
+openat(AT_FDCWD, "/s/conan/extensions/hooks", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/s/conan/remotes.json.tmp", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3
+write(3, "{\n \"remotes\": [\n  {\n   \"name\": \""..., 243) = 243
+renameat(AT_FDCWD, "/s/conan/remotes.json.tmp", AT_FDCWD, "/s/conan/remotes.json") = 0
+=== juju (juju remove-credential aws home --client)
+openat(AT_FDCWD, "/s/juju/aliases", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/s/juju/clouds.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/s/juju/public-clouds.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/s/juju/credentials.yaml4157161363", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+write(7, "credentials:\n  aws:\n    work:\n  "..., 132) = 132
+fsync(7)                          = 0
+renameat(AT_FDCWD, "/s/juju/credentials.yaml4157161363", AT_FDCWD, "/s/juju/credentials.yaml") = 0
+=== aliyun (aliyun configure delete --profile home)
+openat(AT_FDCWD, "/s/aux/home/.aliyun/ai-mode.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/s/aux/home/.aliyun/.config.json.tmp-4130094458", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4
+write(4, "{\n\t\"current\": \"default\",\n\t\"profi"..., 385) = 385
+fsync(4)                          = 0
+renameat(AT_FDCWD, "/s/aux/home/.aliyun/.config.json.tmp-4130094458", AT_FDCWD, "/s/aux/home/.aliyun/config.json") = 0
+unlinkat(AT_FDCWD, "/s/aux/home/.aliyun/.config.json.tmp-4130094458", 0) = -1 ENOENT (No such file or directory)
+unlinkat(AT_FDCWD, "/s/aux/home/.aliyun/.config.json.tmp-4130094458", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)

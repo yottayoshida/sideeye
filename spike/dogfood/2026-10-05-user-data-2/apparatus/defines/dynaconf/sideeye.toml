@@ -1,0 +1,6 @@
+[world]
+state = "/s/dyn"
+
+[define]
+operation = "dynaconf write toml -y -s DB_PASSWORD=new-secret -p /s/dyn/"
+cwd       = "/s/dyn"

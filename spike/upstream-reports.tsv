@@ -64,3 +64,7 @@ orhun/git-cliff	1650	standing	git-cliff 2.14.2 `--prepend`
 Yakitrak/notesmd-cli	137	standing	notesmd-cli 0.3.7 `move`
 mbloch/mapshaper	706	standing	mapshaper 0.7.72 `-o force`
 mhx/dwarfs	388	standing	DwarFS 0.15.8 `mkdwarfs --recompress`
+solvespace/solvespace	1783	standing	SolveSpace 3.2 `solvespace-cli regenerate`
+schrodinger/pymol-open-source	520	standing	PyMOL 3.1.0 (Debian) `save` of a `.pse`
+smacke/ffsubsync	240	standing	ffsubsync 0.5.1 `--overwrite-input`
+wp-cli/config-command	233	standing	WP-CLI 2.12.0 `config set`

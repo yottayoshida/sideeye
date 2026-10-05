@@ -1,0 +1,8 @@
+clone lines: 12
+37    execve("/opt/bin/aliyun", ["aliyun", "configure", "delete", "--profile", "home"], 0xfffffeb77d50 /* 14 vars */) = 0
+44    execve("/usr/bin/uname", ["uname", "-s"], 0x40001ac600 /* 14 vars */ <unfinished ...>
+44    <... execve resumed>)             = 0
+45    execve("/usr/bin/uname", ["uname", "-r"], 0x4000298000 /* 14 vars */ <unfinished ...>
+45    <... execve resumed>)             = 0
+46    execve("/usr/bin/uname", ["uname", "-m"], 0x4000298080 /* 14 vars */ <unfinished ...>
+46    <... execve resumed>)             = 0

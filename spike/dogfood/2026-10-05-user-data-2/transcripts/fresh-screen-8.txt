@@ -1,0 +1,9 @@
+fresh python-dotenv
+fresh theskumar
+fresh dotenv-linter
+fresh gita
+fresh nosarthur
+fresh minio
+fresh devpod
+fresh homeassistant
+fresh home-assistant

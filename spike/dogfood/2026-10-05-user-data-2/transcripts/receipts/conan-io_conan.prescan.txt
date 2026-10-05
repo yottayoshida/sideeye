@@ -1,0 +1,885 @@
+== novelty pre-scan: conan-io/conan
+== date: 2026-10-05T05:28:11Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18102 open 2025-04-09 [bug] Crash while uploading packages
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #20223 open 2026-07-28 Fix #19423: Add VSCMD_VER guard to conanvcvars.bat
+      #9791 open 2021-10-13 [feature] Default CMAKE_POSITION_INDEPENDENT_CODE to OFF in CMakeToolchain when building for bare-metal targets
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #14784 open 2023-09-20 [feature] debugging symbols management
+      #15269 open 2023-12-13 Extract .zip files with recorded file timestamps (#15268)
+      #20143 closed 2026-07-02 [bug]: Docker runner silently swallows exceptions from conanfile.layout() via bare except
+      #20205 closed 2026-07-23 [bug] conan lock upgrade-config path argument parsing fail
+      #20146 merged 2026-07-06 [Bugfix] ConanFileDependencies.from_node: fix for non-applying replace_requires
+      #16963 open 2024-09-09 [question] ffmpeg/6.1.1 dependancies and PKG_CONFIG
+      #19844 merged 2026-04-07 Inline transitive dependencies to avoid Xcode recursion crashes
+      #13570 closed 2023-03-30 [bug] `self.*_path` in `CMakeToolchain` variables causes `CMakePresets` generation failure
+      #18714 open 2025-07-30 [question] How to use an environment script before CMake.configure()
+      #17846 open 2025-02-25 [question] Packages build caching
+      #19821 closed 2026-04-02 Generated xcconfig files cause Xcode to crash for large dependencies
+      #20289 closed 2026-08-25 Pre-release regression: encrypted local credentials are not migrated after CONAN_LOGIN_ENCRYPTION_KEY removal
+      #16840 closed 2024-08-18 [bug]OpenCV crashes the program on Linux
+      #19977 merged 2026-05-12 runtime_deploy: avoid crashing when overriding existing symlinks
+      #17545 open 2025-01-02 [question] Parallel jobs and independent caches
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #20270 open 2026-08-17 Fix: Improve `conan cache restore` folder extraction to avoid overwrites
+      #20071 open 2026-06-10 [question] Are remote commands synchronous or asynchronous?
+      #14329 open 2023-07-19 [question] download cache lock issue (potential bug)
+      #13767 open 2023-04-25 [bug] Uploading package with user and channel generates an error
+      #16703 open 2024-07-19 Server side atomic uploads for concurrent uploads
+      #16666 open 2024-07-13 [question] Cross-building on Windows (build-profile) for NI LinuxRT (host-profile) and using of gRPC
+      #20306 closed 2026-09-03 [bug] `conan upload --force` leaves stale archives when changing compression format
+      #11863 open 2022-08-13 [bug] Cross compiling with MinGW fails
+      #20055 closed 2026-06-04 [bug] corrupted global.conf renders Conan API and CLI disfunctional
+      #19713 merged 2026-03-04 Fix exception with corrupted recipes
+      #19814 closed 2026-03-30 [question] Is there a command to remove corrupted packages (.dirty)
+      #19969 merged 2026-05-11 Redownload files when URL mismatch across SHA
+      #19712 closed 2026-03-04 [bug] conan cache check-integrity throws AttributeError
+      #19860 closed 2026-04-10 `conan remove` not working at all.
+      #15839 closed 2024-03-08 [bug] Conan Assert after canceled conan Install
+      #19112 closed 2025-10-17 [question] How to fix all corrupted packages?
+      #13655 closed 2023-04-10 [question] armv8 cross compile build failed usins same cananfile.txt used in linux X86_64
+      #8099 closed 2020-11-23 Feature: add test for hard-links preserved
+      #19337 merged 2025-12-02 Feature/builtin compression
+  corruption     44 hit(s) (all listed)
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #19845 open 2026-04-08 [feature] multi process lock for cache database
+      #19571 merged 2026-02-03 fix internal copy of [buildenv]
+      #18989 closed 2025-09-25 [bug] conan audit generates reports with mixed languages
+      #19796 closed 2026-03-26 [bug] Case mismatch in requires() name causes loss of transitive dependencies
+      #1346 closed 2017-06-01 Consider adding gcc/clang sanitizers to the model
+      #19570 closed 2026-02-03 [bug] buildenv PATH variable leaks from one package into another
+      #19112 closed 2025-10-17 [question] How to fix all corrupted packages?
+      #19343 merged 2025-12-03 cache check-integrity: new json output
+      #19313 closed 2025-11-26 [question] ERROR: Package 'open62541/1.4.14' not resolved: Reference 'open62541/1.4.14#4f1ffaf9cf6e3a3d2366527bf4138a38%1764140285.608425' already exists.
+      #19323 closed 2025-11-27 [bug] Conan doesn't seem to receive any dependency information from packages stored on an Artifactory remote
+      #12423 closed 2022-10-28 [bug] Periodic issues building packages with exported sources
+      #17968 merged 2025-03-15 tests were not running in CI
+      #17588 merged 2025-01-17 make saving remotes file transactional
+      #13174 closed 2023-02-20 [bug] could not remove local receipe because of "receipe not found"
+      #17685 closed 2025-02-03 [question] Required component package not in dependencies - 2.9.1 vs 2.12.1
+      #17622 closed 2025-01-23 [bug] Corrupted packages in local cache
+      #17079 closed 2024-09-28 [question] `conan install ... --build=missing` not building unbuilt dependencies.
+      #16262 closed 2024-05-15 [feature] Integrity check in install command
+      #16509 merged 2024-06-20 fix Conan 1 lockfile options package_id
+  truncated      33 hit(s) (all listed)
+      #18401 open 2025-06-02 [question] SHORT DESCRIPTION
+      #19181 open 2025-10-31 [bug] AssertionError: Conan failed to acquire database lock
+      #20077 open 2026-06-10 [bug] Linker Errors
+      #8623 closed 2021-03-09 Android compiler.libcxx=c++_shared not respected
+      #19790 closed 2026-03-26 [bug] grpc++ dependencies incorrect with CMakeConfigDeps and linker hardening
+      #8102 closed 2020-11-23 Best practise for unit test integration with CMake and Conan
+      #19112 closed 2025-10-17 [question] How to fix all corrupted packages?
+      #19029 closed 2025-10-02 [bug] Conan wrongly claims a version conflict using <host_version>, a "user", and multiple revisions
+      #18010 closed 2025-03-24 [suggestion] Wildcards in version range
+      #18041 closed 2025-03-28 [bug] The bundled version of `conan` (from `PyInstaller`) should automatically bundle all tools
+      #15164 closed 2023-11-23 Install and deploy a package based on package_id
+      #16241 closed 2024-05-12 [bug] conan2 does not work with gcc 14.1 , error requires the language dialect "CXX23"
+      #16656 closed 2024-07-12 [question] Protobuf build module for `protoc` compiler not generated and cannot be consumed by grpc.
+      #14605 merged 2023-08-29 MakeDeps: Provide "require" information, and more styling tweaks
+      #13583 closed 2023-03-31 [bug] list_test tests fail non-deterministically
+      #15334 closed 2023-12-22 [question] The imported project "...\conan_eigen.props" was not found
+      #12637 closed 2022-11-30 [question] no files exported in recipe
+      #9690 closed 2021-09-29  Propagation of options to dependencies
+      #10756 closed 2022-03-11 [bug] Conan ignores CONAN_CMAKE_SYSTEM_VERSION
+      #10186 merged 2021-12-16 CMakeToolchain: proper support of find_*() & include() commands
+  truncate       56 hit(s) (all listed)
+      #18401 open 2025-06-02 [question] SHORT DESCRIPTION
+      #19181 open 2025-10-31 [bug] AssertionError: Conan failed to acquire database lock
+      #13098 open 2023-02-11 [bug] AutotoolsToolchain: pkgconfig files not found if build machine is Windows
+      #19640 closed 2026-02-19 [bug] tools.microsoft:msvc_update truncates trailing zero in version (e.g., 8.29910 becomes 8.2991)
+      #19638 closed 2026-02-19 [bug] CMake variables are not properly escaped
+      #16905 closed 2024-08-29 [bug] in Ubuntu, clang, Ninja enviornment. ERROR: pulseaudio/14.2: Error in build() method, line 131 
+      #8623 closed 2021-03-09 Android compiler.libcxx=c++_shared not respected
+      #18513 closed 2025-06-23 [question] Questions regarding products pipeline
+      #8102 closed 2020-11-23 Best practise for unit test integration with CMake and Conan
+      #19112 closed 2025-10-17 [question] How to fix all corrupted packages?
+      #19029 closed 2025-10-02 [bug] Conan wrongly claims a version conflict using <host_version>, a "user", and multiple revisions
+      #18409 closed 2025-06-03 [bug] "conan profile detect" detects compiler versions with 3 digits but ships settings.yml only with 2 digits
+      #18010 closed 2025-03-24 [suggestion] Wildcards in version range
+      #16493 closed 2024-06-16 Autotools packages are ignoring host profile and building for the build profile
+      #18041 closed 2025-03-28 [bug] The bundled version of `conan` (from `PyInstaller`) should automatically bundle all tools
+      #12323 closed 2022-10-18 [question/bug] correct way to use custom Make program on Windows
+      #15713 merged 2024-02-20 fix conan_server timestamp truncation
+      #16660 closed 2024-07-12 [question] Does the use of conans.AutoToolsBuildEnvironment make the current swig recipe incompatible with Conan 2?
+      #15164 closed 2023-11-23 Install and deploy a package based on package_id
+      #15892 closed 2024-03-18 [question] how to build a binary with arch=armv8 on a m2 macbook?
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14180 open 2023-06-28 [question] XcodeDeps possible to leave linker options empty?
+      #10803 open 2022-03-17 [question] Are empty string and False option values equal for Conan?
+      #20361 closed 2026-09-29 [bug] Explicit empty channel creates a different package reference from no channel
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #20244 closed 2026-08-06 test pwsh support for empty enviroment variables
+      #20239 open 2026-08-04 Feature/token store
+      #12022 open 2022-09-05 [feature] Force check credentials before search
+      #20292 closed 2026-08-26 [question] Why are the INCLUDE_DIRs empty with transitive_headers=True?
+      #11242 open 2022-05-12 [bug] Artifactory can be returning 200 for missing packages
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #20321 open 2026-09-08 [bug] graph info rejects an acyclic compiler bootstrap graph
+      #20284 closed 2026-08-24 [bug] CPS reader ignores a component's inline `configurations` map, so multi-config descriptors from `export(PACKAGE_INFO)` yield empty libraries
+      #15530 open 2024-01-25 [bug] Suggested replacement of SCM attribute with export/source is broken
+      #14056 open 2023-06-09 [question] Replacement for scm attribute in Conan 2.x when exporting sources
+      #20322 merged 2026-09-08 cmakedeps/target_data: avoid writing no-op genexes
+      #15606 open 2024-02-06 Is there a way to use USERPROFILE in MSBuildDeps generator?
+      #20025 open 2026-05-26 [question] SBOM generated from Conan dependencies cannot include components directly embedded in source code
+      #18546 open 2025-06-26 [feature] conan.scm.Git should support getting the tag and branch of the currently checked out repo
+      #13767 open 2023-04-25 [bug] Uploading package with user and channel generates an error
+      #20196 closed 2026-07-22 [bug] `conan upload` fails on an empty recipe set
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16703 open 2024-07-19 Server side atomic uploads for concurrent uploads
+      #19495 open 2026-01-21 Feature/atomic replace cache
+      #19734 open 2026-03-09 Poc for a RecipesTable without Sqlite
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #13223 open 2023-02-24 [bug] environment variables not expanded before passing to cmake
+      #18202 open 2025-04-30 [bug] Wrong path of vcvarsall.bat with VisualStudioBuildTools
+      #17846 open 2025-02-25 [question] Packages build caching
+      #14768 open 2023-09-18 [bug] Error when compiling boost/1.76.0 on Windows with clang
+      #20306 closed 2026-09-03 [bug] `conan upload --force` leaves stale archives when changing compression format
+      #17134 open 2024-10-08 [feature] package revisions in lockfiles
+      #18048 open 2025-03-31 [migrate] Help me migrate our open source project Nativium
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #15256 open 2023-12-12 [bug] Cannot build on MSYS2 Clang64 ("Visual Studio Runtime version not defined")
+      #20077 open 2026-06-10 [bug] Linker Errors
+      #13062 closed 2023-02-06 Boost 1.81.0 and gtest 1.12.1 built with different visibilities on MacOS
+      #19532 merged 2026-01-29 windows atomic_replace retry
+      #19555 closed 2026-02-02 Support multi-process concurrency
+      #19914 closed 2026-04-27 [feature] conan upload: Add flag to allow upload to disabled remotes
+      #19510 merged 2026-01-26 make the RemoteManager.get_package() more atomic
+      #19565 merged 2026-02-03 revert atomic os.replace due to antivirus Win issues
+  atomically     10 hit(s) (all listed)
+      #19734 open 2026-03-09 Poc for a RecipesTable without Sqlite
+      #20306 closed 2026-09-03 [bug] `conan upload --force` leaves stale archives when changing compression format
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #19552 closed 2026-02-02 [bug] New os.replace() implementation for Windows fails
+      #9426 closed 2021-08-13 [question] Support for atomic bulk promotion using lockfiles CI
+      #871 closed 2017-01-17 Add possibility to upload "transactional"
+      #14926 closed 2023-10-13 [bug] cache.sqlite3 is not compatible between Windows and Unix platforms
+      #14752 merged 2023-09-15 Feature/Add an option to install() method in package_manager
+      #2219 closed 2017-12-26 Error when running conan install in parallel
+  interrupted    59 hit(s) (all listed)
+      #20270 open 2026-08-17 Fix: Improve `conan cache restore` folder extraction to avoid overwrites
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #20071 open 2026-06-10 [question] Are remote commands synchronous or asynchronous?
+      #18253 open 2025-05-07 [POC] Using fasteners to control parallel execution of Conan
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #19914 closed 2026-04-27 [feature] conan upload: Add flag to allow upload to disabled remotes
+      #15839 closed 2024-03-08 [bug] Conan Assert after canceled conan Install
+      #18962 closed 2025-09-18 [question] Handling failed builds in products pipeline flow
+      #12436 closed 2022-11-01 [bug] Error when trying to fix corrupted package
+      #7498 closed 2020-08-04 [bug] Conan with Artifactory fails to download large packages
+      #17842 closed 2025-02-24 [bug] AuthenticationException 403 on bzip2/1.0.8 download
+      #17929 closed 2025-03-11 [question] How can I resolve Conan install error?
+      #7181 closed 2020-06-10 [bug] Interrupted install leaves locks in bad state
+      #17578 closed 2025-01-15 [feature] Add "force" option to conan remote remove
+      #16794 closed 2024-08-06 [bug] Non-zero exit code expected on conan list/search failure
+      #16670 closed 2024-07-15 [question] Is it possible to check if local cache is corrupted? 
+      #6870 closed 2020-04-16 [bug] conan upload should be a transaction
+      #10169 closed 2021-12-13 [bug] conan remove outdated failed
+      #6709 closed 2020-03-20 [question] Using `conan graph` to get the build-order of a subgraph
+  interrupt      76 hit(s) (all listed)
+      #20270 open 2026-08-17 Fix: Improve `conan cache restore` folder extraction to avoid overwrites
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #20071 open 2026-06-10 [question] Are remote commands synchronous or asynchronous?
+      #18253 open 2025-05-07 [POC] Using fasteners to control parallel execution of Conan
+      #19914 closed 2026-04-27 [feature] conan upload: Add flag to allow upload to disabled remotes
+      #15839 closed 2024-03-08 [bug] Conan Assert after canceled conan Install
+      #18962 closed 2025-09-18 [question] Handling failed builds in products pipeline flow
+      #12436 closed 2022-11-01 [bug] Error when trying to fix corrupted package
+      #7498 closed 2020-08-04 [bug] Conan with Artifactory fails to download large packages
+      #18371 closed 2025-05-27 [bug] package has 'exports_sources' but sources not found in local cache from local conan center index
+      #17929 closed 2025-03-11 [question] How can I resolve Conan install error?
+      #17842 closed 2025-02-24 [bug] AuthenticationException 403 on bzip2/1.0.8 download
+      #7181 closed 2020-06-10 [bug] Interrupted install leaves locks in bad state
+      #17578 closed 2025-01-15 [feature] Add "force" option to conan remote remove
+      #15850 closed 2024-03-11 [feature] List all missing recipes/packages instead of the first one if `conan install` fails
+      #17032 closed 2024-09-20 [question] Building package with multiple workstation 
+      #16695 closed 2024-07-17 [bug] `conan.tools.files.copy()` fails silently.
+      #16794 closed 2024-08-06 [bug] Non-zero exit code expected on conan list/search failure
+  sigkill        4 hit(s) (all listed)
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #6079 closed 2019-11-14 [bug] Repo advisory locks fail to release on process termination
+      #6094 closed 2019-11-18 [Fix #6079] Use native APIs for reliable interprocess (shared) locking
+      #2071 closed 2017-11-23 Can an interrupted install leave locks inconsistent?
+  sigint         4 hit(s) (all listed)
+      #6079 closed 2019-11-14 [bug] Repo advisory locks fail to release on process termination
+      #13246 closed 2023-02-26 [bug] Ctrl+Break does not work in conan
+      #2360 closed 2018-01-24 SIGINT handler returns 0, should return non-zero
+      #2071 closed 2017-11-23 Can an interrupted install leave locks inconsistent?
+  ctrl-c         59 hit(s) (all listed)
+      #16703 open 2024-07-19 Server side atomic uploads for concurrent uploads
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #19982 closed 2026-05-13 [question] local build without net
+      #9249 closed 2021-07-08 [bug] tools.get() hangs after first download 2GB+ archive
+      #13246 closed 2023-02-26 [bug] Ctrl+Break does not work in conan
+      #17820 closed 2025-02-20 [bug] Conan starts asking for server authentication for "read" operations some time after he done "write" query
+      #17612 closed 2025-01-22 [bug] Conan create gets stuck generating dependency graph
+      #15037 closed 2023-10-31 [bug] find_package can't find all the dependencies
+      #8992 closed 2021-05-24 Can't connect to conan_server through apache
+      #17428 closed 2024-12-06 [bug] performance regression in v2.10 with respect to v2.9.3
+      #12940 closed 2023-01-20 [bug] poco, libmysqlclient undefined reference to zlib functions
+      #7300 closed 2020-07-02 [bug] Conan remove --locks doesn't work
+      #15722 closed 2024-02-21 [bug] The `conan auth` command locks up the CLI on Windows git-bash mingw64
+      #7774 closed 2020-09-30 [bug] conan search comman stuck/infinity
+      #5173 closed 2019-05-18 `conan install` seemingly hangs, in fact is silently installing with no console output
+      #15476 closed 2024-01-18 [question] Does conan export all cmake targets by default?
+      #7101 closed 2020-05-26 [question] issue around conan locks - unable to proceed without clearing local cache. 
+      #3046 closed 2018-06-14 Error 401 getting packages from conan-center
+      #15617 closed 2024-02-07 [question] issue in updating boost library on jfrog artifactory with multiple profiles
+      #5008 closed 2019-04-19 recipe found by search can't be found by install and inspect
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12024 open 2022-09-05 [feature] conditional config remote installation
+      #19810 open 2026-03-30 [feature] Short Output Messages
+      #20294 closed 2026-08-27 Review ability to support `sources` only package in CMakeConfigDeps
+      #12341 open 2022-10-19 [feature] Run Conan from generic CMakeToolchain file and chainload the generated
+      #17246 closed 2024-10-29 [question] Using Conan in cPython package builds, Conan enabled build-backend
+      #19798 closed 2026-03-27 [feature] Custom `conan new` templates: Add ability to specify jinja variables that are loaded before template evaluation
+      #18913 closed 2025-09-10 [bug] Powershell permission denied temporary folder
+      #19782 closed 2026-03-24 [question] Windows ARM64EC support
+      #16698 closed 2024-07-18 [suggestion] Allow specifying commit hash when installing config from git repository with `conan config install`
+      #19685 closed 2026-02-27 How to make use Conan packages in a Visual Studio environment
+      #15081 closed 2023-11-10 CMake Generate Fails during Conan Build Yet Is Successful Without Conan
+      #7285 closed 2020-06-30 [question] How to combine a compiler package with a CMake toolchain file?
+      #18928 merged 2025-09-12 Always run validate hooks even if no validate method exists
+      #9994 closed 2021-11-09 [feature] Add option "--ignore-binaries" to conan install or --build=notincache
+      #18614 closed 2025-07-09 [question] Does Path(".") in conanfile.py resolve differently in Conan 2 compared to Conan 1?
+      #14424 closed 2023-08-04 [question] Handling different versions of tools for packages
+      #12833 closed 2023-01-03 [question] Best practice to set configuration in conan 2.0
+      #18774 closed 2025-08-13 [question] RREV changes break consumer builds only in embedded mode, while other linkage modes work fine. How do you solve this?
+      #18166 merged 2025-04-23 Add URL Preview for Package Uploads
+      #18634 closed 2025-07-13 How to use clang with conan2
+  outage         17 hit(s) (all listed)
+      #16354 closed 2024-05-28 [bug] Workflow with Artifactory Virtual Repository breaks with Read-only user
+      #12687 closed 2022-12-11 [bug] Virtual repository breaks when remote repository becomes unreachable (and conan center is down)
+      #18060 closed 2025-04-02 [bug] Can't download boost sources
+      #11960 closed 2022-08-25 [feature] Better build caching support in Conan 2.0 (as compared to 1.x)
+      #17982 closed 2025-03-18 [bug] 503 error reponces while installing wayland/1.22.0
+      #6886 closed 2020-04-20 [bug] json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+      #8074 closed 2020-11-18 [feature] Introduce concept of ABI groups for easier interoperability.
+      #6212 closed 2019-12-11 [bug] Unable to connect to conan-center=https://conan.bintray.com
+      #14714 closed 2023-09-11 [bug] Failed to establish connection to conan center
+      #3821 closed 2018-10-22 Are local cached files checked against the contents of conanmanifest.txt?
+      #11681 closed 2022-07-20 [bug] Urgent Issue: New recipe revisions using "conan.tools" rather than "conans.tools" breaks using Conan 1.x
+      #7573 closed 2020-08-21 Unable to connect to conan-center
+      #6763 closed 2020-03-30 [suggestion] Make Conan more tolerant of unavailable source
+      #8850 closed 2021-04-22 [maintenance] ERROR: Exceeded 30 redirects.. [Remote: conan-center]
+      #8788 closed 2021-04-12 [bug] conan.bintray.com has invalid/no certificate and fails in redirection loop
+      #610 closed 2016-10-26 Support More Sources
+      #1024 merged 2017-02-24 Cmake system name
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #20157 open 2026-07-08 [feature] Cache Size Limiter with auto-eviction
+      #12106 open 2022-09-13 [bug] conan.tools.AutotoolsDeps: linker error due to `-F -Wl,-rpath -Wl,<libdirs>` on macOS when there are dependencies
+      #20302 open 2026-09-01 [question] On package create, upload resolved dependency manifest with package?
+      #14329 open 2023-07-19 [question] download cache lock issue (potential bug)
+      #16600 open 2024-07-03 [feature] System cache
+      #19580 open 2026-02-05 [question] Need clarification on python_requires best practices
+      #16703 open 2024-07-19 Server side atomic uploads for concurrent uploads
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #13769 open 2023-04-25 [question] Is there a way to specify component-level dependencies with "conan install --requires"
+      #15269 open 2023-12-13 Extract .zip files with recorded file timestamps (#15268)
+      #20273 closed 2026-08-18 Log all command output to a file
+      #20216 open 2026-07-27 [question] How to securely store secrets with conan?
+      #14107 open 2023-06-16 [question] dependency options conditional on whether dependency is being built
+      #8626 open 2021-03-10 [feature] Packageable pip installable Python venv based utilities
+      #12964 open 2023-01-24 [question] MSBuild Helper looking in wrong folder for buildtools
+      #20104 merged 2026-06-23 Lockfile API
+      #19181 open 2025-10-31 [bug] AssertionError: Conan failed to acquire database lock
+      #20006 closed 2026-05-19 [feature] read only remote cache
+      #20206 closed 2026-07-23 [question] conan run and env variables
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #17402 open 2024-12-03 [question] Ignore timestamps when updating conan.lock?
+      #19076 open 2025-10-13 [question] lockfiles with overrides works weird
+      #18673 open 2025-07-21 Check cpp_info propagation to dependencies based on traits in *Deps generators
+      #19816 open 2026-03-31 [feature] Allow caching of `source()` step in a remote
+      #18510 open 2025-06-23 [question] Overriding lockfile entry with editable package
+      #20331 merged 2026-09-10 Fix build order transitive options
+      #19580 open 2026-02-05 [question] Need clarification on python_requires best practices
+      #20144 closed 2026-07-06 [question] unset for tool_requires
+      #20267 closed 2026-08-14 [bug] conan detect on windows (msvc) fails to correctly detect cppstd
+      #20264 merged 2026-08-14 Add support for lockfile reading in `conan source` for Python Requires
+      #17949 open 2025-03-12 A "Remote" repository in Artifactory is not getting updated revisions (RREV) from upstream after initial copy
+      #14843 open 2023-09-28 [question] linked in shared libraries do not hide its dependencies
+      #19086 open 2025-10-13 [feature] CMakeToolchain - emit cache_variables to cache file
+      #19243 open 2025-11-13 [question] full_mode on embedded deps
+      #16070 open 2024-04-11 [question] Cross-compiling with arm toolchain and unit tests
+      #10280 open 2022-01-06 Remote authentication using environmental variables does not work
+      #19252 open 2025-11-14 [regression] validate() failures no longer fall back on compatibility() options.
+      #14613 open 2023-08-30 [question] Ignore local cache when creating lock file
+      #16819 open 2024-08-12 [question] How to properly "evolve" lockfiles?
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20270 open 2026-08-17 Fix: Improve `conan cache restore` folder extraction to avoid overwrites
+      #19311 open 2025-11-25 [bug] Conan generated .pc files should have -uninstalled in file name so the packages work when using a sysroot
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #19424 open 2025-12-30 visual studio command environment need only be setup once.
+      #20071 open 2026-06-10 [question] Are remote commands synchronous or asynchronous?
+      #19734 open 2026-03-09 Poc for a RecipesTable without Sqlite
+      #15438 open 2024-01-10 [bug] Unable to compile with clang-cl
+      #16819 open 2024-08-12 [question] How to properly "evolve" lockfiles?
+      #18577 open 2025-07-01 [question] graph explain using compatibility()
+      #18852 open 2025-08-30 [question] How to work with SDL2 library with Conan ?
+      #16703 open 2024-07-19 Server side atomic uploads for concurrent uploads
+      #14242 open 2023-07-06 Necessary cases for tools.apple:sdk_path
+      #14329 open 2023-07-19 [question] download cache lock issue (potential bug)
+      #17289 open 2024-11-07 [question] Configuring CUDA projects with Conan CMake toolchain fails
+      #14766 open 2023-09-18 [bug] tools.env.virtualenv:powershell=True prevents program from compiling
+      #14893 open 2023-10-08 [bug] Incorrect behavior with CMakeToolchain when package doesn't contain compiler setting
+      #19318 open 2025-11-26 [feature] make `[conf]` settings for the host context available in the build-context
+      #19467 open 2026-01-15 [question] how to optimize subsequent conan graph calls
+      #20314 closed 2026-09-05 [bug] graph build-order build_args do not reproduce transitive dependency options
+      #20311 closed 2026-09-04 [question] `conanvcvars.bat` activation fail does not raise a build error
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #20315 closed 2026-09-05 [fix] Preserve transitive dependency options in build-order `build_args`
+      #20180 merged 2026-07-17 Recover `test_xcodebuild_test_different_sdk` test
+      #20242 merged 2026-08-06 fixing vs skipped tests
+      #10864 open 2022-03-23 [bug] merge refs not found in remote when capturing commit coordinates
+      #20314 closed 2026-09-05 [bug] graph build-order build_args do not reproduce transitive dependency options
+      #20291 closed 2026-08-26 [bug] Version range conflict although a version satisfying both ranges exists
+      #20235 closed 2026-08-04 [question] Changing cmake layout from the recipe
+      #13885 closed 2023-05-13 [question] during source() step, untracked working tree source files should be forced to be overwritten by checkout ?
+      #15530 open 2024-01-25 [bug] Suggested replacement of SCM attribute with export/source is broken
+      #19890 merged 2026-04-21 refactor _compute_fix_transitive()
+      #20206 closed 2026-07-23 [question] conan run and env variables
+      #10777 closed 2022-03-14 [question] Is example for `Implementing the scm feature` (migration to Conan 2.0) useful?
+      #19710 open 2026-03-04 [feature] Autotools generator should have better support for using the generator in a shell environment (.e.g. --host parameters)
+      #15839 closed 2024-03-08 [bug] Conan Assert after canceled conan Install
+      #19671 closed 2026-02-25 [question] Using captured Git scm with "conan source"
+      #19971 closed 2026-05-11 [bug] Concurrent access to conan cache fails during `conan graph build-order`
+      #12125 closed 2022-09-15 [question] How to use export-pkg with --ignore-dirty and the new scm mode in Conan v2.0
+      #19786 closed 2026-03-25 [question] Managing different kind of artifacts
+      #19097 closed 2025-10-15 [question] Remember URL of conan config install-pkg
+  recovery       9 hit(s) (all listed)
+      #19816 open 2026-03-31 [feature] Allow caching of `source()` step in a remote
+      #18712 closed 2025-07-30 [question] How to find commit from recipe hash of a conan-center-index package
+      #19308 closed 2025-11-25 [question] Consuming documentation metadata of dependencies
+      #17929 closed 2025-03-11 [question] How can I resolve Conan install error?
+      #15585 closed 2024-02-02 [bug] EnvVars.save_script() generates incorrect paths when placing a recipe in `/build/` folder
+      #6886 closed 2020-04-20 [bug] json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+      #6876 closed 2020-04-17 [question] Backing up an offline Build/Sources of a recipe/package
+      #353 closed 2016-07-01 Possibly inconsistent status after conan export
+      #4431 closed 2019-01-31 conan interactive mode even with CONAN_NON_INTERACTIVE
+  rollback       19 hit(s) (all listed)
+      #20071 open 2026-06-10 [question] Are remote commands synchronous or asynchronous?
+      #19738 closed 2026-03-11 [bug] Requirement 'xxx' not in lockfile 'build_requires'
+      #3003 closed 2018-06-06 [scm][revisions] Thoughts and questions on how to properly handle gitflow and Continuous Integration/Delivery with Conan recipes
+      #17115 closed 2024-10-04 [bug] Conan generate the wrong CMake Presets when building for MSVC 194
+      #16508 closed 2024-06-20 [question] Corrupted package after upload (403)
+      #871 closed 2017-01-17 Add possibility to upload "transactional"
+      #13874 closed 2023-05-11 [question] Should export_conandata_patches actually exports only a subset of patches instead of everything?
+      #7331 closed 2020-07-08 [feature] Make latest revision the latest uploaded, not latest created
+      #8510 closed 2021-02-16 [WIP] Locks + cache for multiple revisions
+      #722 closed 2016-12-01 Rollback for "conan imports"
+      #2929 closed 2018-05-23 Override compiler settings in build()
+      #5788 closed 2019-09-20 Updating conan config files tends to cause breakages
+      #7724 closed 2020-09-18 [question] Installing directories and files to GNUInstallDirs SYSCONFDIR
+      #7675 closed 2020-09-08 [bug] Two issues with rolling back changes in remote; changes not propagating
+      #6173 closed 2019-12-03 [bug] UNC paths are not supported with Python 3.8
+      #5202 closed 2019-05-22 [POC] Feature: crossbuilding model
+      #7095 merged 2020-05-26 Rollback (and simplify) changes from #7048
+      #7171 closed 2020-06-09 Generator 'pkg_config': same logic as others to get the names
+      #6819 merged 2020-04-08 Fix: handle compiler flags for Intel C++ (AutoToolsBuildEnvironment, Meson)
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15606 open 2024-02-06 Is there a way to use USERPROFILE in MSBuildDeps generator?
+      #6732 open 2020-03-25 [question] Performance of parallel_download
+      #18185 open 2025-04-25 [feature] Multithreaded conan cache save
+      #11087 open 2022-04-24 VSCode extension
+      #11224 open 2022-05-11 [feature] Issues with the CMakeToolchain generator
+      #11627 open 2022-07-13 [question] Possible Workflow with CMake (and CLion)
+      #4389 closed 2019-01-26 Feature/qmake subdirs generator implementation
+      #20086 closed 2026-06-17 [question] Docker Runner example
+      #7431 open 2020-07-27 Distributing and using a Yocto SDK via conan
+      #19607 closed 2026-02-11 Fix Xcode issues with the premake5 integration
+      #19157 closed 2025-10-28 Refactor virtual environment generation
+      #11601 closed 2022-07-10 Add PythonVirtualEnv helper and CMakePythonDeps generator
+      #14706 closed 2023-09-08 Add support for zstd compression
+      #18255 closed 2025-05-07 [feature] Support zstd compression for conan cache save
+      #18318 closed 2025-05-16 [question] Pipeline Handling
+      #7844 closed 2020-10-07 [question] Managing large binary 3rd party dependencies
+      #648 closed 2016-11-09 Use LZMA compression for transmission of binary packages
+      #15992 closed 2024-03-29 Conan 2 workspaces
+      #12914 closed 2023-01-17 wip: Make deactivate_conanx a function instead of an extra file
+      #18364 closed 2025-05-26 [question] Conan workspaces CI
+  half-written   12 hit(s) (all listed)
+      #19734 open 2026-03-09 Poc for a RecipesTable without Sqlite
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #20089 closed 2026-06-17 [bug?] non posix version of gtest pulled on linux
+      #13567 closed 2023-03-30 [question] Conan 2.0 upgrade
+      #5410 closed 2019-06-27 Stop requiring class properties on recipes
+      #13579 closed 2023-03-31 [question] dependency graph resolving process
+      #9718 closed 2021-10-03 [WIP] Conanfile external references
+      #10095 closed 2021-11-27 [bug] Cannot open opencv_ml453.lib
+      #9561 closed 2021-09-08 [bug] RequestsDependencyWarning: urllib3 (1.26.6) or chardet (3.0.4) doesn't match a supported version
+      #3873 closed 2018-10-29 conan cmake will invalidate the old project test
+      #8081 closed 2020-11-19 [bug] Cross build from Linux x86_64 to Linux armv8 fails
+      #6512 closed 2020-02-11 [feature] Conan remove --dryrun
+  wipe           55 hit(s) (all listed)
+      #10737 open 2022-03-08 [bug] searching virtual repository does not search component local repository
+      #19561 merged 2026-02-03 Add default `#platform` revision to `platform_{tool_}requires`
+      #8314 closed 2021-01-11 [question] How to model header only libraries that have a runtime dependency?
+      #922 closed 2017-01-28 Optimize conan install --update
+      #19120 closed 2025-10-20 Investigate file de-duplication performance for .tgz due to timestamps
+      #8841 closed 2021-04-21 conan inspect with conan-center is failing on windows platform
+      #18314 closed 2025-05-16 Compression plugin
+      #11250 closed 2022-05-13 [bug] Compiled program searches for binaries in non eistent path
+      #17761 closed 2025-02-12 [question] How to use a editable dependency that uses a different profile to the main consumer
+      #8012 closed 2020-11-05 [bug] build fails if build folder is only partially cleaned.
+      #15992 closed 2024-03-29 Conan 2 workspaces
+      #17228 closed 2024-10-27 [bug] [Windows] Cannot create a working default profile for VS 2022
+      #16825 closed 2024-08-15 [question] Conan 'home' with CI/CD Runners
+      #17079 closed 2024-09-28 [question] `conan install ... --build=missing` not building unbuilt dependencies.
+      #16948 closed 2024-09-06 [question] Changed revision of a transitive dep breaks the binary package selection [conan 2]
+      #16373 closed 2024-05-30 [bug] vcvars not called when using Visual Studio 17.10 + clang
+      #12625 closed 2022-11-29 Artifactory bloat issues with multiple Conan packages (versions/revision). 
+      #16207 closed 2024-05-06 Cache Gets wrong package[bug]
+      #16367 closed 2024-05-29 [question] Local cache vs. Artifactory
+      #14853 closed 2023-09-30 [bug] Example2 consuming_packages broken on Windows
+  wipes          4 hit(s) (all listed)
+      #8314 closed 2021-01-11 [question] How to model header only libraries that have a runtime dependency?
+      #7995 closed 2020-11-03 [feature] reuse existing shortened subdirectories in C:\.conan when using short_paths
+      #11447 merged 2022-06-13 [develop2] use always same paths in the conan cache for temporary folders too
+      #2718 closed 2018-04-05 Conan migrates settings back and forth always overwriting my settings with defaults
+  erase          47 hit(s) (all listed)
+      #15795 open 2024-03-01 [feature] Use PKG_CONFIG_LIBDIR and PKG_CONFIG_SYSROOT_DIR
+      #19243 open 2025-11-13 [question] full_mode on embedded deps
+      #20083 closed 2026-06-13 [feature] allow erasing conf values
+      #18421 closed 2025-06-06 [question] build-order-merge multiple files containing the asame package id with different contexts
+      #10332 closed 2022-01-13 [question] Cross building Qt using two profile approach
+      #18968 closed 2025-09-21 [question] How to delete specific setting for package by overriding on conan install -s command?
+      #19172 closed 2025-10-30 [question] Package recipe revision
+      #18348 closed 2025-05-23 [question] How can I erase from settings in compatibility()
+      #19151 closed 2025-10-27 [question] How to make compatible a msvc package produced for a clang-cl consumer?
+      #18313 closed 2025-05-16 [question] What API to use to manipulate both settings and options in Conan 2?
+      #16772 merged 2024-08-02 Issue with 'automatic' compatible packages and custom package ids
+      #7831 closed 2020-10-06 [bug] CMakeToolchain can no longer configure pre-3.13 CMake options
+      #16731 closed 2024-07-26 [bug] Changing info.settings.compiler erases other compiler options
+      #16718 closed 2024-07-24 [question] How to erase values from one profile to the other
+      #16732 merged 2024-07-26 ISSUE-16731: "msvc" compatibility with "Visual Studio" is broken
+      #3003 closed 2018-06-06 [scm][revisions] Thoughts and questions on how to properly handle gitflow and Continuous Integration/Delivery with Conan recipes
+      #16785 closed 2024-08-05 [question] Issue with 'automatic' compatible packages and custom package ids
+      #16606 closed 2024-07-04 [bug] & settings specifier removes * specified settings for conan create
+      #16701 closed 2024-07-19 [question] Artifactory compatibility between Conan 1 and Conan 2?
+      #16016 closed 2024-04-04 autotools: PKG_CONFIG_PATH is now set correctly if it wasn't declared…
+  erasing        4 hit(s) (all listed)
+      #20083 closed 2026-06-13 [feature] allow erasing conf values
+      #16016 closed 2024-04-04 autotools: PKG_CONFIG_PATH is now set correctly if it wasn't declared…
+      #8676 closed 2021-03-19 [bug] Package not found when using Compiler Any
+      #8429 closed 2021-02-02 [bug] ERROR: compiler.version setting required for vcvars not defined
+  erased         16 hit(s) (all listed)
+      #19243 open 2025-11-13 [question] full_mode on embedded deps
+      #18421 closed 2025-06-06 [question] build-order-merge multiple files containing the asame package id with different contexts
+      #10332 closed 2022-01-13 [question] Cross building Qt using two profile approach
+      #19172 closed 2025-10-30 [question] Package recipe revision
+      #18348 closed 2025-05-23 [question] How can I erase from settings in compatibility()
+      #18313 closed 2025-05-16 [question] What API to use to manipulate both settings and options in Conan 2?
+      #16732 merged 2024-07-26 ISSUE-16731: "msvc" compatibility with "Visual Studio" is broken
+      #16701 closed 2024-07-19 [question] Artifactory compatibility between Conan 1 and Conan 2?
+      #16174 closed 2024-04-29 [feature] Add an option to keep the same tree for conan cache save
+      #9766 closed 2021-10-08 [bug] env is erased after deactivating virtual env and virtual run env
+      #11860 merged 2022-08-12 Prevent mutation of conan_data structure in apply_conandata_patches
+      #11753 closed 2022-08-02 [bug] pkg info doesn't contain VS toolset
+      #11396 closed 2022-06-04 [bug] conan build --missing does not respect inner dependency options
+      #680 closed 2016-11-21 Make 'Any' working with missing setting value
+      #3060 closed 2018-06-15 Bad developer experience with relation to unit tests integration
+      #3971 closed 2018-11-20 deterministic short_paths
+  destroy        79 hit(s) (all listed)
+      #18016 open 2025-03-25 [bug] % in profiles
+      #7431 open 2020-07-27 Distributing and using a Yocto SDK via conan
+      #19036 closed 2025-10-03 [bug] Relative paths in generated CMake presets are incorrect
+      #19998 closed 2026-05-18 [question] profile-based/layout-based `conan workspace clean`
+      #19949 closed 2026-05-06 [question] package revision
+      #5513 open 2019-07-18 [feature request] add support for simultaneous multiple conan caches
+      #19552 closed 2026-02-02 [bug] New os.replace() implementation for Windows fails
+      #19765 closed 2026-03-18 [question] conan workspace rebuild dependers
+      #19027 closed 2025-10-02 [question] Compatibility of packages with `cppstd=None`
+      #18022 closed 2025-03-26 [question] cannot compile application with boost on macos in a nix-environment
+      #18338 closed 2025-05-22 [question] adjusting the PKG_CONFIG_PATH environment variable: Package ' ...', required by 'virtual:world', not found
+      #18371 closed 2025-05-27 [bug] package has 'exports_sources' but sources not found in local cache from local conan center index
+      #17916 closed 2025-03-09 [bug] unable to parse valid patch file
+      #17514 merged 2024-12-19 Config clean command sketch
+      #7189 closed 2020-06-12 Problem with conan create command
+      #17549 closed 2025-01-08 [bug] Conan 2.X generates invalid transitive dependency info when building project with editable packages
+      #13534 closed 2023-03-25 [question] cmake_layout in test_package
+      #16967 closed 2024-09-10 [question] Reproducible build with build_type=Debug
+      #7348 closed 2020-07-13 [RFC] conan dependency resolution policy
+      #12343 closed 2022-10-20 [bug] cross compiling v2 compatible recipes fails on mac
+  destroys       12 hit(s) (all listed)
+      #7431 open 2020-07-27 Distributing and using a Yocto SDK via conan
+      #19552 closed 2026-02-02 [bug] New os.replace() implementation for Windows fails
+      #18338 closed 2025-05-22 [question] adjusting the PKG_CONFIG_PATH environment variable: Package ' ...', required by 'virtual:world', not found
+      #18371 closed 2025-05-27 [bug] package has 'exports_sources' but sources not found in local cache from local conan center index
+      #17514 merged 2024-12-19 Config clean command sketch
+      #13725 closed 2023-04-19 [bug] conan info --path destroys installed package
+      #5718 closed 2019-09-09 Running conan create without copying source
+      #11607 closed 2022-07-11 [question]  CMake generators - how to use libraries form a different build config
+      #4048 closed 2018-12-03 real support for rpath - post install package modification step
+      #10183 merged 2021-12-15 making aggregate_components non-destructive, very dangerous
+      #4407 closed 2019-01-29 question: how to same package name, different version, different settings combinations
+      #2469 closed 2018-02-13 Wrong targeted Windows SDK after solution upgrade with Visual Studio 2017
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20270 open 2026-08-17 Fix: Improve `conan cache restore` folder extraction to avoid overwrites
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #19419 open 2025-12-25 [feature] conan upload should enforce strict overwrite control to prevent package revision ambiguity and enable reliable traceability
+      #19271 open 2025-11-19 [question]The conan upload operation intermittently fails when executed concurrently for three build types.
+      #16703 open 2024-07-19 Server side atomic uploads for concurrent uploads
+      #18939 open 2025-09-16 [question] conan upload sometimes fails when running parallely
+      #10609 open 2022-02-17 [feature] Passing options to compatible_packages that do not affect package_id
+      #12057 open 2022-09-07 [question] Is it possible to configure export-pkg command to do nothing if the package already exists in the conan cache?
+      #14428 open 2023-08-04 Fix pkgconfig name collision on Windows
+      #20249 open 2026-08-08 fix: change permissions of read-only files before extracting in cache restore (#20241)
+      #14180 open 2023-06-28 [question] XcodeDeps possible to leave linker options empty?
+      #15979 open 2024-03-28 [bug] CMake ends up using the Debug build of moc.exe in AUTOMOC
+      #12447 open 2022-11-02 [question] Handling multiple package setting/option variations in single CMake build
+      #11224 open 2022-05-11 [feature] Issues with the CMakeToolchain generator
+      #12953 open 2023-01-23 [feature] Support for virtual environments
+      #15606 open 2024-02-06 Is there a way to use USERPROFILE in MSBuildDeps generator?
+      #12963 open 2023-01-24 [feature] Allow setting of vendor specific information for generated CMake presets
+      #15795 open 2024-03-01 [feature] Use PKG_CONFIG_LIBDIR and PKG_CONFIG_SYSROOT_DIR
+      #13962 open 2023-05-25 [question] cross building packages that uses PkgConfig.fill_cpp_info
+      #15632 open 2024-02-09 [question] pre install hook
+  clobber        15 hit(s) (all listed)
+      #20192 merged 2026-07-22 Test for AutotoolsDeps msvc LINK/Automake collision
+      #10708 closed 2022-03-03 [question] static code analysis over multiple packages
+      #19432 closed 2026-01-04 [feature] local `settings_user`
+      #18247 merged 2025-05-06 [new command] `conan report diff` to inspect diffs between versions and revisions 
+      #18593 closed 2025-07-03 [bug] potential cmake_try_compile regression in 2.18
+      #13534 closed 2023-03-25 [question] cmake_layout in test_package
+      #14457 closed 2023-08-09 [bug] CMakePresets does not support multiple build configurations
+      #12646 closed 2022-12-01 [bug] Unable to install grpc/1.50.1
+      #2172 closed 2017-12-18 Switch from node-semver to python-semver
+      #1377 closed 2017-06-10 [workspace] Adding "conan-project" feature, to allow simultaneous edition of connected packages
+      #2242 closed 2018-01-02 Option scoping broken in export_pkg api
+      #5135 closed 2019-05-13 Deploy generator clobbers file permissions, including executable bit
+      #4304 closed 2019-01-15 run_in_windows_bash runs commands inside bash --login, which clobbers the environment
+      #3597 closed 2018-09-21 [question] Non-standard .cmake file locations within package/hashXXXX directory
+      #3398 closed 2018-08-26 cmake.patch_config_paths doesn't work properly on windows
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20348 merged 2026-09-22 Fix missing package reference in error messages of scoped output steps
+      #18284 open 2025-05-10 [bug] compatibility handling feedback
+      #12203 open 2022-09-26 [bug] conan lock/install/build bypass validate failure
+      #17289 open 2024-11-07 [question] Configuring CUDA projects with Conan CMake toolchain fails
+      #16600 open 2024-07-03 [feature] System cache
+      #17825 open 2025-02-21 [question] Toolchain as a package that injects compiler args
+      #847 open 2017-01-09 Pivoting on target-cpu/arch
+      #16963 open 2024-09-09 [question] ffmpeg/6.1.1 dependancies and PKG_CONFIG
+      #14203 closed 2023-06-30 [bug] conan upload --list errors on empty recipe list
+      #20077 open 2026-06-10 [bug] Linker Errors
+      #18293 open 2025-05-13 [question] How to speed up installation
+      #20057 closed 2026-06-04 [bug] Inconsistent/faulty recipe metadata download behaviour
+      #20033 closed 2026-05-28 [bug] `conan upload` JSON output says upload=true even if nothing changed
+      #16256 closed 2024-05-14 [bug] `conan create lock` is orders of magnitude faster with `--build="*"`
+      #19157 closed 2025-10-28 Refactor virtual environment generation
+      #19474 merged 2026-01-16 Add BAT support for ``tools.env:deactivation_mode=function``
+      #19448 closed 2026-01-09 [bug] conan config install-pkg does not respect URL(s)
+      #19562 closed 2026-02-03 [question] Highest version in version range is not resolved
+      #15721 closed 2024-02-21 A just builded revision is removed from the cash and the dependency cannont be resolved
+      #19126 merged 2025-10-20 Add groups for argument options
+  unreadable     9 hit(s) (all listed)
+      #12891 closed 2023-01-12 [bug] Conan is unusable on white terminal theme (default for Gnome terminal, etc)
+      #17578 closed 2025-01-15 [feature] Add "force" option to conan remote remove
+      #14891 closed 2023-10-07 [bug] CMake Error in the generated conan_provider.cmake
+      #9303 closed 2021-07-21 [feature] exclude some deps from conan dependency graph 
+      #11301 closed 2022-05-19 Try ANSI encoding before Windows-1252 on Windows
+      #8667 closed 2021-03-18 [question] Can revision numbers be updated with "normal" increments?
+      #6575 closed 2020-02-20 [feature] Add __main__.py somewere to allow starting conan using python -m conans.XXX
+      #2178 merged 2017-12-19 Package path parameter to be a conanfile path or a directory
+      #7690 merged 2020-09-09 Feature/markdown cmake gen info
+  garbage        25 hit(s) (all listed)
+      #17992 open 2025-03-19 [question] Building using Conan CMakePresets via Jenkins jobs in parallel
+      #10541 closed 2022-02-08 [bug] conans.tools.Git.get_branch returns garbage when in detached HEAD state
+      #11076 closed 2022-04-21 [bug] Running with win_bash=True handles encoding incorrectly
+      #19838 merged 2026-04-06 detect_libcxx: Remove temporary directory usage
+      #11032 closed 2022-04-14 [question] Trouble linking dependency library package which depends on precompiled libraries.
+      #18712 closed 2025-07-30 [question] How to find commit from recipe hash of a conan-center-index package
+      #4047 closed 2018-12-03 Support Microsoft Symbol Server integration with Artifactory for Conan packages containing .pdb
+      #17960 closed 2025-03-13 [bug]Bad error message for bad download path
+      #8347 closed 2021-01-18 Fix: Allow modification of system/cpu_family/cpu/endian in generated MesonToolchain toolchain file
+      #5368 closed 2019-06-18 [Question] Package_ID, PREV, RREV - howto
+      #10667 closed 2022-02-26 [question] Is there a way to control the size of Conan cache?
+      #14360 closed 2023-07-24 [question] How to remove "dirty" folders from cache?
+      #15088 closed 2023-11-12 [bug] Findboost.cmake not generated
+      #14536 closed 2023-08-21 [question] 0 (zero) bytes items in JFrog Artifactory after conan upload
+      #14154 closed 2023-06-22 [bug] Findfmt.cmake not generated
+      #11675 merged 2022-07-20 Add conan.conanrc file to setup the conan user home
+      #157 closed 2016-02-13 download caching and avoiding a single point of failure
+      #1229 closed 2017-04-19 Conan `remove` left several Gb in X:\.conan\ folder
+      #2415 closed 2018-01-31 Allow promotion of packages in Artifactory
+      #1377 closed 2017-06-10 [workspace] Adding "conan-project" feature, to allow simultaneous edition of connected packages
+  mangled        11 hit(s) (all listed)
+      #13555 open 2023-03-28 [bug] Problems when enable Swift language in CMake
+      #15430 open 2024-01-09 [feature] gfortran Compiler Support
+      #18893 closed 2025-09-06 [question] Conan + cmake + ninja + msvc. How to set exact toolset 14.40.33807?
+      #17685 closed 2025-02-03 [question] Required component package not in dependencies - 2.9.1 vs 2.12.1
+      #16118 closed 2024-04-22 [bug] subsystem.Popen() should be called with a clean env
+      #4261 closed 2019-01-09 Windows short_paths feature still needs long paths initially and can fail in Jenkins Multibranch pipelines
+      #3179 closed 2018-07-06 [question] tools.cross_building and warning "This package defines both 'os' and 'os_build'"
+      #6727 closed 2020-03-24 [question] conan info|install skips cache and tries to find package from remote instead?
+      #7755 closed 2020-09-25 [question] Is there a way to build project that outputs multiple lib files with both static and shared types?
+      #5162 merged 2019-05-17 Update conan_requester.py
+      #6632 merged 2020-03-05 Feature/installer parallel
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20270 open 2026-08-17 Fix: Improve `conan cache restore` folder extraction to avoid overwrites
+      #13555 open 2023-03-28 [bug] Problems when enable Swift language in CMake
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #18048 open 2025-03-31 [migrate] Help me migrate our open source project Nativium
+      #14767 open 2023-09-18 Capitalisation (?) mismatch between conan and CMake
+      #13665 open 2023-04-10 How to copy Qt supporting dlls required to run an application
+      #18259 open 2025-05-07 [feature] Use subdirectory for conan cache save content
+      #13210 open 2023-02-23 [question] How to cross compiling when using generator with AutotoolsToolchain()
+      #16716 open 2024-07-23 [bug] conan should not change ownership of files while extracting conan_package.tgz
+      #19311 open 2025-11-25 [bug] Conan generated .pc files should have -uninstalled in file name so the packages work when using a sysroot
+      #15597 open 2024-02-05 [question] How to disable signing on Xcode
+      #15237 open 2023-12-07 [question] Cross compiling SDL
+      #12106 open 2022-09-13 [bug] conan.tools.AutotoolsDeps: linker error due to `-F -Wl,-rpath -Wl,<libdirs>` on macOS when there are dependencies
+      #18585 open 2025-07-03 [question] Propagating package_info when using generator_info
+      #15646 open 2024-02-12 [feature] stdcpp_library when using static-libstdc++
+      #17567 open 2025-01-13 [question] Usefulness of platform_requires
+      #12024 open 2022-09-05 [feature] conditional config remote installation
+      #13697 open 2023-04-14 How to change location/order  of -ldl
+      #19070 open 2025-10-10 [question] Suggested user and access management for Artifactory conan repo
+      #19689 open 2026-03-01 [bug] Large (3GB+) package uploads to Artifactory fail
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20254 open 2026-08-12 Fix ``conan cache restore`` crashing with ``PermissionError`` when the cache contains read-only files
+      #18788 open 2025-08-15 [question] Best practices for scaling up lock files for many repos and profiles
+      #20178 open 2026-07-16 [feature] Model FILE_SETs in CMake-related `package_info(self)`
+      #15928 open 2024-03-22 [bug] Escape semicolon in CMake defines
+      #19810 open 2026-03-30 [feature] Short Output Messages
+      #20324 open 2026-09-08 [fix] Preserve package configuration order during installation
+      #20372 open 2026-10-02 Add new os.libc setting (#16179)
+      #20302 open 2026-09-01 [question] On package create, upload resolved dependency manifest with package?
+      #19634 open 2026-02-18 [question] Install external lib with SOVERSION
+      #18673 open 2025-07-21 Check cpp_info propagation to dependencies based on traits in *Deps generators
+      #11686 open 2022-07-21 [feature] Consider allowing overriding install prefix at package creation time
+      #18974 open 2025-09-22 [feature] consider outputting diagnostic messages to structured SARIF file
+      #19086 open 2025-10-13 [feature] CMakeToolchain - emit cache_variables to cache file
+      #14180 open 2023-06-28 [question] XcodeDeps possible to leave linker options empty?
+      #20025 open 2026-05-26 [question] SBOM generated from Conan dependencies cannot include components directly embedded in source code
+      #13447 open 2023-03-15 [question] Support for RAD Studio (Delphi and C++Builder)?
+      #18340 open 2025-05-22 [question] Editable packages: Custom cpp_info properties with path
+      #17023 open 2024-09-18 [feature] Expand tools.build:compiler_executables  to accept other common executables like strip
+      #15708 open 2024-02-20 [feature] Bring some customizability to CMakePresets generated by CMakeToolchain
+      #14480 open 2023-08-14 [feature] Obtain timestamp from unzip routines for SOURCE_DATE_EPOCH
+  unclean        3 hit(s) (all listed)
+      #16539 closed 2024-06-25 fix(requires): don't stop propagating requires in build context  #16333
+      #16118 closed 2024-04-22 [bug] subsystem.Popen() should be called with a clean env
+      #2163 closed 2017-12-16 Windows: non-latin symbols in USERPROFILE or PATH break conan
+  shutdown       21 hit(s) (all listed)
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #19593 closed 2026-02-10 [bug] CopyTree is very slow on windows when many files are involved
+      #19910 closed 2026-04-24 [question] How do I package interface using conan2?
+      #18999 closed 2025-09-26 vcvars call causes cmake to hang
+      #9695 closed 2021-09-30 [question] Unable to connect to conancenter=https://center.conan.io
+      #16367 closed 2024-05-29 [question] Local cache vs. Artifactory
+      #15037 closed 2023-10-31 [bug] find_package can't find all the dependencies
+      #12706 closed 2022-12-14 [question] Locally built package not found
+      #6145 closed 2019-11-27 facing linking error when I upgraded conan version from 1.18.5 to 1.20.4
+      #16513 closed 2024-06-20 [question] unable to link header files using conan2.4
+      #9456 closed 2021-08-20 [question] Propagate system libs of dependencies in VisualStudioBuildEnvironment helper?
+      #9293 closed 2021-07-20 [bug] conan not able to download package
+      #8999 merged 2021-05-25 Add new center remote
+      #8788 closed 2021-04-12 [bug] conan.bintray.com has invalid/no certificate and fails in redirection loop
+      #8804 closed 2021-04-15 [question] Conan center search takes ages
+      #439 closed 2016-08-30 Trigger-system for the Conan Server
+      #2297 closed 2018-01-11 Automate backup to any another git web service
+      #3895 closed 2018-11-01 Improve the server printed traces 
+      #4517 closed 2019-02-13 Can not search in broken remotes
+      #7549 closed 2020-08-13 [bug] cmake_find_package_multi: frameworks not propagated on MacOS
+  reboot         14 hit(s) (all listed)
+      #19838 merged 2026-04-06 detect_libcxx: Remove temporary directory usage
+      #19474 merged 2026-01-16 Add BAT support for ``tools.env:deactivation_mode=function``
+      #18345 closed 2025-05-22 [question] revision doesn't change when relinking with a different linker?
+      #9700 closed 2021-09-30 [question] What's the use of `host_name` in `conan_server` config?
+      #13046 closed 2023-02-03 [bug] Extracting packages from Artifactory after download fails on Windows/SMB
+      #7300 closed 2020-07-02 [bug] Conan remove --locks doesn't work
+      #3587 closed 2018-09-20 New command/option for cache cleanup with customizable retention period
+      #9730 closed 2021-10-05 [bug] Conan error on 1:st connection to server after reboot
+      #626 closed 2016-11-04 Appveyor: ImportError: No module named conan.packager
+      #666 closed 2016-11-15 Windows installer problem with pywintypes27.dll
+      #1400 closed 2017-06-16 False error message from server on recipe date
+      #4600 closed 2019-02-23 conan create not rebuilding tree with scm "auto" and --build=outdated
+      #5087 closed 2019-05-02 Error when install on raspbian
+      #1914 merged 2017-10-19 Feature/short paths py32 auto
+  disk+full      61 hit(s) (all listed)
+      #20302 open 2026-09-01 [question] On package create, upload resolved dependency manifest with package?
+      #19178 open 2025-10-31 [bug] Canceling a conan install corrupts cache
+      #14107 open 2023-06-16 [question] dependency options conditional on whether dependency is being built
+      #8626 open 2021-03-10 [feature] Packageable pip installable Python venv based utilities
+      #12964 open 2023-01-24 [question] MSBuild Helper looking in wrong folder for buildtools
+      #19181 open 2025-10-31 [bug] AssertionError: Conan failed to acquire database lock
+      #20176 merged 2026-07-15 change workspace load_conanfile and python_requires
+      #18293 open 2025-05-13 [question] How to speed up installation
+      #11601 closed 2022-07-10 Add PythonVirtualEnv helper and CMakePythonDeps generator
+      #18786 closed 2025-08-15 [question] making bundles/meta packages
+      #19493 closed 2026-01-21 [bug] build_type setting should be defined
+      #13407 closed 2023-03-10 [question] How to proparate transitive build dependencies (Conan v2)?
+      #18698 closed 2025-07-26 [bug] python exception while using `conan graph explain` from a Gitea Conan remote
+      #18983 closed 2025-09-24 [question] How download binaries for Windows on Linux host ?
+      #18247 merged 2025-05-06 [new command] `conan report diff` to inspect diffs between versions and revisions 
+      #18106 closed 2025-04-10 [question]  Conan cache folder layout.
+      #18648 closed 2025-07-15 [question] Define option in python_requires conanfile (conan2)
+      #17775 closed 2025-02-14 [bug] tools.files.get with strip_root=True shows over 100% unarchival progress (140+%)
+      #17691 closed 2025-02-04 [feature] Use MSVC binary compatibility when searching for compatible packages
+      #17609 closed 2025-01-22 [question] Creating a custom Qt package misses bindirs on the consumer side
+  data+loss      18 hit(s) (all listed)
+      #14706 closed 2023-09-08 Add support for zstd compression
+      #12323 closed 2022-10-18 [question/bug] correct way to use custom Make program on Windows
+      #16182 closed 2024-04-30 [bug] Cannot build Boost with Conan 2
+      #7075 closed 2020-05-23 Meson cross again > 1.24 remove duplicate #6410
+      #6403 closed 2020-01-22 [bug] MSBuild.build does not use arch argument to set vcvars
+      #14080 closed 2023-06-13 How to resolve boost::scoped_static_mutex_lock link error?
+      #12855 closed 2023-01-05 [question] CMakeToolchain requires VCVars
+      #11670 closed 2022-07-18 [feature] PyInstall --onefile support
+      #12227 closed 2022-10-02 [question] Did you consider all the consequences of some depreciations in Conan 2.x?
+      #11891 closed 2022-08-17 [bug] Failed to build test_package for multiple profiles
+      #12023 closed 2022-09-05 [bug] generator 'MSBuildDeps': 'settings.build_type' doesn't exist
+      #10241 merged 2021-12-28 exploring new compatibility
+      #1870 closed 2017-10-08 Building bzip2 from sources fails on Windows
+      #4383 closed 2019-01-25 difference between --build and --build=missing for conan install command
+      #4444 closed 2019-02-01 How to handle warnings generated by upstream package
+      #7114 closed 2020-05-28 [question] undefined reference on test_package
+      #6406 closed 2020-01-23 [bug] Revision not picked up when building conan package.
+      #7869 closed 2020-10-13 [feature] 'conan download': preserve tarfiles in the cache ('conan upload' to use it)
+  partial+write  33 hit(s) (all listed)
+      #18048 open 2025-03-31 [migrate] Help me migrate our open source project Nativium
+      #18263 closed 2025-05-08 Get ``Workspace`` feature out of incubating
+      #19518 closed 2026-01-27 feat: conan pkglist find-remote can determine revisions
+      #19083 closed 2025-10-13 Bug/19082 package list items swallows information if no binary revision is given
+      #19738 closed 2026-03-11 [bug] Requirement 'xxx' not in lockfile 'build_requires'
+      #16798 closed 2024-08-07 [feature] In build-order.json, provide build_args even when binary="Download"
+      #14859 closed 2023-10-02 [bug] compatibility plugin ignores compatible binary when package ID depends on cmake generator
+      #16636 closed 2024-07-09 [question] How to update a reference in a lockfile?
+      #13127 closed 2023-02-14 How to Read a environment variable
+      #13439 closed 2023-03-14 [question] How to disable search of dependency's test binary packages
+      #16099 closed 2024-04-17 [bug] Cannot set requirements through extended class
+      #12360 closed 2022-10-21 [question] cmake_layout with subproject vs conan.tools.scm.Git
+      #16210 closed 2024-05-06 [question] Problem deploying oneMKL prepackaged binaries in custom package
+      #13451 closed 2023-03-15 [bug] lockfile options are overridden by config_options
+      #14133 merged 2023-06-20 Add MakeDeps generator
+      #12593 closed 2022-11-23 [question] Is it possible to install the lower border of your version ranges?
+      #6508 closed 2020-02-10 [feature] --deploy-generator option : deploy single package only
+      #2356 closed 2018-01-22 Feature/gpg
+      #10304 closed 2022-01-10 [bug] Recipe self.dependencies does not contain any elements
+      #3573 closed 2018-09-19 Incorrect handling of MSVC versions
+  crash+safe     27 hit(s) (all listed)
+      #20289 closed 2026-08-25 Pre-release regression: encrypted local credentials are not migrated after CONAN_LOGIN_ENCRYPTION_KEY removal
+      #17545 open 2025-01-02 [question] Parallel jobs and independent caches
+      #18648 closed 2025-07-15 [question] Define option in python_requires conanfile (conan2)
+      #17622 closed 2025-01-23 [bug] Corrupted packages in local cache
+      #13439 closed 2023-03-14 [question] How to disable search of dependency's test binary packages
+      #16732 merged 2024-07-26 ISSUE-16731: "msvc" compatibility with "Visual Studio" is broken
+      #15578 closed 2024-02-01 libvips: conversion to pyramidal files fails
+      #13284 merged 2023-03-01 Fixed parsing the output of vswhere
+      #13327 closed 2023-03-04 [bug] package_info crashing when self.cpp_info.components is set to {}
+      #7760 closed 2020-09-28 Feature: add tests for compression and links
+      #13209 closed 2023-02-23 [bug] CMakeDeps.generate() fails when `build_context_activated` is used
+      #1557 closed 2017-07-30 "Case insensitive filesystem can't manage this"
+      #12077 closed 2022-09-11 [feature] Add `IMPORTED_LOCATION_<CONFIG>` properties for Imported Targets created by `CMakeDeps`.
+      #10255 merged 2021-12-31 new CLI for new command
+      #9553 merged 2021-09-07 [develop2] New flat, simple, dynamic and multi-config lockfiles
+      #9561 closed 2021-09-08 [bug] RequestsDependencyWarning: urllib3 (1.26.6) or chardet (3.0.4) doesn't match a supported version
+      #8309 closed 2021-01-09 [question] How to avoid shared library getting linked into the executable?
+      #8201 merged 2020-12-12 Feature/msvc
+      #8131 merged 2020-12-01 small refactor of add_permissions
+      #683 closed 2016-11-22 Database is locked exception
+  atomic+write   24 hit(s) (all listed)
+      #19734 open 2026-03-09 Poc for a RecipesTable without Sqlite
+      #18048 open 2025-03-31 [migrate] Help me migrate our open source project Nativium
+      #17134 open 2024-10-08 [feature] package revisions in lockfiles
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #20077 open 2026-06-10 [bug] Linker Errors
+      #19518 closed 2026-01-27 feat: conan pkglist find-remote can determine revisions
+      #19462 closed 2026-01-14 [bug] termination in get_recipe and get_package is considered successful by local cache
+      #18913 closed 2025-09-10 [bug] Powershell permission denied temporary folder
+      #18994 closed 2025-09-26 [question] Seeking Best Practices for "Latest" Revision Resolution in a Federated Multi-Remote, Shared-Cache Environment
+      #18554 closed 2025-06-27 [bug] AssertionError
+      #8934 closed 2021-05-07 Best way to promote packages
+      #16508 closed 2024-06-20 [question] Corrupted package after upload (403)
+      #15608 closed 2024-02-06 [question] set_version hook and the local repository
+      #12706 closed 2022-12-14 [question] Locally built package not found
+      #13068 closed 2023-02-07 conan install error: ERROR: Build-require 'strawberryperl' cannot be found in lockfile
+      #14133 merged 2023-06-20 Add MakeDeps generator
+      #5502 closed 2019-07-17 Bugfix: Parallel download of files
+      #12941 closed 2023-01-20 [question] TinyXML broken with Linux GCC 12?
+      #12521 closed 2022-11-12 [question] Managing multiple C++ packages within the same git repository
+      #10091 merged 2021-11-26 changed cwd for source() method
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14613 open 2023-08-30 [question] Ignore local cache when creating lock file
+      #18788 open 2025-08-15 [question] Best practices for scaling up lock files for many repos and profiles
+      #20303 open 2026-09-01 [question] How to mark a dependency as compatible for testing against a different depndency version
+      #19181 open 2025-10-31 [bug] AssertionError: Conan failed to acquire database lock
+      #11341 open 2022-05-26 [question] Download cache supports concurrent access by different machines?
+      #20302 open 2026-09-01 [question] On package create, upload resolved dependency manifest with package?
+      #10261 open 2022-01-03 Poc/develop2 exported lockfiles
+      #14329 open 2023-07-19 [question] download cache lock issue (potential bug)
+      #12203 open 2022-09-26 [bug] conan lock/install/build bypass validate failure
+      #19580 open 2026-02-05 [question] Need clarification on python_requires best practices
+      #20175 open 2026-07-15 [feature] Add package_ids to lockfiles.
+      #19845 open 2026-04-08 [feature] multi process lock for cache database
+      #14873 open 2023-10-04 [feature] add switch to make export of same latest recipe revision a non-op
+      #17402 open 2024-12-03 [question] Ignore timestamps when updating conan.lock?
+      #18253 open 2025-05-07 [POC] Using fasteners to control parallel execution of Conan
+      #18098 open 2025-04-08 [testing] Add validation for concurrent cache in Conan
+      #15840 open 2024-03-08 [Feature] Conan 2 cache concurrency
+      #11353 open 2022-05-27 [feature] Have a way to generate both conanbuild.bat and conanbuild.ps1 files.
+      #17545 open 2025-01-02 [question] Parallel jobs and independent caches
+      #19734 open 2026-03-09 Poc for a RecipesTable without Sqlite
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19734 open 2026-03-09 Poc for a RecipesTable without Sqlite
+      #12024 open 2022-09-05 [feature] conditional config remote installation
+      #10709 open 2022-03-03 [bug] cmake error output not shown when using msys2/git bash
+      #12964 open 2023-01-24 [question] MSBuild Helper looking in wrong folder for buildtools
+      #19181 open 2025-10-31 [bug] AssertionError: Conan failed to acquire database lock
+      #20068 open 2026-06-08 [question] Build all dependencies locally
+      #13555 open 2023-03-28 [bug] Problems when enable Swift language in CMake
+      #20196 closed 2026-07-22 [bug] `conan upload` fails on an empty recipe set
+      #12391 closed 2022-10-25 [bug] It seems, that it is not possible to specify build and install folders with new generators 
+      #19462 closed 2026-01-14 [bug] termination in get_recipe and get_package is considered successful by local cache
+      #19784 closed 2026-03-24 [question] graph build-order ignores Skipped binaries (tools)
+      #19717 closed 2026-03-05 [question] Out-of-tree build and generator folders for local builds only
+      #19782 closed 2026-03-24 [question] Windows ARM64EC support
+      #19167 closed 2025-10-29 [bug] None vs "None" in package options
+      #16612 closed 2024-07-04 [question] Building and uploading missing packages changes the recipe revision timestamp
+      #15380 closed 2024-01-03 [bug] PremakeDeps not working for conan 1.62.0
+      #3106 closed 2018-06-25 [feature] Generate multiple packages from single compilation
+      #6620 closed 2020-03-03 A sporadic import failure in the CI when adding a global hook
+      #17115 closed 2024-10-04 [bug] Conan generate the wrong CMake Presets when building for MSVC 194
+      #7181 closed 2020-06-10 [bug] Interrupted install leaves locks in bad state
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20270 open 2026-08-17 Fix: Improve `conan cache restore` folder extraction to avoid overwrites
+      #20241 open 2026-08-06 [bug] `PermissionError` during `conan cache restore` when extracting read-only files on Windows
+      #13555 open 2023-03-28 [bug] Problems when enable Swift language in CMake
+      #18259 open 2025-05-07 [feature] Use subdirectory for conan cache save content
+      #18048 open 2025-03-31 [migrate] Help me migrate our open source project Nativium
+      #13210 open 2023-02-23 [question] How to cross compiling when using generator with AutotoolsToolchain()
+      #19311 open 2025-11-25 [bug] Conan generated .pc files should have -uninstalled in file name so the packages work when using a sysroot
+      #16716 open 2024-07-23 [bug] conan should not change ownership of files while extracting conan_package.tgz
+      #18585 open 2025-07-03 [question] Propagating package_info when using generator_info
+      #12106 open 2022-09-13 [bug] conan.tools.AutotoolsDeps: linker error due to `-F -Wl,-rpath -Wl,<libdirs>` on macOS when there are dependencies
+      #15597 open 2024-02-05 [question] How to disable signing on Xcode
+      #14767 open 2023-09-18 Capitalisation (?) mismatch between conan and CMake
+      #15237 open 2023-12-07 [question] Cross compiling SDL
+      #15646 open 2024-02-12 [feature] stdcpp_library when using static-libstdc++
+      #17567 open 2025-01-13 [question] Usefulness of platform_requires
+      #18202 open 2025-04-30 [bug] Wrong path of vcvarsall.bat with VisualStudioBuildTools
+      #19689 open 2026-03-01 [bug] Large (3GB+) package uploads to Artifactory fail
+      #13697 open 2023-04-14 How to change location/order  of -ldl
+      #20225 open 2026-07-28 What if Conan could provide Zig with library information
+      #12155 open 2022-09-20 [question] What is the equivalent of `conans.tools.MSBuild.build()` `upgrade_project` in `conan.tools.microsoft.MSBuid`?
+
+== 51 terms run; 49 returned hits, 17 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,2 @@
+ROW regctl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations
+EXIT regctl 0

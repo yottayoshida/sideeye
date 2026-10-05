@@ -1,0 +1,25 @@
+Vercel CLI 62.2.0 (Node.js 22.23.3)
+
+> Telemetry status: Disabled
+
+> You have opted out of Vercel CLI telemetry
+> No data will be collected from your machine
+
+Learn more: https://vercel.com/docs/cli/about-telemetry
+Error: Failed to get package info: Error: Failed to fetch dist-tags from npm
+    at process.<anonymous> (/usr/local/lib/node_modules/vercel/dist/get-latest-worker.cjs:124:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+UNKNOWN  multiple_threads_detected
+         two threads of process 1895 wrote in the judged directory: tid 1906 performed mkdir(/s/vercel) and tid 1895 performed mkdir(/s/vercel). No thread creation or join the shim recorded orders the first of those before the second, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/vercel-in
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   the shim recorded a process boundary; the strace account was not read, so nothing accounts for what the other process did; the shim recorded 54 thread(s) created, and 2 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 49 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

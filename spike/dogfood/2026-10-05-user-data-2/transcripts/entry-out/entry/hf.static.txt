@@ -1,0 +1,2 @@
+static: /opt/py/bin/hf: Python script, ASCII text executable
+next: sideeye explore --state /s/hf --cwd "/s/hf-in" --operation "hf auth logout --token-name hf_a" \

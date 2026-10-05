@@ -1,0 +1,4 @@
+static: /opt/bin/kubeadm: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=xj4KlQxsIg8abKSQ-zSh/cDwhnvHhk8zHgquqD0r3/qGdtUeoGznMVnc8bkEie/RnJshPCUWyI5w6Hf3gSF, BuildID[sha1]=4836fad55cf953e05e289303bade3ed4352d4194, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/kadm --cwd "/s/kadm-in" --operation "kubeadm config migrate --old-config /s/kadm/kubeadm.yaml --new-config /s/kadm/kubeadm.yaml" \

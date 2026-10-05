@@ -1,0 +1,1036 @@
+== novelty pre-scan: golang/go
+== date: 2026-10-05T06:55:47Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #80377 open 2026-07-11 runtime: crash after shrinkstack crash with cgo
+      #82003 open 2026-10-04 crypto/x509: fix crash on invalid UTF-8 DNSName in macOS verifier
+      #81943 open 2026-10-01 runtime: windows/386: suspending a thread inside NtContinue crashes recovery from a fault
+      #62086 open 2023-08-17 runtime: crashes with "runtime: traceback stuck"
+      #81559 open 2026-09-16 runtime: SIGSEGV in gcStart on Bottlerocket 1.65.0 / Linux 6.12.103 — regression vs go1.25.14
+      #82006 open 2026-10-05 runtime: random memory allocation errors on AIX
+      #22227 open 2017-10-12 runtime: crash on Plan 9 since CL 46033
+      #81103 open 2026-08-25 x/tools/gopls: idle goroutine crashes in pthread_cond_wait [darwin]
+      #81944 open 2026-10-01 runtime: windows: a fault while printing an exception hangs the process instead of exiting
+      #31378 open 2019-04-10 runtime: ARM uClinux crash with -buildmode=c-archive
+      #19928 open 2017-04-11 runtime: crash in hybrid barrier initializing C memory
+      #81888 open 2026-09-30 runtime: keep a valid frame pointer in mcall on windows/amd64
+      #81761 open 2026-09-25 runtime:mayMoreStackMove: TestFinalizerOrCleanupDeadlock/Cleanup/Panic failures
+      #79867 open 2026-06-05 crypto/x509: Darwin verification can crash on invalid UTF-8 DNSName
+      #81869 open 2026-09-29 cmd/compile: generic shift-by-constant canonicalization gives Const64 the wrong type [1.26 backport]
+      #77515 open 2026-02-09 x/build: memory corruption crashes on darwin-amd64 builders
+      #46467 open 2021-05-31 pthread_create crash: gofuzz, cgo, asan, go 1.16
+      #81405 open 2026-09-09 simd/archsimd: Float32x4 and Float64x2 Abs and Neg crash with SIGILL on AVX-only CPUs
+      #76859 open 2025-12-16 runtime: crash message not included in debug.SetCrashOutput
+      #79650 open 2026-05-25 runtime/secret:runtimesecret: TestCore failures
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81238 open 2026-08-31 runtime: windows/amd64 exception recovery can write below a goroutine stack and corrupt the Go heap
+      #81189 open 2026-08-28 sync: Map.Store crashes on Windows with concurrent first-use (HashTrieMap.expand corrupts type hash pointer)
+      #51760 open 2022-03-17 cmd/go: detect corrupt (overwritten) installation
+      #75542 open 2025-09-19 os: os.Chtimes is corrupting very old timestamps
+      #73779 open 2025-05-19 x/tools/gopls: ChangeSignature: "cannot inline: corrupted reference" bug
+      #57698 open 2023-01-09 runtime: in core dump generated for a signal while executing C code, gdb reports a corrupt stack
+      #38751 open 2020-04-29 x/playground: very large output is sometimes corrupted
+      #81944 open 2026-10-01 runtime: windows: a fault while printing an exception hangs the process instead of exiting
+      #81943 open 2026-10-01 runtime: windows/386: suspending a thread inside NtContinue crashes recovery from a fault
+      #81847 open 2026-09-29 GOEXPERIMENT=simd alone slows async preemption program-wide on AVX-512 hardware
+      #81659 open 2026-09-22 x/image/vp8: int32 overflow in inverseDCT4 produces incorrect decoded pixels
+      #48606 open 2021-09-24 testing: fuzzed function can corrupt internal state of fuzzer
+      #69566 open 2024-09-21 cmd/go: invoking go run from go test can corrupt build cache
+      #81767 open 2026-09-26 cmd/compile: fix broken regalloc eviction of AVX-512 K mask values on amd64
+      #77048 open 2026-01-01 archive/tar: reset Size to 0 for header-only types in WriteHeader
+      #80591 open 2026-07-28 mime: FormatMediaType emits duplicate parameters for keys differing only by case
+      #75809 open 2025-10-08 x/telemetry/internal/counter: TestConcurrentExtension failures
+      #81147 open 2026-08-27 cmd/compile: loong64 spills a byte-sized inlined result with an 8-byte MOVD, clobbering adjacent stack slots [1.27 backport]
+      #81542 open 2026-09-15 compress/flate: compression degradation in streaming mode with intermediate Flush() calls
+      #69438 open 2024-09-13 runtime: panic not generating a correct backtrace stack while crashing in cgo on ARM64 platform
+  corruption     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #55167 open 2022-09-20 runtime: corruption in tests
+      #77516 open 2026-02-09 runtime: memory corruption on mips builders
+      #68878 open 2024-08-14 internal/trace: corruption in tests
+      #70829 open 2024-12-13 runtime: corruption after wasm stack overflow RangeError
+      #77515 open 2026-02-09 x/build: memory corruption crashes on darwin-amd64 builders
+      #59724 open 2023-04-20 runtime: system stack and heap corruption when interacting with cgo on Windows
+      #81944 open 2026-10-01 runtime: windows: a fault while printing an exception hangs the process instead of exiting
+      #81943 open 2026-10-01 runtime: windows/386: suspending a thread inside NtContinue crashes recovery from a fault
+      #62251 open 2023-08-23 runtime: stack corruption on freebsd/arm
+      #71425 open 2025-01-24 x/tools/gopls: crashes due to memory corruption
+      #78161 open 2026-03-14 runtime: memory corruption leading to panic on linux/riscv64
+      #64938 open 2024-01-02 runtime: memory corruption on `android-arm-corellium`
+      #60670 open 2023-06-07 runtime: corruption in tests on freebsd-arm
+      #48086 open 2021-08-31 x/exp/shiny: memory corruption on windows
+      #81147 open 2026-08-27 cmd/compile: loong64 spills a byte-sized inlined result with an 8-byte MOVD, clobbering adjacent stack slots [1.27 backport]
+      #77060 open 2026-01-04 archive/zip: ZIP64 Local File Header version mismatch causes file corruption in strict readers
+      #57081 open 2022-12-01 x/tools/gopls: file corruption on case-insensitive filesystems
+      #52493 open 2022-04-22 x/build: apparent filesystem corruption on darwin-amd64-11_0
+      #51119 open 2022-02-09 x/tools/cmd/goimports: line directive can cause file corruption
+      #34988 open 2019-10-18 syscall: memory corruption when forking on OpenBSD, NetBSD, AIX, and Solaris
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81033 open 2026-08-23 encoding/json: Decoder.More reports a SyntaxError instead of io.EOF on truncated input under jsonv2
+      #78151 open 2026-03-13 debug/macho: return FormatError for truncated or empty files
+      #23873 open 2018-02-16 net: don't keep reading from UDP resolver after truncated packet
+      #81234 open 2026-08-30 encoding/asn1: BitString.At panics when Bytes length is less than BitLength
+      #81798 open 2026-09-28 crypto/x509: extension parsers ignore trailing data in extension values
+      #74265 open 2025-06-17 proposal: io: add NoEOF to convert EOF to ErrUnexpectedEOF
+      #81843 open 2026-09-29 proposal: io: add LimitedWriter
+      #73438 open 2025-04-18 go/ast: establish File.FileStart <= Node.Pos <= Node.End <= File.FileEnd for all Nodes in a File
+      #4565 open 2012-12-18 cmd/compile: possible error message improvement
+      #81447 closed 2026-09-10 x/arch/x86/x86asm: Decode panics on truncated VEX/EVEX prefix
+      #80718 open 2026-08-04 text/template: errorf misplaces format args
+      #38751 open 2020-04-29 x/playground: very large output is sometimes corrupted
+      #32666 open 2019-06-18 proposal: spec: allow untyped float const multiplied by typed integer constants (2.5*time.Hour)
+      #43669 open 2021-01-13 runtime: heap, allocs, block, and mutex profiles truncate stacks at 32 frames
+      #47677 open 2021-08-12 io: ReadFull should not forward io.ErrUnexpectedEOF from underlying reader
+      #81569 open 2026-09-16 crypto/tls: reject trailing data in outer ECH extensions
+      #34989 open 2019-10-18 proposal: x/text: provide an option for compact number formatting
+      #81383 closed 2026-09-08 encoding/json: struct tag name is truncated at a reserved character instead of falling back to the field name
+      #10447 open 2015-04-14 image/jpeg: add options to partially decode or tolerantly decode invalid images?
+      #80953 open 2026-08-19 archive/zip: Writer.Copy preserves stale Zip64 offset extra fields
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81033 open 2026-08-23 encoding/json: Decoder.More reports a SyntaxError instead of io.EOF on truncated input under jsonv2
+      #79175 open 2026-05-03 archive/tar: fix silent integer overflow and truncation of Uid/Gid
+      #81526 open 2026-09-14 proposal: os: add Root.ReadDir
+      #78151 open 2026-03-13 debug/macho: return FormatError for truncated or empty files
+      #81446 open 2026-09-10 archive/tar: UID/GID overflow check added to mergePAX is missing on the USTAR/v7 path
+      #27159 open 2018-08-22 x/mobile: unexpected truncation of int type iOS->Go
+      #43883 open 2021-01-24 runtime/race: race detector truncates command-line arguments on ppc64le
+      #81234 open 2026-08-30 encoding/asn1: BitString.At panics when Bytes length is less than BitLength
+      #81966 open 2026-10-02 x/tools/gopls: `organizeImports` affects `cmd/go/...` imports
+      #27572 open 2018-09-08 cmd/compile: eliminate unnecessary extend-of-truncate calculations in prove pass
+      #23873 open 2018-02-16 net: don't keep reading from UDP resolver after truncated packet
+      #43669 open 2021-01-13 runtime: heap, allocs, block, and mutex profiles truncate stacks at 32 frames
+      #81798 open 2026-09-28 crypto/x509: extension parsers ignore trailing data in extension values
+      #81618 open 2026-09-20 proposal: testing: expose -fullpath to tests as T.FullPath
+      #81390 open 2026-09-08 cmd/compile: prove pass misses bounds checks across 32/64-bit integer conversions
+      #81928 open 2026-09-30 cmd/compile: regalloc reloads a value from a narrower phi's stack slot, losing its upper bits
+      #74265 open 2025-06-17 proposal: io: add NoEOF to convert EOF to ErrUnexpectedEOF
+      #81637 open 2026-09-21 x/pkgsite: compute imported-by counts incrementally
+      #73149 open 2025-04-03 proposal: unicode/utf8: add LastPartialRuneLen
+      #81843 open 2026-09-29 proposal: io: add LimitedWriter
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81539 open 2026-09-15 x/crypto/ssh: CheckCert matches the empty string
+      #81785 open 2026-09-27 net/http: keep empty path segments apart from single wildcards
+      #81547 open 2026-09-15 encoding/json: `appendIndent` makes no progress with empty indent
+      #81970 open 2026-10-02 log/slog: attributes after a group that turns out to be empty are written incorrectly
+      #81025 open 2026-08-22 x/tools/gopls: empty uri in publishDiagnostics from autogenerated.json
+      #81277 open 2026-09-01 x/tools/internal/refactor/inline: discard go/defer of empty functions
+      #81271 open 2026-09-01 x/tools/internal/refactor/inline: discard go/defer of empty functions
+      #24650 open 2018-04-02 cmd/compile: eliminate empty switch cases
+      #81278 open 2026-09-01 x/tools/internal/refactor/inline: unwrap variadic literal in empty-body discard
+      #81272 open 2026-09-01 x/tools/internal/refactor/inline: unwrap variadic literal in empty-body discard
+      #80596 open 2026-07-28 cmd/internal/quoted: Join does not preserve empty arguments
+      #81749 open 2026-09-25 net: IPMask.MarshalText silently returns empty output for masks that are not 4 or 16 bytes long
+      #79743 open 2026-05-29 crypto/x509: reject misencoded empty EKU
+      #81988 open 2026-10-04 hash/maphash: WriteComparable loses input on a zero-value Hash
+      #42154 open 2020-10-22 x/tools/gopls: improve diagnostics for empty go files
+      #79744 open 2026-05-29 crypto/x509: reject CA w/ empty subject
+      #81222 open 2026-08-29 net/http: ServeMux binds a wildcard to an empty path segment without recording it, so PathValue panics
+      #79856 open 2026-06-05 crypto/x509: ParseCertificate accepts rfc822Name values with empty domains
+      #55071 open 2022-09-14 log/syslog: TestWrite failures with empty Info
+      #81991 open 2026-10-04 hash/maphash: init seed in WriteComparable for zero-value Hash
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #79304 open 2026-05-09 internal/runtime/atomic: add cas128 primitive
+      #81175 open 2026-08-27 cmd/go: TestScript/cover_atomic_pkgall broken on riscv64
+      #70146 open 2024-10-31 cmd/go: TestScript/cover_atomic_pkgall failures
+      #61236 open 2023-07-08 sync/atomic: add Uint64Pair
+      #66960 open 2024-04-22 proposal: sync/atomic: add Chan atomic channel
+      #81406 open 2026-09-09 cmd/go: SIGSEGV in modload.Lookup when testing a file list with -covermode=atomic
+      #63999 open 2023-11-08 sync/atomic: add Max/Min operators
+      #8739 open 2014-09-15 runtime,sync/atomic: unify API for runtime/internal/atomic and sync/atomic
+      #63289 open 2023-09-29 proposal: sync/atomic: constructors for typed atomics
+      #58771 open 2023-02-27 misc/cgo/test: link failure with atomics on arm64
+      #63256 open 2023-09-27 sync/atomic: document that atomic types should not be copied
+      #66095 open 2024-03-04 sync/atomic: describe return value of atomic.Bool CompareAndSwap
+      #53821 open 2022-07-12 runtime: convert atomic values to runtime/internal/atomic types
+      #80475 open 2026-07-20 cmd/internal/obj/arm64: add LDSMAX, LDSMIN, LDUMAX, LDUMIN instructions
+      #81996 open 2026-10-04 net/http: HTTP/2 server re-arms a connection's idle timer after its serve loop ends, retaining the connection for IdleTimeout (and the client read loop never stops its health-check timer)
+      #54731 open 2022-08-29 fmt,sync/atomic: `fmt` functions should allow integer verbs for atomic integers
+      #5721 open 2013-06-17 sync/atomic: support int/uint types
+      #38881 open 2020-05-05 runtime/race: should 32-bit atomic ops be flagged as racing with 64-bit atomic ops?
+      #81313 open 2026-09-02 runtime: make MemProfile preemptible
+      #81638 open 2026-09-21 runtime: upgrade TSAN
+  atomically     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81313 open 2026-09-02 runtime: make MemProfile preemptible
+      #68390 open 2024-07-11 x/telemetry: write the weekends file atomically
+      #39717 open 2020-06-19 proposal: reflect: allow creation of recursive types atomically
+      #22397 open 2017-10-23 proposal: os: add a package to atomically create or replace a file
+      #81527 open 2026-09-14 runtime/metrics: add metrics for gauges of number of goroutines by stack size
+      #78763 open 2026-04-15 database/sql: cache-line false sharing between DB atomic counters and DB.mu
+      #66960 open 2024-04-22 proposal: sync/atomic: add Chan atomic channel
+      #3117 open 2012-02-23 proposal: spec: cannot assign to a field of a map element directly: m["foo"].f = x
+      #22707 open 2017-11-14 cmd/cgo: pointer-passing rules may not be strong enough
+      #69327 open 2024-09-06 runtime: non-preemptible zeroing in clear, append, bytes.growSlice, etc
+      #61236 open 2023-07-08 sync/atomic: add Uint64Pair
+      #38858 open 2020-05-04 runtime: nmspinning's position in  struct schedt 
+      #49008 open 2021-10-15 runtime: audit lock/atomic-free accesses in pollDesc
+      #81171 open 2026-08-27 x/build/cmd/relui: improvements for security releasing
+      #70655 open 2024-12-03 x/build/cmd/relui: add workflows for some remaining manual recurring Go major release cycle tasks
+      #30409 open 2019-02-26 cmd/go/internal/lockedfile: clean *.lock files
+      #37142 open 2020-02-08 sync: shrink types in sync package
+      #29697 open 2019-01-11 cmd/go: set .cache/go-build files as read-only
+      #74545 open 2025-07-09 proposal: new `Recorder` types in runtime/pprof
+      #28461 open 2018-10-29 os/exec: race on cmd.Wait() might lead to panic
+  interrupted    >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #52137 open 2022-04-04 net: Interfaces on Linux should check for rtnetlink dump interrupted
+      #81237 open 2026-08-31 runtime/jit: add user frame support for JIT compilers and VMs
+      #57531 open 2022-12-31 x/crypto/ssh: write errors should be returned immediately
+      #57039 open 2022-12-02 cmd/go: 'build output "...." already exists and is not an object file' error after interrupted compilation
+      #59569 open 2023-04-12 runtime: cgo stuck because of go signal handler went into dead loop if pid=1
+      #25808 open 2018-06-09 cmd/go: install/build doesn't remove temporary files when aborted
+      #81599 open 2026-09-18 cmd/test2json: test result events are dropped for unterminated output when `-v` is combined with `-json`
+      #75728 open 2025-10-02 cmd/go: TestScript/govcs failures
+      #13841 open 2016-01-06 runtime/pprof: CPU profiles incorrect for kernels with broken setitimer support
+      #31036 open 2019-03-25 x/net/nettest: add TestListener API
+      #40467 open 2020-07-29 cmd/go: run does not relay signals to child process
+      #75051 open 2025-08-16 runtime: fatal error: semasleep on Darwin signal stack
+      #78555 open 2026-04-06 net/http: Client blocks reading body with h1 requests when ctx.Done()
+      #68071 open 2024-06-19 proposal: testing: more structured output from fuzz tests
+      #49422 open 2021-11-07 crypto/tls: the whole http body is read, but an Unexpected EOF is return at the same time
+      #48125 open 2021-09-01 net, net/http: Deadline and Timeout Fail to Close Hung Connections. 
+      #46374 open 2021-05-25 cgo: use of libc's backtrace from a C++ signal handler invoked for Go code crashes on ppc64le
+      #34608 open 2019-09-30 net/http: TimeoutHandler hides panic after timeout
+      #71134 open 2025-01-06 runtime: async preemption (or alternative) for wasm
+      #65138 open 2024-01-17 runtime: SIGQUIT crash loop + startm race condition deadlock
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7939 open 2014-05-05 x/crypto/ssh/terminal: does not handle interruptions
+      #78939 open 2026-04-24 net/http: closing HTTP/1 server request body does not interrupt read
+      #53434 open 2022-06-17 runtime: TestNetpollBreak failures with `netpollBreak did not interrupt netpoll`
+      #57502 open 2022-12-29 cmd/asm: add Intel architecture ISA extension for user interrupts
+      #52137 open 2022-04-04 net: Interfaces on Linux should check for rtnetlink dump interrupted
+      #75580 open 2025-09-24 os: TestProcessWithHandleLinux failures
+      #25808 open 2018-06-09 cmd/go: install/build doesn't remove temporary files when aborted
+      #81657 open 2026-09-22 runtime: speed up GC phase transitions
+      #13841 open 2016-01-06 runtime/pprof: CPU profiles incorrect for kernels with broken setitimer support
+      #73608 open 2025-05-06 proposal: all: add bare metal support
+      #81237 open 2026-08-31 runtime/jit: add user frame support for JIT compilers and VMs
+      #80921 open 2026-08-17 runtime: darwin CPU profiles omit systemstack callers during syscalls
+      #57039 open 2022-12-02 cmd/go: 'build output "...." already exists and is not an object file' error after interrupted compilation
+      #59569 open 2023-04-12 runtime: cgo stuck because of go signal handler went into dead loop if pid=1
+      #57531 open 2022-12-31 x/crypto/ssh: write errors should be returned immediately
+      #81796 open 2026-09-27 runtime/secret: support windows/amd64
+      #17608 open 2016-10-26 syscall: add support for Windows job objects
+      #40467 open 2020-07-29 cmd/go: run does not relay signals to child process
+      #75152 open 2025-08-26 cmd/go: `go tool` signal forwarding does not play nice with foreground tools
+      #79552 open 2026-05-20 cmd/compile: TestScript/dwarf5_gen_assembly_and_go failures
+  sigkill        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #75319 open 2025-09-08 x/telemetry/cmd/stacks: spurious git SIGKILL in tests
+      #81505 open 2026-09-13 crypto/internal/fips140/drbg: 32 MiB BSS reservation makes binaries unrunnable on low-memory Linux
+      #20748 open 2017-06-21 runtime: signal handling: sighandler crash due to race with signal.Ignore
+      #17608 open 2016-10-26 syscall: add support for Windows job objects
+      #53307 open 2022-06-09 x/playground: no error reported when program gets stuck
+      #73406 open 2025-04-16 cmd/link: cgo cross linking using the clang --target flag creates crashing programs
+      #54868 open 2022-09-05 proposal: cmd/go/internal/run:  Use an exec without fork, or pass signals to child
+      #33788 open 2019-08-22 os/exec: $HOME not updated when running command as a different UID
+      #52046 open 2022-03-30 go/parser: SIGSEGV in `(*resolver).resolveList`
+      #81759 open 2026-09-25 runtime: stop-the-world never completes while goroutines are blocked in read(2) on a pipe (go1.26 regression)
+      #52569 open 2022-04-26 testing: fuzzer aborts with "fuzzing process hung or terminated unexpectedly while minimizing: EOF"
+      #77911 open 2026-03-03 runtime: bypass reading /proc/self/cgroup and /proc/self/mountinfo when GODEBUG=containermaxprocs=0
+      #56163 open 2022-10-11 cmd/go: add a flag to use stdin as a cancellation side-channel
+      #42805 open 2020-11-24 runtime: ill-fated GC outcome in spiky/bursty scenarios
+      #78821 closed 2026-04-17 net/http: TestTransportRespectRequestWantsClose/h1/DisableKeepAlive=false,RequestClose=false failures
+      #51445 open 2022-03-02 x/benchmarks/sweet/cmd/sweet: TestSweetEndToEnd failing with gvisor build errors since CL 386698
+      #14592 open 2016-03-02 runtime: let idle OS threads exit
+      #11100 open 2015-06-06 runtime: support dlclose with -buildmode=c-shared
+      #60792 open 2023-06-14 all: announce end of support for old Linux versions
+      #81506 closed 2026-09-13 crypto/internal/sysrand: syscall 384 corrupts caller memory and aborts on kernels where it is not getrandom
+  sigint         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #55066 open 2022-09-14 runtime: signalfd is not working after shared library compiled by cgo is loaded
+      #41891 open 2020-10-09 testing: run Cleanup if SIGINT occurs
+      #19465 open 2017-03-08 runtime: signal handling: async signals should forward to existing C handlers by default 
+      #6948 open 2013-12-13 os, runtime: CTRL_CLOSE_EVENT should generate SIGHUP on Windows
+      #75152 open 2025-08-26 cmd/go: `go tool` signal forwarding does not play nice with foreground tools
+      #80559 open 2026-07-24 testing: fuzz: runtime out of memory on GOARCH=386
+      #19397 open 2017-03-04 testing: output hard to read when a test case is stalling
+      #40467 open 2020-07-29 cmd/go: run does not relay signals to child process
+      #70369 open 2024-11-15 x/sys/windows: signal.Notify doesn't handle windows.Signal well
+      #66556 open 2024-03-27 cmd/test2json: tests inherit signal.Ignore from test2json
+      #48715 open 2021-10-01 x/crypto/ssh: cannot send a Signal to remote process without Pty
+      #20202 open 2017-05-01 runtime/pprof: improve docs around short-lived processes
+      #24866 open 2018-04-15 x/build/maintner: occasional unexpected updates for specific issues/PRs
+      #33624 open 2019-08-13 runtime: netpollWaiters typically not decremented
+      #70368 open 2024-11-15 os/signal: check int type of signal using reflection
+      #17608 open 2016-10-26 syscall: add support for Windows job objects
+      #70548 open 2024-11-24 os/signal: sending SIGTSTP doesn't return to shell when non-SIGTSTP handler exists (OpenBSD)
+      #50228 open 2021-12-16 cmd/go: uses of os/exec can trigger fuzz failures when stopping via ^C
+      #72884 open 2025-03-15 proposal: x/sys/windows/svc: Call AllocConsole as part of Run
+      #46321 open 2021-05-22 os/signal: Reset doesn't reset ignored signals
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #62385 open 2023-08-30 x/term: Cannot differentiate a CTRL+C from CTRL+D
+      #25808 open 2018-06-09 cmd/go: install/build doesn't remove temporary files when aborted
+      #73482 open 2025-03-09 x/tools/gopls: Add a source code action to regenerate cgo definitions.
+      #31180 open 2019-04-01 x/crypto/ssh/terminal: ReadPassword keeps echo disabled when stopped with Ctrl+C
+      #17011 open 2016-09-07 x/exp/shiny: value of event/key.Event.Rune inconsistent across platforms while control key is pressed
+      #6948 open 2013-12-13 os, runtime: CTRL_CLOSE_EVENT should generate SIGHUP on Windows
+      #50222 open 2021-12-16 x/playground: add keyboard shortcut for "Share"
+      #17608 open 2016-10-26 syscall: add support for Windows job objects
+      #19465 open 2017-03-08 runtime: signal handling: async signals should forward to existing C handlers by default 
+      #29744 open 2019-01-15 os/signal: TestCtrlBreak fails with "exit status 0xc000013a" error
+      #38601 open 2020-04-22 runtime: weird panic while dumping non-pointer struct with wrapped error
+      #46354 open 2021-05-24 runtime: unexpected failure and garbage data when c-shared Go DLL on Windows receives CtrlBreak signal concurrently with runtime initialization
+      #70369 open 2024-11-15 x/sys/windows: signal.Notify doesn't handle windows.Signal well
+      #70548 open 2024-11-24 os/signal: sending SIGTSTP doesn't return to shell when non-SIGTSTP handler exists (OpenBSD)
+      #75152 open 2025-08-26 cmd/go: `go tool` signal forwarding does not play nice with foreground tools
+      #64482 open 2023-11-30 os: File.Close can hang when used with non-overlapped pipes on Windows
+      #39052 open 2020-05-13 runtime/race: potential false positive from race detector
+      #52183 open 2022-04-06 net/http: HTTP/2 request context sometimes returns no error when the client disconnects
+      #48715 open 2021-10-01 x/crypto/ssh: cannot send a Signal to remote process without Pty
+      #48059 open 2021-08-30 runtime: hangs on windows with golang >= 1.14
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25280 open 2018-05-07 cmd/cover: use different //line comment for code that does not come from source file
+      #80703 open 2026-08-03 x/build: gotip-linux-ppc64le_power8 tasks expire after OSU POWER8 hardware retirement
+      #36579 open 2020-01-15 x/build: use Google Cloud for aix/ppc64 and linux/ppc64x builders
+      #81995 open 2026-10-04 math: Exp returns +Inf for finite results on amd64 (709.436 <= x < 709.783)
+      #76179 open 2025-11-05 cmd/internal/obj/riscv: support zawrs assembly on riscv64
+      #80880 open 2026-08-14 x/build: add LUCI linux-riscv64 builder
+      #77707 open 2026-02-19 math/big: improve big.Int.Exp for moderate-size inputs / fix minor bugs
+      #14865 open 2016-03-18 runtime: x_cgo_init determines stacklo incorrectly for some Solaris versions
+      #76923 open 2025-12-19 runtime: allow `GOMEMLIMIT` to parse non integer values with a suffix like `1.5GiB` → `1536MiB`
+      #62513 open 2023-09-07 compress/zstd: add new package
+      #38721 open 2020-04-28 cmd/compile: experiment with more integer comparison optimizations
+      #79220 open 2026-05-06 math/big: address the inconsistency between big.Float input and output
+      #54573 open 2022-08-21 proposal: x/crypto/bcrypt: DefaultCost should be increased to 12 
+      #76381 open 2025-11-20 x/tools/gopls: add a 'format' mcp tool
+      #43313 open 2020-12-22 cmd/go: add clean commands to clear away potentially corrupt files in module cache
+      #29456 open 2018-12-29 math: Pow(x,y) optimization for cases: constant integer `y`. 
+      #68081 open 2024-06-20 cmd/compile: inliner does not inline `binary.*Endian.Uint*` after many inlines in a big function
+      #81370 open 2026-09-05 proposal: container/deque: new slice based deque package
+      #79621 open 2026-05-22 net: huge battery drain as TCP_KEEPIDLE is too low
+      #33703 open 2019-08-18 x/crypto/scrypt: implementation not compliant with RFC 7914?
+  outage         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81754 open 2026-09-25 x/build: solaris-amd64 builder remains offline
+      #60958 open 2023-06-23 proposal: x/crypto/acme: support the ACME Renewal Information standard in Client
+      #40444 open 2020-07-28 x/pkgsite: select healthy DB per request
+      #54503 open 2022-08-17 cmd/go: remove test dependency on gopkg.in service
+      #74578 open 2025-07-11 proposal: net/http: access to HTTP/2 GoAwayError
+      #21192 open 2017-07-27 x/build/maintner: poll Gerrit more often than 5 minutes
+      #39007 open 2020-05-11 proxy.golang.org: don't cache /@latest for modules that no longer exist at the upstream head revision
+      #21600 open 2017-08-24 net: DialContext can use a stale context via happy eyeballs
+      #64864 open 2023-12-25 proposal: cmd/go: `go get -u` shouldn't bump minor release in `v0` packages.
+      #36026 open 2019-12-06 net/http, x/net/http2: TCP connection is not closed after http client request times out after missing RST (TCP) or GOAWAY(HTTP/2) frame
+      #70042 open 2024-10-25 sum.golang.org: repeated 500 internal server errors when fetching very new versions
+      #57248 open 2022-12-11 database/sql: rate limit creation of new connections
+      #80876 closed 2026-08-14 net/http: ReadHeaderTimeout remains active after unencrypted HTTP/2 handoff
+      #53572 open 2022-06-27 x/build: build failures due to `410 Gone` responses from `symbolic-datum-552` GOPROXY
+      #74132 closed 2025-06-12 x/pkgsite, proxy.golang.org: (partial) outage ongoing
+      #80548 closed 2026-07-23 sum.golang.org: transient 500 Internal Server Error from /lookup for a newly published pseudo-version
+      #51174 open 2022-02-13  cmd/go: cryptic error message when git repository is reachable locally but not reachable from sum.golang.org google SaaS server
+      #34034 closed 2019-09-03 x/tools/internal/imports: test frequently times out on `dragonfly-amd64` builder
+      #57478 open 2022-12-27 net/http: http2 requests blocked after timeout
+      #73715 closed 2025-05-14 x/build: trybots and CI outage due to crash loop in VMs
+  ENOSPC         10 hit(s) (all listed)
+      #61446 open 2023-07-19 all: test failures with `_assert(): stream.sputn` on ios-arm64-corellium
+      #13548 open 2015-12-09 archive/tar: add support for writing tar containing sparse files
+      #67433 closed 2024-05-16 x/tools/gopls: "internal error reading (shared cache|typerefs data|symbol data)" bug (E[MN]FILES?)
+      #75795 closed 2025-10-07 cmd/link/internal/ld: fallocate_test.go:61: unexpected disk usage: got 2 blocks, want at least 2048
+      #59930 closed 2023-05-02 x/tools/gopls/test/debug: TestTemplates failures (ENOSPC)
+      #57713 closed 2023-01-10 x/tools/gopls/internal/regtest/completion: TestUnimportedCompletion failures
+      #8984 closed 2014-10-23 cmd/gofmt: go fmt eats my source code if it gets ENOSPC
+      #2416 closed 2011-11-02 describe ,ok idiom in Effective Go
+      #17869 closed 2016-11-09 proposal: provide ioutil.SafeWriteFile writing to a tmp file before overwriting an existing file
+      #32405 closed 2019-06-03 proposal: errors: simplified error inspection
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81727 open 2026-09-24 cmd/go: use cached copy instead of GOTMPDIR archive
+      #29561 open 2019-01-04 cmd/go: clean GOCACHE based on disk usage
+      #81807 open 2026-09-28 cmd/go: 'go work use' documentation is stale and contains typo
+      #78859 open 2026-04-20 x/tools/gopls: detect and recover from snapshot/disk incoherence
+      #35887 open 2019-11-28 proposal: crypto/x509: reloading certificates from disk
+      #78214 open 2026-03-19 x/tools/go/analysis: intermediate test variants cause 10x increase in work, cache data
+      #37310 open 2020-02-20 cmd/link: unexpected fault address (when low on disk space?)
+      #81408 open 2026-09-09 x/tools/gopls: issues many redundant `go list` invocations concurrently
+      #75851 open 2025-10-10 cmd/go: save GOMODCACHE disk space with clonefile/reflink copies of dup files?
+      #76337 open 2025-11-18 cmd/go: compress GOCACHE
+      #60076 open 2023-05-09 cmd/go: misleading error message when build cache runs out of disk space
+      #60255 open 2023-05-17 all: unrecognized failures on `plan9/386`
+      #79843 open 2026-06-05 internal/analysis/driverutil: report partial success in ApplyFixes
+      #22227 open 2017-10-12 runtime: crash on Plan 9 since CL 46033
+      #77515 open 2026-02-09 x/build: memory corruption crashes on darwin-amd64 builders
+      #58529 open 2023-02-14 net/http: multipart form parsing is hazardous and difficult to configure
+      #62656 open 2023-09-15 proposal: x/crypto/ssh/knownhosts: create from ...io.Reader
+      #13548 open 2015-12-09 archive/tar: add support for writing tar containing sparse files
+      #38311 open 2020-04-08 x/net/idna: adds 680KiB to binary when imported but unreferenced
+      #28547 open 2018-11-02 os: add test for Windows Dedup volumes
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81960 open 2026-10-02 simd: fix element count of emulated 64-bit partial loads
+      #79843 open 2026-06-05 internal/analysis/driverutil: report partial success in ApplyFixes
+      #80704 open 2026-08-04 encoding/base32: NewDecoder with NoPadding fails when the reader returns partial data
+      #31514 open 2019-04-17 compress/flate: implement partial flush
+      #52604 open 2022-04-28 proposal: cmd/go: partial vendoring
+      #74436 open 2025-06-30 cmd/go: TestScript/cover_coverpkg_partial failures
+      #79853 open 2026-06-05 crypto/tls: TLS 1.3 ticket_age_add accepts partial random reads
+      #68130 open 2024-06-22 compress/flate: read data with partial flush
+      #37415 open 2020-02-24 cmd/compile: partial cse of phi inputs?
+      #9618 open 2015-01-16 runtime: support partial object collection in GC
+      #64673 open 2023-12-12 cmd/compile: PGO devirtualization of partial interface implementations
+      #34248 open 2019-09-11 go/types: CheckExpr doesn't return partial results
+      #82001 open 2026-10-04 simd: emulated Load{Float64,Int64,Uint64}sPart return len(s) instead of the number of elements loaded
+      #81686 open 2026-09-22 net/http/cgi: RequestFromMap can set r.URL.Host to a different value than r.Host
+      #65755 open 2024-02-16 x/tools/gopls: consider multiplexing operations across all Views (with partial results?)
+      #68063 open 2024-06-19 x/tools/gopls: run completion using partial type checking of current package
+      #68610 open 2024-07-26 x/perf/cmd/benchstat: ignore lines prefixed with `panic: `
+      #81669 open 2026-09-22 net/http/cgi: PathLocationHandler local redirects starting with "//" overwrite Request.Host
+      #81692 closed 2026-09-23 simd/archsimd: amd64 AVX partial loads read beyond short slices
+      #36806 open 2020-01-27 x/pkgsite: partial search doesn't return (any) matches which are "close" or latest
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81548 open 2026-09-15 net/http/fcgi: incomplete multiplexed requests can exhaust server memory
+      #80161 open 2026-06-25 html/template: incomplete jsBraceDepth CVE-2026-32289 fix
+      #40507 open 2020-07-31 cmd/cgo: cgo allows creating values of incomplete struct/union type
+      #54657 open 2022-08-24 cmd/api: fallback to context-free definitions fails for cgo targets
+      #76581 open 2025-11-27 cmd/go: TestScript/mod_get_workspace_incomplete failures
+      #13841 open 2016-01-06 runtime/pprof: CPU profiles incorrect for kernels with broken setitimer support
+      #15637 open 2016-05-11 syscall: Windows Errno.Temporary and Errno.Timeout are incomplete
+      #81627 open 2026-09-21 cmd/compile: internal error when instantiating constrained generic type parameter
+      #79684 open 2026-05-27 x/text/language: ParseAcceptLanguage dash-count guard bypassed by '_' separator (incomplete CVE-2022-32149 fix)
+      #42351 open 2020-11-02 x/review/git-codereview: incomplete help documentation for `git codereview`
+      #56358 open 2022-10-20 x/mod/sumdb/note: documentation for key formats is incomplete
+      #19487 open 2017-03-10 cmd/cgo: permits reference to non-existent struct
+      #81990 open 2026-10-04 cmd/compile: linker panic "R_USEIFACE ... references type:.eqfunc... which is not a type or itab" with reflect.TypeFor[T]().Comparable()
+      #61024 open 2023-06-27 doc: incomplete documentation for vanity import paths in combination with Go modules
+      #71325 open 2025-01-19 net/http: Client.Timeout doesn't work when receiving a response from an incomplete WebSocket handshake
+      #32932 open 2019-07-04 cmd/go: print an incomplete go mod graph even if an error occurs
+      #81494 open 2026-09-13 crypto/tls: final ServerHello can accept ECH after HelloRetryRequest rejected it
+      #81385 open 2026-09-08 x/tools/go/ssa: panic building a generic method expression inside an instantiated function
+      #80302 open 2026-07-08 x/crypto/ssh: BannerDisplayStderr is unsanitized
+      #37451 open 2020-02-25 x/tools/gopls: go/parser work-arounds
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81959 open 2026-10-02 runtime: nil-pointer panic in a promoted-method wrapper becomes "traceback did not unwind completely" under -race
+      #26813 open 2018-08-05 runtime: defer/recover support in race detector
+      #34530 open 2019-09-25 spec: clarify when calling recover stops a panic
+      #80908 open 2026-08-16 testing/synctest: document channel and timer violations as fatal
+      #74577 open 2025-07-11 proposal: runtime: make stack exhaustion recoverable
+      #81943 open 2026-10-01 runtime: windows/386: suspending a thread inside NtContinue crashes recovery from a fault
+      #81237 open 2026-08-31 runtime/jit: add user frame support for JIT compilers and VMs
+      #67243 open 2024-05-07 proposal: runtime: surface silent panic-recovers
+      #81277 open 2026-09-01 x/tools/internal/refactor/inline: discard go/defer of empty functions
+      #78193 open 2026-03-17 x/tools/internal/refactor/inline: do not inline a function that directly calls recover()
+      #78859 open 2026-04-20 x/tools/gopls: detect and recover from snapshot/disk incoherence
+      #57739 open 2023-01-11 spec: clarify wording describing result of recover
+      #70292 open 2024-11-11 proposal: net/http: optionally disable recover on panic
+      #80624 open 2026-07-29 net/http: treat reader-originated HTTP/2 StreamError as terminal
+      #80727 open 2026-08-05 proposal: remove GODEBUG=panicnil=1
+      #64511 open 2023-12-02 doc: clarify description of recover in go_spec
+      #54972 open 2022-09-09 proposal: encoding/gob: reliably recover from type-errors when decoding
+      #44929 open 2021-03-10 proposal: testing: consider having timeouts in test binaries be recoverable/handled
+      #80890 open 2026-08-15 runtime/pprof: avoid panic for sigprofNonGoPC short stacks
+      #19070 open 2017-02-13 doc: Effective Go's "safelyDo" does not demonstrate safe use of recover
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81943 open 2026-10-01 runtime: windows/386: suspending a thread inside NtContinue crashes recovery from a fault
+      #81238 open 2026-08-31 runtime: windows/amd64 exception recovery can write below a goroutine stack and corrupt the Go heap
+      #78931 open 2026-04-24 cmd/go: test go doc with trimpath GOROOT recovery
+      #81944 open 2026-10-01 runtime: windows: a fault while printing an exception hangs the process instead of exiting
+      #58833 open 2023-03-02 go/parser: poor error recovery after missing function call argument
+      #45408 open 2021-04-06 x/tools/gopls: vendor go/parser
+      #65021 open 2024-01-08 cmd/compile: improve fn arg recovery in tracebacks via call site records
+      #63834 open 2023-10-30 go/parser: bad error recovery for simple program with missing function name
+      #71121 open 2025-01-04 net/http: optimize Cookie.sanitizeOrWarn and timeoutHandler.ServeHTTP
+      #61371 open 2023-07-15 x/tools/gopls: `TestXxx()` completions not working when location followed by newline, due to parser error recovery
+      #66683 open 2024-04-04 go/parser: StructType.End() can underflow the File
+      #76763 open 2025-12-09 net/http: documentation: make it clear that the built-in panic recovery in net/http is generally a practice that should be avoided
+      #81796 open 2026-09-27 runtime/secret: support windows/amd64
+      #81637 open 2026-09-21 x/pkgsite: compute imported-by counts incrementally
+      #70292 open 2024-11-11 proposal: net/http: optionally disable recover on panic
+      #67243 open 2024-05-07 proposal: runtime: surface silent panic-recovers
+      #73426 open 2025-04-17 x/tools/gopls: no autocompletion when missing closing parenthesis
+      #69492 open 2024-09-16 x/tools/gopls: no completions provided in some seemingly straightforward cases
+      #73438 open 2025-04-18 go/ast: establish File.FileStart <= Node.Pos <= Node.End <= File.FileEnd for all Nodes in a File
+      #48300 open 2021-09-09 go/parser: StructType.End() can overflow the File
+  rollback       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #75225 open 2025-09-02 database/sql: update Rollback docstring to clarify that it's a no-op if already committed
+      #40280 open 2020-07-18 database/sql: improve documentation for closing prepared statement on Tx
+      #43507 open 2021-01-05 database/sql: cancelled context in a transaction gives a variable error
+      #14468 open 2016-02-22 database/sql: common interface for query functions in sql.DB and sql.Tx
+      #7898 open 2014-04-30 database/sql: nested transaction or save point support
+      #76465 open 2025-11-25 database/sql: panic in the Scanner interface implementation causes a deadlock
+      #20875 open 2017-06-30 testing: consider calling ReadMemStats less during benchmarking
+      #81606 closed 2026-09-19 database/sql: Conn.Raw can deadlock against an open sibling Tx when the callback returns driver.ErrBadConn
+      #81615 closed 2026-09-20 database/sql: avoid Conn self-deadlock when Raw reports a bad connection
+      #9377 open 2014-12-18 x/review/git-codereview: doesn't set upstream to origin/master
+      #19981 open 2017-04-14 database/sql: add option to customize Begin statement
+      #24887 open 2018-04-16 x/build/cmd/gerritbot: Gerrit edits are immediately overwritten by older GitHub commits
+      #70751 open 2024-12-10 net: DialTimeout causes persistent slowdown on windows
+      #65532 open 2024-02-05 cmd/compile: pgo can dramatically increase goroutine stack size
+      #46977 open 2021-06-29 x/net/nettest: TestConn cannot succeed with some valid net.Conn implementations
+      #47084 open 2021-07-07 x/time/rate: Limiter.Wait waits too long
+      #56103 open 2022-10-08 spec: disallow anonymous interface cycles
+      #26813 open 2018-08-05 runtime: defer/recover support in race detector
+      #71698 open 2025-02-12 cmd/go: "mod tidy" exhausts file descriptors, crashes other macOS apps
+      #40044 open 2020-07-04 runtime: libunwind is unable to unwind CGo to Go's stack
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81963 open 2026-10-02 runtime: stack switching on wasm
+      #81448 open 2026-09-10 runtime: skip async preemption during Windows exception handling
+      #25352 open 2018-05-11 crypto/tls: GetCertificate called on resumed sessions
+      #25578 open 2018-05-25 runtime: support resuming a single goroutine under debuggers
+      #77377 open 2026-01-30 crypto/tls: disable session resumption when VerifyPeerCertificate is in use
+      #27483 open 2018-09-04 x/mobile: application freeze after resumed from suspend state on iOS
+      #31132 open 2019-03-29 runtime: stop single goroutine
+      #55066 open 2022-09-14 runtime: signalfd is not working after shared library compiled by cgo is loaded
+      #77293 open 2026-01-23 crypto/tls: add identity freshness on server resumption
+      #59569 open 2023-04-12 runtime: cgo stuck because of go signal handler went into dead loop if pid=1
+      #81657 open 2026-09-22 runtime: speed up GC phase transitions
+      #77359 open 2026-01-28 crypto/tls: don't recheck peer certificate validity on resumption if InsecureSkipVerify is set
+      #30881 open 2019-03-16 x/tools/go/ssa/interp: panic: no code for function: time.runtimeNano on darwin
+      #65584 open 2024-02-07 misc/chrome/gophertool: migrate to Manifest V3
+      #30753 open 2019-03-11 runtime: killed threads do not crash whole process
+      #81943 open 2026-10-01 runtime: windows/386: suspending a thread inside NtContinue crashes recovery from a fault
+      #72797 open 2025-03-11 context: canceling a context should clear the timeout in nodejs
+      #19574 open 2017-03-16 runtime: performance problem with many Cgo calls
+      #46408 open 2021-05-27 os: directory exists but os.ReadDir reports "no such file or directory"
+      #68516 open 2024-07-18 crypto/tls: SCTs increment by one byte on resume during tls 1.0, tls 1.1, and 1.2 BoringSSL OnResume tests
+  half-written   >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81936 open 2026-10-01 image/draw: finding the closest palette color is slow for large palettes
+      #48610 open 2021-09-24 x/net/http2: client stream left unclosed after response status >=300
+      #80577 open 2026-07-27 cmd/compile: regalloc uses unreliable type data (like `v.Type.IsSigned()`) to choose the restore of spills
+      #24305 open 2018-03-07 cmd/compile: esc.go fails to mark anonymous receiver parameters as non-escaping
+      #81729 open 2026-09-24 x/crypto/chacha20poly1305: key and Poly1305 key material left on the stack after Seal/Open on amd64
+      #17048 open 2016-09-10 proposal: C API for the runtime
+      #66433 open 2024-03-21 proposal: cmd/gofmt: permit single line case and statement
+      #81062 open 2026-08-24 encoding/json: Unmarshal leaves ±Inf in the destination on float overflow in Go 1.27
+      #79768 open 2026-05-31 proposal: slices: add Move
+      #15734 open 2016-05-18 cmd/go: build dependent packages as soon as export data is ready
+      #31721 open 2019-04-28 crypto/rsa: doc: reword "coprime to" in doc comments
+      #27179 open 2018-08-23 encoding/json/v2: support preservation of object key ordering
+      #15735 open 2016-05-18 net: add mechanism to wait for readability on a TCPConn
+      #81753 open 2026-09-25 cmd/vet: detect evaluation-order mistakes
+      #28454 open 2018-10-29 cmd/cgo: avoid calls to cgoCheckPointer when debug.cgocheck=0
+      #17150 open 2016-09-18 plugin: drop runtime from plugins
+      #26074 open 2018-06-27 proposal: cmd/link: by default, do not write out DWARF
+      #36133 open 2019-12-13 math/rand: documentation on rng.go is lacking important context and information
+      #81238 open 2026-08-31 runtime: windows/amd64 exception recovery can write below a goroutine stack and corrupt the Go heap
+      #20754 open 2017-06-22 encoding/xml: unmarshal only processes first XML element
+  wipe           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81991 open 2026-10-04 hash/maphash: init seed in WriteComparable for zero-value Hash
+      #81796 open 2026-09-27 runtime/secret: support windows/amd64
+      #45208 open 2021-03-24 x/build/cmd/relui: add checkbox to Go installers to delete previous GOENV configuration file
+      #58571 open 2023-02-16 cmd/go: test cache hash inputs include ModTime, often causing cache misses on CI
+      #73507 open 2025-04-26 proposal: runtime: remove unnecessary copies when converting the command line to os.Args under Windows
+      #41220 open 2020-09-04 x/sys/windows: GetLastError always returns nil
+      #29561 open 2019-01-04 cmd/go: clean GOCACHE based on disk usage
+      #54651 open 2022-08-24 cmd/go: `expected 'package', found 'EOF'` errors with module indexing enabled on WSL2
+      #52137 open 2022-04-04 net: Interfaces on Linux should check for rtnetlink dump interrupted
+      #42282 open 2020-10-29 gollvm: build failed, on FreeBSD 13.0 x86_64
+      #77642 open 2026-02-16 encoding/json/v2: performance regression when umarshalling in []any
+      #41304 open 2020-09-09 gollvm: libgo's shell scripts raise errors, during gollvm's build
+      #23824 open 2018-02-14 x/build: sharded iOS builders
+      #6508 open 2013-09-28 runtime/race: eliminate dependency on cmd/cgo
+      #21865 closed 2017-09-13 runtime/secret: add new package
+      #17053 open 2016-09-10 net/http: add docs for getting TLS certs with x/crypto/acme
+      #73460 closed 2025-04-21 x/sys/windows: NTUnicodeString of PROCESS_BASIC_INFORMATION.PebBaseAddress.ProcessParameters.CommandLine is incorrectly converted to slice
+      #71451 closed 2025-01-27 runtime: reportZombies throws "found pointer to free object" in sweeper
+      #50224 closed 2021-12-16 x/playground: feature request: instant Share URL on each "Run"
+      #33276 closed 2019-07-25 x/tools/godoc,gddo: do not swallow code after output comments if it is not in concluding lines
+  wipes          12 hit(s) (all listed)
+      #41220 open 2020-09-04 x/sys/windows: GetLastError always returns nil
+      #29561 open 2019-01-04 cmd/go: clean GOCACHE based on disk usage
+      #73460 closed 2025-04-21 x/sys/windows: NTUnicodeString of PROCESS_BASIC_INFORMATION.PebBaseAddress.ProcessParameters.CommandLine is incorrectly converted to slice
+      #71451 closed 2025-01-27 runtime: reportZombies throws "found pointer to free object" in sweeper
+      #31434 closed 2019-04-12 x/tools/cmd/gorename: rename failure sometimes wipes files clean
+      #68690 closed 2024-08-01 os: documentation of `Rename` doesn't specify the behavior of trying to rename a file to an existing directory
+      #65374 closed 2024-01-30 cmd/go: TestScript failure with "requires external (cgo) linking, but cgo is not enabled"
+      #43177 closed 2020-12-14 cmd/go: invalid -ldflags is silently ignored
+      #34527 closed 2019-09-25 cmd/go: add GOMODCACHE
+      #14396 closed 2016-02-19 all: kubernetes slower execution since Go 1.4.3
+      #5749 closed 2013-06-21 time: leads to memory leaks
+      #693 closed 2010-03-25 Multiple assignment apparantly happens sequentially
+  erase          88 hit(s) (all listed)
+      #67072 open 2024-04-26 cmd/go: report trimpath erasing ldflags, and allow override
+      #81381 open 2026-09-07 x/crypto/blake2b: digest retains the last input block after Sum and Reset
+      #38615 open 2020-04-23 x/mobile: adding an assets/icon.png erases the app label
+      #81796 open 2026-09-27 runtime/secret: support windows/amd64
+      #76795 open 2025-12-11 proposal: runtime/secret: add carve-out for returning allocated values
+      #57574 open 2023-01-04 cmd/gofmt: -r strips some comments when pattern matching
+      #41220 open 2020-09-04 x/sys/windows: GetLastError always returns nil
+      #62379 open 2023-08-30 runtime/coverage: Eliminate dominator Coverage Units 
+      #78273 open 2026-03-21 x/tools/gopls: gopls sends verbose error messages via $/progress instead of window/showMessage
+      #66077 open 2024-03-03 cmd/go: When `go list -m -json -versions` returns no versions, it does not include an `Origin`
+      #63432 open 2023-10-07 cmd/go: using `--trimpath` in `go build` removes `-ldflags` from `go version -m` output
+      #68237 open 2024-06-28 net: Dial does not respond to quickly-broken IPv6 connections by falling back to IPv4
+      #80146 open 2026-06-25 cmd/compile/internal/ssa: eSSA for the prove pass
+      #29095 open 2018-12-04 cmd/compile: better const-based optimizations handling in compiler frontend
+      #77642 open 2026-02-16 encoding/json/v2: performance regression when umarshalling in []any
+      #56103 open 2022-10-08 spec: disallow anonymous interface cycles
+      #80120 closed 2026-06-23 proposal: x/sync/singleflight: make Group.Do generic
+      #21865 closed 2017-09-13 runtime/secret: add new package
+      #70373 closed 2024-11-15 os: File sporadic waits upon non-blocking raw connect
+      #34417 open 2019-09-19 cmd/go: do not allow the main module to replace (to or from) itself
+  erasing        10 hit(s) (all listed)
+      #67072 open 2024-04-26 cmd/go: report trimpath erasing ldflags, and allow override
+      #62379 open 2023-08-30 runtime/coverage: Eliminate dominator Coverage Units 
+      #63432 open 2023-10-07 cmd/go: using `--trimpath` in `go build` removes `-ldflags` from `go version -m` output
+      #76795 open 2025-12-11 proposal: runtime/secret: add carve-out for returning allocated values
+      #77642 open 2026-02-16 encoding/json/v2: performance regression when umarshalling in []any
+      #21865 closed 2017-09-13 runtime/secret: add new package
+      #19412 open 2017-03-05 proposal: spec: add sum types / discriminated unions
+      #33762 closed 2019-08-21 sync: add new Map method LoadAndDelete
+      #22130 closed 2017-10-04 all: cherry-picks for Go 1.9.2
+      #33680 closed 2019-08-16 go build for hello world saying 'go tool: no such tool "compile"'
+  erased         32 hit(s) (all listed)
+      #57574 open 2023-01-04 cmd/gofmt: -r strips some comments when pattern matching
+      #41220 open 2020-09-04 x/sys/windows: GetLastError always returns nil
+      #76795 open 2025-12-11 proposal: runtime/secret: add carve-out for returning allocated values
+      #66077 open 2024-03-03 cmd/go: When `go list -m -json -versions` returns no versions, it does not include an `Origin`
+      #80146 open 2026-06-25 cmd/compile/internal/ssa: eSSA for the prove pass
+      #29095 open 2018-12-04 cmd/compile: better const-based optimizations handling in compiler frontend
+      #80120 closed 2026-06-23 proposal: x/sync/singleflight: make Group.Do generic
+      #21865 closed 2017-09-13 runtime/secret: add new package
+      #77647 closed 2026-02-16 simd/archsimd: would intrinsics eliminate Go/assembly boundary overhead for SIMD prefilter?
+      #70732 closed 2024-12-09 go1.23.4 linux/amd64 completely broken
+      #60717 closed 2023-06-10 crypto/elliptic: P256 ScalarBaseMult with order-34 yields point at infinity
+      #71553 closed 2025-02-04 proposal: spec: Compile-time recognition of functions that cannot return normally, using `!return`
+      #46136 closed 2021-05-12 cmd/vet: report use of too-new standard library symbols
+      #57575 closed 2023-01-04  src/cmd/gofmt: -r adds odd newlines when pattern matching
+      #58788 closed 2023-02-28 cmd/go: too many open files in system 
+      #56628 closed 2022-11-07 proposal: Go 2: just return the error 
+      #27228 closed 2018-08-26 cmd/compile: "internal compiler error: weird decoding" on Raspberry Pi with Go 1.11
+      #20481 closed 2017-05-24 plugin: Utility of Go plug-ins diminished by vendored dependencies
+      #55026 closed 2022-09-12 proposal: Go 2: Error handling that is compact and composeable
+      #21555 closed 2017-08-22 x/build: "no commits" for new branches
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81794 open 2026-09-27 x/pkgsite: package removal request for github.com/erikwang2013/go-php
+      #63819 open 2023-10-30 x/build/internal/gomote: explore destroying the bot after a gomote instance is destroyed
+      #41070 open 2020-08-27 cmd/cgo: Null pointer is accessed in C code, causing the stack to be destroyed
+      #81749 open 2026-09-25 net: IPMask.MarshalText silently returns empty output for masks that are not 4 or 16 bytes long
+      #59724 open 2023-04-20 runtime: system stack and heap corruption when interacting with cgo on Windows
+      #78258 open 2026-03-20 x/build: linux-riscv64 builder too slow to run racebuild
+      #78683 open 2026-04-13 x/build: support GitHub Actions runners as LUCI Swarming bots for windows/arm64
+      #20275 open 2017-05-07 cmd/cgo: never generate Go fields for zero-sized C fields
+      #43738 open 2021-01-16 x/tools/gopls: enable -rpc.trace logging to a file by default
+      #26959 open 2018-08-13 x/mobile: lifecycle.StageDead never reach on Android 
+      #68981 open 2024-08-21 x/image/vector: repeat Draw() -> nonsense
+      #14592 open 2016-03-02 runtime: let idle OS threads exit
+      #75113 open 2025-08-21 testing/synctest: allow `runtime.AddCleanup` functions in bubble
+      #47653 open 2021-08-11 archive, image, debug, encoding, x/net/html: DO NOT PANIC
+      #26184 open 2018-07-02 cmd/link: exporting `free` c function from c-shared library hangs executable with that library LD_PRELOADed 
+      #20461 open 2017-05-22 plugin: add support for closing plugins
+      #19487 open 2017-03-10 cmd/cgo: permits reference to non-existent struct
+      #26962 open 2018-08-13 x/mobile: preserve eglContext when activity paused on Android
+      #80576 open 2026-07-27 cmd/compile: break the false dependency of scalar SSE merges on amd64
+      #69565 open 2024-09-20 proposal: cmd/go: allow disabling build cache trimming
+  destroys       46 hit(s) (all listed)
+      #80977 open 2026-08-20 os: zero copy pipe splice falling back to read+write
+      #38204 open 2020-04-01 cmd/gofmt: allow same level indent for block comments
+      #29207 open 2018-12-13 testing: t.FailNow() in a deferred function masks test panic
+      #57964 open 2023-01-23 x/pkgsite: links in package synopsis don't work in directory list
+      #17608 open 2016-10-26 syscall: add support for Windows job objects
+      #13548 open 2015-12-09 archive/tar: add support for writing tar containing sparse files
+      #74722 closed 2025-07-23 cmd/go: go fmt destroys sub-items in documentation
+      #81000 closed 2026-08-21 cmd/compile: loong64 spills a byte-sized inlined result with an 8-byte MOVD, clobbering adjacent stack slots
+      #80641 closed 2026-07-30 encoding/json: Error reporting difference between jsonv1 in experimental mode
+      #5465 open 2013-05-14 proposal: net/http/v2: thoughts for Go 2.0
+      #80774 closed 2026-08-06 x/tools/internal/imports: modindex.Read is called for every file before it is known to be needed
+      #80856 closed 2026-08-12 simd/archsimd: partial slice load/store fail under checkptr: LoadFloat32x16SlicePart converts a short slice to *[16]float32
+      #71643 closed 2025-02-10 x/tools/telemetry/cmd/stacks: record current pattern in each new issue note
+      #40024 closed 2020-07-03 cmd/go: go test -json splits log records
+      #6386 open 2013-09-14 proposal: spec: allow constants of arbitrary data structure type
+      #73577 closed 2025-05-02 runtime: segment violation in mexit/vgetrandomPutState/mallocgcSmallNoscan
+      #27935 open 2018-09-29 proposal: add container/queue
+      #45380 open 2021-04-04 proposal: spec: generics: type switch on parametric types
+      #76003 closed 2025-10-22 x/tools/cmd/goimports:
+      #67712 closed 2024-05-30 iter: `iter.Pull` should forward panics and `runtime.Goexit` [freeze exception]
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81669 open 2026-09-22 net/http/cgi: PathLocationHandler local redirects starting with "//" overwrite Request.Host
+      #43001 open 2020-12-04 testing: don't overwrite race detector exit code
+      #66059 open 2024-03-01 x/net/webdav: `MOVE` without an `Overwrite` header does not default to `T`
+      #81686 open 2026-09-22 net/http/cgi: RequestFromMap can set r.URL.Host to a different value than r.Host
+      #81827 open 2026-09-28 cmd/dist: `{CC,CXX}_FOR_TARGET` is incorrectly embedded into output when cross-compiling
+      #6508 open 2013-09-28 runtime/race: eliminate dependency on cmd/cgo
+      #81730 open 2026-09-24 x/crypto/chacha20poly1305: clear the derived HChaCha20 subkey in XChaCha20 Seal/Open
+      #81319 open 2026-09-02 net/http/httputil: ReverseProxy does not remove hop-by-hop headers from forwarded 1xx responses
+      #61572 open 2023-07-25 archive/zip: extra Extra fields when repacking zip file
+      #67782 open 2024-06-03 govulncheck-action: allow users to use specific version of govulncheck
+      #81352 open 2026-09-04 cmd/compile: arm64 Broadcast* generates dead VMOVI/VMOV before VDUP instead of single DUP/LD1R
+      #67836 open 2024-06-05 dl: golang.org/dl/go1.n.m wrappers always force own GOROOT, even overwriting another value in the environment
+      #40775 open 2020-08-13 cmd/go/internal/modload: refactor global state into exported struct type
+      #81238 open 2026-08-31 runtime: windows/amd64 exception recovery can write below a goroutine stack and corrupt the Go heap
+      #81812 open 2026-09-28 x/tools/gopls: codeAction/resolve after a document change computes the edit at the old position
+      #59365 open 2023-04-01 log/slog: JSONHandler should deduplicate keys
+      #24928 open 2018-04-18 runtime: sparse zeroing in mallocgc
+      #29697 open 2019-01-11 cmd/go: set .cache/go-build files as read-only
+      #40871 open 2020-08-18 x/tools/gopls: Completion: add insert-replace support (insertReplaceEdit)
+      #39536 open 2020-06-11 proposal: cmd/go: extend syntax go.mod to allow overriding fetch protocol
+  clobber        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81842 open 2026-09-29 cmd/compile: signed division on ppc64x clobbers CR0 without clobberFlags, so a later branch tests the wrong condition
+      #61751 open 2023-08-04 syscall: nextfd handling for attr.Files shuffle will clobber files
+      #81147 open 2026-08-27 cmd/compile: loong64 spills a byte-sized inlined result with an 8-byte MOVD, clobbering adjacent stack slots [1.27 backport]
+      #81146 open 2026-08-27 cmd/compile: loong64 spills a byte-sized inlined result with an 8-byte MOVD, clobbering adjacent stack slots [1.26 backport]
+      #81847 open 2026-09-29 GOEXPERIMENT=simd alone slows async preemption program-wide on AVX-512 hardware
+      #61754 open 2023-08-04 syscall: exec_linux: switch to F_DUPFD_CLOEXEC in clobber-prevention logic
+      #81928 open 2026-09-30 cmd/compile: regalloc reloads a value from a narrower phi's stack slot, losing its upper bits
+      #47027 open 2021-07-02 x/tools/go/analysis: framepointer doesn't report BP clobbering on Windows
+      #81463 open 2026-09-10 cmd/compile: inlined generic interface dispatch miscompiles int64 compare with -race on amd64
+      #30818 open 2019-03-13 cmd/compile: allow ; on the RHS of rewrite rules for side-effects
+      #81244 open 2026-08-31 encoding/json: new panic when using nested embedded struct pointer that implements Unmarshaler
+      #75490 open 2025-09-16 runtime: enable `debugCheckBP` by default for language version 1.26
+      #79062 open 2026-04-30 cmd/asm: don't allow writes outside of a function's stack frame
+      #19733 open 2017-03-28 cmd/compile: clumsy rematerialization in mapassign_fast*
+      #69838 open 2024-10-10 cmd/vet: improve the frame pointer check
+      #79298 open 2026-05-09 cmd/internal/obj/riscv: redundant LUI+ADD recomputation when accessing large stack offs
+      #61700 open 2023-08-01 cmd/compile: nonsensical DWARF location lists produced for function argument
+      #50294 open 2021-12-21 runtime: print register state for all crashes (user panics, ...) 
+      #78379 open 2026-03-26 cmd/compile: channel operations require but do not use a type dictionary
+      #80257 open 2026-07-04 cmd/compile: intel APX meta issue
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #43193 open 2020-12-15 x/tools/cmd/goimports: adds flag control to delete extra blank lines before grouping
+      #44467 open 2021-02-20 database/sql: should disallow blank driver name 
+      #81132 open 2026-08-26 crypto/tls, crypto/x509: binary size increases sharply starting with Go 1.24
+      #81278 open 2026-09-01 x/tools/internal/refactor/inline: unwrap variadic literal in empty-body discard
+      #55142 open 2022-09-19 gccgo: struct comparison with blank field could be wrong
+      #6996 open 2013-12-21 cmd/gofmt: remove leading/trailing blank lines from function bodies
+      #81848 closed 2026-09-29 cmd/compile: handle blank and unnamed parameters in simd dispatchers
+      #81273 open 2026-09-01 x/tools/internal/refactor/inline: simplify binding decls to param := arg when types are redundant
+      #81267 open 2026-09-01 x/tools/internal/refactor/inline: simplify binding decls to param := arg when types are redundant
+      #59529 open 2023-04-11 cmd/doc: Blank lines inserted into doc output in place of "directive" lines  
+      #81745 open 2026-09-25 internal/cgrouptest: skip when cpu.max is not available
+      #81272 open 2026-09-01 x/tools/internal/refactor/inline: unwrap variadic literal in empty-body discard
+      #81954 open 2026-10-02 cmd/compile: omit or normalize line numbers in export data (.x) for incremental build pruning
+      #26167 open 2018-07-01 cmd/compile: msan cannot handle structs with padding
+      #64271 open 2023-11-20 proposal: x/tools/cmd/goimports: add flag to remove blank lines in import for regrouping during formatting
+      #81844 closed 2026-09-29 cmd/compile: GOEXPERIMENT=simd rejects blank identifier parameters in functions that call simd
+      #37466 open 2020-02-26 x/net/html: do not parse the blank line and line break as a TextNode
+      #77518 open 2026-02-09 proposal: net/http: server.Start and server.StartTLS
+      #38311 open 2020-04-08 x/net/idna: adds 680KiB to binary when imported but unreferenced
+      #81697 closed 2026-09-23 cmd/compile: trailing blank variable causes nil pointer panic in array range
+  unreadable     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #64387 open 2023-11-26 x/pkgsite: unreadable links in deprecated sections in dark mode 
+      #64030 open 2023-11-09 runtime/traceback: segmentation violation failures from unwinding crash
+      #71535 open 2025-02-02 cmd/compile: very long names for simple generic usage
+      #46670 open 2021-06-09 cmd/compile: no debug information emitted for type used only as initializer
+      #64195 open 2023-11-16 x/build/cmd/gomote: `gettar` with a single file generates an invalid tarball
+      #48405 open 2021-09-15 cmd/compile: DWARF Incorrect slice len
+      #10050 open 2015-03-02 liblink, cmd/ld: don't encode the instruction being relocated in Reloc.add
+      #55127 open 2022-09-18 net/http: panic at Transport.roundTrip getConn
+      #80783 open 2026-08-07 runtime: zero cgroup CPU period yields NaN GOMAXPROCS and fatal "procresize: invalid arg" at startup
+      #38920 open 2020-05-07 Gerrit: messy merge commits created when merges are not fresh
+      #61731 open 2023-08-03 proposal: spec: support type inference on generic structs
+      #47850 open 2021-08-20 cmd/compile: DWARF Incorrect location list
+      #43934 open 2021-01-26 runtime: Crash in autogenerated function 
+      #71646 open 2025-02-10 proposal: testing: print more information about failing tests at the end
+      #14407 open 2016-02-19 encoding/xml: proposed fixes for namespaces
+      #35304 open 2019-11-01 proposal: spec: anonymous struct literals
+      #75510 open 2025-09-17 crypto/ed25519: Sign panics with private key allocated in memory-mapped region
+      #64341 open 2023-11-22 proposal: io/fs,path/filepath: add iterator form of WalkDir
+      #41750 open 2020-10-02 crypto/x509/pkix: Name.String() rfc2253 AttributeTypes 
+      #17544 open 2016-10-21 cmd/vet: move asm checks into cmd/asm
+  garbage        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81876 open 2026-09-30 go/types: types.Error.go116end end position derived from placeholder Ident.Name is garbage
+      #63884 open 2023-11-01 x/telemetry: add garbage collection
+      #74923 open 2025-08-07 runtime: slowdown with green tea garbage collector
+      #77317 open 2026-01-26 runtime: garbage collector panic
+      #81249 open 2026-08-31 x/sys/windows: generated wrappers read undefined upper bits of 32-bit syscall return values
+      #81944 open 2026-10-01 runtime: windows: a fault while printing an exception hangs the process instead of exiting
+      #28783 open 2018-11-13 runtime: types are not garbage collected
+      #81237 open 2026-08-31 runtime/jit: add user frame support for JIT compilers and VMs
+      #13841 open 2016-01-06 runtime/pprof: CPU profiles incorrect for kernels with broken setitimer support
+      #61797 open 2023-08-07 proposal: compress/gzip: return different error for trailing garbage
+      #81487 open 2026-09-13 math/big: ProbablyPrime panics when the Lucas parameter search exceeds its bound
+      #18155 open 2016-12-02 runtime: latency in sweep assists when there's no garbage
+      #79587 open 2026-05-21 runtime: objects pointed to by package-level var initializer are not garbage collected after pointer reassignment
+      #65013 open 2024-01-08 x/website/_content/doc: add note about how much memory the Go runtime retains to the GC guide
+      #81393 open 2026-09-08 runtime: amortize zeroing and its publication for small-object spans
+      #81928 open 2026-09-30 cmd/compile: regalloc reloads a value from a narrower phi's stack slot, losing its upper bits
+      #80583 open 2026-07-27 cmd/compile: type-based alias resolving has problems
+      #81967 open 2026-10-02 runtime: allocation profile is stale when collected multiple times before GC happens
+      #78569 open 2026-04-08 net/url: zone identifier parsing accepts invalid characters, allowing garbage injection via %25 (CVE-2026-25679 follow-up)
+      #52436 open 2022-04-19 os/exec: Cmd fails to enforce that Env entries are of the documented "key=value" form
+  mangled        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #39072 open 2020-05-14 go/types: UsesCgo exposes mangled names
+      #27569 open 2018-09-08 gccgo: internal compiler error: in mangled_name
+      #27835 open 2018-09-24 runtime: CallersFrames showing mangled package path for nonASCII pkg name
+      #11775 open 2015-07-18 go/printer: AST rewriting and then formatting results in mangled docs
+      #69509 open 2024-09-17 os: Open("file/.") does not produce an error on wasip1
+      #13949 open 2016-01-14 cmd/link: DW_AT_name should come from source code
+      #26311 open 2018-07-10 cmd/compile: internal prefix paths leaking into generated DWARF
+      #72896 open 2025-03-16 cmd/go: mismatched line number and import path in error messages
+      #10402 open 2015-04-10 gccgo: "incompatible type in initialization" is too vague
+      #69334 open 2024-09-07 cmd/go: `go list -json -e` does not store location for invalid import path
+      #35558 open 2019-11-13 cmd/compile: encoded pkg path shown in stack trace
+      #41339 open 2020-09-11 x/playground: faketime headers not stripped from os/exec subprocess output
+      #13467 open 2015-12-03 cmd/cgo: make identical C types identical Go types across packages
+      #24832 open 2018-04-12 x/build/cmd/gerritbot: auto-wrap description
+      #67834 open 2024-06-05 os: File.ReadDir returns "The parameter is incorrect." when passed Windows device path (1.22 regression)
+      #81529 open 2026-09-15 runtime/pprof: support dynamic languages with "virtual frames"
+      #28591 open 2018-11-04 proposal: spec: language: make slices of constant strings constant if the indexes are constant
+      #43934 open 2021-01-26 runtime: Crash in autogenerated function 
+      #20568 open 2017-06-03 cmd/link: debugging fails with -linkmode external on macOS
+      #46560 open 2021-06-04 cmd/link: `go tool dist test testshared` failed if linked with lld or mold
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25349 open 2018-05-11 brand: book table of contents
+      #81634 open 2026-09-21 net/http/pprof: document security implications of exposing profiles
+      #14242 open 2016-02-05 x/website/tour: search in table of contents
+      #69964 open 2024-10-21 cmd/cgo/internal/testcarchive: TestCompileWithoutShared failures
+      #50151 open 2021-12-14 x/tools/gopls: high cpu usage when make changes in package which have some cgo package dependents
+      #81540 open 2026-09-15 vscode-go: DAP rendezvous socket binds to all interfaces
+      #80491 open 2026-07-21 cmd/go: reject cgo -sectcreate linker flags by default
+      #80382 open 2026-07-13 os: multiple TestRoot testcase failures in AIX platform
+      #7929 open 2014-05-03 x/net/html: Tokenizer cannot round-trip <script> tag contents
+      #50206 open 2021-12-16 x/website: update the contents of https://go.dev/talks/
+      #66769 open 2024-04-11 x/website: show table of contents persistently in left-side panel
+      #75440 open 2025-09-12 cmd/go: toolchain selection does not consider the contents of alternate go.mod given to -modfile flag
+      #23603 open 2018-01-29 x/playground: feature request: prepopulate file system with contents of $GOROOT/src
+      #12516 open 2015-09-05 runtime: throw in linked c++ library causes app crash even if caught, on windows platform
+      #81393 open 2026-09-08 runtime: amortize zeroing and its publication for small-object spans
+      #66802 open 2024-04-12 x/tools/imports: support sessions in Process and FixImports for performance
+      #76890 open 2025-12-18 build: build failure on gotip-linux-386-longtest
+      #80315 open 2026-07-09 os: TestRootMultiReadFile/bsSprbsD failures [consistent failure]
+      #78750 open 2026-04-14 cmd/go: harden against cgo LDFLAGS allowing arbitrary file read at build time on darwin
+      #80386 open 2026-07-13 os: TestRootMultiMkdirAllShallow failures on openbsd [consistent failure]
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81649 open 2026-09-22 cmd/compile: composite literal fields built by inlined constructors are not initialized in place
+      #52454 open 2022-04-20 x/website: place the link to go.dev/project in a more visible place
+      #20562 open 2017-06-03 cmd/gofmt: puts `else if` comments in wrong place
+      #80829 open 2026-08-11 cmd/compile: archsimd MulAdd cannot accumulate in place or fold a broadcast memory operand (no VFMADD231PS, no .BCST), though the assembler encodes both
+      #74357 open 2025-06-24 cmd/internal/obj: prologue end marker in arm64 is in the wrong place
+      #34124 open 2019-09-05 net/http: document outgoing Host header origin in more places
+      #81504 open 2026-09-13 internal/routebsd: fix interface parsing on DragonFly BSD
+      #59529 open 2023-04-11 cmd/doc: Blank lines inserted into doc output in place of "directive" lines  
+      #81698 open 2026-09-23 proposal: maps: add Grow
+      #73820 open 2025-05-21 all: flaky failures on netbsd/arm
+      #81962 open 2026-10-02 x/pkgsite: use accurate same-module test for package imports
+      #10382 open 2015-04-08 cmd/compile: use conditional execution in place of branches for small blocks on arm
+      #81971 open 2026-10-03 cmd/go: add -static build flag
+      #81637 open 2026-09-21 x/pkgsite: compute imported-by counts incrementally
+      #24326 open 2018-03-09 go/printer, gofmt: line directives specifying columns must stay in place relative to next token
+      #81200 open 2026-08-28 net/http: Transport should allow disabling Accept-Encoding: gzip on a per-request basis
+      #81970 open 2026-10-02 log/slog: attributes after a group that turns out to be empty are written incorrectly
+      #81652 open 2026-09-22 net/netip: make ParseAddr alloc-free in more cases
+      #81969 open 2026-10-02 net/http: deflake TestTransportMaxConnsPerHostDialCancellation
+      #81940 open 2026-10-01 cmd/go: describe when go work use adds and removes directives
+  unclean        43 hit(s) (all listed)
+      #50629 open 2022-01-15 path/filepath: WalkDir pass unclean path to WalkDirFunc while using unclean root
+      #81309 open 2026-09-02 path/filepath: Walk fails for long file paths
+      #37427 open 2020-02-24 cmd/go: clean file paths in module replace directives
+      #80289 open 2026-07-07 net/http: FileServer local redirection is buggy for escaped path
+      #69509 open 2024-09-17 os: Open("file/.") does not produce an error on wasip1
+      #27416 open 2018-08-31 os: Readdir swallows partial results if it fails to Lstat any file in the listing
+      #62470 open 2023-09-06 proposal: cmd/compile: softfloat support for GOARCH=wasm
+      #35882 open 2019-11-27 cmd/go: error isn't properly reported when running go list on cgo package with missing pkg-config
+      #78076 closed 2026-03-11 cmd/go: get creates 2nd indirect block on clean go.mod
+      #76987 closed 2025-12-25 src/runtime/mgcmark.go:656:11: internal compiler error
+      #69044 closed 2024-08-23 net/http: ServeMux not backwards compatible (with Go 1.21) when registering double-slash patterns
+      #70711 closed 2024-12-06 path/filepath: filepath.Join() removes dir if it is just a dot
+      #69801 closed 2024-10-07 path/filepath: can not handle files on windows that end with a .
+      #69250 closed 2024-09-04 import/path: fs.FileInfo and fs.DirEntry,they have same two method called isDir() ,maybe should return same result?
+      #69251 closed 2024-09-04 import/path: fs.FileInfo and fs.DirEntry,they have same two method called isDir() ,maybe should return same result?
+      #50603 closed 2022-01-14 cmd/go: stamp the pseudo-version in builds generated by `go build`
+      #67156 closed 2024-05-03 x/tools/gopls: crash during internal/imports.scanDirForPackage (crash)
+      #61324 closed 2023-07-12 x/tools/go/analysis/checker: an importable analysis driver based on go/packages
+      #65506 closed 2024-02-04 runtime/debug: TestStack fail
+      #60539 closed 2023-05-31 crypto/tls: expose SessionState extra information
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81153 open 2026-08-27 net/http: Server.Shutdown hangs until its context expires when an HTTP/2 connection is registered after the shutdown GOAWAY sweep
+      #81154 open 2026-08-27 net/http/internal/http2: shut down conns that register during graceful shutdown
+      #80975 open 2026-08-20 proposal: compiler warnings for deprecated / soon to be shutdown features and GOEXPERIMENTS
+      #81996 open 2026-10-04 net/http: HTTP/2 server re-arms a connection's idle timer after its serve loop ends, retaining the connection for IdleTimeout (and the client read loop never stops its health-check timer)
+      #29462 open 2018-12-29 crypto/tls: safely shutdown
+      #42963 open 2020-12-03 database/sql: shutdown connections gracefully
+      #80759 open 2026-08-06 x/net/http2: client GOAWAY uses an odd (client) Last-Stream-ID, rejected as PROTOCOL_ERROR by nghttp2 servers
+      #78216 open 2026-03-19 x/vuln: govulncheck false positive traces http.Server.Shutdown to pgproto3 through unrelated code path (VTA imprecision)
+      #17048 open 2016-09-10 proposal: C API for the runtime
+      #65735 open 2024-02-15 build: build failure on gotip-linux-ppc64* builders
+      #69877 open 2024-10-14 proposal: net/http: configurable shutdown idle timeout for Server
+      #77518 open 2026-02-09 proposal: net/http: server.Start and server.StartTLS
+      #81721 open 2026-09-24 x/tools/gopls: support -remote=auto across CLI subcommands
+      #79120 open 2026-04-30 x/build: infrastructure build failure of rdb-stream failing with "rpc error: code = Unauthenticated desc = oauth: bad access token"
+      #26682 open 2018-07-30 x/net/http2/h2c: support closure of all connections and graceful shutdown
+      #66477 open 2024-03-22 net/http: TestServerNoReadTimeout/h2 failures
+      #70401 open 2024-11-17 build: build failure on gotip-linux-riscv64
+      #76955 open 2025-12-22 build: build failure on gotip-linux-mips64le
+      #41418 open 2020-09-16 x/net/http2: graceful shutdown support to standalone HTTP/2 server
+      #75591 open 2025-09-24 net/http: EOF on new connection and http1.1 request under shutdown
+  reboot         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25808 open 2018-06-09 cmd/go: install/build doesn't remove temporary files when aborted
+      #71304 open 2025-01-17 cmd/internal/bootstrap_test: TestRepeatBootstrap failures
+      #58435 open 2023-02-09 x/build: iOS builder took 19h to obtain machine
+      #52839 open 2022-05-10 net: pure Go DNS resolver hangs with ipv6 link-local address on macOS
+      #29759 open 2019-01-15 net/http/httptest: httptest on Windows is IPv4-specific
+      #67854 open 2024-06-06 cmd/link: ld: B/BL out of range -134840372 (max +/-128MB) from 0x10809F954
+      #77417 open 2026-02-03 x/build: add LUCI linux-mipsle builder
+      #67995 open 2024-06-14 x/tools/gopls: experiment with an option/capability for server-side file watching
+      #44817 open 2021-03-05 cmd/link: binary failed to execute with "This version of %1 is not compatible with the version of Windows you're running."
+      #33863 open 2019-08-27 cmd/link: "readSym out of sync" flake
+      #70708 open 2024-12-06 x/build: add doas package on NetBSD systems
+      #25916 open 2018-06-15 cmd/compile: possible missed optimization in append benchmark
+      #70702 open 2024-12-05 runtime: TestSUID hangs with "Password" prompt on FreeBSD
+      #37998 open 2020-03-22 net: cannot send multicast using ListenPacket("udp4", "") on Windows 10 (1909)
+      #45170 open 2021-03-23 runtime/pprof: tests start failing since migration of AIX builder
+      #74670 open 2025-07-18 cmd/compile/internal/ssa: TestDebugLines_74576/i74576b.go failures
+      #42805 open 2020-11-24 runtime: ill-fated GC outcome in spiky/bursty scenarios
+      #64684 open 2023-12-12 x/build/dashboard: update dragonfly to 6.4.0
+      #24383 open 2018-03-14 os/user: LookupUser() doesn't find users on macOS when compiled with CGO_ENABLED=0
+      #67299 open 2024-05-10 x/build: add LUCI aix-ppc64 builder
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29561 open 2019-01-04 cmd/go: clean GOCACHE based on disk usage
+      #60255 open 2023-05-17 all: unrecognized failures on `plan9/386`
+      #22227 open 2017-10-12 runtime: crash on Plan 9 since CL 46033
+      #78859 open 2026-04-20 x/tools/gopls: detect and recover from snapshot/disk incoherence
+      #76337 open 2025-11-18 cmd/go: compress GOCACHE
+      #36345 open 2020-01-01 encoding/gob: permit registering duplicate names
+      #35456 open 2019-11-08 runtime: "unexpected signal during runtime execution" during bgscavenge on plan9
+      #46362 open 2021-05-25 x/build: solaris-amd64-oraclerel failures with "no space left on device"
+      #77482 open 2026-02-06 cmd/fix, x/tools/go/analysis: fix can print "applied 8 of 10 fixes; 2 files updated" and fail without actually applying any fixes
+      #32417 open 2019-06-03 proposal: x/crypto/blake2s: add New(size, key)
+      #38335 open 2020-04-09 encoding/xml: unable to handle utf-16-encoded file without manual manipulation of source bytes
+      #52604 open 2022-04-28 proposal: cmd/go: partial vendoring
+      #60076 open 2023-05-09 cmd/go: misleading error message when build cache runs out of disk space
+      #37577 open 2020-02-29 x/build/maintner: make it easy for interested clients to subscribe/watch for new Go releases
+      #22735 open 2017-11-15 archive/tar: re-add sparse file support
+      #57081 open 2022-12-01 x/tools/gopls: file corruption on case-insensitive filesystems
+      #49290 open 2021-11-02 cmd/go: support corpus minimization
+      #55162 open 2022-09-20 all: test failures using proxy.golang.org
+      #13548 open 2015-12-09 archive/tar: add support for writing tar containing sparse files
+      #6817 open 2013-11-22 os: "async" file IO
+  data+loss      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #80924 open 2026-08-17 net/http/httputil: fix leaks and data loss in ReverseProxy protocol upgrade
+      #80875 open 2026-08-13 net/http/httputil: ReverseProxy.handleUpgradeResponse has FD leaks on validation failure, data loss from bufio.Reader, and leaks hop-by-hop headers
+      #55296 open 2022-09-21 x/playground: refresh page by mistake will lead to irretrievable data loss
+      #39119 open 2020-05-17 encoding/csv: skipping of empty rows leads to loss of data in single-column datasets
+      #81319 open 2026-09-02 net/http/httputil: ReverseProxy does not remove hop-by-hop headers from forwarded 1xx responses
+      #29878 open 2019-01-22 cmd/cgo: map sized integer types to C equivalents
+      #81847 open 2026-09-29 GOEXPERIMENT=simd alone slows async preemption program-wide on AVX-512 hardware
+      #71080 open 2025-01-01 cmd/compile: position information not properly decoded by non-compiler importers
+      #63422 open 2023-10-06 net/http: http/2 connection management magnifies the effect of network timeouts
+      #43313 open 2020-12-22 cmd/go: add clean commands to clear away potentially corrupt files in module cache
+      #61166 open 2023-07-05 [perf][queue] Replace %s with copy.
+      #32969 open 2019-07-08 cmd/compile: superfluous MOV instructions
+      #50604 open 2022-01-14 x/crypto/ssh: ssh client hangs on waitting for the openConfirm message.
+      #15734 open 2016-05-18 cmd/go: build dependent packages as soon as export data is ready
+      #73563 open 2025-05-01 runtime: append can write out of bounds during data races
+      #36301 open 2019-12-29 archive/zip: FileHeader.SetMode: character files encoded as regular files
+      #32257 open 2019-05-26 strings,bytes: tune inliner for Contains or add ContainsByte
+      #80690 open 2026-08-02 internal/bytealg, strings, bytes: vectorize Index for arm64 with NEON
+      #28952 open 2018-11-26 cmd/compile: consider teaching prove about unexported integer fields
+      #49018 open 2021-10-16 x/tools/gopls: The Need For Gopls Extensibility (Proposal)
+  partial+write  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81542 open 2026-09-15 compress/flate: compression degradation in streaming mode with intermediate Flush() calls
+      #80574 open 2026-07-27 cmd/compile: zero the SETcc destination ahead of the compare on amd64
+      #68610 open 2024-07-26 x/perf/cmd/benchstat: ignore lines prefixed with `panic: `
+      #31514 open 2019-04-17 compress/flate: implement partial flush
+      #42508 open 2020-11-11 encoding/json: Unmarshal inserts map keys when the value is not appropriate for the map type
+      #45912 open 2021-05-02 x/crypto/ssh: Channel.Read incorrectly returns write error instead of io.EOF
+      #46977 open 2021-06-29 x/net/nettest: TestConn cannot succeed with some valid net.Conn implementations
+      #79706 open 2026-05-27 os,net,internal/poll: write and sendfile results are out of order in certain interactions with network intercepting software
+      #9618 open 2015-01-16 runtime: support partial object collection in GC
+      #22520 open 2017-11-01 archive/zip: FileHeader.Extra API is problematic
+      #80257 open 2026-07-04 cmd/compile: intel APX meta issue
+      #77032 open 2025-12-30 proposal: syscall: `fork()` support
+      #28872 open 2018-11-19 proposal: encoding/asn1: expose parseTagAndLength
+      #45049 open 2021-03-16 proposal: spec: add a mechanism to allow generic de- and re-structuring of complex values
+      #28900 open 2018-11-20 net/v2: meta bug for v2 changes
+      #15734 open 2016-05-18 cmd/go: build dependent packages as soon as export data is ready
+      #15735 open 2016-05-18 net: add mechanism to wait for readability on a TCPConn
+      #5171 open 2013-03-31 proposal: database/sql: support a way to perform bulk actions
+      #74948 open 2025-08-08 sync: Map panics with unhelpful error message when breaking hashing invariants (for example, string data changes)
+      #72992 open 2025-03-21 cmd/go, testing: go test 4-5x slower on Windows when test caching is used; -count=1 is fast
+  crash+safe     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #81189 open 2026-08-28 sync: Map.Store crashes on Windows with concurrent first-use (HashTrieMap.expand corrupts type hash pointer)
+      #63567 open 2023-10-16 os: Setenv leads to SIGSEGV with GODEBUG=netdns=cgo, and other uses of cgo
+      #80147 open 2026-06-25 runtime: TOCTOU race in scanConservative causes SIGSEGV via nil allocBits
+      #75051 open 2025-08-16 runtime: fatal error: semasleep on Darwin signal stack
+      #46374 open 2021-05-25 cgo: use of libc's backtrace from a C++ signal handler invoked for Go code crashes on ppc64le
+      #78522 open 2026-04-03 runtime: handle ENOTSUP/ENOSYS from poll_oneoff in netpoll_wasip1
+      #81445 open 2026-09-10 net/http: http.Transport should wait for the request body to be closed
+      #47276 open 2021-07-19 strings: copying but not using a Builder after first use leads to runtime crash (generates heap -> stack pointer)
+      #78042 open 2026-03-09 x/tools/gopls: failed assertion in go/types.validType0
+      #76693 open 2025-12-04 x/tools/gopls: SEGV due to invalid g in brand new goroutine
+      #70743 open 2024-12-09 x/build/cmd/watchflakes: periodically restarts
+      #19070 open 2017-02-13 doc: Effective Go's "safelyDo" does not demonstrate safe use of recover
+      #72031 open 2025-02-28 runtime: (theoretically) redundant package check in isAsyncSafePoint
+      #37603 open 2020-03-02 x/build/maintner/maintnerd, x/build/maintner: changes are hard to review and test
+      #70292 open 2024-11-11 proposal: net/http: optionally disable recover on panic
+      #11100 open 2015-06-06 runtime: support dlclose with -buildmode=c-shared
+      #27203 open 2018-08-24 net: clarify net.Conn concurrency requirement
+      #79249 open 2026-05-07 runtime: intermittent startup panics across multiple Go applications on Windows 11
+      #25408 open 2018-05-15 proposal: io: add OnceCloser helper
+      #46439 open 2021-05-29 proposal: x/crypto/acme/autocert: offer safe defaults for Manager
+  atomic+write   >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #68390 open 2024-07-11 x/telemetry: write the weekends file atomically
+      #80645 open 2026-07-30 proposal: sync: add new type Counter, a sharded counter
+      #81996 open 2026-10-04 net/http: HTTP/2 server re-arms a connection's idle timer after its serve loop ends, retaining the connection for IdleTimeout (and the client read loop never stops its health-check timer)
+      #81217 open 2026-08-29 net/http: request write error misclassified as Request.Body read error masks response error
+      #22707 open 2017-11-14 cmd/cgo: pointer-passing rules may not be strong enough
+      #27203 open 2018-08-24 net: clarify net.Conn concurrency requirement
+      #78763 open 2026-04-15 database/sql: cache-line false sharing between DB atomic counters and DB.mu
+      #81981 open 2026-10-03 x/sys/unix: Syscall functions do not keep pointer arguments alive on linux/ppc64x
+      #63999 open 2023-11-08 sync/atomic: add Max/Min operators
+      #80583 open 2026-07-27 cmd/compile: type-based alias resolving has problems
+      #69327 open 2024-09-06 runtime: non-preemptible zeroing in clear, append, bytes.growSlice, etc
+      #52183 open 2022-04-06 net/http: HTTP/2 request context sometimes returns no error when the client disconnects
+      #80735 open 2026-08-05 net/http{,/internal/http2}: reduce memory usage
+      #80785 open 2026-08-07 cmd/vet: naked return nocopy is missed
+      #76224 open 2025-11-07 runtime/coverage: WriteCounters fails with covermode=invalid error despite using -covermode=atomic for build
+      #70607 open 2024-11-28 proposal: sync/atomic: add relaxed LoadAcq / StoreRel methods
+      #18802 open 2017-01-26 proposal: sync: support for sharded values
+      #76786 open 2025-12-11 proposal: runtime/race: Pure-Go implementation without CGO dependency
+      #76808 open 2025-12-12 sync: RWMutex Readers can starve writers for many seconds
+      #81759 open 2026-09-25 runtime: stop-the-world never completes while goroutines are blocked in read(2) on a pipe (go1.26 regression)
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #43556 open 2021-01-06 x/net/webdav: moving a locked file fails unless destination is locked
+      #78366 open 2026-03-25 x/tools/gopls/internal/filewatcher: TestStress/fsnotify flakes due to windows file locking
+      #30409 open 2019-02-26 cmd/go/internal/lockedfile: clean *.lock files
+      #80739 open 2026-08-05 syscall: mmapper.Mmap uses a single registry mutex, causing performance issues
+      #23468 open 2018-01-18 cmd/cgo: don't use syscall.Errno type as errno return on Windows
+      #81181 open 2026-08-28 x/net/webdav: fatal stack overflow parsing deeply nested XML — internal/xml fork never got the Decoder.Skip fix (CVE-2022-28131)
+      #81796 open 2026-09-27 runtime/secret: support windows/amd64
+      #33974 open 2019-08-30 proposal: os: make the internal lockedfile package public
+      #67737 open 2024-05-30 x/telemetry/internal/upload: TestRun_Concurrent failures
+      #61426 open 2023-07-18 runtime: contention in runtime.gcFlushBgCredit on work.assistQueue.lock
+      #22315 open 2017-10-18 os: StartProcess ETXTBSY race on Unix systems
+      #42839 open 2020-11-25 x/net/webdav: delete should release locks
+      #31948 open 2019-05-09 cmd/go: concurrent build and cache clean is unsafe
+      #22553 open 2017-11-03 runtime: windows-amd64-race builder fails with errno=1455
+      #81811 open 2026-09-28 x/tools/gopls: references miss uses in a package's _test.go files until a file of the package is edited
+      #74493 open 2025-07-08 x/sys/windows: windows.PSAPI_WORKING_SET_EX_INFORMATION data structure does not match the Windows api
+      #22227 open 2017-10-12 runtime: crash on Plan 9 since CL 46033
+      #75051 open 2025-08-16 runtime: fatal error: semasleep on Darwin signal stack
+      #13672 open 2015-12-18 cmd/cgo: signal arrived during external code execution that calls setjmp on Windows
+      #48572 open 2021-09-23 cmd/go: "RLock …: Function not implemented" when the main module is in a filesystem that does not support locking
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #73430 open 2025-04-17 runtime: failure to detect write barriers inside nowritebarrierrec / questionable write barriers
+      #57988 open 2023-01-25 net/http: TestIssue3595 failures with `write: broken pipe`
+      #60416 open 2023-05-24 net/http: TestTimeoutHandlerContextCanceled failures with `unexpected Write in handler`
+      #52208 open 2022-04-07 x/net/http2: TestServer failures with "write: broken pipe" on openbsd 
+      #81217 open 2026-08-29 net/http: request write error misclassified as Request.Body read error masks response error
+      #80689 open 2026-08-02 simd: bridge.LoadFloat32sPart cannot be used in variable initialization
+      #81552 open 2026-09-15 runtime/cgo: intermittent `SIGABRT` (pthread_create failed: Resource temporarily unavailable)
+      #80923 open 2026-08-17 net/http: count a lost HTTP/2 ping exactly once, and never on a failed connection
+      #80695 open 2026-08-03 runtime: TestCgoExternalThreadSignal failures
+      #81282 open 2026-09-01 net/http: TestIdentityResponse/h1 failures
+      #81063 open 2026-08-24 crypto: network flakes in fetching test modules
+      #29561 open 2019-01-04 cmd/go: clean GOCACHE based on disk usage
+      #79808 open 2026-06-03 testing: allow examples with any signature
+      #51907 open 2022-03-24 net/http: request.Body.Read() can be called after client.Do() returns and resp.Body is drained/closed
+      #72752 open 2025-03-09 cmd/cgo/internal/testsanitizers:  ASAN symbolization problems for LUCI's older gcc versionswith DWARF 5
+      #78430 open 2026-03-27 x/pkgsite/internal/queue/gcpqueue: unrecognized failures
+      #81238 open 2026-08-31 runtime: windows/amd64 exception recovery can write below a goroutine stack and corrupt the Go heap
+      #70208 open 2024-11-05 runtime/pprof: flaky TestGenericsHashKeyInPprofBuilder
+      #74501 open 2025-07-08 runtime/race: TestRace failures
+      #22315 open 2017-10-18 os: StartProcess ETXTBSY race on Unix systems
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #69964 open 2024-10-21 cmd/cgo/internal/testcarchive: TestCompileWithoutShared failures
+      #80491 open 2026-07-21 cmd/go: reject cgo -sectcreate linker flags by default
+      #23603 open 2018-01-29 x/playground: feature request: prepopulate file system with contents of $GOROOT/src
+      #81540 open 2026-09-15 vscode-go: DAP rendezvous socket binds to all interfaces
+      #80382 open 2026-07-13 os: multiple TestRoot testcase failures in AIX platform
+      #81872 open 2026-09-29 net/http: FileServer issues incorrect redirect to regular file given multiple trailing slashes
+      #50151 open 2021-12-14 x/tools/gopls: high cpu usage when make changes in package which have some cgo package dependents
+      #66802 open 2024-04-12 x/tools/imports: support sessions in Process and FixImports for performance
+      #80179 open 2026-06-26 proposal: cmd/go: restrict or remove the -modfile flag
+      #80386 open 2026-07-13 os: TestRootMultiMkdirAllShallow failures on openbsd [consistent failure]
+      #12516 open 2015-09-05 runtime: throw in linked c++ library causes app crash even if caught, on windows platform
+      #67053 open 2024-04-26 cmd/cgo/internal/testcarchive: TestInstall failures
+      #68507 open 2024-07-18 cmd/link/internal/ld: TestArchiveBuildInvokeWithExec failures
+      #62028 open 2023-08-14 os: `ReadDir` and `Readdir` on a `File` opened from a relative path try the wrong paths for `FileInfo` structs
+      #28835 open 2018-11-16 proposal: cmd/go: subcommands to add and remove modules from the module cache
+      #58666 open 2023-02-23 cmd/go: `go install` should warn or error if none of its arguments have install targets
+      #58571 open 2023-02-16 cmd/go: test cache hash inputs include ModTime, often causing cache misses on CI
+      #70070 open 2024-10-27 proposal: testing: add (*testing.F).AddNamed() for naming seed corpus entries
+      #71698 open 2025-02-12 cmd/go: "mod tidy" exhausts file descriptors, crashes other macOS apps
+      #78860 open 2026-04-20 proposal: cmd/go: add FileHashes to go list -json output
+
+== 51 terms run; 50 returned hits, 43 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,2 @@
+SETUP ERROR  /ap/defines/regctl/sideeye.toml line 7: the value must be one double-quoted string (an inline # comment may follow it)
+sideeye: json sha256=aaec9e9441c71a78e20b2bbb81c09fd89b62165996b7c0c29d975f95ae8e93b5;

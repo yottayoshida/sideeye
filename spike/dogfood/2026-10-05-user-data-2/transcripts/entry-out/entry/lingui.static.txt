@@ -1,0 +1,2 @@
+static: /opt/node22/bin/node: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=1870845bae85efda102f2d886269b18edcdc5c78, for GNU/Linux 3.7.0, with debug_info, not stripped, too many notes (256)
+next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.

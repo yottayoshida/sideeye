@@ -1,0 +1,929 @@
+=== geth: geth account update --help
+NAME:
+   geth account update - Update an existing account
+
+USAGE:
+   geth account update [command options] <address>
+
+DESCRIPTION:
+   
+       geth account update <address>
+
+   Update an existing account.
+
+   The account is saved in the newest version in encrypted format, you are prompted
+   for a password to unlock the account and another to save the updated file.
+
+   This same command can therefore be used to migrate an account of a deprecated
+   format to the newest format or change the password for an account.
+
+   For non-interactive use the password can be specified with the --password flag:
+
+       geth account update [options] <address>
+
+   Since only one password can be given, only format update can be performed,
+   changing your password is only possible interactively.
+
+
+OPTIONS:
+   ACCOUNT
+
+   
+    --keystore value                                                       ($GETH_KEYSTORE)
+          Directory for the keystore (default = inside the datadir)
+   
+    --lightkdf                          (default: false)                   ($GETH_LIGHTKDF)
+          Reduce key-derivation RAM & CPU usage at some expense of KDF strength
+
+   ETHEREUM
+
+   
+    --datadir value                     (default: /s/aux/home/.ethereum)   ($GETH_DATADIR)
+--- rc 0
+=== geth-ver: geth version
+Geth
+Version: 1.17.7-stable
+Git Commit: 3d858f858a458effb2a563788aedf1fe65e1f0d3
+Git Commit Date: 20260930
+Architecture: arm64
+Go Version: go1.27.1
+Operating System: linux
+GOPATH=
+GOROOT=
+--- rc 0
+=== monero: monero-wallet-cli --help
+Monero 'Fluorine Fermi' (v0.18.5.1-release)
+
+This is the command line monero wallet. It needs to connect to a monero
+daemon to work correctly.
+
+Usage:
+  monero-wallet-cli [--wallet-file=<filename>|--generate-new-wallet=<filename>] [<COMMAND>]
+
+General options:
+  --help                                Produce help message
+  --version                             Output version information
+
+Wallet options:
+  --daemon-address arg                  Use daemon instance at <host>:<port>
+  --daemon-host arg                     Use daemon instance at host <arg> 
+                                        instead of localhost
+  --proxy arg                           [<ip>:]<port> socks proxy to use for 
+                                        daemon connections
+  --trusted-daemon                      Enable commands which rely on a trusted
+                                        daemon
+  --untrusted-daemon                    Disable commands which rely on a 
+                                        trusted daemon
+  --password arg                        Wallet password (escape/quote as 
+                                        needed)
+  --password-file arg                   Wallet password file
+  --daemon-port arg (=0)                Use daemon instance at port <arg> 
+                                        instead of 18081
+  --daemon-login arg                    Specify username[:password] for daemon 
+                                        RPC client
+  --daemon-ssl arg (=autodetect)        Enable SSL on daemon RPC connections: 
+                                        enabled|disabled|autodetect
+  --daemon-ssl-private-key arg          Path to a PEM format private key
+  --daemon-ssl-certificate arg          Path to a PEM format certificate
+  --daemon-ssl-ca-certificates arg      Path to file containing concatenated 
+                                        PEM format certificate(s) to replace 
+                                        system CA(s).
+  --daemon-ssl-allowed-fingerprints arg List of valid fingerprints of allowed 
+                                        RPC servers
+  --daemon-ssl-allow-any-cert           Allow any SSL certificate from the 
+                                        daemon
+--- rc 0
+=== steamguard: steamguard --help
+Generate Steam 2FA codes and confirm Steam trades from the command line.
+
+Usage: steamguard [OPTIONS] [COMMAND]
+
+Commands:
+  approve     Approve or deny pending login sessions
+  debug       Debug stuff, not useful for most users.
+  completion  Generate shell completions
+  setup       Set up a new account with steamguard-cli
+  import      Import an account with steamguard already set up. It must not be encrypted. If you haven't used steamguard-cli before, you probably don't need to use this command.
+  list        List all accounts from the manifest.
+  confirm     Interactive interface for steam mobile confirmations
+  remove      Remove the authenticator from an account.
+  encrypt     Encrypt all maFiles
+  decrypt     Decrypt all maFiles
+  code        Generate 2FA codes
+  qr          Generate QR codes. This *will* print sensitive data to stdout.
+  qr-login    Log in to Steam on another device using the QR code that it's displaying.
+  status      Query and print the 2FA status of an account.
+  help        Print this message or the help of the given subcommand(s)
+
+Options:
+  -u, --username <USERNAME>
+          Select the account you want by steam username. Case-sensitive. By default, the first account in the manifest is selected.
+
+      --password <PASSWORD>
+          Steam account password. You really shouldn't use this if you can avoid it.
+          
+          [env: STEAMGUARD_CLI_STEAM_PASSWORD=]
+
+  -a, --all
+          Select all accounts in the manifest.
+
+  -m, --mafiles-path <MAFILES_PATH>
+          Specify which folder your maFiles are in. This should be a path to a folder that contains manifest.json. Default: ~/.config/steamguard-cli/maFiles
+          
+          [env: STEAMGUARD_CLI_MAFILES=]
+
+  -p, --passkey <PASSKEY>
+          Specify your encryption passkey.
+--- rc 0
+=== steamguard-enc: steamguard encrypt --help
+Encrypt all maFiles
+
+Usage: steamguard encrypt
+
+Options:
+  -h, --help  Print help
+--- rc 0
+=== lighthouse: lighthouse account validator modify --help
+Modify validator status in validator_definitions.yml.
+
+Usage: lighthouse account_manager validator modify [OPTIONS] [COMMAND]
+
+Commands:
+  enable
+          Enable validator(s) in validator_definitions.yml.
+  disable
+          Disable validator(s) in validator_definitions.yml.
+  help
+          Print this message or the help of the given subcommand(s)
+
+Options:
+  -d, --datadir <DIR>
+          Used to specify a custom root data directory for lighthouse keys and
+          databases. Defaults to $HOME/.lighthouse/{network} where network is
+          the value of the `network` flag Note: Users should specify separate
+          custom datadirs for different networks.
+      --debug-level <LEVEL>
+          Specifies the verbosity level used when emitting logs to the terminal.
+          [default: info] [possible values: info, debug, trace, warn, error]
+      --genesis-state-url <URL>
+          A URL of a beacon-API compatible server from which to download the
+          genesis state. Checkpoint sync server URLs can generally be used with
+          this flag. If not supplied, a default URL or the --checkpoint-sync-url
+          may be used. If the genesis state is already included in this binary
+          then this value will be ignored.
+      --genesis-state-url-timeout <SECONDS>
+          The timeout in seconds for the request to --genesis-state-url.
+          [default: 300]
+      --log-format <FORMAT>
+          Specifies the log format used when emitting logs to the terminal.
+          [possible values: JSON]
+      --logfile-debug-level <LEVEL>
+          The verbosity level used when emitting logs to the log file. [default:
+          debug] [possible values: info, debug, trace, warn, error]
+      --logfile-dir <DIR>
+          Directory path where the log file will be stored
+      --logfile-format <FORMAT>
+          Specifies the log format used when emitting logs to the logfile.
+--- rc 0
+=== lighthouse-vm: lighthouse validator-manager --help
+Utilities for managing a Lighthouse validator client via the HTTP API.
+
+Usage: lighthouse validator_manager [OPTIONS] [COMMAND]
+
+Commands:
+  create
+          Creates new validators from BIP-39 mnemonic. A JSON file will be
+          created which contains all the validator keystores and other validator
+          data. This file can then be imported to a validator client using the
+          "import-validators" command. Another, optional JSON file is created
+          which contains a list of validator deposits in the same format as the
+          "ethstaker-deposit-cli" tool.
+  import
+          Uploads validators to a validator client using the HTTP API. The
+          validators are defined in a JSON file which can be generated using the
+          "create-validators" command.
+  move
+          Uploads validators to a validator client using the HTTP API. The
+          validators are defined in a JSON file which can be generated using the
+          "create-validators" command. This command only supports validators
+          signing via a keystore on the local file system (i.e., not Web3Signer
+          validators).
+  list
+          Lists all validators in a validator client using the HTTP API.
+  delete
+          Deletes one or more validators from a validator client using the HTTP
+          API.
+  exit
+          Exits one or more validators using the HTTP API. It can also be used
+          to generate a presigned voluntary exit message for a particular future
+          epoch.
+  help
+          Print this message or the help of the given subcommand(s)
+
+Options:
+  -d, --datadir <DIR>
+          Used to specify a custom root data directory for lighthouse keys and
+          databases. Defaults to $HOME/.lighthouse/{network} where network is
+          the value of the `network` flag Note: Users should specify separate
+          custom datadirs for different networks.
+--- rc 0
+=== jump: jump --help
+Usage: jump [COMMAND ...]
+
+Jump to a fuzzy-matched directory passed as an argument.
+
+Commands:
+  cd           Fuzzy match a directory to jump to.
+  chdir        Update the score of directory during chdir.
+  clean        Cleans the database of non-existent entries.
+  forget       Removes the current directory from the database.
+  hint         Hints relevant paths for jumping.
+  import       Import autojump, z or zoxide scores.
+  pin          Pin a directory to a search term.
+  pins         Lists all the pinned search terms.
+  settings     Configure jump settings.
+  shell        Display a shell integration script.
+  top          Lists the directories as they are scored.
+  unpin        Unpin a search term.
+
+Options:
+  --help       Show this screen.
+  --version    Show version.
+--- rc 0
+=== gcm: git-credential-manager --help
+Description:
+
+Usage:
+  git-credential-manager [command] [options]
+
+Options:
+  --no-ui         Do not use graphical user interface prompts
+  --version       Show version information
+  -?, -h, --help  Show help and usage information
+
+Commands:
+  get          [Git] Return a stored credential
+  store        [Git] Store a credential
+  erase        [Git] Erase a stored credential
+  configure    Configure Git Credential Manager as the Git credential helper
+  unconfigure  Unconfigure Git Credential Manager as the Git credential helper
+  diagnose     Run diagnostics and gather logs to diagnose problems with Git Credential Manager
+  azure-repos  Commands for interacting with the Azure Repos host provider
+  github       Commands for interacting with the GitHub host provider
+
+--- rc 0
+=== firewalld: firewall-offline-cmd --help
+
+Usage: firewall-offline-cmd [OPTIONS...]
+
+If no options are given, configuration from '/etc/sysconfig/system-config-firewall' will be migrated.
+
+General Options
+  -h, --help           Prints a short help text and exits
+  -V, --version        Print the version string of firewalld
+  -q, --quiet          Do not print status messages
+      --system-config  Path to firewalld system configuration
+      --default-config Path to firewalld default configuration
+      --check-config   Check system and default configuration
+      --reset-to-defaults
+                       Reset configuration to firewalld's default configuration
+
+Lokkit Compatibility Options
+  --migrate-system-config-firewall=<file>
+                        Import configuration data from the given configuration
+                        file.
+  --enabled             Enable firewall (default)
+  --disabled            Disable firewall
+  --addmodule=<module>  Ignored option, was used to enable an iptables module
+  --removemodule=<module>
+                        Ignored option, was used to disable an iptables module
+  -s <service>, --service=<service>
+                        Enable a service in the default zone (example: ssh)
+  --remove-service=<service>
+                        Disable a service in the default zone (example: ssh)
+  -p <port>[-<port>]:<protocol>, --port=<port>[-<port>]:<protocol>
+                        Enable a port in the default zone (example: ssh:tcp)
+  -t <interface>, --trust=<interface>
+                        Bind an interface to the trusted zone
+  -m <interface>, --masq=<interface>
+                        Enables masquerading in the default zone, interface
+                        argument is ignored. This is IPv4 only.
+  --custom-rules=[<type>:][<table>:]<filename>
+                        Ignored option. Was used to add custom rules to the
+                        firewall (Example:
+                        ipv4:filter:/etc/sysconfig/ipv4_filter_addon)
+  --forward-port=if=<interface>:port=<port>:proto=<protocol>[:toport=<destination port>][:toaddr=<destination address>]
+--- rc 0
+=== i18n-tasks: i18n-tasks add-missing --help
+Usage: i18n-tasks add-missing [options] [locale ...]
+    -l, --locales en,es,ru           Locale(s) to process. Special: base. Default: all
+    -f, --format FORMAT              Output format: terminal-table, yaml, json, keys, inspect, key-values
+    -p, --pattern PATTERN            Filter by key pattern (e.g. 'common.*')
+    -v, --value VALUE                Value. Interpolates: %{value}, %{human_key}, %{key}, %{default}, %{value_or_human_key}, %{value_or_default_or_human_key}. Default: %{value_or_default_or_human_key}
+        --nil-value                  Set value to nil. Takes precedence over the value argument.
+        --verbose                    Verbose output
+    -h, --help                       Show this message
+--- rc 0
+=== dwpage: php /opt/dokuwiki/bin/dwpage.php --help
+USAGE:
+   dwpage.php <OPTIONS> <COMMAND> ...
+
+   Utility to help command line Dokuwiki page editing, allow pages to be  
+   checked out for editing then committed after changes                   
+                                                                          
+
+OPTIONS:
+   -f, --force           force obtaining a lock for the page (generally   
+                         bad idea)                                        
+
+   -u <username>, --user work as this user. defaults to current CLI user  
+   <username>                                                             
+
+   -h, --help            Display this help screen and exit immediately.   
+
+   --no-colors           Do not use any colors in output. Useful when     
+                         piping output to other tools or files.           
+
+   --loglevel <level>    Minimum level of messages to display. Default is 
+                         info. Valid levels are: debug, info, notice,     
+                         success, warning, error, critical, alert,        
+                         emergency.                                       
+
+
+COMMANDS:
+   This tool accepts a command as first parameter as outlined below:      
+
+
+   checkout <wikipage> [<workingfile>]
+
+     Checks out a file from the repository, using the wiki id and         
+     obtaining a lock for the page.                                       
+     If a working_file is specified, this is where the page is copied to. 
+     Otherwise defaults to the same as the wiki page in the current       
+     working directory.                                                   
+                                                                          
+
+     <wikipage>           The wiki page to checkout                       
+     <workingfile>        How to name the local checkout                  
+--- rc 0
+=== basic-memory: basic-memory tool --help
+                                                                                
+ Usage: basic-memory tool [OPTIONS] COMMAND [ARGS]...                           
+                                                                                
+ Access to MCP tools via CLI                                                    
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ write-note       Create or update a markdown note. Content can be provided   │
+│                  via --content or stdin.                                     │
+│ read-note        Read a markdown note from the knowledge base.               │
+│ delete-note      Delete a note or directory from the knowledge base.         │
+│ edit-note        Edit an existing markdown note using                        │
+│                  append/prepend/find_replace/replace_section.                │
+│ build-context    Get context needed to continue a discussion.                │
+│ recent-activity  Get recent activity across the knowledge base.              │
+│ search-notes     Search across all content in the knowledge base.            │
+│ list-projects    List all available projects with their status (JSON         │
+│                  output).                                                    │
+│ list-workspaces  List available cloud workspaces (JSON output).              │
+│ schema-validate  Validate notes against their schemas (JSON output).         │
+│ schema-infer     Infer schema from existing notes of a type (JSON output).   │
+│ schema-diff      Show drift between schema and actual usage (JSON output).   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+--- rc 0
+=== basic-memory-edit: basic-memory tool edit-note --help
+                                                                                
+ Usage: basic-memory tool edit-note [OPTIONS] {identifier}                      
+                                                                                
+ Edit an existing markdown note using                                           
+ append/prepend/find_replace/replace_section.                                   
+                                                                                
+ Examples:                                                                      
+                                                                                
+ bm tool edit-note my-note --operation append --content "new content"           
+ bm tool edit-note my-note --operation find_replace --find-text "old" --content 
+ "new"                                                                          
+ bm tool edit-note my-note --operation replace_section --section "## Notes"     
+ --content "updated"                                                            
+ bm tool edit-note my-note --operation replace_section --section "## Notes"     
+ --content "updated" --no-replace-subsections                                   
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    identifier      <str>  [required]                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --operation                                   <str>  Edit operation to    │
+│                                                         apply                │
+│                                                         [required]           │
+│ *  --content                                     <str>  Content for the edit │
+│                                                         operation            │
+│                                                         [required]           │
+│    --find-text                                   <str>  Text to find for     │
+│                                                         find_replace         │
+│                                                         operation            │
+│    --section                                     <str>  Section heading for  │
+│                                                         replace_section      │
+│                                                         operation            │
+│    --expected-replace…                           <int>  Expected replacement │
+│                                                         count for            │
+│                                                         find_replace         │
+│                                                         operation            │
+│                                                         [default: 1]         │
+│    --replace-subsecti…    --no-replace-subse…           For replace_section, │
+│                                                         replace nested       │
+│                                                         subsections too; use │
+--- rc 0
+=== ffsubsync: ffsubsync --help
+usage: ffsubsync [-h] [-i [SRTIN ...]] [-o SRTOUT] [--merge-with-reference]
+                 [--make-test-case] [--reference-stream REFERENCE_STREAM]
+                 [--pgs-ref-stream [PGS_REF_STREAM]] [-v] [--overwrite-input]
+                 [--encoding ENCODING]
+                 [--max-subtitle-seconds MAX_SUBTITLE_SECONDS]
+                 [--start-seconds START_SECONDS]
+                 [--max-offset-seconds MAX_OFFSET_SECONDS]
+                 [--split-penalty [SPLIT_PENALTY]]
+                 [--split-length-penalty SPLIT_LENGTH_PENALTY]
+                 [--split-subsample SPLIT_SUBSAMPLE]
+                 [--max-duration-seconds MAX_DURATION_SECONDS]
+                 [--extract-audio-first] [--multi-segment-sync]
+                 [--segment-count SEGMENT_COUNT] [--skip-intro-outro]
+                 [--parallel-workers PARALLEL_WORKERS]
+                 [--apply-offset-seconds APPLY_OFFSET_SECONDS]
+                 [--skip-sync-on-low-quality] [--min-score MIN_SCORE]
+                 [--quality-max-offset-seconds QUALITY_MAX_OFFSET_SECONDS]
+                 [--max-framerate-deviation MAX_FRAMERATE_DEVIATION]
+                 [--frame-rate FRAME_RATE] [--skip-infer-framerate-ratio]
+                 [--non-speech-label NON_SPEECH_LABEL]
+                 [--output-encoding OUTPUT_ENCODING]
+                 [--reference-encoding REFERENCE_ENCODING] [--vad VAD]
+                 [--whisper-weights WHISPER_WEIGHTS] [--language LANGUAGE]
+                 [--whisper-args WHISPER_ARGS] [--no-fix-framerate]
+                 [--serialize-speech]
+                 [--extract-subs-from-stream EXTRACT_SUBS_FROM_STREAM]
+                 [--suppress-output-if-offset-less-than SUPPRESS_OUTPUT_IF_OFFSET_LESS_THAN]
+                 [--ffmpeg-path FFMPEG_PATH] [--log-dir-path LOG_DIR_PATH]
+                 [--gss] [--strict]
+                 [reference]
+
+Synchronize subtitles with video.
+
+positional arguments:
+  reference             Reference (video, subtitles, or a numpy array with VAD
+                        speech) to which to synchronize input subtitles.
+
+options:
+  -h, --help            show this help message and exit
+  -i, --srtin [SRTIN ...]
+--- rc 0
+=== rio: rio edit-info --help
+Usage: rio edit-info [OPTIONS] INPUT
+
+  Edit a dataset's metadata: coordinate reference system, affine
+  transformation matrix, nodata value, and tags.
+
+  The coordinate reference system may be either a PROJ.4 or EPSG:nnnn string,
+
+    --crs 'EPSG:4326'
+
+  or a JSON text-encoded PROJ.4 object.
+
+    --crs '{"proj": "utm", "zone": 18, ...}'
+
+  Transforms are JSON-encoded Affine objects like:
+
+    --transform '[300.038, 0.0, 101985.0, 0.0, -300.042, 2826915.0]'
+
+  Prior to Rasterio 1.0 GDAL geotransforms were supported for --transform, but
+  are no longer supported.
+
+  Metadata items may also be read from an existing dataset using a combination
+  of the --like option with at least one of --all, `--crs like`, `--nodata
+  like`, and `--transform like`.
+
+    rio edit-info example.tif --like template.tif --all
+
+  To get just the transform from the template:
+
+    rio edit-info example.tif --like template.tif --transform like
+
+Options:
+  -b, --bidx INTEGER              Input file band index (default: 1).
+  --nodata NUMBER|nan|null        Modify the Nodata value.
+  --unset-nodata                  Unset the dataset's nodata value.
+  --crs TEXT                      New coordinate reference system
+  --unset-crs                     Unset the dataset's CRS value.
+  --transform TEXT                New affine transform matrix
+  --units TEXT                    Edit units of a band (requires --bidx)
+  --description TEXT              Edit description of a band (requires --bidx)
+  --tag KEY=VAL                   New tag.
+--- rc 0
+=== kaggle: kaggle config --help
+usage: kaggle config [-h] {view,set,unset} ...
+
+options:
+  -h, --help        show this help message and exit
+
+commands:
+  {view,set,unset}
+    view            View current config values
+    set             Set a configuration value
+    unset           Clear a configuration value
+--- rc 0
+=== kaggle-set: kaggle config set --help
+usage: kaggle config set [-h] -n NAME -v VALUE
+
+required arguments:
+  -n, --name NAME    Name of the configuration parameter
+                     (one of competition, path, proxy)
+  -v, --value VALUE  Value of the configuration parameter, valid values depending on name
+                     - competition: Competition URL suffix (use "kaggle competitions list" to show options)
+                     - path: Folder where file(s) will be downloaded, defaults to current working directory
+                     - proxy: Proxy for HTTP requests
+--- rc 0
+=== hf: hf auth --help
+[90mHint: The `hf-cli` skill is not installed. Run `hf skills add -g` to teach your AI agents how to use the `hf` CLI.[0m
+Usage: hf auth [OPTIONS] COMMAND [ARGS]...
+
+  Manage authentication (login, logout, etc.).
+
+Options:
+  -h, --help  Show this message and exit.
+
+Main commands:
+  list    List all stored access tokens. [alias: ls]
+  login   Login from your browser, or using a token from
+          huggingface.co/settings/tokens.
+  logout  Logout from a specific token.
+  switch  Switch between access tokens.
+  token   Print the current access token to stdout.
+  whoami  Find out which huggingface.co account you are logged in as.
+
+Examples
+  $ hf auth list
+  $ hf auth login
+  $ hf auth logout
+  $ hf auth switch
+  $ hf auth token
+  $ hf auth whoami
+
+Learn more
+  Use `hf <command> --help` for more information about a command.
+  Read the documentation at
+  https://huggingface.co/docs/huggingface_hub/en/guides/cli
+--- rc 0
+=== hf-logout: hf auth logout --help
+Usage: hf auth logout [OPTIONS]
+
+  Logout from a specific token.
+
+Options:
+  --token-name TEXT  Name of token to logout
+  -h, --help         Show this message and exit.
+
+Formatting options:
+  --format [auto|human|agent|json|quiet]
+                                  Output format. Defaults to 'auto' which
+                                  picks 'agent' or 'human' based on the
+                                  terminal.
+  --json                          JSON output. Equivalent to '--format json'.
+  -q, --quiet                     Quiet output (one ID per line). Equivalent
+                                  to '--format quiet'.
+  --no-truncate                   Do not truncate scalar values in human
+                                  tables (list/dict columns stay shortened).
+
+Examples
+  $ hf auth logout
+  $ hf auth logout --token-name my-token
+
+Learn more
+  Use `hf <command> --help` for more information about a command.
+  Read the documentation at
+  https://huggingface.co/docs/huggingface_hub/en/guides/cli
+--- rc 0
+=== skopeo: skopeo logout --help
+Logout of a container registry on a specified server.
+
+Usage:
+skopeo logout [command options] REGISTRY
+
+Examples:
+skopeo logout quay.io
+
+Flags:
+  -a, --all                       Remove the cached credentials for all registries in the auth file
+      --authfile string           path of the authentication file. Use REGISTRY_AUTH_FILE environment variable to override
+      --compat-auth-file string   path of a Docker-compatible config file to update instead
+  -h, --help                      help for logout
+      --tls-verify                require HTTPS and verify certificates when accessing the registry
+
+--- rc 0
+=== oras: oras logout --help
+Log out from a remote registry
+
+Example - Log out from a registry:
+  oras logout localhost:5000
+
+Example - Log out from a registry with a custom auth config path:
+  oras logout --registry-config ~/.config/oras/auth.json localhost:5000
+
+Usage:
+  oras logout [flags] <registry>
+
+Flags:
+  -d, --debug                         debug mode
+  -h, --help                          help for logout
+      --registry-config stringArray   auth config path
+--- rc 0
+=== regctl: regctl registry set --help
+Set or modify the configuration of a registry.
+
+Usage:
+  regctl registry set <registry> [flags]
+
+Examples:
+
+# configure a registry for HTTP
+regctl registry set localhost:5000 --tls disabled
+
+# configure a self signed certificate
+regctl registry set registry.example.org --cacert "$(cat reg-ca.crt)"
+
+# specify a local mirror for Docker Hub
+regctl registry set docker.io --mirror hub-mirror.example.org
+
+# specify the requests per sec throttle
+regctl registry set quay.io --req-per-sec 10
+
+Flags:
+      --api-opts stringArray   List of options (key=value))
+      --blob-chunk int         Blob chunk size
+      --blob-max int           Blob size before switching to chunked push, -1 to disable
+      --cacert string          CA Certificate (not a filename, use "$(cat ca.pem)" to use a file)
+      --client-cert string     Client certificate for mTLS (not a filename, use "$(cat client.pem)" to use a file)
+      --client-key string      Client key for mTLS (not a filename, use "$(cat client.key)" to use a file)
+      --cred-helper string     Credential helper (full binary name, including docker-credential- prefix)
+  -h, --help                   help for set
+      --hostname string        Hostname or ip with port
+      --mirror stringArray     List of mirrors (registry names)
+      --path-prefix string     Prefix to all repositories
+      --priority uint          Priority (for sorting mirrors)
+      --repo-auth              Separate auth requests per repository instead of per registry
+      --req-concurrent int     Concurrent requests
+      --req-per-sec float      Requests per second
+      --skip-check             Skip checking connectivity to the registry
+      --tls string             TLS (enabled, insecure, disabled)
+
+Global Flags:
+      --host stringArray     Registry hosts to add (reg=registry,user=username,pass=password,tls=enabled)
+--- rc 0
+=== nerdctl: nerdctl logout --help
+Log out from a container registry
+
+Usage: nerdctl logout [flags] [SERVER]
+
+Flags:
+  -h, --help   help for logout
+
+See also 'nerdctl --help' for the global flags such as '--namespace', '--snapshotter', and '--cgroup-manager'.
+--- rc 0
+=== velero: velero client config set --help
+Set client configuration file values
+
+Usage:
+  velero client config set KEY=VALUE [KEY=VALUE]... [flags]
+
+Flags:
+  -h, --help   help for set
+
+Global Flags:
+      --add_dir_header                      If true, adds the file directory to the header of the log messages
+      --alsologtostderr                     log to standard error as well as files (no effect when -logtostderr=true)
+      --alsologtostderrthreshold severity   logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true)
+      --colorized optionalBool              Show colored output in TTY. Overrides 'colorized' value from $HOME/.config/velero/config.json if present. Enabled by default
+      --features stringArray                Comma-separated list of features to enable for this Velero process. Combines with values from $HOME/.config/velero/config.json if present
+      --kubeconfig string                   Path to the kubeconfig file to use to talk to the Kubernetes apiserver. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration
+      --kubecontext string                  The context to use to talk to the Kubernetes apiserver. If unset defaults to whatever your current-context is (kubectl config current-context)
+      --legacy_stderr_threshold_behavior    If true, stderrthreshold is ignored when logtostderr=true (legacy behavior). If false, stderrthreshold is honored even when logtostderr=true (default true)
+      --log_backtrace_at traceLocation      when logging hits line file:N, emit a stack trace (default :0)
+      --log_dir string                      If non-empty, write log files in this directory (no effect when -logtostderr=true)
+      --log_file string                     If non-empty, use this log file (no effect when -logtostderr=true)
+      --log_file_max_size uint              Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. (default 1800)
+      --logtostderr                         log to standard error instead of files (default true)
+  -n, --namespace string                    The namespace in which Velero should operate (default "velero")
+      --one_output                          If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true)
+      --skip_headers                        If true, avoid header prefixes in the log messages
+      --skip_log_headers                    If true, avoid headers when opening log files (no effect when -logtostderr=true)
+      --stderrthreshold severity            logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true unless -legacy_stderr_threshold_behavior=false) (default 2)
+  -v, --v Level                             number for the log level verbosity
+      --vmodule moduleSpec                  comma-separated list of pattern=N settings for file-filtered logging
+--- rc 0
+=== codex: codex mcp add --help
+Usage: codex mcp add [OPTIONS] <NAME> (--url <URL> | -- <COMMAND>...)
+
+Arguments:
+  <NAME>
+          Name for the MCP server configuration
+
+  [COMMAND]...
+          Command to launch the MCP server. Use --url for a streamable HTTP server
+
+Options:
+  -c, --config <key=value>
+          Override a configuration value that would otherwise be loaded from `~/.codex/config.toml`.
+          Use a dotted path (`foo.bar.baz`) to override nested values. The `value` portion is parsed
+          as TOML. If it fails to parse as TOML, the raw string is used as a literal.
+          
+          Examples: - `-c model="o3"` - `-c 'sandbox_permissions=["disk-full-read-access"]'` - `-c
+          shell_environment_policy.inherit=all`
+
+      --env <KEY=VALUE>
+          Environment variables to set when launching the server. Only valid with stdio servers
+
+      --enable <FEATURE>
+          Enable a feature (repeatable). Equivalent to `-c features.<name>=true`
+
+      --url <URL>
+          URL for a streamable HTTP MCP server
+
+      --bearer-token-env-var <ENV_VAR>
+          Optional environment variable to read for a bearer token. Only valid with streamable HTTP
+          servers
+
+      --disable <FEATURE>
+          Disable a feature (repeatable). Equivalent to `-c features.<name>=false`
+
+      --oauth-client-id <CLIENT_ID>
+          Optional OAuth client identifier to use for this MCP server
+
+      --oauth-client-secret <CLIENT_SECRET>
+          Optional OAuth client secret for the pre-registered client
+
+--- rc 0
+=== sheldon: sheldon add --help
+Add a new plugin to the config file
+
+Usage: sheldon add [OPTIONS] <--git <URL>|--gist <ID>|--github <REPO>|--remote <URL>|--local <DIR>> <NAME>
+
+Arguments:
+  <NAME>  A unique name for this plugin
+
+Options:
+      --git <URL>               Add a clonable Git repository
+      --gist <ID>               Add a clonable Gist snippet
+      --github <REPO>           Add a clonable GitHub repository
+      --remote <URL>            Add a downloadable file
+      --local <DIR>             Add a local directory
+      --proto <PROTO>           The Git protocol for a Gist or GitHub plugin
+      --branch <BRANCH>         Checkout the tip of a branch
+      --rev <SHA>               Checkout a specific commit
+      --tag <TAG>               Checkout a specific tag
+      --dir <PATH>              Which sub directory to use in this plugin
+      --use <MATCH>...          Which files to use in this plugin
+      --apply <TEMPLATE>...     Templates to apply to this plugin
+      --profiles <PROFILES>...  Only use this plugin under one of the given profiles
+      --hooks <SCRIPT>...       Hooks executed during template evaluation
+  -h, --help                    Print help
+--- rc 0
+=== micro: micro -help
+Usage: micro [OPTION]... [FILE]... [+LINE[:COL]] [+/REGEX]
+       micro [OPTION]... [FILE[:LINE[:COL]]]...  (only if the `parsecursor` option is enabled)
+-clean
+    	Clean the configuration directory and exit
+-config-dir dir
+    	Specify a custom location for the configuration directory
+FILE:LINE[:COL] (only if the `parsecursor` option is enabled)
+FILE +LINE[:COL]
+    	Specify a line and column to start the cursor at when opening a buffer
++/REGEX
+    	Specify a regex to search for when opening a buffer
+-options
+    	Show all options help and exit
+-debug
+    	Enable debug mode (enables logging to ./log.txt)
+-profile
+    	Enable CPU profiling (writes profile info to ./micro.prof
+    	so it can be analyzed later with "go tool pprof micro.prof")
+-version
+    	Show the version number and information and exit
+
+Micro's plugins can be managed at the command line with the following commands.
+-plugin install [PLUGIN]...
+    	Install plugin(s)
+-plugin remove [PLUGIN]...
+    	Remove plugin(s)
+-plugin update [PLUGIN]...
+    	Update plugin(s) (if no argument is given, updates all plugins)
+-plugin search [PLUGIN]...
+    	Search for a plugin
+-plugin list
+    	List installed plugins
+-plugin available
+    	List available plugins
+
+Micro's options can also be set via command line arguments for quick
+adjustments. For real configuration, please use the settings.json
+file (see 'help options').
+
+-<option> value
+--- rc 0
+=== ytdlp: yt-dlp --version
+2026.08.19
+--- rc 0
+=== vercel: vercel telemetry --help
+Vercel CLI 62.2.0 (Node.js 20.19.2)
+> NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
+> This information is used to shape the CLI roadmap and prioritize features.
+> You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
+> https://vercel.com/docs/cli/about-telemetry
+
+  ▲ vercel telemetry command
+
+  Allows you to enable or disable telemetry collection                          
+
+  Commands:
+
+  enable     Enables telemetry collection                               
+  disable    Disables telemetry collection                              
+  status     Shows whether telemetry collection is enabled or disabled  
+
+
+  Global Options:
+
+       --cwd <DIR>            Sets the current working directory for a single   
+                              run of a command                                  
+  -d,  --debug                Debug mode (default off)                          
+  -Q,  --global-config <DIR>  Path to the global `.vercel` directory            
+  -h,  --help                 Output usage information                          
+  -A,  --local-config <FILE>  Path to the local `vercel.json` file              
+       --no-color             No color mode (default off)                       
+       --non-interactive      Run without interactive prompts; when an agent is 
+                              detected this is the default                      
+  -S,  --scope                Set a custom scope                                
+  -t,  --token <TOKEN>        Login token                                       
+  -v,  --version              Output the version number                         
+
+
+Error: Failed to get package info: Error: Failed to fetch dist-tags from npm
+    at process.<anonymous> (/usr/local/lib/node_modules/vercel/dist/get-latest-worker.cjs:124:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+--- rc 0
+=== wrangler: wrangler telemetry --help
+Wrangler requires at least Node.js v22.0.0. You are using v20.19.2. Please update your version of Node.js.
+
+Consider using a Node.js version manager such as https://volta.sh/ or https://github.com/nvm-sh/nvm.
+--- rc 0
+=== gemini: gemini mcp add --help
+timeout: failed to run command 'gemini': No such file or directory
+--- rc 0
+=== serverless: serverless config credentials --help
+No version found for 
+--- rc 0
+=== ntfslabel: ntfslabel --help
+
+Usage: ntfslabel [options] device [label]
+    -n, --no-action    Do not write to disk
+    -f, --force        Use less caution
+        --new-serial   Set a new serial number
+        --new-half-serial Set a partial new serial number
+    -q, --quiet        Less output
+    -v, --verbose      More output
+    -V, --version      Display version information
+    -h, --help         Display this help
+
+Developers' email address: ntfs-3g-devel@lists.sf.net
+News, support and information:  https://github.com/tuxera/ntfs-3g/
+
+--- rc 0
+=== wandb: wandb offline --help
+timeout: failed to run command 'wandb': No such file or directory
+--- rc 0
+=== posh: oh-my-posh config migrate --help
+timeout: failed to run command 'oh-my-posh': No such file or directory
+--- rc 0
+=== opam: opam option --help
+timeout: failed to run command 'opam': No such file or directory
+--- rc 0
+=== stack: stack config set --help
+timeout: failed to run command 'stack': No such file or directory
+--- rc 0
+=== juliaup: juliaup config --help
+timeout: failed to run command 'juliaup': No such file or directory
+--- rc 0
+=== goi18n: goi18n merge -help
+timeout: failed to run command 'goi18n': No such file or directory
+--- rc 0
+=== toybox: toybox sed --help
+timeout: failed to run command 'toybox': No such file or directory
+--- rc 0
+=== gltfpack: gltfpack
+timeout: failed to run command 'gltfpack': No such file or directory
+--- rc 0
+=== solvespace: solvespace-cli --help
+timeout: failed to run command 'solvespace-cli': No such file or directory
+--- rc 0
+=== gltf-transform: gltf-transform --help
+timeout: failed to run command 'gltf-transform': No such file or directory
+--- rc 0

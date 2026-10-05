@@ -1,0 +1,156 @@
+== novelty pre-scan: nosarthur/gita
+== date: 2026-10-05T05:08:39Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          3 hit(s) (all listed)
+      #291 open 2025-10-08 --auto-group option crashes if trying to add non-git object
+      #302 open 2025-12-18 UnicodeDecodeError on Windows when running gita ll (threaded describe)
+      #310 closed 2026-04-22 Update pytest requirement from >=6.1.2 to >=8.4.2
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      7 hit(s) (all listed)
+      #312 open 2026-07-06 Update setuptools requirement from >=40.6.3 to >=83.0.0
+      #308 open 2026-04-22 Update twine requirement from >=1.12.1 to >=6.2.0
+      #307 open 2026-04-22 Update pytest-cov requirement from >=2.6.1 to >=7.1.0
+      #309 open 2026-04-22 Update pytest-xdist requirement from >=2.1.0 to >=3.8.0
+      #306 closed 2026-04-22 Update setuptools requirement from >=40.6.3 to >=82.0.1
+      #264 closed 2023-10-16 Limit `gita ll` column widths
+      #277 merged 2024-06-05 Issue 264 - Adds layout.csv to format output into columns
+  truncate       8 hit(s) (all listed)
+      #302 open 2025-12-18 UnicodeDecodeError on Windows when running gita ll (threaded describe)
+      #312 open 2026-07-06 Update setuptools requirement from >=40.6.3 to >=83.0.0
+      #308 open 2026-04-22 Update twine requirement from >=1.12.1 to >=6.2.0
+      #307 open 2026-04-22 Update pytest-cov requirement from >=2.6.1 to >=7.1.0
+      #309 open 2026-04-22 Update pytest-xdist requirement from >=2.1.0 to >=3.8.0
+      #306 closed 2026-04-22 Update setuptools requirement from >=40.6.3 to >=82.0.1
+      #264 closed 2023-10-16 Limit `gita ll` column widths
+      #277 merged 2024-06-05 Issue 264 - Adds layout.csv to format output into columns
+  empty          10 hit(s) (all listed)
+      #245 open 2023-07-11 Revised symbols
+      #240 closed 2023-05-17 problem displaying repo status properly
+      #192 closed 2021-09-10 include inital repo url in repos.csv
+      #203 merged 2021-12-15 write empty file using Path().write_text()
+      #154 merged 2021-05-29 feat: add flag to 'clone' to preserve paths (#153)
+      #134 merged 2021-03-25 fix throw error if repository remote url is not set
+      #42 closed 2019-03-12 gita hangs after 'gita pull' when password is needed for multiple repos
+      #2 closed 2019-02-03 empty `~/.gita/repo_path` file causes traceback
+      #4 merged 2019-02-03 fix: #2 empty path file
+      #13 merged 2019-02-05 fix: #2 empty path file
+  atomic         1 hit(s) (all listed)
+      #309 open 2026-04-22 Update pytest-xdist requirement from >=2.1.0 to >=3.8.0
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #52 closed 2019-03-24 Better handling of KeyboardInterrupts
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         3 hit(s) (all listed)
+      #52 closed 2019-03-24 Better handling of KeyboardInterrupts
+      #42 closed 2019-03-12 gita hangs after 'gita pull' when password is needed for multiple repos
+      #53 closed 2019-03-25 hide stacktrace with ctrl+c
+  power          73 hit(s) (all listed)
+      #122 merged 2021-01-13 implement shell subcommand
+      #99 merged 2020-09-27 add freeze sub-command
+      #127 merged 2021-01-30 fix repo name in group config file after rename
+      #130 merged 2021-02-05 fix broken context after group name change
+      #165 merged 2021-06-07 replace colors.yml by colors.csv
+      #162 merged 2021-06-06 allow shell command to be defined in cmds.yml
+      #159 merged 2021-06-03 replace group yml by csv
+      #155 merged 2021-05-30 implement flags sub-command
+      #166 merged 2021-06-13 replace cmds.yml by cmds.json for commands registration
+      #135 merged 2021-04-29 Upgrade to GitHub-native Dependabot
+      #131 merged 2021-02-14 allow bare repo to be added
+      #164 merged 2021-06-07 replace info.yml by info.csv
+      #154 merged 2021-05-29 feat: add flag to 'clone' to preserve paths (#153)
+      #147 merged 2021-05-18 tag main repos in config file
+      #142 merged 2021-05-16 use local config if possible
+      #140 merged 2021-05-16 enhance add for main repos
+      #149 merged 2021-05-23 underline main repos
+      #134 merged 2021-03-25 fix throw error if repository remote url is not set
+      #88 merged 2020-07-19 Add a Gitter chat badge to README.md
+      #26 merged 2019-02-10 use asyncio for git execution
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           5 hit(s) (all listed)
+      #312 open 2026-07-06 Update setuptools requirement from >=40.6.3 to >=83.0.0
+      #288 merged 2025-09-18 Create group if not exists when cloning repo
+      #225 closed 2022-03-05 I am unable to remove a repository from a group if the repository does not exist anymore
+      #200 closed 2021-10-29 Unable to create group
+      #58 closed 2019-05-23 Add now option: gita ll --show-paths
+  partial        2 hit(s) (all listed)
+      #194 merged 2021-09-13 fix help of 'super' and 'shell' commands
+      #101 closed 2020-10-24 Allow automatic group creation on recursive add
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #288 merged 2025-09-18 Create group if not exists when cloning repo
+  recovery       1 hit(s) (all listed)
+      #288 merged 2025-09-18 Create group if not exists when cloning repo
+  rollback       0 hit(s)
+  resume         2 hit(s) (all listed)
+      #193 closed 2021-09-13 README file states gita shell group-name(s) <any-shell-command> is supported, but it does not work
+      #143 closed 2021-05-17 convert groups.yml to groups.csv 
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #274 closed 2024-05-13 failure with many repositories on MacOS
+  destroys       0 hit(s)
+  overwrite      12 hit(s) (all listed)
+      #312 open 2026-07-06 Update setuptools requirement from >=40.6.3 to >=83.0.0
+      #311 open 2026-06-23 Update pytest requirement from >=6.1.2 to >=9.1.1
+      #308 open 2026-04-22 Update twine requirement from >=1.12.1 to >=6.2.0
+      #307 open 2026-04-22 Update pytest-cov requirement from >=2.6.1 to >=7.1.0
+      #309 open 2026-04-22 Update pytest-xdist requirement from >=2.1.0 to >=3.8.0
+      #306 closed 2026-04-22 Update setuptools requirement from >=40.6.3 to >=82.0.1
+      #310 closed 2026-04-22 Update pytest requirement from >=6.1.2 to >=8.4.2
+      #260 closed 2023-07-26 Gita clone -g should create group if not exists.
+      #160 closed 2021-06-03 don't overwrite the group.csv when running test
+      #161 closed 2021-06-05 How to run subshell included cmd with gita?
+      #154 merged 2021-05-29 feat: add flag to 'clone' to preserve paths (#153)
+      #64 closed 2019-06-15 disallow renaming a repo to an exisiting repo name
+  clobber        1 hit(s) (all listed)
+      #161 closed 2021-06-05 How to run subshell included cmd with gita?
+  blank          5 hit(s) (all listed)
+      #288 merged 2025-09-18 Create group if not exists when cloning repo
+      #249 closed 2023-07-12 gita ll - nothing happend
+      #243 closed 2023-06-30 show status as words as well as colour in `gita ll`
+      #133 closed 2021-03-25 freeze fails if any repo is not have had commits (or remote)
+      #124 merged 2021-01-18 Display tags under `gita ll`
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       2 hit(s) (all listed)
+      #277 merged 2024-06-05 Issue 264 - Adds layout.csv to format output into columns
+      #215 closed 2022-01-29 gita drive root error on Windows
+  in-place       4 hit(s) (all listed)
+      #277 merged 2024-06-05 Issue 264 - Adds layout.csv to format output into columns
+      #266 merged 2023-11-02 Make new zsh completion #132
+      #168 closed 2021-06-29 Feature Request: gita ll --work  
+      #75 merged 2020-01-09 refactor: added get_config_dir()
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #302 open 2025-12-18 UnicodeDecodeError on Windows when running gita ll (threaded describe)
+  atomic+write   0 hit(s)
+  lock+file      0 hit(s)
+  write+failure  0 hit(s)
+  file+contents  2 hit(s) (all listed)
+      #277 merged 2024-06-05 Issue 264 - Adds layout.csv to format output into columns
+      #215 closed 2022-01-29 gita drive root error on Windows
+
+== 51 terms run; 21 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,250 @@
+== novelty pre-scan: regclient/regclient
+== date: 2026-10-05T03:53:20Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #577 merged 2023-10-17 Fix crash on RepoList from invalid hostname
+  corrupt        6 hit(s) (all listed)
+      #1105 closed 2026-06-17 [Issue] Unclear "not found" on index create
+      #1048 closed 2026-02-12 [Issue]  regctl blob delete cannot work fine in my private repository
+      #844 closed 2024-10-31 [Question] How to copy an image in Docker format into an OCI registry (incl. conversion)
+      #669 merged 2024-02-23 Add regctl blob delete and ocidir blob delete API
+      #263 closed 2022-07-10 [Question] On a registry -> registry sync, possible to skip on error?
+      #121 merged 2021-12-07 Only warn on regsync backup errors
+  corruption     3 hit(s) (all listed)
+      #844 closed 2024-10-31 [Question] How to copy an image in Docker format into an OCI registry (incl. conversion)
+      #576 closed 2023-10-16 regsync isn't always respecting the allow/deny tags
+      #18 merged 2020-12-01 Fixing host config corruption bug
+  truncated      4 hit(s) (all listed)
+      #152 closed 2022-02-11 Bump github.com/docker/distribution from 2.7.1+incompatible to 2.8.0+incompatible
+      #112 closed 2021-11-18 Bump github.com/containerd/containerd from 1.5.7 to 1.5.8
+      #101 closed 2021-10-04 Bump github.com/containerd/containerd from 1.5.5 to 1.5.7
+      #80 closed 2021-08-30 Bump github.com/containerd/containerd from 1.5.1 to 1.5.4
+  truncate       4 hit(s) (all listed)
+      #152 closed 2022-02-11 Bump github.com/docker/distribution from 2.7.1+incompatible to 2.8.0+incompatible
+      #112 closed 2021-11-18 Bump github.com/containerd/containerd from 1.5.7 to 1.5.8
+      #101 closed 2021-10-04 Bump github.com/containerd/containerd from 1.5.5 to 1.5.7
+      #80 closed 2021-08-30 Bump github.com/containerd/containerd from 1.5.1 to 1.5.4
+  empty          48 hit(s) (all listed)
+      #1058 open 2026-03-06 [Feature] `regsync once` should be able to output a report
+      #1090 closed 2026-05-13 [Feature] regctl image mod: add --config-user and --config-workdir
+      #1077 closed 2026-04-27 [Feature] regsync as a Go library?
+      #1035 closed 2025-12-31 [Question] Access registry's `RepoTags` using `regctl image inspect`
+      #860 closed 2024-11-17 Add image save to export multiple images in same tar
+      #917 merged 2025-03-05 Feat: Improve regctl image check-base output
+      #910 merged 2025-02-18 Chore: Modernize Go to the 1.22 specs
+      #789 closed 2024-07-24 [Issue] Unable to use regsync with self-hosted quay syncing whole registry
+      #883 closed 2024-12-10 [Question] Push a blob using regclient as a library
+      #857 closed 2024-11-16 Add -o option to image export and export of multiple images
+      #892 merged 2025-01-06 Fix addScope in bearerHandler
+      #753 closed 2024-05-29 [Issue] image mod will lose io.containerd.image.name annotation
+      #869 closed 2024-12-03 [Issue] ECR repository not created when doing registry sync
+      #784 merged 2024-07-20 Add WithDockerCredsFile() RegClient Opt
+      #722 closed 2024-04-22 [Feature] Support for creating new images that contain nothing
+      #755 closed 2024-05-29 [Issue] image mod on existing local image will generate additional manifest entry
+      #509 closed 2023-08-02 [Question]  How is `regclient.WithFS` used?
+      #726 closed 2024-04-25 [Question] buildx imagetools create alternative
+      #444 closed 2023-05-28 Switching from scratch to filler media type
+      #610 closed 2023-11-22 BlobPut: improve the code readability a bit
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #746 merged 2024-05-20 Handle nil blob reader
+  interrupt      3 hit(s) (all listed)
+      #978 open 2025-08-18 [Issue] `regctl import`: Unable to import TAR image file
+      #746 merged 2024-05-20 Handle nil blob reader
+      #69 closed 2021-07-12 "use of closed network connection" on long-lived blob pushes (how can I configure timeouts?)
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #745 closed 2024-05-20 [Issue] panic when received SIGINT
+  ctrl-c         1 hit(s) (all listed)
+      #671 merged 2024-02-23 Allow ctrl-c on regctl registry login
+  power          3 hit(s) (all listed)
+      #984 closed 2025-08-26 [Question] Script-friendly method to get the numeric version of regclient?
+      #270 closed 2022-07-26 [Feature] non-regex version of tags support in regsync config
+      #46 closed 2021-04-27 Registry login failure on Windows...
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           12 hit(s) (all listed)
+      #973 open 2025-08-08 [Question]  Question about a some changes to be implemented here for rules_oci
+      #1067 open 2026-04-01 [Feature] `regsync` filter images by 'age'
+      #710 open 2024-04-03 [Feature] Ability to pack multiple images into one tar export
+      #941 closed 2025-04-25 [Question] With regbot lua, best way to get created timestamp
+      #757 closed 2024-06-02 [Issue] Missing Output when using --format '{{jsonPretty .}}'
+      #509 closed 2023-08-02 [Question]  How is `regclient.WithFS` used?
+      #719 closed 2024-04-19 [Feature] Support uncompressed layers
+      #638 closed 2024-01-04 [Question] Can I export local image to .tar file within podman?
+      #562 closed 2023-10-02 [Feature] `regctl image size`
+      #367 closed 2023-02-22 [Question]  can 'regctl export' only specific platforms?
+      #321 closed 2022-10-05 [Question] Can I use regctl to do a backup/restore of my registry
+      #80 closed 2021-08-30 Bump github.com/containerd/containerd from 1.5.1 to 1.5.4
+  partial        16 hit(s) (all listed)
+      #973 open 2025-08-08 [Question]  Question about a some changes to be implemented here for rules_oci
+      #878 merged 2024-12-06 Feat: Document community maintained packages
+      #851 merged 2024-11-11 Feat: Switch regsync to slog
+      #849 merged 2024-11-11 Feat: Switch regbot to slog
+      #850 merged 2024-11-11 Feat: Switch regctl to slog
+      #847 merged 2024-11-10 Feat: Refactor logging to use log/slog
+      #627 closed 2023-12-14 [Issue] Seems need to add rangeEnd to chunkStart for push image to Aliyun DevOps registry
+      #583 closed 2023-10-30 RegClient: implement Ping() method
+      #470 merged 2023-06-17 Improve error handling of artifact tree
+      #503 merged 2023-07-22 Only check digest on EOF
+      #367 closed 2023-02-22 [Question]  can 'regctl export' only specific platforms?
+      #321 closed 2022-10-05 [Question] Can I use regctl to do a backup/restore of my registry
+      #272 closed 2022-07-29 [Question] How to list paginated image tags from quay.io
+      #323 closed 2022-10-09 [Issue] Getting "Not Found" while pushing to DockerHub after a sleep for backoff
+      #215 closed 2022-04-26 [Feature] option to only sync n most recent tags for an image
+      #77 merged 2021-08-16 Add tests for partial final blob
+  incomplete     2 hit(s) (all listed)
+      #294 closed 2022-09-09 [Question] Copy image for cartain platforms
+      #885 merged 2024-12-10 Feat: Support incomplete subject descriptor
+  dataloss       0 hit(s)
+  recover        8 hit(s) (all listed)
+      #1065 open 2026-03-28 reghttp: keep retry backoff state request local
+      #723 closed 2024-04-24 ìmage mod --label` change the config mediatype
+      #328 closed 2022-10-24 [Feature] configurable parallelism for regsync
+      #325 merged 2022-10-11 Recover a failed chunk with a status request
+      #331 closed 2022-10-29 unable to reuse reader
+      #333 merged 2022-11-01 Adding Seek to reghttp to enable retries
+      #295 closed 2022-09-11 [Question] Is regsync resumable?
+      #121 merged 2021-12-07 Only warn on regsync backup errors
+  recovery       0 hit(s)
+  rollback       2 hit(s) (all listed)
+      #991 closed 2025-09-12 [Feature] `regctl tag add`
+      #615 merged 2023-11-23 Use http.Client default values
+  resume         4 hit(s) (all listed)
+      #701 merged 2024-03-24 Update GHA registry push and sign steps
+      #627 closed 2023-12-14 [Issue] Seems need to add rangeEnd to chunkStart for push image to Aliyun DevOps registry
+      #295 closed 2022-09-11 [Question] Is regsync resumable?
+      #80 closed 2021-08-30 Bump github.com/containerd/containerd from 1.5.1 to 1.5.4
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        4 hit(s) (all listed)
+      #576 closed 2023-10-16 regsync isn't always respecting the allow/deny tags
+      #321 closed 2022-10-05 [Question] Can I use regctl to do a backup/restore of my registry
+      #323 closed 2022-10-09 [Issue] Getting "Not Found" while pushing to DockerHub after a sleep for backoff
+      #106 closed 2021-10-28 meaning of "Digest required to delete manifest"?
+  destroys       0 hit(s)
+  overwrite      13 hit(s) (all listed)
+      #826 open 2024-09-26 [Feature] Support setting Workdir in regctl's --layer-add option
+      #1122 closed 2026-08-12 config: clear credential helper when merging an identity token
+      #1012 closed 2025-11-15 [Feature] regsync could more useful if
+      #987 merged 2025-08-28 Chore(deps): Bump github.com/ulikunitz/xz from 0.5.13 to 0.5.14
+      #258 closed 2022-06-27 Cannot remove any tag from sonatype nexus repo?
+      #755 closed 2024-05-29 [Issue] image mod on existing local image will generate additional manifest entry
+      #526 closed 2023-08-30 [Issue] regctl artifact put not allowing overwrite
+      #290 merged 2022-08-31 Fix artifact put with both refers and tag
+      #135 closed 2022-01-06 Bump github.com/containerd/containerd from 1.5.8 to 1.5.9
+      #152 closed 2022-02-11 Bump github.com/docker/distribution from 2.7.1+incompatible to 2.8.0+incompatible
+      #112 closed 2021-11-18 Bump github.com/containerd/containerd from 1.5.7 to 1.5.8
+      #101 closed 2021-10-04 Bump github.com/containerd/containerd from 1.5.5 to 1.5.7
+      #80 closed 2021-08-30 Bump github.com/containerd/containerd from 1.5.1 to 1.5.4
+  clobber        0 hit(s)
+  blank          3 hit(s) (all listed)
+      #110 closed 2021-11-16 Can't copy image to ECR, no credentials available for basic auth
+      #96 closed 2021-09-29 regctl tag rm seems to leave dangling/empty tag in docker hub
+      #2 merged 2020-10-01 Add prompt for user/pass on registry login
+  unreadable     0 hit(s)
+  garbage        10 hit(s) (all listed)
+      #710 open 2024-04-03 [Feature] Ability to pack multiple images into one tar export
+      #1048 closed 2026-02-12 [Issue]  regctl blob delete cannot work fine in my private repository
+      #808 closed 2024-08-21 [Question] Nested index: is it normal for an index to be deleted if its tag is deleted even when it is part of another index
+      #809 closed 2024-08-22 [Question] Clarifications on how the manifest endpoint should behave in the context of manifests of indexes referenced by other indexes
+      #669 merged 2024-02-23 Add regctl blob delete and ocidir blob delete API
+      #690 closed 2024-03-08 [Question] regctl image delete behaviour, and regctl image update improvement
+      #321 closed 2022-10-05 [Question] Can I use regctl to do a backup/restore of my registry
+      #146 merged 2022-02-04 Adding ocidir garbage collection and major linting update
+      #323 closed 2022-10-09 [Issue] Getting "Not Found" while pushing to DockerHub after a sleep for backoff
+      #64 closed 2021-06-24 Feature Request: Support for synchronizing docker registries
+  mangled        1 hit(s) (all listed)
+      #611 closed 2023-11-22 BlobPut: preserve the passed blob descriptor when doing chunked upload
+  contents       25 hit(s) (all listed)
+      #1079 open 2026-04-28 [Feature] Progress for image import
+      #1058 open 2026-03-06 [Feature] `regsync once` should be able to output a report
+      #1028 open 2025-12-14 [Issue] Unable to read all files from tar
+      #710 open 2024-04-03 [Feature] Ability to pack multiple images into one tar export
+      #415 closed 2023-04-21 Introduce GoReleaser
+      #955 closed 2025-06-16 [Issue] HTTP 400 when copying image using `regsync` to ELB-fronted `distribution/distribution` registry
+      #866 merged 2024-11-29 Feat: Support referrers in an external repository
+      #870 merged 2024-12-03 Feat: Include source in referrers response
+      #755 closed 2024-05-29 [Issue] image mod on existing local image will generate additional manifest entry
+      #740 merged 2024-05-12 Feat: regctl image mod add layer from directory
+      #756 closed 2024-05-31 [Question] Using artifact put in a github action
+      #637 merged 2024-01-03 Preserve the descriptor on chunked blob put
+      #618 closed 2023-11-27 Add: Supports multiple image export and import
+      #590 merged 2023-11-08 Add a Ping method
+      #592 closed 2023-11-09 [Question] Why `mod` keeps docker specific keys in image config when converting to OCI
+      #527 merged 2023-08-31 Refactoring mod of Docker to OCI referrers
+      #518 merged 2023-08-20 Add the ability to access the OCI index in tag ls
+      #502 closed 2023-07-19 image get-file does not return all the file or from wrong layer
+      #466 closed 2023-06-12 [Issue] Error syncing images with annotations from Docker Hub to GCR
+      #354 closed 2023-02-02 manually created tars - "unable to export all files from tar: not found"
+  in-place       27 hit(s) (all listed)
+      #1067 open 2026-04-01 [Feature] `regsync` filter images by 'age'
+      #710 open 2024-04-03 [Feature] Ability to pack multiple images into one tar export
+      #1106 merged 2026-06-18 Chore: Improve error messages in ocidir scheme
+      #1105 closed 2026-06-17 [Issue] Unclear "not found" on index create
+      #1098 closed 2026-06-04 feat: add ipAddr host option to override the dialed IP
+      #1089 closed 2026-05-12 Add `manifest.descriptor` and `manifest:descriptor` lua functions to regbot
+      #1036 closed 2026-01-05 [Feature] Compliance with XDG base directory specification
+      #1012 closed 2025-11-15 [Feature] regsync could more useful if
+      #1005 merged 2025-10-27 feat: add semver versioning
+      #844 closed 2024-10-31 [Question] How to copy an image in Docker format into an OCI registry (incl. conversion)
+      #872 closed 2024-12-04 [Question] Snap package for regclient
+      #786 closed 2024-07-22 [Issue] Odd tarball layout on Windows platform when exporting image by regctl
+      #809 closed 2024-08-22 [Question] Clarifications on how the manifest endpoint should behave in the context of manifests of indexes referenced by other indexes
+      #728 closed 2024-04-26 feat: implement digest --decompress
+      #711 closed 2024-04-11 [Issue] Hitting RateLimit with Head Requests ?
+      #719 closed 2024-04-19 [Feature] Support uncompressed layers
+      #727 closed 2024-04-26 [Feature] Add a new flag for regctl digest to decompress 
+      #618 closed 2023-11-27 Add: Supports multiple image export and import
+      #598 closed 2023-11-14 [Issue] Race detected when using regclient in tests
+      #603 closed 2023-11-17 [Issue] regctl image check-base does not find anotation for Docker image
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      2 hit(s) (all listed)
+      #710 open 2024-04-03 [Feature] Ability to pack multiple images into one tar export
+      #509 closed 2023-08-02 [Question]  How is `regclient.WithFS` used?
+  data+loss      2 hit(s) (all listed)
+      #844 closed 2024-10-31 [Question] How to copy an image in Docker format into an OCI registry (incl. conversion)
+      #106 closed 2021-10-28 meaning of "Digest required to delete manifest"?
+  partial+write  2 hit(s) (all listed)
+      #323 closed 2022-10-09 [Issue] Getting "Not Found" while pushing to DockerHub after a sleep for backoff
+      #215 closed 2022-04-26 [Feature] option to only sync n most recent tags for an image
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      1 hit(s) (all listed)
+      #601 merged 2023-11-16 Add tests for ocidir throttle race
+  write+failure  1 hit(s) (all listed)
+      #1137 open 2026-10-02 [Feature] regsync: OpenTelemetry metrics for sync runs
+  file+contents  16 hit(s) (all listed)
+      #1079 open 2026-04-28 [Feature] Progress for image import
+      #710 open 2024-04-03 [Feature] Ability to pack multiple images into one tar export
+      #1028 open 2025-12-14 [Issue] Unable to read all files from tar
+      #415 closed 2023-04-21 Introduce GoReleaser
+      #955 closed 2025-06-16 [Issue] HTTP 400 when copying image using `regsync` to ELB-fronted `distribution/distribution` registry
+      #866 merged 2024-11-29 Feat: Support referrers in an external repository
+      #870 merged 2024-12-03 Feat: Include source in referrers response
+      #755 closed 2024-05-29 [Issue] image mod on existing local image will generate additional manifest entry
+      #740 merged 2024-05-12 Feat: regctl image mod add layer from directory
+      #756 closed 2024-05-31 [Question] Using artifact put in a github action
+      #637 merged 2024-01-03 Preserve the descriptor on chunked blob put
+      #618 closed 2023-11-27 Add: Supports multiple image export and import
+      #502 closed 2023-07-19 image get-file does not return all the file or from wrong layer
+      #466 closed 2023-06-12 [Issue] Error syncing images with annotations from Docker Hub to GCR
+      #245 closed 2022-06-07 [Issue] 0.4.3 regresses docker hub credentials helper
+      #214 closed 2022-04-25 [Feature] Improve User Experience of regsync by offering a simplified config file option
+
+== 51 terms run; 30 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

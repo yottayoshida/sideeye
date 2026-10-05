@@ -1,0 +1,2 @@
+static: /opt/py/bin/conan: Python script, ASCII text executable
+next: sideeye explore --state /s/conan --cwd "/s/conan-in" --operation "conan remote disable conancenter" \

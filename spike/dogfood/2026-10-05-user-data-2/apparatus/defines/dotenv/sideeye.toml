@@ -1,0 +1,6 @@
+[world]
+state = "/s/env"
+
+[define]
+operation = "dotenv -f /s/env/.env set DEBUG true"
+cwd       = "/s/env"

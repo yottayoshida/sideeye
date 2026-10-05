@@ -1,0 +1,847 @@
+== novelty pre-scan: yt-dlp/yt-dlp
+== date: 2026-10-05T03:21:35Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4838 open 2022-09-03 Postprocessing crashed after downloading vimeo original video
+      #15778 open 2026-01-31 [downloader/common] Fix missing newline on download crash
+      #16582 open 2026-04-26 yt-dlp says 403 forbidden on Fox4KC.com
+      #15516 open 2026-01-08 YouTube `--live-from-start` download thread eventually crashes due to ERROR: Did not get any data blocks
+      #2327 open 2022-01-13 add support : learn.justdjango.com
+      #17662 closed 2026-09-10 Crash parsing subtitles with colored text (Youtube)
+      #9929 open 2024-05-15 ERROR: Postprocessing: Error opening input files: Result too large
+      #8546 open 2023-11-08 Random SIGPIPE when downloading videos.
+      #12654 open 2025-03-18 [ie/facebook] Fix extractor, truncate filename Fixes #12541
+      #6501 open 2023-03-10 --extract-audio deletes already-downloaded videos
+      #3554 open 2022-04-26 Add support for live chat/subtitles output to stdout
+      #4842 open 2022-09-04 [Vidio] ERROR: 'bool' object has no attribute 'startswith' 
+      #17677 closed 2026-09-13 [utils] devalue: BigInt/RegExp/Map/null branches raise unhandled exceptions on malformed payloads, crash extractors
+      #16551 open 2026-04-22 [ie/vgtv] Use HTTPS for svp.vg.no asset API
+      #16761 open 2026-05-20 [ie/vk] Fix subtitle extraction when lang/title are null
+      #16251 open 2026-03-16 [ustream fix extractor] Add live stream support for video.ibm.com channels
+      #16784 open 2026-05-23 [Site Request] Substack live streams (open.substack.com/live-stream/<id>)
+      #7786 open 2023-08-07 Add support of videas.fr
+      #12429 open 2025-02-21 [NYTimesArticle] Unable to extract any media blocks from interactive webpage
+      #9970 open 2024-05-19 Videos with only dots cause an FFMPEG-related abort
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6221 open 2023-02-12 [ok.ru] Videos are corrupted, wrong mtime
+      #15059 open 2025-11-14 [Bug] TED.com extractor downloads corrupted/desynchronized subtitles
+      #16069 open 2026-02-26 [YouTube] Embedding a thumbnail on a specific video caused a corrupt output file
+      #2175 open 2021-12-30 Lenient WebVTT parser for sites that are known to serve corrupt WebVTT segments
+      #4192 open 2022-06-26 Ghost Chapters (download-sections + embed-chapters = softly corrupted file), and wastefully download
+      #17519 open 2026-08-23 Stop mangling backslashes when generating manpage
+      #9509 open 2024-03-21 "ERROR: This request requires WebSocket support" when passing `--proxy` and websockets is installed
+      #16654 open 2026-05-07 [laracasts]/[laracasts:series]: Can't download neither episode nor serie
+      #11995 closed 2025-01-04 WeTV: Corrupted Video and Missing Audio
+      #9048 open 2024-01-22 Download error aborts although it should try process another format according to docs
+      #2528 open 2022-01-28 ffmpeg's `-movflags +faststart` fails on gvfs
+      #5039 open 2022-09-25 [downloader/hls] Decouple Hls Media Manifest parsing
+      #9662 open 2024-04-10 No audio is redirected to the standard output when using the "-o -" parameter (standard output redirection parameter) together with the "--live-from-start" parameter
+      #9094 open 2024-01-28 Feature to save periodically for a long live stream
+      #6880 open 2023-04-21 Can't decrypt cookies from vivaldi store
+      #15778 open 2026-01-31 [downloader/common] Fix missing newline on download crash
+      #8329 open 2023-10-11 Error in processing of ISO 639-1 codes
+      #12762 open 2025-03-27 [Cookies] WARNING: failed to decrypt cookie (AES-CBC) because UTF-8 decoding failed.
+      #6181 open 2023-02-07 [PlutoTV] New URL Format
+      #1622 open 2021-11-10 VrtNu Subtitels not working
+  corruption     56 hit(s) (all listed)
+      #12427 open 2025-02-21 Sponsorblock-remove causes timestamp corruption of the video
+      #12128 open 2025-01-18 YT m4a audio DASH stream download corruption
+      #16242 open 2026-03-15 [epoch/theepochtimes.com] Epochtimes links are detected only via generic extractor and fail to download
+      #13231 open 2025-05-20 [pp/ffmpeg] add workaround for ffmpeg issue 11493
+      #15688 open 2026-01-26 Requesting new options `--write-traffic` and `--write-timestamp` to store traffic and last-modified(--mtime) in separate files.
+      #15825 open 2026-02-04 [twitch] FFmpegFixupM3u8PP causes video truncation/compression for long Twitch VODs
+      #14295 open 2025-09-11 [senate.gov] "Embedded" links come up as unsupported while other work
+      #3206 open 2022-03-26 Check for existing attachment before embedding (subtitles, thumbnail)
+      #6757 open 2023-04-10 Do not skip fragments on filesystem errors
+      #13929 open 2025-08-05 yt-dlp not picking best audio format
+      #12043 closed 2025-01-10 [TikTok] Can't download videos, Invalid Argument error
+      #13588 merged 2025-06-30 [ie] Fix m3u8 playlist data corruption
+      #17362 closed 2026-08-04 [youtube] view_count truncated to first digit-group with youtube:lang=fr (space thousands separator) in --flat-playlist
+      #12218 open 2025-01-27 "Error parsing Opus packet header." + "Error during demuxing: Error number -10054 occurred" (while using "--download-sections")
+      #16868 closed 2026-06-03 [Youtube] Some videos give a corrupted small file
+      #6491 closed 2023-03-09 [Twitch] continue downloading live VOD
+      #14689 closed 2025-10-22 Support Duktape as external JS runtime (YouTube JS challenge provider)
+      #15081 closed 2025-11-16 Why is a heavy-weight JavaScript runtime needed ?
+      #15375 closed 2025-12-20 Is it possible to use HTTP/3 using curl-cffi?
+      #6918 closed 2023-04-26 Embedding webvtt subtitles/automatic captions sometimes causes video corruption
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6983 open 2023-05-03 mark truncated filenames with ellipsis "…" in `-o` template if length exceeds x bytes
+      #17650 open 2026-09-08 KVS generic extractor uses page title instead of flashvars 'video_title'. Why?
+      #17328 open 2026-07-29 Option --stop-on-unavailable-fragments
+      #16940 open 2026-06-12 [ie/twitter] Don't strip newlines from description
+      #13017 open 2025-04-26 Fix: Correct byte truncation for output templates
+      #10918 open 2024-09-04 [facebook:reel] Extract full description
+      #17750 closed 2026-09-28 [ie/odnoklassniki] Handle metadata that is already parsed
+      #12618 open 2025-03-15 [VKVideo] Empty formats
+      #13956 closed 2025-08-07 [TikTok] Title gets truncated
+      #6717 open 2023-04-05 [YouTube] --match-filter by description on tab inconsistent
+      #17548 open 2026-08-27 [ie/tiktok] Retry item_list on empty API response
+      #17612 closed 2026-09-03 --download-sections on YouTube is throttled to ~32 KiB/s for videos longer than ~12 minutes
+      #6974 open 2023-05-02 intelligent filename trim
+      #17362 closed 2026-08-04 [youtube] view_count truncated to first digit-group with youtube:lang=fr (space thousands separator) in --flat-playlist
+      #7935 open 2023-08-22 [ZDF] Download fails for FHD and UHD videos with HTTP Error 403
+      #12983 open 2025-04-23 Some instagram URLs download video playlist instead of single video
+      #12901 open 2025-04-13 Byte-based truncation is incorrect
+      #12023 open 2025-01-07 [core] Improved --trim-filenames
+      #7031 open 2023-05-11 [CSPAN] Warning: unable to extract duration
+      #15516 open 2026-01-08 YouTube `--live-from-start` download thread eventually crashes due to ERROR: Did not get any data blocks
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12654 open 2025-03-18 [ie/facebook] Fix extractor, truncate filename Fixes #12541
+      #15825 open 2026-02-04 [twitch] FFmpegFixupM3u8PP causes video truncation/compression for long Twitch VODs
+      #12901 open 2025-04-13 Byte-based truncation is incorrect
+      #13017 open 2025-04-26 Fix: Correct byte truncation for output templates
+      #16940 open 2026-06-12 [ie/twitter] Don't strip newlines from description
+      #6983 open 2023-05-03 mark truncated filenames with ellipsis "…" in `-o` template if length exceeds x bytes
+      #17650 open 2026-09-08 KVS generic extractor uses page title instead of flashvars 'video_title'. Why?
+      #17328 open 2026-07-29 Option --stop-on-unavailable-fragments
+      #10918 open 2024-09-04 [facebook:reel] Extract full description
+      #12023 open 2025-01-07 [core] Improved --trim-filenames
+      #6717 open 2023-04-05 [YouTube] --match-filter by description on tab inconsistent
+      #17750 closed 2026-09-28 [ie/odnoklassniki] Handle metadata that is already parsed
+      #8329 open 2023-10-11 Error in processing of ISO 639-1 codes
+      #14869 open 2025-11-01 [Downloader] ERROR: Adding to archive: [Errno 29] Illegal seek
+      #1136 open 2021-10-01 [Feature request] Handle Long filenames in default template and temporary files
+      #2314 open 2022-01-12 --trim-filenames fails to clip file name properly when there is a dot in a video title
+      #12618 open 2025-03-15 [VKVideo] Empty formats
+      #12560 merged 2025-03-07 [ie/twitter] Truncate title
+      #17548 open 2026-08-27 [ie/tiktok] Retry item_list on empty API response
+      #12566 merged 2025-03-09 [ie/tiktok] Truncate title
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12618 open 2025-03-15 [VKVideo] Empty formats
+      #13134 open 2025-05-08 [tiktok] API returns empty response
+      #17548 open 2026-08-27 [ie/tiktok] Retry item_list on empty API response
+      #17225 open 2026-07-14 Youku empty file in China-only video
+      #15186 open 2025-11-28 [ie/youtube] Allow empty last fragment YouTube and add --allow-empty-fragments option
+      #16907 open 2026-06-09 [YouTube] Request: optionally return non-zero exit code if playlist appears empty
+      #17382 open 2026-08-06 Option to automatically delete files that are 0 bytes in size?
+      #14685 open 2025-10-21 [yandexvideo] Fix extarctor to get raw url for yandex preview. Allow empty title for yandex video
+      #13443 open 2025-06-10 [youtube] version 2025.06.09: Empty subtitles result in "Did not get any data blocks" error
+      #15175 open 2025-11-26 No retries on "ERROR: Did not get any data blocks" - always skips fragment
+      #8421 open 2023-10-23 cda.pl needs to detect drm and raise appropriate error
+      #17431 closed 2026-08-14 ERROR: The downloaded file is empty
+      #5497 open 2022-11-11 [TwitCasting] ERROR: Initialization fragment found after media fragments, unable to download
+      #14412 open 2025-09-23 Firefox cookie fail
+      #12328 open 2025-02-10 Zing MP3 Error The song is only for VIP accounts.
+      #5899 open 2022-12-29 Adds track_id to TikTok Extractor
+      #4329 open 2022-07-11 Downloading TikTok sound links fail.
+      #13525 open 2025-06-22 [ie/easybroadcast] Add extractor
+      #12711 open 2025-03-23 Fix #9970: FFmpeg requires ext in filename for FFmpegMetadataPP
+      #1364 open 2021-10-21 [Site Feature] Facebook: Facebook "show" playlists are not recognized
+  atomic         24 hit(s) (all listed)
+      #15534 open 2026-01-10 deleting temp files from a tmpfs filesystem fails with permission error
+      #9808 open 2024-04-28 Provide a Flatpak/Submit to Flathub
+      #4975 open 2022-09-20 [postprocessor] Add retries to file rename
+      #9929 open 2024-05-15 ERROR: Postprocessing: Error opening input files: Result too large
+      #7576 open 2023-07-13 Respect `--ignore-errors` for `--write-info-json`
+      #5977 open 2023-01-06 Safer overwriting of cookies.txt
+      #6318 merged 2023-02-21 [extractor/twitch] Skip errors in GQL response
+      #7890 merged 2023-08-18 [extractor/Facebook] fix: Changed json data retrieval
+      #16529 open 2026-04-20 [SBS] Unable to download SMIL file: HTTP Error 410: Gone
+      #16069 open 2026-02-26 [YouTube] Embedding a thumbnail on a specific video caused a corrupt output file
+      #7461 closed 2023-06-29 [WDRPage] Rockpalast (concert videos) unable to extract stream url
+      #13895 closed 2025-08-01 Metadata is mangled on YouTube / YT Music songs when fields contain the middle dot character
+      #15227 closed 2025-12-02 Persistent Download Queue Management
+      #13509 closed 2025-06-20 Why does "" 'cookies.txt' does not look like a Netscape format cookies file "" keep happening ?
+      #12779 merged 2025-03-29 [ie/zdf] Fix extractors
+      #9056 merged 2024-01-23 [ie/LinkedIn] Fix metadata and extract subtitles
+      #8343 merged 2023-10-13 [extractor/bilibili] Support interactive videos and course videos
+      #6335 closed 2023-02-24 Download last 3 weeks of subscriptions / restrict youtube search by date: ytsubs ytsearchdate
+      #8241 merged 2023-09-30 [fd/fragments] Refactor and improve progress calculation
+      #7107 closed 2023-05-22 Request for support vkplay.live
+  atomically     3 hit(s) (all listed)
+      #7576 open 2023-07-13 Respect `--ignore-errors` for `--write-info-json`
+      #5977 open 2023-01-06 Safer overwriting of cookies.txt
+      #8241 merged 2023-09-30 [fd/fragments] Refactor and improve progress calculation
+  interrupted    >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11432 open 2024-11-02 [youtube] livestream download is often interrupted
+      #17501 open 2026-08-21 Tiktok  failed to parse json.. I'm using gallery-dl but yt-dlp to download
+      #17571 open 2026-08-30 Add --ignore-private-videos command-line-option for YouTube
+      #7456 open 2023-06-29 Save decrypted fragments to disk with `--keep-fragments`
+      #17504 open 2026-08-21 [niconico] /user/: Downloading JSON metadata page <infinity>
+      #15748 open 2026-01-29 Error message on wrong line
+      #1740 open 2021-11-21 ok.ru download speed limited to 250KB/s
+      #16850 open 2026-05-31 [tiktok:live] Unable to download JSON metadata: HTTP Error 400: Bad Request
+      #17354 open 2026-08-03 [spankbang] Unable to download webpage: HTTP Error 403: Forbidden
+      #17656 open 2026-09-09 "unable to extract yt initial data" warnings after passing cookies
+      #16858 open 2026-06-02 Unable to set MAX value for --wait-for-video
+      #5868 open 2022-12-24 Hotstar forbidden error
+      #12841 open 2025-04-05 Fix #6303: --max-downloads generates a warning even when the limit
+      #17202 open 2026-07-12 [youtube] DASH downloader not stopping properly when format is swapped mid livestream
+      #9964 open 2024-05-19 `-o "%(duration>%H:%M:%S)s"` is sanitized to `01_16_58` while `-o "%(duration>%H: %M: %S)s"` is sanitized to `01： 16： 58`
+      #6663 open 2023-03-28 Upper limit to maximum wait time / reattempts with option `--wait-for-video`
+      #7902 open 2023-08-19 Feature request: Twitter Spaces subtitles
+      #6872 open 2023-04-20 [RUMBLE] Make --write-comments work
+      #16544 open 2026-04-22 Pornhub is trying to download pages endlessly.
+      #9816 open 2024-04-29 [YouTube] `--wait-for-video` should be able to stop retrying without access when a `Private video` is available
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11432 open 2024-11-02 [youtube] livestream download is often interrupted
+      #17501 open 2026-08-21 Tiktok  failed to parse json.. I'm using gallery-dl but yt-dlp to download
+      #17571 open 2026-08-30 Add --ignore-private-videos command-line-option for YouTube
+      #7456 open 2023-06-29 Save decrypted fragments to disk with `--keep-fragments`
+      #4441 open 2022-07-25 tiktok following
+      #15825 open 2026-02-04 [twitch] FFmpegFixupM3u8PP causes video truncation/compression for long Twitch VODs
+      #15748 open 2026-01-29 Error message on wrong line
+      #17504 open 2026-08-21 [niconico] /user/: Downloading JSON metadata page <infinity>
+      #1740 open 2021-11-21 ok.ru download speed limited to 250KB/s
+      #15938 open 2026-02-13 Fix Youtube Live with --live-from-start (core/dash)
+      #16850 open 2026-05-31 [tiktok:live] Unable to download JSON metadata: HTTP Error 400: Bad Request
+      #17354 open 2026-08-03 [spankbang] Unable to download webpage: HTTP Error 403: Forbidden
+      #17656 open 2026-09-09 "unable to extract yt initial data" warnings after passing cookies
+      #5868 open 2022-12-24 Hotstar forbidden error
+      #9964 open 2024-05-19 `-o "%(duration>%H:%M:%S)s"` is sanitized to `01_16_58` while `-o "%(duration>%H: %M: %S)s"` is sanitized to `01： 16： 58`
+      #16858 open 2026-06-02 Unable to set MAX value for --wait-for-video
+      #12841 open 2025-04-05 Fix #6303: --max-downloads generates a warning even when the limit
+      #17202 open 2026-07-12 [youtube] DASH downloader not stopping properly when format is swapped mid livestream
+      #6663 open 2023-03-28 Upper limit to maximum wait time / reattempts with option `--wait-for-video`
+      #7902 open 2023-08-19 Feature request: Twitter Spaces subtitles
+  sigkill        2 hit(s) (all listed)
+      #9630 open 2024-04-06 yt-dlp does not pass signals to the external downloader.
+      #8618 closed 2023-11-19 Gatekeeper / Windows Defender / Malwarebytes: Did something change about the signature in the latest release?
+  sigint         6 hit(s) (all listed)
+      #9630 open 2024-04-06 yt-dlp does not pass signals to the external downloader.
+      #16762 closed 2026-05-20 Linux Systemd process manager status Integration
+      #15245 closed 2025-12-05 Graceful shutdown when used as library
+      #7599 closed 2023-07-15 Can you kill FFmpeg through the exposed YoutubeDL interface once it's already running?
+      #3535 closed 2022-04-23 How to stop live stream recording
+      #888 merged 2021-09-03 [youtube] download live from the start, to the end
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17764 open 2026-10-02 [kick:vod] Massive slowdown on VODs since ~2 weeks ago/~2026.09.15
+      #16783 open 2026-05-22 [ie/tiktok] Fix live extractor
+      #6663 open 2023-03-28 Upper limit to maximum wait time / reattempts with option `--wait-for-video`
+      #16858 open 2026-06-02 Unable to set MAX value for --wait-for-video
+      #9816 open 2024-04-29 [YouTube] `--wait-for-video` should be able to stop retrying without access when a `Private video` is available
+      #17571 open 2026-08-30 Add --ignore-private-videos command-line-option for YouTube
+      #8780 open 2023-12-15 using check_formats causes connection timeout on youtube
+      #8081 open 2023-09-11 [downloader/fragment] Partially revert 4823ec9f
+      #9094 open 2024-01-28 Feature to save periodically for a long live stream
+      #15938 open 2026-02-13 Fix Youtube Live with --live-from-start (core/dash)
+      #14288 open 2025-09-10 [youtube] yt-dlp does not abort on 403 errors during `--live-from-start` download
+      #16850 open 2026-05-31 [tiktok:live] Unable to download JSON metadata: HTTP Error 400: Bad Request
+      #13683 open 2025-07-10 Ability to cancel or move to next item in list
+      #16966 open 2026-06-15 [youtube] Make "Incomplete data received" in comments a different error category and seperate from `--extractor-retries` OR make comments resume
+      #13515 open 2025-06-21 [fd/sabr] Add YouTube SABR protocol downloader
+      #15516 open 2026-01-08 YouTube `--live-from-start` download thread eventually crashes due to ERROR: Did not get any data blocks
+      #9630 open 2024-04-06 yt-dlp does not pass signals to the external downloader.
+      #5762 open 2022-12-10 Disk IO hang
+      #2898 open 2022-02-26 [youtube] premature download termination with --live-from-start
+      #14560 open 2025-10-06 hd.kinopoisk.ru Unsupported URL
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17591 open 2026-09-01 [youtube] Multi-thread comments extraction
+      #9593 open 2024-04-01 National Film and Soundtrack Archive of Australia (NFSA, www.nfsa.gov.au)
+      #5615 open 2022-11-21 Pornhub extractor expects URLs that contain /video/get_media as json and fails to parse JSON: Expecting value in '': line 1 column 1 (char 0) 
+      #13657 open 2025-07-06 Viggle.ai page support
+      #17397 open 2026-08-09 I cannot download almost any Youtube videos.
+      #3861 open 2022-05-24 Adultswim Streams Support Suggestion
+      #7445 open 2023-06-28 [youtube] approximate description metadata
+      #5720 open 2022-12-05 Streamgates
+      #16585 open 2026-04-27 [CNN] [twitter] circular redirection
+      #5389 open 2022-10-29 field string case format change from 'ANy cASe' to 'Title Case'
+      #13886 open 2025-07-31 Feature Request/Workaround: Support for <base> tag or providing a base URL for GenericIE on local files
+      #126 open 2021-03-01 [Feature Request] Merge, Add metadata and other ffmpeg operations simultaneously
+      #17647 open 2026-09-08 [YouTube] 403 error even with deno
+      #7936 open 2023-08-22 Site feature request: Substack newsletter post type to download embedded videos from newsletter pages
+      #11583 open 2024-11-19 Output template: Support conditional statements
+      #17298 open 2026-07-24 VK follower-only videos fail with authenticated browser cookies ("Video only available to followers")
+      #14807 open 2025-10-28 [eurovisionsport.com] Site support request
+      #7159 open 2023-05-28 ytsubs downloads all videos from all subscribed channels
+      #16531 open 2026-04-20 [LinkedIn] Unable to extract video from LinkedIn group post
+      #15914 open 2026-02-11 Cannot update OPUS metadata when file already exists
+  outage         11 hit(s) (all listed)
+      #6627 open 2023-03-25 Add option for network retries during extraction (for connectivity/DNS issues)
+      #16559 open 2026-04-23 Youtube responds with 503 Service Unavailable for Video Download
+      #14737 open 2025-10-24 [Tubi] [tubitv] An extractor error has occurred. (caused by KeyError)
+      #14569 open 2025-10-06 [BBC Sounds] "Unable to extract playlist data" with bbc.co.uk/sounds/play/ URLs
+      #14637 closed 2025-10-15 Youtube: HTTP Code 403 [YouTube Outage]
+      #15833 closed 2026-02-04 HTTPSConnectionPool  Read timed out. (read timeout=20.0). Retrying
+      #7442 closed 2023-06-27 [crunchyroll] Error 403 Forbidden for all URLs
+      #6078 closed 2023-01-23 How to handle missing/incomplete fragments more elegantly
+      #3718 closed 2022-05-12 [ZDF] 500: Internal Server Error, but youtube-dl works
+      #3302 merged 2022-04-04 [arte] Move to v2 API
+      #319 closed 2021-05-18 [youtube] Age-gate bypass gives 404 intermittently
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9685 open 2024-04-14 pre-allocation of disk space
+      #16626 open 2026-05-03 Option to immediately write comments to disk
+      #5762 open 2022-12-10 Disk IO hang
+      #17757 open 2026-10-01 --cookies-from-browser: Firefox: Custom Profile: "could not find firefox cookies database"
+      #7456 open 2023-06-29 Save decrypted fragments to disk with `--keep-fragments`
+      #3239 open 2022-03-29 [yandex.disk] Unable to extract store
+      #13348 open 2025-05-30 Failed to download video from Yandex Disk
+      #5241 open 2022-10-14 Possible to save *decrypted* segments to disk?
+      #17561 open 2026-08-28 [Panopto] --cookies-from-browser does not work
+      #16083 open 2026-02-27 [Youtube] YT-DLP checks for thumbnail 41 before checking if a thumbnail is already on disk
+      #14467 open 2025-09-27 [ie/yandexdisk] Support videos under shared folders
+      #11459 open 2024-11-05 [ie/bahamut] add extractor
+      #2799 open 2022-02-16 Need help with embed-subs UNFORCED
+      #15933 open 2026-02-13 [pp/embedthumbnail] Normalize thumbnail extensions to lowercase
+      #17179 open 2026-07-09 Can yt-dlp download SWF flash videos from archive.org snapshots that has been emulated with Ruffle?
+      #17273 open 2026-07-21 Higher default `--concurrent-fragments`/`-N`
+      #6447 open 2023-03-06 Downloading fragments when outputting to stdout can fail due to race condition when running multiple downloads in parallel
+      #16990 open 2026-06-17 [ie/BBC] Fix BBC extractor failing to extract BBC Sounds playlist data
+      #7392 open 2023-06-23 Cannot get cookies from Safari.
+      #6757 open 2023-04-10 Do not skip fragments on filesystem errors
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16243 open 2026-03-15 Only partial subtitle download for NRKTV
+      #13351 open 2025-05-30 Add partial support for IAMF formats
+      #8747 open 2023-12-10 Theater Complex Town - Only grabs partial stream
+      #9329 open 2024-03-01 [ie/viu:ott] Partial fix for ViuOTT in ID region
+      #15352 open 2025-12-18 Native http downloader deletes/overwrites partial file when retrying downloads of FLV livestreams
+      #16270 open 2026-03-18 [ie/lbry] Add comment download
+      #16051 open 2026-02-24 [Nebula] "HTTP Error 416: Range Not Satisfiable"
+      #15641 open 2026-01-21 git build broken: IPv6 SOCKS tests fail on systems without ::1 loopback
+      #12253 open 2025-02-01 [pp/FFmpegMetadata] Convert date strings to ISO 8601
+      #8081 open 2023-09-11 [downloader/fragment] Partially revert 4823ec9f
+      #11482 open 2024-11-09 Tele5, not mediathek
+      #13212 open 2025-05-18 [utils] `str_to_int`: support optional decimal-dot parsing
+      #16022 open 2026-02-21 [utils] `get_element(s)_*`, `find_element(s)`: Improve element matching more comprehensively
+      #12584 open 2025-03-12 Add `check_thumbnails` option
+      #6642 open 2023-03-26 [extractor/iwara] Add search functionality
+      #1659 open 2021-11-14 errors returned as parsable json
+      #7456 open 2023-06-29 Save decrypted fragments to disk with `--keep-fragments`
+      #11167 open 2024-10-05 Add support for CENC, Clear Key, AES-128-CBC in DASH manifests
+      #13513 open 2025-06-20 Test: Improve test coverage for FragmentFD.download_and_append_fragments
+      #10411 open 2024-07-10 [tele5] extractor writes two .info.json files
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11327 open 2024-10-23 [ximalaya:album] The album listing data is incomplete
+      #16441 open 2026-04-06 [youtube] comments downloading stops entirely after "Incomplete data received" error instead of trying to continue to fetch next comments, but only on certain videos
+      #16966 open 2026-06-15 [youtube] Make "Incomplete data received" in comments a different error category and seperate from `--extractor-retries` OR make comments resume
+      #17656 open 2026-09-09 "unable to extract yt initial data" warnings after passing cookies
+      #16626 open 2026-05-03 Option to immediately write comments to disk
+      #8002 open 2023-08-31 --match-filter !is_live generates python "< not supported" error
+      #17166 open 2026-07-07 [sporteurope] fixed 404 error after the API changes
+      #11130 open 2024-09-30 [youtube:tab] Shorts playlists: Only 100 shorts are extracted from playlist
+      #9964 open 2024-05-19 `-o "%(duration>%H:%M:%S)s"` is sanitized to `01_16_58` while `-o "%(duration>%H: %M: %S)s"` is sanitized to `01： 16： 58`
+      #4168 open 2022-06-24 --match-filter against a variable
+      #9614 open 2024-04-04 Allow downgrading missing video in a playlist errors to warnings to preserve exit code 0
+      #1364 open 2021-10-21 [Site Feature] Facebook: Facebook "show" playlists are not recognized
+      #11333 open 2024-10-23 Regex in match-filters doesn't work
+      #16807 open 2026-05-26 [youtube] Suggestion: Client documentation
+      #7445 open 2023-06-28 [youtube] approximate description metadata
+      #4197 open 2022-06-26 [feature request] subtitle conversion of .srv3/newer .vtt with YTSubConverter to .ass
+      #6501 open 2023-03-10 --extract-audio deletes already-downloaded videos
+      #12861 open 2025-04-07 AsianGamesHub
+      #17636 closed 2026-09-06 unable to extract yt initial data
+      #7927 open 2023-08-21 Download of lives from youtube continue after the end of the transmission
+  dataloss       0 hit(s)
+  recover        59 hit(s) (all listed)
+      #16682 open 2026-05-10 [fix] Improve KVS player extraction and add support for new video URL
+      #15337 open 2025-12-16 ok.ru issue (again) but only with certain videos
+      #10576 open 2024-07-27 Retrieve new elements such as artist, album, track name... from youtube
+      #10412 open 2024-07-10 [AlJazeera] ERROR: No suitable extractor (BrightcoveNew) found for URL
+      #15497 open 2026-01-05 [xhamster] `No video formats found` due to age verification requirement
+      #13506 open 2025-06-20 [Allocine] can't download video due to KeyError('sources') error
+      #14304 open 2025-09-12 Add `--no-print-traffic` and `--no-write-pages` options.
+      #2544 open 2022-01-30 Amazon Prime Video trailers
+      #4432 open 2022-07-24 [yandexmusic:playlist] `argument of type 'bool' is not iterable` after calling `_download_webpage_handle`
+      #4280 open 2022-07-06 Twitch live streams have out of sync audio and lowered pitch
+      #4752 open 2022-08-24 [generic] Redirect loop
+      #12427 open 2025-02-21 Sponsorblock-remove causes timestamp corruption of the video
+      #16875 closed 2026-06-04 [ie/bilibili] Fix request status code 412 and video parameter extraction
+      #17671 closed 2026-09-11 ERROR: [youtube] KJybu1Y2tyY: Unable to download API page: (<HTTPSConnection(host='www.youtube.com', port=443) at 0x1f029f5d150>, 'Connection to www.youtube.com timed out.
+      #15450 closed 2025-12-31 [Twitch] Requesting clips from a nonexistent account yields other accounts' clips
+      #6294 closed 2023-02-19 [extractor/instagram] Login Fix
+      #14963 closed 2025-11-09 [ie/instagram:user] Fix extractor
+      #16975 closed 2026-06-16 [Chaturbate] Add support for LL-HLS playlists
+      #15489 closed 2026-01-04 [ie/nebula] Add android `login api`
+      #17443 closed 2026-08-16 A ready-to-use cookie solution for Windows
+  recovery       22 hit(s) (all listed)
+      #5534 open 2022-11-14 Get session cookies when using --cookies-from-browser
+      #17727 merged 2026-09-24 [utils] Improve `Content-Disposition` filename parsing
+      #13515 open 2025-06-21 [fd/sabr] Add YouTube SABR protocol downloader
+      #10277 open 2024-06-27 ffmpeg warns "Invalid NAL unit size" and exits when using `--download-sections` with some m3u8 formats
+      #9411 open 2024-03-10 [ie/niconico] Directly download live timeshift videos; WebSocket fixes
+      #16009 closed 2026-02-20 [iwara] Unable to download after site recovery
+      #4846 open 2022-09-04 [Discussion] Upcoming changes to format selection
+      #6294 closed 2023-02-19 [extractor/instagram] Login Fix
+      #16043 closed 2026-02-23 [Iwara] 403 Forbidden afer site recovery
+      #16146 closed 2026-03-06 [iwara] yt-dlp fails to fetch formats other than preview and 360p
+      #14365 closed 2025-09-19 Bitdefender goes nuts and deletes everything that is open with no recovery
+      #15227 closed 2025-12-02 Persistent Download Queue Management
+      #13851 closed 2025-07-26 How to import non-included modules from a plugin?
+      #14019 closed 2025-08-14 Stop download when part file is deleted
+      #12735 closed 2025-03-25 How to remove #Hashtag and @Mention from video title or description?
+      #11053 closed 2024-09-21 Clarifications of PO Token process
+      #11296 closed 2024-10-20 [youtube] Age-restricted videos now always require sign-in
+      #550 closed 2021-07-22 Cookies from Browser (Firefox MacOS)
+      #9043 closed 2024-01-21 Issues combining "live-from-start" and "format" with YouTube livestreams to choose upper resolutions.
+      #4050 closed 2022-06-11 [bilibili] Dolby Vision and Dolby Atmos support
+  rollback       2 hit(s) (all listed)
+      #1949 closed 2021-12-10 Memory leaks
+      #2996 closed 2022-03-09 '<' not supported between instances of 'float' and 'str' and --throttled-rate error after update?
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14144 open 2025-08-25 Option to force resume support
+      #6160 open 2023-02-05 Stop and resume download.Multiple video downloads.
+      #12994 open 2025-04-23 Fail to resume download after Http error 416
+      #16966 open 2026-06-15 [youtube] Make "Incomplete data received" in comments a different error category and seperate from `--extractor-retries` OR make comments resume
+      #8579 open 2023-11-14 Hang getting youtube video and cannot resume because got no data blocks
+      #9630 open 2024-04-06 yt-dlp does not pass signals to the external downloader.
+      #17328 open 2026-07-29 Option --stop-on-unavailable-fragments
+      #13515 open 2025-06-21 [fd/sabr] Add YouTube SABR protocol downloader
+      #15938 open 2026-02-13 Fix Youtube Live with --live-from-start (core/dash)
+      #16626 open 2026-05-03 Option to immediately write comments to disk
+      #14725 open 2025-10-23 [PeerTube] Playlist with query parameters fails to download
+      #16051 open 2026-02-24 [Nebula] "HTTP Error 416: Range Not Satisfiable"
+      #6740 open 2023-04-07 [data loss] METABUG: don't overwrite files
+      #3680 open 2022-05-08 [Enhancement] Create a formatting option for batch indexing/counting/numbering just like for playlists
+      #15352 open 2025-12-18 Native http downloader deletes/overwrites partial file when retrying downloads of FLV livestreams
+      #10939 open 2024-09-06 [ie/ShowupTV] Add extractor
+      #8081 open 2023-09-11 [downloader/fragment] Partially revert 4823ec9f
+      #17523 closed 2026-08-24 [ytdl_hook] ERROR: [generic] 127.0.0: Response data has no m3u header
+      #6589 open 2023-03-21 [Rumble] Throttling
+      #10819 open 2024-08-21 Download hangs forever for youtube format 18 on some videos
+  half-written   20 hit(s) (all listed)
+      #11979 open 2025-01-03 Add a "quickstart" tutorial to the documentation/wiki
+      #126 open 2021-03-01 [Feature Request] Merge, Add metadata and other ffmpeg operations simultaneously
+      #15191 open 2025-11-28 "programme_id" error on some BBC iPlayer episodes
+      #9929 open 2024-05-15 ERROR: Postprocessing: Error opening input files: Result too large
+      #10878 open 2024-08-29 Cannot download Twitch VOD with initialization fragments after media fragments
+      #4354 closed 2022-07-14 [Vimeo] Don't embed placeholder description.
+      #3564 open 2022-04-27 [teachable] ERROR: Unable to find Video URL https://edu.ecomsuccess.pk/courses/enrolled/903296
+      #10422 open 2024-07-11 [Vimeo] HTTP Error 429/403 When Using Impersonate Target
+      #16766 closed 2026-05-20 [Announcement] Bun support is now limited and deprecated
+      #11856 closed 2024-12-19 Use 64 KiB buffered writes for performance and less fragmentation
+      #15437 closed 2025-12-30 Assistance with format sorting and suggested approach?
+      #14404 closed 2025-09-23 [Announcement] Upcoming new requirements for YouTube downloads
+      #3810 open 2022-05-20 [abciview + others] ERROR: Data must be padded to 16 byte boundary in CBC mode
+      #11517 closed 2024-11-12 `--download-sections` does not offset chapters
+      #10443 closed 2024-07-12 [Youtube] throttling and inconsistent speed in Russia
+      #8935 closed 2024-01-04 Keep computer awake while downloading
+      #6705 closed 2023-04-03 [generic] Detect hls livestreams
+      #3316 closed 2022-04-05 Embed all subtitles, thumbnails, metadata, etc. in one go
+      #3302 merged 2022-04-04 [arte] Move to v2 API
+      #2121 closed 2021-12-26 [question/idea] split the modules from the core
+  wipe           17 hit(s) (all listed)
+      #17141 closed 2026-07-05 Imposter yt-dlp site serving malware
+      #10927 open 2024-09-05 `--cookies-from-browser`: WARNING: failed to decrypt with DPAPI / ERROR: 'NoneType' object has no attribute 'decode'
+      #6603 closed 2023-03-22 Can't download password-protected Vimeo link / [vimeo] Unable to download JSON metadata: HTTP Error 400: Bad Request
+      #10693 open 2024-08-08 [ie/rplaylive] Add extractor for rplay.live
+      #13539 merged 2025-06-25 [ie/youtube] Improve player context payloads
+      #16729 closed 2026-05-15 [PornHub] Unable to download webpage: HTTP Error 410: Gone
+      #5431 closed 2022-11-02 Odysee members-only videos using cookies results in "authentication required"
+      #5049 closed 2022-09-26 Roblox Audio
+      #3667 closed 2022-05-07 Roblox Video/Audio
+      #4029 closed 2022-06-09 Roblox Audio and Video assets
+      #3343 closed 2022-04-07 Use Git diff drivers for Markdown and Python
+      #2992 merged 2022-03-08 [Rokfin] Search & login
+      #3215 closed 2022-03-26 Unhandled TypeError in downloader/http.py
+      #1534 merged 2021-11-03 [Rokfin] Add extractor
+      #1385 closed 2021-10-23 [Broken] Funimation dont embed subs in video
+      #1300 closed 2021-10-16 [Broken] YouTube: Cannot download comments with cookies file set
+      #681 closed 2021-08-12 [Broken] ParamountPlus Extractor w/ --geo-verification-proxy
+  wipes          1 hit(s) (all listed)
+      #681 closed 2021-08-12 [Broken] ParamountPlus Extractor w/ --geo-verification-proxy
+  erase          14 hit(s) (all listed)
+      #14144 open 2025-08-25 Option to force resume support
+      #8088 open 2023-09-12 "[Errno 18] Invalid cross-device link" when temporary path is on a different filesystem in WSL
+      #126 open 2021-03-01 [Feature Request] Merge, Add metadata and other ffmpeg operations simultaneously
+      #3164 closed 2022-03-22 Write comments to a separate file (not info.json)
+      #10630 closed 2024-08-02 yt-dlp_linux: tar_extract_all() failed: Invalid argument
+      #12829 closed 2025-04-03 yt-dlp tries to merge files even when ffmpeg isn't detected after PR12318
+      #10687 closed 2024-08-07 How to not parse singles as albums
+      #4262 closed 2022-07-03 What are yt-dlp's error codes?
+      #6841 closed 2023-04-17 Extract 2 audio streams from the 4 contained in a resource
+      #9976 closed 2024-05-20 Ignoring duplicate input URLs, keeping deleted YouTube comments, checking video availability
+      #887 closed 2021-09-03 [Broken] HLS: acodec of video+audio format not detected correctly (rai livestream)
+      #1147 closed 2021-10-02 Audio download missing most of the audio
+      #431 closed 2021-06-22 Slight Modification needed for Pluto Extractor
+      #353 closed 2021-05-28 [Discussion] YT-DLP Show/Series/Playlist/Channel Extractors Project
+  erasing        2 hit(s) (all listed)
+      #3164 closed 2022-03-22 Write comments to a separate file (not info.json)
+      #10630 closed 2024-08-02 yt-dlp_linux: tar_extract_all() failed: Invalid argument
+  erased         7 hit(s) (all listed)
+      #14144 open 2025-08-25 Option to force resume support
+      #8088 open 2023-09-12 "[Errno 18] Invalid cross-device link" when temporary path is on a different filesystem in WSL
+      #3164 closed 2022-03-22 Write comments to a separate file (not info.json)
+      #12829 closed 2025-04-03 yt-dlp tries to merge files even when ffmpeg isn't detected after PR12318
+      #9976 closed 2024-05-20 Ignoring duplicate input URLs, keeping deleted YouTube comments, checking video availability
+      #1147 closed 2021-10-02 Audio download missing most of the audio
+      #353 closed 2021-05-28 [Discussion] YT-DLP Show/Series/Playlist/Channel Extractors Project
+  destroy        40 hit(s) (all listed)
+      #17326 open 2026-07-29 [YouTube] Select videos on specific channels fail to merge with "Conversion failed!"
+      #17556 closed 2026-08-28 WARNING: [youtube] unable to extract yt initial data;
+      #14304 open 2025-09-12 Add `--no-print-traffic` and `--no-write-pages` options.
+      #15688 open 2026-01-26 Requesting new options `--write-traffic` and `--write-timestamp` to store traffic and last-modified(--mtime) in separate files.
+      #9094 open 2024-01-28 Feature to save periodically for a long live stream
+      #4138 open 2022-06-22 [tiktok] Get original/source HD quality formats
+      #16364 closed 2026-03-28 QProcess: Destroyed while process is still running.
+      #5977 open 2023-01-06 Safer overwriting of cookies.txt
+      #16444 merged 2026-04-07 [build] Harden release workflow
+      #13515 open 2025-06-21 [fd/sabr] Add YouTube SABR protocol downloader
+      #6618 closed 2023-03-24 When downloading channel, hundreds or thousands of ghost pages are downloaded
+      #6751 closed 2023-04-09 Zee5 error - Data must be padded to 16 byte boundary in CBC mode
+      #14404 closed 2025-09-23 [Announcement] Upcoming new requirements for YouTube downloads
+      #15583 closed 2026-01-15 [youtube] <videoID>: tv player response playability status: LOGIN_REQUIRED
+      #14721 closed 2025-10-23 yt_dlp download fails with "HTTP Error 403: Forbidden"...
+      #3797 closed 2022-05-19 JSON issue when downloading from VK
+      #9316 closed 2024-02-28 [youtube] YouTube said: ERROR - Precondition check failed - HTTP Error 400: Bad Request
+      #13876 closed 2025-07-29 Getting youtube upload date as modified timestamp - would be very practical
+      #13374 closed 2025-06-02 [ie/youtube] extract translated info
+      #13507 closed 2025-06-20 [Youtube] Error in Youtube extractor from `extract_info()` in Python script
+  destroys       10 hit(s) (all listed)
+      #17326 open 2026-07-29 [YouTube] Select videos on specific channels fail to merge with "Conversion failed!"
+      #9094 open 2024-01-28 Feature to save periodically for a long live stream
+      #13876 closed 2025-07-29 Getting youtube upload date as modified timestamp - would be very practical
+      #9613 merged 2024-04-04 [patreon] fix some vimeo embed downloads
+      #7169 closed 2023-05-30 [YouTube] Embed chapters show as "unnamed" instead of chapter name.
+      #8372 closed 2023-10-18 2023.10.13 creating empty folders
+      #3786 closed 2022-05-18 yt-dlp 2022.05.18 checks links against download archive much slower
+      #1181 closed 2021-10-06 [Question] Native HLS downlaoder destroys downloaded files in case of netowkr error?
+      #978 closed 2021-09-14 [Question] How to manually use the entrypoint as a script
+      #247 merged 2021-04-15 Subtitle extraction from streaming media manifests (HLS, DASH, Smooth Streaming)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5977 open 2023-01-06 Safer overwriting of cookies.txt
+      #13381 open 2025-06-03 yt-dlp overwrite final file
+      #6740 open 2023-04-07 [data loss] METABUG: don't overwrite files
+      #16320 open 2026-03-23 [downloader/common] Fix progressbar missing newlines and overwriting last line
+      #15352 open 2025-12-18 Native http downloader deletes/overwrites partial file when retrying downloads of FLV livestreams
+      #6228 open 2023-02-13 --no-overwrites option doesn't work when one uses --convert-thumbnails jpg
+      #17581 open 2026-08-30 [build] Update 21 dependencies
+      #1467 open 2021-10-28 Add option to not overwrite the embedded metadata if the video file already exists
+      #6206 open 2023-02-10 `--write-link` broken on UNC paths
+      #14957 open 2025-11-09 Flag to treat broken symbolic links as present files
+      #16862 open 2026-06-03 [youtube] "No video formats found!" for livestream when NOT using `--live-from-start`
+      #8548 open 2023-11-08 Change extension of metadata files
+      #6451 open 2023-03-06 Keep intermediate files selectively
+      #12184 open 2025-01-24 feat: add flag to suppress standard headers
+      #5485 open 2022-11-09 [feature request] auto increment duplicate file 
+      #1544 open 2021-11-04 When downloading thumbnails: 404 errors printed out until a valid thumbnail URL is reached
+      #12275 open 2025-02-04 Abstract facebook _extract_metadata method out from inside '_extract_from_url'
+      #3298 open 2022-04-04 Allow downloading to buffer
+      #15406 open 2025-12-26 [utils] Make `sleep` function
+      #17067 open 2026-06-27 [Patreon] Downloading the Patreon shop video will redirect to an odd video address.
+  clobber        9 hit(s) (all listed)
+      #8908 open 2024-01-01 yt-dlp should abort on first "File name too long" error
+      #17004 closed 2026-06-19 Need to do something about URLs on Youtube which turn out to be "playlists" that download unknown to user.
+      #2137 open 2021-12-27 --live-from-start didn't merge after live stream end.
+      #12895 closed 2025-04-11 How to print info only for one format when requesting multiple formats?
+      #11205 merged 2024-10-09 [build] `make_lazy_extractors`: Force running without plugins
+      #9962 closed 2024-05-19 Is it possible to output the archive file of a playlist with this syntax: "%(playlist_title)s/downloaded_archive.txt"
+      #4516 closed 2022-07-31 Regression: yt-dlp clobbers mp4 output file when I select multiple formats.
+      #3764 closed 2022-05-17 [Announcement] Dropping Python 3.6 support
+      #3475 closed 2022-04-18 MLB - Article falls back to generic and fails
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15550 open 2026-01-12 Support sleebi
+      #7858 open 2023-08-16 UpRide.cc support
+      #3245 open 2022-03-30 Unable to download TV4 subtitles for Trap: Parse error
+      #15728 open 2026-01-29 [pornhub] Very large playlists seem to be rate-limited / yt-dlp can only get the few first pages
+      #1734 open 2021-11-21 Fix YouTube's autogenerated subtitles
+      #13754 open 2025-07-17 Add support for song.link
+      #16585 open 2026-04-27 [CNN] [twitter] circular redirection
+      #4247 open 2022-07-02 RTHK Site Full Support Request
+      #1622 open 2021-11-10 VrtNu Subtitels not working
+      #4217 open 2022-06-28 [youtube] Missing song metadata
+      #9200 open 2024-02-13 [ie/promodj] Add extractors
+      #14211 closed 2025-08-31 [YouTube] Downloading sections of a video leaves blank space at the start
+      #5257 open 2022-10-16 Not Finding Limelight Audio Files
+      #623 open 2021-08-04 [Broken] Multiple audio streams in one format
+      #5780 open 2022-12-12 [ArteTV] ParseError for webvtt subtitles
+      #5991 open 2023-01-08 Videos from www.college-de-france.fr not handled anymore
+      #620 open 2021-08-03 [Feature Request] Streamlined bug reporting
+      #13674 open 2025-07-09 Having yt-dlp create a symlink for playlists with a certain path
+      #13525 open 2025-06-22 [ie/easybroadcast] Add extractor
+      #5478 open 2022-11-08 AngelStudios.com
+  unreadable     27 hit(s) (all listed)
+      #5241 open 2022-10-14 Possible to save *decrypted* segments to disk?
+      #12688 open 2025-03-21 [ie/vk] add music extractor
+      #10320 open 2024-07-01 [Mediasite] Slide extraction broken
+      #8869 open 2023-12-28 Embed thumbnail using mutagen for mp3 files, fix lyrics issue #5635
+      #17104 closed 2026-07-01 --retry-sleep http: crashes with RuntimeError instead of reporting an invalid expression
+      #1734 open 2021-11-21 Fix YouTube's autogenerated subtitles
+      #6919 open 2023-04-26 Add Hulu to supported Adobe Pass multiple-system operators
+      #14065 merged 2025-08-18 [ie/NRKTVEpisode] Fix ID extraction
+      #6491 closed 2023-03-09 [Twitch] continue downloading live VOD
+      #5840 closed 2022-12-20 RheinMainTV
+      #10108 closed 2024-06-05 [youtube] The following content is not available on this app.. Watch on the latest version of YouTube
+      #14446 merged 2025-09-25 [ie/xhamster] Fix extractor (#14395)
+      #11983 closed 2025-01-03 Include downloaded filepath info in --download-archive?
+      #11608 merged 2024-11-22 [cleanup] Bump ruff to 0.8.x
+      #7101 merged 2023-05-22 6720: Pressing enter uses default format
+      #7486 closed 2023-07-01 "Open Video Downloader" won't work
+      #7017 closed 2023-05-09 [Nebula] Extractor failed to obtain "id"
+      #6443 closed 2023-03-05 [youtube] Trying to fix `translated_subs` and `automatic_captions` in codes.
+      #4355 merged 2022-07-14 make pyinst.py build name more PEP425 compatible
+      #3547 merged 2022-04-24 [ruutu] Add hs.fi embeds
+  garbage        37 hit(s) (all listed)
+      #14378 open 2025-09-20 Ignore --list-formats when dumping JSON
+      #3366 open 2022-04-09 Please add support for www.vix.com
+      #15422 open 2025-12-28 [ie/rinsefm] Fix release_timestamp extraction
+      #17549 open 2026-08-27 Windows filename sanitizer silently replaces ASCII "/" with U+29F8 BIG SOLIDUS
+      #7992 open 2023-08-30 Unable to download on Adobe
+      #9152 open 2024-02-06 m4a metadata create/modified dates for youtube downloaded audio streams recently became invalid
+      #13382 closed 2025-06-03 ❗ Bug Report: Unable to download Douyin video despite valid fresh cookies
+      #11995 closed 2025-01-04 WeTV: Corrupted Video and Missing Audio
+      #16738 merged 2026-05-16 [build] Upgrade all Linux binaries to Python 3.14
+      #14737 open 2025-10-24 [Tubi] [tubitv] An extractor error has occurred. (caused by KeyError)
+      #4354 closed 2022-07-14 [Vimeo] Don't embed placeholder description.
+      #6618 closed 2023-03-24 When downloading channel, hundreds or thousands of ghost pages are downloaded
+      #15532 closed 2026-01-10 Cant Download Source/Quality Higher then 1080p on TWITCH.TV
+      #16459 closed 2026-04-10 GNOME Keyring wrong decryption key used when Electron apps share "Chromium Safe Storage" label
+      #14692 closed 2025-10-22 Youtube download fails with 403 Forbidden
+      #10911 closed 2024-09-03 [Youtube] Missing formats on a video
+      #13070 closed 2025-05-01 --progress-template
+      #12134 closed 2025-01-19 Invisible Characters added to File Name
+      #3578 closed 2022-04-28 [olympics.com] Data must be padded to 16 byte boundary in CBC mode
+      #6564 closed 2023-03-19 Linux/macOS/BSD chromium cookies could not be decrypted; failed to decrypt cookie (AES-CBC) because UTF-8 decoding failed
+  mangled        8 hit(s) (all listed)
+      #15778 open 2026-01-31 [downloader/common] Fix missing newline on download crash
+      #7159 open 2023-05-28 ytsubs downloads all videos from all subscribed channels
+      #11669 closed 2024-11-28 [tiktok] No video formats found! for sensitive-flagged videos
+      #13895 closed 2025-08-01 Metadata is mangled on YouTube / YT Music songs when fields contain the middle dot character
+      #10517 closed 2024-07-21 yt-dlp command line equivalents for `-j` and `-J` that write to a file rather then stdout
+      #7484 merged 2023-07-01 CBCPlayer
+      #7017 closed 2023-05-09 [Nebula] Extractor failed to obtain "id"
+      #3778 closed 2022-05-18 [crunchyroll] Endless loop when trying to download an episode
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17263 open 2026-07-20 Add support for Nintendo Today
+      #16737 open 2026-05-16 [TVer] No STREAKS ID found; falling back to Brightcove extraction
+      #17330 open 2026-07-29 FIX for 
+      #17230 open 2026-07-16 Add support for ShortMax (shorttv.live)
+      #12794 open 2025-03-31 [YouTube] 403 for a short period of time(a few seconds), then the link can be downloaded normally
+      #1178 open 2021-10-05 [Broken] [Twitch] Reruns wrongly use built-in HLS downloader
+      #3727 open 2022-05-13 [TVer] Support series URL
+      #13676 open 2025-07-09 [bbc] BBC Audio (for global audience) URLs are not supported
+      #3390 open 2022-04-11 Memory usage is very large for some videos
+      #6670 open 2023-03-29 [RedBull] Download all episodes of a show from the show URL
+      #14265 open 2025-09-07 Progress reporting: Provide data for "processing item k of N" reporting (or document its presence)
+      #15773 open 2026-01-30 Extract chapter infomation from jwplayer
+      #15174 open 2025-11-26 [ie/Forendors] Add extractor
+      #7021 open 2023-05-09 ivi.ru not working
+      #13135 open 2025-05-08 Update README.md to include clear example usage at the top of the README
+      #6698 open 2023-04-02 [ceskatelevize] update to March 2023 changes (#6539)
+      #13835 open 2025-07-25 [youtube] Premium detection not detecting YouTube Music Premium
+      #7631 open 2023-07-18 [megatube] Add extractor
+      #11533 open 2024-11-13 [ie/alphaporno] Fix extractor
+      #15664 open 2026-01-24 [ie/youtube] Support for downloading uploaded videos if shared in a single post
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17579 open 2026-08-30 [ie/rutube] Surface error messages provided by the site
+      #17676 open 2026-09-12 [Request] remove "WARNING ... mkv will be used"
+      #17737 open 2026-09-25 Add expiration date from 3Cat media metadata
+      #1923 open 2021-12-07 [TikTok] Add more data to profile json
+      #16626 open 2026-05-03 Option to immediately write comments to disk
+      #11886 open 2024-12-23 [Mediasite] Support alternative URL format
+      #11809 open 2024-12-14 Thumbnail selection by ID
+      #6744 open 2023-04-08 [vimeo] player.vimeo.com URLs with trailing slash are unsupported
+      #12348 open 2025-02-12 Extracting audio files from ABC radio (eg triple J)
+      #16995 open 2026-06-18 [ie/BBCCoUkPlaylist] Fix next_page extraction
+      #1659 open 2021-11-14 errors returned as parsable json
+      #16050 open 2026-02-24 Vimeo live streams fail to be recognized
+      #12246 open 2025-01-31 support google maps user content
+      #17330 open 2026-07-29 FIX for 
+      #17166 open 2026-07-07 [sporteurope] fixed 404 error after the API changes
+      #12408 open 2025-02-19 Audio only `--download-sections` can be more accurate
+      #17002 open 2026-06-19 Unable to download from CTVNews
+      #12230 open 2025-01-29 Wrong date format in opus/m4a tags
+      #9603 open 2024-04-03 Template prefix syntax in readme
+      #12630 open 2025-03-15 refactor: extract common `jwt_is_expired` to `utils`
+  unclean        9 hit(s) (all listed)
+      #13855 open 2025-07-26 [ie/sharepoint] Add support for chapters
+      #126 open 2021-03-01 [Feature Request] Merge, Add metadata and other ffmpeg operations simultaneously
+      #16049 closed 2026-02-23 Removing "thumbnails" from info.json via --parse-metadata breaks --write-thumbnail
+      #13105 closed 2025-05-05 same video name, but content is different, yt-dlp do nothing.
+      #7212 merged 2023-06-03 acast: fix test data, support embeds in other pages
+      #6700 closed 2023-04-03 [release] Multiple improvements
+      #8508 merged 2023-11-03 [RadioComercial] Add extractor
+      #5773 closed 2022-12-11 The fields playlist and playlist_id are missing in exec command
+      #5024 merged 2022-09-24 [core] `traverse_obj`: Various fixes
+  shutdown       36 hit(s) (all listed)
+      #15641 open 2026-01-21 git build broken: IPv6 SOCKS tests fail on systems without ::1 loopback
+      #15073 open 2025-11-15 Impersonate target "" is not available when embedding yt_dlp in a thread
+      #17202 open 2026-07-12 [youtube] DASH downloader not stopping properly when format is swapped mid livestream
+      #1381 open 2021-10-22 Live stream TF1.FR not detected (with solution)
+      #3298 open 2022-04-04 Allow downloading to buffer
+      #17660 open 2026-09-09 [youtube:search] and [youtube:tab] (on channels) | `playlist_count` is not available  if `--lazy-playlist` is used, even after whole playlist is extracted
+      #14221 open 2025-09-02 wedotv, no download possible
+      #17433 merged 2026-08-15 [test:socks] Fix compatibility with `websockets>=17`
+      #5339 closed 2022-10-23 Support pietsmiet.de
+      #16660 merged 2026-05-08 [ie/twitch] Drop dead `rechat` subtitle URL
+      #16762 closed 2026-05-20 Linux Systemd process manager status Integration
+      #10338 closed 2024-07-02 [YouTube] Annotations not downloaded when `--write-annotations` is passed
+      #11698 merged 2024-12-01 [fd/external] Fix resuming downloads with aria2c
+      #16137 merged 2026-03-05 [cleanup] Remove dead extractors
+      #15245 closed 2025-12-05 Graceful shutdown when used as library
+      #15089 open 2025-11-17 [Rumble] Unable to download webpage: HTTP Error 403: Forbidden
+      #14908 closed 2025-11-04 [ARD/ardmediathek] broken age verification
+      #17483 closed 2026-08-20 [Youtube] Got error: HTTP Error 403: Forbidden. Retrying fragment n (n/10)... using --live-from-start
+      #15789 closed 2026-02-01 Verifying PO Token configuration
+      #13267 merged 2025-05-22 [ie/limelight] Remove extractor
+  reboot         24 hit(s) (all listed)
+      #1986 open 2021-12-13 [youtube] yt-dlp fails to fall back if primary video server is unavailable
+      #6627 open 2023-03-25 Add option for network retries during extraction (for connectivity/DNS issues)
+      #6225 open 2023-02-13 `--embed-thumbnail` with `--split-chapters` is broken for some formats (`ERROR: Postprocessing:   Stream #0:1 -> #0:1 (copy)`)
+      #6181 open 2023-02-07 [PlutoTV] New URL Format
+      #10927 open 2024-09-05 `--cookies-from-browser`: WARNING: failed to decrypt with DPAPI / ERROR: 'NoneType' object has no attribute 'decode'
+      #16075 closed 2026-02-27 Memory leak
+      #5639 closed 2022-11-25 [extractor/youtube] Add fallback formats
+      #15566 closed 2026-01-15 Titkok  -- unable to extract webpage video data
+      #13414 closed 2025-06-07 [Twitch] broken download
+      #16810 closed 2026-05-26 [YouTube] via ssh proxy: `EOFError: 4 bytes missing`
+      #10630 closed 2024-08-02 yt-dlp_linux: tar_extract_all() failed: Invalid argument
+      #12828 closed 2025-04-03 Optimizing yt-dlp in Python for extracting specific fields
+      #13303 closed 2025-05-26 EILSEQ error in macOS due to some emojis in the title like 🫟
+      #10128 closed 2024-06-07 [youtube] Sign in to confirm you’re not a bot
+      #14276 closed 2025-09-09 [10play] An extractor error has occurred. (caused by `KeyError('dashManifestUrl')`)
+      #12423 closed 2025-02-20 Youtube videos take way too long to start downloading when using networkmanager in linux
+      #7977 closed 2023-08-28 TCP Error -138 when trying to download sections
+      #550 closed 2021-07-22 Cookies from Browser (Firefox MacOS)
+      #11199 closed 2024-10-09 Unable to download 1080p Bilibili videos while logged in (passing cookies)
+      #10377 closed 2024-07-07 Receive `ERROR: unable to download video data: HTTP Error 403: Forbidden` only when `ffmpeg` installed
+  disk+full      76 hit(s) (all listed)
+      #17757 open 2026-10-01 --cookies-from-browser: Firefox: Custom Profile: "could not find firefox cookies database"
+      #3239 open 2022-03-29 [yandex.disk] Unable to extract store
+      #7392 open 2023-06-23 Cannot get cookies from Safari.
+      #2799 open 2022-02-16 Need help with embed-subs UNFORCED
+      #17709 closed 2026-09-21 could not find brave cookies database in ~/Library/Application Support/BraveSoftware/Brave-Browser
+      #6757 open 2023-04-10 Do not skip fragments on filesystem errors
+      #16644 open 2026-05-06 [Newgrounds] Original cover art for audio
+      #5241 open 2022-10-14 Possible to save *decrypted* segments to disk?
+      #13190 open 2025-05-16 [cookies] Improve message for Safari permission error with `--cookies-from-browser`
+      #2573 open 2022-02-01 [Google Drive] get format/download source even the video still processing
+      #5977 open 2023-01-06 Safer overwriting of cookies.txt
+      #6498 open 2023-03-10 [youtube] Support --download-sections with formats --live-from-start
+      #15161 open 2025-11-24 [facebook] "Cannot parse data" with cookies (impersonation needed)
+      #13301 open 2025-05-26 [ADN] Unable to download JSON metadata: HTTP Error 409: Conflict
+      #3766 open 2022-05-17 🚨[IMPORTANT]🚨 KNOWN ISSUES/FAQ
+      #3131 open 2022-03-20 Sponsorblock integration and YouTube via MPV
+      #2898 open 2022-02-26 [youtube] premature download termination with --live-from-start
+      #1354 open 2021-10-20 [Feature Request] Replace phantomjs with something else?
+      #8808 closed 2023-12-19 Twitter not supported anymore ?
+      #13515 open 2025-06-21 [fd/sabr] Add YouTube SABR protocol downloader
+  data+loss      48 hit(s) (all listed)
+      #6740 open 2023-04-07 [data loss] METABUG: don't overwrite files
+      #1467 open 2021-10-28 Add option to not overwrite the embedded metadata if the video file already exists
+      #2162 open 2021-12-29 Subtitle conversion from tt not well-formed (invalid token): line 1997, column 93
+      #17667 open 2026-09-10 [niconico] Unable to log in: HTTP Error 404: Not Found (caused by <HTTPError 404: Not Found>)
+      #8488 open 2023-11-01 Feature: Normalized VBR support
+      #10204 open 2024-06-17 Converted Subtitles Not Moved From Temp Folder
+      #8928 open 2024-01-04 [TTML Subtitles] Potential to add more feature support when converting to other formats?
+      #10422 open 2024-07-11 [Vimeo] HTTP Error 429/403 When Using Impersonate Target
+      #4846 open 2022-09-04 [Discussion] Upcoming changes to format selection
+      #6757 open 2023-04-10 Do not skip fragments on filesystem errors
+      #4280 open 2022-07-06 Twitch live streams have out of sync audio and lowered pitch
+      #4477 closed 2022-07-28 Cannot parse data facebook
+      #13515 open 2025-06-21 [fd/sabr] Add YouTube SABR protocol downloader
+      #16535 closed 2026-04-20 YT-DLP not working on Rumble - Error 403 Forbidden
+      #16343 closed 2026-03-25 Effects of implementing HTTP/3 to use QUIC instead of TCP
+      #5563 closed 2022-11-16 Jio cinema Extractor 
+      #12143 closed 2025-01-20 how to add background to ass subtitle
+      #2640 closed 2022-02-05 [CNNArticle] Unable to extract cnn url
+      #6618 closed 2023-03-24 When downloading channel, hundreds or thousands of ghost pages are downloaded
+      #10108 closed 2024-06-05 [youtube] The following content is not available on this app.. Watch on the latest version of YouTube
+  partial+write  95 hit(s) (all listed)
+      #16243 open 2026-03-15 Only partial subtitle download for NRKTV
+      #1659 open 2021-11-14 errors returned as parsable json
+      #16054 open 2026-02-24 [Kick] `--download-sections` doesn't work correctly for VODs with `#EXT-X-DISCONTINUITY`
+      #10411 open 2024-07-10 [tele5] extractor writes two .info.json files
+      #9009 open 2024-01-15 Alias option name conflicts with longer existing option name when placed at the end of command
+      #16083 open 2026-02-27 [Youtube] YT-DLP checks for thumbnail 41 before checking if a thumbnail is already on disk
+      #8546 open 2023-11-08 Random SIGPIPE when downloading videos.
+      #15174 open 2025-11-26 [ie/Forendors] Add extractor
+      #2092 open 2021-12-23 Can't download a video from Facebook
+      #11220 open 2024-10-11 [site request] https://www.boomplay.com
+      #16634 open 2026-05-04 suggestion: new label for issues with a proposed fix
+      #3608 open 2022-05-01 Escape unicode cookies
+      #1986 open 2021-12-13 [youtube] yt-dlp fails to fall back if primary video server is unavailable
+      #16895 open 2026-06-06 dash manifest.mpd: infer BaseURL from Location
+      #13515 open 2025-06-21 [fd/sabr] Add YouTube SABR protocol downloader
+      #17419 closed 2026-08-12 WARNING: [youtube] No supported JavaScript runtime could be found . . .
+      #17389 open 2026-08-07 [Youtube] ERROR: The page needs to be reloaded (tv_downgraded player response playability status: UNPLAYABLE)
+      #8493 closed 2023-11-02 Tiktok: yt-dlp either downloads only the first set of videos, or none at all
+      #16529 open 2026-04-20 [SBS] Unable to download SMIL file: HTTP Error 410: Gone
+      #11698 merged 2024-12-01 [fd/external] Fix resuming downloads with aria2c
+  crash+safe     11 hit(s) (all listed)
+      #9929 open 2024-05-15 ERROR: Postprocessing: Error opening input files: Result too large
+      #16251 open 2026-03-16 [ustream fix extractor] Add live stream support for video.ibm.com channels
+      #16576 closed 2026-04-25 dr.dk - <IncompleteRead:
+      #14689 closed 2025-10-22 Support Duktape as external JS runtime (YouTube JS challenge provider)
+      #3810 open 2022-05-20 [abciview + others] ERROR: Data must be padded to 16 byte boundary in CBC mode
+      #12840 merged 2025-04-05 [ie/youtube] Add a PO Token Provider Framework
+      #9700 closed 2024-04-16 Is yt-dlp able to use RAM-only cookies from browser?
+      #9705 merged 2024-04-17 Issue 9701: NEXT_DATA field video extraction for bbc US website
+      #7216 merged 2023-06-03 [extractor/iprima] Fix extractor (relax nuxt function regex, add js_to_json hack)
+      #4606 merged 2022-08-09 [urplay] Add support for audio-only formats
+      #1328 closed 2021-10-18 Possible code fix to deal with &s not properly encoded in TTML/TT subtitles
+  atomic+write   11 hit(s) (all listed)
+      #9929 open 2024-05-15 ERROR: Postprocessing: Error opening input files: Result too large
+      #5977 open 2023-01-06 Safer overwriting of cookies.txt
+      #7576 open 2023-07-13 Respect `--ignore-errors` for `--write-info-json`
+      #6318 merged 2023-02-21 [extractor/twitch] Skip errors in GQL response
+      #16069 open 2026-02-26 [YouTube] Embedding a thumbnail on a specific video caused a corrupt output file
+      #16529 open 2026-04-20 [SBS] Unable to download SMIL file: HTTP Error 410: Gone
+      #15227 closed 2025-12-02 Persistent Download Queue Management
+      #13509 closed 2025-06-20 Why does "" 'cookies.txt' does not look like a Netscape format cookies file "" keep happening ?
+      #12779 merged 2025-03-29 [ie/zdf] Fix extractors
+      #793 merged 2021-08-26 Use `os.replace` where applicable to preserve atomicity on some filesystems
+      #783 closed 2021-08-25 ERROR: Postprocessing: sponskrub failed with error code 2
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3443 open 2022-04-15 "Retrying fragment" always fails because of "Locking file failed" while downloading a livestream with the --live-from-start option
+      #17695 open 2026-09-17 Only the last part of the SOOP subscription only VOD downloads successfully.
+      #17502 open 2026-08-21 Some of the free videos on Abema appear to be fake, yet they can still be downloaded.
+      #17753 open 2026-09-29 Support for National Archives of Singapore
+      #10878 open 2024-08-29 Cannot download Twitch VOD with initialization fragments after media fragments
+      #15813 open 2026-02-03 [MovingImage] `Unable to download webpage: HTTP Error 405: Not Allowed (caused by <HTTPError 405: Not Allowed>)`
+      #12575 open 2025-03-11 [soop] output file name is not set as expected
+      #17455 open 2026-08-17 Support thumbnails, descriptions and more for Odnoklassniki (OK.ru)
+      #17751 open 2026-09-28 How to download video with age
+      #17631 open 2026-09-06 Should Vimeo downloads for single videos be routed through the embedded player for non-logged in users now that default video downloads require login credentials?
+      #17549 open 2026-08-27 Windows filename sanitizer silently replaces ASCII "/" with U+29F8 BIG SOLIDUS
+      #17397 open 2026-08-09 I cannot download almost any Youtube videos.
+      #16983 open 2026-06-17 [aenetworks] History Channel "Unable to extract RelayState" with Spectrum MSO adobepass
+      #10587 open 2024-07-28 leTV 16:9 videos only download 360p
+      #12345 open 2025-02-12 Facebook Reel title not extracted when passing logged-in cookies
+      #13862 open 2025-07-27 [twitter:spaces] Add downloader
+      #17254 open 2026-07-19 [Bilibili] Video downloading fails in the middle
+      #16993 open 2026-06-18 [thumbnail embedding] File extension in all uppercase is not considered as valid formats for embedding.
+      #15921 open 2026-02-11 [youtube] Live Stream Download Prematurely Terminating with `--live-from-start`
+      #17259 open 2026-07-19 [AbemaTV] Unable to download some videos due to a "label too long" error
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9486 open 2024-03-18 [vimeo] 404 error with `--write-subs` and download aborts
+      #17120 open 2026-07-02 SoundCloud: Add fields indicating login status / original download availability to infodict
+      #10887 open 2024-08-31 Upon error, delay & restart the download a user-defined number X of times with user-defined Y seconds delay between each time.
+      #5977 open 2023-01-06 Safer overwriting of cookies.txt
+      #13831 open 2025-07-24 [YouTube] Unable to download video subtitles: HTTP Error 429: Too Many Requests
+      #17322 open 2026-07-28 [ie/kick] Rework extractors
+      #9685 open 2024-04-14 pre-allocation of disk space
+      #126 open 2021-03-01 [Feature Request] Merge, Add metadata and other ffmpeg operations simultaneously
+      #9630 open 2024-04-06 yt-dlp does not pass signals to the external downloader.
+      #17448 closed 2026-08-17 All of a sudden I get this after an update - [PYI-33316:ERROR] Security validation failure: parent process has different executable!
+      #12035 open 2025-01-08 [core] Default --trim-filenames values
+      #16570 open 2026-04-24 [TikTok] flv `record layer failure` when live ends
+      #14812 open 2025-10-29 Pornhub: ERROR: The extracted extension ('9') is unusual and will be skipped for safety reasons.
+      #2360 open 2022-01-16 Dropout.tv write-info-json
+      #15175 open 2025-11-26 No retries on "ERROR: Did not get any data blocks" - always skips fragment
+      #7288 open 2023-06-11 yt-dlp cannot add-metadata on M4A : ERROR: Postprocessing: Error selecting an encoder for stream 0:1
+      #16626 open 2026-05-03 Option to immediately write comments to disk
+      #17497 open 2026-08-20 [Youtube] ERROR: Video unavailable. Playback on other websites has been disabled by the video owner (web_embedded player response playability status: UNPLAYABLE)
+      #16387 open 2026-03-29 [mixcloud] Thumbnail embed fails if thumbnail image has an inaccurate extension
+      #15921 open 2026-02-11 [youtube] Live Stream Download Prematurely Terminating with `--live-from-start`
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17263 open 2026-07-20 Add support for Nintendo Today
+      #17230 open 2026-07-16 Add support for ShortMax (shorttv.live)
+      #12794 open 2025-03-31 [YouTube] 403 for a short period of time(a few seconds), then the link can be downloaded normally
+      #17330 open 2026-07-29 FIX for 
+      #1178 open 2021-10-05 [Broken] [Twitch] Reruns wrongly use built-in HLS downloader
+      #15773 open 2026-01-30 Extract chapter infomation from jwplayer
+      #13839 open 2025-07-25 [pluralsight:course] Unable to download JSON metadata: HTTP Error 404: Not Found
+      #7036 open 2023-05-11 [bilibili.tv] BiliBili videos giving error while extracting formats
+      #16204 open 2026-03-11 Support more peertube instances (techlore.tv, tube.matrix.rocks, etc)
+      #13835 open 2025-07-25 [youtube] Premium detection not detecting YouTube Music Premium
+      #14304 open 2025-09-12 Add `--no-print-traffic` and `--no-write-pages` options.
+      #1467 open 2021-10-28 Add option to not overwrite the embedded metadata if the video file already exists
+      #15174 open 2025-11-26 [ie/Forendors] Add extractor
+      #17202 open 2026-07-12 [youtube] DASH downloader not stopping properly when format is swapped mid livestream
+      #11965 open 2025-01-01 Add --download-archive option for YouTube playlists
+      #11533 open 2024-11-13 [ie/alphaporno] Fix extractor
+      #8478 open 2023-10-30 site request qos videos
+      #7021 open 2023-05-09 ivi.ru not working
+      #5039 open 2022-09-25 [downloader/hls] Decouple Hls Media Manifest parsing
+      #11014 open 2024-09-16 [orf.at] Unsupported URL and using generic extractor instead of orf.py
+
+== 51 terms run; 49 returned hits, 20 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

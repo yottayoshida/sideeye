@@ -1,0 +1,587 @@
+== novelty pre-scan: platformio/platformio-core
+== date: 2026-10-05T05:34:15Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          69 hit(s) (all listed)
+      #5053 open 2024-12-20 Redirecting `pio pkg list` output crashes
+      #5487 open 2026-08-01 Fix: pio pkg list crashes when its output stream cannot encode the tree characters
+      #4932 open 2024-06-09 Debugging with blackmagicprobe crashes at start.
+      #4391 open 2022-08-12 Unescaped File Path Injected into Python String Constant in test_build_unflags
+      #5477 closed 2026-07-22 device/monitor: fix pio monitor crash when stdin is a pipe
+      #5503 merged 2026-08-24 Fail with a clear error when device monitor stdin is not a TTY
+      #4059 open 2021-09-21 PlatformIO is architecturally wrong about RAM
+      #5389 closed 2026-02-28 KERNAL_TASK 263%. When using Project and Configuration
+      #5470 merged 2026-07-05 Fix: relative -d/--project-dir path causes FileNotFoundError in device monitor
+      #1326 open 2018-02-01 Z-Uno (Z-Wave Arduino prototyping board)
+      #3831 closed 2021-02-02 Disabled telemetry is ignored for PIO Home
+      #5287 closed 2025-10-16 new builds with old unchanged code run then crash requiring/sometimes forcing esp device reboot
+      #5070 closed 2025-01-20 pio pkg exec crash
+      #5103 closed 2025-03-11 It seems that M5Cardputer.BtnA becomes null once any function from M5Cardputer.Power gets called
+      #4925 closed 2024-05-30 ESP.getFlashChipMode(); crashes on esp32s3
+      #3939 closed 2021-04-25 Serial Monitor should handle disconnects more gracefully
+      #4076 closed 2021-10-04 Unit Testing not working on ESP32 (test port not automatically recognized)
+      #3368 closed 2020-02-02 Project Inspector Crashes when Flash Use > 100%
+      #3980 closed 2021-06-19 Unit testing impossible for frameworks including Unity themselves
+      #4739 closed 2023-09-07 Upload and Monitor in CLion fails with termios.error: (25, 'Inappropriate ioctl for device')
+  corrupt        17 hit(s) (all listed)
+      #3591 open 2020-07-11 platformio remote: no synchronization
+      #5217 open 2025-07-17 [feature] DFP (Device Family Pack) / atpack / CMSIS integration with PlatformIO
+      #5412 merged 2026-03-26 fix integrity.dat not being cleaned on version string typo
+      #4751 closed 2023-09-25 Cannot create new PlatformIO project in CLion
+      #2321 closed 2019-04-16 [Error 2] The system cannot find the file specified
+      #2844 closed 2019-07-27 WinError 5 Access is denied error thrown when installing a dependency
+      #4369 closed 2022-07-24 ESP32 can't boot If compile and upload on the different PC
+      #4038 closed 2021-08-23 LPC1769 missing from the PlatformIO board list
+      #3996 closed 2021-07-04 Dependecy issue "idna<3,>=2.5" when running `pio remote agent start`
+      #2966 merged 2019-08-31 Stop ModemManager corrupting Arduino uploads
+      #345 closed 2015-11-30 Update framework-arduinoespressif to 2.0.0
+      #214 closed 2015-05-25 teensy arduino linking problem after upgrade to PIO2.0
+      #458 closed 2016-01-13 Streamline SPIFFS upload
+      #741 closed 2016-08-05 Problems with installer .exe
+      #582 closed 2016-03-16 Install fails  Windows 10, 64-bit
+      #2066 closed 2019-01-23 Home: Libraries: Could not install library
+      #3659 closed 2020-09-08 Error with compiling for ESP32 
+  corruption     4 hit(s) (all listed)
+      #5348 open 2026-01-08 Environment Switching Requires .pio Cleanup on Windows
+      #5052 closed 2024-12-19 No multicore support when building on macos ?
+      #3804 closed 2021-01-20 UnicodeDecodeError: 'utf-8' codec can't decode byte
+      #3546 closed 2020-06-04 zipfile.BadZipFile: File is not a zip file
+  truncated      7 hit(s) (all listed)
+      #5180 open 2025-06-19 Spaces in Windows User name not supported in Inspect
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #4391 open 2022-08-12 Unescaped File Path Injected into Python String Constant in test_build_unflags
+      #509 closed 2016-02-11 Modifying any lib file under the .pioenvs affects the original
+      #67 closed 2015-02-10 Relocation truncated to fit when using math.h with serial library on Arduino
+      #925 closed 2017-03-30 LibraryManager: Cloning from private git repos fails 
+      #673 closed 2016-05-28 relocation truncated to fit: R_AVR_13_PCREL
+  truncate       13 hit(s) (all listed)
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #5180 open 2025-06-19 Spaces in Windows User name not supported in Inspect
+      #4391 open 2022-08-12 Unescaped File Path Injected into Python String Constant in test_build_unflags
+      #5405 merged 2026-03-26 Stop closing Arduino serial port at Unity test completion
+      #511 closed 2016-02-11 How can I list available libraries without being horribly, horribly annoying.
+      #509 closed 2016-02-11 Modifying any lib file under the .pioenvs affects the original
+      #67 closed 2015-02-10 Relocation truncated to fit when using math.h with serial library on Arduino
+      #925 closed 2017-03-30 LibraryManager: Cloning from private git repos fails 
+      #673 closed 2016-05-28 relocation truncated to fit: R_AVR_13_PCREL
+      #1642 closed 2018-05-28 Support
+      #3290 closed 2019-11-27 pio lib hangs
+      #3366 closed 2020-02-04 Unable to do a library simple search
+      #3420 closed 2020-03-16 Replace installer script with a new one
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3915 open 2021-04-01 pio-test: global library extra_script.py is executed with an empty project
+      #5519 open 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps
+      #5526 open 2026-10-04 Generated "PIO Debug" launch entries mix two environments when "default_envs" and "build_type = debug" point to different environments
+      #3744 open 2020-11-22 Clion: PlatformIO utility is not found but installed
+      #4499 open 2022-12-27 WMI failures in getting local drive list show no indication of failure
+      #5502 open 2026-08-23 macOS: default `projects_dir` is placed inside `~/Documents`, which iCloud syncs
+      #5463 open 2026-06-23 Libraries not installed from registry cannot be detected as already installed dependencies of other libraries
+      #4536 open 2023-01-31 Failed to find registry package after installing it with pio lib install
+      #5522 closed 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps (agian)
+      #5301 closed 2025-10-29 Fix: Handle -U flags with spaces in build_flags
+      #5237 closed 2025-08-26 Undefines in build_flags don't work if there's a space after -U
+      #5474 closed 2026-07-10 Preserve user .vscode/extensions.json on IDE regeneration (#5473)
+      #5477 closed 2026-07-22 device/monitor: fix pio monitor crash when stdin is a pipe
+      #5411 closed 2026-03-26 Introduce dynamic IDE project-file basename derived from project directory
+      #5302 closed 2025-10-29 Fix: Display actual test suite status instead of hardcoded 'PASSED'
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #5110 closed 2025-03-17 Automatic cleanup of the .pio/libdeps folder doesnt work correctly if lib_deps section is empty
+      #5377 closed 2026-02-07 SameFile: Multiple Definition of variable; SameFile: first defined here (Linker ignores include guards?)
+      #5047 closed 2024-12-12 Python error caused by empty args
+      #5076 closed 2025-01-30 Log2File - override default log file name
+  atomic         6 hit(s) (all listed)
+      #4446 open 2022-10-31 pio check using clangtidy fails on large project
+      #5102 closed 2025-03-08 AVR: eeprom_busy_wait function causes build error
+      #553 closed 2016-03-03 https://github.com/openstack/pylockfile
+      #280 closed 2015-08-30 Eclipse doesn't know about __LONG_MAX__
+      #801 closed 2016-10-08 ignored macros #ifdef
+      #664 closed 2016-05-19 .pioenvs caching breaks strange behavior on 2nd run
+  atomically     0 hit(s)
+  interrupted    9 hit(s) (all listed)
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #5435 merged 2026-04-18 Avoid infinite loop when cached mirror redirect keeps failing
+      #4664 closed 2023-06-16 "remove multiple PIO Cores from a system" – how?
+      #4623 closed 2023-05-12 Failing tests on a freshly downloaded project
+      #4139 closed 2021-12-15 Actual git version is not displayed for `platform_packages`
+      #175 closed 2015-04-14 Use alternative protocol to upload to STM32
+      #3546 closed 2020-06-04 zipfile.BadZipFile: File is not a zip file
+      #2708 closed 2019-06-25 Cannot use shared library storage with lib_deps
+      #3549 closed 2020-06-07 Connection reset by peer when installing new platform toolchains
+  interrupt      31 hit(s) (all listed)
+      #4621 open 2023-05-11 Semihosting stdin spammed with internal strings - scanf() not usable
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #4454 open 2022-11-06 Precompiled libraries include path doesn't include FPU variant
+      #5435 merged 2026-04-18 Avoid infinite loop when cached mirror redirect keeps failing
+      #5445 merged 2026-05-17 Update 99-platformio-udev.rules: add `303a:4001 Espressif Systems Espressif Device`
+      #5323 closed 2025-12-05 Bug: sin1.contabostorage.com blocked by QUAD9 (DoH) DNS-over-HTTPS leads to DNS flood
+      #5153 closed 2025-05-08 Add Support for STM32F429IGT6 Custom Board
+      #5102 closed 2025-03-08 AVR: eeprom_busy_wait function causes build error
+      #3784 closed 2021-01-02 Compile error for Arduino framework
+      #3824 closed 2021-01-28 Platformio overwrites .vscode/launch.json, breaking official VSCode documentation, preventing project-specific settings
+      #4664 closed 2023-06-16 "remove multiple PIO Cores from a system" – how?
+      #4139 closed 2021-12-15 Actual git version is not displayed for `platform_packages`
+      #140 closed 2015-03-25 Wrong insertion of function prototypes converting .pde to .cpp
+      #175 closed 2015-04-14 Use alternative protocol to upload to STM32
+      #249 closed 2015-07-10 scons: *** [.pioenvs/engduinov3/firmware.elf] Error 1
+      #801 closed 2016-10-08 ignored macros #ifdef
+      #664 closed 2016-05-19 .pioenvs caching breaks strange behavior on 2nd run
+      #1364 closed 2018-02-14 attachInterrupt function arduino
+      #736 closed 2016-07-28 NodeMCU builds fail after 2.11.1 upgrade
+      #1776 closed 2018-07-31 Serial interruption 
+  sigkill        0 hit(s)
+  sigint         4 hit(s) (all listed)
+      #3841 closed 2021-02-12 `pio device monitor` does not exit on SIGINT
+      #3756 closed 2020-12-05 Fix silent hang when custom `debug_server` is not found
+      #175 closed 2015-04-14 Use alternative protocol to upload to STM32
+      #2733 closed 2019-07-02 Can't pause Debugger neither on command line nor in Eclipse
+  ctrl-c         50 hit(s) (all listed)
+      #4097 open 2021-11-03 Visual Studio IntelliSense does not recognize basic using std::xyz statements
+      #5231 open 2025-08-16 `pio device monitor` doesn't reconnect proactively when resetting ESP32
+      #4932 open 2024-06-09 Debugging with blackmagicprobe crashes at start.
+      #704 open 2016-06-22 Add support for all PIC microcontrollers
+      #728 open 2016-07-25 Micropython support
+      #4446 open 2022-10-31 pio check using clangtidy fails on large project
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #4556 closed 2023-02-17 Serial Monitor filters does not work with "solution" for colorized output
+      #5312 closed 2025-11-17 platformio.exe not found - Inconsistent PATH Treatment / Broken Installation - Persists through reinstalls
+      #4858 closed 2024-02-11 NameError: name 'includes' is not defined while updating metadata for VSCode IDE
+      #5034 closed 2024-12-01 eu2.contabostorage.com is blocked in Poland
+      #4076 closed 2021-10-04 Unit Testing not working on ESP32 (test port not automatically recognized)
+      #4732 closed 2023-08-31 Serial Monitor only allows ASCII characters
+      #3089 closed 2019-10-08 Lib installer hangs if project is on NFS mount
+      #106 closed 2015-03-03 digispark-tiny upload failing
+      #980 closed 2017-06-09 Add GDB debugger support for native platform
+      #684 closed 2016-06-03 Add support for 8-bit PICs through SDCC and gputils
+      #4606 closed 2023-04-25 Resolving nodemcu-32s dependencies... fails
+      #4219 closed 2022-04-09 Support for SonarLint in Visual Studio Code
+  power          82 hit(s) (all listed)
+      #4521 open 2023-01-16 changed bmp gdb init
+      #4482 open 2022-11-30 Introduce a centralized GHA check/gate job
+      #3418 open 2020-03-15 Support for On Semiconductor RSL10 boards
+      #2709 open 2019-06-26 Sparkfun Edge Cortex M4 MCU Board Support
+      #3672 open 2020-09-16 Add support for the NRF9160
+      #4446 open 2022-10-31 pio check using clangtidy fails on large project
+      #5519 open 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps
+      #5301 closed 2025-10-29 Fix: Handle -U flags with spaces in build_flags
+      #4854 open 2024-02-02 Feature request for support for Milk-V Boards
+      #3575 open 2020-06-26 `pio remote device list` takes over 7 minutes to complete after an agent drops from network
+      #5237 closed 2025-08-26 Undefines in build_flags don't work if there's a space after -U
+      #5445 merged 2026-05-17 Update 99-platformio-udev.rules: add `303a:4001 Espressif Systems Espressif Device`
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #3777 closed 2020-12-26 Using built-in library fails with KeyError: 'framework-stm32cube'
+      #4894 closed 2024-04-10 PlatformIO trips up on spaces inside microcontroller names on Windows 10
+      #5280 closed 2025-10-10 Branch2
+      #5287 closed 2025-10-16 new builds with old unchanged code run then crash requiring/sometimes forcing esp device reboot
+      #5132 closed 2025-04-10 Add support to MSPM0 series
+      #5103 closed 2025-03-11 It seems that M5Cardputer.BtnA becomes null once any function from M5Cardputer.Power gets called
+      #930 closed 2017-04-01 "built with platformio" badge
+  outage         6 hit(s) (all listed)
+      #3575 open 2020-06-26 `pio remote device list` takes over 7 minutes to complete after an agent drops from network
+      #4939 closed 2024-06-19 Australian download mirror incredibly slow; Breaks and tries new mirror that is faster
+      #1659 closed 2018-06-05 PlatformIO website is down
+      #2126 closed 2019-02-12 Error: [API] Invalid response: <html>  <head><title>502 Bad Gateway</title></head>
+      #3314 closed 2019-12-23 Connection Error accessing api.platformio.org
+      #3319 closed 2019-12-26 REFUSAL to compile if api.platformio.org is down!
+  ENOSPC         0 hit(s)
+  disk           56 hit(s) (all listed)
+      #2872 open 2019-08-05 Use XDG_CONFIG_HOME for .platformio directory
+      #4883 open 2024-03-24 Option to delete intermediate output when running tests (and use less storage for CI builds in general)
+      #4574 open 2023-03-17 Remove environment name from `build_cache_dir` cache keys
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #2844 closed 2019-07-27 WinError 5 Access is denied error thrown when installing a dependency
+      #4555 closed 2023-02-16 Optimisation: specify directories to ignore during installation in library.json
+      #3417 closed 2020-03-12 Problem with Python 3.8+ on Windows when network drive is used
+      #4272 closed 2022-05-17 Out of memory (>60G) from scons.py compiling Marlin 
+      #4135 closed 2021-12-08 Added support for test hierarchies
+      #2197 closed 2019-03-08 Errors: sh: 1: xtensa-lx106-elf-g++: not found
+      #4099 closed 2021-11-04 Failure to build/grab dependencies when building from network share
+      #596 closed 2016-03-25 st-flash: dyld: Library not loaded: /usr/local/lib/libusb-1.0.0.dylib
+      #3865 closed 2021-02-28 Remote agent on Raspbian
+      #3916 closed 2021-04-01 PlatformIO tries to scan protected folders (and fails) when searching for libraries specified in lib_extra_dirs.
+      #3996 closed 2021-07-04 Dependecy issue "idna<3,>=2.5" when running `pio remote agent start`
+      #3809 closed 2021-01-23 pm-update: respect only_check value
+      #477 closed 2016-01-26 Incorrect board when uploading nodemcu instead of esp12e
+      #500 closed 2016-02-07 compiled code doesnt seem to run on redbearlabblenano
+      #43 closed 2014-12-25 auto download of platforms
+      #366 closed 2015-12-10 Update native SDK for ESP8266 to 1.5
+  partial        19 hit(s) (all listed)
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #927 open 2017-04-01 Support Chibitronics Love-to-Code
+      #5323 closed 2025-12-05 Bug: sin1.contabostorage.com blocked by QUAD9 (DoH) DNS-over-HTTPS leads to DNS flood
+      #4449 closed 2022-11-01 PIO is not building files that should be build because defines in a header file included by compiler flag -include changed
+      #4329 closed 2022-06-23 ESP-IDF: Import of non-existent variable ''projenv''
+      #3417 closed 2020-03-12 Problem with Python 3.8+ on Windows when network drive is used
+      #4382 closed 2022-08-05 Googletest in a linux arm64 environment failing
+      #3349 closed 2020-01-21 Monitor port autodetection based on VID:PID
+      #790 closed 2016-09-20 Add inheritance in platformio.ini file via includes
+      #512 closed 2016-02-12 eclipse integration
+      #488 closed 2016-01-31 [platformio-ide 0.3.2] Windows setup affected by virtualenv 14.0.2/14.0.3 bug
+      #269 closed 2015-08-19 Install through proxy
+      #1528 closed 2018-03-25 Can't install mbed-drivers, error in file lib.py
+      #645 closed 2016-05-02 SSLError: [SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC] decryption failed or bad record mac (_ssl.c:1754)
+      #1744 closed 2018-07-15 Cannot uninstall 'lockfile'
+      #3612 closed 2020-07-31 Cannot use generic platform_packages = $URL with different OS
+      #3535 closed 2020-05-31 Spurious rebuilds - partial fix
+      #3763 closed 2020-12-13 something went wrong
+      #3635 closed 2020-08-22 Libraries: Updates
+  incomplete     17 hit(s) (all listed)
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #1326 open 2018-02-01 Z-Uno (Z-Wave Arduino prototyping board)
+      #5408 closed 2026-03-26 Expand conditional LDF scanner include paths to use full compile-time include context
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #5191 closed 2025-06-25 Need help with building Arduino as ESP-IDF component in PlatformIO
+      #4677 closed 2023-06-25 pio remote run -t upload not working
+      #4590 closed 2023-04-04 Newest toolchain-gccarmnoneeabi 1.110301.0 package broken
+      #4117 closed 2021-11-21 Network problem on Windows
+      #4380 merged 2022-08-04 optionally pass env to AddBuildMiddleware callback
+      #4109 closed 2021-11-13 The next files/directories have been created when I installing ESP32-IDF with vscode ide
+      #3848 closed 2021-02-15 Provide support to assembly laungage and C for 8051 MCU family
+      #512 closed 2016-02-12 eclipse integration
+      #301 closed 2015-10-07 mbed: cstddef: No such file or directory
+      #727 closed 2016-07-22 Buggy compile on Arduino Leonardo
+      #1613 closed 2018-05-08 ZephyrProject integration
+      #3389 closed 2020-02-20 (zephyr) pio run results in "The toolchain is unable to build a dummy C file. See CMakeError.log."
+      #3435 closed 2020-03-22 Fish shell completions
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #2966 merged 2019-08-31 Stop ModemManager corrupting Arduino uploads
+      #520 closed 2016-02-16 Please add support for some SAMD21 boards:
+      #820 closed 2016-10-30 Data loss on Import Arduino Project
+      #3286 closed 2019-11-25 Multiple bugs on PIO Plus
+  recovery       6 hit(s) (all listed)
+      #4827 closed 2024-01-10 Release 6.1.12 breaks installation through github actions
+      #4685 closed 2023-07-07 AttributeError: 'dict' object has no attribute 'get_debug_tool_name'
+      #4560 closed 2023-02-28 unable to compile due to platformio error
+      #4371 closed 2022-07-25 undefinedError: Program/firmware is missed
+      #4008 closed 2021-07-19 Compile marlin is error on cmd but vscode is success
+      #712 closed 2016-07-04 Problem Arduino Yun bootloader and PlatformIO
+  rollback       1 hit(s) (all listed)
+      #1516 closed 2018-03-23 vscode (1.21.1)+platformio  (3.5.3a7) + openocd (0.10) -> no jlink device found
+  resume         16 hit(s) (all listed)
+      #5484 open 2026-07-27 The Critical Need for a China-Accessible Mirror: Proposal for Configurable Registry, Speed Testing, and Resume Support
+      #4864 open 2024-02-24 Feature request for support resuming downloads
+      #3789 open 2021-01-05 Support Attaching Debugger to a Running Target
+      #4959 open 2024-08-07 pio debug --interface=gdb --interpreter=mi2 generates malformed GDB-MI messages
+      #4932 open 2024-06-09 Debugging with blackmagicprobe crashes at start.
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #4345 closed 2022-07-08 Chinese mirror of the package registry
+      #3824 closed 2021-01-28 Platformio overwrites .vscode/launch.json, breaking official VSCode documentation, preventing project-specific settings
+      #4018 closed 2021-08-02 Library Dependency Finder should take symlinked directories into account
+      #3793 closed 2021-01-08 Debugging not accessible on commandline using Windows CMD
+      #510 closed 2016-02-11 URGENT: Dear PlatformIO 2.0 contributors...
+      #614 closed 2016-04-12 update esptool
+      #3401 closed 2020-03-04 Integrate with Renode Simulation Framework for load and debug
+      #3549 closed 2020-06-07 Connection reset by peer when installing new platform toolchains
+      #3893 closed 2021-03-18 Debugging using Blackmagic probe is broken
+      #4008 closed 2021-07-19 Compile marlin is error on cmd but vscode is success
+  half-written   4 hit(s) (all listed)
+      #684 closed 2016-06-03 Add support for 8-bit PICs through SDCC and gputils
+      #148 closed 2015-03-31 Handle libraries which are compatible with build environment using "library.json" data
+      #178 closed 2015-04-16 PlatformIO breaks serial interface for Arduino Leonardo (but only for PlatformIO)
+      #709 closed 2016-07-01 BBC MicroBit configuration
+  wipe           12 hit(s) (all listed)
+      #5519 open 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps
+      #5522 closed 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps (agian)
+      #4170 closed 2022-02-06 Automatically delete removed dependencies
+      #4286 closed 2022-05-22 Project build failures when migrating to v6.0.1
+      #486 closed 2016-01-29 upload fails and wipes bootloader on Trinket 5v 8Mhz
+      #119 closed 2015-03-12 Support for ESP8266
+      #362 closed 2015-12-08 Avoiding IDE import errors
+      #390 closed 2015-12-18 2.6.1 install generates bad esp12e firmware
+      #914 closed 2017-03-07 Importing a project unrecoverably wiped it!
+      #727 closed 2016-07-22 Buggy compile on Arduino Leonardo
+      #1407 closed 2018-02-28 Only the libraries used by the current configuration should be compiled
+      #3290 closed 2019-11-27 pio lib hangs
+  wipes          3 hit(s) (all listed)
+      #5519 open 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps
+      #5522 closed 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps (agian)
+      #486 closed 2016-01-29 upload fails and wipes bootloader on Trinket 5v 8Mhz
+  erase          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4477 open 2022-11-28 cli: `pio run --list-targets` should show `envdump`, `exec`, `test` [and others?]
+      #4934 open 2024-06-11 `pio run -t compiledb` does not generate compilation database for tests
+      #4478 open 2022-11-28 [feature request] cli: add the "build" target
+      #4642 open 2023-05-30 upload_protocol option missing in CLI params
+      #4977 open 2024-09-17 As long as you can use any port if not specified in  platformio.ini,  when you diag wrong port, why not offer to use the available one?
+      #4854 open 2024-02-02 Feature request for support for Milk-V Boards
+      #4164 open 2022-02-01 Recent News
+      #4576 open 2023-03-18 escaping $ in build_flags
+      #4512 open 2023-01-11 Setup github issue templates
+      #4903 open 2024-04-24 Project is built with include directories for two different versions of the same library
+      #4935 open 2024-06-11 Integration with `nvim-dap`
+      #4641 open 2023-05-26 Please support multiple test_xxxx test cases in a single directory
+      #4814 open 2023-12-22 LDF default-includes wrong libs for "Arduino IoT Cloud" + Portenta H7
+      #3959 open 2021-05-19 PlatformIO Core does not work on msys 2
+      #4454 open 2022-11-06 Precompiled libraries include path doesn't include FPU variant
+      #4414 open 2022-09-12 LDF doesn't evaluate macro properly
+      #4069 open 2021-09-27 Support viewing SWO data
+      #4029 open 2021-08-11 "pio check --json-output" may contain extra output of program stdout
+      #4838 open 2024-01-23 LDF can't work with latest Adafruit TinyUSB on any setting
+      #3744 open 2020-11-22 Clion: PlatformIO utility is not found but installed
+  erasing        14 hit(s) (all listed)
+      #293 merged 2015-09-27 Update ststm32.json
+      #382 closed 2015-12-17 Add : espressif : make spiffs
+      #238 closed 2015-06-16 stk500v2_command(): command failed
+      #685 closed 2016-06-03 st-flash fails on 1st upload (stlink)
+      #546 closed 2016-02-29 ESP8266-native demo fails to run on Adafruit Huzzah
+      #876 closed 2017-01-15 The st-util tool causes error on STM32F091 Nucleo-64 board
+      #614 closed 2016-04-12 update esptool
+      #665 closed 2016-05-20 STM32F0 upload failing
+      #1078 closed 2017-09-19 sf-flash fails after first successful upload
+      #1263 closed 2017-12-28 xtensa esp8266 toolchain on arm64v8 (aarch64) not working
+      #622 closed 2016-04-16 Uploading fails via platformio command but is fine when executed manually
+      #1804 closed 2018-08-22 stk500v1 upload broken in v3.6.0
+      #2105 closed 2019-02-06 Home: Could not initialize project
+      #221 closed 2015-05-29 Upload to Arduino embedded custom board
+  erased         12 hit(s) (all listed)
+      #3744 open 2020-11-22 Clion: PlatformIO utility is not found but installed
+      #4367 closed 2022-07-16 ESP-prog with esp_tool protocol fails at upload or serial
+      #293 merged 2015-09-27 Update ststm32.json
+      #685 closed 2016-06-03 st-flash fails on 1st upload (stlink)
+      #1319 closed 2018-01-28 Add Pycom LoPy Board
+      #876 closed 2017-01-15 The st-util tool causes error on STM32F091 Nucleo-64 board
+      #905 closed 2017-02-18 Bug: Upload on Arduino Uno fails
+      #564 closed 2016-03-06 Deploying Arduino Projects to Bare AVRs (no bootloader) Fails Verification. Requesting Board Definition for Bare AVR
+      #665 closed 2016-05-20 STM32F0 upload failing
+      #1078 closed 2017-09-19 sf-flash fails after first successful upload
+      #1366 closed 2018-02-15 Platform espressif8266: Problem switching frameworks
+      #739 closed 2016-08-01 Platformio erases bootloader on samd21
+  destroy        14 hit(s) (all listed)
+      #5519 open 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps
+      #988 open 2017-06-25 Better Visual Studio support
+      #5473 closed 2026-07-10 project init --ide vscode unconditionally overwrites .vscode/extensions.json, destroying user ordering, formatting, and comments
+      #5522 closed 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps (agian)
+      #5474 closed 2026-07-10 Preserve user .vscode/extensions.json on IDE regeneration (#5473)
+      #3831 closed 2021-02-02 Disabled telemetry is ignored for PIO Home
+      #4206 closed 2022-03-23 `lib_extra_dirs = ...` no longer works with 5.3.0a3
+      #3552 merged 2020-06-09 Add account and org destroy commands. Fix tests
+      #1011 closed 2017-08-09 Can't get rid of login nagscreen
+      #2341 closed 2019-04-19 Error: Detected unknown package 'contrib-pysite'
+      #2873 closed 2019-08-06 Why is pio destroying environment by default?
+      #3533 closed 2020-05-29 CLI to manage teams
+      #3701 closed 2020-10-10 serial does not name a type
+      #3659 closed 2020-09-08 Error with compiling for ESP32 
+  destroys       0 hit(s)
+  overwrite      30 hit(s) (all listed)
+      #3745 open 2020-11-23 Windows: Set "intelliSenseMode" property in c_cpp_properties.json file to "gcc-arm" 
+      #988 open 2017-06-25 Better Visual Studio support
+      #5473 closed 2026-07-10 project init --ide vscode unconditionally overwrites .vscode/extensions.json, destroying user ordering, formatting, and comments
+      #5406 closed 2026-03-26 Add CLI support for user-provided project scaffold templates
+      #3952 closed 2021-05-12 Multiple issues with 'extends' option in platformio.ini
+      #3824 closed 2021-01-28 Platformio overwrites .vscode/launch.json, breaking official VSCode documentation, preventing project-specific settings
+      #980 closed 2017-06-09 Add GDB debugger support for native platform
+      #4257 closed 2022-05-06 Upload to board fails if specified wildcards in upload_port option
+      #4462 closed 2022-11-16 extends doesn't override options as it is described in documentation
+      #3917 closed 2021-04-02 Cannot use assembly files in MCS51 platform due to core issue
+      #4205 closed 2022-03-22 Escaping linker arguments with quotes impossible to do correctly
+      #4262 merged 2022-05-14 qtcreator IDE template now generates a "generic" Qt project
+      #3992 closed 2021-07-02 Serial Monitor swallows my print lines
+      #3901 closed 2021-03-25 "pio test" does not install platform, leading to "Error: Unknown development platform"
+      #3797 closed 2021-01-08 Inclusion of ArduinoJSON causes cppcheck to not recognize a call to a function
+      #3051 closed 2019-09-26 CMake IDE/TPL added
+      #382 closed 2015-12-17 Add : espressif : make spiffs
+      #464 closed 2016-01-18 Make local installs the default
+      #444 closed 2016-01-08 Not clear how to overwrite $BOARD.options.resetmethod ..
+      #810 closed 2016-10-17 Eclipse project has its own system path defined
+  clobber        4 hit(s) (all listed)
+      #5188 closed 2025-06-24 Neovim + Arduino + PlatformIO
+      #2811 closed 2019-07-20 Solved: Please install Git client from https://git-scm.com/downloads
+      #254 closed 2015-07-20 No module named pip
+      #1367 closed 2018-02-15 Custom platform packages per build environment
+  blank          41 hit(s) (all listed)
+      #4499 open 2022-12-27 WMI failures in getting local drive list show no indication of failure
+      #5487 open 2026-08-01 Fix: pio pkg list crashes when its output stream cannot encode the tree characters
+      #5507 merged 2026-08-30 Update marshmallow constraints (allow 3.x and 4.x)
+      #5503 merged 2026-08-24 Fail with a clear error when device monitor stdin is not a TTY
+      #5499 merged 2026-08-12 prevent path traversal via chmod and mtime in zip unpacking
+      #5408 closed 2026-03-26 Expand conditional LDF scanner include paths to use full compile-time include context
+      #5404 closed 2026-03-26 Validation relies on assert, which is stripped in optimized Python mode
+      #5411 closed 2026-03-26 Introduce dynamic IDE project-file basename derived from project directory
+      #5407 closed 2026-03-26 Scope `build_src_flags` to project source compilation only
+      #5409 closed 2026-03-26 Normalize incoming Home RPC path arguments to the remote host OS
+      #5406 closed 2026-03-26 Add CLI support for user-provided project scaffold templates
+      #5410 closed 2026-03-26 Regression tests for Unity define/path generation in VSCode `c_cpp_properties.json`
+      #5405 merged 2026-03-26 Stop closing Arduino serial port at Unity test completion
+      #5099 closed 2025-03-05 PlatformIO doesn't compile for ESP32CAM using arduino framework.
+      #5064 closed 2025-01-14 Stuck at Installing platformio/toolchain-riscv
+      #1383 closed 2018-02-22 Feature Request: Simultaneously upload to multiple serial ports
+      #4076 closed 2021-10-04 Unit Testing not working on ESP32 (test port not automatically recognized)
+      #3939 closed 2021-04-25 Serial Monitor should handle disconnects more gracefully
+      #4671 closed 2023-06-18 unity.py: fixing whitespace issue when running tests with `-Wpedantic`
+      #4606 closed 2023-04-25 Resolving nodemcu-32s dependencies... fails
+  unreadable     1 hit(s) (all listed)
+      #33 closed 2014-12-09 dark blue unreadable in console output
+  garbage        4 hit(s) (all listed)
+      #4621 open 2023-05-11 Semihosting stdin spammed with internal strings - scanf() not usable
+      #4320 closed 2022-06-14 add timestamp to logfiles
+      #3026 merged 2019-09-16 UTF8 decoding should ignore invalid characters coming from the serial connection
+      #3387 closed 2020-02-19 UnicodeDecodeError when executing pio run
+  mangled        2 hit(s) (all listed)
+      #5040 open 2024-12-05 Project Inspector fails when projects are compiled with non-native GCC or non-GCC based compilers
+      #2796 closed 2019-07-16 'ascii' codec can't decode byte
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4613 open 2023-05-06 Pinning transitive dependencies with a lockfile
+      #5217 open 2025-07-17 [feature] DFP (Device Family Pack) / atpack / CMSIS integration with PlatformIO
+      #5473 closed 2026-07-10 project init --ide vscode unconditionally overwrites .vscode/extensions.json, destroying user ordering, formatting, and comments
+      #5494 closed 2026-08-06 Sort project library integrity data
+      #5481 closed 2026-07-23 Stale .o survives git checkout to a different branch — SCons decider misses the change, linker fails with undefined reference to removed code
+      #4574 open 2023-03-17 Remove environment name from `build_cache_dir` cache keys
+      #5474 closed 2026-07-10 Preserve user .vscode/extensions.json on IDE regeneration (#5473)
+      #5406 closed 2026-03-26 Add CLI support for user-provided project scaffold templates
+      #728 open 2016-07-25 Micropython support
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #4446 open 2022-10-31 pio check using clangtidy fails on large project
+      #5379 closed 2026-02-08 NameError: name 'prog_path' is not defined
+      #4754 closed 2023-09-26 $PROJECT_HASH in build_dir causes exception
+      #4858 closed 2024-02-11 NameError: name 'includes' is not defined while updating metadata for VSCode IDE
+      #5165 closed 2025-05-20 Updating metadata for the vscode IDE error
+      #1022 closed 2017-08-22 pre build extra script is not behaving as expected or documentation missing
+      #5057 closed 2024-12-25 PIO tries to give the contents of #ifdef/#endif blocks to the compiler even if they should not be compiled.
+      #5135 closed 2025-04-14 comment in build flag define value breaks import / build with cryptic message
+      #4978 closed 2024-09-18 NameError: name 'includes' is not defined while updating metadata 
+      #4076 closed 2021-10-04 Unit Testing not working on ESP32 (test port not automatically recognized)
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4641 open 2023-05-26 Please support multiple test_xxxx test cases in a single directory
+      #4934 open 2024-06-11 `pio run -t compiledb` does not generate compilation database for tests
+      #4303 open 2022-06-03 Allow global source filter
+      #1790 open 2018-08-11 Include I/O voltage in board information
+      #4710 open 2023-08-09 Add  UNITY_INCLUDE_CONFIG_H and path to it in c_cpp_properties.json
+      #4990 open 2024-10-07 Support specifying the *exact* library folder for a given environment
+      #2367 open 2019-04-22 Import project from Keil µVision IDE
+      #4164 open 2022-02-01 Recent News
+      #4576 open 2023-03-18 escaping $ in build_flags
+      #4512 open 2023-01-11 Setup github issue templates
+      #4935 open 2024-06-11 Integration with `nvim-dap`
+      #4886 open 2024-03-26 Improve memory exhaustion warnings/errors
+      #4792 open 2023-11-22 Add support for VEGA Aries boards
+      #4181 open 2022-02-12 Please allow disabling automatic .gitignore generation; or any arbitrary .tpl file
+      #337 open 2015-11-25 Improving Linux distribution support
+      #3959 open 2021-05-19 PlatformIO Core does not work on msys 2
+      #3456 open 2020-04-12 RIOT-OS support
+      #4069 open 2021-09-27 Support viewing SWO data
+      #4454 open 2022-11-06 Precompiled libraries include path doesn't include FPU variant
+      #5474 closed 2026-07-10 Preserve user .vscode/extensions.json on IDE regeneration (#5473)
+  unclean        0 hit(s)
+  shutdown       9 hit(s) (all listed)
+      #5423 closed 2026-03-31 fix: usage with starlette >= 1
+      #3980 closed 2021-06-19 Unit testing impossible for frameworks including Unity themselves
+      #3933 closed 2021-04-21 \ wrongly escaped in openocd command
+      #356 closed 2015-12-05 Arduino ZERO as board type?
+      #828 closed 2016-11-15 Can't upload to Arduino Zero on programming USB port
+      #805 closed 2016-10-14 Cannot upload to mzeropro with using stable or development version
+      #1029 closed 2017-09-02 JLink as upload tool
+      #732 closed 2016-07-27 Cannot upload to SAMD21_XPRO with Mbed framework
+      #3313 closed 2019-12-23 PIO Home not working anymore (Raspberry Pi 3 and Termux)
+  reboot         39 hit(s) (all listed)
+      #5389 closed 2026-02-28 KERNAL_TASK 263%. When using Project and Configuration
+      #445 open 2016-01-09 Consider adding Particle Platform
+      #728 open 2016-07-25 Micropython support
+      #5359 closed 2026-01-14 Unit testing with unity fails on Windows because of Serial.end
+      #5372 closed 2026-02-01 Python 3.14 support not yet released
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #5287 closed 2025-10-16 new builds with old unchanged code run then crash requiring/sometimes forcing esp device reboot
+      #5312 closed 2025-11-17 platformio.exe not found - Inconsistent PATH Treatment / Broken Installation - Persists through reinstalls
+      #2321 closed 2019-04-16 [Error 2] The system cannot find the file specified
+      #3939 closed 2021-04-25 Serial Monitor should handle disconnects more gracefully
+      #4367 closed 2022-07-16 ESP-prog with esp_tool protocol fails at upload or serial
+      #4416 closed 2022-09-16 FEAT: Configurable delay between Upload and Monitor
+      #3875 closed 2021-03-07 Upload fails with "serial.serialutil.SerialException: could not open port 'COM5': FileNotFoundError..."
+      #4429 closed 2022-10-01 undefined reference to static member variable from within a static member function
+      #4308 closed 2022-06-07 `pio device monitor` sometimes picks the wrong port
+      #200 merged 2015-05-14 added soft reboot to teensy_loader_cli
+      #500 closed 2016-02-07 compiled code doesnt seem to run on redbearlabblenano
+      #119 closed 2015-03-12 Support for ESP8266
+      #257 closed 2015-07-28 miniterm requires sudo
+      #396 closed 2015-12-21 "system param error" on latest platformio when flashing 8266
+  disk+full      8 hit(s) (all listed)
+      #4574 open 2023-03-17 Remove environment name from `build_cache_dir` cache keys
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #3417 closed 2020-03-12 Problem with Python 3.8+ on Windows when network drive is used
+      #3865 closed 2021-02-28 Remote agent on Raspbian
+      #3996 closed 2021-07-04 Dependecy issue "idna<3,>=2.5" when running `pio remote agent start`
+      #356 closed 2015-12-05 Arduino ZERO as board type?
+      #914 closed 2017-03-07 Importing a project unrecoverably wiped it!
+      #810 closed 2016-10-17 Eclipse project has its own system path defined
+  data+loss      6 hit(s) (all listed)
+      #969 open 2017-05-28 Support parsing Arduino additional board json files?
+      #5474 closed 2026-07-10 Preserve user .vscode/extensions.json on IDE regeneration (#5473)
+      #5473 closed 2026-07-10 project init --ide vscode unconditionally overwrites .vscode/extensions.json, destroying user ordering, formatting, and comments
+      #820 closed 2016-10-30 Data loss on Import Arduino Project
+      #3453 closed 2020-04-08 On creating a node
+      #3543 closed 2020-06-03 Library "TinyWireM" which is a dependency of Adafruit "RTClib" causes compile failure, unless "lib_ignore = TinyWireM" is added to "platformio.ini"
+  partial+write  2 hit(s) (all listed)
+      #3417 closed 2020-03-12 Problem with Python 3.8+ on Windows when network drive is used
+      #645 closed 2016-05-02 SSLError: [SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC] decryption failed or bad record mac (_ssl.c:1754)
+  crash+safe     3 hit(s) (all listed)
+      #5053 open 2024-12-20 Redirecting `pio pkg list` output crashes
+      #4013 closed 2021-07-24 Better error handling if git is not installed
+      #301 closed 2015-10-07 mbed: cstddef: No such file or directory
+  atomic+write   0 hit(s)
+  lock+file      35 hit(s) (all listed)
+      #5519 open 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps
+      #4911 open 2024-05-01 Support concurrent access to shared PLATFORMIO_PACKAGES_DIR and PLATFORMIO_PLATFORMS_DIR for CI builds
+      #4446 open 2022-10-31 pio check using clangtidy fails on large project
+      #5522 closed 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps (agian)
+      #5323 closed 2025-12-05 Bug: sin1.contabostorage.com blocked by QUAD9 (DoH) DNS-over-HTTPS leads to DNS flood
+      #3089 closed 2019-10-08 Lib installer hangs if project is on NFS mount
+      #4155 closed 2022-01-17 Error: Unknown board ID - due to wrong absolute path used instead of relative path in case of subst-ed Windows drive
+      #4425 closed 2022-09-28 Raspi OS 64-bit: pio remote initial dependency installation error on cryptography part
+      #4314 closed 2022-06-10 xdrv_05_irremote_full.ino:557:13: error: 'class IRsend' has no member named 'sendGC' irsend->sendGC(GC, count+1);
+      #3865 closed 2021-02-28 Remote agent on Raspbian
+      #553 closed 2016-03-03 https://github.com/openstack/pylockfile
+      #2916 closed 2019-08-17 Clean-up error handling in 'run' command
+      #486 closed 2016-01-29 upload fails and wipes bootloader on Trinket 5v 8Mhz
+      #145 closed 2015-03-29 avrdude: fuses question
+      #356 closed 2015-12-05 Arduino ZERO as board type?
+      #330 closed 2015-11-19 PlatformIO for a cloud compiler service
+      #178 closed 2015-04-16 PlatformIO breaks serial interface for Arduino Leonardo (but only for PlatformIO)
+      #247 closed 2015-07-02 avrdude verification error when uploading to Panstamp AVR
+      #249 closed 2015-07-10 scons: *** [.pioenvs/engduinov3/firmware.elf] Error 1
+      #294 closed 2015-09-28 Serial Ports list is empty even when devices are available in OS /dev/tty.*
+  write+failure  15 hit(s) (all listed)
+      #5502 open 2026-08-23 macOS: default `projects_dir` is placed inside `~/Documents`, which iCloud syncs
+      #5519 open 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps
+      #4932 open 2024-06-09 Debugging with blackmagicprobe crashes at start.
+      #4391 open 2022-08-12 Unescaped File Path Injected into Python String Constant in test_build_unflags
+      #5522 closed 2026-09-23 Generated .ino.cpp invalidates the checksum; background pio commands wipe .pio/build and .pio/libdeps (agian)
+      #5473 closed 2026-07-10 project init --ide vscode unconditionally overwrites .vscode/extensions.json, destroying user ordering, formatting, and comments
+      #5417 closed 2026-03-28 pio test should support JUnit XML output for CI/CD pipeline integration
+      #3417 closed 2020-03-12 Problem with Python 3.8+ on Windows when network drive is used
+      #4514 closed 2023-01-11 Python errors?
+      #2966 merged 2019-08-31 Stop ModemManager corrupting Arduino uploads
+      #492 closed 2016-02-02 Coding including Audio.h with teensy31 board fails to compile from commandline
+      #895 closed 2017-02-03 Make PlatformIO Python 3 compatible
+      #739 closed 2016-08-01 Platformio erases bootloader on samd21
+      #3545 closed 2020-06-04 Warning! You are not connected to the Internet.
+      #3792 closed 2021-01-06 "Command line is too long" while building large project under Windows
+  file+contents  95 hit(s) (all listed)
+      #5217 open 2025-07-17 [feature] DFP (Device Family Pack) / atpack / CMSIS integration with PlatformIO
+      #4574 open 2023-03-17 Remove environment name from `build_cache_dir` cache keys
+      #5473 closed 2026-07-10 project init --ide vscode unconditionally overwrites .vscode/extensions.json, destroying user ordering, formatting, and comments
+      #5494 closed 2026-08-06 Sort project library integrity data
+      #5474 closed 2026-07-10 Preserve user .vscode/extensions.json on IDE regeneration (#5473)
+      #728 open 2016-07-25 Micropython support
+      #5018 open 2024-11-12 FYI - Build speed optimization - ccache massively speeds up build time
+      #4446 open 2022-10-31 pio check using clangtidy fails on large project
+      #5406 closed 2026-03-26 Add CLI support for user-provided project scaffold templates
+      #5379 closed 2026-02-08 NameError: name 'prog_path' is not defined
+      #4754 closed 2023-09-26 $PROJECT_HASH in build_dir causes exception
+      #4858 closed 2024-02-11 NameError: name 'includes' is not defined while updating metadata for VSCode IDE
+      #5165 closed 2025-05-20 Updating metadata for the vscode IDE error
+      #1022 closed 2017-08-22 pre build extra script is not behaving as expected or documentation missing
+      #5135 closed 2025-04-14 comment in build flag define value breaks import / build with cryptic message
+      #5057 closed 2024-12-25 PIO tries to give the contents of #ifdef/#endif blocks to the compiler even if they should not be compiled.
+      #4978 closed 2024-09-18 NameError: name 'includes' is not defined while updating metadata 
+      #4076 closed 2021-10-04 Unit Testing not working on ESP32 (test port not automatically recognized)
+      #3835 closed 2021-02-06 How to download packages manually?
+      #4635 closed 2023-05-19 `pio project init --ide qtcreator` does not include test or lib files
+
+== 51 terms run; 44 returned hits, 4 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

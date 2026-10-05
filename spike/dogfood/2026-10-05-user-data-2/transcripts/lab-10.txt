@@ -1,0 +1,9 @@
+98158585f7ba6ea679ba5ef1a3aaa1f7330025e3205953f0379de150167fea6a  /lab/wp/wp-config.php
+Success: Updated the constant 'DB_PASSWORD' in the 'wp-config.php' file with the value 'new-secret'.
+rc=0
+6a078dad54e9d0a17b3708161ad06c9f2dd6903d03f5f99196109e56db9722bd  /lab/wp/wp-config.php
+define( 'DB_PASSWORD', 'new-secret' );
+total 12
+drwxr-xr-x 2 root root 4096 Oct  5 02:49 .
+drwxr-xr-x 3 root root 4096 Oct  5 02:49 ..
+-rw-r--r-- 1 root root  369 Oct  5 02:49 wp-config.php

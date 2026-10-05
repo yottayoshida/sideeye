@@ -1,0 +1,1 @@
+sigstore/cosign stars=6346 pushed=2026-10-04 archived=false issues=true full=sigstore/cosign

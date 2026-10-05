@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 5 state-changing operation(s) observed
+
+cwd          /s/gg-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 5 operations (15498 syscall lines examined, 32 in scope of the judged state), witness strace
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2009 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/gg --cwd "/s/gg-in" --operation "ggshield config set default_token_lifetime 30" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

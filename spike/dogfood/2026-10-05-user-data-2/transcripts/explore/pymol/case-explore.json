@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/pm",
+    "operation": "/usr/bin/python3 -m pymol -cq /s/pm/model.pse /s/pm-in/edit.pml",
+    "cwd": "/s/pm-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/pm/model.pse",
+  "before_class": "write",
+  "before_path": "/s/pm/model.pse",
+  "violation": "hybrid"
+}

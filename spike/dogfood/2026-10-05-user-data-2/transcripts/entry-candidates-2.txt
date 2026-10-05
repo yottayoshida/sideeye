@@ -1,0 +1,14 @@
+ROW stripe static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations
+EXIT stripe 0
+ROW infracost static=1 preflight_rc=1 gate=1 detail=SUPERVISED; byte-repeatability: --twice found different bytes
+EXIT infracost 1
+ROW pymol static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT pymol 0
+ROW fitscheck static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT fitscheck 1
+ROW azure-cli static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT azure-cli 1
+ROW monero static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT monero 1
+ROW wrangler static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT wrangler 0

@@ -1,0 +1,33 @@
+== theskumar/python-dotenv (label bug)
+#157 2018-12-14 comments=6 first_project_reply=OWNER 2018-12-14
+#89 2018-02-07 comments=1 first_project_reply=none
+#51 2017-03-26 comments=3 first_project_reply=OWNER 2017-03-30
+#35 2016-11-15 comments=15 first_project_reply=CONTRIBUTOR 2016-11-18
+#14 2015-11-03 comments=3 first_project_reply=OWNER 2015-11-04
+#13 2015-11-03 comments=1 first_project_reply=OWNER 2015-11-04
+
+== nosarthur/gita (label bug)
+#240 2023-05-17 comments=12 first_project_reply=OWNER 2023-05-18
+#225 2022-03-05 comments=3 first_project_reply=OWNER 2022-03-05
+#215 2022-01-29 comments=34 first_project_reply=OWNER 2022-01-29
+#211 2022-01-25 comments=2 first_project_reply=none
+#179 2021-09-01 comments=22 first_project_reply=OWNER 2021-09-01
+#158 2021-06-02 comments=2 first_project_reply=none
+#129 2021-02-05 comments=0 first_project_reply=none
+#126 2021-01-30 comments=0 first_project_reply=none
+#64 2019-06-15 comments=1 first_project_reply=none
+#42 2019-03-12 comments=9 first_project_reply=OWNER 2019-03-12
+
+== home-assistant/core (label bug)
+#180171 2026-08-25 comments=5 first_project_reply=CONTRIBUTOR 2026-08-25
+#177585 2026-07-29 comments=3 first_project_reply=MEMBER 2026-07-30
+#176602 2026-07-16 comments=3 first_project_reply=CONTRIBUTOR 2026-07-16
+#172922 2026-06-03 comments=3 first_project_reply=CONTRIBUTOR 2026-06-03
+#166440 2026-03-25 comments=9 first_project_reply=CONTRIBUTOR 2026-03-25
+#158447 2025-12-09 comments=1 first_project_reply=CONTRIBUTOR 2025-12-09
+#154871 2025-10-20 comments=2 first_project_reply=CONTRIBUTOR 2025-10-20
+#151329 2025-08-28 comments=9 first_project_reply=CONTRIBUTOR 2025-08-29
+#151049 2025-08-22 comments=4 first_project_reply=CONTRIBUTOR 2025-08-22
+#151027 2025-08-22 comments=53 first_project_reply=CONTRIBUTOR 2025-08-22
+
+rule11-all: done 2026-10-05T02:44:52Z

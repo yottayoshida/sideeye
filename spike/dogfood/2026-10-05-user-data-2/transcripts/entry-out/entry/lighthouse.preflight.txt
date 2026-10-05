@@ -1,0 +1,31 @@
+No logfile path provided, logging to file is disabled
+Running account manager for mainnet network
+validator-dir path: "/s/lh/validators"
+Validator 0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c disabled
+
+Successfully modified validator_definitions.yml
+No logfile path provided, logging to file is disabled
+Running account manager for mainnet network
+validator-dir path: "/s/lh/validators"
+Validator 0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c disabled
+
+Successfully modified validator_definitions.yml
+PREFLIGHT  recording accepted — 7 state-changing operation(s) observed
+
+cwd          /s/lh-in
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 7 operations (551 syscall lines examined, 33 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 15 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 10 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/lh --cwd "/s/lh-in" --operation "lighthouse account validator modify --datadir /s/lh disable --pubkey 0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

@@ -1,0 +1,2 @@
+static: /opt/py/bin/wandb: Python script, ASCII text executable
+next: sideeye explore --state /s/wb/wandb --cwd "/s/wb" --operation "wandb offline" \

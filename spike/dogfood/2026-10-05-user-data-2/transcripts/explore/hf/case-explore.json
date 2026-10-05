@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/hf",
+    "operation": "hf auth logout --token-name hf_a",
+    "cwd": "/s/hf-in",
+    "expected_status": 0
+  },
+  "k": 7,
+  "ops_total": 7,
+  "prefix_hash": "e7343ef1ec1c5b08",
+  "after_class": "open",
+  "after_path": "/s/hf/stored_tokens",
+  "before_class": "write",
+  "before_path": "/s/hf/stored_tokens",
+  "violation": "hybrid"
+}

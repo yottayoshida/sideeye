@@ -1,0 +1,2 @@
+static: /opt/py/bin/kaggle: Python script, ASCII text executable
+next: sideeye explore --state /s/kg --cwd "/s/kg-in" --operation "kaggle config set -n path -v /data/kaggle" \

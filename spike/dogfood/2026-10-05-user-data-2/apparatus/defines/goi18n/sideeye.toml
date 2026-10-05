@@ -1,0 +1,6 @@
+[world]
+state = "/s/gi"
+
+[define]
+operation = "goi18n merge active.en.toml active.ja.toml translate.ja.toml"
+cwd       = "/s/gi"

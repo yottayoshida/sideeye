@@ -1,0 +1,25 @@
+== modelcontextprotocol/python-sdk (label bug)
+#3337 2026-08-19 comments=6 first_project_reply=none
+#3324 2026-08-17 comments=0 first_project_reply=none
+#3307 2026-08-14 comments=5 first_project_reply=none
+#3303 2026-08-13 comments=5 first_project_reply=none
+#3300 2026-08-13 comments=5 first_project_reply=none
+#3281 2026-08-11 comments=2 first_project_reply=none
+#3256 2026-08-05 comments=1 first_project_reply=none
+#3174 2026-07-26 comments=10 first_project_reply=CONTRIBUTOR 2026-10-02
+#3154 2026-07-23 comments=1 first_project_reply=none
+#3146 2026-07-22 comments=2 first_project_reply=none
+
+== PrefectHQ/fastmcp (label bug)
+#5474 2026-10-05 comments=0 first_project_reply=none
+#5473 2026-10-05 comments=0 first_project_reply=none
+#5447 2026-10-04 comments=1 first_project_reply=CONTRIBUTOR 2026-10-04
+#5442 2026-10-04 comments=2 first_project_reply=none
+#5406 2026-10-03 comments=0 first_project_reply=none
+#5400 2026-10-03 comments=0 first_project_reply=none
+#5399 2026-10-03 comments=2 first_project_reply=none
+#5396 2026-10-03 comments=0 first_project_reply=none
+#5382 2026-10-01 comments=3 first_project_reply=COLLABORATOR 2026-10-02
+#5378 2026-10-01 comments=2 first_project_reply=none
+
+rule11-all: done 2026-10-05T04:28:51Z

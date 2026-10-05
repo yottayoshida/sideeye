@@ -1,0 +1,6 @@
+[world]
+state = "/s/hf"
+
+[define]
+operation = "hf auth logout --token-name hf_a"
+cwd       = "/s/hf-in"

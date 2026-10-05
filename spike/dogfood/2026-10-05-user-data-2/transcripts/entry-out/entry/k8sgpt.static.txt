@@ -1,0 +1,4 @@
+static: /opt/bin/k8sgpt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=uDDsCLRGa1qmG9y3LnZs/DGocla5KBqAxBBuUscV0/Ic5OdKgbPRj51wMBX2as/ExIF7vmO9sMcE6xD8TRH, BuildID[sha1]=bf136c5bd2c6867eb047a55307b31bf79cc24394, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/aux/home/.config/k8sgpt --cwd "/s/k8sgpt-in" --operation "k8sgpt auth remove --backends openai" \

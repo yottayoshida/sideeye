@@ -1,0 +1,26 @@
+WARNING: Command group 'config' is experimental and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+WARNING: Command group 'config' is experimental and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 22 of 24
+            after  open(/s/az/config)
+            before write(/s/az/config)
+path        config
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 24 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 24 operations (7422 syscall lines examined, 205 in scope of the judged state), witness strace
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/azure-cli/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/az-in
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/az SIDEEYE_TRACE_PATH=/out/azure-cli/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=22 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=cee6961c705623a6187a3ddc080ae858ce3595c3129315197a848841b64113ec;

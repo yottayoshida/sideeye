@@ -1,0 +1,2 @@
+static: /opt/py/bin/gita: Python script, ASCII text executable
+next: sideeye explore --state /s/gita/gita --cwd "/s/gita-in" --operation "gita rename a alpha" \

@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/pio",
+    "operation": "pio settings set check_platformio_interval 30",
+    "cwd": "/s/pio-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 4,
+  "prefix_hash": "ecdde2900e148f37",
+  "after_class": "open",
+  "after_path": "/s/pio/appstate.json",
+  "before_class": "write",
+  "before_path": "/s/pio/appstate.json",
+  "violation": "hybrid"
+}

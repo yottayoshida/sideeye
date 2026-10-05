@@ -1,0 +1,24 @@
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/pm/model.pse)
+            before write(/s/pm/model.pse)
+path        model.pse
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (3375 syscall lines examined, 21 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/pymol/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/pm-in
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/pm SIDEEYE_TRACE_PATH=/out/pymol/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=1fb762db427b7e61bae72fb2de908d7fd873ca688c716c45e5da55fff2c977ee;

@@ -1,0 +1,49 @@
+$ juju add-credential aws -f /lab/juju-in/creds.yaml --client
+ERROR Get "https://streams.canonical.com/juju/public-clouds.syaml": dial tcp: lookup streams.canonical.com on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable
+Since Juju 3 is being run for the first time, it has downloaded the latest public cloud information.
+Credentials "work, home" added locally for cloud "aws".
+
+rc=0
+93aab184b097  /lab/juju/credentials.yaml
+2fddbfd19e29  /lab/juju/ssh/juju_id_rsa
+07a545e98759  /lab/juju/ssh/juju_id_rsa.pub
+credentials:
+  aws:
+    home:
+      auth-type: access-key
+      access-key: FAKE-ACCESS-ID-00002
+      secret-key: example-secret-2
+    work:
+      auth-type: access-key
+      access-key: FAKE-ACCESS-ID-00001
+      secret-key: example-secret-1
+$ juju remove-credential aws home --client
+Found local cloud "aws" on this client.
+Credential "home" for cloud "aws" removed from this client.
+rc=0
+f8590e93f40e  /lab/juju/credentials.yaml
+2fddbfd19e29  /lab/juju/ssh/juju_id_rsa
+07a545e98759  /lab/juju/ssh/juju_id_rsa.pub
+credentials:
+  aws:
+    work:
+      auth-type: access-key
+      access-key: FAKE-ACCESS-ID-00001
+      secret-key: example-secret-1
+$ juju default-credential aws work --client
+ERROR option provided but not defined: --client
+rc=0
+f8590e93f40e  /lab/juju/credentials.yaml
+2fddbfd19e29  /lab/juju/ssh/juju_id_rsa
+07a545e98759  /lab/juju/ssh/juju_id_rsa.pub
+$ kubeadm config migrate --old-config /lab/kadm/kubeadm.yaml --new-config /lab/kadm/kubeadm.yaml
+error: your configuration file uses an old API spec: "kubeadm.k8s.io/v1beta3" (kind: "ClusterConfiguration"). Please use kubeadm v1.36 instead and run 'kubeadm config migrate --old-config old-config-file --new-config new-config-file', which will write the new, similar spec using a newer API version.
+To see the stack trace of this error execute with --v=5 or higher
+rc=0
+0d8a3d7e4ac0  /lab/kadm/kubeadm.yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+kubernetesVersion: v1.36.0
+clusterName: home
+networking:
+  podSubnet: 10.244.0.0/16

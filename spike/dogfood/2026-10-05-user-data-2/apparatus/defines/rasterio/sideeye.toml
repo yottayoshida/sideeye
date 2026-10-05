@@ -1,0 +1,6 @@
+[world]
+state = "/s/rio"
+
+[define]
+operation = "rio edit-info --crs EPSG:4326 --tag survey=2026 /s/rio/a.tif"
+cwd       = "/s/rio-in"

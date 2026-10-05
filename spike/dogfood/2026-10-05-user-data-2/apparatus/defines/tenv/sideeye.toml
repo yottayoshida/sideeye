@@ -1,0 +1,6 @@
+[world]
+state = "/s/tenv"
+
+[define]
+operation = "tenv tf constraint ~>1.6"
+cwd       = "/s/tenv-in"

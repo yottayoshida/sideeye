@@ -1,0 +1,23 @@
+wandb: Loading settings from /s/wb/wandb/settings
+wandb: Updated settings file /s/wb/wandb/settings
+wandb: Loading settings from /s/wb/wandb/settings
+wandb: Updated settings file /s/wb/wandb/settings
+PREFLIGHT  recording accepted — 4 state-changing operation(s) observed
+
+cwd          /s/wb
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 4 operations (25916 syscall lines examined, 44 in scope of the judged state), witness strace
+processes    1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 12 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 11 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2564 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/wb/wandb --cwd "/s/wb" --operation "wandb offline" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

@@ -1,0 +1,8 @@
+ffsubsync: CANDIDATES-REJECTED.md:58
+ggshield: CANDIDATES-REJECTED.md:69
+gitguardian: CANDIDATES-REJECTED.md:69
+micro: CANDIDATES-REJECTED.md:49
+prs: SCOUT-ROWS.md:185 SCOUT-ROWS-SLOT2.md:78 rule11-unison.txt:25
+subsync: CANDIDATES-REJECTED.md:58
+yt-dlp: CANDIDATES-REJECTED.md:137
+cohort4-recheck: done

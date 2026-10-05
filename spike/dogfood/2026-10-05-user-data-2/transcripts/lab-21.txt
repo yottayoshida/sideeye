@@ -1,0 +1,39 @@
+3950a69e7e35a4446ae068089adf5f6db0a68998a9c6327a4b5f523eda17f01a  /lab/kadm/kubeadm.yaml
+$ kubeadm config migrate --old-config /lab/kadm/kubeadm.yaml --new-config /lab/kadm/kubeadm.yaml
+W1005 06:04:42.302919      12 common.go:200] WARNING: could not obtain a bind address for the API Server: no default routes found in "/proc/net/route" or "/proc/net/ipv6_route"; using: 0.0.0.0
+rc=0
+fbe798f9d40239234f811f58c13a565d7f3de96822da535b320b6cda8bcaa126  /lab/kadm/kubeadm.yaml
+apiVersion: kubeadm.k8s.io/v1beta4
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: fuowy9.ysdf4h4b6ujmae0w
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 0.0.0.0
+  bindPort: 6443
+nodeRegistration:
+  criSocket: unix:///var/run/containerd/containerd.sock
+  imagePullPolicy: IfNotPresent
+  imagePullSerial: true
+  name: e05430b8fe28
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+timeouts:
+  controlPlaneComponentHealthCheck: 4m0s
+  discovery: 5m0s
+  etcdAPICall: 2m0s
+  kubeletHealthCheck: 4m0s
+  kubernetesAPICall: 1m0s
+  tlsBootstrap: 5m0s
+  upgradeManifests: 5m0s
+---
+$ kubeadm config migrate --old-config /lab/kadm/kubeadm.yaml --new-config /lab/kadm/kubeadm.yaml
+W1005 06:04:42.317028      26 common.go:200] WARNING: could not obtain a bind address for the API Server: no default routes found in "/proc/net/route" or "/proc/net/ipv6_route"; using: 0.0.0.0
+rc=0
+fbe798f9d40239234f811f58c13a565d7f3de96822da535b320b6cda8bcaa126  /lab/kadm/kubeadm.yaml

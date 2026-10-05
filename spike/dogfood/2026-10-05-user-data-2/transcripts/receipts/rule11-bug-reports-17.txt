@@ -1,0 +1,13 @@
+== sigstore/cosign (label bug)
+#5110 2026-09-11 comments=1 first_project_reply=none
+#5084 2026-09-01 comments=5 first_project_reply=CONTRIBUTOR 2026-09-20
+#5063 2026-08-17 comments=1 first_project_reply=CONTRIBUTOR 2026-08-18
+#5030 2026-07-30 comments=3 first_project_reply=CONTRIBUTOR 2026-08-19
+#5018 2026-07-17 comments=0 first_project_reply=none
+#4995 2026-07-08 comments=0 first_project_reply=none
+#4993 2026-07-07 comments=0 first_project_reply=none
+#4980 2026-07-03 comments=0 first_project_reply=none
+#4973 2026-07-01 comments=2 first_project_reply=none
+#4937 2026-06-10 comments=1 first_project_reply=none
+
+rule11-all: done 2026-10-05T06:21:21Z

@@ -1,0 +1,117 @@
+$ k8sgpt auth add --backend openai --model gpt-4o --password sk-test-aaaa
+openai added to the AI backend provider list
+rc=0
+$ k8sgpt auth add --backend localai --model llama --baseurl http://localhost:8080/v1
+localai added to the AI backend provider list
+rc=0
+2962311ccdb5  /s/aux/home/.config/k8sgpt/k8sgpt.yaml
+ai:
+    providers:
+        - name: openai
+          model: gpt-4o
+          password: sk-test-aaaa
+          temperature: 0.7
+          topp: 0.5
+          topk: 50
+          maxtokens: 2048
+          customheaders: []
+        - name: localai
+          model: llama
+          baseurl: http://localhost:8080/v1
+          temperature: 0.7
+          topp: 0.5
+          topk: 50
+          maxtokens: 2048
+          customheaders: []
+    defaultprovider: ""
+commit: ed1aac4
+date: unknown
+kubeconfig: ""
+kubecontext: ""
+verbose: false
+version: 0.4.39
+$ k8sgpt auth default --provider localai
+Default provider set to localai
+rc=0
+$ k8sgpt auth remove --backends openai
+openai deleted from the AI backend provider list
+rc=0
+8a7460c1b251  /s/aux/home/.config/k8sgpt/k8sgpt.yaml
+ai:
+    providers:
+        - name: localai
+          model: llama
+          baseurl: http://localhost:8080/v1
+          temperature: 0.7
+          topp: 0.5
+          topk: 50
+          maxtokens: 2048
+          customheaders: []
+    defaultprovider: localai
+commit: ed1aac4
+date: unknown
+kubeconfig: ""
+kubecontext: ""
+verbose: false
+version: 0.4.39
+$ ggshield config --help
+  --check-for-updates / --no-check-for-updates
+                                  After executing commands, check if a new
+                                  version of ggshield is available.
+  --insecure                      Skip all certificate verification checks.
+                                  WARNING: this option makes the transfer
+                                  insecure.
+  --allow-self-signed             Deprecated: use --insecure.
+  --log-file FILE                 Send log output to FILE. Use '-' to redirect
+                                  to stderr.
+  --debug                         Send log output to stderr. Equivalent to
+                                  `--log-file -`.
+  -v, --verbose                   Verbose display mode.
+  -h, --help                      Show this message and exit.
+
+Commands:
+  get      Print the value of the given configuration key.
+  list     Print the list of configuration keys and values.
+  migrate  Migrate configuration file to the latest version
+  set      Update the value of the given configuration key.
+  unset    Remove the value of the given configuration key.
+rc=0
+$ ggshield config set instance https://dashboard.gitguardian.example
+rc=0
+$ ggshield config set default_token_lifetime 30
+rc=0
+== /s/aux/home/.gitguardian.yaml
+instance: https://dashboard.gitguardian.example
+version: 2
+/s/aux/home/.gitguardian.yaml
+$ /opt/py/bin/uv auth --help
+          Whether to load TLS certificates from the platform's native certificate store [env:
+          UV_SYSTEM_CERTS=]
+      --offline
+          Disable network access [env: UV_OFFLINE=]
+      --allow-insecure-host <ALLOW_INSECURE_HOST>
+          Allow insecure connections to a host [env: UV_INSECURE_HOST=]
+      --no-progress
+          Hide all progress outputs [env: UV_NO_PROGRESS=]
+      --directory <DIRECTORY>
+          Change to the given directory prior to running the command [env: UV_WORKING_DIR=]
+      --project <PROJECT>
+          Discover a project in the given directory [env: UV_PROJECT=]
+      --config-file <CONFIG_FILE>
+          The path to a `uv.toml` file to use for configuration [env: UV_CONFIG_FILE=]
+      --no-config
+          Avoid discovering configuration files (`pyproject.toml`, `uv.toml`) [env: UV_NO_CONFIG=]
+  -h, --help
+          Display the concise help for this command
+
+Use `uv help auth` for more details.
+rc=0
+$ /opt/py/bin/uv auth login https://pkgs.example.internal/simple --username alice --password pw1
+Stored credentials for alice@https://pkgs.example.internal/
+rc=0
+== /s/aux/data/uv/credentials/credentials.toml
+[[credential]]
+service = "https://pkgs.example.internal/"
+username = "alice"
+scheme = "basic"
+password = "pw1"

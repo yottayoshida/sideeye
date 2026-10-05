@@ -1,0 +1,3 @@
+modelcontextprotocol/python-sdk stars=24483 pushed=2026-10-02 archived=false issues=true full=modelcontextprotocol/python-sdk
+jlowin/fastmcp stars=27981 pushed=2026-10-05 archived=false issues=true full=PrefectHQ/fastmcp
+nschloe/meshio stars=2332 pushed=2024-07-23 archived=false issues=true full=nschloe/meshio

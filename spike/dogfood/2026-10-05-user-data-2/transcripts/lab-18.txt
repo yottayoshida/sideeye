@@ -1,0 +1,32 @@
+$ /opt/go127/go/bin/go env -w GOPROXY=https://proxy.example.internal,direct GOPRIVATE=git.example.internal/* GONOSUMDB=git.example.internal/*
+rc=0
+d6b62cee83cf  /lab/goenv/env
+GONOSUMDB=git.example.internal/*
+GOPRIVATE=git.example.internal/*
+GOPROXY=https://proxy.example.internal,direct
+$ /opt/go127/go/bin/go env -w GOFLAGS=-mod=mod
+rc=0
+2b3a981b4a19  /lab/goenv/env
+GOFLAGS=-mod=mod
+GONOSUMDB=git.example.internal/*
+GOPRIVATE=git.example.internal/*
+GOPROXY=https://proxy.example.internal,direct
+$ /opt/go127/go/bin/go env -u GONOSUMDB
+rc=0
+71bd4f1bf94b  /lab/goenv/env
+GOFLAGS=-mod=mod
+GOPRIVATE=git.example.internal/*
+GOPROXY=https://proxy.example.internal,direct
+--- what else the go command wrote under HOME
+/s/aux/home/.config/go/telemetry/local/go@go1.27.1-go1.27.1-linux-arm64-2026-10-05.v1.count
+/s/aux/home/.config/go/telemetry
+/s/aux/home/.config/go/telemetry/local
+/s/aux/home/.config/go/telemetry/local/go@go1.27.1-go1.27.1-linux-arm64-2026-10-05.v1.count
+/s/aux/home/.config/go/telemetry/local/weekends
+/s/aux/home/.config/go/telemetry/local/upload.token
+--- strace: processes and writes
+clone lines: 5
+59    execve("/opt/go127/go/bin/go", ["/opt/go127/go/bin/go", "env", "-w", "GOFLAGS=-mod=readonly"], 0xffffeee50b68 /* 14 vars */) = 0
+59    openat(AT_FDCWD, "/lab/goenv/env", O_RDONLY|O_CLOEXEC) = 4
+59    openat(AT_FDCWD, "/lab/goenv/env", O_RDONLY|O_CLOEXEC) = 7
+59    openat(AT_FDCWD, "/lab/goenv/env", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7

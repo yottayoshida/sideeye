@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/kadm",
+    "operation": "kubeadm config migrate --old-config /s/kadm/kubeadm.yaml --new-config /s/kadm/kubeadm.yaml",
+    "cwd": "/s/kadm-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/kadm/kubeadm.yaml",
+  "before_class": "write",
+  "before_path": "/s/kadm/kubeadm.yaml",
+  "violation": "hybrid"
+}

@@ -1,0 +1,477 @@
+== novelty pre-scan: JuliaLang/juliaup
+== date: 2026-10-05T04:18:24Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1405 open 2026-01-29 `juliaup self channel` crash
+      #1224 open 2025-07-25 crash report
+      #1338 open 2025-11-19 Juliainstaller Crash Report
+      #1329 open 2025-11-08 Juliainstaller Crash Report
+      #1328 open 2025-11-07 Juliainstaller Crash Report
+      #1160 open 2025-01-28 Juliainstaller Crash Report
+      #1103 open 2024-11-08 Juliainstaller Crash Report
+      #1064 open 2024-10-08 julia installer crashes
+      #1085 open 2024-10-26 juliaup crash report
+      #1068 open 2024-10-10 Juliaup Crash Report
+      #1067 open 2024-10-09 Juliainstaller Crash Report
+      #1051 open 2024-09-17 Juliaup crash report
+      #1038 open 2024-09-06 Juliaup Crash Report
+      #953 open 2024-06-08 Juliaup Crash report
+      #847 open 2024-02-23 Juliainstaller Crash Report
+      #732 open 2023-09-26 Juliaup Crash Report
+      #1339 open 2025-11-20 Juliaup launcher Crash Report
+      #1330 open 2025-11-10 Juliaup launcher Crash Report
+      #1182 open 2025-03-13 Juliaup launcher Crash Report
+      #911 open 2024-04-30 Juliaup installer crash report
+  corrupt        16 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1485 open 2026-04-20 Fix `install_version` skipping download when files are missing from disk
+      #895 open 2024-02-23 julialauncher.exe Bad Image error for updating to Julia version 1.10.1 on Windows 11
+      #1519 open 2026-06-07 Consider changing self update defaults
+      #1611 merged 2026-09-22 Read archives through to gzip and HTTP EOF before installing
+      #1260 open 2025-10-01 `julia` not found despite correct installation and the directory existing in the PATH
+      #1521 merged 2026-06-08 security: Harden deployment workflow
+      #1587 merged 2026-09-09 chore(deps): bump the cargo-dependencies group across 1 directory with 3 updates
+      #1238 closed 2025-08-30 Replace file locking with atomic file operations
+      #1186 closed 2025-03-24 chore(deps): bump tempfile from 3.15.0 to 3.19.1
+      #1295 merged 2025-10-27 Make `save_config_db` atomic
+      #1275 closed 2025-10-16 Immediate kill when trying to launch a julia PR build on mac (related to code signing?)
+      #710 closed 2023-08-01 Julia (and other `juliaup` commands) no longer run with latest version of `juliaup` on intel mac
+      #96 closed 2021-08-11 Add a nightly channel
+      #387 closed 2022-08-19 Print help on `julia update` in case of no update
+      #417 closed 2022-10-03  Use the published versions.json
+  corruption     5 hit(s) (all listed)
+      #1613 open 2026-09-22 Fetch archive downloads with concurrent byte ranges
+      #1485 open 2026-04-20 Fix `install_version` skipping download when files are missing from disk
+      #1603 merged 2026-09-16 Download over HTTP/1.1 instead of HTTP/2
+      #1453 merged 2026-03-20 chore(deps): bump tar from 0.4.44 to 0.4.45
+      #1459 closed 2026-03-25 chore(deps): bump the cargo-dependencies group across 1 directory with 9 updates
+  truncated      78 hit(s) (all listed)
+      #1617 open 2026-09-23 Resume interrupted downloads with Range requests
+      #1611 merged 2026-09-22 Read archives through to gzip and HTTP EOF before installing
+      #1630 open 2026-10-03 chore(deps): bump windows-future from 0.3.2 to 0.100.0 in the cargo-dependencies group across 1 directory
+      #1605 closed 2026-09-16 chore(deps): bump the github-actions group with 2 updates
+      #1577 merged 2026-08-20 ui: stop update text overflowing the channel tiles and the status table
+      #1583 closed 2026-09-02 chore(deps): bump the github-actions group with 2 updates
+      #1618 closed 2026-09-23 chore(deps): bump the github-actions group across 1 directory with 7 updates
+      #1586 merged 2026-09-09 chore(deps): bump the github-actions group across 1 directory with 3 updates
+      #1575 merged 2026-08-19 chore(deps): bump the github-actions group with 2 updates
+      #1626 merged 2026-09-30 chore(deps): bump the github-actions group across 1 directory with 8 updates
+      #1565 merged 2026-08-05 chore(deps): bump the github-actions group with 2 updates
+      #1553 merged 2026-07-13 chore(deps): bump the github-actions group across 1 directory with 2 updates
+      #1529 closed 2026-06-10 chore(deps): bump the github-actions group across 1 directory with 2 updates
+      #1578 merged 2026-08-26 chore(deps): bump the github-actions group with 2 updates
+      #1549 merged 2026-07-08 chore(deps): bump the github-actions group with 2 updates
+      #1543 closed 2026-06-24 chore(deps): bump the github-actions group across 1 directory with 3 updates
+      #1522 closed 2026-06-08 chore(deps): bump the github-actions group across 1 directory with 3 updates
+      #1628 closed 2026-10-02 chore(deps): bump the cargo-dependencies group across 1 directory with 7 updates
+      #1568 merged 2026-08-12 chore(deps): bump the github-actions group with 3 updates
+      #1511 closed 2026-06-04 chore(deps): bump the github-actions group with 2 updates
+  truncate       89 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1617 open 2026-09-23 Resume interrupted downloads with Range requests
+      #1611 merged 2026-09-22 Read archives through to gzip and HTTP EOF before installing
+      #1619 closed 2026-09-23 chore(deps): bump the cargo-dependencies group across 1 directory with 4 updates
+      #1627 closed 2026-09-30 chore(deps): bump the cargo-dependencies group across 1 directory with 5 updates
+      #1628 closed 2026-10-02 chore(deps): bump the cargo-dependencies group across 1 directory with 7 updates
+      #1630 open 2026-10-03 chore(deps): bump windows-future from 0.3.2 to 0.100.0 in the cargo-dependencies group across 1 directory
+      #1605 closed 2026-09-16 chore(deps): bump the github-actions group with 2 updates
+      #1577 merged 2026-08-20 ui: stop update text overflowing the channel tiles and the status table
+      #1583 closed 2026-09-02 chore(deps): bump the github-actions group with 2 updates
+      #1618 closed 2026-09-23 chore(deps): bump the github-actions group across 1 directory with 7 updates
+      #1586 merged 2026-09-09 chore(deps): bump the github-actions group across 1 directory with 3 updates
+      #1575 merged 2026-08-19 chore(deps): bump the github-actions group with 2 updates
+      #1626 merged 2026-09-30 chore(deps): bump the github-actions group across 1 directory with 8 updates
+      #1565 merged 2026-08-05 chore(deps): bump the github-actions group with 2 updates
+      #1553 merged 2026-07-13 chore(deps): bump the github-actions group across 1 directory with 2 updates
+      #1529 closed 2026-06-10 chore(deps): bump the github-actions group across 1 directory with 2 updates
+      #1578 merged 2026-08-26 chore(deps): bump the github-actions group with 2 updates
+      #1549 merged 2026-07-08 chore(deps): bump the github-actions group with 2 updates
+      #1543 closed 2026-06-24 chore(deps): bump the github-actions group across 1 directory with 3 updates
+  empty          65 hit(s) (all listed)
+      #1038 open 2024-09-06 Juliaup Crash Report
+      #1405 open 2026-01-29 `juliaup self channel` crash
+      #1441 open 2026-03-03 startupselfupdateinterval defaults to 0 on install
+      #1121 open 2024-12-04 Julia crash report, likely associated with faulty local network connection
+      #1068 open 2024-10-10 Juliaup Crash Report
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #594 open 2023-03-13 Support fish
+      #308 open 2022-06-08 Julia Installer Crash Report (Better Unix Base directories specifications )
+      #257 open 2022-03-04 using multiple DEPOT_PATH s with one julia installation
+      #1444 open 2026-03-06 Multi-server support
+      #705 open 2023-07-28 Disabling latest version message
+      #1600 merged 2026-09-14 Discover nightly builds and variants through `nightlies.json`
+      #313 open 2022-06-21 Clean up codebase
+      #1327 closed 2025-11-06 feat: persist `JULIA_*` ENV variables used as user settings
+      #758 open 2023-11-25 Make Windows & Mac installation put Julia runtime libraries in path
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1575 merged 2026-08-19 chore(deps): bump the github-actions group with 2 updates
+      #1463 merged 2026-03-25 chore(deps): bump the cargo-dependencies group across 1 directory with 7 updates
+      #1452 closed 2026-03-18 chore(deps): bump the cargo-dependencies group across 1 directory with 7 updates
+      #1459 closed 2026-03-25 chore(deps): bump the cargo-dependencies group across 1 directory with 9 updates
+  atomic         27 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1085 open 2024-10-26 juliaup crash report
+      #276 open 2022-03-26 juliaup in a multi-user environment
+      #1438 open 2026-02-27 New permissions issues on a shared Julia installation on Linux
+      #1600 merged 2026-09-14 Discover nightly builds and variants through `nightlies.json`
+      #1238 closed 2025-08-30 Replace file locking with atomic file operations
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1514 merged 2026-06-05 Restore julia symlinks after self-update
+      #1517 merged 2026-06-06 Don't hold the configuration lock during downloads
+      #561 closed 2023-01-17 Don't lock the juliaup config file when only reading 
+      #1455 merged 2026-03-25 security: harden tar extraction and server URL validation
+      #1180 closed 2025-03-10 chore(deps): bump tempfile from 3.15.0 to 3.18.0
+      #1183 closed 2025-03-17 chore(deps): bump tempfile from 3.15.0 to 3.19.0
+      #1186 closed 2025-03-24 chore(deps): bump tempfile from 3.15.0 to 3.19.1
+      #1295 merged 2025-10-27 Make `save_config_db` atomic
+      #1425 closed 2026-02-18 chore(deps): bump the cargo-dependencies group across 1 directory with 8 updates
+      #1408 closed 2026-02-04 chore(deps): bump the cargo-dependencies group across 1 directory with 5 updates
+      #1435 closed 2026-02-25 chore(deps): bump the cargo-dependencies group across 1 directory with 11 updates
+      #1413 merged 2026-02-07 chore(deps): bump the cargo-dependencies group across 1 directory with 6 updates
+      #1443 merged 2026-03-04 chore(deps): bump the cargo-dependencies group across 1 directory with 12 updates
+  atomically     7 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1600 merged 2026-09-14 Discover nightly builds and variants through `nightlies.json`
+      #1238 closed 2025-08-30 Replace file locking with atomic file operations
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1455 merged 2026-03-25 security: harden tar extraction and server URL validation
+      #1408 closed 2026-02-04 chore(deps): bump the cargo-dependencies group across 1 directory with 5 updates
+      #1413 merged 2026-02-07 chore(deps): bump the cargo-dependencies group across 1 directory with 6 updates
+  interrupted    9 hit(s) (all listed)
+      #1617 open 2026-09-23 Resume interrupted downloads with Range requests
+      #574 open 2023-02-03 Interrupted installer, now I can't get juliaup to create a `julia` symlink
+      #1613 open 2026-09-22 Fetch archive downloads with concurrent byte ranges
+      #401 open 2022-09-12 `Ctrl+C`-ing the installer leaves the terminal without cursor
+      #837 open 2024-02-14 Fatal error due to unhandled EINTR during waitpid 
+      #1524 closed 2026-06-09 potential spurious lock messages in 1.20.4
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1516 closed 2026-06-05 Background self-update replaced binaries but did not recreate the `julia` symlink in `~/.juliaup/bin` (Linux)
+      #1126 closed 2024-12-13 pr{number} channels broken on macOS aarch64
+  interrupt      16 hit(s) (all listed)
+      #1617 open 2026-09-23 Resume interrupted downloads with Range requests
+      #574 open 2023-02-03 Interrupted installer, now I can't get juliaup to create a `julia` symlink
+      #1613 open 2026-09-22 Fetch archive downloads with concurrent byte ranges
+      #401 open 2022-09-12 `Ctrl+C`-ing the installer leaves the terminal without cursor
+      #699 open 2023-07-24 Juliaup crashes ungracefully when hitting CTRL+C during readline in script
+      #837 open 2024-02-14 Fatal error due to unhandled EINTR during waitpid 
+      #659 open 2023-06-22 Add tip to SIGUSR1 and SIGINFO messages
+      #257 open 2022-03-04 using multiple DEPOT_PATH s with one julia installation
+      #1524 closed 2026-06-09 potential spurious lock messages in 1.20.4
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1516 closed 2026-06-05 Background self-update replaced binaries but did not recreate the `julia` symlink in `~/.juliaup/bin` (Linux)
+      #1291 closed 2025-10-22 juliaup update to v1.12.1 failed on macOS 15.7.1
+      #645 closed 2023-05-19 `anyhow::bail!("Maybe we should never reach this?")`: what if we did reach this?
+      #1126 closed 2024-12-13 pr{number} channels broken on macOS aarch64
+      #600 closed 2023-03-22 [bug] juliaup status suggestion differs from what being actually updated
+      #80 closed 2021-08-04 [idea] maybe use `pin` instead of `setdefault`
+  sigkill        3 hit(s) (all listed)
+      #1363 closed 2026-01-04 pr{num} builds have invalid code signing on arm64 macOS
+      #1275 closed 2025-10-16 Immediate kill when trying to launch a julia PR build on mac (related to code signing?)
+      #525 merged 2022-12-14 Handle signals in julialauncher
+  sigint         2 hit(s) (all listed)
+      #645 closed 2023-05-19 `anyhow::bail!("Maybe we should never reach this?")`: what if we did reach this?
+      #525 merged 2022-12-14 Handle signals in julialauncher
+  ctrl-c         12 hit(s) (all listed)
+      #699 open 2023-07-24 Juliaup crashes ungracefully when hitting CTRL+C during readline in script
+      #401 open 2022-09-12 `Ctrl+C`-ing the installer leaves the terminal without cursor
+      #656 open 2023-06-15 juliaup incompatible with git for windows
+      #1404 closed 2026-01-29 juliaup cannot detect release channel installation
+      #1267 closed 2025-10-09 REPL totally unresponsive in Cygwin MinTTY
+      #157 closed 2021-11-19 Ctrl+C ruins the terminal
+      #607 closed 2023-04-02 Suspending Julia via Ctrl-Z requires two presses
+      #645 closed 2023-05-19 `anyhow::bail!("Maybe we should never reach this?")`: what if we did reach this?
+      #84 closed 2021-08-04 How to distribute to Linux and OSX?
+      #865 closed 2023-08-06 Base is not read-only
+      #569 merged 2023-01-30 launcher: replace parent process on supported platforms.
+      #158 merged 2021-11-20 Fix Ctrl-C handling
+  power          7 hit(s) (all listed)
+      #1230 open 2025-08-23 Ship a CLI for Pkg.jl
+      #758 open 2023-11-25 Make Windows & Mac installation put Julia runtime libraries in path
+      #164 closed 2021-11-22 What should the URL for the shell install script be?
+      #71 closed 2021-07-15 New install: julia hangs for few seconts and does nothing
+      #197 closed 2021-12-27 support nightly channels
+      #596 closed 2023-03-14 disentangle JULIA_DEPOT_PATH from Juliaup and use JULIAUP_HOME instead
+      #259 merged 2022-03-12 Add openSUSE TumbleWeed in Installation
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           22 hit(s) (all listed)
+      #1485 open 2026-04-20 Fix `install_version` skipping download when files are missing from disk
+      #1185 open 2025-03-22 Bad configuration due to out-of-disk-space
+      #1456 open 2026-03-25 security: verify SHA256 of juliaup's own tarball before extraction
+      #1457 open 2026-03-25 security: sign juliaup SHA256SUMS and verify Julia tarball hashes
+      #1626 merged 2026-09-30 chore(deps): bump the github-actions group across 1 directory with 8 updates
+      #1611 merged 2026-09-22 Read archives through to gzip and HTTP EOF before installing
+      #1603 merged 2026-09-16 Download over HTTP/1.1 instead of HTTP/2
+      #1569 merged 2026-08-14 Support FreeBSD in juliaupgui
+      #1586 merged 2026-09-09 chore(deps): bump the github-actions group across 1 directory with 3 updates
+      #1575 merged 2026-08-19 chore(deps): bump the github-actions group with 2 updates
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1618 closed 2026-09-23 chore(deps): bump the github-actions group across 1 directory with 7 updates
+      #608 closed 2023-04-06 Juliaup locked unable to do any process
+      #1418 merged 2026-02-08 Use the `--verbose` flag for Cargo on FreeBSD
+      #1389 merged 2026-01-18 FreeBSD: Tidy up more aggressively because the VM is only 11GB
+      #1221 closed 2025-07-15 juliaup destroyed config file when running out of disk quota
+      #1363 closed 2026-01-04 pr{num} builds have invalid code signing on arm64 macOS
+      #1127 closed 2024-12-13 On macOS, when a PR build is installed, Juliaup should print instructions for doing the ad-hoc codesigning
+      #98 closed 2021-08-11 `Error: No such file or directory (os error 2)` on Linux
+      #1126 closed 2024-12-13 pr{number} channels broken on macOS aarch64
+  partial        11 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1536 open 2026-06-12 Enforce dev → releasepreview → 24h soak → release channel order
+      #1592 merged 2026-09-11 fix: stream Windows downloads so progress bar updates live
+      #1396 open 2026-01-21 Consistent naming convention for future channels
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1238 closed 2025-08-30 Replace file locking with atomic file operations
+      #1453 merged 2026-03-20 chore(deps): bump tar from 0.4.44 to 0.4.45
+      #1459 closed 2026-03-25 chore(deps): bump the cargo-dependencies group across 1 directory with 9 updates
+      #831 closed 2024-02-12 Bump chrono from 0.4.33 to 0.4.34
+      #417 closed 2022-10-03  Use the published versions.json
+      #286 merged 2022-04-11 Bump actions/download-artifact from 2 to 3
+  incomplete     7 hit(s) (all listed)
+      #1019 open 2024-08-21 Enhancement: Better prompt when existing configuration
+      #889 open 2024-04-06 Prevent downgrading on old version in mirror
+      #1518 merged 2026-06-06 Add some more Juliaup GUI setup tweaks on Windows
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1587 merged 2026-09-09 chore(deps): bump the cargo-dependencies group across 1 directory with 3 updates
+      #1102 closed 2024-11-04 chore(deps): bump thiserror from 1.0.65 to 1.0.68
+      #346 closed 2022-07-30 Start win standalone setup
+  dataloss       0 hit(s)
+  recover        6 hit(s) (all listed)
+      #1603 merged 2026-09-16 Download over HTTP/1.1 instead of HTTP/2
+      #939 open 2024-05-30 No existing Julia version after installing through MS Store and Juliaup is unable to install new versions
+      #1492 closed 2026-04-27 Dependency cooldowns feature
+      #773 closed 2023-12-21 Symlink error when link/file exist
+      #796 closed 2024-01-15 Julia Installer had a problem and crashed!
+      #935 closed 2024-05-28 Allow users to manually modify `PATH`
+  recovery       2 hit(s) (all listed)
+      #1613 open 2026-09-22 Fetch archive downloads with concurrent byte ranges
+      #1291 closed 2025-10-22 juliaup update to v1.12.1 failed on macOS 15.7.1
+  rollback       3 hit(s) (all listed)
+      #1616 open 2026-09-23 Better UX for manifest-based Julia version selection: install prompts, --auto-instantiate, compat-based upgrades
+      #1583 closed 2026-09-02 chore(deps): bump the github-actions group with 2 updates
+      #1586 merged 2026-09-09 chore(deps): bump the github-actions group across 1 directory with 3 updates
+  resume         4 hit(s) (all listed)
+      #1617 open 2026-09-23 Resume interrupted downloads with Range requests
+      #1613 open 2026-09-22 Fetch archive downloads with concurrent byte ranges
+      #964 open 2024-06-20 Add apps support
+      #607 closed 2023-04-02 Suspending Julia via Ctrl-Z requires two presses
+  half-written   2 hit(s) (all listed)
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1626 merged 2026-09-30 chore(deps): bump the github-actions group across 1 directory with 8 updates
+  wipe           3 hit(s) (all listed)
+      #1395 closed 2026-01-21 Juliainstaller Crash Report
+      #1284 closed 2025-10-20 Juliaup crash report
+      #174 closed 2021-11-24 Installer crashes on MacOS
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #966 closed 2024-06-24 Bump url from 2.5.0 to 2.5.2
+      #956 closed 2024-06-10 Bump url from 2.5.0 to 2.5.1
+  erasing        0 hit(s)
+  erased         2 hit(s) (all listed)
+      #966 closed 2024-06-24 Bump url from 2.5.0 to 2.5.2
+      #956 closed 2024-06-10 Bump url from 2.5.0 to 2.5.1
+  destroy        2 hit(s) (all listed)
+      #1221 closed 2025-07-15 juliaup destroyed config file when running out of disk quota
+      #621 merged 2023-04-24 Bump peter-evans/create-pull-request from 4 to 5
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1027 open 2024-08-31 Option to repair shell configuration files
+      #1018 open 2024-08-21 Enhancement: better info message when existing `juliaup` install
+      #1019 open 2024-08-21 Enhancement: Better prompt when existing configuration
+      #1007 open 2024-08-10 guideline to remove previous julia installations completely
+      #1438 open 2026-02-27 New permissions issues on a shared Julia installation on Linux
+      #1630 open 2026-10-03 chore(deps): bump windows-future from 0.3.2 to 0.100.0 in the cargo-dependencies group across 1 directory
+      #1582 closed 2026-09-02 chore(deps): bump log from 0.4.33 to 0.4.34 in the cargo-dependencies group
+      #1564 merged 2026-08-05 chore(deps): bump the cargo-dependencies group with 2 updates
+      #1627 closed 2026-09-30 chore(deps): bump the cargo-dependencies group across 1 directory with 5 updates
+      #1559 closed 2026-07-22 chore(deps): bump the cargo-dependencies group with 2 updates
+      #1552 closed 2026-07-13 chore(deps): bump clap_complete from 4.6.6 to 4.6.7 in the cargo-dependencies group
+      #1605 closed 2026-09-16 chore(deps): bump the github-actions group with 2 updates
+      #1578 merged 2026-08-26 chore(deps): bump the github-actions group with 2 updates
+      #1583 closed 2026-09-02 chore(deps): bump the github-actions group with 2 updates
+      #1587 merged 2026-09-09 chore(deps): bump the cargo-dependencies group across 1 directory with 3 updates
+      #1565 merged 2026-08-05 chore(deps): bump the github-actions group with 2 updates
+      #1628 closed 2026-10-02 chore(deps): bump the cargo-dependencies group across 1 directory with 7 updates
+      #1248 merged 2025-09-15 Don't overwrite body when turning prerelease into release
+      #1568 merged 2026-08-12 chore(deps): bump the github-actions group with 3 updates
+      #1262 merged 2025-10-04 Don't overwrite body when turning prerelease into release Pt. 2
+  clobber        0 hit(s)
+  blank          8 hit(s) (all listed)
+      #1438 open 2026-02-27 New permissions issues on a shared Julia installation on Linux
+      #1294 merged 2025-10-26 Fix Homebrew bump action with explicit tag and revision
+      #1258 merged 2025-09-29 Don't show `julia` update messages when not interactive
+      #1232 merged 2025-08-24 add nushell completions
+      #1277 merged 2025-10-17 query to code sign PR builds on mac
+      #1218 merged 2025-07-14 Offer to / automatically install versions via channel selection
+      #1231 closed 2025-08-24 fix: temp dir warning
+      #225 closed 2022-01-18 "Use 0 to disable" -> "Not a valid input"
+  unreadable     3 hit(s) (all listed)
+      #1113 closed 2024-11-18 chore(deps): bump bstr from 1.10.0 to 1.11.0
+      #1315 merged 2025-10-30 match against environment manifest version before using the default channel
+      #935 closed 2024-05-28 Allow users to manually modify `PATH`
+  garbage        18 hit(s) (all listed)
+      #1625 open 2026-09-26 Declarative per-channel Pkg apps (and optionally packages), CLI and GUI
+      #1230 open 2025-08-23 Ship a CLI for Pkg.jl
+      #1602 merged 2026-09-15 juliaupgui: route gc and other status output into the GUI log
+      #1401 open 2026-01-26 Can't Update, Can't Uninstall
+      #1211 open 2025-06-17 Apps, second attempt
+      #964 open 2024-06-20 Add apps support
+      #1444 open 2026-03-06 Multi-server support
+      #1439 merged 2026-03-01 Add juliaupgui: graphical interface for juliaup
+      #1516 closed 2026-06-05 Background self-update replaced binaries but did not recreate the `julia` symlink in `~/.juliaup/bin` (Linux)
+      #1433 merged 2026-02-20 Improve error messages by showing more context
+      #1403 closed 2026-01-28 chore(deps): bump the cargo-dependencies group with 2 updates
+      #1408 closed 2026-02-04 chore(deps): bump the cargo-dependencies group across 1 directory with 5 updates
+      #1413 merged 2026-02-07 chore(deps): bump the cargo-dependencies group across 1 directory with 6 updates
+      #53 closed 2021-06-03 Provide options to delete old Julia versions
+      #151 closed 2021-09-27 shell completion
+      #184 closed 2021-12-01 failing on macOS: juliaup add 1.0
+      #187 merged 2021-12-02 Added how to launch a channel
+      #72 closed 2021-07-18 Calling `juliaup update` from within julia doesn't work
+  mangled        2 hit(s) (all listed)
+      #1049 open 2024-09-11 Command to fix existing installations?
+      #85 closed 2021-08-04 Microsoft store installation currently broken
+  contents       37 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1444 open 2026-03-06 Multi-server support
+      #1067 open 2024-10-09 Juliainstaller Crash Report
+      #1399 open 2026-01-23 Fresh mac install: Juliaup not on path
+      #1019 open 2024-08-21 Enhancement: Better prompt when existing configuration
+      #970 open 2024-06-27 CLI installation wizard bug for zsh
+      #95 open 2021-08-10 add way to get CI builds for a specific commit
+      #1255 open 2025-09-16 Bug: Juliaup doesn't clean up `.bashrc` when encountering an error
+      #673 open 2023-06-29 Install failing on Ubuntu (via standard curl command )
+      #257 open 2022-03-04 using multiple DEPOT_PATH s with one julia installation
+      #1499 merged 2026-05-14 ci: declare contents:write and pull-requests:write on updateversiondb workflow
+      #631 closed 2023-05-08 Provide better error message when target can't be accessed
+      #561 closed 2023-01-17 Don't lock the juliaup config file when only reading 
+      #1135 closed 2024-12-23 chore(deps): bump thiserror from 2.0.8 to 2.0.9
+      #1320 merged 2025-11-03 Try to use .dmg installers on macOS before .tar.gz
+      #998 closed 2024-07-16 WIP: use dmgs on macos
+      #1435 closed 2026-02-25 chore(deps): bump the cargo-dependencies group across 1 directory with 11 updates
+      #1443 merged 2026-03-04 chore(deps): bump the cargo-dependencies group across 1 directory with 12 updates
+      #1291 closed 2025-10-22 juliaup update to v1.12.1 failed on macOS 15.7.1
+      #1250 closed 2025-09-16 Broken Juliaup versiondb (caused by broken Versions.json upstream) 
+  in-place       78 hit(s) (all listed)
+      #1556 open 2026-07-18 Centralize where paths are discovered v2
+      #1608 open 2026-09-20 installer: add Juliaup and Julia to the applications menu by default
+      #1536 open 2026-06-12 Enforce dev → releasepreview → 24h soak → release channel order
+      #1581 open 2026-09-02 ci: migrate Windows Store publishing from StoreBroker to msstore-cli
+      #1625 open 2026-09-26 Declarative per-channel Pkg apps (and optionally packages), CLI and GUI
+      #1613 open 2026-09-22 Fetch archive downloads with concurrent byte ranges
+      #1485 open 2026-04-20 Fix `install_version` skipping download when files are missing from disk
+      #1431 open 2026-02-20 Where does `channelsymlinks` install symlinks / how to configure this?
+      #1630 open 2026-10-03 chore(deps): bump windows-future from 0.3.2 to 0.100.0 in the cargo-dependencies group across 1 directory
+      #1429 open 2026-02-20 Provide a guide for installing Julia via `juliaup` in a computer lab (so sysadmin installs juliaup and julia, regular users only run julia), or if this is not supported, a notice to that effect
+      #915 open 2024-04-30 Centralize where paths are discovered
+      #1013 open 2024-08-19 Defensively making juliaup availible on $PATH
+      #1319 open 2025-11-03 Only alert about actual new versions
+      #908 open 2024-04-24 Alternative to Microsoft App Store installation instructions for Windows
+      #1621 merged 2026-09-23 ci: ship the musl CLI in the Linux gnu archives
+      #1396 open 2026-01-21 Consistent naming convention for future channels
+      #656 open 2023-06-15 juliaup incompatible with git for windows
+      #1519 open 2026-06-07 Consider changing self update defaults
+      #1603 merged 2026-09-16 Download over HTTP/1.1 instead of HTTP/2
+      #857 open 2024-03-02 IJulia broken on update — re-build IJulia when updating Julia?
+  unclean        0 hit(s)
+  shutdown       5 hit(s) (all listed)
+      #844 open 2024-02-20 A path to XDG compliance
+      #1566 merged 2026-08-10 Fix SIGILL when closing the GUI window on macOS
+      #1575 merged 2026-08-19 chore(deps): bump the github-actions group with 2 updates
+      #1195 closed 2025-04-08 chore(deps): bump tokio from 1.43.0 to 1.44.2
+      #1507 merged 2026-05-27 chore(deps): bump the github-actions group across 1 directory with 6 updates
+  reboot         4 hit(s) (all listed)
+      #343 open 2022-07-29 Alternative to Windows Store for Windows - an msi installer for juliaup
+      #1575 merged 2026-08-19 chore(deps): bump the github-actions group with 2 updates
+      #1507 merged 2026-05-27 chore(deps): bump the github-actions group across 1 directory with 6 updates
+      #1291 closed 2025-10-22 juliaup update to v1.12.1 failed on macOS 15.7.1
+  disk+full      8 hit(s) (all listed)
+      #1456 open 2026-03-25 security: verify SHA256 of juliaup's own tarball before extraction
+      #1626 merged 2026-09-30 chore(deps): bump the github-actions group across 1 directory with 8 updates
+      #1611 merged 2026-09-22 Read archives through to gzip and HTTP EOF before installing
+      #1618 closed 2026-09-23 chore(deps): bump the github-actions group across 1 directory with 7 updates
+      #1586 merged 2026-09-09 chore(deps): bump the github-actions group across 1 directory with 3 updates
+      #1575 merged 2026-08-19 chore(deps): bump the github-actions group with 2 updates
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #920 closed 2024-05-09 Fails when startup scripts are inaccessible (even if asked not to modify them)
+  data+loss      0 hit(s)
+  partial+write  3 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1238 closed 2025-08-30 Replace file locking with atomic file operations
+  crash+safe     2 hit(s) (all listed)
+      #758 open 2023-11-25 Make Windows & Mac installation put Julia runtime libraries in path
+      #174 closed 2021-11-24 Installer crashes on MacOS
+  atomic+write   7 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1438 open 2026-02-27 New permissions issues on a shared Julia installation on Linux
+      #276 open 2022-03-26 juliaup in a multi-user environment
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1238 closed 2025-08-30 Replace file locking with atomic file operations
+      #1517 merged 2026-06-06 Don't hold the configuration lock during downloads
+      #561 closed 2023-01-17 Don't lock the juliaup config file when only reading 
+  lock+file      48 hit(s) (all listed)
+      #845 open 2024-02-20 Juliaup launcher Crash Report
+      #1532 open 2026-06-11 Read-only mode
+      #469 open 2022-11-25 Crash during install of 1.7.27 on MacOS 12.6 `Failed to open juliaup config file.`
+      #732 open 2023-09-26 Juliaup Crash Report
+      #1317 open 2025-11-02 Close config files right after read
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #252 open 2022-02-21 FlockError Unknown error 524 
+      #254 open 2022-02-22 Support exiting if configuration is locked by another process
+      #1429 open 2026-02-20 Provide a guide for installing Julia via `juliaup` in a computer lab (so sysadmin installs juliaup and julia, regular users only run julia), or if this is not supported, a notice to that effect
+      #1011 open 2024-08-16 Failing installation with default configuration on SUSE Linux Enterprise Server 15.5.0 [64-bit] (Juliainstaller Crash Report)
+      #343 open 2022-07-29 Alternative to Windows Store for Windows - an msi installer for juliaup
+      #1472 open 2026-04-04 Obtain binary path
+      #844 open 2024-02-20 A path to XDG compliance
+      #276 open 2022-03-26 juliaup in a multi-user environment
+      #1519 open 2026-06-07 Consider changing self update defaults
+      #762 open 2023-11-28 `juliaup`  fails to install working launcher under Alpine Linux (musl)
+      #1238 closed 2025-08-30 Replace file locking with atomic file operations
+      #561 closed 2023-01-17 Don't lock the juliaup config file when only reading 
+      #1533 merged 2026-06-11 Make julialauncher config reads lock-free
+      #1517 merged 2026-06-06 Don't hold the configuration lock during downloads
+  write+failure  12 hit(s) (all listed)
+      #1613 open 2026-09-22 Fetch archive downloads with concurrent byte ranges
+      #1485 open 2026-04-20 Fix `install_version` skipping download when files are missing from disk
+      #349 open 2022-08-01 Add juliaup as an Ubuntu "snap"?
+      #1473 closed 2026-04-08 chore(deps): bump the cargo-dependencies group with 2 updates
+      #1235 closed 2025-08-26 Add alias command - Review fixes
+      #1477 closed 2026-04-15 chore(deps): bump the cargo-dependencies group across 1 directory with 3 updates
+      #1489 closed 2026-04-22 chore(deps): bump the cargo-dependencies group with 3 updates
+      #1493 closed 2026-04-29 chore(deps): bump the cargo-dependencies group across 1 directory with 5 updates
+      #1498 merged 2026-05-13 chore(deps): bump the cargo-dependencies group across 1 directory with 6 updates
+      #1315 merged 2025-10-30 match against environment manifest version before using the default channel
+      #872 merged 2024-03-19 FreeBSD support
+      #270 closed 2022-03-20 brew install took over 40mins and burning the Mac
+  file+contents  23 hit(s) (all listed)
+      #1557 open 2026-07-18 Tolerate missing juliaupself.json
+      #1067 open 2024-10-09 Juliainstaller Crash Report
+      #1019 open 2024-08-21 Enhancement: Better prompt when existing configuration
+      #1255 open 2025-09-16 Bug: Juliaup doesn't clean up `.bashrc` when encountering an error
+      #673 open 2023-06-29 Install failing on Ubuntu (via standard curl command )
+      #257 open 2022-03-04 using multiple DEPOT_PATH s with one julia installation
+      #631 closed 2023-05-08 Provide better error message when target can't be accessed
+      #1499 merged 2026-05-14 ci: declare contents:write and pull-requests:write on updateversiondb workflow
+      #561 closed 2023-01-17 Don't lock the juliaup config file when only reading 
+      #1320 merged 2025-11-03 Try to use .dmg installers on macOS before .tar.gz
+      #1250 closed 2025-09-16 Broken Juliaup versiondb (caused by broken Versions.json upstream) 
+      #196 closed 2021-12-27 Juliaup package for Julia 1.7.1 aarch64 does not launch
+      #181 closed 2021-11-30 If the `.tool-versions` file exists and has an entry for `julia`, then `juliaup` should use that version of Julia
+      #630 closed 2023-05-08 Juliainstaller Crash Report
+      #227 closed 2022-01-18 Install crashes on macOS install with old config file
+      #223 closed 2022-01-15 PATH propagation for zhs
+      #183 closed 2021-12-01 failing on macOS: juliaup add 1.3
+      #1157 closed 2025-01-25 ETag header not found in response for darwin
+      #71 closed 2021-07-15 New install: julia hangs for few seconts and does nothing
+      #136 closed 2021-08-20 Support mirror servers: custom downloading upstream
+
+== 51 terms run; 42 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

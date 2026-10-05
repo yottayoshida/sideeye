@@ -1,0 +1,160 @@
+== novelty pre-scan: wp-cli/config-command
+== date: 2026-10-05T05:24:19Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #200 merged 2025-06-11 PHPStan: Don't look in wp-cli-tests folder
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      1 hit(s) (all listed)
+      #146 closed 2022-10-17 Bump actions/checkout from 2 to 3
+  truncate       1 hit(s) (all listed)
+      #146 closed 2022-10-17 Bump actions/checkout from 2 to 3
+  empty          22 hit(s) (all listed)
+      #232 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #229 merged 2026-07-23 Modernize deprecated syntax in Behat tests
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+      #213 merged 2026-03-12 Show literal "true"/"false" for boolean config values instead of "1"/empty string
+      #165 closed 2023-10-20 Show literal "true"/"false" when reading boolean values instead of an empty string
+      #227 merged 2026-05-27 Add `db_password` argument alias
+      #219 merged 2026-04-01 Make `--dbname` and `--dbuser` optional when SQLite integration is active
+      #217 merged 2026-03-27 Tests: improve Windows compatibility
+      #221 closed 2026-04-09 Make --dbname and --dbuser optional when SQLite is active
+      #223 merged 2026-04-15 Allow `wp config create` to defer `DB_NAME`/`DB_USER` initialization via `--skip-check`
+      #209 closed 2026-02-02 Fix infinite loop in `wp config create` by adding @when before_wp_load annotation
+      #134 closed 2020-05-18 WP-CLI detecting wp-config.php in parent folder could cause command to fail 
+      #101 closed 2019-11-13 deleting a constant with concatenated function deletes much more
+      #31 closed 2017-10-09 Error: Could not create new 'wp-config.php' file.
+      #164 merged 2023-10-12 Fail on empty table prefix
+      #170 closed 2023-11-07 `wp config set` fails to update string values due to empty line comments
+      #157 closed 2023-06-07 Error: Could not create new 'wp-config.php' file.
+      #161 merged 2023-08-21 Add `wp config is-true` command
+      #153 merged 2023-02-17 Replace empty namespace autoloader with classmap
+      #104 merged 2020-03-16 Add  `--config-file` argument to process custom configuration files
+  atomic         1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  atomically     1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          1 hit(s) (all listed)
+      #207 merged 2026-01-20 Mark `dbpass` as sensitive
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        2 hit(s) (all listed)
+      #27 closed 2017-08-19 Define constants programmatically
+      #44 merged 2018-01-26 Add config modification commands
+  incomplete     1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  destroys       0 hit(s)
+  overwrite      8 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+      #232 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #212 merged 2026-03-02 Fix `wp config create` incorrectly detecting wp-config.php in parent directory
+      #225 merged 2026-05-14 Bump shivammathur/setup-php from 2.37.0 to 2.37.1
+      #140 closed 2022-01-26 Unable to properly set `WP_DEBUG` using `wp config create --extra-php` as of wp cli 2.6.0
+      #147 closed 2022-10-25 Bump andstor/file-existence-action from 1 to 2
+      #146 closed 2022-10-17 Bump actions/checkout from 2 to 3
+      #122 closed 2021-02-19 Update wp-cli/wp-cli-tests requirement from ^2.1 to ^3.0
+  clobber        0 hit(s)
+  blank          16 hit(s) (all listed)
+      #232 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+      #227 merged 2026-05-27 Add `db_password` argument alias
+      #182 closed 2024-06-18 Replace boolean value of config variables to literal string when showing to the user
+      #223 merged 2026-04-15 Allow `wp config create` to defer `DB_NAME`/`DB_USER` initialization via `--skip-check`
+      #219 merged 2026-04-01 Make `--dbname` and `--dbuser` optional when SQLite integration is active
+      #218 merged 2026-03-29 Tests: Further improve Windows compatibility
+      #220 merged 2026-04-02 Add Behat test for `config has` after concatenation assignment
+      #217 merged 2026-03-27 Tests: improve Windows compatibility
+      #213 merged 2026-03-12 Show literal "true"/"false" for boolean config values instead of "1"/empty string
+      #212 merged 2026-03-02 Fix `wp config create` incorrectly detecting wp-config.php in parent directory
+      #206 merged 2025-11-02 Add `wp config add` and `wp config update` commands
+      #205 merged 2025-10-19 Docs: Fix return_value() inline documentation
+      #104 merged 2020-03-16 Add  `--config-file` argument to process custom configuration files
+      #57 closed 2018-04-21 Issue writing change when previous line ends with a //comment
+      #84 closed 2019-03-11 WordPress become blank page after setting WP_MEMORY_LIMIT
+  unreadable     1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       11 hit(s) (all listed)
+      #231 closed 2026-08-29 Duplicated constants in wp-config if anchor is duplicated
+      #232 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+      #219 merged 2026-04-01 Make `--dbname` and `--dbuser` optional when SQLite integration is active
+      #192 closed 2025-03-05 wp config create - utils.php on line 608
+      #31 closed 2017-10-09 Error: Could not create new 'wp-config.php' file.
+      #172 closed 2023-12-17 Could not create new 'wp-config.php' file.
+      #104 merged 2020-03-16 Add  `--config-file` argument to process custom configuration files
+      #63 merged 2018-07-24 Ensure `file_put_contents()` writes to the `wp-config.php` path
+      #14 closed 2017-05-31 Make the config command consistent by providing "list" and "get".
+      #3 closed 2017-04-07 dirname( __FILE__ ) doesn't work when command is bundled into Phar
+  in-place       13 hit(s) (all listed)
+      #232 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+      #223 merged 2026-04-15 Allow `wp config create` to defer `DB_NAME`/`DB_USER` initialization via `--skip-check`
+      #212 merged 2026-03-02 Fix `wp config create` incorrectly detecting wp-config.php in parent directory
+      #134 closed 2020-05-18 WP-CLI detecting wp-config.php in parent folder could cause command to fail 
+      #55 closed 2018-04-18 wp config create - Too many positional arguments
+      #171 merged 2023-11-10 Add support for MySQL socket connection
+      #97 closed 2019-08-14 Missing documentation: special flag `--anchor=EOF`
+      #104 merged 2020-03-16 Add  `--config-file` argument to process custom configuration files
+      #27 closed 2017-08-19 Define constants programmatically
+      #42 merged 2018-01-25 Restructure config value retrieval
+      #16 merged 2017-06-15 Use `--constant=<constant>` or `--global=<global>` to get the value of a specific constant or global
+      #61 closed 2018-07-18 wp config create results in broken wp-config.php
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  lock+file      2 hit(s) (all listed)
+      #232 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #189 merged 2024-10-01 Composer: prevent a lock file from being created
+  write+failure  1 hit(s) (all listed)
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+  file+contents  11 hit(s) (all listed)
+      #231 closed 2026-08-29 Duplicated constants in wp-config if anchor is duplicated
+      #232 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #226 merged 2026-05-27 Refactor `wp config create` to set config values through `WPConfigTransformer`
+      #219 merged 2026-04-01 Make `--dbname` and `--dbuser` optional when SQLite integration is active
+      #192 closed 2025-03-05 wp config create - utils.php on line 608
+      #31 closed 2017-10-09 Error: Could not create new 'wp-config.php' file.
+      #172 closed 2023-12-17 Could not create new 'wp-config.php' file.
+      #104 merged 2020-03-16 Add  `--config-file` argument to process custom configuration files
+      #63 merged 2018-07-24 Ensure `file_put_contents()` writes to the `wp-config.php` path
+      #14 closed 2017-05-31 Make the config command consistent by providing "list" and "get".
+      #3 closed 2017-04-07 dirname( __FILE__ ) doesn't work when command is bundled into Phar
+
+== 51 terms run; 21 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

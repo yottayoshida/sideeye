@@ -1,0 +1,6 @@
+[world]
+state = "/s/wp"
+
+[define]
+operation = "php /opt/bin/wp config set DB_PASSWORD new-secret --path=/s/wp --allow-root"
+cwd       = "/s/wp-in"

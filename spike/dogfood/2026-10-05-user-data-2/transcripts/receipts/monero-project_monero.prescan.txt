@@ -1,0 +1,920 @@
+== novelty pre-scan: monero-project/monero
+== date: 2026-10-05T02:23:18Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8897 open 2023-06-09 Monerod periodically crashes on sync (Assertion failed)
+      #11172 open 2026-08-23 OpenBSD amd64: RandomX JIT SIGSEGV reading execute-only text
+      #9972 open 2025-06-28 System crashed overnight, blockchain (seemingly) corrupted
+      #11266 open 2026-09-07 Add optional flag to persist wallet state synchronously before responding
+      #3620 open 2018-04-12 Add instructions for getting a crash stack trace on Windows
+      #10595 open 2026-05-13 p2p: download blocklist from quorum'd hash;url
+      #9332 open 2024-05-15 Wallet corruption while storing
+      #11455 open 2026-10-02 Upgrade Monero from C++17 to C++23
+      #11117 open 2026-08-15 No robustness against corrupted blockchain
+      #10180 open 2025-10-28 monerod crashes with segmentation fault when MemoryDenyWriteExecute=yes is enabled in systemd unit (ARM/Raspberry Pi)
+      #11101 closed 2026-08-12 tests: fix functional_tests_rpc.py python3 crash and logging
+      #6855 open 2020-10-01 monero-wallet-rcp should check on startup if it can bind to the specified --rpc-bind-port
+      #9822 open 2025-02-26 possible speed up for HDDs initial sync, pre-sizing database to the current size of the database instead of constant resizing
+      #11121 merged 2026-08-15 simplewallet: fix crash in sweep commands when address is omitted
+      #10286 open 2026-01-21 Better monerod OpenBSD support in future
+      #9594 open 2024-11-25 RPC connectivity stops for good in high traffic
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #9317 open 2024-05-03 A lot of 150/2 transactions in the txpool causes memory spike / OOM
+      #6608 open 2020-05-31 Wallet v0.16, multiple [wallet 49... (out of sync)]: filling the screen when coming out of lock
+      #4413 open 2018-09-22 Support USR1 signal for log rotation
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11313 open 2026-09-13 Feature request: Corrupted database recostruction
+      #11117 open 2026-08-15 No robustness against corrupted blockchain
+      #11454 open 2026-10-02 OSS-Fuzz: Add fuzzer for peerlist
+      #9972 open 2025-06-28 System crashed overnight, blockchain (seemingly) corrupted
+      #8729 open 2023-02-03 Corrupted wallet when insufficient address lookahead on offline wallet
+      #11312 closed 2026-09-13 db: Making monerod able to notify user about truncated database corruption
+      #10141 open 2025-10-03 Unable to find transaction
+      #9332 open 2024-05-15 Wallet corruption while storing
+      #10175 open 2025-10-22 monero-blockchain-prune pruning very slow over SSD, possible issue
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #11285 closed 2026-09-10 Bug: monerod cannot correctly identify database corruption caused by truncation
+      #11415 closed 2026-09-27 Add automated checkpointing and recovery for lmdb corruption
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #11134 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown
+      #9371 closed 2024-06-19 Corrupted binaries built from Ubuntu 22.04
+      #10286 open 2026-01-21 Better monerod OpenBSD support in future
+      #8837 closed 2023-05-05 Monerod crashes without any visible errors in its logs
+      #8996 open 2023-09-19 Add SSL support to P2P
+      #11022 merged 2026-08-01 device: implement default device locking
+      #8754 closed 2023-03-01 Make it possible to exit cli wallet when locked
+  corruption     83 hit(s) (all listed)
+      #9332 open 2024-05-15 Wallet corruption while storing
+      #11117 open 2026-08-15 No robustness against corrupted blockchain
+      #11415 closed 2026-09-27 Add automated checkpointing and recovery for lmdb corruption
+      #11312 closed 2026-09-13 db: Making monerod able to notify user about truncated database corruption
+      #11285 closed 2026-09-10 Bug: monerod cannot correctly identify database corruption caused by truncation
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #9736 open 2025-01-26 failed to parse blob 1.5 tb storage but input output error at 85%
+      #11486 open 2026-10-04 Monerod v0.18.5.1 stalls at block height 1,329,964 during synchronization Summary
+      #5492 open 2019-04-24 Encrypted backup in a format designed for long life
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #9448 closed 2024-08-22 readme: Update minimal dependencies
+      #8132 open 2022-01-06 monerod throws a lot of exceptions and slows down synchronization till almost complete halt.
+      #8897 open 2023-06-09 Monerod periodically crashes on sync (Assertion failed)
+      #10094 closed 2025-09-22 v0.18.4.2 monerod illegal instruction
+      #6896 closed 2020-10-13 crypto: add a rw lock to rx_slow_hash for robustness
+      #6250 closed 2019-12-18 Cannot connect to peers or sync with monerod-0.15.0.1
+      #11059 closed 2026-08-06 Exception escaping `node_server::idle_worker()` permanently disables all p2p maintenance (out-peers → 0, connections never reaped)
+      #5570 closed 2019-05-24 OpenBSD memory leak? Corruption? Readline?
+      #2669 closed 2017-10-16 Bus error on loading blockchain
+      #9341 closed 2024-05-24 blockchain always gets corrupt
+  truncated      32 hit(s) (all listed)
+      #11416 open 2026-09-27 varint: reject truncated varints
+      #11312 closed 2026-09-13 db: Making monerod able to notify user about truncated database corruption
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #11454 open 2026-10-02 OSS-Fuzz: Add fuzzer for peerlist
+      #11367 merged 2026-09-22 epee: reject incomplete and trailing json
+      #10796 merged 2026-06-20 wallet2: avoid std::out_of_range on a truncated tx set blob
+      #11131 merged 2026-08-17 epee: fix rpc write timer regression and misconfiguration
+      #11221 closed 2026-08-31 serialization: bound varint reserve
+      #10094 closed 2025-09-22 v0.18.4.2 monerod illegal instruction
+      #10896 merged 2026-07-11 common: increase performance timer buffer size (fix warning)
+      #10696 merged 2026-06-01 fix off-by-one buffer over-read in match_string2 unicode escape
+      #10422 merged 2026-04-19 rpc: fix incomplete range check in get_coinbase_tx_sum + update test
+      #10137 closed 2025-10-02 add the right prunable hash per tx to pruned get_blocks.bin call
+      #10354 closed 2026-03-07 24h monitoring data from Tor node: connectivity patterns and network stability analysis
+      #8535 closed 2022-08-24 rpc: avoid superfluous buffer copy
+      #9964 closed 2025-06-22 monerod exits under dinit with "Loading checkpoi"
+      #3545 closed 2018-04-03 Idea for ASIC resistance
+      #8599 closed 2022-09-28 Gitian build fails trying to find qttranslations-everywhere-src-5.15.1
+      #8061 merged 2021-11-15 Add view tags to outputs to reduce wallet scanning time
+      #3190 closed 2018-01-27 node.moneroworld.com providing too many records, truncated and switches to TCP which breaks OS X
+  truncate       69 hit(s) (all listed)
+      #11416 open 2026-09-27 varint: reject truncated varints
+      #10764 open 2026-06-12 epee: avoid unsafe file truncation
+      #11312 closed 2026-09-13 db: Making monerod able to notify user about truncated database corruption
+      #11285 closed 2026-09-10 Bug: monerod cannot correctly identify database corruption caused by truncation
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #11398 open 2026-09-25 epee: preserve RPC responses after slow handlers
+      #11454 open 2026-10-02 OSS-Fuzz: Add fuzzer for peerlist
+      #4413 open 2018-09-22 Support USR1 signal for log rotation
+      #11367 merged 2026-09-22 epee: reject incomplete and trailing json
+      #10603 merged 2026-05-14 daemonizer: avoid unsafe pidfile truncation
+      #11131 merged 2026-08-17 epee: fix rpc write timer regression and misconfiguration
+      #10796 merged 2026-06-20 wallet2: avoid std::out_of_range on a truncated tx set blob
+      #10608 merged 2026-05-15 daemonizer: avoid unsafe pidfile truncation [release-v0.18]
+      #11221 closed 2026-08-31 serialization: bound varint reserve
+      #6456 open 2020-04-16 Proposal/Request: Update Supplementary Transaction Content
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #10094 closed 2025-09-22 v0.18.4.2 monerod illegal instruction
+      #10896 merged 2026-07-11 common: increase performance timer buffer size (fix warning)
+      #9930 closed 2025-05-19 Get_block_template Fails with reserve_size > 127 (Expected Max 255)
+      #10808 merged 2026-06-22 escape control characters in json string serialiser
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7289 open 2021-01-07 blockchain: return empty chain hashes if the start is pruned
+      #11334 open 2026-09-15 multisig: erase all copies of a nonce at the same time
+      #11416 open 2026-09-27 varint: reject truncated varints
+      #11346 merged 2026-09-19 wallet2: validate block hash when repairing empty hashchain
+      #11358 open 2026-09-20 wallet_rpc_server: autosave before in-memory key generation
+      #10340 open 2026-02-25 ringct: remove dead multisig_out type
+      #11347 merged 2026-09-19 wallet2: validate block hash when repairing empty hashchain [release-v0.18]
+      #11180 open 2026-08-24 Include tx_hash in the cold-signing output export format
+      #9917 open 2025-04-29 threadpool: fix simple form of starvation
+      #8867 open 2023-05-20 Replace serialization functions
+      #10965 open 2026-07-24 crypto: add x25519 wrapper API
+      #11234 open 2026-09-03 uri: add multi-destination support to make_uri and parse_uri
+      #11398 open 2026-09-25 epee: preserve RPC responses after slow handlers
+      #11401 open 2026-09-25 wallet2: cache contiguous subaddress scan ranges
+      #11384 open 2026-09-23 wallet_rpc_server: defer pool polling while catching up
+      #10295 open 2026-01-31 RPC `get_blocks.bin`: allow excluding txblob
+      #11132 merged 2026-08-17 wallet_rpc_server: leave unknown incoming tx hash empty
+      #11242 open 2026-09-04 cryptonote_basic: simplify Hardfork
+      #10077 open 2025-09-11 wallet: more robust reorg handling for multisig info messages
+      #10532 open 2026-05-06 wallet_rpc_server: make address optional in generate_from_keys
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11421 open 2026-09-28 wallet: count only spending-account outputs as change on key image import
+      #11266 open 2026-09-07 Add optional flag to persist wallet state synchronously before responding
+      #10513 open 2026-05-01 daemon: stack-use-after-return via dangling signal handler references
+      #11353 open 2026-09-20 wallet: add multi-recipient URI RPC methods
+      #11381 open 2026-09-23 Fix wallet transaction accounting during sync
+      #10101 open 2025-09-22 Add thread acquire+release for ZeroMQ msg calls
+      #11369 merged 2026-09-22 crypto: random and siphash static-init-safety
+      #10514 open 2026-05-01 daemon: clear signal handler before stack teardown
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+      #11134 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown
+      #9768 open 2025-02-04 src: remove threadpool and use taskflow instead
+      #11084 merged 2026-08-11 daemon: add unban all command
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #11275 closed 2026-09-09 wallet: add optional flush parameter preemptive of disaster events
+      #11087 merged 2026-08-11 wallet_rpc_server: expose change amount in transfer entries
+      #10539 closed 2026-05-07 Reduce download overhead
+      #7345 merged 2021-01-23 Change p2p connection map from raw pointers to weak_ptrs
+      #10990 closed 2026-07-28 Fix long-standing 'Next span is not empty' sync stall (#8194)
+      #1184 closed 2016-10-05 Something like bitcoin's nLockTime
+      #9181 closed 2024-02-19 cryptonote_core: introducing rwlock mechanism
+  atomically     2 hit(s) (all listed)
+      #11084 merged 2026-08-11 daemon: add unban all command
+      #4729 merged 2018-10-25 wallet2: rewrite keys file in a safer manner
+  interrupted    34 hit(s) (all listed)
+      #11381 open 2026-09-23 Fix wallet transaction accounting during sync
+      #11425 open 2026-09-29 FCMP++: tree building DB integration
+      #11068 merged 2026-08-07 blockchain_db: resume interrupted pruning
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10178 closed 2025-10-24 interrupting --prune-blockchain cancels historical pruning
+      #8986 closed 2023-09-09 bg-mining-miner-target still can't get reached
+      #5397 closed 2019-04-04 http_simple_client disconnect deadlock
+      #7160 closed 2020-12-16 Multihost parallel compilation via USE_ICECC=ON or release-all-icecc …
+      #9296 closed 2024-04-20 MacOS/MoneroGui: button to do first-run install
+      #8900 merged 2023-06-09 properly terminate interrupted TCP connection. fixes #8685 [release-v0.18]
+      #8731 merged 2023-02-03 epee net tcp server: properly terminate interrupted TCP connection. fixes #8685
+      #8051 closed 2021-11-09 Error in `monerod': free(): corrupted unsorted chunks
+      #8685 closed 2022-12-21 monerod: High CPU usage after 2-3 days
+      #8426 merged 2022-07-07 connection: fix implementation (by @perfect-daemon)
+      #6168 closed 2019-11-22 monero-blockchain-prune corrupts the pruned database if interupted
+      #6738 closed 2020-08-02 why CLI cannot  display Chinese character for me
+      #3742 closed 2018-05-01 Error: Couldn't connect to daemon (after importing blockchain.raw)
+      #7509 closed 2021-03-11 All Hosts Blocked
+  interrupt      70 hit(s) (all listed)
+      #11381 open 2026-09-23 Fix wallet transaction accounting during sync
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #11425 open 2026-09-29 FCMP++: tree building DB integration
+      #11068 merged 2026-08-07 blockchain_db: resume interrupted pruning
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #11398 open 2026-09-25 epee: preserve RPC responses after slow handlers
+      #10178 closed 2025-10-24 interrupting --prune-blockchain cancels historical pruning
+      #6216 open 2019-12-04 microlags using monerod, only on win10
+      #11134 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown
+      #8986 closed 2023-09-09 bg-mining-miner-target still can't get reached
+      #8754 closed 2023-03-01 Make it possible to exit cli wallet when locked
+      #5397 closed 2019-04-04 http_simple_client disconnect deadlock
+      #10605 merged 2026-05-15 rpc: speedup block&tx RPC calls
+      #3779 closed 2018-05-07 Excessive CPU usage of monero daemon with torsocks when Tor is not available
+      #10385 merged 2026-03-26 Fix DNS resolve UB [0.18]
+      #7160 closed 2020-12-16 Multihost parallel compilation via USE_ICECC=ON or release-all-icecc …
+      #10192 merged 2025-11-07 Blockchain: cancel pop_blocks() operation on interrupt
+      #9296 closed 2024-04-20 MacOS/MoneroGui: button to do first-run install
+      #9939 merged 2025-05-30 p2p: Improved peer selection with /24 subnet deduplication to disadvantage 'spy nodes'
+  sigkill        8 hit(s) (all listed)
+      #4413 open 2018-09-22 Support USR1 signal for log rotation
+      #11138 merged 2026-08-18 wallet_rpc_server: stop refresh on shutdown
+      #11059 closed 2026-08-06 Exception escaping `node_server::idle_worker()` permanently disables all p2p maintenance (out-peers → 0, connections never reaped)
+      #8841 closed 2023-05-06 Synchronization went to the current level ( 99% ) and then the problem started. 
+      #5098 closed 2019-01-27 Unable to exit daemon when running with torsocks
+      #6555 closed 2020-05-17 Testing RPC pay, connected wallet-cli client ID mis-identified as inactive for negative days value, Monerod crashes with "Aborted"
+      #32 closed 2014-06-11 simplewallet ctrl+d close failture
+      #2182 merged 2017-07-19 daemon: Add ability to write a PID file
+  sigint         19 hit(s) (all listed)
+      #10351 open 2026-03-06  src: fix monerod shutdown hanging by making SIGINT handling async-signal-safe
+      #10994 open 2026-07-28 chore: consolidate anonymity networks info
+      #4413 open 2018-09-22 Support USR1 signal for log rotation
+      #10513 open 2026-05-01 daemon: stack-use-after-return via dangling signal handler references
+      #8754 closed 2023-03-01 Make it possible to exit cli wallet when locked
+      #10192 merged 2025-11-07 Blockchain: cancel pop_blocks() operation on interrupt
+      #6168 closed 2019-11-22 monero-blockchain-prune corrupts the pruned database if interupted
+      #7616 merged 2021-03-18 daemon: add command line arg to set socks proxy
+      #853 closed 2016-05-28 bitmonerod stops itself if run without --detach as non-forking systemd service
+      #1595 closed 2017-01-19 Still getting stalling issue with easylogging++
+      #2298 closed 2017-08-16 memory corruption at the end of unit_tests in readline code
+      #1873 closed 2017-03-17 monero-wallet-cli spooling large number of threads when syncing 0 blocks and in background refresh
+      #4198 closed 2018-07-30 monero-wallet-cli frozen after typing password for a transfer
+      #4681 closed 2018-10-21 CTRL+C stops the CLI wallet
+      #6555 closed 2020-05-17 Testing RPC pay, connected wallet-cli client ID mis-identified as inactive for negative days value, Monerod crashes with "Aborted"
+      #6725 closed 2020-07-27 Can't exit from password prompt
+      #37 merged 2014-06-13 Fixed console handler not properly exiting on SIGINT and such
+      #4547 merged 2018-10-10 simplewallet: fixed deadlock if a user hits CTRL+C twice
+      #3222 closed 2018-02-01 simplewallet: ignore ^C while in password entry
+  ctrl-c         68 hit(s) (all listed)
+      #10351 open 2026-03-06  src: fix monerod shutdown hanging by making SIGINT handling async-signal-safe
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10513 open 2026-05-01 daemon: stack-use-after-return via dangling signal handler references
+      #9231 open 2024-03-10 CLI wallet terminal lockscreen handler needs updating
+      #11134 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown
+      #9594 open 2024-11-25 RPC connectivity stops for good in high traffic
+      #6192 closed 2019-11-27 Cannot Ctrl-C close the wallet when it's "Locked due to inactivity."
+      #10178 closed 2025-10-24 interrupting --prune-blockchain cancels historical pruning
+      #2251 closed 2017-08-05 Monero-wallet-CLI slow exit when attempting to connect to dead / nonexistent daemon
+      #8754 closed 2023-03-01 Make it possible to exit cli wallet when locked
+      #11120 closed 2026-08-15 Linux: inactivity lock loops on password prompt and never unlocks (correct password ignored)
+      #10382 merged 2026-03-25 p2p: fix hanging shutdown
+      #10392 closed 2026-03-29 regtest connects to mainnet seeds
+      #10311 closed 2026-02-06 Can't Ctrl+C When Prompted With Password To Exit monero-wallet-cli
+      #1768 closed 2017-02-21 Failed to create file monero-wallet-rpc.28081.login
+      #8478 closed 2022-08-02 failed to get output distribution
+      #9954 merged 2025-06-12 wallet: immediate lookahead table expansion + set_subaddresss_lookahead RPC endpoint [0.18]
+      #9789 closed 2025-02-08 Unable to sync after pruning: E internal error: passed start_height not <  m_db->height() -- 3343083 >= 3343083
+      #9356 closed 2024-06-07 monerod started mining on its own
+      #7722 closed 2021-05-14 set simple counter to exit after too many loops
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11427 open 2026-09-29 rpc: allow regtest mining with --no-sync
+      #11487 open 2026-10-04 epee: bound and reset chunked response cache
+      #11481 open 2026-10-03 epee: bound HTTP client response headers
+      #11266 open 2026-09-07 Add optional flag to persist wallet state synchronously before responding
+      #8928 open 2023-07-01 Run miner threads at priority `SCHED_IDLE` (see `sched(7)`)
+      #10862 open 2026-07-05 wallet: reconnect before submitting txs
+      #10082 open 2025-09-15 Wallet error！！！！
+      #11291 merged 2026-09-11 tests: fix unused result warning in cpu_power_test
+      #10074 open 2025-09-09 Sync and RPC errors on Alpine Linux
+      #11312 closed 2026-09-13 db: Making monerod able to notify user about truncated database corruption
+      #9736 open 2025-01-26 failed to parse blob 1.5 tb storage but input output error at 85%
+      #10275 open 2026-01-10 monerod "DB resize needed" causes full system hang
+      #5711 open 2019-07-01 High-precision fees leak information [discussion]
+      #5067 open 2019-01-13 feature request: progress updates during refresh on ledger
+      #10286 open 2026-01-21 Better monerod OpenBSD support in future
+      #9972 open 2025-06-28 System crashed overnight, blockchain (seemingly) corrupted
+      #11285 closed 2026-09-10 Bug: monerod cannot correctly identify database corruption caused by truncation
+      #9509 closed 2024-10-09 Getting "E couldn't query power status from /sys/class/power_supply" in daemon when start mining
+      #10522 open 2026-05-04 DoS vector: TXID calculation
+      #9134 open 2024-01-24 int-util: faster and more portable mul128
+  outage         13 hit(s) (all listed)
+      #9736 open 2025-01-26 failed to parse blob 1.5 tb storage but input output error at 85%
+      #10082 open 2025-09-15 Wallet error！！！！
+      #2669 closed 2017-10-16 Bus error on loading blockchain
+      #9255 closed 2024-03-17 monerod just quits at start
+      #9714 closed 2025-01-16 Monerod.exe did start the synchronization, en then only fails to get data.
+      #8885 closed 2023-05-31 Node no longer syncs --Failed to query m_blocks: MDB_BAD_TXN--
+      #9604 closed 2024-12-08 Need help with repairing the corrupted Blockchain while syncing. 
+      #9183 closed 2024-02-19 Segfault on any operation on the blockchain
+      #9054 closed 2023-11-04 monerod killed with SIGSEGV after loading blockchain (Segmentation fault after "setting m_height") on archlinux
+      #4181 closed 2018-07-26 Lost Power @ 1602195/1625219 Blocks Synced; Now monerod.exe will not finish the sync..
+      #8520 closed 2022-08-20 monerod: incoming peers unreasonably low
+      #3540 closed 2018-04-02 Assertion failed: Connection reset by peer (../zeromq-4.2.3/src/signaler.cpp:357)
+      #6953 closed 2020-10-31 Cannot reconnect to blockchain 90% downloaded
+  ENOSPC         3 hit(s) (all listed)
+      #1091 closed 2016-09-18 bitmonerod: boost::archive::archive_exception
+      #6530 closed 2020-05-13 can't start daemon
+      #3259 merged 2018-02-13 monerod: do not log to tmpdir in daemon mode
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11130 open 2026-08-17 cryptonote: support pruned weights for old RingCT
+      #9965 open 2025-06-23 monerod writing 1TiB on disk for a 50GiB (pruned) blockchain
+      #8742 open 2023-02-15 monerod: [windows] Mysterious "disk leak," while Monero daemon is running
+      #11117 open 2026-08-15 No robustness against corrupted blockchain
+      #10794 open 2026-06-18 p2p: allow --ban-list to load from a URL
+      #10175 open 2025-10-22 monero-blockchain-prune pruning very slow over SSD, possible issue
+      #9822 open 2025-02-26 possible speed up for HDDs initial sync, pre-sizing database to the current size of the database instead of constant resizing
+      #10511 open 2026-04-30 Consider upgrading LMDB to v1.0 soon
+      #8109 open 2021-12-08 The daemon ran without enough storage available
+      #7348 open 2021-01-24 Monerod keeps growing the database file regardless of the number of free pages
+      #6216 open 2019-12-04 microlags using monerod, only on win10
+      #9146 open 2024-01-30 Adding issue template to bug reports in Monero repository.
+      #11285 closed 2026-09-10 Bug: monerod cannot correctly identify database corruption caused by truncation
+      #11486 open 2026-10-04 Monerod v0.18.5.1 stalls at block height 1,329,964 during synchronization Summary
+      #9492 open 2024-09-27        Modifications to enable Offline Signing in monero-gui and possible...
+      #11222 closed 2026-08-31 sync-pruned-blocks appears to store the wrong prunable hash
+      #10074 open 2025-09-09 Sync and RPC errors on Alpine Linux
+      #7913 open 2021-08-31 Improve performance syncing daemon with another daemon on the same local machine
+      #1271 open 2016-10-29 Don't use Insecure Userland PRNG for random_scalar()
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11437 open 2026-09-30 p2p: handle bracketed IPv6 bind addresses
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10077 open 2025-09-11 wallet: more robust reorg handling for multisig info messages
+      #11264 merged 2026-09-07 multisig: reject mismatched key image component count
+      #11265 merged 2026-09-07 wallet2: reject malformed multisig_info on import
+      #9089 open 2023-12-17 Bug: it's theoretically possible (seems *very* unlikely) to be unable to restore a valid seed
+      #8827 open 2023-04-22 [Proposal] Improve PoW verification at the next hard fork
+      #11082 merged 2026-08-11 p2p: don't reset timeout timer for handshakes
+      #5145 open 2019-02-14 Protecting Monero's untraceability when large numbers of private view keys are disclosed to light-wallet servers
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #11046 merged 2026-08-04 wallet_rpc_server: add weight to describe_transfer
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #10865 merged 2026-07-05 wallet: export generated key images
+      #10232 open 2025-11-24 remove cached password from Wallet API (master)
+      #7935 closed 2021-09-11 p2p: group peers by AS (bitcoin's asmap)
+      #10576 merged 2026-05-10 common: validate Content-Range before resuming downloads
+      #11059 closed 2026-08-06 Exception escaping `node_server::idle_worker()` permanently disables all p2p maintenance (out-peers → 0, connections never reaped)
+      #11076 merged 2026-08-10 wallet: add pending_tx sanity checker
+      #10018 closed 2025-08-01 wallet-crypto target not found: device links against non-existent library
+      #8540 merged 2022-08-30 Update levin async callbacks for C++14
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11398 open 2026-09-25 epee: preserve RPC responses after slow handlers
+      #11487 open 2026-10-04 epee: bound and reset chunked response cache
+      #11367 merged 2026-09-22 epee: reject incomplete and trailing json
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #11381 open 2026-09-23 Fix wallet transaction accounting during sync
+      #11264 merged 2026-09-07 multisig: reject mismatched key image component count
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #11223 merged 2026-09-01 cryptonote_basic: cache prunable hash for pruned txs
+      #10707 merged 2026-06-03 Multisig tx builder: fix incomplete memory wipe
+      #10937 merged 2026-07-20 wallet_api: return all unsigned tx recipients
+      #10708 merged 2026-06-03 Multisig tx builder: fix incomplete memory wipe [release-v0.18]
+      #10093 closed 2025-09-21 tests: complete fuzz tests documentation
+      #10422 merged 2026-04-19 rpc: fix incomplete range check in get_coinbase_tx_sum + update test
+      #10503 merged 2026-04-29 zmq: add more filtering and clarify help text
+      #8132 open 2022-01-06 monerod throws a lot of exceptions and slows down synchronization till almost complete halt.
+      #10634 closed 2026-05-21 CMake Error
+      #5754 closed 2019-07-15 improved error output when trying to import outputs that lack data
+      #9608 closed 2024-12-10 Getting undefined reference errors when trying to build with make fuzz
+      #10068 closed 2025-09-03 can't compile on NetBSD
+      #9334 open 2024-05-20 [Proposal] Change how transactions are broadcasted to significantly reduce P2P bandwidth usage 
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6581 open 2020-05-21 Bug when recovering from seed
+      #11329 open 2026-09-15 epee: scale RPC timeouts by configured per-IP limits
+      #11407 open 2026-09-25 FCMP++: verify FCMP++ proofs tooling
+      #10077 open 2025-09-11 wallet: more robust reorg handling for multisig info messages
+      #11140 open 2026-08-19 Deterministic transaction keys from an outgoing view key and the spent key images
+      #10866 open 2026-07-06 mnemonics: decode seeds with explicit language
+      #6638 open 2020-06-10 Deterministically generate transaction key
+      #10915 open 2026-07-14 cryptonote_core: improve block template backlog handling
+      #10958 merged 2026-07-23 rpc: recover from oversized ZMQ requests
+      #5492 open 2019-04-24 Encrypted backup in a format designed for long life
+      #8494 open 2022-08-10 monero-wallet-cli broken cli output
+      #9767 open 2025-02-04 wallet: avoid premature elevation of auto fee
+      #10959 merged 2026-07-23 rpc: recover from oversized ZMQ requests [release-v0.18]
+      #11131 merged 2026-08-17 epee: fix rpc write timer regression and misconfiguration
+      #10081 open 2025-09-13 wallet: re-add detatched confirmed transactions on reorg
+      #4183 open 2018-07-27 Idea: 4 factor authentication for Monero Wallet
+      #1341 open 2016-11-15 Feature request: export/import all details of outputs
+      #9559 open 2024-11-08 carrot_core
+      #5145 open 2019-02-14 Protecting Monero's untraceability when large numbers of private view keys are disclosed to light-wallet servers
+      #9594 open 2024-11-25 RPC connectivity stops for good in high traffic
+  recovery       73 hit(s) (all listed)
+      #11415 closed 2026-09-27 Add automated checkpointing and recovery for lmdb corruption
+      #9337 open 2024-05-20 [seraphis] async: add async framework
+      #11317 closed 2026-09-13 wallet2: add user-facing skip-sync (--skip-sync-to-height) — analysis, patch proposal, test plan [bounty #79 ref]
+      #11170 merged 2026-08-22 simplewallet: suggest hw_reconnect on refresh
+      #9152 open 2024-02-04 monero-cli: non-interactive wallet generation
+      #11140 open 2026-08-19 Deterministic transaction keys from an outgoing view key and the spent key images
+      #11068 merged 2026-08-07 blockchain_db: resume interrupted pruning
+      #10901 merged 2026-07-11 wallet_api: set m_password in the recovery creation paths
+      #11275 closed 2026-09-09 wallet: add optional flush parameter preemptive of disaster events
+      #7291 open 2021-01-07 [PROPOSAL] Add advanced command to monero-wallet-cli: scan_block
+      #10922 merged 2026-07-16 wallet_api: set m_password in the recovery creation paths [release-v0.18]
+      #9594 open 2024-11-25 RPC connectivity stops for good in high traffic
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #8996 open 2023-09-19 Add SSL support to P2P
+      #11126 closed 2026-08-16 Suggest `hw_reconnect` when hardware wallet HID communication fails during refresh
+      #11059 closed 2026-08-06 Exception escaping `node_server::idle_worker()` permanently disables all p2p maintenance (out-peers → 0, connections never reaped)
+      #10923 closed 2026-07-16 Pending outgoing transaction survives wallet restore and never reaches daemon or blockchain
+      #10533 merged 2026-05-06 ringct: merge `decodeRct()` and `decodeRctSimple()`
+      #11076 merged 2026-08-10 wallet: add pending_tx sanity checker
+      #8157 open 2022-01-25 "No Wallet Left Behind" - Make Sure Our Wallets Survive the Fork to Monero 2.0
+  rollback       30 hit(s) (all listed)
+      #10064 open 2025-08-31 Temporary rolling DNS checkpoints
+      #4958 open 2018-12-08 software upadte system
+      #8970 open 2023-08-11 Read interface for new serialization system
+      #10647 merged 2026-05-23 add safety for future fork heights
+      #10744 merged 2026-06-08 wallet: fix warning signed unsigned comparison
+      #10832 closed 2026-06-28 Could Monero have any analogous coinbase reward cap risk after the Beldex HF21 incident?
+      #3931 closed 2018-06-05 PANIC! failed to add (again) block while chain switching during the rollback!
+      #9954 merged 2025-06-12 wallet: immediate lookahead table expansion + set_subaddresss_lookahead RPC endpoint [0.18]
+      #8885 closed 2023-05-31 Node no longer syncs --Failed to query m_blocks: MDB_BAD_TXN--
+      #9235 closed 2024-03-10 monerod: rpc_request fails when rpc-login set
+      #8303 closed 2022-04-29 17.3.0 Rollback
+      #8195 merged 2022-02-28 wallet2: update stagenet rollback blocks
+      #8196 merged 2022-02-28 [release-v0.17] wallet2: update stagenet rollback blocks
+      #6742 closed 2020-08-05 Using Chaos Mesh to enhance monero
+      #1854 closed 2017-03-08 GNU Guix Packaging
+      #7898 merged 2021-08-27 wallet_rpc_server: fix help text remaining bold
+      #706 closed 2016-03-07 DB corruption 
+      #1426 closed 2016-12-10 Testnet: Wallet fails to update balance after blockchain rollback
+      #1764 closed 2017-02-21 RPC transfer fails with 16 char payment / No strict check on payment_id
+      #3657 closed 2018-04-18 Post-upgrade issue: blockheight stuck despite doing blockchain rollback
+  resume         80 hit(s) (all listed)
+      #11481 open 2026-10-03 epee: bound HTTP client response headers
+      #11097 open 2026-08-12 epee: rearm idle handlers after exceptions
+      #11425 open 2026-09-29 FCMP++: tree building DB integration
+      #9358 open 2024-06-11 "Refresh" logic not resuming refresh from correct height causing excessive bandwidth / processing for nodes
+      #11384 open 2026-09-23 wallet_rpc_server: defer pool polling while catching up
+      #11068 merged 2026-08-07 blockchain_db: resume interrupted pruning
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #9433 open 2024-08-13 contrib: change default value of epee::serialization to fix limitation
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #3192 closed 2018-01-27 monero-blockchain-export resume
+      #11199 merged 2026-08-26 common: handle case-insensitive Content-Range
+      #9388 open 2024-06-28 Daemons processing big blocks may bump against serializer sanity checks and fail to sync
+      #11055 merged 2026-08-06 wallet2: honor max_blocks bound during fast_refresh hash pulls
+      #10286 open 2026-01-21 Better monerod OpenBSD support in future
+      #10576 merged 2026-05-10 common: validate Content-Range before resuming downloads
+      #7385 closed 2021-02-18 Mining to Daemon Gives Occasional Error read error: "connection reset by peer" no active pools, stop mining
+      #8410 closed 2022-06-28 monerod stalled. no new logs being created, RPC doesn't respond
+      #10569 closed 2026-05-10 monero-blockchain-import: Segmentation fault
+      #8194 closed 2022-02-27 Syncing gets stuck around block >~2450000
+      #9436 open 2024-08-14 [WIP] full-chain membership proof++ integration
+  half-written   31 hit(s) (all listed)
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10138 open 2025-10-02 Remove the undocumented, unused array type from the portable storage specification
+      #9559 open 2024-11-08 carrot_core
+      #10659 open 2026-05-26 Add cbor support to all ZMQ-PUB subscriptions
+      #10605 merged 2026-05-15 rpc: speedup block&tx RPC calls
+      #10359 merged 2026-03-11 FCMP++: Rust FFI + crypto conversion `selene_scalar_from_bytes`
+      #7078 open 2020-12-05 P2P Encryption+Authentication Discussion
+      #6668 open 2020-06-20 [Discussion] Consider removing the tx_extra field
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #3545 closed 2018-04-03 Idea for ASIC resistance
+      #8061 merged 2021-11-15 Add view tags to outputs to reduce wallet scanning time
+      #8211 merged 2022-03-08 EPEE Cleanup Reorganized
+      #3826 closed 2018-05-17 Fail to build on PPC64
+      #6401 closed 2020-03-24 BlockchainDB Rework transactions to improve thread safety
+      #881 closed 2016-06-26 Feature request: Transaction that require the signature of both the sender and recipient.
+      #1878 closed 2017-03-17 [Enhancement] Improvements to the block reward penalty and minimum block size
+      #1673 closed 2017-02-04 [Discussion] Raising the mandatory ringsize in the v6 hardfork, September 2017
+      #1828 closed 2017-03-02 Wallet sync - upgrade to 64 bit arithmetics and streamlining blockchain scan
+      #3035 closed 2017-12-30 increase ringsize / block time
+      #4229 closed 2018-08-05 [Discussion] Move to a Fixed Ringsize
+  wipe           76 hit(s) (all listed)
+      #11402 open 2026-09-25 polyseed: wipe normalization buffers when normalization fails
+      #11388 open 2026-09-23 src: fix more cases of missing memory wipes
+      #11385 merged 2026-09-23 mnemonics/polyseed: wipe stack buffers before returning
+      #11334 open 2026-09-15 multisig: erase all copies of a nonce at the same time
+      #10081 open 2025-09-13 wallet: re-add detatched confirmed transactions on reorg
+      #10232 open 2025-11-24 remove cached password from Wallet API (master)
+      #10344 closed 2026-03-01 crypto: wipe AES key material before free
+      #11395 merged 2026-09-24 cmake: compile polyseed with -fexceptions
+      #10233 open 2025-11-24 replace wallet2 with Wallet API in simplewallet
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #9559 open 2024-11-08 carrot_core
+      #10138 open 2025-10-02 Remove the undocumented, unused array type from the portable storage specification
+      #9915 closed 2025-04-28 remove cached password from Wallet API [release]
+      #10707 merged 2026-06-03 Multisig tx builder: fix incomplete memory wipe
+      #7184 open 2020-12-23 7.1.7 banning nodes added to config as "add-priority-node" when building new pruned nodes
+      #10708 merged 2026-06-03 Multisig tx builder: fix incomplete memory wipe [release-v0.18]
+      #2869 closed 2017-11-27 [Feature] hardware keylogger/screenshot resistant wallet restore entry method for cli
+      #10765 merged 2026-06-14 Polyseed support for 'wallet2', Wallet API, CLI wallet app, wallet RPC server
+      #11076 merged 2026-08-10 wallet: add pending_tx sanity checker
+      #10338 merged 2026-02-25 crypto: derive key image generator & separate {un}biased hash to ec
+  wipes          9 hit(s) (all listed)
+      #11388 open 2026-09-23 src: fix more cases of missing memory wipes
+      #10344 closed 2026-03-01 crypto: wipe AES key material before free
+      #10138 open 2025-10-02 Remove the undocumented, unused array type from the portable storage specification
+      #2869 closed 2017-11-27 [Feature] hardware keylogger/screenshot resistant wallet restore entry method for cli
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #10765 merged 2026-06-14 Polyseed support for 'wallet2', Wallet API, CLI wallet app, wallet RPC server
+      #6446 merged 2020-04-12 trezor: adapt to new passphrase mechanism
+      #6441 merged 2020-04-08 use memwipe on secret k/alpha values
+      #5357 merged 2019-03-27 daemon, wallet: new pay for RPC use system
+  erase          81 hit(s) (all listed)
+      #11432 open 2026-09-29 wallet2: erase all matching payments in import_key_images
+      #11334 open 2026-09-15 multisig: erase all copies of a nonce at the same time
+      #5812 open 2019-08-14 wallet2 import_key_images erases incoming transfers
+      #11331 merged 2026-09-15 multisig: erase all copies of a nonce at the same time [release-v0.18]
+      #8996 open 2023-09-19 Add SSL support to P2P
+      #10038 open 2025-08-14 cryptonote_core: support RandomX V2 and commitments in v17
+      #11426 closed 2026-09-29 epee: avoid a full  `std::shuffle` in delete_connections for performance
+      #8285 closed 2022-04-23 wallet2: Erase payments for self-spends or change when importing key images
+      #9933 open 2025-05-22 Tx Relay v2: New Relay Logic with threshold-based peer dropping
+      #10999 closed 2026-07-29 cryptonote_protocol: trim overlapping spans
+      #11138 merged 2026-08-18 wallet_rpc_server: stop refresh on shutdown
+      #10825 merged 2026-06-26 wallet2: remove unused pool tx removed callback
+      #10649 merged 2026-05-24 Fixed dangling iterator in is_remote_host_allowed [release-v0.18]
+      #10648 merged 2026-05-24 Fixed dangling iterator in is_remote_host_allowed
+      #6250 closed 2019-12-18 Cannot connect to peers or sync with monerod-0.15.0.1
+      #9830 open 2025-03-09 wallet: add multiple-recipient URI support to `parse_uri` and `make_uri`
+      #10382 merged 2026-03-25 p2p: fix hanging shutdown
+      #9473 merged 2024-09-05 cryptonote_core: unrestricted rpc to respect packet size limit
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #9872 merged 2025-03-26 construct_tx_and_get_tx_key: don't erase exception trace
+  erasing        9 hit(s) (all listed)
+      #10999 closed 2026-07-29 cryptonote_protocol: trim overlapping spans
+      #9933 open 2025-05-22 Tx Relay v2: New Relay Logic with threshold-based peer dropping
+      #10825 merged 2026-06-26 wallet2: remove unused pool tx removed callback
+      #6250 closed 2019-12-18 Cannot connect to peers or sync with monerod-0.15.0.1
+      #7170 merged 2020-12-18 Bulletproof+ by sarang, tied to consensus
+      #2848 closed 2017-11-20 Testnet donation command breaks
+      #6555 closed 2020-05-17 Testing RPC pay, connected wallet-cli client ID mis-identified as inactive for negative days value, Monerod crashes with "Aborted"
+      #4819 merged 2018-11-07 epee: No list for self ref
+      #2056 merged 2017-05-30 Subaddresses
+  erased         22 hit(s) (all listed)
+      #10038 open 2025-08-14 cryptonote_core: support RandomX V2 and commitments in v17
+      #8285 closed 2022-04-23 wallet2: Erase payments for self-spends or change when importing key images
+      #11138 merged 2026-08-18 wallet_rpc_server: stop refresh on shutdown
+      #10382 merged 2026-03-25 p2p: fix hanging shutdown
+      #9868 closed 2025-03-26 wallet: Remove TransactionInfoImpl and TransactionHistoryImpl
+      #9037 closed 2023-10-24 "Exception in main! Error adding spent key image to db transaction: MDB_BAD_TXN..." On Mac OS Sonoma
+      #9050 merged 2023-11-02 wallet: fix multisig key storage leak
+      #8886 closed 2023-06-01 Can I save the wallet after clearing the subaddress?
+      #8550 closed 2022-09-06 monerod docker container 180% CPU usage (After full sync, public node, full node)
+      #8982 closed 2023-09-06 Didn't receive monero my balance is 0.
+      #4815 closed 2018-11-07 Can not recover from 25 word mnemonic
+      #7877 merged 2021-08-18 multisig: key exchange update and refactor
+      #1292 closed 2016-11-03 Bug with CLI wallet: Amounts get contaminated after deleting long multi-row texts wrapping around
+      #2780 closed 2017-11-08 Synchronization error
+      #5070 closed 2019-01-13 Integrate with I2P-Java via libsam3
+      #5357 merged 2019-03-27 daemon, wallet: new pay for RPC use system
+      #2936 merged 2017-12-15 Atex
+      #3098 merged 2018-01-10 levin_protocol_handler_async: erase from back of vector instead of front
+      #2860 merged 2017-11-24 Memwipe
+      #1809 closed 2017-02-26 Dl2
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10514 open 2026-05-01 daemon: clear signal handler before stack teardown
+      #11407 open 2026-09-25 FCMP++: verify FCMP++ proofs tooling
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+      #11140 open 2026-08-19 Deterministic transaction keys from an outgoing view key and the spent key images
+      #11423 closed 2026-09-28 lmdb: fix spinlock leak on resize() failure [v0.18]
+      #10038 open 2025-08-14 cryptonote_core: support RandomX V2 and commitments in v17
+      #9594 open 2024-11-25 RPC connectivity stops for good in high traffic
+      #10344 closed 2026-03-01 crypto: wipe AES key material before free
+      #10595 open 2026-05-13 p2p: download blocklist from quorum'd hash;url
+      #11002 open 2026-07-29 CoC: Add an AI policy
+      #10233 open 2025-11-24 replace wallet2 with Wallet API in simplewallet
+      #8540 merged 2022-08-30 Update levin async callbacks for C++14
+      #9768 open 2025-02-04 src: remove threadpool and use taskflow instead
+      #8132 open 2022-01-06 monerod throws a lot of exceptions and slows down synchronization till almost complete halt.
+      #6250 closed 2019-12-18 Cannot connect to peers or sync with monerod-0.15.0.1
+      #8199 closed 2022-03-02 ZMQ DESTROYED by p2pool daemon. 
+      #8194 closed 2022-02-27 Syncing gets stuck around block >~2450000
+      #10111 merged 2025-09-26 crypto: fast `fe_batch_invert` using Montgomery's trick
+      #11043 closed 2026-08-04 device_trezor: add Trezor Host Protocol v2 support
+      #8911 closed 2023-06-19 ZMQ Crash
+  destroys       6 hit(s) (all listed)
+      #11140 open 2026-08-19 Deterministic transaction keys from an outgoing view key and the spent key images
+      #8540 merged 2022-08-30 Update levin async callbacks for C++14
+      #10059 closed 2025-08-26 Post-Mortem Of `find_and_save_rings()` Bug 2025
+      #8091 closed 2021-11-28 bug: 'destinations' field is empty when showing details of a multisig transaction with show_transfer
+      #2706 closed 2017-10-22 transfers information disappeared from wallet
+      #4819 merged 2018-11-07 epee: No list for self ref
+  overwrite      77 hit(s) (all listed)
+      #10965 open 2026-07-24 crypto: add x25519 wrapper API
+      #5586 open 2019-05-29 prepare_multisig overwrote used wallet 
+      #10077 open 2025-09-11 wallet: more robust reorg handling for multisig info messages
+      #11286 open 2026-09-10 epee: reject ambiguous HTTP request framing
+      #10233 open 2025-11-24 replace wallet2 with Wallet API in simplewallet
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+      #2187 closed 2017-07-21 [BUG] Password "line" rendered invisible when a transaction comes in
+      #11383 merged 2026-09-23 simplewallet: replace init with set daemon and add options
+      #10496 merged 2026-04-29 cmake: don't overwrite CMAKE_EXE_LINKER_FLAGS
+      #5370 open 2019-03-29 use boost::container::flat_map instead of std::unordered_map for suba…
+      #8452 open 2022-07-21 Warning "Invalid DNSSEC TXT record signature for updates.moneropulse.org"
+      #1768 closed 2017-02-21 Failed to create file monero-wallet-rpc.28081.login
+      #11095 closed 2026-08-12 build(deps): bump keccak from 0.1.5 to 0.1.6 in /src/fcmp_pp/fcmp_pp_rust
+      #10424 merged 2026-04-19 zmq: add more missing restricted rpc checks
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #9097 closed 2023-12-23 [Bug] `monero-blockchain-prune` copies the whole DB. Extremely slowly.
+      #8478 closed 2022-08-02 failed to get output distribution
+      #9348 closed 2024-05-29 [Discussion] Stress Testing monerod
+      #8920 merged 2023-06-28 [seraphis] common: update TimingsDatabase
+      #9304 closed 2024-04-25 Build failure with Boost 1.85.0
+  clobber        1 hit(s) (all listed)
+      #10299 merged 2026-02-03 depends: freebsd: don't clobber sysroot with native package install dirs
+  blank          44 hit(s) (all listed)
+      #10794 open 2026-06-18 p2p: allow --ban-list to load from a URL
+      #11416 open 2026-09-27 varint: reject truncated varints
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10168 open 2025-10-14 [proposal] add date and name parameters to wallet URI specification
+      #10602 closed 2026-05-14 print_cn shows blank hosts with IPv6
+      #9368 open 2024-06-14 API organize functions
+      #10857 merged 2026-07-04 readme: fix outdated info, normalize formatting
+      #10232 open 2025-11-24 remove cached password from Wallet API (master)
+      #11026 merged 2026-08-02 simplewallet: show default value in Y/N prompts
+      #10605 merged 2026-05-15 rpc: speedup block&tx RPC calls
+      #6668 open 2020-06-20 [Discussion] Consider removing the tx_extra field
+      #10765 merged 2026-06-14 Polyseed support for 'wallet2', Wallet API, CLI wallet app, wallet RPC server
+      #10228 closed 2025-11-23 .
+      #10227 closed 2025-11-23 .
+      #10177 closed 2025-10-23 Update copyright year to 2025
+      #10176 closed 2025-10-23 DO NOT MERGE
+      #9809 merged 2025-02-20 logging: Fix easylogging++ init with blank config
+      #9316 merged 2024-05-02 net_node: update seed nodes
+      #8660 merged 2022-12-01 [seraphis] common: add variant class
+      #8828 closed 2023-04-22 cant connect with to wallet with windows monero gui
+  unreadable     12 hit(s) (all listed)
+      #10794 open 2026-06-18 p2p: allow --ban-list to load from a URL
+      #10763 open 2026-06-12 p2p: allow --ban-list to load from a URL
+      #9559 open 2024-11-08 carrot_core
+      #10132 closed 2025-09-30 Disable libunwind exceptions on release builds
+      #6639 closed 2020-06-10 [PROPOSAL] Encode restore height as 26th word of the mnemonic seed
+      #8790 closed 2023-03-20 Exceptions in log
+      #8922 merged 2023-06-30 cmake: set cpp17 standard
+      #7480 closed 2021-03-08 Epee: CppCheck fixes
+      #7877 merged 2021-08-18 multisig: key exchange update and refactor
+      #5645 closed 2019-06-14  Error: Couldn't connect to daemon: 127.0.0.1:18081
+      #4885 merged 2018-11-22 wallet2: resume processing when tx extra is partially broken
+      #4218 merged 2018-08-03 Cryptonight variant 2
+  garbage        35 hit(s) (all listed)
+      #11428 open 2026-09-29 portable_binary_iarchive: check signature length before allocating
+      #10222 open 2025-11-22 Depends Perpetual
+      #11130 open 2026-08-17 cryptonote: support pruned weights for old RingCT
+      #9461 open 2024-08-27 wallet2_api + smart pointers
+      #11002 open 2026-07-29 CoC: Add an AI policy
+      #10094 closed 2025-09-22 v0.18.4.2 monerod illegal instruction
+      #6668 open 2020-06-20 [Discussion] Consider removing the tx_extra field
+      #10220 merged 2025-11-21 cryptonote_basic: fix add_extra_nonce_to_tx_extra() length
+      #3281 closed 2018-02-17 Support for reading 16 byte / 13-word seeds
+      #10324 closed 2026-02-15 Implement 'unban all' RPC command.
+      #10765 merged 2026-06-14 Polyseed support for 'wallet2', Wallet API, CLI wallet app, wallet RPC server
+      #10089 merged 2025-09-21 remove 66.85.74.134 as seed node
+      #9860 merged 2025-03-23 wallet: fix wallet_keys_unlocker
+      #10157 merged 2025-10-10 cryptonote_core: cache input verification results directly in mempool
+      #9863 merged 2025-03-24 fix: multisig stale data after failed refresh
+      #9491 merged 2024-09-26 trezor: vendor trezor-common
+      #9762 merged 2025-02-01 tests: Improve p2p tx propagation functional test
+      #9395 merged 2024-07-11 Blockchain: fix temp fails causing alt blocks to be permanently invalid
+      #9139 closed 2024-01-29 Month-long reorgs in logs
+      #8979 merged 2023-08-31 gcc: fix uninitialized constructor warnings
+  mangled        7 hit(s) (all listed)
+      #10280 merged 2026-01-12 Tweak command_line::add_arg for clang 21
+      #817 merged 2016-04-20 simplewallet: some background refresh threading fixes
+      #8144 closed 2022-01-16 unable to obtain and/or process more than 40 new blocks per day
+      #2193 closed 2017-07-23 Cursor inside prompt in monero-wallet-cli
+      #4718 closed 2018-10-24 Can't create transaction: internal error: Daemon response did not include the requested real output
+      #3275 merged 2018-02-16 Fix broken build + refresh language files
+      #6057 merged 2019-10-29 wallet2: make keys unlocker reentrant
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9852 open 2025-03-19 tests: Add Virtualenv Recommendation and Version the Python Testing Packages
+      #10970 merged 2026-07-25 rpc: hide ZMQ request contents in restricted mode
+      #9736 open 2025-01-26 failed to parse blob 1.5 tb storage but input output error at 85%
+      #10265 open 2025-12-20 epee: optimize uri conversion functions
+      #10971 merged 2026-07-25 rpc: hide ZMQ request contents in restricted mode [release-v0.18]
+      #6573 open 2020-05-20  iOS sync blocks performance issues
+      #9234 open 2024-03-10 Added `max_weight` parameter for mining
+      #9334 open 2024-05-20 [Proposal] Change how transactions are broadcasted to significantly reduce P2P bandwidth usage 
+      #8202 open 2022-03-03 Daemon: Store blockchain in '~/.local/share/bitmonero' by default
+      #6410 open 2020-03-31 encrypted recipient private data in extra
+      #8836 open 2023-05-03 Monerod is not a full node by default
+      #11211 closed 2026-08-30 View Only Wallet - Daemon response did not include the requested real output
+      #8740 closed 2023-02-11 Load wallet file very slow
+      #6042 open 2019-10-27 "Double Check" - An extension to OpenAlias for improved security
+      #6456 open 2020-04-16 Proposal/Request: Update Supplementary Transaction Content
+      #7293 closed 2021-01-08 Couldn't allocate RandomX dataset for miner on Rpi 4B
+      #10560 merged 2026-05-09 src: replace deprecated sprintf calls (fix warning)
+      #7078 open 2020-12-05 P2P Encryption+Authentication Discussion
+      #8864 closed 2023-05-19 monero-wallet-rpc erroneously claims to lose connection to daemon if tx-notify script crashes
+      #10585 merged 2026-05-13 lmdb: mark Apple text_env section as code
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11390 open 2026-09-23 cmake: use target_include_directories where applicable
+      #11247 open 2026-09-04 command_line: fix parsing error
+      #10032 open 2025-08-11 wallet: failed txs due to dropping connection during long operations
+      #10595 open 2026-05-13 p2p: download blocklist from quorum'd hash;url
+      #11313 open 2026-09-13 Feature request: Corrupted database recostruction
+      #11407 open 2026-09-25 FCMP++: verify FCMP++ proofs tooling
+      #9461 open 2024-08-27 wallet2_api + smart pointers
+      #11090 open 2026-08-11 p2p: add option to exempt local addresses from bans and restrictions
+      #10233 open 2025-11-24 replace wallet2 with Wallet API in simplewallet
+      #11249 open 2026-09-05 p2p: add Tor SOCKS stream isolation
+      #9442 open 2024-08-17 Add man page for monerod !
+      #10847 open 2026-06-30 daemon: load config from explicit data dir
+      #10085 open 2025-09-17 daemon: kick invalid txs from pool
+      #9234 open 2024-03-10 Added `max_weight` parameter for mining
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10787 open 2026-06-16 epee: lazy generation of ssl certificates
+      #8261 open 2022-04-16 Fix languages list being defined twice and add language validation on wallet creation
+      #10819 open 2026-06-25 wallet_rpc: replace wallet2 with Wallet API
+      #7803 open 2021-07-20 Improve epee binary unpack performance
+      #10421 open 2026-04-18 device: enable support for Ledger Speculos
+  unclean        7 hit(s) (all listed)
+      #8380 open 2022-06-08 Error sending funds to self with integrated subaddress
+      #10342 merged 2026-02-27 crypto: torsion clearing for FCMP++
+      #2669 closed 2017-10-16 Bus error on loading blockchain
+      #7424 closed 2021-03-04 monerod bus error
+      #1349 closed 2016-11-17 Segmentation fault issue
+      #898 closed 2016-07-10 bitmonerod: segfaults on (probably) corrupt lmdb blockchain data
+      #5085 closed 2019-01-20 Fork to Argon/ArgonNight
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11409 open 2026-09-26 wallet-rpc: bind before loading the wallet
+      #11266 open 2026-09-07 Add optional flag to persist wallet state synchronously before responding
+      #10351 open 2026-03-06  src: fix monerod shutdown hanging by making SIGINT handling async-signal-safe
+      #10514 open 2026-05-01 daemon: clear signal handler before stack teardown
+      #11134 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown
+      #10513 open 2026-05-01 daemon: stack-use-after-return via dangling signal handler references
+      #4413 open 2018-09-22 Support USR1 signal for log rotation
+      #11138 merged 2026-08-18 wallet_rpc_server: stop refresh on shutdown
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #10074 open 2025-09-09 Sync and RPC errors on Alpine Linux
+      #11415 closed 2026-09-27 Add automated checkpointing and recovery for lmdb corruption
+      #11139 merged 2026-08-18 wallet_rpc_server: stop refresh on shutdown [release-v0.18]
+      #8996 open 2023-09-19 Add SSL support to P2P
+      #11135 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown [release-v0.18]
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #8729 open 2023-02-03 Corrupted wallet when insufficient address lookahead on offline wallet
+      #10940 merged 2026-07-21 epee: detect half-closed sockets so clients reconnect instead of failing
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+      #9767 open 2025-02-04 wallet: avoid premature elevation of auto fee
+  reboot         39 hit(s) (all listed)
+      #9063 open 2023-11-09 Incorrect amounts for wallet transaction after key image sync
+      #9482 open 2024-09-14 monerod exit gets stuck/hangs at deinitializing p2p; network connection activity continues in background; command window will not close and cannot force process to close
+      #1271 open 2016-10-29 Don't use Insecure Userland PRNG for random_scalar()
+      #9055 closed 2023-11-04 start of monerod gives "Segmentation fault (core dumped)" on Archlinux
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #1768 closed 2017-02-21 Failed to create file monero-wallet-rpc.28081.login
+      #8629 closed 2022-11-02 Failed send XMR, Monero GUi WALLET / Ledger Nano X
+      #10393 closed 2026-03-30 monero-0.18.4.6 triggers kernel bug.
+      #8837 closed 2023-05-05 Monerod crashes without any visible errors in its logs
+      #8327 closed 2022-05-12 Monero wallet RPC - repetitive "syncing" and "Error starting server: Failed to bind IPv4"
+      #8194 closed 2022-02-27 Syncing gets stuck around block >~2450000
+      #8790 closed 2023-03-20 Exceptions in log
+      #9419 closed 2024-08-03 monerod.service - Failed to initiatize p2p server
+      #6621 closed 2020-06-02 Daemon with RPC Pay Stops Communicating and on Reboot Earned Credits are Lost
+      #3931 closed 2018-06-05 PANIC! failed to add (again) block while chain switching during the rollback!
+      #9356 closed 2024-06-07 monerod started mining on its own
+      #8759 closed 2023-03-03 Monerod is stuck while synchronizing
+      #8573 closed 2022-09-18 When syncing blockchain "Error in handle_invoke_map: std::bad_alloc"
+      #8342 closed 2022-05-19 p2pool mining excessive ram usage never reclaims reboots required
+      #8520 closed 2022-08-20 monerod: incoming peers unreasonably low
+  disk+full      53 hit(s) (all listed)
+      #11130 open 2026-08-17 cryptonote: support pruned weights for old RingCT
+      #8742 open 2023-02-15 monerod: [windows] Mysterious "disk leak," while Monero daemon is running
+      #9822 open 2025-02-26 possible speed up for HDDs initial sync, pre-sizing database to the current size of the database instead of constant resizing
+      #11486 open 2026-10-04 Monerod v0.18.5.1 stalls at block height 1,329,964 during synchronization Summary
+      #9240 open 2024-03-11 Considering a fee increase for the next hard fork
+      #9736 open 2025-01-26 failed to parse blob 1.5 tb storage but input output error at 85%
+      #9097 closed 2023-12-23 [Bug] `monero-blockchain-prune` copies the whole DB. Extremely slowly.
+      #9399 closed 2024-07-15 lazy fetching of the monero blockchain
+      #8826 closed 2023-04-20 Unable to prune
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #8194 closed 2022-02-27 Syncing gets stuck around block >~2450000
+      #9341 closed 2024-05-24 blockchain always gets corrupt
+      #6639 closed 2020-06-10 [PROPOSAL] Encode restore height as 26th word of the mnemonic seed
+      #3281 closed 2018-02-17 Support for reading 16 byte / 13-word seeds
+      #9476 closed 2024-09-12 first use dialog: recommend tor for anonymous transactions
+      #8929 merged 2023-07-02 Bootstrappable Builds
+      #9135 merged 2024-01-24 blockchain sync: reduce disk writes from 2 to 1 per tx
+      #4843 merged 2018-11-13 Pruning
+      #9315 closed 2024-05-02 Daemon crashed last night with only a warning
+      #9081 closed 2023-11-29 Error with blockchain after abnormal shutdown
+  data+loss      53 hit(s) (all listed)
+      #10572 open 2026-05-10 common/dns_utils: load DNS blocklist in chunks from each domain
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+      #10038 open 2025-08-14 cryptonote_core: support RandomX V2 and commitments in v17
+      #11285 closed 2026-09-10 Bug: monerod cannot correctly identify database corruption caused by truncation
+      #8380 open 2022-06-08 Error sending funds to self with integrated subaddress
+      #10064 open 2025-08-31 Temporary rolling DNS checkpoints
+      #6668 open 2020-06-20 [Discussion] Consider removing the tx_extra field
+      #7078 open 2020-12-05 P2P Encryption+Authentication Discussion
+      #10085 open 2025-09-17 daemon: kick invalid txs from pool
+      #11059 closed 2026-08-06 Exception escaping `node_server::idle_worker()` permanently disables all p2p maintenance (out-peers → 0, connections never reaped)
+      #10605 merged 2026-05-15 rpc: speedup block&tx RPC calls
+      #7889 open 2021-08-24 [Discussion] Proposal to deprecate integrated addresses
+      #8194 closed 2022-02-27 Syncing gets stuck around block >~2450000
+      #10765 merged 2026-06-14 Polyseed support for 'wallet2', Wallet API, CLI wallet app, wallet RPC server
+      #10341 closed 2026-02-26 Daemon keeps corrupting during sync
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #9341 closed 2024-05-24 blockchain always gets corrupt
+      #10040 closed 2025-08-16 Preventing selfish mining
+      #8885 closed 2023-05-31 Node no longer syncs --Failed to query m_blocks: MDB_BAD_TXN--
+      #9664 merged 2024-12-30 Check for windows NTFS compression on monerod startup (fixes #9617)
+  partial+write  24 hit(s) (all listed)
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #10969 merged 2026-07-24 blockchain_utilities: resume interrupted exports safely
+      #1768 closed 2017-02-21 Failed to create file monero-wallet-rpc.28081.login
+      #7078 open 2020-12-05 P2P Encryption+Authentication Discussion
+      #7889 open 2021-08-24 [Discussion] Proposal to deprecate integrated addresses
+      #9334 open 2024-05-20 [Proposal] Change how transactions are broadcasted to significantly reduce P2P bandwidth usage 
+      #8889 closed 2023-06-02 Bus error upon starting monerod on termux android 32-bit
+      #8114 closed 2021-12-14 multisig: fixes
+      #8203 merged 2022-03-03 multisig: add key exchange round booster
+      #3545 closed 2018-04-03 Idea for ASIC resistance
+      #8520 closed 2022-08-20 monerod: incoming peers unreasonably low
+      #8149 merged 2022-01-18 Multisig: signature fixes
+      #4139 closed 2018-07-16 [Do Not Merge] Adding "light wallet server" that is mymonero compatible
+      #7147 closed 2020-12-14 gitian: CA certs are out of date
+      #8144 closed 2022-01-16 unable to obtain and/or process more than 40 new blocks per day
+      #7170 merged 2020-12-18 Bulletproof+ by sarang, tied to consensus
+      #3387 closed 2018-03-12 Proposal to consider an ASIC-friendly proof of work
+      #8061 merged 2021-11-15 Add view tags to outputs to reduce wallet scanning time
+      #1673 closed 2017-02-04 [Discussion] Raising the mandatory ringsize in the v6 hardfork, September 2017
+  crash+safe     63 hit(s) (all listed)
+      #9972 open 2025-06-28 System crashed overnight, blockchain (seemingly) corrupted
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #10286 open 2026-01-21 Better monerod OpenBSD support in future
+      #9433 open 2024-08-13 contrib: change default value of epee::serialization to fix limitation
+      #8194 closed 2022-02-27 Syncing gets stuck around block >~2450000
+      #9912 closed 2025-04-24 [Discussion] New Release schedule and Git workflow
+      #10341 closed 2026-02-26 Daemon keeps corrupting during sync
+      #10765 merged 2026-06-14 Polyseed support for 'wallet2', Wallet API, CLI wallet app, wallet RPC server
+      #10163 closed 2025-10-13 Busy public node segfaults since 4.3 update
+      #9255 closed 2024-03-17 monerod just quits at start
+      #9081 closed 2023-11-29 Error with blockchain after abnormal shutdown
+      #3545 closed 2018-04-03 Idea for ASIC resistance
+      #4531 closed 2018-10-08 device: destroy device objects on exit
+      #8680 closed 2022-12-16 Daemon dont synchronize 
+      #9101 closed 2023-12-24 Bug: Monerod crashes on Docker for no reason
+      #8051 closed 2021-11-09 Error in `monerod': free(): corrupted unsorted chunks
+      #4241 merged 2018-08-10 [for review] TREZOR: initial integration proposal
+      #8839 merged 2023-05-05 bump lmdb sync threshold for performance
+      #8810 merged 2023-03-29 Fixed deadlock and crash when syncing with full dataset on Windows
+      #8520 closed 2022-08-20 monerod: incoming peers unreasonably low
+  atomic+write   43 hit(s) (all listed)
+      #11381 open 2026-09-23 Fix wallet transaction accounting during sync
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+      #10513 open 2026-05-01 daemon: stack-use-after-return via dangling signal handler references
+      #10101 open 2025-09-22 Add thread acquire+release for ZeroMQ msg calls
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #11134 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown
+      #11275 closed 2026-09-09 wallet: add optional flush parameter preemptive of disaster events
+      #9933 open 2025-05-22 Tx Relay v2: New Relay Logic with threshold-based peer dropping
+      #9181 closed 2024-02-19 cryptonote_core: introducing rwlock mechanism
+      #9830 open 2025-03-09 wallet: add multiple-recipient URI support to `parse_uri` and `make_uri`
+      #8157 open 2022-01-25 "No Wallet Left Behind" - Make Sure Our Wallets Survive the Fork to Monero 2.0
+      #6668 open 2020-06-20 [Discussion] Consider removing the tx_extra field
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #10324 closed 2026-02-15 Implement 'unban all' RPC command.
+      #9494 merged 2024-09-30 src: dynamic block sync size
+      #9193 closed 2024-02-21 database: Potential data race for mutual exclusion
+      #7760 closed 2021-06-22 connection: fix implementation
+      #8211 merged 2022-03-08 EPEE Cleanup Reorganized
+      #7170 merged 2020-12-18 Bulletproof+ by sarang, tied to consensus
+      #8061 merged 2021-11-15 Add view tags to outputs to reduce wallet scanning time
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11420 open 2026-09-28 Add nix development flake
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #11100 open 2026-08-12 [WIP] fcmp_pp_rust: vendor cargo deps
+      #11242 open 2026-09-04 cryptonote_basic: simplify Hardfork
+      #9522 open 2024-10-17 blockchain_utilities: add tool to track running counts of locked outputs
+      #11329 open 2026-09-15 epee: scale RPC timeouts by configured per-IP limits
+      #11486 open 2026-10-04 Monerod v0.18.5.1 stalls at block height 1,329,964 during synchronization Summary
+      #9332 open 2024-05-15 Wallet corruption while storing
+      #9092 open 2023-12-20 Redesign and Improve the Logging Infrastructure
+      #8058 open 2021-11-13 [UX] monero-wallet-rpc Should Log That it's Syncing on Default Log Level
+      #9822 open 2025-02-26 possible speed up for HDDs initial sync, pre-sizing database to the current size of the database instead of constant resizing
+      #7027 open 2020-11-18 monerod hogging CPU on OpenBSD after synchronisation
+      #9436 open 2024-08-14 [WIP] full-chain membership proof++ integration
+      #5719 open 2019-07-01 failure to read passphrase when using screen.
+      #5492 open 2019-04-24 Encrypted backup in a format designed for long life
+      #10343 open 2026-03-01 Add proper status / error codes to the Wallet API
+      #9024 open 2023-10-17 docs/utils: add decoy selection implementation guides and tools
+      #10286 open 2026-01-21 Better monerod OpenBSD support in future
+      #10064 open 2025-08-31 Temporary rolling DNS checkpoints
+      #9464 open 2024-08-30 add functions to wallet API
+  write+failure  84 hit(s) (all listed)
+      #11409 open 2026-09-26 wallet-rpc: bind before loading the wallet
+      #11381 open 2026-09-23 Fix wallet transaction accounting during sync
+      #11185 open 2026-08-25 wallet_api: lock refresh around wallet mutations
+      #10523 open 2026-05-05 net/i2p: support sam protocol
+      #9831 open 2025-03-13 epee: Change Color Contrast On Magenta (Console Color)
+      #10140 open 2025-10-03 Investigating repeated LMDB errors: could a MITM / malicious peers be pushing a covert fork?
+      #8024 open 2021-10-27 unit tests: Harden flaky decoy output selection tests
+      #11208 open 2026-08-29 epee: replace readline with linenoise
+      #9822 open 2025-02-26 possible speed up for HDDs initial sync, pre-sizing database to the current size of the database instead of constant resizing
+      #9972 open 2025-06-28 System crashed overnight, blockchain (seemingly) corrupted
+      #9559 open 2024-11-08 carrot_core
+      #7057 open 2020-12-03 Provide last error from http client to UI
+      #9464 open 2024-08-30 add functions to wallet API
+      #9933 open 2025-05-22 Tx Relay v2: New Relay Logic with threshold-based peer dropping
+      #10855 merged 2026-07-03 wallet: copy parsed crypto fields
+      #11134 merged 2026-08-17 wallet2: abort in-flight daemon request on shutdown
+      #9830 open 2025-03-09 wallet: add multiple-recipient URI support to `parse_uri` and `make_uri`
+      #9736 open 2025-01-26 failed to parse blob 1.5 tb storage but input output error at 85%
+      #11043 closed 2026-08-04 device_trezor: add Trezor Host Protocol v2 support
+      #1768 closed 2017-02-21 Failed to create file monero-wallet-rpc.28081.login
+  file+contents  78 hit(s) (all listed)
+      #9852 open 2025-03-19 tests: Add Virtualenv Recommendation and Version the Python Testing Packages
+      #8202 open 2022-03-03 Daemon: Store blockchain in '~/.local/share/bitmonero' by default
+      #11211 closed 2026-08-30 View Only Wallet - Daemon response did not include the requested real output
+      #6042 open 2019-10-27 "Double Check" - An extension to OpenAlias for improved security
+      #8740 closed 2023-02-11 Load wallet file very slow
+      #8864 closed 2023-05-19 monero-wallet-rpc erroneously claims to lose connection to daemon if tx-notify script crashes
+      #7293 closed 2021-01-08 Couldn't allocate RandomX dataset for miner on Rpi 4B
+      #7078 open 2020-12-05 P2P Encryption+Authentication Discussion
+      #10585 merged 2026-05-13 lmdb: mark Apple text_env section as code
+      #10084 merged 2025-09-15 wallet: add `wallet2_basic` library types
+      #7871 closed 2021-08-16 Building macOS non-vendored dependencies fail on macOS Big Sur  
+      #10394 merged 2026-03-31 brew: remove unnecessary homebrew/bundle tap
+      #10111 merged 2025-09-26 crypto: fast `fe_batch_invert` using Montgomery's trick
+      #8889 closed 2023-06-02 Bus error upon starting monerod on termux android 32-bit
+      #8619 merged 2022-10-21 wallet: background sync with just the view key [master]
+      #7283 closed 2021-01-05 Run tests in parallel, whenever possible
+      #9255 closed 2024-03-17 monerod just quits at start
+      #9849 closed 2025-03-18 Convert CRLF to LF.
+      #9876 merged 2025-03-28 CMakeLists: add cache option for MANUAL_SUBMODULES
+      #9642 merged 2024-12-24 depends: unbound: update to 1.22.0
+
+== 51 terms run; 50 returned hits, 14 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

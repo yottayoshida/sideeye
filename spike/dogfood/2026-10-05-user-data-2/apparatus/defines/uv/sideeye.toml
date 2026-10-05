@@ -1,0 +1,6 @@
+[world]
+state = "/s/uvd/uv/credentials"
+
+[define]
+operation = "/opt/py/bin/uv auth logout https://pkgs.example.internal/simple --username alice"
+cwd       = "/s/uv-in"

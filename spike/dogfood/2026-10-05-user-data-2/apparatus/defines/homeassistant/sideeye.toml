@@ -1,0 +1,6 @@
+[world]
+state = "/s/ha"
+
+[define]
+operation = "hass --script auth -c /s/ha change_password alice pw-three"
+cwd       = "/s/ha-in"

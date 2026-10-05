@@ -1,0 +1,814 @@
+== novelty pre-scan: sigp/lighthouse
+== date: 2026-10-05T02:49:57Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6467 open 2024-10-05 Regular panic crash on Windows
+      #7216 open 2025-03-28 Global pubkey cache is not crash safe
+      #9978 open 2026-09-04 Revert `fork_choice::payload_received` when envelope db write fails
+      #9776 merged 2026-08-09 make historical backfill DB writes crash-safe
+      #9620 open 2026-07-13 PeerDAS: finalized-chain sync livelocks — outbound self rate-limiter blocks all data_column_sidecars_by_range requests (v8.2.0, Hoodi)
+      #10085 open 2026-09-18 Aggregate replays with mutated `aggregator_index` bypass dedup and batch verification
+      #5811 open 2024-05-19 `monitoring-endpoint` argument from beaconcha.in is not working
+      #1914 open 2020-11-16 Batch attestation slashability checking
+      #2824 open 2021-11-19 Add `lighthouse db purge dht` subcommand
+      #4198 open 2023-04-17 Fix and test fork revert logic
+      #9584 open 2026-07-07 PTC payload-attestation fork gate evaluated on the wrong slot — first Gloas slot is skipped
+      #9623 closed 2026-07-13 Fsync during backfill
+      #2844 open 2021-12-01 Idea: I/O queue to accelerate block processing
+      #9895 closed 2026-08-20 Do not advance state under fc lock
+      #6606 open 2024-11-25 Block verification checks for pre-finalized/conflicting-with-finalized blocks are flaky
+      #8147 open 2025-10-01 Fork choice write lock held during database write
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #9377 closed 2026-05-31 Lighthouse crashes due to panic in rust-libp2p UPnP behaviour
+      #6399 closed 2024-09-16 Panic crash after upgrade to 5.3.0 from 5.1.3 (UPnP)
+      #5391 open 2024-03-11 Import expired blobs
+  corrupt        59 hit(s) (all listed)
+      #10147 open 2026-09-29 Improve error handling in EF `operations` tests
+      #9644 open 2026-07-15 Add `static_file_storage` crate
+      #7638 open 2025-06-23 Add PostgresDB as an optional DB implementation for the Beacon Node
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #6277 open 2024-08-19 Binaries compiled with MDBX exhibit memory corruption
+      #2824 open 2021-11-19 Add `lighthouse db purge dht` subcommand
+      #10142 closed 2026-09-28 FCR startup fails when finalized checkpoint predates hot/cold split after restart
+      #9623 closed 2026-07-13 Fsync during backfill
+      #9633 merged 2026-07-14 Check if cached cells are identical to received cells
+      #9209 merged 2026-04-28 Gloas payload cache
+      #8314 merged 2025-10-28 Cell Dissemination (Partial messages)
+      #8538 closed 2025-12-04 Upgraded 8.0.1 Node Fails to Start (DB issue)
+      #8146 closed 2025-10-01 Potentially connected to malicious network
+      #8363 closed 2025-11-04 State Reconstruction Fails with MissingHDiff Error on Archival Node
+      #8156 merged 2025-10-02 Block proposal optimisations
+      #7849 merged 2025-08-11 Fix bugs in rebasing of states prior to finalization
+      #7589 closed 2025-06-12 error loading checkpoint state
+      #7460 merged 2025-05-15 Make DAG construction more permissive
+      #7384 closed 2025-05-01 Lighthouse failed to start beacon node.. suddently
+      #3662 closed 2022-10-26 Failure to sync
+  corruption     54 hit(s) (all listed)
+      #6277 open 2024-08-19 Binaries compiled with MDBX exhibit memory corruption
+      #9644 open 2026-07-15 Add `static_file_storage` crate
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #5145 open 2024-01-30 `fsync` more
+      #7839 open 2025-08-07 Attestation verification access of `fork_choice` lock is racey
+      #3026 open 2022-02-15 Don't let state reconstruction starve pruning
+      #6974 open 2025-02-11 Perform integrity check on custody columns against database on startup
+      #4616 open 2023-08-14 Spurious failures in `validator_manager` tests
+      #483 open 2019-08-02 Switch on-disk database from LevelDB
+      #10142 closed 2026-09-28 FCR startup fails when finalized checkpoint predates hot/cold split after restart
+      #9623 closed 2026-07-13 Fsync during backfill
+      #8877 closed 2026-02-20 Invalid execution payloads — mismatched block state root on sepolia
+      #8378 closed 2025-11-06 Optimise fork choice attestation dequeueing
+      #8607 closed 2025-12-19 Fix and test fork revert
+      #8192 closed 2025-10-12 Allow LH to checkpoint sync into a non-finalized checkpoint
+      #8538 closed 2025-12-04 Upgraded 8.0.1 Node Fails to Start (DB issue)
+      #8156 merged 2025-10-02 Block proposal optimisations
+      #7781 closed 2025-07-23 Intermittently freezes
+      #8146 closed 2025-10-01 Potentially connected to malicious network
+      #7132 closed 2025-03-13 Add logs when adding to pubkey cache
+  truncated      16 hit(s) (all listed)
+      #9547 merged 2026-06-26 engine_forkchoiceUpdatedV4: provide custody columns to the EL
+      #9108 merged 2026-04-08 Truncated `Display` impl for `ExecutionBlockHash`
+      #3051 closed 2022-03-01 Fix handling of `api-token.txt` and `validator_key_cache.json` when disk is full
+      #7440 closed 2025-05-12 Missing `version` in response of Beacon-API method `getPendingConsolidations`
+      #7394 merged 2025-05-03 simulator: Persist beacon logs
+      #6750 merged 2025-01-02 Hierarchical state diffs in hot DB
+      #5100 closed 2024-01-20 Fix and test fork revert logic
+      #6117 merged 2024-07-16 chore: update the trusted setup to match the consensus-specs version
+      #4859 closed 2023-10-18 [Merged by Bors] - deneb related logging improvements
+      #3891 closed 2023-01-17 Check data availability boundary in rpc request
+      #3856 closed 2023-01-06 Bump tokio from 1.21.2 to 1.23.1
+      #3169 closed 2022-05-05 `Peer sent invalid block in single block` seems to cause beacon node desync (malicious ?)
+      #2338 closed 2021-05-10 [Merged by Bors] - Write validator definitions atomically
+      #2037 closed 2020-12-02 Possible leak from length of truncated Git hash in graffiti
+      #939 closed 2020-03-19 Deposit contract address cli flag
+      #1642 closed 2020-09-21 BIP-39 12 word seed phrase causes problems
+  truncate       37 hit(s) (all listed)
+      #10096 open 2026-09-21 Fix bad time rounding in proposer reorg checks (Gnosis)
+      #10038 open 2026-09-11 Implement `GET beacon/pool/payload_attestations` endpoint
+      #9742 merged 2026-08-03 Add inclusion list committee derivation
+      #9547 merged 2026-06-26 engine_forkchoiceUpdatedV4: provide custody columns to the EL
+      #9108 merged 2026-04-08 Truncated `Display` impl for `ExecutionBlockHash`
+      #3051 closed 2022-03-01 Fix handling of `api-token.txt` and `validator_key_cache.json` when disk is full
+      #7558 merged 2025-06-04 Append client version info to graffiti
+      #8032 merged 2025-09-11 Bump `ssz_types` to `v0.12.2`
+      #7440 closed 2025-05-12 Missing `version` in response of Beacon-API method `getPendingConsolidations`
+      #7927 merged 2025-08-25 Fix RPC blocks not getting fully KZG verified
+      #7921 merged 2025-08-22 Use `rayon` to speed up batch KZG verification
+      #7930 merged 2025-08-25 Delete `RuntimeVariableList::from_vec`
+      #7394 merged 2025-05-03 simulator: Persist beacon logs
+      #6750 merged 2025-01-02 Hierarchical state diffs in hot DB
+      #5100 closed 2024-01-20 Fix and test fork revert logic
+      #6339 merged 2024-09-02 Integrate tracing
+      #6078 merged 2024-07-11 Migrate from `ethereum-types` to `alloy-primitives`
+      #6117 merged 2024-07-16 chore: update the trusted setup to match the consensus-specs version
+      #5290 merged 2024-02-25 Encode Execution Engine Client Version In Graffiti
+      #4640 merged 2023-08-18 More deneb cleanup
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9976 open 2026-09-04 Fix empty BlocksByRoot responses during Gloas column publish
+      #9865 open 2026-08-19 Fix: use empty finalized header when finalized_block_root is zero
+      #10175 open 2026-09-30 Add Gloas tests for invalid finalized payloads
+      #9971 open 2026-09-03 Avoid retaining useless data on finalization
+      #10176 open 2026-09-30 Add Gloas optimistic sync invalidation tests
+      #10152 open 2026-09-29 Gloas optimistic sync testing blitz
+      #10071 open 2026-09-17 Provide IL transactions in forkchoiceUpdatedV5 calls
+      #10118 open 2026-09-24 Test case: invalid finalized payload
+      #9666 open 2026-07-20 Add light client data collection ef test handler (draft)
+      #10125 open 2026-09-25 Publish partial column requests after HTTP block import
+      #9975 open 2026-09-04 Gloas block import race causes peer disconnects
+      #9928 open 2026-08-27 Improve Gloas sync notifier logs
+      #9729 open 2026-08-01 Add inclusion_list_bits to ExecutionPayloadBid
+      #9099 open 2026-04-06 Gloas sync notifier logs
+      #10008 open 2026-09-08 Add inclusion list production endpoint to the Beacon API
+      #9990 open 2026-09-07 Aggregate real public keys in the fake_crypto backend
+      #10069 open 2026-09-17 Refresh PTC duties after validator index discovery
+      #8630 open 2026-01-07 ePBS side-effects on Lighthouse
+      #9691 open 2026-07-26 `BalancesCache` can diverge from justified checkpoint state balances
+      #8985 open 2026-03-13 Fix Column Reconstruction Race Condition
+  atomic         73 hit(s) (all listed)
+      #1537 open 2020-08-18 Improve atomicity of slashing protection DB creation
+      #4984 open 2023-12-06 Atomicity bug while adding validators using validator client API
+      #9644 open 2026-07-15 Add `static_file_storage` crate
+      #10080 open 2026-09-18 Add in-process ERE verification bindings for execution proofs
+      #1307 open 2020-06-29 Redesign and clean up store metrics
+      #6572 open 2024-11-07 Remove `DataColumnInfo`
+      #9906 open 2026-08-22 Repeated optimistic/synced flapping on execution-layer outage causes attester duty dependent_root oscillation → near double-vote via multi-BN VC fallback
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #10024 open 2026-09-09 Implement light-client sync verification with EF sync tests
+      #2557 open 2021-09-01 Feature Request: simpler and safer workflow to move validators from one lighthouse vc to another
+      #5402 open 2024-03-12 Validator manager move should respect suggested fee recipient
+      #2824 open 2021-11-19 Add `lighthouse db purge dht` subcommand
+      #8147 open 2025-10-01 Fork choice write lock held during database write
+      #9373 closed 2026-05-29 Instrument the fork choice lock with hold-time metrics and backtraces
+      #10015 merged 2026-09-09 Prune finalised payload envelopes
+      #9775 merged 2026-08-08 Deduplicate execution payload envelopes on gossip
+      #3051 closed 2022-03-01 Fix handling of `api-token.txt` and `validator_key_cache.json` when disk is full
+      #7783 merged 2025-07-23 Expose functions to do preliminary slashing checks
+      #8551 closed 2025-12-08 fix: TOCTOU issue in network config
+      #8409 merged 2025-11-13 Gracefully handle deleting states prior to anchor_slot
+  atomically     40 hit(s) (all listed)
+      #2844 open 2021-12-01 Idea: I/O queue to accelerate block processing
+      #5145 open 2024-01-30 `fsync` more
+      #2557 open 2021-09-01 Feature Request: simpler and safer workflow to move validators from one lighthouse vc to another
+      #5402 open 2024-03-12 Validator manager move should respect suggested fee recipient
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #8404 closed 2025-11-12 Delete the `block_cache`
+      #10015 merged 2026-09-09 Prune finalised payload envelopes
+      #8895 merged 2026-02-24 Add debug spans to DB write paths
+      #7783 merged 2025-07-23 Expose functions to do preliminary slashing checks
+      #7685 closed 2025-07-01 feat(store): Add PostgresDB backend with basic get/put and tests
+      #7648 merged 2025-06-25 Data column custody info
+      #4235 closed 2023-04-26 Use target state to compute committees
+      #6559 closed 2024-11-01 Prune blobs can OOM
+      #6332 closed 2024-08-30 Optimize Redb temporary state cleanup
+      #4669 closed 2023-08-25 Modularize beacon node backend
+      #4718 merged 2023-09-09 Modularize beacon node backend
+      #6329 merged 2024-08-29 Make max_blobs_per_block a config parameter
+      #6041 merged 2024-07-03 Track store metrics by DB column
+      #5119 merged 2024-01-23 Backfill blob storage fix
+      #5114 closed 2024-01-23 Backfill mistakenly stores blobs in the hot DB
+  interrupted    8 hit(s) (all listed)
+      #9834 closed 2026-08-17 merge queue: checking unstable (3ea7c47) and #9760 together
+      #9859 closed 2026-08-18 merge queue: checking unstable (b8cc497) and [#9761 + #9763] together
+      #9835 closed 2026-08-17 merge queue: checking unstable (3ea7c47), #9760 and #9761 together
+      #9833 closed 2026-08-17 merge queue: checking unstable (3ea7c47) and [#9760 + #9761 + #9763] together
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #5390 closed 2024-03-11 Beacon Processor's Inbound Event Queue Is Unaffected By a Runtime Argument
+      #4332 closed 2023-05-25 Beacon node failing to recover after a SIGINT shutdown (fork choice store corruption)
+      #1680 closed 2020-09-28 If beacon is restarted after genesis state has been generated but before genesis event, it will fail.
+  interrupt      19 hit(s) (all listed)
+      #2466 open 2021-07-18 Downgrade HeadMissingFromSnapshotCache warning
+      #4616 open 2023-08-14 Spurious failures in `validator_manager` tests
+      #6467 open 2024-10-05 Regular panic crash on Windows
+      #9834 closed 2026-08-17 merge queue: checking unstable (3ea7c47) and #9760 together
+      #9859 closed 2026-08-18 merge queue: checking unstable (b8cc497) and [#9761 + #9763] together
+      #9835 closed 2026-08-17 merge queue: checking unstable (3ea7c47), #9760 and #9761 together
+      #9833 closed 2026-08-17 merge queue: checking unstable (3ea7c47) and [#9760 + #9761 + #9763] together
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #6922 merged 2025-02-06 Make range sync peer loadbalancing PeerDAS-friendly
+      #3662 closed 2022-10-26 Failure to sync
+      #5390 closed 2024-03-11 Beacon Processor's Inbound Event Queue Is Unaffected By a Runtime Argument
+      #4332 closed 2023-05-25 Beacon node failing to recover after a SIGINT shutdown (fork choice store corruption)
+      #478 closed 2019-07-31 HTTP API Prevents Graceful Shutdown w/ Chrome
+      #3487 closed 2022-08-19 [Merged by Bors] - Run per-slot fork choice at a further distance from the head
+      #2114 closed 2020-12-22 Shutdown gracefully on SIGPIPE, SIGHUP
+      #2194 closed 2021-02-12 [Merged by Bors] - Prune slashing protection DB
+      #1547 closed 2020-08-19 Analyse missing attestations on Medalla
+      #1680 closed 2020-09-28 If beacon is restarted after genesis state has been generated but before genesis event, it will fail.
+      #1837 closed 2020-10-28 [Merged by Bors] - Improve validator key cache lock handling
+  sigkill        13 hit(s) (all listed)
+      #10160 merged 2026-09-29 Fix FCR restart UX bug
+      #6606 open 2024-11-25 Block verification checks for pre-finalized/conflicting-with-finalized blocks are flaky
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #7781 closed 2025-07-23 Intermittently freezes
+      #4773 closed 2023-09-22 Lighthouse space usage - Increasing dramastically from 87GB to 430GB in 7 days
+      #4332 closed 2023-05-25 Beacon node failing to recover after a SIGINT shutdown (fork choice store corruption)
+      #3879 closed 2023-01-13 Fix docker antithesis builds
+      #3536 closed 2022-09-02 Heavy HTTP requests halt the client
+      #3636 closed 2022-10-10 could not compile `simulator`
+      #3274 closed 2022-06-15 error: failed to compile `lighthouse v2.3.1 (/root/lighthouse/lighthouse)`, intermediate artifacts can be found at `/root/lighthouse/target`
+      #1958 closed 2020-11-24 [Merged by Bors] - Use OS file locks in validator client
+      #692 closed 2019-12-10 Use atomic operations in database to harden against failures
+      #839 closed 2020-02-05 Docker container doesn't exit gracefully
+  sigint         8 hit(s) (all listed)
+      #4616 open 2023-08-14 Spurious failures in `validator_manager` tests
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #3662 closed 2022-10-26 Failure to sync
+      #4332 closed 2023-05-25 Beacon node failing to recover after a SIGINT shutdown (fork choice store corruption)
+      #2486 closed 2021-07-31 [Merged by Bors] - Add more unix signal handlers
+      #2114 closed 2020-12-22 Shutdown gracefully on SIGPIPE, SIGHUP
+      #2208 closed 2021-02-17 Validator node does not start after updating from v1.1.0 to v1.1.1
+      #2054 closed 2020-12-06 Graffiti ""
+  ctrl-c         19 hit(s) (all listed)
+      #2316 open 2021-04-18 Use long-running tokio tasks to prevent VC missing duties on shutdown
+      #2394 open 2021-06-03 VC blocks on `SlashingDatabase::open` when running with NSSM on Windows
+      #3662 closed 2022-10-26 Failure to sync
+      #4054 merged 2023-03-06 Deneb
+      #3927 closed 2023-01-27 Fix kill_process.sh bug
+      #4332 closed 2023-05-25 Beacon node failing to recover after a SIGINT shutdown (fork choice store corruption)
+      #478 closed 2019-07-31 HTTP API Prevents Graceful Shutdown w/ Chrome
+      #1557 closed 2020-08-21 Head tracker has unsafe API wrt concurrency
+      #2566 closed 2021-09-04 Reduce verbosity of logging on VC when a BN is offline
+      #2486 closed 2021-07-31 [Merged by Bors] - Add more unix signal handlers
+      #1780 closed 2020-10-16 [Merged by Bors] - Remove eth1 deposit functionality
+      #1545 closed 2020-08-18 [Merged by Bors] - Shutdown like a Sir
+      #1329 closed 2020-07-05 Prevent double sending deposit tx if response was not received from eth1 node
+      #511 closed 2019-08-26 Upgrade to sequential processing of batch sync and correct thread handling
+      #905 closed 2020-03-11 Ensure CLI args override on-disk config
+      #839 closed 2020-02-05 Docker container doesn't exit gracefully
+      #1727 closed 2020-10-05 Prepare deposit tools for mainnet
+      #1313 closed 2020-06-29 Fix restrictions on VC lockfiles and slashing protection
+      #510 merged 2019-08-24 Ethereum 2.0 Network Specification Upgrade
+  power          36 hit(s) (all listed)
+      #3953 open 2023-02-08 Pause downloading of historical blocks while EL responds with HeadBlockNotFullyVerified
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #6606 open 2024-11-25 Block verification checks for pre-finalized/conflicting-with-finalized blocks are flaky
+      #4564 open 2023-08-02 Reduce binary size by compressing `genesis.ssz`
+      #4248 open 2023-05-01 Add DVT "selections" endpoints to VC
+      #8601 merged 2025-12-18 Update chainspec p2p and etc
+      #7781 closed 2025-07-23 Intermittently freezes
+      #5423 closed 2024-03-18 Remove VC response signing
+      #5144 merged 2024-01-30 `fsync` during backfill to prevent DB corruption
+      #4178 closed 2023-04-11 [Merged by Bors] - Update Lighthouse book and some FAQs
+      #3001 closed 2022-02-07 VC option to pass subscriptions to fallback nodes
+      #4900 merged 2023-11-02 Sidecar inclusion proof
+      #2230 closed 2021-02-27 [Merged by Bors] - Doppelganger detection
+      #4058 closed 2023-03-07 Expand attestation related queues
+      #2962 closed 2022-01-26 Ensure all caches are built during checkpoint sync startup
+      #3436 closed 2022-08-08 File `validator_definitions.yml` constantly being overwritten, preventing secure setup
+      #2715 closed 2021-10-15 Calling `engine_preparePayload` in advance
+      #2028 closed 2020-12-01 Failed to build beacon chain: Head block not found in store
+      #2895 closed 2022-01-10 Lighthouse won't start
+      #3025 closed 2022-02-15 [Merged by Bors] - Use SmallVec in Bitfield
+  outage         22 hit(s) (all listed)
+      #9906 open 2026-08-22 Repeated optimistic/synced flapping on execution-layer outage causes attester duty dependent_root oscillation → near double-vote via multi-BN VC fallback
+      #9530 open 2026-06-24 Lighthouse 8.2.0 - CPU spike and OOM after extended network outage
+      #3953 open 2023-02-08 Pause downloading of historical blocks while EL responds with HeadBlockNotFullyVerified
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #6606 open 2024-11-25 Block verification checks for pre-finalized/conflicting-with-finalized blocks are flaky
+      #4248 open 2023-05-01 Add DVT "selections" endpoints to VC
+      #6801 merged 2025-01-13 Execution requests with prefix
+      #5144 merged 2024-01-30 `fsync` during backfill to prevent DB corruption
+      #4178 closed 2023-04-11 [Merged by Bors] - Update Lighthouse book and some FAQs
+      #4626 closed 2023-08-16 [Merged by Bors] - `ForkChoice`: remove an impossible case for `parent_checkpoints`
+      #1709 closed 2020-10-02 Parasitic voluntary exits
+      #3094 closed 2022-03-16 Pause sync when execution layer is offline
+      #3674 closed 2022-10-31 [Merged by Bors] - Added Merkle Proof Generation for Beacon State
+      #2157 closed 2021-01-15 Beacon-nodes optionally round-robin / random
+      #2028 closed 2020-12-01 Failed to build beacon chain: Head block not found in store
+      #2895 closed 2022-01-10 Lighthouse won't start
+      #1787 closed 2020-10-19 Remove pubkey cache file
+      #2146 closed 2021-01-07 Improve lighthouse's disconnect responsiveness
+      #2015 closed 2020-11-30 Restart after power outage throws validator into a boot-up loop due to existing lock file.
+      #1958 closed 2020-11-24 [Merged by Bors] - Use OS file locks in validator client
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9689 open 2026-07-25 Report datadir disk usage in remote monitoring
+      #5030 open 2024-01-02 Compress blobs on disk?
+      #5373 open 2024-03-07 Disk usage spiked with Panic log
+      #483 open 2019-08-02 Switch on-disk database from LevelDB
+      #3208 open 2022-05-24 Compress and linearise beacon blocks on disk
+      #4241 open 2023-04-26 Metrics scraping shouldn't access the disk
+      #5424 open 2024-03-18 Optional disk indexing for withdrawals, proposals, exits, etc
+      #6687 open 2024-12-12 Update Remote Monitoring to Report Disk Usage for Datadir Mount Point
+      #5105 open 2024-01-23 Missed attestations, beacon node increase CPU, increased disk read + writes
+      #9978 open 2026-09-04 Revert `fork_choice::payload_received` when envelope db write fails
+      #7216 open 2025-03-28 Global pubkey cache is not crash safe
+      #8147 open 2025-10-01 Fork choice write lock held during database write
+      #7211 open 2025-03-27 Tweak hdiff buffer sizes
+      #6606 open 2024-11-25 Block verification checks for pre-finalized/conflicting-with-finalized blocks are flaky
+      #9527 open 2026-06-24 Prune finalized gloas envelopes
+      #5267 open 2024-02-20 Solve race conditions in `unused_port`
+      #7745 open 2025-07-16 Send fcU before fully importing block
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #1914 open 2020-11-16 Batch attestation slashability checking
+      #8216 open 2025-10-16 Remember non-canonical block roots
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10125 open 2026-09-25 Publish partial column requests after HTTP block import
+      #9588 open 2026-07-07 Gloas partial data column message support
+      #10104 open 2026-09-22 Investigate blob-column retrieval for HTTP-published Gloas blocks
+      #9924 open 2026-08-26 Gloas gossip handlers
+      #10152 open 2026-09-29 Gloas optimistic sync testing blitz
+      #10024 open 2026-09-09 Implement light-client sync verification with EF sync tests
+      #10069 open 2026-09-17 Refresh PTC duties after validator index discovery
+      #9896 merged 2026-08-20 Enable partial data columns by default on all networks
+      #9232 open 2026-04-30 Implement gossip validation tests from EF test vectors
+      #9538 open 2026-06-25 Prevent long state advance during stalled sync
+      #9773 merged 2026-08-07 Enable partials by default on custom networks
+      #9981 closed 2026-09-07 Gloas `filter_voluntary_exits_for_parent_execution_requests` needs to account for partial withdrawals
+      #10086 open 2026-09-18 Attestation replays with mutated `committee_index` bypass dedup and batch verification
+      #9586 open 2026-07-07 Gloas TODO tracking (major tasks)
+      #4248 open 2023-05-01 Add DVT "selections" endpoints to VC
+      #9325 merged 2026-05-20 Gloas partial data columns
+      #5335 open 2024-03-01 Missing feature: Backfill Status Monitoring
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #9033 open 2026-03-26 Explore more Milhouse optimisations
+      #9934 merged 2026-08-29 Re-enable optimistic sync for Gloas payload envelopes
+  incomplete     65 hit(s) (all listed)
+      #9587 open 2026-07-07 Gloas light client support
+      #9588 open 2026-07-07 Gloas partial data column message support
+      #9662 open 2026-07-20 Remove invalid blocks from fork choice
+      #5402 open 2024-03-12 Validator manager move should respect suggested fee recipient
+      #4041 open 2023-03-02 Beacon state HTTP endpoint returns head state if request slot is ahead
+      #2844 open 2021-12-01 Idea: I/O queue to accelerate block processing
+      #3423 open 2022-08-03  "Failed to send scheduled attestation" errors—how to remedy or at least reduce?
+      #9776 merged 2026-08-09 make historical backfill DB writes crash-safe
+      #9695 merged 2026-07-27 Fix PTC blob_data_available voting to be independent of payload import
+      #9526 closed 2026-06-24 Backfill support for gloas
+      #9433 merged 2026-06-08 Fix sending partials from immediately complete columns
+      #9679 closed 2026-07-23 PTC voting incorrect when payload not received but blob data available
+      #9472 closed 2026-06-15 `/eth/v1/beacon/light_client/updates` may return incorrect data
+      #9361 merged 2026-05-27 Fix and improve handling of empty columns after getBlobs response
+      #9166 merged 2026-04-22 Avoid lint and fmt for agents
+      #7752 closed 2025-07-17 Rough prototype sending fcU earlier
+      #9030 closed 2026-03-26 Reuse SSZSnappy decode buffers across partial frames
+      #8928 open 2026-03-02 [Eth Sepolia] Lighthouse syncs slowly and intermittently when `blobs_db` size is huge
+      #9209 merged 2026-04-28 Gloas payload cache
+      #6680 merged 2024-12-11 decouple `eth2` from `store` and `lighthouse_network`
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10150 open 2026-09-29 Delete "shutdown on invalid justified payload" feature
+      #9664 open 2026-07-20 FCR correctness investigations
+      #9978 open 2026-09-04 Revert `fork_choice::payload_received` when envelope db write fails
+      #10104 open 2026-09-22 Investigate blob-column retrieval for HTTP-published Gloas blocks
+      #9280 open 2026-05-08 Pass proposer slot to randao reveal
+      #9993 closed 2026-09-07 Recover evicted payload bids instead of failing with MissingBid
+      #4193 open 2023-04-14 Execution layer CRITs in syncing simulator
+      #9620 open 2026-07-13 PeerDAS: finalized-chain sync livelocks — outbound self rate-limiter blocks all data_column_sidecars_by_range requests (v8.2.0, Hoodi)
+      #5771 open 2024-05-13 Do not retry strictly invalid blocks
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #5825 open 2024-05-22 Drop lookups for blocks imported via range sync
+      #9967 open 2026-09-03 Lighthouse: per-slot proposer duty poll leaves up to 12s stale-duty window after reorg
+      #9819 merged 2026-08-16 Initiate a shutdown if the node cannot recover from a diverged fork choice
+      #3707 open 2022-11-09 Deposit contract finalization fails after checkpoint sync without deposit snapshot
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #4198 open 2023-04-17 Fix and test fork revert logic
+      #2053 open 2020-12-05 validator_definitions.yml is not created when creating validator
+      #5732 open 2024-05-07 Sync Stall On Lighthouse/v5.1.3-d7191c5
+      #9894 merged 2026-08-20 Gloas payload attributes use the wrong withdrawals after an empty parent
+      #9428 merged 2026-06-05 Simplify lookup sync da_checker oracle
+  recovery       44 hit(s) (all listed)
+      #10104 open 2026-09-22 Investigate blob-column retrieval for HTTP-published Gloas blocks
+      #9664 open 2026-07-20 FCR correctness investigations
+      #10186 open 2026-10-01 v8.3.0-rc.0: Besu 26.9.0 compatibility issue in forkchoiceUpdated and getBlobs
+      #9620 open 2026-07-13 PeerDAS: finalized-chain sync livelocks — outbound self rate-limiter blocks all data_column_sidecars_by_range requests (v8.2.0, Hoodi)
+      #2102 open 2020-12-18 Missing check on seed and password length
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #9818 merged 2026-08-16 Add tests to check for divergence between fork choice and the store
+      #10036 merged 2026-09-10 Add stateless Gloas block production to the VC
+      #4904 open 2023-11-03 Getting `404 not found` errors for missed blocks instead of a specific missed error code
+      #10142 closed 2026-09-28 FCR startup fails when finalized checkpoint predates hot/cold split after restart
+      #9819 merged 2026-08-16 Initiate a shutdown if the node cannot recover from a diverged fork choice
+      #8438 open 2025-11-19 Feat: Supermajority fork protection in the VC
+      #8802 closed 2026-02-11 Add ipc support in --execution-endpoint
+      #8838 closed 2026-02-17 Head monitor: per-stream recovery and restart on candidate update
+      #6153 merged 2024-07-23 Show correct total validator count during validator recovery
+      #8509 closed 2025-12-01 Fix data_columns sorting when reconstructing blobs
+      #8538 closed 2025-12-04 Upgraded 8.0.1 Node Fails to Start (DB issue)
+      #7991 closed 2025-09-03 CellIndicesNotUnique error during reconstruction
+      #7739 closed 2025-07-13 Experimental validator module for sync notarization and authorship tracking
+      #7781 closed 2025-07-23 Intermittently freezes
+  rollback       12 hit(s) (all listed)
+      #9971 open 2026-09-03 Avoid retaining useless data on finalization
+      #8147 open 2025-10-01 Fork choice write lock held during database write
+      #9097 closed 2026-04-06 Gloas checkpoint sync
+      #8409 merged 2025-11-13 Gracefully handle deleting states prior to anchor_slot
+      #8682 merged 2026-01-20 Add Gloas data column support 
+      #6750 merged 2025-01-02 Hierarchical state diffs in hot DB
+      #6674 closed 2024-12-10 Set Java Version to 21 (required since Web3Signer 24.12.0).
+      #5941 merged 2024-06-17 chore: add rust PeerdasKZG crypto library for peerdas functionality and rollback c-kzg dependency to 4844 version
+      #2059 closed 2020-12-07 Use persistent data structures in fork choice
+      #2706 closed 2021-10-12 Upgrading Lighthouse for new hardfork
+      #2208 closed 2021-02-17 Validator node does not start after updating from v1.1.0 to v1.1.1
+      #588 closed 2019-10-31 Implement Slashing Protection
+  resume         97 hit(s) (all listed)
+      #3715 open 2022-11-11 Backfilling is not resumed after paused
+      #10050 open 2026-09-14 Lc historical backfill
+      #9722 open 2026-07-30 `--purge-db` silently no-ops on headless nodes, and the "Refusing to checkpoint sync" message recommends it rather than `--purge-db-force`
+      #9940 merged 2026-08-30 Fix Gloas nodes failing to resume sync after restart
+      #9273 open 2026-05-07 ERA file consumer and producer via LCLI
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #9299 open 2026-05-13 Disable priming proposer shuffling cache during checkpoint sync
+      #10157 closed 2026-09-29 Fix FCR startup when the finalized checkpoint is below the split
+      #4198 open 2023-04-17 Fix and test fork revert logic
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #5584 open 2024-04-15 the lighthouse process is killed
+      #10045 open 2026-09-13 Custody backfill sends the full DataColumnsByRange request to every selected peer (N× download amplification)
+      #9620 open 2026-07-13 PeerDAS: finalized-chain sync livelocks — outbound self rate-limiter blocks all data_column_sidecars_by_range requests (v8.2.0, Hoodi)
+      #10160 merged 2026-09-29 Fix FCR restart UX bug
+      #4321 open 2023-05-22 Enforce the `BATCH_BUFFER_SIZE` when handling failed batches in range sync
+      #4924 open 2023-11-14 IPv6-only node finds no peers
+      #8039 merged 2025-09-12 Regression test for range sync CGC race condition
+      #8802 closed 2026-02-11 Add ipc support in --execution-endpoint
+      #9245 closed 2026-04-30 Glamsterdam devnet 2
+      #9428 merged 2026-06-05 Simplify lookup sync da_checker oracle
+  half-written   7 hit(s) (all listed)
+      #9883 open 2026-08-19 Fix `lcli generate-bootnode-enr` advertising the wrong TCP port
+      #8147 open 2025-10-01 Fork choice write lock held during database write
+      #7760 closed 2025-07-18 Slim down PersistedForkChoice
+      #5534 merged 2024-04-08 Event-based block lookup tests
+      #2023 closed 2020-11-30 Feature Request: IPv6 support
+      #3583 closed 2022-09-16   Compress and linearise beacon blocks on disk
+      #3693 closed 2022-11-05 [Merged by Bors] - Adding light_client gossip topics
+  wipe           9 hit(s) (all listed)
+      #9644 open 2026-07-15 Add `static_file_storage` crate
+      #9620 open 2026-07-13 PeerDAS: finalized-chain sync livelocks — outbound self rate-limiter blocks all data_column_sidecars_by_range requests (v8.2.0, Hoodi)
+      #9776 merged 2026-08-09 make historical backfill DB writes crash-safe
+      #4773 closed 2023-09-22 Lighthouse space usage - Increasing dramastically from 87GB to 430GB in 7 days
+      #4648 closed 2023-08-22 Add commmand for pruning states
+      #4273 closed 2023-05-08 [Merged by Bors] - Addition to Lighthouse Book faq.md
+      #2058 closed 2020-12-07 Running beacon node without eth1 endpoint even once makes eth1 sync fail forever
+      #2039 closed 2020-12-02 [Merged by Bors] - Add a eth1-purge-cache cli option
+      #938 closed 2020-03-19 Panic: The next epoch cannot start before now
+  wipes          2 hit(s) (all listed)
+      #9644 open 2026-07-15 Add `static_file_storage` crate
+      #2039 closed 2020-12-02 [Merged by Bors] - Add a eth1-purge-cache cli option
+  erase          6 hit(s) (all listed)
+      #7781 closed 2025-07-23 Intermittently freezes
+      #6065 merged 2024-07-09 Add an option to keep existing enclave when starting local testnet
+      #3062 closed 2022-03-08 [Merged by Bors] - Kiln mev boost
+      #4773 closed 2023-09-22 Lighthouse space usage - Increasing dramastically from 87GB to 430GB in 7 days
+      #2419 closed 2021-06-27 Import slash protection without checking slashability
+      #2227 closed 2021-02-26 feature request - Add a way to remove the deposit data
+  erasing        0 hit(s)
+  erased         3 hit(s) (all listed)
+      #3062 closed 2022-03-08 [Merged by Bors] - Kiln mev boost
+      #4773 closed 2023-09-22 Lighthouse space usage - Increasing dramastically from 87GB to 430GB in 7 days
+      #2227 closed 2021-02-26 feature request - Add a way to remove the deposit data
+  destroy        11 hit(s) (all listed)
+      #9236 open 2026-04-30 Optimise hdiff buffer handling by (re)using Milhouse data structures
+      #7579 merged 2025-06-07 Store the libp2p/discv5 logs when stopping local-testnet
+      #6065 merged 2024-07-09 Add an option to keep existing enclave when starting local testnet
+      #6604 merged 2024-11-24 Increase idle connection timeout
+      #5865 merged 2024-05-30 Replace local testnet script with Kurtosis
+      #4979 merged 2023-12-04 add tracing metrics layer for dependency logging
+      #3023 closed 2022-02-15 [Merged by Bors] - Filter non global ips from discovery
+      #2697 closed 2021-10-10 Workaround make audit failure for rust-nix
+      #208 closed 2019-01-14 Remove constants from function parameters
+      #850 closed 2020-02-12 Block processing "lanes" (WIP)
+      #624 merged 2019-11-23 Reduced tree encode/decode
+  destroys       2 hit(s) (all listed)
+      #9236 open 2026-04-30 Optimise hdiff buffer handling by (re)using Milhouse data structures
+      #2697 closed 2021-10-10 Workaround make audit failure for rust-nix
+  overwrite      53 hit(s) (all listed)
+      #10024 open 2026-09-09 Implement light-client sync verification with EF sync tests
+      #4706 open 2023-09-06 Shared global ENR
+      #10089 closed 2026-09-18 Schema V29 migration zeroes vote slots, rolling back latest messages
+      #4321 open 2023-05-22 Enforce the `BATCH_BUFFER_SIZE` when handling failed batches in range sync
+      #3108 closed 2022-03-22 Set process_cpu_seconds_total to type counter
+      #9496 merged 2026-06-17 Range sync: fetch data columns via custody-by-root
+      #4571 merged 2023-08-07 CLI in Lighthouse Book
+      #8847 merged 2026-02-18 Add sync batch state metrics
+      #8998 merged 2026-03-18 Gloas spec v1.7.0-alpha.5 and beacon_chain tests
+      #8951 merged 2026-03-09 Implement Fast Confirmation Rule
+      #7944 merged 2025-08-26 Replace `INTERVALS_PER_SLOT` with explicit slot component times
+      #8267 merged 2025-10-22 Fix CGC backfill race condition
+      #8339 merged 2025-10-30 Ensure custody backfill sync couples all responses before importing
+      #7146 closed 2025-03-17 Debug level logs not written to log file (beacon.log) on `unstable`
+      #5700 merged 2024-05-03 Consistent logging of full root in lookup debug logs
+      #6442 closed 2024-09-27 Web3Signer integration tests failing on MacOS
+      #6682 merged 2024-12-11 Fix subscribing to attestation subnets for aggregating (#6681)
+      #6583 merged 2024-11-12 builder gas limit & some refactoring
+      #3446 closed 2022-08-09 Allow provisioning of the api-token.txt file (HTTP server auth)
+      #6117 merged 2024-07-16 chore: update the trusted setup to match the consensus-specs version
+  clobber        8 hit(s) (all listed)
+      #4706 open 2023-09-06 Shared global ENR
+      #2409 open 2021-06-16 Add file locking for validator_definitions.yml
+      #4836 closed 2023-10-12 [Merged by Bors] - Fix broken Nethermind integration tests
+      #9462 merged 2026-06-12 Only bake warpbuild snapshot from stable
+      #4732 merged 2023-09-13 add processing and processed caching to the DA checker
+      #4755 closed 2023-09-19 [Merged by Bors] - Ultra Fast Super Slick CI
+      #4332 closed 2023-05-25 Beacon node failing to recover after a SIGINT shutdown (fork choice store corruption)
+      #3186 closed 2022-05-17 Rename from Merge to Bellatrix
+  blank          23 hit(s) (all listed)
+      #5880 open 2024-06-03 Blank line at the end of graffiti-file causes error
+      #8845 merged 2026-02-18 Update agent review instructions on large PRs
+      #8378 closed 2025-11-06 Optimise fork choice attestation dequeueing
+      #8760 merged 2026-02-05 Gloas consensus logic for attestations
+      #8729 merged 2026-02-02 Fast path for `/eth/v1/beacon/blocks/head/root`
+      #8781 merged 2026-02-10 Gloas envelope consensus and more operations tests
+      #8443 merged 2025-11-20 Cargo Update
+      #8339 merged 2025-10-30 Ensure custody backfill sync couples all responses before importing
+      #7544 merged 2025-06-02 Add a name to the Tokio task
+      #6635 merged 2024-11-30 Fix for blank line in graffiti file
+      #6581 merged 2024-11-12 Add a security section to the book
+      #6193 merged 2024-07-28 Implement DB schema upgrade for hierarchical state diffs
+      #6339 merged 2024-09-02 Integrate tracing
+      #5864 merged 2024-05-30 Add `block_gossip` Beacon API events
+      #2413 closed 2021-06-21 Protect validator definitions against race conditions via a lockfile
+      #4080 closed 2023-03-14 Document IPV6 Connectivity
+      #4332 closed 2023-05-25 Beacon node failing to recover after a SIGINT shutdown (fork choice store corruption)
+      #3575 closed 2022-09-14 Missing head events
+      #3822 closed 2022-12-20 [Merged by Bors] - Implement `attestation_rewards` API (per-validator reward)
+      #2973 closed 2022-01-30 [Merged by Bors] - local testnet: Fix an error on startup
+  unreadable     1 hit(s) (all listed)
+      #8103 merged 2025-09-23 Implement `/eth/v1/beacon/blobs` endpoint
+  garbage        21 hit(s) (all listed)
+      #6099 open 2024-07-15 Allow to sync a long unknown fork
+      #9301 closed 2026-05-13 Trailing Bytes Spec Violation
+      #8404 closed 2025-11-12 Delete the `block_cache`
+      #9575 merged 2026-07-05 Gloas backfill
+      #9803 merged 2026-08-13 Add builder API types, request-auth domain, and eth2 client methods (Gloas builder API 1/5)
+      #8992 merged 2026-03-16 Unknown block for envelope
+      #8336 merged 2025-10-30 Rework `lighthouse_version` to reduce spurious recompilation
+      #6332 closed 2024-08-30 Optimize Redb temporary state cleanup
+      #6744 merged 2024-12-28 Drop head tracker for summaries DAG
+      #6422 merged 2024-09-23 Clean up temporary state flags while running
+      #4384 closed 2023-06-07 Upgrading schema from v13 to v16 makes beacon database inconsistent and unrecoverable
+      #4732 merged 2023-09-13 add processing and processed caching to the DA checker
+      #4152 merged 2023-03-31 Single blob lookups
+      #3599 closed 2022-09-22 [Merged by Bors] - Make garbage collection test less failure prone
+      #3891 closed 2023-01-17 Check data availability boundary in rpc request
+      #800 closed 2020-01-13 Potential memory exhaustion vector
+      #2112 closed 2020-12-22 Avoid storing redundant attestations in slasher DB
+      #499 closed 2019-08-12 Optimise state storage with long-term freezer database
+      #484 closed 2019-08-02 Optimise state storage with Chunked Ranges™
+      #1798 closed 2020-10-21 [Merged by Bors] - Implement database temp states to reduce memory usage
+  mangled        4 hit(s) (all listed)
+      #6678 merged 2024-12-10 Enforce alphabetically ordered cargo deps
+      #7315 merged 2025-04-11 Backmerge `release-v7.0.0` to `unstable`
+      #2565 closed 2021-09-03 [Merged by Bors] - v1.5.2-rc.0
+      #2372 closed 2021-05-27 BlockDownloadFailed (TimedOut) error downloading Eth1 blocks [Infura, Alchemy, local Geth]
+  contents       50 hit(s) (all listed)
+      #3444 open 2022-08-09 Builder api registration pubkey override for Distributed validators
+      #9590 open 2026-07-07 Implement Gloas builder API
+      #10036 merged 2026-09-10 Add stateless Gloas block production to the VC
+      #9807 merged 2026-08-13 Migrate the validator client to the Gloas builder API (Gloas builder API 5/5)
+      #7421 closed 2025-05-08 Improve Disk Monitoring Logic
+      #9398 closed 2026-06-02 Add Content-Length limit to the SSZ API HTTP endpoints
+      #9358 closed 2026-05-26 HTTP API OOM from lack of Content-Length limit
+      #8876 closed 2026-02-20 fix: repair Gloas block replay crash with IncorrectStateVariant
+      #7827 merged 2025-08-05 Refactor `consensus/types`
+      #876 closed 2020-02-27 Eth1 block cache should store only candidate blocks
+      #7538 merged 2025-05-29 Add support for nightly tests
+      #6731 merged 2024-12-19 Electra spec changes for `v1.5.0-beta.0`
+      #5420 merged 2024-03-17 Move processing cache out of DA
+      #6663 closed 2024-12-06 Memory Leaks and OOM
+      #6254 merged 2024-08-13 Prevent fd leak in random slasher tests
+      #6211 merged 2024-08-01 Work around UB in LMDB bindings
+      #5529 merged 2024-04-05 Remove VC response signing and fix HTTP error handling
+      #6105 closed 2024-07-16 Investigate PeerDAS KZG library stack overflow during block production
+      #4684 closed 2023-08-30 Request: VC option to submit messages to all connected beacon nodes
+      #4629 closed 2023-08-16 [Merged by Bors] - Block v3 endpoint
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7158 open 2025-03-18 Use `MAX_PAYLOAD_SIZE` in place of `GOSSIP_MAX_SIZE`
+      #10196 open 2026-10-02 Write engine API JWT secrets with 0600 permissions
+      #9990 open 2026-09-07 Aggregate real public keys in the fake_crypto backend
+      #9885 open 2026-08-20 Feature Request: Indicate What Epoch Doppelganger Check will be Complete
+      #9722 open 2026-07-30 `--purge-db` silently no-ops on headless nodes, and the "Refusing to checkpoint sync" message recommends it rather than `--purge-db-force`
+      #10172 open 2026-09-30 Lighthouse does not detect its public v4 when EIM-NAT is not configured
+      #10046 open 2026-09-13 Add optional mimalloc feature with allocator metrics
+      #9906 open 2026-08-22 Repeated optimistic/synced flapping on execution-layer outage causes attester duty dependent_root oscillation → near double-vote via multi-BN VC fallback
+      #9944 open 2026-08-30 Fix blob ordering when filtering blobs by versioned hash
+      #10164 merged 2026-09-30 Simplify fork boilerplate
+      #9218 open 2026-04-29 Clean up "churn limit" code
+      #3638 open 2022-10-13 Replace uses of `SystemTime::now` by slot clock where possible
+      #9689 open 2026-07-25 Report datadir disk usage in remote monitoring
+      #10038 open 2026-09-11 Implement `GET beacon/pool/payload_attestations` endpoint
+      #7473 open 2025-05-16 `Box` inside `BeaconChainError`
+      #3369 open 2022-07-23 Support builds that are reproducible and do not require network access
+      #6959 open 2025-02-10 De-duplicate `enable_light_client_server`
+      #9591 open 2026-07-07 Support multi-BN block proposal selection in the validator client
+      #4085 open 2023-03-14 Logically decoupling range syncing for blobs and blocks?
+      #8652 open 2026-01-13 Expose a minimal set of core types in `consensus/types`
+  unclean        6 hit(s) (all listed)
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #6606 open 2024-11-25 Block verification checks for pre-finalized/conflicting-with-finalized blocks are flaky
+      #8921 merged 2026-03-02 Persist custody context more readily
+      #7578 merged 2025-06-07 Implement basic validator custody framework (no backfill)
+      #6393 closed 2024-09-13 Reproducible builds
+      #2625 closed 2021-09-25 [Merged by Bors] - Update zeroize_derive
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10150 open 2026-09-29 Delete "shutdown on invalid justified payload" feature
+      #10152 open 2026-09-29 Gloas optimistic sync testing blitz
+      #10176 open 2026-09-30 Add Gloas optimistic sync invalidation tests
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #6666 open 2024-12-06 Anti-slashing via VC shutdown on SSE events
+      #10118 open 2026-09-24 Test case: invalid finalized payload
+      #9978 open 2026-09-04 Revert `fork_choice::payload_received` when envelope db write fails
+      #2316 open 2021-04-18 Use long-running tokio tasks to prevent VC missing duties on shutdown
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #5811 open 2024-05-19 `monitoring-endpoint` argument from beaconcha.in is not working
+      #6467 open 2024-10-05 Regular panic crash on Windows
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #9819 merged 2026-08-16 Initiate a shutdown if the node cannot recover from a diverged fork choice
+      #10165 merged 2026-09-30 Keep fork choice finalized checkpoint consistent with split
+      #7110 open 2025-03-11 Slasher HTTP API to import attestations from blocks
+      #3780 open 2022-12-07 Increase detail in error reporting for UnableToOpenVotingKeystore
+      #2844 open 2021-12-01 Idea: I/O queue to accelerate block processing
+      #10025 merged 2026-09-09 Replace EF bootnodes with NodeOps fleet
+      #6606 open 2024-11-25 Block verification checks for pre-finalized/conflicting-with-finalized blocks are flaky
+      #9934 merged 2026-08-29 Re-enable optimistic sync for Gloas payload envelopes
+  reboot         30 hit(s) (all listed)
+      #1881 open 2020-11-10 Create optional --reuse-password flag for decrypting keys in validator client
+      #2316 open 2021-04-18 Use long-running tokio tasks to prevent VC missing duties on shutdown
+      #5584 open 2024-04-15 the lighthouse process is killed
+      #4564 open 2023-08-02 Reduce binary size by compressing `genesis.ssz`
+      #6551 merged 2024-10-29 Allow the `--beacon-nodes` list to be updated at runtime
+      #7403 closed 2025-05-06 Validator Client intermittently freezes on Linux kernel `6.14.4` -> `6.14.7`
+      #7613 closed 2025-06-16 `deposit_data.json` ignored during validator import even in clean datadir
+      #1560 closed 2020-08-21 Beacon node stops syncing after reboot
+      #5415 closed 2024-03-15 Lighthouse node stop syncing after restart
+      #6284 closed 2024-08-20 lighthouse stop sync when it about to catch up with the latest slot
+      #2230 closed 2021-02-27 [Merged by Bors] - Doppelganger detection
+      #4730 closed 2023-09-13 [Merged by Bors] - Add more checks and logging before genesis
+      #3919 merged 2023-01-27 Broadcast address changes at Capella
+      #2333 closed 2021-05-05 [Merged by Bors] - Enable Compatibility with Windows
+      #3703 closed 2022-11-08 core dumped
+      #3312 closed 2022-07-06 [Merged by Bors] - Refactor op pool for speed and correctness
+      #3337 closed 2022-07-15 [builder API] Add `--builder-timestamp-override`
+      #2983 closed 2022-02-01 Retrospective transition block checking
+      #3601 closed 2022-09-22 Error whist recomputing - ForkChoiceError, find_head failed
+      #2916 closed 2022-01-14 [Merged by Bors] - Lazy hashing for SignedBeaconBlock in sync
+  disk+full      81 hit(s) (all listed)
+      #9527 open 2026-06-24 Prune finalized gloas envelopes
+      #9214 open 2026-04-29 Better storage for historical blobs
+      #3433 open 2022-08-05 State Reconstruction reaches a faulty state
+      #2844 open 2021-12-01 Idea: I/O queue to accelerate block processing
+      #8928 open 2026-03-02 [Eth Sepolia] Lighthouse syncs slowly and intermittently when `blobs_db` size is huge
+      #9620 open 2026-07-13 PeerDAS: finalized-chain sync livelocks — outbound self rate-limiter blocks all data_column_sidecars_by_range requests (v8.2.0, Hoodi)
+      #10015 merged 2026-09-09 Prune finalised payload envelopes
+      #5391 open 2024-03-11 Import expired blobs
+      #9592 closed 2026-07-07 Blind Finalized Payload Envelopes to Preserve Disk Space
+      #9589 closed 2026-07-07 Avoid synchronous payload bid store reads in Gloas async validation paths
+      #9325 merged 2026-05-20 Gloas partial data columns
+      #9320 closed 2026-05-19 docs(installation): mention blob storage CPU and disk impact
+      #3051 closed 2022-03-01 Fix handling of `api-token.txt` and `validator_key_cache.json` when disk is full
+      #8802 closed 2026-02-11 Add ipc support in --execution-endpoint
+      #8888 closed 2026-02-23 Implement blinded payloads for `ExecutionPayloadEnvelope`
+      #9348 merged 2026-05-24 Gloas ensure we emit payload attributes SSE event
+      #8382 closed 2025-11-07 Safe non-finalized checkpoint sync
+      #9025 merged 2026-03-24 Gloas fork choice redux
+      #8998 merged 2026-03-18 Gloas spec v1.7.0-alpha.5 and beacon_chain tests
+      #9209 merged 2026-04-28 Gloas payload cache
+  data+loss      19 hit(s) (all listed)
+      #9584 open 2026-07-07 PTC payload-attestation fork gate evaluated on the wrong slot — first Gloas slot is skipped
+      #10085 open 2026-09-18 Aggregate replays with mutated `aggregator_index` bypass dedup and batch verification
+      #4904 open 2023-11-03 Getting `404 not found` errors for missed blocks instead of a specific missed error code
+      #8928 open 2026-03-02 [Eth Sepolia] Lighthouse syncs slowly and intermittently when `blobs_db` size is huge
+      #4983 closed 2023-12-06 PeerDAS - Tracking Issue
+      #8951 merged 2026-03-09 Implement Fast Confirmation Rule
+      #8184 closed 2025-10-09 Failed to start beacon node
+      #6744 merged 2024-12-28 Drop head tracker for summaries DAG
+      #4120 closed 2023-03-22 chore: bump ethers
+      #4312 closed 2023-05-21 Validator block proposal missing
+      #5570 merged 2024-04-12 Send custody data column to `DataAvailabilityChecker` for determining block importability
+      #4221 closed 2023-04-21 [Merged by Bors] - Update Lighthouse book Sec 3-6 and FAQ
+      #3890 closed 2023-01-16 [Merged by Bors] - Split common crates out into their own repos
+      #3936 closed 2023-02-01 [Merged by Bors] - Rate limiting backfill sync
+      #2860 closed 2021-12-08 [Merged by Bors] - Enable proposer boost re-orging
+      #2871 closed 2021-12-21 temporary validator exit
+      #1242 closed 2020-06-03 SIGILL when creating wallet on CPU without AVX support
+      #1271 closed 2020-06-16 Can't find peers
+      #58 merged 2018-10-21 Clippy warnings
+  partial+write  17 hit(s) (all listed)
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #5391 open 2024-03-11 Import expired blobs
+      #8907 merged 2026-02-26 Add SSZ response to HTTP API endpoints
+      #9311 closed 2026-05-17 Builder deposits optimisation
+      #8314 merged 2025-10-28 Cell Dissemination (Partial messages)
+      #7961 merged 2025-08-28 Fix data availability checker race condition causing partial data columns to be served over RPC
+      #7931 closed 2025-08-25 Fix race condition causing data columns getting inserted into DA checker after block is imported
+      #1785 closed 2020-10-19 Remove head tracker in favour of fork choice
+      #6750 merged 2025-01-02 Hierarchical state diffs in hot DB
+      #5365 closed 2024-03-07 SSV use lighthouse v5.0.0， proposal block miss.
+      #2321 closed 2021-04-26 [Merged by Bors] - [Altair] Sync committee pools
+      #4316 closed 2023-05-22 [Merged by Bors] - Add broadcast validation routes to Beacon Node HTTP API
+      #3244 closed 2022-06-06 [Merged by Bors] - Use async code when interacting with EL
+      #2416 closed 2021-06-23 [Merged by Bors] - Cache participating indices for Altair epoch processing
+      #499 closed 2019-08-12 Optimise state storage with long-term freezer database
+      #516 merged 2019-08-27 Interop
+      #441 merged 2019-07-16 RPC Rewrite
+  crash+safe     24 hit(s) (all listed)
+      #7216 open 2025-03-28 Global pubkey cache is not crash safe
+      #9776 merged 2026-08-09 make historical backfill DB writes crash-safe
+      #1914 open 2020-11-16 Batch attestation slashability checking
+      #9623 closed 2026-07-13 Fsync during backfill
+      #8147 open 2025-10-01 Fork choice write lock held during database write
+      #5428 open 2024-03-18 error: "rtnetlink socket closed"
+      #8785 merged 2026-02-10 Add AI assistant documentation and commands
+      #7944 merged 2025-08-26 Replace `INTERVALS_PER_SLOT` with explicit slot component times
+      #1785 closed 2020-10-19 Remove head tracker in favour of fork choice
+      #7578 merged 2025-06-07 Implement basic validator custody framework (no backfill)
+      #6489 merged 2024-10-15 Remove TTD flags and `safe-slots-to-import-*`
+      #2822 closed 2021-11-18 [Merged by Bors] - v1.1.6 Fork Choice changes
+      #4773 closed 2023-09-22 Lighthouse space usage - Increasing dramastically from 87GB to 430GB in 7 days
+      #4074 closed 2023-03-13 [Merged by Bors] - Logging via the HTTP API
+      #4172 closed 2023-04-07 Validator `exit` command crashes for local testnet
+      #3790 closed 2022-12-12 Implement `sync_committee_rewards` API (per-validator reward)
+      #3536 closed 2022-09-02 Heavy HTTP requests halt the client
+      #2356 closed 2021-05-19 [Merged by Bors] - Minimum Outbound-Only Peers Requirement
+      #1942 closed 2020-11-21 Out of sync after BlockProcessingFailure on Pyrmont
+      #2015 closed 2020-11-30 Restart after power outage throws validator into a boot-up loop due to existing lock file.
+  atomic+write   34 hit(s) (all listed)
+      #9644 open 2026-07-15 Add `static_file_storage` crate
+      #1307 open 2020-06-29 Redesign and clean up store metrics
+      #8147 open 2025-10-01 Fork choice write lock held during database write
+      #4984 open 2023-12-06 Atomicity bug while adding validators using validator client API
+      #2067 open 2020-12-08 Handle ungraceful shutdown on first startup
+      #9373 closed 2026-05-29 Instrument the fork choice lock with hold-time metrics and backtraces
+      #10015 merged 2026-09-09 Prune finalised payload envelopes
+      #9775 merged 2026-08-08 Deduplicate execution payload envelopes on gossip
+      #3051 closed 2022-03-01 Fix handling of `api-token.txt` and `validator_key_cache.json` when disk is full
+      #8409 merged 2025-11-13 Gracefully handle deleting states prior to anchor_slot
+      #1785 closed 2020-10-19 Remove head tracker in favour of fork choice
+      #6332 closed 2024-08-30 Optimize Redb temporary state cleanup
+      #6403 merged 2024-09-17 Refactor data column reconstruction and avoid blocking processing
+      #5119 merged 2024-01-23 Backfill blob storage fix
+      #5114 closed 2024-01-23 Backfill mistakenly stores blobs in the hot DB
+      #3492 closed 2022-08-22 Best set of runtime arguments for maximizing revenue? Best set of compile-time arguments?
+      #4481 closed 2023-07-07 Add logic to prune all historic states
+      #4773 closed 2023-09-22 Lighthouse space usage - Increasing dramastically from 87GB to 430GB in 7 days
+      #3852 merged 2023-01-05 Prune blobs
+      #2321 closed 2021-04-26 [Merged by Bors] - [Altair] Sync committee pools
+  lock+file      92 hit(s) (all listed)
+      #2409 open 2021-06-16 Add file locking for validator_definitions.yml
+      #9644 open 2026-07-15 Add `static_file_storage` crate
+      #3859 open 2023-01-08 purge-db option fails when freezer is mounted on separate volume
+      #5267 open 2024-02-20 Solve race conditions in `unused_port`
+      #3458 open 2022-08-11 error 'terminate called after throwing an instance of 'std::length_error'' after unclean shutdown
+      #8928 open 2026-03-02 [Eth Sepolia] Lighthouse syncs slowly and intermittently when `blobs_db` size is huge
+      #9282 open 2026-05-08 fix: auto-pull latest Nethermind version in EL test
+      #9805 merged 2026-08-13 Add Gloas bid selection, block production, and bid gossip processing (Gloas builder API 3/5)
+      #8802 closed 2026-02-11 Add ipc support in --execution-endpoint
+      #9402 merged 2026-06-03 beacon_node/execution_layer: add traceparent header to engine API requests
+      #9083 closed 2026-04-02 Fix TOCTOU race in unused_port module
+      #9081 closed 2026-04-01 lighthouse v8.1.3 does not build on FreeBSD
+      #8785 merged 2026-02-10 Add AI assistant documentation and commands
+      #8806 merged 2026-02-12 Gloas payload envelope processing
+      #8378 closed 2025-11-06 Optimise fork choice attestation dequeueing
+      #8314 merged 2025-10-28 Cell Dissemination (Partial messages)
+      #7803 closed 2025-07-27 Memory Aware Caching in Lighthouse
+      #8463 closed 2025-11-25 Optimize AttesterCache::maybe_cache_state to reduce lock contention
+      #8525 closed 2025-12-03 [False start] Fix and test fork revert logic
+      #8443 merged 2025-11-20 Cargo Update
+  write+failure  75 hit(s) (all listed)
+      #9978 open 2026-09-04 Revert `fork_choice::payload_received` when envelope db write fails
+      #4984 open 2023-12-06 Atomicity bug while adding validators using validator client API
+      #9819 merged 2026-08-16 Initiate a shutdown if the node cannot recover from a diverged fork choice
+      #9623 closed 2026-07-13 Fsync during backfill
+      #9775 merged 2026-08-08 Deduplicate execution payload envelopes on gossip
+      #9757 closed 2026-08-06 Gloas: external builder API (payload bid selection and block production)
+      #6695 merged 2024-12-14 Add Fulu boilerplate
+      #4393 merged 2023-06-13 Rework Validator Client fallback mechanism
+      #7168 merged 2025-03-18 Tracing cleanup
+      #9382 merged 2026-06-01 Reject importing Gloas block until parent's payload is imported
+      #9393 merged 2026-06-02 Gloas alpha spec 9
+      #4571 merged 2023-08-07 CLI in Lighthouse Book
+      #8561 closed 2025-12-10 feat: adding `telemetry-trace-sample-rate` cli arg and set default to 1%
+      #8039 merged 2025-09-12 Regression test for range sync CGC race condition
+      #7892 merged 2025-08-18 Use events API to eager send attestations 
+      #7347 merged 2025-04-22 Implement weak subjectivity safety checks
+      #8314 merged 2025-10-28 Cell Dissemination (Partial messages)
+      #8951 merged 2026-03-09 Implement Fast Confirmation Rule
+      #8437 closed 2025-11-19 Address updated loop in beacon leads to OOM
+      #8186 merged 2025-10-10 Refactor get_validator_blocks_v3 fallback
+  file+contents  21 hit(s) (all listed)
+      #9807 merged 2026-08-13 Migrate the validator client to the Gloas builder API (Gloas builder API 5/5)
+      #7827 merged 2025-08-05 Refactor `consensus/types`
+      #7538 merged 2025-05-29 Add support for nightly tests
+      #5420 merged 2024-03-17 Move processing cache out of DA
+      #6663 closed 2024-12-06 Memory Leaks and OOM
+      #6254 merged 2024-08-13 Prevent fd leak in random slasher tests
+      #5529 merged 2024-04-05 Remove VC response signing and fix HTTP error handling
+      #6105 closed 2024-07-16 Investigate PeerDAS KZG library stack overflow during block production
+      #4640 merged 2023-08-18 More deneb cleanup
+      #4629 closed 2023-08-16 [Merged by Bors] - Block v3 endpoint
+      #3890 closed 2023-01-16 [Merged by Bors] - Split common crates out into their own repos
+      #3568 closed 2022-09-12 [Merged by Bors] - Pass EL JWT secret key via cli flag
+      #3538 closed 2022-09-03 [Merged by Bors] - Add flag 'log-color' preserving color of log redirected to file. 
+      #1430 closed 2020-07-31 Read Only access for Validator's datadir
+      #2159 closed 2021-01-17 Contents of validator defs. file is deleted
+      #2271 closed 2021-03-18 Silent Failure after Cache Lock Timeout
+      #2338 closed 2021-05-10 [Merged by Bors] - Write validator definitions atomically
+      #2234 closed 2021-03-01 [Merged by Bors] - Use the database to persist the pubkey cache
+      #1532 closed 2020-08-17 [Merged by Bors] - Directory restructure
+      #804 merged 2020-01-13 Add proto_array fork choice
+
+== 51 terms run; 48 returned hits, 7 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

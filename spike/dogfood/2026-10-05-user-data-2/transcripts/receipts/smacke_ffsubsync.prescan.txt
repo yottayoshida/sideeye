@@ -1,0 +1,98 @@
+== novelty pre-scan: smacke/ffsubsync
+== date: 2026-10-05T02:41:21Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #205 closed 2024-12-22 Not working on macOS
+  corrupt        1 hit(s) (all listed)
+      #192 merged 2024-09-18 Turn on Audio Sync for audio extraction process
+  corruption     1 hit(s) (all listed)
+      #54 closed 2020-01-04 use cchardet to autodetect text encodings
+  truncated      1 hit(s) (all listed)
+      #199 closed 2024-11-07 won't work
+  truncate       1 hit(s) (all listed)
+      #199 closed 2024-11-07 won't work
+  empty          3 hit(s) (all listed)
+      #60 open 2020-03-26 Subsync erroring out with "max() arg is an empty sequence".
+      #176 open 2023-04-24 stops processing multiple files on pysubs2.exceptions.UnknownFPSError
+      #92 closed 2020-08-18 --make-test-case cannot work on Windows
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #8 open 2019-02-27 Support Windows 10
+      #216 closed 2025-07-28 Unable to install ffsubsync on Windows due to error in building faust-cchardet
+  power          1 hit(s) (all listed)
+      #27 closed 2019-04-21 Unable to read the content of some directories
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        1 hit(s) (all listed)
+      #61 open 2020-03-29 exceptions result in bad test cases
+  incomplete     1 hit(s) (all listed)
+      #198 open 2024-11-07 won't install
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #231 merged 2026-03-22 Use PGS subtitles as reference
+  recovery       1 hit(s) (all listed)
+      #101 open 2020-08-28 increase tolerance of srt parsing
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      10 hit(s) (all listed)
+      #108 open 2020-11-28 allow some kind of "rename pattern" for syncing multiple files instead of overwriting the inputs
+      #144 open 2021-12-06 Run multiple inputs at once
+      #176 open 2023-04-24 stops processing multiple files on pysubs2.exceptions.UnknownFPSError
+      #238 open 2026-09-16 Default `subs_then_webrtc` VAD aligns against forced-only embedded subtitle stubs, producing ±60 s offsets on in-sync subtitles
+      #79 open 2020-06-05 check if there is embedded subtitles
+      #175 closed 2023-04-19 Suppressing output because offset 8.49 was less than suppression threshold 0.5 ?
+      #112 closed 2021-01-05 Change default output to reference file name
+      #81 closed 2020-06-07 add an --overwrite-input flag to allow overwriting of the --srtin argument
+      #91 closed 2020-08-18 Cannot use `--make-test-case` with `--overwrite-input`
+      #107 merged 2020-11-26 support syncing several subs against the same ref
+  clobber        0 hit(s)
+  blank          0 hit(s)
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       2 hit(s) (all listed)
+      #67 closed 2020-04-28 Add "Table of Contents" in README.md
+      #54 closed 2020-01-04 use cchardet to autodetect text encodings
+  in-place       3 hit(s) (all listed)
+      #234 closed 2026-06-16 Docker image : access denied
+      #28 closed 2019-05-01 Synchronization from a reference.srt did not work well for me.
+      #41 closed 2019-08-04 Are you planning to expand to cover foreign languages?
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      3 hit(s) (all listed)
+      #8 open 2019-02-27 Support Windows 10
+      #229 closed 2026-03-04 pkg_resources/setuptools deprecation
+      #27 closed 2019-04-21 Unable to read the content of some directories
+  write+failure  0 hit(s)
+  file+contents  1 hit(s) (all listed)
+      #54 closed 2020-01-04 use cchardet to autodetect text encodings
+
+== 51 terms run; 17 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,26 @@
+Removed credentials for alice@https://pkgs.example.internal/
+Removed credentials for alice@https://pkgs.example.internal/
+FAIL  1 of 6 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 5 of 5
+            after  open(/s/uvd/uv/credentials/credentials.toml)
+            before write(/s/uvd/uv/credentials/credentials.toml)
+path        credentials.toml
+observed    holding neither the old nor the new content
+explored    6 worlds (crash points 5 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 5 operations (343 syscall lines examined, 26 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/uv/work-explore/cases/000001.json
+replay      sideeye replay /out/uv/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/uv/work-explore/evidence/000001.json
+cwd         /s/uv-in
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 1 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/uvd/uv/credentials SIDEEYE_TRACE_PATH=/out/uv/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=935e704a8d75d79c7ef2e8e748eaf47a104b9092952bb259114b0e8b1d8202e4;

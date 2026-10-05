@@ -1,0 +1,6 @@
+[world]
+state = "/s/wb/wandb"
+
+[define]
+operation = "wandb offline"
+cwd       = "/s/wb"

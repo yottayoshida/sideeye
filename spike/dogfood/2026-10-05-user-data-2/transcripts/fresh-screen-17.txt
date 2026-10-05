@@ -1,0 +1,5 @@
+fresh k8sgpt
+fresh ggshield
+fresh gitguardian
+fresh localstack
+fresh uv-cli

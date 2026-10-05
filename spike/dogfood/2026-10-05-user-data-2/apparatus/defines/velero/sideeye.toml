@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/velero"
+
+[define]
+operation = "velero client config set namespace=backups"
+cwd       = "/s/velero-in"

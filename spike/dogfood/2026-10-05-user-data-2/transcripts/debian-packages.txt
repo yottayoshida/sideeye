@@ -1,0 +1,60 @@
+# Which Debian 13 trixie package ships each tool: apt-cache show by name (and python3-<name>), and
+# apt-file for the command it installs. Run in debian:trixie-slim on 2026-10-05 by apparatus/debian-packages.sh
+# with apparatus/debian-names.txt as input. Read by apparatus/ledger-rows.py for the B2 lines and aliases.
+solvespace | by-name: solvespace | ships /usr/bin/solvespace-cli: solvespace 
+wp-cli | by-name: none | ships /usr/bin/wp: none
+rasterio | by-name: rasterio python3-rasterio | ships /usr/bin/rio: none
+goi18n | by-name: none | ships /usr/bin/goi18n: none
+juju | by-name: none | ships /usr/bin/juju: none
+pymol | by-name: pymol python3-pymol | ships /usr/bin/pymol: pymol 
+i18n-tasks | by-name: none | ships /usr/bin/i18n-tasks: none
+dynaconf | by-name: python3-dynaconf | ships /usr/bin/dynaconf: python3-dynaconf 
+stripe-cli | by-name: none | ships /usr/bin/stripe: none
+tenv | by-name: none | ships /usr/bin/tenv: none
+gltfpack | by-name: gltfpack | ships /usr/bin/gltfpack: gltfpack 
+wrangler | by-name: none | ships /usr/bin/wrangler: none
+kaggle | by-name: none | ships /usr/bin/kaggle: none
+velero | by-name: none | ships /usr/bin/velero: none
+crictl | by-name: none | ships /usr/bin/crictl: none
+toybox | by-name: toybox | ships /usr/bin/toybox: toybox 
+uv | by-name: none | ships /usr/bin/uv: none
+gita | by-name: gita | ships /usr/bin/gita: gita 
+k8sgpt | by-name: none | ships /usr/bin/k8sgpt: none
+kubeadm | by-name: none | ships /usr/bin/kubeadm: none
+sheldon | by-name: none | ships /usr/bin/sheldon: none
+yt-dlp | by-name: yt-dlp | ships /usr/bin/yt-dlp: yt-dlp 
+conan | by-name: none | ships /usr/bin/conan: none
+skopeo | by-name: skopeo | ships /usr/bin/skopeo: skopeo 
+regctl | by-name: none | ships /usr/bin/regctl: none
+turbo | by-name: none | ships /usr/bin/turbo: none
+wandb | by-name: none | ships /usr/bin/wandb: none
+platformio | by-name: none | ships /usr/bin/pio: none
+nerdctl | by-name: none | ships /usr/bin/nerdctl: none
+oras | by-name: oras | ships /usr/bin/oras: oras 
+ffsubsync | by-name: none | ships /usr/bin/ffsubsync: none
+huggingface-hub | by-name: none | ships /usr/bin/hf: none
+ntfs-3g | by-name: ntfs-3g | ships /usr/bin/ntfslabel: ntfs-3g 
+opam | by-name: opam | ships /usr/bin/opam: opam 
+juliaup | by-name: none | ships /usr/bin/juliaup: none
+dotenv | by-name: python3-dotenv | ships /usr/bin/dotenv: dotenv-cli 
+azure-cli | by-name: azure-cli python3-azure-cli | ships /usr/bin/az: azure-cli 
+ggshield | by-name: none | ships /usr/bin/ggshield: none
+aliyun-cli | by-name: none | ships /usr/bin/aliyun: none
+dokuwiki | by-name: dokuwiki | ships /usr/bin/dwpage: none
+lighthouse | by-name: none | ships /usr/bin/lighthouse: none
+jump | by-name: none | ships /usr/bin/jump: none
+basic-memory | by-name: none | ships /usr/bin/basic-memory: none
+codex | by-name: none | ships /usr/bin/codex: none
+firebase-tools | by-name: none | ships /usr/bin/firebase: none
+firewalld | by-name: firewalld | ships /usr/bin/firewall-offline-cmd: firewalld 
+astropy | by-name: python3-astropy | ships /usr/bin/fitscheck: astropy-utils 
+gemini-cli | by-name: none | ships /usr/bin/gemini: none
+gltf-transform | by-name: none | ships /usr/bin/gltf-transform: none
+homeassistant | by-name: homeassistant | ships /usr/bin/hass: none
+infracost | by-name: none | ships /usr/bin/infracost: none
+lingui | by-name: none | ships /usr/bin/lingui: none
+monero | by-name: monero | ships /usr/bin/monero-wallet-cli: monero 
+steamguard-cli | by-name: none | ships /usr/bin/steamguard: none
+vercel | by-name: none | ships /usr/bin/vercel: none
+xmake | by-name: xmake | ships /usr/bin/xmake: xmake 
+golang-go | by-name: golang-go | ships /usr/bin/go: gccgo-go golang-go 

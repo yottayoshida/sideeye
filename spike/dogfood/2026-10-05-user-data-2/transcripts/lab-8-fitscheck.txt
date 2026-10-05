@@ -1,0 +1,12 @@
+400fc5d6c1c0f7cd7484dc3b7410541a4c57ee70f916f48d6cc3a6766bfecf69  /lab/f/a.fits
+400fc5d6c1c0f7cd7484dc3b7410541a4c57ee70f916f48d6cc3a6766bfecf69  /lab/f/b.fits
+rc=0
+MISSING '/lab/f/b.fits' .. Checksum not found in HDU #0
+MISSING '/lab/f/b.fits' .. Datasum not found in HDU #0
+MISSING '/lab/f/b.fits' .. Checksum not found in HDU #1
+MISSING '/lab/f/b.fits' .. Datasum not found in HDU #1
+4 errors
+rc=1
+457bedbb2058e25139eaeffba625888bfe9f4fd198be9c8faa235c3bf11713af  /lab/f/a.fits
+457bedbb2058e25139eaeffba625888bfe9f4fd198be9c8faa235c3bf11713af  /lab/f/b.fits
+rc=0

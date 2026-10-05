@@ -1,0 +1,45 @@
+fresh dokuwiki
+fresh veracrypt
+SEEN  logrotate  b2-exclusions:150
+SEEN  logrotate  b2-candidates:159
+SEEN  logrotate  spike/dogfood/2026-09-16-userview-3/SELECTION.md:96
+fresh firewalld
+fresh netplan
+fresh kanbn
+fresh basic-memory
+fresh lighthouse
+fresh prysm
+fresh cosmos-sdk
+SEEN  pdm  b2-exclusions:210
+SEEN  pdm  spike/dogfood/2026-09-05-userview/SELECTION.md:59
+SEEN  pdm  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  pdm  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  hatch  funnel:77
+SEEN  hatch  target-classes:73
+SEEN  hatch  b2-exclusions:107
+SEEN  hatch  spike/dogfood/2026-09-16-outside-git/SELECTION.md:42
+fresh xonsh
+fresh dendron
+SEEN  calcure  spike/dogfood/2026-09-05-userview/SELECTION.md:24
+fresh nbdime
+fresh jupyterlab
+fresh aptos-core
+fresh yt-dlp
+SEEN  kopia  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:126
+fresh nextcloud
+fresh owncloud
+fresh onedrive
+fresh gphotos
+fresh icloudpd
+fresh immich-go
+fresh tiddlywiki
+fresh zim-desktop
+fresh QOwnNotes
+fresh cherrytree
+fresh ntfs-3g
+fresh e2fsprogs
+fresh tune2fs
+fresh lazygit
+fresh gitui
+SEEN  tig  funnel:163
+SEEN  tig  target-classes:97

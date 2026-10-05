@@ -1,0 +1,3 @@
+ccache/ccache stars=2966 pushed=2026-09-30 archived=false issues=true full=ccache/ccache
+xmake-io/xmake stars=12244 pushed=2026-10-04 archived=false issues=true full=xmake-io/xmake
+buildpacks/pack stars=3013 pushed=2026-09-21 archived=false issues=true full=buildpacks/pack

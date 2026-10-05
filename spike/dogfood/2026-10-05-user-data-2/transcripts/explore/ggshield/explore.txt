@@ -1,0 +1,13 @@
+PASS  6/6 explored worlds satisfied the built-in atomicity invariant
+      explored 6 worlds (crash points 5 + 1 baseline)
+      expected status: 0
+      atomicity: 1 path(s) judged pre-or-post
+      oracle: agreed on 5 operations (15444 syscall lines examined, 32 in scope of the judged state), witness strace
+      metadata: 1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: 16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the subject's image replaced 1 time(s), chain unbroken (#123)
+      not tested: power loss, torn writes, concurrent processes
+      cwd: /s/gg-in
+sideeye: json sha256=d45523cbdbb6d196734d08b0c28d712160484e02853d76ff1e9080a7d756c196;

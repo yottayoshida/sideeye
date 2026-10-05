@@ -1,0 +1,2 @@
+static: /opt/bin/az: a /opt/az/bin/python3.13 script, ASCII text executable
+next: sideeye explore --state /s/az --cwd "/s/az-in" --operation "az config set core.output=table" \

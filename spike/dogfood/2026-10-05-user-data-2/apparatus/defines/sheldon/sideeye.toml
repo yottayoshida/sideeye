@@ -1,0 +1,6 @@
+[world]
+state = "/s/sheldon"
+
+[define]
+operation = "sheldon add autosugg --github zsh-users/zsh-autosuggestions"
+cwd       = "/s/sheldon-in"

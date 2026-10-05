@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Thirty tools whose state git does not hold, in six rounds of five on the released v1.8.0: 22 FAIL, 8 PASS, and four reports upstream** (`spike/dogfood/2026-10-05-user-data-2/`; `docs/target-classes.md`, `spike/dogfood/RUNS.md`, `spike/outcome-funnel.tsv`, `spike/upstream-reports.tsv`, `spike/unknown-rate/b2-exclusions.txt`). 359 names were screened, none at a project already reported to, and 57 went through the entry gate. Twenty-one FAILs are the truncating open and the kill before the write. SolveSpace's `solvespace-cli regenerate` empties the sketch and still reports success, PyMOL's `save` empties the session, WP-CLI's `config set` empties `wp-config.php`, and ffsubsync's `--overwrite-input` empties the subtitle; they are reported as solvespace/solvespace#1783, schrodinger/pymol-open-source#520, wp-cli/config-command#233 and smacke/ffsubsync#240. Fourteen of the thirty are static images named bare, and every one reached a verdict through v1.8.0's next step to `--observe supervised`. aliyun-cli, a static image whose child is dynamic, did not: the page's path ends at `oracle_missed_operation` and then at syscalls with no mode named, the shape lefthook met on v1.7.0. Two screens missed: `fresh.sh` did not read cohort 4's rejected candidates (ffsubsync), and uv was screened under a spelling no ledger carries; both left the slate with their explores kept, and go `env -w` took uv's place. The B2 exclusions now name each tool by the trixie package that ships it, looked up rather than recalled.
+
 ### Changed
 
 - **The CI quickstart pins v1.8.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`). The release lane installs the published v1.8.0 asset instead of v1.7.0's. The pin moves after the release, as on v1.7.0, because the lane downloads the asset and the asset exists only once the release is published. Nothing else in the lane changes.

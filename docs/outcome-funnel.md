@@ -141,29 +141,29 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-190 encounters (one campaign meeting one target) over 27 campaigns, 21 of them
-recording every target they met; 132 distinct targets.
-137 rows are held to a report this repository committed; 53 name a written record only.
-572 candidates screened before the slates were fixed, over the 19 campaign(s) that
+247 encounters (one campaign meeting one target) over 28 campaigns, 22 of them
+recording every target they met; 189 distinct targets.
+177 rows are held to a report this repository committed; 70 name a written record only.
+931 candidates screened before the slates were fixed, over the 20 campaign(s) that
 recorded one; the rest kept no such count.
 
-reach, over the 21 campaign(s) that recorded every target they met
-  attempted       181
-  explored        108
-  judged           99
-    PASS           29
-    FAIL           70
+reach, over the 22 campaign(s) that recorded every target they met
+  attempted       238
+  explored        148
+  judged          139
+    PASS           42
+    FAIL           97
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                53              44             31
-  report_worthy        37              28             31
-  filed                35              26             31
+  novel                58              49             35
+  report_worthy        42              33             35
+  filed                39              30             35
   acknowledged          7               5              6
   fixed                 7               5              6
   revalidated           6               4              5
 
-why encounters stopped: awaiting 21, declined 4, discussing 2, known 9, no_content_lost 3, not_worth 28, wall 65, withdrawn 1
-upstream states last read between 2026-08-13 and 2026-10-03; spike/upstream-report-status.sh measures them now.
+why encounters stopped: awaiting 25, declined 4, discussing 2, known 15, no_content_lost 3, not_worth 46, wall 79, withdrawn 1
+upstream states last read between 2026-08-13 and 2026-10-05; spike/upstream-report-status.sh measures them now.
 ```
 
 <!-- outcome-funnel:summary:end -->

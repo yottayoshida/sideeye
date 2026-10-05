@@ -1,0 +1,6 @@
+[world]
+state = "/s/gg"
+
+[define]
+operation = "ggshield config set default_token_lifetime 30"
+cwd       = "/s/gg-in"

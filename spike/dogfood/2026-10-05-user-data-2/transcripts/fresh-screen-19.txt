@@ -1,0 +1,6 @@
+SEEN  juju  target-classes:130
+SEEN  juju  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  juju  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  juju  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:3
+fresh azure-dev
+fresh azd

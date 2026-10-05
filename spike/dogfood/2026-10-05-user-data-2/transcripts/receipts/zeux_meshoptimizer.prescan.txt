@@ -1,0 +1,220 @@
+== novelty pre-scan: zeux/meshoptimizer
+== date: 2026-10-05T03:17:28Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          11 hit(s) (all listed)
+      #1085 closed 2026-08-28 simplify_with_attributes segfaults on Linux due to missing ctypes argtypes/restype
+      #1080 closed 2026-08-21 Assertion failure in meshopt_computeClusterBounds due to unhandled Inf/NaN from float cross-product overflow
+      #1077 closed 2026-08-20 Float-cast-overflow in meshopt_encodeFilterExp via unclamped exponent producing -inf
+      #1078 closed 2026-08-20 Unvalidated NaN in vertex positions causes undefined float-to-int cast in computeOrder
+      #1050 closed 2026-04-29 tools: add two fuzz harnesses to be consumed by OSS-Fuzz
+      #894 closed 2025-06-12 Crash running demo with Chasm: The Rift Demo gltf files
+      #346 closed 2021-10-15 Flipped triangles when simplifying mesh
+      #545 closed 2023-04-07 gltfpack: No output on a large obj input
+      #439 closed 2022-07-18 Segfault when extras are kept and equivalent materials exist
+      #48 closed 2019-07-18 gltfpack does not preserve node hierarchy
+      #148 merged 2020-05-27 gltfpack: Fix processing for .glb files with no images
+  corrupt        8 hit(s) (all listed)
+      #1085 closed 2026-08-28 simplify_with_attributes segfaults on Linux due to missing ctypes argtypes/restype
+      #1078 closed 2026-08-20 Unvalidated NaN in vertex positions causes undefined float-to-int cast in computeOrder
+      #1080 closed 2026-08-21 Assertion failure in meshopt_computeClusterBounds due to unhandled Inf/NaN from float cross-product overflow
+      #628 closed 2023-10-31 Why is meshopt_simplifyWithAttributes (silently) limited to 16 attributes?
+      #920 closed 2025-07-25 meshopt_simplify* throws `malloc(): invalid size (unsorted)`
+      #676 merged 2024-04-08 gltfpack: Replace images that can't be found or encoded with invalid URI
+      #624 closed 2023-10-20 Corrupted textures after meshopt_optimizeOverdraw
+      #174 closed 2020-08-08 IndexAdapter breaks with Signed indices
+  corruption     1 hit(s) (all listed)
+      #920 closed 2025-07-25 meshopt_simplify* throws `malloc(): invalid size (unsorted)`
+  truncated      4 hit(s) (all listed)
+      #1010 merged 2026-01-28 meshletcodec: Improve testing coverage
+      #158 closed 2020-06-23 Attribute-aware error metrics for simplification
+      #443 merged 2022-07-24 gltfpack: Implement support for normalized attributes
+      #162 closed 2020-07-06 Verbose output as Json 
+  truncate       10 hit(s) (all listed)
+      #583 closed 2023-07-18 gltfpack: Double precision support for node translation values
+      #1010 merged 2026-01-28 meshletcodec: Improve testing coverage
+      #1009 merged 2026-01-27  meshletcodec: Implement NEON decoding support
+      #922 closed 2025-07-31 Should buildMeshlets align local indices to 4 bytes?
+      #916 merged 2025-07-18 vertexfilter: Implement experimental color filter 
+      #158 closed 2020-06-23 Attribute-aware error metrics for simplification
+      #443 merged 2022-07-24 gltfpack: Implement support for normalized attributes
+      #2 closed 2017-04-14 Using templated parameters for indices and vertex positions
+      #162 closed 2020-07-06 Verbose output as Json 
+      #37 merged 2019-06-03 gltfpack: Animation fixes and improvements
+  empty          17 hit(s) (all listed)
+      #886 merged 2025-05-27 demo: fix address error when container array is empty
+      #894 closed 2025-06-12 Crash running demo with Chasm: The Rift Demo gltf files
+      #182 closed 2020-09-25  Name of glb changed to MESH
+      #802 merged 2024-11-13 gltfpack: Take account of primitive extras
+      #675 closed 2024-04-02 gltfpack: Output GLTF is invalid if input scene has missing image files
+      #551 closed 2023-04-25 gltfpack: Empty node names removed when compressed?
+      #452 merged 2022-08-06 Adds exports and updates type definitions for MeshoptSimplifier
+      #437 closed 2022-07-17 cmake and basisu
+      #451 closed 2022-08-06 error model.
+      #294 closed 2021-05-28 Empty children arrays causing glTF validation errors
+      #1 closed 2017-03-25 Using overdraw optimization by itself
+      #48 closed 2019-07-18 gltfpack does not preserve node hierarchy
+      #44 closed 2019-06-27 [gltfpack] Issue with the displacement of position in animated skinned meshes
+      #164 closed 2020-07-06 Provide gltfpack as a js module and also a cli tool.
+      #82 merged 2019-11-30 gltfpack: Improve robustness when dealing with invalid files
+      #199 closed 2020-12-05 Support for vrm.
+      #225 merged 2021-01-17 gltfpack: Fix handling of absolute paths on node.js
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          7 hit(s) (all listed)
+      #1059 merged 2026-06-19 vertexcodec: Optimize SSSE3 decoding
+      #916 merged 2025-07-18 vertexfilter: Implement experimental color filter 
+      #628 closed 2023-10-31 Why is meshopt_simplifyWithAttributes (silently) limited to 16 attributes?
+      #870 closed 2025-04-14 Wrong unorm quantization function?
+      #843 merged 2025-02-18 Improve partitioning scoring and group size limits
+      #462 merged 2022-08-17 gltfpack: Experimental support for floating point position quantization
+      #175 merged 2020-08-21 gltfpack: Implement image resize for block and power of two rounding
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           5 hit(s) (all listed)
+      #1052 merged 2026-05-12 Implement shared exponent helper for cluster encoding
+      #798 merged 2024-10-28 gltfpack: Allow per-texture-class control for texture scaling
+      #675 closed 2024-04-02 gltfpack: Output GLTF is invalid if input scene has missing image files
+      #597 closed 2023-08-23 Add dequantization functions
+      #173 closed 2020-08-02 How to represent quantized vertex in shader?
+  partial        4 hit(s) (all listed)
+      #944 merged 2025-08-26 Validate output extension up front to prevent late failure and unnecessary work
+      #829 merged 2025-01-03 vertexcodec: Additional latency optimizations for delta decoding
+      #611 merged 2023-10-05 gltfpack: Improve texture file handling behavior
+      #442 merged 2022-07-22 gltfpack: Support partial texture compression with -tc
+  incomplete     6 hit(s) (all listed)
+      #487 closed 2022-09-27 gltfpack: produce incomplete gltf asset if source contains external images
+      #619 merged 2023-10-12 simplify: Add color support to simplifyPoints
+      #594 closed 2023-08-21 gltfpack: obj material color
+      #524 merged 2022-12-29 simplify: Initial support for attribute-aware simplification
+      #322 merged 2021-07-28 js: Implement a standalone encoder library
+      #30 merged 2019-05-31 gltfpack
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #810 merged 2024-12-04 vertexcodec: Initial implementation of experimental next version
+      #185 closed 2020-10-08 Ability to keep animations unoptimized
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         3 hit(s) (all listed)
+      #1086 merged 2026-08-29 demo: Implement assorted remeshing improvements
+      #158 closed 2020-06-23 Attribute-aware error metrics for simplification
+      #346 closed 2021-10-15 Flipped triangles when simplifying mesh
+  half-written   2 hit(s) (all listed)
+      #1046 merged 2026-04-23 tangentspace: Implement experimental tangent space generator
+      #922 closed 2025-07-31 Should buildMeshlets align local indices to 4 bytes?
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        3 hit(s) (all listed)
+      #962 closed 2025-09-30 README Mesh Shader section may underallocate?
+      #71 closed 2019-10-24 simplifySloppy aggressively welds vertices causing issues for attribute discontinuities
+      #652 closed 2024-01-28 gltfpack: Simplification take in account the vertex color
+  destroys       0 hit(s)
+  overwrite      5 hit(s) (all listed)
+      #1048 merged 2026-04-28  gltfpack: Support optional tangent space generation
+      #1008 merged 2026-01-26  meshletcodec: Implement new decodeMeshlet interface
+      #713 closed 2024-06-27 Large perf improvement
+      #420 closed 2022-04-01 meshopt_encodeVertex* variants with version arguments
+      #252 closed 2021-03-09 Replace mesh rather than generate new
+  clobber        0 hit(s)
+  blank          1 hit(s) (all listed)
+      #675 closed 2024-04-02 gltfpack: Output GLTF is invalid if input scene has missing image files
+  unreadable     0 hit(s)
+  garbage        2 hit(s) (all listed)
+      #193 closed 2020-11-06 Binary Comparison in meshopt_generateVertexRemap fails because of padding bytes
+      #86 closed 2019-12-11 Simplification runs, but the result has many defects/issues
+  mangled        1 hit(s) (all listed)
+      #151 closed 2020-06-13 gltfpack: option to disable mesh consolidation? 
+  contents       10 hit(s) (all listed)
+      #1098 closed 2026-09-25 Stable source archive
+      #677 merged 2024-04-10 gltfpack: Fixup image mime type between jpeg/png based on headers
+      #620 merged 2023-10-13 indexcodec: Bump default encoding version to 1
+      #165 closed 2020-07-09 Individual mesh picking on consolidated meshes - gltfpack
+      #517 closed 2022-11-29 call gltfpack.exe many times whith -tc -noq, it seems to be deadlock
+      #459 closed 2022-08-13 Keep `-te` option for .gltf.
+      #299 closed 2021-06-03 gltfpack: UASTC (-tu) doesn't work with toktx 4.0 (final)
+      #322 merged 2021-07-28 js: Implement a standalone encoder library
+      #199 closed 2020-12-05 Support for vrm.
+      #147 merged 2020-05-19 gltfpack: Substantiall reduce memory footprint
+  in-place       37 hit(s) (all listed)
+      #1096 merged 2026-09-24 remesher: Improve output shape and performance
+      #1095 open 2026-09-24 Version of the simplifier that outputs a triangle mapping
+      #1044 closed 2026-04-16 Confusing simplify results
+      #1006 merged 2026-01-23 meshletcodec: Revise encoding format for slightly more compression
+      #992 merged 2025-12-01 Release 1.0
+      #919 merged 2025-07-24 simplifier: Classify half-seams as seams instead of borders
+      #921 merged 2025-07-30 simplifier: Implement experimental position/attribute update
+      #908 merged 2025-07-03 simplifier: Implement support for vertex locking for simplifySloppy
+      #628 closed 2023-10-31 Why is meshopt_simplifyWithAttributes (silently) limited to 16 attributes?
+      #858 merged 2025-03-19 indexcodec: Restructure decoding fast path for better codegen
+      #876 closed 2025-04-23 I hope this project will support vs2013 in the future
+      #785 closed 2024-10-07 MeshoptEncoder.reorderMesh failed.
+      #757 merged 2024-08-30 gltfpack: Sanitize floats before writing them to JSON
+      #760 merged 2024-09-05 demo: Initial hierarchical clustered simplification demo
+      #738 merged 2024-08-18 Add JS bindings for clusterizer API
+      #158 closed 2020-06-23 Attribute-aware error metrics for simplification
+      #601 merged 2023-09-19 Add API to specify which vertices to lock when simplifying
+      #645 closed 2023-12-26 gltfpack: Objects with large scales distort other objects' geometry
+      #621 merged 2023-10-13 Use NULL for null pointer constants instead of 0/nullptr
+      #608 closed 2023-10-02 gltfpack: Implement texture copying when compression is not used
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      2 hit(s) (all listed)
+      #798 merged 2024-10-28 gltfpack: Allow per-texture-class control for texture scaling
+      #173 closed 2020-08-02 How to represent quantized vertex in shader?
+  data+loss      15 hit(s) (all listed)
+      #1064 merged 2026-07-10  indexcodec: Optimize decoding for GCC/Clang on x64
+      #583 closed 2023-07-18 gltfpack: Double precision support for node translation values
+      #921 merged 2025-07-30 simplifier: Implement experimental position/attribute update
+      #922 closed 2025-07-31 Should buildMeshlets align local indices to 4 bytes?
+      #916 merged 2025-07-18 vertexfilter: Implement experimental color filter 
+      #531 closed 2023-01-25 When creating meshlets using meshopt_buildMeshlets some clusters might not be connected
+      #826 merged 2024-12-28 vertexcodec: Stabilize v1 encoding
+      #811 closed 2024-12-06 vertexcodec: Initial implementation of experimental decoders
+      #820 merged 2024-12-12 vertexcodec: Implement enhanced delta encoding
+      #810 merged 2024-12-04 vertexcodec: Initial implementation of experimental next version
+      #798 merged 2024-10-28 gltfpack: Allow per-texture-class control for texture scaling
+      #710 merged 2024-06-24 simplify: Make hasTriangleFlip predicate use an angle cutoff
+      #443 merged 2022-07-24 gltfpack: Implement support for normalized attributes
+      #438 closed 2022-07-18 [Feature Request] Ability to selectively compress textures by texture name?
+      #201 closed 2020-12-11 Retain the names of the individual mesh within a node
+  partial+write  0 hit(s)
+  crash+safe     3 hit(s) (all listed)
+      #1077 closed 2026-08-20 Float-cast-overflow in meshopt_encodeFilterExp via unclamped exponent producing -inf
+      #346 closed 2021-10-15 Flipped triangles when simplifying mesh
+      #48 closed 2019-07-18 gltfpack does not preserve node hierarchy
+  atomic+write   0 hit(s)
+  lock+file      6 hit(s) (all listed)
+      #760 merged 2024-09-05 demo: Initial hierarchical clustered simplification demo
+      #477 closed 2022-09-06 Degenerate triangles or wired triangles (wrong topology) generated
+      #601 merged 2023-09-19 Add API to specify which vertices to lock when simplifying
+      #312 closed 2021-07-04 Border vertex is getting collapsed when border collapsing is turned off
+      #295 closed 2021-05-28 Is possible to set  certain vertex and face unchanged when simplify glb model?
+      #122 closed 2020-04-13 Mesh seems to turn cards into triangles
+  write+failure  2 hit(s) (all listed)
+      #1065 closed 2026-07-10 Simplification failure on flat surfaces
+      #507 closed 2022-10-30 gltfpack fails to write output data to tmp folder when compiling latest
+  file+contents  6 hit(s) (all listed)
+      #677 merged 2024-04-10 gltfpack: Fixup image mime type between jpeg/png based on headers
+      #165 closed 2020-07-09 Individual mesh picking on consolidated meshes - gltfpack
+      #517 closed 2022-11-29 call gltfpack.exe many times whith -tc -noq, it seems to be deadlock
+      #459 closed 2022-08-13 Keep `-te` option for .gltf.
+      #299 closed 2021-06-03 gltfpack: UASTC (-tu) doesn't work with toktx 4.0 (final)
+      #199 closed 2020-12-05 Support for vrm.
+
+== 51 terms run; 26 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,2 @@
+juju/juju stars=2674 pushed=2026-10-02 archived=false issues=true full=juju/juju
+Azure/azure-dev stars=570 pushed=2026-10-04 archived=false issues=true full=Azure/azure-dev

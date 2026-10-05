@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/wb/wandb",
+    "operation": "wandb offline",
+    "cwd": "/s/wb",
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 4,
+  "prefix_hash": "902bd3ea67104177",
+  "after_class": "open",
+  "after_path": "/s/wb/wandb/settings",
+  "before_class": "write",
+  "before_path": "/s/wb/wandb/settings",
+  "violation": "hybrid"
+}

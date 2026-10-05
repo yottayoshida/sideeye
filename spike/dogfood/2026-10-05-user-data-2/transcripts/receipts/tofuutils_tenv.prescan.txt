@@ -1,0 +1,233 @@
+== novelty pre-scan: tofuutils/tenv
+== date: 2026-10-05T05:43:59Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          3 hit(s) (all listed)
+      #573 merged 2026-04-17 go: bump github.com/zclconf/go-cty from 1.18.0 to 1.18.1
+      #337 merged 2025-01-22 go: bump github.com/zclconf/go-cty from 1.16.1 to 1.16.2
+      #257 closed 2024-09-29 If `GITHUB_ACTIONS` is `true`, the proxy command fails if paths aren't available
+  corrupt        4 hit(s) (all listed)
+      #106 open 2024-04-13 Try to fix issues related to exe files
+      #340 closed 2025-01-24 Sending SIGTERM to tenv put terraform state at risk
+      #237 closed 2024-08-21 Check integrity of the binary when already installed
+      #215 closed 2024-07-18 docs: add guidance around verifying tenv using cosign
+  corruption     0 hit(s)
+  truncated      44 hit(s) (all listed)
+      #602 open 2026-06-08 gh-actions: bump codecov/codecov-action from 5.5.5 to 7.0.0
+      #626 merged 2026-08-20 go: bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #625 closed 2026-08-17 go: bump github.com/stretchr/testify from 1.11.1 to 1.12.0
+      #591 merged 2026-05-19 gh-actions: bump codecov/codecov-action from 6.0.0 to 6.0.1
+      #584 merged 2026-04-27 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.2.1
+      #580 merged 2026-04-20 chore(deps): bump github.com/go-git/go-git/v5 from 5.13.0 to 5.18.0 in /tools
+      #563 merged 2026-03-27 gh-actions: bump codecov/codecov-action from 5.5.3 to 6.0.0
+      #559 merged 2026-03-19 gh-actions: bump codecov/codecov-action from 5.5.2 to 5.5.3
+      #578 closed 2026-04-20 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.1.0
+      #530 merged 2025-12-10 gh-actions: bump codecov/codecov-action from 5.5.1 to 5.5.2
+      #469 merged 2025-09-03 go: bump github.com/spf13/cobra from 1.9.1 to 1.10.1
+      #448 merged 2025-08-12 gh-actions: bump actions/checkout from 4 to 5
+      #479 merged 2025-09-15 go: bump github.com/stretchr/testify from 1.10.0 to 1.11.1
+      #472 merged 2025-09-05 gh-actions: bump codecov/codecov-action from 5.5.0 to 5.5.1
+      #450 merged 2025-08-21 gh-actions: bump codecov/codecov-action from 5.4.3 to 5.5.0
+      #463 merged 2025-08-25 go: bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #435 merged 2025-06-22 chore(deps): bump github.com/cloudflare/circl from 1.3.7 to 1.6.1 in /tools
+      #416 merged 2025-05-16 gh-actions: bump codecov/codecov-action from 5.4.2 to 5.4.3
+      #387 merged 2025-04-10 go: bump github.com/charmbracelet/bubbles from 0.20.0 to 0.21.0
+      #371 merged 2025-03-14 go: bump github.com/charmbracelet/lipgloss from 1.0.0 to 1.1.0
+  truncate       44 hit(s) (all listed)
+      #602 open 2026-06-08 gh-actions: bump codecov/codecov-action from 5.5.5 to 7.0.0
+      #626 merged 2026-08-20 go: bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #625 closed 2026-08-17 go: bump github.com/stretchr/testify from 1.11.1 to 1.12.0
+      #591 merged 2026-05-19 gh-actions: bump codecov/codecov-action from 6.0.0 to 6.0.1
+      #584 merged 2026-04-27 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.2.1
+      #580 merged 2026-04-20 chore(deps): bump github.com/go-git/go-git/v5 from 5.13.0 to 5.18.0 in /tools
+      #563 merged 2026-03-27 gh-actions: bump codecov/codecov-action from 5.5.3 to 6.0.0
+      #559 merged 2026-03-19 gh-actions: bump codecov/codecov-action from 5.5.2 to 5.5.3
+      #578 closed 2026-04-20 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.1.0
+      #530 merged 2025-12-10 gh-actions: bump codecov/codecov-action from 5.5.1 to 5.5.2
+      #469 merged 2025-09-03 go: bump github.com/spf13/cobra from 1.9.1 to 1.10.1
+      #448 merged 2025-08-12 gh-actions: bump actions/checkout from 4 to 5
+      #479 merged 2025-09-15 go: bump github.com/stretchr/testify from 1.10.0 to 1.11.1
+      #472 merged 2025-09-05 gh-actions: bump codecov/codecov-action from 5.5.0 to 5.5.1
+      #450 merged 2025-08-21 gh-actions: bump codecov/codecov-action from 5.4.3 to 5.5.0
+      #463 merged 2025-08-25 go: bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #435 merged 2025-06-22 chore(deps): bump github.com/cloudflare/circl from 1.3.7 to 1.6.1 in /tools
+      #371 merged 2025-03-14 go: bump github.com/charmbracelet/lipgloss from 1.0.0 to 1.1.0
+      #416 merged 2025-05-16 gh-actions: bump codecov/codecov-action from 5.4.2 to 5.4.3
+      #387 merged 2025-04-10 go: bump github.com/charmbracelet/bubbles from 0.20.0 to 0.21.0
+  empty          21 hit(s) (all listed)
+      #617 open 2026-07-13 fix: return an error when uninstalling a non-installed version
+      #627 merged 2026-08-31 go: bump github.com/PuerkitoBio/goquery from 1.12.0 to 1.13.0
+      #566 closed 2026-04-07 Panic when exiting `tenv tf uninstall`
+      #502 closed 2025-11-05 Allow disabling fallback for detect commands
+      #491 merged 2025-10-03 Add configurable lock file path support for filesystem compatibility
+      #468 merged 2025-09-01 go: bump github.com/spf13/pflag from 1.0.7 to 1.0.9
+      #463 merged 2025-08-25 go: bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #479 merged 2025-09-15 go: bump github.com/stretchr/testify from 1.10.0 to 1.11.1
+      #369 merged 2025-03-11 feat: update versionmanager to support root.hcl files
+      #386 closed 2025-04-04 tenv does not use correct Terraform version in a terraform/terragrunt project (Failed to parse terragrunt attribute)
+      #330 merged 2025-01-06 go: bump github.com/zclconf/go-cty from 1.15.1 to 1.16.0
+      #359 merged 2025-02-17 go: bump github.com/spf13/cobra from 1.8.1 to 1.9.1
+      #209 closed 2024-07-16 Even if TFENV_HASHICORP_PGP_KEY is set, it is always treated as an empty character
+      #193 merged 2024-06-27 Fixes: light proxy did not pipe stdin, detect command empty display on error 
+      #379 merged 2025-03-19 chore(deps): bump github.com/go-git/go-git/v5 from 5.12.0 to 5.13.0 in /tools
+      #305 closed 2024-12-23 Failure during tofu call : fork/exec /usr/bin/tenv: inappropriate ioctl for device
+      #191 closed 2024-06-27 tenv 2.2.0 breaks terraform fmt with nvim lsp and terraform-ls
+      #234 merged 2024-08-21 go: bump github.com/charmbracelet/bubbles from 0.18.0 to 0.19.0
+      #283 merged 2024-11-15 gh-actions: bump codecov/codecov-action from 4 to 5
+      #129 merged 2024-05-12 WIP: Add  support for atmos
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #306 closed 2024-12-23 inappropriate ioctl for device when running tofu or terragrunt in Docker container
+  interrupt      7 hit(s) (all listed)
+      #340 closed 2025-01-24 Sending SIGTERM to tenv put terraform state at risk
+      #345 merged 2025-02-05 go: bump github.com/charmbracelet/bubbletea from 1.2.4 to 1.3.0
+      #255 closed 2024-09-27 Ctrl-C kills child processes immediately
+      #306 closed 2024-12-23 inappropriate ioctl for device when running tofu or terragrunt in Docker container
+      #134 merged 2024-05-16 Improve interrupt signal handling
+      #128 merged 2024-05-12 Clean lock on interrupt signal
+      #95 closed 2024-04-05 SIGINT (CTRL+C) returns to shell immediately
+  sigkill        1 hit(s) (all listed)
+      #123 closed 2024-05-02 Leftover `.lock` file hangs commands without a message
+  sigint         4 hit(s) (all listed)
+      #255 closed 2024-09-27 Ctrl-C kills child processes immediately
+      #345 merged 2025-02-05 go: bump github.com/charmbracelet/bubbletea from 1.2.4 to 1.3.0
+      #95 closed 2024-04-05 SIGINT (CTRL+C) returns to shell immediately
+      #123 closed 2024-05-02 Leftover `.lock` file hangs commands without a message
+  ctrl-c         7 hit(s) (all listed)
+      #566 closed 2026-04-07 Panic when exiting `tenv tf uninstall`
+      #255 closed 2024-09-27 Ctrl-C kills child processes immediately
+      #334 closed 2025-01-14 Terraform shell completion fails without TENV_DETACHED_PROXY=false
+      #340 closed 2025-01-24 Sending SIGTERM to tenv put terraform state at risk
+      #345 merged 2025-02-05 go: bump github.com/charmbracelet/bubbletea from 1.2.4 to 1.3.0
+      #95 closed 2024-04-05 SIGINT (CTRL+C) returns to shell immediately
+      #123 closed 2024-05-02 Leftover `.lock` file hangs commands without a message
+  power          1 hit(s) (all listed)
+      #52 merged 2024-02-05 ci: bump codecov/codecov-action from 3 to 4
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           4 hit(s) (all listed)
+      #580 merged 2026-04-20 chore(deps): bump github.com/go-git/go-git/v5 from 5.13.0 to 5.18.0 in /tools
+      #183 closed 2024-06-23 Technical improvement "lightweight proxy"
+      #116 closed 2024-04-30 tenv cannot be used concurrently
+      #63 closed 2024-02-14 When using terraform format on stdin/stdout tenv output is included in the resulting output stream
+  partial        3 hit(s) (all listed)
+      #489 open 2025-10-02 Enhance test coverage across entire codebase for codecov.
+      #77 merged 2024-03-04 Merge feat/env-var-fallback
+      #4 merged 2024-01-08 ci: bump actions/checkout from 3 to 4
+  incomplete     3 hit(s) (all listed)
+      #263 open 2024-10-10 Linux manual installation guide is largely incomplete
+      #574 open 2026-04-18 docs: expand Linux manual installation guide
+      #241 merged 2024-08-27 go: bump github.com/hashicorp/hcl/v2 from 2.21.0 to 2.22.0
+  dataloss       0 hit(s)
+  recover        4 hit(s) (all listed)
+      #629 open 2026-09-21 go: bump github.com/hashicorp/hcl/v2 from 2.24.0 to 2.25.0
+      #476 merged 2025-09-12 go: bump github.com/charmbracelet/bubbletea from 1.3.8 to 1.3.9
+      #251 merged 2024-09-12 go: bump github.com/charmbracelet/bubbletea from 1.1.0 to 1.1.1
+      #192 closed 2024-06-27 tenv 2.2.0 breaks terraform apply: `error asking for approval: EOF`
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         2 hit(s) (all listed)
+      #442 merged 2025-07-08 go: bump github.com/charmbracelet/bubbletea from 1.3.5 to 1.3.6
+      #232 closed 2024-08-19 go: bump github.com/charmbracelet/bubbletea from 0.26.6 to 0.27.0
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #76 closed 2024-02-23 Erase big file from git history
+  erasing        1 hit(s) (all listed)
+      #76 closed 2024-02-23 Erase big file from git history
+  erased         1 hit(s) (all listed)
+      #76 closed 2024-02-23 Erase big file from git history
+  destroy        4 hit(s) (all listed)
+      #340 closed 2025-01-24 Sending SIGTERM to tenv put terraform state at risk
+      #255 closed 2024-09-27 Ctrl-C kills child processes immediately
+      #213 closed 2024-07-17 -detailed-exitcode doesn't work when GITHUB_ACTIONS is set
+      #192 closed 2024-06-27 tenv 2.2.0 breaks terraform apply: `error asking for approval: EOF`
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #630 open 2026-10-02 go: bump github.com/ProtonMail/gopenpgp/v2 from 2.10.0 to 2.11.0
+      #615 open 2026-07-07 go: bump github.com/zclconf/go-cty from 1.18.1 to 1.19.0
+      #629 open 2026-09-21 go: bump github.com/hashicorp/hcl/v2 from 2.24.0 to 2.25.0
+      #610 open 2026-06-24 gh-actions: bump actions/setup-go from 6.4.0 to 6.5.0
+      #613 open 2026-06-30 gh-actions: bump goreleaser/goreleaser-action from 7.2.2 to 7.2.3
+      #612 open 2026-06-30 gh-actions: bump golangci/golangci-lint-action from 9.2.1 to 9.3.0
+      #614 open 2026-07-02 gh-actions: bump docker/login-action from 4.2.0 to 4.3.0
+      #602 open 2026-06-08 gh-actions: bump codecov/codecov-action from 5.5.5 to 7.0.0
+      #627 merged 2026-08-31 go: bump github.com/PuerkitoBio/goquery from 1.12.0 to 1.13.0
+      #626 merged 2026-08-20 go: bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #607 merged 2026-06-12 go: bump github.com/bradleyfalzon/ghinstallation/v2 from 2.18.0 to 2.19.0
+      #625 closed 2026-08-17 go: bump github.com/stretchr/testify from 1.11.1 to 1.12.0
+      #600 merged 2026-06-03 gh-actions: bump actions/checkout from 6.0.2 to 6.0.3
+      #587 merged 2026-05-07 gh-actions: bump sigstore/cosign-installer from 4.1.1 to 4.1.2
+      #591 merged 2026-05-19 gh-actions: bump codecov/codecov-action from 6.0.0 to 6.0.1
+      #590 merged 2026-05-19 gh-actions: bump goreleaser/goreleaser-action from 7.2.1 to 7.2.2
+      #608 merged 2026-06-19 gh-actions: bump actions/checkout from 6.0.3 to 7.0.0
+      #573 merged 2026-04-17 go: bump github.com/zclconf/go-cty from 1.18.0 to 1.18.1
+      #595 merged 2026-05-25 gh-actions: bump docker/login-action from 4.1.0 to 4.2.0
+      #562 merged 2026-03-26 gh-actions: bump sigstore/cosign-installer from 4.1.0 to 4.1.1
+  clobber        0 hit(s)
+  blank          2 hit(s) (all listed)
+      #501 open 2025-10-22 Shell completion to suggest installed version feature added (resolves #420)
+      #343 merged 2025-01-30 go: bump github.com/spf13/pflag from 1.0.5 to 1.0.6
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       3 hit(s) (all listed)
+      #578 closed 2026-04-20 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.1.0
+      #548 closed 2026-02-23 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.0.0
+      #371 merged 2025-03-14 go: bump github.com/charmbracelet/lipgloss from 1.0.0 to 1.1.0
+  in-place       12 hit(s) (all listed)
+      #223 open 2024-08-05 Terragrunt command not found
+      #534 closed 2026-01-14 `install latest-allowed` installs newer than is allowed; `detect` detects correctly
+      #491 merged 2025-10-03 Add configurable lock file path support for filesystem compatibility
+      #64 closed 2024-02-14 Allow setting of a fallback version
+      #305 closed 2024-12-23 Failure during tofu call : fork/exec /usr/bin/tenv: inappropriate ioctl for device
+      #213 closed 2024-07-17 -detailed-exitcode doesn't work when GITHUB_ACTIONS is set
+      #73 closed 2024-02-22 Feature request: add terraform vs tofu agnostic command
+      #176 closed 2024-06-17 go install -v github.com/tofuutils/tenv/cmd/tenv@latest installing version 1
+      #167 closed 2024-06-13 fix: Improve type checks in extractReleases
+      #92 closed 2024-04-03 Request: Allow `terraform` as a human-friendly alias for `tf` tool
+      #105 closed 2024-04-09 update-path not working
+      #29 closed 2024-01-24 [tfswitch-parity] Transparently support .tfswitchrc files.
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #95 closed 2024-04-05 SIGINT (CTRL+C) returns to shell immediately
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #580 merged 2026-04-20 chore(deps): bump github.com/go-git/go-git/v5 from 5.13.0 to 5.18.0 in /tools
+  data+loss      3 hit(s) (all listed)
+      #340 closed 2025-01-24 Sending SIGTERM to tenv put terraform state at risk
+      #255 closed 2024-09-27 Ctrl-C kills child processes immediately
+      #95 closed 2024-04-05 SIGINT (CTRL+C) returns to shell immediately
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      12 hit(s) (all listed)
+      #489 open 2025-10-02 Enhance test coverage across entire codebase for codecov.
+      #480 closed 2025-09-16 Allow changing the lock file location
+      #491 merged 2025-10-03 Add configurable lock file path support for filesystem compatibility
+      #340 closed 2025-01-24 Sending SIGTERM to tenv put terraform state at risk
+      #64 closed 2024-02-14 Allow setting of a fallback version
+      #140 merged 2024-05-23 bugfix: proper lock file close
+      #197 closed 2024-07-03 lock file is created even if we do not download the version
+      #123 closed 2024-05-02 Leftover `.lock` file hangs commands without a message
+      #117 merged 2024-04-30 Write a lock file during install
+      #139 closed 2024-05-22 OpenTofu install broken in windows
+      #121 closed 2024-05-02 Tenv hangs indefinitely 
+      #116 closed 2024-04-30 tenv cannot be used concurrently
+  write+failure  1 hit(s) (all listed)
+      #116 closed 2024-04-30 tenv cannot be used concurrently
+  file+contents  3 hit(s) (all listed)
+      #578 closed 2026-04-20 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.1.0
+      #548 closed 2026-02-23 gh-actions: bump goreleaser/goreleaser-action from 6.2.1 to 7.0.0
+      #371 merged 2025-03-14 go: bump github.com/charmbracelet/lipgloss from 1.0.0 to 1.1.0
+
+== 51 terms run; 30 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

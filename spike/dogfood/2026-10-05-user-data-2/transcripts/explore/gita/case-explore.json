@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/gita/gita",
+    "operation": "gita rename a alpha",
+    "cwd": "/s/gita-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 6,
+  "prefix_hash": "a0e3434d4e02de36",
+  "after_class": "open",
+  "after_path": "/s/gita/gita/repos.csv",
+  "before_class": "write",
+  "before_path": "/s/gita/gita/repos.csv",
+  "violation": "hybrid"
+}
