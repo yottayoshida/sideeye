@@ -1,0 +1,21 @@
+   Configure Property 'versionsdbupdateinterval' set to '0'
+   Configure Property 'versionsdbupdateinterval' set to '0'
+PREFLIGHT  recording accepted — 58 state-changing operation(s) observed
+
+cwd          /s/jd-in
+atomicity    3 path(s) judged pre-or-post
+oracle       agreed on 58 operations (137 syscall lines examined, 70 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2004 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/jd --cwd "/s/jd-in" --operation "juliaup config versionsdbupdateinterval 0" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

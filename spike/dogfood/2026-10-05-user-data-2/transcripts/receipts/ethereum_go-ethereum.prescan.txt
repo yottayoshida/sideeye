@@ -1,0 +1,947 @@
+== novelty pre-scan: ethereum/go-ethereum
+== date: 2026-10-05T02:17:00Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35871 open 2026-10-03 p2p/nat: retry UPnP mapping with permanent lease on error 725
+      #35813 open 2026-09-27 triedb/pathdb: fix data race in historical state reader
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #35233 open 2026-06-27 internal/ethapi: make difficulty override a no-op post-merge in eth_simulateV1
+      #31320 open 2025-03-05 Geth crashes on Holesky when trying to add invalid block after syncing good branch
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+      #35799 closed 2026-09-25 triedb/pathdb: stale history index after crash recovery onto a different fork returns wrong historical state
+      #35671 closed 2026-09-08 eth_simulateV1: blockOverrides.difficulty crashes the method handler on post-merge chains
+      #35508 open 2026-08-11 core/txpool/blobpool: nil pointer dereference in Cache due to initialization race with BlobPool.Init
+      #35844 merged 2026-09-30 core: handle the sync restarting after unclean shutdown
+      #22143 open 2021-01-07 Research transactional database support
+      #35379 open 2026-07-18 eth/downloader: TestSkeletonSyncRetrievals and TestEmptyShortCircuit flake under -race
+      #21963 open 2020-12-04 FR: Separate Dangerous Debugs From Useful Debugs
+      #18443 open 2019-01-14 p2p/discover: UDP listener port not released when macOS firewall is enabled
+      #35621 closed 2026-08-31 Docs: Update storage requirement from 1TB to 2TB+ for mainnet sync
+      #35400 merged 2026-07-22 triedb/pathdb: report nothing recoverable during state sync
+      #35606 closed 2026-08-28 eth: return canonical execution witness from debug_executionWitness
+      #35472 closed 2026-08-07 triedb/pathdb: StateReader.Account panics on corrupt account data instead of returning error
+      #35140 merged 2026-06-10 beacon/engine: ensure nil ExecutionPayloadEnvelope.BlockValue doesn't crash
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35304 open 2026-07-05 ethdb/memorydb: avoid corrupting prefix slice in NewIterator
+      #35521 open 2026-08-12 eth/protocols/snap: don't ignore batch write error in resetSyncState
+      #35502 open 2026-08-10 core, eth/catalyst, beacon/engine: fix pre-fork field and BAL validation for devnet-8
+      #35154 open 2026-06-11 accounts/abi: copy selector in Pack to avoid aliasing cached method.ID
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+      #35265 open 2026-06-30 eth/downloader, cmd: add --snap.exactpivot for exact-head snap sync
+      #35429 merged 2026-07-28 core/txpool/blobpool: lock lookup when logging corrupt tx blobs
+      #35651 closed 2026-09-04 core/state/snapshot: propagate dangling storage check errors
+      #31405 open 2025-03-17 Failed to truncate extra state histories err="out of range,
+      #35749 merged 2026-09-21 eth/protocols/snap: implement bal catchup for trie
+      #35511 closed 2026-08-11 triedb/pathdb: return error instead of panic on corrupt account data
+      #35472 closed 2026-08-07 triedb/pathdb: StateReader.Account panics on corrupt account data instead of returning error
+      #35491 closed 2026-08-09 core/state: fail fast on account error when applying block access lists
+      #35427 merged 2026-07-27 miner: don't seal block if a db error occurred
+      #35370 closed 2026-07-16 triedb/pathdb: validate restart count and key offsets in trienode decoder
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #35512 merged 2026-08-11 core: honor ExecuteConfig.EnableTracer for the EVM-level tracing hooks
+      #35324 merged 2026-07-09 internal/testlog: clone attrs before appending
+      #30660 open 2024-10-23 core/state: set-based journalling
+      #34993 closed 2026-05-18 core/txpool/blobpool: support legacy limbo blobs
+  corruption     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #35602 closed 2026-08-28 HELP WITH CORRUPTION THROUGH NONPROFIT ORG?
+      #22143 open 2021-01-07 Research transactional database support
+      #35669 closed 2026-09-07 consensus/clique: return fallback difficulty when snapshot lookup fails
+      #20363 open 2019-11-22 Make `clef` scalable
+      #31866 open 2025-05-21 Implemented health probe for cleaner shutdown
+      #33574 closed 2026-01-10 core: skip duplicate block and state writes in ProcessBlock() on block re-execution
+      #35370 closed 2026-07-16 triedb/pathdb: validate restart count and key offsets in trienode decoder
+      #34677 closed 2026-04-07 core/state: fix codeLen=0 corruption of bintrie BasicData
+      #34944 closed 2026-05-12 core/txpool/blobpool: data loss in limbo.update on setAndIndex failure
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #34983 closed 2026-05-15 Data race in core/txpool/locals (go-ethereum) — journal.writer concurrent read/write
+      #34891 merged 2026-05-06 core/txpool/blobpool: continue on cell proof error in `GetBlobs`
+      #34737 closed 2026-04-16 core/overlay: prevent silent transition state restart on decode failure
+      #33822 closed 2026-02-11 ethdb/leveldb: add logging for database corruption recovery
+      #34027 closed 2026-03-17 core: use defer to release txLookupLock in reorg
+      #34096 closed 2026-03-26 eth/protocols/snap: handle StateReader error in ServiceTrieNodesQuery
+      #34642 merged 2026-04-02 triedb/pathdb: skip duplicate-root layer insertion
+      #34010 closed 2026-03-16 Potential deadlock in reorg() due to unreleased txLookupLock on error paths
+  truncated      90 hit(s) (all listed)
+      #35761 open 2026-09-21 core/types: validate yParity when decoding authorizations from JSON
+      #28643 open 2023-12-05 tracing: investigate persistence
+      #35799 closed 2026-09-25 triedb/pathdb: stale history index after crash recovery onto a different fork returns wrong historical state
+      #35451 open 2026-08-02 src: paginate release listings
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #35844 merged 2026-09-30 core: handle the sync restarting after unclean shutdown
+      #35536 closed 2026-08-13 core/rawdb: allow head truncation below the tail of a newly aligned table
+      #35688 merged 2026-09-10 eth: return iterator errors from debug_getModifiedAccounts
+      #35670 closed 2026-09-08 accounts/scwallet: check deserialize error in transmitEncrypted
+      #35800 closed 2026-09-25 triedb/pathdb: unindex histories before truncating them on startup
+      #35667 closed 2026-09-07 core/state/snapshot, triedb/internal: return iterator error from trie root generation
+      #35554 merged 2026-08-18 eth: return iterator errors from debug_storageRangeAt
+      #32069 closed 2025-06-20 triedb: truncate history states in a batch way
+      #35564 merged 2026-08-22 core/txpool/locals: check close error before replacing journal
+      #35579 open 2026-08-24 build(deps): bump github.com/gorilla/websocket from 1.4.2 to 1.5.3
+      #35272 closed 2026-07-01 internal/ethapi: return invalid params for undecodable raw transactions
+      #30119 open 2024-07-04 Missing some block hash -> block number links in DB after restart | "block body not found" error
+      #35729 closed 2026-09-17 build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace from 1.41.0 to 1.45.0
+      #35730 closed 2026-09-17 build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc from 1.41.0 to 1.45.0
+      #35731 closed 2026-09-17 build(deps): bump go.opentelemetry.io/otel/sdk from 1.41.0 to 1.45.0
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31405 open 2025-03-17 Failed to truncate extra state histories err="out of range,
+      #35210 open 2026-06-23 Latest Geth upgrade resulted in a chain gap (I think)
+      #35800 closed 2026-09-25 triedb/pathdb: unindex histories before truncating them on startup
+      #35652 open 2026-09-04 core, eth: optimize chain segment insertion
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #32139 open 2025-07-03 core,triedb: prevent debug_setHead from rewinding below oldest available state block
+      #35551 merged 2026-08-17 core/rawdb: fix head truncation below a diverged tail group
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #35330 open 2026-07-09 trie/bintrie: preserve low balance bytes
+      #35761 open 2026-09-21 core/types: validate yParity when decoding authorizations from JSON
+      #31320 open 2025-03-05 Geth crashes on Holesky when trying to add invalid block after syncing good branch
+      #35536 closed 2026-08-13 core/rawdb: allow head truncation below the tail of a newly aligned table
+      #30119 open 2024-07-04 Missing some block hash -> block number links in DB after restart | "block body not found" error
+      #35451 open 2026-08-02 src: paginate release listings
+      #28643 open 2023-12-05 tracing: investigate persistence
+      #35844 merged 2026-09-30 core: handle the sync restarting after unclean shutdown
+      #35799 closed 2026-09-25 triedb/pathdb: stale history index after crash recovery onto a different fork returns wrong historical state
+      #35343 closed 2026-07-11 cmd/geth: truncate BAL freezer when pruning history
+      #30908 open 2024-12-13 History expiry planning
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35746 open 2026-09-20 internal/ethapi: return nil from log tracer Logs on empty stack
+      #35732 open 2026-09-17 accounts/abi: error on empty event payload in abigen v2 unpackers
+      #35733 open 2026-09-17  accounts/abi/abigen, accounts/abi/bind/v2: reject empty log payload when event arguments are expected
+      #35726 open 2026-09-17 abigen v2: generated event unpackers skip the decode for an empty payload, returning nil fields with a nil error
+      #35768 open 2026-09-22 ethclient: expose blob fee history fields
+      #35840 open 2026-09-29 core: v1.17.6 rejects all Linea mainnet blocks (no code at EIP-7002/7251 predeploys)
+      #28838 open 2024-01-18 eth_getFilterChanges returns empty output
+      #35853 open 2026-10-01 tests: unskip prague system contract deployment fixtures
+      #33382 open 2025-12-09 event: handle empty subscription list in JoinSubscriptions
+      #35764 open 2026-09-22 cmd/rlpdump: fix -reverse for top-level values and quoted strings
+      #35725 open 2026-09-17 ethereum, ethclient: expose blob fee history
+      #34037 open 2026-03-17 internal/ethapi: don't attach empty sidecar when signing blob tx without blobs
+      #35829 open 2026-09-28 eip8141: support frame transactions in `eth_fillTransaction`
+      #35668 open 2026-09-07 internal/ethapi, core: align eth_simulateV1 blocks with the Amsterdam spec
+      #35740 open 2026-09-19 docs: correct eth_simulateV1 block time and failure semantics
+      #20630 open 2020-02-06 p2p/discover: bootnodes not retried often enough when table becomes empty
+      #29642 open 2024-04-24 abi: attempting to unmarshal an empty string while arguments are expected
+      #35737 open 2026-09-18 core: EIP-8304 SSZ table roots
+      #35208 open 2026-06-22 Use full StateAccounts in triedb
+      #35504 open 2026-08-10 ethapi: make net_listening reflect the actual P2P listener state
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35713 open 2026-09-15 engine_forkchoiceUpdated applies the reorg before returning -38002 (forkchoice state not updated atomically)
+      #35750 open 2026-09-21 eth/catalyst: check forkchoice state before moving the head
+      #35830 open 2026-09-28 eip8141: support frame results in `eth_simulateV1`
+      #35871 open 2026-10-03 p2p/nat: retry UPnP mapping with permanent lease on error 725
+      #35541 open 2026-08-14 eth, blobpool: reconcile cell fetching after custody updates
+      #31194 open 2025-02-17 core/types: add cache for authority
+      #35812 closed 2026-09-27 core, eth/tracers: trace every frame of an EIP-8141 frame transaction
+      #35811 closed 2026-09-27 core, eth/tracers: trace every frame of an EIP-8141 frame transaction
+      #33904 open 2026-02-26 trie: reduce allocations in parallel commit
+      #35436 open 2026-07-29 core, trie/bintrie, triedb: EIP-8297 partitioned binary tree (temporary, for discussion)
+      #34855 open 2026-04-30 internal/ethapi, eth, eth/catalyst: gate eth_syncing on CL handshake
+      #31132 open 2025-02-05 core/tracing: auto upgrade deprecated hooks
+      #27846 open 2023-08-03 Make EWMA metrics synchronous
+      #35709 closed 2026-09-14 node: report actual closure in admin_stopHTTP and admin_stopWS
+      #35500 closed 2026-08-10 eth/downloader: attach access lists under the result store lock
+      #35463 merged 2026-08-04 eth/protocols/snap: advance catch-up pivot after batch commit
+      #35178 merged 2026-06-16 eth, triedb, internal: add snap/2 sync progress
+      #34827 merged 2026-04-25 eth/tracers: fix data race on interruption reason across tracers
+      #34802 merged 2026-04-23 eth/protocols/snap: fix data race on testPeer counters
+      #33111 merged 2025-11-06 log: allow –vmodule to downgrade log levels
+  atomically     41 hit(s) (all listed)
+      #35713 open 2026-09-15 engine_forkchoiceUpdated applies the reorg before returning -38002 (forkchoice state not updated atomically)
+      #35750 open 2026-09-21 eth/catalyst: check forkchoice state before moving the head
+      #35541 open 2026-08-14 eth, blobpool: reconcile cell fetching after custody updates
+      #35463 merged 2026-08-04 eth/protocols/snap: advance catch-up pivot after batch commit
+      #33111 merged 2025-11-06 log: allow –vmodule to downgrade log levels
+      #33303 merged 2025-11-27 triedb/pathdb: optimize history indexing efficiency
+      #33473 closed 2025-12-22 core/state: persist state size metrics
+      #32859 closed 2025-10-09 Race Conditions in Chain Reorg and State Management
+      #30464 merged 2024-09-19 triedb/pathdb, eth: use double-buffer mechanism in pathdb
+      #31945 closed 2025-06-02 Support range deletion in batch
+      #32329 closed 2025-08-02 ethclient: fix flaky pending tx test
+      #31414 merged 2025-03-18 core, eth/downloader: implement pruning mode sync
+      #31525 merged 2025-03-29 core/filtermaps: hashdb safe delete range
+      #30752 merged 2024-11-13 core, triedb: remove destruct flag in state snapshot
+      #23427 closed 2021-08-20 Trie pruning v9000
+      #29058 closed 2024-02-22 please review ERC20Upgradeable.sol for dencun upgrade
+      #28483 merged 2023-11-08 core/rawdb: fsync the index file after each freezer write
+      #27732 closed 2023-07-15 core/state/snapshot: use atomic.Bool in disklayer as stale type
+      #27451 closed 2023-06-10 txpool/nonce: sync.map used
+      #19244 merged 2019-03-08 cmd, core, eth, les, node: chain freezer on top of db rework
+  interrupted    62 hit(s) (all listed)
+      #35153 open 2026-06-11 cmd/utils: return ErrImportInterrupted sentinel from batch-import interrupt
+      #33863 open 2026-02-18 cmd/utils:  Enable transaction queries on pruned nodes via era files
+      #35837 merged 2026-09-29 core: allow restarting a snap sync before the history cutoff
+      #33837 closed 2026-02-13 miner: retry immediately when block building is interrupted
+      #34045 closed 2026-03-18 cmd: Improve import-history UX
+      #35155 merged 2026-06-11 eth/downloader, eth/protocols/snap: freeze pivot once state is downloaded
+      #30914 closed 2024-12-14 Add initial FOCIL implementation
+      #33855 closed 2026-02-16 eth/syncer: respect close signal during retry backoff
+      #33796 merged 2026-02-09 core/rawdb: fix incorrect tail value in unindexTransactions log output
+      #33260 merged 2025-11-24 core/txpool/blobpool: drain and signal pending conversion tasks on shutdown
+      #32827 closed 2025-10-02 triedb/pathdb: improve state history indexing completion log
+      #32859 closed 2025-10-09 Race Conditions in Chain Reorg and State Management
+      #31384 merged 2025-03-13 cmd/geth: add prune history command
+      #32098 closed 2025-06-26 eth/downloader: fix downloader cancel
+      #32095 closed 2025-06-25 core: add graceful shutdown checks during block processing
+      #31525 merged 2025-03-29 core/filtermaps: hashdb safe delete range
+      #31184 closed 2025-02-14 High CPU and IO usage after upgrade to 1.15.1
+      #22922 closed 2021-05-21 Snapshot creation slows down archive node
+      #23635 merged 2021-09-24 core/state/snapshot: fix BAD BLOCK error when snapshot is generating
+      #29378 merged 2024-03-28 eth/protocols/snap: skip retrieval for completed storages
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35153 open 2026-06-11 cmd/utils: return ErrImportInterrupted sentinel from batch-import interrupt
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #34104 open 2026-03-27 core: rolling history expiry
+      #18443 open 2019-01-14 p2p/discover: UDP listener port not released when macOS firewall is enabled
+      #31866 open 2025-05-21 Implemented health probe for cleaner shutdown
+      #33863 open 2026-02-18 cmd/utils:  Enable transaction queries on pruned nodes via era files
+      #31508 open 2025-03-27 Node doesn't shutdown gracefully during block import
+      #35837 merged 2026-09-29 core: allow restarting a snap sync before the history cutoff
+      #35817 closed 2026-09-28 core: BlockChain.Stop does not wait for the block prefetcher, which refills the reset pathdb clean caches (leak)
+      #32153 open 2025-07-07 panic: pebble: batch too large: >= 4.0 G
+      #33837 closed 2026-02-13 miner: retry immediately when block building is interrupted
+      #28242 open 2023-10-03 Block-building Latency issues and improvements
+      #35155 merged 2026-06-11 eth/downloader, eth/protocols/snap: freeze pivot once state is downloaded
+      #34827 merged 2026-04-25 eth/tracers: fix data race on interruption reason across tracers
+      #34045 closed 2026-03-18 cmd: Improve import-history UX
+      #34905 closed 2026-05-08 core/vm, core, miner: abort timed-out block transactions
+      #30914 closed 2024-12-14 Add initial FOCIL implementation
+      #34004 closed 2026-03-13 core, params: binary conversion activation
+      #33230 closed 2025-11-19 core/state/snapshot: race resulting in `generate()` goroutine leak
+      #30119 open 2024-07-04 Missing some block hash -> block number links in DB after restart | "block body not found" error
+  sigkill        18 hit(s) (all listed)
+      #35804 open 2026-09-25 eth/catalyst: don't treat a forward canonical update as a reorg
+      #31866 open 2025-05-21 Implemented health probe for cleaner shutdown
+      #35155 merged 2026-06-11 eth/downloader, eth/protocols/snap: freeze pivot once state is downloaded
+      #28236 closed 2023-10-02 Stop geth manually timeout
+      #15340 closed 2017-10-20 terminated by signal SIGKILL (Forced quit)
+      #26493 closed 2023-01-14 Unclean shutdown throws geth 4-5 days behind
+      #26131 closed 2022-11-07 Geth fails to shutdown in 90s, is killed by systemd
+      #26546 closed 2023-01-24 Geth Reboots with geth.service: Failed with result 'signal'.
+      #25845 closed 2022-09-21 eth_syncing returns False when syncing to recover head state
+      #24834 closed 2022-05-08 Geth 1.10.16 stable crashes with OOM error
+      #24416 closed 2022-02-17 Geth won't shutdown properly when started from a systemd file.
+      #21948 closed 2020-12-03 Shutdown is too slow
+      #22763 closed 2021-04-29 canonical block #12291468 unknown
+      #22103 merged 2021-01-03 cmd/geth: Graceful shutdown if disk is full
+      #21459 closed 2020-08-18 getTransactionCount on pending-block: nonce incorrectly returned as 0
+      #21893 merged 2020-11-23 implement unclean-shutdown marker
+      #15153 closed 2017-09-16 how much memory does geth need? it eat up all my 8 gb memory then crashed
+      #20464 closed 2019-12-17 geth in light mode hanging with 100% CPU
+  sigint         36 hit(s) (all listed)
+      #31866 open 2025-05-21 Implemented health probe for cleaner shutdown
+      #35582 merged 2026-08-25 core/txpool: restore empty state fallback during snap sync
+      #24100 closed 2021-12-12 Listen to new blocks/txs/receipts being added
+      #29322 closed 2024-03-24 `geth export` tries to write on read-only datadir
+      #18383 closed 2019-01-03 Can't get the correct balance of a token after I restart geth node within docker
+      #16307 closed 2018-03-13 How to run the geth client in the background ?
+      #28314 closed 2023-10-11 Is the Goerli testnet deprecated already?  I can't get Geth and Prysm to sync.
+      #27833 closed 2023-08-01 core/txpool: drop the zero balance
+      #25443 closed 2022-07-30 geth how to open persistence
+      #26810 closed 2023-03-04 Geth not starting sync with Docker
+      #26411 closed 2023-01-03 Adding quotes to args in docker-compose causes the values to be ignored
+      #25258 merged 2022-07-06 rpc: add graceful shutdown timeout for HTTP server
+      #25257 closed 2022-07-06 Gracefully stopping Geth but it hangs on net/http.Shutdown()
+      #25498 closed 2022-08-08 [BUG][Clique] Database has receipts with a legacy format on fresh node, cannot restart node
+      #23387 merged 2021-08-12 cmd/geth, console: support interrupting the js console
+      #24416 closed 2022-02-17 Geth won't shutdown properly when started from a systemd file.
+      #22763 closed 2021-04-29 canonical block #12291468 unknown
+      #22463 closed 2021-03-08 Failing to store most recent snapshot
+      #22528 closed 2021-03-18 geth resyncs last day every restart
+      #21925 closed 2020-11-30 SIGINT never gets around to shutting down node
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31508 open 2025-03-27 Node doesn't shutdown gracefully during block import
+      #31866 open 2025-05-21 Implemented health probe for cleaner shutdown
+      #20630 open 2020-02-06 p2p/discover: bootnodes not retried often enough when table becomes empty
+      #20583 open 2020-01-20 IPC/Websockets requests continue executing after connection closes
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #33034 closed 2025-10-28 Fellow C++ developers in the crypto space! I built **MEV Shield** - a C++17 MEV detection engine that shows what modern C++ can achieve in blockchain applications beyond core development.
+      #32095 closed 2025-06-25 core: add graceful shutdown checks during block processing
+      #31360 merged 2025-03-12 cmd/geth: fix ctrl-c interrupt in import command
+      #31499 closed 2025-03-26 Fatal error after crlt-c kill: gap in the chain between ancients [...] and leveldb [...]
+      #22056 closed 2020-12-22 "Database compacting, degraded performance database" for 2 days already
+      #28987 closed 2024-02-14 Reproducible builds
+      #29955 closed 2024-06-08 --dev mode restart error with --datadir
+      #29322 closed 2024-03-24 `geth export` tries to write on read-only datadir
+      #18383 closed 2019-01-03 Can't get the correct balance of a token after I restart geth node within docker
+      #14647 closed 2017-06-18 What is the upper bound of "imported new state entries"?
+      #20383 closed 2019-11-25 geth does not persist trie node data from memory to disk on ungraceful system restart
+      #1908 closed 2015-10-16 geth attach does not work.
+      #22931 merged 2021-05-24 cmd/geth: implement data import and export
+      #24524 closed 2022-03-09 Add newPendingRawTransactions to filter system to save bandwidth
+      #27141 closed 2023-04-21 WIP: cmd/dbconvert: implement pebble<->leveldb conversion
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35871 open 2026-10-03 p2p/nat: retry UPnP mapping with permanent lease on error 725
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+      #27692 open 2023-07-10 Get rid of snap sync heal phase
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #35563 open 2026-08-21 core/ssz: add SSZ encoding, decoding, merkleization and proof generation
+      #34711 closed 2026-04-12 freezer: incorrect fsync ordering in freezerTable.truncateTail
+      #29775 closed 2024-05-14 metrics: Synchronous metrics
+      #29726 closed 2024-05-08 eth_estimateGas returns wrong gas, off by 1.5%
+      #2091 merged 2015-12-24 rlp, p2p, p2p/discover: EIP-8 changes
+      #22308 closed 2021-02-11 Geth not broadcasting transfer
+      #2637 merged 2016-05-30 eth/downloader: ensure cancel channel is closed post sync
+      #2582 merged 2016-05-18 eth: fixed regression in eth_signTransaction fixes #2578
+      #2647 merged 2016-06-02 eth/downloader: make fast sync resilient to critical section fails
+      #2649 merged 2016-06-02 eth: don't accept transactions until we sync up with the network
+      #2614 merged 2016-05-24 eth: enable bad block reports
+      #29792 merged 2024-05-16 core/rawdb: freezer index repair
+      #2159 merged 2016-01-29 eth: separate common and full node-specific API and backend service
+      #31898 merged 2025-05-25 cmd/geth, cmd/utils: log prefunded account/key in ephemeral development mode
+      #2630 merged 2016-05-27 eth/downloader: adaptive quality of service tuning
+      #31932 closed 2025-05-29 core: improve state recovery logging after unexpected shutdown
+  outage         34 hit(s) (all listed)
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #13858 closed 2017-04-01 eth/filters: JSON headers from newHeads sub should include hash
+      #34881 closed 2026-05-05 p2p/discover: Deadlock in `Table` when `discv5` iterator is in `waitForNodes` during `doRefresh.loadSeedNode`
+      #32344 merged 2025-08-04 graphql: add query depth limit to prevent DoS attacks
+      #30265 merged 2024-08-05 p2p/nat: remove forceful port mapping in upnp
+      #29937 closed 2024-06-05 FinalizedBlockTag is existent but the corresponding block/header is missing
+      #30721 closed 2024-11-03 How does the node respond and recovers to internet outages ?
+      #22056 closed 2020-12-22 "Database compacting, degraded performance database" for 2 days already
+      #29687 closed 2024-04-30 Is it possible for geth to be written in such a away to prevent data corruption upon power outage?
+      #28951 closed 2024-02-07 Client Diversity - Intentional Synchronous Outages 
+      #26811 closed 2023-03-05 geth node starts syncing from the beginning
+      #25901 closed 2022-09-30 cmd/blsync, light/beacon: standalone beacon light sync tool
+      #28105 closed 2023-09-13 CRIT Failed to truncate extra state histories err=EOF
+      #25963 merged 2022-10-11 all: implement path-based state scheme
+      #25905 closed 2022-09-30 Unable to sync Eth and cannot find recent reference to error
+      #21315 closed 2020-07-09 Fatal: Error starting protocol stack: genesis mismatch
+      #24059 closed 2021-12-05 Impossible reorg "please file an issue" after .11 -> .13 upgrade
+      #16796 closed 2018-05-24 Geth node sync always behind
+      #21825 closed 2020-11-11 Sync block problem
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35527 open 2026-08-13 eth/protocol/snap: reduce the code disk read
+      #35859 open 2026-10-01 eth/protocols/eth: don't skip invalid receipts
+      #35866 open 2026-10-01 core, eth, triedb: move the database writes off the engine api path
+      #34958 open 2026-05-13 cmd/geth: report disk space cleared on prune-history completion
+      #31916 open 2025-05-28 Print disk space cleared after `prune-history`
+      #35521 open 2026-08-12 eth/protocols/snap: don't ignore batch write error in resetSyncState
+      #35878 open 2026-10-04 internal/ethapi: bound eth_capabilities receipts by the tx index tail
+      #35691 open 2026-09-10 ethdb/pebble: adjust the config of pebble
+      #35508 open 2026-08-11 core/txpool/blobpool: nil pointer dereference in Cache due to initialization race with BlobPool.Init
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+      #34102 open 2026-03-27 core/txpool/blobpool: implement ContentFrom for blob transactions
+      #35788 closed 2026-09-24 triedb/pathdb: Disable leaks the disk layer's clean caches
+      #34759 open 2026-04-18 trie/bintrie: flag-byte serialization for stem padding (follow-up to #34055)
+      #33664 open 2026-01-22 Blobpool performance tasks
+      #35781 open 2026-09-23 eth_capabilities: receipts.oldestBlock ignores the tx index tail, but eth_getTransactionReceipt depends on it
+      #33889 open 2026-02-24 core/txpool/blobpool: drop underpriced before adding to pool
+      #34885 open 2026-05-06 add ux improvement changes
+      #33745 open 2026-02-03 core/blockchain.go: cleanup txlookup,log index
+      #34706 open 2026-04-12 core/state,triedb/pathdb: bintrie flat state support 
+      #35789 merged 2026-09-24 triedb/pathdb: release clean caches when disabling
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33764 open 2026-02-05 eth: add partial statefulness mode via EIP-7928
+      #35541 open 2026-08-14 eth, blobpool: reconcile cell fetching after custody updates
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #35569 open 2026-08-23 eth/fetcher: avoid sorting unrequested announcements
+      #35147 open 2026-06-11 core/vm: charge consumed gas in opPush1EIP4762 for consistency
+      #35397 open 2026-07-21 internal/ethapi: don't fail eth_createAccessList on unaffordable fee defaults
+      #35537 merged 2026-08-14 eth/protocols/eth: fix deadlock when re-requesting partial receipts
+      #27846 open 2023-08-03 Make EWMA metrics synchronous
+      #34958 open 2026-05-13 cmd/geth: report disk space cleared on prune-history completion
+      #35593 merged 2026-08-26 eth/protocols/eth, eth/downloader: reject empty partial receipt responses
+      #32224 open 2025-07-16 params: Config2
+      #28242 open 2023-10-03 Block-building Latency issues and improvements
+      #35399 merged 2026-07-22 eth/fetcher: clear partial map when dropping last waitlist peer
+      #35772 merged 2026-09-23 core: encode the BAL with a dedicated pipeline
+      #35367 merged 2026-07-15 core/txpool: add blocked transaction size cap
+      #34666 merged 2026-04-05 eth/catalyst: fix getBlobsV3 partial/complete metrics
+      #35393 merged 2026-07-20 eth/fetcher: count unique hashes in blob queueing metric
+      #34047 merged 2026-03-18 core, eth: implement sparse blobpool
+      #34982 closed 2026-05-15 core/state/pruner: handle batch write errors in pruning
+      #34905 closed 2026-05-08 core/vm, core, miner: abort timed-out block transactions
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35869 open 2026-10-02 cmd/devp2p: respect negotiated eth version in transaction tests
+      #35506 open 2026-08-10 eth: report export finalization errors
+      #35489 open 2026-08-09 eth: include deleted accounts in modified account queries
+      #35150 open 2026-06-11 accounts/usbwallet: fix De Morgan error dropping stale wallets on refresh
+      #35541 open 2026-08-14 eth, blobpool: reconcile cell fetching after custody updates
+      #35257 open 2026-06-29 cmd/evm/internal/t8ntool: add execution witness as t8n output
+      #35657 closed 2026-09-05 cmd/utils: return error from writing history export checksums
+      #35593 merged 2026-08-26 eth/protocols/eth, eth/downloader: reject empty partial receipt responses
+      #35537 merged 2026-08-14 eth/protocols/eth: fix deadlock when re-requesting partial receipts
+      #35481 open 2026-08-08 `debug_getModifiedAccountsByHash/Number` omit accounts deleted between the compared blocks
+      #35562 closed 2026-08-21 eth: report gzip export finalization errors
+      #35505 closed 2026-08-10 eth: report export finalization errors
+      #35480 closed 2026-08-08 `admin_exportChain` reports success when gzip finalization fails
+      #35326 closed 2026-07-09 eth/protocols/snap: skip BAL catch-up when gap starts pre-amsterdam
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #34814 merged 2026-04-24 core/state, core/types/bal: copy stateReadList in StateDB.Copy
+      #34637 merged 2026-04-02 core: merge access events for all system calls
+      #34043 merged 2026-03-18 cmd/devp2p/internal/v5test: fix hive test for discv5 findnode results
+      #33927 merged 2026-03-02 internal/telemetry: fix undersized span queue causing dropped spans
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35761 open 2026-09-21 core/types: validate yParity when decoding authorizations from JSON
+      #35795 open 2026-09-25 eth/downloader: only calibrate request sizes on validated replies
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #35840 open 2026-09-29 core: v1.17.6 rejects all Linea mainnet blocks (no code at EIP-7002/7251 predeploys)
+      #35481 open 2026-08-08 `debug_getModifiedAccountsByHash/Number` omit accounts deleted between the compared blocks
+      #35800 closed 2026-09-25 triedb/pathdb: unindex histories before truncating them on startup
+      #35726 open 2026-09-17 abigen v2: generated event unpackers skip the decode for an empty payload, returning nil fields with a nil error
+      #32139 open 2025-07-03 core,triedb: prevent debug_setHead from rewinding below oldest available state block
+      #35799 closed 2026-09-25 triedb/pathdb: stale history index after crash recovery onto a different fork returns wrong historical state
+      #35765 closed 2026-09-22 core/vm: treat nil BlobBaseFee as zero in BLOBBASEFEE
+      #31131 open 2025-02-05 Dealing with journal version upgrades
+      #35400 merged 2026-07-22 triedb/pathdb: report nothing recoverable during state sync
+      #35543 merged 2026-08-15 core/txpool/blobpool: speed up serving pre eth/72 peers
+      #35760 closed 2026-09-21 rlp: bound list nesting depth in Stream
+      #26693 open 2023-02-15 New blocks are rejected because of setHead operation
+      #35409 closed 2026-07-24 triedb/pathdb: report non-recoverable in read-only mode
+      #35529 merged 2026-08-13 crypto/kzg4844: add RecoverCells with systematic fast path
+      #35528 merged 2026-08-13 crypto/kzg4844: add BlobsFromDataCells for zero-KZG blob reconstruction
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #30591 open 2024-10-13 Flaky tests
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #34107 open 2026-03-27 core, internal/ethapi: skip EIP-7702 auth signature validation in simulation mode
+      #35381 open 2026-07-18 eth/filters: reduce lock scope in GetFilterChanges
+      #35800 closed 2026-09-25 triedb/pathdb: unindex histories before truncating them on startup
+      #35799 closed 2026-09-25 triedb/pathdb: stale history index after crash recovery onto a different fork returns wrong historical state
+      #35528 merged 2026-08-13 crypto/kzg4844: add BlobsFromDataCells for zero-KZG blob reconstruction
+      #31617 open 2025-04-12 Skip validation of the EIP7702 Authority signature when EstimateGas
+      #26693 open 2023-02-15 New blocks are rejected because of setHead operation
+      #35529 merged 2026-08-13 crypto/kzg4844: add RecoverCells with systematic fast path
+      #15063 open 2017-08-31 ethclient: SubscribeFilterLogs() not respecting FilterQuery.FromBlock
+      #32007 open 2025-06-10 Failed to get remote head and new block ranges: EndpointError(FarBehind)
+      #35591 merged 2026-08-26 beacon, cmd, core, params: remove the holesky testnet
+      #35630 open 2026-09-02 core/filtermaps: eth_getLogs matcher goroutines never released after client disconnect; accumulated lock waiters starve the head renderer into a permanent livelock
+      #35071 open 2026-05-29 Geth 1.16.0 + Lighthouse 7.0.0 private PoS chain: Geth never becomes synced, Lighthouse reports "Not ready Bellatrix"
+      #35252 merged 2026-06-29 core: improve chain reset head
+      #32386 open 2025-08-10 geth giving BAD BLOCK and invalid merkle root error - stops working after that
+      #34944 closed 2026-05-12 core/txpool/blobpool: data loss in limbo.update on setAndIndex failure
+      #34970 closed 2026-05-14 core/txpool/blobpool: preserve limbo entry on update store failure
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #34665 closed 2026-04-05 core/txpool/blobpool: prevent data loss in limbo.update on setAndIndex failure
+  rollback       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #31829 open 2025-05-15 Optimize state rollback performance
+      #31487 open 2025-03-25 Support verkle data rollback in pathdb
+      #35830 open 2026-09-28 eip8141: support frame results in `eth_simulateV1`
+      #31320 open 2025-03-05 Geth crashes on Holesky when trying to add invalid block after syncing good branch
+      #32139 open 2025-07-03 core,triedb: prevent debug_setHead from rewinding below oldest available state block
+      #30660 open 2024-10-23 core/state: set-based journalling
+      #28242 open 2023-10-03 Block-building Latency issues and improvements
+      #34970 closed 2026-05-14 core/txpool/blobpool: preserve limbo entry on update store failure
+      #34035 closed 2026-03-17 internal/download: distinguish missing file from stale in era download
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #33396 closed 2025-12-12 Chain rollback fault injection caused node crash
+      #33398 closed 2025-12-12 Potential attack scenarios based on chain state rollback to create zombie nodes
+      #33397 closed 2025-12-12 Chain rollback fault injection caused node stuck, resulting in the observed anomaly
+      #34055 merged 2026-03-19 trie/bintrie: replace BinaryNode interface with GC-free NodeRef arena
+      #33592 closed 2026-01-13 node: Disable discv4 by default on main
+      #30133 closed 2024-07-09 [WIP] Verkle pathdb rollback
+      #32280 merged 2025-07-25 ethclient/simulated: Fix flaky rollback test
+      #32252 closed 2025-07-21 Fix flaky test TestEthClient
+      #32335 closed 2025-08-03 triedb/pathdb: fix an issue of history indexer deadloop
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35600 open 2026-08-28 triedb/pathdb: copy iterator key before release in reopenIterator
+      #34706 open 2026-04-12 core/state,triedb/pathdb: bintrie flat state support 
+      #35873 open 2026-10-03 beacon/blsync: add --beacon.p2pblocks, following the head without downloading blocks
+      #33863 open 2026-02-18 cmd/utils:  Enable transaction queries on pruned nodes via era files
+      #34650 open 2026-04-03 cmd/evm: add enginetest command for direct engine fixture execution
+      #35582 merged 2026-08-25 core/txpool: restore empty state fallback during snap sync
+      #34104 open 2026-03-27 core: rolling history expiry
+      #27692 open 2023-07-10 Get rid of snap sync heal phase
+      #35316 merged 2026-07-07 eth/protocols/snap: purge stale sync state when snap sync v2 is re-enabled
+      #35159 merged 2026-06-12 eth/protocols/snap: remove uncovered states before resuming
+      #35463 merged 2026-08-04 eth/protocols/snap: advance catch-up pivot after batch commit
+      #33687 open 2026-01-26 unexpected sync status response
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #35155 merged 2026-06-11 eth/downloader, eth/protocols/snap: freeze pivot once state is downloaded
+      #34045 closed 2026-03-18 cmd: Improve import-history UX
+      #34807 merged 2026-04-23 triedb: reconcile stale storage roots in GenerateTrie, add cancel support
+      #34775 closed 2026-04-21 PBSS diskRoot stuck at genesis — crash-resume and snapshot restore fail
+      #34626 merged 2026-03-31 core, eth/protocols/snap, eth/downloader: snap/2 sync logic
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #34790 closed 2026-04-22 miner: supply a slot number when synthesising pending block post-Amsterdam
+  half-written   16 hit(s) (all listed)
+      #26483 closed 2023-01-12 Gap in chain (investigation)
+      #14647 closed 2017-06-18 What is the upper bound of "imported new state entries"?
+      #19244 merged 2019-03-08 cmd, core, eth, les, node: chain freezer on top of db rework
+      #16218 closed 2018-02-28 geth node is consistently behind the mainnet
+      #23572 closed 2021-09-14 Rinkeby Faucet Down
+      #17791 closed 2018-09-30 Geth is unreasonably reducing the cache size ignoring the command line
+      #16876 merged 2018-06-04 trie: cache collapsed tries node, not rlp blobs
+      #2141 merged 2016-01-21 core, core/vm, tests: changed the initialisation behaviour of the EVM
+      #2116 merged 2016-01-11 core, core/vm: consensus changes necessary for the homestead release
+      #18204 closed 2018-11-28 ethdb: disable fsync
+      #1669 merged 2015-08-16 core, xeth: chain reorg move missing transactions to transaction pool
+      #1953 merged 2015-10-30 eth/downloader: fetch data proportionally to peer capacity
+      #2201 closed 2016-02-11 Geth runs out of memory when syncing from a local node
+      #17450 closed 2018-08-20 Memory used increasing slowly
+      #15704 closed 2017-12-18 NTFS file system improvements (suggestions)
+      #18496 closed 2019-01-22 Geth v1.8.20 & v1.8.21 full sync crashing (fatal error: runtime: out of memory)
+  wipe           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35823 merged 2026-09-28 core/filtermaps: fix intermittent hang in TestIndexerRandomRange
+      #35649 open 2026-09-03 core/txpool/legacypool: Logic race in reorg loop incorrectly gapping transactions
+      #35756 merged 2026-09-21 ethdb/memorydb: don't treat batch delete of the empty key as a range delete
+      #30660 open 2024-10-23 core/state: set-based journalling
+      #35477 merged 2026-08-08 eth/protocols/snap: add tests and comments
+      #35155 merged 2026-06-11 eth/downloader, eth/protocols/snap: freeze pivot once state is downloaded
+      #24461 closed 2022-02-23 Setting up archive node sets
+      #34724 merged 2026-04-15 core/state: export StateUpdate struct
+      #34736 closed 2026-04-16 core/state: improve state journal
+      #32621 merged 2025-09-16 triedb/pathdb: enable trienode history
+      #33090 merged 2025-11-03 accounts/keystore: clear decrypted key after use
+      #28759 closed 2024-01-03 is there a way to get refunded from a scam smart contract?
+      #32905 closed 2025-10-14 How to migrate to latest geth?
+      #33079 closed 2025-11-02 Geth 1.16.5 consistently lags 1 epoch behind
+      #31437 closed 2025-03-19 Unable to Sync. Whats going wrong here and what can i do to fix this?
+      #31898 merged 2025-05-25 cmd/geth, cmd/utils: log prefunded account/key in ephemeral development mode
+      #31044 closed 2025-01-19 Revert "all: implement state history v2"
+      #31494 closed 2025-03-26 TxTracker could miss the pending tx removed by txpool after tx tracker discards the txs under pendingNonce.
+      #30107 merged 2024-07-02 all: implement state history v2
+      #23730 merged 2021-10-13 cmd/geth: add support for sepolia testnet
+  wipes          8 hit(s) (all listed)
+      #35823 merged 2026-09-28 core/filtermaps: fix intermittent hang in TestIndexerRandomRange
+      #35649 open 2026-09-03 core/txpool/legacypool: Logic race in reorg loop incorrectly gapping transactions
+      #29297 closed 2024-03-20 core/txpool/legacypool: locals-tracker (second attempt) 
+      #30149 closed 2024-07-13 `snap` sync in `path` mode not working. 
+      #27675 closed 2023-07-07 Missing trie node after removedb
+      #25080 closed 2022-06-13 Chain data completely wiped out after unclean shutdown
+      #22463 closed 2021-03-08 Failing to store most recent snapshot
+      #19563 merged 2019-05-13 cmd/faucet: remove Google+ mention from web assets too
+  erase          19 hit(s) (all listed)
+      #35158 merged 2026-06-12 eth/protocols/snap: fix catchup stall
+      #34676 merged 2026-04-07 trie/bintrie: fix DeleteAccount no-op
+      #31425 closed 2025-03-18 Remove drainning timer due to new implementation as of 1.23
+      #27476 merged 2023-06-14 core/state, light, trie: add UpdateContractCode to the Trie interface
+      #1271 closed 2015-06-15 Fatal: Error starting Ethereum: listen udp :30303: bind: address already in use
+      #22083 merged 2020-12-28 cmd/geth: dump config for metrics
+      #16218 closed 2018-02-28 geth node is consistently behind the mainnet
+      #20859 closed 2020-04-02 Detect unclean shutdowns
+      #2284 merged 2016-03-03 accounts: cache key addresses
+      #2467 closed 2016-04-17 blockchain sync stalls/ extremely slow
+      #2672 closed 2016-06-08 Deficiences regarding geth local security
+      #2329 closed 2016-03-12 Fatal blockchain db error
+      #3752 closed 2017-03-06 --light switch changes behavior of filters (eth_newFilter/eth_getFilterChanges)
+      #14461 closed 2017-05-11 --fast option seems to override default --syncmode "fast" and put in --syncmode "full" mode
+      #14620 closed 2017-06-14 checksum mismatch
+      #15704 closed 2017-12-18 NTFS file system improvements (suggestions)
+      #17882 closed 2018-10-10 CREATE2 can re-run constructor multiple times in a selfdestructed contract
+      #20067 closed 2019-09-12 Fatal: Error starting protocol stack: missing block number for head header hash
+      #20727 closed 2020-02-27 Check existing account balance when replacing with new one?
+  erasing        4 hit(s) (all listed)
+      #16218 closed 2018-02-28 geth node is consistently behind the mainnet
+      #3752 closed 2017-03-06 --light switch changes behavior of filters (eth_newFilter/eth_getFilterChanges)
+      #14461 closed 2017-05-11 --fast option seems to override default --syncmode "fast" and put in --syncmode "full" mode
+      #15704 closed 2017-12-18 NTFS file system improvements (suggestions)
+  erased         5 hit(s) (all listed)
+      #20859 closed 2020-04-02 Detect unclean shutdowns
+      #2329 closed 2016-03-12 Fatal blockchain db error
+      #14620 closed 2017-06-14 checksum mismatch
+      #15704 closed 2017-12-18 NTFS file system improvements (suggestions)
+      #17882 closed 2018-10-10 CREATE2 can re-run constructor multiple times in a selfdestructed contract
+  destroy        77 hit(s) (all listed)
+      #35481 open 2026-08-08 `debug_getModifiedAccountsByHash/Number` omit accounts deleted between the compared blocks
+      #35350 closed 2026-07-13 qkc/slave 05: add MasterConn protocol layer
+      #35192 closed 2026-06-19 core/vm, core/state: implement EIP-8246 Remove SELFDESTRUCT Burn
+      #33851 merged 2026-02-15 core, core/vm:  Rename selfdestruct log to burn
+      #33743 merged 2026-02-03 core/state: track slot reads for empty storage
+      #32376 closed 2025-08-08 EIP-6780 selfdestruct tracing behaviour
+      #32858 closed 2025-10-09 Probabilistic Verification Weaknesses in Snap Sync
+      #32919 merged 2025-10-15 core: invoke selfdestruct tracer hooks during finalisation
+      #30686 merged 2024-10-28 core/state: invoke OnCodeChange-hook on selfdestruct
+      #29792 merged 2024-05-16 core/rawdb: freezer index repair
+      #30672 merged 2024-10-25 core, trie: import remaining verkle state processor tests
+      #30817 closed 2024-11-27 Is it possible to set up a fully functional private GoEthereum network with a Proof of Stake consensus mechanism without using Kurtosis or other wrappers?
+      #30758 closed 2024-11-15 improve context management, error handling, and replace var with let/const
+      #31007 merged 2025-01-08 core/tracing: document `OnCodeChange` now being called from SelfDestruct
+      #30774 closed 2024-11-21 The `prestateTracer` under `diffMode` does not return all the storage diffs.
+      #25422 merged 2022-07-27 eth/tracers: add diffMode to prestateTracer
+      #29771 closed 2024-05-14 geth is underfilling mainnet blocks
+      #26483 closed 2023-01-12 Gap in chain (investigation)
+      #29058 closed 2024-02-22 please review ERC20Upgradeable.sol for dencun upgrade
+      #24723 closed 2022-04-20 cmd, core, eth: add issuance tracking and querying
+  destroys       8 hit(s) (all listed)
+      #29771 closed 2024-05-14 geth is underfilling mainnet blocks
+      #29058 closed 2024-02-22 please review ERC20Upgradeable.sol for dencun upgrade
+      #14808 closed 2017-07-14 event: concurrently deliver events to each TypeMuxSubscription
+      #17658 closed 2018-09-12 swarm: Chunk refactor
+      #17659 merged 2018-09-12 swarm: Chunk refactor
+      #18203 closed 2018-11-28 .ldb filesize 2MB=>128MB
+      #16674 closed 2018-05-04 Block processing time slowdown following trie persistence
+      #2294 closed 2016-03-05 Using a genesis.json does not allocate amounts accordingly
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35483 open 2026-08-08 `admin_startWS` can leave two WebSocket endpoints active simultaneously
+      #31559 open 2025-04-04 Contract code reset in verkle tree
+      #34102 open 2026-03-27 core/txpool/blobpool: implement ContentFrom for blob transactions
+      #32224 open 2025-07-16 params: Config2
+      #17988 open 2018-10-26 p2p: simultaneous connect between two nodes fails on both sides
+      #35802 open 2026-09-25 eth/gasprice: preserve actual fees in fee history
+      #35563 open 2026-08-21 core/ssz: add SSZ encoding, decoding, merkleization and proof generation
+      #32680 open 2025-09-19 internal/ethapi: add transient storage override support for eth_call
+      #30660 open 2024-10-23 core/state: set-based journalling
+      #34653 merged 2026-04-03 signer/core: fix unconditional http request metadata scheme overwrite
+      #35648 merged 2026-09-03 cmd/devp2p/internal/ethtest: fix concurrent reads in readAnyFrom
+      #33510 merged 2026-01-01 core/vm/runtime: don't overwrite user-provided Random
+      #35579 open 2026-08-24 build(deps): bump github.com/gorilla/websocket from 1.4.2 to 1.5.3
+      #35141 merged 2026-06-10 log: clone terminal handler attrs
+      #35418 closed 2026-07-25 eth/syncer: finalized and safe markers set to head-64 / head-32 after restart, serving non-checkpoint blocks over RPC
+      #33574 closed 2026-01-10 core: skip duplicate block and state writes in ProcessBlock() on block re-execution
+      #35387 merged 2026-07-20 core/txpool/blobpool: serialize legacy data conversions
+      #35424 closed 2026-07-27 build(deps): bump golang.org/x/crypto from 0.48.0 to 0.52.0 in /cmd/keeper
+      #35444 closed 2026-08-01 build(deps): bump github.com/pion/stun/v3 from 3.1.2 to 3.1.5
+      #35411 closed 2026-07-24 build(deps): bump google.golang.org/grpc from 1.79.1 to 1.82.1
+  clobber        12 hit(s) (all listed)
+      #35141 merged 2026-06-10 log: clone terminal handler attrs
+      #34948 merged 2026-05-12 node: default OpenTelemetry SampleRatio to 1.0
+      #31816 closed 2025-05-12 Advance SimulatedBeacon based on lastBlockTime
+      #28607 closed 2023-11-25 all: replace common big values with const
+      #25072 closed 2022-06-13 accounts/abi/bind/backend: `SimulatedBackend` options to always honour `vm.Config`
+      #27874 merged 2023-08-07 core/vm: update 4844 - point evaluation precompile address
+      #28702 merged 2023-12-19 build(deps): bump golang.org/x/crypto from 0.15.0 to 0.17.0
+      #24439 closed 2022-02-21 crypto/bn256: compile error
+      #24476 merged 2022-02-27 crypto/bn256/cloudflare: fix asm for dynamic linking
+      #23372 closed 2021-08-10 cmd/geth, eth: (typo) change whitelist terms to enforcelist
+      #23283 closed 2021-07-28 Inclusive language
+      #17305 closed 2018-08-01 ethereum-swam clobbers file in another deb package without noting conflict in deb control
+  blank          95 hit(s) (all listed)
+      #33346 open 2025-12-02 p2p: add optional SOCKS5 proxy support for outbound peer dials
+      #35254 merged 2026-06-29 cmd/devp2p: add combined discovery listener
+      #32383 closed 2025-08-10 core/txpool/blobpool: Avoid restore blob tx again in limbo
+      #34763 merged 2026-04-20 core/state: separate trie reader to mptReader and ubtReader
+      #34724 merged 2026-04-15 core/state: export StateUpdate struct
+      #33980 closed 2026-03-10 core/txpool/legacypool: fix empty cache sentinel
+      #33982 closed 2026-03-10 core/txpool/legacypool: fix replacement totalcost overflow ordering
+      #33989 merged 2026-03-11 trie/bintrie: use a sync.Pool when hashing binary tree nodes
+      #33640 merged 2026-01-19 triedb/pathdb: enhance history index initer
+      #33677 closed 2026-01-24 core/types: Add more log in SetCodeAuthorities method
+      #33676 closed 2026-01-24 core/txpool/legacypool: Don't need to copy the while slice, it's ok to use the pointer directly
+      #33555 closed 2026-01-08 rlp: pre alloc slice capacity to improve the structFields method
+      #33554 merged 2026-01-08 rlp: improve SplitListValues allocation efficiency
+      #33546 closed 2026-01-07 triedb/pathdb: upgrade lock usage in report relate methods.
+      #33560 closed 2026-01-08 rpc, ethclient, ethclient/gethclient: make ethclient.Client take an RPCClient interface
+      #33670 closed 2026-01-23 accounts/keystore, cmd/clef, signer/core: add database-backed keystore
+      #32797 closed 2025-09-30 core/vm: handle os.WriteFile error in TestWriteExpectedValues
+      #33080 closed 2025-11-02 core/state/snapshot: Simplify the `Snapshots` method
+      #33083 closed 2025-11-02 core/sate: fix bug in the statedb test case
+      #33077 closed 2025-11-02 trie: let set the whole children a bit faster
+  unreadable     10 hit(s) (all listed)
+      #35816 closed 2026-09-28 core/txpool, core/types, eth, internal/ethapi, miner: support blob-carrying frame transactions
+      #34054 closed 2026-03-19 core/rawdb: parallel pruning of txindex
+      #32507 merged 2025-08-28 core/stateless: only report leaf depth in witness stats
+      #2455 merged 2016-04-14 core: improved chain db performance by using sequential keys
+      #24479 merged 2022-02-28 core/state/snapshot: cleanup generation logic
+      #23771 merged 2021-10-19 cmd/evm: handle rlp errors in t9n
+      #14494 closed 2017-05-21 core/vm: improve error message for invalid opcodes
+      #2141 merged 2016-01-21 core, core/vm, tests: changed the initialisation behaviour of the EVM
+      #499 closed 2015-03-16 SEC-24 Parent issue for ethash / PoW security issues
+      #19861 closed 2019-07-18 Colourfull output of Clef on Windows 10 produces (unreadable) ansi characters
+  garbage        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32842 open 2025-10-06 accounts/keystore: add Close method and improve finalizer documentation
+      #32903 open 2025-10-13 triedb/pathdb: fix max buffer size
+      #20098 open 2019-09-19 martian network packets during `geth console` download of chain 
+      #23132 open 2021-06-30 For some blocks, Batch RPC return only some replies, or the replies have null/mismatched fields
+      #35809 closed 2026-09-26 core/types/bal, beacon/engine: bound block access list rlp decoding
+      #30773 open 2024-11-20 Use hedging / noise / extra entropy to improve signature security
+      #35511 closed 2026-08-11 triedb/pathdb: return error instead of panic on corrupt account data
+      #35363 merged 2026-07-15 cmd: add gogc flag
+      #35472 closed 2026-08-07 triedb/pathdb: StateReader.Account panics on corrupt account data instead of returning error
+      #35168 merged 2026-06-13 cmd/utils: keep metrics tag values containing '='
+      #35084 merged 2026-05-30 p2p/nat: server list contains IPv6 servers
+      #34054 closed 2026-03-19 core/rawdb: parallel pruning of txindex
+      #34046 closed 2026-03-18 metrics: replace time.Tick with time.NewTicker to prevent resource leaks
+      #34055 merged 2026-03-19 trie/bintrie: replace BinaryNode interface with GC-free NodeRef arena
+      #34034 closed 2026-03-17 cmd/geth: add --gcpercent flag for GC tuning
+      #34042 closed 2026-03-18 trie/bintrie: replace BinaryNode interface with GC-free NodeRef arena
+      #29775 closed 2024-05-14 metrics: Synchronous metrics
+      #33670 closed 2026-01-23 accounts/keystore, cmd/clef, signer/core: add database-backed keystore
+      #33224 closed 2025-11-18 metrics: fix resource leak in Write function
+      #32987 closed 2025-10-21 metrics/log: replace time.Tick with time.NewTicker to prevent timer leaks
+  mangled        3 hit(s) (all listed)
+      #28103 merged 2023-09-13 cmd/geth, internal/flags, go.mod: colorize cli help, support env vars
+      #14951 merged 2017-08-09 swarm: fix megacheck warnings
+      #16286 closed 2018-03-08 geth console special character/encoding problem
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #25122 open 2022-06-17 leveldb filesystem structure with no subdirectories will become a problem over time
+      #26419 open 2022-12-22 [website] Add Edit button to docs
+      #20098 open 2019-09-19 martian network packets during `geth console` download of chain 
+      #28266 open 2023-10-06 Parallel Intermediate Node Fetching (for a single trie)
+      #35170 merged 2026-06-14 cmd/devp2p/internal/ethtest: validate received txs, not the sent ones
+      #30773 open 2024-11-20 Use hedging / noise / extra entropy to improve signature security
+      #13858 closed 2017-04-01 eth/filters: JSON headers from newHeads sub should include hash
+      #24132 closed 2021-12-20 Implement EIP 4361
+      #34861 merged 2026-05-01 core, core/state: instrument BAL slow-block metrics
+      #34711 closed 2026-04-12 freezer: incorrect fsync ordering in freezerTable.truncateTail
+      #34065 closed 2026-03-20 cmd/utils: validate imported history before insertion
+      #33755 merged 2026-02-04 rlp: add RawList for working with un-decoded lists
+      #33323 merged 2025-11-28 crypto/keccak: vendor in golang.org/x/crypto/sha3
+      #32873 closed 2025-10-10 Support for granular storage slot override
+      #32816 merged 2025-09-30 cmd/keeper: use the ziren keccak precompile
+      #30037 merged 2024-06-20 build:  add check for stale generated files
+      #28753 closed 2024-01-01 trie: optimize node encoding using in-place RLP encoder.
+      #27351 closed 2023-05-25 Enable GitHub Advanced Security - Code Scanning for this repository
+      #31945 closed 2025-06-02 Support range deletion in batch
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35853 open 2026-10-01 tests: unskip prague system contract deployment fixtures
+      #35708 open 2026-09-14 core/ssz: add SSZ serialization and strict decoding 
+      #35150 open 2026-06-11 accounts/usbwallet: fix De Morgan error dropping stale wallets on refresh
+      #35563 open 2026-08-21 core/ssz: add SSZ encoding, decoding, merkleization and proof generation
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+      #33863 open 2026-02-18 cmd/utils:  Enable transaction queries on pruned nodes via era files
+      #35713 open 2026-09-15 engine_forkchoiceUpdated applies the reorg before returning -38002 (forkchoice state not updated atomically)
+      #31109 open 2025-02-01 core/types: add method to compute transaction intrinsic gas
+      #35333 open 2026-07-10 internal/ethapi: reject gasPrice with blob hashes
+      #33666 open 2026-01-22 Query transactions from era files on a pruned node
+      #25122 open 2022-06-17 leveldb filesystem structure with no subdirectories will become a problem over time
+      #23574 open 2021-09-14 Enhancing subscription processing to be able to work with transaction data
+      #23132 open 2021-06-30 For some blocks, Batch RPC return only some replies, or the replies have null/mismatched fields
+      #33889 open 2026-02-24 core/txpool/blobpool: drop underpriced before adding to pool
+      #35171 open 2026-06-14 eth/catalyst: add rest-ssz based engine api
+      #26693 open 2023-02-15 New blocks are rejected because of setHead operation
+      #32224 open 2025-07-16 params: Config2
+      #35749 merged 2026-09-21 eth/protocols/snap: implement bal catchup for trie
+      #35800 closed 2026-09-25 triedb/pathdb: unindex histories before truncating them on startup
+      #31132 open 2025-02-05 core/tracing: auto upgrade deprecated hooks
+  unclean        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35652 open 2026-09-04 core, eth: optimize chain segment insertion
+      #35804 open 2026-09-25 eth/catalyst: don't treat a forward canonical update as a reorg
+      #35871 open 2026-10-03 p2p/nat: retry UPnP mapping with permanent lease on error 725
+      #35844 merged 2026-09-30 core: handle the sync restarting after unclean shutdown
+      #32153 open 2025-07-07 panic: pebble: batch too large: >= 4.0 G
+      #31131 open 2025-02-05 Dealing with journal version upgrades
+      #32903 open 2025-10-13 triedb/pathdb: fix max buffer size
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #31405 open 2025-03-17 Failed to truncate extra state histories err="out of range,
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #35800 closed 2026-09-25 triedb/pathdb: unindex histories before truncating them on startup
+      #35799 closed 2026-09-25 triedb/pathdb: stale history index after crash recovery onto a different fork returns wrong historical state
+      #31866 open 2025-05-21 Implemented health probe for cleaner shutdown
+      #33165 open 2025-11-13 Run Geth with an integrated blsync doesn't work. "invalid attested header: unsupported fork: fulu" is reported
+      #35159 merged 2026-06-12 eth/protocols/snap: remove uncovered states before resuming
+      #35258 merged 2026-06-29 core/rawdb: prevent truncateHead from returning an error for empty tables
+      #34775 closed 2026-04-21 PBSS diskRoot stuck at genesis — crash-resume and snapshot restore fail
+      #30119 open 2024-07-04 Missing some block hash -> block number links in DB after restart | "block body not found" error
+      #29025 closed 2024-02-19 miner, core/txpool: refactor processing of `pending` transactions
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31866 open 2025-05-21 Implemented health probe for cleaner shutdown
+      #35615 open 2026-08-30 rpc: cancel handler root context before waiting on calls
+      #35652 open 2026-09-04 core, eth: optimize chain segment insertion
+      #35798 open 2026-09-25 rpc: cancel running calls when a connection is closed
+      #35804 open 2026-09-25 eth/catalyst: don't treat a forward canonical update as a reorg
+      #31508 open 2025-03-27 Node doesn't shutdown gracefully during block import
+      #35410 open 2026-07-24 p2p/enode: close FairMix source iterators when runSource exits
+      #35871 open 2026-10-03 p2p/nat: retry UPnP mapping with permanent lease on error 725
+      #35844 merged 2026-09-30 core: handle the sync restarting after unclean shutdown
+      #31405 open 2025-03-17 Failed to truncate extra state histories err="out of range,
+      #32153 open 2025-07-07 panic: pebble: batch too large: >= 4.0 G
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #31131 open 2025-02-05 Dealing with journal version upgrades
+      #32387 open 2025-08-10 Running geth attach in a screen session immediately exits
+      #18443 open 2019-01-14 p2p/discover: UDP listener port not released when macOS firewall is enabled
+      #32903 open 2025-10-13 triedb/pathdb: fix max buffer size
+      #31586 open 2025-04-07 Geth just keeps rewinding after crash in hash mode
+      #31327 open 2025-03-06 eth/catalyst SimulatedBeacon can spinloop when txpool closing and doCommit closing race
+      #35870 closed 2026-10-03 p2p/nat: retry UPnP mapping with permanent lease on error 725
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+  reboot         68 hit(s) (all listed)
+      #28528 open 2023-11-15 p2p discovery: public P2P nodes removed from boot nodes after being restarted 
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #34728 merged 2026-04-15 core/rawdb: fix incorrect fsync ordering for index file truncation
+      #30867 closed 2024-12-06 Geth can't recover after a crash
+      #23730 merged 2021-10-13 cmd/geth: add support for sepolia testnet
+      #22056 closed 2020-12-22 "Database compacting, degraded performance database" for 2 days already
+      #22374 closed 2021-02-24 Fatal: Failed to register the Ethereum service: gap (#492149) in the chain between ancients and leveldb
+      #20383 closed 2019-11-25 geth does not persist trie node data from memory to disk on ungraceful system restart
+      #30468 closed 2024-09-19 OSError: [Errno 23] Too many open files in system (even with high limits)
+      #14647 closed 2017-06-18 What is the upper bound of "imported new state entries"?
+      #28105 closed 2023-09-13 CRIT Failed to truncate extra state histories err=EOF
+      #27569 closed 2023-06-25 Loose peers every 5 to 7 days
+      #26546 closed 2023-01-24 Geth Reboots with geth.service: Failed with result 'signal'.
+      #26446 closed 2023-01-06 geth gets killed with OOM
+      #26208 closed 2022-11-17 OOM reboot loop
+      #26493 closed 2023-01-14 Unclean shutdown throws geth 4-5 days behind
+      #26131 closed 2022-11-07 Geth fails to shutdown in 90s, is killed by systemd
+      #26197 closed 2022-11-17 Restart geth kept throwing Unhandled trie error: missing trie node
+      #26327 closed 2022-12-08 Geth crashing every few days in snap sync mode
+      #21315 closed 2020-07-09 Fatal: Error starting protocol stack: genesis mismatch
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35878 open 2026-10-04 internal/ethapi: bound eth_capabilities receipts by the tx index tail
+      #35781 open 2026-09-23 eth_capabilities: receipts.oldestBlock ignores the tx index tail, but eth_getTransactionReceipt depends on it
+      #34958 open 2026-05-13 cmd/geth: report disk space cleared on prune-history completion
+      #34102 open 2026-03-27 core/txpool/blobpool: implement ContentFrom for blob transactions
+      #33317 open 2025-11-28 Speeding up `eth_getTransactionByHash`
+      #33889 open 2026-02-24 core/txpool/blobpool: drop underpriced before adding to pool
+      #35788 closed 2026-09-24 triedb/pathdb: Disable leaks the disk layer's clean caches
+      #26386 open 2022-12-27 geth not sync with fullnode sync mode
+      #33764 open 2026-02-05 eth: add partial statefulness mode via EIP-7928
+      #30908 open 2024-12-13 History expiry planning
+      #29575 open 2024-04-18 Pebble compaction causes intermittent, but significant performance impacts
+      #28266 open 2023-10-06 Parallel Intermediate Node Fetching (for a single trie)
+      #35359 open 2026-07-14 Allow bounded transaction history with path-based archive state
+      #35630 open 2026-09-02 core/filtermaps: eth_getLogs matcher goroutines never released after client disconnect; accumulated lock waiters starve the head renderer into a permanent livelock
+      #35543 merged 2026-08-15 core/txpool/blobpool: speed up serving pre eth/72 peers
+      #35621 closed 2026-08-31 Docs: Update storage requirement from 1TB to 2TB+ for mainnet sync
+      #35816 closed 2026-09-28 core/txpool, core/types, eth, internal/ethapi, miner: support blob-carrying frame transactions
+      #35749 merged 2026-09-21 eth/protocols/snap: implement bal catchup for trie
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #35591 merged 2026-08-26 beacon, cmd, core, params: remove the holesky testnet
+  data+loss      69 hit(s) (all listed)
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+      #34885 open 2026-05-06 add ux improvement changes
+      #34706 open 2026-04-12 core/state,triedb/pathdb: bintrie flat state support 
+      #33885 open 2026-02-24 eth/filters: cap polling filter queues to prevent unbounded memory growth
+      #32903 open 2025-10-13 triedb/pathdb: fix max buffer size
+      #20363 open 2019-11-22 Make `clef` scalable
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #30773 open 2024-11-20 Use hedging / noise / extra entropy to improve signature security
+      #34944 closed 2026-05-12 core/txpool/blobpool: data loss in limbo.update on setAndIndex failure
+      #34665 closed 2026-04-05 core/txpool/blobpool: prevent data loss in limbo.update on setAndIndex failure
+      #23938 closed 2021-11-20 on contract subscription error, the subscription is dropped
+      #34798 closed 2026-04-22 core/stateless: preserve witness keys across encoding
+      #34728 merged 2026-04-15 core/rawdb: fix incorrect fsync ordering for index file truncation
+      #34711 closed 2026-04-12 freezer: incorrect fsync ordering in freezerTable.truncateTail
+      #33579 closed 2026-01-10 Add AI Agent for Autonomous DeFi Trading prototype
+      #31525 merged 2025-03-29 core/filtermaps: hashdb safe delete range
+      #22056 closed 2020-12-22 "Database compacting, degraded performance database" for 2 days already
+      #24993 closed 2022-05-30 I got "Head state missing, repairing" and the node does sync blocks any more
+      #29905 closed 2024-06-01 The block generation speed of geth's POW private chain is too fast. 4 blocks may be generated in 1 second. Then the server disk quickly increases in size. The server is shut down directly or the process is exited, resulting in data loss. How to solve this problem?
+      #26940 merged 2023-03-21 core/txpool/blobpool: 4844 blob transaction pool
+  partial+write  26 hit(s) (all listed)
+      #34982 closed 2026-05-15 core/state/pruner: handle batch write errors in pruning
+      #33153 merged 2025-11-11 eth: implement EIP-7975 (eth/70 - partial block receipt lists)
+      #2455 merged 2016-04-14 core: improved chain db performance by using sequential keys
+      #26586 closed 2023-02-01 Output format inconsistent between JS and native tracers in traceBlock*
+      #26274 merged 2022-11-29 all: activate pbss as experimental feature
+      #26483 closed 2023-01-12 Gap in chain (investigation)
+      #28035 merged 2023-08-31 metrics: refactor metrics (part II) 
+      #28163 merged 2023-09-20 trie: remove internal nodes between shortNode and child in path mode
+      #26793 merged 2023-03-02 metrics: improve accuracy of CPU gauges
+      #25963 merged 2022-10-11 all: implement path-based state scheme
+      #26137 merged 2022-11-08 core/vm: deep copy jumptable when enabling extra eips
+      #18418 closed 2019-01-09 [WIP] Historical state pruning
+      #21350 closed 2020-07-20 Random ordering of equally-priced transactions incentivises competitive spam 
+      #2568 closed 2016-05-14 leveldb/table: corruption on data-block
+      #23873 closed 2021-11-08 Generating snapshots makes geth slow
+      #23196 closed 2021-07-11 How to alter contract function or mapping with eth_call?
+      #22118 closed 2021-01-05 core/rawdb: avoid exiting geth from freezer on fsync failure (ref #22112)
+      #2204 closed 2016-02-11 Synchronisation failed: no peers to keep download active - will this resolve?
+      #2711 merged 2016-06-17 Fix #2710 Filter race: concurrent map read and map write
+      #2111 closed 2016-01-08 Garbage collector
+  crash+safe     57 hit(s) (all listed)
+      #35813 open 2026-09-27 triedb/pathdb: fix data race in historical state reader
+      #35586 open 2026-08-26 core/filtermaps: bound database batch size during log index rollback
+      #21963 open 2020-12-04 FR: Separate Dangerous Debugs From Useful Debugs
+      #35517 closed 2026-08-11 core/txpool/blobpool, eth: don't start the blob cache before the pool is initialized
+      #34775 closed 2026-04-21 PBSS diskRoot stuck at genesis — crash-resume and snapshot restore fail
+      #32672 closed 2025-09-18 Snap syncing at genesis of new network causes corrupt db
+      #30867 closed 2024-12-06 Geth can't recover after a crash
+      #33339 closed 2025-12-01 fix(bintrie): prevent OOB on 31-byte stems at depth 248
+      #32370 closed 2025-08-08 LRU performance optimization
+      #30661 merged 2024-10-23 core, triedb/pathdb: final integration (snapshot integration pt 5)
+      #2455 merged 2016-04-14 core: improved chain db performance by using sequential keys
+      #31791 merged 2025-05-09 eth/catalyst: implement getBlobsV2
+      #31499 closed 2025-03-26 Fatal error after crlt-c kill: gap in the chain between ancients [...] and leveldb [...]
+      #28154 closed 2023-09-19 Geth v.1.13.1 - BAD BLOCK - Invalid merkle root - Error when I make a transaction
+      #22136 merged 2021-01-07 cmd/faucet: fix websocket race regression after switching to gorilla
+      #29834 closed 2024-05-24 ethstats: added some error handling in ethstats.go
+      #26274 merged 2022-11-29 all: activate pbss as experimental feature
+      #26133 closed 2022-11-07 core/vm: implement full EOF suite
+      #28187 merged 2023-09-25 all: replace log15 with slog
+      #27629 closed 2023-06-30 all: live chain-aware tracing
+  atomic+write   63 hit(s) (all listed)
+      #35463 merged 2026-08-04 eth/protocols/snap: advance catch-up pivot after batch commit
+      #34665 closed 2026-04-05 core/txpool/blobpool: prevent data loss in limbo.update on setAndIndex failure
+      #34004 closed 2026-03-13 core, params: binary conversion activation
+      #33670 closed 2026-01-23 accounts/keystore, cmd/clef, signer/core: add database-backed keystore
+      #28892 merged 2024-01-29 cmd/geth: add inspect trie tool to analysis trie storage
+      #33473 closed 2025-12-22 core/state: persist state size metrics
+      #33455 closed 2025-12-19 core, eth: add lock protection in snap sync and improve beacon sync robustness
+      #30464 merged 2024-09-19 triedb/pathdb, eth: use double-buffer mechanism in pathdb
+      #31714 merged 2025-04-25 eth: stabilize tx relay peer selection
+      #28471 closed 2023-11-07 core, eth, trie: write nodebuffer asynchronously to disk
+      #31680 merged 2025-04-20 core/filtermaps: clone cached slices, fix tempRange
+      #31414 merged 2025-03-18 core, eth/downloader: implement pruning mode sync
+      #30654 merged 2024-10-22 trie/pathdb: state iterator (snapshot integration pt 4)
+      #30752 merged 2024-11-13 core, triedb: remove destruct flag in state snapshot
+      #28534 closed 2023-11-15 `Imported new potential chain segment` poor performance when `ancient` is on external drive — v1.13.5
+      #24685 merged 2022-04-12 core/state/snapshot: fix race condition
+      #20152 merged 2019-10-04 Dynamic state snapshots
+      #23427 closed 2021-08-20 Trie pruning v9000
+      #29135 merged 2024-03-01 core/rawdb: implement in-memory freezer
+      #28694 closed 2023-12-18 Beacon backfilling failed. Retrieved hash chain is invalid: rename
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35846 open 2026-09-30 accounts/keystore: fix race between key scan and delete
+      #35630 open 2026-09-02 core/filtermaps: eth_getLogs matcher goroutines never released after client disconnect; accumulated lock waiters starve the head renderer into a permanent livelock
+      #30053 open 2024-06-23 accounts/keystore: fix flaky test `TestWalletNotifications`
+      #30119 open 2024-07-04 Missing some block hash -> block number links in DB after restart | "block body not found" error
+      #34983 closed 2026-05-15 Data race in core/txpool/locals (go-ethereum) — journal.writer concurrent read/write
+      #35060 closed 2026-05-28 core/txpool/locals: protect journal.writer with a dedicated mutex (closes #34983)
+      #33665 closed 2026-01-22 p2p/discover: fix a deadlock
+      #34038 closed 2026-03-17 core: txLookupLock mutex leaked on error returns in reorg()
+      #3 closed 2014-01-15 Corrected typo ‘enroding > encoding’
+      #33455 closed 2025-12-19 core, eth: add lock protection in snap sync and improve beacon sync robustness
+      #33147 merged 2025-11-10 core/rawdb: capture open file error and fix resource leak
+      #33205 closed 2025-11-16 p2p/discover: optimize findnodeByID
+      #29329 closed 2024-03-24 Connection Slot Exhaustion with Passive Nodes
+      #33284 closed 2025-11-26 accounts/usbwallet: fix data race in self-derivation paths
+      #32157 merged 2025-07-07 internal/era: New EraE implementation
+      #32859 closed 2025-10-09 Race Conditions in Chain Reorg and State Management
+      #33339 closed 2025-12-01 fix(bintrie): prevent OOB on 31-byte stems at depth 248
+      #32845 merged 2025-10-07 core/txpool/legacypool: fix validTxMeter to count transactions
+      #32019 closed 2025-06-12 a potential data race occurs in the httpConfig field in rpcstack.go
+      #32223 closed 2025-07-16 Data race in `miner/worker.go`
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #35700 open 2026-09-12 rpc: close websocket on ping write failure
+      #35843 open 2026-09-29 core, core/types/bal, tests: net post-execution storage writes and balances
+      #35382 open 2026-07-18 rpc, p2p/discover/v5wire: fix data race, KDF error handling, and DoS in ServeListener
+      #34757 open 2026-04-17 accounts/keystore: fsync temp keyfile before rename
+      #35839 merged 2026-09-29 triedb/pathdb: fix flaky TestHistoricalStateReader
+      #35784 closed 2026-09-24 trie: return after dump write error in inspector
+      #35657 closed 2026-09-05 cmd/utils: return error from writing history export checksums
+      #31798 open 2025-05-09 Lag between tx inclusion and accessible state over RPC
+      #35603 merged 2026-08-28 core/rawdb: return iterator errors from safe range deletion
+      #35516 closed 2026-08-11 core/rawdb: don't drop bad block execution detail on duplicated write
+      #29056 open 2024-02-22 health: expand health check functionality with `health` package 
+      #35814 closed 2026-09-28 core, core/txpool: enforce the eip-8141 public mempool policy for frame transactions
+      #34744 open 2026-04-17 Error in block freeze operation  err="canonical hash missing, can't freeze block
+      #35480 closed 2026-08-08 `admin_exportChain` reports success when gzip finalization fails
+      #35463 merged 2026-08-04 eth/protocols/snap: advance catch-up pivot after batch commit
+      #35189 closed 2026-06-17 eth/downloader, cmd: add --snap.skipreceipts for state-only snap sync
+      #30660 open 2024-10-23 core/state: set-based journalling
+      #34970 closed 2026-05-14 core/txpool/blobpool: preserve limbo entry on update store failure
+      #34982 closed 2026-05-15 core/state/pruner: handle batch write errors in pruning
+      #34944 closed 2026-05-12 core/txpool/blobpool: data loss in limbo.update on setAndIndex failure
+  file+contents  86 hit(s) (all listed)
+      #25122 open 2022-06-17 leveldb filesystem structure with no subdirectories will become a problem over time
+      #24962 open 2022-05-25 Fatal: Failed to register the Ethereum service: failed to retrieve genesis from ancient EOF
+      #34711 closed 2026-04-12 freezer: incorrect fsync ordering in freezerTable.truncateTail
+      #32816 merged 2025-09-30 cmd/keeper: use the ziren keccak precompile
+      #30037 merged 2024-06-20 build:  add check for stale generated files
+      #27351 closed 2023-05-25 Enable GitHub Advanced Security - Code Scanning for this repository
+      #31994 closed 2025-06-09 roseteromeo56/go-ethereum
+      #17789 merged 2018-09-29 Implemented EIP191/712 in clef
+      #15005 closed 2017-08-19 Your account has been flagged.
+      #30944 closed 2024-12-20 discv4 protocol message exception message received a correct reply
+      #29754 closed 2024-05-11 all: integrate snapshot into pathdb
+      #28151 closed 2023-09-19 Unable to run goerli network through the configuration file using the latest version
+      #28673 closed 2023-12-12 bug: history.transactions flag not honored during resync (keeping ancients)
+      #29083 merged 2024-02-26 core/txpool: no need to run rotate if no local txs
+      #20119 closed 2019-09-24 Crash in gasSStoreEIP2200 due to panic in SubRefund
+      #22856 closed 2021-05-11 Add --rewind-to-block <block_or_hash> flag
+      #27908 closed 2023-08-11 docker: reduce docker build context sending
+      #28173 closed 2023-09-21 Geth 1.13.1 - Two WebSockets opening with --ws flag
+      #25963 merged 2022-10-11 all: implement path-based state scheme
+      #26017 closed 2022-10-20 cmd/faucet: can not start a faucet which tries to connect to a post merge private network node
+
+== 51 terms run; 49 returned hits, 26 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

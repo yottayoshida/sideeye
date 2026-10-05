@@ -1,0 +1,6 @@
+[world]
+state = "/s/i18n/config/locales"
+
+[define]
+operation = "i18n-tasks add-missing"
+cwd       = "/s/i18n"

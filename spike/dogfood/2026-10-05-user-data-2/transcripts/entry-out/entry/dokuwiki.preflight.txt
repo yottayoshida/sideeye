@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 30 state-changing operation(s) observed
+
+cwd          /s/dw-in
+atomicity    39 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): meta/_dokuwiki.changes, meta/wiki/start.changes
+oracle       agreed on 30 operations (2713 syscall lines examined, 291 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2012 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/dw/data --cwd "/s/dw-in" --operation "php /s/dw/bin/dwpage.php commit -m second /s/dw-in/page.txt wiki:start" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

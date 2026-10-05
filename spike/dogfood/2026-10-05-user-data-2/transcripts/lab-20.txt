@@ -1,0 +1,41 @@
+turbo -> /opt/node22/lib/node_modules/turbo/bin/turbo
+/opt/node22/lib/node_modules/turbo/bin/turbo: Node.js script executable, ASCII text
+/opt/node22/lib/node_modules/turbo/node_modules/@turbo/linux-arm64/bin/turbo
+/opt/node22/lib/node_modules/turbo/bin/turbo
+$ turbo telemetry status
+This information is used to shape the Turborepo roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://turborepo.dev/docs/telemetry
+
+• turbo 2.11.7
+
+Status: Enabled
+
+Turborepo telemetry is completely anonymous. Thank you for participating!
+Learn more: https://turborepo.dev/docs/telemetry
+rc=0
+$ turbo telemetry disable
+• turbo 2.11.7
+Success!
+
+Status: Disabled
+
+You have opted-out of Turborepo anonymous telemetry. No data will be collected from your machine.
+Learn more: https://turborepo.dev/docs/telemetry
+rc=0
+== /s/aux/home/.config/turborepo/telemetry.json
+{
+  "telemetry_enabled": false,
+  "telemetry_id": "3691f04b0746bce5f7edb6d219ee133c1d6b8346f2c92e408b22b379c9ef5c68",
+  "telemetry_salt": "ee1371b9-85a0-458a-97d2-b7f54c29f2b9",
+  "telemetry_alerted": "2026-10-05T05:26:45.951332843Z"
+}$ turbo telemetry enable
+• turbo 2.11.7
+Success!
+
+Status: Enabled
+
+Turborepo telemetry is completely anonymous. Thank you for participating!
+Learn more: https://turborepo.dev/docs/telemetry
+rc=0
+0f9e8f1b2c398745dd4c365a066a59289c69250d076d6abd2c41b8cae672bdeb  /s/aux/home/.config/turborepo/telemetry.json

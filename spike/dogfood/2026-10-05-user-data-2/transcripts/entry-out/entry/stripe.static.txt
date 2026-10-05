@@ -1,0 +1,4 @@
+static: /opt/bin/stripe: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=Qza_ogmezSgEr2A7YKsM/ruFLBzRw78hXEXmA4oZ7/XYQcNyBcOqi1HyL3R_Aw/3OKRFJXMi6C9DaahahdP, BuildID[sha1]=7a30595dcbe5c434d20182e703c3ff0bebc47fe7, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/aux/home/.config/stripe --cwd "/s/stripe-in" --operation "stripe config --set color off" \

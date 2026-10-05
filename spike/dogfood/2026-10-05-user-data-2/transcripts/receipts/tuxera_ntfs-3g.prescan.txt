@@ -1,0 +1,221 @@
+== novelty pre-scan: tuxera/ntfs-3g
+== date: 2026-10-05T03:27:35Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          8 hit(s) (all listed)
+      #203 open 2026-06-15 Null pointer dereference crash in fuse_fs_release (fs=0x0) on ntfs-3g 2022.5.17 aarch64 kernel 5.10
+      #73 open 2023-02-23 [RFE] Add mount option to control sparse file creation
+      #56 open 2022-08-29 livelock scenario
+      #117 closed 2024-07-21 -f set but still human interaction
+      #148 closed 2025-03-23 Ubuntu Noble 24.04 Freeze during copying of large number of files and directorys
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+      #81 closed 2023-05-02 NTFS-3G segfaulting when removing a directory
+      #16 closed 2021-11-25 Heap overflow in ntfsck
+  corrupt        12 hit(s) (all listed)
+      #45 open 2022-07-01 Improve ntfs_device_size_get for file
+      #73 open 2023-02-23 [RFE] Add mount option to control sparse file creation
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+      #128 closed 2024-11-03 Does ntfs-3g support Mandatory File Locking?
+      #158 closed 2025-07-16 Files appear corrupted with invalid metadata until remount
+      #132 closed 2025-01-04 ntfsfix broke my device
+      #148 closed 2025-03-23 Ubuntu Noble 24.04 Freeze during copying of large number of files and directorys
+      #108 closed 2024-03-21 ntfs-3g fails to mount on kernel 6.8.1
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+      #104 closed 2024-02-22 BUG: NTFS drive corrupted after power failure
+      #99 closed 2024-01-30 BUG - renaming files corrupt them
+      #79 closed 2023-04-22 NTFS-3G priority to NTFS3?
+  corruption     5 hit(s) (all listed)
+      #45 open 2022-07-01 Improve ntfs_device_size_get for file
+      #65 open 2022-11-24 Mounting takes a long time with big UserMapping file
+      #217 closed 2026-09-27 Regression in 2026.9.18: "Failed to read of MFT ... br=-1: Invalid argument", cannot create new files
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+      #108 closed 2024-03-21 ntfs-3g fails to mount on kernel 6.8.1
+  truncated      0 hit(s)
+  truncate       3 hit(s) (all listed)
+      #213 open 2026-08-24 Handle directories in ntfscp, so parent directories are created and source directories are cursively copied
+      #209 closed 2026-07-16 ntfsresize: shrink that relocates the first $MFT extent leaves $MFTMirr record 0 stale when $MFTMirr itself is not relocated (volume then fails to open with "$MFTMirr does not match $MFT (record 0)")
+      #145 closed 2025-03-15 mkfs.ntfs refuses to create FS in a file
+  empty          5 hit(s) (all listed)
+      #221 open 2026-10-02 configure.ac: fix build with older autotools
+      #213 open 2026-08-24 Handle directories in ntfscp, so parent directories are created and source directories are cursively copied
+      #102 open 2024-02-12 BUG: missing files on large drives
+      #176 closed 2026-02-03 1MB infront of boot sector
+      #21 closed 2021-12-21 --sbindir ignored
+  atomic         2 hit(s) (all listed)
+      #133 closed 2025-01-08 Prefer the physical block size over the logical block size
+      #173 closed 2026-01-22 Under the NTFS-3G environment, I can copy, delete, and rename files normally, but I cannot edit text files or modify their contents. Could this be related to the reason I mentioned below?
+  atomically     1 hit(s) (all listed)
+      #133 closed 2025-01-08 Prefer the physical block size over the logical block size
+  interrupted    0 hit(s)
+  interrupt      3 hit(s) (all listed)
+      #181 closed 2026-05-08 Massive buffer memory growth (>3 Gigabytes) of ntfs-3g leading to system swapping
+      #56 open 2022-08-29 livelock scenario
+      #17 closed 2021-11-30 Copy interruption, U disk is damaged 
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #30 closed 2022-02-16 It should be possible to cancel mkfs.ntfs
+  ctrl-c         1 hit(s) (all listed)
+      #30 closed 2022-02-16 It should be possible to cancel mkfs.ntfs
+  power          4 hit(s) (all listed)
+      #215 open 2026-09-02 Validate index_block_size to Prevent Attacker-Controlled Memory Exhaustion
+      #40 open 2022-05-30 ntfsclone: support writing a ddrescue domain mapfile
+      #117 closed 2024-07-21 -f set but still human interaction
+      #104 closed 2024-02-22 BUG: NTFS drive corrupted after power failure
+  outage         1 hit(s) (all listed)
+      #117 closed 2024-07-21 -f set but still human interaction
+  ENOSPC         0 hit(s)
+  disk           39 hit(s) (all listed)
+      #220 open 2026-09-30 Add a `redact` mount option to keep the volume label out of logs
+      #143 open 2025-02-15 Writing to a Windows System Partition with ntfs-3g Until Full Breaks Windows
+      #215 open 2026-09-02 Validate index_block_size to Prevent Attacker-Controlled Memory Exhaustion
+      #77 open 2023-04-10 Failed to mount the Windows-formatted NTFS U disk
+      #42 open 2022-06-14 Remounting from read-only to read-write allows editing but prevents creating new files
+      #43 open 2022-06-22 Mounting in read-only mode allows access times to be changed
+      #207 open 2026-07-04 ntfsclone reports failed sector outside the range of the rescued partition
+      #95 open 2023-12-07 ntfsclone (ntfsprogs) utility won't convert between partitions of different sector-size (e.g.: 512B to 4KB, or vice-versa)
+      #73 open 2023-02-23 [RFE] Add mount option to control sparse file creation
+      #69 open 2022-12-16 What are the optimal ntfs-3g or kernel parameters/tunables for use with SMR media?
+      #112 open 2024-05-02 support for Cygwin XATTRs in NTFS-3g?
+      #45 open 2022-07-01 Improve ntfs_device_size_get for file
+      #217 closed 2026-09-27 Regression in 2026.9.18: "Failed to read of MFT ... br=-1: Invalid argument", cannot create new files
+      #36 open 2022-05-01 Fuse reported filesystem type is fuseblk, it should be fuse.ntfs
+      #142 open 2025-02-11 resize error: No free mft record for $MFT: No space left on device fresh Win11 install
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+      #65 open 2022-11-24 Mounting takes a long time with big UserMapping file
+      #144 closed 2025-02-15 High CPU usage (20 %) copying files
+      #67 closed 2022-11-25 ntfsfix can not correct MFT errors
+      #176 closed 2026-02-03 1MB infront of boot sector
+  partial        2 hit(s) (all listed)
+      #9 open 2021-10-12 Fix bugs and limitations in NTFS utilities encountered with deep paths (over 20 levels)
+      #209 closed 2026-07-16 ntfsresize: shrink that relocates the first $MFT extent leaves $MFTMirr record 0 stale when $MFTMirr itself is not relocated (volume then fails to open with "$MFTMirr does not match $MFT (record 0)")
+  incomplete     3 hit(s) (all listed)
+      #106 open 2024-03-08 Fix Cygwin build
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+      #59 closed 2022-09-27 how to support the other character set, such as GBK
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #180 open 2026-04-14 `ntfsfix` does not check target filesystem and breaks VFAT.
+      #57 open 2022-09-09 Do you send TRIM?
+      #102 open 2024-02-12 BUG: missing files on large drives
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+      #132 closed 2025-01-04 ntfsfix broke my device
+  recovery       3 hit(s) (all listed)
+      #180 open 2026-04-14 `ntfsfix` does not check target filesystem and breaks VFAT.
+      #209 closed 2026-07-16 ntfsresize: shrink that relocates the first $MFT extent leaves $MFTMirr record 0 stale when $MFTMirr itself is not relocated (volume then fails to open with "$MFTMirr does not match $MFT (record 0)")
+      #99 closed 2024-01-30 BUG - renaming files corrupt them
+  rollback       1 hit(s) (all listed)
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+  resume         2 hit(s) (all listed)
+      #40 open 2022-05-30 ntfsclone: support writing a ddrescue domain mapfile
+      #170 merged 2025-10-11 Fix typo in NTFS hibernation error message ("turned it off" → "turn it off")
+  half-written   0 hit(s)
+  wipe           2 hit(s) (all listed)
+      #216 open 2026-09-09 Expose volume state machine-readably (ntfs-3g 2022.10.3)
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #102 open 2024-02-12 BUG: missing files on large drives
+      #173 closed 2026-01-22 Under the NTFS-3G environment, I can copy, delete, and rename files normally, but I cannot edit text files or modify their contents. Could this be related to the reason I mentioned below?
+      #132 closed 2025-01-04 ntfsfix broke my device
+  erasing        1 hit(s) (all listed)
+      #173 closed 2026-01-22 Under the NTFS-3G environment, I can copy, delete, and rename files normally, but I cannot edit text files or modify their contents. Could this be related to the reason I mentioned below?
+  erased         2 hit(s) (all listed)
+      #102 open 2024-02-12 BUG: missing files on large drives
+      #132 closed 2025-01-04 ntfsfix broke my device
+  destroy        3 hit(s) (all listed)
+      #203 open 2026-06-15 Null pointer dereference crash in fuse_fs_release (fs=0x0) on ntfs-3g 2022.5.17 aarch64 kernel 5.10
+      #56 open 2022-08-29 livelock scenario
+      #86 open 2023-06-15 ntfs-3g can't support a device node named with comma?
+  destroys       0 hit(s)
+  overwrite      4 hit(s) (all listed)
+      #162 open 2025-09-19 `mkntfs` should quick format by default
+      #41 open 2022-06-04 add wipefs to 'mkfs.ntfs --fast'
+      #80 open 2023-05-01 README build instructions omit details
+      #217 closed 2026-09-27 Regression in 2026.9.18: "Failed to read of MFT ... br=-1: Invalid argument", cannot create new files
+  clobber        0 hit(s)
+  blank          3 hit(s) (all listed)
+      #221 open 2026-10-02 configure.ac: fix build with older autotools
+      #85 open 2023-06-14 Containers hang forever and cannot be killed
+      #1 closed 2021-05-26 NTFS allows files ending with blank/period when mounted as root but not when mounted as user
+  unreadable     2 hit(s) (all listed)
+      #90 open 2023-08-09 issue when configuring windows behavior in file creation parameters
+      #35 open 2022-04-30 Ntfs-3g is using Interix mode on write even when `special_files=wsl`
+  garbage        1 hit(s) (all listed)
+      #9 open 2021-10-12 Fix bugs and limitations in NTFS utilities encountered with deep paths (over 20 levels)
+  mangled        0 hit(s)
+  contents       8 hit(s) (all listed)
+      #35 open 2022-04-30 Ntfs-3g is using Interix mode on write even when `special_files=wsl`
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+      #173 closed 2026-01-22 Under the NTFS-3G environment, I can copy, delete, and rename files normally, but I cannot edit text files or modify their contents. Could this be related to the reason I mentioned below?
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+      #108 closed 2024-03-21 ntfs-3g fails to mount on kernel 6.8.1
+      #44 closed 2022-06-30 OneDrive: unsupported reparse tag 0x9000701a
+      #32 closed 2022-04-02 Memory leak/logic bug in ntfsusermap.c:callback
+      #8 closed 2021-09-16 [macOS] building errors
+  in-place       13 hit(s) (all listed)
+      #221 open 2026-10-02 configure.ac: fix build with older autotools
+      #142 open 2025-02-11 resize error: No free mft record for $MFT: No space left on device fresh Win11 install
+      #43 open 2022-06-22 Mounting in read-only mode allows access times to be changed
+      #209 closed 2026-07-16 ntfsresize: shrink that relocates the first $MFT extent leaves $MFTMirr record 0 stale when $MFTMirr itself is not relocated (volume then fails to open with "$MFTMirr does not match $MFT (record 0)")
+      #177 closed 2026-03-11 `ntfslabel` cannot rename a volume to a new name starting with a hyphen `-`
+      #173 closed 2026-01-22 Under the NTFS-3G environment, I can copy, delete, and rename files normally, but I cannot edit text files or modify their contents. Could this be related to the reason I mentioned below?
+      #108 closed 2024-03-21 ntfs-3g fails to mount on kernel 6.8.1
+      #99 closed 2024-01-30 BUG - renaming files corrupt them
+      #92 closed 2023-10-10 GPL License violation?
+      #63 closed 2022-10-28 Migration from Sourceforge is not complete
+      #39 closed 2022-05-26 Minor autoconf improvements for portability
+      #25 closed 2022-01-17 "not in multiple of 0x10000" disk scan errors for sparse files 
+      #2 closed 2021-06-01 Rename README to README.md
+  unclean        1 hit(s) (all listed)
+      #81 closed 2023-05-02 NTFS-3G segfaulting when removing a directory
+  shutdown       4 hit(s) (all listed)
+      #143 open 2025-02-15 Writing to a Windows System Partition with ntfs-3g Until Full Breaks Windows
+      #142 open 2025-02-11 resize error: No free mft record for $MFT: No space left on device fresh Win11 install
+      #104 closed 2024-02-22 BUG: NTFS drive corrupted after power failure
+      #81 closed 2023-05-02 NTFS-3G segfaulting when removing a directory
+  reboot         8 hit(s) (all listed)
+      #204 open 2026-06-26 Unable to resize or clone Windows 11 main data partition.
+      #85 open 2023-06-14 Containers hang forever and cannot be killed
+      #217 closed 2026-09-27 Regression in 2026.9.18: "Failed to read of MFT ... br=-1: Invalid argument", cannot create new files
+      #209 closed 2026-07-16 ntfsresize: shrink that relocates the first $MFT extent leaves $MFTMirr record 0 stale when $MFTMirr itself is not relocated (volume then fails to open with "$MFTMirr does not match $MFT (record 0)")
+      #108 closed 2024-03-21 ntfs-3g fails to mount on kernel 6.8.1
+      #104 closed 2024-02-22 BUG: NTFS drive corrupted after power failure
+      #34 closed 2022-04-19 Editing Windows while hibernated and remove_hiberfile
+      #19 closed 2021-12-15 Copy NTFS files preserving all their attributes ?
+  disk+full      3 hit(s) (all listed)
+      #73 open 2023-02-23 [RFE] Add mount option to control sparse file creation
+      #36 open 2022-05-01 Fuse reported filesystem type is fuseblk, it should be fuse.ntfs
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+  data+loss      3 hit(s) (all listed)
+      #95 open 2023-12-07 ntfsclone (ntfsprogs) utility won't convert between partitions of different sector-size (e.g.: 512B to 4KB, or vice-versa)
+      #117 closed 2024-07-21 -f set but still human interaction
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+  atomic+write   2 hit(s) (all listed)
+      #133 closed 2025-01-08 Prefer the physical block size over the logical block size
+      #173 closed 2026-01-22 Under the NTFS-3G environment, I can copy, delete, and rename files normally, but I cannot edit text files or modify their contents. Could this be related to the reason I mentioned below?
+  lock+file      3 hit(s) (all listed)
+      #56 open 2022-08-29 livelock scenario
+      #128 closed 2024-11-03 Does ntfs-3g support Mandatory File Locking?
+      #181 closed 2026-05-08 Massive buffer memory growth (>3 Gigabytes) of ntfs-3g leading to system swapping
+  write+failure  1 hit(s) (all listed)
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+  file+contents  7 hit(s) (all listed)
+      #35 open 2022-04-30 Ntfs-3g is using Interix mode on write even when `special_files=wsl`
+      #218 closed 2026-09-28 MFT allocation repeatedly fails with EINVAL on a bitmap-free, never-initialized MFT record
+      #173 closed 2026-01-22 Under the NTFS-3G environment, I can copy, delete, and rename files normally, but I cannot edit text files or modify their contents. Could this be related to the reason I mentioned below?
+      #135 closed 2025-01-28 undefined behavior: dereferencing unaligned pointer
+      #108 closed 2024-03-21 ntfs-3g fails to mount on kernel 6.8.1
+      #44 closed 2022-06-30 OneDrive: unsupported reparse tag 0x9000701a
+      #8 closed 2021-09-16 [macOS] building errors
+
+== 51 terms run; 40 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

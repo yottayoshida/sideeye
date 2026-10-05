@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+cwd          /s/yt-in
+atomicity    0 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): archive.txt
+oracle       agreed on 2 operations (8313 syscall lines examined, 25 in scope of the judged state), witness strace
+processes    3 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2003 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/yt --cwd "/s/yt-in" --operation "yt-dlp --enable-file-urls --download-archive /s/yt/archive.txt -o /s/yt-out/%(title)s.%(ext)s file:///s/yt-in/clip.mp4" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

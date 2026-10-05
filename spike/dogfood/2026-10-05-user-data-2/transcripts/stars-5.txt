@@ -1,0 +1,7 @@
+stripe/stripe-cli stars=2199 pushed=2026-10-03 archived=false issues=true full=stripe/stripe-cli
+infracost/infracost stars=12550 pushed=2026-09-30 archived=false issues=true full=infracost/infracost
+httpie/cli stars=38694 pushed=2024-12-17 archived=false issues=true full=httpie/cli
+PrefectHQ/prefect stars=23966 pushed=2026-10-05 archived=false issues=true full=PrefectHQ/prefect
+meltano/meltano stars=2644 pushed=2026-10-05 archived=false issues=true full=meltano/meltano
+astropy/astropy stars=5325 pushed=2026-10-02 archived=false issues=true full=astropy/astropy
+schrodinger/pymol-open-source stars=1751 pushed=2026-07-25 archived=false issues=true full=schrodinger/pymol-open-source

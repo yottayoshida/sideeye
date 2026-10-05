@@ -1,0 +1,6 @@
+[world]
+state = "/s/sk"
+
+[define]
+operation = "skopeo logout --authfile /s/sk/auth.json registry.example.com"
+cwd       = "/s/sk-in"

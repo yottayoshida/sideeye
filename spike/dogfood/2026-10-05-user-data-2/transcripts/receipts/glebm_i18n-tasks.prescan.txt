@@ -1,0 +1,225 @@
+== novelty pre-scan: glebm/i18n-tasks
+== date: 2026-10-05T02:59:33Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          11 hit(s) (all listed)
+      #737 merged 2026-05-11 Prevent Prism crash on dynamic `human_attribute_name` arguments
+      #728 merged 2026-05-01 Fix crash when human_attribute_name is called with interpolated string argument
+      #730 merged 2026-05-04 Add CHANGES.md entry for PR #728
+      #733 merged 2026-05-09 Prism: Handles model_name called w safe navigation
+      #677 closed 2025-11-09 Cyclic call detected prism crash with `check-prism`
+      #122 closed 2015-01-15  undefined method `each' for nil:NilClass (NoMethodError)
+      #537 closed 2023-12-03 Inconsistent and unrelated error messages when modifying code
+      #458 merged 2022-06-08 Exclude *.xlsx files by default
+      #430 merged 2022-03-25 Fixes parsing of ERB comments without a space
+      #118 closed 2015-01-03 Sloppy gemspec: slop 4.0 causes crash
+      #347 closed 2020-04-08 deepl plural and singular response handling
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      9 hit(s) (all listed)
+      #747 merged 2026-06-22 chore(deps): bump actions/checkout from 6 to 7
+      #686 merged 2025-11-23 chore(deps): bump actions/checkout from 5 to 6
+      #657 merged 2025-08-18 chore(deps): bump actions/checkout from 4 to 5
+      #594 merged 2024-08-26 chore(deps): bump paambaati/codeclimate-action from 8 to 9
+      #586 merged 2024-06-17 chore(deps): bump paambaati/codeclimate-action from 6 to 8
+      #561 merged 2024-04-29 chore(deps): bump paambaati/codeclimate-action from 5 to 6
+      #522 merged 2023-09-11 chore(deps): bump actions/checkout from 3 to 4
+      #511 merged 2023-07-10 chore(deps): bump paambaati/codeclimate-action from 4 to 5
+      #501 merged 2023-04-17 Bump actions/checkout from 2 to 3
+  truncate       9 hit(s) (all listed)
+      #747 merged 2026-06-22 chore(deps): bump actions/checkout from 6 to 7
+      #686 merged 2025-11-23 chore(deps): bump actions/checkout from 5 to 6
+      #657 merged 2025-08-18 chore(deps): bump actions/checkout from 4 to 5
+      #594 merged 2024-08-26 chore(deps): bump paambaati/codeclimate-action from 8 to 9
+      #586 merged 2024-06-17 chore(deps): bump paambaati/codeclimate-action from 6 to 8
+      #561 merged 2024-04-29 chore(deps): bump paambaati/codeclimate-action from 5 to 6
+      #522 merged 2023-09-11 chore(deps): bump actions/checkout from 3 to 4
+      #511 merged 2023-07-10 chore(deps): bump paambaati/codeclimate-action from 4 to 5
+      #501 merged 2023-04-17 Bump actions/checkout from 2 to 3
+  empty          30 hit(s) (all listed)
+      #579 open 2024-05-23 Normalize moves empty string keys to a new file
+      #607 open 2024-11-12 Isolating router scrambles multiple files
+      #192 open 2016-03-09 New mode detecting incorrect translations
+      #473 open 2022-09-26 defining `one`, `other` is detected as missing keys.
+      #744 open 2026-06-16 [Prism Scanner] fix wrongfully reported missing keys in nested models
+      #700 open 2025-12-23 Find equal or unequal values between arbitrary trees?
+      #345 open 2020-04-06 error handling
+      #674 closed 2025-10-14 Add command to prune locale files of keys that don't exist in base locale
+      #671 merged 2025-09-15 Prism: Detects more invalid scopes
+      #189 closed 2016-02-11 can't translate using Google
+      #649 closed 2025-06-30 ERB config file method throws error
+      #614 merged 2025-01-25 OpenAI: log errors
+      #355 closed 2020-06-24 Normalization adds whitespaces - inconsistently
+      #504 merged 2023-04-24 Bump paambaati/codeclimate-action from 3.2.0 to 4.0.0
+      #475 closed 2022-09-27 Normalization might fail if there are lists with empty items
+      #387 closed 2021-08-16 Health task fails only in CI
+      #394 merged 2021-10-27 add --config to specify config file location
+      #10 closed 2013-10-07 missing task does not find missing translations for the base locale
+      #71 closed 2014-06-22 "i18n-tasks missing" should also check whether there are some keys in a locale, but not in base locale
+      #59 closed 2014-04-25 Handle exisisting but empty keys foo_bar: ''
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #47 closed 2014-03-24 [feature] Write only missing keys to file
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #407 closed 2021-12-22 Painfully slow in rspec with version 0.9.36
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           1 hit(s) (all listed)
+      #726 merged 2026-04-19 Add performance benchmark suite
+  partial        14 hit(s) (all listed)
+      #750 open 2026-07-28 `health` reports relative localization keys used in partials as "unused"
+      #516 open 2023-07-18 `other` sub-key in translation may cause a key to be marked as unused
+      #602 open 2024-10-20 `translate-missing` not considering `available_locales`
+      #470 open 2022-08-09 Bug(?) `sign_in` being used, getting removed
+      #691 merged 2025-11-30 Prism: Allows relative key in partial views
+      #665 merged 2025-09-08 Prism: Relative keys not supported in partial ERB
+      #554 closed 2024-03-29 No detecting use of locale keys on form helpers
+      #122 closed 2015-01-15  undefined method `each' for nil:NilClass (NoMethodError)
+      #509 merged 2023-05-31 Support partially dynamic segments
+      #10 closed 2013-10-07 missing task does not find missing translations for the base locale
+      #46 closed 2014-03-07 relative keys in controller actions
+      #156 closed 2015-07-08 Finding localized partials
+      #227 closed 2017-02-07 Incorrectly scoping a nested layout
+      #15 merged 2013-10-30 Fix absolutizing relative keys in partials
+  incomplete     2 hit(s) (all listed)
+      #480 closed 2022-10-27 Incomplete translations with Google Translate
+      #308 closed 2018-10-24 Detect incomplete pluralizations
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       1 hit(s) (all listed)
+      #422 closed 2022-03-23 better_html scans any project that uses i18n-tasks
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        5 hit(s) (all listed)
+      #540 open 2023-12-11 Feature: Support short hand in more Rails controller methods (private methods, before_actions)
+      #61 closed 2014-05-03 "normalize" destroys stuff like &defaults
+      #584 closed 2024-06-07 i18n-tasks missing returning all keys present (false positive?)
+      #128 closed 2015-02-04 Unused keys and controllers in modules
+      #239 closed 2017-04-14 todelete
+  destroys       1 hit(s) (all listed)
+      #61 closed 2014-05-03 "normalize" destroys stuff like &defaults
+  overwrite      15 hit(s) (all listed)
+      #473 open 2022-09-26 defining `one`, `other` is detected as missing keys.
+      #726 merged 2026-04-19 Add performance benchmark suite
+      #747 merged 2026-06-22 chore(deps): bump actions/checkout from 6 to 7
+      #686 merged 2025-11-23 chore(deps): bump actions/checkout from 5 to 6
+      #657 merged 2025-08-18 chore(deps): bump actions/checkout from 4 to 5
+      #594 merged 2024-08-26 chore(deps): bump paambaati/codeclimate-action from 8 to 9
+      #586 merged 2024-06-17 chore(deps): bump paambaati/codeclimate-action from 6 to 8
+      #561 merged 2024-04-29 chore(deps): bump paambaati/codeclimate-action from 5 to 6
+      #522 merged 2023-09-11 chore(deps): bump actions/checkout from 3 to 4
+      #511 merged 2023-07-10 chore(deps): bump paambaati/codeclimate-action from 4 to 5
+      #502 merged 2023-04-17 Bump paambaati/codeclimate-action from 3.0.0 to 3.2.0
+      #504 merged 2023-04-24 Bump paambaati/codeclimate-action from 3.2.0 to 4.0.0
+      #501 merged 2023-04-17 Bump actions/checkout from 2 to 3
+      #229 closed 2017-02-16 Detect overwritten keys
+      #310 closed 2018-10-26 Missing plural keys wrong locale displayed, does not respect ignore list
+  clobber        1 hit(s) (all listed)
+      #596 open 2024-08-30 Identify and translate missing plural keys
+  blank          32 hit(s) (all listed)
+      #739 open 2026-05-13 Prism does not properly handle single-table inheritance
+      #337 open 2019-12-10 Multiline translations shown as unused
+      #579 open 2024-05-23 Normalize moves empty string keys to a new file
+      #744 open 2026-06-16 [Prism Scanner] fix wrongfully reported missing keys in nested models
+      #745 open 2026-06-16 [Feature request] Plugin API
+      #709 open 2026-02-10 Cache key_value? lookups with pre-built flat Set per locale
+      #600 open 2024-10-18 Inability to Ignore Specific Pluralization Keys in Arabic Translations
+      #721 merged 2026-04-11 Unused keys: Handles false positives for child nodes
+      #728 merged 2026-05-01 Fix crash when human_attribute_name is called with interpolated string argument
+      #720 merged 2026-04-11 Restructure README for clarity and navigability
+      #726 merged 2026-04-19 Add performance benchmark suite
+      #283 closed 2018-03-16 Undefined 'each' for nil when running translate-missing
+      #694 merged 2025-12-09 Prism: Supports ViewComponent
+      #691 merged 2025-11-30 Prism: Allows relative key in partial views
+      #717 merged 2026-03-22  Prism: Handles more magic comments
+      #733 merged 2026-05-09 Prism: Handles model_name called w safe navigation
+      #684 merged 2025-11-23 Prism: Candidate keys and parser fixes
+      #189 closed 2016-02-11 can't translate using Google
+      #666 merged 2025-09-13 Prism: Adds support for mailer subjects
+      #475 closed 2022-09-27 Normalization might fail if there are lists with empty items
+  unreadable     1 hit(s) (all listed)
+      #587 closed 2024-06-17 Unreadable output
+  garbage        0 hit(s)
+  mangled        1 hit(s) (all listed)
+      #742 open 2026-05-25 Avoid mangling emojis and support strict double quoting
+  contents       8 hit(s) (all listed)
+      #465 open 2022-08-02 HAML AST Scanner
+      #470 open 2022-08-09 Bug(?) `sign_in` being used, getting removed
+      #263 open 2017-09-24 Normalize with pattern router may leave duplicate entries.
+      #720 merged 2026-04-11 Restructure README for clarity and navigability
+      #74 closed 2014-07-03 devise translations reported as missing
+      #63 closed 2014-06-02 No relative key root detected for "." Runtime Error
+      #260 closed 2017-09-05 remove-unused don't remove whole files
+      #9 merged 2013-10-06 add support for grep parameters
+  in-place       23 hit(s) (all listed)
+      #705 open 2026-01-12 Do not report `other` as missing for locales that use `few` and `many` instead
+      #263 open 2017-09-24 Normalize with pattern router may leave duplicate entries.
+      #596 open 2024-08-30 Identify and translate missing plural keys
+      #540 open 2023-12-11 Feature: Support short hand in more Rails controller methods (private methods, before_actions)
+      #525 closed 2023-09-27 Openai translation  - base_translator.rb:92:in `next': iteration reached an end (StopIteration)
+      #637 merged 2025-05-10 Gemspec: Removes upper required_ruby_version
+      #612 closed 2025-01-21 Silence parser warning and patch version mismatch when loading parser/current
+      #625 closed 2025-03-07 Normalisation thrown by line breaks
+      #580 merged 2024-05-24 Allow configuring translation backend in yaml
+      #556 closed 2024-03-29 Google Translate does case sensitive locale comparison
+      #553 merged 2024-03-12 Fix unescaped interpolated reserved key in help text and handle escaped interpolations in inconsistent interpolations check
+      #288 closed 2018-05-09 Add copy command
+      #515 merged 2023-07-18 Fixes typo while commenting out AstMachers in i18n-tasks.yml.
+      #409 closed 2021-12-22 New `--config` option doesn't appear to work.
+      #433 merged 2022-03-27 Adds Rails matcher for AST-scanners
+      #174 closed 2015-10-30 Expected output formatting
+      #168 closed 2015-08-30 'language.no' is treated as if it was 'language.false' !?
+      #238 closed 2017-04-14 Support for identifying the use translations via It.it and It.plain
+      #261 closed 2017-09-15 On Travis CI, getting failure: Failure/Error: raise Parser::SyntaxError, diagnostic
+      #316 closed 2018-11-14 Relative keys are marked as missing when used in render layout blocks. 
+  unclean        2 hit(s) (all listed)
+      #151 closed 2015-05-27 Exit code of i18n-tasks CLI should be nonzero for health/missing/unused when unclean
+      #52 closed 2014-04-11 Refactor RSpec integration example
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #726 merged 2026-04-19 Add performance benchmark suite
+  data+loss      0 hit(s)
+  partial+write  1 hit(s) (all listed)
+      #750 open 2026-07-28 `health` reports relative localization keys used in partials as "unused"
+  crash+safe     2 hit(s) (all listed)
+      #728 merged 2026-05-01 Fix crash when human_attribute_name is called with interpolated string argument
+      #733 merged 2026-05-09 Prism: Handles model_name called w safe navigation
+  atomic+write   0 hit(s)
+  lock+file      3 hit(s) (all listed)
+      #470 open 2022-08-09 Bug(?) `sign_in` being used, getting removed
+      #37 closed 2014-01-31 rake -T doesn't list tasks in Rails 4
+      #183 closed 2015-12-31 Add specs for checking for untranslated resource names and attributes
+  write+failure  3 hit(s) (all listed)
+      #682 closed 2025-11-15 v1.1.0: Specs fail unpredictably in ActiveAdmin / ruby 3.2/3.3 (no prism)
+      #400 closed 2021-12-08 i18n-tasks seems not working with Rails/ActiveSupport 7 RC1
+      #202 closed 2016-08-26 undefined method `sample'
+  file+contents  8 hit(s) (all listed)
+      #465 open 2022-08-02 HAML AST Scanner
+      #263 open 2017-09-24 Normalize with pattern router may leave duplicate entries.
+      #470 open 2022-08-09 Bug(?) `sign_in` being used, getting removed
+      #720 merged 2026-04-11 Restructure README for clarity and navigability
+      #74 closed 2014-07-03 devise translations reported as missing
+      #63 closed 2014-06-02 No relative key root detected for "." Runtime Error
+      #260 closed 2017-09-05 remove-unused don't remove whole files
+      #9 merged 2013-10-06 add support for grep parameters
+
+== 51 terms run; 26 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,2 @@
+ROW juju static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 4 operations
+EXIT juju 0

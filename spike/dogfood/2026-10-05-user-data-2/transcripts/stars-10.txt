@@ -1,0 +1,4 @@
+conan-io/conan stars=9527 pushed=2026-10-02 archived=false issues=true full=conan-io/conan
+spack/spack stars=5134 pushed=2026-10-02 archived=false issues=true full=spack/spack
+platformio/platformio-core stars=9503 pushed=2026-09-23 archived=false issues=true full=platformio/platformio-core
+arduino/arduino-cli stars=5051 pushed=2026-10-05 archived=false issues=true full=arduino/arduino-cli

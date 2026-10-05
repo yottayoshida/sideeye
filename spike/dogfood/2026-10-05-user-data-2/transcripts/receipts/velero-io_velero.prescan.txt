@@ -1,0 +1,804 @@
+== novelty pre-scan: velero-io/velero
+== date: 2026-10-05T04:03:12Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10547 open 2026-09-19 Unify `veleroResourcesExist()` missing-CRD crash path into CRD schema validation framework
+      #10544 open 2026-09-19 CRD schema check: self-resolution for `strict` mode failures (`/readyz` instead of crash-loop)
+      #8697 open 2025-02-17 Bump crash-diagnostics from v0.3.10 to v0.4.0
+      #10556 open 2026-09-22 [Design]Owner reference and dependency relink design
+      #10131 open 2026-08-01 Fix Tiltfile Developer Experience and Plugin Build Issues
+      #3539 open 2021-03-08 velero backup of cluster resources results in a crash of velero pod 
+      #9265 open 2025-09-16 Fixes Restore for Workerless Clusters
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #9212 open 2025-08-27 backup waits until timeout when the DataUpload pod is killed on Pending state
+      #6855 open 2023-09-22 Velero debug bundle entry paths are messed up when the debug command is run on Windows
+      #487 open 2018-05-14 [Epic] support running multiple velero backups/restores concurrently
+      #10327 open 2026-08-18 Detect data path pod deletion via informer DeleteFunc
+      #7560 open 2024-03-25 `velero debug` doesn't support `--insecure-skip-tls-verify`
+      #5042 open 2022-06-22 add the limitation of velero in documentation
+      #8956 open 2025-05-22 fs-backup deprecate support for emptyDir volumes
+      #9260 open 2025-09-12 Add CRD version compatibility validation during server startup
+      #8583 open 2025-01-06 Ability to identify conflicts in backed-up resources
+      #4509 open 2022-01-10 Snapshot Groups of Pod volumes before backing up using Restic 
+      #7478 open 2024-02-28 Adding topologySpreadConstraint to velero default helm values
+      #6405 open 2023-06-17 Backup API Type Fail
+  corrupt        47 hit(s) (all listed)
+      #10515 open 2026-09-10 Kopia repo creation fails for every namespace but the first one created against a shared BackupStorageLocation ("cipher: message authentication failed")
+      #10090 open 2026-07-28 fix(kopia): fix block restore write loop slice bounds
+      #10089 open 2026-07-28 Bug: Kopia block restore write loop uses wrong slice bounds, causing panic on partial writes
+      #8563 open 2024-12-30 fix nilpointer panic when decode addlitional item failed in restore
+      #7481 open 2024-02-29 Add design for only restore volume data.
+      #3875 open 2021-06-16 Support for data integrity and data trust of the backups
+      #10241 closed 2026-08-12 scheduleReconciler corrupts server-wide skipImmediately default via pointer aliasing
+      #9187 open 2025-08-15 Implement Backup Integrity Verification for Data Corruption Detection
+      #10040 open 2026-07-20 NFS: restore silently loses file ownership — server rejects chown (root_squash / idmap EPERM) and hardcoded IgnorePermissionErrors swallows the error
+      #10459 closed 2026-09-01 Set OwnerReference on repository maintenance Jobs
+      #9951 closed 2026-06-26 v1.14.2 AWS plugin corrupts backups on S3-compatible backends via SDK checksum defaults
+      #8099 open 2024-08-09 Allow non-expiry of backups
+      #9543 open 2026-02-12 Verifying Validity of Snapshots/Repositories
+      #8654 open 2025-01-27 Velero backups failing due to blob missing from the repository
+      #10398 closed 2026-08-25 DELETE operation should not require available storage space - circular dependency when object store is full
+      #4248 closed 2021-10-18 Restic-wait failed to completed because of permission denied
+      #9868 closed 2026-06-01 Reject restores that reference a backup in the Deleting phase
+      #10044 closed 2026-07-20 Azure Files SMB / Blobfuse / gcsfuse: restore silently loses file ownership — chown/chmod fake success, no error exists to surface
+      #9790 closed 2026-05-14 Restore validation should reject restores from backups in Deleting phase
+      #9395 closed 2025-11-07 Fix PrepareRepo to recreate missing local config for remote repos
+  corruption     26 hit(s) (all listed)
+      #9187 open 2025-08-15 Implement Backup Integrity Verification for Data Corruption Detection
+      #10515 open 2026-09-10 Kopia repo creation fails for every namespace but the first one created against a shared BackupStorageLocation ("cipher: message authentication failed")
+      #9543 open 2026-02-12 Verifying Validity of Snapshots/Repositories
+      #8466 open 2024-11-27 Velero doesnt do well with Minio bucket versioning 
+      #5168 open 2022-08-01 Enhance Velero PV restore process via Restic
+      #7241 open 2023-12-21 BackupRepository state not updated when repository fails at non-maintaining stage
+      #10040 open 2026-07-20 NFS: restore silently loses file ownership — server rejects chown (root_squash / idmap EPERM) and hardcoded IgnorePermissionErrors swallows the error
+      #10260 merged 2026-08-13 Add cap for backup data extraction
+      #9318 closed 2025-10-10 Behavior of skip volume policy is strange/problematic
+      #10022 closed 2026-07-16 Flaky unit test:  TestBlockUploaderBackup/success_full_backup
+      #9690 closed 2026-04-08 [release-1.17] Add CI check for invalid characters in file paths
+      #9716 merged 2026-04-13 Add CBT interfaces for block data mover
+      #9528 merged 2026-02-06 Block data mover design
+      #9344 closed 2025-10-17 VolumeGroupSnaphosts don't respect VolumePolicies
+      #9314 closed 2025-10-07 Velero backup deletion is not deleting objects in kopia repository, leading to increase in our s3 bucket size.
+      #9070 closed 2025-07-07 Exclude a selected PVC from restore
+      #8620 closed 2025-01-15 Cannot get velero version from velero client when the network is slower than 250 milliseconds
+      #8991 merged 2025-05-30 Concurrent backup design doc
+      #8780 closed 2025-03-12 Prometheus monitoring backups are in PartiallyFailed state
+      #7613 closed 2024-04-02 Velero with kopia restore failure
+  truncated      58 hit(s) (all listed)
+      #9770 open 2026-05-01 design: Kubernetes name length enforcement for Velero-created objects (#8815)
+      #10310 open 2026-08-17 Include the errors/warnings from node-agent and data-mover pods in the velero backup/restore get/describe commands
+      #10258 merged 2026-08-13 Cap the unzip of metadata download to avoid OOM kill
+      #10138 merged 2026-08-03 fix: return errors correctly in block restore validation and BatchForget
+      #9330 closed 2025-10-13 Bump github/codeql-action from 3 to 4
+      #9920 merged 2026-06-15 Support copying namespace-scoped secrets/configmaps for backup and restore PVC provisioning
+      #10542 merged 2026-09-18 Bump go.opentelemetry.io/otel/sdk from 1.44.0 to 1.45.0
+      #10462 merged 2026-09-02 Bump google.golang.org/grpc from 1.82.1 to 1.83.1
+      #10202 merged 2026-08-08 Bump actions/setup-go from 6 to 7
+      #10135 merged 2026-08-01 Bump github/codeql-action from 3 to 4.37.3
+      #10239 merged 2026-08-11 Bump the github-actions group with 4 updates
+      #10133 merged 2026-08-01 Bump actions/checkout from 6 to 7
+      #10074 merged 2026-07-25 Bump codecov/codecov-action from 6 to 7
+      #10075 merged 2026-07-25 Bump actions/labeler from 5 to 7
+      #10589 merged 2026-09-26 Bump the github-actions group with 3 updates
+      #10134 merged 2026-08-01 Bump docker/setup-buildx-action from 3 to 4
+      #10201 merged 2026-08-08 Bump kentaro-m/auto-assign-action from 2.0.0 to 2.0.2
+      #9992 merged 2026-07-11 Bump docker/setup-qemu-action from 3 to 4
+      #9230 closed 2025-09-08 Bump actions/labeler from 5 to 6
+      #9789 closed 2026-05-14 Investigate current Velero base images and Trivy findings
+  truncate       68 hit(s) (all listed)
+      #9770 open 2026-05-01 design: Kubernetes name length enforcement for Velero-created objects (#8815)
+      #10089 open 2026-07-28 Bug: Kopia block restore write loop uses wrong slice bounds, causing panic on partial writes
+      #10310 open 2026-08-17 Include the errors/warnings from node-agent and data-mover pods in the velero backup/restore get/describe commands
+      #10258 merged 2026-08-13 Cap the unzip of metadata download to avoid OOM kill
+      #10138 merged 2026-08-03 fix: return errors correctly in block restore validation and BatchForget
+      #10260 merged 2026-08-13 Add cap for backup data extraction
+      #10612 merged 2026-09-30 fix: defer VGS cleanup until backup finalization
+      #9772 merged 2026-05-01 Design: namespace selection by label in resource policy
+      #9330 closed 2025-10-13 Bump github/codeql-action from 3 to 4
+      #10542 merged 2026-09-18 Bump go.opentelemetry.io/otel/sdk from 1.44.0 to 1.45.0
+      #9920 merged 2026-06-15 Support copying namespace-scoped secrets/configmaps for backup and restore PVC provisioning
+      #10462 merged 2026-09-02 Bump google.golang.org/grpc from 1.82.1 to 1.83.1
+      #10202 merged 2026-08-08 Bump actions/setup-go from 6 to 7
+      #10135 merged 2026-08-01 Bump github/codeql-action from 3 to 4.37.3
+      #10239 merged 2026-08-11 Bump the github-actions group with 4 updates
+      #10133 merged 2026-08-01 Bump actions/checkout from 6 to 7
+      #10074 merged 2026-07-25 Bump codecov/codecov-action from 6 to 7
+      #10075 merged 2026-07-25 Bump actions/labeler from 5 to 7
+      #10589 merged 2026-09-26 Bump the github-actions group with 3 updates
+      #10134 merged 2026-08-01 Bump docker/setup-buildx-action from 3 to 4
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4183 open 2021-09-22 Error thrown for empty files during backup
+      #10522 open 2026-09-10 Fix schedule pause/delete swallowing lookup errors
+      #6699 open 2023-08-24 restic: do not log exit code when snapshot is empty
+      #10593 open 2026-09-28 e2e: verify CSI snapshots on kind
+      #10432 open 2026-08-28 Show default volume snapshot location in snapshot-location get output
+      #10137 open 2026-08-02 Issue #9480: Route orphaned backup deletion through DeleteBackupRequest
+      #9511 open 2026-01-30 Fix ListBackups to skip directories without metadata file
+      #10584 open 2026-09-25 velero-plugin-for-aws v1.14.3 still sends x-amz-tagging on PutObject with Backblaze B2, despite #309's guard
+      #10272 open 2026-08-14 fix: trim spaces in feature flag lists
+      #10212 open 2026-08-09 Fix Zip Slip path check accepting a sibling directory in archive extraction
+      #8654 open 2025-01-27 Velero backups failing due to blob missing from the repository
+      #10588 open 2026-09-26 e2e: make the StorageClass names configurable
+      #10144 merged 2026-08-03 Empty sa namespace when secret is empty for getChangedBlocks
+      #10382 closed 2026-08-24 1.17: #9795: Skip DeleteSnapshot when ProviderSnapshotID is empty
+      #10381 merged 2026-08-24 1.18: #9795: Skip DeleteSnapshot when ProviderSnapshotID is empty
+      #10118 open 2026-07-30 Enhancement: Add missing volumeSnapshotLabel selector to CSI pvcRestoreItemAction
+      #10386 closed 2026-08-24 [Backport release-1.16] Skip DeleteSnapshot when ProviderSnapshotID is empty
+      #9804 open 2026-05-20 [ceph] velero-plugin-for-aws: checksumAlgorithm: "" does not suppress AWS SDK v2 trailing checksum - PutObject 400 InvalidArgument on S3-compatible storage
+      #8524 open 2024-12-18 Intermittent Backup Failures in Velero with "failed to refresh cached credentials" Error
+      #9750 open 2026-04-24 fix: improve error handling for discarded hooks in WaitExecHookHandler
+  atomic         38 hit(s) (all listed)
+      #9798 open 2026-05-18 feat: enable modernize linter in golangci-lint and fix all violations
+      #10544 open 2026-09-19 CRD schema check: self-resolution for `strict` mode failures (`/readyz` instead of crash-loop)
+      #9447 open 2025-12-10 [AI-generated]Fix race condition: check concurrent limit before GetExposed
+      #6017 open 2023-03-22 Velero object restore contest problem
+      #10429 closed 2026-08-28 node-agent: data race in VgdpCounter.IsConstrained can latch a stale queue length and wedge VGDP admission
+      #10488 closed 2026-09-07 Add concurrent backend store contract test for kopialib
+      #10310 open 2026-08-17 Include the errors/warnings from node-agent and data-mover pods in the velero backup/restore get/describe commands
+      #10431 closed 2026-08-28 guard the VGDP counter cache states against concurrent access from four controllers
+      #8956 open 2025-05-22 fs-backup deprecate support for emptyDir volumes
+      #9036 open 2025-06-23 In progress backup/restore may not in Failed status when Velero server restarts
+      #10521 merged 2026-09-10 Fix backup queue permanently stuck when a dequeued backup completes during the patch
+      #10322 merged 2026-08-18 Issue 10321: fill the error to the corresponding CR when data mover pod is evicted
+      #10255 merged 2026-08-13 Use thread safe map for cancel recorder
+      #10371 merged 2026-08-23 prevent panic when the restore hook init container command annotation is empty
+      #10370 merged 2026-08-23 fix log format string mismatches that produce wrong or mangled output
+      #10191 closed 2026-08-08 Typos in Log Messages and Status Strings
+      #10369 closed 2026-08-23 Logging: six format-string defects produce wrong or mangled log output
+      #9646 merged 2026-03-24 Fix backup-finalizer: do not set backup phase to Completed before PutBackupMetadata succeeds
+      #9344 closed 2025-10-17 VolumeGroupSnaphosts don't respect VolumePolicies
+      #9070 closed 2025-07-07 Exclude a selected PVC from restore
+  atomically     6 hit(s) (all listed)
+      #9447 open 2025-12-10 [AI-generated]Fix race condition: check concurrent limit before GetExposed
+      #8956 open 2025-05-22 fs-backup deprecate support for emptyDir volumes
+      #10191 closed 2026-08-08 Typos in Log Messages and Status Strings
+      #10429 closed 2026-08-28 node-agent: data race in VgdpCounter.IsConstrained can latch a stale queue length and wedge VGDP admission
+      #1687 closed 2019-07-23 Allow restoration of the `status` metadata field
+      #5971 merged 2023-03-08 Follow-on fixes for BIAv2 controller work
+  interrupted    16 hit(s) (all listed)
+      #10443 open 2026-08-29 fix(cli): fix velero uninstall deployment deletion and add test coverage
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #10179 open 2026-08-06 fix: periodically enqueue DataUpload tasks in Prepared phase
+      #9480 open 2026-01-12 GCP snapshots not deleted after backup TTL expires; no controller:backup-deletion logs emitted
+      #6310 open 2023-05-24 Backup priority
+      #9517 closed 2026-02-03 [Feature request] Concurrent item deletion action
+      #8832 closed 2025-03-31 Issue while restoring entire EKS cluster.
+      #7721 merged 2024-04-22 Bump actions/stale from 6.0.1 to 9.0.0
+      #7091 merged 2023-11-13 Don't fail backup/restore on velero server restart in PhaseWaitingFor…
+      #2800 closed 2020-08-06 Backup process should have a time out so that long running backups don't block the backup pipeline
+      #3351 closed 2021-01-25 Restic volume restore fails with ‘interrupted system call’
+      #826 merged 2018-09-07 Wait for namespace to terminate before restoring
+      #888 merged 2018-09-28 support multiple backup locations for restic
+      #3095 merged 2020-11-18 Preserve nodePort support with --preserve-nodeports flag
+      #1118 merged 2018-12-06 Fix minio setup job command
+      #2738 closed 2020-07-21 No backups being made because one is infinitely InProgress?
+  interrupt      34 hit(s) (all listed)
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #9480 open 2026-01-12 GCP snapshots not deleted after backup TTL expires; no controller:backup-deletion logs emitted
+      #10179 open 2026-08-06 fix: periodically enqueue DataUpload tasks in Prepared phase
+      #6310 open 2023-05-24 Backup priority
+      #7481 open 2024-02-29 Add design for only restore volume data.
+      #487 open 2018-05-14 [Epic] support running multiple velero backups/restores concurrently
+      #7057 open 2023-11-05 Fail get DataUploadResult for restore - multiple DataUpload result cms found 
+      #9514 closed 2026-02-02 Restore stuck at Scale - with postgres-WAL kopia restore in NEW state till timeout
+      #9517 closed 2026-02-03 [Feature request] Concurrent item deletion action
+      #8832 closed 2025-03-31 Issue while restoring entire EKS cluster.
+      #7767 closed 2024-05-02 Ability to add additional files from secret(s) to Velero pod without restart
+      #7715 merged 2024-04-22 Fix condition matching in resource modifier when there are multiple rules
+      #7675 closed 2024-04-15 [bug] CSI plugin Poll timeout error check
+      #7721 merged 2024-04-22 Bump actions/stale from 6.0.1 to 9.0.0
+      #7089 closed 2023-11-13 Dead loop occurred sometime when running performance E2E test
+      #7091 merged 2023-11-13 Don't fail backup/restore on velero server restart in PhaseWaitingFor…
+      #5957 closed 2023-03-06 CSI VolumeSnapshot is not ready but Backup phase is marked as Completed
+      #4834 closed 2022-04-15 Velero with restic plugin shut down OpenShift cluster with API requests.
+      #2877 closed 2020-08-28 Backups and restores not adopted when the velero pod is restarted
+      #3241 merged 2021-01-13 Delete residual file caused by network interruption and so on. Fixes …
+  sigkill        2 hit(s) (all listed)
+      #10438 open 2026-08-28 Issue #10437: derive velero server's graceful shutdown timeout from terminationGracePeriodSeconds
+      #10437 open 2026-08-28 `velero server`'s shutdown grace period is hardcoded to 30s, ignoring `terminationGracePeriodSeconds`
+  sigint         4 hit(s) (all listed)
+      #4403 open 2021-11-27 velero timeout after 4 hours but restic is still copying data
+      #9720 merged 2026-04-13 Add dynamic resource autocompletion to Velero CLI
+      #483 merged 2018-05-10 shutdown gracefully on SIGINT/SIGTERM
+      #366 closed 2018-03-08 Clean up plugin processes on SIGINT when running locally
+  ctrl-c         50 hit(s) (all listed)
+      #10169 open 2026-08-05 DeleteBackupRequest stuck InProgress permanently when final status patch fails
+      #4493 open 2022-01-06 Can not set to default when creating or modifying snapshot location
+      #10153 closed 2026-08-04 `gcFailureBSLUnavailable` label is never applied when BSL is unavailable during garbage collection
+      #9991 closed 2026-07-11 Velero not backing up few CRD like AnalysisRun, AnalysisTemplate and Experiment
+      #7841 closed 2024-05-30 Restic handling ParallelFilesDownload and ParallelFilesUpload behavior are not consistent
+      #9973 closed 2026-07-08 Velero restore stuck in progress
+      #9564 merged 2026-02-26 Add e2e test case for PR 9255
+      #8600 closed 2025-01-12 Backup gets created but volumes are empty and the error is Could not connect to minio container!
+      #8439 closed 2024-11-21 velero backup logs or describe is not working though backup create is working fine
+      #7180 closed 2023-12-06 Restore failed because of patch labels returns not found
+      #7996 closed 2024-07-11 Backup Restore PartiallyFailed
+      #7445 merged 2024-02-20 Adjust the logic for the backup_last_status metric to stop incorrectly incrementing over time
+      #4951 closed 2022-05-31 backup for pod with persistenceVolume stored on NFS server fail with SSL key error
+      #3042 closed 2020-10-26 How up to modify the expire time of a backup
+      #6916 closed 2023-10-04 When executing velero backup delete, object data of ${bucket_name}/kopia/${namespace} cannot be deleted from s3 (minio).
+      #7166 closed 2023-11-30 Velero backup not working for Jenkins backend Ceph storage on-premises for Kubernetes PVC 
+      #7190 closed 2023-12-08 Got PartiallyFailed when restoring CRD and CR although all backed up resources were restored successfully
+      #7189 closed 2023-12-07 With DataMover restored PV is Empty
+      #6034 merged 2023-03-26 Make E2E test adopt vSphere CSI version update
+      #6347 closed 2023-06-02 Following the minikube example instructions lead to broken restore
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8453 open 2024-11-25 Upon velero start backups should be handled in creation order (First-In/First-Served)
+      #4769 merged 2022-03-23 Skip povdolumerestore creation when restore excludes pv/pvc
+      #9311 closed 2025-10-06 Search broken on docs site for current versions
+      #9460 closed 2025-12-29 Uploader needs to flush the written data during restore
+      #9148 merged 2025-08-05 Backup repo cache design
+      #5047 closed 2022-06-24 allow excluding all volumes of a pod from restic
+      #5129 merged 2022-07-18 comment typo initialise -> initialize
+      #4768 closed 2022-03-22 Add datamover design - Part 1 (Problem statement, Goals/Non-Goals, Usecases, workflows)
+      #2689 closed 2020-07-04 Http request is redirected to original NodePort after service is restored with a new NodePort
+      #6163 closed 2023-04-19 Update Velero Azure plugin to support AzureDNSZone storageaccount
+      #5774 merged 2023-01-17 Design to add support for Multiple VolumeSnapshotClasses in CSI Plugin
+      #4934 merged 2022-05-24 Add details about using multiple volume snapshot locations and restic
+      #4467 closed 2021-12-21 Upload Progress Monitoring and Item Snapshotter basic support
+      #4778 merged 2022-03-27 Add parameter for e2e test to support modify kibishii install path.
+      #4854 merged 2022-04-23 Modify CSI VolumeSnapshot metric related code.
+      #5064 merged 2022-06-30 Exclude "csinodes.storage.k8s.io" and "volumeattachments.storage.k8s.…
+      #5171 closed 2022-08-01 Avoid unnecessary restic unlocks
+      #4889 merged 2022-05-05 Make waiting VolumeSnapshot to ready process parallel.
+      #5150 merged 2022-07-26 [cherry-pick] Delay CA file deletion in PVB controller
+      #4745 merged 2022-03-16 clarify date/time
+  outage         14 hit(s) (all listed)
+      #9236 open 2025-09-09 Fix BackupRepositories becoming stale when BSL config changes while Velero is not running
+      #10554 merged 2026-09-21 Propagate caller context in repository manager Forget/BatchForget
+      #10174 merged 2026-08-06 add curl --fail flag to kubectl download in e2e kind workflow
+      #10172 closed 2026-08-06 curl -LO in E2E Kind workflow silently saves error responses as kubectl on invalid/failed downloads
+      #6982 open 2023-10-19 Using CMEK on GKE Velero does not seem to encrypt the restored cluster with correct key - same for other cloud provider
+      #474 open 2018-05-03 Add Generic Find/Replace Plugin for Restores
+      #7845 closed 2024-05-30 Retry backup/restore completion/finalizing status patching to unstuck inprogress backups/restores
+      #7863 closed 2024-06-05 Mark InProgress backup/restore as failed upon requeuing
+      #9259 closed 2025-09-12 Schedule Backup Queue Accumulation During Extended Blocking Scenarios
+      #8133 closed 2024-08-20 Fix #8132: managed fields failure during Restore
+      #4228 closed 2021-10-08 velero backup using a mix of restic and csi snapshots
+      #7207 closed 2023-12-13 Velero didn't retry on failed Restore CR status update, causing the CR to remain stuck in "InProgress"
+      #4758 closed 2022-03-22 velero v1.8 taking snapshot twice when CSI plugin is enabled.
+      #539 closed 2018-06-11 Ark + CRD + Myself caused an outage
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7083 open 2023-11-10 Unable to change disk type with velero-plugin-for-microsoft-azure
+      #3918 open 2021-07-02 velero azure restic often not restored azurefile disk without any error
+      #8277 open 2024-10-08 CSI Backup fails upon provisioner and csi driver mismatch (everest-csi)
+      #9488 open 2026-01-14 Support cache volume for repository maintenance jobs
+      #3672 open 2021-04-09 Log warning instead of error when GCP disk description does not contain JSON
+      #9727 open 2026-04-15 fix: fail backup early when CSI VolumeSnapshot error persists in async poll
+      #9674 open 2026-04-06 [CSI][Async Backup] Progress() treats permanent VS errors as temporary, causing indefinite WaitingForPluginOperations
+      #8401 open 2024-11-12 Issue with Velero Restore : Azure disk PV Created with Old SKU Despite Updated Storage Class
+      #6982 open 2023-10-19 Using CMEK on GKE Velero does not seem to encrypt the restored cluster with correct key - same for other cloud provider
+      #4447 open 2021-12-13 Azure - Restoring to CSI storage class results in incomplete CSI PV
+      #8707 open 2025-02-20 Support multiple transmission protocols
+      #9402 open 2025-11-10 9377 ReUpload Backup Results and Volume Info post BIA Plugin
+      #5940 open 2023-03-02 velero is unable to prune PartiallyFailed backup from object storage
+      #3146 open 2019-12-06 GCP Create Snapshot Across Projects
+      #8468 open 2024-11-29 In OpenShift env (installed in azure), velero is not able to backup PVCs those were created using file.csi.azure.com provisioner while it works for PVCs those were created using disk.csi.azure.com provisioner
+      #9627 open 2026-03-18 Reduce binary size using -s -w ldflags
+      #9171 open 2025-08-11 Velero backup to Azure storage Error SubscriptionRequestsThrottled
+      #3151 open 2018-11-09 support azure file snapshot
+      #5246 open 2022-08-24 velero in AKS 1.22.11 - Pods not coming up after restoration(From Velero Backup)
+      #1476 open 2019-05-13 Support both snapshot and Restic backup for the same volume
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10089 open 2026-07-28 Bug: Kopia block restore write loop uses wrong slice bounds, causing panic on partial writes
+      #10090 open 2026-07-28 fix(kopia): fix block restore write loop slice bounds
+      #10602 open 2026-09-28 design: (RFC) Add unified Backup and Restore cancellation RFC
+      #7582 open 2024-03-28 Metric velero_backup_partial_failure_total bigger than velero_backup_attempt_total
+      #10621 open 2026-10-02 fix(controller): propagate context during backup request preparation
+      #10423 open 2026-08-27 [release-1.16] DM controller refactor for cancel (cherry-pick #8952)
+      #10372 open 2026-08-23 Show validation frequency in backup-location get output
+      #10173 open 2026-08-06 fix: use request-scoped ctx in backup storage location reconciler
+      #10432 open 2026-08-28 Show default volume snapshot location in snapshot-location get output
+      #10235 open 2026-08-11 Allow configuration of page buffer size in Item Collector (#10219)
+      #10531 open 2026-09-15 Fix deletion and maintenance stuck on expired storage credentials
+      #10583 merged 2026-09-24 Add Google Analytics 4 to the Velero website
+      #9948 open 2026-06-25 Security: CVE-2026-3805 (curl), CVE-2026-6357 (pip), CVE-2026-39883 (opentelemetry-go) in Velero container image
+      #10495 open 2026-09-07 Fix backup deletion to forget snapshots per repository type
+      #10354 open 2026-08-21 Re-process InProgress DeleteBackupRequests on retry
+      #9384 open 2025-11-04 Skip restore informer cache for resources without watch support
+      #9511 open 2026-01-30 Fix ListBackups to skip directories without metadata file
+      #448 open 2018-04-23 Restore dry run option
+      #10249 open 2026-08-12 Replace CSI snapshot handle polling with watch when available
+      #8884 open 2025-04-25 Design proposal for handling restoration of Kubernetes Jobs
+  incomplete     66 hit(s) (all listed)
+      #4447 open 2021-12-13 Azure - Restoring to CSI storage class results in incomplete CSI PV
+      #9189 open 2025-08-18 Support deleting running backups
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #9190 open 2025-08-18 Support deleting running restores
+      #9866 open 2026-05-29 Kopia Repository Folder Not Cleaned Up from MinIO After Backup Deletion and Full Maintenance
+      #9948 open 2026-06-25 Security: CVE-2026-3805 (curl), CVE-2026-6357 (pip), CVE-2026-39883 (opentelemetry-go) in Velero container image
+      #10491 open 2026-09-07 Fix podvolume restorer to not block on duplicate terminal PVR results
+      #5118 open 2022-07-14 Support filter the resource by name during the backup
+      #10363 merged 2026-08-22 stop routing credential selection on AZURE_USERNAME after username/password removal
+      #10347 merged 2026-08-20 1.18: Only sync finished backups from object storage
+      #10139 closed 2026-08-03 `Block uploader Restore and BatchForget silently swallow errors`
+      #7901 open 2024-06-17 Velero restore stuck during Kopia restoration
+      #9868 closed 2026-06-01 Reject restores that reference a backup in the Deleting phase
+      #9790 closed 2026-05-14 Restore validation should reject restores from backups in Deleting phase
+      #9644 closed 2026-03-24 backup-finalizer controller silently swallows PutBackupMetadata error, resulting in Completed backup on cluster but Finalizing state in object storage
+      #9433 closed 2025-11-27 CNPG database volume not restored
+      #9223 closed 2025-09-03 Design: namespace selection by label selector
+      #9789 closed 2026-05-14 Investigate current Velero base images and Trivy findings
+      #9284 closed 2025-09-18 Design: Backup Cancellation
+      #9344 closed 2025-10-17 VolumeGroupSnaphosts don't respect VolumePolicies
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7919 open 2024-06-24 Failed dataupload because of status "InProgress" should recover / retry
+      #10179 open 2026-08-06 fix: periodically enqueue DataUpload tasks in Prepared phase
+      #6710 open 2023-08-28 velero backup/restore can resume from break point when velero pod is recovered
+      #10354 open 2026-08-21 Re-process InProgress DeleteBackupRequests on retry
+      #8654 open 2025-01-27 Velero backups failing due to blob missing from the repository
+      #10178 open 2026-08-06 Bug: DataUpload tasks can get permanently stuck in the `Prepared` phase
+      #8287 open 2024-10-11 Add disabled PV re-provisioning by StorageClasses option on restore
+      #10148 open 2026-08-03 Guard nil VolumeSnapshotContent.Status when building volume info
+      #9236 open 2025-09-09 Fix BackupRepositories becoming stale when BSL config changes while Velero is not running
+      #10327 open 2026-08-18 Detect data path pod deletion via informer DeleteFunc
+      #10188 open 2026-08-07 Support S3-style bucket/object versioning awareness for backup storage locations (NetApp and other S3-compatible providers)
+      #9656 open 2026-03-27 Kopia maintenance fails with 'ciphertext too short: 0' after S3 quota-related write failures leave 0-byte blobs
+      #5168 open 2022-08-01 Enhance Velero PV restore process via Restic
+      #7478 open 2024-02-28 Adding topologySpreadConstraint to velero default helm values
+      #10169 open 2026-08-05 DeleteBackupRequest stuck InProgress permanently when final status patch fails
+      #8563 open 2024-12-30 fix nilpointer panic when decode addlitional item failed in restore
+      #7858 open 2024-06-04 Backup en AWS Outposts 
+      #9718 open 2026-04-13 node-agent: PVB gets stuck indefinitely after the data path pod completes successfully
+      #10530 merged 2026-09-15 Identify the backed-up volume by CSI volume handle in the in-place restore pre-flight check
+      #10512 merged 2026-09-10 Add in-place restore pre-flight check: PVC must be large enough for the backed-up data
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10531 open 2026-09-15 Fix deletion and maintenance stuck on expired storage credentials
+      #8231 open 2024-09-19 Micro-service datamover backup recovery issue
+      #7007 open 2023-10-24 Disaster Recovery in AWS EKS using velero
+      #10556 open 2026-09-22 [Design]Owner reference and dependency relink design
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #10540 open 2026-09-17 CSI Snapshot Data Movement restores NFS volumes using temporary Velero PVC identities, preventing preservation of original NFS paths
+      #10169 open 2026-08-05 DeleteBackupRequest stuck InProgress permanently when final status patch fails
+      #10235 open 2026-08-11 Allow configuration of page buffer size in Item Collector (#10219)
+      #8287 open 2024-10-11 Add disabled PV re-provisioning by StorageClasses option on restore
+      #7880 open 2024-06-13 Velero support s3/gcs usage metrics?
+      #9662 open 2026-04-01 Remove Restic path for Pod Volume Restore
+      #7475 open 2024-02-28 ALB issue after restoring into new eks cluster
+      #1929 open 2019-10-02 Documentation: Dealing with K8S CA certificates
+      #8279 open 2024-10-08 backupRepository can become stale if velero deployment is not running to observe bsl update/create
+      #7804 open 2024-05-17 Enhancing Velero Schedule with RetainDays and RetainCount for Backup Retention Management.
+      #474 open 2018-05-03 Add Generic Find/Replace Plugin for Restores
+      #10084 open 2026-07-27 Allow RestoreSpec.ResourceModifier to reference a ResourceModifier ConfigMap in an arbitrary namespace.
+      #9187 open 2025-08-15 Implement Backup Integrity Verification for Data Corruption Detection
+      #10010 open 2026-07-15 Design for CRD schema validation at server startup
+      #5168 open 2022-08-01 Enhance Velero PV restore process via Restic
+  rollback       46 hit(s) (all listed)
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #6025 open 2023-03-23 Support restoring data to existing volumes with block level backup
+      #9190 open 2025-08-18 Support deleting running restores
+      #10521 merged 2026-09-10 Fix backup queue permanently stuck when a dequeued backup completes during the patch
+      #4421 open 2021-12-02 velero does not recreate restic|kopia repository from manifest if its directories are deleted on s3
+      #10273 merged 2026-08-14 Fix PVR regression
+      #4785 merged 2022-03-28 Add ability to restore status on selected resources
+      #9347 closed 2025-10-20 Velero 1.17.0 / GCP 1.13.0 googleapi: Error 404: No such object
+      #8897 closed 2025-04-30 Backuprepository object miss values for new namespaces in v1.16
+      #7192 closed 2023-12-08 restore-wait (restic) data not found
+      #8648 closed 2025-01-24 E2E test in v1.32.1 KinD environment action failed
+      #5360 closed 2022-09-19 SOLVED: config has invalid keys [s3Url s3ForcePathStyle]
+      #6231 closed 2023-05-05 Snapshot doesn't take into account the destination subscription if it's different from the cluster one
+      #7124 closed 2023-11-19 permission issue -> compute.disks.get'
+      #6685 closed 2023-08-21 Editing a schedule resource immediately triggers a new backup
+      #6909 closed 2023-10-03 BackupRepository - error to init backup repo - found existing data in storage location
+      #6914 merged 2023-10-03 Fix issue 6913: Velero Built-in Datamover: Backup stucks in phase WaitingForPluginOperations when Node Agent pod gets restarted
+      #5903 closed 2023-02-22 Restic backup/restore get killed on a 20GB volume
+      #7048 merged 2023-11-02 Update E2E README file to latest
+      #6809 closed 2023-09-12 velero_backup_last_status indicates failed backup, while in reality the backup was successful
+  resume         55 hit(s) (all listed)
+      #10437 open 2026-08-28 `velero server`'s shutdown grace period is hardcoded to 30s, ignoring `terminationGracePeriodSeconds`
+      #6710 open 2023-08-28 velero backup/restore can resume from break point when velero pod is recovered
+      #8814 open 2025-03-25 support datamover method on k8s cluster using spot instances
+      #9656 open 2026-03-27 Kopia maintenance fails with 'ciphertext too short: 0' after S3 quota-related write failures leave 0-byte blobs
+      #9449 open 2025-12-11 [AI-generated]Include Prepared phase tasks in periodic enqueue to prevent stalling
+      #10179 open 2026-08-06 fix: periodically enqueue DataUpload tasks in Prepared phase
+      #1444 open 2019-05-03 Restic backup stuck in progress if node becomes unavailable during backup
+      #6466 open 2023-07-05 Design for pre-post backup-restore action types
+      #10310 open 2026-08-17 Include the errors/warnings from node-agent and data-mover pods in the velero backup/restore get/describe commands
+      #7199 open 2023-12-11 Support detect k8s resource dependency during backup
+      #9190 open 2025-08-18 Support deleting running restores
+      #10303 closed 2026-08-16 Losing the data mover pod leaves the DataUpload InProgress until the 4h ItemOperationTimeout — pod informer has no DeleteFunc
+      #10519 closed 2026-09-10 Backup queue stops dequeuing permanently when a dequeued backup fails validation immediately
+      #9839 closed 2026-05-22 CBT availability detection per volume
+      #4967 closed 2022-06-07 Restic: unable to restore NFS Persistent Volumes
+      #9528 merged 2026-02-06 Block data mover design
+      #9433 closed 2025-11-27 CNPG database volume not restored
+      #9030 merged 2025-06-19 VGDP resume PVB/PVR
+      #9132 merged 2025-07-31 feat: add apply flag to install command
+      #9259 closed 2025-09-12 Schedule Backup Queue Accumulation During Extended Blocking Scenarios
+  half-written   4 hit(s) (all listed)
+      #10503 open 2026-09-08 Per-item backup outcomes for observability
+      #10431 closed 2026-08-28 guard the VGDP counter cache states against concurrent access from four controllers
+      #10289 closed 2026-08-15 fall back to VolumeSnapshotRef lookup when cleaning up an unbound VolumeSnapshotContent
+      #10091 merged 2026-07-28 Refactor block uploader thread module
+  wipe           21 hit(s) (all listed)
+      #9480 open 2026-01-12 GCP snapshots not deleted after backup TTL expires; no controller:backup-deletion logs emitted
+      #8287 open 2024-10-11 Add disabled PV re-provisioning by StorageClasses option on restore
+      #10340 closed 2026-08-19 Bug: EphemeralContainers are missing from ServiceAccount token filtering in PodAction
+      #10000 merged 2026-07-14 Fix stale backupLastSuccessfulTimestamp metric after schedule deletion
+      #8837 closed 2025-03-31 Velero backups stuck in "Deleting" after their TTL expires
+      #7839 closed 2024-05-30 Backup finalizer hangs with "gzip: invalid header" error
+      #6801 closed 2023-09-11 resource-modifier-configmap not applied
+      #4959 closed 2022-06-01 PVC restore in EKS does not work with IRSA
+      #4120 closed 2021-09-08 Stateful app migration is "successful" but data is not migrated on the pod volumes
+      #96 merged 2017-09-14 Make config change detection more robust
+      #463 merged 2018-04-25 Don't restore completed pods or jobs
+      #1768 merged 2019-08-16 Multiarch image support
+      #1754 closed 2019-08-12 Cleanup .velero directory when init-container finishes
+      #2931 merged 2020-09-11 Spruce up release instructions and release scripts
+      #72 closed 2017-09-07 Exclude cluster-managed endpoints from restores
+      #365 closed 2018-03-08 Taking backup fails with ark
+      #1151 closed 2019-01-09 Improve handling of PersistentVolumes with Retain reclaim policy
+      #1610 closed 2019-06-27 Velero backup full cluster doesnt appear to backup/restore etcd, and state of cluster after restore isn't same as cluster before backup
+      #1272 closed 2019-03-11 Ability to preserve Status subresource on restored resources
+      #1981 closed 2019-10-18 Restic volume not restored when using OpenShift (DeploymentConfig + ReplicationController)
+  wipes          2 hit(s) (all listed)
+      #463 merged 2018-04-25 Don't restore completed pods or jobs
+      #72 closed 2017-09-07 Exclude cluster-managed endpoints from restores
+  erase          8 hit(s) (all listed)
+      #9162 open 2025-08-06 Kubernetes VolumeSnapshotContent and VolumeSnapShot Deleted After Velero Backup Creating DELL CSI PowerScale OneFS Snapshots
+      #10309 merged 2026-08-16 Report a measured zero incremental instead of erasing it
+      #10297 closed 2026-08-16 A measured zero incremental is indistinguishable from never-measured — omitempty erases it on the API status fields
+      #9833 closed 2026-05-21 Backup/restore describe for block data mover
+      #8135 closed 2024-08-21 Data mover: when a data move fails, the created disk (and snapshot) are not cleaned
+      #6049 closed 2023-03-29 Not found: /restores/www/.velero/470cd690-bcae-45ed-a15f-58d63dbe656f
+      #5315 merged 2022-09-08 A little note about TTL expiration
+      #5141 closed 2022-07-21 volume already bound to a different claim after a restore
+  erasing        3 hit(s) (all listed)
+      #10309 merged 2026-08-16 Report a measured zero incremental instead of erasing it
+      #9162 open 2025-08-06 Kubernetes VolumeSnapshotContent and VolumeSnapShot Deleted After Velero Backup Creating DELL CSI PowerScale OneFS Snapshots
+      #10297 closed 2026-08-16 A measured zero incremental is indistinguishable from never-measured — omitempty erases it on the API status fields
+  erased         6 hit(s) (all listed)
+      #9162 open 2025-08-06 Kubernetes VolumeSnapshotContent and VolumeSnapShot Deleted After Velero Backup Creating DELL CSI PowerScale OneFS Snapshots
+      #10309 merged 2026-08-16 Report a measured zero incremental instead of erasing it
+      #9833 closed 2026-05-21 Backup/restore describe for block data mover
+      #6049 closed 2023-03-29 Not found: /restores/www/.velero/470cd690-bcae-45ed-a15f-58d63dbe656f
+      #5315 merged 2022-09-08 A little note about TTL expiration
+      #5141 closed 2022-07-21 volume already bound to a different claim after a restore
+  destroy        40 hit(s) (all listed)
+      #10368 open 2026-08-22 test: implement missing e2e test case for additional BSL deletion
+      #10041 open 2026-07-20 [e2e][repro] NFSOwnership test: fs-backup restore silently loses file ownership on root-squashing NFS (#10040)
+      #7421 open 2024-02-13 Aws Pod Identity provider not working 
+      #10297 closed 2026-08-16 A measured zero incremental is indistinguishable from never-measured — omitempty erases it on the API status fields
+      #10179 open 2026-08-06 fix: periodically enqueue DataUpload tasks in Prepared phase
+      #6732 open 2023-08-31 Restoring from AWS S3 in a different region is not working(File System Backup)
+      #10412 closed 2026-08-26 record a warning on the DataDownload when RebindVolume fails on completion
+      #10612 merged 2026-09-30 fix: defer VGS cleanup until backup finalization
+      #9567 merged 2026-02-27 Add e2e test case for issue 7725
+      #9426 closed 2025-11-24 Velero 1.17 Backup Partially Failed: PVB Daily Backup Could Not Connect to Repository (Not Initialized)
+      #9564 merged 2026-02-26 Add e2e test case for PR 9255
+      #9359 closed 2025-10-22 1.17.0 restore status always block at Finalizing when container has multiple exec hooks
+      #9148 merged 2025-08-05 Backup repo cache design
+      #8981 closed 2025-05-27 [BUG] Data mover pods are not labeled and therefore are incorrectly subject to backup
+      #2328 closed 2020-03-06 Velero Snapshots Stored in Wrong Resource Group for Azure AKS  (MC_*)
+      #8298 closed 2024-10-14 E2E test cases labelled with PVBackup don't clean the created namespace.
+      #8036 closed 2024-07-22 issue with aws terraform and velero module help me please 
+      #7883 closed 2024-06-13 Support stopping the failed pipeline and keep the test bed
+      #8092 closed 2024-08-07 Error with --snapshot-move-data Flag in Velero with Rook-Ceph Storage backup time
+      #8019 closed 2024-07-16 Restoring a file system backup to a different cluster failed due to Kopia snapshot not found
+  destroys       5 hit(s) (all listed)
+      #10041 open 2026-07-20 [e2e][repro] NFSOwnership test: fs-backup restore silently loses file ownership on root-squashing NFS (#10040)
+      #10297 closed 2026-08-16 A measured zero incremental is indistinguishable from never-measured — omitempty erases it on the API status fields
+      #10412 closed 2026-08-26 record a warning on the DataDownload when RebindVolume fails on completion
+      #9426 closed 2025-11-24 Velero 1.17 Backup Partially Failed: PVB Daily Backup Could Not Connect to Repository (Not Initialized)
+      #450 closed 2018-04-23 Backup Cluster Failed with persistentvolumeclaim not found error in server pod log
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8686 open 2025-02-14 Avoid overwriting during backup to support object lock enabled buckets
+      #4829 open 2022-04-13 To overwrite the auto-generated name of the backup, created from schedule
+      #9760 open 2026-04-27 Allow Velero kubernetes objects to be backed up with If-None-Match bucket policies enabled.
+      #10114 open 2026-07-30 plugin-for-aws improperly includes port number of URI as 'host' attribute when creating presigned URLs - triggers SignatureDoesNotMatch
+      #7987 open 2024-07-08 Maintenance jobs cannot be deployed because of the hard-coded deployment name.
+      #1948 open 2019-10-07 RFE: show diff when object already exists in cluster/is different from backed-up version
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #10364 open 2026-08-22 [Bug] deleteOrphanedBackups deletes cross-namespace backups due to missing Namespace filter in ListOptions
+      #9903 merged 2026-06-10 Fix restore finalization overwriting dynamically provisioned PV labels
+      #474 open 2018-05-03 Add Generic Find/Replace Plugin for Restores
+      #10301 closed 2026-08-16 Dead code in repository maintenance: GenOptionMaintainMode/Full/Quick and overwrite*MaintainInterval are unreachable
+      #6586 open 2023-08-02 Velero restore workflow may cause problem for object already existing case
+      #5506 open 2022-10-27 Velero not re-creating volume using storage class with Retain policy 
+      #4876 open 2022-04-29 Velero backup should capture all cluster scoped CRDs associated with an application running in a namespace
+      #9377 open 2025-10-29 BackupItemAction plugin timeouts are not reported in backup results file or error count
+      #8867 open 2025-04-15 Support patching nested fields inside ConfigMap YAML/JSON string values using resourceModifierRules
+      #10188 open 2026-08-07 Support S3-style bucket/object versioning awareness for backup storage locations (NetApp and other S3-compatible providers)
+      #10040 open 2026-07-20 NFS: restore silently loses file ownership — server rejects chown (root_squash / idmap EPERM) and hardcoded IgnorePermissionErrors swallows the error
+      #8884 open 2025-04-25 Design proposal for handling restoration of Kubernetes Jobs
+      #9680 open 2026-04-08 Bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.48.0 to 1.97.3
+  clobber        5 hit(s) (all listed)
+      #10588 open 2026-09-26 e2e: make the StorageClass names configurable
+      #10431 closed 2026-08-28 guard the VGDP counter cache states against concurrent access from four controllers
+      #10429 closed 2026-08-28 node-agent: data race in VgdpCounter.IsConstrained can latch a stale queue length and wedge VGDP admission
+      #7225 merged 2023-12-18 Bump golang.org/x/crypto from 0.14.0 to 0.17.0
+      #6350 closed 2023-06-03 Issue with controller manager when deploying Velero on a fresh 1.26/1.27 EKS cluster
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3586 open 2021-03-13 PodVolumeRestore seemingly making no progress, blank status
+      #10096 open 2026-07-28 feat(e2e) :- add E2E test for BSL ReadOnly mode validation
+      #10114 open 2026-07-30 plugin-for-aws improperly includes port number of URI as 'host' attribute when creating presigned URLs - triggers SignatureDoesNotMatch
+      #10097 open 2026-07-28 feat(e2e) :- add E2E test for restore hook failure policies
+      #10595 open 2026-09-28 Improve schedule validation errors with actionable cron guidance
+      #10495 open 2026-09-07 Fix backup deletion to forget snapshots per repository type
+      #10137 open 2026-08-02 Issue #9480: Route orphaned backup deletion through DeleteBackupRequest
+      #10368 open 2026-08-22 test: implement missing e2e test case for additional BSL deletion
+      #10491 open 2026-09-07 Fix podvolume restorer to not block on duplicate terminal PVR results
+      #10237 open 2026-08-11 Reject negative --ttl in backup create validation
+      #6023 open 2023-03-23 Enable more linters for Velero
+      #10267 open 2026-08-13 docs: add local Kind setup for CSI e2e
+      #10073 open 2026-07-25 Issue #10043: Verify owner/permissions of restored entries and warn on mismatches
+      #9770 open 2026-05-01 design: Kubernetes name length enforcement for Velero-created objects (#8815)
+      #9910 open 2026-06-11 feat: add CRD schema validation during server startup
+      #8884 open 2025-04-25 Design proposal for handling restoration of Kubernetes Jobs
+      #8793 open 2025-03-14 Make daemonset running error describe pod status
+      #10010 open 2026-07-15 Design for CRD schema validation at server startup
+      #10441 merged 2026-08-29 Add printer columns for BackupStorageLocation provider and access mode
+      #9578 open 2026-03-06 fix: use consistent 'Status' column name in backup storage location output
+  unreadable     7 hit(s) (all listed)
+      #4169 open 2021-09-21 velero Restic restore aws efs Error
+      #8271 merged 2024-10-06 fix(pkg/repository/maintenance): handle when there's no container status
+      #8136 closed 2024-08-21 Kopia release cadence and compatibility with Velero releases
+      #66 merged 2017-09-01 in GetAllBackups don't error if single backup is unreadable
+      #2314 merged 2020-03-03 Document using a public URL to access logs
+      #611 closed 2018-06-26 How to retrieve and restore restic backup
+      #2537 closed 2020-05-14 Cannot view logs
+  garbage        86 hit(s) (all listed)
+      #5683 open 2022-12-13 Garbage collect download/serverstatus/deletebackup requests 
+      #10182 open 2026-08-06 backup create accepts negative --ttl, producing an immediately-expired backup
+      #10556 open 2026-09-22 [Design]Owner reference and dependency relink design
+      #10237 open 2026-08-11 Reject negative --ttl in backup create validation
+      #10137 open 2026-08-02 Issue #9480: Route orphaned backup deletion through DeleteBackupRequest
+      #9044 open 2025-06-26 Stale PVC Metadata Remains in Azure Blob After Velero Backup Expiration and Kopia Garbage Collection
+      #6091 open 2023-04-06 Force deletion of backups after X time
+      #9856 open 2026-05-27 Kopia S3 connections leak in long-running Velero server process
+      #8099 open 2024-08-09 Allow non-expiry of backups
+      #10114 open 2026-07-30 plugin-for-aws improperly includes port number of URI as 'host' attribute when creating presigned URLs - triggers SignatureDoesNotMatch
+      #10154 merged 2026-08-04 Fix missing `gcFailureBSLUnavailable` label during garbage collection
+      #10169 open 2026-08-05 DeleteBackupRequest stuck InProgress permanently when final status patch fails
+      #6549 open 2023-07-26 OADP expired backup delete requests keeps repeating over and over 
+      #4547 open 2022-01-18 Deprecate Feature Flag EnableAPIGroupVersions
+      #9480 open 2026-01-12 GCP snapshots not deleted after backup TTL expires; no controller:backup-deletion logs emitted
+      #9866 open 2026-05-29 Kopia Repository Folder Not Cleaned Up from MinIO After Backup Deletion and Full Maintenance
+      #10153 closed 2026-08-04 `gcFailureBSLUnavailable` label is never applied when BSL is unavailable during garbage collection
+      #10188 open 2026-08-07 Support S3-style bucket/object versioning awareness for backup storage locations (NetApp and other S3-compatible providers)
+      #7582 open 2024-03-28 Metric velero_backup_partial_failure_total bigger than velero_backup_attempt_total
+      #10459 closed 2026-09-01 Set OwnerReference on repository maintenance Jobs
+  mangled        5 hit(s) (all listed)
+      #10370 merged 2026-08-23 fix log format string mismatches that produce wrong or mangled output
+      #10369 closed 2026-08-23 Logging: six format-string defects produce wrong or mangled log output
+      #10391 closed 2026-08-24 [Backport release-1.17] fix log format string mismatches that produce wrong or mangled output
+      #10392 merged 2026-08-24 [Backport release-1.18] fix log format string mismatches that produce wrong or mangled output
+      #10374 closed 2026-08-24 Fix e2e-test-kind: exclude RC tags from kindest/node version matrix
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4531 open 2022-01-14 Update docs table of contents
+      #10614 open 2026-09-30 Kopia MaxListCacheDuration is passed in nanoseconds: on arm64 the server never re-lists indexes, backup deletion leaks snapshots or fails with BLOB not found
+      #10210 open 2026-08-09 Fix explicitly excluded namespaces still tracked via LabelSelector/OrLabelSelector match
+      #8654 open 2025-01-27 Velero backups failing due to blob missing from the repository
+      #7741 open 2024-04-26 The log of repo maintain job is duplicated
+      #9187 open 2025-08-15 Implement Backup Integrity Verification for Data Corruption Detection
+      #7660 open 2024-04-11 Velero CSI volume snapshot using Kopia using excessive egress (downloading) cost
+      #10514 open 2026-09-10 Issue with incremental backup behavior with Velero 1.18 using CSI Snapshot Data Movement with the built-in Kopia data mover.
+      #9603 open 2026-03-10 Backport/Cherry-pick GitHub action
+      #4493 open 2022-01-06 Can not set to default when creating or modifying snapshot location
+      #10567 merged 2026-09-22 [release-1.18] Pin e2e third-party clones to reviewed commits
+      #10566 closed 2026-09-22 [release-1.18] Pin e2e third-party clones to reviewed commits
+      #8818 open 2025-03-26 Issue #8817 - Refactor internal/volume package to pkg/volume
+      #9656 open 2026-03-27 Kopia maintenance fails with 'ciphertext too short: 0' after S3 quota-related write failures leave 0-byte blobs
+      #2066 open 2019-11-14 [Epic] CSI snapshot integration
+      #10471 merged 2026-09-02 Set least-privilege GITHUB_TOKEN permissions in workflows
+      #3533 open 2021-03-05 Upload progress monitoring for plugins after backup completion
+      #10383 open 2026-08-24 Prepare Velero for CNCF Incubation
+      #10184 open 2026-08-06 pkg/archive: sanitizeArchivePath prefix check accepts a sibling directory that shares the destDir prefix
+      #8045 open 2024-07-24 Add information about failed backups to status of schedule object
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9925 open 2026-06-16 Support in-place full/incremental restore
+      #10570 open 2026-09-23 [WIP] Warn when the volume data of an existing PVC backed up by snapshot is not restored
+      #3169 open 2020-12-09 Collect installed plugin information in a central place
+      #10480 merged 2026-09-05 fix(restore): guard against nil PVC in in-place restore preflight checks
+      #10550 merged 2026-09-21 Fail the in-place restore pre-flight check when the backed-up pod exists
+      #10620 open 2026-10-02 Context is not propagated during backup request preparation in backup controller
+      #10530 merged 2026-09-15 Identify the backed-up volume by CSI volume handle in the in-place restore pre-flight check
+      #10110 open 2026-07-29 refactor(serverstatus): Remove outdated Kubernetes v1.9.0 workaround
+      #10544 open 2026-09-19 CRD schema check: self-resolution for `strict` mode failures (`/readyz` instead of crash-loop)
+      #10419 merged 2026-08-27 Add in-place restore pre-flight check: target PVC must not be in use
+      #10413 closed 2026-08-26 Add in-place restore pre-flight check: target PVC must not be in use
+      #10512 merged 2026-09-10 Add in-place restore pre-flight check: PVC must be large enough for the backed-up data
+      #10593 open 2026-09-28 e2e: verify CSI snapshots on kind
+      #10461 merged 2026-09-02 Update code to support namespace mapping when perform the in-place restore with block data mover
+      #10264 open 2026-08-13 Fix loadConcurrency slot leak on forced cancel
+      #9750 open 2026-04-24 fix: improve error handling for discarded hooks in WaitExecHookHandler
+      #10109 open 2026-07-29 Cleanup: Remove outdated Kubernetes v1.9.0 workaround in ServerStatus
+      #10415 merged 2026-08-26 Cherry pick the in-place restore implementation PRs from feature branch to main
+      #10475 merged 2026-09-03 Add in-place restore pre-flight check: PVC must be bound to the backed-up PV
+      #10331 merged 2026-08-19 Preserve PVC selected-node annotation via carrier annotation for in-place restore
+  unclean        1 hit(s) (all listed)
+      #5885 closed 2023-02-20 Restores never starts (stuck as New) until I restart velero
+  shutdown       32 hit(s) (all listed)
+      #10438 open 2026-08-28 Issue #10437: derive velero server's graceful shutdown timeout from terminationGracePeriodSeconds
+      #10437 open 2026-08-28 `velero server`'s shutdown grace period is hardcoded to 30s, ignoring `terminationGracePeriodSeconds`
+      #10173 open 2026-08-06 fix: use request-scoped ctx in backup storage location reconciler
+      #7748 open 2024-04-28 Maintenance job need have the timeout mechanism, abnormal detection, and grace shutdown
+      #10010 open 2026-07-15 Design for CRD schema validation at server startup
+      #10544 open 2026-09-19 CRD schema check: self-resolution for `strict` mode failures (`/readyz` instead of crash-loop)
+      #10171 open 2026-08-06 Bug: `backupStorageLocationReconciler` uses struct-level `r.ctx` instead of request-scoped `ctx` in `Reconcile`
+      #10264 open 2026-08-13 Fix loadConcurrency slot leak on forced cancel
+      #8814 open 2025-03-25 support datamover method on k8s cluster using spot instances
+      #9910 open 2026-06-11 feat: add CRD schema validation during server startup
+      #487 open 2018-05-14 [Epic] support running multiple velero backups/restores concurrently
+      #10545 closed 2026-09-19 CRD schema check: make `warn` mode non-blocking and bound `strict` mode with a shared timeout
+      #8374 open 2024-11-06 Document manual kopia maintenance cleanup with `--safety=none`
+      #9036 open 2025-06-23 In progress backup/restore may not in Failed status when Velero server restarts
+      #9260 open 2025-09-12 Add CRD version compatibility validation during server startup
+      #9460 closed 2025-12-29 Uploader needs to flush the written data during restore
+      #8618 closed 2025-01-15 Add profiler address parameter on node-agent
+      #8237 merged 2024-09-23 Issue 8232: ensure the ending event sinked before shutdown
+      #7947 closed 2024-06-28 Kopia fails with `data path backup failed: Failed to run kopia backup: unable to get local block device entry: resolveSymlink: lstat /var/lib/kubelet: no such file or directory`
+      #8017 closed 2024-07-15 Couple issues with linstor backups to s3
+  reboot         9 hit(s) (all listed)
+      #8018 open 2024-07-16 velero-restore-helper hangs forever when rebooting cluster twice
+      #1444 open 2019-05-03 Restic backup stuck in progress if node becomes unavailable during backup
+      #7759 open 2024-04-30 node-agent is not waiting for `Dataupload` completion before eviction during node image upgrade 
+      #10117 open 2026-07-30 Many of our backups are leaving PodVolumeBackup pods running & stuck
+      #7582 open 2024-03-28 Metric velero_backup_partial_failure_total bigger than velero_backup_attempt_total
+      #8138 closed 2024-08-21 `node-agent` pods won't give back memory after a successful backup
+      #5171 closed 2022-08-01 Avoid unnecessary restic unlocks
+      #5849 merged 2023-02-08 BIAv2 async operations controller work
+      #2027 closed 2019-10-31 Is it possible to backup/restore using restic without remote bucket
+  disk+full      74 hit(s) (all listed)
+      #9674 open 2026-04-06 [CSI][Async Backup] Progress() treats permanent VS errors as temporary, causing indefinite WaitingForPluginOperations
+      #9727 open 2026-04-15 fix: fail backup early when CSI VolumeSnapshot error persists in async poll
+      #9171 open 2025-08-11 Velero backup to Azure storage Error SubscriptionRequestsThrottled
+      #8726 open 2025-02-27 Kopia Maintenance Object Lock support
+      #9627 open 2026-03-18 Reduce binary size using -s -w ldflags
+      #5506 open 2022-10-27 Velero not re-creating volume using storage class with Retain policy 
+      #9543 open 2026-02-12 Verifying Validity of Snapshots/Repositories
+      #9109 open 2025-07-24 Add comprehensive make target for E2E testing with MinIO setup and fresh builds
+      #7447 open 2024-02-20 Failed to load shared config file, /creds/cloud, invalid state with STKind and TokenType none
+      #9377 open 2025-10-29 BackupItemAction plugin timeouts are not reported in backup results file or error count
+      #8738 open 2025-02-28 Issue 3159: Added support for AzureStackHub and Azure private cloud identification
+      #6179 open 2023-04-24 [BUG] Longhorn Snapshots are not deleted after expired Backups (Velero)
+      #6852 open 2023-09-21 Backup partially failed with csi plugin 0.6.0-rc2 on OVH cluster
+      #9221 merged 2025-08-29 docs: Document --write-sparse-files flag for disk space issues during restore
+      #10129 closed 2026-08-01 `Block uploader backup writes full block for partial trailing block on non-aligned volumes`
+      #10294 closed 2026-08-16 Generic CSI changeID retrieval returns empty — all non-vSphere drivers silently fall back to full backups
+      #7344 open 2024-01-23 Design: Velero client download APIServer
+      #6860 open 2023-09-22 [Draft] Improve CSI Snapshotting Performance
+      #9839 closed 2026-05-22 CBT availability detection per volume
+      #2812 closed 2020-08-11 Restore fails with error "no space left on device" if PVCs are 100% utilised during backup
+  data+loss      45 hit(s) (all listed)
+      #10540 open 2026-09-17 CSI Snapshot Data Movement restores NFS volumes using temporary Velero PVC identities, preventing preservation of original NFS paths
+      #10181 open 2026-08-06 Malformed glob in resource filter silently drops explicitly named resources
+      #10364 open 2026-08-22 [Bug] deleteOrphanedBackups deletes cross-namespace backups due to missing Namespace filter in ListOptions
+      #10073 open 2026-07-25 Issue #10043: Verify owner/permissions of restored entries and warn on mismatches
+      #10237 open 2026-08-11 Reject negative --ttl in backup create validation
+      #10040 open 2026-07-20 NFS: restore silently loses file ownership — server rejects chown (root_squash / idmap EPERM) and hardcoded IgnorePermissionErrors swallows the error
+      #10179 open 2026-08-06 fix: periodically enqueue DataUpload tasks in Prepared phase
+      #7804 open 2024-05-17 Enhancing Velero Schedule with RetainDays and RetainCount for Backup Retention Management.
+      #9718 open 2026-04-13 node-agent: PVB gets stuck indefinitely after the data path pod completes successfully
+      #7760 open 2024-04-30 Metrics for backup repository maintenance job
+      #10182 open 2026-08-06 backup create accepts negative --ttl, producing an immediately-expired backup
+      #4183 open 2021-09-22 Error thrown for empty files during backup
+      #10303 closed 2026-08-16 Losing the data mover pod leaves the DataUpload InProgress until the 4h ItemOperationTimeout — pod informer has no DeleteFunc
+      #10521 merged 2026-09-10 Fix backup queue permanently stuck when a dequeued backup completes during the patch
+      #10147 merged 2026-08-03 docs: document ownership loss on mount-constant filesystems
+      #9615 open 2026-03-13 Auto-exclude Velero namespace from backups instead of hard error
+      #10612 merged 2026-09-30 fix: defer VGS cleanup until backup finalization
+      #10014 merged 2026-07-16 Design for supporting volume data in-place restore
+      #10044 closed 2026-07-20 Azure Files SMB / Blobfuse / gcsfuse: restore silently loses file ownership — chown/chmod fake success, no error exists to surface
+      #9318 closed 2025-10-10 Behavior of skip volume policy is strange/problematic
+  partial+write  88 hit(s) (all listed)
+      #10089 open 2026-07-28 Bug: Kopia block restore write loop uses wrong slice bounds, causing panic on partial writes
+      #10090 open 2026-07-28 fix(kopia): fix block restore write loop slice bounds
+      #10235 open 2026-08-11 Allow configuration of page buffer size in Item Collector (#10219)
+      #10503 open 2026-09-08 Per-item backup outcomes for observability
+      #10128 closed 2026-08-01 fix(block): write partial last block bytes correctly during backup
+      #9236 open 2025-09-09 Fix BackupRepositories becoming stale when BSL config changes while Velero is not running
+      #10129 closed 2026-08-01 `Block uploader backup writes full block for partial trailing block on non-aligned volumes`
+      #4183 open 2021-09-22 Error thrown for empty files during backup
+      #10612 merged 2026-09-30 fix: defer VGS cleanup until backup finalization
+      #7481 open 2024-02-29 Add design for only restore volume data.
+      #9054 open 2025-07-01 feat: add support age encryption
+      #10306 closed 2026-08-16 Degrade CBT bitmap failures to allocated blocks instead of whole-device
+      #9377 open 2025-10-29 BackupItemAction plugin timeouts are not reported in backup results file or error count
+      #10071 merged 2026-07-24 Block uploader restore implementation
+      #10252 merged 2026-08-12 Skip signing a download URL when no artifacts can exist yet
+      #9853 merged 2026-05-27 Incremental aware object write
+      #6860 open 2023-09-22 [Draft] Improve CSI Snapshotting Performance
+      #9880 merged 2026-06-04 implemented fine-grained backup filter policies
+      #9946 merged 2026-06-25 restore filters via resource policy
+      #9887 merged 2026-06-05 Incremental aware object writer - writeat
+  crash+safe     15 hit(s) (all listed)
+      #8956 open 2025-05-22 fs-backup deprecate support for emptyDir volumes
+      #10340 closed 2026-08-19 Bug: EphemeralContainers are missing from ServiceAccount token filtering in PodAction
+      #9653 merged 2026-03-26 Fix service restore with null healthCheckNodePort in last-applied-configuration label
+      #9659 closed 2026-03-30 Recurring panics when item-block-worker-count > 1
+      #8271 merged 2024-10-06 fix(pkg/repository/maintenance): handle when there's no container status
+      #7996 closed 2024-07-11 Backup Restore PartiallyFailed
+      #7576 merged 2024-03-28 Data mover micro service design
+      #7628 merged 2024-04-05 Add design for velero backup performance improvements
+      #5171 closed 2022-08-01 Avoid unnecessary restic unlocks
+      #5849 merged 2023-02-08 BIAv2 async operations controller work
+      #3812 closed 2021-05-18 Partially failed backups when trying to backup empty emptyDir with restic
+      #2465 merged 2020-04-28 Design proposal for Restore hooks
+      #1122 closed 2018-12-06 We need your ideas for renaming Heptio Ark!
+      #2646 closed 2020-06-18 Chart incompatible
+      #3131 closed 2020-12-04 Velero backups stuck InProgress
+  atomic+write   8 hit(s) (all listed)
+      #10310 open 2026-08-17 Include the errors/warnings from node-agent and data-mover pods in the velero backup/restore get/describe commands
+      #10429 closed 2026-08-28 node-agent: data race in VgdpCounter.IsConstrained can latch a stale queue length and wedge VGDP admission
+      #8956 open 2025-05-22 fs-backup deprecate support for emptyDir volumes
+      #10431 closed 2026-08-28 guard the VGDP counter cache states against concurrent access from four controllers
+      #9646 merged 2026-03-24 Fix backup-finalizer: do not set backup phase to Completed before PutBackupMetadata succeeds
+      #8991 merged 2025-05-30 Concurrent backup design doc
+      #1687 closed 2019-07-23 Allow restoration of the `status` metadata field
+      #822 closed 2018-09-06 Restore of restic snapshot data broken in 0.9.2+
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9837 open 2026-05-21 Codify backup storage directory layout as a supported contract for external consumers
+      #9760 open 2026-04-27 Allow Velero kubernetes objects to be backed up with If-None-Match bucket policies enabled.
+      #10281 open 2026-08-14 Make backport/pr-filepath-check/auto_assign_prs reusable across velero-io repos
+      #10491 open 2026-09-07 Fix podvolume restorer to not block on duplicate terminal PVR results
+      #9377 open 2025-10-29 BackupItemAction plugin timeouts are not reported in backup results file or error count
+      #8686 open 2025-02-14 Avoid overwriting during backup to support object lock enabled buckets
+      #10284 open 2026-08-14 Proposal: centralize plugin CI build/push workflows as org-wide reusable workflows
+      #5669 open 2022-12-07 velero restic is not creating backup of 200GB PVC of azurefile
+      #5276 open 2022-09-01 Velero prune keep retires every 2 second when one prune fails
+      #8726 open 2025-02-27 Kopia Maintenance Object Lock support
+      #10589 merged 2026-09-26 Bump the github-actions group with 3 updates
+      #9964 open 2026-07-06 backup-finalizer retries forever when object-store PUT hits a non-retryable error (e.g. Azure BlobImmutableDueToPolicy 409)
+      #4183 open 2021-09-22 Error thrown for empty files during backup
+      #8466 open 2024-11-27 Velero doesnt do well with Minio bucket versioning 
+      #10622 merged 2026-10-03 Bump the github-actions group with 2 updates
+      #10262 merged 2026-08-13 [release-1.17] Backport #10250: Fix pod volume restore deadlock
+      #9355 open 2025-10-21 Unexplained repo growth
+      #10263 merged 2026-08-13 [release-1.18] Backport #10250: Fix pod volume restore deadlock
+      #8502 open 2024-12-10 Velero backups fail due to failing to connect to kopia repo: mmap error: cannot allocate memory
+      #8654 open 2025-01-27 Velero backups failing due to blob missing from the repository
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9656 open 2026-03-27 Kopia maintenance fails with 'ciphertext too short: 0' after S3 quota-related write failures leave 0-byte blobs
+      #10286 open 2026-08-15 Fix re-request-review workflow for fork-originated PRs (privilege separation)
+      #9660 open 2026-03-30 fix: e2e test case for multiple fs-backup ns mapping
+      #10096 open 2026-07-28 feat(e2e) :- add E2E test for BSL ReadOnly mode validation
+      #9770 open 2026-05-01 design: Kubernetes name length enforcement for Velero-created objects (#8815)
+      #10310 open 2026-08-17 Include the errors/warnings from node-agent and data-mover pods in the velero backup/restore get/describe commands
+      #10509 open 2026-09-09 Design: propose shared bounded Backup/Restore cancellation
+      #10411 open 2026-08-26 DataDownload is stranded in InProgress and the exposed volume leaks when RebindVolume fails on completion
+      #10503 open 2026-09-08 Per-item backup outcomes for observability
+      #4183 open 2021-09-22 Error thrown for empty files during backup
+      #10235 open 2026-08-11 Allow configuration of page buffer size in Item Collector (#10219)
+      #9187 open 2025-08-15 Implement Backup Integrity Verification for Data Corruption Detection
+      #5578 open 2022-11-09 Restore is in PartiallyFailed :  stderr=ignoring error for /.snapshot: UtimesNano: read-only file system
+      #9543 open 2026-02-12 Verifying Validity of Snapshots/Repositories
+      #4017 open 2021-08-06 velero (restic) backup failed to s3 - Fatal: unable to save snapshot: wrote 0 bytes instead of the expected bytes
+      #10477 merged 2026-09-03 Ignore e2e debug bundles
+      #10416 closed 2026-08-26 Fix re-request-review workflow token permissions for fork-originated PRs
+      #10612 merged 2026-09-30 fix: defer VGS cleanup until backup finalization
+      #10138 merged 2026-08-03 fix: return errors correctly in block restore validation and BatchForget
+      #7481 open 2024-02-29 Add design for only restore volume data.
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10514 open 2026-09-10 Issue with incremental backup behavior with Velero 1.18 using CSI Snapshot Data Movement with the built-in Kopia data mover.
+      #8654 open 2025-01-27 Velero backups failing due to blob missing from the repository
+      #10210 open 2026-08-09 Fix explicitly excluded namespaces still tracked via LabelSelector/OrLabelSelector match
+      #7660 open 2024-04-11 Velero CSI volume snapshot using Kopia using excessive egress (downloading) cost
+      #10184 open 2026-08-06 pkg/archive: sanitizeArchivePath prefix check accepts a sibling directory that shares the destDir prefix
+      #10383 open 2026-08-24 Prepare Velero for CNCF Incubation
+      #9543 open 2026-02-12 Verifying Validity of Snapshots/Repositories
+      #8726 open 2025-02-27 Kopia Maintenance Object Lock support
+      #2066 open 2019-11-14 [Epic] CSI snapshot integration
+      #5049 open 2022-06-26 Minio support on-premise 
+      #7495 open 2024-03-05 Add support for FSB to WebDAV storage via kopia
+      #10612 merged 2026-09-30 fix: defer VGS cleanup until backup finalization
+      #10471 merged 2026-09-02 Set least-privilege GITHUB_TOKEN permissions in workflows
+      #1072 open 2018-11-20 Backup checksums
+      #9377 open 2025-10-29 BackupItemAction plugin timeouts are not reported in backup results file or error count
+      #8351 open 2024-10-26 Restore: Kopia failed to change file's mod time
+      #5612 open 2022-11-22 Getting error "NoCredentialProviders: no valid providers in chain"  while trying to install velero using kube2iam
+      #9580 open 2026-03-06 velero backup describe CLI failed to get volumeinfo metadata but network connectivity is proven with curl from within the pod
+      #9876 open 2026-06-02 Evaluate and onboard Dosu (AI maintainer assistant) for velero-io
+      #4421 open 2021-12-02 velero does not recreate restic|kopia repository from manifest if its directories are deleted on s3
+
+== 51 terms run; 49 returned hits, 14 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

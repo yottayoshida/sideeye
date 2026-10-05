@@ -1,0 +1,37 @@
+== kubernetes-sigs/cri-tools (label kind/bug)
+#2179 2026-09-09 comments=3 first_project_reply=MEMBER 2026-09-09
+#2057 2026-04-23 comments=3 first_project_reply=CONTRIBUTOR 2026-04-24
+#2024 2026-03-21 comments=0 first_project_reply=none
+#2008 2026-03-13 comments=3 first_project_reply=MEMBER 2026-03-13
+#1968 2026-01-03 comments=3 first_project_reply=MEMBER 2026-01-05
+#1967 2026-01-03 comments=2 first_project_reply=MEMBER 2026-01-05
+#1911 2025-09-03 comments=14 first_project_reply=MEMBER 2025-09-04
+#1876 2025-07-28 comments=3 first_project_reply=MEMBER 2025-07-28
+#1871 2025-07-21 comments=4 first_project_reply=MEMBER 2025-07-24
+#1810 2025-04-01 comments=3 first_project_reply=CONTRIBUTOR 2025-04-01
+
+== kubernetes/kubeadm (label kind/bug)
+#3327 2026-08-12 comments=11 first_project_reply=CONTRIBUTOR 2026-08-12
+#3324 2026-07-30 comments=1 first_project_reply=MEMBER 2026-07-30
+#3322 2026-07-07 comments=7 first_project_reply=MEMBER 2026-07-07
+#3317 2026-06-17 comments=10 first_project_reply=MEMBER 2026-06-17
+#3315 2026-06-12 comments=3 first_project_reply=MEMBER 2026-06-12
+#3313 2026-06-08 comments=18 first_project_reply=CONTRIBUTOR 2026-06-08
+#3297 2026-03-26 comments=19 first_project_reply=CONTRIBUTOR 2026-03-26
+#3294 2026-03-17 comments=18 first_project_reply=MEMBER 2026-03-17
+#3283 2026-02-04 comments=5 first_project_reply=MEMBER 2026-02-04
+#3280 2026-01-09 comments=10 first_project_reply=CONTRIBUTOR 2026-01-09
+
+== kubescape/kubescape (label bug)
+#4029 2026-10-03 comments=0 first_project_reply=none
+#4007 2026-10-01 comments=0 first_project_reply=none
+#3997 2026-09-30 comments=0 first_project_reply=none
+#3995 2026-09-30 comments=0 first_project_reply=none
+#3993 2026-09-30 comments=0 first_project_reply=none
+#3987 2026-09-30 comments=0 first_project_reply=none
+#3982 2026-09-30 comments=0 first_project_reply=none
+#3978 2026-09-29 comments=0 first_project_reply=none
+#3970 2026-09-28 comments=1 first_project_reply=none
+#3968 2026-09-28 comments=3 first_project_reply=CONTRIBUTOR 2026-09-28
+
+rule11-all: done 2026-10-05T03:08:21Z

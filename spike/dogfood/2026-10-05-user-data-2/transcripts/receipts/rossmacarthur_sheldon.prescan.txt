@@ -1,0 +1,112 @@
+== novelty pre-scan: rossmacarthur/sheldon
+== date: 2026-10-05T04:09:13Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          0 hit(s)
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      1 hit(s) (all listed)
+      #176 closed 2024-03-06 Messy $PATH with plugins
+  truncate       1 hit(s) (all listed)
+      #176 closed 2024-03-06 Messy $PATH with plugins
+  empty          6 hit(s) (all listed)
+      #198 open 2025-08-31 Optional local plugins
+      #150 merged 2022-09-10 configurable hooks in templates
+      #136 closed 2022-02-23 Sheldon should follow XDG Base Directory spec even if environment variables are not defined
+      #149 closed 2022-09-04 Always use XDG directories
+      #98 closed 2020-04-13 Add `init` command
+      #43 merged 2019-06-02 No color option and replace home with tildes
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      2 hit(s) (all listed)
+      #111 closed 2020-09-30 Interrupting the `edit` command leaves a temporary file in the config directory
+      #110 merged 2020-09-22 Use XDG base directories, if available
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #111 closed 2020-09-30 Interrupting the `edit` command leaves a temporary file in the config directory
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           1 hit(s) (all listed)
+      #151 closed 2022-09-26 Library not loaded:
+  partial        0 hit(s)
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #110 merged 2020-09-22 Use XDG base directories, if available
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      1 hit(s) (all listed)
+      #104 closed 2020-08-04 Automate publishing of docs to `gh-pages` branch
+  clobber        0 hit(s)
+  blank          0 hit(s)
+  unreadable     1 hit(s) (all listed)
+      #176 closed 2024-03-06 Messy $PATH with plugins
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       3 hit(s) (all listed)
+      #200 merged 2026-03-09 Update defer template example
+      #157 closed 2022-11-03 What kind of error message is this?
+      #158 closed 2022-11-07 invalid type: map, expected a string for key `templates.defer`
+  in-place       6 hit(s) (all listed)
+      #176 closed 2024-03-06 Messy $PATH with plugins
+      #157 closed 2022-11-03 What kind of error message is this?
+      #149 closed 2022-09-04 Always use XDG directories
+      #100 closed 2020-06-14 sheldon command not found the first time terminal start
+      #112 merged 2020-10-07 Replace `root` with `config_dir` and `data_dir`
+      #110 merged 2020-09-22 Use XDG base directories, if available
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         1 hit(s) (all listed)
+      #110 merged 2020-09-22 Use XDG base directories, if available
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      23 hit(s) (all listed)
+      #193 open 2025-01-25 Support VCS-friendly plugins rev lockfile
+      #167 open 2023-11-23 Support Windows
+      #127 closed 2021-12-11 sheldon lock --update fails if github is configured to use ssh
+      #197 closed 2025-07-08 The `sheldon init` Command Fails When a Config Directory Does Not Yet Exist
+      #196 closed 2025-04-13 Parallel shell opening are throttled waiting for lock
+      #176 closed 2024-03-06 Messy $PATH with plugins
+      #175 closed 2024-01-24 Deprecation warning caused by `plugins.lock`
+      #170 closed 2023-12-21 Use fs2 instead of fmutex for cross-platform mutex support
+      #150 merged 2022-09-10 configurable hooks in templates
+      #147 closed 2022-08-05 Consider having a separate lock file for each set of profiles
+      #156 closed 2022-10-29 Setting sheldon config file is not enough
+      #159 closed 2022-11-16 File mutex and no write access to config directory
+      #143 merged 2022-07-01 Conditional sourcing of plugins using profiles
+      #124 closed 2021-10-25 Building against libgit2 1.2.0 results in failing tests
+      #123 closed 2021-09-27 [Install Fails] Difference of clap version between git repo and cargo repo
+      #120 closed 2021-07-13 Broken symlink seems to break lock file without erroring
+      #35 closed 2019-04-18 General CLI improvements
+      #61 closed 2019-07-20 Plugin update mechanism
+      #102 closed 2020-07-28 Check local plugins each time `sheldon source` is run
+      #103 closed 2020-07-28 Silently failing when no files are matched for a plugin
+  write+failure  0 hit(s)
+  file+contents  3 hit(s) (all listed)
+      #200 merged 2026-03-09 Update defer template example
+      #157 closed 2022-11-03 What kind of error message is this?
+      #158 closed 2022-11-07 invalid type: map, expected a string for key `templates.defer`
+
+== 51 terms run; 14 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

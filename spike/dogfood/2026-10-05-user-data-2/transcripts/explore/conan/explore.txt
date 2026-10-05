@@ -1,0 +1,13 @@
+PASS  5/5 explored worlds satisfied the built-in atomicity invariant
+      explored 5 worlds (crash points 4 + 1 baseline)
+      expected status: 0
+      atomicity: 13 path(s) judged pre-or-post
+      oracle: agreed on 4 operations (9401 syscall lines examined, 69 in scope of the judged state), witness strace
+      metadata: none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+      cwd: /s/conan-in
+sideeye: json sha256=c967359e746750827f5e8f3be07463b7e7ecf2d497584c42a022cec0059a4cdd;

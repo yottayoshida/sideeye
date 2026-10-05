@@ -1,0 +1,7 @@
+[world]
+state = "/s/pio"
+
+[define]
+operation = "pio settings set check_platformio_interval 30"
+cwd       = "/s/pio-in"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]

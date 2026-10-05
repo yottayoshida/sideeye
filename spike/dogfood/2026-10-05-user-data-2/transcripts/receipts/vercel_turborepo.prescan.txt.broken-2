@@ -1,0 +1,257 @@
+== novelty pre-scan: vercel/turborepo
+== date: 2026-10-05T06:23:49Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14261 merged 2026-09-26 refactor: Replace human-panic with local crash reporting
+      #14092 closed 2026-09-16 [examples/with-nextjs-elysia] Build fails on TS2742, turbo tasks mismatched, and breaks examples scripts
+      #14320 merged 2026-09-27 chore: Release Turborepo 2.11.5-canary.3
+      #13890 merged 2026-08-30 refactor: Migrate CLI parser to usage-rs
+      #13637 merged 2026-08-02 fix: Don't use `eprintln!` in the panic hook
+      #13718 merged 2026-08-11 chore: Update with-rollup example
+      #14329 merged 2026-09-28 chore: Release Turborepo 2.11.5
+      #13346 closed 2026-07-11 Regression in v2.10.1+: turbo crashes on Windows (2.10.0 works, 2.10.1+ fails)
+      #13256 merged 2026-07-05 fix: Avoid non-reentrant libc calls in concurrent shutdown process scans
+      #13826 closed 2026-08-24 chore: Update basic example
+      #13727 merged 2026-08-12 chore: Update non-monorepo example
+      #13352 merged 2026-07-12 fix: Build Ghostty for baseline CPUs
+      #13328 merged 2026-07-09 fix: Resolve EADDRINUSE in kitchen-sink api dev script
+      #13110 merged 2026-06-17 fix: Preserve terminal settings for child PTYs
+      #13197 closed 2026-07-01 Panic in biome_text_size: assertion failed: start <= end
+      #12198 closed 2026-03-08 SIGSEGV in child process when MSW (Mock Service Worker) intercepts fetch during turbo run
+      #9304 closed 2024-10-21 Weird escape codes in terminal when using Turborepo v2.2.1
+      #13109 closed 2026-06-17 turbo prune --docker generates invalid pruned lock when incompatible transitive dep versions are workspace-nested
+      #12824 closed 2026-05-18 turbo prune drops the base packages entry for peer-variant injected workspace deps, breaking pnpm install
+      #12920 closed 2026-05-21 Ctrl+C not crashing turbo dev
+  corrupt        43 hit(s) (all listed)
+      #14027 merged 2026-09-09 perf: Share one repo index across same-package spec rehashes in watch mode
+      #13359 closed 2026-07-13 fix: Isolate Cargo artifact outputs
+      #14026 merged 2026-09-09 perf: Read child output in bounded chunks instead of per-line
+      #13220 merged 2026-07-03 fix: Harden TUI terminal restore during shutdown
+      #13142 closed 2026-06-26 Update package.json
+      #13296 merged 2026-07-07 fix: Make the sccache compile cache actually cache
+      #12933 merged 2026-05-22 fix: Restore a few internal invariant checks
+      #12482 merged 2026-03-28 fix: Prevent pnpm overrides from corrupting resolved peer-dep variants
+      #11844 closed 2026-02-13 fix: Prevent pnpm overrides from corrupting resolved peer-dep variants
+      #13101 closed 2026-06-17 `turbo prune --docker` drops a bun `patchedDependencies` patch when the patched package has a second version in the closure (ships unpatched, silently)
+      #12483 merged 2026-03-29 release(turborepo): 2.8.22-canary.4
+      #12969 closed 2026-05-28 bun + turbo ≥2.9.7 + "ui":"tui" on Windows spawns ~800 node/conhost.exe processes when running persistent dev tasks from monorepo root
+      #11701 closed 2026-02-07 `turbo prune --docker` corrupts bun.lock entries for `file:` protocol dependencies
+      #11917 closed 2026-02-19 fix(prune): Handle tarball URL deps in bun.lock
+      #11710 closed 2026-02-07 fix(bun): Preserve `file:` protocol format in bun.lock during `turbo prune`
+      #12494 merged 2026-03-30 release(turborepo): 2.9.0
+      #11106 merged 2025-11-12 fix: Avoid panic for unanchorable/non-UTF8 git paths
+      #12299 merged 2026-03-14 feat: Route user-facing warnings through turborepo-log and suppress tracing stderr in TUI mode
+      #10403 closed 2025-04-29 `crates/turborepo-scm/src/git.rs` panics in GitHub Actions
+      #12076 merged 2026-02-28 fix: Preserve `file:` and `link:` protocol entries in pruned bun lockfile
+  corruption     19 hit(s) (all listed)
+      #13090 merged 2026-06-15 fix: Handle Windows package manager shutdown
+      #13256 merged 2026-07-05 fix: Avoid non-reentrant libc calls in concurrent shutdown process scans
+      #12842 merged 2026-05-18 chore: Avoid engine graph node expects
+      #12563 closed 2026-04-06 feat: Replace package manager commands in scaffolded README files
+      #11917 closed 2026-02-19 fix(prune): Handle tarball URL deps in bun.lock
+      #6747 merged 2023-12-08 feat: Replace package manager commands in scaffolded README files
+      #9057 closed 2024-08-24 TUI often garbled by errors in tasks
+      #11679 merged 2026-02-05 examples: Update NODE_VERSION to 24.13.1 in Dockerfile
+      #12299 merged 2026-03-14 feat: Route user-facing warnings through turborepo-log and suppress tracing stderr in TUI mode
+      #12087 closed 2026-03-02 turbo watch triggers cascading task restarts in deep dependency graphs, garbling TUI
+      #11678 closed 2026-02-05 Update NODE_VERSION to 24.13.0 in Dockerfile
+      #11591 merged 2026-01-31 examples: Update NODE_VERSION to 24.13.1 in Dockerfile
+      #11965 merged 2026-02-23 perf: Add more tracing spans into startup path
+      #11268 merged 2025-12-17 fix(bun): Add GitHub/git packages
+      #11266 closed 2025-12-17 turbo prune doesn't work with bun.lock for GitHub dependencies (empty string insertion)
+      #11071 merged 2025-11-07 ci: Don't install dependencies in tests that don't need it
+      #10326 closed 2025-04-13 Fix terminal corruption on unexpected termination by adding signal handlers
+      #8607 closed 2024-06-26 chore: upgrade failure to check caches to a warning
+      #8033 merged 2024-04-24 chore(packages/ui turbo gen config.ts): Preventing the format of pack…
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14024 merged 2026-09-09 perf: Bound TUI raw-output retention independently of scrollback
+      #12709 merged 2026-05-04 fix: Harden OG image signatures
+      #12997 merged 2026-06-01 examples: add with-mcp-servers
+      #12382 merged 2026-03-18 feat: Deprecate `turbo-ignore` in favor of `turbo query affected`
+      #12607 merged 2026-04-13 feat: Graceful shutdown
+      #12169 merged 2026-03-05 test: Add comprehensive path traversal tests for cache archive
+      #11309 merged 2025-12-23 chore(ci): Remove redundant Turborepo prefix from workflow names
+      #11640 closed 2026-02-02 examples(deps): Bump the kitchen-sink group in /examples/kitchen-sink with 9 updates
+      #11641 closed 2026-02-02 examples(dev-deps): Bump jest-environment-jsdom from 29.7.0 to 30.2.0 in /examples/kitchen-sink
+      #11525 closed 2026-01-19 examples(deps): bump the kitchen-sink group in /examples/kitchen-sink with 9 updates
+      #11748 closed 2026-02-09 examples(deps): bump the non-monorepo group in /examples/non-monorepo with 2 updates
+      #11557 closed 2026-01-26 examples(deps): bump the kitchen-sink group in /examples/kitchen-sink with 9 updates
+      #11750 closed 2026-02-09 examples(dev-deps): bump the with-svelte group in /examples/with-svelte with 6 updates
+      #11749 closed 2026-02-09 examples(dev-deps): bump the with-tailwind group in /examples/with-tailwind with 4 updates
+      #11637 closed 2026-02-02 examples(deps): Bump the non-monorepo group in /examples/non-monorepo with 2 updates
+      #11555 closed 2026-01-26 examples(dev-deps): bump the with-svelte group in /examples/with-svelte with 4 updates
+      #11638 closed 2026-02-02 examples(dev-deps): Bump the with-svelte group in /examples/with-svelte with 6 updates
+      #11639 closed 2026-02-02 examples(deps): Bump the with-tailwind group in /examples/with-tailwind with 5 updates
+      #11554 closed 2026-01-26 examples(deps): bump the non-monorepo group in /examples/non-monorepo with 2 updates
+      #11524 closed 2026-01-19 examples(deps): bump the with-tailwind group in /examples/with-tailwind with 5 updates
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14363 open 2026-10-04 feat: Add shared platform primitives for setup and shim
+      #14024 merged 2026-09-09 perf: Bound TUI raw-output retention independently of scrollback
+      #13828 merged 2026-08-24 fix: Prevent chat SSH command overflow
+      #14021 merged 2026-09-09 perf: Skip speculative content hashing for size-changed unnormalized tracked files
+      #13481 closed 2026-07-25 feat(codemod): add truncateMiddle helper function to codemod logger utils
+      #13315 merged 2026-07-08 feat: Resolve and execute task command overrides
+      #12709 merged 2026-05-04 fix: Harden OG image signatures
+      #13055 merged 2026-06-10 fix: Prevent git argument injection in SCM refs
+      #12821 merged 2026-05-18 fix: Make structured log symlink defense race-safe
+      #12997 merged 2026-06-01 examples: add with-mcp-servers
+      #12170 closed 2026-03-05 feat: Replace local login server with OAuth 2.0 Device Authorization Grant
+      #12382 merged 2026-03-18 feat: Deprecate `turbo-ignore` in favor of `turbo query affected`
+      #12607 merged 2026-04-13 feat: Graceful shutdown
+      #12169 merged 2026-03-05 test: Add comprehensive path traversal tests for cache archive
+      #11309 merged 2025-12-23 chore(ci): Remove redundant Turborepo prefix from workflow names
+      #11593 merged 2026-01-31 fix: Extract git argument validation into reusable helper
+      #11916 merged 2026-02-19 perf: Reduce allocations in SCM hashing, glob preprocessing, and cache lookups
+      #11915 closed 2026-02-19 perf: Reduce allocations in SCM hashing, glob preprocessing, and cache lookups
+      #11640 closed 2026-02-02 examples(deps): Bump the kitchen-sink group in /examples/kitchen-sink with 9 updates
+      #11641 closed 2026-02-02 examples(dev-deps): Bump jest-environment-jsdom from 29.7.0 to 30.2.0 in /examples/kitchen-sink
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14366 open 2026-10-04 fix: Populate task graphs for affected and filtered listings
+      #14293 merged 2026-09-26 fix: Reject empty tokens when reading token files
+      #14359 open 2026-10-03 `turbo ls --affected` returns no packages when `futureFlags.affectedUsingTaskInputs` is enabled
+      #14297 merged 2026-09-26 test: Assert process manager stop postconditions
+      #14169 merged 2026-09-23 refactor: Extract subprocess-free Go observation assembly
+      #14310 merged 2026-09-26 perf: Parse character classes without compiling regex
+      #14290 merged 2026-09-26 test: Cover globwalk parent traversal
+      #14343 merged 2026-09-29 feat: Expose task and package tags in `query`
+      #14167 merged 2026-09-23 refactor: Add injectable manifest loading to repository graphs
+      #14269 merged 2026-09-26 refactor: Remove unused public Rust APIs
+      #14232 merged 2026-09-24 test: Move dependency-output selection and validation cases to engine contracts
+      #14327 merged 2026-09-27 fix: Pass repository to release asset commands
+      #14342 merged 2026-09-29 feat: Add task tags with configuration inheritance
+      #13993 merged 2026-09-09 perf: Avoid materializing npm's legacy dependency tree
+      #13900 merged 2026-08-31 chore: Add workspace diff view
+      #13859 merged 2026-08-27 feat(repository): Expose flat lockfile package list for metrics
+      #14286 merged 2026-09-26 refactor: Remove unused UI task types and dead-code allowance
+      #14262 closed 2026-09-26 Signed remote cache artifacts over 8 MiB are always rejected when the local cache is also enabled (regression in 2.10.13)
+      #14229 merged 2026-09-24 fix: Put version in `turbo query` JSON output instead of a separate banner
+      #14263 closed 2026-09-26 chore: Add i-didnt-check-my-work.md as requested by AGENTS.md
+  atomic         46 hit(s) (all listed)
+      #14095 merged 2026-09-17 fix: Harden cache archive restoration
+      #14031 merged 2026-09-10 test: Deflake Go watch CI
+      #13434 closed 2026-07-22 fix: Publish Cargo discovery state atomically
+      #14012 merged 2026-09-09 perf: Build cache archives once for local and remote writes
+      #13831 merged 2026-08-25 fix: Update Factory pull request branches
+      #13341 closed 2026-07-10 feat: Add portable incremental artifact protocol
+      #13582 merged 2026-07-30 refactor: Port Cargo watch and prune knowledge
+      #13313 merged 2026-07-08 feat: Parse and validate the task command field
+      #13327 merged 2026-07-09 feat: Report incremental cache reuse in the run summary
+      #13435 closed 2026-07-22 refactor: Add graph-local ecosystem contributions
+      #13632 merged 2026-08-01 fix: Invalidate only when Git ignore sources change
+      #11962 merged 2026-02-22 perf: Use `Arc<str>` for task dependency hashes to avoid heap clones
+      #12334 merged 2026-03-16 feat: Add `GroupingLayer` for per-task output buffering
+      #12343 merged 2026-03-16 feat: Route child process bytes through TaskHandle with sink-owned prefix rendering
+      #12337 merged 2026-03-16 refactor: Wire `GroupingLayer` into `Visitor` and migrate task error/warn to `turborepo-log`
+      #11870 merged 2026-02-16 fix: Restrict credential file permissions to owner-only
+      #12513 merged 2026-03-31 fix(config): Deep-merge nested OTEL config across priority sources
+      #12172 closed 2026-03-06 perf: Add file-based caching for PackageGraph to speed up turbo runs
+      #11418 merged 2026-01-10 fix(tui): Properly disable mouse mode on exit and panic
+      #11416 merged 2026-01-09 feat: Git worktree support
+  atomically     16 hit(s) (all listed)
+      #14095 merged 2026-09-17 fix: Harden cache archive restoration
+      #14031 merged 2026-09-10 test: Deflake Go watch CI
+      #13434 closed 2026-07-22 fix: Publish Cargo discovery state atomically
+      #14012 merged 2026-09-09 perf: Build cache archives once for local and remote writes
+      #13582 merged 2026-07-30 refactor: Port Cargo watch and prune knowledge
+      #13313 merged 2026-07-08 feat: Parse and validate the task command field
+      #13632 merged 2026-08-01 fix: Invalidate only when Git ignore sources change
+      #12334 merged 2026-03-16 feat: Add `GroupingLayer` for per-task output buffering
+      #12343 merged 2026-03-16 feat: Route child process bytes through TaskHandle with sink-owned prefix rendering
+      #12337 merged 2026-03-16 refactor: Wire `GroupingLayer` into `Visitor` and migrate task error/warn to `turborepo-log`
+      #11870 merged 2026-02-16 fix: Restrict credential file permissions to owner-only
+      #12513 merged 2026-03-31 fix(config): Deep-merge nested OTEL config across priority sources
+      #10982 merged 2025-10-15 feat: microfrontends
+      #5101 merged 2023-05-25 Store and retrieve timeSaved value from daemon
+      #2851 merged 2022-11-28 fix(turbo): update regex in integration tests
+      #2339 closed 2022-10-25 [turborepo] Failing to build on FreeBSD 13
+  interrupted    24 hit(s) (all listed)
+      #13115 closed 2026-06-20 turbo watch stops interruptible persistent task for changes outside task inputs
+      #13116 merged 2026-06-20 fix: Respect task inputs when stopping interruptible persistent tasks in watch
+      #1497 closed 2022-07-08 Support executing multiple dependent long-running tasks in parallel  
+      #12920 closed 2026-05-21 Ctrl+C not crashing turbo dev
+      #12790 closed 2026-05-12 fix: Wait for process group on the normal task exit path
+      #11679 merged 2026-02-05 examples: Update NODE_VERSION to 24.13.1 in Dockerfile
+      #11678 closed 2026-02-05 Update NODE_VERSION to 24.13.0 in Dockerfile
+      #11591 merged 2026-01-31 examples: Update NODE_VERSION to 24.13.1 in Dockerfile
+      #12501 closed 2026-03-30 turbo watch dev does not re-run `^build` dependencies when their source files change
+      #11205 closed 2025-12-05 `turbo watch` behaves unexpectedly on Windows
+      #10020 closed 2025-02-20 Docker compose commands being run within turbo fails to stop the container after exiting the task with cntrl+c
+      #11063 merged 2025-11-07 fix: Improve determinism for graceful shutdown
+      #11135 merged 2025-11-18 fix: Add fine grained interruptible task restarts in watch mode
+      #8932 closed 2024-08-02 Watch-mode running too often when turborepo is set up inside a folder
+      #9995 merged 2025-02-17 chore(signals): prefactor
+      #10326 closed 2025-04-13 Fix terminal corruption on unexpected termination by adding signal handlers
+      #9228 merged 2024-10-07 feat(watch): add interruptible tasks
+      #9407 merged 2024-11-07 chore(watch): warn if daemon is disabled
+      #10003 closed 2025-02-19 fix(docs): Feedback from Nx team on migration doc
+      #9894 closed 2025-02-04 chore(deps): bump the kitchen-sink group in /examples/kitchen-sink with 10 updates
+  interrupt      77 hit(s) (all listed)
+      #14046 merged 2026-09-11 fix: Avoid duplicate interrupts during task shutdown
+      #14163 merged 2026-09-22 fix: Stop with tasks when parent exits
+      #14196 merged 2026-09-24 test: Cover mixed-toolchain watch task selection in process
+      #14199 merged 2026-09-24 test: Retain real watch smokes after selection migration
+      #14051 merged 2026-09-12 chore: Release Turborepo 2.10.13-canary.5
+      #14203 merged 2026-09-24 test: Move turbo.json validation cases into crate contracts
+      #13116 merged 2026-06-20 fix: Respect task inputs when stopping interruptible persistent tasks in watch
+      #13115 closed 2026-06-20 turbo watch stops interruptible persistent task for changes outside task inputs
+      #13100 merged 2026-06-17 fix: Gracefully stop nested PTY processes
+      #13351 merged 2026-07-12 fix: Preserve watch rerun semantics for task inputs
+      #13130 merged 2026-06-24 release(turborepo): 2.9.19-canary.10
+      #13093 merged 2026-06-16 fix: Prevent duplicate PTY graceful shutdown signals
+      #13073 merged 2026-06-13 fix: Use PTY for interactive Windows tasks
+      #13041 merged 2026-06-08 fix: Send Ctrl+C to Windows PTY tasks
+      #14066 merged 2026-09-14 chore: Release Turborepo 2.10.13
+      #12958 merged 2026-05-27 fix: Avoid hanging PTY shutdown
+      #14102 merged 2026-09-18 chore: Release Turborepo 2.11.0
+      #12920 closed 2026-05-21 Ctrl+C not crashing turbo dev
+      #13632 merged 2026-08-01 fix: Invalidate only when Git ignore sources change
+      #12449 merged 2026-03-26 fix: Resolve turbo watch hang with mixed interruptible persistent tasks
+  sigkill        19 hit(s) (all listed)
+      #13100 merged 2026-06-17 fix: Gracefully stop nested PTY processes
+      #13128 merged 2026-06-23 fix: Improve watch graceful shutdown
+      #9666 closed 2025-01-03 On SIGKILL to `turbo run`, tasks continue running (incompatible with Playwright testing)
+      #11477 merged 2026-01-15 fix: Improve behavior for OOM-killed tasks
+      #10020 closed 2025-02-20 Docker compose commands being run within turbo fails to stop the container after exiting the task with cntrl+c
+      #9694 closed 2025-01-13 `SIGINT` being sent to `turbo` is not forwarded to underlying tasks
+      #10246 closed 2025-03-28 Turborepo does not finalize and process files in WSL
+      #11081 merged 2025-11-10 ci: Fix leaky tests
+      #8281 closed 2024-06-03 Turborepo hanging in CI
+      #10326 closed 2025-04-13 Fix terminal corruption on unexpected termination by adding signal handlers
+      #4064 closed 2023-03-03 Provide timings for each tasks
+      #9175 closed 2024-09-21 Throw error 'error Command failed with signal "SIGKILL".' in gitlab CI
+      #3711 closed 2023-02-09 [turborepo] regression on handling SIGINT
+      #9821 closed 2025-01-27 chore(deps-dev): bump the with-svelte group across 1 directory with 2 updates
+      #9810 closed 2025-01-27 chore(deps): bump the with-svelte group across 1 directory with 15 updates
+      #2143 closed 2022-10-02 SIGKILL from time to time
+      #7402 merged 2024-02-15 fix: reading output from orphan process
+      #4547 closed 2023-04-12 [WEB-902] [turbopack] API routes in nextjs 13.3 stopped working
+      #1269 merged 2022-05-19 Watch task outputs to avoid cache restorations
+  sigint         73 hit(s) (all listed)
+      #14199 merged 2026-09-24 test: Retain real watch smokes after selection migration
+      #14046 merged 2026-09-11 fix: Avoid duplicate interrupts during task shutdown
+      #14196 merged 2026-09-24 test: Cover mixed-toolchain watch task selection in process
+      #14192 merged 2026-09-24 test: Inject watch run lifecycle and event collection
+      #14043 closed 2026-09-11 Ctrl-C shutdown/cache output is printed after the shell prompt
+      #13382 merged 2026-07-14 fix: Retain shutdown signals for force exit
+      #13254 closed 2026-07-05 segfault after Ctrl-C on 2.10 (but not on 2.9.18)
+      #13093 merged 2026-06-16 fix: Prevent duplicate PTY graceful shutdown signals
+      #12652 closed 2026-04-24 `SIGINT` is not forwarded properly when `script-shell=sh`
+      #12691 closed 2026-05-01 test: Add SIGINT regression for npm script shell
+      #13097 closed 2026-06-17 Regression: graceful shutdown is broken when `script-shell=sh`
+      #13104 merged 2026-06-17 fix: Soften force shutdown message
+      #13102 merged 2026-06-17 fix: Restore TUI force shutdown
+      #12958 merged 2026-05-27 fix: Avoid hanging PTY shutdown
+      #13115 closed 2026-06-20 turbo watch stops interruptible persistent task for changes outside task inputs
+      #13256 merged 2026-07-05 fix: Avoid non-reentrant libc calls in concurrent shutdown process scans
+      #9694 closed 2025-01-13 `SIGINT` being sent to `turbo` is not forwarded to underlying tasks
+      #12612 merged 2026-04-13 fix: Ignore `SIGINT` in shim after spawning local `turbo`
+      #13069 merged 2026-06-11 fix: Deliver Ctrl-C to ConPTY children during graceful shutdown on Windows
+      #13067 merged 2026-06-11 fix: Stop shim from killing local turbo on Windows Ctrl+C
+  ctrl-c         97 hit(s) (all listed)
+HTTP 403: API rate limit exceeded for user ID 214414092. If you reach out to GitHub Support for help, please include the request ID D13D:6B11B:F334BF:1289C7C:6AC342DD and timestamp 2026-10-05 06:25:33 UTC. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service) (https://api.github.com/search/issues?advanced_search=true&page=1&per_page=20&q=%28+ctrl-c+%29+repo%3Avercel%2Fturborepo)
+  BROKEN the search errored on term 'power' - the scan is incomplete

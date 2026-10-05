@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/aux/home/.config/stripe",
+    "operation": "stripe config --set color off",
+    "cwd": "/s/stripe-in",
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 5,
+  "prefix_hash": "72d4728374ad5456",
+  "after_class": "open",
+  "after_path": "/s/aux/home/.config/stripe/config.toml",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.config/stripe/config.toml",
+  "violation": "hybrid"
+}

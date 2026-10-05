@@ -1,0 +1,31 @@
+fresh prysm
+fresh lodestar
+fresh hardhat
+fresh ApeWorX
+fresh core-lightning
+fresh hsmtool
+fresh subsync
+fresh wandb
+fresh bentoml
+fresh pixi
+fresh opam
+fresh haskell-stack
+SEEN  cabal  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:32
+fresh juliaup
+SEEN  astral-sh  spike/dogfood/2026-09-06-userview-2/SELECTION.md:45
+fresh kimi-cli
+fresh solvespace
+fresh OSGeo/grass
+fresh go-i18n
+fresh goi18n
+fresh toybox
+SEEN  uutils  funnel:89
+SEEN  uutils  target-classes:65
+SEEN  uutils  b2-exclusions:231
+SEEN  uutils  spike/dogfood/2026-09-16-userview-3/SELECTION.md:112
+fresh alacritty
+fresh oh-my-posh
+fresh gltf-transform
+fresh gltfpack
+fresh meshoptimizer
+fresh xsv

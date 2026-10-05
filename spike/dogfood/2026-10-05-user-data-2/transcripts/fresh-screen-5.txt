@@ -1,0 +1,30 @@
+SEEN  augeas  b2-exclusions:39
+SEEN  augeas  spike/dogfood/2026-09-06-userview-2/SELECTION.md:59
+SEEN  augeas  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  augeas  spike/authoring-cost/pool-atomic.txt:9
+SEEN  augtool  spike/authoring-cost/pool-atomic.txt:9
+fresh saltstack
+fresh salt-call
+fresh puppetlabs
+fresh openvox
+fresh steamguard-cli
+fresh tidwall
+fresh wakatime-cli
+fresh lighthouse
+fresh ntfslabel
+fresh micro
+fresh zyedidia
+SEEN  vis  funnel:123
+SEEN  vis  target-classes:34
+SEEN  vis  b2-candidates:22
+SEEN  vis  spike/dogfood/2026-09-06-imagemagick-refix/SELECTION.md:10
+SEEN  vis  spike/dogfood/2026-09-06-userview-2/SELECTION.md:327
+SEEN  vis  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:68
+SEEN  vis  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:9
+SEEN  vis  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:1
+SEEN  vis  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:7
+SEEN  vis  spike/dogfood/2026-10-02-gate-cleared-twelve/SELECTION.md:15
+SEEN  vis  spike/dogfood/2026-10-03-user-data/SELECTION.md:72
+fresh martanne
+fresh jabkit
+fresh freecadcmd

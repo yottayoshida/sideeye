@@ -1,0 +1,2 @@
+static: /opt/py/bin/dotenv: Python script, ASCII text executable
+next: sideeye explore --state /s/env --cwd "/s/env" --operation "dotenv -f /s/env/.env set DEBUG true" \

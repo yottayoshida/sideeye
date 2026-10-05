@@ -1,0 +1,291 @@
+== novelty pre-scan: theskumar/python-dotenv
+== date: 2026-10-05T05:04:01Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          13 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #499 open 2024-01-23 AssertionError when attempting to locate dotenv file
+      #631 open 2026-03-15 Add `strict` parameter to `load_dotenv()` and `dotenv_values()` for fail-fast behavior
+      #653 merged 2026-05-30 chore(deps): update pytest requirement from >=3.9 to >=9.0.3
+      #245 merged 2020-03-17 Added better context for can't find config file error message
+      #305 closed 2021-02-10 Deployment issue, django on IIS
+      #71 closed 2017-10-10 AttributeError: 'module' object has no attribute 'group'
+      #92 closed 2018-02-19 Option for Docker compatibility
+      #237 merged 2020-02-21 Fix dotenv run crashes on variable without values
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+      #193 closed 2019-06-24 Pin wheel to latest version 0.33.4
+      #194 closed 2019-06-24 Pin twine to latest version 1.13.0
+      #101 merged 2018-03-08 Force environment variables to str with Python2 on Windows
+  corrupt        9 hit(s) (all listed)
+      #662 open 2026-06-17 fix: escape backslashes in set_key so values round-trip
+      #677 open 2026-07-30 fix: read the .env file as UTF-8 in the CLI
+      #661 closed 2026-06-17 set_key corrupts values containing backslashes (Windows paths, regexes) on round-trip
+      #673 closed 2026-07-04 Escape backslashes so set_key values round-trip
+      #496 open 2024-01-12 Connection string in .env-file not read or parsed properly
+      #657 closed 2026-06-04 Behavior of `set_key` on existing but commented variable.
+      #640 merged 2026-03-30 fix: strip UTF-8 BOM from .env files
+      #463 closed 2023-06-08  No module named 'dotenv'
+      #271 closed 2020-08-18 python-dotenv prevents launch of Flask server
+  corruption     2 hit(s) (all listed)
+      #667 closed 2026-06-26 Fix set_key backslash corruption (#661)
+      #271 closed 2020-08-18 python-dotenv prevents launch of Flask server
+  truncated      17 hit(s) (all listed)
+      #674 open 2026-07-12 chore(deps): update mkdocstrings requirement from >=0.24.0 to >=1.0.6
+      #675 open 2026-07-19 chore(deps): update mkdocs-material requirement from >=9.5.0 to >=9.7.7
+      #676 open 2026-07-26 ci(deps): bump the github-actions group across 1 directory with 3 updates
+      #655 closed 2026-05-30 chore(deps): update mkdocs-material requirement from >=9.5.0 to >=9.7.6
+      #656 closed 2026-05-30 chore(deps): update mkdocstrings requirement from >=0.24.0 to >=1.0.4
+      #659 closed 2026-06-14 chore(deps): update pytest requirement from >=9.0.3 to >=9.1.0
+      #658 merged 2026-06-07 ci(deps): bump actions/checkout from 6.0.2 to 6.0.3 in the github-actions group
+      #664 closed 2026-06-21 ci(deps): bump actions/checkout from 6.0.3 to 7.0.0 in the github-actions group
+      #668 closed 2026-06-28 ci(deps): bump the github-actions group across 1 directory with 2 updates
+      #651 merged 2026-05-30 ci(deps): bump peaceiris/actions-gh-pages from 4.0.0 to 4.1.0 in the github-actions group
+      #593 merged 2025-11-24 Bump actions/checkout from 5 to 6 in the github-actions group
+      #577 merged 2025-09-08 Bump the github-actions group across 1 directory with 2 updates
+      #572 closed 2025-08-11 Bump actions/checkout from 4 to 5 in the github-actions group
+      #529 merged 2024-08-05 Bump the github-actions group with 2 updates
+      #513 closed 2024-04-08 Bump the github-actions group with 2 updates
+      #218 closed 2020-01-06 Either space or quote is not allowed in value, truncated otherwise
+      #51 closed 2017-03-26 Truncates last character if .env file doesn't contain a trailing newline
+  truncate       18 hit(s) (all listed)
+      #674 open 2026-07-12 chore(deps): update mkdocstrings requirement from >=0.24.0 to >=1.0.6
+      #675 open 2026-07-19 chore(deps): update mkdocs-material requirement from >=9.5.0 to >=9.7.7
+      #676 open 2026-07-26 ci(deps): bump the github-actions group across 1 directory with 3 updates
+      #655 closed 2026-05-30 chore(deps): update mkdocs-material requirement from >=9.5.0 to >=9.7.6
+      #656 closed 2026-05-30 chore(deps): update mkdocstrings requirement from >=0.24.0 to >=1.0.4
+      #659 closed 2026-06-14 chore(deps): update pytest requirement from >=9.0.3 to >=9.1.0
+      #658 merged 2026-06-07 ci(deps): bump actions/checkout from 6.0.2 to 6.0.3 in the github-actions group
+      #664 closed 2026-06-21 ci(deps): bump actions/checkout from 6.0.3 to 7.0.0 in the github-actions group
+      #668 closed 2026-06-28 ci(deps): bump the github-actions group across 1 directory with 2 updates
+      #651 merged 2026-05-30 ci(deps): bump peaceiris/actions-gh-pages from 4.0.0 to 4.1.0 in the github-actions group
+      #593 merged 2025-11-24 Bump actions/checkout from 5 to 6 in the github-actions group
+      #577 merged 2025-09-08 Bump the github-actions group across 1 directory with 2 updates
+      #572 closed 2025-08-11 Bump actions/checkout from 4 to 5 in the github-actions group
+      #529 merged 2024-08-05 Bump the github-actions group with 2 updates
+      #513 closed 2024-04-08 Bump the github-actions group with 2 updates
+      #218 closed 2020-01-06 Either space or quote is not allowed in value, truncated otherwise
+      #51 closed 2017-03-26 Truncates last character if .env file doesn't contain a trailing newline
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+  empty          66 hit(s) (all listed)
+      #715 open 2026-10-01 An empty value ignores ${name:-default}
+      #720 open 2026-10-04 Fix ${name:-default} ignoring default for empty values
+      #701 open 2026-09-13 Fix empty values in get_cli_string
+      #716 open 2026-10-01 fix: use the default when an interpolated variable is empty
+      #684 open 2026-08-17 Substitute ${name:-default} when the variable is set but empty (POSIX)
+      #712 open 2026-09-30 fix: skip unreadable .env files during discovery and load
+      #696 open 2026-09-06 Document shell completion setup
+      #687 open 2026-08-20 fix: preserve a leading BOM when set_key and unset_key rewrite a file
+      #699 closed 2026-09-12 dotenv get exits with code 1 for empty string values
+      #685 open 2026-08-19 feat: add opt-in $(command) substitution for .env values
+      #700 merged 2026-09-12 Fix dotenv get exiting with code 1 for empty string values
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #454 open 2023-03-19 feat: accept None to 'set_key' to write value-less environment variable
+      #663 closed 2026-06-17 fix: parse empty unquoted value with inline comment as empty string
+      #679 closed 2026-08-08 fix: do not treat an inline comment as an empty value
+      #619 closed 2026-02-20 Fix CLI 'get' command treating empty-string values as missing
+      #642 closed 2026-04-17 Fix `dotenv get` in case of handling of empty string values
+      #630 open 2026-03-12 feat: generate template from .env file
+      #598 open 2025-12-13 Bug: python-dotenv doesn't load 1Password “mounted” .env files (looks like a FIFO / fd-backed file)
+      #672 closed 2026-07-04 Strip inline comment from an empty unquoted value
+  atomic         2 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+  interrupt      1 hit(s) (all listed)
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #271 closed 2020-08-18 python-dotenv prevents launch of Flask server
+      #300 closed 2021-01-25 UnicodeDecodeError exception occurs when .env file contains Non-ASCII characters on Windows 
+  power          2 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #292 closed 2020-12-09 Adding Power support(ppc64le) with ci and testing to the project for architecture independent
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           4 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #411 open 2022-06-24 using set_key on a file over the network results in error
+      #586 merged 2025-10-21 Support reading .env from FIFOs (Unix)
+      #78 merged 2017-12-09 Allows `parse_dotenv(stream=StringIO())`
+  partial        5 hit(s) (all listed)
+      #721 open 2026-10-05 Clean up temporary files when closing a rewrite fails
+      #688 closed 2026-08-20 Draft: add -m/--mask flag to dotenv list (sensitivity-gated)
+      #529 merged 2024-08-05 Bump the github-actions group with 2 updates
+      #513 closed 2024-04-08 Bump the github-actions group with 2 updates
+      #372 closed 2022-01-14 Feature Request: surface errors instead of warnings/swallowing
+  incomplete     5 hit(s) (all listed)
+      #570 closed 2025-07-20 fix: restore multiline support for unquoted values (fixes #555)
+      #207 closed 2019-10-01 load_dotenv()  UnicodeDecodeError
+      #92 closed 2018-02-19 Option for Docker compatibility
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+      #190 closed 2019-06-24 Pin ipython to latest version 7.5.0
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #493 closed 2023-11-14 Additional variable expansion features, some support for Windows
+      #245 merged 2020-03-17 Added better context for can't find config file error message
+  recovery       4 hit(s) (all listed)
+      #669 open 2026-06-30 Handle CRLF invalid lines in parser recovery
+      #620 open 2026-02-20 Fix _rest_of_line regex alternation order for \r\n line endings
+      #680 merged 2026-08-08 fix: make values containing backslashes round-trip through set_key
+      #570 closed 2025-07-20 fix: restore multiline support for unquoted values (fixes #555)
+  rollback       2 hit(s) (all listed)
+      #693 open 2026-08-27 Proposal: optional native parser backend with pure-Python fallback
+      #694 open 2026-08-27 Add an optional native parser backend with pure-Python fallback
+  resume         2 hit(s) (all listed)
+      #113 closed 2018-05-21 AttributeError: module 'importlib._bootstrap' has no attribute 'SourceFileLoader'
+      #53 closed 2017-04-07 Error when installing with Python 3.6
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #631 open 2026-03-15 Add `strict` parameter to `load_dotenv()` and `dotenv_values()` for fail-fast behavior
+  destroys       0 hit(s)
+  overwrite      25 hit(s) (all listed)
+      #315 open 2021-04-01 Allow overwrite value by None if already defined
+      #591 open 2025-11-18 Feature Request: Exception or Warning on Duplicate Configuration Items
+      #644 open 2026-05-05 Feature Request: Automatically copy `default.env` to `.env`
+      #418 open 2022-08-19 feature request: load multiple `.env` file before running a command
+      #630 open 2026-03-12 feat: generate template from .env file
+      #665 open 2026-06-21 chore(deps): update pytest requirement from >=9.0.3 to >=9.1.1
+      #674 open 2026-07-12 chore(deps): update mkdocstrings requirement from >=0.24.0 to >=1.0.6
+      #675 open 2026-07-19 chore(deps): update mkdocs-material requirement from >=9.5.0 to >=9.7.7
+      #690 closed 2026-08-23 fix: do not read through a symlink when rewriting a .env file
+      #652 merged 2026-05-30 chore(deps): update mkdocs-include-markdown-plugin requirement from >=6.0.0 to >=7.3.0
+      #659 closed 2026-06-14 chore(deps): update pytest requirement from >=9.0.3 to >=9.1.0
+      #653 merged 2026-05-30 chore(deps): update pytest requirement from >=3.9 to >=9.0.3
+      #658 merged 2026-06-07 ci(deps): bump actions/checkout from 6.0.2 to 6.0.3 in the github-actions group
+      #664 closed 2026-06-21 ci(deps): bump actions/checkout from 6.0.3 to 7.0.0 in the github-actions group
+      #668 closed 2026-06-28 ci(deps): bump the github-actions group across 1 directory with 2 updates
+      #651 merged 2026-05-30 ci(deps): bump peaceiris/actions-gh-pages from 4.0.0 to 4.1.0 in the github-actions group
+      #593 merged 2025-11-24 Bump actions/checkout from 5 to 6 in the github-actions group
+      #572 closed 2025-08-11 Bump actions/checkout from 4 to 5 in the github-actions group
+      #577 merged 2025-09-08 Bump the github-actions group across 1 directory with 2 updates
+      #529 merged 2024-08-05 Bump the github-actions group with 2 updates
+  clobber        1 hit(s) (all listed)
+      #193 closed 2019-06-24 Pin wheel to latest version 0.33.4
+  blank          14 hit(s) (all listed)
+      #704 open 2026-09-15 Preserve blank lines when setting or unsetting dotenv keys
+      #669 open 2026-06-30 Handle CRLF invalid lines in parser recovery
+      #630 open 2026-03-12 feat: generate template from .env file
+      #703 open 2026-09-15 Add unload_dotenv() to reverse load_dotenv for tests
+      #695 open 2026-09-06 Fix find_dotenv in interactive IDE consoles
+      #700 merged 2026-09-12 Fix dotenv get exiting with code 1 for empty string values
+      #643 open 2026-05-05 Add on_duplicate parameter to handle duplicate keys
+      #604 merged 2026-01-11 Add Windows testing to CI
+      #510 closed 2024-03-30 How to disable python-dotenv
+      #487 closed 2023-10-10 easily allow sourcing .env-file in bash
+      #21 closed 2016-02-23 dotenv keeps '\r' at end of variables in django
+      #134 closed 2018-09-14 Repeated use of set_key messes up dotenv file
+      #138 closed 2018-09-17 CLI doesn't support interactive tty
+      #190 closed 2019-06-24 Pin ipython to latest version 7.5.0
+  unreadable     1 hit(s) (all listed)
+      #712 open 2026-09-30 fix: skip unreadable .env files during discovery and load
+  garbage        2 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #191 closed 2019-06-24 Pin pytest-cov to latest version 2.7.1
+  mangled        0 hit(s)
+  contents       20 hit(s) (all listed)
+      #691 open 2026-08-24 test: pin the contents kept when a symlinked .env is replaced
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #690 closed 2026-08-23 fix: do not read through a symlink when rewriting a .env file
+      #554 closed 2025-03-19 rewrite always finishes with an error when the file is on a Windows host
+      #496 open 2024-01-12 Connection string in .env-file not read or parsed properly
+      #650 merged 2026-05-30 ci(security): harden CI/CD supply chain with SHA pinning and least-privilege permissions
+      #638 merged 2026-03-26 Fix caching for empty dotenv files
+      #605 merged 2026-01-11 Docs: Improve readability of reference page
+      #339 closed 2021-06-25 File collision with Ruby dotenv on /usr/bin/dotenv
+      #331 closed 2021-06-12 Changing env file during after loading does not allow update of env variables
+      #444 closed 2022-12-14 dotenv run is overriding existing environment variables
+      #398 merged 2022-04-17 Improve documentation with direct use of MkDocs
+      #308 closed 2021-03-25 Stream as any text file?
+      #285 closed 2020-11-03 JSON Values are improperly stored
+      #318 merged 2021-04-28 Fix tests for build environment relying on `PYTHONPATH`
+      #35 closed 2016-11-15 Wrong parsing of env variables in single quotes
+      #55 closed 2017-05-03 Add `load` command to `dotenv` application
+      #204 closed 2019-09-24 Malformed .env loads silently
+      #227 closed 2020-01-20 python-dotenv fails to install on linux/ubuntu 
+      #256 closed 2020-06-18 Override / interpolate of variables working incorrectly
+  in-place       29 hit(s) (all listed)
+      #703 open 2026-09-15 Add unload_dotenv() to reverse load_dotenv for tests
+      #678 open 2026-07-31 Reject a key that set_key cannot write faithfully
+      #647 open 2026-05-13 fix: write set_key values containing single quotes as double-quoted
+      #496 open 2024-01-12 Connection string in .env-file not read or parsed properly
+      #419 open 2022-08-23 ModuleNotFoundError: No module named '__main__' / load_dotenv() error on the latest Azure Functions (Python 3.9, Linux)
+      #599 open 2025-12-13 feat: Add waiting logic for FIFO files that may not be immediately readable
+      #615 merged 2026-02-08 fix: apply expanduser to dotenv_path
+      #525 closed 2024-07-15 support expanduser() for dotenv_path
+      #688 closed 2026-08-20 Draft: add -m/--mask flag to dotenv list (sensitivity-gated)
+      #472 closed 2023-07-07 Installing backend dependencies error
+      #321 closed 2021-05-09 load_dotenv() returns True even if .env file is not found
+      #526 closed 2024-07-19 Package ignores the first environment variable in a file
+      #297 closed 2021-01-04 requireFile option for strict checking of env file existence
+      #432 merged 2022-10-20 Fix type hint for dotenv_path var, add StrPath alias
+      #369 closed 2021-12-21 Support for passing ```dict``` or ```json``` as parameters to ```load_dotenv``` method
+      #408 closed 2022-05-30 Help with using dotenv in a distributable cli package to store a user's 3rd party API keys locally
+      #82 closed 2018-01-12 Multiline value not working as expected, better doc example needed
+      #333 closed 2021-06-17 Can you use a more well-known license, e.g. Apache ? 
+      #309 closed 2021-03-26 Type conversion when output via dotenv_values()
+      #124 closed 2018-08-03 PR #109 breaks code that needs env file in the install directory
+  unclean        0 hit(s)
+  shutdown       2 hit(s) (all listed)
+      #522 closed 2024-07-08 Enhance `dotenv run`: Switch to `execvpe` for better resource management and signal handling
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+  reboot         1 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+  disk+full      0 hit(s)
+  data+loss      1 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+  partial+write  1 hit(s) (all listed)
+      #721 open 2026-10-05 Clean up temporary files when closing a rewrite fails
+  crash+safe     1 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+  atomic+write   2 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #189 closed 2019-06-24 Pin click to latest version 7.0
+  lock+file      4 hit(s) (all listed)
+      #627 open 2026-03-11 fix: incorrect uv commands in CONTRIBUTING.md and .gitignore update
+      #320 closed 2021-05-03 Poetry/PyPI issue getting info for python-dotenv  (0.17.1)
+      #233 closed 2020-02-04 Breaking change in 0.10.5
+      #227 closed 2020-01-20 python-dotenv fails to install on linux/ubuntu 
+  write+failure  10 hit(s) (all listed)
+      #721 open 2026-10-05 Clean up temporary files when closing a rewrite fails
+      #678 open 2026-07-31 Reject a key that set_key cannot write faithfully
+      #585 open 2025-10-19 feat: unlink_after_load - unlink .env file after calling load_dotenv
+      #686 merged 2026-08-19 fix: don't leak or mask errors when rewrite cleanup fails on Windows
+      #709 merged 2026-09-29 Fix test_run_with_command_flags on macOS (BSD printenv)
+      #680 merged 2026-08-08 fix: make values containing backslashes round-trip through set_key
+      #676 open 2026-07-26 ci(deps): bump the github-actions group across 1 directory with 3 updates
+      #363 closed 2021-11-10 Documentation should make clear what path formats for --file are allowed
+      #423 merged 2022-09-04 fix: out of scope error when "dest" variable is undefined #413
+      #193 closed 2019-06-24 Pin wheel to latest version 0.33.4
+  file+contents  15 hit(s) (all listed)
+      #713 open 2026-10-01 set_key and unset_key don't fsync before replacing the .env file
+      #691 open 2026-08-24 test: pin the contents kept when a symlinked .env is replaced
+      #690 closed 2026-08-23 fix: do not read through a symlink when rewriting a .env file
+      #496 open 2024-01-12 Connection string in .env-file not read or parsed properly
+      #554 closed 2025-03-19 rewrite always finishes with an error when the file is on a Windows host
+      #638 merged 2026-03-26 Fix caching for empty dotenv files
+      #339 closed 2021-06-25 File collision with Ruby dotenv on /usr/bin/dotenv
+      #331 closed 2021-06-12 Changing env file during after loading does not allow update of env variables
+      #308 closed 2021-03-25 Stream as any text file?
+      #285 closed 2020-11-03 JSON Values are improperly stored
+      #35 closed 2016-11-15 Wrong parsing of env variables in single quotes
+      #55 closed 2017-05-03 Add `load` command to `dotenv` application
+      #204 closed 2019-09-24 Malformed .env loads silently
+      #227 closed 2020-01-20 python-dotenv fails to install on linux/ubuntu 
+      #256 closed 2020-06-18 Override / interpolate of variables working incorrectly
+
+== 51 terms run; 35 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

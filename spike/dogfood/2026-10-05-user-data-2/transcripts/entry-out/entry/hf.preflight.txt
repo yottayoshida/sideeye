@@ -1,0 +1,23 @@
+[90mHint: The `hf-cli` skill is not installed. Run `hf skills add -g` to teach your AI agents how to use the `hf` CLI.[0m
+Successfully logged out from access token: hf_a.
+[90mHint: The `hf-cli` skill is not installed. Run `hf skills add -g` to teach your AI agents how to use the `hf` CLI.[0m
+Successfully logged out from access token: hf_a.
+PREFLIGHT  recording accepted — 7 state-changing operation(s) observed
+
+cwd          /s/hf-in
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 7 operations (7114 syscall lines examined, 82 in scope of the judged state), witness strace
+processes    1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/hf --cwd "/s/hf-in" --operation "hf auth logout --token-name hf_a" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

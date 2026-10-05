@@ -1,0 +1,73 @@
+== stripe/stripe-cli (label bug)
+#2045 2026-09-17 comments=0 first_project_reply=none
+#1906 2026-08-14 comments=1 first_project_reply=none
+#1694 2026-06-18 comments=7 first_project_reply=COLLABORATOR 2026-06-18
+#1688 2026-06-16 comments=1 first_project_reply=COLLABORATOR 2026-06-16
+#1650 2026-06-09 comments=1 first_project_reply=COLLABORATOR 2026-06-09
+#1649 2026-06-09 comments=2 first_project_reply=COLLABORATOR 2026-06-09
+#1620 2026-05-29 comments=1 first_project_reply=none
+#1568 2026-04-30 comments=2 first_project_reply=COLLABORATOR 2026-05-07
+#1521 2026-03-28 comments=0 first_project_reply=none
+#1483 2026-03-14 comments=0 first_project_reply=none
+
+== infracost/infracost (label bug)
+#3466 2025-10-08 comments=2 first_project_reply=MEMBER 2025-10-16
+#3375 2025-04-16 comments=1 first_project_reply=MEMBER 2025-05-23
+#3370 2025-04-09 comments=2 first_project_reply=CONTRIBUTOR 2025-05-01
+#3352 2025-03-12 comments=5 first_project_reply=MEMBER 2025-03-12
+#3218 2024-10-07 comments=16 first_project_reply=MEMBER 2024-11-12
+#3087 2024-05-30 comments=6 first_project_reply=MEMBER 2024-05-30
+#3064 2024-05-07 comments=0 first_project_reply=none
+#3011 2024-04-10 comments=0 first_project_reply=none
+#3005 2024-04-09 comments=1 first_project_reply=CONTRIBUTOR 2026-04-27
+#3004 2024-04-08 comments=2 first_project_reply=MEMBER 2024-04-09
+
+== PrefectHQ/prefect (label bug)
+#23282 2026-10-05 comments=0 first_project_reply=none
+#23276 2026-10-03 comments=0 first_project_reply=none
+#23269 2026-10-02 comments=0 first_project_reply=none
+#23267 2026-10-02 comments=0 first_project_reply=none
+#23243 2026-09-30 comments=0 first_project_reply=none
+#23239 2026-09-30 comments=0 first_project_reply=none
+#23234 2026-09-29 comments=0 first_project_reply=none
+#23227 2026-09-29 comments=0 first_project_reply=none
+#23223 2026-09-28 comments=0 first_project_reply=none
+#23219 2026-09-27 comments=0 first_project_reply=none
+
+== meltano/meltano (label kind/bug)
+#10372 2026-09-30 comments=0 first_project_reply=none
+#9981 2026-04-30 comments=2 first_project_reply=COLLABORATOR 2026-05-08
+#9941 2026-04-09 comments=1 first_project_reply=COLLABORATOR 2026-04-09
+#9859 2026-02-19 comments=3 first_project_reply=COLLABORATOR 2026-02-20
+#9791 2026-01-31 comments=2 first_project_reply=COLLABORATOR 2026-01-31
+#9785 2026-01-30 comments=0 first_project_reply=none
+#9702 2025-12-26 comments=0 first_project_reply=none
+#9674 2025-12-08 comments=4 first_project_reply=COLLABORATOR 2025-12-09
+#9427 2025-08-04 comments=9 first_project_reply=none
+#9424 2025-08-02 comments=1 first_project_reply=none
+
+== astropy/astropy (label bug)
+#20525 2026-10-02 comments=0 first_project_reply=none
+#20522 2026-10-02 comments=2 first_project_reply=CONTRIBUTOR 2026-10-02
+#20515 2026-10-01 comments=0 first_project_reply=none
+#20512 2026-10-01 comments=0 first_project_reply=none
+#20500 2026-09-28 comments=6 first_project_reply=CONTRIBUTOR 2026-09-29
+#20489 2026-09-28 comments=7 first_project_reply=MEMBER 2026-09-28
+#20487 2026-09-27 comments=0 first_project_reply=none
+#20484 2026-09-25 comments=5 first_project_reply=CONTRIBUTOR 2026-09-25
+#20467 2026-09-23 comments=1 first_project_reply=none
+#20457 2026-09-22 comments=21 first_project_reply=MEMBER 2026-09-22
+
+== schrodinger/pymol-open-source (label bug)
+#447 2025-04-03 comments=14 first_project_reply=MEMBER 2025-04-04
+#445 2025-03-26 comments=0 first_project_reply=none
+#169 2021-02-18 comments=0 first_project_reply=none
+#115 2020-07-16 comments=5 first_project_reply=CONTRIBUTOR 2020-07-16
+#112 2020-07-10 comments=5 first_project_reply=CONTRIBUTOR 2020-07-10
+#109 2020-07-08 comments=1 first_project_reply=CONTRIBUTOR 2020-07-09
+#94 2020-05-04 comments=3 first_project_reply=CONTRIBUTOR 2020-05-04
+#43 2019-06-30 comments=8 first_project_reply=CONTRIBUTOR 2019-06-30
+#41 2019-06-28 comments=6 first_project_reply=MEMBER 2019-06-28
+#35 2019-06-13 comments=0 first_project_reply=none
+
+rule11-all: done 2026-10-05T02:37:02Z

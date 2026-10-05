@@ -1,0 +1,347 @@
+== novelty pre-scan: Kaggle/kaggle-cli
+== date: 2026-10-05T03:32:24Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          19 hit(s) (all listed)
+      #1205 open 2026-09-25 fix(kernels): reject versioned kernel identifiers in delete
+      #384 open 2021-09-30 Python-API based download and functionality.
+      #1092 merged 2026-07-07 Fix crash when running kaggle command with invalid credentials
+      #1110 merged 2026-07-14 Phase 5: Consolidated Bug Fixes
+      #1146 merged 2026-07-23 fix(benchmarks): support owner/task separator in benchmark commands
+      #1138 merged 2026-07-18 fix(cli): fix collaborator role handling in dataset metadata update
+      #1082 merged 2026-06-29 fix(cli): stop treating subcommand -v as version flag
+      #1066 closed 2026-06-20 kaggle quota is broken: false "no-auth-needed" short-circuit on -v, and a duration-parsing crash in kagglesdk
+      #1064 closed 2026-06-17 `kaggle quota` fails when API returns whole-second duration like `0s`
+      #1040 merged 2026-05-31 fix: Fix JSON serialization error of `ApiModel` in `print_obj`
+      #984 closed 2026-04-25 Episode download fails for chunked serverside response
+      #988 merged 2026-04-28 fix (cli): kaggle benchmark tasks
+      #923 closed 2026-02-03 PyPI 1.8.3: kaggle competitions submissions crashes (page_number mismatch)
+      #951 merged 2026-03-30 fix: handle 403 and null files in kernels_output
+      #904 closed 2026-01-27 Large file downloads (30+ GB) fail frequently - lacks retry, timeout, and robust error handling
+      #873 closed 2025-11-30 KeyError: 'KAGGLE_API_TOKEN' when using ~/.kaggle/access_token (new auth flow)
+      #198 closed 2019-07-06 AttributeError: 'KernelPushResponse' object has no attribute 'newUrl'
+      #559 merged 2024-03-26 Bump cryptography from 41.0.3 to 42.0.4 in /tools/releases
+      #137 closed 2018-12-18 Kaggle proxy connection fails: Tunnel connection failed: 407 Proxy Authentication Required
+  corrupt        8 hit(s) (all listed)
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+      #1184 merged 2026-08-27 fix(cli): honor --unzip for single file downloads and add it to competitions download
+      #1142 merged 2026-07-22 fix(cli): prevent stale file corruption when resuming downloads
+      #988 merged 2026-04-28 fix (cli): kaggle benchmark tasks
+      #619 closed 2024-08-11 Bad zip file?
+      #620 merged 2024-08-11 Improve Zip File Error Handling with Instructions
+      #604 closed 2024-07-12 Unenable to use SadTalker Gradio WebUI on Kaggle
+      #462 closed 2023-03-07 Support for resumed downloads (enabled by default)
+  corruption     3 hit(s) (all listed)
+      #1142 merged 2026-07-22 fix(cli): prevent stale file corruption when resuming downloads
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+      #1110 merged 2026-07-14 Phase 5: Consolidated Bug Fixes
+  truncated      16 hit(s) (all listed)
+      #1152 open 2026-07-29 feat(ui): add rich as an opt-in output format
+      #1012 open 2026-05-15 Restructure benchmarks skill and rename to kaggle-benchmarks
+      #447 closed 2022-11-07 dataset-metadata.json fails to upload file and column descriptions
+      #1162 merged 2026-08-05 chore(deps): bump cryptography from 48.0.1 to 50.0.0 in /tools/releases
+      #1026 merged 2026-05-26 [Off Platform SDK] format table view
+      #1065 merged 2026-06-19 Bump cryptography from 46.0.7 to 48.0.1 in /tools/releases
+      #1017 merged 2026-05-20 Bump idna from 3.7 to 3.15 in /tools/releases
+      #1010 merged 2026-05-11 Bump urllib3 from 2.6.3 to 2.7.0 in /tools/releases
+      #950 merged 2026-03-30 Bump pygments from 2.16.1 to 2.20.0 in /tools/releases
+      #929 merged 2026-02-11 Bump cryptography from 44.0.1 to 46.0.5 in /tools/releases
+      #877 merged 2025-12-06 Bump urllib3 from 2.5.0 to 2.6.0 in /tools/releases
+      #809 merged 2025-06-19 Bump urllib3 from 2.2.2 to 2.5.0 in /tools/releases
+      #602 merged 2024-07-09 Bump zipp from 3.16.2 to 3.19.1 in /tools/releases
+      #559 merged 2024-03-26 Bump cryptography from 41.0.3 to 42.0.4 in /tools/releases
+      #583 merged 2024-05-21 Bump requests from 2.31.0 to 2.32.0 in /tools/releases
+      #592 merged 2024-06-17 Bump urllib3 from 2.0.7 to 2.2.2 in /tools/releases
+  truncate       17 hit(s) (all listed)
+      #1152 open 2026-07-29 feat(ui): add rich as an opt-in output format
+      #1012 open 2026-05-15 Restructure benchmarks skill and rename to kaggle-benchmarks
+      #1025 closed 2026-05-23 fix(retry): restore jitter in _calculate_backoff_delay
+      #447 closed 2022-11-07 dataset-metadata.json fails to upload file and column descriptions
+      #1162 merged 2026-08-05 chore(deps): bump cryptography from 48.0.1 to 50.0.0 in /tools/releases
+      #1026 merged 2026-05-26 [Off Platform SDK] format table view
+      #1065 merged 2026-06-19 Bump cryptography from 46.0.7 to 48.0.1 in /tools/releases
+      #1017 merged 2026-05-20 Bump idna from 3.7 to 3.15 in /tools/releases
+      #1010 merged 2026-05-11 Bump urllib3 from 2.6.3 to 2.7.0 in /tools/releases
+      #950 merged 2026-03-30 Bump pygments from 2.16.1 to 2.20.0 in /tools/releases
+      #929 merged 2026-02-11 Bump cryptography from 44.0.1 to 46.0.5 in /tools/releases
+      #877 merged 2025-12-06 Bump urllib3 from 2.5.0 to 2.6.0 in /tools/releases
+      #809 merged 2025-06-19 Bump urllib3 from 2.2.2 to 2.5.0 in /tools/releases
+      #602 merged 2024-07-09 Bump zipp from 3.16.2 to 3.19.1 in /tools/releases
+      #559 merged 2024-03-26 Bump cryptography from 41.0.3 to 42.0.4 in /tools/releases
+      #583 merged 2024-05-21 Bump requests from 2.31.0 to 2.32.0 in /tools/releases
+      #592 merged 2024-06-17 Bump urllib3 from 2.0.7 to 2.2.2 in /tools/releases
+  empty          41 hit(s) (all listed)
+      #404 open 2022-01-16 "data" section of dataset-metadata.json empty in recent requests?
+      #1207 open 2026-10-01 File and column descriptions from dataset-metadata.json are still not saved (after #1055)
+      #1152 open 2026-07-29 feat(ui): add rich as an opt-in output format
+      #1140 open 2026-07-20 Kaggle MCP save_notebook silently drops all data-source fields (competition/dataset/kernel/model)
+      #330 open 2021-02-22 Kaggle competition list filters not working
+      #212 open 2019-08-22 unable to unset a wrongly entered proxy
+      #370 open 2021-08-10 Error listing dataset files
+      #1206 merged 2026-10-01 fix(kernels): stream kernels output files through download_file
+      #1195 merged 2026-09-14 fix(cli): show why a submission failed in competitions submission
+      #1161 merged 2026-08-04 fix(cli): exclude omitted overview and usage from model instance update mask
+      #1190 closed 2026-09-07 competitions submission and submissions show ERROR without the reason the API returns
+      #1146 merged 2026-07-23 fix(benchmarks): support owner/task separator in benchmark commands
+      #1181 merged 2026-08-21 fix(cli): keep the requested folder when downloading a single file
+      #1091 merged 2026-07-03 fix(cli): restore fallback for unknown kernel language/type in kernels_pull
+      #1076 closed 2026-06-26 Model delete commands print success message after cancelled confirmation
+      #1077 merged 2026-06-26 fix(cli): avoid success message after cancelled model deletion
+      #1026 merged 2026-05-26 [Off Platform SDK] format table view
+      #1030 merged 2026-05-27 Polish benchmarks CLI error messages
+      #1019 merged 2026-05-21 feat(benchmarks): Add log and download source files
+      #1037 merged 2026-05-29 Upsert keys in .env for benchmarks auth/init instead of appending
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    8 hit(s) (all listed)
+      #1177 open 2026-08-15 feat(kernels): add kernels run command
+      #1142 merged 2026-07-22 fix(cli): prevent stale file corruption when resuming downloads
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+      #999 merged 2026-05-05 Rewrite `kaggle kernels logs --follow` to use SSE log stream
+      #494 closed 2023-08-29 Unable to download files with API
+      #24 closed 2018-04-13 Download resumption
+      #341 closed 2021-04-06 Resuming downloads
+      #462 closed 2023-03-07 Support for resumed downloads (enabled by default)
+  interrupt      12 hit(s) (all listed)
+      #1177 open 2026-08-15 feat(kernels): add kernels run command
+      #1142 merged 2026-07-22 fix(cli): prevent stale file corruption when resuming downloads
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+      #999 merged 2026-05-05 Rewrite `kaggle kernels logs --follow` to use SSE log stream
+      #904 closed 2026-01-27 Large file downloads (30+ GB) fail frequently - lacks retry, timeout, and robust error handling
+      #905 merged 2026-01-27 Add automatic retry and resume to download_file
+      #494 closed 2023-08-29 Unable to download files with API
+      #24 closed 2018-04-13 Download resumption
+      #310 closed 2020-10-29 Add the function of resuming from the point of interruption.
+      #341 closed 2021-04-06 Resuming downloads
+      #462 closed 2023-03-07 Support for resumed downloads (enabled by default)
+      #104 closed 2018-10-09 Is it possible to accept the rules of the competition via the API?
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          4 hit(s) (all listed)
+      #483 open 2023-06-30 :grey_question: API endpoint to trigger a notebook execution :nerd_face: 
+      #861 closed 2025-11-16 Title
+
+Personal Health & Habit Coach AI Agent
+      #101 closed 2018-09-27 ModuleNotFoundError: No module named 'kaggle.competitions'
+      #176 closed 2019-04-27 kaggle does not work with colab GPU runtime type
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           14 hit(s) (all listed)
+      #270 open 2020-06-01 competitions_data_list_files - listing files of a competition
+      #1206 merged 2026-10-01 fix(kernels): stream kernels output files through download_file
+      #458 open 2023-02-01 kaggle competitions files not showing all the files
+      #1176 merged 2026-08-15 fix(kernels): check HTTP status when downloading outputs
+      #1184 merged 2026-08-27 fix(cli): honor --unzip for single file downloads and add it to competitions download
+      #1181 merged 2026-08-21 fix(cli): keep the requested folder when downloading a single file
+      #1038 merged 2026-05-29 correct download labels — show output dir, rename Skipped → Cached
+      #1178 closed 2026-08-18 datasets and competitions download -f discards the directory part of the requested path
+      #959 merged 2026-04-08 Kaggle CLI: Dataset image upload via datasets metadata --update
+      #1026 merged 2026-05-26 [Off Platform SDK] format table view
+      #869 merged 2025-11-24 Fix memory exhaustion when downloading large files
+      #501 closed 2023-09-13 memory leak when downloading data.
+      #150 closed 2019-01-31 Upload not stopping.
+      #378 closed 2021-09-11 Where is the kaggle kernel .ipynb stored?
+  partial        15 hit(s) (all listed)
+      #300 open 2020-09-27 Partial Dataset Download
+      #1150 merged 2026-07-28 fix(cli): prevent silent partial uploads on upload failure
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+      #1206 merged 2026-10-01 fix(kernels): stream kernels output files through download_file
+      #1142 merged 2026-07-22 fix(cli): prevent stale file corruption when resuming downloads
+      #1106 merged 2026-07-14 test: improve coverage for Models API (Phase 2)
+      #1104 merged 2026-07-14 feat(cli): add competitions settings update command
+      #1181 merged 2026-08-21 fix(cli): keep the requested folder when downloading a single file
+      #1102 merged 2026-07-14 Improve unit test coverage for kernels push, pull, and download_file
+      #1019 merged 2026-05-21 feat(benchmarks): Add log and download source files
+      #1010 merged 2026-05-11 Bump urllib3 from 2.6.3 to 2.7.0 in /tools/releases
+      #754 closed 2025-05-05 Shouldn't  API client pass `stream = True` to the `requests` when downloading datasets?
+      #816 merged 2025-06-30 Bump urllib3 from 2.3.0 to 2.5.0
+      #809 merged 2025-06-19 Bump urllib3 from 2.2.2 to 2.5.0 in /tools/releases
+      #425 closed 2022-05-21 Attempting to use TensorFlow Lite Model Maker, but having problems installing
+  incomplete     10 hit(s) (all listed)
+      #255 open 2020-03-24 Dataset version creation error: Incompatible Dataset Type
+      #1113 merged 2026-07-15 fix(cli): resumable upload start offset when zero bytes uploaded
+      #1142 merged 2026-07-22 fix(cli): prevent stale file corruption when resuming downloads
+      #1045 closed 2026-06-03 Download output files is limited to first page, and the returned next page token can not be used, need pagination for kaggle kernels output!
+      #905 merged 2026-01-27 Add automatic retry and resume to download_file
+      #511 closed 2023-10-12 competition_list_files returns incomplete list of competition files
+      #787 merged 2025-05-30 Add canonical aliases for push/pull
+      #676 merged 2025-01-14 Update build script and change log; put kagglesdk in src
+      #592 merged 2024-06-17 Bump urllib3 from 2.0.7 to 2.2.2 in /tools/releases
+      #328 closed 2021-02-04 Support for resumable downloads
+  dataloss       0 hit(s)
+  recover        3 hit(s) (all listed)
+      #1052 closed 2026-06-05 Add CLI telemetry beacon for benchmarks init/auth outcomes
+      #999 merged 2026-05-05 Rewrite `kaggle kernels logs --follow` to use SSE log stream
+      #905 merged 2026-01-27 Add automatic retry and resume to download_file
+  recovery       3 hit(s) (all listed)
+      #1177 open 2026-08-15 feat(kernels): add kernels run command
+      #904 closed 2026-01-27 Large file downloads (30+ GB) fail frequently - lacks retry, timeout, and robust error handling
+      #905 merged 2026-01-27 Add automatic retry and resume to download_file
+  rollback       0 hit(s)
+  resume         36 hit(s) (all listed)
+      #526 open 2023-12-12 How to resume the download of the large dataset?
+      #1206 merged 2026-10-01 fix(kernels): stream kernels output files through download_file
+      #129 open 2018-11-19 I cannot submit results
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+      #1166 merged 2026-08-07 fix(cli): secure resumable upload state directory
+      #488 open 2023-07-13 Cannot Use API to submit or submissions 
+      #1142 merged 2026-07-22 fix(cli): prevent stale file corruption when resuming downloads
+      #1113 merged 2026-07-15 fix(cli): resumable upload start offset when zero bytes uploaded
+      #1150 merged 2026-07-28 fix(cli): prevent silent partial uploads on upload failure
+      #1110 merged 2026-07-14 Phase 5: Consolidated Bug Fixes
+      #1185 merged 2026-08-28 feat(cli): add --no-run to kernels push to save a version without running it
+      #1109 merged 2026-07-14 test: improve coverage for upload helpers and clean up obsolete API (Phase 4)
+      #1102 merged 2026-07-14 Improve unit test coverage for kernels push, pull, and download_file
+      #1154 closed 2026-07-30 How do you fully automate a Kaggle notebook that requires a kernel restart mid-run after installing a library?
+      #988 merged 2026-04-28 fix (cli): kaggle benchmark tasks
+      #905 merged 2026-01-27 Add automatic retry and resume to download_file
+      #884 closed 2025-12-21 Create Vidula_Sagar_Pinjan_Resume.pdf
+      #904 closed 2026-01-27 Large file downloads (30+ GB) fail frequently - lacks retry, timeout, and robust error handling
+      #999 merged 2026-05-05 Rewrite `kaggle kernels logs --follow` to use SSE log stream
+      #865 merged 2025-11-19 Fix resumable download error
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #947 closed 2026-03-27 feat: Add cli for benchmark tasks
+      #243 closed 2020-01-31 Dataset creation error: The requested title "******" is already in use by a dataset. Please choose another title.
+  erasing        2 hit(s) (all listed)
+      #947 closed 2026-03-27 feat: Add cli for benchmark tasks
+      #243 closed 2020-01-31 Dataset creation error: The requested title "******" is already in use by a dataset. Please choose another title.
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      34 hit(s) (all listed)
+      #96 open 2018-09-19 feature request: download to self named folder
+      #1177 open 2026-08-15 feat(kernels): add kernels run command
+      #1193 merged 2026-09-11 fix(kernels): honor -k/--kernel in kernels pull
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+      #1178 closed 2026-08-18 datasets and competitions download -f discards the directory part of the requested path
+      #1110 merged 2026-07-14 Phase 5: Consolidated Bug Fixes
+      #1162 merged 2026-08-05 chore(deps): bump cryptography from 48.0.1 to 50.0.0 in /tools/releases
+      #1019 merged 2026-05-21 feat(benchmarks): Add log and download source files
+      #1065 merged 2026-06-19 Bump cryptography from 46.0.7 to 48.0.1 in /tools/releases
+      #890 closed 2026-01-08 你们的api调用简直是shit
+      #961 merged 2026-04-08 Bump cryptography from 46.0.6 to 46.0.7 in /tools/releases
+      #949 merged 2026-03-29 Bump cryptography from 46.0.5 to 46.0.6 in /tools/releases
+      #1017 merged 2026-05-20 Bump idna from 3.7 to 3.15 in /tools/releases
+      #947 closed 2026-03-27 feat: Add cli for benchmark tasks
+      #1010 merged 2026-05-11 Bump urllib3 from 2.6.3 to 2.7.0 in /tools/releases
+      #941 merged 2026-03-26 Bump requests from 2.32.4 to 2.33.0 in /tools/releases
+      #929 merged 2026-02-11 Bump cryptography from 44.0.1 to 46.0.5 in /tools/releases
+      #870 merged 2025-11-24 Bump cryptography from 42.0.4 to 44.0.1 in /tools/releases
+      #950 merged 2026-03-30 Bump pygments from 2.16.1 to 2.20.0 in /tools/releases
+      #889 merged 2026-01-08 Bump urllib3 from 2.6.0 to 2.6.3 in /tools/releases
+  clobber        1 hit(s) (all listed)
+      #397 open 2021-12-18 kaggle_api_extended.py clobbering kaggle.json with environment keys
+  blank          11 hit(s) (all listed)
+      #1211 open 2026-10-03 fix(quota): include UTC offset in refresh timestamps
+      #1067 open 2026-06-21 The image link cannot be displayed.
+      #364 open 2021-07-02 Failure on Create/Update Datasets
+      #1190 closed 2026-09-07 competitions submission and submissions show ERROR without the reason the API returns
+      #821 closed 2025-07-10 How to enable GPU T4 x 2 in API?
+      #1037 merged 2026-05-29 Upsert keys in .env for benchmarks auth/init instead of appending
+      #998 closed 2026-05-05 Add hackathons CLI and MCP↔CLI parity gate
+      #1026 merged 2026-05-26 [Off Platform SDK] format table view
+      #509 closed 2023-10-03 Missing submission error codes using `api.competition_submissions()`
+      #827 merged 2025-07-11 Add type hints to docstrings
+      #570 closed 2024-04-13 Add Utility Script is Malfunctioning
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #890 closed 2026-01-08 你们的api调用简直是shit
+  mangled        1 hit(s) (all listed)
+      #1111 merged 2026-07-14 test: improve unit test coverage for cli.py
+  contents       16 hit(s) (all listed)
+      #357 open 2021-05-26 issue in CLI competitions leaderboard download for stream contents
+      #473 open 2023-05-16 Kernel runs indefinetely in Active Events popup while "Successfully ran" in the kernel page 
+      #1178 closed 2026-08-18 datasets and competitions download -f discards the directory part of the requested path
+      #1181 merged 2026-08-21 fix(cli): keep the requested folder when downloading a single file
+      #995 closed 2026-05-01 Contradictory docs: schema field description key is 'title' in spec but 'description' in example
+      #998 closed 2026-05-05 Add hackathons CLI and MCP↔CLI parity gate
+      #941 merged 2026-03-26 Bump requests from 2.32.4 to 2.33.0 in /tools/releases
+      #889 merged 2026-01-08 Bump urllib3 from 2.6.0 to 2.6.3 in /tools/releases
+      #508 closed 2023-09-29 Kaggle CLI Failing to download specific files from a large dataset
+      #664 closed 2024-12-22 kaggle kernels output not downloading all folders
+      #118 closed 2018-11-03 How to change the contents of dataset-metadata.jason file in google colaboratory 
+      #565 merged 2024-04-05 Release 1.6.11
+      #354 closed 2021-05-20 fix competitions leaderboard download for stream contents
+      #154 closed 2019-02-13 unable unzip test.zip, using !unzip to specific folder in colab
+      #315 closed 2020-11-21 Download straight to S3
+      #97 closed 2018-09-19 kaggle command fails with google colaboratory
+  in-place       46 hit(s) (all listed)
+      #586 open 2024-06-02 listing model instances doesn't return previous versions
+      #255 open 2020-03-24 Dataset version creation error: Incompatible Dataset Type
+      #483 open 2023-06-30 :grey_question: API endpoint to trigger a notebook execution :nerd_face: 
+      #1183 merged 2026-08-21 Fix misleading code competition submission validation errors
+      #1178 closed 2026-08-18 datasets and competitions download -f discards the directory part of the requested path
+      #1181 merged 2026-08-21 fix(cli): keep the requested folder when downloading a single file
+      #1156 merged 2026-07-30 docs: warn that P100 GPU compute fails with the default image
+      #1091 merged 2026-07-03 fix(cli): restore fallback for unknown kernel language/type in kernels_pull
+      #1037 merged 2026-05-29 Upsert keys in .env for benchmarks auth/init instead of appending
+      #1085 merged 2026-06-30 feat(cli): add competitions data push command
+      #994 merged 2026-04-30 Add Gemini Agent Skill for Benchmarks CLI
+      #1017 merged 2026-05-20 Bump idna from 3.7 to 3.15 in /tools/releases
+      #972 merged 2026-04-22 Add `--format` flag to `datasets status` for JSON output
+      #958 merged 2026-04-07 Change get / update dataset metadata to handle two more metadata fields
+      #866 merged 2025-11-21 Add python-dateutil to pyproject.toml dependencies
+      #873 closed 2025-11-30 KeyError: 'KAGGLE_API_TOKEN' when using ~/.kaggle/access_token (new auth flow)
+      #825 merged 2025-07-11 Use kagglesdk as a package.
+      #742 merged 2025-04-22 Move no-response to proper location
+      #264 closed 2020-04-25 How do I solve ‘Could not find kaggle.json’?
+      #762 merged 2025-05-13 Add kaggle kernels delete
+  unclean        0 hit(s)
+  shutdown       2 hit(s) (all listed)
+      #816 merged 2025-06-30 Bump urllib3 from 2.3.0 to 2.5.0
+      #809 merged 2025-06-19 Bump urllib3 from 2.2.2 to 2.5.0 in /tools/releases
+  reboot         1 hit(s) (all listed)
+      #595 closed 2024-06-22 Rebooting kaggle notebook instance with minimal number of packages
+  disk+full      3 hit(s) (all listed)
+      #1184 merged 2026-08-27 fix(cli): honor --unzip for single file downloads and add it to competitions download
+      #1178 closed 2026-08-18 datasets and competitions download -f discards the directory part of the requested path
+      #1026 merged 2026-05-26 [Off Platform SDK] format table view
+  data+loss      6 hit(s) (all listed)
+      #1140 open 2026-07-20 Kaggle MCP save_notebook silently drops all data-source fields (competition/dataset/kernel/model)
+      #586 open 2024-06-02 listing model instances doesn't return previous versions
+      #1154 closed 2026-07-30 How do you fully automate a Kaggle notebook that requires a kernel restart mid-run after installing a library?
+      #904 closed 2026-01-27 Large file downloads (30+ GB) fail frequently - lacks retry, timeout, and robust error handling
+      #453 closed 2022-12-07 I can't save or save version, always show committing... , which leads to constant data loss, and I can't submit
+      #329 closed 2021-02-14 Error when trying to upload dataset
+  partial+write  2 hit(s) (all listed)
+      #1206 merged 2026-10-01 fix(kernels): stream kernels output files through download_file
+      #1179 merged 2026-08-18 fix(cli): prevent HTTP errors from corrupting resumed downloads
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      8 hit(s) (all listed)
+      #1101 merged 2026-07-14 Regenerate requirements.lock from recent kagglesdk bump
+      #953 merged 2026-04-01 Add pip dependency lock files for supply chain protection
+      #1052 closed 2026-06-05 Add CLI telemetry beacon for benchmarks init/auth outcomes
+      #1019 merged 2026-05-21 feat(benchmarks): Add log and download source files
+      #962 merged 2026-04-09 Release 2.0.1
+      #845 closed 2025-10-10 Download multiple but not all files with a singe ping
+      #24 closed 2018-04-13 Download resumption
+      #425 closed 2022-05-21 Attempting to use TensorFlow Lite Model Maker, but having problems installing
+  write+failure  3 hit(s) (all listed)
+      #996 closed 2026-05-04 Add hackathons CLI commands + MCP/CLI parity gate
+      #904 closed 2026-01-27 Large file downloads (30+ GB) fail frequently - lacks retry, timeout, and robust error handling
+      #618 merged 2024-08-07 Update tests
+  file+contents  10 hit(s) (all listed)
+      #473 open 2023-05-16 Kernel runs indefinetely in Active Events popup while "Successfully ran" in the kernel page 
+      #1178 closed 2026-08-18 datasets and competitions download -f discards the directory part of the requested path
+      #1181 merged 2026-08-21 fix(cli): keep the requested folder when downloading a single file
+      #998 closed 2026-05-05 Add hackathons CLI and MCP↔CLI parity gate
+      #941 merged 2026-03-26 Bump requests from 2.32.4 to 2.33.0 in /tools/releases
+      #508 closed 2023-09-29 Kaggle CLI Failing to download specific files from a large dataset
+      #118 closed 2018-11-03 How to change the contents of dataset-metadata.jason file in google colaboratory 
+      #154 closed 2019-02-13 unable unzip test.zip, using !unzip to specific folder in colab
+      #315 closed 2020-11-21 Download straight to S3
+      #97 closed 2018-09-19 kaggle command fails with google colaboratory
+
+== 51 terms run; 32 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

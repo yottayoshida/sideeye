@@ -1,0 +1,55 @@
+== solvespace
+before:
+  60318 /s/ss/part.slvs
+exit 0
+output:
+  | Written '/s/ss/part.slvs'.
+  | EXIT 0
+after:
+  0 /s/ss/part.slvs
+== ffsubsync
+before:
+  2500 /s/sub/movie.srt
+exit 0
+output:
+  |                         with open(fname or sys.stdout.fileno(),                 
+  |                     "wb") as f:                                                 
+  |                              ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                 
+  |                     ^^^^^^                                                      
+  |                     OSError: [Errno 27] File too large                          
+  | EXIT 0
+after:
+  0 /s/sub/movie.srt
+== pymol
+before:
+  6078 /s/pm/model.pse
+exit 0
+output:
+  | Traceback (most recent call last):
+  |   File "/usr/lib/python3/dist-packages/pymol/exporting.py", line 923, in save
+  |     handle.write(contents)
+  |     ~~~~~~~~~~~~^^^^^^^^^^
+  | OSError: [Errno 27] File too large
+  | EXIT 0
+after:
+  0 /s/pm/model.pse
+== wp-cli
+before:
+  369 /s/wp/wp-config.php
+exit 1
+output:
+  | PHP Notice:  file_put_contents(): Write of 369 bytes failed with errno=27 File too large in phar:///opt/bin/wp/vendor/wp-cli/wp-config-transformer/src/WPConfigTransformer.php on line 366
+  | Error: Could not process the 'wp-config.php' transformation.
+  | Reason: Failed to update the config file.
+  | EXIT 1
+after:
+  0 /s/wp/wp-config.php
+== gltfpack
+before:
+  3788 /s/glp/terrain.glb
+exit 4
+output:
+  | Error saving /s/glp/terrain.glb
+  | EXIT 4
+after:
+  0 /s/glp/terrain.glb

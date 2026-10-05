@@ -1,0 +1,4 @@
+static: /opt/bin/nerdctl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=FNvJ0FDk7k50BrZXFuiF/gRP9-jmr0W0AgrRr-x-f/EaG0SKoBoDE1sB6ezfNF/h35lA_HI2RVuxSe2Ams0, BuildID[sha1]=ff93d9bc3e72c1270539104c6981e01573be8ba7, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/dc --cwd "/s/dc-in" --operation "nerdctl logout registry.example.com" \

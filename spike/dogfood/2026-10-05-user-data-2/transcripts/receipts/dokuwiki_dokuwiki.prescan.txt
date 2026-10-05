@@ -1,0 +1,446 @@
+== novelty pre-scan: dokuwiki/dokuwiki
+== date: 2026-10-05T02:36:10Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          35 hit(s) (all listed)
+      #2138 open 2017-09-26 indexer crashes on IIS / 'dmode' and 'fmode' check for valid range missing
+      #4759 closed 2026-09-06 ~~INFO:syntaxplugins~~ bug and crashes
+      #2362 open 2018-04-30 [Feature Request] [Error Preventing] Checking PHP version in the pre-upgrade phase
+      #2032 open 2017-06-27 Incorrect media type (image extension) causes fetch.php to fail silently
+      #1806 open 2017-01-19 Draft in Firefox
+      #2514 open 2018-09-22 Remove page lock when leaving the editing page
+      #3783 open 2022-09-30 TypeError: call_user_func_array()
+      #2359 open 2018-04-28 Avoid changes in the capitalization of file names
+      #4046 open 2023-08-30 Extension Manager Feature Request: Mark incompatible plugins and plugins with unspecified compatibility
+      #1433 closed 2015-12-20 Saving drafts mechanism doesn't work on browser crash or connection loss
+      #4672 merged 2026-06-25 make getUserData() fail safely on non-string input
+      #4567 closed 2025-12-02 ERROR removing multiple users
+      #4472 closed 2025-06-17 Upgrade to Librarian caused DokuWiki to crash due to inc/common.php using deprecatd strftime()
+      #4016 merged 2023-07-26 ldap: do not crash if gidnumber is not present
+      #4028 closed 2023-08-14 504 Gateway Timeout - Error AH01075
+      #3971 closed 2023-05-17 Fixing PHP 8.2 compatibility for 2 abandoned plugins mediasyntax and WikipediaSnippet - GitHub Sponsor consulting fee as needed
+      #3956 closed 2023-04-15 Attempt to edit "data" results in editing forbidden.html page
+      #3673 closed 2022-05-05 Modify core to facilitate autolink4 plugin for nonlatin languages (e.g. Persian)
+      #2096 merged 2017-08-27 Test code for workflow 'show - sectionedit - save/cancel'
+      #2303 merged 2018-04-06 Mark inputs of styling plugin as required
+  corrupt        20 hit(s) (all listed)
+      #3735 open 2022-08-06 CSS3 semantics are corrupted by the css.php preprocessor
+      #4606 open 2026-03-23 Parser Error: Greedy matching of double curly braces {{ across table cells/structures mangles content
+      #2965 open 2020-01-19 Extension Manager is not consistent it seems
+      #4680 merged 2026-06-28 fix duplicated TOC caused by corrupted persistent metadata (#3179)
+      #4457 closed 2025-05-28 Update .gitattributes
+      #4380 closed 2024-12-17 users.auth.php corrupted by do=profil
+      #4481 closed 2025-07-03 Is it possible for dokuwiki to support SQLite database
+      #4099 closed 2023-11-01 plain auth # corrupts user file
+      #3898 closed 2023-02-20 Strange recent changes listing
+      #3644 closed 2022-03-19 Error with register mail
+      #3542 closed 2021-10-28 All simple links are broken in "Hogfather"
+      #3475 closed 2021-04-13 Empty paragraph in namespace with template
+      #897 closed 2014-10-11 DokuWiki JavaScript minimizer generates corrupted code
+      #970 closed 2014-12-17 Media File Downloads Corrupted in Release 2014-09-29b 
+      #1943 closed 2017-04-07 Corrupted group names
+      #1813 closed 2017-01-26 path resolution broken on Windows Server 2012 R2
+      #1680 closed 2016-09-03 DokuWiki on a Stick - Crash using updated Apache and PHP version
+      #2087 closed 2017-08-22 p_get_metadata problem
+      #2450 closed 2018-07-19 CVE-2018-15474: CSV Formula Injection vulnerability
+      #2966 closed 2020-01-19 Installing a plugin yields a blank page and a corrupted Dokuwiki instance
+  corruption     3 hit(s) (all listed)
+      #3735 open 2022-08-06 CSS3 semantics are corrupted by the css.php preprocessor
+      #4197 closed 2024-02-08 Not enough validation of real name and email of users ("Possibly corruption in your user file")
+      #1025 closed 2015-02-08 Footnote causes corruption (because of an hyperlink with no space before it)
+  truncated      9 hit(s) (all listed)
+      #3913 open 2023-03-09 Line numbers in code truncated in some cases
+      #1949 open 2017-04-12 AJAX quick search box enhancements
+      #2559 open 2018-10-29 do not remove blank lines from code
+      #4114 closed 2023-11-28 Bump phpseclib/phpseclib from 2.0.42 to 3.0.34
+      #3840 closed 2022-11-28 502 Bad Gateway nginx/1.22.1
+      #3922 closed 2023-03-14 Fix #3919 log viewer runs into OOM
+      #2466 closed 2018-08-09 fetch.php truncates the image as to 'fetchsize' configuration setting, causing the image to be invalid
+      #2953 closed 2020-01-06 Translation
+      #3020 closed 2020-03-24 Internal Server Error when trying to update certain pages (page won't update)
+  truncate       12 hit(s) (all listed)
+      #3913 open 2023-03-09 Line numbers in code truncated in some cases
+      #4800 open 2026-10-01 Fix Basic Authentication parsing for passwords containing colons
+      #1949 open 2017-04-12 AJAX quick search box enhancements
+      #2559 open 2018-10-29 do not remove blank lines from code
+      #4684 closed 2026-07-05 fix(parser): bound and de-backtrack inline closer lookaheads
+      #4114 closed 2023-11-28 Bump phpseclib/phpseclib from 2.0.42 to 3.0.34
+      #3840 closed 2022-11-28 502 Bad Gateway nginx/1.22.1
+      #3922 closed 2023-03-14 Fix #3919 log viewer runs into OOM
+      #2466 closed 2018-08-09 fetch.php truncates the image as to 'fetchsize' configuration setting, causing the image to be invalid
+      #2953 closed 2020-01-06 Translation
+      #3020 closed 2020-03-24 Internal Server Error when trying to update certain pages (page won't update)
+      #3178 closed 2020-06-14 X-Accel-Redirect broken when $conf['savedir'] is not under DOKU_INC
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4773 open 2026-09-13 Empty backticks break markdown tables
+      #2562 open 2018-11-01 remove recursively empty directories
+      #4154 open 2024-01-16 No results when searching media with empty string
+      #3478 open 2021-04-14 Fix timeout on empty socket in HTTPClient
+      #4760 open 2026-09-06 fix(info): tolerate plugins with incomplete getInfo() data
+      #1059 open 2015-02-25 Invalid HTML5 due to empty attribute action on element form
+      #4751 open 2026-08-30 Fix link to Media Manager when the current page is in the root namespace
+      #3544 open 2021-11-05 Global "$INFO['userinfo']" seems to be uninitialized for XMLRPC "putPage" events
+      #4298 open 2024-07-17 Anonymous API access?
+      #2360 open 2018-04-28 authldap reset some mapping config on save
+      #4575 open 2026-01-07 Return-Path not working
+      #1726 open 2016-10-16 Invalid argument supplied for foreach() /usr/share/dokuwiki/lib/exe/js.php
+      #1398 open 2015-11-12 Namespaces not cleaned up when upload fails
+      #4573 open 2025-12-28 Table rendering: Inconsistent rendering of vertically unified cells
+      #4051 open 2023-09-06 Table rendering error
+      #4690 open 2026-07-15 Tall picker popups show under footer elements
+      #4075 open 2023-10-02 Table containing italic hostname aborts rendering
+      #1954 open 2017-04-22 Overlapping secedit buttons when using Include plugin
+      #3552 open 2021-11-19 wiki.getAttachment fails if remoteuser has no permission to [root]
+      #2367 open 2018-05-02 Installer remembers values if submit fails
+  atomic         1 hit(s) (all listed)
+      #1791 merged 2017-01-01 Handle delayed writes gracefully
+  atomically     0 hit(s)
+  interrupted    2 hit(s) (all listed)
+      #4114 closed 2023-11-28 Bump phpseclib/phpseclib from 2.0.42 to 3.0.34
+      #1853 closed 2017-02-20 Media Manager won't overwrite existing files
+  interrupt      5 hit(s) (all listed)
+      #2373 open 2018-05-04 Cannot get instance of ActionRouter in ACTION_ACT_PREPROCESS
+      #4114 closed 2023-11-28 Bump phpseclib/phpseclib from 2.0.42 to 3.0.34
+      #1853 closed 2017-02-20 Media Manager won't overwrite existing files
+      #2372 closed 2018-05-04 Configuration manager not showing all settings
+      #2611 closed 2018-11-30 Error: A PCRE backtrack error occured
+  sigkill        1 hit(s) (all listed)
+      #1433 closed 2015-12-20 Saving drafts mechanism doesn't work on browser crash or connection loss
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #3357 closed 2020-12-24 Google Chrome adding line-break after triple-clicking text in code boxes
+  power          10 hit(s) (all listed)
+      #888 open 2014-10-07 Update confutils.php - linesToHash splitting
+      #4684 closed 2026-07-05 fix(parser): bound and de-backtrack inline closer lookaheads
+      #4303 closed 2024-08-03 Added permission levels AUTH_EXPOSE, AUTH_HISTORY, and AUTH_SOURCE.
+      #532 merged 2014-02-05 added bin/gittool.php for simpler git management of plugins
+      #2892 merged 2019-10-21 clientIP: add trustedproxy, return first untrusted IP instead of the last one
+      #2545 closed 2018-10-19 XML-RPC uncaught ArgumentCountError
+      #2926 closed 2019-12-01 dokuwiki wiki title stored xss
+      #2837 closed 2019-08-09 Action unknown: menuitem : failed to rename page on mobile view
+      #3260 closed 2020-09-12 "Error while trying to use the following icon from the Manifest" in browser console
+      #636 closed 2014-03-26 PHP tried to allocate 2557874757 bytes?
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           23 hit(s) (all listed)
+      #3366 open 2021-01-04 need to sanitize some html codes in the edit window
+      #3315 open 2020-10-17 The caching of CSS can't be disabled, changing cachetime to -1 doesn't work
+      #2426 open 2018-06-15 WIP: Refactor the plugin sub system
+      #3954 open 2023-04-12 Trying to access array offset on value of type bool in .... wiki/inc/parserutils.php on line 313
+      #3675 open 2022-05-08 datadir ('pages') at ./data/pages is not found due to missing symbolic links
+      #1451 open 2016-01-21 Can't reinstall bundled plugins
+      #4626 merged 2026-04-25 refactor(changelog): persist external-edit detection on first read
+      #4088 closed 2023-10-15 lesserphp causes lots of deprecation log entries
+      #4026 closed 2023-08-13 "require" Deprecation messages in logs after upgrade
+      #3955 closed 2023-04-14 Very slow search when using the latest release of Dokuwiki - Jack Jackrum
+      #3496 closed 2021-05-20 Proposed improvement to make sidebars cacheable
+      #1810 closed 2017-01-23 Load multiple scripts in plugins
+      #202 closed 2013-03-19 Proposal for limiting the number of crop/resize versions which can be created from one image
+      #436 merged 2013-11-24 Provide an XMLRPC logoff method.
+      #677 closed 2014-05-06 Not yet fail-save against running out of disk space / data loss
+      #823 closed 2014-08-01 Server runs out of disk space alert (feature request)
+      #1521 closed 2016-04-05 Performance when saving changes to a large page
+      #1303 closed 2015-08-13 Full disk may cause complete user database lost
+      #2209 closed 2017-12-27  There was a file copy error while attempting to install files for directory dw2pdf: the disk could be full or file access permissions may be incorrect. This may have resulted in a partially installed plugin and leave your wiki installation unstable
+      #2341 closed 2018-04-24 Plugin List is unsorted on Configpage ( noticed since Frusterick Manners)
+  partial        18 hit(s) (all listed)
+      #4406 open 2025-02-23 Search: Matching full word matches before partial word matches and general order improvements.
+      #1343 open 2015-09-02 Authad - PHP >5.4 and paginated LDAP results
+      #1203 open 2015-06-21 AJAX action loading and inline section edit
+      #2562 open 2018-11-01 remove recursively empty directories
+      #3243 open 2020-08-26 DokuWiki should do search ignoring accents (diacritics)
+      #4540 closed 2025-10-08 Fix Error message accessibility
+      #4591 merged 2026-03-06 fix: Update session validation checks in auth.php
+      #4539 merged 2025-10-08 Login accessibility fixes
+      #4238 closed 2024-03-08 Spaces are not replaced with underscore (config setting) - forbidden blank page instead
+      #4088 closed 2023-10-15 lesserphp causes lots of deprecation log entries
+      #3922 closed 2023-03-14 Fix #3919 log viewer runs into OOM
+      #3361 merged 2020-12-31 Hierarchical class Ui\(Revisions,Diff), new class File\PageFile
+      #2276 closed 2018-03-16 Updated authmysql to mysqli
+      #1659 closed 2016-08-09 Wiki search fails if restricted to a namespace whose ID contains '-' or '.'
+      #2037 closed 2017-07-01 Search/Collation  limitations when using non-ASCII scripts, or extended Latin
+      #2176 closed 2017-11-27 authad
+      #2643 closed 2018-12-24 User Manager does not open with Authad plugin
+      #3169 closed 2020-06-12 Fatal error: require_once()
+  incomplete     27 hit(s) (all listed)
+      #4760 open 2026-09-06 fix(info): tolerate plugins with incomplete getInfo() data
+      #1405 open 2015-11-23 Search index incomplete?
+      #1458 open 2016-02-02 ODT renderer is called with incomplete URL
+      #4707 open 2026-07-21 DokuWiki invents the "speech.less" file.
+      #2562 open 2018-11-01 remove recursively empty directories
+      #4753 closed 2026-09-03 Error on pages with bureaucracy forms after update to Mort C
+      #3783 open 2022-09-30 TypeError: call_user_func_array()
+      #4640 closed 2026-05-17 Feat(openapi): support union and typed associative array typehints
+      #4526 closed 2025-09-22 After upgrading: error JPEGMeta failed parsing image metadata
+      #4490 merged 2025-07-24 32bit IPv6 unpack
+      #4218 closed 2024-02-21 XML-RPC problem when checking content_type header
+      #4110 closed 2023-11-22 Entfernen von doppelten FIXMEs
+      #4036 merged 2023-08-21 ensure plugin.info.txt data is complete. fixes #4033
+      #3922 closed 2023-03-14 Fix #3919 log viewer runs into OOM
+      #3899 merged 2023-02-24 Automate the release workflow using GitHub actions
+      #3919 closed 2023-03-13 Log Viewer runs into OOM
+      #1961 closed 2017-05-01 Added support for additional geshi options using an extendable options array.
+      #1722 closed 2016-10-14 Make cropped images responsive
+      #1628 closed 2016-07-05 update breadcrumb
+      #81 merged 2012-02-01 Allow resetting passwords online
+  dataloss       0 hit(s)
+  recover        17 hit(s) (all listed)
+      #3653 open 2022-04-08 corrections to "Draft file found" window
+      #3521 open 2021-08-15 undo/redo should be possible after using the editor toolbar
+      #2512 open 2018-09-21 Drafts are lost is internet is lost and Save was clicked
+      #3267 open 2020-09-28 set page context in Handler
+      #3958 closed 2023-04-23 "Undefined array key "media" in inc/ChangeLog/RevisionInfo.php on line 39" in 2023-04-04 "Jack Jackrum"
+      #3891 closed 2023-02-13 "Uncaught TypeError: Cannot read properties of undefined (reading '0')" when typing on search box
+      #3737 closed 2022-08-07 "strlen(): Argument #1 ($string) must be of type string, array given" when reconfiguring the Wiki
+      #3607 merged 2022-01-23 add mechanism to track current revision, and other code improvements
+      #1651 closed 2016-08-01 Translation update (ar)
+      #100 merged 2012-05-08 This allows easier identifying of which version has been restored (FS#2522)
+      #2354 merged 2018-04-26 unlock pages on viewing them
+      #2743 merged 2019-04-09 Only ob_flush if there is actually a buffer.
+      #877 closed 2014-09-30 Critical: Upgrading from "Ponder Stibbons" to "Hrun" disables login of (registered former) users
+      #977 closed 2014-12-19 lessc.inc.php is dead, long live lessc.inc.php
+      #2087 closed 2017-08-22 p_get_metadata problem
+      #2977 closed 2020-02-03 uninstall apache and recover dokuwiki data
+      #3188 closed 2020-06-26 RC3 breaks Greek letter phi (φ) in file paths, titles and tags
+  recovery       7 hit(s) (all listed)
+      #3414 open 2021-02-22 Check minimum required PHP version before updating plugin
+      #2512 open 2018-09-21 Drafts are lost is internet is lost and Save was clicked
+      #3891 closed 2023-02-13 "Uncaught TypeError: Cannot read properties of undefined (reading '0')" when typing on search box
+      #3763 closed 2022-09-06 missing buttons on the right side if an error occors
+      #3607 merged 2022-01-23 add mechanism to track current revision, and other code improvements
+      #2375 closed 2018-05-05 [Feature Request] [Error Handling] Start DokuWiki in a safe mode (&do=safe)
+      #2981 closed 2020-02-10 Require password change at next login
+  rollback       4 hit(s) (all listed)
+      #1393 open 2015-11-03 Rollback feature for Extension Manager
+      #3414 open 2021-02-22 Check minimum required PHP version before updating plugin
+      #4711 closed 2026-07-23 Upgrade from "Librarian" to "Mort": TypeError: dokuwiki\Parsing\ModeRegistry
+      #791 closed 2014-07-08 Separate local and core code
+  resume         5 hit(s) (all listed)
+      #4114 closed 2023-11-28 Bump phpseclib/phpseclib from 2.0.42 to 3.0.34
+      #4088 closed 2023-10-15 lesserphp causes lots of deprecation log entries
+      #115 closed 2012-07-08 allow require/require_once/include in config files other than just @include
+      #95 closed 2012-04-16 Moved location of INDEXER_PAGE_ADD -> AFTER event to where the page has been indexed and a PID attributed
+      #1680 closed 2016-09-03 DokuWiki on a Stick - Crash using updated Apache and PHP version
+  half-written   4 hit(s) (all listed)
+      #4026 closed 2023-08-13 "require" Deprecation messages in logs after upgrade
+      #436 merged 2013-11-24 Provide an XMLRPC logoff method.
+      #1561 closed 2016-05-03 Respect showuseras everywhere
+      #1733 closed 2016-10-17 any plan for mediawiki-style templates/macros?
+  wipe           6 hit(s) (all listed)
+      #3314 closed 2020-10-16 Cannot Update Pages, Save/Preview/Cancel buttons don't work
+      #124 closed 2012-08-10 Add action 'refresh' to force page regeneration
+      #865 closed 2014-09-21 gzopen missing, gzopen64 could replace
+      #884 closed 2014-10-02 Problem upgrading from 2014-05-05a to 2014-09-29 (upgrade plugin)
+      #1678 closed 2016-08-29 DokuWiki on a Stick - Update Apache components
+      #1681 closed 2016-09-03 DokuWiki on a Stick - Stable download still delivers old apache
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #3667 closed 2022-04-25 ACL malfunction? All groups frozen in read-only mode but @ALL
+      #2376 closed 2018-05-07 Make old revisions easier to discover
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #3667 closed 2022-04-25 ACL malfunction? All groups frozen in read-only mode but @ALL
+  destroy        6 hit(s) (all listed)
+      #1379 open 2015-10-22 Replace misleading "Show Page" (aka Cancel) icon on right side persistent menu
+      #4694 closed 2026-07-20 authplain modifyUser Regex Injection Can Delete Other User Accounts
+      #4656 merged 2026-06-07 Fix changelog related issues #4635 #4634
+      #436 merged 2013-11-24 Provide an XMLRPC logoff method.
+      #1171 closed 2015-05-26 Destroying the acl.auth.php using "UNDERCONSTRUCTION" tags
+      #2059 closed 2017-07-31 Dokuwiki unauthorized changes the image size in tables.
+  destroys       0 hit(s)
+  overwrite      72 hit(s) (all listed)
+      #2669 open 2019-01-10 need to check "overwrite existing files" to add new media revision
+      #2426 open 2018-06-15 WIP: Refactor the plugin sub system
+      #2737 open 2019-04-05 Translation problem when extending existing plugin
+      #881 open 2014-10-01 Incorrect filenames shown when uploading filenames containing asterisks
+      #893 open 2014-10-10 More Flexible Image options
+      #1757 open 2016-11-15 Provide dokuwiki as composer package
+      #4312 open 2024-08-09 Security issue when farm is enabled
+      #1726 open 2016-10-16 Invalid argument supplied for foreach() /usr/share/dokuwiki/lib/exe/js.php
+      #3760 open 2022-09-02 merge config cascade at depth 2
+      #3759 open 2022-08-31 Why config_cascade merge is not recursive
+      #3578 open 2022-01-03 alphanumeric enumerations should be left aligned
+      #2359 open 2018-04-28 Avoid changes in the capitalization of file names
+      #4350 open 2024-11-09 Acccessibility updates for the template
+      #3354 open 2020-12-03 Logging & Error Handling
+      #2897 open 2019-10-22 Update the checkbox text displayed when Media Revisions is enabled
+      #4719 closed 2026-07-29 TypeError gotcha for missing config value
+      #4076 open 2023-10-02 E_WARNING: JPEGMeta failed parsing image metadata - Got 20 instead of 29 bytes at offset 0
+      #1204 open 2015-06-21 Use web fonts instead of images
+      #4702 closed 2026-07-20 Media Write Operations Authorized Against the Wrong Namespace
+      #2895 closed 2019-10-21 X-Accel-Redirect support seems to be broken
+  clobber        1 hit(s) (all listed)
+      #1347 closed 2015-09-03 * Creating the attribute branch for submission as a pull request upst…
+  blank          74 hit(s) (all listed)
+      #2559 open 2018-10-29 do not remove blank lines from code
+      #4171 open 2024-01-29 Return all results when query string is blank on media manager
+      #4051 open 2023-09-06 Table rendering error
+      #3423 open 2021-02-25 [translation: de-informal] Mixed up page and username when adding / removing page changes abonement
+      #2247 open 2018-02-06 The mark is shifted when a new heading is added
+      #3483 open 2021-04-27 Installer script won't launch on Nginx + PHP 7.4.16 + FreeBSD
+      #3385 open 2021-01-17 HTTPClient.php error after Dokuwiki upgrade
+      #3009 open 2020-03-10 Code block via indention directly after a table makes follow-on text disappear
+      #815 open 2014-07-28 Show preview using AJAX
+      #4755 closed 2026-09-04 Copy Function - Garbled Characters
+      #1894 open 2017-03-07 Subscription emails not working on PHP 7.1.2 FastCGI on Windows, with patch to fix
+      #3783 open 2022-09-30 TypeError: call_user_func_array()
+      #1203 open 2015-06-21 AJAX action loading and inline section edit
+      #4155 open 2024-01-16 Update png/gif icons
+      #4652 merged 2026-06-04 Emit a guard newline in TextareaElement to preserve leading newlines
+      #4684 closed 2026-07-05 fix(parser): bound and de-backtrack inline closer lookaheads
+      #2614 closed 2018-12-02 syntax highlighting adds space in code
+      #4636 merged 2026-05-12 Add native Markdown parsing
+      #2126 closed 2017-09-15 Add docker-compose.yml file and conf/nginx.conf file
+      #4538 closed 2025-10-07 /lib/exe/ajax.php appear to be broken
+  unreadable     10 hit(s) (all listed)
+      #3200 open 2020-07-11 Problem with pattern with Cyrillic letters.
+      #3964 open 2023-04-29 Improve diff page navigation
+      #4647 closed 2026-05-29 incorrectly scoped media ACL checks in remote API
+      #3782 closed 2022-09-28 PHP error when showing page revisions
+      #3662 closed 2022-04-18 The editing window can be resized horizontally beyond container edges
+      #3588 closed 2022-01-07 table breaks by parsing malformed https. strings
+      #3553 closed 2021-11-23 Increase the usage of expressions with combined operators
+      #388 merged 2013-10-18 set error level so it is propagated correctly to dokuwiki
+      #863 closed 2014-09-19 <code> / <file>: would it be possible to send files with CRLF as line feed if client is Windows?
+      #761 closed 2014-06-20 Problem in Issuetracker Plugin ... doku.php, Zeile 455 Zeichen 12
+  garbage        5 hit(s) (all listed)
+      #4300 closed 2024-07-20 Host header is reflected in <link> tag if no baseurl configured
+      #1390 closed 2015-11-02 .
+      #2256 merged 2018-02-14 try to display an error when installer is run without php
+      #2066 closed 2017-08-03 log garbage on data/security.png -> https://bugs.dokuwiki.org/2818.html
+      #761 closed 2014-06-20 Problem in Issuetracker Plugin ... doku.php, Zeile 455 Zeichen 12
+  mangled        4 hit(s) (all listed)
+      #4718 open 2026-07-29 Mangled emails in diff dropdowns
+      #4735 closed 2026-08-12 fix: honor textonly mode for email user links
+      #4704 merged 2026-07-21 Avoid firing PARSER_HANDLER_DONE in sub parsers
+      #4633 merged 2026-05-06 fix(mail): keep '&' intact in mailto links with multiple query params
+  contents       76 hit(s) (all listed)
+      #4782 open 2026-09-18 Parts of the links in the table of contents are not working
+      #3531 open 2021-09-08 display section numbers in the page and table of contents
+      #3299 open 2020-10-09 Table of contents is a h3, following directly the h1
+      #3306 open 2020-10-11 BREAKING CHANGE: incorrect h3 heading direct child of h1 for table of contents, replaced by h2
+      #2121 open 2017-09-13 Server timeout on large tables still happened
+      #2646 open 2018-12-28 p_get_metadata is very slow
+      #1929 open 2017-03-30 Improved "upgrade now" notifications
+      #3783 open 2022-09-30 TypeError: call_user_func_array()
+      #3151 open 2020-06-05 Installation should set "fnencode = utf-8" and "deaccent = 0"
+      #3179 closed 2020-06-14 Table of Contents repeated twice on some, but not all, pages
+      #3446 open 2021-03-22 Inaccessible show/hide functionality in TOC and sidebar
+      #4734 merged 2026-08-11 Release Preparations for 2026-07-14b "Mort"
+      #3443 open 2021-03-21 Insufficient colour contrast
+      #4709 merged 2026-07-22 Release Preparations for 2026-07-14a "Mort"
+      #396 open 2013-10-22 A third attempt to modularize the actions
+      #4688 merged 2026-07-14 Release Preparations for 2026-07-14 "Mort"
+      #4680 merged 2026-06-28 fix duplicated TOC caused by corrupted persistent metadata (#3179)
+      #4076 open 2023-10-02 E_WARNING: JPEGMeta failed parsing image metadata - Got 20 instead of 29 bytes at offset 0
+      #4634 closed 2026-05-08 External edits (no change) in Recents with old dates appearing over newer edits
+      #4572 closed 2025-12-28 Parsing synoinfo.conf fails due to an overly-aggressive regex when preprocessing
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3784 open 2022-09-30 Fix resizing of images rotated by EXIF orientation in some places
+      #4769 open 2026-09-11 markdown breaks some entities
+      #4784 open 2026-09-19 Extension manager fails to download large plugins (e.g. dw2pdf) due to hardcoded 25s timeout in extension helper
+      #4707 open 2026-07-21 DokuWiki invents the "speech.less" file.
+      #4671 open 2026-06-25 psr/log incompabilities
+      #4573 open 2025-12-28 Table rendering: Inconsistent rendering of vertically unified cells
+      #2388 open 2018-05-15 Integrate MediaManager (lite) into Pageditor
+      #2247 open 2018-02-06 The mark is shifted when a new heading is added
+      #4012 open 2023-07-17 extend check for image types with svg and webp
+      #2026 open 2017-06-26 Comma in internal link replaced by ampersand, fine for external links
+      #4345 open 2024-11-05 Footnotes code changes (2)
+      #3466 open 2021-04-07 link wizard positioning is not very good
+      #4314 open 2024-08-12 autodetect css webbase from first url within
+      #3366 open 2021-01-04 need to sanitize some html codes in the edit window
+      #3308 open 2020-10-13 Replacing/Updating phpquery
+      #3088 open 2020-05-25 Namespace start page pattern
+      #3503 open 2021-06-13 Paste images from android browser
+      #1398 open 2015-11-12 Namespaces not cleaned up when upload fails
+      #1203 open 2015-06-21 AJAX action loading and inline section edit
+      #3376 open 2021-01-09 Popularity Feedback 'auto submit' setting is lost when wiki cache is cleared
+  unclean        3 hit(s) (all listed)
+      #2277 open 2018-03-16 Impossible to show files with some special characters in wiki
+      #1536 closed 2016-04-18 wikiFN caches filenames w/o considering $clean
+      #2029 closed 2017-06-27 reflected file download vulnerability
+  shutdown       1 hit(s) (all listed)
+      #3203 merged 2020-07-13 Global error handling
+  reboot         2 hit(s) (all listed)
+      #3013 closed 2020-03-14 Link to old revisions on 'onceexisted' stub is not for current page
+      #2118 closed 2017-09-07  The plugin repository could not be contacted,  Possible blacklist
+  disk+full      4 hit(s) (all listed)
+      #3954 open 2023-04-12 Trying to access array offset on value of type bool in .... wiki/inc/parserutils.php on line 313
+      #3496 closed 2021-05-20 Proposed improvement to make sidebars cacheable
+      #1303 closed 2015-08-13 Full disk may cause complete user database lost
+      #2209 closed 2017-12-27  There was a file copy error while attempting to install files for directory dw2pdf: the disk could be full or file access permissions may be incorrect. This may have resulted in a partially installed plugin and leave your wiki installation unstable
+  data+loss      5 hit(s) (all listed)
+      #3521 open 2021-08-15 undo/redo should be possible after using the editor toolbar
+      #396 open 2013-10-22 A third attempt to modularize the actions
+      #4647 closed 2026-05-29 incorrectly scoped media ACL checks in remote API
+      #192 closed 2013-03-01 Require immediate HTTP revalidation for media serving
+      #677 closed 2014-05-06 Not yet fail-save against running out of disk space / data loss
+  partial+write  2 hit(s) (all listed)
+      #4088 closed 2023-10-15 lesserphp causes lots of deprecation log entries
+      #3922 closed 2023-03-14 Fix #3919 log viewer runs into OOM
+  crash+safe     3 hit(s) (all listed)
+      #1433 closed 2015-12-20 Saving drafts mechanism doesn't work on browser crash or connection loss
+      #4672 merged 2026-06-25 make getUserData() fail safely on non-string input
+      #4567 closed 2025-12-02 ERROR removing multiple users
+  atomic+write   1 hit(s) (all listed)
+      #1791 merged 2017-01-01 Handle delayed writes gracefully
+  lock+file      28 hit(s) (all listed)
+      #2359 open 2018-04-28 Avoid changes in the capitalization of file names
+      #1757 open 2016-11-15 Provide dokuwiki as composer package
+      #4417 open 2025-03-13 Avoid bot loops using stricter access controls on media manager
+      #1676 open 2016-08-29 Mozilla Observatory/Set more security headers
+      #4155 open 2024-01-16 Update png/gif icons
+      #4694 closed 2026-07-20 authplain modifyUser Regex Injection Can Delete Other User Accounts
+      #4609 merged 2026-04-08 Refactor Search Index
+      #4626 merged 2026-04-25 refactor(changelog): persist external-edit detection on first read
+      #3556 closed 2021-12-04 Search Index Refactoring
+      #3796 closed 2022-10-11 Undefined array key after upgrade to update version 53
+      #4461 closed 2025-06-01 PHP warning in dwpage.php when given a directory
+      #4256 merged 2024-04-01 Update deletedFiles.yml with improved workflow
+      #4267 closed 2024-04-16 DokuWiki 2024-02-06a has a stored XSS vulnerability
+      #4157 closed 2024-01-22 Locked Out
+      #2943 closed 2019-12-21 Refactor fulltext search functions and class Doku_Indexer
+      #1152 merged 2015-05-16 Use composer to add 3rd party libs
+      #1791 merged 2017-01-01 Handle delayed writes gracefully
+      #95 closed 2012-04-16 Moved location of INDEXER_PAGE_ADD -> AFTER event to where the page has been indexed and a PID attributed
+      #495 closed 2014-01-06 Enable auth failures based on 'groupfilter'
+      #2382 merged 2018-05-11 PSR-2 refactoring for config plugin
+  write+failure  7 hit(s) (all listed)
+      #3990 closed 2023-06-04 Install script stops when it doesn’t find language files
+      #2693 closed 2019-02-10 Broken Tests on PHPUnit 8
+      #1791 merged 2017-01-01 Handle delayed writes gracefully
+      #2115 merged 2017-09-05 Fix section edit buttons for tables etc. 
+      #1088 closed 2015-03-27 Cleanup of the mail text signature.
+      #2353 closed 2018-04-26 [Error Handling] Checks the currently running PHP-version
+      #1407 closed 2015-11-23 "The plugin repository could not be contacted." ... "Timeout while reading response" with internal _readData() function. Works if I replace
+  file+contents  34 hit(s) (all listed)
+      #4782 open 2026-09-18 Parts of the links in the table of contents are not working
+      #2121 open 2017-09-13 Server timeout on large tables still happened
+      #2646 open 2018-12-28 p_get_metadata is very slow
+      #3151 open 2020-06-05 Installation should set "fnencode = utf-8" and "deaccent = 0"
+      #3783 open 2022-09-30 TypeError: call_user_func_array()
+      #4076 open 2023-10-02 E_WARNING: JPEGMeta failed parsing image metadata - Got 20 instead of 29 bytes at offset 0
+      #396 open 2013-10-22 A third attempt to modularize the actions
+      #4680 merged 2026-06-28 fix duplicated TOC caused by corrupted persistent metadata (#3179)
+      #4634 closed 2026-05-08 External edits (no change) in Recents with old dates appearing over newer edits
+      #4572 closed 2025-12-28 Parsing synoinfo.conf fails due to an overly-aggressive regex when preprocessing
+      #3796 closed 2022-10-11 Undefined array key after upgrade to update version 53
+      #4385 closed 2024-12-23 ACL check fails with user containing special chars
+      #4229 closed 2024-03-03 "draft saved" notification makes edit field too narrow on mobile screens
+      #4084 closed 2023-10-12 Can't access config page after PHP upgrade from 7.2 to 8.29
+      #3877 closed 2023-02-03 getVersionData() throws PHP warnings when refs are packed 
+      #3803 closed 2022-10-14 Datepicker is in Cyrillic after "Igor" upgrade
+      #2943 closed 2019-12-21 Refactor fulltext search functions and class Doku_Indexer
+      #2693 closed 2019-02-10 Broken Tests on PHPUnit 8
+      #3474 closed 2021-04-12 The plugin repository could not be contacted on Windows - select_stream problem
+      #3382 closed 2021-01-15 dokuwiki on Windows - Undefined array key "fperm"
+
+== 51 terms run; 43 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

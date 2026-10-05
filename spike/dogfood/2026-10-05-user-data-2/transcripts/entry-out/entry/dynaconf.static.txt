@@ -1,0 +1,2 @@
+static: /opt/py/bin/dynaconf: Python script, ASCII text executable
+next: sideeye explore --state /s/dyn --cwd "/s/dyn" --operation "dynaconf write toml -y -s DB_PASSWORD=new-secret -p /s/dyn/" \

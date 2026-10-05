@@ -1,0 +1,20 @@
+== angular/angular-cli (label (none matched; last issues of any label))
+#34250 2026-10-03 comments=0 first_project_reply=none
+#34249 2026-10-03 comments=1 first_project_reply=CONTRIBUTOR 2026-10-03
+#34248 2026-10-03 comments=0 first_project_reply=none
+#34246 2026-10-02 comments=0 first_project_reply=none
+#34241 2026-10-02 comments=1 first_project_reply=none
+#34231 2026-10-01 comments=0 first_project_reply=none
+#34215 2026-09-30 comments=0 first_project_reply=none
+#34209 2026-09-30 comments=0 first_project_reply=none
+#34199 2026-09-29 comments=0 first_project_reply=none
+#34198 2026-09-29 comments=0 first_project_reply=none
+
+== vercel/turborepo (label (none matched; last issues of any label))
+#14367 2026-10-04 comments=0 first_project_reply=none
+#14359 2026-10-03 comments=0 first_project_reply=none
+#14358 2026-10-02 comments=0 first_project_reply=none
+#14340 2026-09-29 comments=0 first_project_reply=none
+#14336 2026-09-28 comments=1 first_project_reply=CONTRIBUTOR 2026-09-28
+
+rule11-all: done 2026-10-05T05:25:10Z

@@ -1,0 +1,733 @@
+== novelty pre-scan: ocaml/opam
+== date: 2026-10-05T04:12:41Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          40 hit(s) (all listed)
+      #5246 open 2022-08-16 "opam install" command crash 
+      #2442 open 2016-02-20 Crash with broken installation if upgrade called from invalid cwd
+      #6393 open 2025-02-20 Internal `repos-config` new syntax
+      #5591 open 2023-06-30 OpamFile.OPAM.read_from_string is not domain-safe
+      #5123 open 2022-04-20 Loading global state in safe mode attempts to remove files
+      #5883 open 2024-03-17 Windows-inspired tweaks to the UI
+      #6400 open 2025-02-26 invoking "opam var os" within a build causes errors
+      #4161 open 2020-04-28 How to get a local opam switch in a consistent state?
+      #4283 open 2020-07-22 better integration between opam and dune for building?
+      #6922 merged 2026-05-04 Add regression test for aborted local install leaving half-pinned pkgs
+      #6331 merged 2024-12-10 Fix opam admin check in the presence of the with-dev-setup variable
+      #5504 closed 2023-04-05 "resolution of the request timed out" even with OPAMSOLVERTIMEOUT=1200
+      #5332 closed 2022-10-28 Add support for nixos depexts
+      #6244 merged 2024-10-16 Fix the detection of the current terminal size
+      #5977 merged 2024-05-27 Display a note when reloading a repository
+      #5789 merged 2024-01-19 Add windows to the release script
+      #5764 closed 2023-12-14 opam pin add crashes
+      #5350 merged 2022-11-14 Fix crash for updates to environment with empty strings
+      #5539 closed 2023-05-08 GHA: add missing configure vendored deps flag on cache scripts
+      #5458 closed 2023-03-01 opam env toxic for fish shell
+  corrupt        41 hit(s) (all listed)
+      #6365 open 2025-01-15 bug: opam fails to handle corrupted packages 
+      #7079 open 2026-08-14 With some configuration, switch invariant are always recomputed
+      #5886 open 2024-03-19 Check validity of patches on opam lint --check-upstream
+      #5722 open 2023-11-09 Fine-grained control over `--strict`
+      #5699 open 2023-10-13 "opam pin" fails when "opam pin -n ; opam install" works
+      #6874 open 2026-03-29 Follow symlinks transparently in get_diff
+      #7068 merged 2026-08-03 opam init --reinit now regenerate the list of valid switches and their associated metadata
+      #3760 open 2019-02-25 missing concurrency lock in opam source somewhere
+      #6630 open 2025-08-06 Segfault while re-installing a project with dirty changes
+      #4056 closed 2020-01-09 Feature request: reuse extracted sources 
+      #5302 closed 2022-09-27 opam switch create fails/passes seemingly at random
+      #6628 closed 2025-08-05 opam install --working-dir fails to build
+      #3204 closed 2018-02-03 "/usr/bin/git diff --quiet" exited with code 129
+      #6068 merged 2024-07-03 Add every listed checksums of a given archive to the cache when fetching from it
+      #5538 merged 2023-05-08 Fix opam installing packages without checking their checksum when the local cache is corrupted in some cases
+      #5035 closed 2022-01-29 opam confuses "A depends on B" with "B depends on A"
+      #4791 merged 2021-08-08 depexts: Disable the detection of available packages on RHEL-based distributions
+      #4751 closed 2021-07-14 Problems with .opam/download-cache and packages which depend on git information
+      #4282 closed 2020-07-21 opam clean doesn't clean enough, especially for Docker images
+      #1617 closed 2014-08-18 opam should clear MAKEFLAGS and MAKELEVEL variables
+  corruption     14 hit(s) (all listed)
+      #6883 open 2026-04-14 Standardise allocating c stubs
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #6365 open 2025-01-15 bug: opam fails to handle corrupted packages 
+      #5720 open 2023-11-08 Check the original checksums on the fallback archives from Software Heritage
+      #6893 merged 2026-04-14 [2.5] uname: register roots for intermediate strings to avoid potential GC corruption
+      #6882 merged 2026-04-14 Fix a GC corruption on Windows in enumRegistry
+      #6892 merged 2026-04-14 [2.5] Fix a GC corruption on Windows in enumRegistry
+      #6880 merged 2026-04-12 uname: register roots for intermediate strings to avoid GC corruption
+      #5132 closed 2022-04-28 install --dry-run accidentally updates .opam-switch/install/<pkg-name>.changes
+      #2060 closed 2015-03-17 Option to bypass locks
+      #2006 closed 2015-02-16 is `curl --insecure` still needed ?
+      #1870 closed 2014-11-19 Many broken things since recent upgrade (ocamlrun, sexplib, camlp4)
+      #3636 closed 2018-10-25 Incomprehensible bug with 2.0.1
+      #736 closed 2013-08-08 opam: should check validity of downloaded archives
+  truncated      65 hit(s) (all listed)
+      #6356 open 2025-01-07 opam list does not show any visual signs of lines being truncated
+      #6884 open 2026-04-14 opam pin edit doesn't display the current opam file of the repository
+      #6983 merged 2026-06-29 Bump actions/cache from 5 to 6
+      #6969 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #6486 closed 2025-04-24 console: bound queue to 10 items
+      #6835 merged 2025-12-15 Bump actions/cache from 4 to 5
+      #6758 closed 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #6811 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #6643 merged 2025-08-18 build(deps): bump actions/checkout from 4 to 5
+      #6478 merged 2025-04-21 build(deps): bump actions/cache from 3 to 4
+      #6479 merged 2025-04-21 build(deps): bump actions/checkout from 3 to 4
+      #5171 merged 2022-07-01 Add `opam tree` subcommand
+      #4848 closed 2021-09-30 Broken html tag in the manual
+      #2111 closed 2015-04-14 Make the error window size configurable
+      #1592 closed 2014-08-13 opam failed to install core_bench on ARM
+      #1747 closed 2014-09-23 Opam should not assume that Git is globally configured (1.2)
+      #2050 closed 2015-03-08 MacOS lambda-term/lwt install
+      #642 closed 2013-06-12 Failure when upgrading bin_prot (Core_kernel related)
+      #656 closed 2013-06-18 build failure while trying to install core
+      #875 closed 2013-09-20 Environment may break some packages' scripts
+  truncate       79 hit(s) (all listed)
+      #6677 open 2025-09-09 Rethink the truncating behaviour of opam list
+      #6356 open 2025-01-07 opam list does not show any visual signs of lines being truncated
+      #6884 open 2026-04-14 opam pin edit doesn't display the current opam file of the repository
+      #5469 open 2023-03-09 Pinning local package warns of rsync permission error
+      #6983 merged 2026-06-29 Bump actions/cache from 5 to 6
+      #6969 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #6835 merged 2025-12-15 Bump actions/cache from 4 to 5
+      #6486 closed 2025-04-24 console: bound queue to 10 items
+      #6758 closed 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #6811 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #6643 merged 2025-08-18 build(deps): bump actions/checkout from 4 to 5
+      #6478 merged 2025-04-21 build(deps): bump actions/cache from 3 to 4
+      #6479 merged 2025-04-21 build(deps): bump actions/checkout from 3 to 4
+      #246 closed 2012-10-16 Does OPAM work on windows?
+      #5600 closed 2023-07-13 `make cold` on Windows: flexlink error
+      #5342 merged 2022-11-08 git, hg: Use full revision
+      #5628 closed 2023-08-08 `make cold` on Windows: inconsistent assumptions over implementation Stdlib__Sys
+      #5171 merged 2022-07-01 Add `opam tree` subcommand
+      #4827 merged 2021-09-05 Fix Permission Denied on Win32 install operation
+      #4848 closed 2021-09-30 Broken html tag in the manual
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7080 open 2026-08-14 Always print empty lists when printing bindings
+      #7128 open 2026-09-02 OpamProcess.create_process_env: Fix empty argument handling when calling a Cygwin binary
+      #7062 open 2026-07-28 Keep the switch description empty upon switch creation instead of guessing one
+      #6714 open 2025-10-02 reftest engine: empty arguments are not taken into account on Windows
+      #7079 open 2026-08-14 With some configuration, switch invariant are always recomputed
+      #7076 open 2026-08-14 Feature request: ignoring optional dependencies in lockfiles
+      #6492 open 2025-04-29 opam switch create --show creates an empty switch directory
+      #5039 open 2022-02-03 Revert environment variables instead of setting them to an empty string 
+      #5445 open 2023-02-15 pin: no op when local vcs directory does not contain opam file 
+      #6408 open 2025-03-05 `opam pin ./local#mybranch` does not take `mybranch` opam file
+      #7083 open 2026-08-17 New repository is not completely loaded  when `packages/opam` path exists
+      #3579 open 2018-10-04 Opam file driven full "switch" installation + Features documentation
+      #7152 open 2026-09-18 opam 2.6.0 ignores git system/global config, suggest using envvar
+      #5347 open 2022-11-10 Answering "no" to "opam switch reinstall" will delete all the files in your switch directory
+      #5059 open 2022-02-15 "Nothing to do" when there are pending reinstalls
+      #7061 open 2026-07-28 After upgrading the compiler, `opam switch` shows wrong info
+      #6283 open 2024-10-31 Speedup opam update when nothing changed
+      #6984 open 2026-06-29 GHA: Undeterminic CI failure on cygwin
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #6980 open 2026-06-27 Add support for using git repositories owned by another local user
+  atomic         33 hit(s) (all listed)
+      #7180 open 2026-10-03 Create symlinks atomically so concurrent processes cannot collide
+      #6890 open 2026-04-14 Parallel read/write of internal files on Windows
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #6965 open 2026-06-11 opam switch create --debug doesn't show repository selection, and 5.5~rc1 fails with the relocatable repository
+      #5256 open 2022-08-19 Random failures during copy of some packages
+      #5591 open 2023-06-30 OpamFile.OPAM.read_from_string is not domain-safe
+      #5123 open 2022-04-20 Loading global state in safe mode attempts to remove files
+      #5489 merged 2023-03-23 OpamFile: Make all writes atomic
+      #6194 open 2024-09-07 Feature to track multicore compatibility of libraries
+      #5974 open 2024-05-26 Codify support for scopes/namespaces in package identifers
+      #6395 open 2025-02-23 Windows: problems installing packages that manifest via `Sys_error("...\CMD.exe: Invalid argument")` e.g. CMD=python3
+      #4056 closed 2020-01-09 Feature request: reuse extracted sources 
+      #1536 open 2014-07-25 cross-compilation between switches
+      #6440 merged 2025-03-29 Save disk space by only caching dev packages into the internal 'sources' directory
+      #6625 merged 2025-07-31 Improve performance of opam update/init by changing the structure of the internal http opam repositories (use the tar.gz as-is)
+      #6630 open 2025-08-06 Segfault while re-installing a project with dirty changes
+      #6628 closed 2025-08-05 opam install --working-dir fails to build
+      #5473 closed 2023-03-10 Write config files atomically
+      #5735 closed 2023-11-20 Windows switch create fails with cl compiler
+      #5417 merged 2023-01-13 Fully revertible environment updates
+  atomically     11 hit(s) (all listed)
+      #7180 open 2026-10-03 Create symlinks atomically so concurrent processes cannot collide
+      #6965 open 2026-06-11 opam switch create --debug doesn't show repository selection, and 5.5~rc1 fails with the relocatable repository
+      #5123 open 2022-04-20 Loading global state in safe mode attempts to remove files
+      #6890 open 2026-04-14 Parallel read/write of internal files on Windows
+      #6395 open 2025-02-23 Windows: problems installing packages that manifest via `Sys_error("...\CMD.exe: Invalid argument")` e.g. CMD=python3
+      #1536 open 2014-07-25 cross-compilation between switches
+      #6440 merged 2025-03-29 Save disk space by only caching dev packages into the internal 'sources' directory
+      #6630 open 2025-08-06 Segfault while re-installing a project with dirty changes
+      #6628 closed 2025-08-05 opam install --working-dir fails to build
+      #5473 closed 2023-03-10 Write config files atomically
+      #5417 merged 2023-01-13 Fully revertible environment updates
+  interrupted    21 hit(s) (all listed)
+      #5656 open 2023-09-06 Cancelling an "opam update" midway leads to a broken state for git repositories
+      #6630 open 2025-08-06 Segfault while re-installing a project with dirty changes
+      #3204 closed 2018-02-03 "/usr/bin/git diff --quiet" exited with code 129
+      #5710 closed 2023-10-27 partially installed compiler
+      #3837 closed 2019-05-08 ctrl-C during `opam init` left opam in a bad state
+      #4503 closed 2021-01-20 On breaking compat for the CLI for 2.1
+      #587 closed 2013-04-10 killing opam upgrade, doesn't restart correctly
+      #1212 closed 2014-03-03 Interrupting aspcud can result in mass downgrade
+      #1659 closed 2014-08-27 interrupting opam switch leaves a stale entry
+      #1884 closed 2014-12-01 progress indication
+      #2319 closed 2015-09-29 when upgrading a package, opam removes the old one before the latest version is even compiled
+      #2649 closed 2016-08-31 add a `compiler-bundle:` field
+      #3789 closed 2019-03-20 Opam can create partially initialized repositories and doesn't warn
+      #3527 closed 2018-09-03 Opam init fails on windows subsystem for linux
+      #734 closed 2013-08-08 opam version upgrade should prompt interactively
+      #736 closed 2013-08-08 opam: should check validity of downloaded archives
+      #1404 closed 2014-05-15 upgrade fails with wait : interrupted system call
+      #1411 closed 2014-05-18 opam HEAD, can't upgrade anything anymore. 
+      #1234 merged 2014-03-11 Cleanup the int/ext invocations of the solver
+      #1227 closed 2014-03-06 Ensure that internal heuristics are correctly called 
+  interrupt      47 hit(s) (all listed)
+      #7171 open 2026-10-01 Cancelling opam repo add on a wrong repo url result in the repository still being added
+      #5656 open 2023-09-06 Cancelling an "opam update" midway leads to a broken state for git repositories
+      #3709 open 2018-12-16 ctrl-c not reliable on opam 2.0.2 during installation
+      #4900 open 2021-11-08 confirm-level=ask is actually yes?
+      #5073 open 2022-02-28 opam switch create . fails when _opam exists
+      #4363 open 2020-09-15 "--skip-update" has no effect
+      #6630 open 2025-08-06 Segfault while re-installing a project with dirty changes
+      #6828 closed 2025-12-05 Confusing confirmation behavior when running `opam` in dumb terminals
+      #3230 closed 2018-02-22 Soft timeout notice
+      #3204 closed 2018-02-03 "/usr/bin/git diff --quiet" exited with code 129
+      #5802 closed 2024-01-23 Fish integration: make sure we're not in login mode before sourcing files
+      #5710 closed 2023-10-27 partially installed compiler
+      #3837 closed 2019-05-08 ctrl-C during `opam init` left opam in a bad state
+      #4503 closed 2021-01-20 On breaking compat for the CLI for 2.1
+      #874 closed 2013-09-20 Fail to upgrade to 1.1 because of "websocket.0.5.opam: No such file or directory"
+      #810 closed 2013-09-07 opam 1.0->1.1 update fails with a Not_found
+      #587 closed 2013-04-10 killing opam upgrade, doesn't restart correctly
+      #1135 closed 2014-01-26 aspcud failed with User interruption
+      #1212 closed 2014-03-03 Interrupting aspcud can result in mass downgrade
+      #1659 closed 2014-08-27 interrupting opam switch leaves a stale entry
+  sigkill        2 hit(s) (all listed)
+      #7102 closed 2026-08-25 Add Agentic Bun Framework for multi-agent Claude Code fleets
+      #4400 closed 2020-10-20 "Ctrl-C" during installation quits opam but the build continues
+  sigint         7 hit(s) (all listed)
+      #4629 open 2021-04-07 Stop opam package installation when a package install fails
+      #7102 closed 2026-08-25 Add Agentic Bun Framework for multi-agent Claude Code fleets
+      #4400 closed 2020-10-20 "Ctrl-C" during installation quits opam but the build continues
+      #1363 closed 2014-04-27 Slow parsing of urls.txt?
+      #2542 closed 2016-05-03 Race condition on SIGINT
+      #3373 closed 2018-05-24 ^C do not kill all subprocess during a install
+      #1905 closed 2014-12-16 Catch EINTR on Unix.waitpid
+  ctrl-c         43 hit(s) (all listed)
+      #7171 open 2026-10-01 Cancelling opam repo add on a wrong repo url result in the repository still being added
+      #3709 open 2018-12-16 ctrl-c not reliable on opam 2.0.2 during installation
+      #5475 open 2023-03-10 Failing switch reinstall no more drop switch layout
+      #5028 open 2022-01-26 Sometimes "opam install" wants to recompile many packages - after Ctrl+C + retry it won't
+      #7100 open 2026-08-22 Make the GC work harder on low-end hardware instead of calling Gc.compact
+      #5798 open 2024-01-23 opam doesn't find any compiler for a switch creation on Windows
+      #5883 open 2024-03-17 Windows-inspired tweaks to the UI
+      #6365 open 2025-01-15 bug: opam fails to handle corrupted packages 
+      #5485 open 2023-03-17 'opam init' killed my opam repository configuration... but not really
+      #5073 open 2022-02-28 opam switch create . fails when _opam exists
+      #6630 open 2025-08-06 Segfault while re-installing a project with dirty changes
+      #3482 closed 2018-07-24 NetBSD installation issues
+      #5718 merged 2023-11-03 Git on windows: check and advertise to use Git for Windows
+      #5761 closed 2023-12-12 Multiple switches in PATH after logout
+      #5710 closed 2023-10-27 partially installed compiler
+      #5601 closed 2023-07-13 `make cold` on Windows: dune error
+      #3837 closed 2019-05-08 ctrl-C during `opam init` left opam in a bad state
+      #3257 closed 2018-03-14 Makefile on windows doesn't include all of the necessary system folders
+      #4547 merged 2021-02-12 2.0.9 backported commits
+      #4400 closed 2020-10-20 "Ctrl-C" during installation quits opam but the build continues
+  power          17 hit(s) (all listed)
+      #6454 open 2025-04-02 opam switch create ocaml-base-compiler does not take the latest version of ocaml-base-compiler
+      #5872 open 2024-03-06 `ocamlopt` defaults to system install on OCaml 5 bytecode-only architectures
+      #3850 open 2019-05-27 deprecate {build} directive in opam 2.1?
+      #6124 closed 2024-07-30 Add an admin command to compare 2 package versions
+      #5770 closed 2023-12-24 [macOS] `opam` 2.1.5 fails to build: `sed: opam.install: No such file or directory` `make: *** [processed-opam.install] Error 1`
+      #5617 closed 2023-07-25 opam 2.2+ and Git on Windows
+      #5401 closed 2022-12-22 Change default to auto-install hooks on *nix
+      #2930 closed 2017-05-10 Switch defaults configuration file
+      #2074 closed 2015-03-22 More expressional power in optional dependencies
+      #1371 closed 2014-05-02 The internal solver is broken on some corner cases
+      #130 closed 2012-09-07 failure when building a package on opam is not verbose enough
+      #1267 closed 2014-03-24 Package external solvers for all platforms
+      #482 closed 2013-02-19 eval is evil
+      #1557 merged 2014-08-01 Travis: Add OSX CI to the test matrix
+      #3904 merged 2019-06-30 default to use "fetch" on FreeBSD / "ftp" on OpenBSD
+      #4388 merged 2020-10-11 Allow `post-install-commands` hooks to modify/remove installed files
+      #3015 merged 2017-08-03 Jbuilder support
+  outage         5 hit(s) (all listed)
+      #7018 merged 2026-07-09 Post-2.5.2 release updates
+      #4817 merged 2021-08-30 Fallback to copying on symlink-less MSYS2
+      #3225 closed 2018-02-15 opam hangs
+      #972 closed 2013-11-03 "Unknown archive type" failure with latest OPAM (~1.1) on opam switch
+      #1201 merged 2014-02-26 Fix ocamlgraph in src_ext
+  ENOSPC         1 hit(s) (all listed)
+      #4157 closed 2020-04-24 Opam configuration corrupted on ENOSPC
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #7031 open 2026-07-13 opam repo add triggers a git-maintenance race condition
+      #6994 open 2026-07-01 Abstract `OpamAdminRepoUpgrade.do_upgrade` to do an upgrade  on another layout than curent directory
+      #6986 open 2026-06-29 Rewrite `OpamFilename`
+      #6601 open 2025-07-15 opam install <local> pins packages even if the user doesn't proceed on the installation
+      #6418 open 2025-03-13 Default behaviour of opam file retrieval for local pin on VCS directory
+      #6923 open 2026-05-05 Offer to remove autopin pkgs on install failure
+      #6871 open 2026-03-24 Repository loading: update load from diff mechanism
+      #7159 merged 2026-09-22 Rewrite inefficient set <-> map conversions
+      #7094 merged 2026-08-20 reftest: Fix the regexp matching on temporary files
+      #7156 merged 2026-09-21 GHA: always start CI runs by an apt update
+      #7145 merged 2026-09-14 Upgrade to cudf 0.11~rc1
+      #4487 open 2020-12-31 Windows: removing of files / folder can fail randomly on Windows
+      #5752 open 2023-12-03 opam exec overhead
+      #7064 merged 2026-07-29 Bump version to 2.7.0~alpha1~dev
+      #1895 open 2014-12-10 Global installation
+      #7052 merged 2026-07-22 Upgrade the autoconf generated files to 2.72
+      #5073 open 2022-02-28 opam switch create . fails when _opam exists
+      #7010 closed 2026-07-07 `OpamSystem.real_path` do not resolve `..` on non existent paths on disk
+      #6909 open 2026-04-21 failure upgrading menhir on Windows
+  partial        72 hit(s) (all listed)
+      #5486 open 2023-03-18 No opam init hook eval when .envrc from direnv
+      #6654 open 2025-08-26 GHA: make shellcheck check every bash GHA scripts
+      #5772 open 2023-12-26 "Upgrade is not possible because of conflicts" doesn't say where the conflict comes from
+      #6871 open 2026-03-24 Repository loading: update load from diff mechanism
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #6851 merged 2026-01-27 Show a working opam switch create command when opam init fails to create the default switch
+      #5489 merged 2023-03-23 OpamFile: Make all writes atomic
+      #6680 merged 2025-09-09 [API] Abstract over repository roots to simplify the addition of new repository formats
+      #6957 merged 2026-06-06 bugfix: avoid compiler setup for opam init --bare
+      #2762 open 2016-11-26 [Feature Request] Specify exact git commit of a dependency
+      #6625 merged 2025-07-31 Improve performance of opam update/init by changing the structure of the internal http opam repositories (use the tar.gz as-is)
+      #6522 merged 2025-05-23 Fix simulated pinned packages reinstall trigger
+      #6313 merged 2024-11-26 Run shellcheck on shell/install.sh and make it pass, add a CI job to check next changes
+      #5457 merged 2023-02-28 windows: opam root redirection when path contains spaces
+      #6448 closed 2025-04-01 opam hangs when updating repositories
+      #6482 merged 2025-04-23 Cygwin: Fallback to the existing setup-x86_64.exe if its upgrade failed to be fetched
+      #6286 closed 2024-11-04 Partial installation with 2.3.0~rc1 under Windows 10 x64
+      #5332 closed 2022-10-28 Add support for nixos depexts
+      #6329 closed 2024-12-10 `opam admin check` results in an exception
+      #6479 merged 2025-04-21 build(deps): bump actions/checkout from 3 to 4
+  incomplete     39 hit(s) (all listed)
+      #7078 open 2026-08-14 Switch loading can create a inconsistent cache
+      #3579 open 2018-10-04 Opam file driven full "switch" installation + Features documentation
+      #3140 open 2017-12-19 depext should track facts, aka .so .a .pkg dependency
+      #5641 open 2023-08-24 Line edits for Manual doc
+      #6011 open 2024-06-11 Detect the reason for a downgrade
+      #6483 open 2025-04-24 Opam 2.3.0 for Ocaml 5.3.0 fails to build compiler on Windows 11
+      #6848 open 2026-01-26 Opam init won't try to install default ocaml compiler when failed once.
+      #6106 merged 2024-07-18 Fix most unhelpful conflict explanation message by merging all formulas together
+      #1536 open 2014-07-25 cross-compilation between switches
+      #6426 closed 2025-03-20 Virtual packages are not supported on Suse 
+      #5945 closed 2024-05-06 The instructions for compiling the repo using `opam pin` appear to be out of date?
+      #5164 closed 2022-06-17 chore: Set permissions for GitHub actions
+      #4969 merged 2021-12-16 Completely refactor the way orphan packages are handled (and add tests)
+      #4966 merged 2021-12-15 Reftests: some updates
+      #4421 merged 2020-11-07 ~Reorder options,~ fix brew instructions, spelling
+      #4791 merged 2021-08-08 depexts: Disable the detection of available packages on RHEL-based distributions
+      #1737 closed 2014-09-17 Incomplete markup in FAQ.html
+      #208 closed 2012-10-03 bytecode only compilation on OPAM fails
+      #1371 closed 2014-05-02 The internal solver is broken on some corner cases
+      #2393 closed 2015-12-29 --depends-on sometimes incomplete?
+  dataloss       0 hit(s)
+  recover        52 hit(s) (all listed)
+      #5475 open 2023-03-10 Failing switch reinstall no more drop switch layout
+      #5954 open 2024-05-15 UI improvement, error messages show OCaml exceptions/objects
+      #5073 open 2022-02-28 opam switch create . fails when _opam exists
+      #3310 open 2018-04-24 Provide `opam upgrade --fixup` and `opam upgrade` in one transaction
+      #5485 open 2023-03-17 'opam init' killed my opam repository configuration... but not really
+      #4419 open 2020-11-05 opam does not remove stale files on upgrade
+      #6489 merged 2025-04-25 Do depexts status check at opam update time
+      #5766 closed 2023-12-19 Fix wrong conflict explanation messages that talk about formulas that do not appear in the requested packages
+      #5236 merged 2022-08-09 Fix lots of issues with autopin, deps-only, dev deps, depexts...
+      #5072 closed 2022-02-26 Pinning base (?) packages doesn't show `pin` url and `source-hash` 
+      #4039 merged 2019-12-09 opamCudf: provide machine-readable information on conflicts caused by cycles
+      #1807 closed 2014-10-20 When switch reinstall compiler compile fails, switch can't be fully recovered
+      #2156 closed 2015-05-20 Pin down the pin system semantics
+      #248 closed 2012-10-17 Not possible to upgrade to opam 0.7.7 from opam 0.7.6
+      #275 closed 2012-11-02 problem with lambda-term/lwt
+      #1754 closed 2014-09-30 constraints issue
+      #1787 closed 2014-10-11 Weird conflict message 
+      #2502 closed 2016-04-04 opam on windows passes Windows-style filepath to tar
+      #2450 closed 2016-03-01 Best effort `opam switch import`
+      #2800 closed 2016-12-27 Don't write to user's shell files
+  recovery       13 hit(s) (all listed)
+      #2951 closed 2017-05-31 Usability issue with `opam update <package>`
+      #1636 closed 2014-08-21 opam switch failure recovery
+      #1807 closed 2014-10-20 When switch reinstall compiler compile fails, switch can't be fully recovered
+      #2532 closed 2016-04-25 Next, Feature request: `opam switch pin`
+      #773 closed 2013-08-26 ocamlfind: Package X is already installed ... 
+      #1056 closed 2014-01-03 opam upgrade failure
+      #725 closed 2013-08-07 opam upgrade fails
+      #745 closed 2013-08-11 opam 1.1 sometimes failing to unpack archives from within mirari.
+      #1519 closed 2014-07-14 Automatically check depexts field
+      #896 closed 2013-09-28 Opam update / upgrade removed all packages
+      #12 closed 2012-04-30 support of multiple repository
+      #472 closed 2013-02-16 some packages are not uninstalled correctly during upgrade
+      #2230 merged 2015-06-30 Fixes for 'opam source --pin', recovery of install errors
+  rollback       13 hit(s) (all listed)
+      #4455 open 2020-11-28 Creation of opam switch fails if the cwd get erased
+      #3809 open 2019-03-29 Change default behaviour for opam repository add
+      #5427 closed 2023-01-24 "No agreement on the version of ocaml" while opam file seems fine
+      #2930 closed 2017-05-10 Switch defaults configuration file
+      #4416 merged 2020-11-04 Rollback to fetch failure
+      #1492 closed 2014-06-29 opam pin remove, don't remove the pin if I don't want to continue.
+      #2259 closed 2015-07-17 Lock while switch install
+      #587 closed 2013-04-10 killing opam upgrade, doesn't restart correctly
+      #3471 closed 2018-07-20 Adding dune-project breaks installing packages
+      #773 closed 2013-08-26 ocamlfind: Package X is already installed ... 
+      #668 closed 2013-07-02 opam upgrade: rollbacks
+      #896 closed 2013-09-28 Opam update / upgrade removed all packages
+      #837 merged 2013-09-16 Writing switch backups to allow for rollback after eg. failed upgrades
+  resume         12 hit(s) (all listed)
+      #5147 open 2022-05-22 opam 2.1.2 build fails with Undefined symbols: "__Unwind_Resume"
+      #4892 merged 2021-11-05 Resolve variables before polling system
+      #5055 merged 2022-02-10 Minor tweak to GitHub Actions
+      #4688 closed 2021-05-30 Feature request: support `opam switch -`
+      #2395 closed 2016-01-01 External solver failure 9 'unsafe variables', on OS X 
+      #3333 closed 2018-05-05 2.0.0 Solver compilation error on WinXP
+      #3966 closed 2019-08-23 Compilation fails on Win32 with mingw32+ocaml-4.06.1
+      #4210 closed 2020-05-27 opam init/switch create with patch to base compiler
+      #668 closed 2013-07-02 opam upgrade: rollbacks
+      #1519 closed 2014-07-14 Automatically check depexts field
+      #434 closed 2013-02-04 Some kind of reset locks command would be useful
+      #2422 closed 2016-01-28 Split state root
+  half-written   2 hit(s) (all listed)
+      #6848 open 2026-01-26 Opam init won't try to install default ocaml compiler when failed once.
+      #2618 closed 2016-07-22 Options to navigate versions of a package. 
+  wipe           36 hit(s) (all listed)
+      #6564 open 2025-06-20 Install with `--dry-run` wiped opam files for installed packages that are no longer available
+      #6890 open 2026-04-14 Parallel read/write of internal files on Windows
+      #401 open 2013-01-18 support for XDG base directory specification
+      #5934 open 2024-04-24 `opam upgrade --fixup` doesn't always upgrade as much as possible
+      #2895 open 2017-03-28 missing functionality: ability to do `download`, `build` and `install` as separate steps
+      #5073 open 2022-02-28 opam switch create . fails when _opam exists
+      #4419 open 2020-11-05 opam does not remove stale files on upgrade
+      #1950 open 2015-01-18 Official Support for System-Wide Installation of OPAM and its Packages (Tracking)
+      #5382 closed 2022-12-08 Is there a way to flush a cached source-directory when "install" of a package ?
+      #6248 closed 2024-10-17 `opam install --deps-only --locked` has nothing to do or installs wrong version
+      #5014 merged 2022-01-20 Check that the repositories given to "opam repository remove" actually exist
+      #2981 closed 2017-07-02 `opam update` is incredibly slow.
+      #5132 closed 2022-04-28 install --dry-run accidentally updates .opam-switch/install/<pkg-name>.changes
+      #4102 closed 2020-03-01 Calling opam commands in Ansible doesn't work well; not sending exit?
+      #3838 closed 2019-05-08 `opam switch link ...` creates a broken switch when linking a local switch based on a system switch
+      #2937 closed 2017-05-13 Developer tweaks
+      #4354 closed 2020-09-13 [opam 2.1~beta2] Sandboxed opam var fail when jobs > 1(?)
+      #1805 closed 2014-10-17 Use the current working directory as a build directory
+      #2051 closed 2015-03-09 opam switch reinstall vs. opam upgrade
+      #2262 closed 2015-07-19 "Could not fetch repo" for all git repos
+  wipes          6 hit(s) (all listed)
+      #4419 open 2020-11-05 opam does not remove stale files on upgrade
+      #6564 open 2025-06-20 Install with `--dry-run` wiped opam files for installed packages that are no longer available
+      #5132 closed 2022-04-28 install --dry-run accidentally updates .opam-switch/install/<pkg-name>.changes
+      #4354 closed 2020-09-13 [opam 2.1~beta2] Sandboxed opam var fail when jobs > 1(?)
+      #2873 closed 2017-03-07 Provide a way to bypass dependency constraints
+      #3061 merged 2017-09-17 Split out opam-installer package
+  erase          35 hit(s) (all listed)
+      #4455 open 2020-11-28 Creation of opam switch fails if the cwd get erased
+      #4487 open 2020-12-31 Windows: removing of files / folder can fail randomly on Windows
+      #1895 open 2014-12-10 Global installation
+      #5798 open 2024-01-23 opam doesn't find any compiler for a switch creation on Windows
+      #7030 merged 2026-07-13 reftests: wait for background processes to end before removing its working directory
+      #6938 merged 2026-05-18 Add `root` and `rootexec` sections to .install files
+      #4056 closed 2020-01-09 Feature request: reuse extracted sources 
+      #5922 closed 2024-04-11 Fix incorrect package installed state written on error
+      #3322 closed 2018-04-29 Faulty camlp5 package detection script
+      #4554 closed 2021-02-18 opam-state 2.0.8 and opam 2.0.8 are competing to rebuild the repository cache
+      #5351 closed 2022-11-14 Fix cleaning up switch on error on Windows
+      #5408 closed 2023-01-06 opam update is failing
+      #2930 closed 2017-05-10 Switch defaults configuration file
+      #5055 merged 2022-02-10 Minor tweak to GitHub Actions
+      #4934 merged 2021-11-26 Actually permit multiple state caches to co-exist
+      #4784 closed 2021-08-05 Add default TMPDIR value for sandbox checker
+      #4751 closed 2021-07-14 Problems with .opam/download-cache and packages which depend on git information
+      #4642 merged 2021-04-22 Allow multiple state caches
+      #4134 closed 2020-04-08 Build fails on Android 9 - Linux 3.18 -  aarch64 
+      #2252 closed 2015-07-10 early error on ./opam_installer.sh: cannot see the error message
+  erasing        7 hit(s) (all listed)
+      #6938 merged 2026-05-18 Add `root` and `rootexec` sections to .install files
+      #5922 closed 2024-04-11 Fix incorrect package installed state written on error
+      #3322 closed 2018-04-29 Faulty camlp5 package detection script
+      #4554 closed 2021-02-18 opam-state 2.0.8 and opam 2.0.8 are competing to rebuild the repository cache
+      #5408 closed 2023-01-06 opam update is failing
+      #848 closed 2013-09-18 opam list and pin interaction problem (after #847)
+      #2454 closed 2016-03-02 Error during switch reinstall leads to broken OPAM
+  erased         9 hit(s) (all listed)
+      #4455 open 2020-11-28 Creation of opam switch fails if the cwd get erased
+      #4056 closed 2020-01-09 Feature request: reuse extracted sources 
+      #4554 closed 2021-02-18 opam-state 2.0.8 and opam 2.0.8 are competing to rebuild the repository cache
+      #5351 closed 2022-11-14 Fix cleaning up switch on error on Windows
+      #4642 merged 2021-04-22 Allow multiple state caches
+      #2252 closed 2015-07-10 early error on ./opam_installer.sh: cannot see the error message
+      #189 closed 2012-09-24 opam switch error does not clean up state
+      #4472 closed 2020-12-11 pre/post-session-commands ignored in switch config
+      #3242 merged 2018-03-04 C stubs for native Windows support
+  destroy        11 hit(s) (all listed)
+      #5504 closed 2023-04-05 "resolution of the request timed out" even with OPAMSOLVERTIMEOUT=1200
+      #5942 closed 2024-05-01 intial draft NixOS depext support
+      #6076 closed 2024-07-08 "opam help" prints UTF-8 characters even when LANG doesn't support them
+      #3181 closed 2018-01-19 handling setenv field at package removal
+      #2165 closed 2015-05-27 opam 1.2.2 destroys the $PATH variable when used with the fish shell
+      #228 closed 2012-10-08 opam install `opam list -short` doesnt filter uninstallable packages
+      #1876 closed 2014-11-23 OPAM package "could not get the source"
+      #2870 closed 2017-03-01 opam2 2.0.0~beta2 destroyed my MANPATH env var (I use bash)
+      #3153 closed 2018-01-03 got a `Not_found` under certain conditions
+      #3690 closed 2018-12-06 `opam env` does not produce appropriate settings
+      #1149 closed 2014-01-31 Build clarification
+  destroys       1 hit(s) (all listed)
+      #2165 closed 2015-05-27 opam 1.2.2 destroys the $PATH variable when used with the fish shell
+  overwrite      63 hit(s) (all listed)
+      #3962 open 2019-08-20 install.sh don't allow user installation if a system-wide install exists
+      #3756 open 2019-02-18 PATH not updated correctly
+      #6574 open 2025-06-28 build-env: doesn't seem to be honoured
+      #4361 open 2020-09-15 Sandbox: advise user to launch reinit if updated in opam side
+      #6400 open 2025-02-26 invoking "opam var os" within a build causes errors
+      #4220 open 2020-06-03 Feature wish: support for unsafe reinstall, that does not recompile reverse deps
+      #2762 open 2016-11-26 [Feature Request] Specify exact git commit of a dependency
+      #6945 merged 2026-05-22 Use `tar` library instead of `tar` tool for some operations
+      #6983 merged 2026-06-29 Bump actions/cache from 5 to 6
+      #6969 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #6405 closed 2025-03-01 how to disable sandbox.sh?
+      #6835 merged 2025-12-15 Bump actions/cache from 4 to 5
+      #6758 closed 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #6811 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #6643 merged 2025-08-18 build(deps): bump actions/checkout from 4 to 5
+      #5377 merged 2022-12-05 Reftest: add `build-env` overwrite predefined build env opam vars
+      #6478 merged 2025-04-21 build(deps): bump actions/cache from 3 to 4
+      #6479 merged 2025-04-21 build(deps): bump actions/checkout from 3 to 4
+      #5921 merged 2024-04-11 Fix downloading URLs with invalid characters
+      #3181 closed 2018-01-19 handling setenv field at package removal
+  clobber        5 hit(s) (all listed)
+      #6815 closed 2025-11-27 opam `env_hook` is too agressive, and makes the default install configuration of opam behave invasively in the shell environment
+      #3878 closed 2019-06-20 opam 2.0.4 clobbers MANPATH on fish
+      #2139 closed 2015-05-01 `--external` output is clobbered when querying pinned package
+      #2255 closed 2015-07-13 `opam init` breaks fish shell with configuration
+      #1519 closed 2014-07-14 Automatically check depexts field
+  blank          25 hit(s) (all listed)
+      #7061 open 2026-07-28 After upgrading the compiler, `opam switch` shows wrong info
+      #2995 open 2017-07-08 More clearly show installation warnings with the package name which generated them
+      #6426 closed 2025-03-20 Virtual packages are not supported on Suse 
+      #6303 merged 2024-11-16 Avoid issues when using wget2 where the requested url might return an html page instead of the expected content
+      #6193 closed 2024-09-06 opam install --deps-only <path> should not upgrade packages from that path
+      #5984 merged 2024-06-02 Harden curl output parsing
+      #5935 merged 2024-04-24 Fixes to reversal of environment updates
+      #5442 merged 2023-02-13 opam lint: Enforce synopsis being always present
+      #4702 merged 2021-06-04 Some build fixes
+      #3316 closed 2018-04-26 opam deleted home directory
+      #2101 closed 2015-04-04 Opam reinstall is not the same as uninstall followed by install
+      #1602 closed 2014-08-15 opam-lint
+      #1825 closed 2014-10-25 opam repo ends up completely empty (without any errors) if `tar` is missing
+      #1930 closed 2014-12-30 How to opam switch to local fork of OCaml
+      #1959 closed 2015-01-24 ability to pin packages from switch/compiler descriptions
+      #2682 closed 2016-09-26 Move OPAM's data formats to sexps
+      #2918 closed 2017-04-27 Get a story on 1.2 → 2.0 migration together
+      #2953 closed 2017-06-02 Install instructions for Fedora, CentOS and RHEL don't exist
+      #3005 closed 2017-07-22 Fish shell variables.fish is breaking PATH and MANPATH
+      #3557 closed 2018-09-23 opam list --external broken in trunk
+  unreadable     6 hit(s) (all listed)
+      #6106 merged 2024-07-18 Fix most unhelpful conflict explanation message by merging all formulas together
+      #2927 closed 2017-05-03 %<...>% path expansion notation
+      #1603 closed 2014-08-16 placement of opam 1.2b4 status notifications
+      #2549 closed 2016-05-10 "opam switch list" should use a better ordering
+      #918 closed 2013-10-03 Bright yellow colour unreadable on dark-on-light terminal
+      #2308 merged 2015-09-22 Cleanup uses of Re
+  garbage        12 hit(s) (all listed)
+      #4487 open 2020-12-31 Windows: removing of files / folder can fail randomly on Windows
+      #5396 merged 2022-12-20 Run garbage collection once when the main process is waiting for
+      #5982 merged 2024-05-30 Support Nix depexts with `opam env`
+      #6188 closed 2024-09-03 opam 2.2 misdiagnosing parse errors for `opam-version: "2.2"`
+      #5942 closed 2024-05-01 intial draft NixOS depext support
+      #5417 merged 2023-01-13 Fully revertible environment updates
+      #5376 closed 2022-12-03 Run GC compaction before applying solutions
+      #5053 merged 2022-02-09 Reimplement the depext UI with a menu
+      #4883 closed 2021-11-03 gitconfig color.ui = always breaks patches
+      #3724 closed 2019-01-18 opam.ocaml.org is down 
+      #682 closed 2013-07-12 Segmentation fault (core dumped)
+      #400 merged 2013-01-18 Make judicious use of U+1F42B on darwin.
+  mangled        2 hit(s) (all listed)
+      #7063 closed 2026-07-29 Fix package name inference from project directory names
+      #6842 open 2026-01-02 Make tags more visible and explorable
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6867 open 2026-03-16 Update cmdliner vendor to 2.1.1
+      #3793 open 2019-03-22 One opam file for multiple packages
+      #4994 open 2022-01-13 Include hash/checksum for dependencies in lock file
+      #6445 open 2025-03-31 Documentation of format of sources tarballs and paths missing.
+      #6908 open 2026-04-20 depexts package names are not subject to %{var}% expansion
+      #5881 open 2024-03-15 feature request: have lockfiles record the git commit of pin-depends
+      #3217 open 2018-02-09 [WIP]  Move most of the external tools calls to a single module 
+      #6871 open 2026-03-24 Repository loading: update load from diff mechanism
+      #2693 open 2016-10-01 maintainer information
+      #5637 open 2023-08-21 No printer for url.src
+      #5931 open 2024-04-23 Confusing behavior with installed but now-unavailable package
+      #2995 open 2017-07-08 More clearly show installation warnings with the package name which generated them
+      #3284 open 2018-04-09 Measuring "tentative installations"
+      #5193 open 2022-07-22 Call the env hook only on PWD change in fish?
+      #6842 open 2026-01-02 Make tags more visible and explorable
+      #1895 open 2014-12-10 Global installation
+      #4419 open 2020-11-05 opam does not remove stale files on upgrade
+      #6915 merged 2026-04-28 Allow opam update to update repositories that changed a file to a directory of the same name and vice versa
+      #5648 closed 2023-08-30 Allow to use a "compressed" (one file) repository format for performance and sustainability purpose
+      #1536 open 2014-07-25 cross-compilation between switches
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3552 open 2018-09-19 documentation not being put in the right place in 2.0.0
+      #4991 open 2022-01-13 Handle doas in place of sudo if available, outside of OpenBSD
+      #7177 open 2026-10-01 GHA Depends-Linux jobs assume that all project follow the same branch/version scheme as opam-rt
+      #7167 open 2026-09-28 opam admin cache --no-check (what does --check-all actually do?)
+      #7154 open 2026-09-21 Remove unnecessary set operations in `OpamSwitchState.universe`
+      #7164 open 2026-09-24 Add some tests showing the git cache in action
+      #7180 open 2026-10-03 Create symlinks atomically so concurrent processes cannot collide
+      #7139 open 2026-09-13 Fail when opam switch show is given a switch that isn't installed
+      #6693 open 2025-09-17 opam > 2.1 changes the timestamp on source files
+      #7133 open 2026-09-08 reftest: add `<pkg:` helper that doesn't launch an `opam update`
+      #6986 open 2026-06-29 Rewrite `OpamFilename`
+      #7173 open 2026-10-01 Show git command's output on failure
+      #7152 open 2026-09-18 opam 2.6.0 ignores git system/global config, suggest using envvar
+      #6171 open 2024-08-21 Documentation: the accepted archive formats are not listed
+      #5593 open 2023-07-05 Changing the Markdown files in doc/pages to be amenable for use on OCaml.org
+      #6622 open 2025-07-25 Regression (?) in `opam pin remove` experience and better error messages
+      #7004 open 2026-07-06 Make OpamFilename.remove_prefix consistent with starts_with
+      #5528 open 2023-04-26 opam makes it impossible to install the ocaml-base-compiler package if an OCaml compiler is already located in C:\Cygwin64\bin
+      #6702 open 2025-09-19 RFC: thinking out loud about `signed-by` field to accompany `git:` urls
+      #6954 open 2026-06-04 [API] Remove exported elements
+  unclean        10 hit(s) (all listed)
+      #3380 open 2018-05-28 Feature proposal: `opam install --justinstall`
+      #6625 merged 2025-07-31 Improve performance of opam update/init by changing the structure of the internal http opam repositories (use the tar.gz as-is)
+      #6575 merged 2025-06-30 Ignore VCS directories when adding or updating local non-VCS repositories
+      #5892 merged 2024-03-20 Replace every use of GNU Patch by the OCaml patch library
+      #6614 merged 2025-07-22 `opam update`:  load only changed opam files 
+      #6524 merged 2025-05-27 GHA: Bump the opam-repository sha to avoid a checksum breakage
+      #6526 merged 2025-06-02 Embed cygwin's setup.exe on windows as a fallback when cygwin.com is unavailable
+      #1212 closed 2014-03-03 Interrupting aspcud can result in mass downgrade
+      #2366 closed 2015-11-27 oasis installs fails (lib/userconf and lib/oasis already exist)
+      #3366 closed 2018-05-23 opam pin documentation for kind of pinning is unclear
+  shutdown       4 hit(s) (all listed)
+      #4861 merged 2021-10-07 Fix reverting additions to PATH-like variables
+      #4865 merged 2021-10-12 GHA: add repo cache to opam config
+      #1212 closed 2014-03-03 Interrupting aspcud can result in mass downgrade
+      #1843 closed 2014-10-30 Opam init edits ~/.profile of tcsh users
+  reboot         8 hit(s) (all listed)
+      #5973 open 2024-05-24 Clean `last-env` files
+      #6820 closed 2025-11-27 [ERROR] Sandboxing is not working on your platform neon:
+      #5761 closed 2023-12-12 Multiple switches in PATH after logout
+      #5417 merged 2023-01-13 Fully revertible environment updates
+      #2276 closed 2015-08-05 opam on cygwin fails to install camlp4 with error: Cannot find file dynlink.cmxa
+      #3352 closed 2018-05-12 opam is too slow on top of NFS
+      #736 closed 2013-08-08 opam: should check validity of downloaded archives
+      #477 closed 2013-02-19 Symlinkconfig
+  disk+full      17 hit(s) (all listed)
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #7064 merged 2026-07-29 Bump version to 2.7.0~alpha1~dev
+      #4283 open 2020-07-22 better integration between opam and dune for building?
+      #6440 merged 2025-03-29 Save disk space by only caching dev packages into the internal 'sources' directory
+      #3050 closed 2017-09-07 idea for accelerating 'opam update'
+      #6916 closed 2026-04-29 Bug in dune installation
+      #6417 merged 2025-03-12 Complete format upgrade mechanism at repo & switch level
+      #3970 closed 2019-08-29 Sources of the following couldn't be obtained, aborting
+      #4354 closed 2020-09-13 [opam 2.1~beta2] Sandboxed opam var fail when jobs > 1(?)
+      #2076 closed 2015-03-23 `opam` configures package with the wrong options
+      #1371 closed 2014-05-02 The internal solver is broken on some corner cases
+      #1372 closed 2014-05-03 Advice on development flow.
+      #3060 closed 2017-09-16 opam config is slow in 2.0.0-beta3
+      #1555 closed 2014-07-31 beta: opam pin kind default to git on local git repos
+      #1407 closed 2014-05-16 Unexpected exception ```End_of_file```
+      #3260 merged 2018-03-17 Fully test native Windows in the testsuite
+      #3752 merged 2019-02-13 Optimise repository loading
+  data+loss      4 hit(s) (all listed)
+      #2649 closed 2016-08-31 add a `compiler-bundle:` field
+      #1245 closed 2014-03-14 pinning/recompiling
+      #1310 closed 2014-04-05 Wrong dependency resolution
+      #403 closed 2013-01-20 WARNING, opam-mk-repo removes directories named tmp in the working directory without notice.
+  partial+write  9 hit(s) (all listed)
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #2762 open 2016-11-26 [Feature Request] Specify exact git commit of a dependency
+      #6625 merged 2025-07-31 Improve performance of opam update/init by changing the structure of the internal http opam repositories (use the tar.gz as-is)
+      #5457 merged 2023-02-28 windows: opam root redirection when path contains spaces
+      #4282 closed 2020-07-21 opam clean doesn't clean enough, especially for Docker images
+      #1372 closed 2014-05-03 Advice on development flow.
+      #2649 closed 2016-08-31 add a `compiler-bundle:` field
+      #3861 merged 2019-06-06 Handle failure or interruption of tar during 'opam update'
+      #4040 merged 2019-12-09 Include extra-files in switch export if `full` is provided, on import create an overlay directory with the file contents
+  crash+safe     6 hit(s) (all listed)
+      #5591 open 2023-06-30 OpamFile.OPAM.read_from_string is not domain-safe
+      #5123 open 2022-04-20 Loading global state in safe mode attempts to remove files
+      #6400 open 2025-02-26 invoking "opam var os" within a build causes errors
+      #4161 open 2020-04-28 How to get a local opam switch in a consistent state?
+      #5332 closed 2022-10-28 Add support for nixos depexts
+      #2203 closed 2015-06-17 External solver failed with inconsistent return value on Arch Linux
+  atomic+write   15 hit(s) (all listed)
+      #2715 open 2016-10-11 opam behavior when disk is full
+      #6890 open 2026-04-14 Parallel read/write of internal files on Windows
+      #5123 open 2022-04-20 Loading global state in safe mode attempts to remove files
+      #5489 merged 2023-03-23 OpamFile: Make all writes atomic
+      #6395 open 2025-02-23 Windows: problems installing packages that manifest via `Sys_error("...\CMD.exe: Invalid argument")` e.g. CMD=python3
+      #1536 open 2014-07-25 cross-compilation between switches
+      #6625 merged 2025-07-31 Improve performance of opam update/init by changing the structure of the internal http opam repositories (use the tar.gz as-is)
+      #6630 open 2025-08-06 Segfault while re-installing a project with dirty changes
+      #6628 closed 2025-08-05 opam install --working-dir fails to build
+      #5473 closed 2023-03-10 Write config files atomically
+      #5417 merged 2023-01-13 Fully revertible environment updates
+      #5476 merged 2023-03-10 Support atomic environment updates in OpamFile
+      #5440 closed 2023-02-09 Opam config nuked after running out of disk space
+      #5066 closed 2022-02-23 Refine the computation of atomic actions from a solver solution
+      #4213 closed 2020-05-29 opam update takes (too much) time
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5425 open 2023-01-24 opam lock . creates lock files for opam files that aren't in the current directory
+      #6668 open 2025-09-03 enrich lock file to contain info about original opam files
+      #4994 open 2022-01-13 Include hash/checksum for dependencies in lock file
+      #6636 open 2025-08-09 opam env --readonly tries to create the lock file
+      #5519 open 2023-04-22 Feature request: add an option for `opam lock` to exclude packages from the `locked` file
+      #7076 open 2026-08-14 Feature request: ignoring optional dependencies in lockfiles
+      #4832 open 2021-09-08 Unable to pin or lock opam file with {= version}
+      #6935 open 2026-05-16 Lock file does not use disjunction for transitive dependencies of `with-doc` and `with-dev-setup`
+      #6587 open 2025-07-04 best-effort multi-platform support for opam lock
+      #5426 open 2023-01-24 feature request: produce a lock file of a package that is not installed in the switch
+      #4526 open 2021-02-05 Add an "invisible" flag to require packages to be installed explicitly
+      #7113 open 2026-08-31 Opam should have opam-audit integrated
+      #5739 open 2023-11-23 Race condition when downloading the same archive twice at the same time
+      #5521 open 2023-04-22 `opam install --locked` behavior may not be the one expected by users
+      #5857 open 2024-02-27 Wishlist for Opam Lock
+      #7031 open 2026-07-13 opam repo add triggers a git-maintenance race condition
+      #4190 open 2020-05-08 [Feature Request] use foo.opam.locked file by default if present 
+      #5274 open 2022-09-06 feature request: better support local reproducible environments
+      #6954 open 2026-06-04 [API] Remove exported elements
+      #5123 open 2022-04-20 Loading global state in safe mode attempts to remove files
+  write+failure  49 hit(s) (all listed)
+      #6954 open 2026-06-04 [API] Remove exported elements
+      #6890 open 2026-04-14 Parallel read/write of internal files on Windows
+      #5044 open 2022-02-07 Wrappers, sandbox and specific init
+      #6874 open 2026-03-29 Follow symlinks transparently in get_diff
+      #6400 open 2025-02-26 invoking "opam var os" within a build causes errors
+      #1991 open 2015-02-11 UI Improvements for Really Long Builds.
+      #6702 open 2025-09-19 RFC: thinking out loud about `signed-by` field to accompany `git:` urls
+      #7102 closed 2026-08-25 Add Agentic Bun Framework for multi-agent Claude Code fleets
+      #6945 merged 2026-05-22 Use `tar` library instead of `tar` tool for some operations
+      #6956 merged 2026-06-05 reftest: add '.install' exhaustive test for all fields
+      #6854 merged 2026-01-30 Source compatibility with newer cmdliner versions
+      #6625 merged 2025-07-31 Improve performance of opam update/init by changing the structure of the internal http opam repositories (use the tar.gz as-is)
+      #1536 open 2014-07-25 cross-compilation between switches
+      #5484 closed 2023-03-15 opam update, Could not update repository "default": Failed to extract archive 
+      #6489 merged 2025-04-25 Do depexts status check at opam update time
+      #5971 closed 2024-05-23 `OpamDownload` assertion failure is causing  opam-repo-ci builds to fail on arm32-ocaml-4.14
+      #4797 merged 2021-08-12 Allow the macOS sandbox to write in the `/var/folders/` and `/var/db/mds/` directories
+      #6628 closed 2025-08-05 opam install --working-dir fails to build
+      #6300 closed 2024-11-15 opam 2.3.0 on Windows 11
+      #5636 merged 2023-08-17 Path rewriting for `setenv:` and `build-env:`
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6867 open 2026-03-16 Update cmdliner vendor to 2.1.1
+      #3793 open 2019-03-22 One opam file for multiple packages
+      #4994 open 2022-01-13 Include hash/checksum for dependencies in lock file
+      #6871 open 2026-03-24 Repository loading: update load from diff mechanism
+      #2693 open 2016-10-01 maintainer information
+      #6445 open 2025-03-31 Documentation of format of sources tarballs and paths missing.
+      #6908 open 2026-04-20 depexts package names are not subject to %{var}% expansion
+      #5881 open 2024-03-15 feature request: have lockfiles record the git commit of pin-depends
+      #5637 open 2023-08-21 No printer for url.src
+      #3217 open 2018-02-09 [WIP]  Move most of the external tools calls to a single module 
+      #6842 open 2026-01-02 Make tags more visible and explorable
+      #5193 open 2022-07-22 Call the env hook only on PWD change in fish?
+      #1895 open 2014-12-10 Global installation
+      #2995 open 2017-07-08 More clearly show installation warnings with the package name which generated them
+      #4419 open 2020-11-05 opam does not remove stale files on upgrade
+      #6915 merged 2026-04-28 Allow opam update to update repositories that changed a file to a directory of the same name and vice versa
+      #1536 open 2014-07-25 cross-compilation between switches
+      #5648 closed 2023-08-30 Allow to use a "compressed" (one file) repository format for performance and sustainability purpose
+      #6825 closed 2025-12-02 Permissions behavior of extra-files changed in recent opam
+      #5457 merged 2023-02-28 windows: opam root redirection when path contains spaces
+
+== 51 terms run; 50 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

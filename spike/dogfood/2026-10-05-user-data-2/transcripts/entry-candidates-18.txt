@@ -1,0 +1,5 @@
+# Re-run 2026-10-05T07:11:07Z: juju's and aliyun-cli's seeds wrote fake keys in AWS's and Alibaba Cloud's key-ID shapes; they were replaced by same-length strings no scanner matches, and both defines re-gated (their first rows are in entry-candidates-12.txt and -13.txt).
+ROW juju static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 4 operations
+EXIT juju 0
+ROW aliyun static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 6 operations
+EXIT aliyun 0

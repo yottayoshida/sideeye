@@ -1,0 +1,13 @@
+== juju/juju (label kind/bug)
+#23486 2026-10-03 comments=0 first_project_reply=none
+#23480 2026-10-02 comments=0 first_project_reply=none
+#23467 2026-10-01 comments=0 first_project_reply=none
+#23466 2026-10-01 comments=1 first_project_reply=COLLABORATOR 2026-10-02
+#23465 2026-10-01 comments=2 first_project_reply=MEMBER 2026-10-02
+#23462 2026-10-01 comments=0 first_project_reply=none
+#23461 2026-10-01 comments=1 first_project_reply=COLLABORATOR 2026-10-02
+#23459 2026-10-01 comments=0 first_project_reply=none
+#23456 2026-10-01 comments=1 first_project_reply=COLLABORATOR 2026-10-02
+#23433 2026-09-29 comments=3 first_project_reply=COLLABORATOR 2026-10-02
+
+rule11-all: done 2026-10-05T04:29:48Z

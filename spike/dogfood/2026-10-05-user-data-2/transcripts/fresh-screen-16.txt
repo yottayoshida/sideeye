@@ -1,0 +1,4 @@
+fresh crictl
+fresh cri-tools
+fresh kubeadm
+fresh kubescape

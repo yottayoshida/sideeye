@@ -1,0 +1,554 @@
+== novelty pre-scan: wp-cli/wp-cli
+== date: 2026-10-05T05:18:49Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          20 hit(s) (all listed)
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #6383 merged 2026-08-05 Fix Formatter throwing Error on objects with private/protected properties
+      #6336 closed 2026-06-19 The downloaded PHAR is broken, try running wp cli update again.
+      #6020 merged 2024-11-24 Check whether `less` pager exists before trying to pipe content through it
+      #4689 closed 2018-02-15 Command "scaffold theme-tests" doesn't work on v1.5.0
+      #6188 closed 2026-01-11 Preserve "0" values in YAML output
+      #5844 closed 2023-10-24 Admin context crashes because of admin.php file formatting
+      #5494 closed 2021-01-25 wp language core install fails on PHP8
+      #1509 closed 2014-11-21 Crash when attempting to download a beta version using a non-existant locale
+      #1704 closed 2015-03-09 Potential memory leaks with WXR export
+      #1791 closed 2015-04-22 memory_limit doesn't correspond to the one in /etc/php.ini
+      #292 closed 2013-02-09 Make `wp shell` resistant to syntax errors
+      #1887 closed 2015-06-18 After an interrupted "wp export" as root, Wordpress installation crashed
+      #3388 closed 2016-09-09 Latest build calls apply_filters before plugin.php is loaded
+      #2289 closed 2015-12-10 wp-cli v0.21.1 handles globals differently than WordPress
+      #2291 closed 2015-12-10 Wordpress 4.4 "Class 'WP_Widget' not found" errors
+      #4342 closed 2017-09-08 Dashboard crash with replace form 'blog' on Japanese version.
+      #3825 closed 2017-02-21 Wrong DB prefix in `wp-config.php` produces misleading error messages
+      #3329 closed 2016-08-22 0.24.1: Fatal error:  Cannot access private property WP_Object_Cache::$cache
+      #3974 closed 2017-04-06 Add minor to plugins
+  corrupt        29 hit(s) (all listed)
+      #6396 closed 2026-08-19 WP-CLI latest stable release corrupts WordPress 7.0.4
+      #6392 merged 2026-08-16 Report likely typos in parameters of catch-all commands
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6343 merged 2026-07-16 Add declarative deprecation handling for commands and assoc args
+      #6148 closed 2025-11-10 Cache file validation in cache manager
+      #6268 closed 2026-03-11 Extend ShutdownHandler to surface fatal errors during WordPress core load
+      #6149 merged 2025-11-11 Validate downloaded files before adding to cache
+      #5969 closed 2024-08-09 I don't seem to have the latest version of `db search` after update to v2.11.0
+      #5808 closed 2023-06-25 syntax error, unexpected 'if' (T_IF) in phar:///usr/local/bin/wp/vendor/wp-cli/wp-cli/php/WP_CLI/Runner.php(1309) : eval()'d code on line 184
+      #317 closed 2013-02-22 Using MAMP Pro Always produces Error establishing connection
+      #5486 closed 2020-12-31 Error when using wp eval-file
+      #4289 closed 2017-08-13 Cannot install packages
+      #924 closed 2013-12-19 Exporter hits an infinite loop if a term has a non-existent parent
+      #942 closed 2013-12-30 PharException
+      #1608 closed 2015-01-15 WP Core Download error "Uncaught exception 'UnexpectedValueException'" ... is a corrupted tar file
+      #1791 closed 2015-04-22 memory_limit doesn't correspond to the one in /etc/php.ini
+      #1892 closed 2015-06-22 Core download is failing when using locale fr_FR
+      #2167 closed 2015-10-22 HTML corrupted 
+      #2468 closed 2016-02-10 Error on download link from WP version 4.0.1
+      #3920 closed 2017-03-21 search-replace corrupting serialized data
+  corruption     8 hit(s) (all listed)
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #5948 closed 2024-05-20 Print full database error for ms_not_installed
+      #6196 merged 2026-01-19 Allow custom fields that exist in some items but not others in Formatter output
+      #5843 closed 2023-10-17 Release checklist for v2.9.0
+      #1509 closed 2014-11-21 Crash when attempting to download a beta version using a non-existant locale
+      #221 closed 2012-11-21 wp core reinstall?
+      #283 closed 2013-02-01 Method for clearing object caches which are not available on the command line
+      #2735 closed 2016-05-11 Is it possible to answer yes to all prompts?
+  truncated      27 hit(s) (all listed)
+      #6388 merged 2026-08-13 Synopsis: Support uppercase letters in arguments for completion
+      #5286 open 2019-09-25 wp user update silently ignores typo'ed --user_pass flag
+      #6411 merged 2026-09-24 Fix PHPStan type hints and remove unnecessary ignore comments
+      #6320 closed 2026-05-22 `wp core download` silently truncates filenames longer than 100 characters when extracting `tar.gz`
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6321 closed 2026-05-22 Extractor: Prefer `tar` over `PharData`
+      #6354 merged 2026-07-21 Bump actions/checkout from 7.0.0 to 7.0.1
+      #6278 merged 2026-03-17 Fix STDIN not being passed to all aliases in an alias group
+      #6199 merged 2026-01-19 Fix table formatting to truncate overly large values
+      #6238 merged 2026-02-12 Make Formatter extensible with custom format handlers for multi-item and single-value outputs
+      #6180 merged 2025-12-28 Display PHP memory limit in `wp cli info` output
+      #6335 merged 2026-06-18 Bump actions/checkout from 6.0.3 to 7.0.0
+      #6327 merged 2026-06-02 Bump actions/checkout from 6.0.2 to 6.0.3
+      #6265 merged 2026-03-10 Bump actions/checkout from 4 to 6
+      #6264 merged 2026-03-10 Bump peter-evans/create-pull-request from 7 to 8
+      #6168 merged 2025-12-11 Bump actions/checkout from 5 to 6
+      #2474 closed 2016-02-14 Command 'wp db tables' doesn't see all tables; command 'wp db repair' does! Can't use wp search-replace!
+      #5690 merged 2022-10-17 Bump nucleos/auto-merge-action from 1.0.0 to 1.3.0
+      #5691 closed 2022-10-17 Bump actions/checkout from 2 to 3
+      #545 closed 2013-06-21 Long plugin folder name breaks table in plugin list
+  truncate       38 hit(s) (all listed)
+      #6388 merged 2026-08-13 Synopsis: Support uppercase letters in arguments for completion
+      #5286 open 2019-09-25 wp user update silently ignores typo'ed --user_pass flag
+      #6320 closed 2026-05-22 `wp core download` silently truncates filenames longer than 100 characters when extracting `tar.gz`
+      #6411 merged 2026-09-24 Fix PHPStan type hints and remove unnecessary ignore comments
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6321 closed 2026-05-22 Extractor: Prefer `tar` over `PharData`
+      #6199 merged 2026-01-19 Fix table formatting to truncate overly large values
+      #5252 closed 2019-07-12 Table formatting should truncate overly large values
+      #6238 merged 2026-02-12 Make Formatter extensible with custom format handlers for multi-item and single-value outputs
+      #6354 merged 2026-07-21 Bump actions/checkout from 7.0.0 to 7.0.1
+      #5922 closed 2024-03-28 Wordwrapping in the tabular output
+      #6278 merged 2026-03-17 Fix STDIN not being passed to all aliases in an alias group
+      #6180 merged 2025-12-28 Display PHP memory limit in `wp cli info` output
+      #5704 merged 2022-11-18 Autocomplete `--url`
+      #6335 merged 2026-06-18 Bump actions/checkout from 6.0.3 to 7.0.0
+      #6327 merged 2026-06-02 Bump actions/checkout from 6.0.2 to 6.0.3
+      #6245 merged 2026-02-17 Tests: Improve Windows & macOS compatibility
+      #6265 merged 2026-03-10 Bump actions/checkout from 4 to 6
+      #6264 merged 2026-03-10 Bump peter-evans/create-pull-request from 7 to 8
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6415 merged 2026-10-01 Replace `assertEmpty()` with strict `assertSame()` in unit tests
+      #6408 open 2026-09-18 Add `WpHttpCacheManager::prefetch()` to download whitelisted packages concurrently
+      #5760 open 2023-03-29 post edit should use local EDITOR not EDITOR on the server
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6404 closed 2026-09-13 Add trust-project-config configuration option and track exec commands scope in Runner
+      #6407 merged 2026-09-15 Use the tokenizer to replace `__FILE__` and `__DIR__` in PHP source
+      #6363 merged 2026-07-28 Return empty string from get_sql_dump_command() and get_sql_check_command() when binaries are missing
+      #6352 open 2026-07-21 Release automation
+      #6406 merged 2026-09-14 Load `WP_CLI_REQUIRE` files for protected commands
+      #6411 merged 2026-09-24 Fix PHPStan type hints and remove unnecessary ignore comments
+      #6389 closed 2026-08-13 Would you take a pull-request security scan workflow?
+      #6350 merged 2026-07-21 Make ExtractorTest assertions more robust
+      #6343 merged 2026-07-16 Add declarative deprecation handling for commands and assoc args
+      #6383 merged 2026-08-05 Fix Formatter throwing Error on objects with private/protected properties
+      #6393 merged 2026-08-16 Correct the value type of parse_shell_arrays()'s $assoc_args
+      #6349 closed 2026-07-21 ExtractorTest error-path tests fail on PHP 8.6 (RecursiveDirectoryIterator exception message no longer includes the path)
+      #6351 closed 2026-07-21 Fix ExtractorTest error-path tests for PHP 8.6
+      #6338 merged 2026-06-26 Fix Windows: use `where` instead of `/usr/bin/env which` for MySQL binary detection
+      #6157 closed 2025-11-18 php 8.5 compatibility
+      #6390 closed 2026-08-13 ci: scan pull requests for credentials and injection with ThreatCrush
+  atomic         7 hit(s) (all listed)
+      #6408 open 2026-09-18 Add `WpHttpCacheManager::prefetch()` to download whitelisted packages concurrently
+      #6380 closed 2026-08-04 Correct way to ignore warnings?
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #1767 closed 2015-04-17 Adding custom command / subcommand to a wp-cli core command
+      #3652 closed 2016-12-07 Intermittent build failures on Travis
+      #4335 closed 2017-09-07 Address some code standards
+      #2439 merged 2016-02-03 Don't check translation updates when updating themes or plugins
+  atomically     1 hit(s) (all listed)
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+  interrupted    2 hit(s) (all listed)
+      #1887 closed 2015-06-18 After an interrupted "wp export" as root, Wordpress installation crashed
+      #3431 closed 2016-09-28 Ideas to mitigate slowness of URL replacement on import
+  interrupt      7 hit(s) (all listed)
+      #6406 merged 2026-09-14 Load `WP_CLI_REQUIRE` files for protected commands
+      #6345 merged 2026-07-16 Fix: auto update check error should not fail the running command
+      #1887 closed 2015-06-18 After an interrupted "wp export" as root, Wordpress installation crashed
+      #3914 closed 2017-03-20 Feature request: temporarily enable a theme
+      #3431 closed 2016-09-28 Ideas to mitigate slowness of URL replacement on import
+      #4633 closed 2018-01-24 wp core download throws error 'mkdir(): Permission denied in FileCache.php'
+      #5235 merged 2019-06-02 Speed up vagrant scheme calls by caching `vagrant ssh-config`
+  sigkill        1 hit(s) (all listed)
+      #5180 closed 2019-04-20 Update composer.lock
+  sigint         0 hit(s)
+  ctrl-c         9 hit(s) (all listed)
+      #5713 closed 2022-12-15 PHP 8.2.0 Deprecated: Creation of dynamic property WP_CLI\Dispatcher\Subcommand::$longdesc is deprecated in phar:///………/wp-cli/php/WP_CLI/Dispatcher/CompositeCommand.php
+      #5971 closed 2024-08-14 wp-cli.phar doesn't work with php 8.3.10
+      #287 closed 2013-02-04 `wp post edit` or "How to replace TinyMCE with vim"
+      #2876 closed 2016-05-26 Write a guide to "Shell friends of WP-CLI"
+      #2451 closed 2016-02-05 Do not exit from wp shell if there is some command typed while pressing ctrl + c
+      #3276 merged 2016-08-11 Sync package composer repository on install
+      #506 closed 2013-06-09 Modified wp post edit command to allow non-default GUI editor 
+      #673 merged 2013-08-13 Global support for `--prompt`
+      #2422 merged 2016-01-29 Fix `wp server` when php binary contains spaces
+  power          56 hit(s) (all listed)
+      #6165 closed 2025-12-10 feat(db): add robust support for WP_CLI_MYSQLDUMP override with fallback handling
+      #6277 merged 2026-03-16 Refactor: remove unused imports
+      #6280 closed 2023-04-27 `wp help <specific-command>` should be mentioned earlier / more prominent in help index
+      #6259 merged 2026-03-07 Fatal error handler: remove leading newline
+      #6281 merged 2026-03-17 Move extended root command description higher up in help
+      #6258 merged 2026-03-06 Explicitly globalize admin menu variables
+      #6251 merged 2026-02-26 Ensure `$menu_order` is a global in admin context
+      #6279 merged 2026-03-17 Improve redirect warnings in admin context
+      #6260 closed 2026-03-10 Update bundled Requests to v2.0.17
+      #6241 merged 2026-02-13  Fix undefined index notice in `debug_backtrace_on_exit`
+      #6246 merged 2026-02-19 Clean up `current_screen` on `ms_loaded`
+      #6188 closed 2026-01-11 Preserve "0" values in YAML output
+      #6235 merged 2026-02-09 Utils: Fix `SHOW TABLES` filtering for SQLite
+      #6189 merged 2026-01-11 Add comma to README
+      #6270 merged 2026-03-13 Fix: Resolve admin user dynamically instead of hardcoding user ID 1
+      #6245 merged 2026-02-17 Tests: Improve Windows & macOS compatibility
+      #6202 closed 2026-01-21 docs: add verify installation commands
+      #6219 merged 2026-02-02 Add `$skin` arg to `get_upgrader()`
+      #6201 merged 2026-01-21 Fix regression from field reordering
+      #6166 merged 2025-12-10 Forward environment variables to spawned processes in WP_CLI::launch()
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           30 hit(s) (all listed)
+      #6408 open 2026-09-18 Add `WpHttpCacheManager::prefetch()` to download whitelisted packages concurrently
+      #6412 merged 2026-09-24 Harden `Extractor` against symbolic links in archives and destinations
+      #6386 merged 2026-08-11 Add hints for commands that are not registered
+      #6372 merged 2026-08-03 Configurator: Add recursion guard to `merge_yml()`
+      #6368 merged 2026-08-03 Bootstrap: Swap order for protected commands
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6278 merged 2026-03-17 Fix STDIN not being passed to all aliases in an alias group
+      #6149 merged 2025-11-11 Validate downloaded files before adding to cache
+      #6012 closed 2024-10-27 Extend cmd-dump to include plugin (e.g. woocommerce) added commands too
+      #1279 closed 2014-07-17 Using WP-CLI with cron(tab)
+      #5675 closed 2022-09-15 Autocomplete `--url` (autoclosed by history purge)
+      #5557 closed 2021-08-29 wp-cli to check for ENV first and then if it's writable to avoid disk hit
+      #5544 closed 2021-07-15 Add FPM-compatible CLI runner
+      #587 closed 2013-07-08 <strong>W3 Total Cache Error:</strong> some files appear to be missing or out of place. Please re-install plugin
+      #1000 closed 2014-02-08 WP-CLI hangs with object-cache.php in place
+      #1006 closed 2014-02-10 Allow commands to define their own bash completions
+      #1047 closed 2014-03-01 wp plugin list stopped working [with W3 Total Cache object caching]
+      #1366 closed 2014-08-30 Best Practices - Sideload or Media Import?
+      #1480 closed 2014-11-07 Empty output by some commands
+      #1427 closed 2014-09-30 Uncaught exception trying to download core
+  partial        35 hit(s) (all listed)
+      #6352 open 2026-07-21 Release automation
+      #5286 open 2019-09-25 wp user update silently ignores typo'ed --user_pass flag
+      #6329 merged 2026-06-03 Exclude internal PHPStan stubs from distribution archives
+      #6328 closed 2026-06-03 `utils/phpstan/scan-files.php` declares an incomplete global `wpdb` stub that causes false positives for `wpdb::get_col()` and other methods
+      #6411 merged 2026-09-24 Fix PHPStan type hints and remove unnecessary ignore comments
+      #6392 merged 2026-08-16 Report likely typos in parameters of catch-all commands
+      #4751 closed 2018-03-27 Reduce the need for re-running `scaffold package-*` commands
+      #6140 merged 2025-10-30 Add automatic retry mechanism for HTTP requests
+      #5833 closed 2023-08-29 Bold (and possibly color) escape codes are not honored under FreeBSD.
+      #5803 closed 2023-06-06 English syntax/logic error in wp-cli output message(s)
+      #6278 merged 2026-03-17 Fix STDIN not being passed to all aliases in an alias group
+      #6154 merged 2025-11-15 Warn on malformed --url parameter values
+      #6132 merged 2025-10-30 Add tab completion for flag enum values
+      #545 closed 2013-06-21 Long plugin folder name breaks table in plugin list
+      #1141 closed 2014-04-21 HHVM: STDOUT, STDIN, STDERR
+      #1563 closed 2014-12-12 wp core update fails when using cached .tar.gz file
+      #1898 closed 2015-06-24 wp core update broke install due to application incremental update (possibly because of cached file)
+      #2468 closed 2016-02-10 Error on download link from WP version 4.0.1
+      #3577 closed 2016-11-16 RFC: Return with exit code 1 for some commands when an error occurs
+      #4578 closed 2017-12-18 Dictionary-based suggestion should only be shown if they are a valid option
+  incomplete     32 hit(s) (all listed)
+      #6412 merged 2026-09-24 Harden `Extractor` against symbolic links in archives and destinations
+      #5286 open 2019-09-25 wp user update silently ignores typo'ed --user_pass flag
+      #6328 closed 2026-06-03 `utils/phpstan/scan-files.php` declares an incomplete global `wpdb` stub that causes false positives for `wpdb::get_col()` and other methods
+      #6329 merged 2026-06-03 Exclude internal PHPStan stubs from distribution archives
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6378 merged 2026-08-04 Use 0755 instead of 0700 for cache and extraction directories
+      #6368 merged 2026-08-03 Bootstrap: Swap order for protected commands
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6206 merged 2026-01-25 Add global --ssh-args argument for SSH/Docker/Vagrant execution
+      #6269 closed 2026-03-13 Admin context should resolve a super admin user on multisite instead of hardcoding user ID 1
+      #5948 closed 2024-05-20 Print full database error for ms_not_installed
+      #6239 merged 2026-02-12 Make multisite show detailed error messages from ms_not_installed()
+      #6169 merged 2025-12-14 Add environment variable configuration support to wp-cli.yml
+      #6155 merged 2025-11-15 Support alternative alias syntax for cross-platform compatibility
+      #6203 merged 2026-01-22 Hook into WordPress fatal error handler to suggest --skip-plugins/--skip-themes on fatal errors
+      #6180 merged 2025-12-28 Display PHP memory limit in `wp cli info` output
+      #6201 merged 2026-01-21 Fix regression from field reordering
+      #6213 closed 2026-01-30 Add optional property argument to wp cli alias get <alias>
+      #2612 closed 2016-03-30 core verify-checksums shall ignore obsolete files
+      #545 closed 2013-06-21 Long plugin folder name breaks table in plugin list
+  dataloss       0 hit(s)
+  recover        11 hit(s) (all listed)
+      #6161 open 2025-12-07 WP-CLI in an agentic development world
+      #6352 open 2026-07-21 Release automation
+      #6209 merged 2026-01-25 Fix overly specific exception catching in Runner.php
+      #5292 closed 2019-10-11 Can't save the output
+      #566 closed 2013-06-28 Certificate problem with wp core download 
+      #447 closed 2013-05-11 Not working with cygwin
+      #1427 closed 2014-09-30 Uncaught exception trying to download core
+      #2217 closed 2015-11-19 Install missing plugins with wp plugin command?
+      #2448 closed 2016-02-04 Bad theme breaks wp-cli ?
+      #4910 closed 2018-08-15 pick_fields util function can't deal with numerical headings
+      #653 merged 2013-08-08 Comment commands enhancement and #652 updates
+  recovery       5 hit(s) (all listed)
+      #6352 open 2026-07-21 Release automation
+      #6161 open 2025-12-07 WP-CLI in an agentic development world
+      #6165 closed 2025-12-10 feat(db): add robust support for WP_CLI_MYSQLDUMP override with fallback handling
+      #6297 merged 2026-04-08 Windows: Add hardening when renaming Phar during update
+      #6203 merged 2026-01-22 Hook into WordPress fatal error handler to suggest --skip-plugins/--skip-themes on fatal errors
+  rollback       6 hit(s) (all listed)
+      #6297 merged 2026-04-08 Windows: Add hardening when renaming Phar during update
+      #5971 closed 2024-08-14 wp-cli.phar doesn't work with php 8.3.10
+      #709 closed 2013-08-20 Add search-replace to db export
+      #1934 closed 2015-07-21 Request: one-liner summary after changing files
+      #3577 closed 2016-11-16 RFC: Return with exit code 1 for some commands when an error occurs
+      #3502 closed 2016-10-26 core check-update: Warning: Invalid argument supplied for foreach()
+  resume         10 hit(s) (all listed)
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6352 open 2026-07-21 Release automation
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6375 merged 2026-08-03 Prevent leading hyphens in SSH connection parameters
+      #6345 merged 2026-07-16 Fix: auto update check error should not fail the running command
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6284 merged 2026-03-20 Respect WP_DEBUG/WP_DEBUG_DISPLAY instead of unconditionally overriding display_errors
+      #6249 merged 2026-02-25 Fix ssh option with docker scheme ignored when set at root of `wp-cli.yml`
+      #6366 merged 2026-07-30 Significant PHPStan improvements
+      #931 closed 2013-12-23 Add optional lower and upper bounds to the media regenerate subcommand
+  half-written   0 hit(s)
+  wipe           5 hit(s) (all listed)
+      #6166 merged 2025-12-10 Forward environment variables to spawned processes in WP_CLI::launch()
+      #147 closed 2012-07-26 Automate theme "unit testing" setup
+      #3502 closed 2016-10-26 core check-update: Warning: Invalid argument supplied for foreach()
+      #5120 closed 2019-03-26 Proposal: Have the ability to override the wp-config.php path
+      #1720 closed 2015-03-20 Allow missing active plugins to be deactivated
+  wipes          0 hit(s)
+  erase          10 hit(s) (all listed)
+      #6284 merged 2026-03-20 Respect WP_DEBUG/WP_DEBUG_DISPLAY instead of unconditionally overriding display_errors
+      #1064 closed 2014-03-11 Behavior of "user delete" without the --reassign modifier
+      #1620 closed 2015-01-21 Empty install-wp-tests.sh file
+      #1678 closed 2015-02-26 Broke MySQL on Core Update
+      #1708 closed 2015-03-11 if an import halts due to max_execuation_time, what happens if I re-run it?
+      #6 closed 2011-09-29 Bash completions
+      #288 closed 2013-02-06 PHP Fatal Error: wp_unregister_globals() after checking out 0.8.0
+      #5160 closed 2019-04-17 Add PHP 7.3 to the Travis CI build matrix
+      #4949 closed 2018-09-19 Installation failed: The package could not be installed.
+      #801 merged 2013-09-30 Check for non-string exit code after `wp post edit`
+  erasing        1 hit(s) (all listed)
+      #5160 closed 2019-04-17 Add PHP 7.3 to the Travis CI build matrix
+  erased         3 hit(s) (all listed)
+      #1064 closed 2014-03-11 Behavior of "user delete" without the --reassign modifier
+      #1620 closed 2015-01-21 Empty install-wp-tests.sh file
+      #1678 closed 2015-02-26 Broke MySQL on Core Update
+  destroy        13 hit(s) (all listed)
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #5488 closed 2021-01-13 SSH  vagrant fails due to strict host checking
+      #6275 merged 2026-03-15 Fix vagrant SSH strict host key checking failure
+      #283 closed 2013-02-01 Method for clearing object caches which are not available on the command line
+      #2473 closed 2016-02-14 cd $(wp plugin path) not working
+      #2758 closed 2016-05-17 Your PHP installation appears to be missing the MySQL extension which is required by WordPress
+      #2579 closed 2016-03-23 fatal error: phpunit unable to locate functions.php
+      #4871 closed 2018-07-30 WP CLI search-replace is not replacing all matches there in DB
+      #4085 merged 2017-05-23 Replace variables for subdirectory install path
+      #3610 merged 2016-11-25 Add examples for user session commands
+      #3307 merged 2016-08-17 Introduce user session commands
+      #4156 closed 2017-06-15 Check opcache isn't enabled on cli and throw a warning if so.
+      #838 merged 2013-10-19 Use PharData class to extract tarball
+  destroys       1 hit(s) (all listed)
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+  overwrite      72 hit(s) (all listed)
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6408 open 2026-09-18 Add `WpHttpCacheManager::prefetch()` to download whitelisted packages concurrently
+      #6412 merged 2026-09-24 Harden `Extractor` against symbolic links in archives and destinations
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6378 merged 2026-08-04 Use 0755 instead of 0700 for cache and extraction directories
+      #6401 merged 2026-09-03 Fix wp --info / wp --version being dropped under WP_CLI_STRICT_ARGS_MODE
+      #6349 closed 2026-07-21 ExtractorTest error-path tests fail on PHP 8.6 (RecursiveDirectoryIterator exception message no longer includes the path)
+      #6350 merged 2026-07-21 Make ExtractorTest assertions more robust
+      #6373 merged 2026-08-03 Use 0700 permissions for cache and extractor directories
+      #6351 closed 2026-07-21 Fix ExtractorTest error-path tests for PHP 8.6
+      #6319 merged 2026-05-21 Extractor: Prefer `tar` over `PharData`
+      #6299 merged 2026-04-11 Ensure global runtime parameters take precedence over alias configuration
+      #6375 merged 2026-08-03 Prevent leading hyphens in SSH connection parameters
+      #6297 merged 2026-04-08 Windows: Add hardening when renaming Phar during update
+      #6313 merged 2026-04-29 Fix rerunning command with --skip-plugins after fatal plugin/theme error
+      #6354 merged 2026-07-21 Bump actions/checkout from 7.0.0 to 7.0.1
+      #6249 merged 2026-02-25 Fix ssh option with docker scheme ignored when set at root of `wp-cli.yml`
+      #6198 merged 2026-01-19 Add support for multiple flag values via repeated flags using ellipsis syntax
+      #6327 merged 2026-06-02 Bump actions/checkout from 6.0.2 to 6.0.3
+      #6300 merged 2026-04-13 Bump peter-evans/create-pull-request from 8.1.0 to 8.1.1
+  clobber        8 hit(s) (all listed)
+      #6352 open 2026-07-21 Release automation
+      #6395 merged 2026-08-17 Make Formatter self-register built-in formats on demand
+      #6299 merged 2026-04-11 Ensure global runtime parameters take precedence over alias configuration
+      #4817 closed 2018-06-02 Release process introduces unwanted changes
+      #1327 closed 2014-08-13 error activating olimometer plugin
+      #3502 closed 2016-10-26 core check-update: Warning: Invalid argument supplied for foreach()
+      #1629 merged 2015-01-27 Use `--all-tables` search-replace flag to do all tables in the db
+      #2333 merged 2015-12-29 Switch php-cli-tools to `dev-master`
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6286 open 2026-03-21 Accept plaintext as alias for var_export format
+      #6408 open 2026-09-18 Add `WpHttpCacheManager::prefetch()` to download whitelisted packages concurrently
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6415 merged 2026-10-01 Replace `assertEmpty()` with strict `assertSame()` in unit tests
+      #6386 merged 2026-08-11 Add hints for commands that are not registered
+      #6405 merged 2026-09-14 Declare composer/semver as a direct dependency
+      #6341 merged 2026-07-15 `cli update`: Use deterministic package url
+      #6404 closed 2026-09-13 Add trust-project-config configuration option and track exec commands scope in Runner
+      #6406 merged 2026-09-14 Load `WP_CLI_REQUIRE` files for protected commands
+      #6407 merged 2026-09-15 Use the tokenizer to replace `__FILE__` and `__DIR__` in PHP source
+      #6400 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #6339 merged 2026-06-30 Accept `plaintext` as an alias of `var_export` in `cli param-dump`
+      #6381 merged 2026-08-04 Do not use deprecated plugin/theme status commands in tests
+      #6369 merged 2026-08-03 Escape temp dir in update success check
+      #6340 merged 2026-07-13 Require wp-cli/php-cli-tools v0.13
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #6401 merged 2026-09-03 Fix wp --info / wp --version being dropped under WP_CLI_STRICT_ARGS_MODE
+      #6384 merged 2026-08-05 Anchor SSH argument safe-set check with \A..\z to reject trailing newlines
+      #6379 merged 2026-08-04 Shutdown handler: Skip interactive prompts when not running in a terminal
+      #6346 merged 2026-07-16 Improve flaky HTTP logging test
+  unreadable     3 hit(s) (all listed)
+      #6378 merged 2026-08-04 Use 0755 instead of 0700 for cache and extraction directories
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #2211 merged 2015-11-16 Suppress notices when using `is_readable()`
+  garbage        7 hit(s) (all listed)
+      #425 closed 2013-04-28 Updating WordPress to pre-release or bleeding edge (trunk)
+      #2854 closed 2016-05-25 Add more config options for custom setups
+      #2257 closed 2015-12-05 Won't run on CentOS 6. With CPanel, Get garbage on stdout
+      #3437 closed 2016-09-30 wp user list on multiple WP sites
+      #3692 closed 2016-12-27 wp-cli phar file has garbage in it
+      #838 merged 2013-10-19 Use PharData class to extract tarball
+      #2192 closed 2015-11-06 Include time since last call in `WP_CLI::debug()` message
+  mangled        3 hit(s) (all listed)
+      #6119 merged 2025-09-29 Fix Windows ABSPATH handling: accept drive-letter + forward slash
+      #2529 closed 2016-03-07 wp option list returns a mangled value for permalink_structure
+      #1261 merged 2014-06-29 Fast s r
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6352 open 2026-07-21 Release automation
+      #6322 open 2026-05-25 Release checklist for v3.0.0
+      #6378 merged 2026-08-04 Use 0755 instead of 0700 for cache and extraction directories
+      #5245 open 2019-06-23 SSH: Allow to specify path of remote wp-cli or full command
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6367 closed 2026-07-31 Network Commands Fail Under Sudo After Update to PHP 8.3
+      #6368 merged 2026-08-03 Bootstrap: Swap order for protected commands
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #6389 closed 2026-08-13 Would you take a pull-request security scan workflow?
+      #6357 merged 2026-07-23 Fix PHP code style violations in feature files
+      #6390 closed 2026-08-13 ci: scan pull requests for credentials and injection with ThreatCrush
+      #6407 merged 2026-09-15 Use the tokenizer to replace `__FILE__` and `__DIR__` in PHP source
+      #6336 closed 2026-06-19 The downloaded PHAR is broken, try running wp cli update again.
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6329 merged 2026-06-03 Exclude internal PHPStan stubs from distribution archives
+      #6373 merged 2026-08-03 Use 0700 permissions for cache and extractor directories
+      #5933 closed 2024-04-18 Could not create 'wp-config.php' with `wp-cli config create`
+      #6325 closed 2022-01-30 Phar template path issues
+      #6316 merged 2026-05-12 Check for MariaDB 10.5+ binaries, fall back to MySQL versions
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6352 open 2026-07-21 Release automation
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6237 open 2026-02-11 Add changelog for updates
+      #6412 merged 2026-09-24 Harden `Extractor` against symbolic links in archives and destinations
+      #6406 merged 2026-09-14 Load `WP_CLI_REQUIRE` files for protected commands
+      #6160 open 2025-12-05 Proxy settings being ignored
+      #5286 open 2019-09-25 wp user update silently ignores typo'ed --user_pass flag
+      #6395 merged 2026-08-17 Make Formatter self-register built-in formats on demand
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6393 merged 2026-08-16 Correct the value type of parse_shell_arrays()'s $assoc_args
+      #6355 merged 2026-07-21 Require `--major` for cross-major `wp cli update`
+      #6341 merged 2026-07-15 `cli update`: Use deterministic package url
+      #6394 merged 2026-08-16 Use spl_object_id() instead of spl_object_hash() for hook IDs
+      #6390 closed 2026-08-13 ci: scan pull requests for credentials and injection with ThreatCrush
+      #6407 merged 2026-09-15 Use the tokenizer to replace `__FILE__` and `__DIR__` in PHP source
+      #6338 merged 2026-06-26 Fix Windows: use `where` instead of `/usr/bin/env which` for MySQL binary detection
+      #6377 closed 2026-08-04 Shutdown handler prompt breaks script usage
+      #6401 merged 2026-09-03 Fix wp --info / wp --version being dropped under WP_CLI_STRICT_ARGS_MODE
+      #6339 merged 2026-06-30 Accept `plaintext` as an alias of `var_export` in `cli param-dump`
+      #6332 merged 2026-06-09 Add OSC 8 hyperlink rendering to `wp help` description links with footnote fallback
+  unclean        0 hit(s)
+  shutdown       34 hit(s) (all listed)
+      #6377 closed 2026-08-04 Shutdown handler prompt breaks script usage
+      #6379 merged 2026-08-04 Shutdown handler: Skip interactive prompts when not running in a terminal
+      #6400 merged 2026-09-01 Fix PHPCS errors in Behat test files
+      #6380 closed 2026-08-04 Correct way to ignore warnings?
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #6357 merged 2026-07-23 Fix PHP code style violations in feature files
+      #6284 merged 2026-03-20 Respect WP_DEBUG/WP_DEBUG_DISPLAY instead of unconditionally overriding display_errors
+      #6313 merged 2026-04-29 Fix rerunning command with --skip-plugins after fatal plugin/theme error
+      #6268 closed 2026-03-11 Extend ShutdownHandler to surface fatal errors during WordPress core load
+      #6289 merged 2026-03-25 Rename `WP_CLI_SKIP_PROMPT` to `WP_CLI_ERROR_RERUN`
+      #6203 merged 2026-01-22 Hook into WordPress fatal error handler to suggest --skip-plugins/--skip-themes on fatal errors
+      #6207 merged 2026-01-25 Remove forced infinite memory_limit
+      #6209 merged 2026-01-25 Fix overly specific exception catching in Runner.php
+      #5547 closed 2021-07-22 Currently forcing an infinite php memory_limit
+      #6239 merged 2026-02-12 Make multisite show detailed error messages from ms_not_installed()
+      #6259 merged 2026-03-07 Fatal error handler: remove leading newline
+      #6169 merged 2025-12-14 Add environment variable configuration support to wp-cli.yml
+      #6245 merged 2026-02-17 Tests: Improve Windows & macOS compatibility
+      #5971 closed 2024-08-14 wp-cli.phar doesn't work with php 8.3.10
+      #5816 closed 2023-07-21 Fatal error thrown on WP-CLI 2.8+ through SSH when using wp_remote_post from a plugin during a command.
+  reboot         6 hit(s) (all listed)
+      #6411 merged 2026-09-24 Fix PHPStan type hints and remove unnecessary ignore comments
+      #6386 merged 2026-08-11 Add hints for commands that are not registered
+      #1938 closed 2015-07-23 wordpress-tests-lib files not being created
+      #792 closed 2013-09-26 search-replace encounters PHP Fatal error:  Maximum function nesting level of '100' reached
+      #1620 closed 2015-01-21 Empty install-wp-tests.sh file
+      #1887 closed 2015-06-18 After an interrupted "wp export" as root, Wordpress installation crashed
+  disk+full      5 hit(s) (all listed)
+      #6412 merged 2026-09-24 Harden `Extractor` against symbolic links in archives and destinations
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6386 merged 2026-08-11 Add hints for commands that are not registered
+      #1279 closed 2014-07-17 Using WP-CLI with cron(tab)
+      #4370 closed 2017-09-20 wp core download gives "unable to decompress gzipped phar archive" error
+  data+loss      8 hit(s) (all listed)
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6283 merged 2026-03-20 Enhance sudo -i call example with quoting caveat for empty/multi-word parameters
+      #4876 closed 2018-08-02 Enhance sudo call example for empty parameters
+      #6176 merged 2025-12-20 Add support for argument aliases
+      #6043 closed 2025-02-05 "Terminated"
+      #3333 closed 2016-08-22 Could we have documentation on how to setup an environment so that using --allow-root can be avoided?
+      #44 closed 2011-12-08 Add import/export commands
+      #3215 closed 2016-07-29 --export flag on search-replace causes data loss during migration
+  partial+write  6 hit(s) (all listed)
+      #6352 open 2026-07-21 Release automation
+      #5286 open 2019-09-25 wp user update silently ignores typo'ed --user_pass flag
+      #6392 merged 2026-08-16 Report likely typos in parameters of catch-all commands
+      #6328 closed 2026-06-03 `utils/phpstan/scan-files.php` declares an incomplete global `wpdb` stub that causes false positives for `wpdb::get_col()` and other methods
+      #6278 merged 2026-03-17 Fix STDIN not being passed to all aliases in an alias group
+      #3577 closed 2016-11-16 RFC: Return with exit code 1 for some commands when an error occurs
+  crash+safe     2 hit(s) (all listed)
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #4689 closed 2018-02-15 Command "scaffold theme-tests" doesn't work on v1.5.0
+  atomic+write   2 hit(s) (all listed)
+      #6408 open 2026-09-18 Add `WpHttpCacheManager::prefetch()` to download whitelisted packages concurrently
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6352 open 2026-07-21 Release automation
+      #6322 open 2026-05-25 Release checklist for v3.0.0
+      #4632 open 2018-01-23 WP-CLI's use of composer is interfering with site's usage of composer
+      #6411 merged 2026-09-24 Fix PHPStan type hints and remove unnecessary ignore comments
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6386 merged 2026-08-11 Add hints for commands that are not registered
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #6370 merged 2026-08-03 Require SHA-512 verification for self-update
+      #6366 merged 2026-07-30 Significant PHPStan improvements
+      #6299 merged 2026-04-11 Ensure global runtime parameters take precedence over alias configuration
+      #6249 merged 2026-02-25 Fix ssh option with docker scheme ignored when set at root of `wp-cli.yml`
+      #6297 merged 2026-04-08 Windows: Add hardening when renaming Phar during update
+      #6298 closed 2026-04-08 Standardize plaintext format name across CLI commands
+      #6217 merged 2026-02-02 Fix WP_DEBUG_LOG custom paths not being respected
+      #6245 merged 2026-02-17 Tests: Improve Windows & macOS compatibility
+      #6260 closed 2026-03-10 Update bundled Requests to v2.0.17
+      #6107 merged 2025-08-04 Exclude non-essential files using `.gitattributes`
+      #6086 closed 2025-04-29 Release checklist for v2.12.0
+  write+failure  31 hit(s) (all listed)
+      #6408 open 2026-09-18 Add `WpHttpCacheManager::prefetch()` to download whitelisted packages concurrently
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6352 open 2026-07-21 Release automation
+      #5286 open 2019-09-25 wp user update silently ignores typo'ed --user_pass flag
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6404 closed 2026-09-13 Add trust-project-config configuration option and track exec commands scope in Runner
+      #6370 merged 2026-08-03 Require SHA-512 verification for self-update
+      #6378 merged 2026-08-04 Use 0755 instead of 0700 for cache and extraction directories
+      #6373 merged 2026-08-03 Use 0700 permissions for cache and extractor directories
+      #6386 merged 2026-08-11 Add hints for commands that are not registered
+      #6242 merged 2026-02-14 Fix phar path resolution when WP_CLI_PHAR_PATH includes phar:// prefix
+      #6366 merged 2026-07-30 Significant PHPStan improvements
+      #6278 merged 2026-03-17 Fix STDIN not being passed to all aliases in an alias group
+      #6218 merged 2026-02-02 Fix autoloader priority: locally installed packages now fully override phar-bundled versions
+      #6243 merged 2026-02-14 Fix autoloader priority to prevent loading old framework classes from packages
+      #6249 merged 2026-02-25 Fix ssh option with docker scheme ignored when set at root of `wp-cli.yml`
+      #6217 merged 2026-02-02 Fix WP_DEBUG_LOG custom paths not being respected
+      #6268 closed 2026-03-11 Extend ShutdownHandler to surface fatal errors during WordPress core load
+      #6155 merged 2025-11-15 Support alternative alias syntax for cross-platform compatibility
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6365 open 2026-07-29 Add project configuration trust verification (`trust-project-config`)
+      #6352 open 2026-07-21 Release automation
+      #5245 open 2019-06-23 SSH: Allow to specify path of remote wp-cli or full command
+      #6322 open 2026-05-25 Release checklist for v3.0.0
+      #6413 merged 2026-09-28 Prevent hard link traversal in copy_overwrite_files
+      #6378 merged 2026-08-04 Use 0755 instead of 0700 for cache and extraction directories
+      #6389 closed 2026-08-13 Would you take a pull-request security scan workflow?
+      #6368 merged 2026-08-03 Bootstrap: Swap order for protected commands
+      #6376 merged 2026-08-03 Handle process spawn failures in `WP_CLI::runcommand()`
+      #6407 merged 2026-09-15 Use the tokenizer to replace `__FILE__` and `__DIR__` in PHP source
+      #6390 closed 2026-08-13 ci: scan pull requests for credentials and injection with ThreatCrush
+      #6357 merged 2026-07-23 Fix PHP code style violations in feature files
+      #6374 merged 2026-08-03 Utils: Add `make_temp_file()` and `make_temp_dir()` helper functions
+      #6373 merged 2026-08-03 Use 0700 permissions for cache and extractor directories
+      #6329 merged 2026-06-03 Exclude internal PHPStan stubs from distribution archives
+      #5933 closed 2024-04-18 Could not create 'wp-config.php' with `wp-cli config create`
+      #3220 closed 2016-08-01 Respect WP_DEBUG instead of overriding
+      #6325 closed 2022-01-30 Phar template path issues
+      #5814 closed 2023-07-18 Fatal error: Uncaught Error: Call to undefined function add_action() in phar:///usr/local/bin/wp/vendor/wp-cli/wp-cli/php/WP_CLI/Runner.php(1309) : eval()'d code:11
+      #4689 closed 2018-02-15 Command "scaffold theme-tests" doesn't work on v1.5.0
+
+== 51 terms run; 44 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

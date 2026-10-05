@@ -1,0 +1,6 @@
+[world]
+state = "/s/xm/.xmake"
+
+[define]
+operation = "xmake g --theme=plain"
+cwd       = "/s/xm-in"

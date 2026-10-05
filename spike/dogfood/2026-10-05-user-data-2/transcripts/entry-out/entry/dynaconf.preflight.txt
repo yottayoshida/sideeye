@@ -1,0 +1,23 @@
+/opt/py/lib/python3.13/site-packages/dynaconf/cli.py:118: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+/opt/py/lib/python3.13/site-packages/dynaconf/cli.py:118: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+cwd          /s/dyn
+atomicity    2 path(s) judged pre-or-post
+oracle       agreed on 2 operations (6294 syscall lines examined, 3704 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2004 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/dyn --cwd "/s/dyn" --operation "dynaconf write toml -y -s DB_PASSWORD=new-secret -p /s/dyn/" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

@@ -1,0 +1,920 @@
+== novelty pre-scan: juju/juju
+== date: 2026-10-05T06:09:13Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23480 open 2026-10-02 remoterelationconsumer worker crash-loops on discharge-required errors after offer consume permission is revoked
+      #23413 open 2026-09-28 Machine agent crash-loops: nil pointer dereference in fanconfigurer when fanatic hits the 5s timeout
+      #23269 open 2026-09-10 cross model relation data integrity issues
+      #20361 open 2025-08-06 Model migration cannot be retried when target controller crashes
+      #23358 open 2026-09-18 fix(cmr): suspend cross-model relations when revoking offer consume permission
+      #23481 open 2026-10-02 fix(uniter): re-run interrupted update-status hooks
+      #23415 open 2026-09-28 feat(ci): automatic test selection using LLM
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #23310 merged 2026-09-16 feat: add orphaned record cleanup script for mongo
+      #22114 open 2026-03-30 K8s agent config Secret not updated after model migration back to original controller, causing charm-init CrashLoopBackOff
+      #21248 open 2025-11-18 Cross-controller secret sharing failed: sharing  consumer secrets across a cross model relation not supported (if juju offer created in requirer side)
+      #23021 closed 2026-08-10 This bundle fails to deploy then fills the controller's mongodb PVC leading to permanent unrecoverable crash loop
+      #23390 merged 2026-09-24 fix(worker): finish CAAS k8s cleanup when app is removed mid-flight
+      #23017 closed 2026-08-07 Bug: k8s-worker fails to join cluster — secret permission denied in recover_token
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23048 merged 2026-08-17 fix: allow vault drain token to create secrets when draining from internal backend
+      #22780 merged 2026-07-02 feat: model activation and CMR reconcile on the target
+      #22652 closed 2026-06-15 feat(migration): add TLA+ specification suite and Go drift test
+      #22899 closed 2026-07-15 feat: add abort model import on the target controller
+      #22440 merged 2026-05-18 fix: head of line blocking
+  corrupt        54 hit(s) (all listed)
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23398 open 2026-09-25 feat(application): replace scaling boolean with provisioning operation
+      #19498 open 2025-04-10 The /etc/apt/sources.list file is incorrectly updated by juju agent when it includes  [arch=amd64] entry in the line
+      #20415 open 2025-08-14 Juju `enable-ha` does not respect the given `--constraints` when adding new machines.
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #23314 merged 2026-09-16 fix(controllerconfig): only update api-port when it is set or removed
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23396 merged 2026-09-24 fix(resources): validate resource blobs during model migration
+      #23284 merged 2026-09-11 test(authorized_keys): update imported SSH key identities
+      #23375 merged 2026-09-22 fix: best-effort data cleanse avoids blocking upgrades
+      #23202 merged 2026-09-03 feat: cleanup old juju managed keys after migration
+      #23372 merged 2026-09-21 fix(crossmodelrelation): import consumed offers without relations
+      #23259 closed 2026-09-09 Models with filesystem storage fail to migrate
+      #23317 merged 2026-09-16 feat: upgrade steps to repair broken cross model records
+      #23310 merged 2026-09-16 feat: add orphaned record cleanup script for mongo
+      #23116 merged 2026-08-24 refactor(sshserver): simplify k8s session proxy
+      #23238 merged 2026-09-08 chore: merge 4.0 into 4.1
+      #23013 merged 2026-08-05 fix(agent): wire safe mode controller config ready lock
+      #23395 merged 2026-09-24 fix(relation): import relation data of remote application consumers
+      #22792 merged 2026-07-07 fix(model-defaults): preserve empty defaults and safe comparisons
+  corruption     31 hit(s) (all listed)
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #19498 open 2025-04-10 The /etc/apt/sources.list file is incorrectly updated by juju agent when it includes  [arch=amd64] entry in the line
+      #23375 merged 2026-09-22 fix: best-effort data cleanse avoids blocking upgrades
+      #23284 merged 2026-09-11 test(authorized_keys): update imported SSH key identities
+      #23317 merged 2026-09-16 feat: upgrade steps to repair broken cross model records
+      #22716 closed 2026-06-23 Minor panic due to `model-defaults` corruption? or change from `string` into `map`
+      #23368 merged 2026-09-21 fix(crossmodelrelation): preserve identity and state of imported consumer relations
+      #23396 merged 2026-09-24 fix(resources): validate resource blobs during model migration
+      #23395 merged 2026-09-24 fix(relation): import relation data of remote application consumers
+      #22936 merged 2026-07-20 fix(machine): persist merged model constraints on add-machine
+      #23070 merged 2026-08-18 feat(kubernetes): add enable-service-links model config to control K8s service env var injection
+      #23072 closed 2026-08-18 feat(bootstrap): add fast-path jujud snap patching for dev builds
+      #22946 merged 2026-07-21 feat: reprovision machine CLI
+      #22925 closed 2026-07-17 fix: change operation_id from TEXT to INTEGER
+      #23097 merged 2026-08-20 feat(migration): add synchronous v8 import abort
+      #22780 merged 2026-07-02 feat: model activation and CMR reconcile on the target
+      #20575 merged 2025-09-08 feat: implement action domain methods 
+      #21868 merged 2026-02-26 Add script to change the juju-db snap channel
+      #21589 merged 2026-01-14 feat(migration): import secret
+      #21211 merged 2025-11-13 fix(secretbackend): support complex config values
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22461 open 2026-05-20 feat: preflight draining validation
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23396 merged 2026-09-24 fix(resources): validate resource blobs during model migration
+      #23478 merged 2026-10-02 test(apiserver): make login timestamp assertion tolerant of slow tests
+      #23470 open 2026-10-01 chore(deps): update google-auth requirement from <2.59.0,>=2.58.1 to >=2.59.0,<2.60.0
+      #23469 open 2026-10-01 chore(deps): update google-auth requirement from <2.59.0,>=2.58.1 to >=2.59.0,<2.60.0
+      #20709 merged 2025-09-24 feat: add operation domain methods
+      #23083 merged 2026-08-19 feat(bootstrap): acquire controller snap from store without snapd
+      #23454 closed 2026-10-01 build(deps): bump urllib3 from 2.6.3 to 2.8.0 in /testcharms/charms/credential-get-k8s
+      #21281 merged 2025-11-20 fix: set Since field on statuses on caas provisioning
+      #23297 merged 2026-09-14 chore(deps): update sphinx-terminal requirement from >=1.0.2 to >=1.1.0
+      #23420 closed 2026-09-28 chore(deps): update google-auth requirement from <2.59.0,>=2.58.0 to >=2.58.1,<2.59.0
+      #23419 merged 2026-09-28 chore(deps): update google-auth requirement from <2.59.0,>=2.58.0 to >=2.58.1,<2.59.0
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22977 merged 2026-07-24 feat(sshserver): proxy handlers for k8s
+      #23431 merged 2026-09-29 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+      #23233 merged 2026-09-07 chore(deps): update google-auth requirement from <2.58.0,>=2.57.0 to >=2.57.1,<2.58.0
+      #23299 merged 2026-09-14 chore(deps): update google-auth requirement from <2.58.0,>=2.57.1 to >=2.58.0,<2.59.0
+      #23298 closed 2026-09-14 chore(deps): update google-auth requirement from <2.58.0,>=2.57.1 to >=2.58.0,<2.59.0
+      #23430 merged 2026-09-29 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22755 open 2026-06-29 ci: improve merge conflict notification
+      #22461 open 2026-05-20 feat: preflight draining validation
+      #23478 merged 2026-10-02 test(apiserver): make login timestamp assertion tolerant of slow tests
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23396 merged 2026-09-24 fix(resources): validate resource blobs during model migration
+      #23470 open 2026-10-01 chore(deps): update google-auth requirement from <2.59.0,>=2.58.1 to >=2.59.0,<2.60.0
+      #23469 open 2026-10-01 chore(deps): update google-auth requirement from <2.59.0,>=2.58.1 to >=2.59.0,<2.60.0
+      #23028 merged 2026-08-10 refactor: improve robustness of mongo db script
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #20709 merged 2025-09-24 feat: add operation domain methods
+      #23454 closed 2026-10-01 build(deps): bump urllib3 from 2.6.3 to 2.8.0 in /testcharms/charms/credential-get-k8s
+      #21281 merged 2025-11-20 fix: set Since field on statuses on caas provisioning
+      #23083 merged 2026-08-19 feat(bootstrap): acquire controller snap from store without snapd
+      #23297 merged 2026-09-14 chore(deps): update sphinx-terminal requirement from >=1.0.2 to >=1.1.0
+      #23097 merged 2026-08-20 feat(migration): add synchronous v8 import abort
+      #23420 closed 2026-09-28 chore(deps): update google-auth requirement from <2.59.0,>=2.58.0 to >=2.58.1,<2.59.0
+      #23419 merged 2026-09-28 chore(deps): update google-auth requirement from <2.59.0,>=2.58.0 to >=2.58.1,<2.59.0
+      #22977 merged 2026-07-24 feat(sshserver): proxy handlers for k8s
+      #23431 merged 2026-09-29 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+      #23233 merged 2026-09-07 chore(deps): update google-auth requirement from <2.58.0,>=2.57.0 to >=2.57.1,<2.58.0
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23248 open 2026-09-08 fix(bundle): resolve application base with default-base during upgrade checks
+      #23329 open 2026-09-17 Juju allows to add a cloud you cannot create a controller on.
+      #22342 open 2026-04-28 Model migration fails from 3.5 to 3.6 controller when offer has an empty ACL
+      #23485 open 2026-10-03 fix(k8s): add JSON tags and base64 auth field to dockerconfigjson (#23467)
+      #23326 open 2026-09-16 Removing a unit does not remove it from the applications peer relation in Juju 4
+      #22323 open 2026-04-24 juju4 on openstack storage setup changed
+      #18630 open 2025-01-14 Model configuration `fan-config=""` not applied during model creation
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #23330 open 2026-09-17 feat: run pragma optimize on db to generate statistics
+      #23467 open 2026-10-01 CAAS image pull secrets for private OCI resources are malformed (missing 'auth' field and struct JSON tags)
+      #21448 open 2025-12-09 K8s secrets don't provide a "backend" value in show-secret in Juju 4.0
+      #23128 open 2026-08-25 Bug Report: juju grant silently fails to persist user permissions in 4.0.14
+      #23398 open 2026-09-25 feat(application): replace scaling boolean with provisioning operation
+      #23204 merged 2026-09-03 fix(uniter): remove empty directories left behind by charm upgrades
+      #23418 open 2026-09-28 refactor: immutable resources
+      #23452 open 2026-10-01 fix(uniter): prune completed actions from watcher
+      #23446 open 2026-09-30 feat(relation): provision storage for IAAS subordinate units
+      #23335 open 2026-09-17 Juju 4 does not reuse storage on scale down / scale up on kubernetes.
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22389 open 2026-05-05 fix: delete secret issued tokens in bulk on k8s
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23422 open 2026-09-29 Resources are not atomically safe across refresh
+      #23484 open 2026-10-02 feat: reconcile controller API address projections
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #23418 open 2026-09-28 refactor: immutable resources
+      #23365 open 2026-09-21 Add ssh server port controlsocket handler correctly
+      #23398 open 2026-09-25 feat(application): replace scaling boolean with provisioning operation
+      #22557 open 2026-06-03 Allow for better monitoring of controller upgrade
+      #23381 merged 2026-09-23 Merge 4.0 -> 4.1 20260923
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #22389 open 2026-05-05 fix: delete secret issued tokens in bulk on k8s
+      #22411 merged 2026-05-07 fix(network): validate subnets atomically when adding spaces
+      #23276 merged 2026-09-10 fix: remove deleted relations from unit relation state
+      #23384 open 2026-09-23 feat: create, discover and tear-down OVN forward addresses
+      #22114 open 2026-03-30 K8s agent config Secret not updated after model migration back to original controller, causing charm-init CrashLoopBackOff
+      #23378 merged 2026-09-22 test: flaky TestLoggerRebindsOnRefresh race between rebind and log emission
+      #23237 merged 2026-09-08 feat(openstack): add support for specifying additional cinder volume attributes
+      #22440 merged 2026-05-18 fix: head of line blocking
+      #23266 merged 2026-09-09 feat: prevent controller app scale to zero
+      #23377 merged 2026-09-22 Merge 4.0 -> 4.1 20260922
+      #22843 open 2026-07-09 refactor(network): introduce domain SubnetInfo and bulk ImportSubnets
+  atomically     54 hit(s) (all listed)
+      #23422 open 2026-09-29 Resources are not atomically safe across refresh
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #23484 open 2026-10-02 feat: reconcile controller API address projections
+      #22411 merged 2026-05-07 fix(network): validate subnets atomically when adding spaces
+      #23418 open 2026-09-28 refactor: immutable resources
+      #22114 open 2026-03-30 K8s agent config Secret not updated after model migration back to original controller, causing charm-init CrashLoopBackOff
+      #23378 merged 2026-09-22 test: flaky TestLoggerRebindsOnRefresh race between rebind and log emission
+      #23059 merged 2026-08-17 fix(migration): serve API connections for a model being imported
+      #16705 merged 2023-12-14 Add network domain service, SaveProviderSubnets method
+      #23022 merged 2026-08-10 fix(unitstate): grant pending secrets during hook commit
+      #23150 merged 2026-08-27 feat: k8s HA scale down
+      #22990 closed 2026-07-28 fix(migration): fence controller writes against a racing abort
+      #23458 merged 2026-10-01 feat: network service methods for controller addresses
+      #22440 merged 2026-05-18 fix: head of line blocking
+      #23051 closed 2026-08-17 feat(bootstrap): integrate controller snap build into bootstrap
+      #23097 merged 2026-08-20 feat(migration): add synchronous v8 import abort
+      #22814 open 2026-07-08 fix: force remove dead controller machine
+      #22751 merged 2026-06-29 fix: pass new secret IDs to backend config for charm secret RBAC
+      #23332 closed 2026-09-17 fix(network): use the default LXD bridge for local container networking
+      #22663 merged 2026-06-16 feat: move secret creates into CommitHookChanges transaction
+  interrupted    32 hit(s) (all listed)
+      #23481 open 2026-10-02 fix(uniter): re-run interrupted update-status hooks
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22970 closed 2026-07-23 feat: add abort model import on the target controller
+      #23204 merged 2026-09-03 fix(uniter): remove empty directories left behind by charm upgrades
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23009 merged 2026-07-30 fix(apiserver): file migrated logs under the migrated model
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #22912 merged 2026-07-16 fix(uniter): contain manifest removeDiff to the charm directory
+      #20604 merged 2025-09-10 feat: display and update application storage cmd apiserver
+      #21309 merged 2025-11-25 feat: storage resize for k8s apps
+      #21664 closed 2026-01-27 Juju CLI intermittently exits with "ERROR connection is shut down" under high CPU load
+      #16922 merged 2024-02-13 Fail actions which are interrupted due to an agent restart in the middle
+      #16939 merged 2024-02-16 Merge 3.3 to 3.4
+      #16846 merged 2024-01-26 undertaker RemoveModel() handles secrets config not found
+      #14295 merged 2022-07-12 Fixes to network-health tests.
+      #12596 merged 2021-02-04 Pebble support with *-workload-ready hook.
+      #12475 merged 2020-12-18 Handle Ctrl-C during bootstrap (refactored)
+      #5813 closed 2016-07-16 Introduced database access for auditing
+      #6704 merged 2016-12-14 Add the pubsub forwarder worker
+      #8260 merged 2018-01-05 state: combine $addToSet updates for storage
+  interrupt      64 hit(s) (all listed)
+      #23481 open 2026-10-02 fix(uniter): re-run interrupted update-status hooks
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23352 open 2026-09-18 fix(state): allow forced relation removal with dying endpoints
+      #21648 open 2026-01-23 Failure to remove an oci-resource from a kubernetes based charm
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #19746 open 2025-05-08 juju wait-for model hangs although the model has settled
+      #22970 closed 2026-07-23 feat: add abort model import on the target controller
+      #23150 merged 2026-08-27 feat: k8s HA scale down
+      #23204 merged 2026-09-03 fix(uniter): remove empty directories left behind by charm upgrades
+      #23223 closed 2026-09-07 chore: merge pull request #23152 from wallyworld/fix-cmr-teardown
+      #23085 merged 2026-08-19 fix: concurrent unit removal with storage
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #23009 merged 2026-07-30 fix(apiserver): file migrated logs under the migrated model
+      #22912 merged 2026-07-16 fix(uniter): contain manifest removeDiff to the charm directory
+      #22960 merged 2026-07-22 feat(sshserver): add machine handlers
+      #22763 merged 2026-06-30 feat: use resource revisions matching charm revision
+      #20551 merged 2025-09-04 docs: 3.6+ revisit information foregrounding notes 
+      #22895 merged 2026-07-14 feat: port ssh session worker to 4.x
+      #20604 merged 2025-09-10 feat: display and update application storage cmd apiserver
+      #21309 merged 2025-11-25 feat: storage resize for k8s apps
+  sigkill        6 hit(s) (all listed)
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #22932 merged 2026-07-17 feat: complete controller snap service lifecycle and runtime hooks
+      #15128 closed 2023-02-01 [JUJU-2641] Container teardown fix
+      #12620 merged 2021-02-12 Fix asserts used when finalising an action
+      #11395 merged 2020-04-02 CAAS Charm Upgrade
+  sigint         5 hit(s) (all listed)
+      #21085 open 2025-11-03 Juju status is not showing that errored units are in error state
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #22932 merged 2026-07-17 feat: complete controller snap service lifecycle and runtime hooks
+      #22960 merged 2026-07-22 feat(sshserver): add machine handlers
+      #14180 merged 2022-06-20 Update Pebble to latest version
+  ctrl-c         85 hit(s) (all listed)
+      #23213 open 2026-09-04 Clean up ctrl+c during bootstrap
+      #23401 open 2026-09-25 test(model): add 3.6 -> 4.0 model migration integration tests
+      #22814 open 2026-07-08 fix: force remove dead controller machine
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #20342 open 2025-08-04 Juju remove-saas does not work if the offering controller is dead
+      #23201 merged 2026-09-03 feat(caas): split k8s controller into standalone jujud and machine-agent-only jujuagentd
+      #23383 merged 2026-09-23 fix(migration): import annotations from 3.6 models
+      #21404 open 2025-12-04 Failed host key verification during bootstrap is not reported to the user
+      #23221 merged 2026-09-06 test(migration): add CAAS model migration integration test
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23142 merged 2026-08-26 feat: cross ssh from lxd controller to k8s pod
+      #23074 merged 2026-08-18 feat(ssh): use tailscale fork of gliderlabs/ssh
+      #23277 merged 2026-09-10 feat(controller): flatten controller paths and harden controller-charm socket recovery
+      #23129 merged 2026-08-25 feat: harden IAAS snap bootstrap across all controller-snap source modes
+      #17056 merged 2024-03-18 Remove remote spaces
+      #22834 merged 2026-07-08 docs: 3.6 tutorial switch to cloud init and fix watch and dollar sign issue 22069
+      #17062 merged 2024-03-19 Add new facades version for remote space removal
+      #23006 merged 2026-07-30 feat(sshserver): ssh server domain methods and manifold wiring
+      #22799 merged 2026-07-07 fix: move remove-juju-services script to /usr/sbin for usr-is-merged compatibility
+      #23104 merged 2026-08-20 fix: return NotFound for destroy models
+  power          77 hit(s) (all listed)
+      #22814 open 2026-07-08 fix: force remove dead controller machine
+      #21676 open 2026-01-28 `juju exec` doesn't show output when a single unit times out
+      #22988 open 2026-07-28 Dqlite Splitbrain after destroying one node and enabling-ha.
+      #22733 open 2026-06-26 docs: add how-to on CIS-hardened machines
+      #22703 merged 2026-06-22 fix: preserve app constraints without model defaults
+      #18187 merged 2024-10-04 feat(instancedata): remove HardwareCharacteristics method from state/machine
+      #20686 merged 2025-09-22 fix: set application constraints when creating app
+      #22650 closed 2026-06-15 mem / cpu-power constraints are not applied to the sidecar workload container (regression 3.6 → 4.0)
+      #18084 merged 2024-09-12 feat(machine): support machine cloud instance model migration 
+      #19082 merged 2025-03-03 feat: add unit constraints as a merge of app and model constraints
+      #15310 merged 2023-03-17 [JUJU-3245] Use image-id constraint on MAAS provider
+      #18044 merged 2024-09-06  feat(machine): wire machine cloud instance set 
+      #18214 merged 2024-10-10 chore(instancedata): full cleanup of instance data on legacy state
+      #22587 merged 2026-06-08 fix: update charmhub find featured query
+      #23163 closed 2026-08-28 fix(instancepoller): clear stale provisioning status on agent start
+      #22586 closed 2026-06-08 juju find is broken for empty queries
+      #22691 closed 2026-06-18 Juju deletes MAAS machines instead of releasing it
+      #21469 merged 2025-12-12 fix(modelconfig): coerce provider-specific config attributes from DB
+      #20709 merged 2025-09-24 feat: add operation domain methods
+      #21593 merged 2026-01-15 fix: import machine with left over fan addr
+  outage         26 hit(s) (all listed)
+      #22974 open 2026-07-24 Readiness probe failures in charm container causes traffic to not reach the workload container
+      #22873 open 2026-07-13 docs: Add how-to for recovering from k8s node down
+      #22690 open 2026-06-18 `Juju debug-log` stops showing logs after juju-agent restart (lxd container restart)
+      #23351 open 2026-09-18 [Azure] Support PremiumV2_LRS, UltraSSD_LRS, Premium_ZRS and StandardSSD_ZRS disk types in the azure storage provider
+      #23210 merged 2026-09-04 feat: ensure we pass update and upgrade config
+      #19565 open 2025-04-21 K8s controller pod error: startup probe failed: command timed out: "mongo ..." timed out after 1s
+      #23238 merged 2026-09-08 chore: merge 4.0 into 4.1
+      #20854 closed 2025-10-09 Secret consumer left over after remove-unit
+      #19825 closed 2025-05-26 Juju agent loses status of apps running on VM models
+      #22384 closed 2026-05-04 Juju 3.6 leaks juju-secret-consumer-* RBAC triples (RoleBinding/Role/ServiceAccount) on K8s, fills etcd quota
+      #21587 closed 2026-01-14 fix(ssh): disable PTY allocation when remote command is provided
+      #21140 closed 2025-11-05 feat: restart worker delay
+      #18468 merged 2024-12-03 fix: do not fail probes during controller outage
+      #20131 merged 2025-07-05 feat: enable ha for IAAS
+      #18443 merged 2024-11-27 feat: async charm download worker
+      #18657 closed 2025-01-16 Failing to deploy LXD container with juju with "no matching image found"
+      #18124 merged 2024-09-20 docs: add Azure provider material from the old juju wiki
+      #17979 merged 2024-08-27 feat: new high availability doc for Dqlite
+      #15669 merged 2023-05-29 Bump version to 4.0-beta1
+      #2069 merged 2015-04-14 state/service: Unit names are unique across service names lp:1174610
+  ENOSPC         1 hit(s) (all listed)
+      #23021 closed 2026-08-10 This bundle fails to deploy then fills the controller's mongodb PVC leading to permanent unrecoverable crash loop
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23282 open 2026-09-11 root disk source constraint not validated properly
+      #23351 open 2026-09-18 [Azure] Support PremiumV2_LRS, UltraSSD_LRS, Premium_ZRS and StandardSSD_ZRS disk types in the azure storage provider
+      #23117 open 2026-08-24 Enable root-disk-source storage constraint to choose specific Cinder backend on Openstack
+      #23462 open 2026-10-01 Constraints behavioural inconsistencies 3.6 -> 4.X
+      #22798 open 2026-07-07 mount points for storage swapped at reboot
+      #22198 open 2026-04-09 MAAS: --storage can stall in agent initialising while storage is `attached` but unit attachment has no location
+      #23481 open 2026-10-02 fix(uniter): re-run interrupted update-status hooks
+      #20415 open 2025-08-14 Juju `enable-ha` does not respect the given `--constraints` when adding new machines.
+      #20588 open 2025-09-09 [Azure] Change the default disk type used by bootstrap/juju to use Standard SSD as Standard HDD is getting deprecated
+      #22877 open 2026-07-13 docs: microK8s strict install fails when following the tutorial
+      #20586 open 2025-09-09 The `juju destroy-model` command sometimes hangs while destroying storage
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22418 open 2026-05-08 feat(lxd): lxd storage provider does not support block storage type, preventing ceph-osd deployment via storage_directives
+      #22947 open 2026-07-21 juju add-model  errors with "initialising model logs collection: cannot create index ... EOF"
+      #22435 open 2026-05-15 Juju ignores IPv6 CIDR in no-proxy settings, routing internal controller traffic (port 17070) through HTTP proxy
+      #22432 open 2026-05-15 Storage description change in charmcraft.yaml resulted in upgrade failures
+      #23442 merged 2026-09-30 docs: add 3.6.29 release notes
+      #21850 open 2026-02-26 ObjectStore returns a response with no checksum
+      #23237 merged 2026-09-08 feat(openstack): add support for specifying additional cinder volume attributes
+      #22733 open 2026-06-26 docs: add how-to on CIS-hardened machines
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23400 open 2026-09-25 test: CI suites clobber ~/.aws credentials, breaking local juju bootstrap
+      #23289 open 2026-09-14 fix: time out the depengine introspection report
+      #23384 open 2026-09-23 feat: create, discover and tear-down OVN forward addresses
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22006 open 2026-03-16 bad engine report can hang
+      #23471 open 2026-10-01 refactor: rpc json codec to use encoding/json/v2
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #22389 open 2026-05-05 fix: delete secret issued tokens in bulk on k8s
+      #19641 open 2025-04-29 Allow using openstack server groups as constraints for the openstack cloud
+      #23370 open 2026-09-21 ci(spread): run deploy tests in aws
+      #23421 open 2026-09-29 fix(secretsmanager): scope GetConsumerSecretsRevisionInfo to the caller
+      #23317 merged 2026-09-16 feat: upgrade steps to repair broken cross model records
+      #23375 merged 2026-09-22 fix: best-effort data cleanse avoids blocking upgrades
+      #23464 merged 2026-10-01 feat: new controller API address projections
+      #23243 merged 2026-09-08 fix: set polled instance status early
+      #23290 closed 2026-09-14 fix: time out the depengine introspection report
+      #23205 merged 2026-09-03 feat(application): restore storage removal classification on destroy
+      #23389 open 2026-09-23 test(cmr): add modelmigration suite for egress override
+      #23284 merged 2026-09-11 test(authorized_keys): update imported SSH key identities
+      #23206 merged 2026-09-04 feat(backups): implement the client backups Create method
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22511 open 2026-05-28 Existing docs for contributors are incomplete
+      #23465 open 2026-10-01 juju bootstrapping failing on 4.0/edge (revision 36440)
+      #23329 open 2026-09-17 Juju allows to add a cloud you cannot create a controller on.
+      #23139 open 2026-08-26 juju bootstrap not working when asking for a LB service
+      #22756 open 2026-06-29 CMR SAAS consumed from the same model does not propagate relation-changed events
+      #22988 open 2026-07-28 Dqlite Splitbrain after destroying one node and enabling-ha.
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22578 open 2026-06-05 Juju 4 and Juju 3 mismatch when agent-version is specified when adding a model.
+      #20054 open 2025-06-24 Getting "Missing resource: oci-image" when deploying two minio applications in terraform bundle
+      #23427 open 2026-09-29 docs: 4.1 docs dissolve contributor tree
+      #20207 open 2025-07-15 max-action-results-age configuration not deleting actions
+      #22461 open 2026-05-20 feat: preflight draining validation
+      #19270 open 2025-03-21 ERROR cannot switch when JUJU_CONTROLLER is overriding the controller
+      #19159 open 2025-03-12 Warn when client and controller version is too different.
+      #18867 open 2025-02-12 Invalid region error when bootstrapping OpenStack cloud
+      #22307 open 2026-04-23 `juju show-status-log` changes timing between invokations
+      #23134 merged 2026-08-26 test: fix limit_access test due to port 17022 removal
+      #23173 closed 2026-08-31 juju expose doesn't result in any public IP address
+      #21196 open 2025-11-12 Juju agents must verify that the cluster is truly HA or controller discovery mechanism is working correctly.
+      #23384 open 2026-09-23 feat: create, discover and tear-down OVN forward addresses
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22873 open 2026-07-13 docs: Add how-to for recovering from k8s node down
+      #23479 open 2026-10-02 fix(CMR): follow controller redirects for remote secrets and model lookups
+      #22974 open 2026-07-24 Readiness probe failures in charm container causes traffic to not reach the workload container
+      #23126 open 2026-08-25 JaaS OIDC login repeatedly prompts for OAuth2 verification when cached user identity is stale
+      #23413 open 2026-09-28 Machine agent crash-loops: nil pointer dereference in fanconfigurer when fanatic hits the 5s timeout
+      #23434 open 2026-09-29 docs: 4.1 docs controller config fixes
+      #22988 open 2026-07-28 Dqlite Splitbrain after destroying one node and enabling-ha.
+      #22187 open 2026-04-08 `juju reboot-machine` command
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23358 open 2026-09-18 fix(cmr): suspend cross-model relations when revoking offer consume permission
+      #23017 closed 2026-08-07 Bug: k8s-worker fails to join cluster — secret permission denied in recover_token
+      #23384 open 2026-09-23 feat: create, discover and tear-down OVN forward addresses
+      #23480 open 2026-10-02 remoterelationconsumer worker crash-loops on discharge-required errors after offer consume permission is revoked
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23091 merged 2026-08-20 fix(status): allow blocked units in migration precheck
+      #23243 merged 2026-09-08 fix: set polled instance status early
+      #23175 closed 2026-08-31 fix(provisioner): persist successful provider results
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #21052 open 2025-10-30 MutatingAdmissionWebhook's on Kubernetes affects cluster critical resources
+      #23290 closed 2026-09-14 fix: time out the depengine introspection report
+  recovery       80 hit(s) (all listed)
+      #23358 open 2026-09-18 fix(cmr): suspend cross-model relations when revoking offer consume permission
+      #23288 open 2026-09-13 [3.6][regression in 3.6.11] secret-changed hooks not delivered to cross-model (SAAS) consumers when the secret owner adds a revision
+      #23277 merged 2026-09-10 feat(controller): flatten controller paths and harden controller-charm socket recovery
+      #22461 open 2026-05-20 feat: preflight draining validation
+      #19565 open 2025-04-21 K8s controller pod error: startup probe failed: command timed out: "mongo ..." timed out after 1s
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23442 merged 2026-09-30 docs: add 3.6.29 release notes
+      #23480 open 2026-10-02 remoterelationconsumer worker crash-loops on discharge-required errors after offer consume permission is revoked
+      #23003 merged 2026-07-30 feat: reprovision integration tests
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23084 merged 2026-08-19 fix: allow vault drain token to create secrets when draining from internal backend
+      #23432 merged 2026-09-29 test(controllercharm): harden prometheus suite against CI flakiness
+      #23385 merged 2026-09-23 refactor(jujuagentd): remove dead Dqlite build closure plumbing
+      #23204 merged 2026-09-03 fix(uniter): remove empty directories left behind by charm upgrades
+      #22954 merged 2026-07-22 feat: machine liveness gate
+      #22899 closed 2026-07-15 feat: add abort model import on the target controller
+      #23016 merged 2026-08-07 chore: merge 3.6
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22946 merged 2026-07-21 feat: reprovision machine CLI
+      #22945 merged 2026-07-21 feat: model migration validation
+  rollback       85 hit(s) (all listed)
+      #23384 open 2026-09-23 feat: create, discover and tear-down OVN forward addresses
+      #20708 open 2025-09-24 `juju refresh` fails silently if `--force-units` required but not provided
+      #22060 open 2026-03-20 sunbeam bootstrap intermittently fails due to failure migrating openstack machines model to permanent k8s controller
+      #19585 open 2025-04-23 Expose the currently deployed charm revision as an environment variable
+      #19631 open 2025-04-29 Duplicated peer relation on refresh chains
+      #23370 open 2026-09-21 ci(spread): run deploy tests in aws
+      #20286 open 2025-07-28 Migrating model between controllers  not complete after several days, stuck on transferring ownership of cloud resources to target controller
+      #23411 merged 2026-09-27 feat(backups): hide dqlite backup creation behind a not-implemented error
+      #23369 merged 2026-09-21 refactor: reprovision machine with new unit ordinals
+      #16851 merged 2024-01-29 Rollback changes on snapcraft.yaml including minikube env files
+      #23276 merged 2026-09-10 fix: remove deleted relations from unit relation state
+      #22738 merged 2026-06-26 feat: modelmigration transformer registry
+      #23334 merged 2026-09-17 fix: one K8s service per application
+      #22843 open 2026-07-09 refactor(network): introduce domain SubnetInfo and bulk ImportSubnets
+      #23355 merged 2026-09-18 Merge forward 4.1 -> main
+      #23418 open 2026-09-28 refactor: immutable resources
+      #23150 merged 2026-08-27 feat: k8s HA scale down
+      #23364 merged 2026-09-21 feat: handle K8s service DNS names
+      #22968 merged 2026-07-23 feat: detach operation
+      #22987 merged 2026-07-27 feat: detach with machine storage
+  resume         84 hit(s) (all listed)
+      #23480 open 2026-10-02 remoterelationconsumer worker crash-loops on discharge-required errors after offer consume permission is revoked
+      #23262 open 2026-09-09 CMR consumer breaks after the offerer model migrates
+      #18906 open 2025-02-14 Cross-model relation becomes suspended when permissions are revoked, and cannot be resumed
+      #22974 open 2026-07-24 Readiness probe failures in charm container causes traffic to not reach the workload container
+      #22348 open 2026-04-28 Race in test `TestNewConnectionTrackerBrokenImmediately`
+      #22198 open 2026-04-09 MAAS: --storage can stall in agent initialising while storage is `attached` but unit attachment has no location
+      #21248 open 2025-11-18 Cross-controller secret sharing failed: sharing  consumer secrets across a cross model relation not supported (if juju offer created in requirer side)
+      #23425 merged 2026-09-29 Merge 4.1 -> main 20260929
+      #23102 merged 2026-08-20 fix(schema): emit changestream events for model_migration_import
+      #23223 closed 2026-09-07 chore: merge pull request #23152 from wallyworld/fix-cmr-teardown
+      #19874 open 2025-06-02 juju debug-log not working
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23152 merged 2026-08-28 fix(cmr): notify offering side of relation removal to avoid race
+      #23009 merged 2026-07-30 fix(apiserver): file migrated logs under the migrated model
+      #22986 merged 2026-07-27 fix(migration): move activation commit point to AdoptResources
+      #23315 closed 2026-09-16 Charm blocked on `failed to set charm tracing config`
+      #23401 open 2026-09-25 test(model): add 3.6 -> 4.0 model migration integration tests
+      #22899 closed 2026-07-15 feat: add abort model import on the target controller
+      #20173 open 2025-07-10 The upgrade-charm hook does not run if the charm is pending error resolution.
+      #20661 closed 2025-09-18 Deploying a Charm takes long time to complete
+  half-written   30 hit(s) (all listed)
+      #23434 open 2026-09-29 docs: 4.1 docs controller config fixes
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23360 open 2026-09-19 fix(apiserver): authorise unit resource downloads
+      #20361 open 2025-08-06 Model migration cannot be retried when target controller crashes
+      #22006 open 2026-03-16 bad engine report can hang
+      #23418 open 2026-09-28 refactor: immutable resources
+      #23161 merged 2026-08-28 feat(backups): add archive creation primitives
+      #23098 merged 2026-08-20 test(model): add migration abort test using die-in-export wrench
+      #23460 merged 2026-10-01 fix(bootstrap): fall back to local artifacts when client is newer than published snap
+      #23007 closed 2026-07-30 feat(migration): clean-up old exported versions and add github action to ensure we don't break them -
+      #23396 merged 2026-09-24 fix(resources): validate resource blobs during model migration
+      #22783 merged 2026-07-03 feat(migration): rewrite secret backend UUIDs during model import
+      #22982 merged 2026-07-27 feat(migration): make the migration flag direction-aware
+      #23395 merged 2026-09-24 fix(relation): import relation data of remote application consumers
+      #22323 open 2026-04-24 juju4 on openstack storage setup changed
+      #23150 merged 2026-08-27 feat: k8s HA scale down
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23458 merged 2026-10-01 feat: network service methods for controller addresses
+      #22970 closed 2026-07-23 feat: add abort model import on the target controller
+  wipe           33 hit(s) (all listed)
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #23462 open 2026-10-01 Constraints behavioural inconsistencies 3.6 -> 4.X
+      #23468 merged 2026-10-01 fix(ci): build jujud snap correctly
+      #23017 closed 2026-08-07 Bug: k8s-worker fails to join cluster — secret permission denied in recover_token
+      #23364 merged 2026-09-21 feat: handle K8s service DNS names
+      #22707 merged 2026-06-22 feat: handle logsink migration 
+      #22932 merged 2026-07-17 feat: complete controller snap service lifecycle and runtime hooks
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #20251 closed 2025-07-21 Juju destroy model on LXD does not delete the LXD images added to LXD project by Juju
+      #21449 merged 2025-12-10 feat: re-implement create storage pool facades for Juju 4.0
+      #20726 merged 2025-09-25 feat(k8s-unit-ip): Add k8s unit address in juju status
+      #20770 merged 2025-09-30 chore: update to go 1.25
+      #20336 merged 2025-08-01 feat: undertaker worker
+      #19730 merged 2025-05-07 feat(principal): wire up new IsSubordinateApplication method
+      #19227 merged 2025-03-18 chore: mortally wound the testing factory
+      #18620 merged 2025-01-13 feat(resources): handle size and fingerprint in domain and resource opener
+      #15319 closed 2023-03-21 Prometheus integration for Juju
+      #14834 merged 2022-10-26 [JUJU-2030]Kill unconverted api workers 2 9
+      #599 closed 2014-08-25 cmd/juju: move some tests to their own package to reduce the overall tes...
+      #6888 merged 2017-01-30 Add network interfaces to show-machine
+  wipes          7 hit(s) (all listed)
+      #23462 open 2026-10-01 Constraints behavioural inconsistencies 3.6 -> 4.X
+      #23468 merged 2026-10-01 fix(ci): build jujud snap correctly
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #20770 merged 2025-09-30 chore: update to go 1.25
+      #18620 merged 2025-01-13 feat(resources): handle size and fingerprint in domain and resource opener
+      #7198 merged 2017-04-04 Update tests for new error formatting.
+      #2568 merged 2015-06-16 mongo: fix oplog tests on precise
+  erase          9 hit(s) (all listed)
+      #23444 closed 2026-09-30 fix: send consuming app token for secret watches to legacy peers
+      #23364 merged 2026-09-21 feat: handle K8s service DNS names
+      #22360 merged 2026-04-29 feat: add transformer framework for model export version transforms
+      #22555 merged 2026-06-03 feat(modelmigration): implement source-side domain service and state
+      #21721 merged 2026-02-04 refactor(secret): remove RunAtomic
+      #13290 merged 2021-08-30 Remove app status history when destorying an app; add support for apps in show-status-log
+      #77 merged 2014-06-11 Added provider for CloudSigma
+      #2955 merged 2015-08-10 Fix bug #1468349
+      #10891 closed 2019-11-10 Add vm-folder option to vsphere provider
+  erasing        2 hit(s) (all listed)
+      #13290 merged 2021-08-30 Remove app status history when destorying an app; add support for apps in show-status-log
+      #77 merged 2014-06-11 Added provider for CloudSigma
+  erased         2 hit(s) (all listed)
+      #22360 merged 2026-04-29 feat: add transformer framework for model export version transforms
+      #2955 merged 2015-08-10 Fix bug #1468349
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19795 open 2025-05-20 cannot destroy / kill a Kubernetes juju controller
+      #20586 open 2025-09-09 The `juju destroy-model` command sometimes hangs while destroying storage
+      #22988 open 2026-07-28 Dqlite Splitbrain after destroying one node and enabling-ha.
+      #20350 open 2025-08-05 Juju `destroy-model --destroy-storage` erroring in case of rich storage setup
+      #22075 open 2026-03-24 Juju stuck at destroying k8s model
+      #23473 open 2026-10-02 fix(removal): unblock model teardown on container hosts
+      #23389 open 2026-09-23 test(cmr): add modelmigration suite for egress override
+      #22106 open 2026-03-27 Remove model status reporting is weird
+      #23352 open 2026-09-18 fix(state): allow forced relation removal with dying endpoints
+      #23205 merged 2026-09-03 feat(application): restore storage removal classification on destroy
+      #21699 open 2026-01-30 Re-created model is inaccessible though juju cli until `juju models` is ran
+      #19708 open 2025-05-06 3.6.6 doesn't allow a bundle's default-base to be overriden via an overlay
+      #22963 closed 2026-07-23 storage: destroy-controller/destroy-model hangs indefinitely on a kubernetes model with detached, alive storage
+      #23401 open 2026-09-25 test(model): add 3.6 -> 4.0 model migration integration tests
+      #22114 open 2026-03-30 K8s agent config Secret not updated after model migration back to original controller, causing charm-init CrashLoopBackOff
+      #23104 merged 2026-08-20 fix: return NotFound for destroy models
+      #20816 open 2025-10-06 ERROR model cache: model "..." did not appear in cache timeout
+      #23319 merged 2026-09-16 fix(storage): restore 3.6 semantics for destroy with persistent storage and volume-attach AZ placement
+      #21930 open 2026-03-06 export-bundle: Unable to reuse the exported bundle to redploy the same model on the same environment
+      #21414 open 2025-12-05 juju stop and restart commands
+  destroys       37 hit(s) (all listed)
+      #22814 open 2026-07-08 fix: force remove dead controller machine
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23143 merged 2026-08-26 fix(controlsocket): use fresh password for GetUserByAuth on UserAlreadyExists
+      #23401 open 2026-09-25 test(model): add 3.6 -> 4.0 model migration integration tests
+      #23105 merged 2026-08-20 feat: k8s reconcile from lowest ordinal
+      #22649 closed 2026-06-15 Removing an application that owns a secret destroys the secret values of every other secret in the model
+      #23221 merged 2026-09-06 test(migration): add CAAS model migration integration test
+      #23159 merged 2026-08-28 4.0 into main 3
+      #22213 closed 2026-04-10 Offer connection count doesn't decrement correctly when there are multiple consumers
+      #23317 merged 2026-09-16 feat: upgrade steps to repair broken cross model records
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #21420 closed 2025-12-05 (WIP) docs: update config descriptions to align with user intent
+      #20357 merged 2025-08-06 fix: cleanup LXD profile when a model is deleted
+      #18729 closed 2025-01-27 Killing k8s Juju controller directly breaks permissions for other controllers on the same k8s
+      #17986 merged 2024-08-28 feat(units): dual write unit destroy in cleanup
+      #18124 merged 2024-09-20 docs: add Azure provider material from the old juju wiki
+      #15328 merged 2023-03-23 [JUJU-3226] Fix destroy-model/destroy-controller to handle --force better.
+      #14641 merged 2022-09-21 [JUJU-1831] fix test storage aws
+      #50 merged 2014-06-09 New txn package
+      #2007 merged 2015-04-01 Add managed filesystem source
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19250 open 2025-03-20 Juju offer should stop to silently overwrite offers with same name
+      #23481 open 2026-10-02 fix(uniter): re-run interrupted update-status hooks
+      #23398 open 2026-09-25 feat(application): replace scaling boolean with provisioning operation
+      #20361 open 2025-08-06 Model migration cannot be retried when target controller crashes
+      #18900 open 2025-02-13 LXD: failed to start machine, Failed remote image download: Alias already exists
+      #23376 merged 2026-09-22 perf(apiserver): batch model last-login lookups
+      #23243 merged 2026-09-08 fix: set polled instance status early
+      #22632 merged 2026-06-12 fix: guard against cloud init overwriting agent.conf on reboot
+      #23412 merged 2026-09-28 chore: merge 4.1 into main
+      #23203 closed 2026-09-03 feat(ssh): check user's keys exist in target model
+      #23076 merged 2026-08-18 feat: k8s HA - scale out
+      #23196 merged 2026-09-03 perf(deploy): resolve charmhub resource with one less round-trip
+      #23230 merged 2026-09-07 fix(cmr): store and migrate the application offer description
+      #23066 merged 2026-08-18 fix(upgrade): ship jujud compatibility shim in agent tarballs
+      #23368 merged 2026-09-21 fix(crossmodelrelation): preserve identity and state of imported consumer relations
+      #23470 open 2026-10-01 chore(deps): update google-auth requirement from <2.59.0,>=2.58.1 to >=2.59.0,<2.60.0
+      #23469 open 2026-10-01 chore(deps): update google-auth requirement from <2.59.0,>=2.58.1 to >=2.59.0,<2.60.0
+      #23389 open 2026-09-23 test(cmr): add modelmigration suite for egress override
+      #23163 closed 2026-08-28 fix(instancepoller): clear stale provisioning status on agent start
+      #22922 closed 2026-07-17 chore: update a bunch of upstream dependencies
+  clobber        17 hit(s) (all listed)
+      #23400 open 2026-09-25 test: CI suites clobber ~/.aws credentials, breaking local juju bootstrap
+      #23314 merged 2026-09-16 fix(controllerconfig): only update api-port when it is set or removed
+      #23362 merged 2026-09-21 fix(firewaller): keep controller ports off model firewall
+      #23132 merged 2026-08-25 fix: propagate proxy envvars
+      #23355 merged 2026-09-18 Merge forward 4.1 -> main
+      #21230 merged 2025-11-17 fix: use sqlair Preparer for space constraints
+      #22778 merged 2026-07-02 feat: port emphemeral key methods
+      #22757 merged 2026-06-29 Merge 4.0 to main
+      #17871 merged 2024-08-05 chore(deps): bump golang.org/x/mod from 0.19.0 to 0.20.0
+      #17341 merged 2024-05-06 Ensure we clear multiwatcher payload on send
+      #17009 merged 2024-03-05 Add Prepare method to StateBase to allow for SQLair statement reuse.
+      #16717 closed 2023-12-19 Bump golang.org/x/crypto from 0.16.0 to 0.17.0
+      #13748 merged 2022-02-15 Fix clashing of user vs juju/system action keys
+      #12691 merged 2021-02-25 Add coverage to make file
+      #7335 merged 2017-05-12 environs: Update the cross-model methods in NetworkingEnviron
+      #8680 merged 2018-05-08 raft: Recover cluster when leader of a 2-machine controller is removed
+      #10639 merged 2019-09-17 vsphere: Don't acquire the mutex when bootstrapping
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22994 merged 2026-07-29 fix(ssh): reject public key data describing more than one key
+      #23442 merged 2026-09-30 docs: add 3.6.29 release notes
+      #23312 merged 2026-09-16 fix: import offer connnection details when migrating models
+      #23057 merged 2026-08-17 feat: unitless assume
+      #18626 merged 2025-01-14 feat: add support for trust token based authentication on remote LXD 
+      #23366 closed 2026-09-21 fix(relation): import suspended state of relations
+      #23426 merged 2026-09-29 Merge 4.0 4.1 20260929
+      #23404 merged 2026-09-25 chore(jujuagentd): build the machine agent as pure Go
+      #23079 merged 2026-08-19 fix(migration): ensure external controller records are updated correctly
+      #23227 merged 2026-09-07 fix: pass cgo ldflags to overload in testing
+      #23058 merged 2026-08-17 docs(releasenotes): add Juju 4.0.14 release notes
+      #22753 merged 2026-06-29 (3.6) fix(openstack): delete orphaned cinder attachments during volume destroy
+      #23303 merged 2026-09-15 fix(storage): fall back to device name for block storage location
+      #23070 merged 2026-08-18 feat(kubernetes): add enable-service-links model config to control K8s service env var injection
+      #23028 merged 2026-08-10 refactor: improve robustness of mongo db script
+      #17193 merged 2024-04-12 Use uuid v7 when adding a space, change method signature
+      #22999 merged 2026-07-30 fix: migrate application-named offer entities
+      #21586 merged 2026-01-14 feat: persist unit workload version on import
+      #23389 open 2026-09-23 test(cmr): add modelmigration suite for egress override
+      #23052 merged 2026-08-17 feat(bootstrap): integrate controller snap build into bootstrap
+  unreadable     13 hit(s) (all listed)
+      #23352 open 2026-09-18 fix(state): allow forced relation removal with dying endpoints
+      #23206 merged 2026-09-04 feat(backups): implement the client backups Create method
+      #22928 merged 2026-07-17 feat: bootstrap a reachable snap controller on IAAS
+      #21997 closed 2026-03-13 Intermittent uniter failure to find charm
+      #22051 closed 2026-03-20 Juju 3.6.19 with k8s causes data platform charms to error out with access issues to secrets
+      #22913 closed 2026-07-16 feat: full table scans detector
+      #20259 closed 2025-07-22 docs: relation (integration) image not readable in dark mode
+      #17415 merged 2024-05-24 Fix non-rootless sidecar charms by optionally setting SecurityContext.
+      #16696 merged 2023-12-13 Objects HTTP get request
+      #12919 merged 2021-04-23 Tweak display of app version in k8s models
+      #12911 merged 2021-04-21 improve bundle messaging output
+      #8563 merged 2018-04-05 ci test for update series
+      #319 merged 2014-07-16 Bootstrap no longer cleans up if it can't tell whether an environment is bootstrapped or not.
+  garbage        44 hit(s) (all listed)
+      #23399 closed 2026-09-25 feat(removal): garbage collect orphaned charms via charm removal jobs
+      #22461 open 2026-05-20 feat: preflight draining validation
+      #23427 open 2026-09-29 docs: 4.1 docs dissolve contributor tree
+      #21248 open 2025-11-18 Cross-controller secret sharing failed: sharing  consumer secrets across a cross model relation not supported (if juju offer created in requirer side)
+      #23432 merged 2026-09-29 test(controllercharm): harden prometheus suite against CI flakiness
+      #23290 closed 2026-09-14 fix: time out the depengine introspection report
+      #23418 open 2026-09-28 refactor: immutable resources
+      #23238 merged 2026-09-08 chore: merge 4.0 into 4.1
+      #22993 merged 2026-07-29 feat(gce): add support for new disk storage types eg hyperdisk
+      #22036 merged 2026-03-18 feat: send raw usernames instead of normalized qualifiers to server
+      #22384 closed 2026-05-04 Juju 3.6 leaks juju-secret-consumer-* RBAC triples (RoleBinding/Role/ServiceAccount) on K8s, fills etcd quota
+      #21481 merged 2025-12-15 feat(add-model): adds a target-controller flag to the `add-model` command
+      #21678 closed 2026-01-28 Juju 4.0/4.1 cannot destroy-model: is waiting for units to leave scope
+      #18299 closed 2024-10-27 feat: use snaps instead of debs
+      #18618 closed 2025-01-13 juju migrate command doesn't update unit's agent.conf.
+      #18529 merged 2024-12-10 feat: local charm doployment for bootstrap worker
+      #18046 merged 2024-09-06 feat: persistence methods for storing unit state
+      #16905 merged 2024-02-07 Ensure we close client
+      #16998 merged 2024-03-01 Delete storage pool manager and wire up new storage pool service
+      #16098 merged 2023-08-15 [JUJU-4044] Refactor db-accessor worker tests
+  mangled        8 hit(s) (all listed)
+      #23377 merged 2026-09-22 Merge 4.0 -> 4.1 20260922
+      #21847 merged 2026-02-25 feat: improve performance of watcher registry
+      #21666 merged 2026-01-27 feat: network config updates allow subnet discovery
+      #8285 merged 2018-01-12 audit-log: Make method exclusions configurable
+      #4925 merged 2016-03-30 worker/apiconfigwatcher: Add dependency for API address changes
+      #5268 merged 2016-04-23 Fix find/replace mangling of logger
+      #5394 merged 2016-05-13 Add providerIDs collection and use it for spaces
+      #2726 merged 2015-07-06 Activate state leadership
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21585 open 2026-01-14 A way to pass file contents to action parameters
+      #23360 open 2026-09-19 fix(apiserver): authorise unit resource downloads
+      #23287 open 2026-09-11 fix: update sanitize-db.py for additional items
+      #22798 open 2026-07-07 mount points for storage swapped at reboot
+      #19207 open 2025-03-17 issue with a charm package containing a `bundle.yaml` file
+      #23415 open 2026-09-28 feat(ci): automatic test selection using LLM
+      #19855 open 2025-05-28 Error Adding Manual Machines with Domain-Joined User
+      #21974 open 2026-03-11 Juju unexpectedly changes LXD listening port on "localhost" cloud bootstrap when LXD configured to use a custom port
+      #18949 open 2025-02-19 Stale `juju-store-lock`
+      #23430 merged 2026-09-29 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #19463 open 2025-04-08 Machine agent can't authenticate after adding NIC and rebooting
+      #21248 open 2025-11-18 Cross-controller secret sharing failed: sharing  consumer secrets across a cross model relation not supported (if juju offer created in requirer side)
+      #23101 merged 2026-08-20 fix(tools): make agent binary tarball hash deterministic
+      #19406 open 2025-04-03 Juju 3.6.4 bootstrap in AWS/EC2 reports unsupported constraints: allocate-public-ip
+      #23355 merged 2026-09-18 Merge forward 4.1 -> main
+      #23025 merged 2026-08-10 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #18226 merged 2024-10-14 fix(migration): move description model validation after domain
+      #23067 merged 2026-08-18 test(ssh): use mocks over stubs
+      #23136 merged 2026-08-26 feat(ssh): implement scp for k8s pods via proxy
+      #22704 merged 2026-06-22 chore: add UUID agent rules for service and state methods
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23479 open 2026-10-02 fix(CMR): follow controller redirects for remote secrets and model lookups
+      #23484 open 2026-10-02 feat: reconcile controller API address projections
+      #23473 open 2026-10-02 fix(removal): unblock model teardown on container hosts
+      #23474 open 2026-10-02 test(deploy): stop asserting charm lxd profiles on 4.0
+      #23472 open 2026-10-02 fix(network): use the default LXD bridge for local container networking
+      #23418 open 2026-09-28 refactor: immutable resources
+      #23481 open 2026-10-02 fix(uniter): re-run interrupted update-status hooks
+      #23365 open 2026-09-21 Add ssh server port controlsocket handler correctly
+      #23415 open 2026-09-28 feat(ci): automatic test selection using LLM
+      #23398 open 2026-09-25 feat(application): replace scaling boolean with provisioning operation
+      #23147 open 2026-08-26 lxd bootstrap fails with user not in /etc/passwd
+      #23452 open 2026-10-01 fix(uniter): prune completed actions from watcher
+      #23421 open 2026-09-29 fix(secretsmanager): scope GetConsumerSecretsRevisionInfo to the caller
+      #23451 open 2026-09-30 docs: 4.1 docs entity reference layers
+      #23471 open 2026-10-01 refactor: rpc json codec to use encoding/json/v2
+      #23442 merged 2026-09-30 docs: add 3.6.29 release notes
+      #23434 open 2026-09-29 docs: 4.1 docs controller config fixes
+      #23360 open 2026-09-19 fix(apiserver): authorise unit resource downloads
+      #23403 open 2026-09-25 feat: ssh relay over http upgrade
+      #22841 open 2026-07-09 Juju refresh results in ERROR programming error, both CharmOrigin ID and Hash must be set or neither
+  unclean        6 hit(s) (all listed)
+      #23212 open 2026-09-04 `goal-state` hard-fails ("saas application not found") on SAAS reference left dangling by unclean cross-model teardown
+      #23389 open 2026-09-23 test(cmr): add modelmigration suite for egress override
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22932 merged 2026-07-17 feat: complete controller snap service lifecycle and runtime hooks
+      #21674 closed 2026-01-28 Juju CLI: `juju status` errors out while simulating disaster scenarios
+      #7348 merged 2017-05-16 Disable SSH probing on GCE
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23488 open 2026-10-05 fix(test): flaky TestReportWithDuplicateTopicSubscriptions
+      #23403 open 2026-09-25 feat: ssh relay over http upgrade
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22974 open 2026-07-24 Readiness probe failures in charm container causes traffic to not reach the workload container
+      #22772 open 2026-07-02 Juju shows the last available unit status on the unit (re)start.
+      #23280 merged 2026-09-10 feat: ssh agent reverse tunnel over http upgrade
+      #22607 merged 2026-06-09 fix(externalcontrollerupdater): close watcher client on shutdown race
+      #22814 open 2026-07-08 fix: force remove dead controller machine
+      #23177 merged 2026-08-31 fix(apiserver): close model connections from their own goroutine
+      #22473 merged 2026-05-21 fix: do not drop root disk constraints when custom networking
+      #23240 merged 2026-09-08 chore: merge 4.1 into main
+      #23082 merged 2026-08-19 test: fix race in test worker
+      #22440 merged 2026-05-18 fix: head of line blocking
+      #22935 merged 2026-07-20 fix(authenticationworker): last key removal and worker error cleanup
+      #22747 merged 2026-06-26 fix(watcher): return tomb.ErrDying on shutdown race in NamespaceWatcher and NotifyWatcher
+      #22528 merged 2026-06-01 test: avoid introspection shutdown log race
+      #22769 merged 2026-07-01 chore: remove modeloperator from controller application
+      #22708 merged 2026-06-22 fix: use errors.Is to detect reboot/shutdown sentinels in machine agent
+      #23394 merged 2026-09-24 fix: reliability following CMR teardown
+      #22831 merged 2026-07-08 fix: handle proxy connection errors
+  reboot         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23459 open 2026-10-01 After unit reboot, `start` event occurs before Juju Storage is ready
+      #22187 open 2026-04-08 `juju reboot-machine` command
+      #22798 open 2026-07-07 mount points for storage swapped at reboot
+      #23361 open 2026-09-20 Manual juju cloud: non-primary subnet does not appear in `juju subnets` until machine is rebooted/ juju machine agent is restarted
+      #22772 open 2026-07-02 Juju shows the last available unit status on the unit (re)start.
+      #19463 open 2025-04-08 Machine agent can't authenticate after adding NIC and rebooting
+      #19565 open 2025-04-21 K8s controller pod error: startup probe failed: command timed out: "mongo ..." timed out after 1s
+      #23135 merged 2026-08-26 test(hooks): remove invalid machine-agent reboot-execution assertion
+      #22733 open 2026-06-26 docs: add how-to on CIS-hardened machines
+      #22367 open 2026-04-29 ops: model.get_binding() returns stale IP right after kubernetes pod restarts
+      #23149 merged 2026-08-27 test: pass correct channel to revision refreshes of juju-qa-test
+      #23159 merged 2026-08-28 4.0 into main 3
+      #22639 closed 2026-06-12 In Juju 4, juju-reboot does not reboot
+      #23170 merged 2026-08-31 feat(ssh): make jump behaviour the default
+      #22688 open 2026-06-18 The 'update-status' on not-yet-started-unit might error 'juju status' => abort CI/CD tests
+      #22708 merged 2026-06-22 fix: use errors.Is to detect reboot/shutdown sentinels in machine agent
+      #21052 open 2025-10-30 MutatingAdmissionWebhook's on Kubernetes affects cluster critical resources
+      #22632 merged 2026-06-12 fix: guard against cloud init overwriting agent.conf on reboot
+      #18153 merged 2024-09-29 feat(lxdprofiles): add lxd profiles watcher
+      #20171 merged 2025-07-10 feat: add machine constraints validation and merge
+  disk+full      62 hit(s) (all listed)
+      #23481 open 2026-10-02 fix(uniter): re-run interrupted update-status hooks
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #20415 open 2025-08-14 Juju `enable-ha` does not respect the given `--constraints` when adding new machines.
+      #22733 open 2026-06-26 docs: add how-to on CIS-hardened machines
+      #22461 open 2026-05-20 feat: preflight draining validation
+      #23303 merged 2026-09-15 fix(storage): fall back to device name for block storage location
+      #23237 merged 2026-09-08 feat(openstack): add support for specifying additional cinder volume attributes
+      #23316 merged 2026-09-16 test(backups): mock facade dependencies instead of a db suite
+      #23206 merged 2026-09-04 feat(backups): implement the client backups Create method
+      #23175 closed 2026-08-31 fix(provisioner): persist successful provider results
+      #22946 merged 2026-07-21 feat: reprovision machine CLI
+      #23207 closed 2026-09-04 feat(apiserver): serve backup archive downloads
+      #23240 merged 2026-09-08 chore: merge 4.1 into main
+      #23161 merged 2026-08-28 feat(backups): add archive creation primitives
+      #23021 closed 2026-08-10 This bundle fails to deploy then fills the controller's mongodb PVC leading to permanent unrecoverable crash loop
+      #23016 merged 2026-08-07 chore: merge 3.6
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23396 merged 2026-09-24 fix(resources): validate resource blobs during model migration
+      #20472 open 2025-08-22 Juju bootstrap fails on OpenStack due to image-stream connection refused
+      #23012 merged 2026-08-04 feat: add support for image-id constraint on google cloud
+  data+loss      26 hit(s) (all listed)
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #19874 open 2025-06-02 juju debug-log not working
+      #22323 open 2026-04-24 juju4 on openstack storage setup changed
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23310 merged 2026-09-16 feat: add orphaned record cleanup script for mongo
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #22946 merged 2026-07-21 feat: reprovision machine CLI
+      #23401 open 2026-09-25 test(model): add 3.6 -> 4.0 model migration integration tests
+      #23228 closed 2026-09-07 feat: ssh tunnel over http upgrade
+      #23016 merged 2026-08-07 chore: merge 3.6
+      #22922 closed 2026-07-17 chore: update a bunch of upstream dependencies
+      #22948 merged 2026-07-21 feat: reprovision machine eligibility
+      #22527 merged 2026-06-01 feat(cli): provide a clearer error message when deploying or using resources outside of confinement
+      #22440 merged 2026-05-18 fix: head of line blocking
+      #22960 merged 2026-07-22 feat(sshserver): add machine handlers
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #21993 closed 2026-03-12 Cross-model secret grants not propagating to consuming model (regression in 3.6.18)
+      #20180 closed 2025-07-11 Juju does not clean up CRDs created by the charm on application removal
+      #20540 closed 2025-09-02 Juju Spaces default routes (miss-configuration?) randomly causing no WAN connectivity (with reachable LAN)
+      #6598 merged 2016-11-23 Refactor tests from full-stack => unit
+  partial+write  41 hit(s) (all listed)
+      #23400 open 2026-09-25 test: CI suites clobber ~/.aws credentials, breaking local juju bootstrap
+      #23370 open 2026-09-21 ci(spread): run deploy tests in aws
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23415 open 2026-09-28 feat(ci): automatic test selection using LLM
+      #23464 merged 2026-10-01 feat: new controller API address projections
+      #23207 closed 2026-09-04 feat(apiserver): serve backup archive downloads
+      #23389 open 2026-09-23 test(cmr): add modelmigration suite for egress override
+      #23369 merged 2026-09-21 refactor: reprovision machine with new unit ordinals
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #23081 merged 2026-08-19 fix(migration): fence v8 import transactions
+      #23458 merged 2026-10-01 feat: network service methods for controller addresses
+      #22899 closed 2026-07-15 feat: add abort model import on the target controller
+      #23175 closed 2026-08-31 fix(provisioner): persist successful provider results
+      #23098 merged 2026-08-20 test(model): add migration abort test using die-in-export wrench
+      #23206 merged 2026-09-04 feat(backups): implement the client backups Create method
+      #23362 merged 2026-09-21 fix(firewaller): keep controller ports off model firewall
+      #23076 merged 2026-08-18 feat: k8s HA - scale out
+      #19595 merged 2025-04-23 feat: add unit address watcher
+      #23038 merged 2026-08-14 fix(azure): destroy-controller fails to delete resources in shared resource groups
+  crash+safe     29 hit(s) (all listed)
+      #23358 open 2026-09-18 fix(cmr): suspend cross-model relations when revoking offer consume permission
+      #23415 open 2026-09-28 feat(ci): automatic test selection using LLM
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #21248 open 2025-11-18 Cross-controller secret sharing failed: sharing  consumer secrets across a cross model relation not supported (if juju offer created in requirer side)
+      #23310 merged 2026-09-16 feat: add orphaned record cleanup script for mongo
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #22780 merged 2026-07-02 feat: model activation and CMR reconcile on the target
+      #22935 merged 2026-07-20 fix(authenticationworker): last key removal and worker error cleanup
+      #22899 closed 2026-07-15 feat: add abort model import on the target controller
+      #23076 merged 2026-08-18 feat: k8s HA - scale out
+      #22817 merged 2026-07-08 feat: implement source-side REAP with durable login redirection for 4.x model migration
+      #22440 merged 2026-05-18 fix: head of line blocking
+      #23317 merged 2026-09-16 feat: upgrade steps to repair broken cross model records
+      #23332 closed 2026-09-17 fix(network): use the default LXD bridge for local container networking
+      #22970 closed 2026-07-23 feat: add abort model import on the target controller
+      #22932 merged 2026-07-17 feat: complete controller snap service lifecycle and runtime hooks
+      #22741 merged 2026-06-26 feat: pebble loki config
+      #23097 merged 2026-08-20 feat(migration): add synchronous v8 import abort
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #22487 closed 2026-05-25 feat: allow removal of offers with connections without force flag
+  atomic+write   65 hit(s) (all listed)
+      #23484 open 2026-10-02 feat: reconcile controller API address projections
+      #23398 open 2026-09-25 feat(application): replace scaling boolean with provisioning operation
+      #23450 open 2026-09-30 feat(storage-pools): wire up delete/update
+      #23365 open 2026-09-21 Add ssh server port controlsocket handler correctly
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23418 open 2026-09-28 refactor: immutable resources
+      #22440 merged 2026-05-18 fix: head of line blocking
+      #23150 merged 2026-08-27 feat: k8s HA scale down
+      #23266 merged 2026-09-09 feat: prevent controller app scale to zero
+      #23240 merged 2026-09-08 chore: merge 4.1 into main
+      #23458 merged 2026-10-01 feat: network service methods for controller addresses
+      #23396 merged 2026-09-24 fix(resources): validate resource blobs during model migration
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #22990 closed 2026-07-28 fix(migration): fence controller writes against a racing abort
+      #23076 merged 2026-08-18 feat: k8s HA - scale out
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23175 closed 2026-08-31 fix(provisioner): persist successful provider results
+      #22411 merged 2026-05-07 fix(network): validate subnets atomically when adding spaces
+      #23364 merged 2026-09-21 feat: handle K8s service DNS names
+      #23097 merged 2026-08-20 feat(migration): add synchronous v8 import abort
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23133 open 2026-08-25 docs: elaborate on the structure of the machine lock log file
+      #18949 open 2025-02-19 Stale `juju-store-lock`
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23477 merged 2026-10-02 build(deps): bump oauthlib and urllib3 in testcharms/charms/credential-get-k8s
+      #21897 open 2026-03-03 storageprovisioner cannot find an unused loop device
+      #23418 open 2026-09-28 refactor: immutable resources
+      #23463 merged 2026-10-01 feat: use w3c tracing standard
+      #23277 merged 2026-09-10 feat(controller): flatten controller paths and harden controller-charm socket recovery
+      #23250 merged 2026-09-08 perf: reduce number of subscriptions from 11 to 9
+      #21459 open 2025-12-11 migration failure leaves model in a broken state
+      #23357 merged 2026-09-18 jujuagentd: remove safe-mode and db-repl from machine agent
+      #23394 merged 2026-09-24 fix: reliability following CMR teardown
+      #23122 merged 2026-08-24 fix: wait for configchange.socket before deployer starts on every machine
+      #23468 merged 2026-10-01 fix(ci): build jujud snap correctly
+      #23176 closed 2026-08-31 fix: flaky apiserver tests — nil cancelContext panic in rpc.(*Conn).Close
+      #23439 merged 2026-09-29 docs: 4.1 rewrite and reillustrate architecture doc
+      #23278 merged 2026-09-10 chore: merge forward 4.0 - 4.1
+      #23013 merged 2026-08-05 fix(agent): wire safe mode controller config ready lock
+      #23091 merged 2026-08-20 fix(status): allow blocked units in migration precheck
+      #23070 merged 2026-08-18 feat(kubernetes): add enable-service-links model config to control K8s service env var injection
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23358 open 2026-09-18 fix(cmr): suspend cross-model relations when revoking offer consume permission
+      #23401 open 2026-09-25 test(model): add 3.6 -> 4.0 model migration integration tests
+      #23370 open 2026-09-21 ci(spread): run deploy tests in aws
+      #23403 open 2026-09-25 feat: ssh relay over http upgrade
+      #23415 open 2026-09-28 feat(ci): automatic test selection using LLM
+      #23483 open 2026-10-02 feat: dual binary setup with controller snap
+      #23128 open 2026-08-25 Bug Report: juju grant silently fails to persist user permissions in 4.0.14
+      #23330 open 2026-09-17 feat: run pragma optimize on db to generate statistics
+      #23365 open 2026-09-21 Add ssh server port controlsocket handler correctly
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23412 merged 2026-09-28 chore: merge 4.1 into main
+      #23380 merged 2026-09-23 fix(relation): preserve tokens and unit settings across consume aliases
+      #23416 merged 2026-09-28 feat: controller service reconcilliation
+      #19565 open 2025-04-21 K8s controller pod error: startup probe failed: command timed out: "mongo ..." timed out after 1s
+      #23350 merged 2026-09-18 fix(cmr): address various cmr model corruption symptoms
+      #23464 merged 2026-10-01 feat: new controller API address projections
+      #23389 open 2026-09-23 test(cmr): add modelmigration suite for egress override
+      #23395 merged 2026-09-24 fix(relation): import relation data of remote application consumers
+      #23176 closed 2026-08-31 fix: flaky apiserver tests — nil cancelContext panic in rpc.(*Conn).Close
+      #23456 open 2026-10-01 K8s controller with controller-service-type=loadbalancer advertises unroutable pod IP instead of LoadBalancer external IP
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21585 open 2026-01-14 A way to pass file contents to action parameters
+      #23360 open 2026-09-19 fix(apiserver): authorise unit resource downloads
+      #19207 open 2025-03-17 issue with a charm package containing a `bundle.yaml` file
+      #23287 open 2026-09-11 fix: update sanitize-db.py for additional items
+      #23415 open 2026-09-28 feat(ci): automatic test selection using LLM
+      #22798 open 2026-07-07 mount points for storage swapped at reboot
+      #18949 open 2025-02-19 Stale `juju-store-lock`
+      #23430 merged 2026-09-29 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #19855 open 2025-05-28 Error Adding Manual Machines with Domain-Joined User
+      #21974 open 2026-03-11 Juju unexpectedly changes LXD listening port on "localhost" cloud bootstrap when LXD configured to use a custom port
+      #20472 open 2025-08-22 Juju bootstrap fails on OpenStack due to image-stream connection refused
+      #23101 merged 2026-08-20 fix(tools): make agent binary tarball hash deterministic
+      #23363 open 2026-09-21 feat(backups): always return the archive from create-backup
+      #23025 merged 2026-08-10 build(deps): bump dorny/paths-filter from 4.0.2 to 4.0.3
+      #23355 merged 2026-09-18 Merge forward 4.1 -> main
+      #22814 open 2026-07-08 fix: force remove dead controller machine
+      #23136 merged 2026-08-26 feat(ssh): implement scp for k8s pods via proxy
+      #23206 merged 2026-09-04 feat(backups): implement the client backups Create method
+      #23161 merged 2026-08-28 feat(backups): add archive creation primitives
+      #22704 merged 2026-06-22 chore: add UUID agent rules for service and state methods
+
+== 51 terms run; 50 returned hits, 19 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

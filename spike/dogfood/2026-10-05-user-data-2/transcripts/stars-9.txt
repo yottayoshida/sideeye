@@ -1,0 +1,1 @@
+dynaconf/dynaconf stars=4333 pushed=2026-10-01 archived=false issues=true full=dynaconf/dynaconf

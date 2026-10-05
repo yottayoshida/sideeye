@@ -1,0 +1,6 @@
+[world]
+state = "/s/gita/gita"
+
+[define]
+operation = "gita rename a alpha"
+cwd       = "/s/gita-in"

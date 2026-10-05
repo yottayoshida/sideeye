@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/uvd/uv/credentials",
+    "operation": "/opt/py/bin/uv auth logout https://pkgs.example.internal/simple --username alice",
+    "cwd": "/s/uv-in",
+    "expected_status": 0
+  },
+  "k": 5,
+  "ops_total": 5,
+  "prefix_hash": "c600c076f9fbadd7",
+  "after_class": "open",
+  "after_path": "/s/uvd/uv/credentials/credentials.toml",
+  "before_class": "write",
+  "before_path": "/s/uvd/uv/credentials/credentials.toml",
+  "violation": "hybrid"
+}

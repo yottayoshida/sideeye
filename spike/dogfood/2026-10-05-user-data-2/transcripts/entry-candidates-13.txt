@@ -1,0 +1,2 @@
+ROW aliyun static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 6 operations
+EXIT aliyun 0

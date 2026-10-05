@@ -1,0 +1,6 @@
+sideeye 1.8.0 (trace contract v18)
+engine path: /opt/se/sideeye-v1.8.0-aarch64-linux/sideeye
+installer stdout: /opt/se/sideeye-v1.8.0-aarch64-linux/sideeye
+install-sideeye: reading yottayoshida/sideeye release v1.8.0 (unauthenticated; shares this runner's rate limit)
+install-sideeye: downloaded digest matches (5beb75a8d323dab5daa7974e74541eb8b02398a466cd0609f21d2cb624f14308)
+install-sideeye: sideeye 1.8.0 (trace contract v18)

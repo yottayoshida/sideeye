@@ -1,0 +1,930 @@
+== novelty pre-scan: astral-sh/uv
+== date: 2026-10-05T06:03:12Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21428 open 2026-09-02 Periodic crash (SIGSEV) during `uv pip sync` operations
+      #20632 open 2026-07-23 Publish debugging symbols for official releases
+      #16403 open 2025-10-22 Ignore PermissionDenied during config discovery
+      #17633 open 2026-01-20 fix(install): limit preparer concurrency to prevent file handle exhaustion
+      #19762 open 2026-06-09 Ignore directories named pyproject.toml during settings and workspace discovery (Closes #14584)
+      #18616 open 2026-03-21 uv run panics on non-UTF-8 stdin script on Windows
+      #19647 open 2026-06-02 fix(#16963): Add a hint when requires-python contains a free-threaded selector
+      #12612 open 2025-04-01 uv 0.5.9+ cannot be used with SecuPrint security software on Windows
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #9082 open 2024-11-13 Cleanup .venv on Ctrl-C interrupt during `uv sync`
+      #21199 open 2026-08-18 uv pip install --python <venv> fails for a cpython-*-emscripten-wasm32-musl venv on Windows — malformed path mixing POSIX and Windows conventions
+      #14333 open 2025-06-27 `OPENSSL_Applink` error on Windows with uv-managed Python
+      #8302 open 2024-10-17 Create best practice example of uv workspace for vscode supporting tests and more
+      #18112 open 2026-02-20 UnicodeDecodeError after windows computer restart
+      #15238 open 2025-08-12 `uv sync` removes necessary dependencies when two packages include the same module
+      #10766 open 2025-01-20 uv init --python-preference only-managed installs system python
+      #19390 open 2026-05-13 uv trampoline failed to spawn Python child process. entity not found (os error 2)
+      #11802 open 2025-02-26 Why does `uv run` cause a system package to be imported?
+      #12463 open 2025-03-25 Building uwsgi against multiple system Python versions corrupts it
+      #21337 closed 2026-08-28 uvx crashes with SIGABRT / abort() on macOS when launched non-interactively via subprocess stdio piping
+  corrupt        88 hit(s) (all listed)
+      #11671 open 2025-02-20 Corrupt .pth in site-packages
+      #19630 open 2026-06-01 `uv tool uninstall` fails on corrupt receipts / `uv tool list` recovery hint is un-actionable
+      #15226 open 2025-08-11 corrupted cache? causes uv update to fail
+      #21367 open 2026-08-30 Add opt-in reusable PEP 517 build environments
+      #12463 open 2025-03-25 Building uwsgi against multiple system Python versions corrupts it
+      #10980 open 2025-01-27 Avoid corrupt pyproject.toml when aborting `uv add xxx`
+      #20394 open 2026-07-14 Finalize compressed tar streams during extraction
+      #21968 open 2026-09-24 uv sync leaves an environment with missing NCCL library unchanged
+      #21420 open 2026-09-01 Treat any received TLS alert as fatal in retry classification
+      #20888 open 2026-08-03 Update Rust crate async-compression to v0.4.44
+      #20856 open 2026-07-31 Remove dangling environments for malformed tool receipts
+      #14843 open 2025-07-23 Shadowed `install_name_tool` can break Python installation
+      #15084 open 2025-08-05 Reflink failures on macOS 15.5
+      #20849 open 2026-07-31 Diagnose dangling shebang interpreters in `uv run` / `uv tool run`
+      #16793 open 2025-11-20 I/O operation failed during extraction
+      #18112 open 2026-02-20 UnicodeDecodeError after windows computer restart
+      #20090 open 2026-07-03 Allow opt-in reuse of isolated build environments for native-build backends (scikit-build-core, meson-python)
+      #20334 closed 2026-07-13 Handle corrupt tool receipts gracefully during uninstall
+      #11134 open 2025-01-31 Access Denied error in Windows when removing .exe files from `.venv`
+      #14642 open 2025-07-15 `uv python find` can also cause `os error 15700`
+  corruption     29 hit(s) (all listed)
+      #21420 open 2026-09-01 Treat any received TLS alert as fatal in retry classification
+      #21608 open 2026-09-11 `uv sync` validates a `build-system.requires` wheel against the wrong platform's hash from `uv.lock`
+      #20394 open 2026-07-14 Finalize compressed tar streams during extraction
+      #11886 open 2025-03-01 Handling of signal exit from subprocess is incorrect
+      #21644 open 2026-09-13 ZIP extraction rejects DEFLATE-compressed empty directory with data descriptor
+      #19677 open 2026-06-04 Feature Request: `uv init` should generate LLM/AI assistant configuration to guide correct environment and command usage (similar to `bun init`)
+      #21073 merged 2026-08-12 Heal interpreter metadata cache entries when creating a virtual environment indicates corruption
+      #18112 open 2026-02-20 UnicodeDecodeError after windows computer restart
+      #22052 merged 2026-09-28 Refresh HTTP cache policies in place
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #15084 open 2025-08-05 Reflink failures on macOS 15.5
+      #17645 open 2026-01-21 `uv sync` removes base dependencies when switching extras (at least impacts typer/typer-slim)
+      #17666 open 2026-01-23 uv sync cannot install any setuptools version
+      #21621 merged 2026-09-11 Decode fresh HTTP cache entries in the read task
+      #20790 open 2026-07-29 Support proxy indexes through reversible artifact URLs
+      #19562 closed 2026-05-26 fix(distribution): validate cached wheel archives against corruption
+      #19726 merged 2026-06-08 Update CodSpeedHQ/action action to v4.17.0
+      #19430 closed 2026-05-16 Preserve files claimed by another package's RECORD on uninstall
+      #18603 closed 2026-03-20 fix: recover from poisoned RwLock in CredentialsCache
+      #18218 closed 2026-02-27 parallel uv add?
+  truncated      66 hit(s) (all listed)
+      #18626 open 2026-03-21 Warnings produced by `uv sync` are truncated at certain terminal widths
+      #9793 open 2024-12-11 PowerPC binary build failure "relocation truncated to fit: R_PPC64_REL24"
+      #15983 open 2025-09-22 Add `--all-variants` option to show debug builds in `uv python list`
+      #18622 open 2026-03-21 Bytecode compiler workers race on shared script file and retry loop has no cap
+      #20394 open 2026-07-14 Finalize compressed tar streams during extraction
+      #21866 open 2026-09-20 Don't follow symlinks when writing the Git checkout marker
+      #21420 open 2026-09-01 Treat any received TLS alert as fatal in retry classification
+      #22102 closed 2026-09-30 `uv audit` reports "no known vulnerabilities" (exit 0) when the OSV querybatch response has fewer results than queries
+      #3573 open 2024-05-14 Unknown operation system: mingw_x86_64_ucrt
+      #19920 closed 2026-06-19 Regression in 0.11.22: `uv venv` writes truncated `version_info` to `pyvenv.cfg`, breaking pre-commit health check
+      #2658 open 2024-03-25 Dependency Dashboard
+      #20345 merged 2026-07-13 Bump version to 0.11.29
+      #15603 open 2025-08-31  `uv sync --active` can recreate active venv
+      #21570 merged 2026-09-09 Retry failed partial downloads with HTTP Range header when supported
+      #1710 closed 2024-02-19 `Failed to download distributions` with `unexpected BufError` errors
+      #16816 closed 2025-11-22 Content-address distributions in the cache by distribution hash
+      #19770 merged 2026-06-10 Split uv integration tests into command-area harnesses
+      #19172 merged 2026-04-27 Update taiki-e/install-action action to v2.75.22
+      #18638 closed 2026-03-22 fix: route warnings through MultiProgress::suspend() to prevent truncation
+      #4711 closed 2024-07-01 `uv pip tree` machine readable output
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18626 open 2026-03-21 Warnings produced by `uv sync` are truncated at certain terminal widths
+      #9793 open 2024-12-11 PowerPC binary build failure "relocation truncated to fit: R_PPC64_REL24"
+      #21866 open 2026-09-20 Don't follow symlinks when writing the Git checkout marker
+      #15983 open 2025-09-22 Add `--all-variants` option to show debug builds in `uv python list`
+      #19385 open 2026-05-12 Omit output prior to the tree in `uv tree`
+      #20394 open 2026-07-14 Finalize compressed tar streams during extraction
+      #19528 open 2026-05-21 Sync ZIP extraction overwrites conflicting duplicate entries
+      #18622 open 2026-03-21 Bytecode compiler workers race on shared script file and retry loop has no cap
+      #16914 open 2025-12-01 `uv help` paging breaks when colors are enabled when using `busybox less` compiled without support for `-R`
+      #21420 open 2026-09-01 Treat any received TLS alert as fatal in retry classification
+      #15479 open 2025-08-24 Filter Python executables on Windows by Python version metadata
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #21857 closed 2026-09-20 uv Git checkout marker follows a repository-controlled symlink
+      #22102 closed 2026-09-30 `uv audit` reports "no known vulnerabilities" (exit 0) when the OSV querybatch response has fewer results than queries
+      #3573 open 2024-05-14 Unknown operation system: mingw_x86_64_ucrt
+      #21892 closed 2026-09-21 Avoid following repository-controlled symlinks when writing checkout marker
+      #16121 open 2025-10-03 Add list-scripts subcommand similar to pydoit.org or taskfile.dev
+      #12455 open 2025-03-24 Installing secp256k1 fails on uv but not on pip?
+      #19920 closed 2026-06-19 Regression in 0.11.22: `uv venv` writes truncated `version_info` to `pyvenv.cfg`, breaking pre-commit health check
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21547 open 2026-09-08 Use pylock generation command in empty-hash warnings
+      #21644 open 2026-09-13 ZIP extraction rejects DEFLATE-compressed empty directory with data descriptor
+      #22138 open 2026-10-01 Add experimental lockfile v2
+      #22070 merged 2026-09-29 Omit empty manifest headers from lockfiles
+      #21487 open 2026-09-06 Refuse to remove non-virtualenv directories in `remove_virtualenv`
+      #21458 open 2026-09-04 Reuse environments when PEP 723 dependencies are omitted
+      #21987 merged 2026-09-25 Skip empty `XDG_CONFIG_DIRS` entries
+      #11382 open 2025-02-10 Bad error message when building an empty pyproject.toml
+      #21845 open 2026-09-19 Dedicated reporting for incompatible self-dependencies
+      #12972 open 2025-04-18 Consider skipping empty or invalid `.python-version` files during discovery
+      #22084 open 2026-09-29 Indent explicit newlines in top-level diagnostics
+      #21789 open 2026-09-17 Represent the complete candidate universe for version widening
+      #17343 open 2026-01-07 Index: Redirect to url using basic auth with empty username doesn't work
+      #9227 open 2024-11-19 Allow `--token` to be empty if `--keyring-provider` is set with `uv publish`
+      #6727 open 2024-08-27 minor formatting: dependency grouping not preserved if there's an empty line between
+      #1863 open 2024-02-22 uv venv fails to create a venv if the directory if not empty
+      #21464 open 2026-09-04 Protect non-virtualenv directories with --active --script
+      #21707 merged 2026-09-15 Avoid empty-workdir warnings in PyPI publishing jobs
+      #9021 open 2024-11-11 Empty environment variables e.g. `UV_FROZEN=''` is treated as an error, not unset
+      #22011 open 2026-09-27 Can't install packages: UnknownIssuer
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #20309 open 2026-07-12 fix: finalize managed Python installation before atomic rename
+      #21997 open 2026-09-25 Fix wheel file replacement and stale data handling
+      #21984 open 2026-09-25 Reconcile tool executables after upgrades
+      #20089 open 2026-07-03 Avoid blocking the async runtime when creating temporary files
+      #22054 merged 2026-09-28 Add atomic write and HTTP cache benchmarks
+      #22107 merged 2026-09-30 Revert "Add atomic write and HTTP cache benchmarks"
+      #22006 open 2026-09-27 uv tool install --force --reinstall mutates the tool environment in place: concurrent readers observe missing files for tens of seconds while the install exits 0
+      #21522 open 2026-09-07 Make file move retry timeout configurable
+      #21625 merged 2026-09-12 Fix atomic copies to long Windows paths
+      #12142 open 2025-03-12 `uv self update` may leave uv unusable if interrupted
+      #21478 merged 2026-09-04 Create atomic replacement links without temporary directories
+      #21428 open 2026-09-02 Periodic crash (SIGSEV) during `uv pip sync` operations
+      #15933 open 2025-09-18 Interrupted self update will result in incomplete binary file
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #14843 open 2025-07-23 Shadowed `install_name_tool` can break Python installation
+      #21627 merged 2026-09-12 Wrap temporary files to handle long Windows paths
+      #10980 open 2025-01-27 Avoid corrupt pyproject.toml when aborting `uv add xxx`
+      #22051 merged 2026-09-28 Revert "Batch HTTP cache writes in blocking tasks"
+      #17633 open 2026-01-20 fix(install): limit preparer concurrency to prevent file handle exhaustion
+  atomically     27 hit(s) (all listed)
+      #22006 open 2026-09-27 uv tool install --force --reinstall mutates the tool environment in place: concurrent readers observe missing files for tens of seconds while the install exits 0
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #14843 open 2025-07-23 Shadowed `install_name_tool` can break Python installation
+      #21569 merged 2026-09-09 Reject symlinked wheel installation destinations
+      #19329 open 2026-05-08 `uv python install` publishes managed Python before finalization, allowing `uv python find` to race and observe incomplete installs
+      #20622 merged 2026-07-22 Add a `uv-dev inject-signed-wheel-binaries` command
+      #17633 open 2026-01-20 fix(install): limit preparer concurrency to prevent file handle exhaustion
+      #21675 merged 2026-09-14 Batch HTTP cache writes in blocking tasks
+      #6489 open 2024-08-23 Scripts that use "from future" can result in syntax error when used with uvx
+      #19958 closed 2026-06-23 Stage wheel metadata until installation completes
+      #19960 closed 2026-06-23 Make interrupted wheel uninstalls recoverable
+      #18937 merged 2026-04-09 Add a full "lockfile" to tool receipts
+      #19633 merged 2026-06-01 Don't use `--update` with apt in CI
+      #19562 closed 2026-05-26 fix(distribution): validate cached wheel archives against corruption
+      #18632 closed 2026-03-22 Cache compiled bytecode (.pyc) per package/version/python
+      #17699 merged 2026-01-26 Handle the hard link limit gracefully instead of failing
+      #18214 merged 2026-02-27 Centralised environment storage
+      #17232 closed 2025-12-23 Failing `uv build` still creates sdist/wheel
+      #14225 closed 2025-06-23 use $TMPDIR/uv-locks instead of putting lockfiles directly in $TMPDIR
+      #11263 closed 2025-02-05 Replace junctions with "fake" symlinks on Windows
+  interrupted    46 hit(s) (all listed)
+      #21495 open 2026-09-06 fix(uv-fs): loop on EINTR during file lock acquisition (#15996)
+      #12142 open 2025-03-12 `uv self update` may leave uv unusable if interrupted
+      #22171 open 2026-10-04 Prune temporary build environments in `uv cache prune`
+      #15933 open 2025-09-18 Interrupted self update will result in incomplete binary file
+      #21333 open 2026-08-28 Pipeline file cache publication for streamed wheels
+      #21338 open 2026-08-28 Prefetch wheel central directories for streamed file publication
+      #21339 open 2026-08-28 Pipeline wheel file publication with executable deferral
+      #19388 open 2026-05-13 Retry file lock acquisition on EINTR
+      #18962 open 2026-04-10 Improve `uv cache` cleanup and add global project and venv management
+      #22152 closed 2026-10-02 Make streamed wheel output independent of short reads
+      #20855 closed 2026-07-31 Stage Windows self-updates before replacing uv.exe
+      #9082 open 2024-11-13 Cleanup .venv on Ctrl-C interrupt during `uv sync`
+      #21570 merged 2026-09-09 Retry failed partial downloads with HTTP Range header when supported
+      #22052 merged 2026-09-28 Refresh HTTP cache policies in place
+      #14414 open 2025-07-02 Fail to download python(3.11) on Windows platform
+      #19960 closed 2026-06-23 Make interrupted wheel uninstalls recoverable
+      #19622 open 2026-05-31 `uv python install --reinstall` cannot recover a dangling minor-version-link junction on Windows: "Missing expected target directory for Python minor version link"
+      #16024 open 2025-09-25 Segfault on amd64 under QEMU
+      #16163 open 2025-10-07 `uv venv` suspends itself while prompting
+      #19110 open 2026-04-22 Duplicated package names when installing
+  interrupt      80 hit(s) (all listed)
+      #21495 open 2026-09-06 fix(uv-fs): loop on EINTR during file lock acquisition (#15996)
+      #12142 open 2025-03-12 `uv self update` may leave uv unusable if interrupted
+      #12210 open 2025-03-17 Test for interrupts during git process
+      #22171 open 2026-10-04 Prune temporary build environments in `uv cache prune`
+      #21984 open 2026-09-25 Reconcile tool executables after upgrades
+      #15933 open 2025-09-18 Interrupted self update will result in incomplete binary file
+      #21333 open 2026-08-28 Pipeline file cache publication for streamed wheels
+      #9082 open 2024-11-13 Cleanup .venv on Ctrl-C interrupt during `uv sync`
+      #21338 open 2026-08-28 Prefetch wheel central directories for streamed file publication
+      #21339 open 2026-08-28 Pipeline wheel file publication with executable deferral
+      #19388 open 2026-05-13 Retry file lock acquisition on EINTR
+      #21983 merged 2026-09-25 Restore pyproject.toml when uv upgrade fails
+      #21860 merged 2026-09-20 Fix rollback for uv add
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #20855 closed 2026-07-31 Stage Windows self-updates before replacing uv.exe
+      #18962 open 2026-04-10 Improve `uv cache` cleanup and add global project and venv management
+      #22152 closed 2026-10-02 Make streamed wheel output independent of short reads
+      #21570 merged 2026-09-09 Retry failed partial downloads with HTTP Range header when supported
+      #14414 open 2025-07-02 Fail to download python(3.11) on Windows platform
+      #3095 open 2024-04-17 Consider `execv` for `uv run` on Unix
+  sigkill        16 hit(s) (all listed)
+      #16726 open 2025-11-13 UV Python SIGKILL Issue on macOS
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #12244 open 2025-03-17 uv panics when resizing terminal window
+      #14843 open 2025-07-23 Shadowed `install_name_tool` can break Python installation
+      #14574 open 2025-07-12 Support target aarch64-linux-android
+      #19935 merged 2026-06-22 Update CodSpeedHQ/action action to v4.17.5
+      #18577 closed 2026-03-19 Default clone link-mode on macOS causes ~17s syspolicyd rescan on every venv recreate
+      #11817 closed 2025-02-27 [Windows] Processes spawned by uv are not killed when uv is killed
+      #17123 closed 2025-12-13 fix: add ad-hoc code signing for Python binaries on macOS
+      #9637 closed 2024-12-04 Selecting .venv/bin/python as an active interpreter in VSCode doesn't enable IDE features
+      #12847 closed 2025-04-11 Add `uv run --watch` for scripts
+      #13017 merged 2025-04-21 Forward additional signals to the child process in `uv run`
+      #12830 closed 2025-04-11 Unexpected behavior when handling signals
+      #6724 closed 2024-08-27 uv run doesn't pass signals to children
+      #7697 merged 2024-09-26 Docker: put uv and uvx in a single layer
+      #8654 closed 2024-10-29 uv run and SIGINT propagation
+  sigint         26 hit(s) (all listed)
+      #21758 open 2026-09-16 Report signal-terminated child processes
+      #22171 open 2026-10-04 Prune temporary build environments in `uv cache prune`
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #12244 open 2025-03-17 uv panics when resizing terminal window
+      #20752 merged 2026-07-27 Cleanup managed Python temporary directory on error
+      #16066 open 2025-09-29 How to enforce runtime version consistency for project build requirements?
+      #13429 closed 2025-05-13 SIGINT is being handled very strangely in interactive shell
+      #13756 closed 2025-05-31 `uv run python3` handles SIGINT incorrectly
+      #13925 merged 2025-06-09 Use TTY detection to determine if SIGINT forwarding is enabled
+      #13787 merged 2025-06-02 Use "terminal driver" instead of "shell" in SIGINT docs
+      #12108 closed 2025-03-11 "uv tool run" swallows SIGINT without forwarding to the underlying process
+      #12847 closed 2025-04-11 Add `uv run --watch` for scripts
+      #13919 closed 2025-06-09 uv enters infinite `KeyboardInterrupt` loop in interactive shell
+      #13018 merged 2025-04-21 Add a brief sleep before sending SIGINT to children
+      #11009 merged 2025-01-28 Improve SIGINT handling in `uv run`
+      #10989 closed 2025-01-27 Forward SIGINT to children in `uv run` on second Ctrl-C
+      #12830 closed 2025-04-11 Unexpected behavior when handling signals
+      #11897 merged 2025-03-02 explicitly handle ctrl-c in confirmation prompt instead of signal handler
+      #11704 closed 2025-02-22 `Did you mean [...]?` + `ctr-c` => `thread 'main2' panicked`
+      #8654 closed 2024-10-29 uv run and SIGINT propagation
+  ctrl-c         65 hit(s) (all listed)
+      #22167 open 2026-10-03 uv build leaves a temporary build environment after Ctrl+C
+      #22171 open 2026-10-04 Prune temporary build environments in `uv cache prune`
+      #21758 open 2026-09-16 Report signal-terminated child processes
+      #9082 open 2024-11-13 Cleanup .venv on Ctrl-C interrupt during `uv sync`
+      #14721 open 2025-07-18 Check if `python -m uv run python` REPL works with Ctrl-C on Windows
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #10980 open 2025-01-27 Avoid corrupt pyproject.toml when aborting `uv add xxx`
+      #21859 merged 2026-09-20 Extract the project edit rollback interface
+      #21983 merged 2026-09-25 Restore pyproject.toml when uv upgrade fails
+      #21856 merged 2026-09-20 Restore project files when remove and version fail
+      #18962 open 2026-04-10 Improve `uv cache` cleanup and add global project and venv management
+      #11944 open 2025-03-04 Add confirmation after running `uv add some_package`
+      #13273 open 2025-05-02 Usage of tool `uv` in Dockerfile fails to activate environment
+      #8558 open 2024-10-25 Running uv scripts in debug mode
+      #15933 open 2025-09-18 Interrupted self update will result in incomplete binary file
+      #4056 open 2024-06-05 Keyring cli calls differ from pip
+      #14017 open 2025-06-13 uv sync failed to bytecode-compile Python file because it failed to create temporary script file
+      #16726 open 2025-11-13 UV Python SIGKILL Issue on macOS
+      #14664 open 2025-07-16 Use `nvml` to detect CUDA driver version
+      #1910 open 2024-02-23 Add a command to activate the virtual environment, e.g., `uv shell`
+  power          72 hit(s) (all listed)
+      #21178 open 2026-08-18 Add ppc64le power9/power10/power11 variant detection
+      #21935 open 2026-09-23 Race condition in SIGPIPE causes network errors to kill uv run
+      #20983 open 2026-08-06 uv audit --ignore-until-fixed=ALL
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #17081 open 2025-12-10 Certain options/subcommands could be hidden from completions to reduce noise
+      #18418 open 2026-03-12 fix: update .gitignore to include additional patterns
+      #10687 open 2025-01-16 how to get uv to run my app on a read-only volume?
+      #18121 open 2026-02-20 Add test for tool upgrade after Python version removal
+      #2361 open 2024-03-11 Expose package metadata in a way that can be reused by other tools
+      #15101 open 2025-08-06 Simplify marker edges by tracking conflict reachability on nodes
+      #8991 open 2024-11-10 feat: uv command to add `exclude-newer` with current date
+      #14937 open 2025-07-28 Allow templating the `UV_PROJECT_ENVIRONMENT` path
+      #6970 open 2024-09-03 [Feature Request] allow exporting virtual environments
+      #18112 open 2026-02-20 UnicodeDecodeError after windows computer restart
+      #11456 open 2025-02-12 Guide folks to WinGet by default for Windows installations in README
+      #6613 open 2024-08-25 Work across multiple drives
+      #21780 merged 2026-09-17 Reject invalid Git archive paths in lockfiles
+      #20659 merged 2026-07-24 Support combined upgrade and reinstall in Python install
+      #12852 open 2025-04-13 How to have a full python environment?
+  outage         17 hit(s) (all listed)
+      #17021 open 2025-12-08 Add free-threaded selector hint for requires-python
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #19075 closed 2026-04-20 Retry failed partial downloads with HTTP Range header when supported
+      #19562 closed 2026-05-26 fix(distribution): validate cached wheel archives against corruption
+      #17411 closed 2026-01-12 Add fast-path validation for remote-cached wheels
+      #7185 closed 2024-09-08 HTTP status client error (403 Forbidden) when uv self upgrade
+      #16206 merged 2025-10-09 Allow missing `Scripts` directory
+      #16284 merged 2025-10-13 Move parsing http retries to EnvironmentOptions
+      #17509 closed 2026-01-16 Almost all tests fail on Gentoo (can't find Python) in 0.9.26
+      #15157 merged 2025-08-08 Update Rust toolchain to 1.89
+      #15323 closed 2025-08-16 Cloudsmith publish integration test is failing
+      #14106 closed 2025-06-17 Please publish containers to docker.io
+      #12731 merged 2025-04-07 Add Pyodide support
+      #12114 closed 2025-03-11 deflate decompression error: repeated call with bad state
+      #11862 closed 2025-02-28 can't publish to private pypiserver
+      #9831 closed 2024-12-12 `Unexpected HTTP response: 503` running in Github CI workflow
+      #6292 closed 2024-08-21 Use action/cache in GitHub Actions docs
+  ENOSPC         2 hit(s) (all listed)
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #19984 closed 2026-06-25 Added Testing for No interpreter and No space left
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21829 open 2026-09-18 granular and user-friendly management of cached packages
+      #10595 open 2025-01-14 One cache per disk
+      #22082 open 2026-09-29 feat(cache): add `--inodes` flag to `uv cache size`
+      #21332 open 2026-08-28 Allow frozen exports without workspace member manifests
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #21407 open 2026-09-01 Add conflict-handling benchmarks
+      #22006 open 2026-09-27 uv tool install --force --reinstall mutates the tool environment in place: concurrent readers observe missing files for tens of seconds while the install exits 0
+      #21488 open 2026-09-06 Fix editable installs not rebuilding when generated files are deleted
+      #20090 open 2026-07-03 Allow opt-in reuse of isolated build environments for native-build backends (scikit-build-core, meson-python)
+      #1737 open 2024-02-20 Performance with large git repos
+      #6613 open 2024-08-25 Work across multiple drives
+      #16793 open 2025-11-20 I/O operation failed during extraction
+      #21854 closed 2026-09-20 uv version modifies pyproject.toml on disk even when lock_and_sync fails (e.g., under --locked)
+      #5731 open 2024-08-02 uv cache size limit
+      #21199 open 2026-08-18 uv pip install --python <venv> fails for a cpython-*-emscripten-wasm32-musl venv on Windows — malformed path mixing POSIX and Windows conventions
+      #18641 open 2026-03-22 uv persistent global cache on windows
+      #17000 open 2025-12-05 Add a mode for isolated lock without isolated sync
+      #1620 open 2024-02-18 Allow sparse checkouts/path exclusion for git dependencies
+      #21062 open 2026-08-12 uv run resolves a console-script to a different, already-deleted project's stale cached venv
+      #12587 open 2025-03-31 Equivalent of UV_PROJECT_ENVIRONMENT on uv.toml
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21176 open 2026-08-18 Apply Dependabot always-authenticate bypass to partial credentials
+      #21984 open 2026-09-25 Reconcile tool executables after upgrades
+      #18827 open 2026-04-02 `uv run` shell completion not delegated to the wrapped command
+      #20903 open 2026-08-03 Update Rust crate hyper to v1.11.1
+      #21570 merged 2026-09-09 Retry failed partial downloads with HTTP Range header when supported
+      #20747 open 2026-07-27 Reject distribution metadata in wheel data
+      #13060 open 2025-04-22 `uv pip compile --format pylock.toml` option to preserve extras & dependency groups
+      #7704 open 2024-09-26 Feature Request: Comparison Table in Documentation
+      #18641 open 2026-03-22 uv persistent global cache on windows
+      #19997 open 2026-06-26 `build`: warn on packaging a `py.typed` marker but missing the `Typing :: *` classifier
+      #19663 open 2026-06-03 `uv init --package` generates an invalid layout for `-stubs` packages
+      #15298 open 2025-08-15 UV does not fall back to other indexes when package lacks platform-compatible wheels
+      #18622 open 2026-03-21 Bytecode compiler workers race on shared script file and retry loop has no cap
+      #1737 open 2024-02-20 Performance with large git repos
+      #21644 open 2026-09-13 ZIP extraction rejects DEFLATE-compressed empty directory with data descriptor
+      #20306 open 2026-07-11 Migrating a databricks project to use uv
+      #18519 open 2026-03-16 Add JSON output format support to `uv python install`
+      #21376 open 2026-08-31 Symlink top-level package directories in symlink mode
+      #18667 open 2026-03-23 Parsing of `Dynamic:` field in PKG-INFO should be case insensitive
+      #12292 open 2025-03-18 uv build: add --keep-on-error
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15933 open 2025-09-18 Interrupted self update will result in incomplete binary file
+      #7496 open 2024-09-18 uv exports incomplete requirements if using external packages
+      #15619 open 2025-09-01 Support for environment markers unclear – docs incomplete/need updating
+      #13973 open 2025-06-11 Support for alternate index in `uv tool` seems incomplete
+      #9711 open 2024-12-07 Tracking issue: package without source distribution gets an "incomplete" resolution
+      #12203 open 2025-03-16 Add prototype implementation of wheel variant specification
+      #21176 open 2026-08-18 Apply Dependabot always-authenticate bypass to partial credentials
+      #19329 open 2026-05-08 `uv python install` publishes managed Python before finalization, allowing `uv python find` to race and observe incomplete installs
+      #21968 open 2026-09-24 uv sync leaves an environment with missing NCCL library unchanged
+      #21397 open 2026-09-01 Expose module ownership for installed packages outside the lockfile
+      #12142 open 2025-03-12 `uv self update` may leave uv unusable if interrupted
+      #16468 open 2025-10-27 uv remove followed by uv add leaves package in incomplete state with missing RECORD file and package files
+      #20309 open 2026-07-12 fix: finalize managed Python installation before atomic rename
+      #21365 open 2026-08-30 Respect `CONDA_PREFIX` for `--active` in project commands
+      #14077 open 2025-06-16 WIP unused sources warning
+      #18751 open 2026-03-29 uv pip check is different than what pip check reports
+      #15084 open 2025-08-05 Reflink failures on macOS 15.5
+      #6418 open 2024-08-22 Add incremental resolution benchmark to codspeed
+      #15238 open 2025-08-12 `uv sync` removes necessary dependencies when two packages include the same module
+      #13436 open 2025-05-13 Error when building PyTorch from source
+  dataloss       0 hit(s)
+  recover        74 hit(s) (all listed)
+      #21995 open 2026-09-25 Preserve build constraint hash precedence in lockfiles
+      #21604 open 2026-09-10 Add per-error informational diagnostics
+      #21150 open 2026-08-16 Fix `uv tool uninstall` failing on malformed receipts
+      #17508 open 2026-01-16 recover default source when no extras are selected in [tool.uv.sources]
+      #19622 open 2026-05-31 `uv python install --reinstall` cannot recover a dangling minor-version-link junction on Windows: "Missing expected target directory for Python minor version link"
+      #19412 open 2026-05-15 `uv sync` does not properly recover from an environment with faulty packages (opencv-contrib-python package problem)
+      #21420 open 2026-09-01 Treat any received TLS alert as fatal in retry classification
+      #12210 open 2025-03-17 Test for interrupts during git process
+      #21189 merged 2026-08-18 Recover rejected stacked pull request promotions
+      #20875 open 2026-08-01 Cannot opt into prerelease build requirements in uv 0.12
+      #22098 merged 2026-09-30 Add `UV_PYTHON_ARCH` for requesting an interpreter architecture
+      #21790 closed 2026-09-17 Separate Python build variants in managed installations
+      #14814 open 2025-07-22 Improve uv tool UX for broken Python installs
+      #21565 merged 2026-09-09 Show source chains in user warnings
+      #16348 open 2025-10-17 Provide a way for `uv lock` to ignore and replace existing and/or broken `uv.lock` files
+      #19960 closed 2026-06-23 Make interrupted wheel uninstalls recoverable
+      #13139 open 2025-04-27 Deterministically normalize wheel ZIP metadata
+      #21261 merged 2026-08-21 Improve basic space accounting when reporting cache clean space savings
+      #18005 open 2026-02-13 Use uv project with private git dependencies on Gitlab CI
+      #20914 merged 2026-08-03 Promote ready pull requests after branch updates
+  recovery       27 hit(s) (all listed)
+      #21406 open 2026-09-01 Show lockfile creation guidance as a hint
+      #19630 open 2026-06-01 `uv tool uninstall` fails on corrupt receipts / `uv tool list` recovery hint is un-actionable
+      #20370 open 2026-07-14 Add suffix support to tool installs
+      #19686 open 2026-06-05 Handle invalid tool receipts on uninstall
+      #21150 open 2026-08-16 Fix `uv tool uninstall` failing on malformed receipts
+      #19220 open 2026-04-29 Handle broken managed Python installation directory
+      #17754 open 2026-01-30 How to force copying the Python interpreter to `.venv` instead of symlinking?
+      #21368 merged 2026-08-31 Warn and skip invalid tool directories
+      #21501 open 2026-09-06 Reuse directory handles for Linux hardlink installation
+      #12142 open 2025-03-12 `uv self update` may leave uv unusable if interrupted
+      #21189 merged 2026-08-18 Recover rejected stacked pull request promotions
+      #21621 merged 2026-09-11 Decode fresh HTTP cache entries in the read task
+      #21073 merged 2026-08-12 Heal interpreter metadata cache entries when creating a virtual environment indicates corruption
+      #20945 closed 2026-08-04 ModuleNotFound when run 'uv run <project_name>' in mac
+      #19960 closed 2026-06-23 Make interrupted wheel uninstalls recoverable
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #12455 open 2025-03-24 Installing secp256k1 fails on uv but not on pip?
+      #18603 closed 2026-03-20 fix: recover from poisoned RwLock in CredentialsCache
+      #18882 closed 2026-04-06 Fix broken tool shims when UV_TOOL_DIR path changes between cached runs
+      #18781 closed 2026-03-31 Reject locked malware installations
+  rollback       24 hit(s) (all listed)
+      #21860 merged 2026-09-20 Fix rollback for uv add
+      #21859 merged 2026-09-20 Extract the project edit rollback interface
+      #19758 open 2026-06-09 `uv add --index <name>=<url> <package>` can rename indexes used for source pins
+      #21983 merged 2026-09-25 Restore pyproject.toml when uv upgrade fails
+      #19335 closed 2026-05-09 Clarify rollback after tool install executable conflicts
+      #18854 open 2026-04-05 `error: Executables already exist: black, blackd (use `--force` to overwrite)` does not hint that the tool is not installed
+      #21856 merged 2026-09-20 Restore project files when remove and version fail
+      #20192 open 2026-07-07 Only remove orphaned dependencies on `uv remove`
+      #18562 open 2026-03-19 uv lock --check false negative: accepts internally inconsistent uv.lock where [package.metadata] specifier contradicts [[package]] version
+      #22020 merged 2026-09-28 Update azure/login action to v3.0.2
+      #15246 open 2025-08-12 uv cannot spawn gunicorn in uv project
+      #12197 open 2025-03-15 Improve devcontainer experience, particularly when switching from pip to uv.
+      #13217 open 2025-04-30 Retain history of package versions through updates
+      #6794 open 2024-08-29 Upgrade dependencies in `pyproject.toml` (`uv upgrade`)
+      #18311 merged 2026-03-05 Speedup discovery of large workspaces
+      #17509 closed 2026-01-16 Almost all tests fail on Gentoo (can't find Python) in 0.9.26
+      #14865 closed 2025-07-24 How do I go back? I executed uv init by mistake.
+      #14626 merged 2025-07-15 Stabilize addition of Python executables to the bin
+      #13831 closed 2025-06-04 uv 0.7.10: "Connection reset by peer" on macOS Apple Silicon
+      #6783 closed 2024-08-29 Consider defaulting to `~=` version_cmp instead of `>=`
+  resume         46 hit(s) (all listed)
+      #21984 open 2026-09-25 Reconcile tool executables after upgrades
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #21732 merged 2026-09-16 Make resolver fork continuations explicit
+      #16934 closed 2025-12-02 Support resumable downloads
+      #20789 open 2026-07-29 Staged uploads in uv
+      #13302 open 2025-05-05 error: Operation not supported (os error 95)
+      #21570 merged 2026-09-09 Retry failed partial downloads with HTTP Range header when supported
+      #21787 merged 2026-09-17 Parse requirements-style inputs into RequirementsInput
+      #16163 open 2025-10-07 `uv venv` suspends itself while prompting
+      #20980 merged 2026-08-05 Update issue context when comments add useful information
+      #20914 merged 2026-08-03 Promote ready pull requests after branch updates
+      #6105 open 2024-08-15 Bytecode compilation hangs non-deterministically hangs in QEMU aarch64 docker
+      #21102 merged 2026-08-13 Improve automated fixes for related bug manifestations
+      #20482 merged 2026-07-16 Retain Codex automation threads
+      #19075 closed 2026-04-20 Retry failed partial downloads with HTTP Range header when supported
+      #18642 closed 2026-03-22 Support resuming interrupted package downloads
+      #11670 closed 2025-02-20 Consider system site packages if activated
+      #18638 closed 2026-03-22 fix: route warnings through MultiProgress::suspend() to prevent truncation
+      #18170 closed 2026-02-23 Fix supervisor race condition on Windows trampoline bounce
+      #17498 merged 2026-01-15 Avoid running Claude session start hooks on resume
+  half-written   12 hit(s) (all listed)
+      #17336 open 2026-01-06 Add support for delocating macOS wheels
+      #6349 open 2024-08-21 Request for `uv.lock` to support different index urls across different developer machines and CI environments
+      #5802 open 2024-08-05 Suggestion: `uv bundle`, `uv build --release` or similar to create a contained executable a la pyinstaller, py2exe
+      #5903 open 2024-08-08 Using `uv run` as a task runner
+      #18936 merged 2026-04-08 Reject locked malware installations
+      #18636 closed 2026-03-22 Compile bytecode only for newly installed packages via RECORD
+      #14746 closed 2025-07-19 `uv tool install --in` to add packages to an existing tool environment
+      #1495 closed 2024-02-16 Add an option to store virtual environments in a centralized location outside projects
+      #3372 closed 2024-05-04 feat: Refactor `Dockerfile`
+      #3957 closed 2024-06-01 Add a uv build backend
+      #2338 closed 2024-03-10  Use python from `python -m uv` as default 
+      #1105 merged 2024-01-25 Add bootstrapping and isolation of development Python versions
+  wipe           27 hit(s) (all listed)
+      #19863 open 2026-06-15 Make `--no-cache` work with centralised environments
+      #19697 open 2026-06-06 Preserve group write bits in shared source caches
+      #21365 open 2026-08-30 Respect `CONDA_PREFIX` for `--active` in project commands
+      #17754 open 2026-01-30 How to force copying the Python interpreter to `.venv` instead of symlinking?
+      #17283 open 2026-01-02 Uninstall + Install 1 package everytime uv is called in a monorepo library with a different virtual environment from the root
+      #16381 open 2025-10-21 uv run --python=... removes log folder
+      #20842 merged 2026-07-30 Avoid update-shell file update race between uv shutdown and file IO
+      #11273 open 2025-02-06 Add environment variable to always use `--active` flag
+      #15011 closed 2025-08-01 False positive detection by Windows Defender removes uvw.exe
+      #14628 open 2025-07-15 Initial design doc for centralized venvs
+      #6772 open 2024-08-28 `[tool.uv.sources]` can't be used as `[sources]` in `uv.toml`
+      #19920 closed 2026-06-19 Regression in 0.11.22: `uv venv` writes truncated `version_info` to `pyvenv.cfg`, breaking pre-commit health check
+      #19511 closed 2026-05-21 Refuse uv venv --clear on a path that is not a virtual environment
+      #19114 merged 2026-04-22 Prevent uninstalling site-packages for empty `top_level.txt` in `.egg-info`
+      #19202 closed 2026-04-28 re-anchor path deps inside parent git checkout to git sources
+      #6518 closed 2024-08-23 Constraint flag for `uv add`
+      #15474 closed 2025-08-23 `uv venv -c .` wipes working directory and fails to create a venv
+      #6147 closed 2024-08-16 gracefully handle missing files/directories in cache storage
+      #18214 merged 2026-02-27 Centralised environment storage
+      #1495 closed 2024-02-16 Add an option to store virtual environments in a centralized location outside projects
+  wipes          4 hit(s) (all listed)
+      #11273 open 2025-02-06 Add environment variable to always use `--active` flag
+      #19511 closed 2026-05-21 Refuse uv venv --clear on a path that is not a virtual environment
+      #15474 closed 2025-08-23 `uv venv -c .` wipes working directory and fails to create a venv
+      #9992 merged 2024-12-18 Fix show_settings tests not to be affected by system configs
+  erase          22 hit(s) (all listed)
+      #20607 open 2026-07-22 Persist interpreter-specific bytecode during wheel preparation
+      #13356 open 2025-05-08 Failed to fetch ssh+git dependencies when host is not known
+      #21267 merged 2026-08-21 Preserve typed standalone installer errors
+      #8426 open 2024-10-21 Request for changing python versions more easily
+      #9270 open 2024-11-20 [Feature request] add option to allow UV_ENV_FILE to point to non-existing file
+      #21086 merged 2026-08-13 Forward `uv check` terminal settings to ty
+      #17110 merged 2025-12-12 Consistently format error chains (by removing the miette path)
+      #14506 open 2025-07-08 uv does not use Homebrew OpenSSL, resulting in "fatal error: 'openssl/crypto.h' file not found"
+      #20071 closed 2026-07-01 Reuse proven-safe resolver decisions
+      #20063 closed 2026-06-30 Reuse proven-safe resolver decisions
+      #20737 merged 2026-07-27 add `uv_extract::dirhash` a new scheme and implementation for hashing directory trees
+      #20098 closed 2026-07-03 Support transitive pre-release dependencies with admission ranges
+      #16231 closed 2025-10-10 uv sync --inexact removes `.venv` and recreates it. It was not the case before.
+      #6971 closed 2024-09-03 `uvx`  invocation does not propagate `DYLD_FALLBACK_LIBRARY_PATH` to the invoked script on MacOS
+      #11918 merged 2025-03-03 Update Rust crate owo-colors to v4.2.0
+      #13735 merged 2025-05-30 Add `[tool.uv.dependency-groups].mygroup.requires-python`
+      #5107 closed 2024-07-16 Git prompt hidden without `--verbose` flag
+      #7690 closed 2024-09-25 uv self update on Windows
+      #8644 closed 2024-10-28 Unable to install dedupe
+      #4351 merged 2024-06-17 Update Rust crate url to v2.5.2
+  erasing        7 hit(s) (all listed)
+      #21267 merged 2026-08-21 Preserve typed standalone installer errors
+      #20737 merged 2026-07-27 add `uv_extract::dirhash` a new scheme and implementation for hashing directory trees
+      #16231 closed 2025-10-10 uv sync --inexact removes `.venv` and recreates it. It was not the case before.
+      #11918 merged 2025-03-03 Update Rust crate owo-colors to v4.2.0
+      #5107 closed 2024-07-16 Git prompt hidden without `--verbose` flag
+      #7690 closed 2024-09-25 uv self update on Windows
+      #3627 merged 2024-05-16 Parallelize Resolver
+  erased         6 hit(s) (all listed)
+      #13356 open 2025-05-08 Failed to fetch ssh+git dependencies when host is not known
+      #17110 merged 2025-12-12 Consistently format error chains (by removing the miette path)
+      #6971 closed 2024-09-03 `uvx`  invocation does not propagate `DYLD_FALLBACK_LIBRARY_PATH` to the invoked script on MacOS
+      #13735 merged 2025-05-30 Add `[tool.uv.dependency-groups].mygroup.requires-python`
+      #4351 merged 2024-06-17 Update Rust crate url to v2.5.2
+      #1879 closed 2024-02-22 Requirements.txt empty after compile error
+  destroy        28 hit(s) (all listed)
+      #19220 open 2026-04-29 Handle broken managed Python installation directory
+      #19563 open 2026-05-26 `uv run` ignores active venv and `.python-version`, recreates venv with system Python
+      #9909 open 2024-12-15 Docker and snap-7
+      #19275 open 2026-05-05 Unable to use system-installed PyGObject (GTK) in uv venv, causing matplotlib to fall back to non-interactive backend
+      #8217 open 2024-10-15 Notify users when a new Python patch version is available
+      #7865 open 2024-10-02 Bundle Python Interpreter in virtual environments
+      #11315 open 2025-02-07 Add `conda` environment support for `--active` flag
+      #11134 open 2025-01-31 Access Denied error in Windows when removing .exe files from `.venv`
+      #12604 open 2025-04-01 Improve ux when `pip` is not present in virtual environments
+      #19274 closed 2026-05-05 Unable to use system-installed PyGObject (GTK) in uv venv, causing matplotlib to fall back to non-interactive backend
+      #18781 closed 2026-03-31 Reject locked malware installations
+      #11444 closed 2025-02-12 Race condition in uv build --all-packages / maturin / zig
+      #6612 closed 2024-08-25 `uv add`/`uv sync`/... do not respect the active virtualenv, should they?
+      #14670 closed 2025-07-16 `uv venv` sometimes overwrites symlink with a new directory
+      #16736 closed 2025-11-14 Replace `sys-info` with `sysinfo` for Android support; use mimalloc instead of jemalloc on Android
+      #16747 closed 2025-11-15 "Access is denied. (os error 5)" during .venv updates and database write errors for Python installed via uv
+      #1495 closed 2024-02-16 Add an option to store virtual environments in a centralized location outside projects
+      #7036 closed 2024-09-04 Can't use tkinter with new venv set up with uv
+      #1472 closed 2024-02-16 `uv venv` overwrites existing virtual environment on subsequent run
+      #12342 merged 2025-03-20 Add `uv sync --check` flag
+  destroys       4 hit(s) (all listed)
+      #19563 open 2026-05-26 `uv run` ignores active venv and `.python-version`, recreates venv with system Python
+      #7865 open 2024-10-02 Bundle Python Interpreter in virtual environments
+      #12342 merged 2025-03-20 Add `uv sync --check` flag
+      #9111 closed 2024-11-14 `pip list` in activated venv differs from `uv pip list`
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19528 open 2026-05-21 Sync ZIP extraction overwrites conflicting duplicate entries
+      #16892 open 2025-11-29 Script overwriting behavior not aligned with pip
+      #8702 open 2024-10-30 Overwrite pyproject when workspaces have same normalized name
+      #5505 open 2024-07-27 Should `uv add` allow overwriting previous version specifiers?
+      #12891 open 2025-04-15 Should uv warn or error on overwriting a script in the venv?
+      #17187 open 2025-12-19 Could uv overwrite the github auth acess (ssh vs https) when installing (transitive) private repos
+      #18854 open 2026-04-05 `error: Executables already exist: black, blackd (use `--force` to overwrite)` does not hint that the tool is not installed
+      #20996 open 2026-08-07 Unable to install `redis[hiredis]` correctly
+      #21449 open 2026-09-03 `exclude-newer` behavior with pull-through PyPI caches missing upload timestamps & locking build backends
+      #16348 open 2025-10-17 Provide a way for `uv lock` to ignore and replace existing and/or broken `uv.lock` files
+      #10564 open 2025-01-13 Detect file collisions / conflicts between different packages while installing
+      #16735 open 2025-11-14 Enhancement: Allow specifying `--groups` via environment variable UV_DEFAULT_GROUPS
+      #15119 open 2025-08-06 Unexpected behavior when reusing executables via --with-executables-from
+      #15129 open 2025-08-07 multiple sources for same package: local path dependency and regular dependency
+      #17645 open 2026-01-21 `uv sync` removes base dependencies when switching extras (at least impacts typer/typer-slim)
+      #12525 open 2025-03-28 concurrent `uv run` is very slow even with cache
+      #17508 open 2026-01-16 recover default source when no extras are selected in [tool.uv.sources]
+      #6008 open 2024-08-11 (uv internal error) Failed to spawn the python child process.: The system cannot find the file specified.
+      #17171 open 2025-12-18 Trying to understand which python-build-standalone to mirror
+      #12369 open 2025-03-21 sometimes we want to force `uv publish` to upload anyway
+  clobber        47 hit(s) (all listed)
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #14256 open 2025-06-25 Best practices for Docker builds to exploit layer caching
+      #10719 open 2025-01-17 Hint use of `UV_PROJECT_ENVIRONMENT` when command is available in `VIRTUAL_ENV`
+      #15603 open 2025-08-31  `uv sync --active` can recreate active venv
+      #6568 open 2024-08-24 Race condition when two libraries update the same __init__.py
+      #12363 open 2025-03-21 Clarification on recommended usage of uv for collaborative projects on network drives
+      #13273 open 2025-05-02 Usage of tool `uv` in Dockerfile fails to activate environment
+      #18222 open 2026-02-28 uv run strips PATHEXT to .CPL on Windows, breaking executable resolution
+      #22052 merged 2026-09-28 Refresh HTTP cache policies in place
+      #9906 open 2024-12-15 How to handle named environments with different python versions?
+      #6008 open 2024-08-11 (uv internal error) Failed to spawn the python child process.: The system cannot find the file specified.
+      #14628 open 2025-07-15 Initial design doc for centralized venvs
+      #12197 open 2025-03-15 Improve devcontainer experience, particularly when switching from pip to uv.
+      #6489 open 2024-08-23 Scripts that use "from future" can result in syntax error when used with uvx
+      #20643 merged 2026-07-23 Include best-effort `environment` info by default in `uv workspace metadata`
+      #5605 open 2024-07-30 Documentation feedback
+      #20019 closed 2026-06-26 Avoid shared temporary directories for Windows Python launchers
+      #19912 merged 2026-06-18 Support centralised environments in `uv venv`
+      #20804 merged 2026-07-29 Widen unavailable versions across gaps in the known versions
+      #20809 closed 2026-07-30 Restate available versions in error messages
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22084 open 2026-09-29 Indent explicit newlines in top-level diagnostics
+      #22087 open 2026-09-29 Nest hints beneath warning chains
+      #12886 open 2025-04-14 uv init does not update .gitignore file if it already exists
+      #12986 open 2025-04-20 CLI docs papercut for `--verbose`
+      #21990 merged 2026-09-25 Preserve encoding cookies in CRLF wheel scripts
+      #21150 open 2026-08-16 Fix `uv tool uninstall` failing on malformed receipts
+      #21824 closed 2026-09-18 uv lock fails to pick up direct dependencies
+      #21691 open 2026-09-15 Cache the resolved Git executable on macOS
+      #15012 open 2025-08-01 Is there a way to ignore user set environment variables?
+      #20310 open 2026-07-12 Support UV_ONLY_BINARY for pip commands
+      #19151 open 2026-04-25 Preserve relative structure of transitive editables in `uv pip compile`
+      #19647 open 2026-06-02 fix(#16963): Add a hint when requires-python contains a free-threaded selector
+      #20062 merged 2026-06-30 Avoid blank line for empty `uv pip tree`
+      #18835 open 2026-04-03 Skip macOS AppleDouble sidecar files during .data directory installation
+      #22140 closed 2026-10-01 fix(install-wheel): keep a PEP 263 cookie on line 2 of a re-directed data script
+      #17021 open 2025-12-08 Add free-threaded selector hint for requires-python
+      #21977 closed 2026-09-24 docs: clarify dependency group flags with --no-sync
+      #20000 closed 2026-06-26 Print one blank line rather than two when `uv pip tree` run in empty environment
+      #10918 closed 2025-01-23 PEP 723 inline metadata tag not found when there's trailing whitespace
+      #12202 open 2025-03-16 `uv run` repeatedly compiles bytecode with `UV_COMPILE_BYTECODE=1`
+  unreadable     15 hit(s) (all listed)
+      #21890 open 2026-09-21 Hint when an unreadable lockfile uses a newer format
+      #20522 open 2026-07-19 Use pretty json for `uv python list` & add tests
+      #20192 open 2026-07-07 Only remove orphaned dependencies on `uv remove`
+      #21860 merged 2026-09-20 Fix rollback for uv add
+      #21856 merged 2026-09-20 Restore project files when remove and version fail
+      #11065 open 2025-01-29 Automatically install and use a matching uv version to satisfy `requires-version`.
+      #20909 merged 2026-08-03 Format `GitOid` debug representation
+      #20116 open 2026-07-04 Add automatic pruning of unreferenced cache archives
+      #20963 merged 2026-08-05 Preserve cache compatibility when recording artifact sizes
+      #15100 closed 2025-08-06 Permission denied after reboot
+      #7561 merged 2024-09-19 Make `uv cache prune` robust to unreadable rkyv entries
+      #3832 merged 2024-05-24 Add test context utility to `uv-interpreter`
+      #916 merged 2024-01-14 Bump to the latest packse version
+      #685 merged 2023-12-18 Test that cache errors are non-fatal
+      #309 closed 2023-11-03 Confusing error messages on package resolution failure
+  garbage        22 hit(s) (all listed)
+      #16008 open 2025-09-24 Should/make `uv cache prune` delete packages that are not used anywhere via link count
+      #14428 open 2025-07-02 Always write filesystem locks to a shared state directory
+      #3095 open 2024-04-17 Consider `execv` for `uv run` on Unix
+      #20334 closed 2026-07-13 Handle corrupt tool receipts gracefully during uninstall
+      #21467 merged 2026-09-04 Allow manually specifying build dependency hashes in configuration
+      #20170 closed 2026-07-07 fix(uv): gracefully handle corrupt tool receipts on uninstall (#19630)
+      #19682 merged 2026-06-05 Avoid following external symlinks during cache clean
+      #9559 open 2024-12-01 uv rebuilds cached packages on Termux
+      #19346 merged 2026-05-11 Update dependency astral-sh/uv to v0.11.12
+      #17934 merged 2026-02-09 Update Rust crate nix to 0.31.2
+      #13986 closed 2025-06-12 uv leaves partial .venv around and then refuses to remove it
+      #12104 closed 2025-03-10 To be able to protect environments for scripts that remain on the system
+      #6955 merged 2024-09-03 fix: adjust close_handles pointer offsets to match distlib cleanup_fds
+      #4789 merged 2024-07-03 Use cached environments in PEP 723 execution
+      #4643 closed 2024-06-29 Noob Question: How is it so fast?
+      #1217 merged 2024-02-01 Add a garbage collection mechanism to the CLI
+      #1059 closed 2024-01-23 Add a garbage collection command for the cache
+      #3833 merged 2024-05-24 Port all git functionality to use git CLI
+      #2381 merged 2024-03-12 Move architecture and operating system probing to Python
+      #2149 closed 2024-03-04 Invalid wheel: pip OK but uv KO
+  mangled        12 hit(s) (all listed)
+      #21135 open 2026-08-14 Let a project advertise its run target to uvx (project-side equivalent of pipx's [pipx.run])
+      #20631 merged 2026-07-23 Preserve local path intent when merging dependency metadata
+      #19654 merged 2026-06-02 Remove a bunch of duplication in `show_settings` tests by using diffs
+      #19854 closed 2026-06-15 uv panics (`expect("version for registry source")`) on a `uv.lock` registry package missing `version`
+      #19270 closed 2026-05-05 [bug]: The installation failed when updating.
+      #11097 closed 2025-01-30 uv fails on HTTP redirects with authentication
+      #11096 closed 2025-01-30 uv fails on HTTP redirects with authentication
+      #4833 merged 2024-07-05 Support workspace to workspace path dependencies
+      #3668 closed 2024-05-20 Tilde seen in site-packages
+      #4376 closed 2024-06-18 `crates/uv/tests/toolchain_find.rs` fails on Gentoo Linux
+      #1459 merged 2024-02-16 Fix list rendering in `venv --help` output
+      #967 merged 2024-01-18 Remove RFC2047 decoder
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21364 open 2026-08-30 `uv run --active --script` deletes the contents of a non-virtual-environment `VIRTUAL_ENV`
+      #19468 open 2026-05-18 Maturin 1.13.2 changes wheel contents on macOS
+      #20174 open 2026-07-07 Add license texts for new contents of test/ecosystem/ from PR#20068
+      #22037 open 2026-09-28 Download standalone ty from PyPI
+      #16260 open 2025-10-13 Consider making `uv cache clean` prompt for directories with non-cache contents
+      #21334 open 2026-08-28 Store cached wheel permissions in archive manifests
+      #19528 open 2026-05-21 Sync ZIP extraction overwrites conflicting duplicate entries
+      #21288 open 2026-08-24 Share downloaded URL wheels across hash fragments
+      #21866 open 2026-09-20 Don't follow symlinks when writing the Git checkout marker
+      #20122 open 2026-07-05 Reject conflicting duplicate ZIP entries
+      #22067 open 2026-09-29 Package project locks with uv build
+      #16438 open 2025-10-24 Any plans to expand the capabilities of `uv build` to allow more control over sdist and wheel contents?
+      #21156 open 2026-08-16 Isolate release Codex from publishing credentials
+      #21339 open 2026-08-28 Pipeline wheel file publication with executable deferral
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #20952 open 2026-08-05 __main__.py file now autogenerates with uv init
+      #21010 open 2026-08-08 Added `--active` flag for `uv lock` command
+      #21487 open 2026-09-06 Refuse to remove non-virtualenv directories in `remove_virtualenv`
+      #20180 open 2026-07-07 move "Project dependencies" and "Dependency specifiers" text into a new standards page
+      #19825 open 2026-06-12 Warn when we load a configuration file containing preview settings which were already consulted
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #22006 open 2026-09-27 uv tool install --force --reinstall mutates the tool environment in place: concurrent readers observe missing files for tens of seconds while the install exits 0
+      #22130 merged 2026-10-01 Refresh HTTP cache policies in place
+      #19222 open 2026-04-30 uv --locked looks in the wrong place for lockfile when symlinked
+      #22052 merged 2026-09-28 Refresh HTTP cache policies in place
+      #7395 open 2024-09-14 `.lock` created in the wrong place on NixOS
+      #21284 open 2026-08-24 Explain requirement mismatches when lock resolution fails
+      #22053 open 2026-09-28 inode count for `uv cache size`
+      #21250 open 2026-08-20 Portable Environments
+      #19429 open 2026-05-16 `tempfile` crate is used directly from async code
+      #17913 open 2026-02-09 Fix tool upgrade error after Python version upgrade
+      #21617 open 2026-09-11 Include license information in cyclonedx export
+      #21281 open 2026-08-24 Index URLs with different credentials but the same registry endpoint are not deduplicated
+      #21364 open 2026-08-30 `uv run --active --script` deletes the contents of a non-virtual-environment `VIRTUAL_ENV`
+      #20814 open 2026-07-30 Diff friendly uv.lock formatting for wheels list
+      #12490 open 2025-03-26 Allow `--constraints` in `uv sync`
+      #21305 open 2026-08-26 Allow for workspace members outside of workspace root
+      #19762 open 2026-06-09 Ignore directories named pyproject.toml during settings and workspace discovery (Closes #14584)
+      #17248 open 2025-12-28 Build a dependency tree and get all wheels
+      #20090 open 2026-07-03 Allow opt-in reuse of isolated build environments for native-build backends (scikit-build-core, meson-python)
+      #14428 open 2025-07-02 Always write filesystem locks to a shared state directory
+  unclean        1 hit(s) (all listed)
+      #5903 open 2024-08-08 Using `uv run` as a task runner
+  shutdown       28 hit(s) (all listed)
+      #20903 open 2026-08-03 Update Rust crate hyper to v1.11.1
+      #21644 open 2026-09-13 ZIP extraction rejects DEFLATE-compressed empty directory with data descriptor
+      #20842 merged 2026-07-30 Avoid update-shell file update race between uv shutdown and file IO
+      #21372 merged 2026-08-31 Run streaming ZIP extraction in a blocking task
+      #21033 merged 2026-08-10 Update CodSpeedHQ/action action to v5
+      #16455 open 2025-10-26 uv pip install fails to build certain packages on Ubuntu 24.04 when Python is invoked via nested symlinks 
+      #18498 merged 2026-03-16 Update Rust crate tokio to v1.50.0
+      #3116 closed 2024-04-18 uv powershell windows only works if you are running powershell as admin
+      #9134 closed 2024-11-14 How to properly setup a mirror for the standalone installer and updater?
+      #17277 closed 2025-12-31 Segmentation faults are not reported to user
+      #17500 merged 2026-01-15 Ensure `uv.exe` exits when `uvw.exe` or `uvx.exe` is killed
+      #18049 closed 2026-02-16 Custom index (--default-index / --index) — package page fetched but metadata (/files/...) never requested
+      #15104 closed 2025-08-06 Is uv cache clean thread-safe / process-safe?
+      #14599 merged 2025-07-14 Update Rust crate tokio to v1.46.1
+      #12108 closed 2025-03-11 "uv tool run" swallows SIGINT without forwarding to the underlying process
+      #12758 merged 2025-04-08 Update Rust crate tokio to v1.44.0
+      #6724 closed 2024-08-27 uv run doesn't pass signals to children
+      #6738 closed 2024-08-28 Propagate SIGTERM to `uv run`
+      #8933 merged 2024-11-08 Handle sigterm calls, fixes #6724
+      #10952 closed 2025-01-25 uv run not stopping ray serve with ctrl c
+  reboot         15 hit(s) (all listed)
+      #12292 open 2025-03-18 uv build: add --keep-on-error
+      #14843 open 2025-07-23 Shadowed `install_name_tool` can break Python installation
+      #14017 open 2025-06-13 uv sync failed to bytecode-compile Python file because it failed to create temporary script file
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #3116 closed 2024-04-18 uv powershell windows only works if you are running powershell as admin
+      #15100 closed 2025-08-06 Permission denied after reboot
+      #11049 closed 2025-01-29 feat: wide char based trampoline
+      #16877 closed 2025-11-27 Failed to install `jupyterlab-widgets==3.0.16` in Windows via symlink
+      #17934 merged 2026-02-09 Update Rust crate nix to 0.31.2
+      #14948 closed 2025-07-29 Please help me understand uv pip compile results
+      #12070 merged 2025-03-09 Automatically infer the PyTorch index via `--torch-backend=auto`
+      #13713 closed 2025-05-28 uv fails to detect OS from interpreter on NixOS
+      #10014 closed 2024-12-19 `uv` command on Windows: Inconsistent PATH set by installer
+      #11130 closed 2025-01-31 Azure Artifacts authentication stopped working: 401
+      #2108 merged 2024-03-01 Include exit code for build failures
+  disk+full      48 hit(s) (all listed)
+      #21829 open 2026-09-18 granular and user-friendly management of cached packages
+      #21488 open 2026-09-06 Fix editable installs not rebuilding when generated files are deleted
+      #20090 open 2026-07-03 Allow opt-in reuse of isolated build environments for native-build backends (scikit-build-core, meson-python)
+      #21062 open 2026-08-12 uv run resolves a console-script to a different, already-deleted project's stale cached venv
+      #20675 open 2026-07-24 Clean up ~/.local/share/uv/python/.temp
+      #16793 open 2025-11-20 I/O operation failed during extraction
+      #4466 open 2024-06-24 UV upgrades packages inherited with --system-site-packages
+      #21501 open 2026-09-06 Reuse directory handles for Linux hardlink installation
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #16288 open 2025-10-13 Expand `~` to the home directory in the configuration files
+      #19622 open 2026-05-31 `uv python install --reinstall` cannot recover a dangling minor-version-link junction on Windows: "Missing expected target directory for Python minor version link"
+      #15380 open 2025-08-19 Over-aggressive locking for editables cache
+      #21478 merged 2026-09-04 Create atomic replacement links without temporary directories
+      #6265 open 2024-08-20 Allow creating a `python` shim on `python install`
+      #11106 open 2025-01-30 Use docker cache mounts for apt, pip and cargo
+      #21570 merged 2026-09-09 Retry failed partial downloads with HTTP Range header when supported
+      #7918 open 2024-10-04 hardlinking dependencies causes issues when trying to delete a `.venv` via python on Windows
+      #12449 open 2025-03-24 exclude-newer should have an extra flag to allow it to skip over packages that don't have publish date information.
+      #21163 merged 2026-08-17 Reimplement `package.metadata`-less lockfiles
+      #19984 closed 2026-06-25 Added Testing for No interpreter and No space left
+  data+loss      16 hit(s) (all listed)
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #16030 open 2025-09-25 Prevent accidentally publishing multiple versions of the same package
+      #21780 merged 2026-09-17 Reject invalid Git archive paths in lockfiles
+      #14628 open 2025-07-15 Initial design doc for centralized venvs
+      #11554 open 2025-02-16 uv does not seem to install so files of coremltools
+      #19008 closed 2026-04-15 uv git dependency fetch breaks when GIT_DIR is set in environment
+      #5903 open 2024-08-08 Using `uv run` as a task runner
+      #14933 merged 2025-07-28 Fix symlink preservation in virtual environment creation
+      #12092 closed 2025-03-10 Why isn't tensorflow being installed?
+      #13364 closed 2025-05-09 Issue installing Spacy with Python 3.13
+      #11979 closed 2025-03-05 uv build shouldn't overwrite by default
+      #5640 merged 2024-07-30 fix(venv): make relocatable activation scripts support ksh
+      #11501 closed 2025-02-14 Can't install packages from private PYPI source since v0.5.15
+      #8079 merged 2024-10-10 fix(venv.relocatable): script entrypoints should work if symlinked to
+      #5259 merged 2024-07-21 fix(pip.install.wheel): support variations on `pythonw.exe`
+      #9898 closed 2024-12-14 Error while installing llvmlite on Windows
+  partial+write  29 hit(s) (all listed)
+      #20903 open 2026-08-03 Update Rust crate hyper to v1.11.1
+      #20747 open 2026-07-27 Reject distribution metadata in wheel data
+      #18622 open 2026-03-21 Bytecode compiler workers race on shared script file and retry loop has no cap
+      #18641 open 2026-03-22 uv persistent global cache on windows
+      #21644 open 2026-09-13 ZIP extraction rejects DEFLATE-compressed empty directory with data descriptor
+      #8991 open 2024-11-10 feat: uv command to add `exclude-newer` with current date
+      #11106 open 2025-01-30 Use docker cache mounts for apt, pip and cargo
+      #19075 closed 2026-04-20 Retry failed partial downloads with HTTP Range header when supported
+      #6349 open 2024-08-21 Request for `uv.lock` to support different index urls across different developer machines and CI environments
+      #18506 open 2026-03-16 Roadmap: `uv audit`
+      #5903 open 2024-08-08 Using `uv run` as a task runner
+      #17276 merged 2025-12-31 Avoid broken build artifacts on build failure
+      #19603 closed 2026-05-29 Split uv integration tests into smaller test harnesses
+      #18454 merged 2026-03-13 Add support for using Python 3.6 interpreters
+      #18214 merged 2026-02-27 Centralised environment storage
+      #18637 closed 2026-03-22 Cache compiled bytecode (.pyc) across installs per package/version/python
+      #18311 merged 2026-03-05 Speedup discovery of large workspaces
+      #8432 closed 2024-10-21 Python file autocomplete with `uv run` on zsh with ohmyzsh
+      #14171 closed 2025-06-20 Python installation fails during streamed unpack with connection reset error
+      #17041 closed 2025-12-09 coverage testing under uv markedly slower than in traditional venv
+  crash+safe     19 hit(s) (all listed)
+      #11204 open 2025-02-03 Add docs for `uv pip compile` and renovate
+      #5731 open 2024-08-02 uv cache size limit
+      #1681 open 2024-02-19 Support `pip wheel` subcommand
+      #19226 closed 2026-04-30 uv venv creates the same python.exe and pythonw.exe
+      #19693 merged 2026-06-05 Content-address wheel archives with directory hashes
+      #13481 closed 2025-05-16 failed to copy file from /home/runstone/.cache/uv/archive-v0/xxx/h11-0.14.0.dist-info/RECORD to /home/runstone/work/git/deer-flow/.venv/lib/python3.12/site-packages/h11-0.14.0.dist-info/RECORD: Cannot allocate memory (os error 12)
+      #17463 closed 2026-01-14 Retry on "too many open file" errors when uninstalling Python
+      #18890 closed 2026-04-07 uv version 0.11.x appears to be broken for macos
+      #17934 merged 2026-02-09 Update Rust crate nix to 0.31.2
+      #4022 closed 2024-06-04 Discarding upper-bounds on `Requires-Python`
+      #14582 merged 2025-07-13 Add an exception handler on Windows
+      #14619 merged 2025-07-14 windows_exception: Improve async signal safety
+      #8517 closed 2024-10-24 Prefer `x86_64_v2` Python builds
+      #1795 closed 2024-02-21 Should preserve symlink to specified python interpreter
+      #5780 merged 2024-08-05 Update Rust crate winsafe to 0.0.22
+      #4643 closed 2024-06-29 Noob Question: How is it so fast?
+      #1429 closed 2024-02-16 `uv pip compile` Does not retain PEP-508 environment markers in output
+      #2381 merged 2024-03-12 Move architecture and operating system probing to Python
+      #1398 closed 2024-02-16 "Slow" performance resolution for requirements
+  atomic+write   46 hit(s) (all listed)
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #22054 merged 2026-09-28 Add atomic write and HTTP cache benchmarks
+      #22107 merged 2026-09-30 Revert "Add atomic write and HTTP cache benchmarks"
+      #20089 open 2026-07-03 Avoid blocking the async runtime when creating temporary files
+      #21522 open 2026-09-07 Make file move retry timeout configurable
+      #17633 open 2026-01-20 fix(install): limit preparer concurrency to prevent file handle exhaustion
+      #10980 open 2025-01-27 Avoid corrupt pyproject.toml when aborting `uv add xxx`
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #21627 merged 2026-09-12 Wrap temporary files to handle long Windows paths
+      #21478 merged 2026-09-04 Create atomic replacement links without temporary directories
+      #21675 merged 2026-09-14 Batch HTTP cache writes in blocking tasks
+      #21569 merged 2026-09-09 Reject symlinked wheel installation destinations
+      #21468 merged 2026-09-04 Avoid per-file temporary directories for merged copies
+      #13883 open 2025-06-06 Stronger locking for parallel operations
+      #5487 open 2024-07-26 Support for the `pip-compile-multi` use case?
+      #20622 merged 2026-07-22 Add a `uv-dev inject-signed-wheel-binaries` command
+      #20019 closed 2026-06-26 Avoid shared temporary directories for Windows Python launchers
+      #6489 open 2024-08-23 Scripts that use "from future" can result in syntax error when used with uvx
+      #19562 closed 2026-05-26 fix(distribution): validate cached wheel archives against corruption
+      #18214 merged 2026-02-27 Centralised environment storage
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15996 open 2025-09-22 Loop on `EINTR` on file lock acquisition
+      #21495 open 2026-09-06 fix(uv-fs): loop on EINTR during file lock acquisition (#15996)
+      #19196 open 2026-04-27 Configuration merging produces unusable uv.lock files
+      #12276 open 2025-03-18 Validate locked versions against constraints in lock file
+      #18317 open 2026-03-05 Lock file size scales linearly with conflict declarations in workspace members
+      #19388 open 2026-05-13 Retry file lock acquisition on EINTR
+      #12665 open 2025-04-04 File permissions on lock files (#11324)
+      #13410 open 2025-05-12 uvx with a lock file
+      #21962 open 2026-09-24 Install tools from packaged locks
+      #16348 open 2025-10-17 Provide a way for `uv lock` to ignore and replace existing and/or broken `uv.lock` files
+      #11064 open 2025-01-29 Allow embedding of script lock files
+      #22072 open 2026-09-29 fix(requirements-txt): show better error when uv lockfile is used with `-r`
+      #17961 open 2026-02-11 Add preview option to respect umask when creating lock files
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #16277 open 2025-10-13 Add `@generated` marker to `uv.lock` files
+      #6830 open 2024-08-29 Feature: add --lockfile flag to allow users to customize lock file name
+      #18155 open 2026-02-23 Avoid updating `exclude-newer` in lock file if no package was updated
+      #7698 open 2024-09-26 Using uv.lock file to define package requirements?
+      #21435 open 2026-09-03 Omit yanked files from lockfiles
+      #17866 open 2026-02-05 Retain lock file preferences after fork strategy and resolution mode
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21758 open 2026-09-16 Report signal-terminated child processes
+      #21717 open 2026-09-15 Enforce archive sizes recorded in uv.lock
+      #14428 open 2025-07-02 Always write filesystem locks to a shared state directory
+      #9850 open 2024-12-12 CLI Option to save logs to a file
+      #20792 open 2026-07-29 Windows antivirus/EDR issues
+      #21983 merged 2026-09-25 Restore pyproject.toml when uv upgrade fails
+      #12244 open 2025-03-17 uv panics when resizing terminal window
+      #17633 open 2026-01-20 fix(install): limit preparer concurrency to prevent file handle exhaustion
+      #21860 merged 2026-09-20 Fix rollback for uv add
+      #11287 open 2025-02-06 Add `--virtual` flag to `uv python find`
+      #16841 open 2025-11-25 `uv` tried to use wheels which don't exist
+      #21675 merged 2026-09-14 Batch HTTP cache writes in blocking tasks
+      #21627 merged 2026-09-12 Wrap temporary files to handle long Windows paths
+      #21981 closed 2026-09-25 Resolve symlinks when discovering script lockfiles
+      #17646 open 2026-01-21 Create lock files 644, only check read bit for locks, respect umask
+      #21379 merged 2026-08-31 Avoid duplicate concurrent wheel downloads
+      #4071 open 2024-06-05 Determine Python requirement boundary based on supported `Requires-Python` range
+      #22102 closed 2026-09-30 `uv audit` reports "no known vulnerabilities" (exit 0) when the OSV querybatch response has fewer results than queries
+      #10380 open 2025-01-07 uvx offline fallback mode?
+      #21579 closed 2026-09-10 Read Python version files with BOM sniffing
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #21334 open 2026-08-28 Store cached wheel permissions in archive manifests
+      #21866 open 2026-09-20 Don't follow symlinks when writing the Git checkout marker
+      #22057 open 2026-09-28 Avoid ext4 writeback contention in atomic writes
+      #21339 open 2026-08-28 Pipeline wheel file publication with executable deferral
+      #19528 open 2026-05-21 Sync ZIP extraction overwrites conflicting duplicate entries
+      #20122 open 2026-07-05 Reject conflicting duplicate ZIP entries
+      #20952 open 2026-08-05 __main__.py file now autogenerates with uv init
+      #21487 open 2026-09-06 Refuse to remove non-virtualenv directories in `remove_virtualenv`
+      #19694 open 2026-06-05 Deduplicate binary payloads in the wheel cache
+      #19825 open 2026-06-12 Warn when we load a configuration file containing preview settings which were already consulted
+      #21670 open 2026-09-14 Best way to handle architecture dependent environments
+      #20180 open 2026-07-07 move "Project dependencies" and "Dependency specifiers" text into a new standards page
+      #20174 open 2026-07-07 Add license texts for new contents of test/ecosystem/ from PR#20068
+      #19833 open 2026-06-13 Added flag for whether to fail on invalid environments during project interpreter discovery
+      #16260 open 2025-10-13 Consider making `uv cache clean` prompt for directories with non-cache contents
+      #22152 closed 2026-10-02 Make streamed wheel output independent of short reads
+      #10564 open 2025-01-13 Detect file collisions / conflicts between different packages while installing
+      #20607 open 2026-07-22 Persist interpreter-specific bytecode during wheel preparation
+      #8559 open 2024-10-25 maintain line ending in pyproject.toml
+      #18115 open 2026-02-20 Script shebang with entrypoint that isn't Python
+
+== 51 terms run; 50 returned hits, 14 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

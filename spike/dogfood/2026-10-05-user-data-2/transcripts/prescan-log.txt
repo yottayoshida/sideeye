@@ -1,0 +1,153 @@
+prescan start ethereum/go-ethereum 2026-10-05T02:17:00Z
+prescan end   ethereum/go-ethereum 2026-10-05T02:23:18Z rc=0
+prescan start monero-project/monero 2026-10-05T02:23:18Z
+prescan end   monero-project/monero 2026-10-05T02:29:19Z rc=0
+prescan start dyc3/steamguard-cli 2026-10-05T02:29:19Z
+prescan-all: stopped by hand 2026-10-05T02:32:23Z to drop trackers whose candidates had left (go-ethereum done; git-credential-manager, serverless, micro, oh-my-posh, stack left before the scan reached them); steamguard-cli's partial transcript kept as .stopped
+prescan start dyc3/steamguard-cli 2026-10-05T02:32:23Z
+prescan-all: stopped by hand 2026-10-05T02:36:02Z after the entry gate: steamguard-cli, basic-memory, firewalld, glTF-Transform, vercel, gemini-cli and codex left at the gate (transcripts/entry-candidates.txt), so their scans are dropped; steamguard-cli's second partial transcript kept as .stopped-2
+prescan start dokuwiki/dokuwiki 2026-10-05T02:36:10Z
+prescan end   dokuwiki/dokuwiki 2026-10-05T02:41:21Z rc=0
+prescan start smacke/ffsubsync 2026-10-05T02:41:21Z
+prescan end   smacke/ffsubsync 2026-10-05T02:45:00Z rc=0
+prescan start rasterio/rasterio 2026-10-05T02:45:00Z
+prescan end   rasterio/rasterio 2026-10-05T02:49:57Z rc=0
+prescan start sigp/lighthouse 2026-10-05T02:49:57Z
+prescan end   sigp/lighthouse 2026-10-05T02:55:38Z rc=0
+prescan start gsamokovarov/jump 2026-10-05T02:55:38Z
+prescan end   gsamokovarov/jump 2026-10-05T02:59:33Z rc=0
+prescan start glebm/i18n-tasks 2026-10-05T02:59:33Z
+jump: rule 14 veto noted 2026-10-05T03:00:01Z from the partial transcript (#10 'Introduce atomic file writing to avoid issues like #9'); the scan is left to finish
+prescan end   glebm/i18n-tasks 2026-10-05T03:03:40Z rc=0
+prescan start solvespace/solvespace 2026-10-05T03:03:40Z
+prescan end   solvespace/solvespace 2026-10-05T03:08:57Z rc=0
+prescan start nicksnyder/go-i18n 2026-10-05T03:08:57Z
+prescan end   nicksnyder/go-i18n 2026-10-05T03:12:32Z rc=0
+prescan start landley/toybox 2026-10-05T03:12:32Z
+prescan end   landley/toybox 2026-10-05T03:17:28Z rc=0
+prescan start zeux/meshoptimizer 2026-10-05T03:17:28Z
+prescan end   zeux/meshoptimizer 2026-10-05T03:21:35Z rc=0
+prescan start yt-dlp/yt-dlp 2026-10-05T03:21:35Z
+prescan end   yt-dlp/yt-dlp 2026-10-05T03:27:35Z rc=0
+prescan start tuxera/ntfs-3g 2026-10-05T03:27:35Z
+prescan end   tuxera/ntfs-3g 2026-10-05T03:32:24Z rc=0
+prescan start Kaggle/kaggle-cli 2026-10-05T03:32:24Z
+ntfslabel: rule 14 veto noted 2026-10-05T03:33:07Z after its explore had started (the driver explores when the scan ends): tuxera/ntfs-3g#104 'NTFS drive corrupted after power failure' is an interrupted in-place write to the volume this operation rewrites; the explore is kept and the target leaves the slate
+prescan end   Kaggle/kaggle-cli 2026-10-05T03:36:56Z rc=0
+prescan start huggingface/huggingface_hub 2026-10-05T03:36:56Z
+prescan end   huggingface/huggingface_hub 2026-10-05T03:42:52Z rc=0
+prescan start podman-container-tools/skopeo 2026-10-05T03:42:52Z
+hf: rule 14 veto noted 2026-10-05T03:44:03Z from the finished scan, before its explore: huggingface/huggingface_hub#5013 reports stored_tokens opened O_TRUNC before encoding, left at 0 bytes by a failed write — this operation's file and write shape
+spares, promoted in this fixed order when a slate member is vetoed, decided before any of them is explored: crictl, k8sgpt, ggshield, uv (2026-10-05T03:46:19Z)
+prescan end   podman-container-tools/skopeo 2026-10-05T03:48:14Z rc=0
+prescan start oras-project/oras 2026-10-05T03:48:14Z
+prescan end   oras-project/oras 2026-10-05T03:53:20Z rc=0
+prescan start regclient/regclient 2026-10-05T03:53:20Z
+prescan end   regclient/regclient 2026-10-05T03:57:40Z rc=0
+prescan start containerd/nerdctl 2026-10-05T03:57:40Z
+prescan end   containerd/nerdctl 2026-10-05T04:03:12Z rc=0
+prescan start velero-io/velero 2026-10-05T04:03:12Z
+prescan end   velero-io/velero 2026-10-05T04:09:13Z rc=0
+prescan start rossmacarthur/sheldon 2026-10-05T04:09:13Z
+prescan end   rossmacarthur/sheldon 2026-10-05T04:12:41Z rc=0
+prescan start ocaml/opam 2026-10-05T04:12:41Z
+sheldon: read 2026-10-05T04:17:19Z — rossmacarthur/sheldon#111 is the editor's temporary file left by an interrupted 'edit' (src/editor.rs); 'add' writes plugins.toml through config.to_path -> fs::write, another write shape: not a veto
+prescan end   ocaml/opam 2026-10-05T04:18:24Z rc=0
+prescan start JuliaLang/juliaup 2026-10-05T04:18:24Z
+prescan end   JuliaLang/juliaup 2026-10-05T04:23:33Z rc=0
+prescan start wandb/wandb 2026-10-05T04:23:33Z
+opam: rule 14 veto noted 2026-10-05T04:27:50Z after its explore: ocaml/opam#4157 'Opam configuration corrupted on ENOSPC', #5473 'Write config files atomically', #5489 'OpamFile: Make all writes atomic' — this operation's file and write shape
+juliaup: rule 14 veto noted 2026-10-05T04:27:50Z after its explore: JuliaLang/juliaup#1221 'juliaup destroyed config file when running out of disk quota', #1295 'Make save_config_db atomic'
+promoted in the fixed order: k8sgpt (for opam), ggshield (for juliaup); crictl had been promoted for hf
+prescan end   wandb/wandb 2026-10-05T04:29:36Z rc=0
+prescan start cloudflare/workers-sdk 2026-10-05T04:29:36Z
+spare order extended 2026-10-05T04:31:53Z: uv, then juju
+prescan end   cloudflare/workers-sdk 2026-10-05T04:35:55Z rc=0
+prescan-all: done 2026-10-05T04:35:55Z
+prescan-all: the queued loops never started — each waited with 'pgrep -f prescan-all.sh', which matched its own command line; stopped 2026-10-05T04:54:19Z and the sixteen remaining trackers run as one loop
+prescan start stripe/stripe-cli 2026-10-05T04:54:19Z
+prescan end   stripe/stripe-cli 2026-10-05T04:59:35Z rc=0
+prescan start schrodinger/pymol-open-source 2026-10-05T04:59:35Z
+prescan end   schrodinger/pymol-open-source 2026-10-05T05:04:01Z rc=0
+prescan start theskumar/python-dotenv 2026-10-05T05:04:01Z
+stripe: rule 14 veto noted 2026-10-05T05:06:03Z: stripe/stripe-cli#1109 'fix: restrict WriteConfigField to atomic writes' — the function 'config --set' writes through
+promoted in the fixed order: uv (for stripe); juju is the one spare left
+prescan end   theskumar/python-dotenv 2026-10-05T05:08:39Z rc=0
+prescan start nosarthur/gita 2026-10-05T05:08:39Z
+dotenv: rule 14 veto noted 2026-10-05T05:10:12Z, before its explore: theskumar/python-dotenv#713 'set_key and unset_key don't fsync before replacing the .env file' (open) and #721 — the write 'dotenv set' makes
+promoted in the fixed order: juju (for dotenv); aliyun (gate clear) is the spare after it
+correction 2026-10-05T05:10:20Z: dotenv's veto was noted AFTER its explore (explore-batch-2.txt: exploring 05:08:53Z, PASS), not before; the explore is kept and the target leaves the slate
+prescan end   nosarthur/gita 2026-10-05T05:12:30Z rc=0
+prescan start Azure/azure-cli 2026-10-05T05:12:30Z
+correction 2026-10-05T05:13:52Z: stripe's veto withdrawn. stripe/stripe-cli#1109's 'atomic' is read-modify-write (viper writes only the key passed in), not a crash-safe file write — read from its body; the title alone had been taken. Every other veto was re-read from its body: jump #9/#10, opam #4157/#5489, juliaup #1221/#1295 hold (dokuwiki, lighthouse, ntfs-3g, hf, python-dotenv were read from their bodies when vetoed).
+with stripe back, the fixed order puts juju back as the first spare (aliyun the second); juju's explore still runs and is recorded
+prescan end   Azure/azure-cli 2026-10-05T05:18:49Z rc=0
+prescan start wp-cli/wp-cli 2026-10-05T05:18:49Z
+prescan end   wp-cli/wp-cli 2026-10-05T05:24:19Z rc=0
+prescan start wp-cli/config-command 2026-10-05T05:24:19Z
+gita: read 2026-10-05T05:24:34Z — nosarthur/gita#2 is an empty repo_path after removing every repo (a logic bug), #203 a refactor: not a veto
+azure-cli: rule 14 veto noted 2026-10-05T05:24:34Z, from the bodies: Azure/azure-cli#34060 (open) says _session.py's save() opens azureProfile.json, commandIndex.json and the rest with 'w', so a write that raises partway loses the file (fixes #9427, open) — files 'az config set' rewrites on every run inside this define's state root
+promoted in the fixed order: juju (for azure-cli); aliyun is the one spare left
+spare order extended 2026-10-05T05:27:50Z: aliyun, then turbo
+prescan end   wp-cli/config-command 2026-10-05T05:28:11Z rc=0
+prescan start conan-io/conan 2026-10-05T05:28:11Z
+prescan end   conan-io/conan 2026-10-05T05:34:15Z rc=0
+prescan start platformio/platformio-core 2026-10-05T05:34:15Z
+prescan end   platformio/platformio-core 2026-10-05T05:39:40Z rc=0
+prescan start dynaconf/dynaconf 2026-10-05T05:39:40Z
+prescan end   dynaconf/dynaconf 2026-10-05T05:43:59Z rc=0
+prescan start tofuutils/tenv 2026-10-05T05:43:59Z
+prescan end   tofuutils/tenv 2026-10-05T05:48:23Z rc=0
+prescan start kubernetes-sigs/cri-tools 2026-10-05T05:48:23Z
+prescan end   kubernetes-sigs/cri-tools 2026-10-05T05:53:19Z rc=0
+prescan start k8sgpt-ai/k8sgpt 2026-10-05T05:53:19Z
+prescan end   k8sgpt-ai/k8sgpt 2026-10-05T05:58:05Z rc=0
+prescan start GitGuardian/ggshield 2026-10-05T05:58:05Z
+prescan end   GitGuardian/ggshield 2026-10-05T06:03:12Z rc=0
+prescan start astral-sh/uv 2026-10-05T06:03:12Z
+cri-tools: read 2026-10-05T06:04:05Z — kubernetes-sigs/cri-tools#605 is the config command dropping comments and defaults (semantics), not an interrupted write: not a veto
+k8sgpt: read — nothing about the config file's write: not a veto
+ggshield: rule 14 veto noted 2026-10-05T06:04:05Z, from the body and the code: GitGuardian/ggshield#1243 (open) replaces the truncate-in-place writes of ggshield/core/config/utils.py, and 'config set' saves ~/.gitguardian.yaml through that file's save_yaml_dict (main 841a768, user_config.py:123 -> utils.py:67 p.open('w'))
+promoted in the fixed order: aliyun (for ggshield); turbo is the one spare left
+spare order extended 2026-10-05T06:05:53Z: turbo, then kubeadm
+prescan end   astral-sh/uv 2026-10-05T06:09:13Z rc=0
+prescan start juju/juju 2026-10-05T06:09:13Z
+exclusion gap found 2026-10-05T06:12:45Z: fresh.sh does not read spike/cohort4/CANDIDATES-REJECTED.md. apparatus/cohort4-recheck.sh over every fresh name (transcripts/cohort4-recheck.txt): ffsubsync (cohort-4 candidate, rejected on rule 5) and ggshield (rejected on rule 5) were met; micro, prs, subsync and yt-dlp hits are other words or another row's text. ffsubsync leaves the slate as seen, its explore kept; ggshield was already out on rule 14
+promoted in the fixed order: turbo (for ffsubsync); kubeadm is the one spare left
+prescan end   juju/juju 2026-10-05T06:15:19Z rc=0
+prescan-all: done 2026-10-05T06:15:19Z
+aliyun-cli (the spare after juju) scanned after the loop's last tracker 2026-10-05T06:15:33Z
+prescan start aliyun/aliyun-cli 2026-10-05T06:15:33Z
+prescan end   aliyun/aliyun-cli 2026-10-05T06:20:03Z rc=0
+prescan-all: done 2026-10-05T06:20:03Z
+turborepo (the spare after aliyun) scanned last 2026-10-05T06:20:22Z
+prescan start vercel/turborepo 2026-10-05T06:20:22Z
+juju: read 2026-10-05T06:20:47Z — juju/juju#23400 is CI clobbering ~/.aws; nothing on credentials.yaml's write: not a veto
+aliyun: rule 14 veto noted 2026-10-05T06:20:47Z after its explore, from the body: aliyun/aliyun-cli#1387 (merged 2026-07-21) 'atomically persist CLI configuration through same-directory temporary files and replacement' (config/configuration.go) — the file 'configure delete' rewrites
+promoted in the fixed order: kubeadm (for aliyun); no spare left
+prescan end   vercel/turborepo 2026-10-05T06:23:49Z rc=2
+prescan start vercel/turborepo 2026-10-05T06:23:49Z
+kubeadm (the spare after turbo) scanned last 2026-10-05T06:23:54Z
+prescan start kubernetes/kubeadm 2026-10-05T06:23:54Z
+order note 2026-10-05T06:24:54Z: the first vercel/turborepo scan ended rc=2 (BROKEN, kept as .broken) and explore-after-scan.sh, which matched 'prescan end <repo>' without the rc, started turbo's explore at 06:24:06Z before the re-run scan (started 06:23:49Z) finished
+prescan end   kubernetes/kubeadm 2026-10-05T06:25:04Z rc=2
+prescan start kubernetes/kubeadm 2026-10-05T06:25:04Z
+apparatus/prescan-all.sh: line 10: 25072 Terminated: 15          sh "$root/spike/cohort4/novelty-prescan.sh" "$1" > "$f" 2>&1
+prescan end   kubernetes/kubeadm 2026-10-05T06:25:28Z rc=143
+prescan-all: done 2026-10-05T06:25:28Z
+prescan end   vercel/turborepo 2026-10-05T06:25:35Z rc=2
+prescan-all: done 2026-10-05T06:25:35Z
+order note 2026-10-05T06:25:58Z: kubeadm's scan was started by a waiter that matched turborepo's rc=2 end line, so it ran beside turborepo's re-run; it ended rc=2 (search rate limit; .broken), its retry was stopped by hand (.stopped), and kubeadm's explore had already started at 06:25:17Z on the rc=2 end line — a second explore before its scan. kubeadm is scanned again alone after turborepo
+apparatus note: explore-after-scan.sh was edited while an instance was running; sh reads a script as it goes, and the running instance hit a syntax error after kubeadm's explore had finished (explore-batch-8.txt). Nothing it would have run was left
+turborepo's re-run also ended rc=2 (it ran beside kubeadm's scan; kept as .broken-2); after a pause, turborepo then kubeadm run alone, one loop 2026-10-05T06:28:28Z
+prescan start vercel/turborepo 2026-10-05T06:29:28Z
+prescan end   vercel/turborepo 2026-10-05T06:35:28Z rc=0
+prescan start kubernetes/kubeadm 2026-10-05T06:35:28Z
+prescan end   kubernetes/kubeadm 2026-10-05T06:41:10Z rc=0
+prescan-all: done 2026-10-05T06:41:10Z
+turborepo and kubeadm: read 2026-10-05T06:41:50Z from their clean scans (rc=0, 06:35 and 06:41), which finished after their explores — turborepo #1508 is remote-cache configuration, #13434 Cargo discovery state; kubeadm #1232 an HA set-up followed wrongly, #489/#2736 not a file write: neither is a veto
+go (golang/go), the spare after uv left the slate as seen: scanned alone 2026-10-05T06:55:47Z
+prescan start golang/go 2026-10-05T06:55:47Z
+prescan end   golang/go 2026-10-05T07:02:24Z rc=0
+prescan-all: done 2026-10-05T07:02:24Z
+go (golang/go): read 2026-10-05T07:04:32Z from the clean scan (rc=0, 07:02): no title or body names go env -w's write; #8984 is gofmt on ENOSPC, #45208 the installers. Not a veto

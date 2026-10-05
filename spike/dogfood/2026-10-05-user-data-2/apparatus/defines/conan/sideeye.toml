@@ -1,0 +1,6 @@
+[world]
+state = "/s/conan"
+
+[define]
+operation = "conan remote disable conancenter"
+cwd       = "/s/conan-in"

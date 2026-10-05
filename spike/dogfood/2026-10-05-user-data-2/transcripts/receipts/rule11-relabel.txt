@@ -1,0 +1,152 @@
+== foundry-rs/foundry (label T-bug)
+#17276 2026-10-02 comments=0 first_project_reply=none
+#17248 2026-10-01 comments=0 first_project_reply=none
+#17221 2026-09-30 comments=0 first_project_reply=none
+#17220 2026-09-30 comments=0 first_project_reply=none
+#17219 2026-09-30 comments=2 first_project_reply=MEMBER 2026-10-01
+#17204 2026-09-30 comments=0 first_project_reply=none
+#17189 2026-09-30 comments=0 first_project_reply=none
+#17165 2026-09-29 comments=3 first_project_reply=CONTRIBUTOR 2026-09-30
+#17136 2026-09-29 comments=0 first_project_reply=none
+#17072 2026-09-26 comments=0 first_project_reply=none
+== systemd/systemd (label bug 🐛)
+#44008 2026-10-04 comments=2 first_project_reply=none
+#44005 2026-10-03 comments=0 first_project_reply=none
+#43976 2026-10-02 comments=0 first_project_reply=none
+#43975 2026-10-02 comments=0 first_project_reply=none
+#43966 2026-10-01 comments=1 first_project_reply=none
+#43965 2026-10-01 comments=1 first_project_reply=none
+#43964 2026-10-01 comments=0 first_project_reply=none
+#43963 2026-10-01 comments=0 first_project_reply=none
+#43946 2026-09-29 comments=0 first_project_reply=none
+#43939 2026-09-28 comments=0 first_project_reply=none
+== FreeCAD/FreeCAD (label Type: Bug)
+#32859 2026-09-21 comments=2 first_project_reply=none
+#32831 2026-09-20 comments=2 first_project_reply=CONTRIBUTOR 2026-09-20
+== vercel/vercel (label triaged: bug)
+#12350 2024-10-23 comments=5 first_project_reply=CONTRIBUTOR 2024-10-23
+#10488 2023-09-12 comments=3 first_project_reply=MEMBER 2023-09-12
+#9452 2023-02-15 comments=4 first_project_reply=CONTRIBUTOR 2023-02-15
+#9132 2022-12-26 comments=8 first_project_reply=CONTRIBUTOR 2023-01-11
+#8231 2022-07-23 comments=1 first_project_reply=none
+#8121 2022-07-09 comments=20 first_project_reply=CONTRIBUTOR 2022-07-15
+#8063 2022-06-30 comments=13 first_project_reply=CONTRIBUTOR 2022-06-30
+#7951 2022-06-11 comments=11 first_project_reply=CONTRIBUTOR 2022-06-16
+#7908 2022-06-01 comments=6 first_project_reply=MEMBER 2022-06-10
+#7820 2022-05-18 comments=1 first_project_reply=none
+== cosmos/cosmos-sdk (label (any label, asked for: the bug label held too few))
+#26855 2026-10-02 comments=0 first_project_reply=none
+#26837 2026-09-22 comments=0 first_project_reply=none
+#26834 2026-09-19 comments=0 first_project_reply=none
+#26828 2026-09-16 comments=6 first_project_reply=none
+#26824 2026-09-15 comments=0 first_project_reply=none
+#26823 2026-09-15 comments=0 first_project_reply=none
+#26766 2026-08-21 comments=0 first_project_reply=none
+#26759 2026-08-20 comments=0 first_project_reply=none
+== fwdcloudsec/granted (label (any label, asked for: the bug label held too few))
+#972 2026-09-02 comments=0 first_project_reply=none
+#960 2026-07-28 comments=0 first_project_reply=none
+#957 2026-07-14 comments=1 first_project_reply=COLLABORATOR 2026-09-07
+#943 2026-05-20 comments=1 first_project_reply=COLLABORATOR 2026-07-30
+#940 2026-05-14 comments=1 first_project_reply=none
+#936 2026-03-31 comments=3 first_project_reply=COLLABORATOR 2026-09-06
+#926 2026-03-09 comments=0 first_project_reply=none
+#920 2026-02-03 comments=1 first_project_reply=none
+#886 2025-07-14 comments=1 first_project_reply=none
+#863 2025-05-11 comments=0 first_project_reply=none
+== tuxera/ntfs-3g (label (any label, asked for: the bug label held too few))
+#220 2026-09-30 comments=0 first_project_reply=none
+#218 2026-09-28 comments=5 first_project_reply=COLLABORATOR 2026-09-28
+#217 2026-09-27 comments=5 first_project_reply=MEMBER 2026-09-28
+#216 2026-09-09 comments=0 first_project_reply=none
+#215 2026-09-02 comments=1 first_project_reply=MEMBER 2026-09-02
+#212 2026-08-20 comments=2 first_project_reply=MEMBER 2026-08-20
+#209 2026-07-16 comments=7 first_project_reply=COLLABORATOR 2026-07-18
+#208 2026-07-08 comments=1 first_project_reply=MEMBER 2026-07-09
+#207 2026-07-04 comments=1 first_project_reply=MEMBER 2026-07-04
+#206 2026-06-27 comments=0 first_project_reply=none
+== jupyter/nbdime (label (any label, asked for: the bug label held too few))
+#819 2026-08-22 comments=1 first_project_reply=none
+#815 2026-06-29 comments=6 first_project_reply=MEMBER 2026-06-29
+#805 2026-02-05 comments=0 first_project_reply=none
+#800 2026-02-03 comments=1 first_project_reply=none
+#797 2026-01-15 comments=0 first_project_reply=none
+#796 2026-01-15 comments=0 first_project_reply=none
+#792 2026-01-04 comments=0 first_project_reply=none
+#791 2025-10-25 comments=2 first_project_reply=COLLABORATOR 2026-04-10
+#787 2025-08-12 comments=1 first_project_reply=none
+#785 2025-07-01 comments=3 first_project_reply=MEMBER 2026-01-30
+== mamba-org/mamba (label type::bug)
+#4411 2026-09-23 comments=0 first_project_reply=none
+#4407 2026-09-19 comments=0 first_project_reply=none
+#4394 2026-09-01 comments=0 first_project_reply=none
+#4274 2026-05-13 comments=8 first_project_reply=MEMBER 2026-05-13
+#4114 2025-12-09 comments=1 first_project_reply=none
+#4096 2025-11-12 comments=4 first_project_reply=MEMBER 2025-11-21
+#4043 2025-08-11 comments=1 first_project_reply=none
+#4031 2025-07-30 comments=1 first_project_reply=MEMBER 2025-08-06
+#3954 2025-05-27 comments=7 first_project_reply=MEMBER 2025-06-25
+#3927 2025-05-06 comments=0 first_project_reply=none
+== wandb/wandb (label ty:bug)
+#13027 2026-09-28 comments=1 first_project_reply=none
+#12943 2026-09-23 comments=4 first_project_reply=CONTRIBUTOR 2026-09-25
+#12909 2026-09-21 comments=6 first_project_reply=CONTRIBUTOR 2026-09-21
+#12726 2026-09-04 comments=1 first_project_reply=none
+#12601 2026-08-27 comments=5 first_project_reply=CONTRIBUTOR 2026-08-27
+#12592 2026-08-26 comments=7 first_project_reply=none
+#12552 2026-08-23 comments=5 first_project_reply=none
+#12511 2026-08-20 comments=3 first_project_reply=none
+#12477 2026-08-17 comments=5 first_project_reply=none
+#12458 2026-08-13 comments=4 first_project_reply=none
+== OffchainLabs/prysm (label (any label, asked for: the bug label held too few))
+#17613 2026-10-03 comments=0 first_project_reply=none
+#17604 2026-10-02 comments=0 first_project_reply=none
+#17596 2026-10-01 comments=0 first_project_reply=none
+#17592 2026-09-30 comments=3 first_project_reply=MEMBER 2026-10-02
+#17568 2026-09-27 comments=0 first_project_reply=none
+#17567 2026-09-26 comments=0 first_project_reply=none
+#17546 2026-09-23 comments=0 first_project_reply=none
+#17544 2026-09-23 comments=2 first_project_reply=MEMBER 2026-09-23
+== buildpacks/pack (label type/bug)
+#2706 2026-10-05 comments=0 first_project_reply=none
+#2705 2026-10-01 comments=0 first_project_reply=none
+#2703 2026-09-28 comments=1 first_project_reply=none
+#2702 2026-09-28 comments=0 first_project_reply=none
+#2700 2026-09-25 comments=1 first_project_reply=none
+#2699 2026-09-24 comments=0 first_project_reply=none
+#2697 2026-09-21 comments=0 first_project_reply=none
+#2693 2026-09-17 comments=0 first_project_reply=none
+#2691 2026-09-14 comments=1 first_project_reply=none
+#2690 2026-09-10 comments=0 first_project_reply=none
+== aliyun/aliyun-cli (label (any label, asked for: the bug label held too few))
+#1462 2026-09-29 comments=0 first_project_reply=none
+#1444 2026-09-11 comments=7 first_project_reply=CONTRIBUTOR 2026-09-17
+#1443 2026-09-10 comments=0 first_project_reply=none
+#1412 2026-08-26 comments=1 first_project_reply=CONTRIBUTOR 2026-09-18
+#1409 2026-08-20 comments=1 first_project_reply=CONTRIBUTOR 2026-09-18
+#1404 2026-08-08 comments=2 first_project_reply=COLLABORATOR 2026-09-15
+#1402 2026-07-30 comments=1 first_project_reply=CONTRIBUTOR 2026-07-30
+#1393 2026-07-19 comments=1 first_project_reply=CONTRIBUTOR 2026-07-21
+#1371 2026-07-07 comments=2 first_project_reply=COLLABORATOR 2026-07-07
+== angular/angular-cli (label type: bug/fix)
+#33719 2026-07-31 comments=1 first_project_reply=none
+#33717 2026-07-31 comments=1 first_project_reply=none
+#33716 2026-07-31 comments=1 first_project_reply=none
+#33706 2026-07-30 comments=2 first_project_reply=COLLABORATOR 2026-07-31
+#33473 2026-06-26 comments=1 first_project_reply=none
+#33060 2026-04-28 comments=3 first_project_reply=none
+#33044 2026-04-22 comments=4 first_project_reply=CONTRIBUTOR 2026-04-22
+#33005 2026-04-15 comments=2 first_project_reply=none
+#32998 2026-04-14 comments=2 first_project_reply=none
+#32789 2026-03-18 comments=2 first_project_reply=CONTRIBUTOR 2026-03-27
+== vercel/turborepo (label kind: bug)
+#14336 2026-09-28 comments=1 first_project_reply=CONTRIBUTOR 2026-09-28
+#14096 2026-09-17 comments=0 first_project_reply=none
+#14084 2026-09-16 comments=0 first_project_reply=none
+#14054 2026-09-13 comments=0 first_project_reply=none
+#14048 2026-09-12 comments=1 first_project_reply=none
+#14044 2026-09-11 comments=0 first_project_reply=none
+#14043 2026-09-11 comments=3 first_project_reply=CONTRIBUTOR 2026-09-11
+#14040 2026-09-11 comments=0 first_project_reply=none
+#13944 2026-09-04 comments=1 first_project_reply=CONTRIBUTOR 2026-09-08
+#13846 2026-08-26 comments=0 first_project_reply=none

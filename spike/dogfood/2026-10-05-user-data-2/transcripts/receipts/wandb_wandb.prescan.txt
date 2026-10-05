@@ -1,0 +1,844 @@
+== novelty pre-scan: wandb/wandb
+== date: 2026-10-05T04:23:33Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12394 open 2026-08-06 dduev/parquet read error not crash
+      #11377 open 2026-02-23 Fix config resume crash with nested empty dictionaries (#11366)
+      #12743 open 2026-09-05 feat: add runreader, a package that reads a run back from its local transaction log
+      #13098 open 2026-10-02 fix(sdk): restart wandb-xpu and resubscribe when it exits or fails to start
+      #8745 open 2024-11-01 [Bug-App]: Missing Download Button for Crashed Runs
+      #11386 open 2026-02-24 fix: Add pydantic>=2 lower bound to prevent import crash
+      #5902 open 2023-07-17 [App]: Agent crashes if experiment is written/executed from windows
+      #5879 open 2023-07-12 [App]: Repots crash when changing the run set in a panel grid
+      #3405 open 2022-03-20 [CLI]: wandb wrongly shows a run as crashed and stops logging
+      #12769 open 2026-09-09 chore: list local runs from the first and last records of each log
+      #11366 open 2026-02-19 [Bug]: Crash when resuming with config with nested key with empty dict
+      #10368 open 2025-08-20 [Q]: Controlling what wandb logs as "crashed" vs "finished vs "killed"
+      #9305 open 2025-01-21 [Feature]: Choose Run State Aggregation Priority when Grouping Runs in UI
+      #10669 open 2025-10-08 [Bug]: `wandb.init()` crashes with `wandb.errors.errors.CommError: Run initialization has timed out after 200.0 sec.`
+      #6594 open 2023-11-11 [App]: Resuming a grid sweep does not always rerun deleted runs 
+      #4736 open 2023-01-06 [Feature]: Improved documentation for WANDB_SWEEP_ID env variable
+      #3655 open 2022-05-12 [Q] How to clear the run immediately after finishing the experiment?
+      #1589 open 2020-12-08 Warn about large summary by mistake
+      #3889 open 2022-07-05 Custom Vega Plots Crashing[App]: 
+      #12586 open 2026-08-26 chore: remove deprecated RunDisabled class
+  corrupt        59 hit(s) (all listed)
+      #12773 open 2026-09-09 refactor(leet): read transaction logs through runreader's cursor
+      #12533 open 2026-08-21 fix(leet): keep workspace filter and focus state consistent
+      #12950 merged 2026-09-23 fix(leet): stop wandb leet inspect from looping on a file it cannot read
+      #12952 merged 2026-09-23 feat(leet): add --json and --follow to wandb leet inspect
+      #7376 open 2024-04-13 [Q] Offline currently running jobs shows as "Finished" in the UI, am I doing it wrong?
+      #12685 merged 2026-09-02 fix(sdk): validate the 0-255 range of ImageMask data for all dtypes
+      #12384 closed 2026-08-06 security: make debug logging in wandb-core less blabbermouth
+      #12547 merged 2026-08-22 feat(leet): add a record inspector for .wandb transaction logs
+      #12386 merged 2026-08-06 fix: keep other machines' credentials intact when saving login info to .netrc
+      #12444 closed 2026-08-11 fix: wandb sync syncs the remaining runs when one run cannot be read
+      #12269 closed 2026-07-23 [Bug]: Data loss in shared mode — server overwrites a primary run's earliest history rows after a secondary attach (client offsets correct; reproducible 0.27.0–0.28.1)
+      #6015 open 2023-08-07 [App]: EarlyStopping and min_epochs PL conflict causes App to undersample previous log points
+      #6253 closed 2023-09-08 [CLI]: Run data corrupted; ensure validity of associated logging script.
+      #11861 closed 2026-05-12 fix(save): escape bracket chars in base_path glob expansion
+      #12241 merged 2026-07-21 chore: bump github.com/prometheus/client_golang from 1.23.2 to 1.24.0 in /core
+      #11562 merged 2026-03-23 fix(leet): fix broken live run monitoring
+      #10511 merged 2025-09-15 fix: try to avoid conflicting run directory names
+      #10141 merged 2025-07-09 refactor: fix SeekRecord to allow seeking in the transaction log
+      #10126 closed 2025-07-06 [Q]:when I use that wandb sync offline-run-* ,the cloud only displays partial data curves; the training shows only the initialized 1000k-step data curve.
+      #1526 closed 2020-11-20 Run state reported as "crashed", but the execution is still running fine
+  corruption     23 hit(s) (all listed)
+      #12950 merged 2026-09-23 fix(leet): stop wandb leet inspect from looping on a file it cannot read
+      #12751 merged 2026-09-07 fix: explain incomplete .wandb files in wandb sync
+      #12398 closed 2026-08-07 fix(sdk): correct a memory error when collecting NVIDIA DCGM metrics
+      #12384 closed 2026-08-06 security: make debug logging in wandb-core less blabbermouth
+      #12269 closed 2026-07-23 [Bug]: Data loss in shared mode — server overwrites a primary run's earliest history rows after a secondary attach (client offsets correct; reproducible 0.27.0–0.28.1)
+      #10625 merged 2025-10-01 fix: retry checksum errors when reading tfevents files
+      #1526 closed 2020-11-20 Run state reported as "crashed", but the execution is still running fine
+      #10157 merged 2025-07-11 feat(artifacts): optimize artifact re-verification with checksum caching
+      #9347 merged 2025-01-28 chore: use volatile ECC counter instead of aggregate for system dashboard
+      #9167 merged 2025-01-02 chore: bump github.com/shirou/gopsutil/v4 from 4.24.11 to 4.24.12 in /core
+      #7947 closed 2024-07-11 fix(core): fix data corruption
+      #8060 merged 2024-07-30 chore(core): Log some string memory addresses
+      #7952 closed 2024-07-12 chore(core): debug a minor issue lol
+      #7955 closed 2024-07-12 chore(core): disable system monitor and cgo
+      #737 closed 2020-01-04 "failed to launch"
+      #7994 merged 2024-07-23 fix(core): fix unsafe modification of protobuf in writer
+      #8058 merged 2024-07-30 feat(artifacts): write to etag cache
+      #7850 merged 2024-06-24 refactor(core): Prevent integer overflows in tokenizer
+      #7364 merged 2024-04-11 feat(artifacts): use the cache when downloading through wandb-core
+      #7098 merged 2024-03-05 feat(artifacts): Make caching optional while uploading artifact files
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6459 open 2023-10-16 [CLI]: Media table artifact files are truncated (The "regular" table artifact is not)
+      #12531 open 2026-08-21 fix(leet): let large remote runs load and stop leaking on restart
+      #11193 open 2026-01-14 [Bug]: Gymnasium ≥1.0 RecordVideo videos are saved locally but not uploaded to W&B
+      #5247 open 2023-03-27 [sweeps] Duplicate runs after 500 runs when using local controller
+      #12815 open 2026-09-12 fix(sdk): preserve parent directory for Molecule pathlib.Path input
+      #12755 open 2026-09-07 fix(artifacts): bound auto-generated artifact names to 128 characters
+      #12091 open 2026-06-23 fix(artifacts): enforce max_objects in S3Handler.store_path
+      #12939 merged 2026-09-23 chore: read dictionary and step columns without arrow's cast kernels
+      #12751 merged 2026-09-07 fix: explain incomplete .wandb files in wandb sync
+      #12676 merged 2026-09-02 fix: measure Apple system metrics over the whole sampling interval
+      #7470 open 2024-04-24 [App]: hardware logging in multi-node setting
+      #12805 merged 2026-09-11 feat(sdk): add typed filestream wire schema proto (wandb.filestream.v1)
+      #11313 open 2026-02-10 chore: bump urllib3 from 1.26.20 to 2.6.3
+      #11304 open 2026-02-10 chore: bump google-genai from 1.2.0 to 1.47.0
+      #12002 closed 2026-06-04 [Bug-App]: Panic (nil pointer dereference) in `DeprecatedFinishMetadataTx` during `UpsertUserProfileView` mutation
+      #4624 closed 2022-12-14 [App]: Offline resuming issue
+      #11312 open 2026-02-10 chore: bump asyncer from 0.0.8 to 0.0.12
+      #11069 open 2025-12-15 chore: bump github.com/apache/arrow-go/v18 from 18.4.1 to 18.5.0 in /core
+      #12090 merged 2026-06-23 chore(artifacts): rewrite S3 reference artifact tests with `moto` and move to unit tests
+      #12357 closed 2026-08-04 chore: bump github.com/shirou/gopsutil/v4 from 4.26.6 to 4.26.7 in /core
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6459 open 2023-10-16 [CLI]: Media table artifact files are truncated (The "regular" table artifact is not)
+      #12531 open 2026-08-21 fix(leet): let large remote runs load and stop leaking on restart
+      #11193 open 2026-01-14 [Bug]: Gymnasium ≥1.0 RecordVideo videos are saved locally but not uploaded to W&B
+      #12236 open 2026-07-20 fix: shorten long internal artifact names
+      #5247 open 2023-03-27 [sweeps] Duplicate runs after 500 runs when using local controller
+      #12815 open 2026-09-12 fix(sdk): preserve parent directory for Molecule pathlib.Path input
+      #12755 open 2026-09-07 fix(artifacts): bound auto-generated artifact names to 128 characters
+      #12091 open 2026-06-23 fix(artifacts): enforce max_objects in S3Handler.store_path
+      #12641 merged 2026-08-31 feat: store runtime in the syncstate file
+      #12751 merged 2026-09-07 fix: explain incomplete .wandb files in wandb sync
+      #2692 open 2021-09-21 [Feature] Resume sweeps
+      #12939 merged 2026-09-23 chore: read dictionary and step columns without arrow's cast kernels
+      #3424 open 2022-03-24 [Feature]: support true deletion of run / history
+      #12470 merged 2026-08-14 feat: allow error statuses to wrap to 2 lines
+      #12676 merged 2026-09-02 fix: measure Apple system metrics over the whole sampling interval
+      #7470 open 2024-04-24 [App]: hardware logging in multi-node setting
+      #12469 merged 2026-08-14 refactor: generalize ANSI shortening to ANSI wrapping
+      #12523 merged 2026-08-21 feat(leet): size run overview sections to fill the sidebar
+      #11313 open 2026-02-10 chore: bump urllib3 from 1.26.20 to 2.6.3
+      #11304 open 2026-02-10 chore: bump google-genai from 1.2.0 to 1.47.0
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8280 open 2024-09-05 run.histories return is empty 
+      #13067 open 2026-09-30 fix(sweeps): skip Optuna warm-start runs whose config misses the search space
+      #13088 open 2026-10-01 feat(sweeps): read the scheduler's metric keys from custom objectives
+      #11377 open 2026-02-23 Fix config resume crash with nested empty dictionaries (#11366)
+      #5311 open 2023-04-10 Entire project needs to be emptied once a logging mistake was made
+      #11366 open 2026-02-19 [Bug]: Crash when resuming with config with nested key with empty dict
+      #9646 open 2025-03-27 [Bug]: No wandb-summary.json generated and empty output.log after offline run
+      #12595 open 2026-08-26 fix(sdk): skip unsupported automations when listing
+      #12396 open 2026-08-06 fix(sdk): keep reporting network status for the whole run
+      #10642 open 2025-10-05 [Bug-App]: `wandb.Table` fails to upload (HTTP 503) and appears empty in UI
+      #13076 open 2026-10-01 ci(sdk): prune stale code owner reviewers from PRs
+      #13069 open 2026-10-01 fix(sweeps): return the Ax trials left when a batch exceeds the search space
+      #13065 closed 2026-09-30 fix(sweeps): reject sweeps without parameters and ignore an empty metrics list
+      #13010 open 2026-09-26 fix(sdk): remove core LICENSE symlink for godoc
+      #13092 open 2026-10-01 refactor(sweeps): give each optimizer its objectives at construction
+      #12755 open 2026-09-07 fix(artifacts): bound auto-generated artifact names to 128 characters
+      #12492 open 2026-08-19 fix(sdk): normalize single-element NumPy config values
+      #3978 open 2022-07-23 [Q] Console output failed to be logged in offline mode
+      #12170 open 2026-07-04 feat(sdk): ramp up filestream transmit interval to show run data sooner
+      #11493 open 2026-03-13 feat(sdk): add runs.summaries() for bulk summary metrics retrieval
+  atomic         37 hit(s) (all listed)
+      #13082 open 2026-10-01 feat(core): refresh access tokens from a stored refresh token
+      #12495 open 2026-08-19 fix(sdk): gate SDK telemetry on server support
+      #12778 closed 2026-09-10 Manage federated identity accounts in Python
+      #12843 closed 2026-09-16 feat(sdk): typed history telemetry: baseline for existing `jsonl`
+      #5003 open 2023-02-21 [Q] PyTorch Lightning minimum sweep example
+      #12056 merged 2026-06-16 fix: error on non-2xx HTTP status when downloading a file
+      #12000 merged 2026-06-04 chore: add opentelemetryproxy for wandb-core
+      #11879 merged 2026-05-14 fix: rare 'send on closed channel' panic when the client exits
+      #13081 merged 2026-10-01 chore(deps): update go dependencies
+      #11327 merged 2026-02-11 feat(leet): interactive config editor
+      #11310 closed 2026-02-10 chore: bump pytest-xdist from 3.6.1 to 3.8.0
+      #10495 merged 2025-09-12 chore(sdk): use filestream for run stop status
+      #10735 merged 2025-10-21 chore: add heartbeat manager to leet
+      #10461 closed 2025-09-08 chore: bump github.com/prometheus/common from 0.65.0 to 0.66.1 in /core
+      #10526 merged 2025-09-17 fix: do not infinitely-buffer messages to wandb-core
+      #10764 merged 2025-10-24 feat: wandb leet - Lightweight Experiment Exploration Tool
+      #10496 closed 2025-09-12 feat: wandb leet - Lightweight Experiment Exploration Tool
+      #10462 closed 2025-09-08 chore: bump github.com/prometheus/client_golang from 1.23.0 to 1.23.2 in /core
+      #11006 merged 2025-12-02 chore: bump gocloud.dev from 0.43.0 to 0.44.0 in /core
+      #10579 closed 2025-09-25 feat: wandb leet - Lightweight Experiment Exploration Tool
+  atomically     9 hit(s) (all listed)
+      #13082 open 2026-10-01 feat(core): refresh access tokens from a stored refresh token
+      #11327 merged 2026-02-11 feat(leet): interactive config editor
+      #10764 merged 2025-10-24 feat: wandb leet - Lightweight Experiment Exploration Tool
+      #10496 closed 2025-09-12 feat: wandb leet - Lightweight Experiment Exploration Tool
+      #10579 closed 2025-09-25 feat: wandb leet - Lightweight Experiment Exploration Tool
+      #10526 merged 2025-09-17 fix: do not infinitely-buffer messages to wandb-core
+      #7856 merged 2024-06-25 fix(core): Debounce console updates
+      #7364 merged 2024-04-11 feat(artifacts): use the cache when downloading through wandb-core
+      #5346 merged 2023-04-14 fix(artifacts): checksum the read-only staging copy instead of the original file
+  interrupted    42 hit(s) (all listed)
+      #12407 open 2026-08-07 fix(sdk): clean up properly when run.finish() is interrupted
+      #5593 open 2023-05-22 [Feature]: Allow resuming sweeps also from the API
+      #10368 open 2025-08-20 [Q]: Controlling what wandb logs as "crashed" vs "finished vs "killed"
+      #12601 closed 2026-08-27 [Bug]: Live Upload of Tensorboard
+      #2692 open 2021-09-21 [Feature] Resume sweeps
+      #11994 merged 2026-06-03 chore: fix test_asyncio_compat_run test flake
+      #11781 merged 2026-04-23 chore: better debugging for the test_asyncio_compat_run flake
+      #11974 merged 2026-05-29 chore(sdk): eval tables 5/6: EvalTable image and unsupported media support
+      #9449 closed 2025-02-11 [Feature]: Add option to translate warning `Tried to log to step %d that is less than the current step` to an error
+      #11229 merged 2026-01-26 refactor: cancellation for ServerRequests
+      #9667 closed 2025-04-01 [Feature]: Allow downloading output.log for crashed/running runs
+      #4155 closed 2022-08-22 [Q] The wandb backend process has shutdown
+      #6045 closed 2023-08-11 [CLI]: Unable to sync offline record to server.
+      #10126 closed 2025-07-06 [Q]:when I use that wandb sync offline-run-* ,the cloud only displays partial data curves; the training shows only the initialized 1000k-step data curve.
+      #9926 merged 2025-05-28 refactor: enable and fix RUF100 (unused-noqa)
+      #9660 merged 2025-03-31 chore: attempt to fix test_asyncio_compat_run flake
+      #9454 closed 2025-02-12 [Bug-App]: Prevent Comparator Chart from Auto-Refreshing and Resetting Scroll Position
+      #9098 merged 2024-12-17 chore: fix codecov for test_interrupt.py
+      #9227 merged 2025-01-09 chore: bump cloud.google.com/go/storage from 1.49.0 to 1.50.0 in /core
+      #2963 closed 2021-11-25 Core dumped when use wandb and matplotlib[CLI] 
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12407 open 2026-08-07 fix(sdk): clean up properly when run.finish() is interrupted
+      #5593 open 2023-05-22 [Feature]: Allow resuming sweeps also from the API
+      #1956 open 2021-03-15 [Feature] Kill/stop/pause selected agents 
+      #5573 open 2023-05-18 [CLI]: Can't pickle local object 'TorchHistory.add_log_hooks_to_pytorch_module.<locals>.<lambda>'
+      #4673 open 2022-12-21 [Feature]: access tokens for situations like vast.ai
+      #4707 open 2022-12-29 [App]: Offline that don't finish display incorrect runtime and status when logged
+      #10368 open 2025-08-20 [Q]: Controlling what wandb logs as "crashed" vs "finished vs "killed"
+      #3329 open 2022-03-03 [CLI]: OSError [Errno 24] when running many experiments from same script
+      #12900 merged 2026-09-18 feat(sweeps): add the wandb sweep-scheduler command
+      #12601 closed 2026-08-27 [Bug]: Live Upload of Tensorboard
+      #8366 open 2024-09-13 [Bug]: WandbLogger error on TPU
+      #6500 open 2023-10-26 [App]: define_metrics does not work with media type keys
+      #2692 open 2021-09-21 [Feature] Resume sweeps
+      #12086 merged 2026-06-23 chore: use thread-based pytest-timeout in tests
+      #2074 open 2021-04-15 wandb.login() hangs and then disconnects me every time I try on Google Colab
+      #11994 merged 2026-06-03 chore: fix test_asyncio_compat_run test flake
+      #11817 merged 2026-05-02 refactor: asyncio run stopping
+      #12246 merged 2026-07-21 feat(sweeps): add --term-timeout flag to sweeps agent
+      #11781 merged 2026-04-23 chore: better debugging for the test_asyncio_compat_run flake
+      #11974 merged 2026-05-29 chore(sdk): eval tables 5/6: EvalTable image and unsupported media support
+  sigkill        15 hit(s) (all listed)
+      #9963 open 2025-06-02 [Bug]: wandb-core signal handling behavior
+      #12246 merged 2026-07-21 feat(sweeps): add --term-timeout flag to sweeps agent
+      #12821 merged 2026-09-14 feat(sweeps): add --max-consecutive-failed-runs flag to sweeps agent
+      #12362 closed 2026-08-04 feat(sweeps): add Scheduler base class for driving sweep runs
+      #12152 closed 2026-07-02 fix: reduce system_tests xdist parallelism to curb OOM worker kills
+      #4610 open 2022-12-12 [CLI]:  wandb: ERROR Failed to sample metric: psutil.NoSuchProcess process no longer exists (pid=564)
+      #11538 closed 2026-03-19 [Bug-App]: Resumed runs lose tags
+      #9651 merged 2025-03-28 feat(sweeps): forward signals received by wandb_agent to child processes
+      #9412 closed 2025-02-04 feat: custom actions on run stop
+      #4929 closed 2023-02-08 [CLI]: wandb.finish() stuck when uploaded all data
+      #9721 closed 2025-04-12 [Bug]: x_update_finish_state not taking effect?
+      #8376 closed 2024-09-13 [Bug]: Core service dropping data, sync won't recover
+      #5991 closed 2023-08-02 [CLI]: hangs when stopping a run when using PyCharm, forced to SIGKILL
+      #2821 closed 2021-10-22 [CLI] Wandb crashes when trying to launch a pytorch-lightning experiment
+      #303 merged 2019-02-28 Add agent env vars for SIGKILL and report interval
+  sigint         26 hit(s) (all listed)
+      #13104 open 2026-10-02 feat(sdk): let wandb-xpu listen on a fixed socket and exit when idle
+      #9568 open 2025-03-06 [Bug-App]: SIGINT stops requeing behavior for sweeps.
+      #10072 open 2025-06-20 [Feature]: Allow customization of "Stop Run" signal
+      #9963 open 2025-06-02 [Bug]: wandb-core signal handling behavior
+      #3667 open 2022-05-16 [Feature]: Handle SIGTERM in sweep agent
+      #12898 merged 2026-09-18 feat(sweeps): host an optimizer for a sweep scheduler session
+      #12970 merged 2026-09-24 fix(sweeps): call wandb.teardown() on pyagent finish
+      #12246 merged 2026-07-21 feat(sweeps): add --term-timeout flag to sweeps agent
+      #11946 merged 2026-05-27 fix(xpu): unlink unix socket on shutdown
+      #11950 merged 2026-05-27 fix(sweeps): stop heartbeating and clean up runs on SIGTERM/SIGHUP/SIGQUIT
+      #11781 merged 2026-04-23 chore: better debugging for the test_asyncio_compat_run flake
+      #11773 merged 2026-04-22 feat: stop_fn setting
+      #11774 merged 2026-04-22 feat: stop_on_fatal_error setting
+      #10489 merged 2025-09-11 fix(sweeps): when launching subprocess, use `stdin=subprocess.PIPE` to avoid deadlock
+      #10571 merged 2025-09-25 chore: wandb leet: TUI scaffold & CLI subcommand
+      #9462 merged 2025-02-13 chore: add logging in debug-internal when a sigint or sigterm are received
+      #9721 closed 2025-04-12 [Bug]: x_update_finish_state not taking effect?
+      #5244 closed 2023-03-26 [CLI]: Ctrl+C to kill process leaves "wandb: / 0.124 MB of 0.124 MB uploaded (0.000 MB deduped)" message in shell
+      #7231 closed 2024-03-26 fix(sdk): try sending a sigint to stopped run
+      #5076 closed 2023-03-03 [CLI]: Wandb [occasionally] fails to shut down sender and handler 
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12532 open 2026-08-21 fix(leet): quit reliably from filter inputs and the help screen
+      #6454 open 2023-10-14 [App]: ctrl+c feature on plots not working
+      #6461 open 2023-10-16 [Feature]: Display numbers over bar charts; implement Ctrl+C feature
+      #12407 open 2026-08-07 fix(sdk): clean up properly when run.finish() is interrupted
+      #12900 merged 2026-09-18 feat(sweeps): add the wandb sweep-scheduler command
+      #1589 open 2020-12-08 Warn about large summary by mistake
+      #12898 merged 2026-09-18 feat(sweeps): host an optimizer for a sweep scheduler session
+      #6594 open 2023-11-11 [App]: Resuming a grid sweep does not always rerun deleted runs 
+      #6801 open 2024-01-08 [CLI]: Automatic login in colab doesn't work
+      #12228 merged 2026-07-17 refactor: avoid capturing cancellation/timeout errors in wandb sync
+      #12601 closed 2026-08-27 [Bug]: Live Upload of Tensorboard
+      #11946 merged 2026-05-27 fix(xpu): unlink unix socket on shutdown
+      #2825 open 2021-10-23 OSError Too many open files: /tmp/tmphv67gzd0wandb-media
+      #6372 closed 2023-09-27 [App]: ctrl+c feature on plots stopped working
+      #11950 merged 2026-05-27 fix(sweeps): stop heartbeating and clean up runs on SIGTERM/SIGHUP/SIGQUIT
+      #11679 merged 2026-04-09 refactor: make exit requests cancellable
+      #11614 closed 2026-03-27 api key
+      #11205 merged 2026-01-16 feat: ctrl+c during wandb beta sync cancels it somewhat
+      #2839 closed 2021-10-27 [CLI] WandbCallback AttributeError: 'NoneType' object has no attribute 'item'
+      #11162 closed 2026-01-08 [Bug-App]: Wandb network issue - context deadline exceeded (repost)
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13016 merged 2026-09-27 feat(leet): add a vitals sidebar to symon
+      #12991 merged 2026-09-25 feat(sdk): report cumulative GPU energy for NVIDIA and AMD GPUs
+      #13014 merged 2026-09-27 feat(leet): put the essential charts on the first symon page
+      #10404 open 2025-08-28 [Bug]: Only system stats synced, no app metrics, but the run seems online
+      #12676 merged 2026-09-02 fix: measure Apple system metrics over the whole sampling interval
+      #12990 merged 2026-09-25 refactor(sdk): read AMD GPU metrics through librocm_smi64 instead of the rocm-smi tool
+      #5487 open 2023-05-04 [Q]about pagination of files in artifact
+      #4449 open 2022-11-04 [Feature]: Display two curves in one graph?
+      #1234 open 2020-09-11 Hyperband stopping criterion too permissive with noisy metrics
+      #6224 open 2023-09-05 [Feature]: wandb.Audio and wandb.Table to have Interactive Spectrogram
+      #12587 merged 2026-08-26 chore: offline fork/resume system tests
+      #12668 merged 2026-09-02 fix(sdk): reconcile the resumed starting step against the history row count
+      #12670 merged 2026-09-02 chore(sdk): add system tests for offline resume and sync
+      #12427 closed 2026-08-08 Claude/resume sync state bug 3c777f
+      #12253 closed 2026-07-22 fix(sdk): reject reusing an existing run ID when resume is unspecified
+      #12318 closed 2026-07-29 experiment: revert resume "never" path from PR #12110
+      #7470 open 2024-04-24 [App]: hardware logging in multi-node setting
+      #12110 open 2026-06-26 feat(sdk): allow resume for offline runs
+      #780 open 2020-01-18 Read timed out when total combination of tunable parameters exceed about 15 million
+      #12666 merged 2026-09-02 feat(sdk): wiring up resuming of offline runs (upserter/sender)
+  outage         31 hit(s) (all listed)
+      #13027 closed 2026-09-28 [Bug-App]: Web app crashes after login: 500 from /graphql, "parsing time "2027-11-01""
+      #8806 open 2024-11-07 [Bug-App]: Charts, media not showing on web
+      #12454 merged 2026-08-12 chore: update pypa/cibuildwheel action to v4.2
+      #780 open 2020-01-18 Read timed out when total combination of tunable parameters exceed about 15 million
+      #11750 closed 2026-04-18 [Bug-App]: context deadline exceeded
+      #2899 closed 2021-11-09 [Q] Run ongoing for 1 day 11h and counting - Progress bar for logging artifacts? 
+      #11162 closed 2026-01-08 [Bug-App]: Wandb network issue - context deadline exceeded (repost)
+      #10973 merged 2025-11-25 fix(launch): Prevent Kubernetes job tracker from getting stuck with stale watch connections
+      #7881 closed 2024-06-29 [App]: api.wandb.ai returns 403 forbidden in some regions
+      #10923 closed 2025-11-19 [Bug]: An error occurred while verifying the API key.  
+      #10025 closed 2025-06-12 [Bug-App]: wandb: network error (connecttimeout), entering retry loop.
+      #9969 closed 2025-06-03 [Bug-App]: Run initialization has timed out after 120.0 sec.
+      #9937 closed 2025-05-30 [Bug-App]: WandB Network Error: ProxyError and Re-Login Prompt
+      #9946 closed 2025-05-31 [Q]: wandb: Network error (ConnectTimeout), entering retry loop.
+      #9938 closed 2025-05-30 [Q]: Cannot login wandb.
+      #5367 closed 2023-04-19 [App]: lots of errors in the app
+      #1185 closed 2020-08-04 Network error (ReadTimeout), entering retry loop during sweep
+      #2039 closed 2021-04-06 [CLI] Network error (ReadTimeout), entering retry loop.
+      #5372 closed 2023-04-19 [CLI]: wandb: ERROR Error while calling W&B API: An internal error occurred. Please contact support. (<Response [500]>)
+      #1016 closed 2020-05-05 wandb hangs experiment (10 min+): Internal Server Error for url: https://api.wandb.ai/graphql
+  ENOSPC         2 hit(s) (all listed)
+      #6149 merged 2023-08-23 feat(artifacts): clear the cache on add to prevent overflow
+      #5262 closed 2023-03-29 chore(artifacts): inform user what they can do when they get an 'out of space' error
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13100 open 2026-10-02 feat(sdk): read Linux host metrics from procfs in wandb-xpu
+      #13101 open 2026-10-02 feat(sdk): switch Linux host metrics from wandb-core to wandb-xpu
+      #13011 open 2026-09-27 feat(leet): chart typed system metrics from the schema
+      #13099 open 2026-10-02 refactor(sdk): fill the host metric fields of the wandb-xpu Subscribe request from settings
+      #13039 open 2026-09-29 feat(leet): keep six hours of history per chart in symon
+      #12408 open 2026-08-07 fix(sdk): avoid re-reading image files from disk when logging a list of images
+      #12395 open 2026-08-06 fix(artifacts): report the error instead of hanging when a large download cannot be written to disk
+      #1383 open 2020-10-19 Each added image is stored as a separate file to disk
+      #12567 open 2026-08-24 feat(leet): delete runs with typed confirmation
+      #12540 open 2026-08-21 fix(leet): release media pane resources when a view closes
+      #13013 merged 2026-09-27 feat(leet): chart network and disk throughput in symon
+      #11379 open 2026-02-23 fix(integrations): log RecordVideo videos for Gymnasium >=1.0 (Fixes #11193)
+      #13014 merged 2026-09-27 feat(leet): put the essential charts on the first symon page
+      #937 open 2020-03-24 Add option to delete local run data after finished run
+      #3655 open 2022-05-12 [Q] How to clear the run immediately after finishing the experiment?
+      #5324 open 2023-04-12 [CLI]: wandb sync --clean --clean-old-hours X removes active runs
+      #9664 open 2025-04-01 feat: add option to clean up files as they are uploaded
+      #11283 open 2026-02-06 feat(sdk): add runs.scan_histories() for lazy parquet-based history access
+      #11420 open 2026-02-28 Add Catnip Feature
+      #8594 open 2024-10-10 [Feature]: Bulk download of runs' histories in sweep(s)
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5698 open 2023-06-10 [Q] Partial Grid Search using sweep config
+      #11834 open 2026-05-07 fix(sdk): handle missing file edges in run.files
+      #11442 open 2026-03-05 feat(leet): add workspace view for remote runs
+      #5324 open 2023-04-12 [CLI]: wandb sync --clean --clean-old-hours X removes active runs
+      #10082 open 2025-06-24 [Bug-App]: wandb sdk Settings.https_proxy has no effect to gql_request.py
+      #11519 open 2026-03-17 feat(leet): vertical zoom in charts
+      #11792 open 2026-04-25 feat: add TPU topology and GCP/GKE environment metadata
+      #13012 merged 2026-09-27 feat(leet): show per-core CPU utilization and temperature in symon
+      #11671 open 2026-04-08 feat(leet): french fries (bucketed heatmap) mode for all charts
+      #12919 closed 2026-09-22 refactor(sdk): add opt-in shared cloud HTTP clients
+      #12843 closed 2026-09-16 feat(sdk): typed history telemetry: baseline for existing `jsonl`
+      #6449 open 2023-10-12 [CLI]: BrokenPipeError: [Errno 32] Broken pipe
+      #7376 open 2024-04-13 [Q] Offline currently running jobs shows as "Finished" in the UI, am I doing it wrong?
+      #11581 open 2026-03-26 feat: app wandb parse function to read .wandb files
+      #11045 open 2025-12-06 fix: preserve git information between run resumes.
+      #11279 open 2026-02-05 fix: create standard run files in offline mode
+      #12674 merged 2026-09-02 chore: deflake the leet console logs test and the watcher callback test
+      #10439 open 2025-09-03 feat(artifacts): download large file in parallel in go core
+      #4376 open 2022-10-17 [App]: some columns are displayed as null after offline runs are synced 
+      #12931 merged 2026-09-23 chore(sdk): upload coverage to Datadog from GitHub Actions
+  incomplete     50 hit(s) (all listed)
+      #12751 merged 2026-09-07 fix: explain incomplete .wandb files in wandb sync
+      #11938 open 2026-05-22 feat(artifacts): generalize non-AWS S3 endpoint detection, recognize Backblaze B2, and tag boto3 requests with W&B user-agent
+      #9010 open 2024-12-04 [Bug-App]: Point Cloud visualization misses points (max_point limit?)
+      #2919 open 2021-11-13 [App] wandb sync for offline runs doesn't upload all data until run is finished.
+      #11283 open 2026-02-06 feat(sdk): add runs.scan_histories() for lazy parquet-based history access
+      #7376 open 2024-04-13 [Q] Offline currently running jobs shows as "Finished" in the UI, am I doing it wrong?
+      #12808 merged 2026-09-11 feat: warn when syncing run generated with newer SDK version
+      #6479 open 2023-10-20 [App]: Custom Charts do not allow access to "Step" data
+      #12384 closed 2026-08-06 security: make debug logging in wandb-core less blabbermouth
+      #12110 open 2026-06-26 feat(sdk): allow resume for offline runs
+      #11816 merged 2026-05-01 refactor: asyncio run messages
+      #11407 merged 2026-02-25 chore(artifacts): use artifact id instead of birth artifact id for download url
+      #10339 closed 2025-08-13 [Bug]: `monitor_gym=True` fails with Gymnasium `RecordVideo` due to missing `enabled` and `path` attributes (#9947 related)
+      #11036 merged 2025-12-04 fix: regex-escape path in test_settings_file.py
+      #10193 closed 2025-07-21 [DNM] Disable http keep alive and hash entire file in parallel in python 
+      #11078 merged 2025-12-16 refactor: make leveldb.Reader track and return offsets for seeking
+      #10886 closed 2025-11-13 [Bug]: Random but consistent data loss
+      #11178 merged 2026-01-13 feat: add stats when downloading parquet history
+      #10572 merged 2025-09-25 chore: live leveldb log reader
+      #10764 merged 2025-10-24 feat: wandb leet - Lightweight Experiment Exploration Tool
+  dataloss       0 hit(s)
+  recover        82 hit(s) (all listed)
+      #12407 open 2026-08-07 fix(sdk): clean up properly when run.finish() is interrupted
+      #12814 open 2026-09-12 [Q]: Deleted runs leave orphaned wandb-history artifacts that cannot be deleted (Storage Quota Issue)
+      #6744 open 2023-12-18 [App]: Data lost for first several training steps
+      #3876 open 2022-06-30 [Feature]: Alternate Sweep/Early Stopping Algorithms eg. ASHA
+      #12444 closed 2026-08-11 fix: wandb sync syncs the remaining runs when one run cannot be read
+      #8322 open 2024-09-10 [Bug-App]: invalid tag for offline runs
+      #12391 merged 2026-08-06 fix: wandb sync syncs the remaining runs when one run cannot be read
+      #12379 closed 2026-08-06 fix(sdk): stop resumed runs from overwriting earlier console logs and system metrics
+      #12843 closed 2026-09-16 feat(sdk): typed history telemetry: baseline for existing `jsonl`
+      #12421 merged 2026-08-07 fix: resume keeps console and system metrics filestream offsets
+      #12459 closed 2026-08-13 Please delete these organizations in wandb
+      #1192 open 2020-08-12 Create wandb run with run name that was previously deleted
+      #9646 open 2025-03-27 [Bug]: No wandb-summary.json generated and empty output.log after offline run
+      #12021 closed 2026-06-10 [Bug-App]: Title:  **Charts show “No data for selected runs” despite run history and summary metrics being logged**
+      #11789 merged 2026-04-24 chore(leet): clean up live-stream completion, media retries, and batched system metric ingestion
+      #12269 closed 2026-07-23 [Bug]: Data loss in shared mode — server overwrites a primary run's earliest history rows after a secondary attach (client offsets correct; reproducible 0.27.0–0.28.1)
+      #12241 merged 2026-07-21 chore: bump github.com/prometheus/client_golang from 1.23.2 to 1.24.0 in /core
+      #11528 merged 2026-03-17 feat: collect additional TPU metrics via direct libtpu FFI
+      #7237 closed 2024-03-27 [Feature]: Delete an org
+      #11653 merged 2026-04-03 fix: race conditions in beta_scan_history
+  recovery       11 hit(s) (all listed)
+      #12946 closed 2026-09-23 test(sweeps): deflake agent runs pagination coverage
+      #12269 closed 2026-07-23 [Bug]: Data loss in shared mode — server overwrites a primary run's earliest history rows after a secondary attach (client offsets correct; reproducible 0.27.0–0.28.1)
+      #12189 merged 2026-07-09 feat(sdk): store starting_step in a sync state file for consistency
+      #11701 merged 2026-04-13 chore: bump softprops/action-gh-release from 2 to 3 in /.github/workflows
+      #9312 closed 2025-01-21 [Q]: Recover accidentally deleted project on workspace
+      #6388 closed 2023-09-29 [CLI]: bug using `load_report` with wandb API
+      #8429 merged 2024-09-18 feat(sdk): detect operations that take too long
+      #8286 merged 2024-09-05 feat: experimental C# client
+      #7136 closed 2024-03-11 I accidently deleted one team, can I still recover that, this team is very important to me[Q]
+      #6983 merged 2024-02-10 fix(core): parse upload headers correctly
+      #2332 closed 2021-06-28 [Q] Avoid logging to local filesystem but continue sending logs to W&B servers
+  rollback       3 hit(s) (all listed)
+      #5537 closed 2023-05-11 test(sdk): wip: test metaflow issues with rollback
+      #4308 closed 2022-09-26 [CLI]: Display name attribute in publicApi.runs documentation is wrong
+      #717 closed 2019-12-16 Bump tensorflow from 1.14.0 to 1.15.0
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12110 open 2026-06-26 feat(sdk): allow resume for offline runs
+      #13075 open 2026-10-01 fix(sweeps): print optimizer errors with their traceback when caught
+      #2692 open 2021-09-21 [Feature] Resume sweeps
+      #13080 open 2026-10-01 fix(sdk): sample accelerators once per interval for all runs in a process
+      #13101 open 2026-10-02 feat(sdk): switch Linux host metrics from wandb-core to wandb-xpu
+      #11045 open 2025-12-06 fix: preserve git information between run resumes.
+      #11348 open 2026-02-14 [Bug]: Unable to resume run using run id
+      #4325 open 2022-09-28 [App]: "Duration" field incorrect when resuming runs
+      #11377 open 2026-02-23 Fix config resume crash with nested empty dictionaries (#11366)
+      #6164 open 2023-08-24 [CLI]: Resuming a moved run doesn't work
+      #12522 open 2026-08-21 chore(sdk): remove auto-step assignment from transaction logs (owned by sender)
+      #7557 open 2024-05-03 [CLI]: Large files not successfully uploading when resuming
+      #5593 open 2023-05-22 [Feature]: Allow resuming sweeps also from the API
+      #12520 open 2026-08-21 feat(sdk): revert auto-step handler changes (from #12110)
+      #3629 open 2022-05-05 [Feature]: Add a flag to keep wandb-resume.json after finishing
+      #12999 merged 2026-09-26 fix(sdk): fix `_runtime` for resumed runs
+      #6594 open 2023-11-11 [App]: Resuming a grid sweep does not always rerun deleted runs 
+      #10694 open 2025-10-14 [Feature]: Resuming forked trials lose `branch_point` info - API to check fork information
+      #11366 open 2026-02-19 [Bug]: Crash when resuming with config with nested key with empty dict
+      #12396 open 2026-08-06 fix(sdk): keep reporting network status for the whole run
+  half-written   4 hit(s) (all listed)
+      #9246 merged 2025-01-11 feat(sdk): add methods to edit automations
+      #7992 merged 2024-07-22 feat(artifacts): write large manifests to file rather than encoding as protobufs
+      #1409 closed 2020-10-23 Error communicating with backend
+      #4526 closed 2022-11-23 [CLI]: wandb created two sessions for the same run on a slurm cluster
+  wipe           9 hit(s) (all listed)
+      #3424 open 2022-03-24 [Feature]: support true deletion of run / history
+      #12509 closed 2026-08-20 fix(leet): preserve unknown config keys across saves
+      #11213 closed 2026-01-20 [Bug-App]: Relative Time(Wall/Process) does not work
+      #8306 closed 2024-09-09 fix(sdk): calling run.update no longer wipes run's config
+      #1450 closed 2020-11-02 Overwriting sessions
+      #1179 closed 2020-07-29 Metric present but marked as <null> (Parallel Coordinates)
+      #4626 merged 2022-12-14 chore(launch): reset build command after building
+      #4080 closed 2022-08-11 [App]: Credentials rejected when signing into localhost:8080 for wandb local
+      #2247 merged 2021-06-01 [WB-5643] Automatically convert logged pandas dataframes to wandb.Tables
+  wipes          2 hit(s) (all listed)
+      #12509 closed 2026-08-20 fix(leet): preserve unknown config keys across saves
+      #8306 closed 2024-09-09 fix(sdk): calling run.update no longer wipes run's config
+  erase          19 hit(s) (all listed)
+      #12528 open 2026-08-21 fix(leet): make console logs bounded, ANSI-safe, and cheap to update
+      #11045 open 2025-12-06 fix: preserve git information between run resumes.
+      #3405 open 2022-03-20 [CLI]: wandb wrongly shows a run as crashed and stops logging
+      #3424 open 2022-03-24 [Feature]: support true deletion of run / history
+      #12674 merged 2026-09-02 chore: deflake the leet console logs test and the watcher callback test
+      #12901 open 2026-09-18 feat(leet): native GPUI workspace prototype (leet-gpui)
+      #4345 open 2022-10-03 [Feature]: Overwrite nested default config in sweep
+      #12509 closed 2026-08-20 fix(leet): preserve unknown config keys across saves
+      #1192 open 2020-08-12 Create wandb run with run name that was previously deleted
+      #5865 closed 2023-07-08 [CLI]: wandb sync with --append option fails to sync offline runs with the same id
+      #4377 closed 2022-10-17 [Q] Track to one run from different processes
+      #4727 closed 2023-01-05 [Feature]: Concatenate output (stdout/stderr) when resuming experiment
+      #1817 closed 2021-02-07 [CLI] wandb sync fails to upload reports from crashed scripts (AssertionError)
+      #6317 merged 2023-09-18 feat(launch): delete run queues with public api
+      #1 closed 2017-03-27 Initial Update
+      #1110 closed 2020-06-20 Log content is erased in silent mode
+      #125 closed 2018-02-14 STDOUT/STDERR streams should be serialized before sending to the backend
+      #135 closed 2018-02-26 TextStream not handling carriage returns
+      #1504 closed 2020-11-17 Deprecation warnings due to invalid escape sequences in Python 3.8
+  erasing        2 hit(s) (all listed)
+      #12509 closed 2026-08-20 fix(leet): preserve unknown config keys across saves
+      #1 closed 2017-03-27 Initial Update
+  erased         9 hit(s) (all listed)
+      #11045 open 2025-12-06 fix: preserve git information between run resumes.
+      #12901 open 2026-09-18 feat(leet): native GPUI workspace prototype (leet-gpui)
+      #4345 open 2022-10-03 [Feature]: Overwrite nested default config in sweep
+      #3405 open 2022-03-20 [CLI]: wandb wrongly shows a run as crashed and stops logging
+      #4727 closed 2023-01-05 [Feature]: Concatenate output (stdout/stderr) when resuming experiment
+      #1817 closed 2021-02-07 [CLI] wandb sync fails to upload reports from crashed scripts (AssertionError)
+      #6317 merged 2023-09-18 feat(launch): delete run queues with public api
+      #1110 closed 2020-06-20 Log content is erased in silent mode
+      #125 closed 2018-02-14 STDOUT/STDERR streams should be serialized before sending to the backend
+  destroy        21 hit(s) (all listed)
+      #12410 open 2026-08-07 fix(sdk): exit quietly when the service process has already stopped
+      #1566 open 2020-12-02 [Potential bug] Grouping changes x values in unexpected way
+      #6474 open 2023-10-19 [App]: Downloading csv from the web app generates incoherent column names
+      #2074 open 2021-04-15 wandb.login() hangs and then disconnects me every time I try on Google Colab
+      #3424 open 2022-03-24 [Feature]: support true deletion of run / history
+      #12269 closed 2026-07-23 [Bug]: Data loss in shared mode — server overwrites a primary run's earliest history rows after a secondary attach (client offsets correct; reproducible 0.27.0–0.28.1)
+      #11528 merged 2026-03-17 feat: collect additional TPU metrics via direct libtpu FFI
+      #11042 merged 2025-12-05 chore(artifacts): add extra http headers from env vars
+      #10923 closed 2025-11-19 [Bug]: An error occurred while verifying the API key.  
+      #1206 closed 2020-08-18 Selected runs are not logging media for the key: score per update, but instead are logging type
+      #3612 closed 2022-05-03 [CLI]: Sweep is saying that values are filled with "None" yet values are printed out in the stack trace corresponding to values given in Sweep
+      #7385 merged 2024-04-16 refactor(launch): build + _project_spec cleanup
+      #5686 closed 2023-06-08 Colab Docker instance shuts down on wandb login()
+      #7894 closed 2024-07-02 [CLI]: 
+      #6625 closed 2023-11-22 [CLI]: wandb: Network error (ReadTimeout), entering retry loop
+      #6533 closed 2023-11-01 [App]: WandB sweep is continued more after the count when used together with DDP, mp.spawn
+      #6354 closed 2023-09-22 [Q]Why it has create lots of runs based on one project 
+      #5292 merged 2023-04-04 Update import_hook.py with latest changes in the wrapt repository [draft]
+      #961 closed 2020-04-12 Fastai learner export error while using callback 
+      #1232 closed 2020-09-10 Hyperband first run stops early
+  destroys       4 hit(s) (all listed)
+      #6474 open 2023-10-19 [App]: Downloading csv from the web app generates incoherent column names
+      #1206 closed 2020-08-18 Selected runs are not logging media for the key: score per update, but instead are logging type
+      #7385 merged 2024-04-16 refactor(launch): build + _project_spec cleanup
+      #1232 closed 2020-09-10 Hyperband first run stops early
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4345 open 2022-10-03 [Feature]: Overwrite nested default config in sweep
+      #5119 open 2023-03-09 [CLI]: Using sweeps,  successive wandb.init() calls overwrite older runs
+      #12795 open 2026-09-10 [Bug]: WandbLogger.sync: reflect the already-synced None return
+      #7413 open 2024-04-18 [Feature]: Allow logging artifact without creating new versions
+      #1192 open 2020-08-12 Create wandb run with run name that was previously deleted
+      #5902 open 2023-07-17 [App]: Agent crashes if experiment is written/executed from windows
+      #12592 open 2026-08-26 [Bug-App]: Path traversal in public API File.download enables arbitrary file write
+      #11348 open 2026-02-14 [Bug]: Unable to resume run using run id
+      #5755 open 2023-06-21 [CLI]: MlflowImporter IGNORE step value in MlflowRun
+      #8824 open 2024-11-08 [Q]: Append to wandb Table
+      #5166 open 2023-03-15 [Feature]: Reset step option in wandb.init() which resets the step if required
+      #12801 open 2026-09-10 [Bug]: SDK: align public annotations with runtime behavior
+      #6341 open 2023-09-21 [App]: Logging to the same table doesn't update the data / inconsistent & weird behavior
+      #4990 open 2023-02-17  [Q] wandb instance in spawned processes (console)
+      #12379 closed 2026-08-06 fix(sdk): stop resumed runs from overwriting earlier console logs and system metrics
+      #12528 open 2026-08-21 fix(leet): make console logs bounded, ANSI-safe, and cheap to update
+      #3424 open 2022-03-24 [Feature]: support true deletion of run / history
+      #12520 open 2026-08-21 feat(sdk): revert auto-step handler changes (from #12110)
+      #9536 open 2025-02-28 [Feature]: Adding reference regarding multiple folders in s3
+      #3923 open 2022-07-13 [Feature]: Some improvements for `wandb.apis.public.File.download`
+  clobber        11 hit(s) (all listed)
+      #11442 open 2026-03-05 feat(leet): add workspace view for remote runs
+      #12961 closed 2026-09-24 chore: add git-backed Devin blueprint
+      #11901 merged 2026-05-19 fix(sdk): `class_labels` for `boxes` or `masks` in `wandb.Image` in a `wandb.Table` will now be properly stored separately
+      #11762 merged 2026-04-21 fix: wbapi not ignoring offline mode setting
+      #6135 merged 2023-08-22 chore(sdk): gitignore the .wandb run directory
+      #5916 closed 2023-07-18 chore(launch): Disable service in local process runner
+      #5346 merged 2023-04-14 fix(artifacts): checksum the read-only staging copy instead of the original file
+      #4963 closed 2023-02-14 chore(sweeps): warn user of double command
+      #1442 merged 2020-10-30 Don't ever write innvalid netrc [WB-3785]
+      #58 closed 2017-10-01 Update wheel to 0.30.0
+      #3301 merged 2022-02-25 [WB-8588] Add username to debug-cli log file to prevent conflicts of multiple users
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3601 open 2022-05-02 [CLI]: Histograms of single-item arrays are blank
+      #10770 open 2025-10-25 fix(integrations): avoid blank histograms for 1-D tensors in torch watch (WB-24349)
+      #11326 open 2026-02-11 feat(leet): a spherical cow in an AI bubble in a vacuum
+      #12854 open 2026-09-16 refactor: compute the run summary in the Sender
+      #12885 open 2026-09-17 refactor: delete RunStartRequest
+      #12802 open 2026-09-10 refactor: emit post-Handler records from the TensorBoard integration
+      #12772 open 2026-09-09 chore: utility for an "exclusive" switch
+      #7522 open 2024-05-01 [Q] How to change the x or y axis title position in web report
+      #13105 open 2026-10-02 feat(sdk): share one wandb-xpu service between the W&B processes on a machine
+      #13104 open 2026-10-02 feat(sdk): let wandb-xpu listen on a fixed socket and exit when idle
+      #13099 open 2026-10-02 refactor(sdk): fill the host metric fields of the wandb-xpu Subscribe request from settings
+      #13103 open 2026-10-02 feat(sdk): share OpenMetrics and DCGM exporter scrapes between the runs of a process
+      #13098 open 2026-10-02 fix(sdk): restart wandb-xpu and resubscribe when it exits or fails to start
+      #13101 open 2026-10-02 feat(sdk): switch Linux host metrics from wandb-core to wandb-xpu
+      #13100 open 2026-10-02 feat(sdk): read Linux host metrics from procfs in wandb-xpu
+      #13096 open 2026-10-02 chore: add typed history tests for sender
+      #13088 open 2026-10-01 feat(sweeps): read the scheduler's metric keys from custom objectives
+      #13087 open 2026-10-01 feat(sweeps): add custom objectives to the scheduler init request
+      #13075 open 2026-10-01 fix(sweeps): print optimizer errors with their traceback when caught
+      #13067 open 2026-09-30 fix(sweeps): skip Optuna warm-start runs whose config misses the search space
+  unreadable     15 hit(s) (all listed)
+      #9476 open 2025-02-16 [Bug-App]: Run Comparer Jittering Glitch
+      #4930 open 2023-02-08 [Feature]: Grouping columns by parent in a table
+      #12931 merged 2026-09-23 chore(sdk): upload coverage to Datadog from GitHub Actions
+      #12444 closed 2026-08-11 fix: wandb sync syncs the remaining runs when one run cannot be read
+      #12362 closed 2026-08-04 feat(sweeps): add Scheduler base class for driving sweep runs
+      #12391 merged 2026-08-06 fix: wandb sync syncs the remaining runs when one run cannot be read
+      #12335 closed 2026-07-31 feat(sweeps): scheduler implementation for sweeps
+      #12341 merged 2026-07-31 fix(sdk): re-read the identity token file when refreshing access tokens
+      #11818 merged 2026-05-02 refactor: route Public API GraphQL through wandb-core
+      #11824 merged 2026-05-05 chore: bump google.golang.org/grpc from 1.80.0 to 1.81.0 in /core
+      #10966 closed 2025-11-24 [Bug-App]: Table flickering / jittering makes it unreadable
+      #1268 closed 2020-09-24 Silent Mode Not Working in Terminal
+      #8901 merged 2024-11-18 chore(sdk): add Python-to-GraphQL code generation
+      #5969 closed 2023-07-27 [CLI]: Not able to log `save_hyperparameters` of type `enum.Enum`
+      #2297 merged 2021-06-16 [DOCS-146] adds tox command for linting docs, lints wandb_watch
+  garbage        39 hit(s) (all listed)
+      #12400 open 2026-08-07 fix(sdk): close the run data file when it cannot be reopened for reading
+      #10945 open 2025-11-20 fix: prevent AttributeError during shutdown
+      #10968 open 2025-11-24 [Bug]: "File not found" when syncing an offline run with artifacts created using `Artifact.new_file`
+      #12999 merged 2026-09-26 fix(sdk): fix `_runtime` for resumed runs
+      #8013 open 2024-07-25 [App]: ANNOYING BUG: Chart is not rendering
+      #12910 closed 2026-09-21 [Bug]: wandb-core grows ~2.5 MiB per wandb.Api() instance and never frees it
+      #12114 merged 2026-06-26 fix: error instead of deadlocking in AsyncioManager in a forked process
+      #11344 closed 2026-02-13 fix: use mutable policy in Artifact.new_file() to prevent file loss during offline sync
+      #12079 closed 2026-06-23 [Bug]: wandb >= 0.25.1 deadlocks PyTorch DataLoader workers, causing indefinite training hangs (public API ServiceApi weakref.finalize deadlocks in forked child processes)
+      #11430 merged 2026-03-03 chore(leet): fix run id extraction
+      #10928 closed 2025-11-19 [Bug-App]: Deleting storage is very slow, blocking access to our data
+      #10183 closed 2025-07-17 [Bug]: AttributeError during shutdown in tqdm - wandb's stdout patch during __del__
+      #10911 merged 2025-11-18 chore: bump google.golang.org/grpc from 1.76.0 to 1.77.0 in /core
+      #8739 merged 2024-10-31 refactor(sdk): free unneeded goroutines in internal/waiting/
+      #7019 closed 2024-02-17 [Q] OOM error with sweep (with videos input)
+      #1598 closed 2020-12-10 float32 numbers in wandb.Table get displayed with full precision even when rounded
+      #7278 closed 2024-04-02 [Q] Can I restore the project I deleted?
+      #7174 merged 2024-03-19 fix(core): add network status message
+      #5722 merged 2023-06-14 fix(artifacts): update object storage to include reference and prevent id reuse
+      #5596 merged 2023-05-22 feat(artifacts): don't remove temp files from artifacts cache by default
+  mangled        10 hit(s) (all listed)
+      #13035 merged 2026-09-29 fix(sdk): keep the image name when recording the Kubernetes image ID
+      #11481 closed 2026-03-11 [Bug-App]: X-Axis is mangled based on Line plot range prefs
+      #12347 merged 2026-08-01 fix: do not update api key unless it is valid
+      #11664 merged 2026-04-06 fix: race condition when calling ensure_service in multiple threads
+      #11094 merged 2025-12-19 feat: add download_history_export on api.run
+      #10875 merged 2025-11-12 fix: add early stopping when reading a row which is larger than the requested range
+      #3229 closed 2022-02-07 [CLI] [App] Multiple tensorboard issues.
+      #2924 closed 2021-11-15 [WB-7410] Set user_settings to an empty dict in offline mode in _WandbSetup__WandbSetup._load_user_settings
+      #1801 merged 2021-02-04 [WB-4210] support for external file references in `wandb.Audio`
+      #2978 merged 2021-12-03 [WB-7656] Send uploaded file list on file stream heartbeats
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12684 open 2026-09-02 fix: add server probe for python telemetry side
+      #12688 open 2026-09-02 Fix add python telemetry server probe async
+      #12739 open 2026-09-04 feat(leet): add system metrics for remote runs
+      #12467 open 2026-08-14 feat(sdk): add history txn log compatibility tests
+      #12452 open 2026-08-12 test(core): add Go unit tier for transaction-log format compatibility
+      #12761 open 2026-09-09 feat(leet): display console logs for remote runs
+      #12789 open 2026-09-10 [Bug]: Video: align stream annotations with supported input types
+      #12518 open 2026-08-21 chore: add leet start up telemetry
+      #12493 open 2026-08-19 fix(sdk): remove auto-step from handler; forward history step request to core
+      #12481 open 2026-08-17 chore: prefix opentelemetry service names with sdk
+      #12453 open 2026-08-12 chore(sdk): add golden transaction log fixtures for compatibility tests
+      #12824 open 2026-09-15 feat(leet): add custom axis support for remote runs from define_metric
+      #12475 open 2026-08-15 fix(sdk): bump wandbStoreVersion to 1; update tests
+      #12339 open 2026-07-31 fix(sdk): do not retry on 409 for upsertBucket
+      #12473 open 2026-08-15 fix(sdk): renumber unparsable step values instead of adding a duplicate step entry
+      #12417 open 2026-08-07 geoffhardy/txlog compat test infra
+      #12308 open 2026-07-28 Experimental: Benchmark filestream encoding (geoffhardy)
+      #11442 open 2026-03-05 feat(leet): add workspace view for remote runs
+      #12256 open 2026-07-22 feat: allow setting run command when creating it via api
+      #13061 open 2026-09-30 chore: add span traces to outbound requests to the backend
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12997 open 2026-09-26 refactor(sdk): share Media file placement with EvalTable
+      #13084 open 2026-10-01 feat(cli): make browser login the default for wandb login
+      #12996 open 2026-09-26 refactor(sdk): add class label singleton accessors to image overlays
+      #12528 open 2026-08-21 fix(leet): make console logs bounded, ANSI-safe, and cheap to update
+      #12533 open 2026-08-21 fix(leet): keep workspace filter and focus state consistent
+      #5213 open 2023-03-22 [Feature]: Introduce Project Level Config File
+      #10968 open 2025-11-24 [Bug]: "File not found" when syncing an offline run with artifacts created using `Artifact.new_file`
+      #2499 open 2021-08-04 [Feature] Public sharing of datasets with DOI
+      #6328 open 2023-09-20 [Feature]: Click-and-drag to reorder groups
+      #3978 open 2022-07-23 [Q] Console output failed to be logged in offline mode
+      #12223 open 2026-07-16 feat(sweeps): allow creating a run as part of the sweep through public API
+      #5118 open 2023-03-09 [Q] How to filter rows in run comparer?
+      #5446 open 2023-04-28 [App]: Separating config and metrics
+      #8498 open 2024-09-26 [Bug-App]: system metrics not logged
+      #10439 open 2025-09-03 feat(artifacts): download large file in parallel in go core
+      #7729 open 2024-05-31 [Feature]: Don't capture KeyboardInterrupt on sweeps
+      #9908 open 2025-05-24 [Bug]:
+      #13062 closed 2026-09-30 fix(sweeps): read sweep metric goals case-insensitively in both engines
+      #8599 open 2024-10-11 [Bug-App]: Run compare does not show config items with value `false`
+      #3876 open 2022-06-30 [Feature]: Alternate Sweep/Early Stopping Algorithms eg. ASHA
+  unclean        1 hit(s) (all listed)
+      #3295 merged 2022-02-25 Crank up timeouts on a number of tests
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11998 open 2026-06-04 chore: connection resilience at shutdown
+      #10945 open 2025-11-20 fix: prevent AttributeError during shutdown
+      #12495 open 2026-08-19 fix(sdk): gate SDK telemetry on server support
+      #13032 merged 2026-09-28 fix(sweeps): simplify statemachine shutdown behavior
+      #12397 open 2026-08-07 fix(sdk): stop run.finish() from hanging when system metrics collection stops responding
+      #12410 open 2026-08-07 fix(sdk): exit quietly when the service process has already stopped
+      #12899 merged 2026-09-18 chore(sweeps): end-to-end tests of the sweep scheduler
+      #12753 merged 2026-09-07 fix(sdk): skip final uploads for uninitialized runs
+      #12972 closed 2026-09-25 feat(sweeps): tell the optimizer each enqueued run's id on the next task
+      #2854 open 2021-10-29 [CLI] ValueError: signal only works in main thread of the main interpreter, sweep
+      #12920 merged 2026-09-22 fix(sdk): stop wandb-core from leaking memory for every wandb.Api() instance
+      #13059 merged 2026-09-30 fix(sweeps): report enqueued runs to the optimizer without waiting for a poll
+      #12820 merged 2026-09-14 chore(sdk): fix flaky test of force stop
+      #2802 open 2021-10-19 [CLI] Sweep - wandb: ERROR Problem finishing run
+      #11279 open 2026-02-05 fix: create standard run files in offline mode
+      #12399 closed 2026-08-07 fix(sdk): stop creating many wandb.Api() objects from leaking memory and background requests
+      #12559 closed 2026-08-24 feat(sweeps): route sweep-scheduler requests through the service connection
+      #12891 merged 2026-09-18 feat(sweeps): enqueue the runs the optimizer suggests
+      #12478 merged 2026-08-17 chore: update periodic export time for opentelemetry records
+      #12605 merged 2026-08-27 fix(leet): stop reporting expected workspace errors to telemetry
+  reboot         3 hit(s) (all listed)
+      #8389 open 2024-09-14 [Feature]: Self-Contained Working Directories
+      #3564 closed 2022-04-23 Is there a way to delete local runs's folder automatically?
+      #2031 closed 2021-04-02 [Q] Some runs in a sweep have crashed. How to fix?
+  disk+full      44 hit(s) (all listed)
+      #13039 open 2026-09-29 feat(leet): keep six hours of history per chart in symon
+      #12540 open 2026-08-21 fix(leet): release media pane resources when a view closes
+      #12408 open 2026-08-07 fix(sdk): avoid re-reading image files from disk when logging a list of images
+      #12395 open 2026-08-06 fix(artifacts): report the error instead of hanging when a large download cannot be written to disk
+      #3655 open 2022-05-12 [Q] How to clear the run immediately after finishing the experiment?
+      #11283 open 2026-02-06 feat(sdk): add runs.scan_histories() for lazy parquet-based history access
+      #4534 open 2022-11-24 [Feature]: Reduce `wandb` folder size by continuously deleting files that have already been synced
+      #5573 open 2023-05-18 [CLI]: Can't pickle local object 'TorchHistory.add_log_hooks_to_pytorch_module.<locals>.<lambda>'
+      #7470 open 2024-04-24 [App]: hardware logging in multi-node setting
+      #12147 merged 2026-07-02 chore: bump github.com/shirou/gopsutil/v4 from 4.26.5 to 4.26.6 in /core
+      #12189 merged 2026-07-09 feat(sdk): store starting_step in a sync state file for consistency
+      #11979 closed 2026-06-01 chore: bump github.com/shirou/gopsutil/v4 from 4.26.4 to 4.26.5 in /core
+      #11766 merged 2026-04-22 chore: bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0 in /experimental/go-sdk
+      #11674 closed 2026-04-09 chore: bump github.com/go-git/go-git/v5 from 5.17.0 to 5.17.2 in /core
+      #11425 merged 2026-03-02 chore: bump github.com/shirou/gopsutil/v4 from 4.26.1 to 4.26.2 in /core
+      #11748 merged 2026-04-17 fix: tensorcore utilization metric and TPU 7x duty cycle fan-out
+      #11327 merged 2026-02-11 feat(leet): interactive config editor
+      #11823 merged 2026-05-05 chore: bump github.com/shirou/gopsutil/v4 from 4.26.3 to 4.26.4 in /core
+      #11615 merged 2026-03-27 fix(artifacts): fix multipart download deadlock with new executor
+      #11172 merged 2026-01-12 chore: bump github.com/shirou/gopsutil/v4 from 4.25.11 to 4.25.12 in /core
+  data+loss      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13063 open 2026-09-30 fix(sweeps): reject Ax outcome constraints on undeclared metrics
+      #12110 open 2026-06-26 feat(sdk): allow resume for offline runs
+      #12474 open 2026-08-15 fix(sdk): store shared mode in RunRecord; reject syncing shared mode by default
+      #12740 open 2026-09-04 fix(core): fall back to hardlink/copy when TensorBoard symlink fails …
+      #3841 open 2022-06-24 [Q] Syncing multiple offline runs with common id as one run.
+      #2417 open 2021-07-20 [Feature] support for jittor
+      #3819 open 2022-06-20 [App]: PAGE_FAULT_IN_NONPAGED_AREA Win10 blue screen of death error with pytorch lightning
+      #5003 open 2023-02-21 [Q] PyTorch Lightning minimum sweep example
+      #8216 open 2024-08-29 [CLI]: Message: 'Exception while processing command: %s'
+      #10026 open 2025-06-12 [Bug]: `TorchGraph` incompatible with nested tensors
+      #9387 open 2025-02-03 [Q]: Wandb charts show time (minutes), but I want seconds.
+      #11788 open 2026-04-24 [Bug-App]: Duplicate Panels
+      #6764 open 2023-12-22 [Feature]: Automatic MultiLine Plot when Logging Arrays
+      #8834 open 2024-11-12 [Feature]: Set custom artifact name in WandbModelCheckpoint
+      #10137 open 2025-07-09 [Feature]: build wandb proto scala3 project,but can not normal use ,how to communicate with wandb server?
+      #11283 open 2026-02-06 feat(sdk): add runs.scan_histories() for lazy parquet-based history access
+      #9730 open 2025-04-16 [Bug]: ``wandb.finish()`` with ``log_model=“all”`` is very slow when online
+      #5263 open 2023-03-29 [Q] Using WandbLogger in DDP, Multi-GPU with Pytorch-Lightning 2.0.0 before Trainer.fit(...) is called.
+      #3910 open 2022-07-08 [Q] Is it possible to plot metrics where epochs is on the x-axis ( Training in mmDetection)?
+      #12952 merged 2026-09-23 feat(leet): add --json and --follow to wandb leet inspect
+  partial+write  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10439 open 2025-09-03 feat(artifacts): download large file in parallel in go core
+      #11279 open 2026-02-05 fix: create standard run files in offline mode
+      #12674 merged 2026-09-02 chore: deflake the leet console logs test and the watcher callback test
+      #12843 closed 2026-09-16 feat(sdk): typed history telemetry: baseline for existing `jsonl`
+      #9664 open 2025-04-01 feat: add option to clean up files as they are uploaded
+      #6449 open 2023-10-12 [CLI]: BrokenPipeError: [Errno 32] Broken pipe
+      #12961 closed 2026-09-24 chore: add git-backed Devin blueprint
+      #11958 merged 2026-05-28 fix(artifacts): log_artifact saves the manifest file in the staging directory instead of the default temp dir
+      #12058 merged 2026-06-16 fix(sdk): cleanup unix socket temporary directories on shutdown
+      #12000 merged 2026-06-04 chore: add opentelemetryproxy for wandb-core
+      #11528 merged 2026-03-17 feat: collect additional TPU metrics via direct libtpu FFI
+      #11748 merged 2026-04-17 fix: tensorcore utilization metric and TPU 7x duty cycle fan-out
+      #3282 closed 2022-02-23 [feature request] Function to trigger a sync manually without calling wandb.finish (also possibly a way to perform a sync synchronously / wait for completion of sync)
+      #11178 merged 2026-01-13 feat: add stats when downloading parquet history
+      #6803 closed 2024-01-08 [CLI]: Wandb finish hangging and 500 Server Error in debug-internal.log
+      #11227 merged 2026-01-24 chore: add rust wrapper library to speed up reading parquet files
+      #10875 merged 2025-11-12 fix: add early stopping when reading a row which is larger than the requested range
+      #10554 merged 2025-09-23 feat: add row iterator to read rows from parquet
+      #10584 merged 2025-09-25 feat: wire up get history steps
+      #10761 merged 2025-10-24 chore(sdk): add http headers to run file and artifacts upload/download in go core
+  crash+safe     17 hit(s) (all listed)
+      #4267 open 2022-09-14 [CLI]: sweep agent creates multiple runs with same ID
+      #3522 open 2022-04-13 [CLI]: Sweep starts many duplicated runs
+      #9646 open 2025-03-27 [Bug]: No wandb-summary.json generated and empty output.log after offline run
+      #10917 closed 2025-11-18 [Q]: Publishing Metrics to wandb from ephemeral processes
+      #4155 closed 2022-08-22 [Q] The wandb backend process has shutdown
+      #10327 merged 2025-08-11 feat(integrations): add support for DSPy optimization module
+      #7590 closed 2024-05-07 [Feature]: Support signal-safe wandb.finish()
+      #4472 closed 2022-11-09 [Feature]: Adding created timestamp to the run summary / config
+      #444 closed 2019-07-23 Sweep not doing anything
+      #4409 closed 2022-10-25 [CLI]: wandb saving to local does not work when soft links to the current project are used
+      #6142 merged 2023-08-23 chore(nexus): clean up stream close path
+      #5661 merged 2023-06-02 feat(launch): manually create jobs from cli
+      #636 merged 2019-10-26 Improve handling of oversized data
+      #117 closed 2018-02-02 Pin flask to latest version 0.12.2
+      #2750 closed 2021-10-11 [Q] How to Log multiple times per second?
+      #1952 closed 2021-03-12 Fix "can only test a child process"
+      #1176 closed 2020-07-26 Wandb 0.9.x OSError: [Errno 95] Operation not supported
+  atomic+write   14 hit(s) (all listed)
+      #13082 open 2026-10-01 feat(core): refresh access tokens from a stored refresh token
+      #12843 closed 2026-09-16 feat(sdk): typed history telemetry: baseline for existing `jsonl`
+      #12000 merged 2026-06-04 chore: add opentelemetryproxy for wandb-core
+      #11327 merged 2026-02-11 feat(leet): interactive config editor
+      #10526 merged 2025-09-17 fix: do not infinitely-buffer messages to wandb-core
+      #11006 merged 2025-12-02 chore: bump gocloud.dev from 0.43.0 to 0.44.0 in /core
+      #7835 merged 2024-06-19 fix(artifacts): Fix OSError on `Artifact.download(skip_cache=True)` when encountering different filesystems
+      #7364 merged 2024-04-11 feat(artifacts): use the cache when downloading through wandb-core
+      #7586 merged 2024-05-07 perf(artifacts): pipeline the artifact file uploader
+      #5264 closed 2023-03-29 feat(artifacts): reserve space on disk and prevent out of space errors from the filesystem
+      #5279 merged 2023-04-02 chore(artifacts): add safe_open and safe_copy utilities for atomic writes
+      #5346 merged 2023-04-14 fix(artifacts): checksum the read-only staging copy instead of the original file
+      #2003 merged 2021-03-25 [WB-5068] Parallel artifact reads on the same machine are subject to races
+      #717 closed 2019-12-16 Bump tensorflow from 1.14.0 to 1.15.0
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13083 open 2026-10-01 feat(sdk): add a PKCE browser login flow
+      #12940 open 2026-09-23 chore: trim the parquet wrapper's dependency features
+      #13082 open 2026-10-01 feat(core): refresh access tokens from a stored refresh token
+      #13105 open 2026-10-02 feat(sdk): share one wandb-xpu service between the W&B processes on a machine
+      #13104 open 2026-10-02 feat(sdk): let wandb-xpu listen on a fixed socket and exit when idle
+      #12977 open 2026-09-25 feat(sdk): write rank-to-GPU provenance and GPU/host telemetry to run files
+      #4168 open 2022-08-23 [CLI]: WARNING Config item 'hyperparam_name' was locked by 'sweep' (ignored update) 
+      #12901 open 2026-09-18 feat(leet): native GPUI workspace prototype (leet-gpui)
+      #6449 open 2023-10-12 [CLI]: BrokenPipeError: [Errno 32] Broken pipe
+      #12938 closed 2026-09-23 chore: remove the HTTP file reader from the parquet wrapper
+      #13106 closed 2026-10-02 docs(sdk): update the system monitor design for what shipped
+      #12777 closed 2026-09-10 chore: refresh federated identity credentials in wandb-core
+      #8159 open 2024-08-21 [CLI]: passing certain data to `run.summary.update()` causes indefinite hang on `run.finish()` upload step
+      #12674 merged 2026-09-02 chore: deflake the leet console logs test and the watcher callback test
+      #12990 merged 2026-09-25 refactor(sdk): read AMD GPU metrics through librocm_smi64 instead of the rocm-smi tool
+      #12446 closed 2026-08-11 fix(artifacts): stop a download that skips the cache from affecting later downloads
+      #7006 open 2024-02-15 [CLI]: wandb's `Artifact.download` takes unreasonably long to run when the artifact is already cached
+      #12981 merged 2026-09-25 chore(deps): update nvml-wrapper to 0.13.0
+      #12383 merged 2026-08-06 fix(artifacts): stop a download that skips the cache from affecting later downloads
+      #12377 merged 2026-08-06 fix: use retryable HTTP client in OAuth2CredentialProvider
+  write+failure  81 hit(s) (all listed)
+      #13030 open 2026-09-28 fix(sdk): drop the alpha channel of PIL images logged as JPEG
+      #12400 open 2026-08-07 fix(sdk): close the run data file when it cannot be reopened for reading
+      #12395 open 2026-08-06 fix(artifacts): report the error instead of hanging when a large download cannot be written to disk
+      #12894 merged 2026-09-18 fix: stabilize debounced writer timing test
+      #12865 merged 2026-09-17 feat(sweeps): telemetry events for the sweep scheduler's failure tiers
+      #9664 open 2025-04-01 feat: add option to clean up files as they are uploaded
+      #10439 open 2025-09-03 feat(artifacts): download large file in parallel in go core
+      #12880 merged 2026-09-17 feat(sweeps): generation step that polls the sweep and asks for runs
+      #10497 open 2025-09-13 [Bug-App]: wandb fails at `wandb.init()` with `wandb.errors.errors.CommError: Error uploading run: returned error 404`
+      #12961 closed 2026-09-24 chore: add git-backed Devin blueprint
+      #12843 closed 2026-09-16 feat(sdk): typed history telemetry: baseline for existing `jsonl`
+      #12593 closed 2026-08-26 chore: passing in x-wandb-host to aviato
+      #12589 merged 2026-08-26 chore: update actions/setup-python action to v7
+      #12216 merged 2026-07-15 feat(sdk): report the error that caused a wandb.init() timeout
+      #12666 merged 2026-09-02 feat(sdk): wiring up resuming of offline runs (upserter/sender)
+      #11958 merged 2026-05-28 fix(artifacts): log_artifact saves the manifest file in the staging directory instead of the default temp dir
+      #12018 closed 2026-06-09 chore: verify declarative environment setup
+      #12269 closed 2026-07-23 [Bug]: Data loss in shared mode — server overwrites a primary run's earliest history rows after a secondary attach (client offsets correct; reproducible 0.27.0–0.28.1)
+      #11934 merged 2026-05-21 fix(sandbox): reject invalid placement overrides for serverless sandboxes
+      #11605 closed 2026-03-26 fix(sdk): allow api-* subdomains (e.g. api-forest, api-shared) in base URL validation
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12789 open 2026-09-10 [Bug]: Video: align stream annotations with supported input types
+      #11279 open 2026-02-05 fix: create standard run files in offline mode
+      #12110 open 2026-06-26 feat(sdk): allow resume for offline runs
+      #11581 open 2026-03-26 feat: app wandb parse function to read .wandb files
+      #11408 open 2026-02-26 refactor: change file.download to return a path to the file downloaded
+      #11332 open 2026-02-12 feat: add api.Files.download_all function
+      #11276 open 2026-02-05 Support Flax networks in `wandb.watch`
+      #9664 open 2025-04-01 feat: add option to clean up files as they are uploaded
+      #12107 open 2026-06-26 Renovate Dashboard
+      #3923 open 2022-07-13 [Feature]: Some improvements for `wandb.apis.public.File.download`
+      #12446 closed 2026-08-11 fix(artifacts): stop a download that skips the cache from affecting later downloads
+      #12747 closed 2026-09-05 fix(sdk): make tb_watcher respect settings.symlink
+      #1768 open 2021-01-28 How to access the value in `offline-run*/run-[id].wandb`
+      #12445 merged 2026-08-11 fix(artifacts): download the file again when a different file of the same size is in the way
+      #12462 merged 2026-08-13 chore(sdk): make telemetry seed updates append-only
+      #12383 merged 2026-08-06 fix(artifacts): stop a download that skips the cache from affecting later downloads
+      #10669 open 2025-10-08 [Bug]: `wandb.init()` crashes with `wandb.errors.errors.CommError: Run initialization has timed out after 200.0 sec.`
+      #3924 open 2022-07-13 Some improvements for `wandb.apis.public.File.download`
+      #12574 merged 2026-08-25 chore: remove deprecated image normalization parameter
+      #9646 open 2025-03-27 [Bug]: No wandb-summary.json generated and empty output.log after offline run
+
+== 51 terms run; 50 returned hits, 19 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

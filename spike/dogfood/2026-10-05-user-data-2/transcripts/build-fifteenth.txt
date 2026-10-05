@@ -1,0 +1,161 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 45c7cc0c812e083a417914776f47758fc25bb4791cf862949c52906efe88c82d
+build: the page's (working tree)    sha256 45c7cc0c812e083a417914776f47758fc25bb4791cf862949c52906efe88c82d
+build: the page's at tag v1.8.0     sha256 332474dac29c44e391d03f425bca210bbcbc59354d9759f5ce8fd27889988a04
+build: NOTE the page's installer has moved since v1.8.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 17.38kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/41] FROM docker.io/library/debian:trixie-slim@sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132
+#4 resolve docker.io/library/debian:trixie-slim@sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB 0.0s done
+#5 DONE 0.0s
+
+#6 [22/41] RUN mkdir -p /opt/node22 && curl -fsSL https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-arm64.tar.xz | tar xJ -C /opt/node22 --strip-components=1 && /opt/node22/bin/node --version
+#6 CACHED
+
+#7 [10/41] RUN gem install --no-document i18n-tasks -v 1.1.2 > /tmp/gem-i18n.log 2>&1; echo "gem i18n-tasks exit: $?"; tail -1 /tmp/gem-i18n.log
+#7 CACHED
+
+#8 [15/41] WORKDIR /w
+#8 CACHED
+
+#9 [16/41] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/JanDeDobbeleer/oh-my-posh/releases/download/v31.4.1/posh-linux-arm64 posh;     get $gh/ocaml/opam/releases/download/2.6.0/opam-2.6.0-arm64-linux opam;     get $gh/commercialhaskell/stack/releases/download/v3.11.1/stack-3.11.1-linux-aarch64-bin stack;     get $gh/JuliaLang/juliaup/releases/download/v1.22.7/juliaup-1.22.7-aarch64-unknown-linux-musl-portable.tar.gz juliaup.tgz;     install -m 755 posh /opt/bin/oh-my-posh; install -m 755 opam /opt/bin/opam; install -m 755 stack /opt/bin/stack;     mkdir -p x-juliaup && tar xzf juliaup.tgz -C x-juliaup;     for n in juliaup julialauncher; do f=$(find x-juliaup -type f -name $n | head -1); [ -n "$f" ] && install -m 755 "$f" /opt/bin/$n && echo "bin $n" || echo "bin $n: NOT FOUND"; done
+#9 CACHED
+
+#10 [26/41] RUN python3 -m venv /opt/az && /opt/az/bin/pip install --no-cache-dir azure-cli==2.90.0 > /tmp/pip-az.log 2>&1; echo "pip azure-cli exit: $?"; ln -s /opt/az/bin/az /opt/bin/az
+#10 CACHED
+
+#11 [39/41] RUN set -u; cd /tmp/dl; curl -fsSL -o aliyun.tgz https://github.com/aliyun/aliyun-cli/releases/download/v3.5.1/aliyun-cli-linux-3.5.1-arm64.tgz     && mkdir -p y-aliyun && tar xzf aliyun.tgz -C y-aliyun && install -m 755 y-aliyun/aliyun /opt/bin/aliyun && echo "bin aliyun"
+#11 CACHED
+
+#12 [33/41] RUN for p in conan==2.33.0 platformio==6.2.0; do /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-z.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-z.log; }; done
+#12 CACHED
+
+#13 [12/41] COPY install-sideeye.sh /opt/install-sideeye.sh
+#13 CACHED
+
+#14 [ 4/41] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#14 CACHED
+
+#15 [28/41] RUN for p in "python-dotenv[cli]==1.2.4" gita==0.16.8.2; do /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-y.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-y.log; }; done
+#15 CACHED
+
+#16 [ 2/41] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#16 CACHED
+
+#17 [ 9/41] RUN for p in vercel@62.2.0 wrangler@4.147.0 @google/gemini-cli@0.62.0 serverless@4.43.0; do       npm install -g --no-fund --no-audit "$p" > /tmp/npm-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/npm-$p.log; };     done
+#17 CACHED
+
+#18 [13/41] RUN sh /opt/install-sideeye.sh v1.8.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#18 CACHED
+
+#19 [18/41] RUN for p in cmake libpng-dev zlib1g-dev libfreetype-dev libcairo2-dev libjson-c-dev libfontconfig-dev; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p"; done
+#19 CACHED
+
+#20 [36/41] RUN set -u; cd /tmp/dl;     curl -fsSL -o crictl.tgz https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.37.0/crictl-v1.37.0-linux-arm64.tar.gz && tar xzf crictl.tgz -C /opt/bin && echo "bin crictl";     curl -fsSL -o /opt/bin/kubeadm https://dl.k8s.io/release/v1.37.1/bin/linux/arm64/kubeadm && chmod 755 /opt/bin/kubeadm && echo "bin kubeadm"
+#20 CACHED
+
+#21 [32/41] RUN mkdir -p /opt/lingui-proj && cd /opt/lingui-proj && printf '{"name":"seed","private":true,"type":"module"}\n' > package.json     && npm install --no-fund --no-audit @lingui/cli@6.9.0 @lingui/core@6.9.0 @lingui/babel-plugin-lingui-macro@6.9.0 > /tmp/npm-lingui.log 2>&1;     echo "npm lingui exit: $?"; tail -2 /tmp/npm-lingui.log; ls /opt/lingui-proj/node_modules/.bin | head
+#21 CACHED
+
+#22 [14/41] RUN "$(cat /install.path)" version
+#22 CACHED
+
+#23 [ 3/41] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#23 CACHED
+
+#24 [17/41] RUN GOFLAGS=-mod=mod go install github.com/nicksnyder/go-i18n/v2/goi18n@v2.6.1 > /tmp/go-goi18n.log 2>&1; echo "go goi18n exit: $?"; tail -2 /tmp/go-goi18n.log
+#24 CACHED
+
+#25 [ 5/41] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime              firewalld skopeo ntfs-3g; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#25 CACHED
+
+#26 [ 6/41] RUN set -u; mkdir -p /opt/bin /tmp/dl; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get https://gethstore.blob.core.windows.net/builds/geth-linux-arm64-1.17.7-3d858f85.tar.gz geth.tgz;     get https://downloads.getmonero.org/cli/monero-linux-armv8-v0.18.5.1.tar.bz2 monero.tbz;     get $gh/dyc3/steamguard-cli/releases/download/v0.18.4/steamguard-linux-aarch64 steamguard;     get $gh/sigp/lighthouse/releases/download/v8.2.3/lighthouse-v8.2.3-aarch64-unknown-linux-gnu.tar.gz lighthouse.tgz;     get $gh/git-ecosystem/git-credential-manager/releases/download/v2.9.1/gcm-linux-arm64-2.9.1.tar.gz gcm.tgz;     get $gh/oras-project/oras/releases/download/v1.3.4/oras_1.3.4_linux_arm64.tar.gz oras.tgz;     get $gh/regclient/regclient/releases/download/v0.11.6/regctl-linux-arm64 regctl;     get $gh/containerd/nerdctl/releases/download/v2.4.1/nerdctl-2.4.1-linux-arm64.tar.gz nerdctl.tgz;     get $gh/velero-io/velero/releases/download/v1.18.4/velero-v1.18.4-linux-arm64.tar.gz velero.tgz;     get $gh/openai/codex/releases/download/rust-v0.160.0/codex-aarch64-unknown-linux-musl.tar.gz codex.tgz;     get $gh/rossmacarthur/sheldon/releases/download/0.8.5/sheldon-0.8.5-aarch64-unknown-linux-musl.tar.gz sheldon.tgz;     get $gh/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-linux-arm64.tar.gz micro.tgz;     get $gh/dokuwiki/dokuwiki/archive/refs/tags/release-2026-07-14c.tar.gz dokuwiki.tgz;     ls -l /tmp/dl
+#26 CACHED
+
+#27 [29/41] RUN /opt/py/bin/pip install --no-cache-dir uv > /tmp/pip-uv.log 2>&1 && UV_PYTHON_INSTALL_DIR=/opt/uvpy /opt/py/bin/uv venv -q -p 3.14 /opt/ha > /tmp/uv-venv.log 2>&1       && VIRTUAL_ENV=/opt/ha /opt/py/bin/uv pip install -q homeassistant==2026.9.4 > /tmp/uv-ha.log 2>&1; echo "homeassistant exit: $?"; tail -3 /tmp/uv-ha.log; ln -s /opt/ha/bin/hass /opt/bin/hass; /opt/ha/bin/python --version
+#27 CACHED
+
+#28 [38/41] RUN set -u; cd /tmp/dl; curl -fsSL -o juju.txz https://github.com/juju/juju/releases/download/v3.6.29/juju-3.6.29-linux-arm64.tar.xz     && mkdir -p y-juju && tar xJf juju.txz -C y-juju && f=$(find y-juju -type f -name juju | head -1) && install -m 755 "$f" /opt/bin/juju && echo "bin juju <- $f"
+#28 CACHED
+
+#29 [23/41] RUN npm install -g --no-fund --no-audit @google/gemini-cli@0.62.0 > /tmp/npm-gemini-cli.log 2>&1; echo "npm gemini-cli exit: $?"; tail -2 /tmp/npm-gemini-cli.log
+#29 CACHED
+
+#30 [20/41] RUN npm install -g --no-fund --no-audit @gltf-transform/cli@4.5.1 > /tmp/npm-gltf.log 2>&1; echo "npm gltf-transform exit: $?"; tail -2 /tmp/npm-gltf.log
+#30 CACHED
+
+#31 [25/41] RUN for p in meltano==4.4.0 astropy==8.0.1; do /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-x.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-x.log; }; done
+#31 CACHED
+
+#32 [27/41] RUN apt-get install -y --no-install-recommends pymol > /tmp/apt-pymol.log 2>&1 && echo "OK pymol" || echo "MISSING pymol"
+#32 CACHED
+
+#33 [11/41] RUN GOFLAGS=-mod=mod go install github.com/gsamokovarov/jump@v0.69.0 > /tmp/go-jump.log 2>&1; echo "go jump exit: $?"; tail -2 /tmp/go-jump.log; ls -l /root/go/bin
+#33 CACHED
+
+#34 [21/41] RUN /opt/py/bin/pip install --no-cache-dir wandb==0.30.0 > /tmp/pip-wandb.log 2>&1; echo "pip wandb exit: $?"; tail -2 /tmp/pip-wandb.log
+#34 CACHED
+
+#35 [24/41] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/stripe/stripe-cli/releases/download/v1.53.0/stripe_1.53.0_linux_arm64.tar.gz stripe.tgz;     get $gh/infracost/infracost/releases/download/v0.10.46/infracost-linux-arm64.tar.gz infracost.tgz;     for t in stripe infracost; do mkdir -p y-$t && tar xzf $t.tgz -C y-$t; done;     f=$(find y-stripe -type f -name stripe | head -1); install -m 755 "$f" /opt/bin/stripe && echo "bin stripe";     f=$(find y-infracost -type f -name 'infracost*' | head -1); install -m 755 "$f" /opt/bin/infracost && echo "bin infracost <- $f"
+#35 CACHED
+
+#36 [34/41] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/lima-vm/lima/releases/download/v2.2.1/lima-2.2.1-Linux-aarch64.tar.gz lima.tgz;     get $gh/tofuutils/tenv/releases/download/v4.15.1/tenv_v4.15.1_Linux_arm64.tar.gz tenv.tgz;     mkdir -p /opt/lima && tar xzf lima.tgz -C /opt/lima && ln -sf /opt/lima/bin/limactl /opt/bin/limactl && echo "bin limactl";     mkdir -p y-tenv && tar xzf tenv.tgz -C y-tenv && f=$(find y-tenv -type f -name tenv | head -1) && install -m 755 "$f" /opt/bin/tenv && echo "bin tenv"
+#36 CACHED
+
+#37 [ 7/41] RUN set -u; cd /tmp/dl;     for t in geth lighthouse gcm oras nerdctl velero codex sheldon micro; do mkdir -p x-$t && tar xzf $t.tgz -C x-$t && echo "untar $t: ok" || echo "untar $t: FAILED"; done;     mkdir -p x-monero && tar xjf monero.tbz -C x-monero && echo "untar monero: ok";     install -m 755 steamguard /opt/bin/steamguard; install -m 755 regctl /opt/bin/regctl;     for n in geth lighthouse git-credential-manager oras nerdctl velero sheldon micro monero-wallet-cli; do       f=$(find /tmp/dl/x-* -type f -name "$n" | head -1);       [ -n "$f" ] && install -m 755 "$f" /opt/bin/$n && echo "bin $n <- $f" || echo "bin $n: NOT FOUND";     done;     f=$(find /tmp/dl/x-codex -type f -name 'codex*' | head -1); install -m 755 "$f" /opt/bin/codex && echo "bin codex <- $f";     d=$(dirname "$(find /tmp/dl/x-gcm -type f -name git-credential-manager | head -1)"); cp -a "$d" /opt/gcm && ln -sf /opt/gcm/git-credential-manager /opt/bin/git-credential-manager;     mkdir -p /opt/dokuwiki && tar xzf dokuwiki.tgz -C /opt/dokuwiki --strip-components=1 && echo "dokuwiki: ok";     ls -l /opt/bin
+#37 CACHED
+
+#38 [37/41] RUN set -u; cd /tmp/dl; curl -fsSL -o k8sgpt.tgz https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_Linux_arm64.tar.gz     && mkdir -p y-k8sgpt && tar xzf k8sgpt.tgz -C y-k8sgpt && install -m 755 y-k8sgpt/k8sgpt /opt/bin/k8sgpt && echo "bin k8sgpt";     /opt/py/bin/pip install --no-cache-dir ggshield==1.55.0 > /tmp/pip-gg.log 2>&1; echo "pip ggshield exit: $?"; /opt/py/bin/uv --version
+#38 CACHED
+
+#39 [30/41] RUN curl -fsSL -o /opt/bin/wp https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar && chmod 755 /opt/bin/wp && php /opt/bin/wp --info --allow-root | head -3
+#39 CACHED
+
+#40 [35/41] RUN cd /tmp/src && curl -fsSL https://github.com/xmake-io/xmake/releases/download/v3.1.1/xmake-v3.1.1.tar.gz | tar xz     && cd xmake-3.1.1 && ./configure > /tmp/build-xmake.log 2>&1 && make -j4 >> /tmp/build-xmake.log 2>&1 && make install PREFIX=/usr/local >> /tmp/build-xmake.log 2>&1;     echo "xmake build exit: $?"; tail -2 /tmp/build-xmake.log; XMAKE_ROOT=y xmake --version 2>&1 | head -1
+#40 CACHED
+
+#41 [ 8/41] RUN python3 -m venv /opt/py; for p in basic-memory==0.23.2 ffsubsync==0.5.1 rasterio==1.5.2 kaggle==2.2.4       huggingface_hub==2.1.1 yt-dlp==2026.8.19; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done
+#41 CACHED
+
+#42 [19/41] RUN set -u; mkdir -p /tmp/src; cd /tmp/src; gh=https://github.com;     b() { name=$1; shift; ( set -e; "$@" ) > /tmp/build-$name.log 2>&1 && echo "BUILT $name" || { echo "FAILED $name"; tail -8 /tmp/build-$name.log; }; };     b toybox sh -c "curl -fsSL $gh/landley/toybox/archive/refs/tags/0.8.14.tar.gz | tar xz && cd toybox-0.8.14 && make defconfig && make -j4 toybox && install -m 755 toybox /opt/bin/toybox";     b gltfpack sh -c "git clone -q --depth 1 -b v1.3 $gh/zeux/meshoptimizer && cd meshoptimizer && cmake -S . -B out -DCMAKE_BUILD_TYPE=Release -DMESHOPT_BUILD_GLTFPACK=ON && cmake --build out -j4 --target gltfpack && install -m 755 out/gltfpack /opt/bin/gltfpack";     b solvespace sh -c "git clone -q --depth 1 -b v3.2 --recurse-submodules --shallow-submodules $gh/solvespace/solvespace && cd solvespace && cmake -S . -B out -DCMAKE_BUILD_TYPE=Release -DENABLE_GUI=OFF -DENABLE_TESTS=OFF -DENABLE_OPENMP=OFF && cmake --build out -j4 --target solvespace-cli && install -m 755 out/bin/solvespace-cli /opt/bin/solvespace-cli";     true
+#42 CACHED
+
+#43 [31/41] RUN /opt/py/bin/pip install --no-cache-dir dynaconf==3.3.5 > /tmp/pip-dyn.log 2>&1; echo "pip dynaconf exit: $?"
+#43 CACHED
+
+#44 [40/41] RUN npm install -g --no-fund --no-audit firebase-tools@15.32.1 > /tmp/npm-firebase.log 2>&1; echo "npm firebase-tools exit: $?"; tail -1 /tmp/npm-firebase.log
+#44 CACHED
+
+#45 [41/41] RUN npm install -g --no-fund --no-audit turbo@2.11.7 > /tmp/npm-turbo.log 2>&1; echo "npm turbo exit: $?"; turbo --version
+#45 2.161 npm turbo exit: 0
+#45 2.178 2.11.7
+#45 DONE 2.2s
+
+#46 exporting to image
+#46 exporting layers
+#46 exporting layers 0.9s done
+#46 exporting manifest sha256:b498774c8f02782c4d7571d2b2f582b5031466dc4394abce1626498eb1d30a16 done
+#46 exporting config sha256:213dc3a85ec1c7740c26dbbd5bbca83aded85deb1eac02c8b965a2c6840bc66c done
+#46 exporting attestation manifest sha256:e610428a5a23a718fc22d9bb160019dd54612054ab4b22f232c7d4b0941a8956 done
+#46 exporting manifest list sha256:c39724e684139ca852a26083c9e51e810d63e3a1ffb178e4ea81022832250949 done
+#46 naming to docker.io/library/sideeye-ud1005:latest done
+#46 unpacking to docker.io/library/sideeye-ud1005:latest
+#46 unpacking to docker.io/library/sideeye-ud1005:latest 45.8s done
+#46 DONE 46.8s
+build: sideeye-ud1005 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

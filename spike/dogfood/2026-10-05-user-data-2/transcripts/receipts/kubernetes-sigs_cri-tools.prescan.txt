@@ -1,0 +1,379 @@
+== novelty pre-scan: kubernetes-sigs/cri-tools
+== date: 2026-10-05T05:48:23Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          14 hit(s) (all listed)
+      #1876 closed 2025-07-28 crictl core dump
+      #1844 merged 2025-05-16 Bump the kubernetes group with 7 updates
+      #1858 merged 2025-06-25 Bump github.com/docker/docker from 28.2.2+incompatible to 28.3.0+incompatible in the gomod group
+      #1826 closed 2025-04-21 Bump the gomod group across 1 directory with 8 updates
+      #1827 merged 2025-04-22 Bump the gomod group across 1 directory with 9 updates
+      #1465 merged 2024-06-26 Bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #1091 merged 2023-02-10 Bump github.com/docker/docker from 23.0.0+incompatible to 23.0.1+incompatible
+      #998 merged 2022-10-07 Bump github.com/onsi/gomega from 1.20.2 to 1.21.1
+      #1000 merged 2022-10-12 Bump github.com/onsi/ginkgo/v2 from 2.2.0 to 2.3.0
+      #893 closed 2022-02-11 Suggestion: Remove the fallback endpoints in a versioned release of crictl
+      #901 merged 2022-03-11 Bump github.com/docker/docker from 20.10.12+incompatible to 20.10.13+incompatible
+      #789 closed 2021-06-29 rpc error: code = Unavailable desc = transport is closing 
+      #556 merged 2019-12-02 Print the previous log of the container(just like kubectl)
+      #543 merged 2019-09-25 Fix crash when using stats command
+  corrupt        4 hit(s) (all listed)
+      #2188 merged 2026-09-21 build(deps): bump the gomod group with 3 updates
+      #1860 merged 2025-06-26 Bump the gomod group with 4 updates
+      #1278 closed 2023-10-11 Invalid credentials on image pull corrupt existing image
+      #1123 merged 2023-03-29 Bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  corruption     2 hit(s) (all listed)
+      #1441 merged 2024-06-05 Bump golang.org/x/net from 0.25.0 to 0.26.0
+      #1123 merged 2023-03-29 Bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2184 merged 2026-09-18 build(deps): bump crate-ci/typos from 1.50.1 to 1.50.2
+      #2190 merged 2026-09-28 build(deps): bump crate-ci/typos from 1.50.2 to 1.50.3
+      #2199 open 2026-10-05 build(deps): bump go.opentelemetry.io/proto/otlp from 1.11.0 to 1.11.1 in the gomod group
+      #2170 merged 2026-08-31 build(deps): bump crate-ci/typos from 1.49.0 to 1.50.0
+      #2177 merged 2026-09-04 build(deps): bump crate-ci/typos from 1.50.0 to 1.50.1
+      #2157 merged 2026-08-06 build(deps): bump crate-ci/typos from 1.48.0 to 1.49.0
+      #2166 merged 2026-08-24 build(deps): bump the gomod group across 1 directory with 7 updates
+      #2139 merged 2026-07-01 build(deps): bump crate-ci/typos from 1.47.2 to 1.48.0
+      #2188 merged 2026-09-21 build(deps): bump the gomod group with 3 updates
+      #2164 closed 2026-08-17 build(deps): bump the gomod group across 1 directory with 3 updates
+      #2171 merged 2026-08-31 build(deps): bump the gomod group across 1 directory with 13 updates
+      #2165 closed 2026-08-21 build(deps): bump the gomod group across 1 directory with 5 updates
+      #2134 merged 2026-06-29 build(deps): bump actions/cache/save from 6.0.0 to 6.1.0
+      #2135 merged 2026-06-29 build(deps): bump actions/cache/restore from 6.0.0 to 6.1.0
+      #2115 closed 2026-06-03 build(deps): bump crate-ci/typos from 1.47.0 to 1.47.1
+      #2158 merged 2026-08-07 build(deps): bump the gomod group with 4 updates
+      #2130 merged 2026-06-24 build(deps): bump actions/cache from 5.0.5 to 6.0.0
+      #2150 merged 2026-07-21 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+      #2117 merged 2026-06-04 build(deps): bump crate-ci/typos from 1.47.0 to 1.47.2
+      #2096 merged 2026-05-25 build(deps): bump crate-ci/typos from 1.46.2 to 1.46.3
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2184 merged 2026-09-18 build(deps): bump crate-ci/typos from 1.50.1 to 1.50.2
+      #2190 merged 2026-09-28 build(deps): bump crate-ci/typos from 1.50.2 to 1.50.3
+      #2199 open 2026-10-05 build(deps): bump go.opentelemetry.io/proto/otlp from 1.11.0 to 1.11.1 in the gomod group
+      #2182 merged 2026-09-14 build(deps): bump the gomod group with 3 updates
+      #2170 merged 2026-08-31 build(deps): bump crate-ci/typos from 1.49.0 to 1.50.0
+      #2177 merged 2026-09-04 build(deps): bump crate-ci/typos from 1.50.0 to 1.50.1
+      #2157 merged 2026-08-06 build(deps): bump crate-ci/typos from 1.48.0 to 1.49.0
+      #2083 merged 2026-05-19 crictl: extract shared helpers and fix ContainerStats context
+      #2166 merged 2026-08-24 build(deps): bump the gomod group across 1 directory with 7 updates
+      #2139 merged 2026-07-01 build(deps): bump crate-ci/typos from 1.47.2 to 1.48.0
+      #2188 merged 2026-09-21 build(deps): bump the gomod group with 3 updates
+      #2164 closed 2026-08-17 build(deps): bump the gomod group across 1 directory with 3 updates
+      #2171 merged 2026-08-31 build(deps): bump the gomod group across 1 directory with 13 updates
+      #2165 closed 2026-08-21 build(deps): bump the gomod group across 1 directory with 5 updates
+      #2134 merged 2026-06-29 build(deps): bump actions/cache/save from 6.0.0 to 6.1.0
+      #2135 merged 2026-06-29 build(deps): bump actions/cache/restore from 6.0.0 to 6.1.0
+      #2115 closed 2026-06-03 build(deps): bump crate-ci/typos from 1.47.0 to 1.47.1
+      #2158 merged 2026-08-07 build(deps): bump the gomod group with 4 updates
+      #2130 merged 2026-06-24 build(deps): bump actions/cache from 5.0.5 to 6.0.0
+      #2150 merged 2026-07-21 build(deps): bump actions/checkout from 7.0.0 to 7.0.1
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2194 closed 2026-10-01 crictl e2e: rm/rmi/rmp -a help tests must not assume an empty runtime
+      #2181 open 2026-09-10 fix: add eventual polling on inspection test to avoid race condition
+      #2185 open 2026-09-18 Remove containerd 1.7 support (EOL)
+      #2144 open 2026-07-08 fix: allow crictl config to create a missing explicit file
+      #2195 merged 2026-10-01 Use a separate containerd data volume per e2e test suite
+      #2191 merged 2026-09-28 build(deps): bump the gomod group with 5 updates
+      #2085 merged 2026-05-20 crictl: use sentinel error for empty ID validation
+      #2159 merged 2026-08-08 crictl: allow config to create a missing --config file
+      #2171 merged 2026-08-31 build(deps): bump the gomod group across 1 directory with 13 updates
+      #2188 merged 2026-09-21 build(deps): bump the gomod group with 3 updates
+      #2142 merged 2026-07-08 crictl: Fix CLI flag names in inspect fallback path
+      #2141 merged 2026-07-08 crictl: Pre-compile regex patterns for name and namespace filters
+      #2154 merged 2026-07-25 crictl: Do not advertise base64 env values in JSON schema
+      #2104 merged 2026-05-28 StopPodSandbox first test case
+      #2125 merged 2026-06-15 container lifecycle failed container
+      #2059 closed 2026-04-24 Bump the gomod group across 1 directory with 8 updates
+      #2062 merged 2026-04-27 Bump the gomod group across 1 directory with 9 updates
+      #2058 closed 2026-04-24 Bump the gomod group across 1 directory with 10 updates
+      #2044 closed 2026-04-10 Bump the gomod group across 1 directory with 9 updates
+      #2156 merged 2026-08-03 build(deps): bump google.golang.org/grpc from 1.82.1 to 1.83.0 in the gomod group
+  atomic         9 hit(s) (all listed)
+      #2102 merged 2026-05-27 enable zizmor
+      #1465 merged 2024-06-26 Bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #1276 closed 2023-10-10 Unexpected message issued by crictl when tagging and then removing an image
+      #1283 merged 2023-10-27 Bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #1123 merged 2023-03-29 Bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+      #307 closed 2018-05-08 images retrieve
+      #547 closed 2019-10-09 Can't run hostNetwork pod on CRI-O with crictl runp
+      #449 closed 2019-03-19 Missing cri-tools package for Ubuntu Bionic 18.04 in the PPA repository
+      #689 merged 2020-11-18 .github/workflows: fix GOROOT under sudo etc
+  atomically     4 hit(s) (all listed)
+      #2102 merged 2026-05-27 enable zizmor
+      #1465 merged 2024-06-26 Bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #1283 merged 2023-10-27 Bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #1123 merged 2023-03-29 Bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  interrupted    2 hit(s) (all listed)
+      #2194 closed 2026-10-01 crictl e2e: rm/rmi/rmp -a help tests must not assume an empty runtime
+      #1156 merged 2023-05-04 Bump github.com/onsi/ginkgo/v2 from 2.9.2 to 2.9.4
+  interrupt      23 hit(s) (all listed)
+      #2194 closed 2026-10-01 crictl e2e: rm/rmi/rmp -a help tests must not assume an empty runtime
+      #1892 merged 2025-08-19 Bump crate-ci/typos from 1.35.4 to 1.35.5
+      #1914 merged 2025-09-05 Bump crate-ci/typos from 1.36.0 to 1.36.2
+      #1913 closed 2025-09-04 Bump crate-ci/typos from 1.35.8 to 1.36.1
+      #1904 closed 2025-08-29 Bump crate-ci/typos from 1.35.5 to 1.35.6
+      #1908 merged 2025-09-02 Bump crate-ci/typos from 1.35.5 to 1.35.8
+      #1905 closed 2025-09-01 Bump crate-ci/typos from 1.35.5 to 1.35.7
+      #1912 merged 2025-09-03 Bump crate-ci/typos from 1.35.5 to 1.36.0
+      #1491 merged 2024-07-09 Make `crictl events` interruptable
+      #1798 merged 2025-03-20 Bump the gomod group with 2 updates
+      #1468 merged 2024-06-27 Make all RPC's interruptable
+      #1462 merged 2024-06-21 Make image RPCs interruptable using Ctrl-C
+      #1472 merged 2024-07-02 Fix invalid context on `Status` RPC
+      #1156 merged 2023-05-04 Bump github.com/onsi/ginkgo/v2 from 2.9.2 to 2.9.4
+      #1000 merged 2022-10-12 Bump github.com/onsi/ginkgo/v2 from 2.2.0 to 2.3.0
+      #1001 merged 2022-10-12 Bump github.com/onsi/gomega from 1.21.1 to 1.22.1
+      #998 merged 2022-10-07 Bump github.com/onsi/gomega from 1.20.2 to 1.21.1
+      #989 merged 2022-09-19 Bump github.com/onsi/ginkgo/v2 from 2.1.6 to 2.2.0
+      #720 merged 2021-02-02 Add global signal handler for Interrupt signal
+      #776 merged 2021-06-03 Bump github.com/docker/docker from 20.10.6+incompatible to 20.10.7+incompatible
+  sigkill        0 hit(s)
+  sigint         2 hit(s) (all listed)
+      #1571 merged 2024-08-14 Bump github.com/docker/docker from 27.1.1+incompatible to 27.1.2+incompatible
+      #593 closed 2020-04-26 add crictl stats watch interruption
+  ctrl-c         9 hit(s) (all listed)
+      #1462 merged 2024-06-21 Make image RPCs interruptable using Ctrl-C
+      #1468 merged 2024-06-27 Make all RPC's interruptable
+      #1448 merged 2024-06-06 Add `--pull-timeout` flag to `crictl` `create`, `run` and `pull` commands
+      #1465 merged 2024-06-26 Bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #1451 merged 2024-06-13 Bump github.com/docker/docker from 26.1.4+incompatible to 27.0.0+incompatible
+      #673 closed 2020-10-23 crictl logs -f cannot stop with ctrl+c
+      #807 closed 2021-08-05 Release v1.22.0
+      #720 merged 2021-02-02 Add global signal handler for Interrupt signal
+      #288 closed 2018-04-13 Trap `Ctrl+C`.
+  power          2 hit(s) (all listed)
+      #1128 merged 2023-04-05 Bump github.com/docker/docker from 23.0.2+incompatible to 23.0.3+incompatible
+      #359 closed 2018-07-26 ppc64le: cri tests fail on Power as the test images are not multi-arch
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           17 hit(s) (all listed)
+      #1747 closed 2025-01-14 privileged container's disk attribute is `ro` because the namespace of pause is added
+      #1636 closed 2024-10-16 ctr cann't export image pulled by crictl
+      #1310 merged 2023-12-07 Serialize the container_filesystem and image_filesystem in addition for file stats.
+      #1381 merged 2024-03-20 Bump github.com/docker/docker from 25.0.4+incompatible to 25.0.5+incompatible
+      #1264 closed 2023-09-13 crictl shows the compressed size, and is inconsistent with docker images
+      #1336 closed 2024-01-22 Bump github.com/docker/docker from 24.0.7+incompatible to 25.0.0+incompatible
+      #1216 merged 2023-07-18 Drop support for docker log format
+      #1198 merged 2023-06-25 Add InodesUsed and format usedBytes with humansize print in imagefsinfo cmd
+      #898 closed 2022-03-08 Support the columns that docker have in stats
+      #996 closed 2022-10-04 Read password from the command line when pulling images
+      #399 closed 2018-11-02 crictl images prune
+      #774 merged 2021-05-27 Bump github.com/onsi/gomega from 1.12.0 to 1.13.0
+      #25 closed 2017-03-17 Umbrella issues for benchmark tests
+      #642 closed 2020-07-21 crictl inspect presents wrong args when health check are applied
+      #209 merged 2017-11-30 Add cri stats
+      #427 closed 2019-01-21 crictl stats: complain if user is not root
+      #394 merged 2018-10-15 Enable windows CI on travis
+  partial        25 hit(s) (all listed)
+      #2188 merged 2026-09-21 build(deps): bump the gomod group with 3 updates
+      #2002 merged 2026-03-03 Bump the gomod group with 4 updates
+      #1780 closed 2025-02-24 Bash completion not working for sub-commands
+      #1656 merged 2024-10-24 Bump actions/checkout from 4.2.1 to 4.2.2
+      #1619 merged 2024-10-08 Bump actions/checkout from 4.2.0 to 4.2.1
+      #1606 merged 2024-09-26 Bump actions/checkout from 4.1.7 to 4.2.0
+      #1350 merged 2024-02-12 Bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc from 1.22.0 to 1.23.1
+      #1351 closed 2024-02-12 Bump go.opentelemetry.io/otel from 1.22.0 to 1.23.1
+      #1352 closed 2024-02-12 Bump go.opentelemetry.io/otel/sdk from 1.22.0 to 1.23.1
+      #1353 closed 2024-02-12 Bump go.opentelemetry.io/otel/trace from 1.22.0 to 1.23.1
+      #1042 merged 2022-12-13 Bump go.opentelemetry.io/otel/trace from 1.10.0 to 1.11.2
+      #1007 merged 2022-10-19 Bump github.com/docker/docker from 20.10.19+incompatible to 20.10.20+incompatible
+      #665 closed 2020-09-24 Add test oci images
+      #644 closed 2020-07-29 Add bash completions for the short ids
+      #378 merged 2018-09-13 crictl inspecti fail to unmarshal
+      #611 merged 2020-05-21 Update dockershim critest
+      #623 merged 2020-06-05 feat(build): Add containerd v1.4.0 CRI CI test
+      #630 merged 2020-06-22 Add multi-platform support for containerd cri ci test
+      #631 merged 2020-06-22 Add remaining Travis CI stages to GitHub action workflow
+      #606 merged 2020-05-11 Fix server connection timeout
+  incomplete     3 hit(s) (all listed)
+      #2111 merged 2026-05-29 docs: update version references to v1.36.0, remove archived frakti reference
+      #224 closed 2018-01-17 some questions about cri-tools
+      #214 closed 2017-12-08 crictl cannot pull image just by name
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #2166 merged 2026-08-24 build(deps): bump the gomod group across 1 directory with 7 updates
+      #1605 closed 2024-09-23 Bump google.golang.org/grpc from 1.66.2 to 1.67.0
+      #1607 merged 2024-10-02 Bump google.golang.org/grpc from 1.66.2 to 1.67.1
+      #842 merged 2021-11-03 Bump google.golang.org/grpc from 1.41.0 to 1.42.0
+      #802 merged 2021-08-04 Bump github.com/docker/docker from 20.10.7+incompatible to 20.10.8+incompatible
+  recovery       2 hit(s) (all listed)
+      #2138 merged 2026-07-01 build(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.0 in the gomod group
+      #2036 merged 2026-04-02 Bump google.golang.org/grpc from 1.79.3 to 1.80.0 in the gomod group
+  rollback       1 hit(s) (all listed)
+      #1110 merged 2023-03-06 Bump github.com/urfave/cli/v2 from 2.24.4 to 2.25.0
+  resume         1 hit(s) (all listed)
+      #1593 merged 2024-09-10 Bump github.com/docker/docker from 27.2.0+incompatible to 27.2.1+incompatible
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #513 merged 2019-08-29 Add -a (remove all) option to `rmp`
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        3 hit(s) (all listed)
+      #2061 merged 2026-04-24 Improve agent docs and fix zeitgeist for macOS
+      #1687 closed 2024-11-20 failed to destroy network for sandbox \"e2aa....... cni plugin not initialized
+      #854 merged 2021-12-07 Bump github.com/opencontainers/runc from 1.0.2 to 1.0.3
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2189 merged 2026-09-24 build(deps): bump the gomod group with 2 updates
+      #2178 merged 2026-09-09 build(deps): bump golang.org/x/sys from 0.47.0 to 0.48.0 in the gomod group
+      #2184 merged 2026-09-18 build(deps): bump crate-ci/typos from 1.50.1 to 1.50.2
+      #2190 merged 2026-09-28 build(deps): bump crate-ci/typos from 1.50.2 to 1.50.3
+      #2199 open 2026-10-05 build(deps): bump go.opentelemetry.io/proto/otlp from 1.11.0 to 1.11.1 in the gomod group
+      #2017 merged 2026-03-18 critest: test metric descriptors
+      #2182 merged 2026-09-14 build(deps): bump the gomod group with 3 updates
+      #2162 closed 2026-08-14 build(deps): bump github.com/onsi/ginkgo/v2 from 2.32.0 to 2.32.1 in the gomod group
+      #2177 merged 2026-09-04 build(deps): bump crate-ci/typos from 1.50.0 to 1.50.1
+      #2180 merged 2026-09-10 build(deps): bump github.com/containerd/nri from 0.12.2 to 0.12.3 in the gomod group
+      #2152 merged 2026-07-24 build(deps): bump the gomod group with 2 updates
+      #2168 closed 2026-08-27 build(deps): bump the gomod group with 2 updates
+      #2191 merged 2026-09-28 build(deps): bump the gomod group with 5 updates
+      #2164 closed 2026-08-17 build(deps): bump the gomod group across 1 directory with 3 updates
+      #2165 closed 2026-08-21 build(deps): bump the gomod group across 1 directory with 5 updates
+      #2048 merged 2026-04-13 Makefile: Don't explicitly pass GOFLAGS to go commands
+      #2140 merged 2026-07-07 build(deps): bump golang.org/x/text from 0.38.0 to 0.39.0 in the gomod group
+      #2148 merged 2026-07-17 build(deps): bump actions/setup-go from 6.5.0 to 7.0.0
+      #2157 merged 2026-08-06 build(deps): bump crate-ci/typos from 1.48.0 to 1.49.0
+      #2147 merged 2026-07-16 build(deps): bump google.golang.org/grpc from 1.82.0 to 1.82.1 in the gomod group
+  clobber        1 hit(s) (all listed)
+      #616 closed 2020-05-28 Use K8s Infra GCS bucket for uploading release artifacts
+  blank          4 hit(s) (all listed)
+      #2111 merged 2026-05-29 docs: update version references to v1.36.0, remove archived frakti reference
+      #1922 merged 2025-10-02 Bump crate-ci/typos from 1.37.0 to 1.37.1
+      #742 closed 2021-04-09 Bump github.com/onsi/ginkgo from 1.14.2 to 1.16.1
+      #605 closed 2020-05-11 config command overwrites config
+  unreadable     1 hit(s) (all listed)
+      #2067 merged 2026-05-05 Bump google.golang.org/grpc from 1.80.0 to 1.81.0 in the gomod group
+  garbage        7 hit(s) (all listed)
+      #1748 merged 2025-01-16 Bump the gomod group across 1 directory with 3 updates
+      #1746 closed 2025-01-14 Bump the gomod group with 2 updates
+      #1849 closed 2025-05-29 Bump the gomod group across 1 directory with 6 updates
+      #1719 merged 2024-12-10 Bump github.com/docker/docker from 27.3.1+incompatible to 27.4.0+incompatible in the gomod group
+      #1489 merged 2024-07-05 userns: Skip tests if the host doesn't support idmap mounts
+      #1356 closed 2024-02-14 Don't remove pinned images when pruning
+      #1222 merged 2023-07-25 Bump github.com/docker/docker from 24.0.4+incompatible to 24.0.5+incompatible
+  mangled        0 hit(s)
+  contents       13 hit(s) (all listed)
+      #2194 closed 2026-10-01 crictl e2e: rm/rmi/rmp -a help tests must not assume an empty runtime
+      #2077 merged 2026-05-13 ci: declare contents: read across the 4 remaining workflows
+      #2180 merged 2026-09-10 build(deps): bump github.com/containerd/nri from 0.12.2 to 0.12.3 in the gomod group
+      #1696 closed 2024-11-22 Example crictl run/runp fail on a machine with a running k8s CP
+      #1264 closed 2023-09-13 crictl shows the compressed size, and is inconsistent with docker images
+      #991 closed 2022-09-22 Unable to read the configuration of the container created by dockershim.sock
+      #893 closed 2022-02-11 Suggestion: Remove the fallback endpoints in a versioned release of crictl
+      #587 closed 2020-04-15 provide a brew package
+      #728 closed 2021-03-10 crictl info get wrong container runtime cgroupdrives when use containerd. 
+      #616 closed 2020-05-28 Use K8s Infra GCS bucket for uploading release artifacts
+      #435 closed 2019-02-15 crictl completion for zsh
+      #618 merged 2020-06-03 Use CRI-validation-friendly version of nginx image
+      #624 merged 2020-06-10 Add waits for creations/modifications of timing-sensitive files
+  in-place       48 hit(s) (all listed)
+      #2197 open 2026-10-02 make verify on dirty tree
+      #2198 open 2026-10-02 Add NRI UpdatePodSandbox critest
+      #2144 open 2026-07-08 fix: allow crictl config to create a missing explicit file
+      #1248 open 2023-08-21 Integrate `krel obs` into the release process
+      #1158 open 2023-05-04 CRItest for invalid registry and bad signature error codes
+      #2138 merged 2026-07-01 build(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.0 in the gomod group
+      #2014 merged 2026-03-18 crictl: replace utilyaml with sigs.k8s.io/yaml
+      #2005 closed 2026-03-12 Add incremental checkpointing to crictl
+      #1941 merged 2025-11-11 update selinux to v1.13.0 to address cve
+      #1911 closed 2025-09-03 `crictl rmi` removes all images with the same image id instead of the specified tag
+      #1934 merged 2025-10-28 Add buffer pooling for JSON operations
+      #1895 closed 2025-08-20 Update ginkgo to v2.24.0
+      #1806 closed 2025-03-27 Update Readme to reflect new way of obtaining deb/rpm packages
+      #1875 merged 2025-07-25 Bump sigs.k8s.io/yaml from 1.5.0 to 1.6.0 in the kubernetes group
+      #1827 merged 2025-04-22 Bump the gomod group across 1 directory with 9 updates
+      #1660 merged 2024-10-25 Use const defines for config options
+      #677 closed 2020-11-06 Equivalent docker cp command
+      #1438 merged 2024-05-30 KEP-3619: Fine-grained SupplementalGroups control
+      #1401 closed 2024-04-17  Image pull progress 
+      #1256 closed 2023-08-31 support filter in crictl images
+  unclean        0 hit(s)
+  shutdown       18 hit(s) (all listed)
+      #2171 merged 2026-08-31 build(deps): bump the gomod group across 1 directory with 13 updates
+      #2106 merged 2026-05-28 Replace Fatal calls with proper error returns in crictl
+      #1992 merged 2026-02-13 add a root span
+      #1790 merged 2025-03-06 Bump the gomod group with 9 updates
+      #1827 merged 2025-04-22 Bump the gomod group across 1 directory with 9 updates
+      #1604 merged 2024-09-23 Bump github.com/docker/docker from 27.3.0+incompatible to 27.3.1+incompatible
+      #1672 merged 2024-11-08 Bump google.golang.org/grpc from 1.67.1 to 1.68.0
+      #1432 merged 2024-05-22 Bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc from 1.26.0 to 1.27.0
+      #1430 closed 2024-05-22 Bump go.opentelemetry.io/otel/trace from 1.26.0 to 1.27.0
+      #1431 closed 2024-05-22 Bump go.opentelemetry.io/otel from 1.26.0 to 1.27.0
+      #1433 merged 2024-05-22 Bump go.opentelemetry.io/otel/sdk from 1.26.0 to 1.27.0
+      #1319 merged 2023-12-15 Add support for OTEL tracing
+      #1412 merged 2024-04-25 Bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc from 1.25.0 to 1.26.0
+      #1410 closed 2024-04-25 Bump go.opentelemetry.io/otel/trace from 1.25.0 to 1.26.0
+      #1411 closed 2024-04-25 Bump go.opentelemetry.io/otel from 1.25.0 to 1.26.0
+      #1409 merged 2024-04-25 Bump go.opentelemetry.io/otel/sdk from 1.25.0 to 1.26.0
+      #789 closed 2021-06-29 rpc error: code = Unavailable desc = transport is closing 
+      #726 closed 2021-03-05 results from "ctr images ls " and "crictl image" not the same
+  reboot         5 hit(s) (all listed)
+      #1774 merged 2025-02-20 Bump github.com/docker/docker from 27.5.1+incompatible to 28.0.0+incompatible in the gomod group
+      #1856 closed 2025-06-16 Bump the gomod group across 1 directory with 8 updates
+      #1852 closed 2025-06-06 Bump the gomod group across 1 directory with 7 updates
+      #1266 closed 2023-09-17 symlink Permission denied occurs when pull using the Crictl command
+      #441 closed 2019-03-06 Is cni needed when just using containerd?
+  disk+full      5 hit(s) (all listed)
+      #1381 merged 2024-03-20 Bump github.com/docker/docker from 25.0.4+incompatible to 25.0.5+incompatible
+      #1336 closed 2024-01-22 Bump github.com/docker/docker from 24.0.7+incompatible to 25.0.0+incompatible
+      #1216 merged 2023-07-18 Drop support for docker log format
+      #774 merged 2021-05-27 Bump github.com/onsi/gomega from 1.12.0 to 1.13.0
+      #394 merged 2018-10-15 Enable windows CI on travis
+  data+loss      0 hit(s)
+  partial+write  1 hit(s) (all listed)
+      #2188 merged 2026-09-21 build(deps): bump the gomod group with 3 updates
+  crash+safe     1 hit(s) (all listed)
+      #1465 merged 2024-06-26 Bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+  atomic+write   3 hit(s) (all listed)
+      #1465 merged 2024-06-26 Bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #1283 merged 2023-10-27 Bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #1123 merged 2023-03-29 Bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  lock+file      18 hit(s) (all listed)
+      #2149 merged 2026-07-21 build(deps): bump github.com/containerd/nri from 0.12.0 to 0.12.1 in the gomod group
+      #2013 merged 2026-03-17 feat: add prettier validation to Makefile and AGENTS.md
+      #2020 merged 2026-03-19 Bump actions/cache from 5.0.3 to 5.0.4
+      #1963 merged 2025-12-15 Bump actions/upload-artifact from 5.0.0 to 6.0.0
+      #1907 merged 2025-09-01 fix:sometimes oom test failed
+      #1962 merged 2025-12-15 Bump actions/cache from 4.3.0 to 5.0.1
+      #1920 merged 2025-09-26 Bump crate-ci/typos from 1.36.2 to 1.36.3
+      #1699 merged 2024-11-27 Bump crate-ci/typos from 1.28.0 to 1.28.1
+      #1736 closed 2025-01-01 Bump crate-ci/typos from 1.28.4 to 1.29.0
+      #1725 merged 2024-12-17 Bump crate-ci/typos from 1.28.3 to 1.28.4
+      #1723 merged 2024-12-13 Bump crate-ci/typos from 1.28.2 to 1.28.3
+      #1702 merged 2024-12-03 Bump crate-ci/typos from 1.28.1 to 1.28.2
+      #1460 merged 2024-06-17 Bump k8s.io/klog/v2 from 2.120.1 to 2.130.0
+      #1188 merged 2023-06-09 Bump actions/upload-artifact from 1 to 3
+      #901 merged 2022-03-11 Bump github.com/docker/docker from 20.10.12+incompatible to 20.10.13+incompatible
+      #833 merged 2021-10-05 Bump github.com/docker/docker from 20.10.8+incompatible to 20.10.9+incompatible
+      #802 merged 2021-08-04 Bump github.com/docker/docker from 20.10.7+incompatible to 20.10.8+incompatible
+      #458 merged 2019-04-04 Set SelinuxRelabel to true for bind mounts
+  write+failure  8 hit(s) (all listed)
+      #2017 merged 2026-03-18 critest: test metric descriptors
+      #2079 merged 2026-05-18 Bump the gomod group with 2 updates
+      #1123 merged 2023-03-29 Bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+      #1000 merged 2022-10-12 Bump github.com/onsi/ginkgo/v2 from 2.2.0 to 2.3.0
+      #946 merged 2022-06-21 Validate container status in volume mount tests
+      #905 merged 2022-03-21 Fix CRI-O tests
+      #686 closed 2020-11-16 WIP: Fix golang related CI issues
+      #646 merged 2020-08-05 Use Go 1.15-compatible ioutil.TempDir
+  file+contents  9 hit(s) (all listed)
+      #2194 closed 2026-10-01 crictl e2e: rm/rmi/rmp -a help tests must not assume an empty runtime
+      #1696 closed 2024-11-22 Example crictl run/runp fail on a machine with a running k8s CP
+      #893 closed 2022-02-11 Suggestion: Remove the fallback endpoints in a versioned release of crictl
+      #587 closed 2020-04-15 provide a brew package
+      #616 closed 2020-05-28 Use K8s Infra GCS bucket for uploading release artifacts
+      #728 closed 2021-03-10 crictl info get wrong container runtime cgroupdrives when use containerd. 
+      #435 closed 2019-02-15 crictl completion for zsh
+      #618 merged 2020-06-03 Use CRI-validation-friendly version of nginx image
+      #624 merged 2020-06-10 Add waits for creations/modifications of timing-sensitive files
+
+== 51 terms run; 38 returned hits, 4 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

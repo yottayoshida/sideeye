@@ -1,0 +1,81 @@
+$ conan remote list
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
+rc=0
+d45ff1007324  /lab/conan/extensions/plugins/compatibility/compatibility.py
+69484720e1cf  /lab/conan/extensions/plugins/profile.py
+8a2f217d5b30  /lab/conan/global.conf
+8a33c2561146  /lab/conan/migrations/2.4_1-migrate.py
+4111a1fbe31b  /lab/conan/p/cache.sqlite3
+36cb7e6491f9  /lab/conan/remotes.json
+cc94ae50b4c3  /lab/conan/settings.yml
+3804f00e2fab  /lab/conan/version.txt
+$ conan remote add internal https://artifacts.example.internal/conan
+rc=0
+$ conan remote disable conancenter
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
+rc=0
+d45ff1007324  /lab/conan/extensions/plugins/compatibility/compatibility.py
+69484720e1cf  /lab/conan/extensions/plugins/profile.py
+8a2f217d5b30  /lab/conan/global.conf
+8a33c2561146  /lab/conan/migrations/2.4_1-migrate.py
+4111a1fbe31b  /lab/conan/p/cache.sqlite3
+ad87440b2047  /lab/conan/remotes.json
+cc94ae50b4c3  /lab/conan/settings.yml
+3804f00e2fab  /lab/conan/version.txt
+{
+ "remotes": [
+  {
+   "name": "conancenter",
+   "url": "https://center2.conan.io",
+   "verify_ssl": true,
+   "disabled": true
+  },
+  {
+   "name": "internal",
+   "url": "https://artifacts.example.internal/conan",
+   "verify_ssl": true
+  }
+ ]
+}$ conan remote set-user internal alice
+Changed user of remote 'internal' from 'None' (anonymous) to 'alice' (anonymous)
+rc=0
+cd0e81901a14  /lab/conan/.conan.db
+d45ff1007324  /lab/conan/extensions/plugins/compatibility/compatibility.py
+69484720e1cf  /lab/conan/extensions/plugins/profile.py
+8a2f217d5b30  /lab/conan/global.conf
+8a33c2561146  /lab/conan/migrations/2.4_1-migrate.py
+4111a1fbe31b  /lab/conan/p/cache.sqlite3
+ad87440b2047  /lab/conan/remotes.json
+cc94ae50b4c3  /lab/conan/settings.yml
+3804f00e2fab  /lab/conan/version.txt
+$ pio settings get
+********************************************************************************
+
+Name                          Current value [Default]                    Description
+----------------------------  -----------------------------------------  --------------------------------------------------------------------
+check_platformio_interval     7                                          Check for the new PlatformIO Core interval (days)
+check_prune_system_threshold  1024                                       Check for pruning unnecessary data threshold (megabytes)
+disable_udev_rules_check      No                                         Disable udev rules check
+enable_cache                  Yes                                        Enable caching for HTTP API requests
+enable_proxy_strict_ssl       Yes                                        Verify the proxy server certificate against the list of supplied CAs
+enable_telemetry              Yes                                        Telemetry service <https://bit.ly/pio-telemetry> (Yes/No)
+force_verbose                 No                                         Force verbose output when processing environments
+projects_dir                  /s/aux/home/Documents/PlatformIO/Projects  Default location for PlatformIO projects (PlatformIO Home)
+rc=0
+$ pio settings set enable_telemetry No
+The new value for the setting has been set!
+Name              Current value [Default]    Description
+----------------  -------------------------  ---------------------------------------------------------
+enable_telemetry  No [Yes]                   Telemetry service <https://bit.ly/pio-telemetry> (Yes/No)
+rc=0
+d92a896b3afe  /lab/pio/.cache/telemetry.json
+56c455e16a94  /lab/pio/appstate.json
+{"last_version": "6.2.0", "last_check": {"platformio_upgrade": 1791169057, "prune_system": 1791169057}, "settings": {"enable_telemetry": false}}
+$ pio settings set check_platformio_interval 30
+The new value for the setting has been set!
+Name                       Current value [Default]    Description
+-------------------------  -------------------------  -------------------------------------------------
+check_platformio_interval  30 [7]                     Check for the new PlatformIO Core interval (days)
+rc=0
+84a01d0b41d1  /lab/pio/appstate.json
+{"last_version": "6.2.0", "last_check": {"platformio_upgrade": 1791169057, "prune_system": 1791169057}, "settings": {"enable_telemetry": false, "check_platformio_interval": 30}}

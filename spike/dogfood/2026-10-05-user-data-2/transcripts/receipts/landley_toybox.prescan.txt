@@ -1,0 +1,307 @@
+== novelty pre-scan: landley/toybox
+== date: 2026-10-05T03:12:32Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          23 hit(s) (all listed)
+      #458 open 2023-10-18 Crash in config2help during build
+      #607 open 2026-07-05 Stack buffer overflow in toybox readelf `scan_elf`
+      #354 open 2022-06-07 toybox sh segfault on "case" of empty string
+      #392 open 2022-10-24 Some problem about "route.c" and routing table
+      #497 open 2024-04-19 When running shell scripts, the process coredump.
+      #467 open 2023-11-20 sh eval: traps: sh[200] general protection fault ip:479d76 sp:7ffd269121b8 error:0 in toybox[401000+a3000]
+      #544 closed 2025-03-09 Remove unwanted perror_msg() when using tar --selinux
+      #503 closed 2024-05-31 ASAN failures in various file processing commands
+      #466 closed 2023-11-04 stack-buffer-overflow in toybox tar
+      #428 closed 2023-05-03 find crash on invalid argument
+      #459 closed 2023-10-23 Cant build initramfs system for aarch64
+      #391 closed 2022-10-20 Fix undefined behaviour in sed.
+      #346 closed 2022-05-23 Null pointer dereference in httpd.c
+      #325 closed 2022-03-14 commit 1533ccf | SIGSEGV 
+      #339 closed 2022-05-03 Check return value of fscanf.
+      #192 closed 2020-05-06 Segmentation Fault in sed 's' command if skipping initial match
+      #272 closed 2021-03-08 iOS 14.4 | byte read Translation fault | possible pointer authentication failure
+      #102 closed 2018-08-30 test.c crashes with incorrect number of arguments
+      #17 closed 2015-12-15 Can not cross compile on Max OS X (Mavericks)
+      #74 closed 2017-08-22 toybox ps give out a segment fault
+  corrupt        11 hit(s) (all listed)
+      #278 open 2021-04-19 Hexedit ascii mode
+      #458 open 2023-10-18 Crash in config2help during build
+      #474 open 2024-01-08 generated/help.h:427:29: warning: missing terminating " character
+      #470 open 2023-12-10 Failing to build TOT LinuxL 
+      #479 closed 2024-02-07 hwclock: fix the calls to settimeofday of glibc
+      #469 closed 2023-12-05 tar: bogus GNUSparseFile.0 directory extracting http://www.qemu-advent-calendar.org/2023/download/day01.tar.gz
+      #438 closed 2023-06-21 patch: heap-buffer-overflow
+      #387 closed 2022-10-12 httpd dos problem
+      #339 closed 2022-05-03 Check return value of fscanf.
+      #310 closed 2021-12-23 "Failed to execute /init (error -2)" when building root
+      #251 closed 2020-10-14 stty.c wrongly parse first argument as c_iflags
+  corruption     9 hit(s) (all listed)
+      #600 open 2026-03-27 Fix segfaults and memory corruption during text editing
+      #474 open 2024-01-08 generated/help.h:427:29: warning: missing terminating " character
+      #479 closed 2024-02-07 hwclock: fix the calls to settimeofday of glibc
+      #466 closed 2023-11-04 stack-buffer-overflow in toybox tar
+      #408 closed 2023-01-18 tar --sort=name
+      #74 closed 2017-08-22 toybox ps give out a segment fault
+      #83 closed 2018-01-24 toysh segfaults after "clear" or "reset"
+      #170 closed 2020-02-22 rm: $directory: Directory not empty
+      #163 closed 2020-01-07 ps crashes
+  truncated      3 hit(s) (all listed)
+      #395 closed 2022-11-02 fix-host_txt_rdata.patch
+      #438 closed 2023-06-21 patch: heap-buffer-overflow
+      #99 closed 2018-07-21 file segfaults
+  truncate       16 hit(s) (all listed)
+      #603 open 2026-05-26 lib: multiple issues in update_password
+      #591 open 2025-12-23 [feature][cmd][request] Add column command
+      #278 open 2021-04-19 Hexedit ascii mode
+      #395 closed 2022-11-02 fix-host_txt_rdata.patch
+      #306 closed 2021-12-20 find: infinite loop when performing large amount of inplace file operations on btrfs
+      #438 closed 2023-06-21 patch: heap-buffer-overflow
+      #375 closed 2022-09-14 toybox probing truncates build log
+      #417 closed 2023-03-22 0.8.9 Compile issue
+      #408 closed 2023-01-18 tar --sort=name
+      #394 closed 2022-11-02 toybox_date_regression.patch
+      #387 closed 2022-10-12 httpd dos problem
+      #168 closed 2020-02-07 Some commands aren't listed on the website
+      #302 closed 2021-10-30 make root fails
+      #50 closed 2016-09-26 When I call any applet with the --help option, please show this general information first
+      #99 closed 2018-07-21 file segfaults
+      #243 closed 2020-09-19 b2sum is mentioned twice
+  empty          35 hit(s) (all listed)
+      #566 open 2025-09-03 mkroot: sh2eb.tgz is almost empty
+      #354 open 2022-06-07 toybox sh segfault on "case" of empty string
+      #591 open 2025-12-23 [feature][cmd][request] Add column command
+      #301 open 2021-10-28 du test FAIL on tmpfs
+      #322 open 2022-02-18 md5sum (and other hashing commands) successfully hashes directories and returns the hash of "nothing"
+      #607 open 2026-07-05 Stack buffer overflow in toybox readelf `scan_elf`
+      #553 open 2025-06-27 Request: v1.0
+      #426 open 2023-04-28 sh: failure in cmake OS detection script
+      #249 open 2020-10-13 Add some option alias
+      #473 open 2024-01-08 sh memory leak with fix MR
+      #470 open 2023-12-10 Failing to build TOT LinuxL 
+      #536 closed 2025-01-09 [Bug] tar inside su root -c subshell is not flushing output file data to disk
+      #306 closed 2021-12-20 find: infinite loop when performing large amount of inplace file operations on btrfs
+      #493 closed 2024-04-10 building a rootfs without a kernel
+      #452 closed 2023-08-28 xxd -p -c 0
+      #459 closed 2023-10-23 Cant build initramfs system for aarch64
+      #443 closed 2023-07-18 test/true help menu
+      #447 closed 2023-08-01 Feature request: sh to run toys if external command with than tame is not found
+      #244 closed 2020-09-19 Replace $CC with cc
+      #362 closed 2022-08-13 linux filesystem conflict with glibc >=2.36 
+  atomic         3 hit(s) (all listed)
+      #459 closed 2023-10-23 Cant build initramfs system for aarch64
+      #399 closed 2022-11-07 Can't create temporary file on Android 12
+      #158 closed 2019-12-24 ls -Z doesn't seem to print selinux context
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #41 closed 2016-08-11 stat: block size differences
+  interrupt      3 hit(s) (all listed)
+      #278 open 2021-04-19 Hexedit ascii mode
+      #422 closed 2023-04-08 vmstat: Bad pgpgin in /proc/vmstat:
+      #41 closed 2016-08-11 stat: block size differences
+  sigkill        1 hit(s) (all listed)
+      #458 open 2023-10-18 Crash in config2help during build
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #271 closed 2021-02-24 xsignal and SA_RESTART
+  power          4 hit(s) (all listed)
+      #239 open 2020-09-09 toybox blkid requires root (and still misses things)
+      #586 closed 2025-11-14 reboot, halt and power off
+      #479 closed 2024-02-07 hwclock: fix the calls to settimeofday of glibc
+      #314 closed 2022-01-06 Can’t compile on Apple Silicon with macOS Monterey
+  outage         0 hit(s)
+  ENOSPC         3 hit(s) (all listed)
+      #567 open 2025-09-05 xsendfile_len() to exit with error if underlying write fails
+      #487 open 2024-04-03 xsendfile error checking
+      #563 open 2025-09-02 cp ignores errors during write syscall and exits with success
+  disk           14 hit(s) (all listed)
+      #525 open 2024-10-31 vmstat block io read/write is incorrect
+      #499 open 2024-04-21 find -size <number-without-suffix> not POSIX
+      #413 open 2023-03-06 env.test fails in a coverage run 
+      #536 closed 2025-01-09 [Bug] tar inside su root -c subshell is not flushing output file data to disk
+      #523 closed 2024-10-17 grep hangs indefinitely on FIFO files
+      #469 closed 2023-12-05 tar: bogus GNUSparseFile.0 directory extracting http://www.qemu-advent-calendar.org/2023/download/day01.tar.gz
+      #493 closed 2024-04-10 building a rootfs without a kernel
+      #451 closed 2023-08-28 Missing tls.h in released version 0.8.10 
+      #444 closed 2023-07-22 strings applet proposal
+      #443 closed 2023-07-18 test/true help menu
+      #105 closed 2018-11-01 install -d -o USER -g GROUP DEST doesn't set uid/gid
+      #281 closed 2021-05-08 gcc 10.2.1 compile warnings
+      #66 closed 2017-05-03 cp -R --preserve timing
+      #173 closed 2020-03-01 Is binary searching length of a file still necessary?
+  partial        6 hit(s) (all listed)
+      #505 open 2024-06-11 portability for {Free,Net,Open,}BSD
+      #328 open 2022-03-23 tar tests fail on WSL2 after 4fca350fb34c31e681fd6750692d6089b9810c3d
+      #471 closed 2023-12-15 iconv always silent, `-c` broken
+      #452 closed 2023-08-28 xxd -p -c 0
+      #263 closed 2021-01-26 nc: always read all data if bigger than libbuf
+      #103 closed 2018-09-03 memory issue in config2help (heap-use-after-free)
+  incomplete     6 hit(s) (all listed)
+      #446 closed 2023-07-28 Unable to build Toybox with Android NDK
+      #462 closed 2023-10-27 Toybox is broken on MacOS now 
+      #402 closed 2022-12-21 gunzip FILE, but output file is not complete
+      #281 closed 2021-05-08 gcc 10.2.1 compile warnings
+      #368 closed 2022-08-19 strace: __NR_newfstatat undeclared
+      #292 closed 2021-08-11 fix ip.c compilation failed
+  dataloss       0 hit(s)
+  recover        3 hit(s) (all listed)
+      #278 open 2021-04-19 Hexedit ascii mode
+      #582 open 2025-11-03 Statically compiling toybox: could the documentation/FAQ be extended and improved in this regard? I failed.
+      #159 closed 2019-12-24 [Documentation / FAQ entry] Relationship between toybox and busybox?
+  recovery       3 hit(s) (all listed)
+      #469 closed 2023-12-05 tar: bogus GNUSparseFile.0 directory extracting http://www.qemu-advent-calendar.org/2023/download/day01.tar.gz
+      #370 closed 2022-08-21 Running toybox-aarch64 tar standalone in adb shell "Function not implemented"?
+      #67 closed 2017-06-05 need stty, tr, gawk to run inxi
+  rollback       1 hit(s) (all listed)
+      #307 closed 2021-12-21 cp --preserve=xattr also copies selinux context
+  resume         1 hit(s) (all listed)
+      #402 closed 2022-12-21 gunzip FILE, but output file is not complete
+  half-written   4 hit(s) (all listed)
+      #533 open 2024-12-06 patch utility misapplies change
+      #492 open 2024-04-09 [Documentation / Question] Can toybox be combined with e. g. mruby?
+      #450 open 2023-08-23 glibc 2.38 and crypt idiocy
+      #128 open 2019-05-21 Shall we update README with GitHub style markdown?
+  wipe           1 hit(s) (all listed)
+      #231 closed 2020-08-06 --version and --help should mention who to get in touch with / report bugs
+  wipes          1 hit(s) (all listed)
+      #231 closed 2020-08-06 --version and --help should mention who to get in touch with / report bugs
+  erase          1 hit(s) (all listed)
+      #425 closed 2023-04-21 xargs needs "--" argument stopper
+  erasing        1 hit(s) (all listed)
+      #425 closed 2023-04-21 xargs needs "--" argument stopper
+  erased         0 hit(s)
+  destroy        2 hit(s) (all listed)
+      #302 closed 2021-10-30 make root fails
+      #115 closed 2019-02-15 Fix typos: e.g. change "cannonical" to "canonical".
+  destroys       0 hit(s)
+  overwrite      7 hit(s) (all listed)
+      #457 open 2023-10-11 tar: Hardlink collision on the same entry when extracting
+      #547 closed 2025-04-16 dhcp: fix message type handling
+      #516 closed 2024-08-31 wget utility: invalid path traversal sanitization
+      #100 closed 2018-08-28 test: Fix negation for comparison operators
+      #160 closed 2019-12-26 tar: fix memory write error
+      #253 closed 2020-12-05 id.test: hacks to pass on Raspberry Pi OS.
+      #66 closed 2017-05-03 cp -R --preserve timing
+  clobber        0 hit(s)
+  blank          8 hit(s) (all listed)
+      #405 open 2023-01-14 xargs does not escape unquoted character with backslash
+      #566 open 2025-09-03 mkroot: sh2eb.tgz is almost empty
+      #455 open 2023-09-19 sh feature with `expand_arg_nobrace` memory leak
+      #493 closed 2024-04-10 building a rootfs without a kernel
+      #370 closed 2022-08-21 Running toybox-aarch64 tar standalone in adb shell "Function not implemented"?
+      #50 closed 2016-09-26 When I call any applet with the --help option, please show this general information first
+      #81 closed 2018-01-01 portability.c bug fix for config2help on OSX
+      #169 closed 2020-02-20 Mention that GNU sed is needed for MacOS
+  unreadable     0 hit(s)
+  garbage        7 hit(s) (all listed)
+      #582 open 2025-11-03 Statically compiling toybox: could the documentation/FAQ be extended and improved in this regard? I failed.
+      #560 open 2025-08-02 Add a global argument template to allow fuzzing command line arguments.
+      #607 open 2026-07-05 Stack buffer overflow in toybox readelf `scan_elf`
+      #596 open 2026-02-11 ci: fix and update ci config
+      #474 open 2024-01-08 generated/help.h:427:29: warning: missing terminating " character
+      #547 closed 2025-04-16 dhcp: fix message type handling
+      #414 closed 2023-03-14 i2cget doesn't support implicit "next" address (BUS CHIP vs BUS CHIP ADDR)
+  mangled        2 hit(s) (all listed)
+      #227 closed 2020-07-29 find -type list
+      #251 closed 2020-10-14 stty.c wrongly parse first argument as c_iflags
+  contents       13 hit(s) (all listed)
+      #427 open 2023-05-02 diff from stdin
+      #592 open 2025-12-30 [Question] about checksum field validation in is_tar_header(): why require leading '0' or space?
+      #539 open 2025-01-26 Support for static binaries via the menu?
+      #128 open 2019-05-21 Shall we update README with GitHub style markdown?
+      #306 closed 2021-12-20 find: infinite loop when performing large amount of inplace file operations on btrfs
+      #408 closed 2023-01-18 tar --sort=name
+      #370 closed 2022-08-21 Running toybox-aarch64 tar standalone in adb shell "Function not implemented"?
+      #314 closed 2022-01-06 Can’t compile on Apple Silicon with macOS Monterey
+      #57 closed 2016-12-05 ls applet doesn't take options if not build with CONFIG_LS_COLOR
+      #52 closed 2016-09-30 « sed -i (edit in place) » used as root doesn't preserve uid nor gid 
+      #66 closed 2017-05-03 cp -R --preserve timing
+      #103 closed 2018-09-03 memory issue in config2help (heap-use-after-free)
+      #174 closed 2020-03-10 cp -P doesn't copy symlinks
+  in-place       41 hit(s) (all listed)
+      #604 open 2026-06-16 fix brctl memset size
+      #455 open 2023-09-19 sh feature with `expand_arg_nobrace` memory leak
+      #607 open 2026-07-05 Stack buffer overflow in toybox readelf `scan_elf`
+      #322 open 2022-02-18 md5sum (and other hashing commands) successfully hashes directories and returns the hash of "nothing"
+      #596 open 2026-02-11 ci: fix and update ci config
+      #413 open 2023-03-06 env.test fails in a coverage run 
+      #286 open 2021-06-23 xxd -i: not expected behaviour
+      #498 open 2024-04-21 POSIX deviation: test arithmetic operands must support decimal only
+      #182 open 2020-04-15 Convert scripts (aside from the ones used for testing) to POSIX sh
+      #533 open 2024-12-06 patch utility misapplies change
+      #499 open 2024-04-21 find -size <number-without-suffix> not POSIX
+      #505 open 2024-06-11 portability for {Free,Net,Open,}BSD
+      #539 open 2025-01-26 Support for static binaries via the menu?
+      #278 open 2021-04-19 Hexedit ascii mode
+      #352 open 2022-06-03 Total CPU consumption in top logs i.e   goes beyond 800% for octacore
+      #470 open 2023-12-10 Failing to build TOT LinuxL 
+      #554 closed 2025-07-02 weak symbols hack broke the build
+      #61 closed 2017-01-22 busybox.exe for MSWindows is available, but not toybox.exe for MSWindows
+      #306 closed 2021-12-20 find: infinite loop when performing large amount of inplace file operations on btrfs
+      #496 closed 2024-04-13 building 0.8.11 with ssl and tls is broken
+  unclean        0 hit(s)
+  shutdown       5 hit(s) (all listed)
+      #445 open 2023-07-26 mdev: `-d` and `-f` flags are missing
+      #596 open 2026-02-11 ci: fix and update ci config
+      #299 closed 2021-10-27 GCC-11 format-security warning on sh toy
+      #302 closed 2021-10-30 make root fails
+      #192 closed 2020-05-06 Segmentation Fault in sed 's' command if skipping initial match
+  reboot         10 hit(s) (all listed)
+      #587 open 2025-11-20 Incorrect Initialization Method
+      #596 open 2026-02-11 ci: fix and update ci config
+      #586 closed 2025-11-14 reboot, halt and power off
+      #479 closed 2024-02-07 hwclock: fix the calls to settimeofday of glibc
+      #410 closed 2023-02-07 feature request: cttyhack
+      #417 closed 2023-03-22 0.8.9 Compile issue
+      #168 closed 2020-02-07 Some commands aren't listed on the website
+      #302 closed 2021-10-30 make root fails
+      #192 closed 2020-05-06 Segmentation Fault in sed 's' command if skipping initial match
+      #10 closed 2015-07-04 beastiebox(bsd license)  has few commands which are not yet in toybox. Why not merge those parts into toybox
+  disk+full      0 hit(s)
+  data+loss      5 hit(s) (all listed)
+      #473 open 2024-01-08 sh memory leak with fix MR
+      #455 open 2023-09-19 sh feature with `expand_arg_nobrace` memory leak
+      #278 open 2021-04-19 Hexedit ascii mode
+      #470 open 2023-12-10 Failing to build TOT LinuxL 
+      #41 closed 2016-08-11 stat: block size differences
+  partial+write  2 hit(s) (all listed)
+      #328 open 2022-03-23 tar tests fail on WSL2 after 4fca350fb34c31e681fd6750692d6089b9810c3d
+      #263 closed 2021-01-26 nc: always read all data if bigger than libbuf
+  crash+safe     1 hit(s) (all listed)
+      #466 closed 2023-11-04 stack-buffer-overflow in toybox tar
+  atomic+write   1 hit(s) (all listed)
+      #158 closed 2019-12-24 ls -Z doesn't seem to print selinux context
+  lock+file      3 hit(s) (all listed)
+      #603 open 2026-05-26 lib: multiple issues in update_password
+      #407 open 2023-01-16 passwd broken
+      #302 closed 2021-10-30 make root fails
+  write+failure  8 hit(s) (all listed)
+      #567 open 2025-09-05 xsendfile_len() to exit with error if underlying write fails
+      #596 open 2026-02-11 ci: fix and update ci config
+      #328 open 2022-03-23 tar tests fail on WSL2 after 4fca350fb34c31e681fd6750692d6089b9810c3d
+      #407 open 2023-01-16 passwd broken
+      #458 open 2023-10-18 Crash in config2help during build
+      #339 closed 2022-05-03 Check return value of fscanf.
+      #192 closed 2020-05-06 Segmentation Fault in sed 's' command if skipping initial match
+      #49 closed 2016-09-17 the mount command behaves incorrectly
+  file+contents  12 hit(s) (all listed)
+      #427 open 2023-05-02 diff from stdin
+      #539 open 2025-01-26 Support for static binaries via the menu?
+      #128 open 2019-05-21 Shall we update README with GitHub style markdown?
+      #306 closed 2021-12-20 find: infinite loop when performing large amount of inplace file operations on btrfs
+      #408 closed 2023-01-18 tar --sort=name
+      #370 closed 2022-08-21 Running toybox-aarch64 tar standalone in adb shell "Function not implemented"?
+      #314 closed 2022-01-06 Can’t compile on Apple Silicon with macOS Monterey
+      #57 closed 2016-12-05 ls applet doesn't take options if not build with CONFIG_LS_COLOR
+      #52 closed 2016-09-30 « sed -i (edit in place) » used as root doesn't preserve uid nor gid 
+      #66 closed 2017-05-03 cp -R --preserve timing
+      #103 closed 2018-09-03 memory issue in config2help (heap-use-after-free)
+      #174 closed 2020-03-10 cp -P doesn't copy symlinks
+
+== 51 terms run; 41 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

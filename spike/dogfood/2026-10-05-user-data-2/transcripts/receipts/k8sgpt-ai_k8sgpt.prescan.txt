@@ -1,0 +1,367 @@
+== novelty pre-scan: k8sgpt-ai/k8sgpt
+== date: 2026-10-05T05:53:19Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          38 hit(s) (all listed)
+      #1777 open 2026-09-06 fix: register kyverno policy-report scheme once to avoid concurrent map writes
+      #1730 open 2026-08-12 fix: implement graceful Shutdown RPC instead of panicking
+      #1815 open 2026-09-30 fix: stop the OLM analyzers panicking on catalogs without an image
+      #1717 open 2026-07-28 fix(analyzer): skip non-Service HTTPRoute backends; serialize Gateway API scheme registration
+      #1814 open 2026-09-30 bug: ClusterCatalog and ClusterExtension analyzers panic on objects without an image or catalog source
+      #1712 open 2026-07-21 fix: harden analyzers, AI providers, server, and cache against panics and hangs
+      #1780 merged 2026-09-09 fix(deps): update module google.golang.org/grpc to v1.83.2 [security]
+      #1702 merged 2026-07-13 fix: guard against nil backend port in HTTPRoute analyzer
+      #1705 merged 2026-07-13 fix: register gateway-api scheme once to avoid concurrent map writes
+      #1637 open 2026-04-16 fix(deps): update module github.com/prometheus/prometheus to v0.311.3 [security]
+      #1708 merged 2026-07-15 fix: prevent nil prometheus config dereference on invalid gzipped config
+      #1672 merged 2026-06-30 fix: guard against nil TargetRef in Service not-ready endpoints
+      #1714 merged 2026-07-25 fix(deps): update module google.golang.org/grpc to v1.82.1 [security]
+      #1671 closed 2026-06-30 bug: Service analyzer panics on not-ready endpoint with nil TargetRef
+      #1669 closed 2026-06-30 bug: Gateway/GatewayClass analyzers panic on objects with no status conditions
+      #795 closed 2023-12-19 [Feature]: Deep dive alerts
+      #1682 merged 2026-07-05 fix: guard interplex cache Store and Load against nil grpc conn
+      #1370 closed 2025-02-06 [Feature]: Enabling the Log Analyzer to fetch previous logs of a pod when it restarts
+      #1436 closed 2025-04-08 [Bug]: pods terminated abnormally are not detected
+      #1438 merged 2025-04-08 fix: pod analyzer catches errors when containers are in Terminated state
+  corrupt        4 hit(s) (all listed)
+      #1815 open 2026-09-30 fix: stop the OLM analyzers panicking on catalogs without an image
+      #1814 open 2026-09-30 bug: ClusterCatalog and ClusterExtension analyzers panic on objects without an image or catalog source
+      #1708 merged 2026-07-15 fix: prevent nil prometheus config dereference on invalid gzipped config
+      #209 closed 2023-04-04 feature: Support for remote cache
+  corruption     0 hit(s)
+  truncated      13 hit(s) (all listed)
+      #1760 open 2026-08-27 fix: paginate S3 cache listings
+      #1758 closed 2026-08-27 [Bug] S3 cache list ignores objects after the first page
+      #1756 merged 2026-08-26 fix: handle empty AI responses and respect configured language
+      #1346 open 2024-12-10 fix(deps): update all non-major dependencies
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1570 open 2025-08-14 fix(deps): update module helm.sh/helm/v3 to v3.20.2 [security]
+      #1595 open 2025-12-22 chore(deps): Bump helm.sh/helm/v3 from 3.17.4 to 3.18.5
+      #1708 merged 2026-07-15 fix: prevent nil prometheus config dereference on invalid gzipped config
+      #1151 open 2024-06-14 chore(deps): bump github.com/aquasecurity/trivy from 0.47.0 to 0.51.2
+      #1633 merged 2026-04-08 fix(deps): update module github.com/aws/aws-sdk-go-v2/service/bedrockruntime to v1.50.4 [security]
+      #659 merged 2023-09-15 feat: openAI explicit value for maxToken and temperature
+      #349 closed 2023-04-26 fix: reworked caching method
+      #268 merged 2023-04-13 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.3+incompatible
+  truncate       15 hit(s) (all listed)
+      #1760 open 2026-08-27 fix: paginate S3 cache listings
+      #1792 merged 2026-09-16 fix: send involvedObject filters as a field selector in MCP list-events
+      #1758 closed 2026-08-27 [Bug] S3 cache list ignores objects after the first page
+      #1756 merged 2026-08-26 fix: handle empty AI responses and respect configured language
+      #1346 open 2024-12-10 fix(deps): update all non-major dependencies
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1570 open 2025-08-14 fix(deps): update module helm.sh/helm/v3 to v3.20.2 [security]
+      #1595 open 2025-12-22 chore(deps): Bump helm.sh/helm/v3 from 3.17.4 to 3.18.5
+      #1708 merged 2026-07-15 fix: prevent nil prometheus config dereference on invalid gzipped config
+      #1151 open 2024-06-14 chore(deps): bump github.com/aquasecurity/trivy from 0.47.0 to 0.51.2
+      #1633 merged 2026-04-08 fix(deps): update module github.com/aws/aws-sdk-go-v2/service/bedrockruntime to v1.50.4 [security]
+      #876 closed 2024-01-16 fix(deps): update module sigs.k8s.io/controller-runtime to v0.18.4 - autoclosed
+      #659 merged 2023-09-15 feat: openAI explicit value for maxToken and temperature
+      #349 closed 2023-04-26 fix: reworked caching method
+      #268 merged 2023-04-13 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.3+incompatible
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1797 open 2026-09-22 fix: report blocked PDBs whose selector is empty or uses matchExpressions
+      #1796 open 2026-09-22 bug: PDB analyzer ignores blocked PodDisruptionBudgets with empty or matchExpressions selectors
+      #1731 open 2026-08-12 fix: harden completion calls against empty responses and hangs
+      #1817 open 2026-10-01 bug: NetworkPolicy analyzer ignores matchExpressions in podSelector
+      #1801 open 2026-09-24 bug: webhook analyzers never populate KubernetesDoc (wrong API group and field paths)
+      #1818 open 2026-10-01 fix: honor matchExpressions in NetworkPolicy pod selectors
+      #1781 merged 2026-09-10 fix: guard against empty completion choices in OpenAIClient
+      #1712 open 2026-07-21 fix: harden analyzers, AI providers, server, and cache against panics and hangs
+      #1793 open 2026-09-17 chore(main): release 0.4.40
+      #1756 merged 2026-08-26 fix: handle empty AI responses and respect configured language
+      #1813 open 2026-09-30 Design: Action-Classification Stage for K8sGPT
+      #1815 open 2026-09-30 fix: stop the OLM analyzers panicking on catalogs without an image
+      #1802 open 2026-09-24 fix: correct API doc lookups for the webhook analyzers
+      #1717 open 2026-07-28 fix(analyzer): skip non-Service HTTPRoute backends; serialize Gateway API scheme registration
+      #1605 open 2026-01-30 Fix ConfigMap analyzer false positives for operator-managed sidecars
+      #1339 open 2024-12-03 feat: enable to source customHeaders from the config file
+      #1766 open 2026-08-30 feat: prompt to auto-pull missing ollama models
+      #1724 merged 2026-08-07 fix: skip empty results from custom analyzers with no findings
+      #1635 open 2026-04-14 feat: add support of gpt2giga
+      #1607 open 2026-02-06 feat: add K8SGPT_PROVIDER_REGION env var support for serve command
+  atomic         7 hit(s) (all listed)
+      #1637 open 2026-04-16 fix(deps): update module github.com/prometheus/prometheus to v0.311.3 [security]
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1106 merged 2024-05-09 fix(deps): update module github.com/aws/aws-sdk-go to v1.53.21
+      #876 closed 2024-01-16 fix(deps): update module sigs.k8s.io/controller-runtime to v0.18.4 - autoclosed
+      #303 merged 2023-04-20 fix(deps): update module github.com/prometheus/client_golang to v1.15.0
+      #248 closed 2023-04-12 chore(deps): update module github.com/spdx/tools-golang to v0.5.2 - autoclosed
+      #487 closed 2023-06-07 fix(deps): update module github.com/aquasecurity/trivy-operator to v0.14.1 - autoclosed
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #1188 closed 2024-07-11 fix(deps): update module helm.sh/helm/v3 to v3.16.2 - autoclosed
+  interrupt      2 hit(s) (all listed)
+      #1731 open 2026-08-12 fix: harden completion calls against empty responses and hangs
+      #1647 merged 2026-05-08 fix(deps): update module github.com/ollama/ollama to v0.17.1 [security]
+  sigkill        1 hit(s) (all listed)
+      #1731 open 2026-08-12 fix: harden completion calls against empty responses and hangs
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #531 closed 2023-06-26 Error: failed while calling AI provider openai: error, status code: 401, message: 
+  power          12 hit(s) (all listed)
+      #1647 merged 2026-05-08 fix(deps): update module github.com/ollama/ollama to v0.17.1 [security]
+      #1056 merged 2024-04-05 fix(deps): update module github.com/aws/aws-sdk-go to v1.51.21
+      #852 merged 2024-01-08 fix(deps): update module github.com/aws/aws-sdk-go to v1.49.17
+      #783 merged 2023-12-03 fix(deps): update module github.com/aws/aws-sdk-go to v1.49.6
+      #712 merged 2023-10-17 fix(deps): update module github.com/aws/aws-sdk-go to v1.46.5
+      #682 merged 2023-09-22 fix(deps): update module github.com/aws/aws-sdk-go to v1.45.16
+      #611 merged 2023-08-23 fix(deps): update module github.com/aws/aws-sdk-go to v1.44.333
+      #632 merged 2023-09-05 fix(deps): update module github.com/aws/aws-sdk-go to v1.45.3
+      #554 merged 2023-07-13 fix(deps): update module github.com/aws/aws-sdk-go to v1.44.300
+      #597 merged 2023-08-07 fix(deps): update module github.com/aws/aws-sdk-go to v1.44.327
+      #445 merged 2023-05-19 fix(deps): update module github.com/aws/aws-sdk-go to v1.44.265
+      #268 merged 2023-04-13 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.3+incompatible
+  outage         3 hit(s) (all listed)
+      #1780 merged 2026-09-09 fix(deps): update module google.golang.org/grpc to v1.83.2 [security]
+      #519 merged 2023-06-21 fix(deps): update module github.com/aws/aws-sdk-go to v1.44.288
+      #209 closed 2023-04-04 feature: Support for remote cache
+  ENOSPC         0 hit(s)
+  disk           13 hit(s) (all listed)
+      #1793 open 2026-09-17 chore(main): release 0.4.40
+      #1794 merged 2026-09-17 chore(deps): update jlumbroso/free-disk-space digest to 36e9a5a
+      #1461 closed 2025-04-15 [Question]: False positives in node problems
+      #9 open 2023-03-22 Dependency Dashboard
+      #1630 merged 2026-03-27 chore(deps): pin dependencies
+      #1601 closed 2026-01-15 Unexpected Custom Analyzer Execution
+      #1313 merged 2024-11-10 feat: free disk
+      #1314 merged 2024-11-10 chore(main): release 0.3.45
+      #1090 closed 2024-05-01 fix(deps): update module github.com/kedacore/keda/v2 to v2.15.1 - autoclosed
+      #1166 closed 2024-06-25 k3s node Condition `EtcdIsVoter` Status: True is Normal Considtion but reported as an error.
+      #660 closed 2023-09-15 panic when using PodDisruptionBudget (pdb) filter
+      #344 closed 2023-04-26 feat: introduce config package
+      #272 merged 2023-04-14 feat: add node analyzer
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1818 open 2026-10-01 fix: honor matchExpressions in NetworkPolicy pod selectors
+      #1815 open 2026-09-30 fix: stop the OLM analyzers panicking on catalogs without an image
+      #1805 open 2026-09-27 feat: decouple analysis via System One action classification
+      #1804 open 2026-09-26 feat: filter custom analyzers by name
+      #1819 open 2026-10-01 feat: add Claude Sonnet 5 and Opus 5 support for Amazon Bedrock
+      #1802 open 2026-09-24 fix: correct API doc lookups for the webhook analyzers
+      #1820 open 2026-10-03 fix: render PDB selector operators as readable phrases
+      #1668 open 2026-06-29 [Bug] Ingress analyzer false positive for alb IngressClass. PR #1599 fixed GKE classes but missed AWS ALB and other cloud-provider controllers
+      #1760 open 2026-08-27 fix: paginate S3 cache listings
+      #1766 open 2026-08-30 feat: prompt to auto-pull missing ollama models
+      #1759 open 2026-08-27 fix: honor StatefulSet start ordinals
+      #1797 open 2026-09-22 fix: report blocked PDBs whose selector is empty or uses matchExpressions
+      #1803 merged 2026-09-25 ci: run release jobs from the release tag
+      #1520 open 2025-05-29 feat: add support for amazon bedrock knowledge base
+      #1574 open 2025-08-30 feat: add flag filter for custom analyzer
+      #1812 merged 2026-09-30 fix: scope ConfigMap usage tracking to pod namespace
+      #1607 open 2026-02-06 feat: add K8SGPT_PROVIDER_REGION env var support for serve command
+      #1339 open 2024-12-03 feat: enable to source customHeaders from the config file
+      #1800 merged 2026-09-24 fix: close the custom analyzer gRPC connection after each analysis
+      #1810 merged 2026-09-28 fix: report missing default backend services in Ingress analyzer
+  incomplete     4 hit(s) (all listed)
+      #1668 open 2026-06-29 [Bug] Ingress analyzer false positive for alb IngressClass. PR #1599 fixed GKE classes but missed AWS ALB and other cloud-provider controllers
+      #1775 closed 2026-09-04 v0.4.38 release has no binaries, only SBOM
+      #1758 closed 2026-08-27 [Bug] S3 cache list ignores objects after the first page
+      #1690 open 2026-07-08 fix(deps): update module github.com/kedacore/keda/v2 to v2.20.0 [security]
+  dataloss       0 hit(s)
+  recover        10 hit(s) (all listed)
+      #1717 open 2026-07-28 fix(analyzer): skip non-Service HTTPRoute backends; serialize Gateway API scheme registration
+      #1712 open 2026-07-21 fix: harden analyzers, AI providers, server, and cache against panics and hangs
+      #1780 merged 2026-09-09 fix(deps): update module google.golang.org/grpc to v1.83.2 [security]
+      #1690 open 2026-07-08 fix(deps): update module github.com/kedacore/keda/v2 to v2.20.0 [security]
+      #1705 merged 2026-07-13 fix: register gateway-api scheme once to avoid concurrent map writes
+      #1612 merged 2026-02-15 fix(deps): update module github.com/kedacore/keda/v2 to v2.17.3 [security]
+      #1394 closed 2025-03-12 UTF8 Error Prometheus
+      #1361 closed 2025-01-15 [Bug]: anic: utf8 name validation requested but model.NameValidationScheme is not set to UTF8
+      #960 closed 2024-02-15 fix(deps): update module helm.sh/helm/v3 to v3.14.2 [security]
+      #133 closed 2023-03-29 Cannot analyze GKE environment 
+  recovery       6 hit(s) (all listed)
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1749 merged 2026-08-21 fix: honour K8SGPT_BACKEND on every serve start
+      #1346 open 2024-12-10 fix(deps): update all non-major dependencies
+      #418 closed 2023-05-15 [Feature]: Support multiple prompt styles when explaining errors
+      #712 merged 2023-10-17 fix(deps): update module github.com/aws/aws-sdk-go to v1.46.5
+      #519 merged 2023-06-21 fix(deps): update module github.com/aws/aws-sdk-go to v1.44.288
+  rollback       6 hit(s) (all listed)
+      #1625 open 2026-03-17 Guided K8sGPT install mission in KubeStellar Console
+      #1570 open 2025-08-14 fix(deps): update module helm.sh/helm/v3 to v3.20.2 [security]
+      #960 closed 2024-02-15 fix(deps): update module helm.sh/helm/v3 to v3.14.2 [security]
+      #955 closed 2024-02-14 fix(deps): update module helm.sh/helm/v3 to v3.14.1 - autoclosed
+      #740 merged 2023-11-08 fix(deps): update module helm.sh/helm/v3 to v3.13.2
+      #688 merged 2023-09-27 fix(deps): update module helm.sh/helm/v3 to v3.13.0
+  resume         3 hit(s) (all listed)
+      #1346 open 2024-12-10 fix(deps): update all non-major dependencies
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1647 merged 2026-05-08 fix(deps): update module github.com/ollama/ollama to v0.17.1 [security]
+  half-written   2 hit(s) (all listed)
+      #1743 merged 2026-08-19 fix: ignore in-progress Deployment replica mismatches
+      #1714 merged 2026-07-25 fix(deps): update module google.golang.org/grpc to v1.82.1 [security]
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      18 hit(s) (all listed)
+      #1803 merged 2026-09-25 ci: run release jobs from the release tag
+      #1570 open 2025-08-14 fix(deps): update module helm.sh/helm/v3 to v3.20.2 [security]
+      #1595 open 2025-12-22 chore(deps): Bump helm.sh/helm/v3 from 3.17.4 to 3.18.5
+      #1682 merged 2026-07-05 fix: guard interplex cache Store and Load against nil grpc conn
+      #1704 closed 2026-07-13 fix: return a fresh AI client per call to avoid shared-state data race
+      #1151 open 2024-06-14 chore(deps): bump github.com/aquasecurity/trivy from 0.47.0 to 0.51.2
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1552 closed 2025-07-25 Alterando o prompt para pt
+      #1419 closed 2025-04-03 [Feature]: Proper support for AWS IRSA
+      #1200 merged 2024-07-15 feat: initial kyverno support
+      #878 closed 2024-01-16 Installation fails if K9s is installed
+      #654 closed 2023-09-13 fix: ensure ingress HTTP rule exists to prevent analyze panic
+      #95 merged 2023-03-28 feat: enables overwriting of cache
+      #318 merged 2023-04-21 feat: add helm chart
+      #644 merged 2023-09-12 chore(deps): bump github.com/cyphar/filepath-securejoin from 0.2.3 to 0.2.4
+      #98 merged 2023-03-28 chore(main): release 0.1.0
+      #428 merged 2023-05-16 chore(deps): bump github.com/docker/distribution from 2.8.1+incompatible to 2.8.2+incompatible
+      #268 merged 2023-04-13 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.3+incompatible
+  clobber        0 hit(s)
+  blank          22 hit(s) (all listed)
+      #1625 open 2026-03-17 Guided K8sGPT install mission in KubeStellar Console
+      #1339 open 2024-12-03 feat: enable to source customHeaders from the config file
+      #285 open 2023-04-16 feature: Add Support for Diagnosing Specific Resources
+      #1635 open 2026-04-14 feat: add support of gpt2giga
+      #531 closed 2023-06-26 Error: failed while calling AI provider openai: error, status code: 401, message: 
+      #1687 merged 2026-07-07 test: assert Serve error synchronously after shutdown in TestServe
+      #1639 closed 2026-04-20 fix(analyzer): skip succeeded pods to prevent false positive reports
+      #1651 closed 2026-05-19 feat: implement anthropic backend
+      #1502 merged 2025-05-10 fix(deps): update module github.com/olekukonko/tablewriter to v1
+      #1645 closed 2026-05-01 Add contributor ladder and architecture docs
+      #1646 closed 2026-05-01 Add contributor ladder and architecture docs
+      #1642 merged 2026-04-24 docs: prepare governance docs for CNCF incubation
+      #543 closed 2023-07-05 Error: exhausted API quota for AI provider openai: error, status code: 429, message: Rate limit reached for default-gpt-3.5-turbo[Question]: <Question Title>
+      #577 closed 2023-07-23 `k8sgpt analyze --explain` failed when using local-ai with no auth
+      #981 closed 2024-02-25 k8sgpt analyse --explains fails when using localai (401)
+      #1111 closed 2024-05-13 [bug]: failed while calling AI provider openai
+      #984 merged 2024-02-25 feat: add Google Vertex AI as provider to utilize gemini via GCP
+      #688 merged 2023-09-27 fix(deps): update module helm.sh/helm/v3 to v3.13.0
+      #561 merged 2023-07-18 chore: fixing edge cases with missing wh service
+      #384 merged 2023-05-05 chore: fix the logo URL
+  unreadable     2 hit(s) (all listed)
+      #1714 merged 2026-07-25 fix(deps): update module google.golang.org/grpc to v1.82.1 [security]
+      #1237 merged 2024-08-26 feat: add stats option to analyze command for performance insights
+  garbage        1 hit(s) (all listed)
+      #1626 merged 2026-03-19 fix(deps): update module google.golang.org/grpc to v1.79.3 [security]
+  mangled        0 hit(s)
+  contents       9 hit(s) (all listed)
+      #1570 open 2025-08-14 fix(deps): update module helm.sh/helm/v3 to v3.20.2 [security]
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1348 closed 2024-12-13 [Question]: Is it possible to scrape the Result resources through a log aggregator 
+      #1647 merged 2026-05-08 fix(deps): update module github.com/ollama/ollama to v0.17.1 [security]
+      #1482 closed 2025-05-01 Claude desktop cannot connect to k8sgpt mcp normally
+      #1412 merged 2025-03-31 chore(main): release 0.4.3
+      #999 merged 2024-03-05 fix(deps): update module github.com/stretchr/testify to v1.9.0
+      #682 merged 2023-09-22 fix(deps): update module github.com/aws/aws-sdk-go to v1.45.16
+      #566 closed 2023-07-20 Can not analyze EKS: invalid memory address or nil pointer dereference
+  in-place       36 hit(s) (all listed)
+      #1753 open 2026-08-24 fix: scope Service events to their object identity
+      #1777 open 2026-09-06 fix: register kyverno policy-report scheme once to avoid concurrent map writes
+      #1796 open 2026-09-22 bug: PDB analyzer ignores blocked PodDisruptionBudgets with empty or matchExpressions selectors
+      #1339 open 2024-12-03 feat: enable to source customHeaders from the config file
+      #1635 open 2026-04-14 feat: add support of gpt2giga
+      #1743 merged 2026-08-19 fix: ignore in-progress Deployment replica mismatches
+      #1637 open 2026-04-16 fix(deps): update module github.com/prometheus/prometheus to v0.311.3 [security]
+      #1792 merged 2026-09-16 fix: send involvedObject filters as a field selector in MCP list-events
+      #1779 merged 2026-09-07 fix: stop reporting local StorageClasses as deprecated
+      #1749 merged 2026-08-21 fix: honour K8SGPT_BACKEND on every serve start
+      #1724 merged 2026-08-07 fix: skip empty results from custom analyzers with no findings
+      #1728 merged 2026-08-10 fix: do not panic on an Ingress path with a resource backend
+      #1704 closed 2026-07-13 fix: return a fresh AI client per call to avoid shared-state data race
+      #1685 merged 2026-07-07 test: assert hpa resource-configured error after the results loop
+      #994 closed 2024-03-01 [Feature]: Add a new flag to `k8sgpt analyze` to directly output prompt
+      #1714 merged 2026-07-25 fix(deps): update module google.golang.org/grpc to v1.82.1 [security]
+      #1392 closed 2025-03-07 [Question]: MCP server implementation
+      #1599 merged 2025-12-30 fix: recognize GKE built-in ingress classes 'gce' and 'gce-internal'
+      #1327 merged 2024-11-18 chore(deps): update all non-major dependencies
+      #857 closed 2024-01-11 Preview of Google Managed Prometheus "PodMonitoring" custom resource analyzer.
+  unclean        0 hit(s)
+  shutdown       14 hit(s) (all listed)
+      #1730 open 2026-08-12 fix: implement graceful Shutdown RPC instead of panicking
+      #1712 open 2026-07-21 fix: harden analyzers, AI providers, server, and cache against panics and hangs
+      #1773 open 2026-09-03 fix(deps): update module github.com/mark3labs/mcp-go to v1
+      #1687 merged 2026-07-07 test: assert Serve error synchronously after shutdown in TestServe
+      #1690 open 2026-07-08 fix(deps): update module github.com/kedacore/keda/v2 to v2.20.0 [security]
+      #1647 merged 2026-05-08 fix(deps): update module github.com/ollama/ollama to v0.17.1 [security]
+      #1471 merged 2025-04-24 feat: add MCP support
+      #1307 merged 2024-11-06 fix(deps): update all non-major dependencies
+      #883 merged 2024-01-22 feat: added FailedMount event reason to get the failure in pod analyzer
+      #935 closed 2024-02-08 fix(deps): update module github.com/aquasecurity/trivy-operator to v0.18.5
+      #790 merged 2023-12-12 fix(deps): update module google.golang.org/grpc to v1.60.1
+      #826 closed 2024-01-04 fix(deps): update module github.com/aquasecurity/trivy-operator to v0.18.4
+      #635 merged 2023-09-07 fix(deps): update module google.golang.org/grpc to v1.58.0
+      #284 merged 2023-04-15 feat: add output query param on serve mode & refactor output logic
+  reboot         3 hit(s) (all listed)
+      #1286 closed 2024-10-31 fix(deps): update module github.com/adrg/xdg to v0.5.2 - autoclosed
+      #1291 merged 2024-10-31 fix(deps): update all non-major dependencies
+      #859 merged 2024-01-11 fix(deps): update module github.com/aws/aws-sdk-go to v1.49.19
+  disk+full      0 hit(s)
+  data+loss      3 hit(s) (all listed)
+      #954 merged 2024-02-14 fix(deps): update module google.golang.org/grpc to v1.61.1
+      #975 merged 2024-02-22 fix(deps): update module google.golang.org/grpc to v1.62.0
+      #139 closed 2023-03-29 question: Could you explain how you treat cluster data?
+  partial+write  8 hit(s) (all listed)
+      #1805 open 2026-09-27 feat: decouple analysis via System One action classification
+      #1766 open 2026-08-30 feat: prompt to auto-pull missing ollama models
+      #1798 merged 2026-09-23 fix: recognize EKS node monitoring agent node conditions
+      #1729 merged 2026-08-12 fix: do not also report an unsupported scaleTargetRef as missing
+      #1728 merged 2026-08-10 fix: do not panic on an Ingress path with a resource backend
+      #1705 merged 2026-07-13 fix: register gateway-api scheme once to avoid concurrent map writes
+      #1704 closed 2026-07-13 fix: return a fresh AI client per call to avoid shared-state data race
+      #1174 merged 2024-07-07 feat: add custom http headers to openai related api backends
+  crash+safe     4 hit(s) (all listed)
+      #1730 open 2026-08-12 fix: implement graceful Shutdown RPC instead of panicking
+      #1702 merged 2026-07-13 fix: guard against nil backend port in HTTPRoute analyzer
+      #1708 merged 2026-07-15 fix: prevent nil prometheus config dereference on invalid gzipped config
+      #541 closed 2023-07-05 What is the meaning of KEY FEATURE[ Anonymization ]  in README?
+  atomic+write   0 hit(s)
+  lock+file      12 hit(s) (all listed)
+      #1544 open 2025-07-11 vulnerability in k8sgpt project
+      #1791 open 2026-09-16 fix(deps): bump helm.sh/helm/v3 to v3.20.2 to address CVE-2025-53547
+      #1204 closed 2024-07-19 [Bug]: Trivy Analyzer has concurrent map write issue
+      #1704 closed 2026-07-13 fix: return a fresh AI client per call to avoid shared-state data race
+      #1705 merged 2026-07-13 fix: register gateway-api scheme once to avoid concurrent map writes
+      #1701 merged 2026-07-13 fix: use empty default for auth add --model so per-backend fallback runs
+      #1612 merged 2026-02-15 fix(deps): update module github.com/kedacore/keda/v2 to v2.17.3 [security]
+      #1541 merged 2025-07-09 fix(deps): update module helm.sh/helm/v3 to v3.17.4 [security]
+      #1188 closed 2024-07-11 fix(deps): update module helm.sh/helm/v3 to v3.16.2 - autoclosed
+      #209 closed 2023-04-04 feature: Support for remote cache
+      #224 closed 2023-04-06 feat: add new encryption feature
+      #188 closed 2023-04-02 Local  model support
+  write+failure  20 hit(s) (all listed)
+      #1814 open 2026-09-30 bug: ClusterCatalog and ClusterExtension analyzers panic on objects without an image or catalog source
+      #1813 open 2026-09-30 Design: Action-Classification Stage for K8sGPT
+      #1074 open 2024-04-07 Getting error "AI provider openai not specified in configuration. Please run k8sgpt auth" while using k8sgpt cli with Azureopenai as backend
+      #1806 merged 2026-09-28 fix: use apimeta.FindStatusCondition for GatewayClass Accepted condition
+      #1766 open 2026-08-30 feat: prompt to auto-pull missing ollama models
+      #1805 open 2026-09-27 feat: decouple analysis via System One action classification
+      #1606 open 2026-02-06 Add Generic CRD Analyzer for Custom Resources
+      #1063 open 2024-04-13 [bug]:  run k8sgpt analyze will only complete successfully once , after  trivy integration is active
+      #1798 merged 2026-09-23 fix: recognize EKS node monitoring agent node conditions
+      #1528 open 2025-06-17 [Feature]: Add Generic CRD Analyzer Support for Custom Resources
+      #1729 merged 2026-08-12 fix: do not also report an unsupported scaleTargetRef as missing
+      #1728 merged 2026-08-10 fix: do not panic on an Ingress path with a resource backend
+      #1705 merged 2026-07-13 fix: register gateway-api scheme once to avoid concurrent map writes
+      #1669 closed 2026-06-30 bug: Gateway/GatewayClass analyzers panic on objects with no status conditions
+      #1704 closed 2026-07-13 fix: return a fresh AI client per call to avoid shared-state data race
+      #1570 open 2025-08-14 fix(deps): update module helm.sh/helm/v3 to v3.20.2 [security]
+      #531 closed 2023-06-26 Error: failed while calling AI provider openai: error, status code: 401, message: 
+      #1291 merged 2024-10-31 fix(deps): update all non-major dependencies
+      #1327 merged 2024-11-18 chore(deps): update all non-major dependencies
+      #137 closed 2023-03-29 GitHub action for K8sgpt
+  file+contents  6 hit(s) (all listed)
+      #1570 open 2025-08-14 fix(deps): update module helm.sh/helm/v3 to v3.20.2 [security]
+      #1348 closed 2024-12-13 [Question]: Is it possible to scrape the Result resources through a log aggregator 
+      #1647 merged 2026-05-08 fix(deps): update module github.com/ollama/ollama to v0.17.1 [security]
+      #1482 closed 2025-05-01 Claude desktop cannot connect to k8sgpt mcp normally
+      #999 merged 2024-03-05 fix(deps): update module github.com/stretchr/testify to v1.9.0
+      #682 merged 2023-09-22 fix(deps): update module github.com/aws/aws-sdk-go to v1.45.16
+
+== 51 terms run; 34 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

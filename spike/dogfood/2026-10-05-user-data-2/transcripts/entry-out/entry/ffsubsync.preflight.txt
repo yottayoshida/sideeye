@@ -1,0 +1,49 @@
+[02:32:24] INFO     extracting speech segments from reference   ffsubsync.py:734
+                    '/s/sub-in/ref.srt'...                                      
+           INFO     detected encoding: ASCII              subtitle_parser.py:110
+           INFO     ...done                                     ffsubsync.py:736
+           INFO     extracting speech segments from subtitles   ffsubsync.py:192
+                    file(s) ['/s/sub/movie.srt']...                             
+           INFO     detected encoding: ASCII              subtitle_parser.py:110
+           INFO     inferred frameratio ratio: 1.000            ffsubsync.py:224
+           INFO     ...done                                     ffsubsync.py:233
+           INFO     computing alignments...                     ffsubsync.py:234
+[02:32:25] INFO     ...done                                     ffsubsync.py:250
+           INFO     score: 43821.000                            ffsubsync.py:255
+           INFO     offset seconds: -3.200                      ffsubsync.py:256
+           INFO     framerate scale factor: 1.000               ffsubsync.py:257
+           INFO     writing output to /s/sub/movie.srt          ffsubsync.py:350
+[02:32:26] INFO     extracting speech segments from reference   ffsubsync.py:734
+                    '/s/sub-in/ref.srt'...                                      
+           INFO     detected encoding: ASCII              subtitle_parser.py:110
+           INFO     ...done                                     ffsubsync.py:736
+           INFO     extracting speech segments from subtitles   ffsubsync.py:192
+                    file(s) ['/s/sub/movie.srt']...                             
+           INFO     detected encoding: ASCII              subtitle_parser.py:110
+           INFO     inferred frameratio ratio: 1.000            ffsubsync.py:224
+           INFO     ...done                                     ffsubsync.py:233
+           INFO     computing alignments...                     ffsubsync.py:234
+[02:32:27] INFO     ...done                                     ffsubsync.py:250
+           INFO     score: 43821.000                            ffsubsync.py:255
+           INFO     offset seconds: -3.200                      ffsubsync.py:256
+           INFO     framerate scale factor: 1.000               ffsubsync.py:257
+           INFO     writing output to /s/sub/movie.srt          ffsubsync.py:350
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+cwd          /s/sub-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (6515 syscall lines examined, 22 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2004 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/sub --cwd "/s/sub-in" --operation "ffsubsync /s/sub-in/ref.srt -i /s/sub/movie.srt --overwrite-input" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

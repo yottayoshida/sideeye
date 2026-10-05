@@ -1,0 +1,6 @@
+[world]
+state = "/s/tb"
+
+[define]
+operation = "toybox sed -i s/foo/bar/ a.txt b.txt"
+cwd       = "/s/tb"

@@ -1,0 +1,504 @@
+== novelty pre-scan: solvespace/solvespace
+== date: 2026-10-05T03:03:40Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1423 open 2023-11-17 Linking images on a different drive crashes on Windows (was: Freeze and crash on saving images)
+      #1376 open 2023-06-02 Linux: Crash on launch (repeat of closed issue #1351)
+      #1279 open 2022-08-09 SolveSpace crashes on lathe
+      #1766 open 2026-09-01 libslvs C API aborts foreign host apps instead of returning an error
+      #368 open 2018-11-26 Crash while analyzing degrees of freedom
+      #1263 open 2022-06-30 Crash (assert) on load file - regression?
+      #1227 open 2022-03-15 Solvespace crashes with nullptr when importing .dxf
+      #1569 open 2025-04-17 Crash with/without "Handle isn't unique" error message
+      #1059 open 2021-06-17 Crash when creating lathe group and extrusion from triangle
+      #1058 open 2021-06-11 SolveSpace crashes when moving a sphere into a body
+      #1455 open 2024-04-02 Solvespace crash on new group rotating and new group revolve...
+      #688 open 2020-08-28 Entity identifier remap collision causes crash when linking large assembly
+      #917 open 2021-01-31 Crash after trying to paste the mirror of a construction
+      #320 open 2018-04-04 Uncontrolled recursion in bsp.cpp may cause stack overflow
+      #1428 open 2023-11-29 If I write any uppercase letter (for example R15) into dimension input box solvespace crash
+      #480 open 2019-09-10 WIP: For loops
+      #1363 open 2023-04-23 Solvespace segfaults on routine operations
+      #935 open 2021-02-13 Segmentation fault
+      #1669 open 2026-01-04 Assertion failure in Remap: Too many entities in group (latest master)
+      #1768 merged 2026-09-03 Don't crash in the headless CLI when a linked file is missing
+  corrupt        21 hit(s) (all listed)
+      #968 open 2021-03-24 Libspnavdev
+      #1778 closed 2026-09-15 Opening a .slvs that holds only NUL bytes asserts instead of reporting a corrupt file
+      #1779 merged 2026-09-16 Fix opening files containing only NULL bytes
+      #1263 open 2022-06-30 Crash (assert) on load file - regression?
+      #1766 open 2026-09-01 libslvs C API aborts foreign host apps instead of returning an error
+      #75 open 2016-10-14 New file format
+      #1619 closed 2025-08-17 NURBS failure when ClassifyEdge fails (was: Difference fail depending on compilation options (was: Difference fail with OpenMP))
+      #1363 open 2023-04-23 Solvespace segfaults on routine operations
+      #1693 closed 2026-03-25 Crash on save.
+      #656 closed 2020-07-21 OpenMP issue with complex NURBS
+      #1433 merged 2023-12-07 [parameters] Save parameters to file, Relation constraint
+      #1110 closed 2021-09-12 16-bit color PNG gets imported as corrupted
+      #1120 closed 2021-09-25 New sketch from point and normal does not follow its parent transforms
+      #600 merged 2020-05-08 Use OpenMP for triangulation
+      #919 merged 2021-02-01 Fix a crash when opening an empty file.
+      #249 closed 2017-04-30 Sometimes solvespace creates corrupt slvs files.
+      #383 closed 2019-02-22 solvespace hangs trying to open a corrupt file
+      #435 closed 2019-05-30 Assertion failed: hm.v != t->h.v.
+      #431 closed 2019-05-23 Regression: out of bounds write on loading file
+      #599 closed 2020-05-08 Few DOF shown in group where all entities are constrained
+  corruption     8 hit(s) (all listed)
+      #1278 open 2022-08-08 SolveSpace v3 empty black window (AMD Adrenalin 22.7.1 or Later Driver OpenGL 3 problem). Fixed in 23.4.1 
+      #347 open 2018-07-31 Build an AppImage targeting Xenial
+      #1308 closed 2022-11-05 Web: Add missing features
+      #1158 merged 2021-12-23 Solver changes without eigen
+      #932 closed 2021-02-11 Poor performance when extruding translate groups
+      #600 merged 2020-05-08 Use OpenMP for triangulation
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+      #18 closed 2016-07-18 *** Error in `solvespace': double free or corruption (fasttop): 0x0000000002993380 *** opening DWG file
+  truncated      4 hit(s) (all listed)
+      #855 closed 2020-12-14 Add option to show only SLVS file name in the title of main window (NOT full path)
+      #1087 closed 2021-08-09 Backport patches from LibreCAD's libdxfrw
+      #615 closed 2020-05-17 Suggestion: Add radio buttons to rotate groups for combine method
+      #587 closed 2020-04-25 Frequent build timeouts for arm64 snap
+  truncate       6 hit(s) (all listed)
+      #77 open 2016-10-14 Parametric sketches
+      #855 closed 2020-12-14 Add option to show only SLVS file name in the title of main window (NOT full path)
+      #1087 closed 2021-08-09 Backport patches from LibreCAD's libdxfrw
+      #615 closed 2020-05-17 Suggestion: Add radio buttons to rotate groups for combine method
+      #587 closed 2020-04-25 Frequent build timeouts for arm64 snap
+      #744 closed 2020-10-17 migrate to travis-ci.com before 31-12-2020
+  empty          85 hit(s) (all listed)
+      #1780 open 2026-09-17 Export 2d Section writes an empty file when the plane cuts nothing
+      #1134 open 2021-10-17 "Export 2d Section" produces empty PDF
+      #1279 open 2022-08-09 SolveSpace crashes on lathe
+      #1278 open 2022-08-08 SolveSpace v3 empty black window (AMD Adrenalin 22.7.1 or Later Driver OpenGL 3 problem). Fixed in 23.4.1 
+      #367 open 2018-11-17 DXF/DWG import silently fails
+      #1717 open 2026-04-26 Redundant constraints with zero listed redundant constraints
+      #1748 open 2026-07-29 Damp the Newton step in the solver when the full step makes things worse. Fixes #1247
+      #914 open 2021-01-28 PeekMessage WM_TIMER in message pump to increase timer reliability
+      #1778 closed 2026-09-15 Opening a .slvs that holds only NUL bytes asserts instead of reporting a corrupt file
+      #1779 merged 2026-09-16 Fix opening files containing only NULL bytes
+      #1782 merged 2026-10-02 Disable OpenMP for macOS x86_64 CI builds (no libomp bottle)
+      #1169 open 2021-12-29 [feature request] export several STL files from a single slvs file
+      #1423 open 2023-11-17 Linking images on a different drive crashes on Windows (was: Freeze and crash on saving images)
+      #1749 open 2026-08-03 Only step as far as the linearization of the constraints is trusted. Fixes #1247
+      #1768 merged 2026-09-03 Don't crash in the headless CLI when a linked file is missing
+      #1414 open 2023-10-09 Migrate to GTK4 on Linux
+      #1186 open 2022-01-09 Performance testing models (slow speed benchmarks)
+      #1489 open 2024-10-25 Start adding text window UI for showing and editing named parameters.…
+      #1436 open 2023-12-10 Path to hierarchical parametric sketches
+      #1744 merged 2026-07-28 Don't delete the constraints that the solver couldn't satisfy.
+  atomic         11 hit(s) (all listed)
+      #689 open 2020-08-31 Snap solvespace RGBA pixel error
+      #77 open 2016-10-14 Parametric sketches
+      #1650 closed 2025-12-08 solvespace-qt - Cannot compile shader error on start
+      #1556 closed 2025-04-02 GTK4 Migration Implementation
+      #1560 closed 2025-04-03 GTK4 Migration reimplementation
+      #1433 merged 2023-12-07 [parameters] Save parameters to file, Relation constraint
+      #1359 closed 2023-04-18 Gtk/Glib undefined symbols on OpenBSD
+      #1026 merged 2021-04-22 Flatpak ci
+      #992 closed 2021-04-03 Eradicate the IdList bottleneck
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+      #600 merged 2020-05-08 Use OpenMP for triangulation
+  atomically     1 hit(s) (all listed)
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+  interrupted    5 hit(s) (all listed)
+      #193 open 2017-02-08 switch to "Anywhere in 3d" can cause confusion
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #1099 merged 2021-08-25 mac: Support external quit requests
+      #186 closed 2017-02-03 slightly shifting an assembly causes excessive computation
+      #369 closed 2018-12-04 Xcode: Playground execution failed 
+  interrupt      10 hit(s) (all listed)
+      #439 open 2019-06-07 Feature request: Extrude along an arbitrary path / Loft
+      #193 open 2017-02-08 switch to "Anywhere in 3d" can cause confusion
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #1099 merged 2021-08-25 mac: Support external quit requests
+      #295 closed 2017-09-28 Circle rendering is very conservative
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+      #15 closed 2016-07-05 Version 2.1 fails rank test on jansen-asm, version 2.0 did not
+      #186 closed 2017-02-03 slightly shifting an assembly causes excessive computation
+      #249 closed 2017-04-30 Sometimes solvespace creates corrupt slvs files.
+      #369 closed 2018-12-04 Xcode: Playground execution failed 
+  sigkill        2 hit(s) (all listed)
+      #935 open 2021-02-13 Segmentation fault
+      #1195 closed 2022-01-22 Solvespace crashes on Pinephone!
+  sigint         2 hit(s) (all listed)
+      #186 closed 2017-02-03 slightly shifting an assembly causes excessive computation
+      #249 closed 2017-04-30 Sometimes solvespace creates corrupt slvs files.
+  ctrl-c         23 hit(s) (all listed)
+      #614 open 2020-05-14 RFC:  Copy Groups
+      #1394 open 2023-08-12 Main window hijacks the Cmd+C keyboard shortcut when the About modal is focused
+      #917 open 2021-01-31 Crash after trying to paste the mirror of a construction
+      #845 open 2020-12-09 Enhancement: allow copy and paste between different instances of Solvespace
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #1507 open 2024-12-16 Trackpad gestures on Linux
+      #1621 open 2025-08-30 WIP Named Parameters
+      #72 open 2016-10-14 Mirror groups
+      #935 open 2021-02-13 Segmentation fault
+      #689 open 2020-08-31 Snap solvespace RGBA pixel error
+      #1703 merged 2026-03-30 NFC: Remove `Vector::From` and replace it with aggregate initializati…
+      #1451 closed 2024-03-01 Add Qt 5 GUI backend
+      #736 closed 2020-10-13 NURBS: Improve calculation of tangents on degenerate NURBS patches
+      #453 closed 2019-07-30 Suggestion: New Extrude type Skewed
+      #1093 merged 2021-08-16 mac: Support for pan, zoom and rotate trackpad gestures
+      #1019 closed 2021-04-20 Hope to Specify a hot key for the "workplane" command
+      #295 closed 2017-09-28 Circle rendering is very conservative
+      #720 closed 2020-09-27 When drawing segment, viewport is not redrawing while mouse movement
+      #837 merged 2020-12-04 Fix Save As shortcut
+      #997 merged 2021-04-04 Copy path to avoid it being invalidated by OkayToStartNewFile()
+  power          19 hit(s) (all listed)
+      #1416 open 2023-10-14 Marquee selection similar to other CAD packages (left to right vs. right to left).
+      #738 open 2020-10-15 All NURBS and mesh bugs and their test models in one place
+      #1436 open 2023-12-10 Path to hierarchical parametric sketches
+      #689 open 2020-08-31 Snap solvespace RGBA pixel error
+      #372 open 2019-01-11 Text window accessibility: color contrast and font sizes
+      #1482 closed 2024-09-12 Use parameters in groups (like repeat)
+      #77 open 2016-10-14 Parametric sketches
+      #1447 closed 2024-02-07 Spiro splines as better bezier splines and better bezier splines with optimized parameters 
+      #1374 closed 2023-06-01 Entities outside of the selection box get selected
+      #1287 closed 2022-09-02 feature request: Math curves
+      #591 merged 2020-05-01 Bernstein polynomials with no branching.
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+      #1032 closed 2021-05-01 The comments can't move with the shapes
+      #1060 closed 2021-06-23 Crashes with error LSOpenURLsWithRole() failed with error -10810 for the file
+      #609 merged 2020-05-11 Use C++ instead of C versions of standard library headers
+      #249 closed 2017-04-30 Sometimes solvespace creates corrupt slvs files.
+      #454 closed 2019-08-06 gives insane dimension between 2 obviously-constrained points
+      #816 closed 2020-11-22 Remove CLA signing requirement for contributing
+      #374 closed 2019-01-31 Fresh compiled binary for master branch does not work on VoidLinux
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           11 hit(s) (all listed)
+      #871 open 2020-12-26 Error computing extrude-difference on step-rotated assembly
+      #1055 open 2021-06-07 Compress slvs files
+      #1463 open 2024-06-02 Add Curvature function for surfaces
+      #845 open 2020-12-09 Enhancement: allow copy and paste between different instances of Solvespace
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #1363 open 2023-04-23 Solvespace segfaults on routine operations
+      #77 open 2016-10-14 Parametric sketches
+      #347 open 2018-07-31 Build an AppImage targeting Xenial
+      #1451 closed 2024-03-01 Add Qt 5 GUI backend
+      #1487 closed 2024-09-28 Compiling on msys2
+      #97 closed 2016-11-06 Add MacOS X debug to README.md
+  partial        18 hit(s) (all listed)
+      #1305 open 2022-10-27 Surface experiments
+      #1501 open 2024-12-10 WIP add functions for creating chamfers and fillets to the NURBS kernel
+      #738 open 2020-10-15 All NURBS and mesh bugs and their test models in one place
+      #614 open 2020-05-14 RFC:  Copy Groups
+      #209 open 2017-03-12 Consider using homogeneous coordinates in the solver
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #577 open 2020-03-30 Add chamfer and fillet tools
+      #246 closed 2017-04-29 Circle inexplicably cannot resize more than 16384
+      #1621 open 2025-08-30 WIP Named Parameters
+      #1302 merged 2022-10-15 fr_FR: Add missing translations,review existing ones, and fix typographic style
+      #1288 closed 2022-09-03 Duplicate operations - lathe and revolve have the same name in the Russian translation.
+      #386 closed 2019-03-03 System::CalculateRank() is slow
+      #825 merged 2020-11-23 Fix zoom not working while scrolling slowly on macOS, take WHEEL_DELTA into account on Windows.
+      #15 closed 2016-07-05 Version 2.1 fails rank test on jansen-asm, version 2.0 did not
+      #862 closed 2020-12-17 Enhancement: partial bounded constraints
+      #389 closed 2019-03-26 Feature - New Group: Helix
+      #414 closed 2019-05-20 clang-format config?
+      #374 closed 2019-01-31 Fresh compiled binary for master branch does not work on VoidLinux
+  incomplete     32 hit(s) (all listed)
+      #907 open 2021-01-23 Boolean fail with no boolean
+      #193 open 2017-02-08 switch to "Anywhere in 3d" can cause confusion
+      #1263 open 2022-06-30 Crash (assert) on load file - regression?
+      #1731 open 2026-07-08 Classify Boolean edges where a tangent fillet surface folds onto the shell. Fixes #1291.
+      #72 open 2016-10-14 Mirror groups
+      #77 open 2016-10-14 Parametric sketches
+      #1689 closed 2026-03-20 QT: Solvespace not appending .slvs file extension by default
+      #732 closed 2020-10-09 Can't cut lathe surfaces on seams
+      #1681 closed 2026-03-12 Solvespace application window icon (QT)
+      #1579 closed 2025-05-04 macOS build instructions in README don't work (again)
+      #1539 closed 2025-03-02 macOS build instructions in README don't work
+      #1199 closed 2022-01-24 Building on macOS 10.14.6  requires root?
+      #1641 merged 2025-12-01 Add Qt GUI for Linux
+      #1598 closed 2025-06-13 Build version 3.2 RC1
+      #1196 closed 2022-01-23 Part level configuration could be the answer to many implementation issues and lead to a common standard
+      #1161 closed 2021-12-23 Building solvespace as a submodule fails
+      #317 closed 2018-03-31 Exported STEP file unreadable
+      #939 closed 2021-02-17 Poor Linking performance
+      #245 closed 2017-04-27 Add SVG import support
+      #627 closed 2020-06-04 default chordTol=0.1% max segments=20
+  dataloss       0 hit(s)
+  recover        13 hit(s) (all listed)
+      #1766 open 2026-09-01 libslvs C API aborts foreign host apps instead of returning an error
+      #1417 open 2023-10-23 Spacemouse input restricted to active Solvespace instance
+      #1764 open 2026-08-31 Release version 3.3
+      #1186 open 2022-01-09 Performance testing models (slow speed benchmarks)
+      #39 open 2016-09-15 Single window UI
+      #1759 merged 2026-08-22 Improved newton (BoykoNeov#4)
+      #1744 merged 2026-07-28 Don't delete the constraints that the solver couldn't satisfy.
+      #1751 merged 2026-08-05 When line surface intersection fails due to tangency, try the nearest…
+      #17 closed 2016-07-17 Use AppImage packages for Linux
+      #304 merged 2017-12-11 Misc. trivial typos
+      #775 merged 2020-10-24 Revert "CMake: use sanitizer flags for internal targets only"
+      #766 merged 2020-10-22 Travis: fix release notes, add Windows OpenMP
+      #435 closed 2019-05-30 Assertion failed: hm.v != t->h.v.
+  recovery       5 hit(s) (all listed)
+      #1778 closed 2026-09-15 Opening a .slvs that holds only NUL bytes asserts instead of reporting a corrupt file
+      #1766 open 2026-09-01 libslvs C API aborts foreign host apps instead of returning an error
+      #1751 merged 2026-08-05 When line surface intersection fails due to tangency, try the nearest…
+      #261 merged 2017-05-28 textwin: Ensure va_end() is always called in TextWindow::Printf()
+      #435 closed 2019-05-30 Assertion failed: hm.v != t->h.v.
+  rollback       1 hit(s) (all listed)
+      #1218 merged 2022-02-12 Revert "mac: Don't interpret single-touch scroll events as pan gestures"
+  resume         5 hit(s) (all listed)
+      #347 open 2018-07-31 Build an AppImage targeting Xenial
+      #1678 closed 2026-03-09 Title: Geometry appears off-plane in 3D view in 3.1 but correct after reopening file (fixed in 3.2-rc)
+      #1598 closed 2025-06-13 Build version 3.2 RC1
+      #976 merged 2021-03-27 Allow right click to end sketching of all entities
+      #454 closed 2019-08-06 gives insane dimension between 2 obviously-constrained points
+  half-written   15 hit(s) (all listed)
+      #1748 open 2026-07-29 Damp the Newton step in the solver when the full step makes things worse. Fixes #1247
+      #1764 open 2026-08-31 Release version 3.3
+      #1749 open 2026-08-03 Only step as far as the linearization of the constraints is trusted. Fixes #1247
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #1744 merged 2026-07-28 Don't delete the constraints that the solver couldn't satisfy.
+      #1569 open 2025-04-17 Crash with/without "Handle isn't unique" error message
+      #1746 closed 2026-07-29 Fix #1743 cross vertex split and fix #1291 tangent crossing
+      #857 open 2020-12-14 Vector source for UI icons
+      #17 closed 2016-07-17 Use AppImage packages for Linux
+      #1689 closed 2026-03-20 QT: Solvespace not appending .slvs file extension by default
+      #206 closed 2017-03-04 Feature Request: Exporting (better) solid STEP
+      #1037 closed 2021-05-14 Rebase the emscripten port to master.
+      #1117 closed 2021-09-19 Add FLTK GUI (alternative frontend)
+      #387 closed 2019-03-16 Polygon Cleanup
+      #718 closed 2020-09-26 Create a POINT_N_COPY from a Vector?
+  wipe           3 hit(s) (all listed)
+      #1251 open 2022-06-01 Snap grade detection is unreliable
+      #1754 merged 2026-08-06 Mark file unsaved when a missing image is relocated
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #19 closed 2016-07-19 Fix resource path resolution
+      #329 closed 2018-06-10 Don't restore windows to nonexistent monitors
+      #563 closed 2020-03-23 Tests crash when __FILE__ uses / on Win32
+  erasing        1 hit(s) (all listed)
+      #329 closed 2018-06-10 Don't restore windows to nonexistent monitors
+  erased         0 hit(s)
+  destroy        15 hit(s) (all listed)
+      #1722 open 2026-06-02 Allow linking against system mimalloc
+      #797 open 2020-11-15 Regression: property browser window position no longer memorized
+      #1536 open 2025-02-25 Minor refactoring of surface curve data into its own struct
+      #1744 merged 2026-07-28 Don't delete the constraints that the solver couldn't satisfy.
+      #853 closed 2020-12-12 Prep for GTK4
+      #1680 closed 2026-03-11 Win32: Fix stretched rendering and misaligned click areas when scrollbar visibility changes
+      #347 open 2018-07-31 Build an AppImage targeting Xenial
+      #724 closed 2020-09-28 Link OBJ and STL files
+      #960 closed 2021-03-09 Segmentation fault on opening SLVS file saved in previous session
+      #1027 closed 2021-04-23 Default style for hidden lines is inconsistent with the "stipple occluded lines" icon
+      #127 closed 2016-12-02 Linking solvespace-cli fails
+      #388 closed 2019-03-20 Crash on close
+      #549 closed 2020-02-09 helix -> Assertion failed: FindByIdNoOops(t->h) == nullptr
+      #657 closed 2020-07-22 adding mimalloc breaks running on Windows 10
+      #807 closed 2020-11-20 New Travis pricing plans and their relevance for SolveSpace
+  destroys       3 hit(s) (all listed)
+      #797 open 2020-11-15 Regression: property browser window position no longer memorized
+      #1680 closed 2026-03-11 Win32: Fix stretched rendering and misaligned click areas when scrollbar visibility changes
+      #388 closed 2019-03-20 Crash on close
+  overwrite      16 hit(s) (all listed)
+      #902 open 2021-01-18 Add CLI option to start with custom configuration file (custom styles & workspace layout preset)
+      #1538 open 2025-03-01 file: rework saving and loading for correctness and to avoid copying
+      #1014 open 2021-04-15 Add Export Options
+      #1621 open 2025-08-30 WIP Named Parameters
+      #1724 closed 2026-06-17 QT: Add missing file extension on sketch save
+      #1689 closed 2026-03-20 QT: Solvespace not appending .slvs file extension by default
+      #1693 closed 2026-03-25 Crash on save.
+      #1626 closed 2025-09-16 App crashes on macOS Tahoe when linking/assembling from another file.
+      #1400 merged 2023-08-26 Ask before overwriting existing file
+      #1399 closed 2023-08-25 "Save as" overwrites existing files without a prompt
+      #886 closed 2021-01-10 Edge builds are stacking up
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+      #214 closed 2017-03-17 Memory leak
+      #124 closed 2016-11-28 Export 2D view file selection inconsistent if file extensions are hidden (default)
+      #400 closed 2019-05-08 Feature Request: Use FileChooserNative
+      #1027 closed 2021-04-23 Default style for hidden lines is inconsistent with the "stipple occluded lines" icon
+  clobber        0 hit(s)
+  blank          14 hit(s) (all listed)
+      #1472 open 2024-07-18 How to make threads correctly?
+      #1263 open 2022-06-30 Crash (assert) on load file - regression?
+      #1055 open 2021-06-07 Compress slvs files
+      #72 open 2016-10-14 Mirror groups
+      #1686 closed 2026-03-14 Identify QT or GTK in about window
+      #1661 closed 2025-12-28 Fix: macOS sign action not work
+      #1655 merged 2025-12-25 Fix: macOS points not draggable
+      #1658 merged 2025-12-27 Fix: macOS test action not work
+      #1680 closed 2026-03-11 Win32: Fix stretched rendering and misaligned click areas when scrollbar visibility changes
+      #983 merged 2021-03-31 minor fix open/save dialogue on windows
+      #582 merged 2020-04-21 Eliminate some entity copies in lathe groups.
+      #757 closed 2020-10-20 CI: cleanup, move to arm64-graviton2, deploy only on master
+      #318 closed 2018-04-02 German Localization
+      #718 closed 2020-09-26 Create a POINT_N_COPY from a Vector?
+  unreadable     3 hit(s) (all listed)
+      #1668 closed 2026-01-03 Solvespace crashes on opening assembly: assertion failed in FindById
+      #317 closed 2018-03-31 Exported STEP file unreadable
+      #187 closed 2017-02-03 Exported DXF files are unreadable by QCad, A360, DraftSight
+  garbage        13 hit(s) (all listed)
+      #1376 open 2023-06-02 Linux: Crash on launch (repeat of closed issue #1351)
+      #1233 open 2022-04-14 Glitch with menus and application drawing on ARM
+      #732 closed 2020-10-09 Can't cut lathe surfaces on seams
+      #1569 open 2025-04-17 Crash with/without "Handle isn't unique" error message
+      #1729 closed 2026-07-06 Fix NURBS boolean failures from unhandled edge-on-edge classification (fixes #1619, part of #1091)
+      #1619 closed 2025-08-17 NURBS failure when ClassifyEdge fails (was: Difference fail depending on compilation options (was: Difference fail with OpenMP))
+      #1680 closed 2026-03-11 Win32: Fix stretched rendering and misaligned click areas when scrollbar visibility changes
+      #263 closed 2017-07-13 Use dear imgui for user interface
+      #1366 closed 2023-05-03 Feature Request: New constraint "As Cubic Bezier"  for a 5 points spline
+      #533 merged 2019-12-20 Win32: Drastically reduce stack usage at startup. NFC?
+      #240 closed 2017-04-20 In certain lathe groups, triangle normals get flipped
+      #92 closed 2016-10-22 stack overflow when compiling win32 - solved
+      #412 closed 2019-05-18 Property Browser window stays on top after switching focus
+  mangled        1 hit(s) (all listed)
+      #1766 open 2026-09-01 libslvs C API aborts foreign host apps instead of returning an error
+  contents       45 hit(s) (all listed)
+      #1777 closed 2026-09-14 macOS CI: Homebrew no longer publishes an x86_64 libomp bottle
+      #1233 open 2022-04-14 Glitch with menus and application drawing on ARM
+      #1055 open 2021-06-07 Compress slvs files
+      #1759 merged 2026-08-22 Improved newton (BoykoNeov#4)
+      #1691 closed 2026-03-23 Fix release builds: WASM npm version format, CD artifact path mismatches, and npm publish resilience
+      #1685 merged 2026-03-13 Windows 10/11: Fix the button click area in the property browser shifting
+      #1693 closed 2026-03-25 Crash on save.
+      #1690 closed 2026-03-23 Problem with automatic build of release v3.2 on github
+      #1539 closed 2025-03-02 macOS build instructions in README don't work
+      #1677 closed 2026-03-02 About slvs savefiles - up to ver 3.2~02ec4e57
+      #1199 closed 2022-01-24 Building on macOS 10.14.6  requires root?
+      #1680 closed 2026-03-11 Win32: Fix stretched rendering and misaligned click areas when scrollbar visibility changes
+      #1456 closed 2024-04-04 fix: use macOS Frameworks
+      #681 closed 2020-08-20 Button click area is shifted left of icon
+      #1626 closed 2025-09-16 App crashes on macOS Tahoe when linking/assembling from another file.
+      #1257 merged 2022-06-14 Make scheduled/deferred task order deterministic
+      #1260 merged 2022-06-24 czech translations
+      #1223 closed 2022-03-03 Crashes on Mac when I try to open preferences
+      #1026 merged 2021-04-22 Flatpak ci
+      #927 closed 2021-02-07 make scheduled/deferred task order deterministic
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #738 open 2020-10-15 All NURBS and mesh bugs and their test models in one place
+      #1024 open 2021-04-22 New feature idea? Missing functionality? Look here first.
+      #1723 open 2026-06-04 unstable redundant constraints
+      #171 open 2017-01-25 coincident edges result in NURBS failure
+      #313 open 2018-01-20 Constraint point on a Bezier curve
+      #1670 open 2026-01-22 SLVS_C_ANGLE with signed angles
+      #1760 open 2026-08-25 PR #1751 fallback fixes from Claude Opus 5
+      #1436 open 2023-12-10 Path to hierarchical parametric sketches
+      #1046 open 2021-05-30 Ability to independently show/hide: H/V constraints, dimensions, REF and comments
+      #1376 open 2023-06-02 Linux: Crash on launch (repeat of closed issue #1351)
+      #1224 open 2022-03-06 Repeated tool use and spacebar to alternate on/off
+      #1763 open 2026-08-29 Add Android front end
+      #1492 open 2024-11-05 Circle tangent to line as construction tool
+      #1459 open 2024-05-05 Potential solver improvements from Dune 3D
+      #1714 open 2026-04-08 Change macOS shortcuts that use Function keys to use Command
+      #1748 open 2026-07-29 Damp the Newton step in the solver when the full step makes things worse. Fixes #1247
+      #522 open 2019-12-03 Transparency "glass effect" is broken
+      #900 open 2021-01-18 Text input fields override "Property Browser" window width size
+      #901 open 2021-01-18 Edit text string of "Text in TrueType Font" by double click in main window
+      #1136 open 2021-10-24 Use JSON format for configuration file on all platforms
+  unclean        1 hit(s) (all listed)
+      #1619 closed 2025-08-17 NURBS failure when ClassifyEdge fails (was: Difference fail depending on compilation options (was: Difference fail with OpenMP))
+  shutdown       2 hit(s) (all listed)
+      #1099 merged 2021-08-25 mac: Support external quit requests
+      #429 closed 2019-05-23 Port idlist
+  reboot         4 hit(s) (all listed)
+      #460 open 2019-08-20 Simplify and clang tidy
+      #1339 open 2023-01-30 Scroll wheel no longer zooms on macOS
+      #1653 closed 2025-12-20 Linux: Update metainfo for SolveSpace after install
+      #556 closed 2020-03-05 Symbol lookup error: undefined symbol: _glapi_tls_Current
+  disk+full      3 hit(s) (all listed)
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #77 open 2016-10-14 Parametric sketches
+      #347 open 2018-07-31 Build an AppImage targeting Xenial
+  data+loss      7 hit(s) (all listed)
+      #1749 open 2026-08-03 Only step as far as the linearization of the constraints is trusted. Fixes #1247
+      #1744 merged 2026-07-28 Don't delete the constraints that the solver couldn't satisfy.
+      #372 open 2019-01-11 Text window accessibility: color contrast and font sizes
+      #1110 closed 2021-09-12 16-bit color PNG gets imported as corrupted
+      #435 closed 2019-05-30 Assertion failed: hm.v != t->h.v.
+      #718 closed 2020-09-26 Create a POINT_N_COPY from a Vector?
+      #816 closed 2020-11-22 Remove CLA signing requirement for contributing
+  partial+write  6 hit(s) (all listed)
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #209 open 2017-03-12 Consider using homogeneous coordinates in the solver
+      #1621 open 2025-08-30 WIP Named Parameters
+      #577 open 2020-03-30 Add chamfer and fillet tools
+      #825 merged 2020-11-23 Fix zoom not working while scrolling slowly on macOS, take WHEEL_DELTA into account on Windows.
+      #389 closed 2019-03-26 Feature - New Group: Helix
+  crash+safe     7 hit(s) (all listed)
+      #1766 open 2026-09-01 libslvs C API aborts foreign host apps instead of returning an error
+      #1669 open 2026-01-04 Assertion failure in Remap: Too many entities in group (latest master)
+      #429 closed 2019-05-23 Port idlist
+      #600 merged 2020-05-08 Use OpenMP for triangulation
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+      #772 closed 2020-10-23 3.0 Release prep
+      #215 closed 2017-03-17 File→Save and File→Save As… crash SolveSpace
+  atomic+write   6 hit(s) (all listed)
+      #689 open 2020-08-31 Snap solvespace RGBA pixel error
+      #77 open 2016-10-14 Parametric sketches
+      #1650 closed 2025-12-08 solvespace-qt - Cannot compile shader error on start
+      #1433 merged 2023-12-07 [parameters] Save parameters to file, Relation constraint
+      #616 merged 2020-05-20 Bring some parallelism to boolean code
+      #600 merged 2020-05-08 Use OpenMP for triangulation
+  lock+file      21 hit(s) (all listed)
+      #678 open 2020-08-15 Program lockup  on autosave file loading.  BUG
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #1621 open 2025-08-30 WIP Named Parameters
+      #72 open 2016-10-14 Mirror groups
+      #1482 closed 2024-09-12 Use parameters in groups (like repeat)
+      #1195 closed 2022-01-22 Solvespace crashes on Pinephone!
+      #1196 closed 2022-01-23 Part level configuration could be the answer to many implementation issues and lead to a common standard
+      #1093 merged 2021-08-16 mac: Support for pan, zoom and rotate trackpad gestures
+      #932 closed 2021-02-11 Poor performance when extruding translate groups
+      #1074 merged 2021-07-25 Add optional helix pitch constraint.  WIP
+      #1168 closed 2021-12-28 Solvespace Windows are completely stuck after attempting to change the Background Colour
+      #1117 closed 2021-09-19 Add FLTK GUI (alternative frontend)
+      #677 closed 2020-08-15 Lock-up on loading autosaved file, where dose solvespace put its auto save file? and how dose it name it ?
+      #629 closed 2020-06-06 SolveSpace won't import 3D circles/arcs from DXF
+      #960 closed 2021-03-09 Segmentation fault on opening SLVS file saved in previous session
+      #1027 closed 2021-04-23 Default style for hidden lines is inconsistent with the "stipple occluded lines" icon
+      #144 closed 2016-12-29 Issue #123: implement turntable mouse navigation
+      #59 closed 2016-10-09 Comments inside "sketch-in-plane" not locked in plane
+      #123 closed 2016-11-27 SketchUp-like navigation
+      #599 closed 2020-05-08 Few DOF shown in group where all entities are constrained
+  write+failure  16 hit(s) (all listed)
+      #1780 open 2026-09-17 Export 2d Section writes an empty file when the plane cuts nothing
+      #1761 open 2026-08-26 Consider adding an MCP server (local port) to solvespace
+      #1055 open 2021-06-07 Compress slvs files
+      #1769 open 2026-09-04 unexpected size-dependent redundant constraints
+      #1621 open 2025-08-30 WIP Named Parameters
+      #1743 closed 2026-07-28 Edge split failure
+      #1691 closed 2026-03-23 Fix release builds: WASM npm version format, CD artifact path mismatches, and npm publish resilience
+      #577 open 2020-03-30 Add chamfer and fillet tools
+      #1751 merged 2026-08-05 When line surface intersection fails due to tangency, try the nearest…
+      #1689 closed 2026-03-20 QT: Solvespace not appending .slvs file extension by default
+      #35 closed 2016-08-23 Add "intersection" boolean operation for combining solids
+      #1151 merged 2021-12-16 Fix hang when trying to display characters missing from the embedded font
+      #720 closed 2020-09-27 When drawing segment, viewport is not redrawing while mouse movement
+      #997 merged 2021-04-04 Copy path to avoid it being invalidated by OkayToStartNewFile()
+      #97 closed 2016-11-06 Add MacOS X debug to README.md
+      #11 closed 2016-06-22 SIGABRT when exporting DXF
+  file+contents  25 hit(s) (all listed)
+      #1777 closed 2026-09-14 macOS CI: Homebrew no longer publishes an x86_64 libomp bottle
+      #1055 open 2021-06-07 Compress slvs files
+      #1759 merged 2026-08-22 Improved newton (BoykoNeov#4)
+      #1691 closed 2026-03-23 Fix release builds: WASM npm version format, CD artifact path mismatches, and npm publish resilience
+      #1693 closed 2026-03-25 Crash on save.
+      #1677 closed 2026-03-02 About slvs savefiles - up to ver 3.2~02ec4e57
+      #1199 closed 2022-01-24 Building on macOS 10.14.6  requires root?
+      #1539 closed 2025-03-02 macOS build instructions in README don't work
+      #1626 closed 2025-09-16 App crashes on macOS Tahoe when linking/assembling from another file.
+      #1026 merged 2021-04-22 Flatpak ci
+      #1166 closed 2021-12-26 README : xcode build instruction update
+      #919 merged 2021-02-01 Fix a crash when opening an empty file.
+      #772 closed 2020-10-23 3.0 Release prep
+      #144 closed 2016-12-29 Issue #123: implement turntable mouse navigation
+      #62 closed 2016-10-10 Latest master fails to build
+      #49 closed 2016-10-06 OSX build fails in a fresh install
+      #271 closed 2017-07-21 Running the Cmake generated code in Xcode ends in "Command /bin/sh failed with exit code 2"
+      #5 closed 2016-05-28 Mac OS X: Occasional SIGSEGV on mouse (Magic Trackpad) move
+      #51 closed 2016-10-06 solvespace fails to build on OS X 10.12
+      #96 closed 2016-11-05 Mac OS crash (EXC_BAD_ACCESS) 
+
+== 51 terms run; 45 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

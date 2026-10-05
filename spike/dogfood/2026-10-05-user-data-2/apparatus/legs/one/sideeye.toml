@@ -1,0 +1,5 @@
+[world]
+state = "/s/leg-one"
+
+[define]
+operation = "python3 /ap/toys/one.py /s/leg-one"

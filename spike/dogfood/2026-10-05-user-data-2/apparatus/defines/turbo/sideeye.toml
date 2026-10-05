@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/turborepo"
+
+[define]
+operation = "/opt/node22/lib/node_modules/turbo/node_modules/@turbo/linux-arm64/bin/turbo telemetry disable"
+cwd       = "/s/turbo-in"

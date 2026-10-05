@@ -1,0 +1,2 @@
+static: /opt/py/bin/ffsubsync: Python script, ASCII text executable
+next: sideeye explore --state /s/sub --cwd "/s/sub-in" --operation "ffsubsync /s/sub-in/ref.srt -i /s/sub/movie.srt --overwrite-input" \

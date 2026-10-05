@@ -1,0 +1,474 @@
+== novelty pre-scan: rasterio/rasterio
+== date: 2026-10-05T02:45:00Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          82 hit(s) (all listed)
+      #2528 open 2022-07-18 Reading opened jp2 file segfaults
+      #3500 closed 2025-12-26 Test failure: opening a memory dataset with `thread_safe=True` crashes in Windows tests
+      #2235 closed 2021-07-07 Seg Fault when reading from S3
+      #3415 closed 2025-09-30 fsspec OpenFile support is broken for s3fs
+      #3381 merged 2025-08-17 Build 1.4 wheels with CIBW
+      #3101 closed 2024-06-14 test_sieve_all_masked crashes with gdal 3.9
+      #3264 merged 2024-11-28 Fix typos discovered by codespell
+      #3256 closed 2024-11-25 ValueError: 'PNG' is not a valid Compression when reading MRF file
+      #3105 closed 2024-06-20 rasterio terminates with "uncaught exception of type std::length_error" when running `open()` on `DatasetReader`
+      #3250 closed 2024-11-19 Memory leak in rasterio.open
+      #3128 closed 2024-08-05 SystemError: <class 'UnicodeDecodeError'> returned a result with an exception set
+      #3032 merged 2024-02-20 Sidecar support for Python openers
+      #2994 closed 2023-12-22 DEP: Use numpy in pyproject.toml
+      #2870 merged 2023-07-12 Prevent interpreter segfaults with closed MemoryFile.
+      #2955 closed 2023-10-27  rasterio 1.3.8/1.3.9 fails to read a raster from AWS S3 bucket
+      #2888 closed 2023-07-26 rasterio 1.3.8 fails to read a raster from AWS S3 bucket
+      #2859 merged 2023-06-26 Prevent a crash when accessing block shapes of an HDF5 file
+      #2857 closed 2023-06-22 1.3.8 release
+      #2847 closed 2023-06-11 Multi-threaded image read segmentation fault
+      #2799 closed 2023-03-24 rasterize crashes (double free) when shape is precisely at corner of transform
+  corrupt        19 hit(s) (all listed)
+      #3652 closed 2026-09-29 Writing with driver="COG" converts data to uint8 for non-uint8 dtypes (GDAL 3.13.3 COG driver supports Create())
+      #733 open 2016-05-31 Drop unsupported options when converting to JPEG
+      #2910 open 2023-09-01 Infinite loop using mask on broken files
+      #3485 closed 2025-12-16 Incorrect mask when reading small tiled rasters with masked=True in 1.4.4 and GDAL_FORCE_CACHING=YES
+      #2053 closed 2020-12-02 IReadBlock error while multiprocessing
+      #2526 merged 2022-07-15 Add a context manager that records errors, links them, and raises
+      #2752 closed 2023-02-02 CRS.from_wkt() and CRS.from_user_input() return different results for same WKT string
+      #2502 closed 2022-07-04 rasterio 1.3b2+: segfault when opening uint32 file
+      #2174 closed 2021-05-05 TypeError/WindowError/white lines in merged raster after upgrading from version 1.2.0 to 1.2.3
+      #2149 closed 2021-04-08 Rasterio fails at open a multiband geotiff
+      #2078 closed 2021-01-08 Dataset.tags() call throws UnicodeDecodeError on GeoTIFF metadata readable by GDAL
+      #726 closed 2016-05-30 read_masks segfault
+      #731 closed 2016-05-31 Document GeoTiffs vs other formats re: IndirectRasterUpdater
+      #1077 closed 2017-06-20 GDAL GetMetadataItem('BLOCK_SIZE_%d_%d' % (c, r), 'TIFF')
+      #1428 closed 2018-07-30 Extended merge capabilities
+      #1576 closed 2018-12-13 Incorrect values in the mask when rasterio.mask.mask when all_touched=False
+      #1721 closed 2019-07-09 Bilinear resampling creates invalid mask values 
+      #1873 closed 2020-02-25 Question/Issue - Can Rasterio Sessions be cleared up?
+      #526 closed 2015-11-15 Test coverage is mis-reported for rio modules
+  corruption     6 hit(s) (all listed)
+      #2864 merged 2023-07-05 Allow (float) windowed reads smaller than 1.0 to handle extreme zoom use case
+      #2799 closed 2023-03-24 rasterize crashes (double free) when shape is precisely at corner of transform
+      #1333 closed 2018-05-01 Python crashes while building overviews
+      #1568 closed 2018-12-04 Do not pass a pointer when calling GDALRasterizeGeometries
+      #1876 closed 2020-02-26 Concurrently reading from COGs through vsicurl fails with a segfault in 1.1.3
+      #520 closed 2015-11-04 Check blocksize against image shape
+  truncated      32 hit(s) (all listed)
+      #3652 closed 2026-09-29 Writing with driver="COG" converts data to uint8 for non-uint8 dtypes (GDAL 3.13.3 COG driver supports Create())
+      #3589 merged 2026-07-20 Bump actions/setup-python from 6 to 7
+      #3554 merged 2026-03-30 Bump mamba-org/setup-micromamba from 2 to 3
+      #3618 closed 2026-08-10 Bump pypa/cibuildwheel from 3.4.1 to 4.2.0
+      #3603 closed 2026-07-27 Bump pypa/cibuildwheel from 3.4.1 to 4.1.1
+      #3579 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #3576 closed 2026-06-15 Bump pypa/cibuildwheel from 3.4.1 to 4.1.0
+      #3574 closed 2026-06-08 Bump pypa/cibuildwheel from 3.4.1 to 4.0.0
+      #3310 closed 2025-02-14 tests/test_indexing.py fails on Linux Intel x86 (openSUSE i586 and Debian i386)
+      #3453 merged 2025-12-08 Bump actions/checkout from 4 to 6
+      #3451 merged 2025-12-08 Bump actions/upload-artifact from 4 to 5
+      #3378 merged 2025-08-11 Bump actions/download-artifact from 3 to 5
+      #3377 merged 2025-08-11 Bump actions/checkout from 4 to 5
+      #3454 merged 2025-12-08 Bump actions/setup-python from 5 to 6
+      #3431 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #3422 merged 2025-10-27 Bump actions/upload-artifact from 3 to 5
+      #3396 merged 2025-09-08 Bump actions/setup-python from 5 to 6
+      #3205 merged 2024-10-07 Bump mamba-org/setup-micromamba from 1 to 2
+      #3004 closed 2024-01-06 Simplify rasterize()
+      #3069 merged 2024-04-15 Bump actions/checkout from 2 to 4
+  truncate       37 hit(s) (all listed)
+      #3652 closed 2026-09-29 Writing with driver="COG" converts data to uint8 for non-uint8 dtypes (GDAL 3.13.3 COG driver supports Create())
+      #3589 merged 2026-07-20 Bump actions/setup-python from 6 to 7
+      #3554 merged 2026-03-30 Bump mamba-org/setup-micromamba from 2 to 3
+      #3618 closed 2026-08-10 Bump pypa/cibuildwheel from 3.4.1 to 4.2.0
+      #3603 closed 2026-07-27 Bump pypa/cibuildwheel from 3.4.1 to 4.1.1
+      #3579 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #3456 merged 2025-12-08 ENH:features:shapes: Add uint32,uint64,int64 dtypes & warn for possible truncation
+      #3576 closed 2026-06-15 Bump pypa/cibuildwheel from 3.4.1 to 4.1.0
+      #3574 closed 2026-06-08 Bump pypa/cibuildwheel from 3.4.1 to 4.0.0
+      #3310 closed 2025-02-14 tests/test_indexing.py fails on Linux Intel x86 (openSUSE i586 and Debian i386)
+      #3453 merged 2025-12-08 Bump actions/checkout from 4 to 6
+      #3451 merged 2025-12-08 Bump actions/upload-artifact from 4 to 5
+      #3378 merged 2025-08-11 Bump actions/download-artifact from 3 to 5
+      #3377 merged 2025-08-11 Bump actions/checkout from 4 to 5
+      #3454 merged 2025-12-08 Bump actions/setup-python from 5 to 6
+      #3431 merged 2025-11-24 Bump actions/checkout from 5 to 6
+      #3422 merged 2025-10-27 Bump actions/upload-artifact from 3 to 5
+      #3396 merged 2025-09-08 Bump actions/setup-python from 5 to 6
+      #3115 merged 2024-07-13 Add tests with multiple GDAL threads and implement truncate
+      #3205 merged 2024-10-07 Bump mamba-org/setup-micromamba from 1 to 2
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2724 open 2023-01-23 BUG: Return true minimum dtype when np.inf/nan present & handle empty arrays
+      #2763 open 2023-02-08 rasterio.dtypes improvements
+      #3111 open 2024-07-04 rasterio.features.geometry_window() raises exception with Point
+      #3512 open 2026-01-12 bug with rasterio.mask.mask in version 1.5
+      #3277 open 2024-12-16 Incorrect coordinate transformation with xy() function
+      #3323 open 2025-04-01 Bilinear and cubic resampling at arbitrary points
+      #3646 closed 2026-09-26 Datasets left open in xarray's file cache still print "Error in sys.excepthook" at exit with 1.5.1 (follow-up to #3563/#3612)
+      #3252 open 2024-11-20 Adds read/write access to raster attribute tables
+      #2119 open 2021-02-18 Failure to retry a read for an s3-COG (GeoTIFF on AWS s3)
+      #2992 open 2023-12-21 boundless=True - hangs in docker container rio read
+      #3094 open 2024-05-17 rasterio.merge.merge ungracefully handles rasters with postive height or negative width
+      #2165 open 2021-04-27 disjoint_bounds incorrect behavior
+      #3499 closed 2025-12-26 BUG: Multithreading with Thread Safe Enabled MEM Dataset (Windows & OSX)
+      #3279 closed 2024-12-23 rasterio.features.rasterize cannot accept a triangle (3 point polygon)
+      #3603 closed 2026-07-27 Bump pypa/cibuildwheel from 3.4.1 to 4.1.1
+      #3576 closed 2026-06-15 Bump pypa/cibuildwheel from 3.4.1 to 4.1.0
+      #3335 closed 2025-05-01 warp with 2d destination.mask fails (regression)
+      #3618 closed 2026-08-10 Bump pypa/cibuildwheel from 3.4.1 to 4.2.0
+      #3574 closed 2026-06-08 Bump pypa/cibuildwheel from 3.4.1 to 4.0.0
+      #2868 open 2023-07-11 rasterio does not understand netcdf url format when using Mac Arm
+  atomic         1 hit(s) (all listed)
+      #3611 closed 2026-08-04 Deadlock: GIL vs GDALDriverManager mutex when two threads make their first concurrent features.shapes() call (GDAL >= 3.11)
+  atomically     0 hit(s)
+  interrupted    3 hit(s) (all listed)
+      #2865 closed 2023-07-07 1.3.8: pytest is failing
+      #2747 closed 2023-02-01 1.3.5: pytest is failing
+      #1863 closed 2020-01-30 segfault from windowed boundless read of VRT with shared="0" set
+  interrupt      6 hit(s) (all listed)
+      #2865 closed 2023-07-07 1.3.8: pytest is failing
+      #1686 closed 2019-05-11 Occasional "not recognized as a supported file format" errors when reading from S3
+      #2747 closed 2023-02-01 1.3.5: pytest is failing
+      #2164 merged 2021-04-27 Refactor window intersection and union
+      #571 closed 2016-03-07 GDAL 2.1 to travis build matrix
+      #1863 closed 2020-01-30 segfault from windowed boundless read of VRT with shared="0" set
+  sigkill        1 hit(s) (all listed)
+      #2800 closed 2023-03-29 python process killed when trying to save file with rasterio - pj_open_lib(epsg): call fopen(epsg) - failed
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          14 hit(s) (all listed)
+      #2699 open 2023-01-02 VRT form of merging
+      #3382 closed 2025-08-19 TypeError when passing a list of values to `.index` since version 1.4.1
+      #2932 closed 2023-10-05 Memory leak using rasterio.Env
+      #3020 closed 2024-02-05 Bump codecov/codecov-action from 3 to 4
+      #1287 closed 2018-02-28 Missing docs about dtype argument for read in rio-calc (was: Unexpected result in rio calc with np.power or np.multiply)
+      #1300 closed 2018-03-23 RFC: file and dataset access in Rasterio tools and plugins
+      #1759 closed 2019-08-22 Multi-dimensional support
+      #2202 closed 2021-06-08 Off-by-one error when merging with bounds
+      #1454 closed 2018-09-10 WarpedVRT and internal mask
+      #731 closed 2016-05-31 Document GeoTiffs vs other formats re: IndirectRasterUpdater
+      #461 closed 2015-08-20 rio bounds inconsistencies with fio bounds
+      #538 closed 2016-01-10 Support or supplant vsi* networking virtual file system functionality in GDAL (e.g. vsicurl, vsis3)
+      #1700 closed 2019-05-24 Added support for Proj6 and GDAL 3
+      #1067 closed 2017-05-31 Typo: collectons → collections
+  outage         2 hit(s) (all listed)
+      #3618 closed 2026-08-10 Bump pypa/cibuildwheel from 3.4.1 to 4.2.0
+      #627 closed 2016-04-01 Docstring formatting
+  ENOSPC         0 hit(s)
+  disk           69 hit(s) (all listed)
+      #1960 open 2020-07-09 Have a rio download command to mirror remote datasets
+      #977 open 2017-02-03 Accessing datasets located in buffers using MemoryFile and ZipMemoryFile
+      #507 open 2015-10-26 Improve performance of rio-merge
+      #3652 closed 2026-09-29 Writing with driver="COG" converts data to uint8 for non-uint8 dtypes (GDAL 3.13.3 COG driver supports Create())
+      #3560 open 2026-04-04 fix: add pixel count guard in rio warp to prevent hang on Python 3.14
+      #672 open 2016-04-20 adjusting the IO/memory tradeoff
+      #2070 open 2020-12-14 Weird behavior with DEFLATE / predictor 2 / float64
+      #3647 closed 2026-09-26 Silence close() errors in DatasetBase.__del__ at interpreter shutdown
+      #2565 open 2022-08-24 Inconsistency between top / upper corner points between rasterio and gdal
+      #630 open 2016-04-03 Polygonize for larger-than-memory datasets
+      #3331 open 2025-04-22 Performance regression getting masked data in 1.4.1+ when boto3 is installed
+      #671 open 2016-04-20 Access to S3 rasters identified using arn:
+      #3252 open 2024-11-20 Adds read/write access to raster attribute tables
+      #1281 open 2018-02-19 Add flush method to writer
+      #3196 closed 2024-09-28 rasterio.merge incompatible with WarpedVRT in 1.4.0
+      #3254 closed 2024-11-23 Error opening a WarpedVRT that was created in the same process and stored in Google Cloud Store
+      #1018 closed 2017-04-20 Allow 'rasterio.features.rasterize()' to write to a 'rasterio.band()'
+      #3181 closed 2024-09-20 Memory caching while running multiple raster read operation
+      #2053 closed 2020-12-02 IReadBlock error while multiprocessing
+      #1273 closed 2018-02-07 user-friendly stack python function
+  partial        36 hit(s) (all listed)
+      #3513 open 2026-01-12 BUG:features: Enable geometry_window to work with shear
+      #3323 open 2025-04-01 Bilinear and cubic resampling at arbitrary points
+      #3252 open 2024-11-20 Adds read/write access to raster attribute tables
+      #3331 open 2025-04-22 Performance regression getting masked data in 1.4.1+ when boto3 is installed
+      #2119 open 2021-02-18 Failure to retry a read for an s3-COG (GeoTIFF on AWS s3)
+      #3577 closed 2026-06-17 Improve type hinting for `windows.py`
+      #2322 open 2021-10-24 TYPE: type hinting
+      #3574 closed 2026-06-08 Bump pypa/cibuildwheel from 3.4.1 to 4.0.0
+      #3576 closed 2026-06-15 Bump pypa/cibuildwheel from 3.4.1 to 4.1.0
+      #3357 closed 2025-06-04 test_reproject_error_propagation fails on Python 3.14
+      #3275 closed 2024-12-09 Give users control over the GDAL vsicurl cache
+      #2152 closed 2021-04-13 rasterio.errors.RasterioIOError: path/to/image.tif not recognized as a supported file format
+      #2898 merged 2023-08-11 Python file opener VSI plugin
+      #1796 closed 2019-10-02 Can't open bigtiff file for writing
+      #3206 merged 2024-10-08 adds IAU as known authority to CRS.to_authority
+      #3069 merged 2024-04-15 Bump actions/checkout from 2 to 4
+      #1170 closed 2017-10-11 transform_geom() not properly catching NULL
+      #942 closed 2016-12-08 Using Rasterio's new linux wheels
+      #2414 closed 2022-03-23 Partial write
+      #994 closed 2017-03-15 Filter windows depending on input bounding box
+  incomplete     9 hit(s) (all listed)
+      #2763 open 2023-02-08 rasterio.dtypes improvements
+      #3611 closed 2026-08-04 Deadlock: GIL vs GDALDriverManager mutex when two threads make their first concurrent features.shapes() call (GDAL >= 3.11)
+      #3572 merged 2026-05-26 docs: fix minor typos
+      #3571 closed 2026-05-26 Minor typos in documentation
+      #1947 closed 2020-06-05 Addwarp
+      #2474 closed 2022-06-06 Different behavior in fillnodata with GDAL when smoothing_iterations > 0
+      #2461 closed 2022-05-10 Improve docstrings for dataset read/write
+      #2345 merged 2021-11-24 Draft of project design notes
+      #1138 closed 2017-09-05 fillnodata does not use nodata values
+  dataloss       0 hit(s)
+  recover        9 hit(s) (all listed)
+      #733 open 2016-05-31 Drop unsupported options when converting to JPEG
+      #1686 closed 2019-05-11 Occasional "not recognized as a supported file format" errors when reading from S3
+      #3092 closed 2024-05-15 Colormap extended to 255
+      #2488 merged 2022-06-21 REF: Replace usage of _osr_from_crs with CRS.from_user_input
+      #2435 merged 2022-04-11 Install Python file VSI plugin when GDAL drivers are registered
+      #714 closed 2016-05-20 Writing complex data to a GeoTiff file fails silently.
+      #899 closed 2016-09-27 In-memory GDAL datasets, sqlite style
+      #1271 closed 2018-02-06 Matplotlib and Rasterio
+      #472 merged 2015-08-31 Initial impl of VFS support in lib and CLI
+  recovery       2 hit(s) (all listed)
+      #538 closed 2016-01-10 Support or supplant vsi* networking virtual file system functionality in GDAL (e.g. vsicurl, vsis3)
+      #472 merged 2015-08-31 Initial impl of VFS support in lib and CLI
+  rollback       0 hit(s)
+  resume         4 hit(s) (all listed)
+      #2301 closed 2021-09-21 In-memory dataset
+      #1091 closed 2017-07-17 Gribdoctor with rasterio 1.0a9
+      #1093 closed 2017-07-18 Any utility that gives same function like grib-doctor (for GRIB file) with rasterio?
+      #966 merged 2017-01-30 Lightweight context managers around file objects and memory files
+  half-written   2 hit(s) (all listed)
+      #969 merged 2017-01-31 Tear down Env() properly
+      #528 closed 2015-11-19 Half-pixel shift in geostransform
+  wipe           3 hit(s) (all listed)
+      #2051 closed 2020-11-25 Add option to clear vsicurl cache on entering Env
+      #1604 closed 2019-01-22 API doc failed to build on RTD
+      #541 closed 2016-01-13 rio-warp drops data on right edge
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #3134 merged 2024-08-09 Add stats(), clear_stats(), update_stats(), deprecate statistics()
+      #2806 closed 2023-04-07 Do not mix Per-Band and Per-Dataset methods for `Statistics`
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        11 hit(s) (all listed)
+      #630 open 2016-04-03 Polygonize for larger-than-memory datasets
+      #3079 closed 2024-04-20 Opener registration error for files in same parent directory
+      #2990 merged 2023-12-20 expose GDALs TPS transformer as an option for GCPTransformer
+      #2324 closed 2021-10-29 [RFC][WIP] Prevent fork if GDAL global thread pool has been used
+      #2017 closed 2020-10-11 Rasterio.plot.show() cannot deal properly with RGB and uint16 data. 
+      #2502 closed 2022-07-04 rasterio 1.3b2+: segfault when opening uint32 file
+      #2302 closed 2021-09-22 Fix not destroy datasource when in open mode 'w','w+' is passed APPEND_SUBDATASET='YES'.
+      #2323 closed 2021-10-26 Memory Leak when opening very large VRT files
+      #2225 merged 2021-06-28 Add Transformer classes
+      #602 merged 2016-03-24 New pattern for handling GDAL errors in Cython code
+      #665 merged 2016-04-12 New, lazier AWS sessions
+  destroys       0 hit(s)
+  overwrite      93 hit(s) (all listed)
+      #897 open 2016-09-26 Document changes for CLI plugin development with 1.0
+      #769 open 2016-06-04 Warping multiple inputs to one output
+      #596 open 2016-03-22 rio mask --alpha option
+      #3252 open 2024-11-20 Adds read/write access to raster attribute tables
+      #3648 merged 2026-09-28 Bump pypa/cibuildwheel from 4.2.0 to 4.2.1
+      #3649 merged 2026-09-28 Bump astral-sh/setup-uv from 10.1.0 to 10.2.0
+      #3554 merged 2026-03-30 Bump mamba-org/setup-micromamba from 2 to 3
+      #3030 closed 2024-02-16 Testing on Windows
+      #3579 merged 2026-06-22 Bump actions/checkout from 6 to 7
+      #3287 closed 2025-01-13 Using "isin" as rio calc command fails with expression error in rasterio 1.4.3
+      #3618 closed 2026-08-10 Bump pypa/cibuildwheel from 3.4.1 to 4.2.0
+      #3603 closed 2026-07-27 Bump pypa/cibuildwheel from 3.4.1 to 4.1.1
+      #3316 closed 2025-02-27 Setting block(x|y)size in rio convert throws TypeError in rasterio 1.4.3
+      #3561 merged 2026-04-06 Bump pypa/cibuildwheel from 3.4.0 to 3.4.1
+      #3532 merged 2026-03-02 Bump actions/upload-artifact from 6 to 7
+      #3576 closed 2026-06-15 Bump pypa/cibuildwheel from 3.4.1 to 4.1.0
+      #3533 merged 2026-03-02 Bump actions/download-artifact from 7 to 8
+      #3541 merged 2026-03-09 Bump pypa/cibuildwheel from 3.3.1 to 3.4.0
+      #3514 merged 2026-01-12 Bump pypa/cibuildwheel from 3.3.0 to 3.3.1
+      #3574 closed 2026-06-08 Bump pypa/cibuildwheel from 3.4.1 to 4.0.0
+  clobber        6 hit(s) (all listed)
+      #3079 closed 2024-04-20 Opener registration error for files in same parent directory
+      #3023 merged 2024-02-07 Add a rio create command.
+      #572 closed 2016-03-07 reproject in chunks?
+      #539 closed 2016-01-11 Check for output existing with files_inout_arg
+      #540 merged 2016-01-11 Add a force_overwrite option
+      #1167 merged 2017-10-09 Stop open's inner Env from clobbering outer env creds
+  blank          23 hit(s) (all listed)
+      #3556 open 2026-04-01 DOC: enable pydocstyle checks (via ruff check) and associated fixes
+      #3074 open 2024-04-17 Unexpected sieve results when mask is entirely false
+      #3571 closed 2026-05-26 Minor typos in documentation
+      #3348 merged 2025-05-20 Docs: remove blank rio options docs
+      #3457 merged 2025-12-08 Replace flake8 with ruff check "F", "E" and "W" rules
+      #3346 merged 2025-05-20 rasterio.plot: fix parameters section title
+      #3375 closed 2025-07-30 Unable to read band names from Planet Labs' Hyperspectral H5s
+      #2152 closed 2021-04-13 rasterio.errors.RasterioIOError: path/to/image.tif not recognized as a supported file format
+      #2743 closed 2023-01-28 rasterio.features.rasterize warn & return empty array when no shapes are provided
+      #2664 merged 2022-11-29 Bump codecov/codecov-action from 1 to 3
+      #2245 closed 2021-07-16 Merge with method=max, min have aliased result on overlap
+      #350 closed 2015-05-12 Remove sys.exit() calls from rio commands
+      #607 closed 2016-03-25 pep8 aka pycodestyle
+      #701 closed 2016-05-10 CONTRIBUTE.md
+      #614 closed 2016-03-31 certain resampling methods fail when CHECK_WITH_INVERT_PROJ is False
+      #853 closed 2016-08-17 rio warp paints a wide black band on part of the output
+      #1449 closed 2018-08-30 JPEG 2000 mask issue
+      #1873 closed 2020-02-25 Question/Issue - Can Rasterio Sessions be cleared up?
+      #2074 closed 2020-12-30 Missing region in rasterio reprojection not experienced when using gdalwarp
+      #541 closed 2016-01-13 rio-warp drops data on right edge
+  unreadable     0 hit(s)
+  garbage        12 hit(s) (all listed)
+      #3241 closed 2024-11-08 Tiled GTiff: Windowed read memory leak in latest rasterio version
+      #3034 closed 2024-02-23 Memory leak with .read()
+      #2371 merged 2021-12-21 rasterio.open returns a dataset object for all kinds of input
+      #2376 closed 2022-01-04 update_tags breaks COG format
+      #2253 closed 2021-07-28 Allow np.min/max to output to a new array.
+      #2162 closed 2021-04-23 Check if source overlaps destination in merge
+      #714 closed 2016-05-20 Writing complex data to a GeoTiff file fails silently.
+      #803 closed 2016-06-17 DatasetReader methods as pure functions
+      #1863 closed 2020-01-30 segfault from windowed boundless read of VRT with shared="0" set
+      #1873 closed 2020-02-25 Question/Issue - Can Rasterio Sessions be cleared up?
+      #915 merged 2016-10-17 MemoryFile
+      #1841 merged 2019-12-06 Remove FeatureCollection from output GeoJSON types
+  mangled        0 hit(s)
+  contents       25 hit(s) (all listed)
+      #3254 closed 2024-11-23 Error opening a WarpedVRT that was created in the same process and stored in Google Cloud Store
+      #2152 closed 2021-04-13 rasterio.errors.RasterioIOError: path/to/image.tif not recognized as a supported file format
+      #3118 closed 2024-07-22 Rasterio does not install in Docker container: "ERROR: A GDAL API version must be specified"
+      #2663 closed 2022-11-29 rasterio.warp.reproject truncates high values in uint64 datasets
+      #2485 closed 2022-06-20 rasterio dataset not cleaned properly?
+      #2357 merged 2021-12-08 Always check the error stack after calling GDALSuggestedWarpOutput2
+      #2229 closed 2021-06-30 ENH: Support pathlib-based objects (like cloudpathlib)
+      #2604 closed 2022-10-07 Memory leak -- rasterio.MemoryFile()
+      #2490 closed 2022-06-22 `rasterio.open` "No such file found" after properly reading half of the desired files
+      #2410 closed 2022-03-18 Add and update tags in-place via traditional file, but not MemoryFile, for GTiff
+      #2360 closed 2021-12-08 BUG: passing fsspec into rasterio.open returns ContextManager
+      #2310 closed 2021-10-13 1.3.0 release
+      #2245 closed 2021-07-16 Merge with method=max, min have aliased result on overlap
+      #1323 closed 2018-04-19 Installing Rasterio against GDAL master (2.3) fails on OSX
+      #1240 closed 2017-12-29 `rasterio.mask.mask` masks images with rotation terms in transforms incorrectly
+      #592 closed 2016-03-21 Hosting documentation
+      #798 closed 2016-06-15 Wrap ndarry, transform, and CRS into an object
+      #1066 closed 2017-05-27 segfault on test_skip_gtiff
+      #1587 closed 2018-12-19 Can't open a no crs IMG files
+      #1787 closed 2019-09-24 Unable to open EPSG support file gcs.csv (GDAL 3.0.1 PROJ 6.1.1)
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2568 open 2022-08-24 BUG: Use epsilon to determine rotation when calculating bounds
+      #3179 open 2024-09-18 Rotated rasters and bounds
+      #1990 open 2020-09-04 Rewrite _reproject() to use GDALWarp
+      #3155 open 2024-08-29 Use Decimal objects to calculate exact bounds
+      #525 open 2015-11-12 Standardize or normalize use of bounds and bounding boxes
+      #2986 open 2023-12-19 Incorrect no data filling on the edges during merge operation
+      #671 open 2016-04-20 Access to S3 rasters identified using arn:
+      #2642 open 2022-11-09 BUG: Given nodata value, -999999.0, is beyond the valid range of its data type, float32. (OSX arm64)
+      #3626 closed 2026-08-15 Eliminate boundless reads in stack
+      #2322 open 2021-10-24 TYPE: type hinting
+      #3623 merged 2026-08-14 TST: Move non-fixture code out of conftest.py
+      #2119 open 2021-02-18 Failure to retry a read for an s3-COG (GeoTIFF on AWS s3)
+      #3364 merged 2025-06-24 Deps: Drop dependency to cligj
+      #3493 merged 2025-12-20 CI: Refactor download of source code for rasterio libs
+      #3360 merged 2025-06-11 TST: Fix test fixture for test_reproject_error_propagation
+      #3363 closed 2025-06-18 Add threadsafe flag to readonly rasters.
+      #3093 closed 2024-05-17 GDAL Error Reported in logs, but rasterio method never returns
+      #2433 closed 2022-04-08 Support for 3D transformations and PROJ pipelines
+      #563 closed 2016-03-01 raster attribute table support
+      #1965 closed 2020-07-12 PROPOSAL: Code linting?
+  unclean        0 hit(s)
+  shutdown       3 hit(s) (all listed)
+      #3647 closed 2026-09-26 Silence close() errors in DatasetBase.__del__ at interpreter shutdown
+      #3563 closed 2026-04-13 Recursive `sys.excepthook` error on interpreter shutdown
+      #3646 closed 2026-09-26 Datasets left open in xarray's file cache still print "Error in sys.excepthook" at exit with 1.5.1 (follow-up to #3563/#3612)
+  reboot         1 hit(s) (all listed)
+      #764 closed 2016-06-03 Enhance plot functions.
+  disk+full      10 hit(s) (all listed)
+      #3647 closed 2026-09-26 Silence close() errors in DatasetBase.__del__ at interpreter shutdown
+      #671 open 2016-04-20 Access to S3 rasters identified using arn:
+      #3181 closed 2024-09-20 Memory caching while running multiple raster read operation
+      #2632 closed 2022-11-05 Fails to build with GDAL 3.6.0 due to test failures
+      #244 closed 2015-01-09 How to handle statistics
+      #2015 closed 2020-10-10 Rasterio error `An error occurred while writing a dirty block from GDALRasterBand::IRasterIO` even with Libtiff >4.0 installed on Windows.
+      #710 closed 2016-05-19 Add example on using tif overviews when window.
+      #731 closed 2016-05-31 Document GeoTiffs vs other formats re: IndirectRasterUpdater
+      #511 closed 2015-10-27 PSA: Amazon S3 virtual file system in GDAL trunk
+      #227 closed 2014-12-21 Implemented GDALFillNodata algorithm as rasterio.fill.fillnodata
+  data+loss      8 hit(s) (all listed)
+      #1597 merged 2019-01-13 Change _CRS class to make WKT canonical
+      #377 closed 2015-06-03 No netCDF support after installing Python 3.4 (?)
+      #555 closed 2016-01-29 Warp data loss continues
+      #638 closed 2016-04-05 `ValueError: No indexes to read` after writing multi-band netCDF files
+      #668 closed 2016-04-14 Do not resample silently
+      #853 closed 2016-08-17 rio warp paints a wide black band on part of the output
+      #541 closed 2016-01-13 rio-warp drops data on right edge
+      #372 merged 2015-05-28 Use IPython for the rio interpreter
+  partial+write  12 hit(s) (all listed)
+      #3252 open 2024-11-20 Adds read/write access to raster attribute tables
+      #2322 open 2021-10-24 TYPE: type hinting
+      #2119 open 2021-02-18 Failure to retry a read for an s3-COG (GeoTIFF on AWS s3)
+      #1796 closed 2019-10-02 Can't open bigtiff file for writing
+      #2898 merged 2023-08-11 Python file opener VSI plugin
+      #942 closed 2016-12-08 Using Rasterio's new linux wheels
+      #2414 closed 2022-03-23 Partial write
+      #803 closed 2016-06-17 DatasetReader methods as pure functions
+      #731 closed 2016-05-31 Document GeoTiffs vs other formats re: IndirectRasterUpdater
+      #895 closed 2016-09-23 Can't write internal mask with block windows
+      #1159 closed 2017-09-28 vsis3 write capabilities
+      #1721 closed 2019-07-09 Bilinear resampling creates invalid mask values 
+  crash+safe     8 hit(s) (all listed)
+      #3500 closed 2025-12-26 Test failure: opening a memory dataset with `thread_safe=True` crashes in Windows tests
+      #3381 merged 2025-08-17 Build 1.4 wheels with CIBW
+      #3032 merged 2024-02-20 Sidecar support for Python openers
+      #2324 closed 2021-10-29 [RFC][WIP] Prevent fork if GDAL global thread pool has been used
+      #260 closed 2015-01-25 Appveyor builds
+      #1021 closed 2017-04-21 Switch to OSRRelease() from OSRDestroySpatialReference()
+      #915 merged 2016-10-17 MemoryFile
+      #907 merged 2016-10-03 Push and pop error handler within Env context
+  atomic+write   1 hit(s) (all listed)
+      #3611 closed 2026-08-04 Deadlock: GIL vs GDALDriverManager mutex when two threads make their first concurrent features.shapes() call (GDAL >= 3.11)
+  lock+file      15 hit(s) (all listed)
+      #3357 closed 2025-06-04 test_reproject_error_propagation fails on Python 3.14
+      #3484 merged 2025-12-15 Bump actions/download-artifact from 6 to 7
+      #3483 merged 2025-12-15 Bump actions/upload-artifact from 5 to 6
+      #1686 closed 2019-05-11 Occasional "not recognized as a supported file format" errors when reading from S3
+      #3079 closed 2024-04-20 Opener registration error for files in same parent directory
+      #2053 closed 2020-12-02 IReadBlock error while multiprocessing
+      #2502 closed 2022-07-04 rasterio 1.3b2+: segfault when opening uint32 file
+      #2141 merged 2021-04-02 Add Python file-like VSI Plugin
+      #1539 closed 2018-11-05 Unable to open EPSG support file gcs.csv
+      #1107 closed 2017-08-02 Tests for array equality fail when using pytest
+      #1648 closed 2019-03-04 CRS & upper case EPSG with init issues
+      #1777 closed 2019-09-11 enum34 installed into python ^3.6 by mistake
+      #1811 closed 2019-10-24 DOC: Concurrent read/write docs update
+      #1791 closed 2019-09-30 Rasterio.open() giving ParsedPath or UnparsedPath error
+      #997 merged 2017-03-16 Better defined and tested concurrent Envs
+  write+failure  31 hit(s) (all listed)
+      #3121 open 2024-07-29 Multithreaded `warp.reproject` yields wrong output (and is not idempotent)?
+      #3589 merged 2026-07-20 Bump actions/setup-python from 6 to 7
+      #3364 merged 2025-06-24 Deps: Drop dependency to cligj
+      #3376 closed 2025-07-30 GDAL-3.11.x test failures
+      #3254 closed 2024-11-23 Error opening a WarpedVRT that was created in the same process and stored in Google Cloud Store
+      #1686 closed 2019-05-11 Occasional "not recognized as a supported file format" errors when reading from S3
+      #3218 merged 2024-10-24 Adds CRS.geodetic_crs property
+      #3032 merged 2024-02-20 Sidecar support for Python openers
+      #2526 merged 2022-07-15 Add a context manager that records errors, links them, and raises
+      #2965 closed 2023-11-08 Fails to build with GDAL 3.8.0
+      #2747 closed 2023-02-01 1.3.5: pytest is failing
+      #2632 closed 2022-11-05 Fails to build with GDAL 3.6.0 due to test failures
+      #2592 closed 2022-09-18 test_issue2353bis fails with GDAL 3.5.2 & PROJ 9.1.0
+      #2441 merged 2022-04-17 Add method for getting raster band stats
+      #2141 merged 2021-04-02 Add Python file-like VSI Plugin
+      #100 closed 2014-07-01 Get/set raster band color interpretation
+      #394 closed 2015-06-30 Colormaps always have 255 alpha channel
+      #1131 closed 2017-08-29 MemoryError when calculating transforms for large rasters
+      #1240 closed 2017-12-29 `rasterio.mask.mask` masks images with rotation terms in transforms incorrectly
+      #731 closed 2016-05-31 Document GeoTiffs vs other formats re: IndirectRasterUpdater
+  file+contents  20 hit(s) (all listed)
+      #2152 closed 2021-04-13 rasterio.errors.RasterioIOError: path/to/image.tif not recognized as a supported file format
+      #3254 closed 2024-11-23 Error opening a WarpedVRT that was created in the same process and stored in Google Cloud Store
+      #3118 closed 2024-07-22 Rasterio does not install in Docker container: "ERROR: A GDAL API version must be specified"
+      #2485 closed 2022-06-20 rasterio dataset not cleaned properly?
+      #2229 closed 2021-06-30 ENH: Support pathlib-based objects (like cloudpathlib)
+      #2490 closed 2022-06-22 `rasterio.open` "No such file found" after properly reading half of the desired files
+      #2604 closed 2022-10-07 Memory leak -- rasterio.MemoryFile()
+      #2310 closed 2021-10-13 1.3.0 release
+      #2410 closed 2022-03-18 Add and update tags in-place via traditional file, but not MemoryFile, for GTiff
+      #2360 closed 2021-12-08 BUG: passing fsspec into rasterio.open returns ContextManager
+      #2245 closed 2021-07-16 Merge with method=max, min have aliased result on overlap
+      #1240 closed 2017-12-29 `rasterio.mask.mask` masks images with rotation terms in transforms incorrectly
+      #1066 closed 2017-05-27 segfault on test_skip_gtiff
+      #1587 closed 2018-12-19 Can't open a no crs IMG files
+      #1787 closed 2019-09-24 Unable to open EPSG support file gcs.csv (GDAL 3.0.1 PROJ 6.1.1)
+      #2037 closed 2020-11-13 Local test run causes problems related to cython packages
+      #227 closed 2014-12-21 Implemented GDALFillNodata algorithm as rasterio.fill.fillnodata
+      #972 merged 2017-01-31 MemoryFile() can take a file object parameter
+      #588 merged 2016-03-21 Documentation outline
+      #609 merged 2016-03-30 Public API: flatten tools, windows module
+
+== 51 terms run; 38 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

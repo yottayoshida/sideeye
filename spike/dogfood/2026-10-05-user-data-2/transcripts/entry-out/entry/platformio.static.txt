@@ -1,0 +1,2 @@
+static: /opt/py/bin/pio: Python script, ASCII text executable
+next: sideeye explore --state /s/pio --cwd "/s/pio-in" --operation "pio settings set check_platformio_interval 30" \

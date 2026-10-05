@@ -1,0 +1,21 @@
+WARNING: Command group 'config' is experimental and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+WARNING: Command group 'config' is experimental and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+PREFLIGHT  recording accepted — 24 state-changing operation(s) observed
+
+cwd          /s/az-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 24 operations (7422 syscall lines examined, 205 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded the subject replacing its own image, and that run's capture is never parsed, so nothing accounts for it; the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/az --cwd "/s/az-in" --operation "az config set core.output=table" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

@@ -1,0 +1,64 @@
+ROW basic-memory static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT basic-memory 1
+ROW codex static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT codex 1
+ROW ffsubsync static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT ffsubsync 0
+ROW firewalld static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT firewalld 1
+ROW gemini static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT gemini 1
+ROW gltf-transform static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT gltf-transform 1
+ROW gltfpack static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT gltfpack 0
+ROW goi18n static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 4 operations
+EXIT goi18n 0
+ROW hf static=0 preflight_rc=0 gate=0 detail=accepted, 7 operations
+EXIT hf 0
+ROW i18n-tasks static=0 preflight_rc=0 gate=0 detail=accepted, 4 operations
+EXIT i18n-tasks 0
+ROW juliaup static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 58 operations
+EXIT juliaup 0
+ROW jump static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 12 operations
+EXIT jump 0
+ROW kaggle static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT kaggle 0
+ROW lighthouse static=0 preflight_rc=0 gate=0 detail=accepted, 7 operations
+EXIT lighthouse 0
+ROW monero static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT monero 1
+ROW nerdctl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT nerdctl 0
+ROW ntfslabel static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT ntfslabel 0
+ROW opam static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations
+EXIT opam 0
+ROW oras static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT oras 0
+ROW rasterio static=0 preflight_rc=0 gate=0 detail=accepted, 5 operations
+EXIT rasterio 0
+ROW regctl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations
+EXIT regctl 0
+ROW sheldon static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT sheldon 0
+ROW skopeo static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT skopeo 0
+ROW solvespace static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT solvespace 0
+ROW steamguard static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT steamguard 1
+ROW toybox static=0 preflight_rc=0 gate=0 detail=accepted, 9 operations
+EXIT toybox 0
+ROW velero static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT velero 0
+ROW vercel static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT vercel 1
+ROW wandb static=0 preflight_rc=0 gate=0 detail=accepted, 4 operations
+EXIT wandb 0
+ROW wrangler static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT wrangler 1
+ROW yt-dlp static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT yt-dlp 0
+ROW dokuwiki static=0 preflight_rc=0 gate=0 detail=accepted, 30 operations
+EXIT dokuwiki 0

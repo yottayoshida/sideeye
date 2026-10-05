@@ -1,0 +1,49 @@
+== conan-io/conan (label type: bug)
+#20314 2026-09-05 comments=2 first_project_reply=MEMBER 2026-09-06
+#20285 2026-08-24 comments=2 first_project_reply=MEMBER 2026-08-24
+#20282 2026-08-24 comments=2 first_project_reply=MEMBER 2026-08-24
+#20262 2026-08-13 comments=2 first_project_reply=CONTRIBUTOR 2026-08-14
+#20260 2026-08-13 comments=2 first_project_reply=MEMBER 2026-08-14
+#20258 2026-08-13 comments=2 first_project_reply=MEMBER 2026-08-14
+#20149 2026-07-07 comments=2 first_project_reply=MEMBER 2026-07-07
+#20143 2026-07-02 comments=3 first_project_reply=CONTRIBUTOR 2026-07-08
+#20138 2026-07-02 comments=3 first_project_reply=MEMBER 2026-07-02
+#20060 2026-06-06 comments=2 first_project_reply=MEMBER 2026-06-06
+
+== spack/spack (label bug)
+#53135 2026-09-29 comments=0 first_project_reply=none
+#53110 2026-09-25 comments=1 first_project_reply=none
+#53101 2026-09-23 comments=0 first_project_reply=none
+#53058 2026-09-17 comments=1 first_project_reply=none
+#53037 2026-09-15 comments=0 first_project_reply=none
+#53030 2026-09-15 comments=1 first_project_reply=none
+#53018 2026-09-11 comments=0 first_project_reply=none
+#52993 2026-09-05 comments=0 first_project_reply=none
+#52983 2026-08-31 comments=1 first_project_reply=none
+#52979 2026-08-30 comments=2 first_project_reply=none
+
+== platformio/platformio-core (label bug)
+#5462 2026-06-22 comments=2 first_project_reply=MEMBER 2026-06-23
+#5449 2026-05-24 comments=1 first_project_reply=MEMBER 2026-09-05
+#5424 2026-03-31 comments=1 first_project_reply=MEMBER 2026-04-14
+#5388 2026-02-23 comments=2 first_project_reply=MEMBER 2026-09-04
+#5359 2026-01-14 comments=4 first_project_reply=CONTRIBUTOR 2026-01-18
+#5327 2025-12-10 comments=4 first_project_reply=MEMBER 2026-02-02
+#5237 2025-08-26 comments=2 first_project_reply=MEMBER 2026-09-19
+#5186 2025-06-22 comments=3 first_project_reply=MEMBER 2025-06-23
+#5183 2025-06-20 comments=4 first_project_reply=MEMBER 2026-04-21
+#5126 2025-04-02 comments=1 first_project_reply=none
+
+== arduino/arduino-cli (label (none matched; last issues of any label))
+#3297 2026-09-07 comments=3 first_project_reply=none
+#3294 2026-09-04 comments=0 first_project_reply=none
+#3290 2026-08-29 comments=1 first_project_reply=none
+#3276 2026-08-16 comments=0 first_project_reply=none
+#3274 2026-08-13 comments=0 first_project_reply=none
+#3273 2026-08-12 comments=0 first_project_reply=none
+#3253 2026-07-25 comments=0 first_project_reply=none
+#3258 2026-07-23 comments=4 first_project_reply=CONTRIBUTOR 2026-07-27
+#3228 2026-06-27 comments=1 first_project_reply=MEMBER 2026-07-20
+#3226 2026-06-23 comments=4 first_project_reply=CONTRIBUTOR 2026-06-23
+
+rule11-all: done 2026-10-05T02:56:50Z

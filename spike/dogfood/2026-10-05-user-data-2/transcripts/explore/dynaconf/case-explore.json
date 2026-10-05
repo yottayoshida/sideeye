@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/dyn",
+    "operation": "dynaconf write toml -y -s DB_PASSWORD=new-secret -p /s/dyn/",
+    "cwd": "/s/dyn",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/dyn/.secrets.toml",
+  "before_class": "write",
+  "before_path": "/s/dyn/.secrets.toml",
+  "violation": "hybrid"
+}

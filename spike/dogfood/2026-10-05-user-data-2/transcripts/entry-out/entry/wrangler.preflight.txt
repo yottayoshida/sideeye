@@ -1,0 +1,19 @@
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+cwd          /s/wrangler-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 0 operations (7525 syscall lines examined, 0 in scope of the judged state), witness strace — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and ordered rather than compared one by one: this is `oracle_verified_subject_only`, and `oracle_verified` stays false. What accounts for a write neither observer placed is the per-path reconciliation, not this comparison
+processes    a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 17 thread(s) created, and 0 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 15 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification — only a real exploration runs these
+
+repeatability  two runs 2159 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/aux/home/.config/.wrangler --cwd "/s/wrangler-in" --operation "wrangler telemetry disable" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

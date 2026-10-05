@@ -1,0 +1,9 @@
+SEEN  ccache  funnel:96
+SEEN  ccache  target-classes:151
+SEEN  ccache  b2-exclusions:62
+SEEN  ccache  spike/dogfood/2026-09-16-userview-3/SELECTION.md:109
+SEEN  ccache  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:120
+SEEN  ccache  spike/dogfood/2026-10-02-unjudged-on-v170/SELECTION.md:36
+fresh xmake
+fresh buildpacks
+fresh pack-cli

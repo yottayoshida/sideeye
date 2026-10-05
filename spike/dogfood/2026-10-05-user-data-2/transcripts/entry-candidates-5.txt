@@ -1,0 +1,4 @@
+ROW dynaconf static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT dynaconf 0
+ROW lingui static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT lingui 1

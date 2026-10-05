@@ -1,0 +1,13 @@
+PASS  10/10 explored worlds satisfied the built-in atomicity invariant
+      explored 10 worlds (crash points 9 + 1 baseline)
+      expected status: 0
+      atomicity: 2 path(s) judged pre-or-post
+      oracle: agreed on 9 operations (165 syscall lines examined, 50 in scope of the judged state), witness strace
+      metadata: 4 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x2, fchown x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+      checker: none configured
+      l1: no marker configured
+      case: (none)
+      processes: single process
+      not tested: power loss, torn writes, concurrent processes
+      cwd: /s/tb
+sideeye: json sha256=a8cfd9e1d7d6e974f61bdc803107f77c11e79935d66149f60ef1679fe733e68f;

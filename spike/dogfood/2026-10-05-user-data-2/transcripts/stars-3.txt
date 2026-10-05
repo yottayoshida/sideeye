@@ -1,0 +1,7 @@
+hercules-team/augeas stars=532 pushed=2026-09-29 archived=false issues=true full=hercules-team/augeas
+saltstack/salt stars=15689 pushed=2026-10-03 archived=false issues=true full=saltstack/salt
+puppetlabs/puppet stars=7946 pushed=2026-08-06 archived=false issues=true full=puppetlabs/puppet
+dyc3/steamguard-cli stars=1056 pushed=2026-09-22 archived=false issues=true full=dyc3/steamguard-cli
+tidwall/jj stars=2059 pushed=2023-12-16 archived=false issues=false full=tidwall/jj
+wakatime/wakatime-cli stars=460 pushed=2026-09-29 archived=false issues=true full=wakatime/wakatime-cli
+zyedidia/micro stars=29666 pushed=2026-10-05 archived=false issues=true full=micro-editor/micro

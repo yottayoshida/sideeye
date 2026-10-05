@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/aux/home/.config/k8sgpt",
+    "operation": "k8sgpt auth remove --backends openai",
+    "cwd": "/s/k8sgpt-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 3,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/aux/home/.config/k8sgpt/k8sgpt.yaml",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.config/k8sgpt/k8sgpt.yaml",
+  "violation": "hybrid"
+}

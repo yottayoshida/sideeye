@@ -1,0 +1,2 @@
+static: /opt/py/bin/rio: Python script, ASCII text executable
+next: sideeye explore --state /s/rio --cwd "/s/rio-in" --operation "rio edit-info --crs EPSG:4326 --tag survey=2026 /s/rio/a.tif" \

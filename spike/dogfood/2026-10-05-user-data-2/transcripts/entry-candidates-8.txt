@@ -1,0 +1,2 @@
+ROW xmake static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT xmake 1

@@ -1,0 +1,25 @@
+FAIL  1 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 4
+            after  open(/s/pio/appstate.json)
+            before write(/s/pio/appstate.json)
+path        appstate.json
+observed    holding neither the old nor the new content
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 4 operations (8013 syscall lines examined, 143 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/platformio/work-explore/cases/000001.json
+replay      sideeye replay /out/platformio/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/platformio/work-explore/evidence/000001.json
+cwd         /s/pio-in
+apparatus   env:FAKETIME=2026-10-01 00:00:00, preload:libfaketime
+processes   3 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/pio SIDEEYE_TRACE_PATH=/out/platformio/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=ce2dae9f6af3b939a03879a5b95b60d8a68125dffd5f59d9e036db07b7fa4d22;

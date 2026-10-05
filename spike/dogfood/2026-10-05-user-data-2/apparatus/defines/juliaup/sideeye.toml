@@ -1,0 +1,6 @@
+[world]
+state = "/s/jd"
+
+[define]
+operation = "juliaup config versionsdbupdateinterval 0"
+cwd       = "/s/jd-in"

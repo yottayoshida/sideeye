@@ -1,0 +1,219 @@
+scan ended for solvespace (solvespace/solvespace); exploring 2026-10-05T03:09:13Z
+=== solvespace 2026-10-05T03:09:13Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 1: FAIL -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for i18n-tasks (glebm/i18n-tasks); exploring 2026-10-05T03:09:14Z
+=== i18n-tasks 2026-10-05T03:09:14Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for goi18n (nicksnyder/go-i18n); exploring 2026-10-05T03:12:41Z
+=== goi18n 2026-10-05T03:12:41Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for toybox (landley/toybox); exploring 2026-10-05T03:17:42Z
+=== toybox 2026-10-05T03:17:42Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+scan ended for gltfpack (zeux/meshoptimizer); exploring 2026-10-05T03:21:46Z
+=== gltfpack 2026-10-05T03:21:46Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for yt-dlp (yt-dlp/yt-dlp); exploring 2026-10-05T03:27:47Z
+=== yt-dlp 2026-10-05T03:27:47Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+scan ended for ntfslabel (tuxera/ntfs-3g); exploring 2026-10-05T03:32:31Z
+=== ntfslabel 2026-10-05T03:32:31Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 1: FAIL -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for kaggle (Kaggle/kaggle-cli); exploring 2026-10-05T03:37:12Z
+=== kaggle 2026-10-05T03:37:12Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for hf (huggingface/huggingface_hub); exploring 2026-10-05T03:42:56Z
+=== hf 2026-10-05T03:42:56Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for skopeo (podman-container-tools/skopeo); exploring 2026-10-05T03:48:21Z
+=== skopeo 2026-10-05T03:48:21Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 0: PASS -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 0: PASS -
+scan ended for oras (oras-project/oras); exploring 2026-10-05T03:53:21Z
+=== oras 2026-10-05T03:53:21Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+scan ended for regctl (regclient/regclient); exploring 2026-10-05T03:57:42Z
+=== regctl 2026-10-05T03:57:42Z
+explore exit 3: SETUP_ERROR -
+explore exit 3: SETUP_ERROR -
+scan ended for nerdctl (containerd/nerdctl); exploring 2026-10-05T04:03:23Z
+=== nerdctl 2026-10-05T04:03:23Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+scan ended for velero (velero-io/velero); exploring 2026-10-05T04:09:25Z
+=== velero 2026-10-05T04:09:25Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for sheldon (rossmacarthur/sheldon); exploring 2026-10-05T04:12:47Z
+=== sheldon 2026-10-05T04:12:47Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for opam (ocaml/opam); exploring 2026-10-05T04:18:28Z
+=== opam 2026-10-05T04:18:28Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+scan ended for juliaup (JuliaLang/juliaup); exploring 2026-10-05T04:23:50Z
+=== juliaup 2026-10-05T04:23:50Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+scan ended for wandb (wandb/wandb); exploring 2026-10-05T04:29:53Z
+=== wandb 2026-10-05T04:29:53Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for wrangler (cloudflare/workers-sdk); exploring 2026-10-05T04:36:09Z
+=== wrangler 2026-10-05T04:36:09Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for stripe (stripe/stripe-cli); exploring 2026-10-05T04:59:40Z
+=== stripe 2026-10-05T04:59:40Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for pymol (schrodinger/pymol-open-source); exploring 2026-10-05T05:04:11Z
+=== pymol 2026-10-05T05:04:11Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for dotenv (theskumar/python-dotenv); exploring 2026-10-05T05:08:53Z
+=== dotenv 2026-10-05T05:08:54Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+scan ended for gita (nosarthur/gita); exploring 2026-10-05T05:12:42Z
+=== gita 2026-10-05T05:12:42Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for azure-cli (Azure/azure-cli); exploring 2026-10-05T05:19:06Z
+=== azure-cli 2026-10-05T05:19:06Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for wp-cli (wp-cli/wp-cli+wp-cli/config-command); exploring 2026-10-05T05:28:13Z
+=== wp-cli 2026-10-05T05:28:13Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for conan (conan-io/conan); exploring 2026-10-05T05:34:15Z
+=== conan 2026-10-05T05:34:16Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+scan ended for platformio (platformio/platformio-core); exploring 2026-10-05T05:39:58Z
+=== platformio 2026-10-05T05:39:58Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for dynaconf (dynaconf/dynaconf); exploring 2026-10-05T05:44:03Z
+=== dynaconf 2026-10-05T05:44:03Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for tenv (tofuutils/tenv); exploring 2026-10-05T05:48:26Z
+=== tenv 2026-10-05T05:48:26Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+explore-after-scan: done 2026-10-05T05:48:27Z

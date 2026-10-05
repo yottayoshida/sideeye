@@ -1,0 +1,42 @@
+=== dotenv (dotenv -f /s/env/.env set DEBUG true)
+openat(AT_FDCWD, "/s/env/.tmp_p0no429a", O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC, 0600) = 4
+write(4, "# production secrets\nDATABASE_UR"..., 96) = 96
+renameat(AT_FDCWD, "/s/env/.tmp_p0no429a", AT_FDCWD, "/s/env/.env") = 0
+=== ggshield (ggshield config set default_token_lifetime 30)
+openat(AT_FDCWD, "/s/gg/.config/ggshield/auth_config.yaml", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3
+write(3, "default_token_lifetime: 30\ninsta"..., 41) = 41
+=== opam (opam option jobs=3 --global)
+openat(AT_FDCWD, "/s/opam/config.lock", O_RDWR|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 4
+openat(AT_FDCWD, "/s/opam/opam-atomic0d523b.tmp", O_WRONLY|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 5
+write(5, "opam-version: \"2.0\"\nopam-root-ve"..., 1330) = 1330
+renameat(AT_FDCWD, "/s/opam/opam-atomic0d523b.tmp", AT_FDCWD, "/s/opam/config") = 0
+=== juliaup (juliaup config versionsdbupdateinterval 0)
+openat(AT_FDCWD, "/s/jd/juliaup/.juliaup-lock", O_RDWR|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 3
+openat(AT_FDCWD, "/s/jd/juliaup/juliaup.json", O_RDWR|O_LARGEFILE|O_CLOEXEC) = 4
+openat(AT_FDCWD, "/s/jd/juliaup/.tmpWKJaav", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5
+write(5, "{", 1)                  = 1
+write(5, "\n", 1)                 = 1
+write(5, "  ", 2)                 = 2
+write(5, "\"", 1)                 = 1
+write(5, "Default", 7)            = 7
+write(5, "\"", 1)                 = 1
+write(5, ": ", 2)                 = 2
+write(5, "null", 4)               = 4
+write(5, ",\n", 2)                = 2
+write(5, "  ", 2)                 = 2
+write(5, "\"", 1)                 = 1
+write(5, "InstalledVersions", 17) = 17
+write(5, "\"", 1)                 = 1
+write(5, ": ", 2)                 = 2
+write(5, "{", 1)                  = 1
+write(5, "}", 1)                  = 1
+write(5, ",\n", 2)                = 2
+write(5, "  ", 2)                 = 2
+write(5, "\"", 1)                 = 1
+write(5, "InstalledChannels", 17) = 17
+write(5, "\"", 1)                 = 1
+... 33 more
+firewalld 2.3.1-1+deb13u1
+ntfs-3g 1:2022.10.3-5+deb13u2
+pymol 3.1.0+dfsg-1
+skopeo 1.18.0+ds1-1+b5

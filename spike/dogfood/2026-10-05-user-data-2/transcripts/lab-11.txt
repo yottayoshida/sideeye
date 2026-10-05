@@ -1,0 +1,101 @@
+$ dynaconf write --help
+Usage: dynaconf write [OPTIONS] [ini|toml|yaml|json|py|redis|vault|env]
+
+  Writes data to specific source.
+
+Options:
+  -v, --vars TEXT     key values to be written e.g: `dynaconf write toml -e
+                      NAME=foo -e X=2`
+
+  -s, --secrets TEXT  secret key values to be written in .secrets e.g:
+                      `dynaconf write toml -s TOKEN=kdslmflds -s X=2`
+
+  -p, --path TEXT     defaults to current directory/settings.{ext}
+  -e, --env TEXT      env to write to defaults to DEVELOPMENT for files for
+                      external sources like Redis and Vault it will be
+                      DYNACONF or the value set in $ENVVAR_PREFIX_FOR_DYNACONF
+
+  -y
+  --help              Show this message and exit.
+rc=0
+$ dynaconf write toml -s DB_PASSWORD=new-secret -p /lab/dyn/
+/opt/py/lib/python3.13/site-packages/dynaconf/cli.py:118: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+/lab/dyn/.secrets.toml exists do you want to overwrite it? [y/N]: Aborted!
+rc=0
+94b7aa814ca4  /lab/dyn/.secrets.toml
+2e2caf72d8ca  /lab/dyn/settings.toml
+[default]
+DB_HOST = "db.internal"
+DB_PASSWORD = "old-secret"
+API_TOKEN = "tok-aaaa"
+[default]
+NAME = "household"
+lrwxrwxrwx 1 root root 29 Oct  5 02:54 /opt/lingui-proj/node_modules/.bin/lingui -> ../@lingui/cli/dist/lingui.js
+/opt/lingui-proj/node_modules/@lingui/cli/dist/lingui.js
+$ node /opt/lingui-proj/node_modules/@lingui/cli/dist/lingui.js extract
+✔ Done in 604ms
+Catalog statistics for locales/{locale}/messages: 
+┌─────────────┬─────────────┬─────────┐
+│ Language    │ Total count │ Missing │
+├─────────────┼─────────────┼─────────┤
+│ en (source) │      2      │    -    │
+│ ja          │      2      │    2    │
+└─────────────┴─────────────┴─────────┘
+
+(Use "npm run extract" to update catalogs with new messages.)
+(Use "npm run compile" to compile catalogs for production. Alternatively, use bundler plugins: https://lingui.dev/ref/cli#compiling-catalogs-in-ci)
+rc=0
+5598fd559a43  /lab/lg/locales/en/messages.po
+81a831370946  /lab/lg/locales/ja/messages.po
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-05 02:54+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ja\n"
+
+#: src/app.js:2
+msgid "Welcome home"
+msgstr ""
+
+#: src/app.js:3
+msgid "Your basket"
+msgstr ""
+$ node /opt/lingui-proj/node_modules/@lingui/cli/dist/lingui.js extract
+✔ Done in 373ms
+Catalog statistics for locales/{locale}/messages: 
+┌─────────────┬─────────────┬─────────┐
+│ Language    │ Total count │ Missing │
+├─────────────┼─────────────┼─────────┤
+│ en (source) │      3      │    -    │
+│ ja          │      3      │    1    │
+└─────────────┴─────────────┴─────────┘
+
+(Use "npm run extract" to update catalogs with new messages.)
+(Use "npm run compile" to compile catalogs for production. Alternatively, use bundler plugins: https://lingui.dev/ref/cli#compiling-catalogs-in-ci)
+rc=0
+091f099bccf4  /lab/lg/locales/en/messages.po
+2cb93ce9ceed  /lab/lg/locales/ja/messages.po
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-05 02:54+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ja\n"
+
+#: src/app.js:4
+msgid "Checkout now"
+msgstr ""
+
+#: src/app.js:2
+msgid "Welcome home"
+msgstr "XX"
+
+#: src/app.js:3
+msgid "Your basket"
+msgstr "XX"

@@ -1,0 +1,27 @@
+• turbo 2.11.7
+• turbo 2.11.7
+• turbo 2.11.7
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/aux/home/.config/turborepo/telemetry.json)
+            before write(/s/aux/home/.config/turborepo/telemetry.json)
+path        telemetry.json
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (416 syscall lines examined, 23 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/turbo/work-supervised/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/turbo-in
+processes   single process in the recording; a thread was created in an explored world; the supervising engine recorded 22 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   this run again, with --observe supervised  (the crash point is the engine's, from outside the operation; there is no shim to preload)
+sideeye: json sha256=a54be4a801768303bfc65c56c8ee452615a15e78dfcc6d4e59c16714f4abdf88;

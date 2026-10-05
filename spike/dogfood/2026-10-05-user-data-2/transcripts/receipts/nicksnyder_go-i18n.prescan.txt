@@ -1,0 +1,195 @@
+== novelty pre-scan: nicksnyder/go-i18n
+== date: 2026-10-05T03:08:57Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #123 closed 2018-08-24 Added a check to fix a nil pointer crash
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      14 hit(s) (all listed)
+      #416 open 2026-09-01 Bump codecov/codecov-action from 6 to 7
+      #414 merged 2026-09-01 Bump actions/setup-go from 6 to 7
+      #412 merged 2026-09-01 Bump actions/checkout from 6 to 7
+      #404 merged 2026-04-01 Bump codecov/codecov-action from 5 to 6
+      #402 merged 2026-03-01 Bump goreleaser/goreleaser-action from 6 to 7
+      #393 merged 2025-12-01 Bump actions/checkout from 4 to 6
+      #379 closed 2025-09-01 Bump actions/checkout from 4 to 5
+      #383 merged 2025-10-01 Bump actions/setup-go from 5 to 6
+      #368 closed 2025-04-01 Bump golangci/golangci-lint-action from 6 to 7
+      #350 merged 2024-12-01 Bump codecov/codecov-action from 4 to 5
+      #339 merged 2024-10-13 Bump actions/checkout from 1 to 4
+      #340 merged 2024-10-13 Bump golangci/golangci-lint-action from 3 to 6
+      #342 merged 2024-10-13 Bump goreleaser/goreleaser-action from 2 to 6
+      #341 merged 2024-10-13 Bump actions/setup-go from 2 to 5
+  truncate       16 hit(s) (all listed)
+      #420 open 2026-10-01 Bump golang.org/x/text from 0.32.0 to 0.42.0
+      #415 closed 2026-09-01 Bump golang.org/x/text from 0.32.0 to 0.42.0
+      #416 open 2026-09-01 Bump codecov/codecov-action from 6 to 7
+      #414 merged 2026-09-01 Bump actions/setup-go from 6 to 7
+      #412 merged 2026-09-01 Bump actions/checkout from 6 to 7
+      #404 merged 2026-04-01 Bump codecov/codecov-action from 5 to 6
+      #402 merged 2026-03-01 Bump goreleaser/goreleaser-action from 6 to 7
+      #393 merged 2025-12-01 Bump actions/checkout from 4 to 6
+      #379 closed 2025-09-01 Bump actions/checkout from 4 to 5
+      #383 merged 2025-10-01 Bump actions/setup-go from 5 to 6
+      #368 closed 2025-04-01 Bump golangci/golangci-lint-action from 6 to 7
+      #350 merged 2024-12-01 Bump codecov/codecov-action from 4 to 5
+      #339 merged 2024-10-13 Bump actions/checkout from 1 to 4
+      #340 merged 2024-10-13 Bump golangci/golangci-lint-action from 3 to 6
+      #342 merged 2024-10-13 Bump goreleaser/goreleaser-action from 2 to 6
+      #341 merged 2024-10-13 Bump actions/setup-go from 2 to 5
+  empty          32 hit(s) (all listed)
+      #418 open 2026-09-18 i18n: keep empty message strings on import
+      #329 open 2024-08-02 Empty string as message content is ignored
+      #413 merged 2026-09-01 Bump go.yaml.in/yaml/v3 from 3.0.4 to 3.0.5
+      #241 closed 2021-01-07 Reseting err to nil after falling back on Other plural form
+      #364 closed 2025-03-13 'pluralFormNotFoundError' has not been reset when successfully fallback to "Other" pluralization
+      #209 closed 2020-01-10 translation file with key "id" leads LoadMessageFile to fail silently
+      #334 closed 2024-10-08 The Option in TextParser is not used
+      #326 merged 2024-03-31 fallback to empty string message `""` when get nil value
+      #325 closed 2024-03-30 error `unsupported file format <nil>` when a yaml value is empty
+      #289 closed 2022-12-05 Cound you export this function or when translation has error get the original value
+      #305 merged 2023-10-21 Fix Localize regression with empty default message
+      #317 merged 2024-01-28 Support configurable template parsers
+      #281 closed 2022-08-19 Error handling  is faulty
+      #245 closed 2021-02-08 Extract messages with empty text
+      #38 closed 2015-09-29 Expose the loaded bundles for tests and verification purposes.
+      #189 merged 2019-06-16 simpler fallback behavior
+      #190 merged 2019-06-17 add benchmarks
+      #96 merged 2018-04-17 don't panic if translation is empty
+      #208 merged 2020-01-03 fixes nil reference exception if localization text is empty, fixes #207
+      #202 merged 2019-09-29 fix(goi18n): could not extract constant message id
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          71 hit(s) (all listed)
+      #251 merged 2021-04-17 README.md: fixing broken links
+      #228 merged 2020-09-29 Do not encode HTML entities in JSON message files
+      #273 merged 2022-06-29 chore: add "README.zh-Hans.md" and optimized documentation
+      #274 merged 2022-06-29 go 1.18.3
+      #268 merged 2022-02-16 Upgrade dependencies
+      #269 closed 2022-02-20 Update README.md
+      #261 merged 2021-06-23 Upgrade Go to 1.16.5
+      #260 merged 2021-06-23 Update test to new error message in go 1.16
+      #246 merged 2021-02-25 Add support for loading bundle from fs.FS
+      #249 merged 2021-03-04 Fix workflow condition
+      #162 merged 2019-04-18 remove sudo:false
+      #138 merged 2018-11-17 refactor localizer
+      #143 merged 2018-11-23 extract concatenated strings
+      #145 closed 2018-11-24 try go mod download
+      #144 merged 2018-11-24 add .golangci.yml
+      #166 merged 2019-05-03 handle null in json
+      #173 merged 2019-05-09 add convenience functions
+      #174 merged 2019-05-09  attempt fallback to "other" plural form
+      #175 merged 2019-05-09 update to CLDR v35.1 (2019-04-17)
+      #171 merged 2019-05-08 support artificial languages
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #419 open 2026-09-18 i18n: accept language tag for directory-based message files
+      #400 open 2026-01-12 feat(template): add FastParser for TinyGo compatibility
+      #355 open 2025-01-01 Extract command improvement: collecting values from constants in other package files
+      #253 open 2021-04-24 Fix artificial language matching
+      #412 merged 2026-09-01 Bump actions/checkout from 6 to 7
+      #413 merged 2026-09-01 Bump go.yaml.in/yaml/v3 from 3.0.4 to 3.0.5
+      #414 merged 2026-09-01 Bump actions/setup-go from 6 to 7
+      #404 merged 2026-04-01 Bump codecov/codecov-action from 5 to 6
+      #411 merged 2026-07-06 Remove retired Go report card
+      #402 merged 2026-03-01 Bump goreleaser/goreleaser-action from 6 to 7
+      #407 merged 2026-05-04 Fix status badge in README.md
+      #403 closed 2026-03-01 Bump golang.org/x/text from 0.32.0 to 0.34.0
+      #401 closed 2026-02-01 Bump golang.org/x/text from 0.32.0 to 0.33.0
+      #397 merged 2025-12-30 Replace unmaintained gopkg.in/yaml.v3 with go.yaml.in/yaml/v3
+      #399 merged 2026-01-01 Upgrade deps
+      #398 merged 2026-01-01 Update to CLDR v48
+      #395 merged 2025-12-02 Fix Goreleaser lint warning
+      #394 merged 2025-12-02 Fix CI given minimum version of 1.24
+      #392 merged 2025-12-01 Bump golangci/golangci-lint-action from 7 to 9
+      #393 merged 2025-12-01 Bump actions/checkout from 4 to 6
+  incomplete     2 hit(s) (all listed)
+      #241 closed 2021-01-07 Reseting err to nil after falling back on Other plural form
+      #281 closed 2022-08-19 Error handling  is faulty
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #323 closed 2024-02-27 Add context awareness
+      #153 closed 2019-01-31 null values in json
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      34 hit(s) (all listed)
+      #420 open 2026-10-01 Bump golang.org/x/text from 0.32.0 to 0.42.0
+      #416 open 2026-09-01 Bump codecov/codecov-action from 6 to 7
+      #413 merged 2026-09-01 Bump go.yaml.in/yaml/v3 from 3.0.4 to 3.0.5
+      #414 merged 2026-09-01 Bump actions/setup-go from 6 to 7
+      #404 merged 2026-04-01 Bump codecov/codecov-action from 5 to 6
+      #412 merged 2026-09-01 Bump actions/checkout from 6 to 7
+      #405 closed 2026-04-01 Bump golang.org/x/text from 0.32.0 to 0.35.0
+      #402 merged 2026-03-01 Bump goreleaser/goreleaser-action from 6 to 7
+      #403 closed 2026-03-01 Bump golang.org/x/text from 0.32.0 to 0.34.0
+      #401 closed 2026-02-01 Bump golang.org/x/text from 0.32.0 to 0.33.0
+      #391 merged 2025-12-01 Bump golang.org/x/text from 0.29.0 to 0.31.0
+      #386 closed 2025-11-01 Bump golang.org/x/text from 0.29.0 to 0.30.0
+      #382 merged 2025-10-01 Bump golang.org/x/text from 0.28.0 to 0.29.0
+      #373 closed 2025-06-01 Bump golangci/golangci-lint-action from 7 to 8
+      #380 merged 2025-09-01 Bump golang.org/x/text from 0.27.0 to 0.28.0
+      #392 merged 2025-12-01 Bump golangci/golangci-lint-action from 7 to 9
+      #383 merged 2025-10-01 Bump actions/setup-go from 5 to 6
+      #378 merged 2025-08-01 Bump golang.org/x/text from 0.26.0 to 0.27.0
+      #393 merged 2025-12-01 Bump actions/checkout from 4 to 6
+      #367 merged 2025-04-01 Bump golang.org/x/text from 0.21.0 to 0.23.0
+  clobber        0 hit(s)
+  blank          3 hit(s) (all listed)
+      #418 open 2026-09-18 i18n: keep empty message strings on import
+      #209 closed 2020-01-10 translation file with key "id" leads LoadMessageFile to fail silently
+      #110 closed 2018-05-31 I can't create translate files by command "goi18n merge"
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        1 hit(s) (all listed)
+      #93 closed 2018-04-10 Cannot use % within an arg (template data) to the translate func
+  contents       2 hit(s) (all listed)
+      #402 merged 2026-03-01 Bump goreleaser/goreleaser-action from 6 to 7
+      #238 closed 2020-12-08 Any example present how to use message format in JSON
+  in-place       4 hit(s) (all listed)
+      #327 closed 2024-05-27 Adds ability to extract strings from T() functions to `goi18n extract`
+      #51 merged 2016-09-21 Command goi18n generate dynamic struct R.go #50
+      #137 closed 2018-11-07 The command "goi18n constants" is missing
+      #150 closed 2019-01-07 Question: {{T "messageID" .Param1 .Param2}} in v2
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  2 hit(s) (all listed)
+      #157 merged 2019-03-29 Nested translation support
+      #189 merged 2019-06-16 simpler fallback behavior
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      2 hit(s) (all listed)
+      #91 closed 2018-03-19 The goroutine safety of Tfunc and AddTranslation functions
+      #181 closed 2019-06-02 Data race in Template.Parse
+  write+failure  0 hit(s)
+  file+contents  2 hit(s) (all listed)
+      #402 merged 2026-03-01 Bump goreleaser/goreleaser-action from 6 to 7
+      #238 closed 2020-12-08 Any example present how to use message format in JSON
+
+== 51 terms run; 16 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

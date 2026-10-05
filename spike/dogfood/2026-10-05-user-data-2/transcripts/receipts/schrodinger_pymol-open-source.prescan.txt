@@ -1,0 +1,223 @@
+== novelty pre-scan: schrodinger/pymol-open-source
+== date: 2026-10-05T04:59:35Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          32 hit(s) (all listed)
+      #508 open 2026-05-18 PyMOL 3.1.0a0 crashes when reading 3.0.0 session files
+      #336 open 2024-02-10 Bizarre invalid selection / selection just gives up
+      #447 open 2025-04-03 pymol 3.1.0 broke rendering of ABPS Electrostatics plugin under Wayland on Nvidia non-free drivers
+      #204 open 2021-11-14 Closing pymol which started from python console crashes python
+      #144 open 2020-11-04 segmentation error running pymol to measure distance between water molecules 
+      #517 open 2026-08-12 Heap buffer overflow in PConvPyListToStringVLA with non-ASCII wizard messages
+      #381 open 2024-08-07 Pymol surface error
+      #424 open 2025-01-24 How to reliably compile on Linux Mint 22?
+      #335 open 2024-02-02 pymol --testing destroys SingletonPyMOLGlobals
+      #431 closed 2025-02-07 PyMol crashes when rendering surface of a protein
+      #409 closed 2024-11-29 Unable to re-open PyMOL 3 session file
+      #112 closed 2020-07-10 Issue building surface
+      #217 closed 2022-01-17 Need to port from distutils to setuptools
+      #340 closed 2024-02-28 PyMOL crashes after "Copy to Object"
+      #334 closed 2024-02-02 Crash when loading mmCIF structure locally or through fetch
+      #327 closed 2024-01-16 Pymol crashes when i am trying to split states on M3 chip
+      #322 closed 2023-12-19 get_atom_coords() fails with object or selection name
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+      #244 closed 2022-08-02 Compatibility of sessions between PyMOL (<=) 2.3 and PyMOL 2.5
+      #285 merged 2023-04-15 Fix GIL for get_object_ttt and friends
+  corrupt        3 hit(s) (all listed)
+      #517 open 2026-08-12 Heap buffer overflow in PConvPyListToStringVLA with non-ASCII wizard messages
+      #215 open 2021-12-28 Error fetching pdb id 7BV2 
+      #3 merged 2018-07-04 Fix corruption of .pkl files on Windows
+  corruption     2 hit(s) (all listed)
+      #517 open 2026-08-12 Heap buffer overflow in PConvPyListToStringVLA with non-ASCII wizard messages
+      #3 merged 2018-07-04 Fix corruption of .pkl files on Windows
+  truncated      1 hit(s) (all listed)
+      #352 merged 2024-03-26 Use XDG directories instead of HOME to store plugins data and recent files cache
+  truncate       2 hit(s) (all listed)
+      #471 closed 2025-10-10 Installation failing on Ubuntu 24.04
+      #352 merged 2024-03-26 Use XDG directories instead of HOME to store plugins data and recent files cache
+  empty          16 hit(s) (all listed)
+      #515 open 2026-07-25 feat(exporting): add native glTF 2.0 and GLB export
+      #485 merged 2025-11-29 Some new_command fixes
+      #498 closed 2026-02-24 Edits missing for PyQT6 support
+      #478 closed 2025-10-30 Sometimes `get_object_list(...)` returns `None` instead of `[]` or raising an exception
+      #482 merged 2025-11-04 Error propagation for cmd.get_object_list()
+      #502 closed 2026-03-24 editor.attach_nuc_acid() requires chain to be defined
+      #481 closed 2025-11-04 Validate selections in `get_object_list()``
+      #434 closed 2025-02-19 Plugins not showing
+      #322 closed 2023-12-19 get_atom_coords() fails with object or selection name
+      #241 closed 2022-07-11 Issue when loading a multimodel pdb file using discrete=1
+      #209 closed 2021-12-03 VRML export of distance measurements broken
+      #138 merged 2020-10-16 Crash reading some .cif files with Windows line endings
+      #74 closed 2019-12-12 Bug: cmd.get_atom_coords() fails silently if atom does not exist
+      #109 closed 2020-07-08 select_list strange behavior
+      #16 closed 2018-12-06 MSVS14 32-bit build error
+      #85 closed 2020-04-07 Windows 10 Pymol crashes on startup
+  atomic         6 hit(s) (all listed)
+      #160 open 2021-01-19 Interior color overlapping issue
+      #55 open 2019-10-11 Issue loading multi model PDB file
+      #158 open 2021-01-17 interior color transparency 
+      #269 closed 2023-01-10 Cartoon_trancparency command not working after using it on specific residue ranges
+      #120 closed 2020-07-30 ray_interior_color atomic not working properly 
+      #115 closed 2020-07-16 Issue coloring huge surface in batch mode
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         3 hit(s) (all listed)
+      #438 closed 2025-02-28 Build function works three times before being unable to find source anchor atom
+      #341 closed 2024-02-29 Cannot quit PyMol on MacOS
+      #110 closed 2020-07-08 Installing two versions of pymol-open-source from conda on three Python versions fail on OSX, Linux due to Python version
+  power          1 hit(s) (all listed)
+      #5 closed 2018-09-04 Changes 1.9 to 2.3 which would break shaders?
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           4 hit(s) (all listed)
+      #167 open 2021-02-12 diskarbitrationd causes pymol to hang when accessing files
+      #473 open 2025-10-10 Volumes Don't Render in command-line only mode
+      #95 closed 2020-05-04 Capturing scene pixels without writing image to disk
+      #44 closed 2019-07-02 load_traj's option `selection` does not work for xtc format
+  partial        5 hit(s) (all listed)
+      #514 open 2026-07-25 fix(editing): drive protonate fallback with pKa-based formal charges
+      #312 open 2023-09-20 mmcif files overwrite or skip load function's object argument.
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+      #266 closed 2022-10-25 Not able to load partial pse using API
+      #48 closed 2019-08-07 Pdb file load fail
+  incomplete     4 hit(s) (all listed)
+      #448 closed 2025-04-12 Improvements on the `@cmd.declare_command` API
+      #470 merged 2025-10-09 Declaring new commands
+      #5 closed 2018-09-04 Changes 1.9 to 2.3 which would break shaders?
+      #51 closed 2019-09-17 Installed without error but keep report 'Segmentation fault' when I ran it
+  dataloss       0 hit(s)
+  recover        3 hit(s) (all listed)
+      #167 open 2021-02-12 diskarbitrationd causes pymol to hang when accessing files
+      #470 merged 2025-10-09 Declaring new commands
+      #125 closed 2020-09-03 Auto-fix process for PDB file inconsistencies
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #420 closed 2025-01-10  Scoped enums for PyQt6 proper support
+      #328 closed 2024-01-20 apbs plugin issue 
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+  erasing        2 hit(s) (all listed)
+      #328 closed 2024-01-20 apbs plugin issue 
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+  erased         1 hit(s) (all listed)
+      #420 closed 2025-01-10  Scoped enums for PyQt6 proper support
+  destroy        3 hit(s) (all listed)
+      #335 open 2024-02-02 pymol --testing destroys SingletonPyMOLGlobals
+      #448 closed 2025-04-12 Improvements on the `@cmd.declare_command` API
+      #469 closed 2025-09-26 Pymol 3.1.0 apbs_gui PyQt6 QMessageBox.Yes and QMessageBox.No errors
+  destroys       1 hit(s) (all listed)
+      #335 open 2024-02-02 pymol --testing destroys SingletonPyMOLGlobals
+  overwrite      4 hit(s) (all listed)
+      #312 open 2023-09-20 mmcif files overwrite or skip load function's object argument.
+      #335 open 2024-02-02 pymol --testing destroys SingletonPyMOLGlobals
+      #456 open 2025-05-14 User defined nucleic acid mutagenesis
+      #16 closed 2018-12-06 MSVS14 32-bit build error
+  clobber        0 hit(s)
+  blank          8 hit(s) (all listed)
+      #403 open 2024-10-12 ObjectMolecule: plugin 'gro' cannot open '/home/it-admin/Desktop/pdf/md_0_10.gro'
+      #478 closed 2025-10-30 Sometimes `get_object_list(...)` returns `None` instead of `[]` or raising an exception
+      #448 closed 2025-04-12 Improvements on the `@cmd.declare_command` API
+      #470 merged 2025-10-09 Declaring new commands
+      #416 closed 2025-01-07 PyMOL keeps closing
+      #349 merged 2024-03-23 Forwards better plugins
+      #168 closed 2021-02-15 Depicting the charge (instead of potential) distribution
+      #138 merged 2020-10-16 Crash reading some .cif files with Windows line endings
+  unreadable     1 hit(s) (all listed)
+      #350 closed 2024-03-23 Black formatting
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       21 hit(s) (all listed)
+      #336 open 2024-02-10 Bizarre invalid selection / selection just gives up
+      #200 open 2021-11-09 MacOS menu bars inaccessible after initial launch
+      #104 open 2020-06-21 Pymol can not import python scripts when called in perl
+      #485 merged 2025-11-29 Some new_command fixes
+      #457 closed 2025-05-23 I cannot open PyMOLwin.exe.
+      #405 closed 2024-10-21 Vulnerability notification
+      #390 closed 2024-08-15 `mouse_selection_mode` setting interface
+      #346 closed 2024-03-18 Nested grouping failing
+      #219 closed 2022-01-23 No module named 'pymol.cmd'
+      #363 closed 2024-05-19 WIP: Packaging with Meson
+      #352 merged 2024-03-26 Use XDG directories instead of HOME to store plugins data and recent files cache
+      #328 closed 2024-01-20 apbs plugin issue 
+      #253 closed 2022-09-07 PyMOL traceback error when building residues
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+      #299 closed 2023-07-19 Error in background function
+      #5 closed 2018-09-04 Changes 1.9 to 2.3 which would break shaders?
+      #10 closed 2018-10-30 Testing pymol could be easier and more robust
+      #93 closed 2020-05-01 error when install pymol with homebrew on macOS 10.15.5
+      #49 closed 2019-08-16 how do you load an mmtf file that's been loaded from python3?
+      #70 closed 2019-12-03 No structure representation
+  in-place       22 hit(s) (all listed)
+      #47 open 2019-08-05 Incorrect TER record format
+      #377 open 2024-07-10 Support path separators in PYMOL_PATH (and derived variables)
+      #178 open 2021-05-05 PyMOL failed to start
+      #433 open 2025-02-15 WIP: chempy refactoring
+      #436 open 2025-02-22 BUG `read_pdbstr` cause program to sleep forever
+      #485 merged 2025-11-29 Some new_command fixes
+      #481 closed 2025-11-04 Validate selections in `get_object_list()``
+      #246 closed 2022-08-08 MESA loader - pymol is looking for graphics files in the wrong place on Ubuntu 22.04
+      #472 closed 2025-10-10 Carve Doesn't Work for Volumes
+      #435 merged 2025-02-20 fixing ci pipeline for python3.9 and python3.13
+      #374 merged 2024-06-11 Fix H-bonding issue in DistSet SelectorGetDistSet
+      #382 closed 2024-08-08 WIP: Using pyqt6 as main UI tool
+      #223 closed 2022-02-16 strange error that app/org.pymol.PyMOL/master is not installed
+      #352 merged 2024-03-26 Use XDG directories instead of HOME to store plugins data and recent files cache
+      #193 closed 2021-09-14 build failure on macOS 10.13 and below
+      #238 closed 2022-06-13 Failed to download resource "pymol_bottle_manifest"
+      #31 closed 2019-06-02 "ImportError: No module named pymol"
+      #194 closed 2021-09-16 Aligning 2 small molecules in PyMOL
+      #134 merged 2020-09-28 Include <cstddef> in ov_types.h.
+      #22 closed 2019-02-20 Grouping and object names with comma (,)
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #254 open 2022-09-12 pymol window exits when maximining its window
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      5 hit(s) (all listed)
+      #352 merged 2024-03-26 Use XDG directories instead of HOME to store plugins data and recent files cache
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+      #134 merged 2020-09-28 Include <cstddef> in ov_types.h.
+      #37 closed 2019-06-21 Compile failure with Visual Studio 2017
+      #16 closed 2018-12-06 MSVS14 32-bit build error
+  partial+write  0 hit(s)
+  crash+safe     2 hit(s) (all listed)
+      #517 open 2026-08-12 Heap buffer overflow in PConvPyListToStringVLA with non-ASCII wizard messages
+      #97 closed 2020-05-12 macOS: running pymol through python session fails to launch and crashes the python session
+  atomic+write   0 hit(s)
+  lock+file      2 hit(s) (all listed)
+      #519 open 2026-09-18 Unresponsive when exporting a movie as PNG images
+      #255 closed 2022-09-13 tried to multi-delete selections, received traceback
+  write+failure  3 hit(s) (all listed)
+      #517 open 2026-08-12 Heap buffer overflow in PConvPyListToStringVLA with non-ASCII wizard messages
+      #485 merged 2025-11-29 Some new_command fixes
+      #470 merged 2025-10-09 Declaring new commands
+  file+contents  12 hit(s) (all listed)
+      #336 open 2024-02-10 Bizarre invalid selection / selection just gives up
+      #485 merged 2025-11-29 Some new_command fixes
+      #405 closed 2024-10-21 Vulnerability notification
+      #219 closed 2022-01-23 No module named 'pymol.cmd'
+      #363 closed 2024-05-19 WIP: Packaging with Meson
+      #352 merged 2024-03-26 Use XDG directories instead of HOME to store plugins data and recent files cache
+      #328 closed 2024-01-20 apbs plugin issue 
+      #320 closed 2023-12-06 CmdGetUnusedName GIL bug
+      #253 closed 2022-09-07 PyMOL traceback error when building residues
+      #299 closed 2023-07-19 Error in background function
+      #5 closed 2018-09-04 Changes 1.9 to 2.3 which would break shaders?
+      #119 closed 2020-07-28 Crash when loading structure due to out of bounds access
+
+== 51 terms run; 30 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

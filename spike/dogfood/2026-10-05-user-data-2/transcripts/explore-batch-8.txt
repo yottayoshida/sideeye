@@ -1,0 +1,13 @@
+scan ended for kubeadm (kubernetes/kubeadm); exploring 2026-10-05T06:25:17Z
+=== kubeadm 2026-10-05T06:25:17Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+apparatus/explore-after-scan.sh: line 16: syntax error near unexpected token `('
+apparatus/explore-after-scan.sh: line 16: `e-run finished (2026-10-05).'

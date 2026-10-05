@@ -1,0 +1,2 @@
+# Re-run 2026-10-05T07:05:53Z: the first plain-runs-13.txt (all 54 defines, run when firebase-tools was added) was overwritten by go's plain run, which is now plain-runs-16.txt. Only firebase is re-run here; the other 53 have their plain runs in the earlier files.
+PLAIN firebase exit=0 state=changed  (Disabled experiment webframeworks)

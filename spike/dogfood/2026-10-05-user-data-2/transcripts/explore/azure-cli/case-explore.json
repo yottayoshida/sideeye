@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/az",
+    "operation": "az config set core.output=table",
+    "cwd": "/s/az-in",
+    "expected_status": 0
+  },
+  "k": 22,
+  "ops_total": 24,
+  "prefix_hash": "8c7d0ed0365f4f08",
+  "after_class": "open",
+  "after_path": "/s/az/config",
+  "before_class": "write",
+  "before_path": "/s/az/config",
+  "violation": "hybrid"
+}

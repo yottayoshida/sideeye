@@ -1,0 +1,25 @@
+=== solvespace (solvespace-cli regenerate /s/ss/part.slvs)
+openat(AT_FDCWD, "/s/ss/part.slvs", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
+write(3, "\261\262\263SolveSpaceREVa\n\n\nGroup.h.v=00"..., 4096) = 4096
+write(3, "003002a 1\n    84 8003002b 1\n    "..., 4096) = 4096
+write(3, "tity.type=10000\nEntity.construct"..., 4096) = 4096
+write(3, "e=1\nAddEntity\n\nEntity.h.v=800300"..., 4096) = 4096
+write(3, "tity.type=2010\nEntity.constructi"..., 4096) = 4096
+write(3, "000000000000000\nEntity.actPoint."..., 4096) = 4096
+write(3, "=8004001c\nEntity.type=11000\nEnti"..., 4096) = 4096
+write(3, "ntity.h.v=8004005f\nEntity.type=1"..., 4096) = 4096
+write(3, "20.00000000000000000000\nEntity.a"..., 4096) = 4096
+write(3, "r=0\nConstraint.other2=0\nConstrai"..., 4096) = 4096
+write(3, "000000 10.00000000000000000000\nT"..., 4096) = 4096
+write(3, "0000000 10.00000000000000000000 "..., 4096) = 4096
+write(3, "000000000000  20.000000000000000"..., 4096) = 4096
+=== pymol (/usr/bin/python3 -m pymol -cq /s/pm/model.pse /s/pm-in/edit.pml)
+openat(AT_FDCWD, "/s/pm/model.pse", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4
+write(4, "}q\0(X\v\0\0\0moviescenesq\1]q\2(]q\3]q\4"..., 6118) = 6118
+=== ffsubsync (ffsubsync /s/sub-in/ref.srt -i /s/sub/movie.srt --overwrite-input)
+openat(AT_FDCWD, "/s/sub/movie.srt", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3
+write(3, "1\n00:00:04,999 --> 00:00:07,499\n"..., 2501) = 2501
+=== wp-cli (php /opt/bin/wp config set DB_PASSWORD new-secret --path=/s/wp --allow-root)
+openat(AT_FDCWD, "/s/wp/wp-config.php", O_WRONLY|O_CREAT, 0666) = 4
+ftruncate(4, 0)                   = 0
+write(4, "<?php\ndefine( 'DB_NAME', 'househ"..., 369) = 369

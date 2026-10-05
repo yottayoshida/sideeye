@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/configstore"
+
+[define]
+operation = "firebase experiments:disable webframeworks"
+cwd       = "/s/firebase-in"

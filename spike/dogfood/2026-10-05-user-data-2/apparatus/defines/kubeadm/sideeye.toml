@@ -1,0 +1,6 @@
+[world]
+state = "/s/kadm"
+
+[define]
+operation = "kubeadm config migrate --old-config /s/kadm/kubeadm.yaml --new-config /s/kadm/kubeadm.yaml"
+cwd       = "/s/kadm-in"

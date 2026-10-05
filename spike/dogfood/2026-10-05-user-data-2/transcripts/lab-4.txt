@@ -1,0 +1,271 @@
+##### dokuwiki
+cp: cannot create directory '/lab/dw': No such file or directory
+$ php /lab/dw/bin/dwpage.php commit -m first /lab/page.txt wiki:start
+/ap/lab-4.sh: 10: cannot create /lab/page.txt: Directory nonexistent
+Could not open input file: /lab/dw/bin/dwpage.php
+rc=0
+$ php /lab/dw/bin/dwpage.php commit -m second /lab/page.txt wiki:start
+/ap/lab-4.sh: 12: cannot create /lab/page.txt: Directory nonexistent
+Could not open input file: /lab/dw/bin/dwpage.php
+rc=0
+##### basic-memory
+$ basic-memory project list
+                             Basic Memory Projects                              
+┏━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━┳━━━━━━━━━┓
+┃      ┃                ┃ Cloud   ┃         ┃ CLI     ┃       ┃      ┃         ┃
+┃ Name ┃ Local Path     ┃ Path    ┃ Worksp… ┃ Route   ┃ MCP   ┃ Sync ┃ Default ┃
+┡━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━╇━━━━━━━━━┩
+│ main │ ~/basic-memory │         │         │ local   │ stdio │      │ [X]     │
+└──────┴────────────────┴─────────┴─────────┴─────────┴───────┴──────┴─────────┘
+rc=0
+$ basic-memory project add notes /lab/bm --default
+Project 'notes' added successfully
+rc=0
+$ basic-memory project list
+                             Basic Memory Projects                              
+┏━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━┳━━━━━━━━┓
+┃       ┃                ┃ Cloud   ┃         ┃ CLI     ┃       ┃      ┃        ┃
+┃ Name  ┃ Local Path     ┃ Path    ┃ Worksp… ┃ Route   ┃ MCP   ┃ Sync ┃ Defau… ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━╇━━━━━━━━┩
+│ main  │ ~/basic-memory │         │         │ local   │ stdio │      │        │
+│ notes │ /lab/bm        │         │         │ local   │ stdio │      │ [X]    │
+└───────┴────────────────┴─────────┴─────────┴─────────┴───────┴──────┴────────┘
+rc=0
+$ basic-memory tool write-note --project notes --title Plans --folder notes --content # Plans
+- renew passport
+{
+  "title": "Plans",
+  "permalink": "notes/plans",
+  "file_path": "notes/Plans.md",
+  "checksum": null,
+  "action": "created"
+}
+rc=0
+5fbcdfd56de8  /lab/bm/notes/Plans.md
+$ basic-memory tool edit-note --project notes plans --operation append --content - call the bank
+{
+  "title": "Plans",
+  "permalink": "notes/plans",
+  "file_path": "notes/Plans.md",
+  "checksum": null,
+  "operation": "append",
+  "fileCreated": false
+}
+rc=0
+d6431cfbc8f8  /lab/bm/notes/Plans.md
+---
+title: Plans
+type: note
+permalink: notes/plans
+---
+
+# Plans
+- renew passport
+- call the bankee29599c35a0  /s/aux/home/.basic-memory/basic-memory.log
+76281c541eb7  /s/aux/home/.basic-memory/config.json
+6345902474dc  /s/aux/home/.basic-memory/memory.db
+##### wrangler
+$ wrangler telemetry disable
+
+ ⛅️ wrangler 4.147.0
+────────────────────
+Status: Disabled
+
+Wrangler is no longer collecting telemetry about your usage.
+
+rc=0
+0d4a893d3f24  /s/aux/home/.config/.wrangler/logs/wrangler-2026-10-05_02-25-46_420.log
+068898febc2b  /s/aux/home/.config/.wrangler/metrics.json
+/s/aux/home/.config/.wrangler/metrics.json
+##### gemini
+$ gemini mcp add -s user notes /usr/bin/true --flag
+MCP server "notes" added to user settings. (stdio)
+rc=0
+d1bb8ca35467  /s/aux/home/.gemini/history/w/.project_root
+280a4b11598b  /s/aux/home/.gemini/projects.json
+d9b1a79c6c78  /s/aux/home/.gemini/settings.json
+d1bb8ca35467  /s/aux/home/.gemini/tmp/w/.project_root
+{
+  "theme": "Default",
+  "mcpServers": {
+    "docs": {
+      "command": "docs-server"
+    },
+    "notes": {
+      "command": "/usr/bin/true",
+      "args": [
+        "--flag"
+      ]
+    }
+  }
+}##### oh-my-posh
+$ oh-my-posh config migrate --config /lab/omp/theme.omp.json --write
+
+Global Flags:
+  -c, --config string   config file path
+      --plain           plain text output (no ANSI)
+      --trace           enable tracing
+
+Use "oh-my-posh config [command] --help" for more information about a command.
+
+rc=0
+3c4cd59e1a6a  /lab/omp/theme.omp.json
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "version": 1,
+  "blocks": [
+    {"type": "prompt", "alignment": "left",
+     "segments": [
+       {"type": "path", "style": "plain", "foreground": "#ffffff", "properties": {"prefix": "", "style": "folder"}},
+       {"type": "git", "style": "plain", "foreground": "#ff0000", "properties": {"prefix": " "}}
+     ]}
+  ]
+}
+
+##### opam
+$ opam init --bare -n --disable-sandboxing default /lab/repo
+Checking for available remotes: git.
+  - you won't be able to use rsync and local repositories unless you install the rsync command on your system.
+  - you won't be able to use mercurial repositories unless you install the hg command on your system.
+  - you won't be able to use darcs repositories unless you install the darcs command on your system.
+
+
+<><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
+[default] Initialised
+rc=0
+fb681bddb3ea  /lab/opam/config
+e3b0c44298fc  /lab/opam/config.lock
+e3b0c44298fc  /lab/opam/lock
+bf486c337832  /lab/opam/opam-init/complete.sh
+d6fd03a822bb  /lab/opam/opam-init/complete.zsh
+a331a30c25d1  /lab/opam/opam-init/hooks/sandbox.sh
+cb983d1f498f  /lab/opam/opam-init/hooks/sandbox.sh.hash
+dd7e7e1e89c3  /lab/opam/opam-init/init.cmd
+fef6408ed440  /lab/opam/opam-init/init.csh
+b416cc8fe620  /lab/opam/opam-init/init.fish
+$ opam option jobs=3 --global
+[WARNING] Running as root is not recommended
+Set to '3' the field jobs in global configuration
+rc=0
+20c465ba9d74  /lab/opam/config
+e3b0c44298fc  /lab/opam/config.lock
+e3b0c44298fc  /lab/opam/lock
+bf486c337832  /lab/opam/opam-init/complete.sh
+d6fd03a822bb  /lab/opam/opam-init/complete.zsh
+a331a30c25d1  /lab/opam/opam-init/hooks/sandbox.sh
+cb983d1f498f  /lab/opam/opam-init/hooks/sandbox.sh.hash
+dd7e7e1e89c3  /lab/opam/opam-init/init.cmd
+fef6408ed440  /lab/opam/opam-init/init.csh
+b416cc8fe620  /lab/opam/opam-init/init.fish
+4:jobs: 3
+5:download-jobs: 3
+##### stack
+$ stack config set install-ghc false --global
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+ (ConnectionFailure Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 0, addrAddress = 0.0.0.0:0, addrCanonName = Nothing}, host name: "stackage-haddock.haskell.org", service name: "443"): does not exist (Try again))
+rc=0
+55296ecc68b6  /lab/stack/config.yaml
+977fcf05a554  /lab/stack/pantry/pantry.sqlite3
+e3b0c44298fc  /lab/stack/pantry/pantry.sqlite3.pantry-write-lock
+7315573f8fa7  /lab/stack/stack.sqlite3
+e3b0c44298fc  /lab/stack/stack.sqlite3.pantry-write-lock
+# my stack settings
+install-ghc: true
+system-ghc: false
+##### juliaup
+$ juliaup config versionsdbupdateinterval 0
+   Configure Property 'versionsdbupdateinterval' set to '0'
+rc=0
+$ juliaup config modifypath false
+error: unrecognized subcommand 'modifypath'
+
+Usage: juliaup config <COMMAND>
+
+For more information, try '--help'.
+rc=0
+e3b0c44298fc  /lab/jd/juliaup/.juliaup-lock
+b9222b767fd5  /lab/jd/juliaup/juliaup.json
+{
+  "Default": null,
+  "InstalledVersions": {},
+  "InstalledChannels": {},
+  "Settings": {
+    "VersionsDbUpdateInterval": 0
+  },
+  "Overrides": []
+}##### goi18n
+$ goi18n merge active.en.toml active.ja.toml
+rc=0
+c8f2594c1690  /lab/gi/active.en.toml
+d4fbc24df632  /lab/gi/active.ja.toml
+0c9582ed7591  /lab/gi/translate.ja.toml
+[Cart]
+hash = "sha1-44656820495b5ac552859db3b86659bc4a07f5ea"
+other = "Cart"
+
+[Farewell]
+hash = "sha1-b5b29c53e3c71cb9c6581ab053d7758fab8ca24d"
+other = "Goodbye"
+$ goi18n merge active.en.toml active.ja.toml translate.ja.toml
+failed to load message file translate.ja.toml: toml: line 8: Key 'Farewell' has already been defined.
+rc=0
+c8f2594c1690  /lab/gi/active.en.toml
+d4fbc24df632  /lab/gi/active.ja.toml
+79f935e2711c  /lab/gi/translate.ja.toml
+[Greeting]
+hash = "sha1-f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0"
+other = "こんにちは"
+##### toybox sed
+$ toybox sed -i s/foo/bar/ /lab/tb/a.txt /lab/tb/b.txt
+rc=0
+99df2b35c3c5  /lab/tb/a.txt
+6e770dfdfa94  /lab/tb/b.txt
+alpha bar
+beta bar
+##### solvespace
+/tmp/src/solvespace/test/group/link/normal_v20.slvs
+/tmp/src/solvespace/test/group/link/normal_v22.slvs
+/tmp/src/solvespace/test/group/link/normal.slvs
+a78d07258b8f  /lab/ss/part.slvs
+$ solvespace-cli regenerate /lab/ss/part.slvs
+Segmentation fault
+Missing (absent) translation for group-name'#references'
+Missing (absent) translation for group-name'sketch-in-plane'
+Missing file for group: rect-v20
+rc=0
+a78d07258b8f  /lab/ss/part.slvs
+total 20
+drwxr-xr-x  2 root root 4096 Oct  5 02:25 .
+drwxr-xr-x 11 root root 4096 Oct  5 02:25 ..
+-rw-r--r--  1 root root 8542 Oct  5 02:25 part.slvs
+##### glTF
+2e477b8eaa68  /lab/gl/t2.glb
+2e477b8eaa68  /lab/gl/terrain.glb
+$ gltfpack -i /lab/gl/terrain.glb -o /lab/gl/terrain.glb
+rc=0
+$ gltf-transform weld /lab/gl/t2.glb /lab/gl/t2.glb
+info: t2.glb (3.79 KB) → t2.glb (3.86 KB)
+rc=0
+fcb4a369d96a  /lab/gl/t2.glb
+6583b924895b  /lab/gl/terrain.glb
+total 16
+drwxr-xr-x  2 root root 4096 Oct  5 02:25 .
+drwxr-xr-x 12 root root 4096 Oct  5 02:25 ..
+-rw-r--r--  1 root root 3864 Oct  5 02:25 t2.glb
+-rw-r--r--  1 root root 3380 Oct  5 02:25 terrain.glb
+##### wandb
+$ wandb offline
+wandb: Updated settings file /lab/wb/wandb/settings
+W&B offline. Running your script from this directory will only write metadata locally. Use `wandb disabled` to completely turn off W&B.
+rc=0
+26c7422e23c1  /lab/wb/wandb/settings
+/lab/wb/wandb/settings
+[default]
+mode = offline
+

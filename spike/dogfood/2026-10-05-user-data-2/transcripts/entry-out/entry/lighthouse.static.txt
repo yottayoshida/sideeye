@@ -1,0 +1,2 @@
+static: /opt/bin/lighthouse: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, BuildID[sha1]=3fa5e72187d48faf4c182d72f19ac0487dbcdba2, not stripped
+next: sideeye explore --state /s/lh --cwd "/s/lh-in" --operation "lighthouse account validator modify --datadir /s/lh disable --pubkey 0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c" \

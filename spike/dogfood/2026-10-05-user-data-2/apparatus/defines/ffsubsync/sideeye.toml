@@ -1,0 +1,6 @@
+[world]
+state = "/s/sub"
+
+[define]
+operation = "ffsubsync /s/sub-in/ref.srt -i /s/sub/movie.srt --overwrite-input"
+cwd       = "/s/sub-in"

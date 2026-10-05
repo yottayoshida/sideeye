@@ -109,3 +109,11 @@ git-cliff 2.14.2 `--prepend`	-	upstream-reports.tsv
 notesmd-cli 0.3.7 `move`	-	upstream-reports.tsv
 mapshaper 0.7.72 `-o force`	-	upstream-reports.tsv
 DwarFS 0.15.8 `mkdwarfs --recompress`	-	upstream-reports.tsv
+SolveSpace 3.2 `solvespace-cli regenerate`	solvespace	upstream-reports.tsv
+PyMOL 3.1.0 (Debian) `save` of a `.pse`	pymol;python3-pymol	upstream-reports.tsv
+ffsubsync 0.5.1 `--overwrite-input`	-	upstream-reports.tsv
+WP-CLI 2.12.0 `config set`	-	upstream-reports.tsv
+dynaconf	python3-dynaconf	outcome-funnel.tsv
+python-dotenv	python3-dotenv	outcome-funnel.tsv
+fitscheck	astropy-utils;python3-astropy	outcome-funnel.tsv
+go	golang-go	outcome-funnel.tsv (upstream's go1.27.1 measured; trixie ships 1.24)

@@ -1,0 +1,7 @@
+[world]
+state = "/s/az"
+
+[define]
+operation = "az config set core.output=table"
+cwd       = "/s/az-in"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]

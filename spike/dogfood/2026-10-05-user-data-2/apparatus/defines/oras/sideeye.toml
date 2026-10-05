@@ -1,0 +1,6 @@
+[world]
+state = "/s/oras"
+
+[define]
+operation = "oras logout --registry-config /s/oras/config.json registry.example.com"
+cwd       = "/s/oras-in"

@@ -1,0 +1,35 @@
+$ limactl create --name=dev --tty=false --cpus=2 --memory=2 template:default
+limactl: must not run as the root user
+rc=0
+$ limactl list
+limactl: must not run as the root user
+rc=0
+$ limactl edit --tty=false --set .cpus=4 dev
+limactl: must not run as the root user
+rc=0
+grep: /lab/lima/dev/lima.yaml: No such file or directory
+$ tenv tf constraint --help
+Set a default constraint expression for Terraform (set in TENV_ROOT/Terraform/constraint file).
+
+Without expression reset the default constraint.
+
+The default constraint is added while using latest-allowed, min-required or custom constraint.
+
+Usage:
+  tenv tf constraint [expression] [flags]
+
+Flags:
+  -h, --help   help for constraint
+
+Global Flags:
+  -q, --quiet              no unnecessary output (and no log)
+  -r, --root-path string   local path to install versions of OpenTofu, Terraform, Terragrunt, and Atmos (default "/lab/tenv")
+  -v, --verbose            verbose output (and set log level to Trace)
+rc=0
+$ tenv tf constraint >=1.5.0
+Error: open /lab/tenv/Terraform/constraint: no such file or directory
+rc=0
+find: '/lab/tenv': No such file or directory
+$ tenv tf constraint ~>1.6
+Error: open /lab/tenv/Terraform/constraint: no such file or directory
+rc=0

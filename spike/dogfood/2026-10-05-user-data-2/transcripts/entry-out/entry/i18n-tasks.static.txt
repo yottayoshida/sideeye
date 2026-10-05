@@ -1,0 +1,2 @@
+static: /usr/local/bin/i18n-tasks: Ruby script, ASCII text executable
+next: sideeye explore --state /s/i18n/config/locales --cwd "/s/i18n" --operation "i18n-tasks add-missing" \

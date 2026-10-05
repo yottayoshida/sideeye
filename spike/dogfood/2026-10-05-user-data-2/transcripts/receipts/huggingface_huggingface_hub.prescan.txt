@@ -1,0 +1,823 @@
+== novelty pre-scan: huggingface/huggingface_hub
+== date: 2026-10-05T03:36:56Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5077 open 2026-10-04 [Repocard] Fix UnicodeDecodeError when loading a non-ASCII card
+      #4349 open 2026-06-12 `hf download` routinely crashes with `HF_HUB_DISABLE_XET` (no retry)
+      #5073 open 2026-10-02 [Utils] Make scheduled upload failures easier to inspect
+      #3974 open 2026-03-25 ### 🐛 Bug Report: SIGABRT crash on Python 3.14.3 shutdown with hf_xet + PyTorch  .
+      #5062 closed 2026-10-01 model_index_to_eval_results  crashes on empty list
+      #4950 closed 2026-09-20 [Download] Fix MAX_PATH crash from the unbudgeted incomplete-file suffix on Windows
+      #5075 open 2026-10-03 [Inference Endpoints] Add `fetch_inference_endpoint_logs` and `hf endpoints logs`
+      #5031 closed 2026-09-29 [Dataclasses] @strict crashes with IndexError on bare typing.List / Dict / Set annotations
+      #5019 closed 2026-09-27 `hf datasets sql` returns mojibake or crashes on non-ASCII data when using the DuckDB CLI binary
+      #5032 merged 2026-09-29 [Dataclasses] Accept bare typing.List/Dict/Set in @strict validation
+      #4949 closed 2026-09-20 [Discussions] Defensive deserialization for null author profiles in community events and discussions
+      #4957 merged 2026-09-21 [CLI] Honor `CLAUDE_CONFIG_DIR` in `hf skills add -g --claude`
+      #4870 merged 2026-09-10 [RepoCard] Fix AttributeError when model-index has source: null
+      #4869 closed 2026-09-10 [RepoCard] AttributeError when model-index has `source: null`
+      #5063 merged 2026-10-01 [Bugfix] Fix wrong exception type and unbound variable guard
+      #4994 merged 2026-09-24 [Release] Prepare huggingface_hub 2.0
+      #5056 closed 2026-10-01 [Cards] Fix TypeError when card metadata has an 'ignore_metadata_errors' key
+      #5020 merged 2026-09-27 [datasets sql] Run the DuckDB CLI subprocess with UTF-8 encoding
+      #4546 merged 2026-07-18 Fix Windows crash when downloading into a deep local_dir
+      #4610 merged 2026-07-29 [CLI] Don't crash when stdout can't encode non-ASCII output
+  corrupt        94 hit(s) (all listed)
+      #5050 closed 2026-09-30 [Utils] Share local upload and download metadata parsing
+      #5049 closed 2026-09-30 Share local upload and download metadata parsing
+      #5077 open 2026-10-04 [Repocard] Fix UnicodeDecodeError when loading a non-ASCII card
+      #5066 merged 2026-10-02 [CLI] Read --env-file / --secrets-file as UTF-8 and strip the BOM
+      #4905 merged 2026-09-14 [Cache] Support kernel repos in `hf cache` commands
+      #4837 merged 2026-09-08 [sandbox audit] Pin the sandbox server binary by digest and verify it before running it
+      #5065 closed 2026-10-02 [CLI] --env-file / --secrets-file drop the first variable when the file starts with a UTF-8 BOM
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4740 closed 2026-08-25 [HfApi] Validate safetensors index entries
+      #4913 closed 2026-09-15 Reject Windows-invalid filenames (trailing dot/space) to prevent silent rename and data loss
+      #5019 closed 2026-09-27 `hf datasets sql` returns mojibake or crashes on non-ASCII data when using the DuckDB CLI binary
+      #4912 closed 2026-09-15 Windows: files named with trailing dot/space are silently renamed and can collide, losing data
+      #4430 closed 2026-06-28 Multiple Public dataset LFS files return 403 AccessDenied from cdn-lfs-us-1.hf.co despite visible metadata
+      #4558 closed 2026-07-21 [Jobs] Proposal: optional [tool.hf-jobs] table in PEP 723 headers so a script's runtime config travels with it (hf jobs uv run)
+      #2193 closed 2024-04-03 possible issue with filelock/.locks folder
+      #4551 merged 2026-07-20 [Cache] Warn on inconsistency in cache
+      #4196 open 2026-05-06 No resuming of downloads
+      #4456 closed 2026-06-30 docs: normalize CLI guide warning comment
+      #4550 closed 2026-07-20 fix(cache): list repos with broken symlinks instead of silently dropping them
+      #4420 closed 2026-06-27 hf cache list reports incorrect total disk usage when a cached model repo is omitted
+  corruption     20 hit(s) (all listed)
+      #5012 closed 2026-09-26 A scalar tags value in a card's front matter is split into one-letter tags and written back
+      #5019 closed 2026-09-27 `hf datasets sql` returns mojibake or crashes on non-ASCII data when using the DuckDB CLI binary
+      #4768 closed 2026-08-27 hf download doesn't work properly
+      #4060 closed 2026-04-07 Unreliable resume support and lack of partial corruption recovery in large file downloads
+      #4196 open 2026-05-06 No resuming of downloads
+      #4815 closed 2026-09-05 hf_hub_download: the body GET is not pinned to the commit resolved by the metadata HEAD call (cross-version cache poisoning, mixed-version resume)
+      #4143 closed 2026-04-24 [Download] Harden resume validation
+      #4357 merged 2026-06-13 Ignore Windows metadata files in cache scan
+      #4347 closed 2026-06-11 Add cache doctor CLI for cache diagnostics and safe repairs
+      #4351 merged 2026-06-12 [Download] Retry on RemoteProtocolError in http_get
+      #4306 merged 2026-06-03 [Fix] Make concurrent downloads safe even when file locking is broken
+      #4228 closed 2026-05-15 [Cache] Detect Lustre/GPFS/NFS in `WeakFileLock` and fall back to `SoftFileLock`
+      #4036 merged 2026-04-02 [Fix CI] Do not scan CACHEDIR.TAG file in cache
+      #3778 merged 2026-02-05 Fix file corruption when server ignores Range header on download retry
+      #4226 closed 2026-05-14 [CLI] Allow hf cache rm repo:path for file/variant deletions
+      #4065 merged 2026-04-07 [BUG FIX]: hf_hub_download crashes when stderr lacks a real file descriptor
+      #3644 closed 2025-12-23 Fix: Add SHA-256 checksum verification to detect corrupted downloads
+      #3887 merged 2026-03-05 [Release notes] doc diffs, better skill, concurrent fetching, configurable opencode, summary
+      #3643 closed 2025-12-23 snapshot_download reports success despite blob checksum mismatch (large files, XET storage)
+      #3853 merged 2026-02-26 Release note skill attempt
+  truncated      70 hit(s) (all listed)
+      #4849 merged 2026-09-09 [CLI] Fix truncated command descriptions in the CLI reference
+      #3775 open 2026-02-05 Downloads stall/truncate for xet-enabled repos from Taiwan
+      #4603 merged 2026-07-29 [Safetensors] Fix truncated header on 100kb boundary
+      #4850 closed 2026-09-09 [Sandbox] Preserve terminal results when the HTTP tail truncates
+      #4808 closed 2026-09-03 Add NeuronPool inference provider
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4634 closed 2026-08-05 [CLI] load_dotenv drops multi-line quoted values in --env-file / --secrets-file
+      #4946 closed 2026-09-19 tabulate() pads columns by code points, not display columns: every table skews on CJK/emoji values
+      #4602 closed 2026-07-29 parse_safetensors_file_metadata truncates headers between 99,994 and 100,000 bytes due to an HTTP Range boundary error
+      #4150 closed 2026-04-27 Add parameter to expand/truncate ID column in hf cache ls
+      #4780 closed 2026-08-30 [File download] Fall back to ranged GET for missing size
+      #4757 closed 2026-08-27 feat: --watch flag for `hf buckets sync` (keep a bucket mirrored to a local directory)
+      #4974 closed 2026-09-22 [Inference] Document Pydantic structured output examples
+      #4842 merged 2026-09-08 Fix dotenv parser truncating unquoted values containing '#'
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4215 closed 2026-05-10 fix(cli): hint users about full-output formats when table values are truncated
+      #4555 closed 2026-07-20 feat(cli): add --sort/--reverse to hf jobs ps
+      #4476 closed 2026-07-02 `hf jobs --timeout` help says "int/float" but float durations raise ValueError
+      #4207 closed 2026-05-07 How to stop hf models ls from truncating the results in the table?
+      #4624 closed 2026-08-02 snapshot_download: no way to require that the cached snapshot was actually checked
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3775 open 2026-02-05 Downloads stall/truncate for xet-enabled repos from Taiwan
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #4842 merged 2026-09-08 Fix dotenv parser truncating unquoted values containing '#'
+      #4849 merged 2026-09-09 [CLI] Fix truncated command descriptions in the CLI reference
+      #4850 closed 2026-09-09 [Sandbox] Preserve terminal results when the HTTP tail truncates
+      #4153 open 2026-04-27 [Buckets] Range-aware file write
+      #4751 closed 2026-08-26 [Utils] Fix load_dotenv truncating unquoted values at a bare '#'
+      #4625 closed 2026-08-02 Fix load_dotenv truncating unquoted values at '#'
+      #4750 closed 2026-08-26 load_dotenv truncates unquoted values at a bare '#' (inline comment should require preceding whitespace)
+      #4603 merged 2026-07-29 [Safetensors] Fix truncated header on 100kb boundary
+      #5013 closed 2026-09-26 `stored_tokens` uses the locale encoding: a non-ASCII token name wipes saved tokens, old files break `get_token()` in UTF-8 mode
+      #4946 closed 2026-09-19 tabulate() pads columns by code points, not display columns: every table skews on CJK/emoji values
+      #5043 closed 2026-09-29 [Bug] Saving a token overwrites malformed stored_tokens after parse error
+      #4777 closed 2026-08-30 hf cache xet: Commands to clear/prune the Xet cache
+      #4808 closed 2026-09-03 Add NeuronPool inference provider
+      #4150 closed 2026-04-27 Add parameter to expand/truncate ID column in hf cache ls
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4557 closed 2026-07-21 fix(cli/jobs): correct cell truncation when terminal-fit loop compresses columns below width 3
+      #4634 closed 2026-08-05 [CLI] load_dotenv drops multi-line quoted values in --env-file / --secrets-file
+      #4602 closed 2026-07-29 parse_safetensors_file_metadata truncates headers between 99,994 and 100,000 bytes due to an HTTP Range boundary error
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5062 closed 2026-10-01 model_index_to_eval_results  crashes on empty list
+      #5077 open 2026-10-04 [Repocard] Fix UnicodeDecodeError when loading a non-ASCII card
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #3621 open 2025-12-14 huggingFaceEndpoint invoke error
+      #4907 closed 2026-09-14 still exists Error 416 when copying empty files from a to a bucket on the GUI  #4353
+      #4788 closed 2026-08-31 `hf repos ls` exits 1 with empty stdout when a repo has null storage
+      #4564 open 2026-07-22 [Inference] Send max_tokens for Together and Novita text-generation
+      #5063 merged 2026-10-01 [Bugfix] Fix wrong exception type and unbound variable guard
+      #5067 merged 2026-10-02 [Download] Warn when allow/ignore patterns match no files in snapshot_download
+      #5032 merged 2026-09-29 [Dataclasses] Accept bare typing.List/Dict/Set in @strict validation
+      #4690 closed 2026-08-17 fix: pin empty agent-harness registry at conftest import for deterministic tests
+      #1422 open 2023-04-04 Thread safe when upload files in multiple threads or processes
+      #4578 open 2026-07-24 Make OAuth client secret optional for Spaces (PKCE support)
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4653 closed 2026-08-12 Empty allow_patterns list silently matches nothing (upload_folder/snapshot_download transfer zero files)
+      #4949 closed 2026-09-20 [Discussions] Defensive deserialization for null author profiles in community events and discussions
+      #1844 open 2023-11-20 [CLI] hugging-face init command to help bootstrap new dataset, model, spaces
+      #4954 merged 2026-09-21 [Buckets] Raise when a batch reports failed operations
+      #3603 open 2025-12-09 huggingface cli is not honoring http proxy environment variables on version >=1.0.0
+      #5031 closed 2026-09-29 [Dataclasses] @strict crashes with IndexError on bare typing.List / Dict / Set annotations
+  atomic         35 hit(s) (all listed)
+      #4829 merged 2026-09-08 [Download] Write cache ref file atomically in snapshot_download
+      #4811 closed 2026-09-04 fix: atomic _create_symlink to prevent race under DDP
+      #4977 open 2026-09-23 fix: authorize style bot with an explicit commit SHA
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #5058 merged 2026-10-01 [CI] Reduce flaky tests (jedi cache, read-after-write, fewer reruns)
+      #4828 merged 2026-09-08 [HfFileSystem] Reject unsafe paths before local downloads
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #4600 merged 2026-07-28 [Cache] Make shared blobs cluster-safe
+      #4196 open 2026-05-06 No resuming of downloads
+      #4815 closed 2026-09-05 hf_hub_download: the body GET is not pinned to the commit resolved by the metadata HEAD call (cross-version cache poisoning, mixed-version resume)
+      #4915 closed 2026-09-15 Race in are_symlinks_supported(): snapshot_download(max_workers>1) fails with WinError 1314 on Windows without symlink privilege
+      #4200 closed 2026-05-06 [Upload] Robust, resumable, multi-worker upload_folder
+      #4199 merged 2026-05-06 [CLI] Generate hf-cli skill locally instead of downloading from bucket
+      #4175 merged 2026-04-30 [CLI] migrate `hf skills` to bucket
+      #4234 merged 2026-05-19 [Auth] Harden HF_TOKEN_PATH and HF_STORED_TOKENS_PATH to 0o600 / 0o700
+      #4306 merged 2026-06-03 [Fix] Make concurrent downloads safe even when file locking is broken
+      #4496 merged 2026-07-07 [CLI] Add `hf extensions update` command
+      #4331 merged 2026-06-10 [Upload] Streamed multi-commit upload_folder powered by Xet
+      #3764 closed 2026-02-02 First attempt for an automated changelog system
+      #3896 closed 2026-03-08 Security: Path Traversal Check Windows-Only + Token Files World-Readable (CWE-22, CWE-276)
+  atomically     8 hit(s) (all listed)
+      #4829 merged 2026-09-08 [Download] Write cache ref file atomically in snapshot_download
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #5058 merged 2026-10-01 [CI] Reduce flaky tests (jedi cache, read-after-write, fewer reruns)
+      #4600 merged 2026-07-28 [Cache] Make shared blobs cluster-safe
+      #4175 merged 2026-04-30 [CLI] migrate `hf skills` to bucket
+      #4234 merged 2026-05-19 [Auth] Harden HF_TOKEN_PATH and HF_STORED_TOKENS_PATH to 0o600 / 0o700
+      #4306 merged 2026-06-03 [Fix] Make concurrent downloads safe even when file locking is broken
+      #3896 closed 2026-03-08 Security: Path Traversal Check Windows-Only + Token Files World-Readable (CWE-22, CWE-276)
+  interrupted    38 hit(s) (all listed)
+      #4196 open 2026-05-06 No resuming of downloads
+      #5046 merged 2026-09-30 [CLI] nit: update `hf upload` help text
+      #3868 open 2026-03-02 HTTP download fails for files >50GB — why is there a limit?
+      #1430 open 2022-10-21 Support incremental uploads
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4730 closed 2026-08-24 [Download] Stop Xet snapshot workers on interruption
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #4416 merged 2026-06-26 [CLI] hf cache: surface & prune incomplete downloads
+      #3993 closed 2026-03-27 feat: add `hf buckets import` command for S3-to-HF bucket ingestion
+      #2883 closed 2025-02-21 Upload large folders with symlinks
+      #2218 closed 2024-04-11 huggingface-cli scan-cache doesn't capture cached datasets
+      #4393 closed 2026-06-22 [CLI] Add --rich-progress option to hf download
+      #4412 closed 2026-06-26 hf cache prune: add --incomplete flag to delete orphaned partial-download .incomplete files
+      #4357 merged 2026-06-13 Ignore Windows metadata files in cache scan
+      #3007 closed 2025-04-15 snapshot_download ignores 5xx errors during resume, returns unsafe cached data
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4347 closed 2026-06-11 Add cache doctor CLI for cache diagnostics and safe repairs
+      #4331 merged 2026-06-10 [Upload] Streamed multi-commit upload_folder powered by Xet
+      #4498 merged 2026-07-07 [Cache] Add cross-repo shared blob store
+      #2822 closed 2025-02-02 huggingface-cli: [Error 104] Connection reset by peer - crashes application
+  interrupt      60 hit(s) (all listed)
+      #4196 open 2026-05-06 No resuming of downloads
+      #4730 closed 2026-08-24 [Download] Stop Xet snapshot workers on interruption
+      #5045 open 2026-09-30 [HfFileSystem] Read Xet files with hf_xet in range reads
+      #3868 open 2026-03-02 HTTP download fails for files >50GB — why is there a limit?
+      #5046 merged 2026-09-30 [CLI] nit: update `hf upload` help text
+      #1430 open 2022-10-21 Support incremental uploads
+      #4841 closed 2026-09-08 feat(cli): add --stdout option to hf download (#3176)
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #4364 closed 2026-06-15 WIP: Stream Xet files through HfFileSystem read paths
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4416 merged 2026-06-26 [CLI] hf cache: surface & prune incomplete downloads
+      #4393 closed 2026-06-22 [CLI] Add --rich-progress option to hf download
+      #3993 closed 2026-03-27 feat: add `hf buckets import` command for S3-to-HF bucket ingestion
+      #2883 closed 2025-02-21 Upload large folders with symlinks
+      #2218 closed 2024-04-11 huggingface-cli scan-cache doesn't capture cached datasets
+      #4357 merged 2026-06-13 Ignore Windows metadata files in cache scan
+      #3007 closed 2025-04-15 snapshot_download ignores 5xx errors during resume, returns unsafe cached data
+      #4412 closed 2026-06-26 hf cache prune: add --incomplete flag to delete orphaned partial-download .incomplete files
+      #4347 closed 2026-06-11 Add cache doctor CLI for cache diagnostics and safe repairs
+  sigkill        2 hit(s) (all listed)
+      #2593 merged 2024-10-08 Fix tests listing text generation models
+      #1403 merged 2023-03-22 Raise after download if file size is not consistent
+  sigint         8 hit(s) (all listed)
+      #3871 open 2026-03-02 Uploads with `New Data Upload` over 2GB get stuck in Windows 11 with Python 3.12
+      #4730 closed 2026-08-24 [Download] Stop Xet snapshot workers on interruption
+      #4632 closed 2026-08-05 [BUG] Cancelling one Xet download aborts every other download, and the only way to do it is private API
+      #4681 closed 2026-08-16 Add cancel_event to hf_hub_download for per-download cancellation
+      #4116 merged 2026-04-16 Use the new XetSession API
+      #3429 closed 2025-10-09 hf-xet Integration on Windows Causes Ctrl+C Hang and Shows Confusing Installation Warnings
+      #3125 merged 2025-05-27 Fix `tiny-agents` cli exit issues
+      #1818 closed 2023-11-12 Concurrent model weight download
+  ctrl-c         28 hit(s) (all listed)
+      #5045 open 2026-09-30 [HfFileSystem] Read Xet files with hf_xet in range reads
+      #3286 open 2025-08-05 fix: make utils.tqdm thread-safe
+      #3871 open 2026-03-02 Uploads with `New Data Upload` over 2GB get stuck in Windows 11 with Python 3.12
+      #4730 closed 2026-08-24 [Download] Stop Xet snapshot workers on interruption
+      #3868 open 2026-03-02 HTTP download fails for files >50GB — why is there a limit?
+      #4990 merged 2026-09-24 [HfFileSystem] Download Xet files with hf_xet in get_file
+      #3726 closed 2026-01-24 Pre-upload progress is not persisted across restart (Xet), causing re-uploads and excess traffic
+      #4393 closed 2026-06-22 [CLI] Add --rich-progress option to hf download
+      #4116 merged 2026-04-16 Use the new XetSession API
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #3983 merged 2026-03-26 Interactive CLI autoupdate prompt
+      #4049 merged 2026-04-03 [CLI] spaces hot-reload: misc improvements
+      #3429 closed 2025-10-09 hf-xet Integration on Windows Causes Ctrl+C Hang and Shows Confusing Installation Warnings
+      #3649 closed 2025-12-26 Improve exception handling in hf_raise_for_status warning header parsing
+      #3125 merged 2025-05-27 Fix `tiny-agents` cli exit issues
+      #3098 merged 2025-05-21 [MCP] Tiny Agents in Python
+      #2765 closed 2025-01-20 huggingface-cli login doesn't work
+      #2515 closed 2024-09-05 Hugging Face Space: Exception in ASGI application
+      #2254 merged 2024-04-26 CLI to upload arbitrary huge folder
+      #1818 closed 2023-11-12 Concurrent model weight download
+  power          73 hit(s) (all listed)
+      #3868 open 2026-03-02 HTTP download fails for files >50GB — why is there a limit?
+      #2741 open 2025-01-08 Add pagination support to list_models() API for systematic model discovery
+      #4331 merged 2026-06-10 [Upload] Streamed multi-commit upload_folder powered by Xet
+      #4196 open 2026-05-06 No resuming of downloads
+      #4513 merged 2026-07-09 [Utils] Add `get_cached_repo_tree` utility
+      #3628 closed 2025-12-15 [Feature] OAuth 2.0 Device Authorization Grant (RFC 8628) for CLI/headless authentication
+      #4312 closed 2026-06-05 feat: add my-cloud-infra inference provider
+      #4393 closed 2026-06-22 [CLI] Add --rich-progress option to hf download
+      #4032 merged 2026-04-02 Add `HF_HUB_DISABLE_SYMLINKS` env variable to force no-symlink cache
+      #4007 merged 2026-03-30 [CLI] auto-install official HF CLI extensions on first invocation
+      #3961 closed 2026-03-21 FIXES: #3960
+      #4022 closed 2026-04-01 Ability to disable symlink usage for NAS caches
+      #3884 merged 2026-03-04 [CLI] Show installed extensions in `hf --help`
+      #595 closed 2022-01-14 Some custom objects are not being serialized with push_to_hub_keras
+      #3916 merged 2026-03-12 [CI] All-in-one Github Action for releases
+      #2143 merged 2024-03-22 Fast download in hf file system
+      #3796 closed 2026-02-10 Buckets API
+      #3444 merged 2025-10-15 Remove any hf-transfer related code
+      #2596 closed 2024-10-09 Fix `sentence-similarity` model URL
+      #3308 closed 2025-08-15 hf download: list available models for repo owner
+  outage         22 hit(s) (all listed)
+      #3972 open 2026-03-25 Jobs API: intermittent 500 Internal Server Error on POST /api/jobs
+      #4786 closed 2026-08-31 `is_xet_available()` no longer consults the server, so a self-hosted Hub cannot negotiate down to LFS
+      #4887 closed 2026-09-12 `InferenceClient.get_endpoint_info` targets `api-inference.huggingface.co`, which no longer resolves
+      #2207 closed 2024-04-09 ConnectionResetError: [Errno 54] Connection reset by peer
+      #2822 closed 2025-02-02 huggingface-cli: [Error 104] Connection reset by peer - crashes application
+      #3688 closed 2026-01-17 URGENT: Production outage – Hugging Face Router returns 500 errors for vision models
+      #3615 closed 2025-12-11 [Massive Bug] Cannot sign up for pro. Tried multiple angles. Killing your business model
+      #3458 closed 2025-10-21 HUB still down after AWS Outage
+      #3741 merged 2026-01-27 Add `hf skills add` CLI command
+      #3455 closed 2025-10-20 Cannot Download the Model Checkpoints
+      #2977 closed 2025-04-04 [Issue] Server is Temporary Unavailable
+      #1517 closed 2023-06-19 huggingface-cli login，ConnectionResetError: [WinError 10054] 
+      #2677 closed 2024-11-24 HF_HUB_ENABLE_HF_TRANSFER=1 - last few hundred MBs becomes so so so slow
+      #2438 closed 2024-08-05 SecurityStatus missing in  hf_api.model_info()
+      #2060 closed 2024-02-28 huggingface_hub.utils._errors.HfHubHTTPError: 503 Server Error: Service Temporarily Unavailable for url: https://huggingface.co/timm/vit_large_patch16_384.augreg_in21k_ft_in1k/resolve/main/model.safetensors
+      #2026 merged 2024-02-12 Update backoff strategy
+      #1588 closed 2023-08-11 add a retry mechanism to address random connection reset
+      #1720 merged 2023-10-09 Adding the ability to configure the timeout of get request
+      #1718 closed 2023-10-08 requests.exceptions.ConnectionError: HTTPSConnectionPool(host='cdn-lfs.huggingface.co', port=443): Read timed out.
+      #1466 closed 2023-05-09 404 Client Error using snapshot_download
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3034 open 2025-04-28 huggingface-cli downloads leading to excessive filesystem fragmentation on Windows
+      #2742 open 2025-01-08 No error is thrown when model download fails due to insufficient space
+      #1422 open 2023-04-04 Thread safe when upload files in multiple threads or processes
+      #3300 open 2025-08-11 OOM error occurs when downloading model using recent versions of Huggingface Hub Python library (worked fine in older versions)
+      #3533 open 2025-11-07 httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)
+      #2090 open 2024-03-06 incorrect cache folder name capitalization
+      #4913 closed 2026-09-15 Reject Windows-invalid filenames (trailing dot/space) to prevent silent rename and data loss
+      #3795 open 2026-02-10 Downloads stall on Azure mounted volumes
+      #4841 closed 2026-09-08 feat(cli): add --stdout option to hf download (#3176)
+      #4912 closed 2026-09-15 Windows: files named with trailing dot/space are silently renamed and can collide, losing data
+      #4196 open 2026-05-06 No resuming of downloads
+      #3657 open 2026-01-02 [Feature Request] Support explicitly mapping Model IDs to local paths
+      #5066 merged 2026-10-02 [CLI] Read --env-file / --secrets-file as UTF-8 and strip the BOM
+      #5059 merged 2026-10-01 [CLI] Upload existing paths with glob characters as-is in hf upload
+      #2816 open 2025-01-31 Multi-Tiered HF Cache
+      #4799 closed 2026-09-02 [Cache] Check shared store entries are readable, fix HFCacheInfo docs
+      #4934 closed 2026-09-18 [Download] Reject trailing dot/space filenames on Windows
+      #4935 closed 2026-09-18 [Safetensors] Validate weight_map filenames from the index file
+      #4920 merged 2026-09-16 [Buckets] Send mtime when copying files
+      #4895 closed 2026-09-13 [Windows] Tree cache disabled by long local_dir paths
+  partial        86 hit(s) (all listed)
+      #4196 open 2026-05-06 No resuming of downloads
+      #4655 open 2026-08-12 Add Turkish getting-started documentation
+      #4606 open 2026-07-29 Added translation of 3 files into Marathi as in the issue
+      #4954 merged 2026-09-21 [Buckets] Raise when a batch reports failed operations
+      #4977 open 2026-09-23 fix: authorize style bot with an explicit commit SHA
+      #4985 merged 2026-09-23 [hfh 2.x] Merge main after PrivateLink update
+      #4997 closed 2026-09-24 fix(ci): harden GitHub Actions workflows (#4994)
+      #4940 closed 2026-09-18 [Buckets] Raise when the /batch endpoint reports failed operations
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4840 merged 2026-09-08 [sandbox audit] Decide host teardown per host, and report it honestly
+      #4670 closed 2026-08-14 httpx.ReadTimeout error during snapshot_download() without XET (export HF_HUB_DISABLE_XET=1) can't recover
+      #4412 closed 2026-06-26 hf cache prune: add --incomplete flag to delete orphaned partial-download .incomplete files
+      #4826 merged 2026-09-07 [Download] Share retry handling for stream entry and body failures
+      #4664 closed 2026-08-13 Raise CLIError when positional filenames are combined with --include/--exclude
+      #4694 closed 2026-08-17 fix: retry http_get when the response headers time out
+      #4730 closed 2026-08-24 [Download] Stop Xet snapshot workers on interruption
+      #4060 closed 2026-04-07 Unreliable resume support and lack of partial corruption recovery in large file downloads
+      #4661 merged 2026-08-13 [CLI] Add --tensor-parallel-size / --data-parallel-size to `hf endpoints deploy` and `update`
+      #4469 closed 2026-07-02 [Cache] List partially-downloaded repos instead of dropping them
+      #4788 closed 2026-08-31 `hf repos ls` exits 1 with empty stdout when a repo has null storage
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4978 merged 2026-09-23 [Download] Fix Windows MAX_PATH error on tmp .incomplete file
+      #4950 closed 2026-09-20 [Download] Fix MAX_PATH crash from the unbudgeted incomplete-file suffix on Windows
+      #4196 open 2026-05-06 No resuming of downloads
+      #5081 open 2026-10-05 /papers/{id}.md returns figure SVG content instead of the paper body for some papers
+      #2543 open 2024-09-16 Lock acquisiton fails on download
+      #3440 open 2025-10-13 snapshot_download error after ~20%
+      #3960 open 2026-03-20 Downloading not working with hf_xet
+      #3795 open 2026-02-10 Downloads stall on Azure mounted volumes
+      #4849 merged 2026-09-09 [CLI] Fix truncated command descriptions in the CLI reference
+      #4620 closed 2026-07-31 Download struck at 0 bytes
+      #4797 merged 2026-09-02 [Cache] Remove unreferenced shared blobs in hf cache prune
+      #4851 merged 2026-09-09 [Sandbox] Preserve terminal command results
+      #4416 merged 2026-06-26 [CLI] hf cache: surface & prune incomplete downloads
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4412 closed 2026-06-26 hf cache prune: add --incomplete flag to delete orphaned partial-download .incomplete files
+      #4985 merged 2026-09-23 [hfh 2.x] Merge main after PrivateLink update
+      #4896 merged 2026-09-13 [Download] Fix silently disabled tree cache on long Windows paths
+      #4817 merged 2026-09-05 [Download] Prevent cached file copies during local-dir dry runs
+      #4500 merged 2026-07-07 Expose snapshot_path on IncompleteSnapshotError
+      #4498 merged 2026-07-07 [Cache] Add cross-repo shared blob store
+  dataloss       0 hit(s)
+  recover        31 hit(s) (all listed)
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4670 closed 2026-08-14 httpx.ReadTimeout error during snapshot_download() without XET (export HF_HUB_DISABLE_XET=1) can't recover
+      #3034 open 2025-04-28 huggingface-cli downloads leading to excessive filesystem fragmentation on Windows
+      #4832 merged 2026-09-08 [sandbox audit] Use each pooled sandbox's own capability token
+      #5012 closed 2026-09-26 A scalar tags value in a card's front matter is split into one-letter tags and written back
+      #4805 merged 2026-09-03 [Download] Tolerate missing HEAD Content-Length
+      #4796 closed 2026-09-02 hf auth login aborts on transient DNS failure: whoami has no connection retry
+      #4673 closed 2026-08-14 get_session() returns a permanently unusable client once the global client is closed
+      #4678 closed 2026-08-15 Recreate the shared client in get_session() when it has been closed
+      #4430 closed 2026-06-28 Multiple Public dataset LFS files return 403 AccessDenied from cdn-lfs-us-1.hf.co despite visible metadata
+      #4585 merged 2026-07-27 [CI] [Release] Make notify-prs best-effort with a retry
+      #4299 merged 2026-06-01 [CLI] inline enum choices in the generated CLI skill
+      #3515 closed 2025-11-01 [Bug] Inference API for intfloat/multilingual-e5-large-instruct unreachable (health check failed for days)
+      #4359 closed 2026-06-15 Retry reads on 408 (request time-out)
+      #4893 open 2026-09-13 `hf download` throughput collapses on high-bandwidth link with default concurrency
+      #4485 closed 2026-07-05 hf_xet download hangs indefinitely after huggingface_hub.login(token=...), but succeeds when unauthenticated (same repo/file, same host)
+      #4170 merged 2026-04-29 [CLI] Add hf spaces secrets and variables subgroups
+      #4060 closed 2026-04-07 Unreliable resume support and lack of partial corruption recovery in large file downloads
+      #4234 merged 2026-05-19 [Auth] Harden HF_TOKEN_PATH and HF_STORED_TOKENS_PATH to 0o600 / 0o700
+      #4377 closed 2026-06-18 get_safetensors_metadata can hang indefinitely: no timeout on shard Range requests
+  recovery       21 hit(s) (all listed)
+      #5049 closed 2026-09-30 Share local upload and download metadata parsing
+      #4937 merged 2026-09-18 [Download] Measure http_get progress from the initial file position
+      #4782 merged 2026-08-31 [Sandbox] Require scoped credentials for pooled sandboxes
+      #4832 merged 2026-09-08 [sandbox audit] Use each pooled sandbox's own capability token
+      #5043 closed 2026-09-29 [Bug] Saving a token overwrites malformed stored_tokens after parse error
+      #4885 closed 2026-09-11 [Http] Harden session concurrency against re-entrancy and close races (#4861)
+      #4196 open 2026-05-06 No resuming of downloads
+      #4649 closed 2026-08-10 Stop retrying permanent upload commit failures
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4060 closed 2026-04-07 Unreliable resume support and lack of partial corruption recovery in large file downloads
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4365 closed 2026-06-16 `downloadsAllTime` Decreasing Day-over-Day
+      #4600 merged 2026-07-28 [Cache] Make shared blobs cluster-safe
+      #4496 merged 2026-07-07 [CLI] Add `hf extensions update` command
+      #4200 closed 2026-05-06 [Upload] Robust, resumable, multi-worker upload_folder
+      #4670 closed 2026-08-14 httpx.ReadTimeout error during snapshot_download() without XET (export HF_HUB_DISABLE_XET=1) can't recover
+      #3944 closed 2026-03-18 fix: prevent download hang from stale file locks
+      #4485 closed 2026-07-05 hf_xet download hangs indefinitely after huggingface_hub.login(token=...), but succeeds when unauthenticated (same repo/file, same host)
+      #3555 closed 2025-11-19 Account recovery request: lost access to corporate email
+      #3378 merged 2025-09-19 Add cross-platform CLI Installers
+  rollback       12 hit(s) (all listed)
+      #4782 merged 2026-08-31 [Sandbox] Require scoped credentials for pooled sandboxes
+      #4659 merged 2026-08-13 [CLI] Keep `hf extensions` off the metered GitHub REST API
+      #4400 merged 2026-06-23 Smoother Xet download progress with dual bars
+      #4209 merged 2026-05-08 [Download] Fix snapshot bar inflation on http_get retry
+      #4350 merged 2026-06-12 [Sandbox] Add Sandbox API and `hf sandbox` CLI on top of Jobs
+      #4496 merged 2026-07-07 [CLI] Add `hf extensions update` command
+      #4065 merged 2026-04-07 [BUG FIX]: hf_hub_download crashes when stderr lacks a real file descriptor
+      #3956 merged 2026-03-20 [FEAT] Support skills from hf skills
+      #2406 closed 2024-07-20 Rollback operation for a branch of repositories
+      #2523 closed 2024-09-06 KeyError: 'safe' when calling HfFileSystem.ls()
+      #390 merged 2021-10-06 rollback to pyyaml
+      #355 merged 2021-09-20 Improve save and load repocard metadata
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4196 open 2026-05-06 No resuming of downloads
+      #4349 open 2026-06-12 `hf download` routinely crashes with `HF_HUB_DISABLE_XET` (no retry)
+      #3533 open 2025-11-07 httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)
+      #3868 open 2026-03-02 HTTP download fails for files >50GB — why is there a limit?
+      #4937 merged 2026-09-18 [Download] Measure http_get progress from the initial file position
+      #4721 closed 2026-08-21 [Download] Retry timeout while opening resume stream
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4941 closed 2026-09-18 [CLI] Add a command to remove the Xet cache
+      #4826 merged 2026-09-07 [Download] Share retry handling for stream entry and body failures
+      #3300 open 2025-08-11 OOM error occurs when downloading model using recent versions of Huggingface Hub Python library (worked fine in older versions)
+      #5046 merged 2026-09-30 [CLI] nit: update `hf upload` help text
+      #4955 merged 2026-09-21 [hfh 2.x] Remove deprecated APIs
+      #2083 closed 2024-03-03 upload resume
+      #4694 closed 2026-08-17 fix: retry http_get when the response headers time out
+      #4883 merged 2026-09-11 [docs] xet caching and concurrency updates
+      #4815 closed 2026-09-05 hf_hub_download: the body GET is not pinned to the commit resolved by the metadata HEAD call (cross-version cache poisoning, mixed-version resume)
+      #4670 closed 2026-08-14 httpx.ReadTimeout error during snapshot_download() without XET (export HF_HUB_DISABLE_XET=1) can't recover
+      #4143 closed 2026-04-24 [Download] Harden resume validation
+      #4795 closed 2026-09-02 [Inference Providers] Add IteraCompute provider support
+      #3007 closed 2025-04-15 snapshot_download ignores 5xx errors during resume, returns unsafe cached data
+  half-written   11 hit(s) (all listed)
+      #5058 merged 2026-10-01 [CI] Reduce flaky tests (jedi cache, read-after-write, fewer reruns)
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4633 closed 2026-08-05 A `tqdm_class` that follows the documented contract shows almost no progress on Xet downloads
+      #4196 open 2026-05-06 No resuming of downloads
+      #4306 merged 2026-06-03 [Fix] Make concurrent downloads safe even when file locking is broken
+      #3921 closed 2026-03-12 chore: update release.yml
+      #4350 merged 2026-06-12 [Sandbox] Add Sandbox API and `hf sandbox` CLI on top of Jobs
+      #3956 merged 2026-03-20 [FEAT] Support skills from hf skills
+      #2914 merged 2025-03-07 A better security-wise style bot GH Action
+      #1362 merged 2023-02-24 Write Mixins/Integration guide
+  wipe           20 hit(s) (all listed)
+      #5013 closed 2026-09-26 `stored_tokens` uses the locale encoding: a non-ASCII token name wipes saved tokens, old files break `get_token()` in UTF-8 mode
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4941 closed 2026-09-18 [CLI] Add a command to remove the Xet cache
+      #2090 open 2024-03-06 incorrect cache folder name capitalization
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4532 merged 2026-07-15 [Jobs] Add optional names to Jobs CLI and API
+      #4628 merged 2026-08-04 [Inference Endpoints] Allow container command/args without custom image + support them in update
+      #4416 merged 2026-06-26 [CLI] hf cache: surface & prune incomplete downloads
+      #4496 merged 2026-07-07 [CLI] Add `hf extensions update` command
+      #4346 merged 2026-06-11 [Jobs] Add sync_job_volume helper and local paths in hf jobs -v
+      #4155 merged 2026-04-27 [CLI] Add spaces lifecycle commands: pause, restart, sleep
+      #3847 merged 2026-02-25 Fix Xet token invalid on repo recreation
+      #3849 merged 2026-02-25 Hf buckets file deletion
+      #1997 closed 2024-01-23 `huggingface-cli delete-cache --disable-tui` improvements
+      #3378 merged 2025-09-19 Add cross-platform CLI Installers
+      #1738 closed 2023-10-13 Revampt workflow when downloading to local dir
+      #1232 closed 2022-11-29 Store user token in huggingface home folder
+      #1302 merged 2023-01-19 Make tests more robust (no pre-existing repo on staging Hub)
+      #1025 closed 2022-09-01 :triangular_flag_on_post: Scan cache tool: ability to free up space 
+  wipes          5 hit(s) (all listed)
+      #5013 closed 2026-09-26 `stored_tokens` uses the locale encoding: a non-ASCII token name wipes saved tokens, old files break `get_token()` in UTF-8 mode
+      #4532 merged 2026-07-15 [Jobs] Add optional names to Jobs CLI and API
+      #4496 merged 2026-07-07 [CLI] Add `hf extensions update` command
+      #4155 merged 2026-04-27 [CLI] Add spaces lifecycle commands: pause, restart, sleep
+      #3849 merged 2026-02-25 Hf buckets file deletion
+  erase          16 hit(s) (all listed)
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #4937 merged 2026-09-18 [Download] Measure http_get progress from the initial file position
+      #4840 merged 2026-09-08 [sandbox audit] Decide host teardown per host, and report it honestly
+      #2832 merged 2025-02-04 [Bot] Update inference types
+      #2476 merged 2024-08-21 Fix: do not erase existing values on `update_inference_endpoint`
+      #2406 closed 2024-07-20 Rollback operation for a branch of repositories
+      #1481 closed 2023-05-21 Add `firstCreated` entry to `HfApi`
+      #1381 merged 2023-03-08 Prepare for 0.14
+      #1291 merged 2023-01-16 fixes 1290 - check for existing token during interpreter login
+      #1240 closed 2022-12-02 Opt-in for downloading without symlinks
+      #1214 merged 2022-11-21 Fix metadata_update for verified evaluations
+      #1051 closed 2022-09-14 Git: find a "better" way to handle tokens than git credential store
+      #992 merged 2022-08-12 Enable coverage in CI
+      #876 merged 2022-05-17 ENH Removed history writing in Keras model card
+      #509 merged 2021-11-30 Task Pages on 🤗 Hub
+      #277 merged 2021-08-13 Git credentials
+  erasing        2 hit(s) (all listed)
+      #2406 closed 2024-07-20 Rollback operation for a branch of repositories
+      #1214 merged 2022-11-21 Fix metadata_update for verified evaluations
+  erased         3 hit(s) (all listed)
+      #2832 merged 2025-02-04 [Bot] Update inference types
+      #1481 closed 2023-05-21 Add `firstCreated` entry to `HfApi`
+      #1240 closed 2022-12-02 Opt-in for downloading without symlinks
+  destroy        9 hit(s) (all listed)
+      #3974 open 2026-03-25 ### 🐛 Bug Report: SIGABRT crash on Python 3.14.3 shutdown with hf_xet + PyTorch  .
+      #4307 open 2026-06-03 Fine grain tokens, expose scope inference.endpoints.read to allow enumration of namespaces for auto-discovery
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4840 merged 2026-09-08 [sandbox audit] Decide host teardown per host, and report it honestly
+      #4178 closed 2026-05-01 Streaming dataset hangs consistently
+      #2779 closed 2025-01-24 meta-llama/Llama-3.3-70B-Instruct: OSError: Consistency check failed
+      #2677 closed 2024-11-24 HF_HUB_ENABLE_HF_TRANSFER=1 - last few hundred MBs becomes so so so slow
+      #2493 closed 2024-08-29 AsyncInferenceClient not closing connection properly when answer stream is not entierly consumed
+      #676 merged 2022-02-09 Ensure `post_method` is only executed once
+  destroys       2 hit(s) (all listed)
+      #2677 closed 2024-11-24 HF_HUB_ENABLE_HF_TRANSFER=1 - last few hundred MBs becomes so so so slow
+      #676 merged 2022-02-09 Ensure `post_method` is only executed once
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5043 closed 2026-09-29 [Bug] Saving a token overwrites malformed stored_tokens after parse error
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #5013 closed 2026-09-26 `stored_tokens` uses the locale encoding: a non-ASCII token name wipes saved tokens, old files break `get_token()` in UTF-8 mode
+      #4861 closed 2026-09-10 `get_session()` is not thread-safe
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4912 closed 2026-09-15 Windows: files named with trailing dot/space are silently renamed and can collide, losing data
+      #4558 closed 2026-07-21 [Jobs] Proposal: optional [tool.hf-jobs] table in PEP 723 headers so a script's runtime config travels with it (hf jobs uv run)
+      #4768 closed 2026-08-27 hf download doesn't work properly
+      #3201 open 2025-07-04 Ignore HTTP 429 requests when checking for model updates
+      #5070 closed 2026-10-02 [Tests] Make CI failures visible and retry transient Hub errors
+      #4196 open 2026-05-06 No resuming of downloads
+      #4842 merged 2026-09-08 Fix dotenv parser truncating unquoted values containing '#'
+      #1452 closed 2023-04-27 [HfFileSystem] Reuse caching when downloading a file
+      #4705 closed 2026-08-20 [Download] Add HF_HUB_DOWNLOAD_MODE env var
+      #4825 closed 2026-09-07 [CI] Bound hanging tests and stabilize local download coverage
+      #4934 closed 2026-09-18 [Download] Reject trailing dot/space filenames on Windows
+      #4628 merged 2026-08-04 [Inference Endpoints] Allow container command/args without custom image + support them in update
+      #4646 closed 2026-08-08 Xet downloads ignore `tqdm_class` for the transfer bar
+      #4817 merged 2026-09-05 [Download] Prevent cached file copies during local-dir dry runs
+      #4478 merged 2026-07-03 [Xet] Show Validating progress during shard finalization
+  clobber        10 hit(s) (all listed)
+      #4842 merged 2026-09-08 Fix dotenv parser truncating unquoted values containing '#'
+      #4690 closed 2026-08-17 fix: pin empty agent-harness registry at conftest import for deterministic tests
+      #4530 merged 2026-07-14 [Download] Fix xet download rate: show summed, not per-file speed
+      #4519 closed 2026-07-10 `hf download` seems to report incorrect bit rates
+      #4531 closed 2026-07-15 Bump the actions group with 6 updates
+      #4567 closed 2026-07-22 Bump the actions group across 1 directory with 7 updates
+      #4607 closed 2026-07-29 Bump the actions group across 1 directory with 10 updates
+      #1758 merged 2023-10-17 Added `[[autodoc]]` for `ModelStatus`
+      #1740 merged 2023-10-13 Expanded docstrings on `post` and `ModelStatus`
+      #1734 closed 2023-10-13 Docs request: what is loaded/loadable?
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5077 open 2026-10-04 [Repocard] Fix UnicodeDecodeError when loading a non-ASCII card
+      #5045 open 2026-09-30 [HfFileSystem] Read Xet files with hf_xet in range reads
+      #4578 open 2026-07-24 Make OAuth client secret optional for Spaces (PKCE support)
+      #4718 open 2026-08-21 [Inference Providers] deepinfra: add text-to-image support
+      #4606 open 2026-07-29 Added translation of 3 files into Marathi as in the issue
+      #4564 open 2026-07-22 [Inference] Send max_tokens for Together and Novita text-generation
+      #3895 open 2026-03-08 [Inference Provider] Add TextCLF as an inference provider
+      #4515 open 2026-07-09 Add `HfApi.submit_paper()` and `hf papers submit` CLI
+      #4261 open 2026-05-26 chore: update style-bot.yml
+      #4071 open 2026-04-09 Allow controlled cross-domain redirects for HEAD requests
+      #4059 open 2026-04-06 [BUG FIX]: smoother progress for xet downloads
+      #5070 closed 2026-10-02 [Tests] Make CI failures visible and retry transient Hub errors
+      #5055 merged 2026-10-01 [CLI] Rename 'hf spaces zero-gpu-quota' to 'hf spaces zero-gpu quota'
+      #5063 merged 2026-10-01 [Bugfix] Fix wrong exception type and unbound variable guard
+      #5041 merged 2026-09-29 [Repos] Warn when duplicated repo files are still being copied
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4994 merged 2026-09-24 [Release] Prepare huggingface_hub 2.0
+      #5006 closed 2026-09-25 Strip query strings and support download URLs in repo info parsing
+      #5005 closed 2026-09-24 Make bucket include/exclude matching case-sensitive on all platforms
+      #4968 closed 2026-09-22 [CLI] Remove deprecated --claude option in 2.x
+  unreadable     15 hit(s) (all listed)
+      #4799 closed 2026-09-02 [Cache] Check shared store entries are readable, fix HFCacheInfo docs
+      #4797 merged 2026-09-02 [Cache] Remove unreferenced shared blobs in hf cache prune
+      #5013 closed 2026-09-26 `stored_tokens` uses the locale encoding: a non-ASCII token name wipes saved tokens, old files break `get_token()` in UTF-8 mode
+      #5042 merged 2026-09-29 [CI] Split tests into api / transfer / inference suites
+      #4498 merged 2026-07-07 [Cache] Add cross-repo shared blob store
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4600 merged 2026-07-28 [Cache] Make shared blobs cluster-safe
+      #4234 merged 2026-05-19 [Auth] Harden HF_TOKEN_PATH and HF_STORED_TOKENS_PATH to 0o600 / 0o700
+      #4130 merged 2026-04-21 [Buckets] Add search param to list_buckets
+      #4008 merged 2026-03-30 [Internal] Bump minimum Python version from 3.9 to 3.10
+      #3884 merged 2026-03-04 [CLI] Show installed extensions in `hf --help`
+      #3523 merged 2025-11-04 Compact output in `snapshot_download` and `hf download`
+      #3432 closed 2025-10-10 [RFC] Revamp `hf cache`
+      #1041 merged 2022-09-08 Add autocomplete + tests + type checking
+      #682 merged 2022-02-10 Improve tests and logging
+  garbage        24 hit(s) (all listed)
+      #4861 closed 2026-09-10 `get_session()` is not thread-safe
+      #5042 merged 2026-09-29 [CI] Split tests into api / transfer / inference suites
+      #4412 closed 2026-06-26 hf cache prune: add --incomplete flag to delete orphaned partial-download .incomplete files
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4498 merged 2026-07-07 [Cache] Add cross-repo shared blob store
+      #4226 closed 2026-05-14 [CLI] Allow hf cache rm repo:path for file/variant deletions
+      #4397 closed 2026-06-23 `HfFileSystemStreamFile` (block_size=0): stale connection mid-stream causes unhandled `RemoteProtocolError` and silent bandwidth waste on retry
+      #4092 merged 2026-04-13 Fix reference cycle in `hf_raise_for_status` causing delayed object destruction
+      #4165 merged 2026-04-29 Avoid reuploading preuploaded LFS files in upload-large-folder
+      #4178 closed 2026-05-01 Streaming dataset hangs consistently
+      #3709 closed 2026-01-22 Deleting files from CLI (`hf repo-files delete ...`) with wildcard *recursively* deletes files
+      #4350 merged 2026-06-12 [Sandbox] Add Sandbox API and `hf sandbox` CLI on top of Jobs
+      #3390 closed 2025-09-24 hf_hub_download 'duplicating' files
+      #3252 merged 2025-07-24 Fix: "UserWarning: ... sessions are still open..." when streaming with `AsyncInferenceClient`
+      #3000 merged 2025-04-14 Improve error handling for invalid eval results in model cards
+      #2986 merged 2025-04-08 PoC: `InferenceClient` is also a `MCPClient`
+      #2722 closed 2024-12-26 Script deleted LFS files using git filter-repo but space is still used
+      #2718 closed 2024-12-23 Added the ability to track progress of individual file downloads in snapshot_download() through inner_tqdm_class addition
+      #2521 closed 2024-09-06 AsyncInferenceClient not closing the answer properly when response stream is not entirely consumed
+      #2496 merged 2024-08-30 Properly close session in `AsyncInferenceClient`
+  mangled        4 hit(s) (all listed)
+      #4751 closed 2026-08-26 [Utils] Fix load_dotenv truncating unquoted values at a bare '#'
+      #4750 closed 2026-08-26 load_dotenv truncates unquoted values at a bare '#' (inline comment should require preceding whitespace)
+      #4940 closed 2026-09-18 [Buckets] Raise when the /batch endpoint reports failed operations
+      #4635 closed 2026-08-05 [CLI] Support multi-line quoted values in .env parsing
+  contents       90 hit(s) (all listed)
+      #4989 open 2026-09-24 Scope GITHUB_TOKEN permissions per job
+      #5014 open 2026-09-26 [i18n-vi] Translate the Hugging Face Hub documentation to Vietnamese
+      #4655 open 2026-08-12 Add Turkish getting-started documentation
+      #4963 open 2026-09-22 [i18n-HI] Translate inference guide to Hindi
+      #4982 merged 2026-09-23 Scope GITHUB_TOKEN permissions per job
+      #1430 open 2022-10-21 Support incremental uploads
+      #4965 open 2026-09-22 [Security] Pin style bot execution to the reviewed SHA
+      #4980 merged 2026-09-23 fix(ci): harden GitHub Actions workflows (#4979)
+      #4919 merged 2026-09-16 fix(ci): harden GitHub Actions workflows (#4918)
+      #3312 open 2025-08-23 Production system breaks due to HTTP 429 errors
+      #3034 open 2025-04-28 huggingface-cli downloads leading to excessive filesystem fragmentation on Windows
+      #4808 closed 2026-09-03 Add NeuronPool inference provider
+      #4985 merged 2026-09-23 [hfh 2.x] Merge main after PrivateLink update
+      #4964 closed 2026-09-22 [Security] Stop the style bot from running PR-controlled entrypoints
+      #2990 open 2025-04-09 Offline API Parity
+      #4987 closed 2026-09-23 Unexpected 401s when listing with generated JWTs
+      #4877 merged 2026-09-11 [Serialization] Harden torch checkpoint deserialization
+      #4817 merged 2026-09-05 [Download] Prevent cached file copies during local-dir dry runs
+      #4738 closed 2026-08-25 [CLI] `hf-cli` SKILL.md links to a removed hf-mount install script
+      #4750 closed 2026-08-26 load_dotenv truncates unquoted values at a bare '#' (inline comment should require preceding whitespace)
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #5077 open 2026-10-04 [Repocard] Fix UnicodeDecodeError when loading a non-ASCII card
+      #4953 open 2026-09-21 [i18n-KN] Bootstrap Kannada documentation
+      #1820 open 2023-11-13 [i18n-UR] Translating docs to Urdu
+      #715 open 2022-02-23 Update permissions for a token automatically
+      #2245 open 2024-04-23 I'm 🙏🏻begging you for an 🙅🏻‍♂️UnfollowButton 
+      #5049 closed 2026-09-30 Share local upload and download metadata parsing
+      #2548 open 2024-09-17 Feature: Re-enable symlinking models downloaded from Hub by default
+      #3034 open 2025-04-28 huggingface-cli downloads leading to excessive filesystem fragmentation on Windows
+      #4933 closed 2026-09-18 [Cache] Use posix separators for scan_cache_dir ref names
+      #824 open 2022-04-08 RFC Creating a coherent user and developer experience regarding integrations
+      #5037 merged 2026-09-29 [Spaces] Update docs for cpu-basic gating and dev mode
+      #4961 closed 2026-09-22 Legacy warning message using cli upload
+      #4951 merged 2026-09-21 [HfFileSystem] Make lpath optional in get_file (fsspec>=2026.9.0)
+      #2543 open 2024-09-16 Lock acquisiton fails on download
+      #4777 closed 2026-08-30 hf cache xet: Commands to clear/prune the Xet cache
+      #4787 closed 2026-08-31 CI: no `*)` arm in python-tests.yml, so a matrix rename can run zero tests and still pass
+      #4979 open 2026-09-23 Bump the actions group across 1 directory with 7 updates
+      #4871 closed 2026-09-10 [CI] De-flake HTTP backoff tests + rerun on more transient hub-ci errors
+      #4737 merged 2026-08-25 Fix extension-confusion fallback to pickle in load_state_dict_from_file (add `_is_safetensors`)
+  unclean        0 hit(s)
+  shutdown       16 hit(s) (all listed)
+      #3974 open 2026-03-25 ### 🐛 Bug Report: SIGABRT crash on Python 3.14.3 shutdown with hf_xet + PyTorch  .
+      #4730 closed 2026-08-24 [Download] Stop Xet snapshot workers on interruption
+      #2742 open 2025-01-08 No error is thrown when model download fails due to insufficient space
+      #3726 closed 2026-01-24 Pre-upload progress is not persisted across restart (Xet), causing re-uploads and excess traffic
+      #4178 closed 2026-05-01 Streaming dataset hangs consistently
+      #4084 closed 2026-04-10 Fix reference cycle in hf_raise_for_status delaying object destruction
+      #4116 merged 2026-04-16 Use the new XetSession API
+      #3429 closed 2025-10-09 hf-xet Integration on Windows Causes Ctrl+C Hang and Shows Confusing Installation Warnings
+      #4350 merged 2026-06-12 [Sandbox] Add Sandbox API and `hf sandbox` CLI on top of Jobs
+      #3098 merged 2025-05-21 [MCP] Tiny Agents in Python
+      #3125 merged 2025-05-27 Fix `tiny-agents` cli exit issues
+      #2399 closed 2024-07-18 v0.23 download method breaks on filesystems that don't have flock enabled
+      #2718 closed 2024-12-23 Added the ability to track progress of individual file downloads in snapshot_download() through inner_tqdm_class addition
+      #2002 closed 2024-01-26 Uploading a Model (Python push_to_hub)
+      #1574 closed 2023-07-29 Commit not created when using HfApi.create_commit in ThreadPoolExecutor
+      #444 merged 2021-10-27 Add get started guide for SageMaker
+  reboot         6 hit(s) (all listed)
+      #4155 merged 2026-04-27 [CLI] Add spaces lifecycle commands: pause, restart, sleep
+      #3824 merged 2026-02-19 [CLI][Spaces] Add Dev Mode command
+      #1671 closed 2023-09-16 Implement additional CLI repo functionality
+      #1586 merged 2023-08-11 Support factory reboot when restarting a Space
+      #1585 closed 2023-08-11 Trigger factory reboot from `huggingface_hub`
+      #761 merged 2022-03-10 Added tempfile for tensorboard logs in tensorboard tests in test_keras_integration.py
+  disk+full      60 hit(s) (all listed)
+      #3034 open 2025-04-28 huggingface-cli downloads leading to excessive filesystem fragmentation on Windows
+      #4196 open 2026-05-06 No resuming of downloads
+      #2543 open 2024-09-16 Lock acquisiton fails on download
+      #2248 open 2024-04-24 Content-Range header for multiple part request
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4990 merged 2026-09-24 [HfFileSystem] Download Xet files with hf_xet in get_file
+      #4498 merged 2026-07-07 [Cache] Add cross-repo shared blob store
+      #4600 merged 2026-07-28 [Cache] Make shared blobs cluster-safe
+      #4469 closed 2026-07-02 [Cache] List partially-downloaded repos instead of dropping them
+      #4659 merged 2026-08-13 [CLI] Keep `hf extensions` off the metered GitHub REST API
+      #4513 merged 2026-07-09 [Utils] Add `get_cached_repo_tree` utility
+      #4361 closed 2026-06-15 [Benchmark] snapshot_download HTTP call-count
+      #4560 merged 2026-07-21 [Download] [Fix] Update file-count progress bar on completion
+      #4624 closed 2026-08-02 snapshot_download: no way to require that the cached snapshot was actually checked
+      #4496 merged 2026-07-07 [CLI] Add `hf extensions update` command
+      #4394 merged 2026-06-22 [Download] Cache repo tree listing on disk in snapshot_download
+      #4416 merged 2026-06-26 [CLI] hf cache: surface & prune incomplete downloads
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #1564 open 2023-07-19 scan-cache experiences extreme slowdowns with large models
+      #4412 closed 2026-06-26 hf cache prune: add --incomplete flag to delete orphaned partial-download .incomplete files
+  data+loss      23 hit(s) (all listed)
+      #5077 open 2026-10-04 [Repocard] Fix UnicodeDecodeError when loading a non-ASCII card
+      #4913 closed 2026-09-15 Reject Windows-invalid filenames (trailing dot/space) to prevent silent rename and data loss
+      #4941 closed 2026-09-18 [CLI] Add a command to remove the Xet cache
+      #4762 closed 2026-08-27 [CLI] Fix destructive lexical prefix match in 'hf buckets remove --recursive'
+      #5043 closed 2026-09-29 [Bug] Saving a token overwrites malformed stored_tokens after parse error
+      #4976 closed 2026-09-23 Fix eval_results_to_model_index dropping distinct result-level metadata
+      #5013 closed 2026-09-26 `stored_tokens` uses the locale encoding: a non-ASCII token name wipes saved tokens, old files break `get_token()` in UTF-8 mode
+      #5021 merged 2026-09-28 [Auth] Store token names as UTF-8 instead of locale encoding
+      #4912 closed 2026-09-15 Windows: files named with trailing dot/space are silently renamed and can collide, losing data
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4196 open 2026-05-06 No resuming of downloads
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4149 closed 2026-04-26 [CLI] Add hf cache move command to move cache folder (#1757)
+      #4226 closed 2026-05-14 [CLI] Allow hf cache rm repo:path for file/variant deletions
+      #4057 merged 2026-04-06 [CLI] Migrate `collections`, `discussions`, `extensions`, `endpoints` and `webhooks` to `out` singleton
+      #3673 merged 2026-01-09 Buckets API
+      #3853 merged 2026-02-26 Release note skill attempt
+      #1549 closed 2023-07-10 StableDiffusionImg2ImgPipeline OSError: Consistency check failed
+      #2970 merged 2025-04-01 Handle Rate Limits in Pagination with Automatic Retries
+      #718 closed 2022-02-24 Keras callback for pushing models to Hub
+  partial+write  25 hit(s) (all listed)
+      #4196 open 2026-05-06 No resuming of downloads
+      #4954 merged 2026-09-21 [Buckets] Raise when a batch reports failed operations
+      #4779 closed 2026-08-30 [Download] Validate cached file size before trusting it (#4768)
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #4664 closed 2026-08-13 Raise CLIError when positional filenames are combined with --include/--exclude
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4624 closed 2026-08-02 snapshot_download: no way to require that the cached snapshot was actually checked
+      #4492 closed 2026-07-06 [Download] Fall back to any cached snapshot when refs file is missing in offline mode
+      #3993 closed 2026-03-27 feat: add `hf buckets import` command for S3-to-HF bucket ingestion
+      #4394 merged 2026-06-22 [Download] Cache repo tree listing on disk in snapshot_download
+      #4306 merged 2026-06-03 [Fix] Make concurrent downloads safe even when file locking is broken
+      #4416 merged 2026-06-26 [CLI] hf cache: surface & prune incomplete downloads
+      #4223 closed 2026-05-13 `hf download` exits 0 while leaving `.incomplete` blobs after xet 416 CAS errors
+      #4143 closed 2026-04-24 [Download] Harden resume validation
+      #3778 merged 2026-02-05 Fix file corruption when server ignores Range header on download retry
+      #4607 closed 2026-07-29 Bump the actions group across 1 directory with 10 updates
+      #4636 merged 2026-08-05 Bump the actions group with 10 updates
+      #4350 merged 2026-06-12 [Sandbox] Add Sandbox API and `hf sandbox` CLI on top of Jobs
+      #3741 merged 2026-01-27 Add `hf skills add` CLI command
+  crash+safe     14 hit(s) (all listed)
+      #4949 closed 2026-09-20 [Discussions] Defensive deserialization for null author profiles in community events and discussions
+      #4873 merged 2026-09-10 [Spaces] Fix AttributeError in SpaceRuntime when hardware is null
+      #4789 closed 2026-09-01 fix(hf_api): fallback to 0 for missing or null storage in RepoStorageInfo
+      #4570 closed 2026-07-22 Fix ValueError in 'hf jobs ls --label' when a label value contains '='
+      #4829 merged 2026-09-08 [Download] Write cache ref file atomically in snapshot_download
+      #4600 merged 2026-07-28 [Cache] Make shared blobs cluster-safe
+      #4760 closed 2026-08-27 [experimental] feat(buckets): continuous/watch sync with volatility-aware uploads
+      #4178 closed 2026-05-01 Streaming dataset hangs consistently
+      #4226 closed 2026-05-14 [CLI] Allow hf cache rm repo:path for file/variant deletions
+      #4306 merged 2026-06-03 [Fix] Make concurrent downloads safe even when file locking is broken
+      #4143 closed 2026-04-24 [Download] Harden resume validation
+      #4091 merged 2026-04-13 [Spaces] Add fetch_space_logs + hf spaces logs command
+      #4350 merged 2026-06-12 [Sandbox] Add Sandbox API and `hf sandbox` CLI on top of Jobs
+      #3673 merged 2026-01-09 Buckets API
+  atomic+write   16 hit(s) (all listed)
+      #4829 merged 2026-09-08 [Download] Write cache ref file atomically in snapshot_download
+      #4752 open 2026-08-26 Edit files in-place with open modes "e" and "eb" (and enable "a" and "ab" too)
+      #5058 merged 2026-10-01 [CI] Reduce flaky tests (jedi cache, read-after-write, fewer reruns)
+      #4811 closed 2026-09-04 fix: atomic _create_symlink to prevent race under DDP
+      #4196 open 2026-05-06 No resuming of downloads
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #4915 closed 2026-09-15 Race in are_symlinks_supported(): snapshot_download(max_workers>1) fails with WinError 1314 on Windows without symlink privilege
+      #4234 merged 2026-05-19 [Auth] Harden HF_TOKEN_PATH and HF_STORED_TOKENS_PATH to 0o600 / 0o700
+      #4199 merged 2026-05-06 [CLI] Generate hf-cli skill locally instead of downloading from bucket
+      #4306 merged 2026-06-03 [Fix] Make concurrent downloads safe even when file locking is broken
+      #4496 merged 2026-07-07 [CLI] Add `hf extensions update` command
+      #3896 closed 2026-03-08 Security: Path Traversal Check Windows-Only + Token Files World-Readable (CWE-22, CWE-276)
+      #3874 merged 2026-03-02 [CLI] [API] Add `HfApi.copy_files` method to copy files remotely and update 'hf buckets cp' 
+      #3833 merged 2026-02-23 [CLI][Datasets] - add `sql` and `parquet` commands
+      #3434 closed 2025-10-10 [BUG] Python 3.14t (no gil)
+      #1738 closed 2023-10-13 Revampt workflow when downloading to local dir
+  lock+file      99 hit(s) (all listed)
+      #2543 open 2024-09-16 Lock acquisiton fails on download
+      #3974 open 2026-03-25 ### 🐛 Bug Report: SIGABRT crash on Python 3.14.3 shutdown with hf_xet + PyTorch  .
+      #4196 open 2026-05-06 No resuming of downloads
+      #3285 open 2025-08-05 utils.tqdm is not thread-safe
+      #5049 closed 2026-09-30 Share local upload and download metadata parsing
+      #3440 open 2025-10-13 snapshot_download error after ~20%
+      #4861 closed 2026-09-10 `get_session()` is not thread-safe
+      #5005 closed 2026-09-24 Make bucket include/exclude matching case-sensitive on all platforms
+      #4896 merged 2026-09-13 [Download] Fix silently disabled tree cache on long Windows paths
+      #4839 merged 2026-09-08 [sandbox audit] Bound what a transfer or a command's output costs the client
+      #4917 closed 2026-09-15 [Download] Fix race in are_symlinks_supported() on first call
+      #4915 closed 2026-09-15 Race in are_symlinks_supported(): snapshot_download(max_workers>1) fails with WinError 1314 on Windows without symlink privilege
+      #4732 merged 2026-08-24 [Xet] Cache connection info to avoid one token request per file
+      #4817 merged 2026-09-05 [Download] Prevent cached file copies during local-dir dry runs
+      #4797 merged 2026-09-02 [Cache] Remove unreferenced shared blobs in hf cache prune
+      #4829 merged 2026-09-08 [Download] Write cache ref file atomically in snapshot_download
+      #4842 merged 2026-09-08 Fix dotenv parser truncating unquoted values containing '#'
+      #4673 closed 2026-08-14 get_session() returns a permanently unusable client once the global client is closed
+      #2580 closed 2024-09-30 Mixed permissions of blobs/locks in a multi-user Hub cache
+      #4275 merged 2026-05-27 [Internal] Run pinact (lock versions in workflow files)
+  write+failure  78 hit(s) (all listed)
+      #5073 open 2026-10-02 [Utils] Make scheduled upload failures easier to inspect
+      #4196 open 2026-05-06 No resuming of downloads
+      #4954 merged 2026-09-21 [Buckets] Raise when a batch reports failed operations
+      #4978 merged 2026-09-23 [Download] Fix Windows MAX_PATH error on tmp .incomplete file
+      #4913 closed 2026-09-15 Reject Windows-invalid filenames (trailing dot/space) to prevent silent rename and data loss
+      #5020 merged 2026-09-27 [datasets sql] Run the DuckDB CLI subprocess with UTF-8 encoding
+      #5019 closed 2026-09-27 `hf datasets sql` returns mojibake or crashes on non-ASCII data when using the DuckDB CLI binary
+      #4829 merged 2026-09-08 [Download] Write cache ref file atomically in snapshot_download
+      #4915 closed 2026-09-15 Race in are_symlinks_supported(): snapshot_download(max_workers>1) fails with WinError 1314 on Windows without symlink privilege
+      #2742 open 2025-01-08 No error is thrown when model download fails due to insufficient space
+      #4838 merged 2026-09-08 [sandbox audit] Bind the sandbox pool cache to the endpoint, credential and namespace that wrote it
+      #4825 closed 2026-09-07 [CI] Bound hanging tests and stabilize local download coverage
+      #4786 closed 2026-08-31 `is_xet_available()` no longer consults the server, so a self-hosted Hub cannot negotiate down to LFS
+      #4810 closed 2026-09-04 [RepoCard] Read cards and templates as UTF-8, not the locale encoding
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4937 merged 2026-09-18 [Download] Measure http_get progress from the initial file position
+      #4857 merged 2026-09-10 fix(serialization): save_torch_state_dict cleanup regex silently matches/deletes unrelated files
+      #3603 open 2025-12-09 huggingface cli is not honoring http proxy environment variables on version >=1.0.0
+      #4733 closed 2026-08-25 MCPClient StreamableHTTP import breaks with mcp>=2.0.0 (streamablehttp_client renamed to streamable_http_client)
+      #4615 merged 2026-07-30 [Tests] Fix two Windows-only CI failures + flaky-CI findings
+  file+contents  64 hit(s) (all listed)
+      #4989 open 2026-09-24 Scope GITHUB_TOKEN permissions per job
+      #4963 open 2026-09-22 [i18n-HI] Translate inference guide to Hindi
+      #1430 open 2022-10-21 Support incremental uploads
+      #4980 merged 2026-09-23 fix(ci): harden GitHub Actions workflows (#4979)
+      #4982 merged 2026-09-23 Scope GITHUB_TOKEN permissions per job
+      #3034 open 2025-04-28 huggingface-cli downloads leading to excessive filesystem fragmentation on Windows
+      #4919 merged 2026-09-16 fix(ci): harden GitHub Actions workflows (#4918)
+      #4985 merged 2026-09-23 [hfh 2.x] Merge main after PrivateLink update
+      #2990 open 2025-04-09 Offline API Parity
+      #4808 closed 2026-09-03 Add NeuronPool inference provider
+      #4987 closed 2026-09-23 Unexpected 401s when listing with generated JWTs
+      #4877 merged 2026-09-11 [Serialization] Harden torch checkpoint deserialization
+      #3795 open 2026-02-10 Downloads stall on Azure mounted volumes
+      #4817 merged 2026-09-05 [Download] Prevent cached file copies during local-dir dry runs
+      #4908 closed 2026-09-14 [Download] Measure http_get progress from the initial file position
+      #4751 closed 2026-08-26 [Utils] Fix load_dotenv truncating unquoted values at a bare '#'
+      #4750 closed 2026-08-26 load_dotenv truncates unquoted values at a bare '#' (inline comment should require preceding whitespace)
+      #4738 closed 2026-08-25 [CLI] `hf-cli` SKILL.md links to a removed hf-mount install script
+      #4631 closed 2026-08-05 Add require_complete to snapshot_download
+      #4979 open 2026-09-23 Bump the actions group across 1 directory with 7 updates
+
+== 51 terms run; 48 returned hits, 9 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

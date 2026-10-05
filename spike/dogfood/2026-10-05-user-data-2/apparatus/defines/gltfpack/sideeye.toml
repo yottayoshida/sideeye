@@ -1,0 +1,6 @@
+[world]
+state = "/s/glp"
+
+[define]
+operation = "gltfpack -i /s/glp/terrain.glb -o /s/glp/terrain.glb"
+cwd       = "/s/glp-in"

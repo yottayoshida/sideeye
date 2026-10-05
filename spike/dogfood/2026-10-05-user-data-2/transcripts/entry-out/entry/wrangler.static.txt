@@ -1,0 +1,2 @@
+static: /usr/local/bin/wrangler: Node.js script executable, ASCII text, with very long lines (460)
+next: sideeye explore --state /s/aux/home/.config/.wrangler --cwd "/s/wrangler-in" --operation "wrangler telemetry disable" \

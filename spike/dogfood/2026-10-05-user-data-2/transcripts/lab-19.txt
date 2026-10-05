@@ -1,0 +1,26 @@
+$ firebase experiments:list
+│ n       │ appsinit                       │ Adds experimental `apps:init` command.                                                │
+├─────────┼────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────┤
+│ n       │ mcpalpha                       │ Opt-in to early MCP features before they're widely released.                          │
+├─────────┼────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────┤
+│ n       │ mcpapps                        │ Enables MCP Apps features                                                             │
+├─────────┼────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────┤
+│ n       │ apptesting                     │ Adds experimental App Testing feature                                                 │
+├─────────┼────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────┤
+│ n       │ crashlyticsWeb                 │ Enable the ability to upload source maps for web apps to Crashlytics.                 │
+└─────────┴────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────┘
+rc=0
+$ firebase experiments:enable webframeworks
+Enabled experiment webframeworks
+rc=0
+bec771e15052  /s/aux/home/.config/configstore/firebase-tools.json
+9aed71d0acab  /s/aux/home/.config/configstore/update-notifier-firebase-tools.json
+{
+	"previews": {
+		"webframeworks": true
+	}
+}$ firebase experiments:disable webframeworks
+Disabled experiment webframeworks
+rc=0
+7051f1db16e1  /s/aux/home/.config/configstore/firebase-tools.json
+9aed71d0acab  /s/aux/home/.config/configstore/update-notifier-firebase-tools.json

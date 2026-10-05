@@ -1,0 +1,154 @@
+== novelty pre-scan: dyc3/steamguard-cli
+== date: 2026-10-05T02:29:19Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          7 hit(s) (all listed)
+      #480 merged 2026-01-06 build(deps): bump rsa from 0.9.6 to 0.9.10
+      #319 closed 2023-09-13 Steam no longer provides access token upon first login, so logging in fails
+      #227 merged 2023-06-25 fix null OAuthToken field in SDA accounts causing migrations to crash and burn
+      #171 closed 2022-10-07 Panic with Capital Letters in Username
+      #24 closed 2017-09-07 Unhandled exception after issuing passkey with special characters in prompt
+      #18 closed 2017-06-25 ReadLineSecure causes ArgumentOutOfRangeException in setup
+      #19 closed 2017-06-27 Specific username fails in setup
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      10 hit(s) (all listed)
+      #482 open 2026-02-03 build(deps): bump bytes from 1.7.1 to 1.11.1
+      #483 open 2026-02-05 build(deps): bump time from 0.3.36 to 0.3.47
+      #496 merged 2026-04-14 build(deps): bump tokio from 1.39.2 to 1.51.1
+      #490 closed 2026-04-14 build(deps): bump rand from 0.8.5 to 0.9.3
+      #416 merged 2024-09-03 Bump quinn-proto from 0.11.3 to 0.11.8
+      #180 merged 2023-01-06 Bump tokio from 1.19.2 to 1.20.3
+      #144 closed 2022-06-06 Bump hyper from 0.14.4 to 0.14.19
+      #145 closed 2022-06-06 Bump regex from 1.4.5 to 1.5.5
+      #143 closed 2022-06-06 Bump tokio from 1.4.0 to 1.16.1
+      #142 closed 2022-06-06 Bump zeroize_derive from 1.0.1 to 1.3.2
+  truncate       10 hit(s) (all listed)
+      #482 open 2026-02-03 build(deps): bump bytes from 1.7.1 to 1.11.1
+      #483 open 2026-02-05 build(deps): bump time from 0.3.36 to 0.3.47
+      #496 merged 2026-04-14 build(deps): bump tokio from 1.39.2 to 1.51.1
+      #490 closed 2026-04-14 build(deps): bump rand from 0.8.5 to 0.9.3
+      #416 merged 2024-09-03 Bump quinn-proto from 0.11.3 to 0.11.8
+      #180 merged 2023-01-06 Bump tokio from 1.19.2 to 1.20.3
+      #144 closed 2022-06-06 Bump hyper from 0.14.4 to 0.14.19
+      #145 closed 2022-06-06 Bump regex from 1.4.5 to 1.5.5
+      #143 closed 2022-06-06 Bump tokio from 1.4.0 to 1.16.1
+      #142 closed 2022-06-06 Bump zeroize_derive from 1.0.1 to 1.3.2
+  empty          13 hit(s) (all listed)
+      #519 open 2026-09-22 Display the verification code
+      #499 open 2026-04-14 feat: abstract user prompts behind a generic prompt backend trait
+      #482 open 2026-02-03 build(deps): bump bytes from 1.7.1 to 1.11.1
+      #496 merged 2026-04-14 build(deps): bump tokio from 1.39.2 to 1.51.1
+      #442 closed 2025-02-13 fix(protobufs): missing protobuf module resources.
+      #438 closed 2025-02-12 Confirmation doesn't work due to a 403 Forbidden on POST Request to mobileconf endpoint
+      #398 closed 2024-07-15 Family sharing confirmations aren't showing up with `steamguard confirm`
+      #283 closed 2023-07-09 Failed to migrate manifest
+      #178 closed 2022-12-24 ERROR - Failed to finalize: missing field `want_more`
+      #179 closed 2023-01-03 Captcha not working
+      #162 merged 2022-08-13 add SteamGuardAccount::from_reader
+      #145 closed 2022-06-06 Bump regex from 1.4.5 to 1.5.5
+      #57 closed 2021-04-26 always output error: No accounts read.
+  atomic         1 hit(s) (all listed)
+      #482 open 2026-02-03 build(deps): bump bytes from 1.7.1 to 1.11.1
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #107 closed 2021-08-31 Setup hangs after "Authenticator finalized."
+  interrupt      1 hit(s) (all listed)
+      #107 closed 2021-08-31 Setup hangs after "Authenticator finalized."
+  sigkill        0 hit(s)
+  sigint         2 hit(s) (all listed)
+      #489 closed 2026-03-16 Keyboard locks up after SIGINT during password prompt
+      #116 closed 2021-12-11 Unknown add authenticator status code: 2
+  ctrl-c         3 hit(s) (all listed)
+      #489 closed 2026-03-16 Keyboard locks up after SIGINT during password prompt
+      #463 merged 2025-06-27 fix(tui/windows): fix text prompts on windows not displaying any text
+      #107 closed 2021-08-31 Setup hangs after "Authenticator finalized."
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           7 hit(s) (all listed)
+      #314 closed 2023-09-10 `.deb` in releases is not installable on debian 11 because of missing zstd support in dpkg
+      #107 closed 2021-08-31 Setup hangs after "Authenticator finalized."
+      #71 closed 2021-08-01 Saving session info
+      #101 closed 2021-08-26 Multi account login
+      #75 closed 2021-08-01 User still has to keep entering password when running `trade` multiple times.
+      #28 closed 2018-03-28 WGTokenInvalidException still occurs after session refresh sometimes, for some reason
+      #53 closed 2021-01-16 zsh: Ошибка формата выполняемого файла: build/steamguard
+  partial        0 hit(s)
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #460 closed 2025-05-28 `steamguard approve` does not refresh login tokens automatically
+      #45 closed 2020-08-20 How to use winauth's backup file on steamguard-cli
+  recovery       4 hit(s) (all listed)
+      #434 closed 2025-02-06 Moving Authenticator from Steam Mobile Authenticator to steamguard fails
+      #447 closed 2025-03-16 Generated 2FA code works with Steam client, but not with steamcmd
+      #88 merged 2021-08-14 Parse confirmation descriptions
+      #45 closed 2020-08-20 How to use winauth's backup file on steamguard-cli
+  rollback       0 hit(s)
+  resume         11 hit(s) (all listed)
+      #369 merged 2024-03-04 chore: update CI to use node 20 actions
+      #377 merged 2024-04-05 Bump h2 from 0.3.24 to 0.3.26
+      #372 merged 2024-03-04 Bump mio from 0.8.8 to 0.8.11
+      #370 closed 2024-03-04 ci: attempt to fix aur checker job
+      #368 merged 2024-03-04 rename `trade` subcommand to `confirm` and deprecate `trade` subcommand
+      #371 merged 2024-03-04 ci: add `workflow_dispatch` trigger to `aur-checker`
+      #366 merged 2024-02-19 tests: Replace `tempdir` crate with `tempfile`
+      #365 merged 2024-02-19 Bump `stderrlog` to 0.6
+      #363 merged 2024-02-19 trade: fix `ApiKeyCreation` confirmation getting iterpreted as `Unknown`
+      #359 merged 2024-01-19 Bump h2 from 0.3.20 to 0.3.24
+      #364 merged 2024-02-19 remove dead code to fix lints
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      27 hit(s) (all listed)
+      #513 open 2026-07-28 build(deps): bump quinn-proto from 0.11.14 to 0.11.16
+      #483 open 2026-02-05 build(deps): bump time from 0.3.36 to 0.3.47
+      #482 open 2026-02-03 build(deps): bump bytes from 1.7.1 to 1.11.1
+      #500 merged 2026-05-08 build(deps): bump rpassword from 7.3.1 to 7.5.0
+      #497 merged 2026-04-14 build(deps): bump quinn-proto from 0.11.8 to 0.11.14
+      #496 merged 2026-04-14 build(deps): bump tokio from 1.39.2 to 1.51.1
+      #490 closed 2026-04-14 build(deps): bump rand from 0.8.5 to 0.9.3
+      #480 merged 2026-01-06 build(deps): bump rsa from 0.9.6 to 0.9.10
+      #445 merged 2025-03-07 build(deps): bump ring from 0.17.8 to 0.17.13
+      #416 merged 2024-09-03 Bump quinn-proto from 0.11.3 to 0.11.8
+      #379 merged 2024-04-19 Bump rustls from 0.21.2 to 0.21.11
+      #377 merged 2024-04-05 Bump h2 from 0.3.24 to 0.3.26
+      #372 merged 2024-03-04 Bump mio from 0.8.8 to 0.8.11
+      #359 merged 2024-01-19 Bump h2 from 0.3.20 to 0.3.24
+      #330 merged 2023-10-02 Bump webpki from 0.22.1 to 0.22.2
+      #323 merged 2023-09-21 Bump phonenumber from 0.3.2+8.13.9 to 0.3.3+8.13.9
+      #336 merged 2023-10-18 Bump rustix from 0.37.22 to 0.37.25
+      #321 merged 2023-09-13 Bump webpki from 0.22.0 to 0.22.1
+      #306 merged 2023-08-22 Bump rustls-webpki from 0.100.1 to 0.100.2
+      #183 closed 2023-02-04 Bump tokio from 1.20.3 to 1.20.4
+  clobber        0 hit(s)
+  blank          17 hit(s) (all listed)
+      #455 open 2025-03-22 fix(setup): can now check if phone number available during transfer process
+      #456 open 2025-03-22 feat(setup): add arg `--token-version` to manually specify token version
+      #454 open 2025-03-21 feat(upgrade-token): add `upgrade-token` command
+      #450 merged 2025-03-19 feat(approve): add new `approve` command to approve or deny login attempts like in the mobile app
+      #452 merged 2025-03-21 feat(approve): add arg `--auto-approve-ip` to limit what IP addresses can be auto approved
+      #457 merged 2025-03-22 ci: make jobs run on all PRs
+      #449 merged 2025-03-19 feat(phone): manually add `IPhoneService/AccountPhoneStatus`
+      #436 merged 2025-02-07 feat(setup): option to add phone number if authenticator transfer fails
+      #435 merged 2025-02-07 chore: add log msg about phone number requirement to transfer
+      #430 merged 2024-12-19 feat(login): be able to handle DuplicateRequest errors more gracefully
+      #431 merged 2024-12-19 chore: fix formatting and new lints
+      #396 merged 2024-07-03 setup: debug print full authenticator status when verification fails
+      #397 merged 2024-07-03 fix new lints
+      #395 merged 2024-07-03 fix a potential panic when querying authenticator status
+      #402 merged 2024-07-21 add `status` subcommand
+      #186 merged 2023-03-18 disallow blank encryption passkeys
+      #185 closed 2023-03-18 Encrypt with a blank password, can't be decrypted afterwards
+  unreadable     1 hit(s) (all listed)
+      #233 closed 2023-06-26 Encrypted maFiles become unreadable after upgrading manifest

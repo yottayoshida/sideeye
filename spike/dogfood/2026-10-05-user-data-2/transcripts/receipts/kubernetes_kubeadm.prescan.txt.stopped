@@ -1,0 +1,48 @@
+== novelty pre-scan: kubernetes/kubeadm
+== date: 2026-10-05T06:25:04Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2178 open 2020-06-10 change the kubelet service crash loop behavior
+      #3187 closed 2025-04-24 After kubeadm init kube-apiserver and etcd are in crash loop as they depend on each other
+      #3290 closed 2026-03-03 kubeadm blocks waiting for control plane during installation
+      #3274 closed 2026-01-06 docs: update kube-vip instructions for containerd and k8s v1.29+
+      #3294 closed 2026-03-17 [v1.34.2+] kubeadm init fails at upload-config when control plane endpoint is a load balancer
+      #3269 closed 2025-12-12 kubeadm should confirm that the new etcd peer has started before trying to promote it to a member
+      #3250 closed 2025-10-18 kubeadm join segfault
+      #1318 closed 2018-12-13 kubeadm upgrade apply phases
+      #3223 closed 2025-08-07 failure in -latest test jobs since 2025.08.06
+      #3186 closed 2025-04-24 listen-client-urls of second control plane node contains IP of first control plane node
+      #1890 closed 2019-11-06 kubeadm init times out with custom config file
+      #2271 closed 2020-08-31 make components on control-plane nodes point to the local API server endpoint
+      #3174 closed 2025-03-24 Apiserver healthcheck fails if anonymous-auth=false after enabling WaitForAllControlPlaneComponents
+      #2822 closed 2023-02-06 Consider if to enable protectKernelDefaults in kubelet by default
+      #2833 closed 2023-03-05 kubeadm init, before installing CNI, shows CrashLoopBackOff
+      #2759 closed 2022-09-21 liveness probe for etcd may cause database crash
+      #2778 merged 2022-11-04 kinder: use new kind base image
+      #2500 closed 2021-06-02 kubeadm init creates mysterious kubelet authentication problem, causing "Error writing Crisocket information for the control-plane node"
+      #3069 closed 2024-05-31 kubeadm 1.30.1 init fails in kubelet-check with timeout
+      #3100 closed 2024-08-22 Error when run kubeadm init
+  corrupt        18 hit(s) (all listed)
+      #3187 closed 2025-04-24 After kubeadm init kube-apiserver and etcd are in crash loop as they depend on each other
+      #3265 closed 2025-12-07 failing kinder e2e tests since midday of 6 dec 2025
+      #2676 closed 2022-03-28 etcd: add flag for checking member data consistency
+      #3262 closed 2025-11-26 kubeadm join phase control-plane-join etcd (Kubernetes v1.33+) - etcd manifest is not created
+      #3159 closed 2025-02-07 kubeadm 部署集群 etcd 启动失败，节点 ip a 查询为 30.172.66.173
+      #2957 closed 2023-11-07 kubeadm upgrade from v1.28.0 to v1.28.3 fails
+      #2750 closed 2022-08-26 fix rootless e2e tests
+      #3014 closed 2024-02-06 kubeadm requires kubelet.conf to use specific username, although kubelet doesn't require it
+      #2924 closed 2023-09-04 adjust the kubeadm / kubelet skew policy
+      #1380 closed 2019-02-01 kubeadm init fails
+      #2927 closed 2023-09-08 upgrade-1-28-latest and upgrade-addons-before-controlplane-1-28-latest failed
+      #2527 closed 2021-07-14 kubelet won't restart after reboot - Unable to register node with API server: connection refused
+      #420 closed 2017-09-04 Investigate rollback options for upgrade
+      #1264 closed 2018-11-20 coredns fails with invalid kube-api endpoint
+      #1998 closed 2020-01-05 upgrades: make etcd backup consistent for single CP and HA
+      #2275 closed 2020-09-02 kubeadm join --control-plane to create HA setup killed the cluster
+      #2273 closed 2020-09-01 kubeadm upgrade ignores a configmap change in etcd's image repository if image has the same version
+      #1382 closed 2019-02-02 kubeadm panic during phase based init

@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.aliyun"
+
+[define]
+operation = "aliyun configure delete --profile home"
+cwd       = "/s/aliyun-in"

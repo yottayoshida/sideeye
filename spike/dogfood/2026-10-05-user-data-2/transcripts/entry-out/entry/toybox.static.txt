@@ -1,0 +1,2 @@
+static: /opt/bin/toybox: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, stripped
+next: sideeye explore --state /s/tb --cwd "/s/tb" --operation "toybox sed -i s/foo/bar/ a.txt b.txt" \

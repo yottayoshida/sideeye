@@ -1,0 +1,32 @@
+Missing (absent) translation for group-name'#references'
+Missing (absent) translation for group-name'sketch-in-plane'
+Written '/s/ss/part.slvs'.
+Missing (absent) translation for group-name'#references'
+Missing (absent) translation for group-name'sketch-in-plane'
+Missing (absent) translation for group-name'#references'
+Missing (absent) translation for group-name'sketch-in-plane'
+Written '/s/ss/part.slvs'.
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 16
+            after  open(/s/ss/part.slvs)
+            before write(/s/ss/part.slvs)
+path        part.slvs
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 16 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 16 operations (395 syscall lines examined, 71 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/solvespace/work-syscalls/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/ss-in
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/ss SIDEEYE_TRACE_PATH=/out/solvespace/work-syscalls-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.8.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=353b9345d308d12068d78c467e46da378bef68336164c4cb26cf602abb8ace3f;

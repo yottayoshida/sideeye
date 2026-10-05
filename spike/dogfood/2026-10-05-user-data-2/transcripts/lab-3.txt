@@ -1,0 +1,310 @@
+##### jump
+$ jump chdir
+rc=0
+$ jump chdir
+rc=0
+$ jump pin proj /lab/jump/d1
+rc=0
+c5f086ab3ebe  /lab/jumpdb/pins.json
+f66815a982ac  /lab/jumpdb/scores.json
+e3b0c44298fc  /lab/jumpdb/settings.json
+$ jump top
+/lab/jump/d1
+/lab/jump/d2
+rc=0
+##### dokuwiki
+$ php /lab/dw/bin/dwpage.php -m first commit /lab/page.txt wiki:start
+No such option -m
+rc=0
+$ php /lab/dw/bin/dwpage.php -m second commit /lab/page.txt wiki:start
+No such option -m
+rc=0
+b839261c1ee5  /lab/dw/data/.htaccess
+c6da2704b634  /lab/dw/data/_dummy
+c6da2704b634  /lab/dw/data/attic/_dummy
+5d5d4a2a8101  /lab/dw/data/deleted.files
+549db303e23d  /lab/dw/data/dont-panic-if-you-see-this-in-your-logs-it-means-your-directory-permissions-are-correct.png
+da0ecd85c0b1  /lab/dw/data/dont-panic-if-you-see-this-in-your-logs-it-means-your-directory-permissions-are-correct.xcf
+c6da2704b634  /lab/dw/data/locks/_dummy
+c6da2704b634  /lab/dw/data/log/_dummy
+0f6cf0cc1425  /lab/dw/data/media/wiki/dokuwiki-128.png
+94ee84eecd04  /lab/dw/data/media/wiki/dokuwiki.svg
+c6da2704b634  /lab/dw/data/media_attic/_dummy
+c6da2704b634  /lab/dw/data/media_meta/_dummy
+c6da2704b634  /lab/dw/data/meta/_dummy
+119fe963738d  /lab/dw/data/pages/wiki/dokuwiki.txt
+911bfe61cc16  /lab/dw/data/pages/wiki/syntax.txt
+aca435aadfe0  /lab/dw/data/pages/wiki/welcome.txt
+c6da2704b634  /lab/dw/data/tmp/_dummy
+##### basic-memory
+$ basic-memory project add main /lab/bm --default
+Error adding project: Project 'main' already exists
+rc=0
+$ basic-memory tool write-note --title Plans --folder notes --content # Plans
+- renew passport
+Error during write_note: Project not found: 'main'. No projects are set up yet — run 'basic-memory project add <name> <path>' to create one.
+rc=0
+b7a74919b745  /s/aux/home/.basic-memory/basic-memory.log
+59fb6db7c779  /s/aux/home/.basic-memory/config.json
+2ee1a14982d2  /s/aux/home/.basic-memory/memory.db
+$ basic-memory tool edit-note plans --operation append --content - call the bank
+Error during edit_note: Project not found: 'main'. No projects are set up yet — run 'basic-memory project add <name> <path>' to create one.
+rc=0
+cat: '/lab/bm/notes/*.md': No such file or directory
+##### ffsubsync
+faee20f854ab  /lab/sub/movie.srt
+937cdaf55182  /lab/sub/ref.srt
+$ ffsubsync /lab/sub/ref.srt -i /lab/sub/movie.srt --overwrite-input
+           INFO     computing alignments...                     ffsubsync.py:234
+           INFO     ...done                                     ffsubsync.py:250
+           INFO     score: 43821.000                            ffsubsync.py:255
+           INFO     offset seconds: -3.200                      ffsubsync.py:256
+           INFO     framerate scale factor: 1.000               ffsubsync.py:257
+           INFO     writing output to /lab/sub/movie.srt        ffsubsync.py:350
+rc=0
+22ca128607e1  /lab/sub/movie.srt
+937cdaf55182  /lab/sub/ref.srt
+1
+00:00:04,999 --> 00:00:07,499
+line 0
+##### rasterio
+made
+9ad333cc2ec6  /lab/rio/a.tif
+$ rio edit-info --crs EPSG:4326 --tag survey=2026 /lab/rio/a.tif
+rc=0
+869ba6aeacf5  /lab/rio/a.tif
+total 32
+drwxr-xr-x 2 root root  4096 Oct  5 02:23 .
+drwxr-xr-x 8 root root  4096 Oct  5 02:23 ..
+-rw-r--r-- 1 root root 20714 Oct  5 02:23 a.tif
+$ rio info /lab/rio/a.tif
+{"blockxsize": 100, "blockysize": 40, "bounds": [139.0, 35.0, 140.0, 36.0], "colorinterp": ["gray"], "count": 1, "crs": "EPSG:4326", "descriptions": [null], "driver": "GTiff", "dtype": "uint16", "height": 100, "indexes": [1], "interleave": "band", "lnglat": [139.5, 35.5], "mask_flags": [["all_valid"]], "nodata": null, "res": [0.01, 0.01], "shape": [100, 100], "tiled": false, "transform": [0.01, 0.0, 139.0, 0.0, -0.01, 36.0, 0.0, 0.0, 1.0], "units": [null], "width": 100}
+rc=0
+##### kaggle
+$ kaggle config set -n path -v /data/kaggle
+- path is now set to: /data/kaggle
+rc=0
+7470144a77e9  /lab/kg/kaggle.json
+{
+  "username": "alice",
+  "key": "0123456789abcdef0123456789abcdef",
+  "path": "/data/kaggle"
+}total 12
+drwxr-xr-x 2 root root 4096 Oct  5 02:23 .
+drwxr-xr-x 9 root root 4096 Oct  5 02:23 ..
+-rw------- 1 root root   96 Oct  5 02:23 kaggle.json
+##### huggingface_hub
+$ hf auth list
+[90mHint: The `hf-cli` skill is not installed. Run `hf skills add -g` to teach your AI agents how to use the `hf` CLI.[0m
+  name token      
+- ---- -----------
+  hf_a hf_****aaaa
+* hf_b hf_****bbbb
+rc=0
+$ hf auth logout --token-name hf_a
+Successfully logged out from access token: hf_a.
+rc=0
+e3b0c44298fc  /lab/hf/.check_for_skill_update_done
+e3b0c44298fc  /lab/hf/.check_for_update_done
+2c3b7658fe85  /lab/hf/stored_tokens
+dc1526ed8f79  /lab/hf/token
+[hf_b]
+hf_token = hf_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+##### skopeo / oras / nerdctl (docker-style auth files)
+$ skopeo logout --authfile /lab/auth/sk.json registry.example.com
+Removed login credentials for registry.example.com
+rc=0
+$ oras logout --registry-config /lab/auth/oras.json registry.example.com
+rc=0
+$ nerdctl logout registry.example.com
+rc=0
+2519c4f7f556  /lab/auth/dc.json
+81ff0b986059  /lab/auth/oras.json
+81ff0b986059  /lab/auth/sk.json
+81ff0b986059  /lab/dcfg/config.json
+{
+	"auths": {
+		"ghcr.io": {
+			"auth": "Ym9iOnRva2Vu"
+		},
+		"quay.io": {
+			"auth": "Y2Fyb2w6cHc="
+		}
+	}
+}
+{
+	"auths": {
+		"ghcr.io": {
+			"auth": "Ym9iOnRva2Vu"
+		},
+		"quay.io": {
+			"auth": "Y2Fyb2w6cHc="
+		}
+	}
+}
+##### regctl
+$ regctl registry set registry.example.com --tls disabled
+time=2026-10-05T02:23:54.024Z level=WARN msg="Failed to ping registry, configuration still updated"
+failed to ping registry registry.example.com: Get "http://registry.example.com/v2/": dial tcp: lookup registry.example.com on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable
+rc=0
+$ regctl registry set ghcr.io --req-per-sec 5
+time=2026-10-05T02:23:57.069Z level=WARN msg="Failed to ping registry, configuration still updated"
+failed to ping registry ghcr.io: Get "https://ghcr.io/v2/": dial tcp: lookup ghcr.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable
+rc=0
+99a561649a0b  /s/aux/home/.regctl/config.json
+{
+  "hosts": {
+    "ghcr.io": {
+      "tls": "enabled",
+      "hostname": "ghcr.io",
+      "reqPerSec": 5,
+      "reqConcurrent": 3
+    },
+    "registry.example.com": {
+      "tls": "disabled",
+      "hostname": "registry.example.com",
+      "reqConcurrent": 3
+    }
+  }
+}##### velero
+$ velero client config set namespace=backups features=EnableCSI
+rc=0
+e3f5c2b287d1  /s/aux/home/.config/velero/config.json
+{"features":"EnableCSI","namespace":"backups"}
+
+##### codex
+$ codex mcp add notes -- /usr/bin/true --flag
+Added global MCP server 'notes'.
+rc=0
+672461bb237a  /lab/codex/config.toml
+model = "o3"
+
+[mcp_servers.docs]
+command = "docs-server"
+
+[mcp_servers.notes]
+command = "/usr/bin/true"
+args = ["--flag"]
+##### sheldon
+$ sheldon add autosugg --github zsh-users/zsh-autosuggestions
+LOADED /lab/sheldon/plugins.toml
+     ADDED autosugg
+UPDATED /lab/sheldon/plugins.toml
+rc=0
+80b05cd3cef5  /lab/sheldon/plugins.toml
+shell = "zsh"
+
+[plugins.base16]
+github = "chriskempson/base16-shell"
+
+[plugins.autosugg]
+github = "zsh-users/zsh-autosuggestions"
+##### micro
+$ micro -config-dir /lab/micro -clean
+Cleaning your configuration directory at /lab/micro
+Please consider backing up /lab/micro before continuing
+Continue [Y/n]: EOF
+Stopping early
+rc=0
+14fe72f390c7  /lab/micro/settings.json
+{
+    "tabsize": 4,
+    "notanoption": true,
+    "colorscheme": "monokai"
+}
+##### vercel
+$ vercel telemetry disable --global-config /lab/vercel
+
+> You have opted out of Vercel CLI telemetry
+> No data will be collected from your machine
+
+Learn more: https://vercel.com/docs/cli/about-telemetry
+Error: Failed to get package info: Error: Failed to fetch dist-tags from npm
+    at process.<anonymous> (/usr/local/lib/node_modules/vercel/dist/get-latest-worker.cjs:124:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+rc=0
+a2f1fd05c13e  /lab/vercel/config.json
+ebd9910d192a  /lab/vercel/telemetry-device.json
+f30a078fcf87  /lab/vercel/telemetry-session.json
+##### ntfs-3g
+$ mkntfs -F -Q -L OLDLABEL /lab/ntfs/vol.img
+The partition start sector was not specified for /lab/ntfs/vol.img and it could not be obtained automatically.  It has been set to 0.
+The number of sectors per track was not specified for /lab/ntfs/vol.img and it could not be obtained automatically.  It has been set to 0.
+The number of heads was not specified for /lab/ntfs/vol.img and it could not be obtained automatically.  It has been set to 0.
+Cluster size has been automatically set to 4096 bytes.
+To boot from a device, Windows needs the 'partition start sector', the 'sectors per track' and the 'number of heads' to be set.
+Windows will not be able to boot from this device.
+Creating NTFS volume structures.
+mkntfs completed successfully. Have a nice day.
+rc=0
+a83eaad89354  /lab/ntfs/vol.img
+$ ntfslabel /lab/ntfs/vol.img NEWLABEL
+rc=0
+28beb873582a  /lab/ntfs/vol.img
+$ ntfslabel /lab/ntfs/vol.img
+NEWLABEL
+rc=0
+##### firewalld
+d3897598255d  /etc/firewalld/firewalld.conf
+/etc/firewalld:
+firewalld.conf
+helpers
+icmptypes
+ipsets
+policies
+services
+zones
+
+/etc/firewalld/zones:
+$ firewall-offline-cmd --zone=public --add-port=8080/tcp
+success
+rc=0
+d3897598255d  /etc/firewalld/firewalld.conf
+5c8b8cee4661  /etc/firewalld/zones/public.xml
+total 16
+drwxr-xr-x 1 root root 4096 Oct  5 02:23 .
+drwxr-x--- 1 root root 4096 Oct  5 02:15 ..
+-rw-r--r-- 1 root root  365 Oct  5 02:23 public.xml
+##### i18n-tasks
+$ i18n-tasks missing
+#StandWithUkraine
+Missing translations (2) | i18n-tasks v1.1.2
++--------+-------------------+----------------------------------+
+| Locale | Key               | Value in other locales or source |
++--------+-------------------+----------------------------------+
+|  all   | home.index.footer | app/views/home/index.html.erb:3  |
+|  all   | home.index.intro  | app/views/home/index.html.erb:2  |
++--------+-------------------+----------------------------------+
+rc=0
+$ i18n-tasks add-missing
++--------+-------------------+--------+
+| Locale | Key               | Value  |
++--------+-------------------+--------+
+|   en   | home.index.footer | Footer |
+|   en   | home.index.intro  | Intro  |
+|   ja   | home.index.footer | Footer |
+|   ja   | home.index.intro  | Intro  |
++--------+-------------------+--------+
+rc=0
+f8e63603ff6b  /lab/i18n/config/locales/en.yml
+4b760dc83a2b  /lab/i18n/config/locales/ja.yml
+---
+ja:
+  home:
+    index:
+      footer: Footer
+      intro: Intro
+      title: ようこそ
+##### yt-dlp
+$ yt-dlp --enable-file-urls --download-archive /lab/yt/archive.txt -o /lab/yt-out/%(title)s.%(ext)s file:///lab/yt-in/clip.mp4
+[generic] Extracting URL: file:///lab/yt-in/clip.mp4
+[generic] clip: Downloading webpage
+[info] clip: Downloading 1 format(s): mp4
+[download] Destination: /lab/yt-out/clip.mp4
+[download]   0.5% of  195.31KiB at  Unknown B/s ETA Unknown[download]   1.5% of  195.31KiB at  Unknown B/s ETA Unknown[download]   3.6% of  195.31KiB at  Unknown B/s ETA Unknown[download]   7.7% of  195.31KiB at  Unknown B/s ETA Unknown[download]  15.9% of  195.31KiB at  Unknown B/s ETA Unknown[download]  32.3% of  195.31KiB at  Unknown B/s ETA Unknown[download]  65.0% of  195.31KiB at  Unknown B/s ETA Unknown[download] 100.0% of  195.31KiB at  Unknown B/s ETA Unknown[download] 100% of  195.31KiB in 00:00:00 at 175.94MiB/s   
+rc=0
+e88a65af31b9  /lab/yt/archive.txt
+generic clip0
+generic clip
+clip.mp4

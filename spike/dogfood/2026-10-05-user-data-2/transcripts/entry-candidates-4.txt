@@ -1,0 +1,2 @@
+ROW wp-cli static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT wp-cli 0

@@ -1,0 +1,4 @@
+static: /opt/bin/velero: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=XXKq4LrfjmE4IR34SeSa/AXWebxiyxpJWMA_toM6x/1JTN9lR8TG4P2sFWfwQO/8iCima7MF0mFRGOunsRv, BuildID[sha1]=e10acc6dbe83c6191f495cbfca9b86ea2a9518f3, with debug_info, not stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/aux/home/.config/velero --cwd "/s/velero-in" --operation "velero client config set namespace=backups" \

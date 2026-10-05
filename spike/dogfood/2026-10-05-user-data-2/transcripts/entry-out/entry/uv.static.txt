@@ -1,0 +1,2 @@
+static: /opt/py/bin/uv: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, BuildID[sha1]=f2375ed64efab36f99535c34439b5c7f0465263f, stripped
+next: sideeye explore --state /s/uvd/uv/credentials --cwd "/s/uv-in" --operation "/opt/py/bin/uv auth logout https://pkgs.example.internal/simple --username alice" \

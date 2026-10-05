@@ -1,0 +1,6 @@
+[world]
+state = "/s/yt"
+
+[define]
+operation = "yt-dlp --enable-file-urls --download-archive /s/yt/archive.txt -o /s/yt-out/%(title)s.%(ext)s file:///s/yt-in/clip.mp4"
+cwd       = "/s/yt-in"

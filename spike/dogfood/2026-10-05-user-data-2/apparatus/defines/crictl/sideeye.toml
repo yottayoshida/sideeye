@@ -1,0 +1,6 @@
+[world]
+state = "/s/cri"
+
+[define]
+operation = "crictl --config /s/cri/crictl.yaml config --set timeout=10"
+cwd       = "/s/cri-in"

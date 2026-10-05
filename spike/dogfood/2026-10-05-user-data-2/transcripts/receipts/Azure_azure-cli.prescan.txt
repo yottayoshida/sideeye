@@ -1,0 +1,872 @@
+== novelty pre-scan: Azure/azure-cli
+== date: 2026-10-05T05:12:30Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25127 open 2023-01-14 crash
+      #34055 open 2026-09-10 [AzCLI] Track MSAL update for az login crash in AgOS sandbox
+      #27259 open 2023-08-25 Container crash frequently
+      #26277 open 2023-04-27 az login crash
+      #28479 open 2024-02-28 az vm list-skus crashes
+      #18694 open 2021-06-30 az managedapp show --name crash
+      #12259 open 2020-02-19 az interactive crashes when changing scope
+      #33476 open 2026-05-31 [Container App] Fix `az containerapp exec` crash on non-ASCII (emoji) terminal output
+      #33728 open 2026-07-15 {Core} Handle JSONDecodeError for corrupted MSAL token cache and SP entries
+      #15590 open 2020-10-20 Non UTF-8 boot log crashes decoder
+      #13750 open 2020-05-29 crash of az interactive while updating vnet
+      #12947 open 2020-04-10 CLI crashes when using terraform azure provider
+      #19434 open 2021-09-02 Can't upgrade to remote build, az crashed
+      #33149 open 2026-04-08 az containerapp exec crashes on Unicode emoji output (cp1252 encoding)
+      #32952 open 2026-03-11 azure-cli: crash when handling InvalidTemplateDeployment (response already consumed)
+      #34088 open 2026-09-16 [Network] Fix #27579: `az network dns zone export`: Fix export of empty TXT record sets
+      #33555 open 2026-06-15 az login crashes with "'NoneType' object is not subscriptable" in SubscriptionSelector when account has zero subscriptions (login_experience_v2)
+      #32654 open 2026-01-16 Support Premium SSD v2 and Ultra disks for crash consistent restore points
+      #32147 open 2025-09-19 Memory leak and crash in git bash if `--destination-path` is pefixed with a `/` for ` az storage file upload-batch`
+      #30864 open 2025-02-23 az storage blob upload --data=@- crashes if input data isn't utf-8
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33728 open 2026-07-15 {Core} Handle JSONDecodeError for corrupted MSAL token cache and SP entries
+      #31072 open 2025-03-18 corrupt file systems
+      #27211 open 2023-08-21 bash vars corrupt in WSL2
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #34136 open 2026-09-25 `network-watcher packet-capture create`: unescaped `C:\Captures\...` in docstring emits SyntaxWarning on first run and corrupts the help example
+      #16289 open 2020-12-16 Azure Function managed identity in corrupted state
+      #15529 open 2020-10-15 [Shell] Azure CLI receives corrupted arguments in PowerShell
+      #20990 open 2022-01-14 After upgrading with MSI, Azure CLI's files become corrupted
+      #33720 open 2026-07-10 az login error after authentication in browser - json.decoder.JSONDecodeError: Extra data: line 3 column 8 (char 31)
+      #33980 open 2026-08-25 [VM] Fix #33979: `az vm user update`: Fix password parsing so ')' in `--password` does not break Windows VM password reset
+      #26312 open 2023-05-02 az login / az account clear fail: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+      #21170 open 2022-02-01 warning downloading large files from cosmos
+      #29704 open 2024-08-12 Not able to login using azure-cli
+      #33405 open 2026-05-20 [Core] Replace unsafe pickle deserialization with JSON in MSAL HTTP cache
+      #28172 open 2024-01-11 az vm run-command create doesn't return even the script is finished
+      #17886 open 2021-04-26 Upgrade prompt is interactive and blocks automation workflows
+      #24761 open 2022-11-29 Gzip output getting mangled when piping to azure upload blob command
+      #16421 open 2021-01-04 Cloud Shell not mounting fileshares/restart with blank screen
+      #9427 open 2019-05-17 Corruption of `~/.azure` files
+      #31076 open 2025-03-19 Az Cli not recovering from bad configuration
+  corruption     14 hit(s) (all listed)
+      #9427 open 2019-05-17 Corruption of `~/.azure` files
+      #30046 open 2024-10-08 Concurrent az login causes 'User does not exist in MSAL token cache' due to token cache corruption (portalocker ValueError: can't have unbuffered text I/O)
+      #33935 open 2026-08-20 [Packaging] Fix #28497: Preserve non-ASCII output from Windows launchers in isolated mode
+      #34069 open 2026-09-13 az vm update retains conflicting Capacity Reservation state when switching assignment modes
+      #33728 open 2026-07-15 {Core} Handle JSONDecodeError for corrupted MSAL token cache and SP entries
+      #34136 open 2026-09-25 `network-watcher packet-capture create`: unescaped `C:\Captures\...` in docstring emits SyntaxWarning on first run and corrupts the help example
+      #25721 open 2023-03-08 Azure CLI azure-devops: az artifacts universal download to network share reports success but intermittently writes file with all zero byte content.
+      #32790 closed 2026-02-13 {Compute} `az vmss reimage`: Migrate command to aaz-based implementation
+      #20273 closed 2021-11-10 Permission denied on msal_token_cache.bin.lockfile
+      #17477 merged 2021-03-26 {Core} Fix: `test_credscache_good_error_on_file_corruption` fails when run in parallel with other tests
+      #7438 closed 2018-09-28 ACR Issue with tags
+      #655 closed 2016-08-07 Support creating a blank VHD in a storage account
+      #11767 closed 2020-01-03 az vm image list can't find publisher
+      #4647 merged 2017-10-10 core: capture errors caused by token file corruption and make it actionable
+  truncated      93 hit(s) (all listed)
+      #5163 open 2017-12-22 container logs are truncated
+      #31870 open 2025-07-25 az network vnet list-available-ips: Add total count metadata for capacity planning
+      #17246 open 2021-03-09 'az resource tag' doesn’t work with snapshots from images with legal terms
+      #27245 open 2023-08-23 az network bastion rdp ignores windows system name when using azure ad mfa
+      #16016 open 2020-11-23 Role assignment list includes classic administrators from the wrong scope
+      #20271 open 2021-11-10 Creating wrong dns records for the scm website for a  private endpoint to a staging slot where the base website has more then 40 characters
+      #33544 open 2026-06-12 [RFE] `az account set --subscription`: refresh cache on miss and surface ARM/ARG response correlation IDs in cache-lookup errors
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #17247 open 2021-03-09 'az resource tag' more than a 1000% slower than 'az tag create'
+      #33245 open 2026-04-22 HTTP error while calling OpenAI models using Microsoft Foundry
+      #32644 open 2026-01-14 az.cmd truncates multi-line arguments on windows
+      #4245 open 2017-08-17 [DNS] zone import should not truncate records ending in .
+      #30327 open 2024-11-12 az ml workspace list fails on v2.32.0
+      #28497 open 2024-03-02 Consider use UTF-8 by default for Azure CLI
+      #32655 open 2026-01-16 `az functionapp deploy` crashes (JSONDecodeError) because OneDeploy responses contain JSON + appended HTML (Flex Consumption). Also blocks with RunFromExternalUrlException when WEBSITE_RUN_FROM_PACKAGE is set.
+      #30380 open 2024-11-18 Some `az functionapp` commands don't work for Flex Consumption SKU
+      #34159 open 2026-10-02 Bump urllib3 from 2.7.0 to 2.8.0 in /src/azure-cli
+      #34151 open 2026-09-30 Bump oauthlib from 3.2.2 to 4.0.0 in /src/azure-cli
+      #34164 open 2026-10-04 [VM] Fix #34063: `az vmss update`: Clear the opposite zone placement filter when switching filters
+      #34132 open 2026-09-24 [Packaging] Fix #34131: Enable Fedora 44 RPM build and validation
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5163 open 2017-12-22 container logs are truncated
+      #32644 open 2026-01-14 az.cmd truncates multi-line arguments on windows
+      #4245 open 2017-08-17 [DNS] zone import should not truncate records ending in .
+      #27865 open 2023-11-16 Argument parser truncates closing parenthesis from string when running on windows in Powershell
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #31870 open 2025-07-25 az network vnet list-available-ips: Add total count metadata for capacity planning
+      #17246 open 2021-03-09 'az resource tag' doesn’t work with snapshots from images with legal terms
+      #33427 open 2026-05-22 fix(core): emit LF newlines for tsv output
+      #27245 open 2023-08-23 az network bastion rdp ignores windows system name when using azure ad mfa
+      #19327 open 2021-08-24 static webapp:set a variable with a value containing "="
+      #16016 open 2020-11-23 Role assignment list includes classic administrators from the wrong scope
+      #20271 open 2021-11-10 Creating wrong dns records for the scm website for a  private endpoint to a staging slot where the base website has more then 40 characters
+      #33544 open 2026-06-12 [RFE] `az account set --subscription`: refresh cache on miss and surface ARM/ARG response correlation IDs in cache-lookup errors
+      #17247 open 2021-03-09 'az resource tag' more than a 1000% slower than 'az tag create'
+      #33245 open 2026-04-22 HTTP error while calling OpenAI models using Microsoft Foundry
+      #25207 open 2023-01-23 create a Service Principal with Contributor access to the Resource Group , gave error 
+      #34163 open 2026-10-03 {Misc.} Repository owned agents and tooling with a single x.yml
+      #14151 open 2020-06-30 PermissionError: [Errno 13] Permission denied: '/.azure' when run as container in Jenkins docker agent pipeline !
+      #32251 open 2025-10-13 error with latest version enabling confcom
+      #32655 open 2026-01-16 `az functionapp deploy` crashes (JSONDecodeError) because OneDeploy responses contain JSON + appended HTML (Flex Consumption). Also blocks with RunFromExternalUrlException when WEBSITE_RUN_FROM_PACKAGE is set.
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #34088 open 2026-09-16 [Network] Fix #27579: `az network dns zone export`: Fix export of empty TXT record sets
+      #32704 open 2026-01-27 Empty "virtualHubRouteTableV2s" in VHubs
+      #27349 open 2023-09-08 az network list-service-tags has an empty response with an empty nextlink
+      #28038 open 2023-12-15 InvalidApiVersionParameter if the resource group is empty
+      #21397 open 2022-02-23 when WAD installing the command succeed even though storageAccountSasToken is empty (in LAD, installation fail when storageAccountSasToken is empty)
+      #32234 open 2025-10-09 az network application-gateway settings list return empty list
+      #29450 open 2024-07-23 empty environments when using 'az pipelines release definition list' 
+      #29403 open 2024-07-17 'az webapp config ssl list' returns an empty list
+      #26551 open 2023-05-27 az ad sp list --filter appid returns empty array
+      #15196 open 2020-09-17 [Role] `az role assignment list --subscription` shows empty principalName
+      #14482 open 2020-07-23 Using `--resource-group` listing public addresses gives empty sets
+      #27396 open 2023-09-14 "az network dns zone export" fails with empty TXT records
+      #25355 open 2023-02-05 az policy assignment update does not remove notScope if empty
+      #22829 open 2022-06-10 az login opens empty Chrome window in Ubuntu 20.04
+      #20940 open 2022-01-10 Using az network vnet list --resource-group reports empty array
+      #29641 open 2024-08-02 {iothub} partitionIds are empty if user changes shared access policy registryReadWrite
+      #20589 open 2021-12-02 Empty output for keyvault default policy when using table or tsv
+      #21177 open 2022-02-02 Don't allow the creation of empty pull requests (No changed files)
+      #19274 open 2021-08-19 `az storage container list` sets empty `include` query param which Azurite cannot digest
+      #23061 open 2022-06-29 [Core] Don't accept empty string as resource group name
+  atomic         83 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #34125 open 2026-09-24 {Compute} az sshkey: Migrate command group to aaz-based implementation
+      #19402 open 2021-08-31 Writing shared state breaks parallel execution
+      #19568 open 2021-09-15 Possible race condition in az vm disk attach/detach
+      #34091 open 2026-09-16 az aks get-credentials fails with Error running kubelogin: [Errno 2] No such file or directory: '' despite kubelogin correctly installed and on PATH
+      #22981 open 2022-06-23 Remove redundant error code and error message from Cli error output
+      #34100 merged 2026-09-18 [AKS] `az aks install-desktop`: Add AKS Desktop installation
+      #27923 open 2023-11-27 `compact_aaz.py` fails if path is too long
+      #12947 open 2020-04-10 CLI crashes when using terraform azure provider
+      #29276 open 2024-06-28 ADAL package, which is EOL, included in latest az-cli
+      #33482 merged 2026-06-02 {Security} `az security va sql`: Migrate to aaz with API 2026-04-01-preview
+      #33156 merged 2026-04-09 {AKS} `az aks get-credentials`: Harden kubeconfig write with symlink check and atomic replace
+      #9157 open 2019-04-19 Tab completion is incredibly slow and picky about formatting
+      #33296 merged 2026-04-30 {Security} Set log file permissions to 600 on creation
+      #30980 open 2025-03-07 {DisconnectedOperations} Added `az edge disconnected-operation offer` command
+      #32637 merged 2026-01-14 {Core} Use commandIndex caching to improve performance of top-level `help` commands
+      #32086 closed 2025-09-09 Regression in azure-cli 2.77.0: 'az batch application package create' no longer updates existing version and fails with BlobAlreadyExists
+      #25859 closed 2023-03-17 `FileNotFoundError: [Errno 2] No such file or directory: '/root/.azure/telemetry/cache.3' -> '/root/.azure/telemetry/cache.4'` when running az storage blob list command in parallel
+      #26013 closed 2023-03-31 [ARM] Fix: `az bicep install`: Use CA bundle environment variables if set
+      #32295 merged 2025-10-21 {Compute} `az restore-point collection`: Migrate to AAZ
+  atomically     6 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #34125 open 2026-09-24 {Compute} az sshkey: Migrate command group to aaz-based implementation
+      #34100 merged 2026-09-18 [AKS] `az aks install-desktop`: Add AKS Desktop installation
+      #33296 merged 2026-04-30 {Security} Set log file permissions to 600 on creation
+      #12946 closed 2020-04-10 Microsoft Graph API Support
+      #982 closed 2016-09-26 [VM] Creating a VM failed midway
+  interrupted    33 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #29393 open 2024-07-16 az network application-gateway address-pool update does not return an error when call fails
+      #29027 open 2024-05-25 `az storage blob download` should support resuming broken downloads
+      #33085 open 2026-03-27 az extension update --name azure-devops
+      #25473 open 2023-02-16 Azure CLI V2 (azure-cli-2.45.0.msi) Error 1 module to load starting with 'azext_': got []
+      #33636 open 2026-06-23 [Event Hubs] Fix #32073: `az eventhubs eventhub list`: Prevent namespace name validation regression
+      #33920 open 2026-08-18 [Util] Fix #33919: `az upgrade`: Warn about Device Guard / WDAC blocking after MSI install
+      #33610 closed 2026-06-22 Fix AttributeError when updating a partially installed extension
+      #33361 closed 2026-05-12 Fix AttributeError in `az extension update` when extension has missing metadata from partial install
+      #33156 merged 2026-04-09 {AKS} `az aks get-credentials`: Harden kubeconfig write with symlink check and atomic replace
+      #33577 closed 2026-06-17 [WIP] Copilot Request
+      #32742 closed 2026-02-04 feat: Add keyvault copy command
+      #27895 merged 2023-11-21 {Core} Add `--allow-preview` to `az extension add/update` and `az upgrade`
+      #28283 closed 2024-01-31 CannotOverwriteExistingCassetteException
+      #28427 merged 2024-02-21 {IoT} Updated recording processors and removed test keys
+      #26567 closed 2023-05-30 `az storage blob download-batch --pattern` fails while individual blobs can be downloaded
+      #25049 closed 2023-01-04 Update API version from 2021-04-01 to 2022-09-01 for resources module
+      #19464 merged 2021-09-07 [Core] Support disable progress bar
+      #20749 closed 2021-12-16 Az login issue: json.decoder.JSONDecodeError: Extra data: line 14 column 2 (char 2325)
+      #19755 merged 2021-10-01 [ACR] connected registry commands refactor and testing
+  interrupt      64 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #29393 open 2024-07-16 az network application-gateway address-pool update does not return an error when call fails
+      #13662 open 2020-05-25 [SSH] - Webapp:webapp ssh - should catch ctrl + c
+      #33085 open 2026-03-27 az extension update --name azure-devops
+      #29027 open 2024-05-25 `az storage blob download` should support resuming broken downloads
+      #34115 open 2026-09-22 [AKS] `az aks install-cli`: Add optional host-managed Azure plugin setup
+      #25473 open 2023-02-16 Azure CLI V2 (azure-cli-2.45.0.msi) Error 1 module to load starting with 'azext_': got []
+      #32389 open 2025-11-05 Feature request： Silent Login for Automation Scenarios
+      #19447 open 2021-09-03 [Feature Request] Use CDN to distribute MSI package
+      #28467 open 2024-02-27 do not execute automatic upgrades while running scripts
+      #33070 open 2026-03-26 [App Service] Fix SSH tunnel reliability, signal handling, and instance targeting
+      #25772 open 2023-03-13 Support setting timeout for Azure CLI commands
+      #33636 open 2026-06-23 [Event Hubs] Fix #32073: `az eventhubs eventhub list`: Prevent namespace name validation regression
+      #29980 open 2024-09-26 az containerapp commands output error on stderr
+      #32817 open 2026-02-19 Awareness: az acr supply-chain workflow create --run-immediately fails in Azure Cloud Shell: ORAS receives 403 without WWW-Authenticate during OCI artifact push to csscpolicies
+      #34100 merged 2026-09-18 [AKS] `az aks install-desktop`: Add AKS Desktop installation
+      #26138 open 2023-04-13 {Core} Move clouds.config to config dir
+      #33920 open 2026-08-18 [Util] Fix #33919: `az upgrade`: Warn about Device Guard / WDAC blocking after MSI install
+      #33361 closed 2026-05-12 Fix AttributeError in `az extension update` when extension has missing metadata from partial install
+      #33610 closed 2026-06-22 Fix AttributeError when updating a partially installed extension
+  sigkill        6 hit(s) (all listed)
+      #16673 open 2021-01-26 az container stop seems to send SIGKILL rather than SIGTERM
+      #13662 open 2020-05-25 [SSH] - Webapp:webapp ssh - should catch ctrl + c
+      #20022 open 2021-10-25 Endless loop when setting auto-upgrade.enable=yes in WSL 
+      #29962 closed 2024-09-23 az bicep commands fail with subprocess.CalledProcessError
+      #25500 closed 2023-02-17 ml extension not installing
+      #6265 closed 2018-04-30 Azure CLI Commands Hang - Possibly due to telemetry_upload.py
+  sigint         5 hit(s) (all listed)
+      #33070 open 2026-03-26 [App Service] Fix SSH tunnel reliability, signal handling, and instance targeting
+      #16673 open 2021-01-26 az container stop seems to send SIGKILL rather than SIGTERM
+      #13662 open 2020-05-25 [SSH] - Webapp:webapp ssh - should catch ctrl + c
+      #9427 open 2019-05-17 Corruption of `~/.azure` files
+      #61 closed 2016-03-11 Fix: CLI dies if output pipe is broken. #58 
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13662 open 2020-05-25 [SSH] - Webapp:webapp ssh - should catch ctrl + c
+      #33070 open 2026-03-26 [App Service] Fix SSH tunnel reliability, signal handling, and instance targeting
+      #27879 open 2023-11-20 `az login` cannot open web browser on WSL2 + Ubuntu 22.04
+      #19093 open 2021-08-02 az bicep install with termination command prevents it from installing on second try
+      #14585 open 2020-07-29 Webapp:“az webapp create-remote-connection” pauses powershell script
+      #26916 open 2023-07-17 serial-console: Unable to use SYSREQ magic keys on a serial console connected to an ARM VM
+      #26682 open 2023-06-15 [Feature Request] Replace entry script `az.cmd` with `az.exe` on Windows
+      #15559 open 2020-10-16 Seeing this error while running az interactive --update
+      #28259 open 2024-01-28 If Bicep returns a non-0 exit code (e.g. there are any build errors), not propagating output
+      #30821 open 2025-02-13 While creating tunnel using az cli, getting below error
+      #33321 open 2026-05-05 {TerminalUI} Initial
+      #26109 open 2023-04-11 'az login' hangs in linux server: msal_extensions.cache_lock: Process 505865 failed to create lock file
+      #27283 open 2023-08-29 az network bastion tunnel fails with CERTIFICATE_VERIFY_FAILED
+      #31570 open 2025-05-28 OpenVPN Connection Issue: Invalid Certificate - Azure VM (Central India) from Bangladesh (2 Free Connections) Azure 12 months free trial on B1s VM
+      #28367 open 2024-02-13 `az network bastion tunnel` quietly drops connection
+      #33640 merged 2026-06-23 {App Service} `az webapp exec`: Add remote shell and command execution for Linux web apps 
+      #19682 open 2021-09-24 pip installing azure-cli takes a REALLY long time due to pip looking at multiple versions to determine which version is compatible with other requirements.
+      #32068 closed 2025-09-05 az login using service principal on Windows logs clear-text passwords in process auditing arguments
+      #23190 closed 2022-07-13 LogAnalytics: Az Resource update to disable localAuth in Log Analytics does not give output.
+      #10521 closed 2019-09-12 az aks browse always prompts for login for AAD/RBAC clusters
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32869 open 2026-02-27 Support Python 3.14
+      #32969 open 2026-03-14 CVE-2026-32597 - Upgrade pyJWT
+      #31740 open 2025-07-01 az containerapp debug: websocket._exceptions.WebSocketBadStatusException
+      #33009 open 2026-03-23 remove the section "az mysql flexible-server export"
+      #32224 open 2025-10-07 Request for CLI Support on Confidential Large OS Disk Encryption for CVM Workloads
+      #32944 open 2026-03-09 Allow setting logo for app registrations
+      #32284 open 2025-10-20 az storage blob sync requires 'az login' when using --sas-token
+      #29400 open 2024-07-17 (InvalidPolicyAssignmentName) az policy assignment create --name should be consistent with portal and back-end service
+      #25448 open 2023-02-14 Can't run `az` in PowerShell: Program 'az.cmd' failed to run: Access is denied. At line:1 char:1
+      #31772 open 2025-07-08 Terraform plan is not working for azurerm
+      #33379 open 2026-05-14 `az functionapp config appsettings set` emits misleading "Invalid version: 21 for runtime java" warning on Linux Java 21/25 apps
+      #30944 open 2025-03-04 az mysql flexible-server create writes out password details in log
+      #33528 open 2026-06-10 Upgrade issue - 2.85 -> 2.87
+      #33527 open 2026-06-10 Not able to connect to Akamai
+      #33760 merged 2026-07-21 {Agent} Add AI-powered custom code agent
+      #32416 open 2025-11-12 invoke-action  --action listKeys on a Microsoft.Bing/accounts does not return the keys, but --debug output lists them
+      #32262 open 2025-10-15 az connectedmachine run-command stuck in provisioningState creating
+      #33264 open 2026-04-24 --ttl option does not work when adding A records to private DNS with latest azure cli.
+      #32715 open 2026-01-29 Not able to do az login from terminal and visual studio as well.
+      #32580 open 2025-12-26 [Reference feedback]: az vm run-command invoke inconsistencies
+  outage         48 hit(s) (all listed)
+      #25846 open 2023-03-16 az ml batch-endpoint invoke wants an AccountKey or SasToken for registered Datastores for output
+      #28589 open 2024-03-20 az ad sp create-for-rbac for existing application DELETES EXISTING PASSWORDS even though the command failed
+      #24175 open 2022-10-12 az bicep version check should not block on failure
+      #33559 open 2026-06-16 Bump pyjwt from 2.10.1 to 2.13.0 in /tools/aaz-flow
+      #33813 closed 2026-07-30 Geo-restore from Zone-Redundant HA MySQL Flexible Server to paired region (UK West) fails with HaNotSupportedForLocationNotSupportZRS
+      #34121 open 2026-09-23 Az login on Web Account Manager (WAM) does nto work for professional accounts
+      #33717 closed 2026-07-09 Feature Request - ForceDeallocate flag with exisiting "az vm deallocate"
+      #32577 closed 2025-12-26 Azure CLI logic for PostgreSQL Server networking defaults causes overlapping CIDRs and outages
+      #33292 merged 2026-04-30 {Compute} `az vm/vmss create`: Support Ephemeral OS disk with full caching with `--ephemeral-os-disk-enable-full-caching`
+      #33730 merged 2026-07-15 [Storage] `az storage fs file download`: Stream ADLS Gen2 downloads to avoid content-encoding decode failures
+      #29807 closed 2024-08-29 [Zone resilient VM] [CLI] Enable new capability for new and existing VM
+      #33561 closed 2026-06-16 Bump pyjwt from 2.12.0 to 2.13.0 in /src/azure-cli
+      #33655 merged 2026-06-26 {CI} Switch docs reference trigger to tag trigger
+      #32314 closed 2025-10-24 Throw Warning when user tries to deploy VM/VMSS using a deprecating image
+      #32950 closed 2026-03-10 [Network] az network application-gateway rule create drops validateCertChainAndExpiry from http-settings
+      #29808 closed 2024-08-29 [Force deallocate] [CLI] To be part of regular deallocate operation in CLI
+      #31647 closed 2025-06-12 CRITICAL Installing kubectl and kubelogin is failing since last couple of hours
+      #5841 closed 2018-03-17 az login command fails: [WinError 10060] A connection  attempt failed because the connected party did not properly respond after a period of time...
+      #29344 merged 2024-07-09 {ACR} Change: az acr login support for resource group and skip resource validation for non acr source registry in az acr import
+      #29080 closed 2024-06-03 az apim deletedservice list: Resource provider 'Microsoft.ApiManagement' failed to return collection response for type 'deletedServices'
+  ENOSPC         1 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25812 open 2023-03-14 Detaching OS disk
+      #17123 open 2021-02-26 az disk list doesn't list a disk that definitely exists
+      #30431 open 2024-11-27 az disk update (multitenant)
+      #33390 open 2026-05-18 {Compute} `az vm/ vmss create`: Support Aligned Zonal Fault Domains with `--data-disk-storage-fault-domain-alignment`, `--os-disk-storage-fault-domain-alignment` and `--zonal-platform-fault-domain-align-mode`
+      #18040 open 2021-05-11 az disk create with --os-type doesn't actually create an OS disk
+      #32236 open 2025-10-10 CLI support for Confidential data disk encryption: creating data disk with new security type and confidential DES
+      #34119 open 2026-09-23 {ARO} Migrate validator to aaz-based implementation
+      #29207 open 2024-06-19 Can not create disk with ConfidentialVM_NonPersistedTPM securityType
+      #22955 open 2022-06-21 azure-cli rpm take ~700MB of disk space
+      #21033 open 2022-01-18 Clarify that the disk-sku is per node
+      #13894 open 2020-06-08 Azure Disk Encryption Migration from 2p to 1p
+      #28492 open 2024-03-01 'az backup recoverypoint show' doesn't return disk configuration
+      #19568 open 2021-09-15 Possible race condition in az vm disk attach/detach
+      #29091 open 2024-06-04 Cannot create compute image from VM with PremiumV2_LRS disks
+      #14100 open 2020-06-25 [VMSS] support update the disk encryption set for a VMSS
+      #29566 open 2024-07-31 az tag update does not show the updated tags for managed disks
+      #31937 open 2025-08-12 [Gallery Image Versions - Update] can't scale up replicas when there is an Azure Policy requiring disk encryption set
+      #4897 open 2017-11-16 Deleting VM with 'az vm delete' does not delete its disk
+      #32693 open 2026-01-23 [Feature Request] Support Aligned Zonal Fault Domains for VMSS Flex
+      #32654 open 2026-01-16 Support Premium SSD v2 and Ultra disks for crash consistent restore points
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #22479 open 2022-05-16 az CLI resolves partial argument names  e.g. --resource is getting resolved to --resource-group
+      #32069 open 2025-09-05 Install Azure CLI on Debian 13 - missing trixie directory
+      #30357 open 2024-11-14 "az webapp config ssl bind" command passes partial site object causing Azure policy enforcement to fail when it shouldn't
+      #33728 open 2026-07-15 {Core} Handle JSONDecodeError for corrupted MSAL token cache and SP entries
+      #34094 open 2026-09-16 [Billing] Fix #34082: `az billing product list`: Handle non-ISO product dates
+      #33058 open 2026-03-26 [App Service] Fix #29403, #28722, #27950, #30357, #18697: SSL cert pagination, bind, and `--wait` flag
+      #33352 open 2026-05-11 Bump urllib3 from 2.6.3 to 2.7.0 in /tools/aaz-flow
+      #33979 open 2026-08-25 az vm user update fails to reset Windows VM password when password contains ')' character
+      #23017 open 2022-06-24 `az ad group member list` outputs far less information than before the Graph API migration. How to retrieve those additional attributes?
+      #34101 open 2026-09-19 [AKS] `az aks install-cli`: Add optional native Azure skills installation
+      #34115 open 2026-09-22 [AKS] `az aks install-cli`: Add optional host-managed Azure plugin setup
+      #29792 open 2024-08-27 az ml online-deployment create give me error
+      #15217 open 2020-09-21 az vmss update can't set osDisk caching to None
+      #34147 open 2026-09-29 [App Service] `az functionapp create`, `az functionapp deployment config set`: Add Flex Consumption Registry deployment storage support
+      #34082 open 2026-09-15 Billing product list fails on date format returned
+      #33565 open 2026-06-16 Bump python-multipart from 0.0.22 to 0.0.31 in /tools/aaz-flow
+      #34050 merged 2026-09-09 [App Service] Prevent access restriction updates from dropping site config
+      #31737 open 2025-06-30 Unable to Install AZ CLI on Ubuntu 24.04
+      #33787 open 2026-07-24 [Resource] `az policy assignment list`: Prevent `IndexError` when parsing `--scope`
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23872 open 2022-09-13 az arcappliance logs hci - incomplete documentation
+      #29833 open 2024-09-04 Incomplete output of the command 'az sentinel threat-indicator list'
+      #8544 open 2019-02-15 az network vnet-gateway list-advertised-routes has incomplete data
+      #29492 open 2024-07-26 Customer feedback | az search service create | Parameter short summaries are incomplete
+      #33888 open 2026-08-13 fix: handle SSL certificate verification failures in curl install script (closes #28044)
+      #34054 open 2026-09-10 (chore): finish removing usage of "six"
+      #34116 open 2026-09-22 Bump the github-actions group across 1 directory with 4 updates
+      #34163 open 2026-10-03 {Misc.} Repository owned agents and tooling with a single x.yml
+      #34047 open 2026-09-09 [AKS] Synchronize monitoring profiles and repair live scenarios
+      #34111 open 2026-09-22 {CI} Bump github-actions group with 4 updates
+      #14198 open 2020-07-02 functionapp: List possible outbound IPs Command not returning complete list
+      #30270 open 2024-11-06 Customer feedback | az search service update |
+      #21170 open 2022-02-01 warning downloading large files from cosmos
+      #34147 open 2026-09-29 [App Service] `az functionapp create`, `az functionapp deployment config set`: Add Flex Consumption Registry deployment storage support
+      #21519 open 2022-03-03 I needed to az logout before az login --scope ... for it to work
+      #33588 open 2026-06-19 [Core] az login: Add interactive browser authentication in GitHub Codespaces
+      #34122 open 2026-09-23 [Packaging] Fix #34103: `az version`: Bind relocated Windows launchers to the installed interpreter
+      #32899 open 2026-03-04 Special characters (" and ^) are removed when passing environment variables via Azure CLI (PowerShell)
+      #26703 open 2023-06-18 az vm image terms: check for missing version in URN
+      #23874 open 2022-09-13 az resource list is broken
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31076 open 2025-03-19 Az Cli not recovering from bad configuration
+      #26652 open 2023-06-12 2.49 regression: unable to recover deleted certificate using id parameter
+      #31238 open 2025-04-10 Issues with az vm repair create: Underscore in VM name breaks Bastion access + no option to define VM size
+      #29115 open 2024-06-06 Unable to create KeyVault with purge protection disabled
+      #18208 open 2021-05-25 The parameter '--keyvault' is invalid and an error will be reported in `az batch account create`
+      #33756 open 2026-07-21 Azure ML workspace stuck in soft-deleted state: create blocked, permanently-delete cannot find workspace
+      #27406 open 2023-09-15 Response of keyvault set secret includes secret value by default
+      #19846 open 2021-10-11 az deployment group what-if does not correctly report on soft deleted Azure Key Vaults
+      #26312 open 2023-05-02 az login / az account clear fail: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+      #23016 open 2022-06-24 Passwords from az ad app credential reset starting with character (-) are not accepted by az keyvault secret set
+      #17674 open 2021-04-13 WebApp:az webapp create should have a --docker-registry-server-url parameter
+      #13899 open 2020-06-09 [Cloud] Cloud endpoint discovery
+      #33895 merged 2026-08-14 [Key Vault] Support control plane API version 2026-02-01
+      #19254 open 2021-08-17 Error loading command module 'batch': cannot import name 'ComputeNodeExtensionOperations' from 'azure.batch.operations'
+      #34160 closed 2026-10-02 {Misc.} Decentralize repository owned agents and tooling
+      #32605 open 2026-01-05 az containerapp registry set resets runtime configuration (breaks .NET data protection)
+      #28256 open 2024-01-26 az network private-endpoint-connection list fails to return Key Vault name attribute for private endpoint
+      #34121 open 2026-09-23 Az login on Web Account Manager (WAM) does nto work for professional accounts
+      #34100 merged 2026-09-18 [AKS] `az aks install-desktop`: Add AKS Desktop installation
+      #33952 closed 2026-08-21 [Resource] Point what-if noise notice to Deployment Stacks What-if with reduced noise
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25487 open 2023-02-16 az dataprotection recovery-point list
+      #20927 open 2022-01-07 recommendation for the recovery script
+      #34146 open 2026-09-29 [Backup] `az backup container register`: Add managed identity support for Azure Files backup
+      #28386 open 2024-02-17 Azure service Bus geo-recovery automation using az bash commands
+      #31890 open 2025-07-30 [Backup] `az backup`: Fix afs tier filtering for list rps
+      #18692 open 2021-06-30 [BACKUP] Added support for Customer Managed Keys for Recovery Services Vault  
+      #28744 open 2024-04-15 Mistranslation
+      #34099 open 2026-09-18 [AKS] Fix #34091: `az aks get-credentials`: Fix kubelogin conversion for explicit kubeconfig paths
+      #32325 open 2025-10-26 PI filter fix
+      #24048 open 2022-09-28 Error running SQL DB restore using AZ CLI
+      #34101 open 2026-09-19 [AKS] `az aks install-cli`: Add optional native Azure skills installation
+      #33405 open 2026-05-20 [Core] Replace unsafe pickle deserialization with JSON in MSAL HTTP cache
+      #28186 open 2024-01-12 az backup protection enable-for-azurewl do have server parameter instead of vmname and resourcegroup
+      #25189 open 2023-01-20 sig create/update --soft-delete option documentation
+      #34076 merged 2026-09-14 {Backup} Added support for Microsoft Defender for Cloud Source Scan configuration for Recovery Services vaults and Azure Virtual Machine backup items
+      #18779 open 2021-07-08 MHSM Enable Purge Protection broken
+      #34073 merged 2026-09-14 [Backup] `az backup restore files mount-rp`: Fetch ILR mount scripts via dedicated list action
+      #19264 open 2021-08-18 [Feature] Build retry logic into azure-cli for rate limiting
+      #33151 open 2026-04-08 az backup protection backup-now: Add support for two-phase snapshot full backup for SAP HANA
+      #28492 open 2024-03-01 'az backup recoverypoint show' doesn't return disk configuration
+  rollback       84 hit(s) (all listed)
+      #34021 open 2026-09-02 Add CLI support for NeuroShield resource type
+      #34099 open 2026-09-18 [AKS] Fix #34091: `az aks get-credentials`: Fix kubelogin conversion for explicit kubeconfig paths
+      #34104 open 2026-09-19 [AKS] Fix #34091: `az aks get-credentials`: Fix kubelogin conversion for explicit kubeconfig paths
+      #17587 open 2021-04-06 ARM Template Resource Group Deployment Redeploys
+      #29666 open 2024-08-07 Login Authentication Failure on 2.63.0: Error code: -2147221164
+      #33920 open 2026-08-18 [Util] Fix #33919: `az upgrade`: Warn about Device Guard / WDAC blocking after MSI install
+      #33919 open 2026-08-18 Azure CLI 2.89.1 installed by az upgrade is blocked by Azure Local WDAC policy
+      #26395 open 2023-05-10 Support filtering Azure ML assets and resources with tags through cli/sdk 
+      #34115 open 2026-09-22 [AKS] `az aks install-cli`: Add optional host-managed Azure plugin setup
+      #33748 merged 2026-07-17 [AKS] Fix AKS rollback auto-upgrade channel warning
+      #33509 merged 2026-06-08 [AKS] `az aks nodepool rollback`: Add rollback commands
+      #33854 merged 2026-08-05 {AKS} `az aks nodepool rollback`: Show an accurate warning when only the node OS upgrade channel is enabled
+      #34147 open 2026-09-29 [App Service] `az functionapp create`, `az functionapp deployment config set`: Add Flex Consumption Registry deployment storage support
+      #28589 open 2024-03-20 az ad sp create-for-rbac for existing application DELETES EXISTING PASSWORDS even though the command failed
+      #34100 merged 2026-09-18 [AKS] `az aks install-desktop`: Add AKS Desktop installation
+      #33924 open 2026-08-18 [Resource] Fix #33921: `az bicep snapshot`: Preserve linked resource ID format in bicepparam snapshot to avoid nondeterministic uniqueString regeneration
+      #33802 merged 2026-07-28 {Cosmos DB} `az cosmosdb`: Revert Add support for API version 2026-03-15(#33303)
+      #33503 merged 2026-06-05 [Network] `az network traffic-manager profile create/update`: Add `--record-type` parameter to support record type filtering
+      #8114 closed 2018-12-20 azure Key Vault:how do delete latest version of secret using Azure CLI
+      #33708 closed 2026-07-07 regression: AzureCLI 2.88.0 broke 'az ssh vm'
+  resume         62 hit(s) (all listed)
+      #29027 open 2024-05-25 `az storage blob download` should support resuming broken downloads
+      #34047 open 2026-09-09 [AKS] Synchronize monitoring profiles and repair live scenarios
+      #28467 open 2024-02-27 do not execute automatic upgrades while running scripts
+      #22643 open 2022-05-27 --enable-hibernation parameter does not work with az vm update
+      #22973 open 2022-06-23 cli should support managing Azure Analysis Services
+      #34026 open 2026-09-03 Login issues on Azure CLI
+      #19327 open 2021-08-24 static webapp:set a variable with a value containing "="
+      #22953 open 2022-06-21 Az webapp deployment slot log or status - feature request
+      #29003 open 2024-05-21 2.61.0 `az webapp deploy` for zip deploy polls for status of async deployment and never finishes
+      #34160 closed 2026-10-02 {Misc.} Decentralize repository owned agents and tooling
+      #30333 closed 2024-11-13 az keyvault purge --name "{name}" hangs forever, despite key vault being successfully purged
+      #33449 closed 2026-05-27 VM Processor Mode
+      #33763 merged 2026-07-21 [NetAppFiles] `az netappfiles volume create`: Add `--breakthrough-mode` to specify whether the volume operates in Breakthrough Mode
+      #33699 open 2026-07-03 [ACR] Fix Azure/azure-cli#33698: `az acr login`: Fix ARM token exchange fallback for AzureML MSI/SSO
+      #32351 closed 2025-10-29 AzCLI support for Ephemeral OS disk with full caching during VM/VMSS create/update
+      #33577 closed 2026-06-17 [WIP] Copilot Request
+      #33217 merged 2026-04-17 {NetAppFiles} Release microsoft.net app 2026 01 01
+      #32828 merged 2026-02-23 {NetAppFiles} bump to 2025-12-01
+      #32164 merged 2025-09-24 {App Config} Updating Owners for App Config
+      #27932 merged 2023-11-28 [Backup] `az backup`: Add support for HANA Snapshot
+  half-written   4 hit(s) (all listed)
+      #30998 closed 2025-03-10 Syntax warnings with brand new Azure CLI on macOS installed via brew - attempt 2
+      #10207 closed 2019-08-09 functionapp deployment failes with Getting scm site credentials for zip deployment
+      #21104 closed 2022-01-25 Help message un-informative
+      #9891 closed 2019-07-09 az dls cmd logs preview warning to stderr since new version which makes devops pipeline fail
+  wipe           44 hit(s) (all listed)
+      #16029 open 2020-11-24 az monitor autoscale rule create bugs and missing config fields
+      #14695 open 2020-08-06 How to update API Policy?
+      #11863 open 2020-01-15 az functionapp create is not idempotent
+      #5713 open 2018-03-01 'az container create' does not support --tags
+      #11718 open 2019-12-30 ARM template should not delete and replace application settings for a function app
+      #33559 open 2026-06-16 Bump pyjwt from 2.10.1 to 2.13.0 in /tools/aaz-flow
+      #33582 merged 2026-06-18 {Compute} `az vm update`: Add test case for VM zone-movement.
+      #33561 closed 2026-06-16 Bump pyjwt from 2.12.0 to 2.13.0 in /src/azure-cli
+      #32996 merged 2026-03-20 [AKS] `az aks update`: Add `--disable-http-proxy` and `--enable-http-proxy` options
+      #32012 closed 2025-08-27 az containerapp create --yaml: wipes our Service Connector Environment Variables
+      #30594 closed 2024-12-30 az extension add --name azure-firewall
+      #31177 closed 2025-04-02 Unresponsive commands and inability to sign back in
+      #13577 closed 2020-05-19 `az role assignment delete` command is an insane footgun
+      #28997 closed 2024-05-21 Unable to log in interactivelly on 2.61.0: User cancelled the Accounts Control Operation
+      #16636 closed 2021-01-22 `az functionapp create` doesn't support https-only true
+      #25113 closed 2023-01-12 [AKS] raise InvalidArgumentValueError for azure cni + pod_cidr without overlay
+      #25750 closed 2023-03-10 Installation fails on Debian bookworm due to outdated dependencies
+      #23986 merged 2022-09-23 [Storage] `az storage account update`: Fix updating `--default-share-permission` will wipe out other ADProperties issue
+      #24138 merged 2022-10-10 {Release} Upgrade to Azure CLI 2.41.0
+      #22495 closed 2022-05-17 az webapp identity assign wipes out access restrictions
+  wipes          8 hit(s) (all listed)
+      #5713 open 2018-03-01 'az container create' does not support --tags
+      #11863 open 2020-01-15 az functionapp create is not idempotent
+      #14695 open 2020-08-06 How to update API Policy?
+      #32012 closed 2025-08-27 az containerapp create --yaml: wipes our Service Connector Environment Variables
+      #22495 closed 2022-05-17 az webapp identity assign wipes out access restrictions
+      #19057 merged 2021-07-30 [ARM] `az tag create`: Add the note for handling existing tag in help
+      #7912 closed 2018-11-24 az network vnet create is not idempotent
+      #10881 closed 2019-10-17 "az webapp config ssl bind" wipes tags
+  erase          26 hit(s) (all listed)
+      #34147 open 2026-09-29 [App Service] `az functionapp create`, `az functionapp deployment config set`: Add Flex Consumption Registry deployment storage support
+      #33849 open 2026-08-05 [profile] Enable token cache encryption on MacOS and Linux
+      #19575 open 2021-09-16 Built-in examples are replaced by generated ones in Cloud Shell
+      #31771 closed 2025-07-08 [AKS] `az aks create/update`: Add `--enable-azure-container-storage-v2` and `--disable-azure-container-storage-v2` parameters
+      #26430 closed 2023-05-12 Is it possible to clear service_principal_entries.json secrets from cli?
+      #23460 merged 2022-08-08 [Feedback] `az survey`: New command for CLI survey
+      #18065 merged 2021-05-13 [Core] Fix issue #16798: Azure CLI output is corrupted!
+      #16739 closed 2021-01-29 az ad app update for app roles erases saml2Token optional claims
+      #15865 merged 2020-11-11 {Error Improvement} Adjust error types
+      #1561 closed 2016-12-14 [Storage] az storage container policy create erase the permission setting
+      #3617 closed 2017-06-05 The current get_clouds method will fail to fetch clouds in racing situation.
+      #3555 closed 2017-05-31 Progress reporting should be cleared before completing
+      #5318 closed 2018-01-16 [Test] Recordings from live test runs should be available for download
+      #8087 closed 2018-12-18 microsoft/azure-cli:2.0.53 docker image az cli dont work
+      #8777 closed 2019-03-13 Getting Unicode
+      #8333 closed 2019-01-24 After SSL binding by CLI all TAGs of WebApp are erased
+      #11206 closed 2019-11-13 aks-preview extension breaks most az aks commands
+      #10826 closed 2019-10-12 Can't access blob storage from AZ CLI
+      #11534 closed 2019-12-10 optional claims through azure cli
+      #457 merged 2016-06-24 commands: resource providers registration
+  erasing        2 hit(s) (all listed)
+      #8087 closed 2018-12-18 microsoft/azure-cli:2.0.53 docker image az cli dont work
+      #11206 closed 2019-11-13 aks-preview extension breaks most az aks commands
+  erased         10 hit(s) (all listed)
+      #19575 open 2021-09-16 Built-in examples are replaced by generated ones in Cloud Shell
+      #31771 closed 2025-07-08 [AKS] `az aks create/update`: Add `--enable-azure-container-storage-v2` and `--disable-azure-container-storage-v2` parameters
+      #16739 closed 2021-01-29 az ad app update for app roles erases saml2Token optional claims
+      #11534 closed 2019-12-10 optional claims through azure cli
+      #15865 merged 2020-11-11 {Error Improvement} Adjust error types
+      #1561 closed 2016-12-14 [Storage] az storage container policy create erase the permission setting
+      #5318 closed 2018-01-16 [Test] Recordings from live test runs should be available for download
+      #8333 closed 2019-01-24 After SSL binding by CLI all TAGs of WebApp are erased
+      #11206 closed 2019-11-13 aks-preview extension breaks most az aks commands
+      #10826 closed 2019-10-12 Can't access blob storage from AZ CLI
+  destroy        56 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #32299 open 2025-10-21 Security Issue: "az ad sp create-for-rbac" destroys existing integrations and assigns permissions to the wrong identity!
+      #7613 open 2018-10-18 Feature/Discussion: provide safety net for `create` commands and make them consistent
+      #31031 open 2025-03-13 Update CLI to support creating or updating a user assigned Managed Identity for Event Grid
+      #29175 open 2024-06-15 "az resource delete" with --no-wait is waiting
+      #21156 open 2022-01-31 Application Gateway - CanceledAndSupersededDueToAnotherOperation issue
+      #31570 open 2025-05-28 OpenVPN Connection Issue: Invalid Certificate - Azure VM (Central India) from Bangladesh (2 Free Connections) Azure 12 months free trial on B1s VM
+      #23825 open 2022-09-08 az consumption budget command faulty
+      #9377 closed 2019-05-13 Document why token cache is disabled when using service principal
+      #11749 open 2020-01-02 Getting token from Cloud Shell intermittently fails with 400 Client Error: Bad Request
+      #27798 open 2023-11-08 Microsoft.media provider stuck in "registering"
+      #5172 open 2017-12-26 'az image create' should fail if image name already exists
+      #30594 closed 2024-12-30 az extension add --name azure-firewall
+      #14142 closed 2020-06-30 webapp: Way to get 'Custom Domain Verification ID' for web app
+      #32011 closed 2025-08-27 az postgres flexible-server identity remove: (ServerDifferentSubscription) Server and server must be in same subscription and resource group. Code: ServerDifferentSubscription Message: Server and server must be in same subscription and resource group
+      #26762 closed 2023-06-26 az iot hub monitor-events -n {iothub_name} is not working
+      #25467 closed 2023-02-15 MySQL flexible server internal server error
+      #25945 closed 2023-03-27 Unable to install Kubelogin in windows10
+      #19487 closed 2021-09-08 Support `--no-wait` on az resource delete
+      #10028 closed 2019-07-24 Budgets: az resource create - deployment error message and cannot see budgets
+  destroys       5 hit(s) (all listed)
+      #32299 open 2025-10-21 Security Issue: "az ad sp create-for-rbac" destroys existing integrations and assigns permissions to the wrong identity!
+      #7613 open 2018-10-18 Feature/Discussion: provide safety net for `create` commands and make them consistent
+      #19487 closed 2021-09-08 Support `--no-wait` on az resource delete
+      #4802 closed 2017-11-01 deployment: handle deployment templates and parameters with json comment and metadata 
+      #12909 closed 2020-04-07 -j/--handle-extended-json-format does not work as expected for mutil-line string containing double quotes
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #27377 open 2023-09-12  az ssh config --yes --overwrite have no effect
+      #21907 open 2022-04-01 webapp config container set overwrites DOCKER_* app settings
+      #16994 open 2021-02-19 `az bot directline update` will overwrite existing ones
+      #21779 open 2022-03-24 az storage blob upload can overwrite a blob without needing the --overwrite parameter in az cli version 2.33.1 , however in version 2.34.1 it requires the overwrite parameter.
+      #25019 open 2023-01-02 az storage blob upload - early fail on overwrite error
+      #20175 open 2021-11-03 Re-running create-for-rbac Overwrites Existing 'rbac' Credential
+      #27936 open 2023-11-28 az network nic ip-config update command is overwriting existing applicationSecurityGroups
+      #28919 open 2024-05-09 "az logic workflow create" overwrites existing resource instead of giving duplication error
+      #24539 open 2022-11-02 Can't overwrite the list values in sweep job using az ml job create --set
+      #19203 open 2021-08-12 UnauthorizedBlobOverwrite error even though the blob write is successful and no overwrite attempt is made.
+      #31220 open 2025-04-09 [Storage] `az storage fs file upload` does not overwrite existing blob with new 0 bit files.
+      #32467 open 2025-11-26 `az ad app credential reset` overwrites credentials if executed twice after each other from GitHub Actions workflow
+      #34125 open 2026-09-24 {Compute} az sshkey: Migrate command group to aaz-based implementation
+      #28879 open 2024-05-02 az snapshot create does not create a snapshot if the --name already exists and does not report any error
+      #33921 open 2026-08-18 az bicep snapshot generates unique strings every run
+      #25020 open 2023-01-02 az storage blob upload - support for standard base16 (hex) md5sum
+      #33902 open 2026-08-17 [Network] Support Azure Firewall Policy Kube Selector Groups (az network firewall policy kube-selector-group)
+      #28153 open 2024-01-08 az storage blob upload-batch flag --if-unmodified-since being ignored due to ModuleNotFoundError under storagev2 
+      #27315 open 2023-09-04 ERROR: <urllib3.connection.HTTPSConnection object at 0x7ff24b791100>: Failed to establish a new connection:  [Errno -2] Name or service not known
+      #34040 open 2026-09-07 [Network] Fix #33981: `az network application-gateway show`: Bump parent Application Gateway API version to 2025-07-01 so Managed HSM SSL certificate fields are preserved
+  clobber        11 hit(s) (all listed)
+      #29800 open 2024-08-28 `az storage account network-rule add` clobbers ipRules with concurrent operations
+      #12947 open 2020-04-10 CLI crashes when using terraform azure provider
+      #33274 merged 2026-04-28 [Cosmos DB] `az cosmosdb restore`: Fix cross-region restore by preserving source region in top-level location
+      #24686 closed 2022-11-17 Az CLI install from command line is not updating %PATH% on Azure Stack HCI 22H2
+      #4869 closed 2017-11-12 Documentation: wildcard character * interpreted by markdown
+      #1050 closed 2016-10-07 Show 'permission denied' if 'az component update' fails due to user permissions
+      #1049 closed 2016-10-07 [Component] az component update throws error but succeeds
+      #3264 closed 2017-05-09 (recent version) pip install azure-cli (with or without --pre) fails: azure-nspkg not found
+      #6248 closed 2018-04-27 telemetry hangs during az-cli invocations
+      #4303 merged 2017-08-24 [Resource] Added custom policy rule parameter passing for relevant co…
+      #9690 merged 2019-06-16 Add azure-cli-managedservices module
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16421 open 2021-01-04 Cloud Shell not mounting fileshares/restart with blank screen
+      #27517 open 2023-10-03 Unable to create an APIM api with a blank url suffix
+      #34151 open 2026-09-30 Bump oauthlib from 3.2.2 to 4.0.0 in /src/azure-cli
+      #34152 open 2026-10-01 {Packaging} Bump pyjwt from 2.13.0 to 2.15.0 in /src/azure-cli
+      #34159 open 2026-10-02 Bump urllib3 from 2.7.0 to 2.8.0 in /src/azure-cli
+      #34141 open 2026-09-28 [AKS] `az aks nodepool update`: Allow Windows2022 to Windows2025 upgrades
+      #21177 open 2022-02-02 Don't allow the creation of empty pull requests (No changed files)
+      #34119 open 2026-09-23 {ARO} Migrate validator to aaz-based implementation
+      #34149 open 2026-09-29 [AppService] Fix #33732: `az webapp show`: Restore appServicePlanId in output
+      #34157 open 2026-10-01 {Compute} `az vm update`: Fix generic update command `--add` failed issue
+      #27507 open 2023-09-30 Service principal expiry query command not working
+      #34093 open 2026-09-16 Add quoting examples for containerapp secret set with special characters
+      #34079 open 2026-09-15 Clarify that env-vars is ignored unless image is specified for contai…
+      #34066 open 2026-09-11 [DevTest Labs] `az lab vm create`: Fix `--expiration-date` always failing with a datetime comparison error
+      #34014 open 2026-09-01 {MySQL} Set default value of `auto_scale_iops` to 'Enabled'
+      #34136 open 2026-09-25 `network-watcher packet-capture create`: unescaped `C:\Captures\...` in docstring emits SyntaxWarning on first run and corrupts the help example
+      #34070 open 2026-09-13 [Compute] Fix #34069: `az vm update`: Fix conflicting Capacity Reservation state transitions
+      #34161 open 2026-10-02 [AKS] Support configuring SSH for AKS nodepools
+      #32738 open 2026-02-03 Install on Linux alpine with install script fails
+      #34156 open 2026-10-01 [ARM] Fix Deployment stacks What-If not rendering the properties body on resource creates and deletes
+  unreadable     19 hit(s) (all listed)
+      #26223 open 2023-04-21 Bicep "concat()" doesn't play nicely with "what-if"
+      #6537 open 2018-06-08 az container exec: garbage characters inserted at shell prompt
+      #29861 open 2024-09-06 [Service Fabric] Fix for github issues #29583 #28574 #18358 #5338 #5180
+      #33094 closed 2026-03-28 az storage blob download progress bar formatting broken
+      #28574 closed 2024-03-17 Help content printed by `az sf managed-application update -h` is broken in terminal
+      #31147 closed 2025-03-27 az vmss create -h rendering incorrectly
+      #28615 closed 2024-03-22 Az Cli Gateway updates roll back each other
+      #8483 closed 2019-02-09 Error color makes text unreadable
+      #1628 closed 2017-01-03 Clean up noises in debug output
+      #943 closed 2016-09-21 [Bulk Commands] should be an option to run --ids in parallel
+      #4410 closed 2017-09-09 turn off output in color
+      #4071 closed 2017-07-24 Webapp appsetting command's output is not consistent between 'list' and 'set/delete'
+      #10041 closed 2019-07-24 storage account naming guidance
+      #13856 closed 2020-06-06 az mysql server configuration list with -otable output is not readable
+      #13691 closed 2020-05-26 Permission Denied on PKG-INFO file of azure_cosmos package
+      #466 closed 2016-06-28 Add positional id parameter for storage commands
+      #3621 merged 2017-06-05 azure-python-devtools port
+      #7390 merged 2018-09-21 Add support for windows container app
+      #7105 merged 2018-08-21 Addressing -ssh-key-gen bug.
+  garbage        23 hit(s) (all listed)
+      #6537 open 2018-06-08 az container exec: garbage characters inserted at shell prompt
+      #12947 open 2020-04-10 CLI crashes when using terraform azure provider
+      #16506 open 2021-01-12 /proc/stat permission denied traceback after running successful commands in Termux on Android
+      #27595 open 2023-10-14 az bastion ssh fails when missing read permissions on vm nic without throwing meaningful error
+      #33602 closed 2026-06-22 fix(appservice): handle extra non-JSON data in OneDeploy response body
+      #32742 closed 2026-02-04 feat: Add keyvault copy command
+      #30909 closed 2025-02-27 [draft] [acr] garbage collection connected registry
+      #30956 merged 2025-03-05 [ACR] `az acr connected-registry create/update`: Add new parameters for enabling and setting interval for garbage collection within a connected registry
+      #28971 closed 2024-05-15 Cannot install azure-cli on Ubuntu Noble - E: Unable to locate package azure-cli
+      #10856 closed 2019-10-16 az cli version 2.0.74 commands write to stderr stream even when the command succeeds
+      #20326 merged 2021-11-14 [Compute] `az vm boot-diagnostics get-boot-log`: Fix boot diagnostics decoding
+      #20848 closed 2021-12-28 m2a 
+      #2513 closed 2017-03-14 Clean up test failure output
+      #2445 closed 2017-03-09 Delete a repository from Azure Container Registry
+      #1071 closed 2016-10-12 `az resource group delete` should accept a `--fast` or `--nowait` flag
+      #844 closed 2016-09-08 [Help] Argument groups no longer display correctly 
+      #3757 closed 2017-06-16 Delete multiple blobs
+      #9581 closed 2019-06-06 Username / password authentication no longer works
+      #8239 closed 2019-01-14 az login invalid_grant
+      #8343 merged 2019-01-25 Locking Dependencies 
+  mangled        9 hit(s) (all listed)
+      #24761 open 2022-11-29 Gzip output getting mangled when piping to azure upload blob command
+      #15106 open 2020-09-09 Unable to update or set tags for multiple resource IDs
+      #20980 open 2022-01-13 Support for stdin for 'az storage blob upload' command
+      #33571 open 2026-06-17 [App Service] `az webapp config ssl list`: List site-scoped certificates for Flex Consumption apps
+      #33801 merged 2026-07-28 [AKS] `az aks nodepool update`, `az aks nodepool auto-scale`, `--enable-cluster-autoscaler`: Add CAS support for VMS agent pools
+      #30562 closed 2024-12-20 az network vnet subnet show mangles case in ipConfiguration array output
+      #6878 closed 2018-07-24 [vm image list] SKU field gets mangled in table output
+      #7147 closed 2018-08-27 If the application settings contain a !, it can't be set using az webapp config appsettings set
+      #5769 merged 2018-03-09 Update command guidelines
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33972 open 2026-08-24 [Core] Fix #33963: `az`: add fork workflow validation file
+      #32128 open 2025-09-16 az functionapp deployment source config-zip - does not deploy .zip as expected
+      #11942 open 2020-01-24 Moving resource groups doesn't complete properly
+      #28469 open 2024-02-27 Missing information on zip file content
+      #19837 open 2021-10-11 {Misc.} Drop Visual Studio project files
+      #20047 open 2021-10-26 `curl -L https://aka.ms/InstallAzureCli | bash` fails on macOS monterey 12.0.1 because of outdated virtualenv library
+      #22974 open 2022-06-23 global admin on my own subscription, not being able to read contents of my own blobs in azure storage account, tried to add role to read via Azure PowerShell, failed with below error
+      #16340 open 2020-12-22 [az vm run-command invoke] Support use of newer features already supported by the RunCommand API
+      #10699 open 2019-09-30 Ability to download (download - batch) folders/sub-path from Container
+      #20990 open 2022-01-14 After upgrading with MSI, Azure CLI's files become corrupted
+      #22870 open 2022-06-14 az aks command invoke attachment size limit is too small
+      #29497 open 2024-07-27 Customer feedback |  SEO | Release notes
+      #20383 open 2021-11-17 Getting InvalidRange error when trying to download folders and files from file share via az storage file command
+      #19592 open 2021-09-17 [Feature request] Show command group help when subcommand is missing
+      #33057 open 2026-03-26 Bump requests from 2.32.5 to 2.33.0 in /tools/aaz-flow
+      #21884 open 2022-03-31 Same CLI query (az resource list) returns different results in cloud shell vs. local
+      #11863 open 2020-01-15 az functionapp create is not idempotent
+      #28470 open 2024-02-27 "az iot hub configuration list" response is ignoring deployments
+      #19512 open 2021-09-09 Error: bash: /_temp/AZ_CLI_GITHUB_ACTION_1631195248537.sh: No such file or directory
+      #34122 open 2026-09-23 [Packaging] Fix #34103: `az version`: Bind relocated Windows launchers to the installed interpreter
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #34131 open 2026-09-24 `azure-cli` not available in MSFT Fedora 44 repo
+      #26656 open 2023-06-12 az k8s-extension create doesn't have tags parameter, it's a blocker for companies with Azure Policy in-place that requires tags.
+      #33902 open 2026-08-17 [Network] Support Azure Firewall Policy Kube Selector Groups (az network firewall policy kube-selector-group)
+      #24373 open 2022-10-24 cli-core: pinning msal to beta in 2.41.0 causes dependency conflict
+      #34002 open 2026-08-27 [Resource] Amend what-if noise notice to point to Deployment Stacks
+      #29247 open 2024-06-25 Spain Cloud Region is in the Mediterannean Sea - A new project Natick ?
+      #26807 open 2023-07-03 {Container} `az container attach`: Fix the exception handling for streaming logs
+      #33368 open 2026-05-13 [TEST - DO NOT MERGE] {Consumption} Bump budgets to 2024-08-01 (aaz-dev-mcp test)
+      #28102 open 2023-12-27 Improve the Azure CLI doc
+      #16878 open 2021-02-09 `az deployment ...` very slow compared to times reported in portal
+      #30811 open 2025-02-12 Fix vector embedding typo in help description of "az cosmosdb create"
+      #33086 open 2026-03-27 --minimum-memory and --minimum-memory - GB vs MB
+      #21149 open 2022-01-28 [Feature Suggestion] Deployment Parameters: Allow unused paramaters in deployment 
+      #33702 open 2026-07-06 Support for Debian forky package updates
+      #18978 open 2021-07-23 feat(container): add update command
+      #10903 open 2019-10-17 There should be CLI commands to make it easy for devs to set Azure Identity env vars
+      #1602 open 2016-12-21 Request for latest version
+      #25564 open 2023-02-24 {Core} `az login`: Add extra empty line to separate the tenant warning from output
+      #9637 open 2019-06-11 Support Tab Completion for Resource IDs
+  unclean        1 hit(s) (all listed)
+      #31771 closed 2025-07-08 [AKS] `az aks create/update`: Add `--enable-azure-container-storage-v2` and `--disable-azure-container-storage-v2` parameters
+  shutdown       49 hit(s) (all listed)
+      #15246 open 2020-09-22 az vm auto-shutdown not properly supported in az interactive and the --email options are ignored when specified
+      #29132 open 2024-06-10 az lab vm show and az lab vm list response always have applicableSchedule and scheduleParameters as null
+      #33070 open 2026-03-26 [App Service] Fix SSH tunnel reliability, signal handling, and instance targeting
+      #20378 open 2021-11-17 az sql mi-arc create support termination-grace-period option
+      #33588 open 2026-06-19 [Core] az login: Add interactive browser authentication in GitHub Codespaces
+      #16673 open 2021-01-26 az container stop seems to send SIGKILL rather than SIGTERM
+      #26722 open 2023-06-21 Cannot sign in to azure via CLI running on WSL-Debian
+      #31539 open 2025-05-22 Azure Advisor - Enhancement to VM/VMSS Resize/Rightsize recommendation - Obtaining .csv and .pdf files
+      #31538 open 2025-05-22 Azure Advisor - VM/VMSS Resize/Rightsize recommendations - inconsistent pricing between portal and CLI/CSV and PDF formats
+      #22055 open 2022-04-13 az monitor scheduled-query update doesn't account for SchedulequeryRules created with older API version.
+      #31570 open 2025-05-28 OpenVPN Connection Issue: Invalid Certificate - Azure VM (Central India) from Bangladesh (2 Free Connections) Azure 12 months free trial on B1s VM
+      #26911 open 2023-07-17 Unknown field idle_time_before_scale_down
+      #33929 merged 2026-08-19 {Compute} `az vmss`: Support Open Capacity Reservation
+      #32925 merged 2026-03-06 {Compute} `az vm list-usage/stop`: Migrate commands to aaz-based implementation
+      #7234 closed 2018-09-06 [VM] --auto-shutdown command
+      #31655 closed 2025-06-13 connection timeout
+      #31914 closed 2025-08-05 CLI Support - Disk Availability Policy
+      #31669 merged 2025-06-18 {Packaging} Bump urllib3 to 2.5.0
+      #18603 closed 2021-06-22 `az ad app permission admin-consent` results in a "Not Found" error
+      #30771 merged 2025-02-06 {Compute} `az vm auto-shutdown`: Migrate to AAZ based
+  reboot         97 hit(s) (all listed)
+      #23319 open 2022-07-25 az redis force-reboot message
+      #20458 open 2021-11-22 az redis force-reboot fails with InternalServerError
+      #32333 open 2025-10-27 [Reference feedback]: az vm install-patches --package-name-masks-to-include wrong Format: packageName_packageVersion.
+      #10704 open 2019-09-30 Add a confirm option to CLI vm create commands which cause downtime
+      #17886 open 2021-04-26 Upgrade prompt is interactive and blocks automation workflows
+      #23085 open 2022-06-30 `az login` fails: OSError: [WinError 87]
+      #23910 open 2022-09-16 Keep getting '[Errno 28] No space left on device' when using cli
+      #28165 open 2024-01-10 az login --use-device-code fails with "Sign in to an organisation"
+      #33985 merged 2026-08-25 {Compute} `az vm/vmss`: Add new param `--processor-mode` to support processor mode
+      #26916 open 2023-07-17 serial-console: Unable to use SYSREQ magic keys on a serial console connected to an ARM VM
+      #31085 open 2025-03-19 [WinError 183] Cannot create a file when that file already exists
+      #30528 open 2024-12-16 Deserialization error with az guestconfig guest-configuration-assignment create
+      #28156 open 2024-01-08 az login unexpected error: invalid argument
+      #29672 open 2024-08-07 az batch (Core & Extension) | missing examples in reference content
+      #16907 open 2021-02-11 Cannot allocate write+execute memory on M1 Mac
+      #21744 open 2022-03-22 Permission denied on msal_token_cache.bin.lockfile
+      #33320 closed 2026-05-05 Azure Compute, ScheduledEventsProfile changes
+      #32931 open 2026-03-06 `az login` says "Can't find token from MSAL cache"
+      #33451 merged 2026-05-28 [Compute] `az vm/vmss create/update`, `az vm availability-set create/update`: Support scheduled events profile via new parameters `--scheduled-events-api-version` and `--enable-all-instance-down`
+      #32067 closed 2025-09-05 2.77.0 failes
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23901 open 2022-09-15 restore-only-osdisk dont work
+      #32693 open 2026-01-23 [Feature Request] Support Aligned Zonal Fault Domains for VMSS Flex
+      #17123 open 2021-02-26 az disk list doesn't list a disk that definitely exists
+      #8111 open 2018-12-20 az vm encryption enable continues even if it cannot write secret to vault
+      #15852 open 2020-11-10 Template support (like arm templates)
+      #33151 open 2026-04-08 az backup protection backup-now: Add support for two-phase snapshot full backup for SAP HANA
+      #28428 open 2024-02-21 az vm create --image --specialized seems broken
+      #33728 open 2026-07-15 {Core} Handle JSONDecodeError for corrupted MSAL token cache and SP entries
+      #15079 open 2020-09-08 [Compute] Use update/PATCH instead of create_or_update/PUT in vmss/sig update command
+      #32477 open 2025-12-01 [Draft] Support --what-if argument v2
+      #31910 open 2025-08-04 Microsoft.Compute/virtualMachines/extensions/GuestAttestation leads to 'Conflict key when apply client flatten'
+      #33292 merged 2026-04-30 {Compute} `az vm/vmss create`: Support Ephemeral OS disk with full caching with `--ephemeral-os-disk-enable-full-caching`
+      #33929 merged 2026-08-19 {Compute} `az vmss`: Support Open Capacity Reservation
+      #33882 merged 2026-08-12 [Compute] `az sig image-version create`: Normalize storage type case in target region validation
+      #33703 merged 2026-07-06 {Backup} `az backup`: Add Cross Subscription Backup (CSB) support for AzureIaaSVM
+      #33799 merged 2026-07-28 [Network] `az network private-endpoint`: Add `--billing-sku` to configure the private endpoint billing SKU
+      #32989 merged 2026-03-19 [Resource] `az bicep`: Improve help text for Bicep output parameters to clarify output behavior
+      #7387 open 2018-09-21 azure-cli package could lose some weight
+      #34041 open 2026-09-07 CVE-2026-11824,CVE-2026-11822 - Azure CLI bundles sqlite3.dll 3.50.4.0, below upstream security fix 3.53.2
+      #32351 closed 2025-10-29 AzCLI support for Ephemeral OS disk with full caching during VM/VMSS create/update
+  data+loss      36 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #33064 open 2026-03-26 [App Service] Fix container identity ACR pull and Key Vault reference protection
+      #15910 open 2020-11-13 Az CLI doesn't work through CMake
+      #32605 open 2026-01-05 az containerapp registry set resets runtime configuration (breaks .NET data protection)
+      #25948 open 2023-03-27 Support exit code reporting in az run-command invoke
+      #24451 open 2022-10-27 {Doc} Create versioning and life cycle doc
+      #33893 closed 2026-08-14 `az redis import` should carry a destructive-data warning and confirmation prompt (`--yes`), matching `az redis flush` and `az redis delete`
+      #28044 open 2023-12-16 az bicep install fails
+      #33905 merged 2026-08-17 [Redis] Fix #33893: `az redis import`: Add confirmation prompt matching flush and delete
+      #33123 merged 2026-04-02 {CDN} Version upgraded to 2025 09 01 p, edgeaction suppoort
+      #32784 merged 2026-02-12 [Network] `az network application-gateway ssl-cert`: Support dedicated backend connection
+      #31861 merged 2025-07-23 [App Config] `az appconfig kv import`: Support importing key-values from AKS ConfigMap
+      #14768 closed 2020-08-13 ACR login does not work with podman
+      #28099 closed 2023-12-27 packages.microsoft.com is very slow
+      #27298 merged 2023-08-31 [SQL] `az sql failover-group set-primary`: Add parameter `--try-planned-before-forced-failover` to enable users to perform hybrid failover
+      #27793 closed 2023-11-08 `ModuleNotFoundError` warnings in `az self-test --debug`
+      #26561 closed 2023-05-30 ERROR: The subscription of 'XXXX' doesn't exist in cloud 'AzureCloud'.
+      #4754 closed 2017-10-25 cannot ping Virtual IP from another node
+      #26554 closed 2023-05-29 Allow soft-delete retention reduction post deletion of keyvault managed HSM to override purge protection
+      #21414 closed 2022-02-23 az storage blob sync's deletion behavior can lead to unexpected data loss
+  partial+write  48 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #33728 open 2026-07-15 {Core} Handle JSONDecodeError for corrupted MSAL token cache and SP entries
+      #34147 open 2026-09-29 [App Service] `az functionapp create`, `az functionapp deployment config set`: Add Flex Consumption Registry deployment storage support
+      #34050 merged 2026-09-09 [App Service] Prevent access restriction updates from dropping site config
+      #33565 open 2026-06-16 Bump python-multipart from 0.0.22 to 0.0.31 in /tools/aaz-flow
+      #21298 open 2022-02-15 az container logs --follow  repeats log lines over instead of outputting only new lines
+      #34077 merged 2026-09-14 {AKS} Container Insights azure monitor profile & OTLP GA
+      #32351 closed 2025-10-29 AzCLI support for Ephemeral OS disk with full caching during VM/VMSS create/update
+      #33491 merged 2026-06-04 {Find} Migrate `az find` from Aladdin to MS Learn MCP approach
+      #33005 closed 2026-03-23 bad title
+      #33156 merged 2026-04-09 {AKS} `az aks get-credentials`: Harden kubeconfig write with symlink check and atomic replace
+      #33004 closed 2026-03-23 {CI} Create workflow to verify PR titles
+      #33278 merged 2026-04-28 {AppConfig} `az appconfig kv`: Add snapshot reference support
+      #33431 merged 2026-05-22 {AKS} `az aks maintenanceconfiguration add/update`: Add support for maintenanceWindow format in default maintenance configuration
+      #30638 merged 2025-01-09 [ACR] `az acr create/check-name`: Add parameter `--dnl-scope` for domain name label hash
+      #31162 closed 2025-03-31 {ARM} Update azure-mgmt-resource SDK to latest
+      #30033 closed 2024-10-06 ACR Task fails to download context from GitHub repo containing submodule
+      #28190 closed 2024-01-13 acr task fails to download source tarball from github
+      #24859 merged 2022-12-10 [App Config] `az appconfig snapshot`: New command group to support app configuration snapshots
+      #3444 merged 2017-05-24 Add sql show-capabilities command
+  crash+safe     16 hit(s) (all listed)
+      #33728 open 2026-07-15 {Core} Handle JSONDecodeError for corrupted MSAL token cache and SP entries
+      #32443 open 2025-11-21 `ERROR: Extra data: line 1 column 1253 (char 1252)` when running az functionapp deploy with --type zip
+      #33543 open 2026-06-12 az reservations list throws azure.cli.core.aaz.exceptions.AAZInvalidValueError
+      #33956 closed 2026-08-24 [Core] Remove AzureGermanCloud from built-in cloud list
+      #33840 merged 2026-08-04 [App Config] `az appconfig kv/snapshot`: Add description support
+      #33464 closed 2026-05-28 Fix AttributeError in `az load test update` when YAML config has null values
+      #33807 merged 2026-07-28 [Container App] `containerapp job update`: Fix crash for `--no-wait` parameter
+      #33640 merged 2026-06-23 {App Service} `az webapp exec`: Add remote shell and command execution for Linux web apps 
+      #33573 closed 2026-06-17 [WIP] Copilot Request
+      #33117 merged 2026-04-01 {ACR} az acr check-health: fix check-health command by removing outdated API version gate for CMK check
+      #33409 closed 2026-05-20 Azure CLI crashes on Python 3.14 due to unescaped % in argparse help strings
+      #33404 merged 2026-05-20 [App Service] `az functionapp deployment source config-zip`: Fix KeyError 'FUNCTIONS_WORKER_RUNTIME' for Go on Flex Consumption
+      #33313 merged 2026-05-04 [Packaging] Bump Python version to 3.14
+      #26013 closed 2023-03-31 [ARM] Fix: `az bicep install`: Use CA bundle environment variables if set
+      #4167 merged 2017-08-08 Add extension feature
+      #6682 merged 2018-06-28 Core Telemetry Upload Mechanism Overhaul
+  atomic+write   11 hit(s) (all listed)
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #34125 open 2026-09-24 {Compute} az sshkey: Migrate command group to aaz-based implementation
+      #27923 open 2023-11-27 `compact_aaz.py` fails if path is too long
+      #34091 open 2026-09-16 az aks get-credentials fails with Error running kubelogin: [Errno 2] No such file or directory: '' despite kubelogin correctly installed and on PATH
+      #34100 merged 2026-09-18 [AKS] `az aks install-desktop`: Add AKS Desktop installation
+      #33156 merged 2026-04-09 {AKS} `az aks get-credentials`: Harden kubeconfig write with symlink check and atomic replace
+      #33296 merged 2026-04-30 {Security} Set log file permissions to 600 on creation
+      #26013 closed 2023-03-31 [ARM] Fix: `az bicep install`: Use CA bundle environment variables if set
+      #17210 closed 2021-03-04 SignalR CORS add/remove not atomic
+      #24859 merged 2022-12-10 [App Config] `az appconfig snapshot`: New command group to support app configuration snapshots
+      #24211 merged 2022-10-14 [ARM] `az stack`: Add new commands for deployment stacks
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #26109 open 2023-04-11 'az login' hangs in linux server: msal_extensions.cache_lock: Process 505865 failed to create lock file
+      #34084 open 2026-09-15 {Cosmos DB} `az cosmosdb`: Prepare 2026-07-15 official SDK
+      #33996 open 2026-08-27 az network vnet create intermittently fails with Python 3.14 _ModuleLock deadlock while importing requests.structures
+      #23218 open 2022-07-15 az lock create , On sql database causes error
+      #24486 open 2022-10-29 az vm extension set Issue
+      #20993 open 2022-01-14 bug .azure folder mounted from WSL2 creates lock errors with many requests
+      #33997 open 2026-08-27 [Core] Fix #33996: `az network vnet create`: Eagerly import requests during CLI startup to avoid Python 3.14 module-lock deadlock
+      #33787 open 2026-07-24 [Resource] `az policy assignment list`: Prevent `IndexError` when parsing `--scope`
+      #33849 open 2026-08-05 [profile] Enable token cache encryption on MacOS and Linux
+      #20232 open 2021-11-07 How to remove ScopeLock before deletition
+      #21744 open 2022-03-22 Permission denied on msal_token_cache.bin.lockfile
+      #34002 open 2026-08-27 [Resource] Amend what-if noise notice to point to Deployment Stacks
+      #12947 open 2020-04-10 CLI crashes when using terraform azure provider
+      #17832 open 2021-04-23 azure-cli depends on prerelease version of azure-mgmt-rdbms
+      #24373 open 2022-10-24 cli-core: pinning msal to beta in 2.41.0 causes dependency conflict
+      #32727 open 2026-02-01 Your account has been locked. Contact your support person to unlock it, then try again.
+      #18512 open 2021-06-16 "az mysql server-logs download" fails with "[Errno 104] Connection reset by peer" on large (>32MB) current-day logs
+      #31772 open 2025-07-08 Terraform plan is not working for azurerm
+      #24724 open 2022-11-24 Multiple simultaneous calls to "az artifacts universal download" fail if no previous calls have been made to "az artifacts universal download"
+      #29800 open 2024-08-28 `az storage account network-rule add` clobbers ipRules with concurrent operations
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #34060 open 2026-09-10 [Core] Write session files atomically so a partial write cannot destroy them
+      #34101 open 2026-09-19 [AKS] `az aks install-cli`: Add optional native Azure skills installation
+      #34005 open 2026-08-27 [App Service] az webapp ssh silently exits on macOS with Python 3.14 and Invoke 2.2.0
+      #33476 open 2026-05-31 [Container App] Fix `az containerapp exec` crash on non-ASCII (emoji) terminal output
+      #34163 open 2026-10-03 {Misc.} Repository owned agents and tooling with a single x.yml
+      #21674 open 2022-03-17 Use Read Write Consistency (RWC) Token to call Microsoft Graph API
+      #34048 open 2026-09-09 [Containerapp] az containerapp logs show: Use replica log stream endpoint
+      #33890 open 2026-08-13 [ARM] az policy definition version create fails with undocumented feature gate for custom definitions
+      #16899 open 2021-02-10 Authentication failure when uploading large blobs using SAS with create only permissions
+      #32974 open 2026-03-16 [Feature Request] Global --read-only Mode for Azure CLI
+      #34123 open 2026-09-23 {NetAppFiles} Update to 2026-07-01 and add refresh-ldap-bind-password command 
+      #25321 open 2023-02-01 Make "--no-prompt" a global switch and/or environment variable.
+      #30789 open 2025-02-07 Authorization permission on ms learn sandbox
+      #33390 open 2026-05-18 {Compute} `az vm/ vmss create`: Support Aligned Zonal Fault Domains with `--data-disk-storage-fault-domain-alignment`, `--os-disk-storage-fault-domain-alignment` and `--zonal-platform-fault-domain-align-mode`
+      #34088 open 2026-09-16 [Network] Fix #27579: `az network dns zone export`: Fix export of empty TXT record sets
+      #8831 open 2019-03-20 [webapp remote-connection] - webapp:BrokenPipe error when trying to create TCP tunnel for SSH
+      #33727 open 2026-07-14 [vm] fix `az vm boot-diagnostics get-boot-log` TypeError with azure-mgmt-storage 25.0.0
+      #33924 open 2026-08-18 [Resource] Fix #33921: `az bicep snapshot`: Preserve linked resource ID format in bicepparam snapshot to avoid nondeterministic uniqueString regeneration
+      #27094 open 2023-08-04 Can't connect data connector to Sentinel via az sentinel data-connector command
+      #33835 open 2026-08-03 az webapp create ignores siteConfigPropertiesDictionary from the selected App Service stack
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33972 open 2026-08-24 [Core] Fix #33963: `az`: add fork workflow validation file
+      #32128 open 2025-09-16 az functionapp deployment source config-zip - does not deploy .zip as expected
+      #28469 open 2024-02-27 Missing information on zip file content
+      #19837 open 2021-10-11 {Misc.} Drop Visual Studio project files
+      #20047 open 2021-10-26 `curl -L https://aka.ms/InstallAzureCli | bash` fails on macOS monterey 12.0.1 because of outdated virtualenv library
+      #20383 open 2021-11-17 Getting InvalidRange error when trying to download folders and files from file share via az storage file command
+      #20990 open 2022-01-14 After upgrading with MSI, Azure CLI's files become corrupted
+      #10699 open 2019-09-30 Ability to download (download - batch) folders/sub-path from Container
+      #34122 open 2026-09-23 [Packaging] Fix #34103: `az version`: Bind relocated Windows launchers to the installed interpreter
+      #19512 open 2021-09-09 Error: bash: /_temp/AZ_CLI_GITHUB_ACTION_1631195248537.sh: No such file or directory
+      #34131 open 2026-09-24 `azure-cli` not available in MSFT Fedora 44 repo
+      #16359 open 2020-12-24 az aks get-credentials always saves credentials as yaml irrespective of --output parameter value
+      #33057 open 2026-03-26 Bump requests from 2.32.5 to 2.33.0 in /tools/aaz-flow
+      #21884 open 2022-03-31 Same CLI query (az resource list) returns different results in cloud shell vs. local
+      #27518 open 2023-10-03 Deployment hangs with parameter containing `/*`
+      #28044 open 2023-12-16 az bicep install fails
+      #16396 open 2020-12-30 Need to remove redundant http://azurecliprod.blob.core.windows.net/edge/index.html
+      #31076 open 2025-03-19 Az Cli not recovering from bad configuration
+      #16388 open 2020-12-29 azure-cli homebrew release process update request
+      #9141 open 2019-04-18 Cannot delete full directory structure from Directory in File Share
+
+== 51 terms run; 50 returned hits, 19 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

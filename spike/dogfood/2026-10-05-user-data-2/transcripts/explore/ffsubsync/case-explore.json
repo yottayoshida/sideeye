@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/sub",
+    "operation": "ffsubsync /s/sub-in/ref.srt -i /s/sub/movie.srt --overwrite-input",
+    "cwd": "/s/sub-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/sub/movie.srt",
+  "before_class": "write",
+  "before_path": "/s/sub/movie.srt",
+  "violation": "hybrid"
+}

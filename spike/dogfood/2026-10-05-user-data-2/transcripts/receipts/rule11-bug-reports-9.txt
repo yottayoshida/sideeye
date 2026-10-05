@@ -1,0 +1,40 @@
+== version-fox/vfox (label bug)
+#705 2026-09-10 comments=1 first_project_reply=MEMBER 2026-09-10
+#692 2026-08-10 comments=4 first_project_reply=MEMBER 2026-09-14
+#689 2026-07-31 comments=0 first_project_reply=none
+#688 2026-07-27 comments=1 first_project_reply=none
+#685 2026-07-20 comments=0 first_project_reply=none
+#684 2026-07-15 comments=0 first_project_reply=none
+#681 2026-07-06 comments=12 first_project_reply=MEMBER 2026-09-06
+#710 2026-05-24 comments=1 first_project_reply=none
+#656 2026-04-16 comments=1 first_project_reply=none
+#655 2026-04-14 comments=1 first_project_reply=MEMBER 2026-04-15
+
+== lima-vm/lima (label bug)
+#5520 2026-09-20 comments=9 first_project_reply=MEMBER 2026-09-20
+#5515 2026-09-18 comments=7 first_project_reply=CONTRIBUTOR 2026-09-18
+#5511 2026-09-18 comments=1 first_project_reply=MEMBER 2026-09-25
+#5510 2026-09-18 comments=0 first_project_reply=none
+#5500 2026-09-14 comments=0 first_project_reply=none
+#5490 2026-09-08 comments=2 first_project_reply=MEMBER 2026-09-08
+#5407 2026-08-11 comments=3 first_project_reply=none
+#5389 2026-08-05 comments=10 first_project_reply=MEMBER 2026-08-05
+#5368 2026-07-29 comments=2 first_project_reply=CONTRIBUTOR 2026-07-30
+#5278 2026-07-18 comments=3 first_project_reply=none
+
+== crc-org/crc (label bug)
+#5315 2026-07-20 comments=4 first_project_reply=MEMBER 2026-07-28
+
+== tofuutils/tenv (label bug)
+#603 2026-06-08 comments=5 first_project_reply=COLLABORATOR 2026-06-10
+#575 2026-04-19 comments=9 first_project_reply=COLLABORATOR 2026-04-19
+#566 2026-04-07 comments=0 first_project_reply=none
+#558 2026-03-17 comments=0 first_project_reply=none
+#517 2025-11-20 comments=7 first_project_reply=COLLABORATOR 2025-11-21
+#508 2025-11-10 comments=4 first_project_reply=COLLABORATOR 2025-11-30
+#504 2025-11-06 comments=0 first_project_reply=none
+#486 2025-09-23 comments=6 first_project_reply=none
+#417 2025-05-18 comments=2 first_project_reply=CONTRIBUTOR 2025-05-21
+#415 2025-05-15 comments=6 first_project_reply=CONTRIBUTOR 2025-05-25
+
+rule11-all: done 2026-10-05T03:01:42Z

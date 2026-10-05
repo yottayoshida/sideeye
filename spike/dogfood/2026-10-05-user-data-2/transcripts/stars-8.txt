@@ -1,0 +1,3 @@
+neilotoole/sq stars=2572 pushed=2026-10-03 archived=false issues=true full=neilotoole/sq
+grafana/tanka stars=2689 pushed=2026-10-05 archived=false issues=true full=grafana/tanka
+Parchive/par2cmdline stars=939 pushed=2026-09-29 archived=false issues=true full=Parchive/par2cmdline

@@ -1,0 +1,7 @@
+[world]
+state = "/s/aux/home/.regctl"
+
+[define]
+operation = "regctl registry set registry.example.com --tls disabled"
+cwd       = "/s/regctl-in"
+expected_status = "1"

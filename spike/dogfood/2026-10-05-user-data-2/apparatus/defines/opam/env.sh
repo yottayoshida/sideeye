@@ -1,0 +1,1 @@
+export OPAMROOT=/s/opam

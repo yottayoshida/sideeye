@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/gi",
+    "operation": "goi18n merge active.en.toml active.ja.toml translate.ja.toml",
+    "cwd": "/s/gi",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 4,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/gi/active.en.toml",
+  "before_class": "write",
+  "before_path": "/s/gi/active.en.toml",
+  "violation": "hybrid"
+}

@@ -1,0 +1,241 @@
+##### stripe
+$ stripe config --help
+Examples:
+  stripe config --list
+  stripe config --set color off
+  stripe config --unset color
+  stripe config --remove-profile my-project
+
+Flags:
+  -c, --confirm                 Skip the confirmation prompt for
+                                --remove-profile
+  -e, --edit                    Open an editor to the config file
+  -h, --help                    help for config
+      --list                    List configs
+      --remove-profile string   Remove a profile and its stored
+                                credentials from the config file
+      --set                     Set a config field to some value
+      --unset string            Unset a specific config field
+
+Global flags:
+      --api-key string        Your API key to use for the command, instead
+                              of your logged in session. Overridden by the
+                              STRIPE_API_KEY environment variable, if set
+      --color string          turn on/off color output (on, off, auto)
+      --config string         config file (default is
+                              $HOME/.config/stripe/config.toml)
+      --device-name string    device name
+      --log-level string      log level (debug, info, trace, warn, error)
+                              (default "info")
+      --map string[="tree"]   Print a command tree [tree|compact|paths|json]
+  -p, --project-name string   the project name to read from for config
+                              (default "default")
+rc=0
+$ stripe config --set color off
+rc=0
+5ede224da4a5  /s/aux/home/.config/stripe/config.toml
+color = ''
+machine_uuid = '8819baeb-364f-4c34-9789-4855e4fcb23e'
+project-name = 'default'
+
+[default]
+color = 'off'
+device_name = 'laptop'
+test_mode_api_key = 'sk_test_aaaa'
+test_mode_pub_key = 'pk_test_aaaa'
+
+[work]
+test_mode_api_key = 'sk_test_bbbb'
+##### infracost
+$ infracost configure set --help
+
+USAGE
+  infracost configure set <key> <value> [flags]
+
+EXAMPLES
+  Set your Infracost API key:
+
+      infracost configure set api_key MY_API_KEY
+
+  Set your Cloud Pricing API endpoint:
+
+      infracost	configure set pricing_api_endpoint https://cloud-pricing-api
+
+  Set your preferred currency code (ISO 4217):
+
+      infracost	configure set currency EUR
+
+
+FLAGS
+  -h, --help   help for set
+
+GLOBAL FLAGS
+      --debug-report       Generate a debug report file which can be sent to Infracost team
+      --log-level string   Log level (trace, debug, info, warn, error, fatal)
+      --no-color           Turn off colored output
+rc=0
+$ infracost configure set currency EUR
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+rc=0
+$ infracost configure set api_key ico-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+[31mERROR[0m request failed error Post "https://dashboard.api.infracost.io/graphql": dial tcp: lookup dashboard.api.infracost.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable method POST url https://dashboard.api.infracost.io/graphql [36mlibrary=[0mretryablehttp
+rc=0
+6d381d6e5f31  /s/aux/home/.config/infracost/.state.json
+55f16250ce6b  /s/aux/home/.config/infracost/configuration.yml
+0e6d939cad54  /s/aux/home/.config/infracost/credentials.yml
+== /s/aux/home/.config/infracost/configuration.yml
+version: "0.1"
+currency: EUR
+enable_cloud: null
+enable_cloud_upload: null
+== /s/aux/home/.config/infracost/credentials.yml
+version: "0.1"
+api_key: ico-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+##### meltano
+$ meltano init proj --no-usage-stats
+Meltano Environments initialized with dev, staging, and prod.
+To learn more about Environments visit: https://docs.meltano.com/concepts/environments
+
+Next steps:
+  cd proj
+  Visit https://docs.meltano.com/getting-started/part1 to learn where to go from here
+rc=0
+bb952fd90493  /lab/proj/.gitignore
+cdbcae15105d  /lab/proj/.meltano/.gitignore
+f973c322fe54  /lab/proj/.meltano/CACHEDIR.TAG
+a648c2289c3c  /lab/proj/.meltano/analytics.json
+a1590fb0d351  /lab/proj/.meltano/meltano.db
+e3b0c44298fc  /lab/proj/.meltano/run/meltano.yml.lock
+e3b0c44298fc  /lab/proj/README.md
+e3b0c44298fc  /lab/proj/analyze/.gitkeep
+e3b0c44298fc  /lab/proj/extract/.gitkeep
+e3b0c44298fc  /lab/proj/load/.gitkeep
+$ meltano config meltano list
+2026-10-05T02:40:07.843548Z [info     ] meltano      Meltano 4.4.0, Python 3.13.5, Linux (aarch64)
+2026-10-05T02:40:07.857984Z [info     ] meltano      The default environment 'dev' will be ignored for `meltano config`. To configure a specific environment, please use the option `--environment=<environment name>`.
+Usage: meltano config [OPTIONS] [COMMAND] [ARGS]...
+Try 'meltano config --help' for help.
+
+Error: No such command 'meltano'.
+rc=0
+$ meltano config meltano set send_anonymous_usage_stats false
+2026-10-05T02:40:08.424279Z [info     ] meltano      Meltano 4.4.0, Python 3.13.5, Linux (aarch64)
+2026-10-05T02:40:08.440348Z [info     ] meltano      The default environment 'dev' will be ignored for `meltano config`. To configure a specific environment, please use the option `--environment=<environment name>`.
+Usage: meltano config [OPTIONS] [COMMAND] [ARGS]...
+Try 'meltano config --help' for help.
+
+Error: No such command 'meltano'.
+rc=0
+bb952fd90493  /lab/proj/.gitignore
+cdbcae15105d  /lab/proj/.meltano/.gitignore
+f973c322fe54  /lab/proj/.meltano/CACHEDIR.TAG
+a648c2289c3c  /lab/proj/.meltano/analytics.json
+a1590fb0d351  /lab/proj/.meltano/meltano.db
+e3b0c44298fc  /lab/proj/.meltano/run/meltano.yml.lock
+e3b0c44298fc  /lab/proj/README.md
+e3b0c44298fc  /lab/proj/analyze/.gitkeep
+e3b0c44298fc  /lab/proj/extract/.gitkeep
+e3b0c44298fc  /lab/proj/load/.gitkeep
+default_environment: dev
+project_id: 01a109ee-cbf7-7688-b2a3-7eb09ad12bf0
+environments:
+- name: dev
+- name: staging
+- name: prod
+send_anonymous_usage_stats: false
+##### astropy fitscheck
+$ fitscheck --help
+usage: fitscheck [-h] [--version] [-k {standard,remove,none}] [-w] [-f] [-c]
+                 [-i] [-v]
+                 file [file ...]
+
+e.g. fitscheck example.fits
+
+Verifies and optionally re-writes the CHECKSUM and DATASUM keywords
+for a .fits file.
+Optionally detects and fixes FITS standard compliance problems.
+
+This script is part of the Astropy package. See
+https://docs.astropy.org/en/latest/io/fits/usage/scripts.html#module-astropy.io.fits.scripts.fitscheck
+for further documentation.
+
+positional arguments:
+  file                  .fits files to process.
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  -k, --checksum {standard,remove,none}
+                        Choose FITS checksum mode or none. Defaults standard.
+  -w, --write           Write out file checksums and/or FITS compliance fixes.
+  -f, --force           Do file update even if original checksum was bad.
+  -c, --compliance      Do FITS compliance checking; fix if possible.
+  -i, --ignore-missing  Ignore missing checksums.
+  -v, --verbose         Generate extra output.
+rc=0
+made
+5e07599d22ff  /lab/fits/obs.fits
+$ fitscheck --checksum both --write /lab/fits/obs.fits
+usage: fitscheck [-h] [--version] [-k {standard,remove,none}] [-w] [-f] [-c]
+                 [-i] [-v]
+                 file [file ...]
+fitscheck: error: argument -k/--checksum: invalid choice: 'both' (choose from standard, remove, none)
+rc=0
+5e07599d22ff  /lab/fits/obs.fits
+$ fitscheck /lab/fits/obs.fits
+MISSING '/lab/fits/obs.fits' .. Checksum not found in HDU #0
+MISSING '/lab/fits/obs.fits' .. Datasum not found in HDU #0
+MISSING '/lab/fits/obs.fits' .. Checksum not found in HDU #1
+MISSING '/lab/fits/obs.fits' .. Datasum not found in HDU #1
+4 errors
+rc=0
+##### pymol
+$ pymol -cq /lab/pm-in/make.pml
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import importlib.util; print(importlib.util.find_spec('pymol').submodule_search_locations[0])
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'submodule_search_locations'
+/opt/py/bin/python3: Error while finding module specification for 'pymol.__init__' (ModuleNotFoundError: No module named 'pymol')
+rc=0
+$ pymol -cq /lab/pm/model.pse /lab/pm-in/edit.pml
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import importlib.util; print(importlib.util.find_spec('pymol').submodule_search_locations[0])
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'submodule_search_locations'
+/opt/py/bin/python3: Error while finding module specification for 'pymol.__init__' (ModuleNotFoundError: No module named 'pymol')
+rc=0
+##### azure-cli
+$ az config set core.output=table
+WARNING: Command group 'config' is experimental and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+rc=0
+aa25e978046d  /lab/az/az.json
+aa25e978046d  /lab/az/az.sess
+aa25e978046d  /lab/az/azureProfile.json
+aa25e978046d  /lab/az/commandIndex.json
+c589e85fbd6b  /lab/az/commands/2026-10-05.02-40-09.config_set.212.log
+592f551ce3e1  /lab/az/config
+aa25e978046d  /lab/az/extensionHelpIndex.json
+aa25e978046d  /lab/az/extensionIndex.json
+aa25e978046d  /lab/az/helpIndex.json
+5657d27b185f  /lab/az/versionCheck.json
+[core]
+output = table
+collect_telemetry = false
+
+[defaults]
+location = japaneast
+group = rg-home
+
+[cloud]
+name = AzureCloud
+

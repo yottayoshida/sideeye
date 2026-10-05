@@ -1,0 +1,58 @@
+$ dotenv -f /lab/env/.env set DEBUG true
+DEBUG=true
+rc=0
+a9cc93d78a03  /lab/env/.env
+# production secrets
+DATABASE_URL=postgres://app:pw@db/app
+STRIPE_KEY=sk_live_aaaa
+DEBUG='true'
+total 12
+drwxr-xr-x 2 root root 4096 Oct  5 02:46 .
+drwxr-xr-x 5 root root 4096 Oct  5 02:46 ..
+-rw-r--r-- 1 root root   96 Oct  5 02:46 .env
+$ gita add /lab/repos/a
+Found 1 new repo(s).
+rc=0
+$ gita add /lab/repos/b
+Found 1 new repo(s).
+rc=0
+c6e712b5ba7c  /lab/gita-cfg/gita/repos.csv
+/lab/repos/a,a,,
+/lab/repos/b,b,,
+$ gita group add a b -n work
+rc=0
+536f7a424aa5  /lab/gita-cfg/gita/groups.csv
+c6e712b5ba7c  /lab/gita-cfg/gita/repos.csv
+work:a b:
+$ gita rename a alpha
+rc=0
+427ed0fab7df  /lab/gita-cfg/gita/groups.csv
+3ae04804072f  /lab/gita-cfg/gita/repos.csv
+/lab/repos/b,b,,
+/lab/repos/a,alpha,,
+$ hass --script auth --help
+usage: hass [-h] [--script {auth}] [-c CONFIG]
+            {list,add,validate,change_password} ...
+
+Manage Home Assistant users
+
+positional arguments:
+  {list,add,validate,change_password}
+
+options:
+  -h, --help            show this help message and exit
+  --script {auth}
+  -c, --config CONFIG   Directory that contains the Home Assistant
+                        configuration
+rc=0
+$ hass --script auth -c /lab/ha add alice pw-one
+Auth created
+rc=0
+23994f28ab60  /lab/ha/.storage/auth_provider.homeassistant
+$ hass --script auth -c /lab/ha add bob pw-two
+Auth created
+rc=0
+$ hass --script auth -c /lab/ha change_password alice pw-three
+Password changed
+rc=0
+c776973b25d1  /lab/ha/.storage/auth_provider.homeassistant

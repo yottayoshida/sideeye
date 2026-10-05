@@ -1,0 +1,37 @@
+== k8sgpt-ai/k8sgpt (label bug)
+#1817 2026-10-01 comments=1 first_project_reply=MEMBER 2026-10-02
+#1814 2026-09-30 comments=1 first_project_reply=MEMBER 2026-10-02
+#1801 2026-09-24 comments=1 first_project_reply=MEMBER 2026-09-25
+#1796 2026-09-22 comments=1 first_project_reply=MEMBER 2026-09-23
+#1789 2026-09-16 comments=1 first_project_reply=MEMBER 2026-09-17
+#1784 2026-09-14 comments=1 first_project_reply=MEMBER 2026-09-15
+#1775 2026-09-04 comments=1 first_project_reply=MEMBER 2026-09-05
+#1774 2026-09-03 comments=1 first_project_reply=MEMBER 2026-09-05
+#1754 2026-08-24 comments=3 first_project_reply=MEMBER 2026-08-24
+#1752 2026-08-24 comments=1 first_project_reply=MEMBER 2026-08-24
+
+== GitGuardian/ggshield (label type:bug)
+#1508 2026-09-14 comments=3 first_project_reply=CONTRIBUTOR 2026-09-21
+#1393 2026-08-05 comments=0 first_project_reply=none
+#1350 2026-07-12 comments=0 first_project_reply=none
+#1343 2026-07-02 comments=0 first_project_reply=none
+#1288 2026-06-16 comments=1 first_project_reply=CONTRIBUTOR 2026-06-17
+#1266 2026-06-10 comments=2 first_project_reply=CONTRIBUTOR 2026-08-03
+#1265 2026-06-10 comments=12 first_project_reply=MEMBER 2026-06-16
+#1258 2026-06-01 comments=1 first_project_reply=CONTRIBUTOR 2026-08-03
+#1189 2026-03-07 comments=2 first_project_reply=CONTRIBUTOR 2026-03-17
+#1175 2026-02-13 comments=0 first_project_reply=none
+
+== astral-sh/uv (label bug)
+#22110 2026-09-30 comments=4 first_project_reply=MEMBER 2026-09-30
+#22089 2026-09-30 comments=0 first_project_reply=none
+#22046 2026-09-28 comments=1 first_project_reply=none
+#22040 2026-09-28 comments=1 first_project_reply=none
+#22011 2026-09-27 comments=2 first_project_reply=MEMBER 2026-09-28
+#21982 2026-09-25 comments=0 first_project_reply=none
+#21978 2026-09-25 comments=1 first_project_reply=CONTRIBUTOR 2026-09-25
+#21969 2026-09-24 comments=0 first_project_reply=none
+#21954 2026-09-23 comments=3 first_project_reply=MEMBER 2026-09-24
+#21935 2026-09-23 comments=2 first_project_reply=MEMBER 2026-09-23
+
+rule11-all: done 2026-10-05T03:44:28Z

@@ -1,0 +1,6 @@
+ROW k8sgpt static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT k8sgpt 0
+ROW ggshield static=0 preflight_rc=0 gate=0 detail=accepted, 5 operations
+EXIT ggshield 0
+ROW uv static=0 preflight_rc=0 gate=0 detail=accepted, 5 operations
+EXIT uv 0

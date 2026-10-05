@@ -1,0 +1,8 @@
+scan ended for uv (astral-sh/uv); exploring 2026-10-05T06:09:31Z
+=== uv 2026-10-05T06:09:31Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+explore-after-scan: done 2026-10-05T06:09:31Z

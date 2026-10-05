@@ -1,0 +1,6 @@
+[world]
+state = "/s/kg"
+
+[define]
+operation = "kaggle config set -n path -v /data/kaggle"
+cwd       = "/s/kg-in"

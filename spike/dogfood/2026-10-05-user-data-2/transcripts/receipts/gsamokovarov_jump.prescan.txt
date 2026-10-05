@@ -1,0 +1,103 @@
+== novelty pre-scan: gsamokovarov/jump
+== date: 2026-10-05T02:55:38Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 31 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          1 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+  corrupt        5 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+      #14 closed 2018-04-27 err: no entries in the database
+      #57 closed 2020-05-11 jump has stopped tracking my directories
+      #2 closed 2015-10-29 Error appears in terminal
+      #10 merged 2017-12-31 Introduce atomic file writing to avoid issues like #9
+  corruption     3 hit(s) (all listed)
+      #57 closed 2020-05-11 jump has stopped tracking my directories
+      #10 merged 2017-12-31 Introduce atomic file writing to avoid issues like #9
+      #12 merged 2018-01-07 Documentation for 0.18.0
+  truncated      1 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+  truncate       1 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+  empty          3 hit(s) (all listed)
+      #38 closed 2019-06-06 ”status --is-interactive; and . (jump shell | psub)“ is not working in fish of  Mac Mojave
+      #14 closed 2018-04-27 err: no entries in the database
+      #15 closed 2018-05-19 bash completion
+  atomic         3 hit(s) (all listed)
+      #11 closed 2018-01-06 failed to create scores.json after the latest commit
+      #10 merged 2017-12-31 Introduce atomic file writing to avoid issues like #9
+      #12 merged 2018-01-07 Documentation for 0.18.0
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #21 closed 2018-09-03 Comparison with other tools?
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           3 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+      #13 closed 2018-02-07 jump clean doesn't clean at all
+      #41 closed 2019-06-11 disable auto cleaning
+  partial        2 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+      #57 closed 2020-05-11 jump has stopped tracking my directories
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #37 closed 2019-05-26 Install v0.23.0 on ubuntu 18.04, error: Merg`status file could not be parsed or opened.
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #57 closed 2020-05-11 jump has stopped tracking my directories
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #87 merged 2026-08-03 fish: leave a clean exit status after z/j jumps
+  erasing        1 hit(s) (all listed)
+      #87 merged 2026-08-03 fish: leave a clean exit status after z/j jumps
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      0 hit(s)
+  clobber        1 hit(s) (all listed)
+      #5 closed 2016-01-29 PROMPT_COMMAND clobbers $?
+  blank          0 hit(s)
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #7 closed 2017-02-07 Clear non-existing directories.
+  mangled        1 hit(s) (all listed)
+      #62 closed 2021-06-01 Integration documentation outdated?
+  contents       1 hit(s) (all listed)
+      #81 closed 2024-03-01 Move differences documentation into readme
+  in-place       0 hit(s)
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+  data+loss      0 hit(s)
+  partial+write  2 hit(s) (all listed)
+      #9 closed 2017-09-28 scores.json becomes malformat when disk is full
+      #57 closed 2020-05-11 jump has stopped tracking my directories
+  crash+safe     0 hit(s)
+  atomic+write   2 hit(s) (all listed)
+      #10 merged 2017-12-31 Introduce atomic file writing to avoid issues like #9
+      #12 merged 2018-01-07 Documentation for 0.18.0
+  lock+file      1 hit(s) (all listed)
+      #2 closed 2015-10-29 Error appears in terminal
+  write+failure  1 hit(s) (all listed)
+      #57 closed 2020-05-11 jump has stopped tracking my directories
+  file+contents  1 hit(s) (all listed)
+      #81 closed 2024-03-01 Move differences documentation into readme
+
+== 51 terms run; 24 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

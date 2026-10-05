@@ -1,0 +1,31 @@
+SEEN  composer  funnel:85
+SEEN  composer  target-classes:60
+SEEN  composer  b2-exclusions:69
+SEEN  composer  spike/dogfood/2026-09-16-userview-3/SELECTION.md:77
+SEEN  skaffold  spike/dogfood/2026-10-03-user-data/SELECTION.md:59
+SEEN  conda  cohort4-rejected:112
+SEEN  conda  spike/dogfood/2026-10-03-user-data/SELECTION.md:59
+SEEN  npm  funnel:73
+SEEN  npm  target-classes:69
+SEEN  npm  b2-exclusions:176
+SEEN  npm  cohort4-rejected:45
+SEEN  npm  spike/dogfood/2026-09-11-past-walls/SELECTION.md:52
+SEEN  npm  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:60
+SEEN  npm  spike/dogfood/2026-09-21-release-path/SELECTION.md:52
+SEEN  npm  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:125
+SEEN  npm  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:10
+SEEN  npm  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:43
+SEEN  npm  spike/dogfood/2026-10-02-unjudged-on-v170/SELECTION.md:35
+SEEN  npm  spike/dogfood/2026-10-03-user-data/SELECTION.md:85
+SEEN  pnpm  cohort4-rejected:45
+SEEN  pnpm  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:125
+fresh yarnpkg
+SEEN  eyeD3  b2-candidates:92
+SEEN  metaflac  funnel:48
+SEEN  metaflac  target-classes:52
+SEEN  metaflac  b2-exclusions:89
+SEEN  metaflac  spike/dogfood/2026-09-06-userview-2/SELECTION.md:34
+SEEN  metaflac  spike/dogfood/2026-09-11-past-walls/SELECTION.md:29
+SEEN  metaflac  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+fresh doppler
+fresh golang
