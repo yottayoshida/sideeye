@@ -53,7 +53,7 @@ verdicts = [
          "Not filed: API keys the user re-issues. A rule-14 veto on its tracker's `#1109` was taken from the "
          "title and withdrawn from the body"),
     fail(f"Version manager writing its constraint ({S})", "tenv 4.15.1 `tf constraint`", "1/3", "2 of 2",
-         "Terraform/constraint", "7", "Not filed: a setting"),
+         "constraint", "7", "In tenv's `Terraform` directory. Not filed: a setting"),
     fail("3D-asset optimiser writing over its input", "gltfpack (meshoptimizer v1.3) `-i x -o x`", "1/3",
          "2 of 2", "terrain.glb", "3,788",
          "With writes failing, `Error saving` and exit 4. Not filed: meshoptimizer's `CONTRIBUTING.md` closes "
@@ -142,7 +142,7 @@ walls = [
      f"| `--twice` differs at the gate | {R} |"),
     (f"| Other walls at the gate | firewalld 2.3.1 (Debian) `firewall-offline-cmd`, astropy 8.0.1 `fitscheck -w`, "
      f"Home Assistant 2026.9.4 `--script auth`, firebase-tools 15.32.1 `experiments:disable` | "
-     f"`unsupported_syscall_observed` (`listxattr`; `mmap(PROT_WRITE|MAP_SHARED)`); `unresolvable_path` (an "
+     f"`unsupported_syscall_observed` (`listxattr`; `mmap(PROT_WRITE\\|MAP_SHARED)`); `unresolvable_path` (an "
      f"operation whose path the trace closed); `child_touched_state_dir` (a child makes configstore's directory) "
      f"| {R} |"),
 ]
