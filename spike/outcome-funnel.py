@@ -65,9 +65,12 @@ Usage:
   python3 spike/outcome-funnel.py summary                # the funnel
   python3 spike/outcome-funnel.py summary --campaign X   # one campaign
   python3 spike/outcome-funnel.py summary --since DATE   # campaigns from DATE on
-  python3 spike/outcome-funnel.py --check-doc            # docs block is generated
-  python3 spike/outcome-funnel.py --write-doc            # regenerate that block
+  python3 spike/outcome-funnel.py --check-doc            # both generated blocks match
+  python3 spike/outcome-funnel.py --write-doc            # regenerate both blocks
   python3 spike/outcome-funnel.py --selftest             # falsify the checker
+
+Two pages carry a generated block: docs/outcome-funnel.md (the counts) and docs/found.md
+(every report in spike/upstream-reports.tsv with its furthest state here, #713).
 
 Exit 0 it holds, 1 the records disagree, 2 the check could not run -- and, from
 --selftest, a predicate that no longer fires, which is the same thing said of the
@@ -109,6 +112,13 @@ REPORT_KEYS = {"schema", "verdict", "explored", "crash_points"}
 DOC = "docs/outcome-funnel.md"
 BEGIN = "<!-- outcome-funnel:summary:begin -->"
 END = "<!-- outcome-funnel:summary:end -->"
+# The second generated page (#713): every report in spike/upstream-reports.tsv, with the
+# furthest state this ledger records for it. A sentinel for `_tree` below: render the
+# page from the tree's own records rather than writing a fixed text.
+FOUND = "docs/found.md"
+FOUND_BEGIN = "<!-- found:begin -->"
+FOUND_END = "<!-- found:end -->"
+RENDER = object()
 
 
 class Broken(Exception):
@@ -154,6 +164,38 @@ def read_report(root, rel):
     if not isinstance(doc, dict) or not REPORT_KEYS.issubset(doc.keys()):
         return None
     return doc
+
+
+def read_upstream(root):
+    """The report ledger with every column kept. `load` reduces it to the set of reports;
+    docs/found.md needs the status and the tool's name as well (#713)."""
+    out = []
+    for n, (owner, number, status, finding) in read_tsv(
+            os.path.join(root, "spike/upstream-reports.tsv"), 4, "upstream-reports"):
+        out.append({"line": n, "owner": owner, "number": number, "status": status,
+                    "finding": finding, "report": "%s#%s" % (owner, number)})
+    return out
+
+
+def reports_at_filed(campaigns, rows):
+    """Each report's rows at `filed` or beyond, earliest campaign first (then file order).
+    One place for `check`'s filing rules and for docs/found.md: the first entry's date is
+    the filing, and the furthest row is the state the page shows."""
+    by_report = {}
+    for row in rows:
+        if row["report"] != "-" and RANK.get(row["stage"], -1) >= RANK["filed"]:
+            c = campaigns.get(row["campaign"])
+            by_report.setdefault(row["report"], []).append((c["date"] if c else "", row))
+    for dated in by_report.values():
+        dated.sort(key=lambda dr: (dr[0], dr[1]["line"]))
+    return by_report
+
+
+def furthest(dated):
+    """The row a report's state is read from: the highest stage, and of two rows at that
+    stage the later campaign's (then the later line) -- the newer reading of the same
+    tail. By campaign date, not file order: the funnel file is not written in date order."""
+    return max(dated, key=lambda dr: (RANK[dr[1]["stage"]], dr[0], dr[1]["line"]))[1]
 
 
 # Read from transcripts (.txt) only. A markdown record quotes other targets' blocks and
@@ -217,10 +259,7 @@ def load(root):
         row = dict(zip(keys, parts))
         row["line"] = n
         rows.append(row)
-    filed = set()
-    for n, (owner, number, _status, _finding) in read_tsv(
-            os.path.join(root, "spike/upstream-reports.tsv"), 4, "upstream-reports"):
-        filed.add("%s#%s" % (owner, number))
+    filed = {u["report"] for u in read_upstream(root)}
     return campaigns, rows, filed
 
 
@@ -372,16 +411,8 @@ def check(root):
     # 2026-09-05 run, answered on the same issue by the refix run, and re-measured by
     # the patch3 run -- and that last row is the only `revalidated` this project has.
     # A rule of one row per report would make the top of the ladder unreachable.
-    by_report = {}
-    for row in rows:
-        if row["report"] != "-" and RANK.get(row["stage"], -1) >= RANK["filed"]:
-            by_report.setdefault(row["report"], []).append(row)
-    for report, group in sorted(by_report.items()):
-        dated = []
-        for row in group:
-            c = campaigns.get(row["campaign"])
-            dated.append((c["date"] if c else "", row))
-        dated.sort(key=lambda dr: (dr[0], dr[1]["line"]))
+    by_report = reports_at_filed(campaigns, rows)
+    for report, dated in sorted(by_report.items()):
         first_date = dated[0][0]
         if len(dated) > 1 and dated[1][0] == first_date:
             bad.append("%s: two campaigns dated %s both carry it at filed or beyond, "
@@ -395,6 +426,18 @@ def check(root):
         if report not in by_report:
             bad.append("%s is in spike/upstream-reports.tsv and reaches no row here "
                        "-- add the row for the campaign that filed it" % report)
+    # Withdrawn is said in both records, and docs/found.md shows the ledger's word. The
+    # two have to agree, or the page states one and this file the other (#713).
+    for u in read_upstream(root):
+        dated = by_report.get(u["report"])
+        if not dated:
+            continue
+        top = furthest(dated)
+        if (u["status"] == "withdrawn") != (top["stop"] == "withdrawn"):
+            bad.append("%s: spike/upstream-reports.tsv says %s and its furthest row here "
+                       "(funnel line %d) stops at %s -- the two records disagree on "
+                       "whether it was withdrawn"
+                       % (u["report"], u["status"], top["line"], top["stop"]))
 
     if bad:
         return 1, ["REFUSE the funnel does not agree with what it names:"] + \
@@ -477,28 +520,93 @@ def summarise(root, campaign=None, since=None):
     return "\n".join(out)
 
 
+# The state a report shows, strongest first; the order is also the page's order.
+FOUND_STATES = ["fixed upstream, re-measured", "fixed upstream", "acknowledged", "filed",
+                "withdrawn"]
+
+
+def found_state(u, top):
+    """What docs/found.md says of one report: the ledger's withdrawn, or the furthest
+    row's stage, with its stop where it has one -- `revalidated` with `discussing` is a
+    fix that was re-measured and argued over, and the page says so rather than drop it."""
+    if u["status"] == "withdrawn":
+        return "withdrawn", "withdrawn"
+    kind = {"revalidated": "fixed upstream, re-measured",
+            "fixed": "fixed upstream"}.get(top["stage"], top["stage"])
+    shown = kind if top["stop"] == "-" else "%s (%s)" % (kind, top["stop"])
+    return kind, shown
+
+
+def found_block(root):
+    """docs/found.md's block: one row per report in spike/upstream-reports.tsv (#713)."""
+    campaigns, rows, _filed = load(root)
+    by_report = reports_at_filed(campaigns, rows)
+    entries = []
+    for u in read_upstream(root):
+        dated = by_report.get(u["report"])
+        if not dated:
+            raise Broken("%s is in spike/upstream-reports.tsv and has no funnel row at "
+                         "filed or beyond -- %s cannot give it a state"
+                         % (u["report"], FOUND))
+        top = furthest(dated)
+        kind, shown = found_state(u, top)
+        # The date the shown state was read: the furthest row's, not the newest row's. A
+        # later campaign that read a lower stage would otherwise date an older state.
+        entries.append((FOUND_STATES.index(kind), dated[0][0], u["line"], u, shown,
+                        top["as_of"]))
+    entries.sort(key=lambda e: e[:3])
+    counts = []
+    for i, kind in enumerate(FOUND_STATES):
+        n = sum(1 for e in entries if e[0] == i)
+        if n:
+            counts.append("%d %s" % (n, kind.replace(", re-measured", " and re-measured")))
+    head = ("%d report%s: %s." % (len(entries), "" if len(entries) == 1 else "s",
+                                   ", ".join(counts)) if entries else "No reports.")
+    out = [FOUND_BEGIN, "", head, "",
+           "| Tool | Report | State | As of |", "|---|---|---|---|"]
+    for _k, _d, _l, u, shown, as_of in entries:
+        out.append("| %s | [%s](https://github.com/%s/issues/%s) | %s | %s |"
+                   % (u["finding"].replace("|", "\\|"), u["report"], u["owner"],
+                      u["number"], shown, as_of))
+    out += ["", FOUND_END]
+    return "\n".join(out)
+
+
 def doc_block(root):
     return "\n".join([BEGIN, "", "```", summarise(root), "```", "", END])
 
 
-def read_doc(root):
-    path = os.path.join(root, DOC)
+# The generated pages, in the order they are checked and written. A refusal names its
+# page at the head of its sentence, so the self-test can tell one page from the other.
+PAGES = [(DOC, BEGIN, END, doc_block), (FOUND, FOUND_BEGIN, FOUND_END, found_block)]
+
+
+def read_doc(root, doc, begin, end_marker):
+    path = os.path.join(root, doc)
     if not os.path.isfile(path):
-        raise Broken("cannot read %s" % DOC)
+        raise Broken("cannot read %s" % doc)
     with open(path, encoding="utf-8") as fh:
         body = fh.read()
-    start, end = body.find(BEGIN), body.find(END)
+    start, end = body.find(begin), body.find(end_marker)
     if start < 0 or end < 0 or end < start:
         raise Broken("%s does not carry the pair of markers this block lives between"
-                     % DOC)
-    return path, body, start, end + len(END)
+                     % doc)
+    return path, body, start, end + len(end_marker)
 
 
 def check_doc(root):
-    _path, body, start, end = read_doc(root)
-    have, want = body[start:end], doc_block(root)
+    rc, lines = 0, []
+    for doc, begin, end, render in PAGES:
+        one_rc, one = check_one_doc(root, doc, begin, end, render)
+        rc, lines = max(rc, one_rc), lines + one
+    return rc, lines
+
+
+def check_one_doc(root, doc, begin, end_marker, render):
+    _path, body, start, end = read_doc(root, doc, begin, end_marker)
+    have, want = body[start:end], render(root)
     if have == want:
-        return 0, ["ok: the block in %s is what the ledger renders" % DOC]
+        return 0, ["ok: the block in %s is what the ledger renders" % doc]
     # Name the first line that differs rather than the two lengths: a figure edited
     # by one digit leaves the lengths equal, which is the edit this check exists for.
     hl, wl = have.splitlines(), want.splitlines()
@@ -512,14 +620,20 @@ def check_doc(root):
                       "    the ledger:    %s" % w]
             break
     return 1, ["REFUSE %s no longer matches the ledger. Regenerate it with "
-               "`python3 spike/outcome-funnel.py --write-doc`." % DOC] + detail
+               "`python3 spike/outcome-funnel.py --write-doc`." % doc] + detail
 
 
 def write_doc(root):
-    path, body, start, end = read_doc(root)
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(body[:start] + doc_block(root) + body[end:])
-    return 0, ["wrote the block in %s" % DOC]
+    # Every block rendered before any page is written: a refusal while rendering the
+    # second page must not leave the first rewritten and the second stale.
+    pending = []
+    for doc, begin, end_marker, render in PAGES:
+        path, body, start, end = read_doc(root, doc, begin, end_marker)
+        pending.append((doc, path, body[:start] + render(root) + body[end:]))
+    for _doc, path, text in pending:
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+    return 0, ["wrote the block in %s" % doc for doc, _p, _t in pending]
 
 
 # --------------------------------------------------------------------------- tests
@@ -534,7 +648,7 @@ UPSTREAM_EMPTY = "# no filings in this tree\n"
 
 
 def _tree(tmp, rows, campaigns=CAMPAIGNS_T, upstream=UPSTREAM_T, report=None,
-          page=None):
+          page=None, found=None):
     os.makedirs(os.path.join(tmp, "spike/x"), exist_ok=True)
     os.makedirs(os.path.join(tmp, "docs"), exist_ok=True)
     with open(os.path.join(tmp, "spike/x/RESULTS.md"), "w") as fh:
@@ -545,14 +659,23 @@ def _tree(tmp, rows, campaigns=CAMPAIGNS_T, upstream=UPSTREAM_T, report=None,
     doc.update(report or {})
     with open(os.path.join(tmp, "spike/x/r.json"), "w") as fh:
         json.dump(doc, fh)
-    with open(os.path.join(tmp, "docs/outcome-funnel.md"), "w") as fh:
-        fh.write(page if page is not None
-                 else "# page\n\n" + BEGIN + "\nstale\n" + END + "\n")
     for name, body in (("spike/outcome-funnel-campaigns.tsv", campaigns),
                        ("spike/outcome-funnel.tsv", rows),
                        ("spike/upstream-reports.tsv", upstream)):
         with open(os.path.join(tmp, name), "w") as fh:
             fh.write(body)
+    # The pages after the records, so RENDER can read them. Rendering runs here, outside
+    # the selftest's own try: a leg asks for RENDER only where its tree renders.
+    if page is RENDER:
+        page = "# page\n\n" + doc_block(tmp) + "\n"
+    if found is RENDER:
+        found = "# found\n\n" + found_block(tmp) + "\n"
+    with open(os.path.join(tmp, DOC), "w") as fh:
+        fh.write(page if page is not None
+                 else "# page\n\n" + BEGIN + "\nstale\n" + END + "\n")
+    with open(os.path.join(tmp, FOUND), "w") as fh:
+        fh.write(found if found is not None
+                 else "# found\n\n" + FOUND_BEGIN + "\nstale\n" + FOUND_END + "\n")
     return tmp
 
 
@@ -573,9 +696,91 @@ def _wall(**kw):
     return _row(**f)
 
 
-# Every refusal `check`, `check_doc` and `summary` can raise, seen red once. Measured by
-# tracing each leg and collecting the line it reddened: 35 sites, 35 covered. A clause
-# without a leg here is a clause nobody has watched fail (#342).
+# The ledger `found_block` is held to (#713): every state a report can render, and the
+# two orders of rows that tell a correct pick of the furthest row from a wrong one --
+# owner/a's lower row comes first, owner/b's higher row comes first. A rendering that takes
+# the first row, the last row, or acknowledged for fixed, differs from FOUND_WANT.
+CAMPAIGNS_F = ("dogfood/x\t2026-09-16\tfull\t9\tspike/x/RESULTS.md\n"
+               "dogfood/y\t2026-09-17\tfull\t-\tspike/x/RESULTS.md\n"
+               "dogfood/z\t2026-09-18\tfull\t-\tspike/x/RESULTS.md\n"
+               "dogfood/w\t2026-09-18\tfull\t-\tspike/x/RESULTS.md\n")
+ROWS_F = (
+    _row(target="a", report="owner/a#1", stage="filed", stop="awaiting", as_of="2026-09-16")
+    + _row(campaign="dogfood/y", target="b", report="owner/b#2", stage="fixed", stop="-",
+           as_of="2026-09-20")
+    + _row(campaign="dogfood/y", target="a", report="owner/a#1", stage="revalidated",
+           stop="discussing", as_of="2026-09-21")
+    + _row(target="b", report="owner/b#2", stage="filed", stop="awaiting", as_of="2026-09-16")
+    + _row(target="c", report="owner/c#3", stage="acknowledged", stop="-", as_of="2026-09-18")
+    + _row(target="d", report="owner/d#4", stage="filed", stop="declined", as_of="2026-09-19")
+    + _row(target="e", report="owner/e#5", stage="filed", stop="discussing", as_of="2026-09-17")
+    + _row(target="f", report="owner/f#6", stage="filed", stop="withdrawn", as_of="2026-09-16")
+    # owner/g: the latest campaign read a lower stage than the one before it -- the state is
+    # the furthest row's, and so is its date, not the latest campaign's (R1 of the diff).
+    + _row(target="g", report="owner/g#7", stage="filed", stop="awaiting", as_of="2026-09-16")
+    + _row(campaign="dogfood/y", target="g", report="owner/g#7", stage="fixed", stop="-",
+           as_of="2026-09-22")
+    + _row(campaign="dogfood/z", target="g", report="owner/g#7", stage="acknowledged",
+           stop="discussing", as_of="2026-09-25")
+    # owner/h: two rows at the furthest stage, written in the file against their dates --
+    # the later campaign's reading wins, whatever the file order.
+    + _row(campaign="dogfood/z", target="h", report="owner/h#8", stage="acknowledged",
+           stop="discussing", as_of="2026-09-24")
+    + _row(target="h", report="owner/h#8", stage="filed", stop="awaiting", as_of="2026-09-16")
+    + _row(campaign="dogfood/y", target="h", report="owner/h#8", stage="acknowledged",
+           stop="-", as_of="2026-09-23")
+    # owner/i: the same two-rows-at-one-stage, written in date order -- a rendering that
+    # keeps the first row it met at the top stage differs here (R2 of the diff).
+    + _row(target="i", report="owner/i#9", stage="filed", stop="awaiting", as_of="2026-09-16")
+    + _row(campaign="dogfood/y", target="i", report="owner/i#9", stage="acknowledged",
+           stop="discussing", as_of="2026-09-17")
+    + _row(campaign="dogfood/z", target="i", report="owner/i#9", stage="acknowledged",
+           stop="-", as_of="2026-09-26")
+    # owner/j: two rows at the top stage on one date, as ImageMagick's refix and patch3 are;
+    # the later line is the later reading.
+    + _row(target="j", report="owner/j#10", stage="filed", stop="awaiting", as_of="2026-09-16")
+    + _row(campaign="dogfood/z", target="j", report="owner/j#10", stage="acknowledged",
+           stop="discussing", as_of="2026-09-18")
+    + _row(campaign="dogfood/w", target="j", report="owner/j#10", stage="acknowledged",
+           stop="-", as_of="2026-09-27"))
+UPSTREAM_F = ("# f\nowner/a\t1\tstanding\ttool a\nowner/b\t2\tstanding\ttool b\n"
+              "owner/c\t3\tstanding\ttool c\nowner/e\t5\tstanding\ttool e\n"
+              "owner/d\t4\tstanding\ttool | d\nowner/f\t6\twithdrawn\ttool f\n"
+              "owner/g\t7\tstanding\ttool g\nowner/h\t8\tstanding\ttool h\n"
+              "owner/i\t9\tstanding\ttool i\nowner/j\t10\tstanding\ttool j\n")
+FOUND_WANT = "\n".join([
+    FOUND_BEGIN, "",
+    "10 reports: 1 fixed upstream and re-measured, 2 fixed upstream, 4 acknowledged, "
+    "2 filed, 1 withdrawn.",
+    "",
+    "| Tool | Report | State | As of |",
+    "|---|---|---|---|",
+    "| tool a | [owner/a#1](https://github.com/owner/a/issues/1) | fixed upstream, re-measured (discussing) | 2026-09-21 |",
+    "| tool b | [owner/b#2](https://github.com/owner/b/issues/2) | fixed upstream | 2026-09-20 |",
+    "| tool g | [owner/g#7](https://github.com/owner/g/issues/7) | fixed upstream | 2026-09-22 |",
+    "| tool c | [owner/c#3](https://github.com/owner/c/issues/3) | acknowledged | 2026-09-18 |",
+    "| tool h | [owner/h#8](https://github.com/owner/h/issues/8) | acknowledged (discussing) | 2026-09-24 |",
+    "| tool i | [owner/i#9](https://github.com/owner/i/issues/9) | acknowledged | 2026-09-26 |",
+    "| tool j | [owner/j#10](https://github.com/owner/j/issues/10) | acknowledged | 2026-09-27 |",
+    "| tool e | [owner/e#5](https://github.com/owner/e/issues/5) | filed (discussing) | 2026-09-17 |",
+    "| tool \\| d | [owner/d#4](https://github.com/owner/d/issues/4) | filed (declined) | 2026-09-19 |",
+    "| tool f | [owner/f#6](https://github.com/owner/f/issues/6) | withdrawn | 2026-09-16 |",
+    "", FOUND_END])
+
+
+def _found_as_wanted(root):
+    have = found_block(root)
+    if have == FOUND_WANT:
+        return 0, ["found_block renders the ledger as wanted"]
+    return 1, ["found_block rendered something else:"] + \
+              ["  " + line for line in have.splitlines()]
+
+
+# Every refusal `check`, `check_doc`, `found_block` and `summary` can raise, seen red once.
+# Measured when this list was first written by tracing each leg and collecting the line it
+# reddened; every clause added since came with its leg. No count is written here: the one
+# that was went stale the first time a clause was added. A clause without a leg here is a
+# clause nobody has watched fail (#342).
 #
 # Some legs redden more than one clause -- a row with an invalid stage also fails the
 # containment sweep, because an invalid row is skipped before its report is collected --
@@ -677,13 +882,56 @@ LEGS = [
           upstream=UPSTREAM_EMPTY),
      1, "resolves outside this repository"),
     ("the page's block is not what the ledger renders",
-     dict(rows=_row(), fn=check_doc), 1, "first difference"),
+     dict(rows=_row(), fn=check_doc), 1, "REFUSE docs/outcome-funnel.md no longer matches"),
     ("the page has lost the markers the block lives between",
      dict(rows=_row(), fn=check_doc, page="# page\n\nno markers here\n"),
-     2, "does not carry the pair of markers"),
+     2, "docs/outcome-funnel.md does not carry the pair of markers"),
     ("the page is not there at all",
      dict(rows=_row(), fn=check_doc, remove="docs/outcome-funnel.md"),
      2, "cannot read docs/outcome-funnel.md"),
+    # --- docs/found.md (#713). Each with the funnel page rendered, so a refusal of that
+    # page cannot be what the leg matched.
+    ("both pages are what the ledgers render",
+     dict(rows=_row(), fn=check_doc, page=RENDER, found=RENDER),
+     0, "ok: the block in docs/found.md is what the ledger renders"),
+    ("the found page's block is not what the ledgers render",
+     dict(rows=_row(), fn=check_doc, page=RENDER), 1, "REFUSE docs/found.md no longer matches"),
+    ("the found page has lost its markers",
+     dict(rows=_row(), fn=check_doc, page=RENDER, found="# found\n\nno markers here\n"),
+     2, "docs/found.md does not carry the pair of markers"),
+    ("the found page is not there at all",
+     dict(rows=_row(), fn=check_doc, page=RENDER, remove="docs/found.md"),
+     2, "cannot read docs/found.md"),
+    ("a filed report whose only row is below filed has no state to render",
+     dict(rows=_row(stage="judged", stop="known"), fn=check_doc, page=RENDER),
+     2, "has no funnel row at filed or beyond"),
+    ("the ledger says withdrawn and the funnel's furthest row does not",
+     dict(rows=_row(), upstream="# c\nowner/repo\t7\twithdrawn\tthing\n"),
+     1, "disagree on whether it was withdrawn"),
+    ("the funnel's furthest row says withdrawn and the ledger does not",
+     dict(rows=_row(stop="withdrawn")),
+     1, "disagree on whether it was withdrawn"),
+    ("withdrawn is read off the furthest row, not off any row",
+     dict(rows=_row(stop="withdrawn") + _row(campaign="dogfood/y", stage="acknowledged",
+                                             stop="-"),
+          campaigns=CAMPAIGNS_Y, upstream="# c\nowner/repo\t7\twithdrawn\tthing\n"),
+     1, "disagree on whether it was withdrawn"),
+    ("withdrawn on the furthest row and in the ledger agree, whatever the first row says",
+     dict(rows=_row() + _row(campaign="dogfood/y", stage="acknowledged", stop="withdrawn"),
+          campaigns=CAMPAIGNS_Y, upstream="# c\nowner/repo\t7\twithdrawn\tthing\n"),
+     0, "each holding to the evidence"),
+    ("one report is one report",
+     dict(rows=_row(), fn=lambda root: (0 if "\n1 report: 1 filed.\n" in found_block(root)
+                                        else 1, [found_block(root)])),
+     0, "1 report: 1 filed"),
+    ("an empty report ledger renders no reports",
+     dict(rows=_row(stage="judged", stop="known", report="-"), upstream=UPSTREAM_EMPTY,
+          fn=lambda root: (0 if "\nNo reports.\n" in found_block(root) else 1,
+                           [found_block(root)])),
+     0, "No reports."),
+    ("every state the found page can show, from both orders of rows",
+     dict(rows=ROWS_F, campaigns=CAMPAIGNS_F, upstream=UPSTREAM_F, fn=_found_as_wanted),
+     0, "renders the ledger as wanted"),
     # --- the entrances `summary` opens
     ("a campaign nobody can summarise",
      dict(rows=_row(), fn=lambda root: (0, [summarise(root, campaign="nope")])),

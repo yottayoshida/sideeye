@@ -24,7 +24,8 @@ expensive, that is a different bottleneck again.
 |---|---|
 | `spike/outcome-funnel.tsv` | One row per (campaign, target): the furthest stage that campaign reached with that target, why it stopped, and the record that says so |
 | `spike/outcome-funnel-campaigns.tsv` | One row per campaign: its date, whether it recorded every target it met, and how many candidates it screened |
-| `spike/outcome-funnel.py` | The checker, the generator of the block below, and its own self-test |
+| `spike/outcome-funnel.py` | The checker, the generator of the block below and of [`docs/found.md`](found.md), and its own self-test |
+| [`docs/found.md`](found.md) | Every report in `spike/upstream-reports.tsv`, with the tool, a link and the furthest state recorded here — generated, and compared like the block below |
 
 Each file's columns and closed sets are documented in its own header. The checker runs
 on every pull request and on `main` as the `outcome-funnel` job, self-test first.

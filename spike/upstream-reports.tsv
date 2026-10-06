@@ -1,4 +1,5 @@
-# Every upstream report this project has filed, one per line. This file is the
+# Every report this project has filed on GitHub, one per line (a report filed anywhere else
+# has no row: the columns are a GitHub owner/repo and number). This file is the
 # record; spike/upstream-report-status.sh reads it rather than carrying a list
 # of its own, and spike/check-upstream-ledger.sh holds it to the markers in
 # docs/target-classes.md in both directions (#297).
