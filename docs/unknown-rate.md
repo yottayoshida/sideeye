@@ -146,7 +146,10 @@ threshold set from it would be satisfied by construction. So:
   percentage.
 - **A PASS with 0 crash points** (a declared operation that performed
   nothing state-changing, e.g. topydo `ls`) stays in the denominator and is
-  flagged in the per-trial table.
+  flagged in the per-trial table. *(2026-10-06: an engine carrying ADR 0091
+  refuses such a run `nothing_could_fail` instead. The generations below were
+  measured before it and are left as measured; a regeneration would move
+  these rows from PASS to UNKNOWN.)*
 - **SETUP_ERROR is an apparatus failure, not a refusal**: fix the apparatus
   and re-run that trial; if unfixable, the row is published as excluded,
   with the reason. It never counts as UNKNOWN. Which of those two happened

@@ -66,6 +66,7 @@ pub const Reconciled = snapshot.Reconciled;
 pub const Link = snapshot.Link;
 pub const reconcile = snapshot.reconcile;
 pub const collectLinks = snapshot.collectLinks;
+pub const namedByMutation = snapshot.namedByMutation;
 pub const scratchMatches = snapshot.scratchMatches;
 pub const finalizeEntries = snapshot.finalizeEntries;
 pub const testSnapshot = snapshot.testSnapshot;

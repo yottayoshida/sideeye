@@ -45,7 +45,7 @@ cat > "$WORK/libc_toy.c" <<'EOF'
 int main(void) {
     const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
     char p[1024]; snprintf(p, sizeof(p), "%s/keep", d);
-    int fd = open(p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    int fd = open(p, O_CREAT | O_WRONLY, 0600); /* in place, over the bytes `keep` holds (ADR 0091) */
     if (fd < 0) { perror("open"); return 1; }
     if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
     if (close(fd) != 0) { perror("close"); return 1; }
@@ -121,6 +121,12 @@ run() {  # run <name> <toy> <extra-args...>
         > "$WORK/$name.txt" 2>&1
     echo $?
 }
+# Checks 1 and 6 need a verdict, and since ADR 0091 a run whose operation only creates files,
+# with no checker, is refused `nothing_could_fail` — both toys were that until then. `keep` is
+# put in the state before the run and the toys rewrite its three bytes in place (no O_TRUNC):
+# the same crash points, a path the atomicity invariant judges, and no world that can hold
+# anything else. The other checks assert refusals that come first and are left as they were.
+seed_keep() { mkdir -p "$WORK/state-$1" && printf 'ok\n' > "$WORK/state-$1/keep"; }
 field() { python3 -c "
 import json,sys
 try: print(json.load(open(sys.argv[1])).get(sys.argv[2]))
@@ -160,7 +166,9 @@ echo "=================================================================="
 echo "Check 1 — a verified PASS stands on macOS"
 echo "  predicate: exit 0 AND oracle_verified true, with --oracle-fs-usage"
 echo "  control:   the same toy without the flag refuses (completeness_not_verified)"
+seed_keep c1ctl
 rc_ctl=$(run c1ctl libc_toy)
+seed_keep c1
 rc=$(run c1 libc_toy --oracle-fs-usage)
 echo "  control exit=$rc_ctl reason=$(field c1ctl unknown_reason)"
 echo "  flagged exit=$rc oracle_verified=$(field c1 oracle_verified) verdict=$(field c1 verdict)"
@@ -312,7 +320,7 @@ cat > "$WORK/worker_toy.c" <<'EOF'
 #include <unistd.h>
 static int writefile(const char *d, const char *name) {
     char p[1024]; snprintf(p, sizeof(p), "%s/%s", d, name);
-    int fd = open(p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    int fd = open(p, O_CREAT | O_WRONLY, 0600); /* in place, over the bytes `keep` holds (ADR 0091) */
     if (fd < 0) { perror("open"); return 1; }
     if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
     if (close(fd) != 0) { perror("close"); return 1; }
@@ -365,6 +373,7 @@ EOF
 for t in worker_toy twowriters_toy; do
     "$CC" -O0 -pthread -o "$WORK/$t" "$WORK/$t.c" 2>/dev/null || fail "could not build $t"
 done
+seed_keep c6
 rc6=$(run c6 worker_toy --oracle-fs-usage)
 c6_ver=$(field c6 oracle_verified)
 c6_reason=$(field c6 unknown_reason)

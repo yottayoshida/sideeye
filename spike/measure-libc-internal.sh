@@ -34,7 +34,9 @@
 #              not replace them, and at the libc boundary they stay a wall — the negative
 #              control this check did not have to invent. The decision is about the libc
 #              boundary; the kernel boundary never needed a replacement.
-#   inert      `tmpfile`, **on this platform only**: glibc reaches
+#   inert      no crash point — refused `nothing_could_fail` with its detail saying so since
+#              ADR 0091, a PASS "the operation performed nothing" before it.
+#              `tmpfile`, **on this platform only**: glibc reaches
 #              `openat(AT_FDCWD, "/tmp", O_RDWR|O_EXCL|O_TMPFILE)`, which creates no
 #              directory entry and ignores TMPDIR entirely, so it cannot mutate a
 #              state root here. That reading does **not** carry to macOS, where
@@ -155,9 +157,14 @@ classify() { # $1 = exit code, $2 = output
     # inside the target's own process — which is this check failing to ask the question
     # on that host, not a member's answer (#541 review).
     if [ "$_rc" = 3 ]; then echo broken; return; fi
+    # A run with no crash point: refused `nothing_could_fail` since ADR 0091 (a PASS reading
+    # "the operation performed nothing that can change the judged state" before it). The
+    # reason is shared with runs that had crash points and nothing to judge, so the detail
+    # line has to say there was none.
     case "$_head" in
-        PASS*"performed nothing that can change the judged state"*)
-            [ "$_rc" = 0 ] || { echo other; return; }
+        'UNKNOWN  nothing_could_fail')
+            [ "$_rc" = 2 ] || { echo other; return; }
+            printf '%s\n' "$2" | sed -n 2p | grep -q 'so there was no crash point' || { echo other; return; }
             echo inert; return ;;
     esac
     if [ "$_rc" = 2 ]; then
@@ -354,10 +361,17 @@ UNKNOWN  oracle_missed_operation')" other
     check "killed by a signal is BROKEN" "$(classify 139 'PASS  5/5')" broken
     check "a SETUP ERROR is BROKEN, not a mismatch" \
         "$(classify 3 'SETUP ERROR  the kernel refused the seccomp filter')" broken
-    check "the inert PASS is inert, not judged" \
-        "$(classify 0 'PASS  the operation performed nothing that can change the judged state')" inert
+    check "a refusal with no crash point is inert, not judged" \
+        "$(classify 2 'UNKNOWN  nothing_could_fail
+         the operation performed no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail')" inert
+    check "the same refusal with crash points is not inert" \
+        "$(classify 2 'UNKNOWN  nothing_could_fail
+         no world could have failed: no checker was declared, no marker was declared, and none of the 1 path(s) the built-in atomicity invariant judges was changed or named by a crash point')" other
     check "an inert line with a bad exit is neither" \
-        "$(classify 2 'PASS  the operation performed nothing that can change the judged state')" other
+        "$(classify 0 'UNKNOWN  nothing_could_fail
+         the operation performed no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail')" other
+    check "the old inert PASS no longer reads as inert" \
+        "$(classify 0 'PASS  the operation performed nothing that can change the judged state')" other
 
     echo
     echo "== each mode reads its own column"

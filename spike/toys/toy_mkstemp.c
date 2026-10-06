@@ -17,6 +17,13 @@
  * own final path so a divergence names the member that caused it. The shim now
  * reimplements the five creators (contract v13), so those five reach a verdict here;
  * `dprintf` and `tmpfile` are the deliberate non-members and stay measurable.
+ *
+ * 2026-10-06 (ADR 0091): `init` also creates every member's final path, and `mkdtemp`
+ * renames the directory it made over an empty one `init` made. Until then each member
+ * wrote only paths the operation created, which the atomicity invariant does not judge,
+ * and with no checker an engine carrying that ADR refuses such a run `nothing_could_fail`
+ * instead of reaching the verdict this toy exists to reach. The members' own calls are
+ * unchanged; what they replace or append to now exists before they run.
  */
 
 #define _GNU_SOURCE
@@ -114,8 +121,9 @@ static int scratch_via_tmpfile(void) {
  *
  * Each of the four file creators performs the same atomic replace `rotate` does, so
  * the shape under measurement is the one a real C program writes. `mkdtemp` has no
- * atomic-replace form: it creates the directory and leaves it, which is what a
- * program using it does.
+ * atomic-replace form: a program using it creates the directory and leaves it. Here it
+ * is renamed over an empty one `init` made (2026-10-06, ADR 0091, above) — a step the
+ * member's own call does not need, there so the run has a judged path to reach.
  */
 static int replace_with(int fd, char *tmpl, const char *final_name) {
     char final_path[1024];
@@ -157,9 +165,12 @@ static int cmd_mkostemps(void) {
 }
 
 static int cmd_mkdtemp(void) {
-    char t[1024];
+    char t[1024], final_path[1024];
     join_path(t, sizeof(t), "m-mkdtemp.XXXXXX");
     if (mkdtemp(t) == NULL) { perror("mkdtemp"); return 1; }
+    /* Over the empty directory `init` made: a judged path the rename names (ADR 0091). */
+    join_path(final_path, sizeof(final_path), "m-mkdtemp.d");
+    if (rename(t, final_path) != 0) { perror("rename"); return 1; }
     return 0;
 }
 
@@ -186,6 +197,22 @@ static int cmd_init(void) {
     if (!f) { perror("fopen init"); return 1; }
     fputs("key=1\n", f);
     fclose(f);
+    /* Each member's final path, present before it runs (ADR 0091; see the header). The logs
+     * hold a line already, so an append is judged by the history form. */
+    static const char *const finals[][2] = {
+        { "m-mkstemp.json", "key=1\n" }, { "m-mkostemp.json", "key=1\n" },
+        { "m-mkstemps.json", "key=1\n" }, { "m-mkostemps.json", "key=1\n" },
+        { "log.txt", "born\n" }, { "log-big.txt", "born\n" },
+    };
+    for (size_t i = 0; i < sizeof(finals) / sizeof(finals[0]); i++) {
+        join_path(path, sizeof(path), finals[i][0]);
+        f = fopen(path, "w");
+        if (!f) { perror("fopen init final"); return 1; }
+        fputs(finals[i][1], f);
+        fclose(f);
+    }
+    join_path(path, sizeof(path), "m-mkdtemp.d");
+    if (mkdir(path, 0755) != 0) { perror("mkdir init"); return 1; }
     return 0;
 }
 
