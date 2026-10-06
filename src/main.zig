@@ -47,8 +47,10 @@
 //!   - `cli.zig` — the argv surface: `Args`, the usage text and `version`, and `parse`, which
 //!     is the mode dispatch, the flag loop and the mode refusals that used to open `main()`.
 //!     `main()` sets `refuse.json_arena`, calls `cli.parse(argv)` and reads the mode, replay's
-//!     case path and the flags back; the branches before parsing (`mcp`, `help`, `version`,
-//!     `demo`) are still here, and so are `splitArgs`, `commandArgv` and the `resolve*` family,
+//!     case path and the flags back; `cli.answerEntry` answers help, `version`, a bare
+//!     `sideeye` and a word that names no command before anything else (#705); the branches
+//!     before parsing (`mcp`, `evidence`, `demo`) are still here, and so are `splitArgs`,
+//!     `commandArgv` and the `resolve*` family,
 //!     because the freeze audit's rung 1 reads surface 1 out of this file
 //!     (`spike/freeze-audit/surface-drift.sh`) and nothing in `cli.zig` calls them; the
 //!     digit grammar `expected_status` and `--expect-status` share is `config.parseExpectStatus`
@@ -570,6 +572,21 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // call it made would be the subject's.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], supervise.exec_arg)) supervise.filterExec(argv);
 
+    // Help in every spelling and in the positions it is answered in, `version` and
+    // `--version`, a bare `sideeye`, and a first word that names no command — answered and
+    // exited in `cli.answerEntry` (#273, #296, #705), before `mcp` so that `mcp --help` is
+    // answered too. What returns is a command word followed by anything else, for the
+    // branch below that owns it.
+    //
+    // Help in a late position (`explore --state X --help`) is still not answered as help:
+    // `--json` calls removeFile() while the loop parses, so a help branch inside the loop
+    // would let `explore --state X --json report.json --help` delete an existing report on
+    // its way to printing usage — a refusal with a side effect, the trap the comment on that
+    // removeFile records avoiding once already. The loop names the token instead and says
+    // where help is answered; answering it needs the parser split into a side-effect-free
+    // stage and a side-effecting one.
+    cli.answerEntry(arena_state.allocator(), argv);
+
     // `mcp` runs a stateless MCP stdio server and never returns to the explore/replay
     // pipeline below (that pipeline is entirely explore/replay-specific). It forwards
     // tool calls by self-exec'ing this same binary's `explore`/`replay`.
@@ -577,57 +594,9 @@ pub fn main(init: std.process.Init.Minimal) !void {
         // No further arguments: everything operational comes from SIDEEYE_MCP_*.
         // Silently ignoring extras would start a stdin-reading server where the user
         // expected a flag to have meant something.
-        if (argv.len != 2) {
-            const msg = "sideeye mcp takes no arguments; operational settings come from SIDEEYE_MCP_* environment variables\n";
-            _ = posix.write(2, msg.ptr, msg.len);
-            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
-        }
+        if (argv.len != 2) cli.refuseArgumentOf(arena_state.allocator(), "mcp", argv[2], "; operational settings come from SIDEEYE_MCP_* environment variables");
         mcp.runServer(gpa);
         return;
-    }
-
-    // `--help`, `-h` and `help` print the usage text and exit 0.
-    //
-    // The same text already reached stdout when the program was invoked wrongly, but that
-    // path exits 3, so `sideeye --help` was a SETUP ERROR and `sideeye --help && …` took
-    // the failure branch (#273). Asking to be told how to use the tool is not a failure.
-    //
-    // This adds no meaning to the exit codes: exit 0 is the success of whatever the command
-    // does, not PASS specifically, and `version` below already exits 0 without producing a
-    // verdict. docs/contract-freeze.md §3 says so explicitly.
-    //
-    // This branch is the top-level one. `<mode> --help` is answered by the branch below
-    // it (#296) — deliberately as a separate exact-shape match rather than by wiring help
-    // into the parse loop, which would let it run after `--json` has already called
-    // removeFile. What is still not answered anywhere is help in a late position
-    // (`explore --state X --help`); that needs the parser split into a side-effect-free
-    // stage and a side-effecting one.
-    if (argv.len >= 2 and (std.mem.eql(u8, argv[1], "--help") or
-        std.mem.eql(u8, argv[1], "-h") or
-        std.mem.eql(u8, argv[1], "help")))
-    {
-        // Refused rather than ignored, the way `version` and `mcp` refuse extras: silently
-        // dropping them would answer a question the caller did not ask.
-        if (argv.len != 2) {
-            const msg = "sideeye help takes no arguments\n";
-            _ = posix.write(2, msg.ptr, msg.len);
-            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
-        }
-        cli.usage();
-        std.process.exit(@intFromEnum(contract.ExitCode.pass));
-    }
-
-    // `version` prints the one line a release workflow needs to hold a tag against the
-    // binary it is about to ship, and exits 0. The usage banner carries the same string
-    // but exits 3 — an assert built on that would have to treat failure as success.
-    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "version")) {
-        if (argv.len != 2) {
-            const msg = "sideeye version takes no arguments\n";
-            _ = posix.write(2, msg.ptr, msg.len);
-            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
-        }
-        say("sideeye {s} (trace contract v{d})\n", .{ cli.version, contract.contract_version });
-        std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
     // `evidence` renders the bundle a FAIL saved beside its case (#607, ADR 0071). Here
@@ -635,68 +604,31 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // surface: it reads one file and writes one document, and the flag loop below has
     // nothing it wants. No flags of its own either — the machine-readable form is the
     // evidence file itself, whose path the report names, so a `--format json` would be a
-    // second way to ask for bytes already on disk.
+    // second way to ask for bytes already on disk. `evidence --help` is answered above.
     //
     // The body is `src/evidence.zig`'s. `spike/check-main-shape.sh` holds this file's
     // declaration count at its ceiling (#572, ADR 0062), and a `runEvidence` beside
     // `runDemo` would be over it — but the reason to put it there is the one that matters:
     // the module that owns the behaviour owns the code, which is what that ratchet is for.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "evidence")) {
-        // Answered HERE, not by the `<mode> --help` block below, because this dispatch sits
-        // in front of it: a mode word consumed here never reaches that block, so adding
-        // `evidence` to its list — which was the first attempt — changed nothing and
-        // `sideeye evidence --help` went on trying to read a file called `--help`. The same
-        // shape as #296, which is the issue that put the block there in the first place.
-        if (argv.len == 3 and (std.mem.eql(u8, argv[2], "--help") or std.mem.eql(u8, argv[2], "-h"))) {
-            cli.usage();
-            std.process.exit(@intFromEnum(contract.ExitCode.pass));
-        }
-        if (argv.len != 3) {
-            const msg = "sideeye evidence takes one argument: the saved case, or the bundle beside it\n";
-            _ = posix.write(2, msg.ptr, msg.len);
-            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        // One argument, a path. A dash-led one is still a path when that file is there
+        // (`-x.json` was read before #705 and is read now); refused as the option it looks
+        // like only when nothing by that name exists. With more than one, the refusal names
+        // the extra that looks like an option, or else the second.
+        const ea = arena_state.allocator();
+        const one = "sideeye evidence takes one argument: the saved case, or the bundle beside it";
+        const looks_like_option = argv.len == 3 and argv[2].len > 1 and argv[2][0] == '-' and
+            std.c.access((ea.dupeZ(u8, argv[2]) catch argv[2]).ptr, std.c.F_OK) != 0;
+        if (argv.len == 2) cli.refuseOnStderr(ea, one, .{});
+        if (argv.len != 3 or looks_like_option) {
+            const extra = if (argv.len == 3) argv[2] else for (argv[2..]) |a| {
+                if (a.len > 1 and a[0] == '-') break a;
+            } else argv[3];
+            cli.refuseOnStderr(ea, one ++ "; got '{s}'{s} (sideeye help evidence)", .{
+                defang.textShown(ea, extra), if (looks_like_option) ", which is no file here, and evidence takes no option" else " too",
+            });
         }
         std.process.exit(evidence.runCommand(gpa, argv[2]));
-    }
-
-    // `<mode> --help` and `<mode> -h`, answered here rather than in the parse loop.
-    //
-    // #273 wired help in at the top level only, so once a mode word was consumed the
-    // spelling fell through to whatever came next: `explore --help` and `preflight
-    // --help` reached the loop's arity guard ("an option is missing its value" — the
-    // loop treats every unrecognised flag as one that takes a value), `replay --help`
-    // reached the dispatch's `else` and printed the banner with exit 3, and `demo
-    // --help` hit runDemo's own refusal. Four modes, four different failures, none of
-    // them help (#296). The ticket's transcript reports "unknown option" for explore;
-    // that is the four-element form. Measured before this branch was written.
-    //
-    // WHY NOT IN THE PARSE LOOP. `--json` calls removeFile() while parsing, so a help
-    // branch inside the loop would let `explore --state X --json report.json --help`
-    // delete an existing report on its way to printing usage. The comment on that
-    // removeFile records this project avoiding the same trap once already — a refusal
-    // that had already deleted the caller's report is a refusal with a side effect.
-    // Matching the exact three-argument shape here never enters the loop, so it cannot
-    // reach any side effect at all.
-    //
-    // The shape is exact on purpose, and each part of it is load-bearing:
-    //   - `explore --marker --help` stays a marker whose bytes are "--help". Four
-    //     elements, no match, the loop consumes it as the value it is.
-    //   - `explore --help extra` stays a refusal, the way the top level refuses extras.
-    //   - Late-position help (`explore --state X --help`) is deliberately NOT answered.
-    //     It needs the parser split into a side-effect-free stage and a side-effecting
-    //     one, which is a larger change than this ticket.
-    //
-    // mcp, help and version are absent: they take no arguments, their synopsis lines
-    // advertise none, and their existing refusals already name what they refused on.
-    if (argv.len == 3 and
-        (std.mem.eql(u8, argv[2], "--help") or std.mem.eql(u8, argv[2], "-h")) and
-        (std.mem.eql(u8, argv[1], "demo") or
-            std.mem.eql(u8, argv[1], "preflight") or
-            std.mem.eql(u8, argv[1], "explore") or
-            std.mem.eql(u8, argv[1], "replay")))
-    {
-        cli.usage();
-        std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
 
     // `demo` compiles the embedded planted-bug toy on this machine and self-execs
@@ -4369,7 +4301,7 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
             i += 2;
             continue;
         }
-        setupError(.define_invalid, "demo takes only --shim <lib>; everything else it arranges itself");
+        cli.refuseDemoArgument(arena, rest[i]);
     }
 
     const self = mcp.canonicalSelf() orelse setupError(.environment, "could not resolve the canonical path of this binary; refusing to guess what to self-exec");

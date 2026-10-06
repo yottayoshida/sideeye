@@ -10,10 +10,13 @@
 //! `report.checker_note`, `report.l1_note`, `report.expected_status_val`,
 //! `report.settleDeclared`) and where the JSON goes (`refuse.json_path`, removing a previous
 //! report at that path), and it records which witness was named
-//! (`boundary.boundary_ev.witness`). Every refusal in here goes through
-//! `refuse.setupError`; the one exit of its own is the unknown-mode banner — `usage()` then
-//! exit 3 — which prints no verdict line. Not here: the `mcp`, `help`, `version` and `demo`
-//! branches that run before any parsing (they exit or self-exec and are `main()`'s), and
+//! (`boundary.boundary_ev.witness`). Every refusal `parse` makes goes through
+//! `refuse.setupError`; its one exit of its own is the unknown-mode banner — `usage()` then
+//! exit 3 — which `main()` no longer reaches. Also here since #705: `answerEntry`, which
+//! answers help, `version` and `--version`, a bare `sideeye` and a word that names no
+//! command before anything is parsed, and each command's own help, cut out of the usage
+//! text. Not here: the `mcp`, `evidence` and `demo` branches (they exit or self-exec and
+//! are `main()`'s), and
 //! `splitArgs`, `commandArgv` and the `resolve*` family, which the freeze audit's rung 1 reads
 //! out of `src/main.zig` and which no code here calls — and, for the same reason, the digit
 //! grammar of `--expect-status`, which is `config.parseExpectStatus` because the toml key
@@ -34,6 +37,7 @@ const boundary = @import("boundary.zig");
 const report = @import("report.zig");
 const refuse = @import("refuse.zig");
 const files = @import("files.zig");
+const defang = @import("defang.zig");
 const setupError = refuse.setupError;
 const say = report.say;
 const removeFile = files.removeFile;
@@ -160,7 +164,7 @@ const usage_fmt =
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
-    \\  sideeye help
+    \\  sideeye help [<command>]
     \\  sideeye version
     \\
     \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
@@ -228,8 +232,8 @@ const usage_fmt =
     \\  --oracle     path to strace; the recording run is compared against it (Linux;
     \\               refused on macOS, whose witness is --oracle-fs-usage)
     \\  --oracle-fs-usage
-    \\               macOS: compare the recording run against fs_usage instead. Needs
-    \\               root, so sudo must already hold credentials (`sudo -v` first, in
+    \\               macOS, as root: compare the recording run against fs_usage
+    \\               instead. sudo must already hold credentials (`sudo -v` first, in
     \\               this terminal — the cache is per-terminal); the run refuses
     \\               rather than prompting. Narrower than strace: fs_usage prints
     \\               only a rename's old path and cuts long pathnames from the left,
@@ -289,9 +293,9 @@ const usage_fmt =
     \\               the refused entry is retracted on the SIGSYS that refused it. So
     \\               the claim is `oracle_verified`, and the report's oracle line says
     \\               how the capture was read.
-    \\               **Do not use it on a target that execs an image the shim cannot be
-    \\               loaded into.** A filter is inherited across exec and cannot be
-    \\               replaced, while exec resets the SIGSYS handler that makes it
+    \\               **Caution: do not use `syscalls` on a target that execs an image the
+    \\               shim cannot be loaded into.** A filter is inherited across exec and
+    \\               cannot be replaced, while exec resets the SIGSYS handler that makes it
     \\               survivable, so a statically linked helper dies at its first
     \\               state-changing call (measured: exit 0 under wrappers, killed by
     \\               SIGSYS under this). A child the shim IS loaded into is unaffected,
@@ -355,7 +359,7 @@ const usage_fmt =
     \\               two runs are not all runs. The two-second gap is what
     \\               epoch-second stamping needs to move — not a measured
     \\               sufficiency threshold for nondeterminism in general.
-    \\               It also REWRITES --state: the directory is restored from the
+    \\               Caution: it also REWRITES --state: the directory is restored from the
     \\               pre-run snapshot before the second run, so the first run's
     \\               output is gone and file modes come back as 0644/0755. A
     \\               preflight without this flag leaves the directory as the run
@@ -376,6 +380,621 @@ pub fn usage() void {
     say(usage_fmt, .{ version, contract.contract_version });
 }
 
+// ---- #705: a mistake is named in one line, and each command has its own help -----------
+//
+// The first answer to a mistyped command or flag used to be the whole of `usage_fmt` —
+// 218 lines, the longest 412 columns — with no line saying what was wrong, and the parse
+// loop's arity guard answered an unknown flag typed last as "an option is missing its
+// value". What follows names the token instead, offers the nearest spelling the command
+// accepts, and cuts each command's own help out of the same text.
+//
+// Every name compared against comes out of `usage_fmt`: the synopsis lines for commands
+// and their flags, the flag entries for what each flag is. `spike/acceptance.sh`'s #273
+// block holds the synopsis against the parser in three directions, so reading it here
+// adds no second list to drift — a flag the parser reads with no synopsis line is red
+// there before it could be missing here.
+
+const synopsis_prefix = "  sideeye ";
+
+/// The command a synopsis line is for (`explore` for both of explore's), or null for a
+/// line that is not one.
+fn synopsisCommand(line: []const u8) ?[]const u8 {
+    if (!std.mem.startsWith(u8, line, synopsis_prefix)) return null;
+    const rest = line[synopsis_prefix.len..];
+    return rest[0 .. std.mem.indexOfScalar(u8, rest, ' ') orelse rest.len];
+}
+
+/// Whether `word` is a command some synopsis line is for.
+pub fn isCommand(word: []const u8) bool {
+    var it = std.mem.splitScalar(u8, usage_fmt, '\n');
+    while (it.next()) |line| {
+        if (synopsisCommand(line)) |c| if (std.mem.eql(u8, c, word)) return true;
+    }
+    return false;
+}
+
+/// The `--flag` words of one line, at word boundaries: `--oracle` is never read out of
+/// `--oracle-fs-usage`, nor a flag out of a `--` inside another word.
+const FlagWords = struct {
+    s: []const u8,
+    i: usize = 0,
+    fn next(self: *FlagWords) ?[]const u8 {
+        while (std.mem.indexOfPos(u8, self.s, self.i, "--")) |at| {
+            var end = at + 2;
+            while (end < self.s.len and (std.ascii.isAlphanumeric(self.s[end]) or self.s[end] == '-')) end += 1;
+            self.i = end;
+            const starts_word = at == 0 or self.s[at - 1] == ' ' or self.s[at - 1] == '[';
+            if (starts_word and end > at + 2) return self.s[at..end];
+        }
+        return null;
+    }
+};
+
+/// The flags the synopsis lines of `cmd` name — of every command when `cmd` is null, which
+/// is the set the parse loop reads (the help, version and mcp lines carry none) — each
+/// once, in the order they first appear.
+fn synopsisFlags(cmd: ?[]const u8, buf: [][]const u8) [][]const u8 {
+    var n: usize = 0;
+    var it = std.mem.splitScalar(u8, usage_fmt, '\n');
+    while (it.next()) |line| {
+        const c = synopsisCommand(line) orelse continue;
+        if (cmd) |want| if (!std.mem.eql(u8, c, want)) continue;
+        var fw: FlagWords = .{ .s = line };
+        next_flag: while (fw.next()) |f| {
+            for (buf[0..n]) |seen| if (std.mem.eql(u8, seen, f)) continue :next_flag;
+            if (n == buf.len) break;
+            buf[n] = f;
+            n += 1;
+        }
+    }
+    return buf[0..n];
+}
+
+/// The commands, each once, in synopsis order.
+fn synopsisCommands(buf: [][]const u8) [][]const u8 {
+    var n: usize = 0;
+    var it = std.mem.splitScalar(u8, usage_fmt, '\n');
+    next_line: while (it.next()) |line| {
+        const c = synopsisCommand(line) orelse continue;
+        for (buf[0..n]) |seen| if (std.mem.eql(u8, seen, c)) continue :next_line;
+        if (n == buf.len) break;
+        buf[n] = c;
+        n += 1;
+    }
+    return buf[0..n];
+}
+
+/// Room for every flag or command the synopsis names; a count past it is cut off rather
+/// than written out of bounds, and the unit test below fails first.
+const max_names = 64;
+
+/// Whether some command's synopsis line names `flag`: the parse loop's test for "a flag",
+/// asked before its arity guard so that an unknown one is named rather than taken for a
+/// known one missing its value. Every command's, not the running one's — `spike/
+/// acceptance.sh` measures arity by putting each parser flag last under `explore`, and a
+/// flag explore refuses by name (`--state-under`, `--twice`) has to reach that refusal.
+pub fn isKnownFlag(flag: []const u8) bool {
+    var buf: [max_names][]const u8 = undefined;
+    for (synopsisFlags(null, &buf)) |f| if (std.mem.eql(u8, f, flag)) return true;
+    return false;
+}
+
+/// Levenshtein distance, or null past the longest name worth comparing — a token that
+/// long is not a misspelling of anything here.
+fn editDistance(a: []const u8, b: []const u8) ?usize {
+    const cap = 64;
+    if (a.len > cap or b.len > cap) return null;
+    var row: [cap + 1]usize = undefined;
+    for (0..b.len + 1) |j| row[j] = j;
+    for (a, 0..) |ca, i| {
+        var diag = row[0];
+        row[0] = i + 1;
+        for (b, 0..) |cb, j| {
+            const up = row[j + 1];
+            row[j + 1] = @min(@min(up + 1, row[j] + 1), diag + @intFromBool(ca != cb));
+            diag = up;
+        }
+    }
+    return row[b.len];
+}
+
+/// The one name a mistyped `token` most plausibly meant. A token that is the start of
+/// exactly one name (three characters at least past the dashes) is read as that start.
+/// Otherwise the closest name within
+/// one edit for a stem of four characters or fewer, two for a longer one — two edits reach
+/// too far in a short word (`--ora` is two from `--work`; unit test below). Two names as
+/// close as each other answer nothing: a guess between two is not a correction. `names`
+/// are distinct, which `synopsisFlags` and `synopsisCommands` guarantee.
+fn nearest(token: []const u8, names: []const []const u8) ?[]const u8 {
+    const stem = std.mem.trimStart(u8, token, "-");
+    var prefix: ?[]const u8 = null;
+    var prefixes: usize = 0;
+    var best: ?[]const u8 = null;
+    var best_d: usize = (if (stem.len <= 4) @as(usize, 1) else 2) + 1;
+    var tied = false;
+    for (names) |name| {
+        if (std.mem.eql(u8, name, token)) return null;
+        if (stem.len >= 3 and std.mem.startsWith(u8, name, token)) {
+            prefix = name;
+            prefixes += 1;
+        }
+        if (editDistance(token, name)) |d| {
+            if (d < best_d) {
+                best = name;
+                best_d = d;
+                tied = false;
+            } else if (d == best_d and best != null) tied = true;
+        }
+    }
+    // The start of exactly one name is that name. The start of several falls to the edit
+    // distance among all of them (review of #705): `--recover` starts both `--recovery` and
+    // `--recovery-check` and is one edit from the first, which it plainly meant.
+    if (prefixes == 1) return prefix;
+    if (best != null and !tied) return best;
+    return null;
+}
+
+/// The nearest flag `cmd` itself takes — never one only another command takes, which
+/// would be a spelling the command refuses.
+fn nearestFlagOf(cmd: []const u8, token: []const u8) ?[]const u8 {
+    var buf: [max_names][]const u8 = undefined;
+    return nearest(token, synopsisFlags(cmd, &buf));
+}
+
+fn didYouMean(arena: std.mem.Allocator, near: ?[]const u8) []const u8 {
+    const n = near orelse return "";
+    return std.fmt.allocPrint(arena, " — did you mean '{s}'?", .{n}) catch "";
+}
+
+/// Write `fmt` to stderr as one line and exit 3: the shape the argument refusals of `mcp`,
+/// `help`, `version` and `evidence` have always had, which print no verdict line because
+/// no run has started.
+pub fn refuseOnStderr(arena: std.mem.Allocator, comptime fmt: []const u8, args: anytype) noreturn {
+    const msg = std.fmt.allocPrint(arena, fmt ++ "\n", args) catch fmt ++ "\n";
+    _ = posix.write(2, msg.ptr, msg.len);
+    std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+}
+
+/// A word that names no command: in the command position (`top`), or after `help`. An
+/// option where the command goes is told the order, which is the likelier mistake.
+fn refuseUnknownCommand(arena: std.mem.Allocator, top: bool, token: []const u8) noreturn {
+    var buf: [max_names][]const u8 = undefined;
+    const order = if (top and token.len > 0 and token[0] == '-') " — the command comes first: sideeye <command> [options]" else "";
+    refuseOnStderr(arena, "{s}unknown command '{s}'{s}{s} (sideeye help lists the commands)", .{
+        if (top) "sideeye: " else "sideeye help: ", defang.textShown(arena, token), didYouMean(arena, nearest(token, synopsisCommands(&buf))), order,
+    });
+}
+
+/// `sideeye <command>` refusing an argument it does not take — `mcp` and `version`, which
+/// take none. "takes no arguments" is what `spike/acceptance.sh` #273 reads for them.
+pub fn refuseArgumentOf(arena: std.mem.Allocator, cmd: []const u8, token: []const u8, tail: []const u8) noreturn {
+    refuseOnStderr(arena, "sideeye {s} takes no arguments; got '{s}'{s}", .{ cmd, defang.textShown(arena, token), tail });
+}
+
+/// `demo`'s refusal of anything but `--shim <lib>`, naming what it was given. Through
+/// `setupError`, as it always was, and still beginning "demo takes only", which is what
+/// `spike/acceptance.sh` #273 reads for a flag demo refuses.
+pub fn refuseDemoArgument(arena: std.mem.Allocator, token: []const u8) noreturn {
+    refuse.setupErrorFmt(arena, .define_invalid, "demo takes only --shim <lib>; got '{s}'{s} — everything else it arranges itself", .{
+        defang.textShown(arena, token), didYouMean(arena, nearestFlagOf("demo", token)),
+    });
+}
+
+/// A token in a flag's position that the parse loop cannot take. Three shapes, each said
+/// for what it is: help asked for after the command, which is answered only right after
+/// it (`main()`'s note on late-position help says why the loop does not answer it); a word
+/// that is not a flag at all; and an unknown flag, with the nearest one the command takes.
+/// The comparison with the help spellings is made here on `token`, not in the loop on
+/// `argv[i]` — `spike/acceptance.sh` check 15 holds the loop to having none.
+fn refuseFlagPosition(mode: Mode, token: []const u8) noreturn {
+    const arena = argArena();
+    const m = @tagName(mode);
+    const shown = defang.textShown(arena, token);
+    if (std.mem.eql(u8, token, "--help") or std.mem.eql(u8, token, "-h"))
+        refuse.setupErrorFmt(arena, .define_invalid, "'{s}' is answered only on its own: sideeye help {s}, or sideeye {s} {s} with nothing after it", .{ shown, m, m, shown });
+    if (token.len == 0 or token[0] != '-')
+        refuse.setupErrorFmt(arena, .define_invalid, "{s} takes no positional argument here: '{s}' (sideeye help {s})", .{ m, shown, m });
+    refuse.setupErrorFmt(arena, .define_invalid, "unknown option '{s}'{s} (sideeye help {s} lists the options {s} takes)", .{
+        shown, didYouMean(arena, nearestFlagOf(m, token)), m, m,
+    });
+}
+
+/// The column a flag's summary starts at in a command's help, past the longest flag name
+/// that fits; a longer one pushes its own first line two columns further.
+const summary_col = 22;
+const help_width = 80;
+
+/// Append `text`, split on single spaces, starting at column `col` and breaking before a
+/// word that would carry a line past `help_width`; each further line starts at `indent`.
+fn appendWrapped(out: *std.ArrayList(u8), arena: std.mem.Allocator, words: []const []const u8, start_col: usize, indent: usize) error{OutOfMemory}!void {
+    var col = start_col;
+    var line_empty = true;
+    for (words) |w| {
+        if (!line_empty and col + 1 + w.len > help_width) {
+            try out.append(arena, '\n');
+            try out.appendNTimes(arena, ' ', indent);
+            col = indent;
+            line_empty = true;
+        }
+        if (!line_empty) {
+            try out.append(arena, ' ');
+            col += 1;
+        }
+        try out.appendSlice(arena, w);
+        col += w.len;
+        line_empty = false;
+    }
+}
+
+/// A synopsis line cut into the units it may break between: words outside brackets, a
+/// bracketed group whole, and a flag together with the `<value>` after it.
+fn synopsisUnits(arena: std.mem.Allocator, line: []const u8) error{OutOfMemory}![]const []const u8 {
+    var units: std.ArrayList([]const u8) = .empty;
+    var depth: usize = 0;
+    var start: usize = 0;
+    var i: usize = 0;
+    while (i <= line.len) : (i += 1) {
+        const at_end = i == line.len;
+        if (!at_end) switch (line[i]) {
+            '[' => depth += 1,
+            ']' => depth -|= 1,
+            else => {},
+        };
+        if (at_end or (line[i] == ' ' and depth == 0)) {
+            if (i > start) {
+                const unit = line[start..i];
+                const n = units.items.len;
+                if (unit[0] == '<' and n > 0 and std.mem.startsWith(u8, units.items[n - 1], "--")) {
+                    const prev = units.items[n - 1];
+                    const prev_start = @intFromPtr(prev.ptr) - @intFromPtr(line.ptr);
+                    units.items[n - 1] = line[prev_start..i];
+                } else try units.append(arena, unit);
+            }
+            start = i + 1;
+        }
+    }
+    return units.items;
+}
+
+/// One flag's summary for a command's help: the first sentence of its entry in the flag
+/// list, or the whole description when it has no sentence end (`--state`'s is one clause),
+/// joined onto one line. The entry is the line beginning `  --flag` and the continuation
+/// lines indented under it; its heading runs to the first two-space gap, and a heading with
+/// none (`--observe wrappers|syscalls|supervised`, `--world-timeout <s>`) leaves the whole
+/// description to the lines below. Null when the list has no entry for the flag, which the
+/// unit test below keeps from happening.
+fn flagSummary(arena: std.mem.Allocator, flag: []const u8) error{OutOfMemory}!?[]const u8 {
+    var text: std.ArrayList(u8) = .empty;
+    var found = false;
+    var it = std.mem.splitScalar(u8, usage_fmt, '\n');
+    while (it.next()) |line| {
+        if (found) {
+            if (!std.mem.startsWith(u8, line, "    ")) break;
+            if (text.items.len > 0) try text.append(arena, ' ');
+            try text.appendSlice(arena, std.mem.trim(u8, line, " "));
+            continue;
+        }
+        if (!std.mem.startsWith(u8, line, "  --")) continue;
+        var fw: FlagWords = .{ .s = line };
+        const name = fw.next() orelse continue;
+        if (!std.mem.eql(u8, name, flag)) continue;
+        found = true;
+        if (std.mem.indexOfPos(u8, line, 2, "  ")) |gap| try text.appendSlice(arena, std.mem.trim(u8, line[gap..], " "));
+    }
+    if (!found) return null;
+    const s = text.items;
+    // Every sentence of the entry that begins `Caution:` rides along after the first (review
+    // of #705): the short help is where `<command> --help` now sends a reader, and the first
+    // sentence alone dropped `--twice` rewriting --state and `syscalls` killing a static
+    // helper — both visible there while `<command> --help` printed the whole reference. A
+    // caution added to an entry later is carried by being spelled the same way.
+    var out: std.ArrayList(u8) = .empty;
+    try out.appendSlice(arena, s[0..sentenceEnd(s, 0)]);
+    var k = out.items.len;
+    while (std.mem.indexOfPos(u8, s, k, "Caution:")) |at| {
+        const begin = if (at >= 2 and std.mem.eql(u8, s[at - 2 .. at], "**")) at - 2 else at;
+        const end = sentenceEnd(s, at);
+        try out.append(arena, ' ');
+        try out.appendSlice(arena, s[begin..end]);
+        k = end;
+    }
+    return out.items;
+}
+
+/// Where the sentence that contains `from` ends: just past a `.` followed by a space or the
+/// end, or past a `.**` that closes an emphasised sentence. The whole text when it has none.
+fn sentenceEnd(s: []const u8, from: usize) usize {
+    var k = from;
+    while (std.mem.indexOfScalarPos(u8, s, k, '.')) |dot| {
+        if (dot + 1 == s.len or s[dot + 1] == ' ') return dot + 1;
+        if (std.mem.startsWith(u8, s[dot + 1 ..], "**") and (dot + 3 == s.len or s[dot + 3] == ' ')) return dot + 3;
+        k = dot + 1;
+    }
+    return s.len;
+}
+
+/// The paragraph of `usage_fmt` that begins at column 0 with `lead` and a space — `demo`'s,
+/// `preflight`'s, `evidence`'s, `replay`'s, and `exit codes:` — up to the next blank line.
+fn paragraph(lead: []const u8) ?[]const u8 {
+    var it = std.mem.splitScalar(u8, usage_fmt, '\n');
+    var prev_blank = false;
+    while (it.next()) |line| {
+        defer prev_blank = line.len == 0;
+        if (!prev_blank or !std.mem.startsWith(u8, line, lead) or line.len <= lead.len or line[lead.len] != ' ') continue;
+        const begin = @intFromPtr(line.ptr) - @intFromPtr(usage_fmt.ptr);
+        const end = std.mem.indexOfPos(u8, usage_fmt, begin, "\n\n") orelse usage_fmt.len;
+        return usage_fmt[begin..end];
+    }
+    return null;
+}
+
+/// `sideeye help <command>` and `sideeye <command> --help`: the version line, the command's
+/// synopsis lines broken to fit, its paragraph, one line per flag its synopsis names, and
+/// the exit codes — the codes' first line for a command that reaches a run, with the
+/// preflight parenthesis only under preflight, which produces no verdict.
+pub fn renderCommandHelp(arena: std.mem.Allocator, cmd: []const u8) error{OutOfMemory}![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    try out.print(arena, "sideeye {s} (trace contract v{d})\n\nusage:\n", .{ version, contract.contract_version });
+    var it = std.mem.splitScalar(u8, usage_fmt, '\n');
+    while (it.next()) |line| {
+        const c = synopsisCommand(line) orelse continue;
+        if (!std.mem.eql(u8, c, cmd)) continue;
+        try out.appendSlice(arena, "  ");
+        try appendWrapped(&out, arena, try synopsisUnits(arena, line[2..]), 2, 6);
+        try out.append(arena, '\n');
+    }
+    if (paragraph(cmd)) |p| try out.print(arena, "\n{s}\n", .{p});
+    var buf: [max_names][]const u8 = undefined;
+    const flags = synopsisFlags(cmd, &buf);
+    if (flags.len > 0) {
+        try out.appendSlice(arena, "\noptions:\n");
+        for (flags) |f| {
+            try out.print(arena, "  {s}", .{f});
+            const col = 2 + f.len;
+            const start = if (col + 2 <= summary_col) summary_col else col + 2;
+            try out.appendNTimes(arena, ' ', start - col);
+            var words: std.ArrayList([]const u8) = .empty;
+            var ws = std.mem.splitScalar(u8, (try flagSummary(arena, f)) orelse "", ' ');
+            while (ws.next()) |w| if (w.len > 0) try words.append(arena, w);
+            try appendWrapped(&out, arena, words.items, start, summary_col);
+            try out.append(arena, '\n');
+        }
+        if (paragraph("exit codes:")) |codes| {
+            var lines = std.mem.splitScalar(u8, codes, '\n');
+            try out.print(arena, "\n{s}\n", .{lines.first()});
+            const own = try std.fmt.allocPrint(arena, "({s} ", .{cmd});
+            if (lines.peek()) |second| if (std.mem.startsWith(u8, std.mem.trimStart(u8, second, " "), own)) {
+                while (lines.next()) |l| try out.print(arena, "{s}\n", .{l});
+            };
+        }
+    }
+    try out.appendSlice(arena, "\nEvery flag in full, and the other commands: sideeye help\n");
+    return out.items;
+}
+
+fn printCommandHelp(arena: std.mem.Allocator, cmd: []const u8) noreturn {
+    const text = renderCommandHelp(arena, cmd) catch refuseOnStderr(arena, "sideeye: out of memory rendering the help for {s}", .{cmd});
+    say("{s}", .{text});
+    std.process.exit(@intFromEnum(contract.ExitCode.pass));
+}
+
+/// A bare `sideeye`: the version line, the commands, and where help is. Exit 3, as the bare
+/// invocation always has (`spike/acceptance.sh` #273 holds both that and the first line).
+fn printOverview(arena: std.mem.Allocator) noreturn {
+    var buf: [max_names][]const u8 = undefined;
+    const cmds = synopsisCommands(&buf);
+    const list = std.mem.join(arena, ", ", cmds) catch "";
+    say("sideeye {s} (trace contract v{d})\n\nusage: sideeye <command> [options]\ncommands: {s}\n\nsideeye help <command> describes one command; sideeye help is the whole reference.\n", .{ version, contract.contract_version, list });
+    std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+}
+
+fn isHelpSpelling(s: []const u8) bool {
+    return std.mem.eql(u8, s, "--help") or std.mem.eql(u8, s, "-h");
+}
+
+/// The answers no define is needed for, given before anything is parsed: help in every
+/// spelling and position it is answered in, `version` and `--version`, a bare `sideeye`,
+/// and a first word that names no command. Each exits. A command word followed by
+/// anything else returns, to the branch in `main()` that owns that command.
+///
+/// Called after the `__filter-exec` branch, which must run before anything else in `main`
+/// (every call it made would be the subject's), and before `mcp`'s, so `mcp --help` is
+/// answered like every other command's.
+///
+/// `<command> --help` is still the exact three-element shape #296 made it, and for its
+/// reason: `explore --marker --help` keeps `--help` as the marker's bytes, `explore --help
+/// extra` reaches the parser's refusal, and help in a late position is not answered here
+/// because the parse loop's `--json` has already removed a file by then.
+pub fn answerEntry(arena: std.mem.Allocator, argv: []const []const u8) void {
+    if (argv.len < 2) printOverview(arena);
+    // `--help -h` and `-h --help` are help asking about itself, as `help -h` is.
+    if (argv.len == 3 and isHelpSpelling(argv[2]) and (isCommand(argv[1]) or isHelpSpelling(argv[1])))
+        printCommandHelp(arena, if (isHelpSpelling(argv[1])) "help" else argv[1]);
+    // `--help`, `-h` and `help` print the whole reference and exit 0 (#273): asking how to use
+    // the tool is not a failure, and exit 0 is the success of what was asked, not PASS
+    // (docs/contract-freeze.md §3). `help <command>` prints that command's own.
+    if (std.mem.eql(u8, argv[1], "--help") or std.mem.eql(u8, argv[1], "-h") or std.mem.eql(u8, argv[1], "help")) {
+        if (argv.len == 2) {
+            usage();
+            std.process.exit(@intFromEnum(contract.ExitCode.pass));
+        }
+        if (argv.len == 3 and isCommand(argv[2])) printCommandHelp(arena, argv[2]);
+        if (argv.len == 3) refuseUnknownCommand(arena, false, argv[2]);
+        refuseOnStderr(arena, "sideeye help takes one command at most; got '{s}' after '{s}'", .{ defang.textShown(arena, argv[3]), defang.textShown(arena, argv[2]) });
+    }
+    // `version` prints the one line a release workflow holds a tag against, and exits 0. The
+    // usage banner carries the same string but exits 3 — an assert built on that would have
+    // to treat failure as success. `--version` is the spelling people try first.
+    if (std.mem.eql(u8, argv[1], "version") or std.mem.eql(u8, argv[1], "--version")) {
+        if (argv.len != 2) refuseArgumentOf(arena, "version", argv[2], "");
+        say("sideeye {s} (trace contract v{d})\n", .{ version, contract.contract_version });
+        std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    }
+    if (!isCommand(argv[1])) refuseUnknownCommand(arena, true, argv[1]);
+}
+
+fn displayWidth(line: []const u8) usize {
+    return std.unicode.utf8CountCodepoints(line) catch line.len;
+}
+
+/// Does `help` carry a summary line for `flag` — a line that begins `  <flag>` and then a
+/// space, so `--oracle` is not found in `--oracle-fs-usage`'s line?
+fn hasSummaryLine(help: []const u8, flag: []const u8) bool {
+    var it = std.mem.splitScalar(u8, help, '\n');
+    while (it.next()) |line| {
+        if (line.len > 2 + flag.len and std.mem.startsWith(u8, line, "  ") and
+            std.mem.eql(u8, line[2 .. 2 + flag.len], flag) and line[2 + flag.len] == ' ') return true;
+    }
+    return false;
+}
+
+test "each command's help is its own: every flag it takes has a summary line, no other's does, and it fits (#705)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var cbuf: [max_names][]const u8 = undefined;
+    const cmds = synopsisCommands(&cbuf);
+    // The eight the synopsis lists today. A count, not a list of names: a ninth command is
+    // added to `usage_fmt` and this loop covers it without being edited.
+    try std.testing.expect(cmds.len >= 8);
+    var all_buf: [max_names][]const u8 = undefined;
+    const all = synopsisFlags(null, &all_buf);
+    try std.testing.expect(all.len >= 20);
+    for (cmds) |cmd| {
+        const help = try renderCommandHelp(arena, cmd);
+        // The first line is the version line `spike/check-evidence-bundle.sh` reads for
+        // `evidence --help`, built with its holes filled rather than cut out of `usage_fmt`.
+        try std.testing.expect(std.mem.startsWith(u8, help, "sideeye "));
+        try std.testing.expect(std.mem.indexOf(u8, help, "{s}") == null and std.mem.indexOf(u8, help, "{d}") == null);
+        var lines: usize = 0;
+        var it = std.mem.splitScalar(u8, help, '\n');
+        while (it.next()) |line| {
+            lines += 1;
+            if (displayWidth(line) > help_width) {
+                std.debug.print("help {s}: a line of {d} columns: {s}\n", .{ cmd, displayWidth(line), line });
+                return error.TestUnexpectedResult;
+            }
+        }
+        // 64, not the 60 first planned: the cautions the first diff review asked to carry
+        // (`--twice`, `--observe`) put explore's at 61. The full reference is 218.
+        try std.testing.expect(lines <= 64);
+        // Shorter than the whole reference, which is the point of having one per command.
+        try std.testing.expect(help.len * 2 < usage_fmt.len);
+        var own_buf: [max_names][]const u8 = undefined;
+        const own = synopsisFlags(cmd, &own_buf);
+        for (all) |f| {
+            const takes = for (own) |o| {
+                if (std.mem.eql(u8, o, f)) break true;
+            } else false;
+            if (hasSummaryLine(help, f) != takes) {
+                std.debug.print("help {s}: {s} {s}\n", .{ cmd, f, if (takes) "has no summary line" else "has a summary line it does not take" });
+                return error.TestUnexpectedResult;
+            }
+        }
+    }
+}
+
+test "a flag's summary is a whole sentence, or the whole description when it has no sentence end (#705)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var buf: [max_names][]const u8 = undefined;
+    for (synopsisFlags(null, &buf)) |f| {
+        const s = (try flagSummary(arena, f)) orelse {
+            std.debug.print("{s} has no entry in the flag list\n", .{f});
+            return error.TestUnexpectedResult;
+        };
+        try std.testing.expect(s.len > 0);
+        const ends = s[s.len - 1] == '.' or s[s.len - 1] == ')' or std.mem.endsWith(u8, s, ".**");
+        // Not ending in either is allowed only when nothing was cut: no sentence end inside.
+        if (!ends and std.mem.indexOf(u8, s, ". ") != null) {
+            std.debug.print("{s}'s summary stops mid-sentence: {s}\n", .{ f, s });
+            return error.TestUnexpectedResult;
+        }
+    }
+    // The two heading shapes with no two-space gap, whose description starts a line below.
+    try std.testing.expect(std.mem.startsWith(u8, (try flagSummary(arena, "--observe")).?, "where operations are counted. "));
+    try std.testing.expect(std.mem.startsWith(u8, (try flagSummary(arena, "--world-timeout")).?, "wall-clock budget"));
+    // A one-clause description comes back whole.
+    try std.testing.expectEqualStrings("directory whose contents define the target's state", (try flagSummary(arena, "--state")).?);
+    // The cautions ride along: what `--twice` does to --state, what `syscalls` does to a
+    // static helper, and that fs_usage needs root, which is in its first sentence.
+    try std.testing.expect(std.mem.indexOf(u8, (try flagSummary(arena, "--twice")).?, "Caution: it also REWRITES --state") != null);
+    try std.testing.expect(std.mem.indexOf(u8, (try flagSummary(arena, "--observe")).?, "**Caution: do not use `syscalls`") != null);
+    try std.testing.expect(std.mem.startsWith(u8, (try flagSummary(arena, "--oracle-fs-usage")).?, "macOS, as root:"));
+    // Every caution the flag list states reaches a summary: counted across all of them, so
+    // a caution added to any entry later is held here without this test being edited.
+    var in_list: usize = 0;
+    var at: usize = 0;
+    while (std.mem.indexOfPos(u8, usage_fmt, at, "Caution:")) |hit| : (at = hit + 1) in_list += 1;
+    var in_summaries: usize = 0;
+    for (synopsisFlags(null, &buf)) |f| {
+        const s = (try flagSummary(arena, f)).?;
+        var k: usize = 0;
+        while (std.mem.indexOfPos(u8, s, k, "Caution:")) |hit| : (k = hit + 1) in_summaries += 1;
+    }
+    try std.testing.expect(in_list >= 2);
+    try std.testing.expectEqual(in_list, in_summaries);
+}
+
+test "a flag is known by its whole word, whichever command takes it (#705)" {
+    try std.testing.expect(isKnownFlag("--oracle"));
+    try std.testing.expect(isKnownFlag("--oracle-fs-usage"));
+    try std.testing.expect(isKnownFlag("--state-under")); // replay's; explore refuses it by name
+    try std.testing.expect(isKnownFlag("--twice")); // preflight's
+    try std.testing.expect(!isKnownFlag("--orac"));
+    try std.testing.expect(!isKnownFlag("--help"));
+    try std.testing.expect(!isKnownFlag("--version"));
+    try std.testing.expect(!isKnownFlag("-h"));
+    try std.testing.expect(isCommand("explore") and isCommand("evidence") and isCommand("version"));
+    try std.testing.expect(!isCommand("explor") and !isCommand("--version"));
+}
+
+test "the nearest spelling is the command's own, and two equally near answer nothing (#705)" {
+    var cbuf: [max_names][]const u8 = undefined;
+    const cmds = synopsisCommands(&cbuf);
+    try std.testing.expectEqualStrings("explore", nearest("explor", cmds).?);
+    try std.testing.expectEqualStrings("version", nearest("versoin", cmds).?);
+    try std.testing.expect(nearest("init", cmds) == null);
+    try std.testing.expectEqualStrings("--state", nearestFlagOf("explore", "--stat").?);
+    try std.testing.expectEqualStrings("--shim", nearestFlagOf("demo", "--sim").?);
+    try std.testing.expectEqualStrings("--observe", nearestFlagOf("explore", "--obs").?);
+    // Near a flag only another command takes: explore refuses `--twice` and `--state-under`,
+    // preflight refuses `--json`, so none of them is offered.
+    try std.testing.expect(nearestFlagOf("explore", "--twic") == null);
+    try std.testing.expect(nearestFlagOf("explore", "--state-undr") == null);
+    try std.testing.expect(nearestFlagOf("preflight", "--jsn") == null);
+    // A prefix of two flags (`--oracle`, `--oracle-fs-usage`) is no single answer — and not
+    // `--work`, two edits away, which a two-edit reach on a short word used to offer.
+    try std.testing.expect(nearestFlagOf("explore", "--ora") == null);
+    // The start of several names falls to the edit distance among them: `--wor` starts both
+    // `--work` and `--world-timeout` and is one edit from `--work`; `--recover` starts both
+    // recovery flags and is one from `--recovery`.
+    try std.testing.expectEqualStrings("--work", nearestFlagOf("explore", "--wor").?);
+    try std.testing.expectEqualStrings("--world-timeout", nearestFlagOf("explore", "--worl").?);
+    try std.testing.expectEqualStrings("--recovery", nearestFlagOf("explore", "--recover").?);
+    try std.testing.expectEqualStrings("--oracle", nearestFlagOf("explore", "--oracl").?);
+    // One edit is the reach for a short stem: `--jsn` is one from `--json`, which explore takes.
+    try std.testing.expectEqualStrings("--json", nearestFlagOf("explore", "--jsn").?);
+    try std.testing.expect(nearestFlagOf("explore", "--jxsn") == null);
+    // Two names at the same distance: neither is offered.
+    try std.testing.expect(nearest("ab", &.{ "ac", "ad" }) == null);
+    try std.testing.expectEqual(@as(?usize, 3), editDistance("kitten", "sitting"));
+}
+
+test "a synopsis line breaks between bracket groups and keeps a flag with its value (#705)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const units = try synopsisUnits(arena_state.allocator(), "sideeye x --state <dir> [--oracle <strace> | --oracle-fs-usage] [--twice]");
+    try std.testing.expectEqual(@as(usize, 5), units.len);
+    try std.testing.expectEqualStrings("--state <dir>", units[2]);
+    try std.testing.expectEqualStrings("[--oracle <strace> | --oracle-fs-usage]", units[3]);
+    var fw: FlagWords = .{ .s = units[3] };
+    try std.testing.expectEqualStrings("--oracle", fw.next().?);
+    try std.testing.expectEqualStrings("--oracle-fs-usage", fw.next().?);
+    try std.testing.expect(fw.next() == null);
+}
+
 /// Split a command line on whitespace.
 ///
 /// The first version of this ran commands through `/bin/sh -c`, which was wrong in a
@@ -392,20 +1011,36 @@ pub fn usage() void {
 /// is more plausibly a unit mistake than an intent, and the bound is what keeps the
 /// millisecond conversion trivially inside u64.
 fn parseWorldTimeout(s: []const u8) u32 {
-    const msg = "--world-timeout must be a whole number of seconds, 1..86400";
-    if (s.len == 0 or s.len > 5) setupError(.define_invalid, msg);
+    if (s.len == 0 or s.len > 5) badValue(null, "--world-timeout must be a whole number of seconds, 1..86400", s, null);
     var v: u32 = 0;
     for (s) |ch| {
-        if (ch < '0' or ch > '9') setupError(.define_invalid, msg);
+        if (ch < '0' or ch > '9') badValue(null, "--world-timeout must be a whole number of seconds, 1..86400", s, null);
         v = v * 10 + (ch - '0');
     }
-    if (v == 0 or v > 86400) setupError(.define_invalid, msg);
+    if (v == 0 or v > 86400) badValue(null, "--world-timeout must be a whole number of seconds, 1..86400", s, null);
     return v;
+}
+
+/// The allocator a refusal raised while parsing builds its sentence in: the arena `main()`
+/// places before `parse` runs, or the page allocator for a caller that placed none.
+fn argArena() std.mem.Allocator {
+    return refuse.json_arena orelse std.heap.page_allocator;
+}
+
+/// A flag's value refused, in one shape for every flag (#705 — "names what was typed"
+/// covers a value as much as a flag): why, then the value as typed, then the nearest
+/// accepted value when there is one. `flag` prefixes a `why` that does not name it — the
+/// config parser's sentences, shared with the toml, do not.
+fn badValue(flag: ?[]const u8, why: []const u8, value: []const u8, near: ?[]const u8) noreturn {
+    const arena = argArena();
+    refuse.setupErrorFmt(arena, .define_invalid, "{s}{s}{s}; got '{s}'{s}", .{
+        flag orelse "", if (flag != null) ": " else "", why, defang.textShown(arena, value), didYouMean(arena, near),
+    });
 }
 
 /// `--apparatus ENTRY`: the same grammar the toml key uses, refused with the same words.
 fn appendApparatusFlag(args: *Args, v: []const u8) void {
-    if (config.apparatusFault(v)) |m| setupError(.define_invalid, m);
+    if (config.apparatusFault(v)) |m| badValue("--apparatus", m, v, null);
     const n = args.apparatus.len;
     if (n == max_apparatus) setupError(.define_invalid, "--apparatus: more than 32 entries; a define this large belongs in a toml");
     apparatus_flag_buf[n] = v;
@@ -417,7 +1052,7 @@ fn appendApparatusFlag(args: *Args, v: []const u8) void {
 fn appendScratchFlag(args: *Args, v: []const u8) void {
     const norm = switch (config.parseScratchEntry(v)) {
         .ok => |p| p,
-        .bad => |m| setupError(.define_invalid, m),
+        .bad => |m| badValue("--scratch", m, v, null),
     };
     const n = args.scratch.len;
     if (n == max_scratch) setupError(.define_invalid, "--scratch: more than 32 entries; a define this large belongs in a toml");
@@ -496,7 +1131,15 @@ pub fn parse(argv: []const []const u8) Parsed {
     } else if (argv.len >= 3 and std.mem.eql(u8, argv[1], "replay") and argv[2].len > 0 and argv[2][0] != '-') {
         mode = .replay;
         case_arg = argv[2];
+    } else if (argv.len >= 2 and std.mem.eql(u8, argv[1], "replay")) {
+        // A case's path is replay's first argument. This used to fall into the branch below
+        // and print the whole help (#705); the refusal names what stood where the path goes.
+        const arena = argArena();
+        if (argv.len < 3) refuse.setupErrorFmt(arena, .define_invalid, "replay takes the saved case's path first: sideeye replay <case.json> [options] (sideeye help replay)", .{});
+        refuse.setupErrorFmt(arena, .define_invalid, "replay takes the saved case's path first; got '{s}' (sideeye help replay)", .{defang.textShown(arena, argv[2])});
     } else {
+        // Not reached from `main()`, whose `answerEntry` refuses a word that names no command
+        // before this runs; kept so a new caller cannot fall through to a mode it never chose.
         usage();
         std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
     }
@@ -549,11 +1192,22 @@ pub fn parse(argv: []const []const u8) Parsed {
             i += 1;
             continue;
         }
-        if (i + 1 >= argv.len) setupError(.define_invalid, "an option is missing its value");
+        // Asked before the arity guard (#705): an unknown flag typed last used to reach that
+        // guard and be told it was missing its value. Every flag some synopsis line names
+        // passes, whichever command it belongs to, so a known flag the mode refuses by name
+        // still reaches that refusal below, and `spike/acceptance.sh`'s arity probe — each
+        // parser flag placed last under `explore` — still meets the guard.
+        if (!isKnownFlag(argv[i])) refuseFlagPosition(mode, argv[i]);
+        // The guard's opening words are what that probe reads; the flag is named after them.
+        if (i + 1 >= argv.len) refuse.setupErrorFmt(argArena(), .define_invalid, "an option is missing its value: {s} takes one", .{argv[i]});
         const v = argv[i + 1];
         if (std.mem.eql(u8, argv[i], "--observe")) {
-            args.observe = contract.ObserveMode.parse(v) orelse
-                setupError(.define_invalid, "--observe takes `wrappers` (the default), `syscalls` or `supervised`");
+            args.observe = contract.ObserveMode.parse(v) orelse {
+                // The modes the near value is chosen from are the enum's own names.
+                var modes: [@typeInfo(contract.ObserveMode).@"enum".fields.len][]const u8 = undefined;
+                inline for (@typeInfo(contract.ObserveMode).@"enum".fields, 0..) |f, k| modes[k] = f.name;
+                badValue(null, "--observe takes `wrappers` (the default), `syscalls` or `supervised`", v, nearest(v, &modes));
+            };
         } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).
@@ -568,15 +1222,15 @@ pub fn parse(argv: []const []const u8) Parsed {
             // The value travels into the replay line this run prints, so it is held to the
             // byte discipline a toml value is (#26): a control byte could forge that line,
             // and a backslash would promise an escape nothing processes.
-            if (config.badBytes(v)) |msg| setupError(.define_invalid, msg);
-            if (v.len == 0) setupError(.define_invalid, "a recovery command is empty");
+            if (config.badBytes(v)) |msg| badValue(argv[i], msg, v, null);
+            if (v.len == 0) badValue(argv[i], "a recovery command is empty", v, null);
             if (argv[i].len == "--recovery".len) args.recovery = v else args.recovery_check = v;
         }
         // Taken as spelled, unlike the toml's, which resolves against the file's own
         // directory: a flag is typed at a cwd, so a relative one already means what the
         // caller meant. It is absolutized with the rest of them further down.
         else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--scratch")) appendScratchFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--expect-status")) {
-            args.expect_status = config.parseExpectStatus(v) orelse setupError(.define_invalid, "--expect-status must be an integer in 0..255");
+            args.expect_status = config.parseExpectStatus(v) orelse badValue(null, "--expect-status must be an integer in 0..255", v, null);
             // Mirrored immediately: a refusal between here and the canonical binding
             // below must not report the declaration as 0 (R1 finding).
             report.expected_status_val = args.expect_status.?;
@@ -617,7 +1271,7 @@ pub fn parse(argv: []const []const u8) Parsed {
             // an exit that never reaches a writer leaves *no* report rather than a stale
             // one: absence is unambiguous, a previous verdict is not.
             removeFile(v);
-        } else setupError(.define_invalid, "unknown option");
+        } else refuseFlagPosition(mode, argv[i]); // a synopsis flag no branch above reads: #273 is red for it first
         i += 2;
     }
 

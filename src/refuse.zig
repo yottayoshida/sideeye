@@ -19,10 +19,11 @@
 //! `main.zig` sets each once.
 //!
 //! Not here: the PASS and FAIL exits, `preflightReport`'s two, and the argv refusals that
-//! exit 3 before any report exists — three in `main()` that write one line to stderr
-//! (`mcp`, `help`, `version` given arguments) and the unknown-mode exit in `cli.parse` that
-//! prints the usage banner to stdout — none of the four prints a verdict line; they are the
-//! orchestrator's and the parser's.
+//! exit 3 before any report exists — the one-line stderr refusals of a word that names no
+//! command and of `help`, `version`, `mcp` and `evidence` given what they do not take
+//! (`cli.answerEntry` and `main()`, #705), and a bare `sideeye`, which prints the commands
+//! to stdout — none of which prints a verdict line; they are the orchestrator's and the
+//! parser's.
 //!
 //! Third seam of #572 (ADR 0062), first half. Bodies moved from `main.zig` byte for byte on
 //! 2026-09-13, with `pub` added where `main.zig` still calls them — except that a fact or
