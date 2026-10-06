@@ -20,7 +20,7 @@
 # The size bound is the other half. The page had grown to 33 KB by writing each
 # decision's record into it — issue numbers, ADR numbers, the reason behind each refusal —
 # and those have homes of their own (DESIGN.md, docs/, docs/adr/). The bound is a sum of what
-# the page must carry plus a fixed slack, not a target picked first: 8475 + 590 = 9065.
+# the page must carry plus a fixed slack, not a target picked first: 8556 + 590 = 9146.
 # The sum was corrected twice, upward, during the change that introduced this check, and both
 # corrections were elements it had never counted rather than drafts that would not fit. First
 # the 382-byte clause naming the one exception to "never a silent PASS", which an owner ruling
@@ -37,6 +37,9 @@
 # the `--oracle` bullet gave up the clause naming strace; the two bytes of slack the page had are
 # left as they were. Not as a `# macOS` at the end of the line: zsh, macOS's shell, does not read
 # `#` as a comment when typed, so a pasted line would hand `#` to sideeye as an argument.
+# A fifth (#700, 2026-10-06): the toml example's `cwd` line, 81 bytes. Without it the example
+# ran its commands in Sideeye's own directory, so a define copied from it and given a relative
+# argument meant one file from the toml's directory and another from anywhere else.
 #
 # Sunset: if this has not failed once by 2026-12-04, delete it and its CI step.
 set -u
@@ -55,7 +58,7 @@ has() { grep -qF -e "$1" "$R"; }
 
 bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 9065 ]; then ok "size: $bytes bytes, at most 9065"; else bad "size: $bytes bytes, over 9065"; fi
+if [ "$bytes" -le 9146 ]; then ok "size: $bytes bytes, at most 9146"; else bad "size: $bytes bytes, over 9146"; fi
 if [ "$lines" -le 120 ]; then ok "length: $lines lines, at most 120"; else bad "length: $lines lines, over 120"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi

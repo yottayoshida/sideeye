@@ -535,6 +535,147 @@ pub fn unstartable(arena: std.mem.Allocator, role: []const u8, argv: []const []c
     } catch "a define command cannot be started";
 }
 
+/// The toml's own directory, resolved, set once by `main.zig` when `--config` named a regular
+/// file — null for flags, for a case, and for a config read from a pipe (`/dev/stdin`, a process
+/// substitution), where "add cwd = \".\"" would point at `/dev`. Read by `cwdObservation`.
+pub var toml_dir: ?[]const u8 = null;
+
+/// What was observed about where a failed command ran (#700, ADR 0093), or null.
+///
+/// A toml resolves its own paths and argv[0] against its directory (ADR 0007), and every other
+/// argument against the directory the command runs in — Sideeye's own when no `cwd` is declared.
+/// So when a command read from a toml failed, this looks for the one fact that says the two
+/// came apart: an argument of THAT command (not of the define's others) that names something
+/// present under the toml's directory and absent under the one the command ran in. Found, it is
+/// returned as a clause for the detail; the caller's `next_step` then names the line to add
+/// (`cwdStep`). Not found, nothing is said — no guess at a cause (ADR 0086 declined that).
+///
+/// Every element after argv[0] is tried, and the value of an `--opt=value`; a name that starts
+/// with `/` is not relative and is skipped. A name is tried, then each directory above it
+/// (`./state/config.json`, then `./state`), because the commonest relative argument names a file
+/// the command is about to create — under no directory yet — inside one that is under the
+/// toml's and not under the other (the case #700 was measured on). The walk stops at the first
+/// name present where the command ran: below it, the two directories no longer differ. Both
+/// directories are the resolved spellings the run already holds (`toml_dir`,
+/// `report.command_cwd`), so equal directories say nothing.
+pub fn cwdObservation(arena: std.mem.Allocator, argv: []const []const u8) ?[]const u8 {
+    const dir = toml_dir orelse return null;
+    if (report.command_cwd_declared) return null;
+    const ran = report.command_cwd orelse return null;
+    if (std.mem.eql(u8, dir, ran) or argv.len < 2) return null;
+    for (argv[1..]) |word| {
+        const v = if (word.len > 1 and word[0] == '-')
+            (if (std.mem.indexOfScalar(u8, word, '=')) |eq| word[eq + 1 ..] else continue)
+        else
+            word;
+        if (v.len == 0 or v[0] == '/') continue;
+        var name: []const u8 = v;
+        while (true) {
+            if (existsUnder(arena, ran, name)) break;
+            if (existsUnder(arena, dir, name))
+                return std.fmt.allocPrint(arena, "{s} is under the toml's directory {s} and not under {s}, where the commands ran", .{ textShown(arena, name), textShown(arena, dir), textShown(arena, ran) }) catch null;
+            const up = std.fs.path.dirname(name) orelse break;
+            if (up.len == 0 or std.mem.eql(u8, up, ".") or std.mem.eql(u8, up, "..")) break;
+            name = up;
+        }
+    }
+    return null;
+}
+
+fn existsUnder(arena: std.mem.Allocator, dir: []const u8, rel: []const u8) bool {
+    const p = std.fs.path.join(arena, &.{ dir, rel }) catch return false;
+    const z = arena.dupeZ(u8, p) catch return false;
+    return posix.access(z.ptr, posix.F_OK) == 0;
+}
+
+/// The step for a refusal `cwdObservation` found something for: `declare_cwd` where the site
+/// would have said `fix_define`, and the site's own step everywhere else — above all
+/// `syscalls_may_have_killed`, whose sentence says to check before changing the define.
+pub fn cwdStep(observation: ?[]const u8, step: contract.NextStep) contract.NextStep {
+    return if (observation != null and step == .fix_define) .declare_cwd else step;
+}
+
+/// `detail`, with the observation as its last clause when there is one — and the line to add
+/// beside it whenever no `next_step` will name it: a SETUP ERROR has none (`step` null), and
+/// under `--observe syscalls` the step stays `syscalls_may_have_killed`, which says to check
+/// before changing the define (#700 review). Where the step is `declare_cwd`, the detail keeps
+/// the observation and the step the action, ADR 0030's division.
+pub fn withObservation(arena: std.mem.Allocator, detail: []const u8, observation: ?[]const u8, step: ?contract.NextStep) []const u8 {
+    const o = observation orelse return detail;
+    if (step) |st| if (st == .declare_cwd) return std.fmt.allocPrint(arena, "{s}; {s}", .{ detail, o }) catch detail;
+    return std.fmt.allocPrint(arena, "{s}; {s}: add cwd = \".\" under [define] to run the commands from the toml's directory", .{ detail, o }) catch detail;
+}
+
+test "cwdObservation names an argument found only under the toml's directory (#700)" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    var tb: [128]u8 = undefined;
+    var rb: [128]u8 = undefined;
+    const toml_z = try std.fmt.bufPrintZ(&tb, "/tmp/sideeye-cwdobs-toml-{d}", .{posix.getpid()});
+    const ran_z = try std.fmt.bufPrintZ(&rb, "/tmp/sideeye-cwdobs-ran-{d}", .{posix.getpid()});
+    _ = posix.mkdir(toml_z.ptr, 0o755);
+    _ = posix.mkdir(ran_z.ptr, 0o755);
+    var sb: [192]u8 = undefined;
+    var bb: [192]u8 = undefined;
+    var cb: [192]u8 = undefined;
+    const seed = try std.fmt.bufPrintZ(&sb, "{s}/seed", .{toml_z});
+    const both_t = try std.fmt.bufPrintZ(&bb, "{s}/both", .{toml_z});
+    const both_r = try std.fmt.bufPrintZ(&cb, "{s}/both", .{ran_z});
+    for ([_][:0]const u8{ seed, both_t, both_r }) |p| {
+        const fd = posix.open(p.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
+        if (fd < 0) return error.SkipZigTest;
+        _ = posix.close(fd);
+    }
+    defer {
+        for ([_][:0]const u8{ seed, both_t, both_r }) |p| _ = posix.unlink(p.ptr);
+        _ = posix.rmdir(toml_z.ptr);
+        _ = posix.rmdir(ran_z.ptr);
+    }
+    const saved = .{ toml_dir, report.command_cwd, report.command_cwd_declared };
+    defer {
+        toml_dir = saved[0];
+        report.command_cwd = saved[1];
+        report.command_cwd_declared = saved[2];
+    }
+    toml_dir = toml_z;
+    report.command_cwd = ran_z;
+    report.command_cwd_declared = false;
+
+    // A file still to be created, inside a directory that is under the toml's only: the
+    // directory is what is named (the shape #700 was measured on).
+    var db: [192]u8 = undefined;
+    const state_t = try std.fmt.bufPrintZ(&db, "{s}/state", .{toml_z});
+    _ = posix.mkdir(state_t.ptr, 0o755);
+    defer _ = posix.rmdir(state_t.ptr);
+    const nested = cwdObservation(a, &.{ "./cfgset", "./state/config.json", "theme" }) orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.startsWith(u8, nested, "./state is under the toml's directory "));
+    // Found: `./seed` and `--in=seed` are under the toml's directory only.
+    const o = cwdObservation(a, &.{ "/bin/cp", "./seed", "out" }) orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.startsWith(u8, o, "./seed is under the toml's directory "));
+    try std.testing.expect(cwdObservation(a, &.{ "tool", "--in=seed" }) != null);
+    try std.testing.expectEqual(contract.NextStep.declare_cwd, cwdStep(o, .fix_define));
+    try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, cwdStep(o, .syscalls_may_have_killed));
+    // Not found: present in both, present in neither, absolute, a flag without a value, argv[0].
+    try std.testing.expect(cwdObservation(a, &.{ "tool", "both", "nothing", "/abs/seed", "-v" }) == null);
+    try std.testing.expect(cwdObservation(a, &.{"seed"}) == null);
+    try std.testing.expectEqual(contract.NextStep.fix_define, cwdStep(null, .fix_define));
+    // The clause carries the line to add unless `declare_cwd` is the step that names it.
+    try std.testing.expect(std.mem.indexOf(u8, withObservation(a, "d", o, .declare_cwd), "add cwd") == null);
+    try std.testing.expect(std.mem.indexOf(u8, withObservation(a, "d", o, .syscalls_may_have_killed), "add cwd = \".\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, withObservation(a, "d", o, null), "add cwd = \".\"") != null);
+    try std.testing.expectEqualStrings("d", withObservation(a, "d", null, null));
+    // Not asked at all: a declared cwd, the same directory, no toml.
+    report.command_cwd_declared = true;
+    try std.testing.expect(cwdObservation(a, &.{ "tool", "./seed" }) == null);
+    report.command_cwd_declared = false;
+    report.command_cwd = toml_z;
+    try std.testing.expect(cwdObservation(a, &.{ "tool", "./seed" }) == null);
+    report.command_cwd = ran_z;
+    toml_dir = null;
+    try std.testing.expect(cwdObservation(a, &.{ "tool", "./seed" }) == null);
+}
+
 /// A setup error is a verdict too, and it has to reach the JSON.
 ///
 /// It did not, and the file was neither written nor removed: a caller running twice into
@@ -877,14 +1018,19 @@ fn hasOneSidedEntry(plan: engine.L0Plan, pre: engine.Snapshot, post: engine.Snap
 /// what that leaves open: an operation that rewrote a file with the bytes it already held
 /// through a raw syscall changes no snapshot and leaves no record, so "nothing" is the shim's
 /// word alone.
-pub fn refuseNoCrashPoint(arena: std.mem.Allocator, has_oracle: bool) noreturn {
+pub fn refuseNoCrashPoint(arena: std.mem.Allocator, has_oracle: bool, observation: ?[]const u8) noreturn {
     const who = boundary.recorder();
     const detail = if (has_oracle)
         "the operation performed no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail"
     else
         std.fmt.allocPrint(arena, "{s} recorded no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail; no oracle ran, so an operation {s} did not see is not ruled out", .{ who, who }) catch
             "no state-changing operation was recorded inside the state directory, so there was no crash point and no world in which anything could fail; no oracle ran, so an operation that was not seen is not ruled out";
-    unknown(.nothing_could_fail, detail, .nothing_in_state);
+    // #700 (ADR 0093): an operation whose relative argument was read under the wrong directory
+    // can find nothing to do there and exit 0 — or write outside the state — and record nothing.
+    // Where the operation's arguments show that (`cwdObservation`), the step names the line to
+    // add instead of saying the operation changed nothing.
+    const step: contract.NextStep = if (observation != null) .declare_cwd else .nothing_in_state;
+    unknown(.nothing_could_fail, withObservation(arena, detail, observation, step), step);
 }
 
 /// An exploration with crash points in which still nothing could have failed (#683, ADR 0091).

@@ -1481,6 +1481,15 @@ pub const NextStep = enum {
     /// the state it leaves. It does not branch on whether the subject died of `SIGSYS`: that one is
     /// detectable, a child's death is not, and one sentence covers both.
     syscalls_may_have_killed,
+    /// Where a site would say `fix_define`, for a define read from a toml that declares no `cwd`,
+    /// whose commands therefore ran in Sideeye's own directory rather than the toml's — and only
+    /// when the command that failed carries an argument — or a directory above one — the engine
+    /// found under the toml's directory and not under the one it ran in (#700, ADR 0093). The
+    /// detail names that path and both directories; this names the line to add. An observation, not a guess
+    /// about the cause: ADR 0086 declined the guess and ADR 0093 records why this is not one.
+    /// Never over `syscalls_may_have_killed`, whose sentence says to check before changing the
+    /// define at all.
+    declare_cwd,
     /// Nothing the operator changes fixes this; it is Sideeye's.
     sideeye_defect,
     /// `nothing_could_fail` with no crash point (#682, ADR 0091): the operation changed nothing
@@ -1526,6 +1535,7 @@ pub const NextStep = enum {
             .observe_syscalls => "Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.",
             .observe_supervised => "Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.",
             .syscalls_may_have_killed => "Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.",
+            .declare_cwd => "Add cwd = \".\" under [define]: the define declares none, so its commands ran in Sideeye's own directory rather than the toml's, and the detail names an argument, or a directory above one, that exists only under the toml's directory.",
             .sideeye_defect => "Nothing in the define fixes this: it is a defect in Sideeye. File it with the report attached.",
             .nothing_in_state => "The operation changed nothing in the state directory that the verdict judges (a change of ownership or permissions alone lands here too). If it should have, find where its store resolved: a define that declares no cwd runs its commands in Sideeye's own directory, and a relative argument resolves there — declare cwd, or point state at the store (docs/cli.md). An operation that is meant to change nothing has no crash point to test.",
             .declare_check_or_marker => "The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.",
