@@ -9254,6 +9254,12 @@ echo "=========== check 2ad: two witnesses that disagree are both reported (#405
 # 2026-08-30). The verdict and the count are unchanged by the fix; only the account moved.
 vf_fails=0
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+# The toy rewrites a.txt; it is there, empty, before the run (ADR 0091). Created by the
+# operation instead, it would be a path only the post snapshot holds, which the built-in
+# invariant does not judge — no world could fail, and the run is nothing_could_fail before
+# the account this leg reads is ever printed. Empty, the world between the truncating open
+# and the write holds what it held before, so the verdict stays the PASS the leg reads.
+: > /tmp/acc/state/a.txt
 # The compiler the rest of the suite's toys use, with the same fallback, and its
 # stderr kept: swallowing it left "could not build" as the only thing a broken build
 # could say (review).
