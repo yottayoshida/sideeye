@@ -104,6 +104,10 @@ operation = ["mytool", "commit", "-m", "a message with spaces"]
   `explore --config` — whose falsification gate and refusal set answer
   everything preflight would have, strictly more. Documented in the README and
   the CI quickstart beside the array form itself.
+  *(Amended by ADR 0094, 2026-10-06, #704: `sideeye preflight --config` reads a
+  toml as explore reads it, in either spelling, and the flags' preflight refuses
+  `--check`, `--marker` and `--recovery` as before. The consequence above held
+  until then; it no longer does.)*
 - The config parser gains one value shape, and a named line-numbered refusal
   for every way of leaving it, pinned by unit tests and the acceptance suite;
   the DESIGN §12 ledger paragraph records this noticing beside the two before

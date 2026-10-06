@@ -5610,6 +5610,240 @@ else
 fi
 
 echo ""
+echo "=========== check 6c: preflight reads a sideeye.toml as explore reads it (#704, ADR 0094) ==========="
+# The property docs/cli.md states: every define mistake on its list is refused by `preflight
+# --config` before any crash world, by the same detector and in the same words `explore
+# --config` uses. Each row below runs one toml through both and compares the exit code, the
+# first line, and the detail line beneath an UNKNOWN — not a reason name alone, which a
+# constant could satisfy. Explore gets the oracle preflight gets, so its zero-crash-point
+# answer is preflight's rather than the completeness gate that comes first without one.
+# No toml's check may start under preflight: the checker appends to a file each time it
+# starts, and that file must not exist after a preflight run.
+rm -rf /tmp/acc-704 && mkdir -p /tmp/acc-704/T /tmp/acc-704/from
+echo seed > /tmp/acc-704/T/seed
+echo x > /tmp/acc-704/T/afile
+printf '#!/bin/sh\necho ran >> /tmp/acc-704/check-ran\nexec %s/spike/check.sh\n' "$ROOT" > /tmp/acc-704/T/check.sh
+chmod 755 /tmp/acc-704/T/check.sh
+TOY=$OUT/toy-bug
+export TOY
+c704() {   # c704 <name> <lines of [define]> [extra sections] — writes T/<name>.toml
+    printf '[world]\nstate = "./state-%s"\n\n[define]\n%s\n%s' "$1" "$2" "${3:-}" > /tmp/acc-704/T/$1.toml
+}
+p704() {   # p704 <name> [from] — preflight on T/<name>.toml; sets op704, prc704, ran704
+    rm -rf /tmp/acc-704/T/state-$1 /tmp/acc-704/check-ran
+    op704=$(cd "${2:-/tmp/acc-704/T}" && "$SIDEEYE" preflight --config /tmp/acc-704/T/$1.toml \
+        --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+    prc704=$?
+    ran704=no; [ -e /tmp/acc-704/check-ran ] && ran704=yes
+}
+e704() {   # e704 <name> [from] — explore on the same toml; sets oe704, erc704
+    rm -rf /tmp/acc-704/T/state-$1
+    oe704=$(cd "${2:-/tmp/acc-704/T}" && "$SIDEEYE" explore --config /tmp/acc-704/T/$1.toml \
+        --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+    erc704=$?
+}
+same704() {   # same704 <name> <first-line prefix> [from] — preflight and explore refuse alike
+    p704 "$1" "${3:-}"; e704 "$1" "${3:-}"
+    # The verdict line is looked for anywhere, as #700's legs do: a failing command's own
+    # stderr can come first. Compared from there: that line and the one under it.
+    pl=$(printf '%s\n' "$op704" | grep -A1 -m1 -- "^$2")
+    el=$(printf '%s\n' "$oe704" | grep -A1 -m1 -- "^$2")
+    if [ -n "$pl" ] && [ "$pl" = "$el" ] && [ "$prc704" = "$erc704" ] && [ "$ran704" = no ]; then
+        echo "ok   #704: $1 — preflight --config refuses as explore --config does, the check never started"
+        return
+    fi
+    echo "FAIL #704: $1 (preflight exit $prc704, explore exit $erc704, check started: $ran704; wanted a line [$2...] in both, alike)"
+    printf '%s\n' "$op704" | sed 's/^/     p| /' | head -4
+    printf '%s\n' "$oe704" | sed 's/^/     e| /' | head -4
+    fails=$((fails + 1))
+}
+d704='cwd = "."'
+s704="setup = \"$OUT/toy-bug init\""
+
+# Accepted, string and argv forms: the report names what the toml declared, and the next
+# command names the toml. A preflight that kept refusing --config, or that took it and
+# printed the flags' hint, fails here.
+c704 good "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./check.sh\"
+marker = \"COMMITTED\""
+TOY_MARKER=1
+export TOY_MARKER
+p704 good
+ok=1
+[ "$prc704" = "0" ] || ok=0
+printf '%s\n' "$op704" | grep -q "^PREFLIGHT  recording accepted" || ok=0
+printf '%s\n' "$op704" | grep -qxF "marker       observed in the recording run's output; preflight explores no crash world" || ok=0
+printf '%s\n' "$op704" | grep -qxF "checker      declared, not run: not refused as a command that cannot be" || ok=0
+printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/good.toml' --shim $SHIM --oracle /usr/bin/strace" || ok=0
+[ "$ran704" = no ] || ok=0
+e704 good
+unset TOY_MARKER
+case "$erc704" in 0|1) ;; *) ok=0 ;; esac
+printf '%s\n' "$oe704" | grep -q "explored worlds" || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   #704: a toml with a check and a marker is accepted by preflight, its check not run, and the hint names the toml explore then explores"
+else
+    echo "FAIL #704: accepted leg (preflight exit $prc704, check started: $ran704; explore exit $erc704)"
+    printf '%s\n' "$op704" | sed 's/^/     p| /' | head -14
+    fails=$((fails + 1))
+fi
+c704 argv "$d704
+$s704
+operation = [\"$OUT/toy-bug\", \"rotate\"]"
+p704 argv
+if [ "$prc704" = "0" ] && printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/argv.toml' --shim $SHIM --oracle /usr/bin/strace"; then
+    echo "ok   #704: an argv-form operation is accepted by preflight --config and needs no spelling in the hint"
+else
+    echo "FAIL #704: argv leg (exit $prc704)"
+    printf '%s\n' "$op704" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# One mistake per toml, each refused alike by both and before any world.
+c704 badkey "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+colour = \"blue\""
+same704 badkey "SETUP ERROR  /tmp/acc-704/T/badkey.toml line"
+c704 cwd "cwd = \"./no-such-dir\"
+operation = \"$OUT/toy-bug rotate\""
+same704 cwd "SETUP ERROR  "
+c704 apparatus "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+apparatus = [\"env:ACC_NO_SUCH_704\"]"
+same704 apparatus "SETUP ERROR  apparatus env:ACC_NO_SUCH_704"
+c704 scratch "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+scratch = [\"/abs/path\"]"
+same704 scratch "SETUP ERROR  /tmp/acc-704/T/scratch.toml line"
+printf '[world]\nstate = "./afile"\n\n[define]\n%s\noperation = "%s rotate"\n' "$d704" "$OUT/toy-bug" > /tmp/acc-704/T/statefile.toml
+same704 statefile "SETUP ERROR  --state"
+c704 nocheck "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./no-such-check.sh\""
+same704 nocheck "SETUP ERROR  check:"
+# A check with no words in it passes the parser and has no first word to judge; explore refuses
+# it ahead of the falsification, with a crash point, whether or not the state is empty.
+c704 blank "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \" \""
+same704 blank "SETUP ERROR  --check is empty"
+c704 blankempty "$d704
+operation = \"$OUT/toy-bug rotate\"
+check = \" \""
+same704 blankempty "SETUP ERROR  --check is empty"
+c704 marker "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+marker = \"NEVER-PRINTED\""
+same704 marker "UNKNOWN  marker_never_observed"
+c704 zero "$d704
+$s704
+operation = \"$OUT/toy-bug doctor\"
+check = \"./check.sh\""
+same704 zero "UNKNOWN  nothing_could_fail"
+# A check, an empty state and no crash point: explore answers the crash point first and never
+# reaches the checker, so preflight must too — `nothing_could_fail`, not `checker_not_falsified`.
+c704 zeroempty "$d704
+operation = \"$OUT/toy-bug doctor\"
+check = \"./check.sh\""
+same704 zeroempty "UNKNOWN  nothing_could_fail"
+# The one detector this change adds to preflight: a check, an empty state, and a crash point.
+c704 empty "$d704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./check.sh\""
+same704 empty "UNKNOWN  checker_not_falsified"
+# No cwd, run from elsewhere, an argument only under the toml's directory (#700).
+c704 relarg "$s704
+operation = \"/bin/cat ./seed\""
+same704 relarg "UNKNOWN  recording_run_failed" /tmp/acc-704/from
+printf '%s\n' "$op704" | grep -q '^next  *Add cwd = "\."' ||
+    { echo "FAIL #704: relarg: preflight's step is not the one naming cwd"; fails=$((fails + 1)); }
+
+# What this change decided. A recovery is never started (ADR 0072) and the report says so; a
+# define-surface flag beside --config gets explore's refusal, not one about preflight; a toml
+# read from a pipe gets no hint naming the pipe; --twice names the toml's state.
+c704 recovery "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./check.sh\"" "
+[recovery]
+command = \"/no/such/recovery\"
+check = \"./check.sh\"
+"
+p704 recovery
+if [ "$prc704" = "0" ] && [ "$ran704" = no ] && printf '%s\n' "$op704" | grep -qxF "recovery     declared; preflight runs no recovery"; then
+    echo "ok   #704: a recovery that does not exist is not run by preflight, which says it is declared"
+else
+    echo "FAIL #704: recovery leg (exit $prc704, check started: $ran704)"
+    printf '%s\n' "$op704" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+o=$("$SIDEEYE" preflight --config /tmp/acc-704/T/good.toml --check /bin/true 2>&1 | head -1)
+case "$o" in
+    "SETUP ERROR  --config and the define-surface flags"*"are mutually exclusive"*)
+        echo "ok   #704: a define-surface flag beside --config is refused as explore refuses it" ;;
+    *)  echo "FAIL #704: --config with --check: $o"; fails=$((fails + 1)) ;;
+esac
+sed "s|^cwd = .*||; s|\./|/tmp/acc-704/T/|g" /tmp/acc-704/T/argv.toml > /tmp/acc-704/abs.toml
+# The hint names the toml in the directory its relative paths were resolved against: a toml
+# that is a symlink keeps its own side, where the target's side would be another define. A toml
+# read from /dev/stdin — through a pipe, or redirected from a file, whose directory is still
+# /dev — cannot be named for a pasted command to read, and gets the line that says to save it.
+mkdir -p /tmp/acc-704/T/link /tmp/acc-704/T/real
+cp /tmp/acc-704/T/argv.toml /tmp/acc-704/T/real/real.toml
+ln -sf ../real/real.toml /tmp/acc-704/T/link/sideeye.toml
+rm -rf /tmp/acc-704/T/link/state-argv
+o=$("$SIDEEYE" preflight --config /tmp/acc-704/T/link/sideeye.toml --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/link/sideeye.toml' --shim $SHIM --oracle /usr/bin/strace"; then
+    echo "ok   #704: a toml that is a symlink is named on its own side, whose directory its paths resolved against"
+else
+    echo "FAIL #704: symlink leg (exit $rc)"
+    printf '%s\n' "$o" | sed 's/^/     | /' | tail -4
+    fails=$((fails + 1))
+fi
+# A toml that is itself a link to /dev/stdin, redirected from a file, resolves on Linux all the
+# way to that file through /proc/self/fd/0; the hint must still not name the link.
+ln -sf /dev/stdin /tmp/acc-704/stdin-link.toml
+for how in pipe redirect link; do
+    rm -rf /tmp/acc-704/T/state-argv
+    from=/dev/stdin
+    if [ "$how" = pipe ]; then
+        o=$(cat /tmp/acc-704/abs.toml | "$SIDEEYE" preflight --config /dev/stdin --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+    elif [ "$how" = redirect ]; then
+        o=$("$SIDEEYE" preflight --config /dev/stdin --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace < /tmp/acc-704/abs.toml 2>&1)
+    else
+        from=/tmp/acc-704/stdin-link.toml
+        o=$("$SIDEEYE" preflight --config "$from" --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace < /tmp/acc-704/abs.toml 2>&1)
+    fi
+    rc=$?
+    if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -qxF "next         the define was read from $from," &&
+       printf '%s\n' "$o" | grep -qxF "             which a second command may not read the same way: save it to a file, then"; then
+        echo "ok   #704: a toml read from /dev/stdin ($how) gets the line that says to save it, not one naming /dev/stdin or the file behind it"
+    else
+        echo "FAIL #704: /dev/stdin $how leg (exit $rc)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | tail -4
+        fails=$((fails + 1))
+    fi
+done
+rm -rf /tmp/acc-704/T/state-argv
+o=$("$SIDEEYE" preflight --config /tmp/acc-704/T/argv.toml --twice --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+if printf '%s\n' "$o" | grep -qE "^repeatability  two runs [0-9]+ ms apart left equal state under \[world\] state$"; then
+    echo "ok   #704: --twice reads the toml's state and names it as the toml does"
+else
+    echo "FAIL #704: --twice leg"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2sc: a define names its scratch paths, and the judge leaves them alone (#261, ADR 0043) ==========="
 # `[define] scratch` / `--scratch`: a declared path (itself and everything beneath it) is
 # judged by neither built-in invariant, in no world, on no side of the pair. The legs:
@@ -8049,6 +8283,7 @@ acc_flags=$( { parser_literals i
 #
 #   key | base argv | flags the line's required part must name | expected failure
 acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
+preflight-config|preflight --config $acc_nx.toml|--config|--config could not be read
 explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-config|explore --config $acc_nx.toml|--config|--config could not be read
 replay|replay $acc_nx.json||the case file could not be read
@@ -8056,7 +8291,8 @@ evidence|evidence $acc_nx.json||no evidence file could be read beside that case"
 
 acc_line_for() {
     case "$1" in
-        preflight)      printf '%s\n' "$h1" | grep -E '^  sideeye preflight ' ;;
+        preflight)      printf '%s\n' "$h1" | grep -E '^  sideeye preflight --state ' ;;
+        preflight-config) printf '%s\n' "$h1" | grep -E '^  sideeye preflight --config ' ;;
         explore-define) printf '%s\n' "$h1" | grep -E '^  sideeye explore --state ' ;;
         explore-config) printf '%s\n' "$h1" | grep -E '^  sideeye explore --config ' ;;
         replay)         printf '%s\n' "$h1" | grep -E '^  sideeye replay ' ;;
@@ -8163,13 +8399,19 @@ fi
 acc_seen="$acc_seen $acc_demo_accepted"
 acc_lines=$((acc_lines + 1))
 
-# The three argument-free modes. Their lines advertise nothing, so the claim is that they
-# accept nothing — checked by execution rather than assumed, and the flag alone never
-# starts the MCP server because the refusal happens before anything else.
+# The three flag-free modes. Their lines advertise no flag, so the claim is that they accept
+# none — checked by execution rather than assumed, and the flag alone never starts the MCP
+# server because the refusal happens before anything else. `help` takes a command name
+# since #705 (`sideeye help [<command>]`), so a flag there is an unknown command, named;
+# `mcp` and `version` take nothing and say so. The refusal is read for the flag it got, so
+# a refusal that stopped naming what it was given reads as one that did not refuse.
 for acc_m in mcp help version; do
-    acc_m_line=$(printf '%s\n' "$h1" | grep -E "^  sideeye $acc_m\$")
+    case "$acc_m" in
+        help) acc_m_line=$(printf '%s\n' "$h1" | grep -E '^  sideeye help \[<command>\]$'); acc_m_says="unknown command" ;;
+        *)    acc_m_line=$(printf '%s\n' "$h1" | grep -E "^  sideeye $acc_m\$"); acc_m_says="takes no arguments" ;;
+    esac
     if [ -z "$acc_m_line" ]; then
-        echo "     the synopsis has no bare line for $acc_m"
+        echo "     the synopsis has no line of the expected shape for $acc_m"
         cli_fails=$((cli_fails + 1))
         continue
     fi
@@ -8177,9 +8419,9 @@ for acc_m in mcp help version; do
         acc_out=$(acc_first "$acc_m" "$acc_f")
         acc_probes=$((acc_probes + 1))
         case "$acc_out" in
-            *"takes no arguments"*) ;;
+            *"$acc_m_says"*"'$acc_f'"*) ;;
             *)
-                echo "     $acc_m accepts $acc_f, which its synopsis line does not advertise: $acc_out"
+                echo "     $acc_m accepts $acc_f, which its synopsis line does not advertise, or refused it without naming it: $acc_out"
                 cli_fails=$((cli_fails + 1))
                 ;;
         esac
@@ -8250,9 +8492,9 @@ echo "=========== check 15: help is answered per mode, and cannot reach the pars
 # the old set. Same reason #295 takes its flag candidates from the parser.
 help_fails=0
 
-# The modes that take flags, from the parser. mcp/help/version take no arguments and
-# keep refusing extras, so they are deliberately absent — their synopsis lines advertise
-# nothing and --help is an extra there in the literal sense.
+# The modes that take flags, from the parser. mcp/help/version are left out of this loop:
+# their synopsis lines advertise no flag, `<one of them> --help` prints that one line since
+# #705, and #273's loop above holds what each refuses.
 help_modes=$(parser_literals 1 | grep -v '^-' | grep -vE '^(mcp|help|version)$')
 help_mode_n=$(printf '%s\n' $help_modes | grep -c .)
 if [ "$help_mode_n" -lt 4 ]; then
@@ -8272,15 +8514,42 @@ fi
 # rc, stdout and stderr are three separate assertions, and stdout is compared with cmp
 # rather than in a shell variable: command substitution strips trailing newlines, so a
 # variable comparison cannot honestly be called byte-identical.
+#
+# Since #705 the answer is the mode's own help, not the whole reference: `sideeye <mode>
+# --help` prints what `sideeye help <mode>` prints, which is shorter than `sideeye --help`,
+# starts with the version line, and carries a summary line for every flag the mode's
+# synopsis line names (read here from the whole reference, so a flag the mode help lost
+# reads as missing rather than agreeing about a smaller world).
 for help_m in $help_modes; do
+    "$SIDEEYE" help "$help_m" > "$help_dir/ref" 2>"$help_dir/ref.err"
+    help_rc=$?
+    if [ "$help_rc" != "0" ] || [ ! -s "$help_dir/ref" ] || [ -s "$help_dir/ref.err" ]; then
+        echo "     sideeye help $help_m is not usable as the mode's reference (rc=$help_rc)"
+        help_fails=$((help_fails + 1))
+    fi
+    if cmp -s "$help_dir/canonical" "$help_dir/ref"; then
+        echo "     sideeye help $help_m prints the whole reference, not $help_m's own help"
+        help_fails=$((help_fails + 1))
+    fi
+    [ "$(wc -c < "$help_dir/ref")" -lt "$(wc -c < "$help_dir/canonical")" ] || {
+        echo "     sideeye help $help_m is not shorter than the whole reference"
+        help_fails=$((help_fails + 1)); }
+    head -1 "$help_dir/ref" | grep -q '^sideeye ' || {
+        echo "     sideeye help $help_m does not start with the version line: $(head -1 "$help_dir/ref")"
+        help_fails=$((help_fails + 1)); }
+    for help_f in $(printf '%s\n' "$h1" | grep -E "^  sideeye $help_m( |\$)" | grep -oE -- '--[A-Za-z0-9][A-Za-z0-9-]*' | sort -u); do
+        grep -qE -- "^  $help_f( |\$)" "$help_dir/ref" || {
+            echo "     sideeye help $help_m has no summary line for $help_f, which its synopsis line names"
+            help_fails=$((help_fails + 1)); }
+    done
     for help_spelling in --help -h; do
         "$SIDEEYE" "$help_m" "$help_spelling" > "$help_dir/out" 2>"$help_dir/err"
         help_rc=$?
         [ "$help_rc" = "0" ] || {
             echo "     sideeye $help_m $help_spelling exited $help_rc, want 0"
             help_fails=$((help_fails + 1)); }
-        cmp -s "$help_dir/canonical" "$help_dir/out" || {
-            echo "     sideeye $help_m $help_spelling does not print what sideeye --help prints"
+        cmp -s "$help_dir/ref" "$help_dir/out" || {
+            echo "     sideeye $help_m $help_spelling does not print what sideeye help $help_m prints"
             help_fails=$((help_fails + 1)); }
         # Weak on its own: setupError writes to STDOUT in this program (measured), so a
         # failing help path leaves stderr empty too. The cmp above is what catches that.
@@ -8380,11 +8649,103 @@ done
     echo "     --help/-h appears as a parse-loop literal in src/main.zig or src/cli.zig ($help_loop site(s)); help must be answered before the loop, which calls removeFile for --json"
     help_fails=$((help_fails + 1)); }
 
-rm -f "$help_dir"/canonical "$help_dir"/canonical.err "$help_dir"/out "$help_dir"/err "$help_dir"/marker.err "$help_dir"/control.err
+# #705: a mistake is named in one line, with the nearest spelling the command accepts —
+# never the whole reference. Each row is an argv and the words its first line must hold
+# (in order); a row ending `!did you mean` must NOT offer a spelling, because the near
+# names there belong to another command. The exit code is 3 for every row: these are
+# refusals, and a refusal that exited 0 would read as an answer.
+#
+# A dash-led value is still a value: `--marker -x` takes the same path as `--marker ZZZ`.
+help_mk_rc=0; help_mk_ctl=0
+"$SIDEEYE" explore --marker -x > "$help_dir/mk.out" 2>&1 || help_mk_rc=$?
+"$SIDEEYE" explore --marker ZZZ > "$help_dir/mk.ctl" 2>&1 || help_mk_ctl=$?
+if [ "$help_mk_rc" != "$help_mk_ctl" ] || ! cmp -s "$help_dir/mk.out" "$help_dir/mk.ctl" || [ ! -s "$help_dir/mk.ctl" ]; then
+    echo "     explore --marker -x did not take the path --marker ZZZ takes; a dash-led value was read as a flag"
+    help_fails=$((help_fails + 1))
+fi
+help_esc=$(printf 'ex\033]0;x\007')
+while IFS='|' read -r help_args help_want; do
+    [ -n "$help_args" ] || continue
+    # shellcheck disable=SC2086
+    help_out=$("$SIDEEYE" $help_args </dev/null 2>&1); help_rc=$?
+    help_first=$(printf '%s\n' "$help_out" | head -1)
+    help_n=$(printf '%s\n' "$help_out" | grep -c .)
+    help_ok=1
+    [ "$help_rc" = "3" ] || help_ok=0
+    [ "$help_n" -le 3 ] || help_ok=0
+    help_rest=$help_want
+    while [ -n "$help_rest" ]; do
+        help_w=${help_rest%%^*}; [ "$help_w" = "$help_rest" ] && help_rest="" || help_rest=${help_rest#*^}
+        case "$help_w" in
+            !*) case "$help_first" in *"${help_w#!}"*) help_ok=0 ;; esac ;;
+            *)  case "$help_first" in *"$help_w"*) ;; *) help_ok=0 ;; esac ;;
+        esac
+    done
+    [ "$help_ok" = "1" ] || {
+        echo "     sideeye $help_args: rc=$help_rc, $help_n line(s), first: $help_first (want rc 3, at most 3 lines, holding: $help_want)"
+        help_fails=$((help_fails + 1)); }
+done <<HELP_705
+explor|unknown command 'explor'^did you mean 'explore'
+init|unknown command 'init'^!did you mean
+--state x|unknown command '--state'^the command comes first
+help explor|sideeye help: unknown command 'explor'^did you mean 'explore'
+version --x|takes no arguments; got '--x'
+mcp --x|takes no arguments; got '--x'
+replay|replay takes the saved case's path first
+replay -x|replay takes the saved case's path first; got '-x'
+replay c.json --sim x|unknown option '--sim'^did you mean '--shim'
+explore --frobnicate|unknown option '--frobnicate'^sideeye help explore
+explore --frobnicate x|unknown option '--frobnicate'
+explore --stat x|unknown option '--stat'^did you mean '--state'
+explore --twic x|unknown option '--twic'^!did you mean
+explore --state-undr x|unknown option '--state-undr'^!did you mean
+preflight --jsn x|unknown option '--jsn'^!did you mean
+explore foo|takes no positional argument here: 'foo'
+explore --state|an option is missing its value: --state takes one
+explore --state x --help|'--help' is answered only on its own^sideeye help explore
+explore --help --state x|'--help' is answered only on its own^with nothing after it
+explore --recover x|unknown option '--recover'^did you mean '--recovery'
+explore --observe bogus|--observe takes^got 'bogus'
+explore --observe syscall|got 'syscall'^did you mean 'syscalls'
+explore --expect-status abc|must be an integer in 0..255; got 'abc'
+explore --world-timeout abc|whole number of seconds, 1..86400; got 'abc'
+explore --apparatus bad|--apparatus: ^got 'bad'
+explore --scratch /abs|--scratch: ^got '/abs'
+demo --frobnicate|demo takes only --shim <lib>; got '--frobnicate'
+demo --sim x|demo takes only^did you mean '--shim'
+evidence --frobnicate|got '--frobnicate', which is no file here
+evidence --frob x|got '--frob' too
+$help_esc|unknown command 'ex?]0;x?'
+HELP_705
+# A dash-led path is still a path when the file is there: read, not refused as an option.
+help_dash_out=$(cd "$help_dir" && : > ./-x.json && "$SIDEEYE" evidence -x.json 2>&1)
+case "$help_dash_out" in
+    *"no file here"*|*"takes one argument"*)
+        echo "     sideeye evidence -x.json refused an existing file as an option: $help_dash_out"
+        help_fails=$((help_fails + 1)) ;;
+esac
+rm -f "$help_dir/-x.json"
+# `--help -h` is help asking about itself, as `help -h` is.
+help_h1=$("$SIDEEYE" --help -h 2>&1); help_h1_rc=$?
+help_h2=$("$SIDEEYE" help -h 2>&1); help_h2_rc=$?
+if [ "$help_h1_rc" != "0" ] || [ "$help_h1" != "$help_h2" ]; then
+    echo "     sideeye --help -h (rc=$help_h1_rc) does not answer what sideeye help -h answers"
+    help_fails=$((help_fails + 1))
+fi
+# `--version` is `version`: the same one line, exit 0.
+help_v1=$("$SIDEEYE" version 2>&1); help_v1_rc=$?
+help_v2=$("$SIDEEYE" --version 2>&1); help_v2_rc=$?
+if [ "$help_v1_rc" != "0" ] || [ "$help_v2_rc" != "0" ] || [ "$help_v1" != "$help_v2" ]; then
+    echo "     sideeye --version (rc=$help_v2_rc: $help_v2) is not sideeye version (rc=$help_v1_rc: $help_v1)"
+    help_fails=$((help_fails + 1))
+fi
+
+rm -f "$help_dir"/canonical "$help_dir"/canonical.err "$help_dir"/out "$help_dir"/err "$help_dir"/marker.err "$help_dir"/control.err \
+    "$help_dir"/ref "$help_dir"/ref.err "$help_dir"/mk.out "$help_dir"/mk.ctl
 rmdir "$help_dir" 2>/dev/null || true
 
 if [ "$help_fails" = "0" ]; then
-    echo "ok   $help_mode_n modes answer --help and -h with the top-level text, exit 0, and no help path enters the parse loop"
+    echo "ok   $help_mode_n modes answer --help and -h with their own help, exit 0, no help path enters the parse loop, and a mistake is named in one line (#705)"
 else
     echo "FAIL per-mode help: $help_fails problem(s)"
     fails=$((fails + 1))

@@ -19,10 +19,11 @@
 //! `main.zig` sets each once.
 //!
 //! Not here: the PASS and FAIL exits, `preflightReport`'s two, and the argv refusals that
-//! exit 3 before any report exists — three in `main()` that write one line to stderr
-//! (`mcp`, `help`, `version` given arguments) and the unknown-mode exit in `cli.parse` that
-//! prints the usage banner to stdout — none of the four prints a verdict line; they are the
-//! orchestrator's and the parser's.
+//! exit 3 before any report exists — the one-line stderr refusals of a word that names no
+//! command and of `help`, `version`, `mcp` and `evidence` given what they do not take
+//! (`cli.answerEntry` and `main()`, #705), and a bare `sideeye`, which prints the commands
+//! to stdout — none of which prints a verdict line; they are the orchestrator's and the
+//! parser's.
 //!
 //! Third seam of #572 (ADR 0062), first half. Bodies moved from `main.zig` byte for byte on
 //! 2026-09-13, with `pub` added where `main.zig` still calls them — except that a fact or
@@ -1010,6 +1011,27 @@ fn hasOneSidedEntry(plan: engine.L0Plan, pre: engine.Snapshot, post: engine.Snap
     for (post.entries.items) |e| if (pre.find(e.rel) == null and !plan.isScratch(e.rel)) return true;
     for (pre.entries.items) |e| if (post.find(e.rel) == null and !plan.isScratch(e.rel)) return true;
     return false;
+}
+
+/// A declared checker whose command splits to no words has nothing to run — `check = " "` gets
+/// past the config parser, and `unstartable` judges an argv only once it has a first word. The
+/// exploration refuses it ahead of the falsification, and `preflight --config` at the same
+/// point (#704 review), so the two give the same answer for it.
+pub fn checkerArgv(split: anyerror![]const []const u8) []const []const u8 {
+    const cargv = split catch setupError(.define_invalid, "--check is empty");
+    if (cargv.len == 0) setupError(.define_invalid, "--check is empty");
+    return cargv;
+}
+
+/// A declared checker against an initial state with nothing in it to corrupt: the
+/// falsification (DESIGN §14-13) has nothing to break, so the checker cannot be shown to
+/// respond. One function for the exploration's falsification and for `preflight --config`
+/// (#704, ADR 0094), which reaches the same answer from the same snapshot before any world,
+/// so the two say it in the same words. Called with a crash point: with none, both answer
+/// `nothing_could_fail` first.
+pub fn refuseNothingToCorrupt(initial: engine.Snapshot) void {
+    if (engine.countCorruptible(initial) == 0)
+        unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested", .fix_define);
 }
 
 /// The exploration with no crash point (#682, ADR 0091): it is UNKNOWN, not PASS, with or
