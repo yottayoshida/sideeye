@@ -403,7 +403,8 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     // PASS blocks both print it, and only the UNKNOWN text left it out — so a reader refused
     // for touching the state could not tell that the engine had followed the subject across
     // an image change. Two text blocks still do not carry it and are not meant to: a
-    // `SETUP_ERROR` is one line by design, and the zero-operation PASS renders its own.
+    // `SETUP_ERROR` is one line by design. (The zero-operation PASS rendered its own block until ADR
+    // 0091 made it this refusal.)
     // `boundaryAccount()` answers from this run's evidence, not from a capability blurb: a
     // self-exec chain adds "the subject's image replaced N time(s), chain unbroken", a run
     // refused before the trace was read says the account was never established.
@@ -444,9 +445,10 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
 ///
 /// FAIL does not need this — a counterexample is real whether or not the account of the
 /// run was complete. "No counterexample found" is only worth something if what was
-/// looked at is known. Both PASS exits call this, including the one for a target that
-/// appeared to perform no operations at all: that is the case where the shim saw
-/// nothing, which is precisely when the question of whether it *could* see matters most.
+/// looked at is known. Both exits that used to PASS call this — the one PASS left, and the
+/// run with no crash point, which is refused `nothing_could_fail` since ADR 0091 and asks
+/// this first: that is the case where the shim saw nothing, which is precisely when the
+/// question of whether it *could* see matters most.
 ///
 /// `allow_unverified` exists because macOS has no oracle sideeye can use by default
 /// (measured, #181, spike/macos-oracle/): DTrace's syscall provider matches no probes
@@ -808,6 +810,154 @@ pub fn reconcileOrRefuse(
             "The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all" },
     ) catch "the judged state changed at a path that no recorded operation names";
     unknown(.state_changed_unaccounted, detail, .class_wall);
+}
+
+/// What, besides a checker, could fail in a crash world of this run (#683, ADR 0091), read
+/// once from the recording: how many of the paths the built-in atomicity invariant judges
+/// could have changed, and whether the post-success invariant has anything of its own to judge.
+pub const Judgeable = struct {
+    /// Judged paths that ended other than they began, or that a crash point named (fsync and
+    /// mkdir aside) or renamed a directory above (`engine.namedByMutation`). A judged path
+    /// outside this set holds its pre content in every crash world, so comparing it can fail
+    /// nowhere — ggshield's "6/6 over files it did not write".
+    touched: u32,
+    /// A non-scratch entry that only one snapshot holds. The marker's invariant judges shared
+    /// paths against the post content too, but a shared path the operation did not touch holds
+    /// that content in every world; what it adds over `touched` is the created and the removed.
+    one_sided: bool,
+    /// How many paths the atomicity invariant judges, `touched` among them — the plan's size,
+    /// carried here so the refusal and the verdict line read it from the same measurement.
+    judged: usize,
+};
+
+/// `Judgeable` for this recording. `ops` are the recording's own records, the set
+/// `reconcileOrRefuse` reads; `alt` is the alternate spelling of the root, or "".
+pub fn measureJudgeable(
+    gpa: std.mem.Allocator,
+    arena: std.mem.Allocator,
+    initial: engine.Snapshot,
+    final: engine.Snapshot,
+    plan: engine.L0Plan,
+    ops: []const engine.Op,
+    root: []const u8,
+    alt: []const u8,
+) Judgeable {
+    var links: std.ArrayList(engine.Link) = .empty;
+    engine.collectLinks(arena, initial, final, &links) catch setupError(.environment, "out of memory");
+    const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError(.environment, "out of memory");
+    defer gpa.free(scratch);
+    return .{
+        .touched = countTouched(plan, ops, links.items, root, alt, scratch),
+        .one_sided = hasOneSidedEntry(plan, initial, final),
+        .judged = plan.files.items.len,
+    };
+}
+
+fn countTouched(plan: engine.L0Plan, ops: []const engine.Op, links: []const engine.Link, root: []const u8, alt: []const u8, scratch: []u8) u32 {
+    var n: u32 = 0;
+    for (plan.files.items) |f| {
+        // Ended other than it began: a crash world can stand between the two, whatever the
+        // records say — and an unrecorded change that `reconcileOrRefuse` let through
+        // because a `close` named the path still lands here (R1 of the plan, M1).
+        const changed = f.pre_kind != f.post_kind or !std.mem.eql(u8, f.pre_content, f.post_content);
+        if (changed or engine.namedByMutation(f.rel, ops, links, root, alt, scratch)) n +|= 1;
+    }
+    return n;
+}
+
+fn hasOneSidedEntry(plan: engine.L0Plan, pre: engine.Snapshot, post: engine.Snapshot) bool {
+    for (post.entries.items) |e| if (pre.find(e.rel) == null and !plan.isScratch(e.rel)) return true;
+    for (pre.entries.items) |e| if (post.find(e.rel) == null and !plan.isScratch(e.rel)) return true;
+    return false;
+}
+
+/// The exploration with no crash point (#682, ADR 0091): it is UNKNOWN, not PASS, with or
+/// without a checker — a checker has no world to run in. Raised in `preflight` too, which the
+/// README promises names the detector a real run would use. Without an oracle the detail says
+/// what that leaves open: an operation that rewrote a file with the bytes it already held
+/// through a raw syscall changes no snapshot and leaves no record, so "nothing" is the shim's
+/// word alone.
+pub fn refuseNoCrashPoint(arena: std.mem.Allocator, has_oracle: bool) noreturn {
+    const who = boundary.recorder();
+    const detail = if (has_oracle)
+        "the operation performed no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail"
+    else
+        std.fmt.allocPrint(arena, "{s} recorded no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail; no oracle ran, so an operation {s} did not see is not ruled out", .{ who, who }) catch
+            "no state-changing operation was recorded inside the state directory, so there was no crash point and no world in which anything could fail; no oracle ran, so an operation that was not seen is not ruled out";
+    unknown(.nothing_could_fail, detail, .nothing_in_state);
+}
+
+/// An exploration with crash points in which still nothing could have failed (#683, ADR 0091).
+/// Called after every world has run and before the PASS is printed — a world may take a branch
+/// the recording did not, and a FAIL there exits before this; moved ahead of the worlds, it
+/// would refuse a run that had a counterexample to show. Not called for a replay: its one world
+/// answers whether that world still fails, and a fix that moves the marker after the last
+/// operation leaves the replayed world with nothing to judge and a true answer (R1 of the plan, M4).
+pub fn requireSomethingCouldFail(arena: std.mem.Allocator, j: Judgeable, checker: bool, marker_declared: bool, marker_worlds: u32) void {
+    if (checker or j.touched > 0) return;
+    if (marker_worlds > 0 and j.one_sided) return;
+    const detail = std.fmt.allocPrint(
+        arena,
+        "no world could have failed: no checker was declared, {s}, and none of the {d} path(s) the built-in atomicity invariant judges was changed or named by a crash point",
+        .{ if (!marker_declared) "no marker was declared" else if (marker_worlds == 0) "the marker printed in no crash world" else "the marker's invariant had no created or removed path to judge", j.judged },
+    ) catch "no world could have failed: no checker, no marker world with anything to judge, and no judged path any crash point could change";
+    unknown(.nothing_could_fail, detail, couldFailStep(j, marker_declared));
+}
+
+/// The step for `requireSomethingCouldFail`. A marker judges what only one snapshot holds;
+/// where there is nothing of that kind — a define that declared every changed path scratch,
+/// say — offering one would be offering what cannot help (R1 of the diff), and where one is
+/// declared already, asking for it would ask for what the define has.
+fn couldFailStep(j: Judgeable, marker_declared: bool) contract.NextStep {
+    return if (marker_declared or !j.one_sided) .declare_check else .declare_check_or_marker;
+}
+
+test "a marker is offered only where one could judge something and none is declared (#683)" {
+    try std.testing.expectEqual(contract.NextStep.declare_check_or_marker, couldFailStep(.{ .touched = 0, .one_sided = true, .judged = 1 }, false));
+    try std.testing.expectEqual(contract.NextStep.declare_check, couldFailStep(.{ .touched = 0, .one_sided = false, .judged = 1 }, false));
+    try std.testing.expectEqual(contract.NextStep.declare_check, couldFailStep(.{ .touched = 0, .one_sided = true, .judged = 1 }, true));
+}
+
+fn testPlanned(rel: []const u8, pre: []const u8, post: []const u8) engine.PlannedFile {
+    return .{ .rel = rel, .pre_kind = .file, .post_kind = .file, .form = .standard, .pre_content = pre, .post_content = post };
+}
+
+test "a judged path counts as touched when it changed or a crash point named it, and not otherwise (#683)" {
+    var plan: engine.L0Plan = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .files = .empty };
+    defer plan.deinit();
+    const a = plan.arena.allocator();
+    try plan.files.append(a, testPlanned("keep.txt", "k", "k"));
+    try plan.files.append(a, testPlanned("grown.txt", "g", "g2"));
+    try plan.files.append(a, testPlanned("same.txt", "s", "s"));
+    var scratch: [2048]u8 = undefined;
+    const ops = [_]engine.Op{
+        // The same bytes, swapped in atomically: unchanged, and still named.
+        .{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/same.txt.tmp", .aux = "/tmp/s/same.txt" },
+        // Records that never count: an fsync of the untouched file, a mkdir of the root.
+        .{ .class = .fsync, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/keep.txt", .aux = "" },
+        .{ .class = .mkdir, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+    };
+    // `grown.txt` changed with no record naming it (the M1 shape) and still counts.
+    try std.testing.expectEqual(@as(u32, 2), countTouched(plan, &ops, &.{}, "/tmp/s", "", &scratch));
+    // With nothing named and nothing changed, nothing counts: the control.
+    var still: engine.L0Plan = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .files = .empty };
+    defer still.deinit();
+    try still.files.append(still.arena.allocator(), testPlanned("keep.txt", "k", "k"));
+    try std.testing.expectEqual(@as(u32, 0), countTouched(still, &ops, &.{}, "/tmp/s", "", &scratch));
+}
+
+test "an entry only one snapshot holds is something the marker's invariant can judge, unless it is scratch (#683)" {
+    const gpa = std.testing.allocator;
+    var pre = try engine.testSnapshot(gpa, &.{.{ "keep.txt", "k" }});
+    defer pre.deinit();
+    var post = try engine.testSnapshot(gpa, &.{ .{ "keep.txt", "k" }, .{ "new.txt", "n" } });
+    defer post.deinit();
+    var plan: engine.L0Plan = .{ .arena = std.heap.ArenaAllocator.init(gpa), .files = .empty };
+    defer plan.deinit();
+    try std.testing.expect(hasOneSidedEntry(plan, pre, post));
+    try std.testing.expect(!hasOneSidedEntry(plan, pre, pre));
+    plan.scratch = &.{"new.txt"};
+    try std.testing.expect(!hasOneSidedEntry(plan, pre, post));
 }
 
 /// A SETUP ERROR whose sentence carries values; when even the sentence cannot be built

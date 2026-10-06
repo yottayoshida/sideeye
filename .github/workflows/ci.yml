@@ -989,6 +989,7 @@ jobs:
             --operation "/tmp/ci-guarded/toy-guarded /tmp/ci-guarded/state/g" \
             --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
             --work /tmp/ci-guarded/work \
+            --json /tmp/ci-guarded/r.json \
             --allow-unverified 2>&1)
           rc=$?
           set -e
@@ -997,10 +998,15 @@ jobs:
           echo "$out" | grep -q 'state_changed_without_ops' && {
             echo "the guarded writes went unrecorded — the interposers are not reached"
             exit 1; }
-          echo "$out" | grep -q "crash points $want" || {
-            echo "expected $want crash points from the guarded calls the toy exercised"
+          # The toy only creates `g`, which the atomicity invariant does not judge, so with no
+          # checker the run ends `nothing_could_fail` after every world (ADR 0091) — a PASS
+          # before it. The count is what this leg measures, and the JSON carries it on both.
+          got=$(python3 -c 'import json;print(json.load(open("/tmp/ci-guarded/r.json"))["crash_points"])')
+          [ "$got" = "$want" ] || {
+            echo "expected $want crash points from the guarded calls the toy exercised, got $got"
             exit 1; }
-          [ "$rc" = "0" ] || { echo "expected PASS (exit 0), got $rc"; exit 1; }
+          [ "$rc" = "2" ] && grep -q '"unknown_reason": "nothing_could_fail"' /tmp/ci-guarded/r.json \
+            || { echo "expected nothing_could_fail (exit 2) after every world, got $rc"; exit 1; }
 
       # Interposition reaches a call the target resolved at runtime (#299, ADR 0034).
       #
@@ -1215,35 +1221,45 @@ jobs:
             [ "$rc" = "$2" ] || { echo "leg $1: expected exit $2, got $rc"; echo "$out" | head -6; exit 1; }
           }
           points() { python3 -c 'import json;print(json.load(open("/tmp/ci-v12/r.json"))["crash_points"])'; }
+          # ADR 0091: a leg whose operation changes no path the atomicity invariant judges, with no
+          # checker or marker, ends `nothing_could_fail` after every world — the counts are what
+          # these legs measure, and the JSON carries them on that refusal as on a PASS.
+          nothing() { grep -q '"unknown_reason": "nothing_could_fail"' /tmp/ci-v12/r.json || { echo "$1: expected nothing_could_fail"; cat /tmp/ci-v12/r.json; exit 1; }; }
 
           # C1: clone succeeds and is counted. clone(.write) + open(a) + fsync(a) = 3.
           run_leg clone-plus 0
           [ "$(points)" = "3" ] || { echo "clone-plus: want 3 crash points (clone counted), got $(points)"; exit 1; }
 
-          # state-twin: wr(dst)=3, failed clone attempt=+1, fallback wr(dst)=3 → 7, PASS.
-          run_leg failed-clone 0
+          # state-twin: wr(dst)=3, failed clone attempt=+1, fallback wr(dst)=3 → 7. dst is created by
+          # the operation, so nothing judged is touched: nothing_could_fail (ADR 0091), count intact.
+          run_leg failed-clone 2
+          nothing failed-clone
           [ "$(points)" = "7" ] || { echo "failed-clone: want 7 crash points (attempt counted, verdict intact), got $(points)"; exit 1; }
 
           # C2: destination outside → the clone is NOT counted. Setup runs BEFORE the
           # initial snapshot, and nothing in scope changes during the operation, so the
-          # honest outcome is a PASS over zero crash points — measured, not assumed:
+          # honest outcome is no crash point — a PASS until ADR 0091, `nothing_could_fail` since — measured, not assumed:
           # the first draft of this leg expected the zero-ops refusal, which needs the
           # snapshots to DIFFER, and they don't here. The discriminating number is the
           # count: a swapped-argument implementation fabricates an in-scope write and
           # answers 1.
-          run_leg clone-out 0
+          run_leg clone-out 2
+          nothing clone-out
           [ "$(points)" = "0" ] || { echo "clone-out: want 0 crash points (out-of-scope clone not counted; nonzero is the argument swap)"; cat /tmp/ci-v12/r.json; exit 1; }
 
           # C2, fclonefileat with the arguments a swap would misread: srcfd inside,
           # relative dst outside. Correct: 0 crash points. Swapped: srcfd read as a
           # dirfd resolves the dst UNDER state/a.txt — inside scope — and the count
           # goes to 1.
-          run_leg fclone-out 0
+          run_leg fclone-out 2
+          nothing fclone-out
           [ "$(points)" = "0" ] || { echo "fclone-out: want 0 crash points; a nonzero count here is the argument swap"; cat /tmp/ci-v12/r.json; exit 1; }
 
           # The DATA-path pin: libcopyfile's plain _open/_write imports keep the copy
-          # visible. write(dst) recorded → at least 1 crash point, and a verdict.
-          run_leg copy-data 0
+          # visible. write(dst) recorded → at least 1 crash point. dst is created by the copy, so the run
+          # ends `nothing_could_fail` (ADR 0091) rather than a verdict; the count is still the pin.
+          run_leg copy-data 2
+          nothing copy-data
           [ "$(points)" -ge 1 ] || { echo "copy-data: the DATA path went dark (Apple import change?)"; exit 1; }
 
           # The swap refusal, in scope, with the Linux-shaped spelling.

@@ -487,6 +487,9 @@ const Run = struct {
         trace: engine.TraceInfo,
         final: engine.Snapshot,
         l0_plan: engine.L0Plan,
+        /// What besides a checker could fail in a crash world (#683, ADR 0091), measured once
+        /// from the recording beside the plan it reads.
+        judgeable: refuse.Judgeable,
         /// The recording run's cgroup (contract v17, #559); null when the run was not contained.
         cgroup: ?posix.CgroupSpawn,
         rec_trace_buf: [contract.max_path]u8,
@@ -517,6 +520,9 @@ const Run = struct {
         /// and `phaseReport` is where it is written out beside the case.
         first_failure_ev: ?evidence.Draft,
         first_checker_ev: ?evidence.Draft,
+        /// Crash worlds whose capture held the marker — one of the three things that can make a
+        /// PASS mean something (ADR 0091), read where the PASS is printed.
+        marker_worlds: u32,
     };
 
     gpa: std.mem.Allocator,
@@ -1085,6 +1091,20 @@ fn phaseDefine(run: *Run) void {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, {s}", .{ textShown(arena_state.allocator(), state), refuse.resolveFailure(arena_state.allocator(), state, why), if (args.observe == .supervised) "the engine could not match the paths it reads from the target against it" else "the shim and the engine would filter on different spellings of it" });
     };
+    // #682: a `state` naming something that is there and is not a directory. The mkdir above
+    // failed with EEXIST and realpath resolved the file itself, so nothing downstream noticed:
+    // the snapshot of a file holds no entries, the operation's writes fell outside it, and the
+    // run PASSed with zero crash points. Here, the realpath has followed any symlink, the
+    // directory was not created by this invocation (a fresh one is a directory), and nothing
+    // has run — so `define_invalid` and exit 3 are both true of it. Also reached by `--state`
+    // and by a replayed case's state.
+    if (posix.kindOfPathNoFollow(@ptrCast(state_abs.ptr))) |kind| {
+        if (kind != .dir) setupErrorFmt(arena_state.allocator(), .define_invalid, "--state {s} is not a directory: the state is the one directory the target's state lives in, and a {s} there would be judged as an empty tree", .{ textShown(arena_state.allocator(), state), switch (kind) {
+            .file => "regular file",
+            .symlink => "symlink",
+            else => "non-directory entry",
+        } });
+    } else |_| {}
 
     // A recovery is a pair (#606, ADR 0072), held here and only here: after the case or the
     // config has been read — so a flag and a toml key cannot each supply half — and after the
@@ -2422,12 +2442,11 @@ fn phaseOracle(run: *Run) void {
     // path is unexplained". This is the detector for the runs that have no second
     // witness at all, which is every macOS run that does not pay root.
     refuse.reconcileOrRefuse(gpa, arena, initial, final, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
-
     const n = trace.kill_point_count;
     report.crash_points = n;
 
     // The landing context, before anything is explored — including before the
-    // zero-crash-points PASS below, which would otherwise answer for a case whose
+    // zero-crash-points refusal below, which would otherwise answer for a case whose
     // operations have all disappeared. Classes gate; paths only warn (pid-embedded
     // temp names legitimately differ between runs — the timewarrior shape).
     if (replay_case) |rc| {
@@ -2461,6 +2480,14 @@ fn phaseOracle(run: *Run) void {
         containment.afterRun(arena, cg, &trace, "", true);
     }
 
+    // #683, ADR 0091: measured once every check on the recording's trace has held — the last of
+    // them is the contained run's account just above — so a refusal raised on a trace that was cut
+    // short, too large, of another contract or not finished carries no count read from it (R1 and
+    // R2 of the diff). From the same plan and records, so the count the report carries and the one
+    // the PASS gate reads are one measurement.
+    run.rec.judgeable = refuse.measureJudgeable(gpa, arena, initial, final, run.rec.l0_plan, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
+    report.l0_judged_paths_touched = run.rec.judgeable.touched;
+
     run.n = n;
 }
 
@@ -2485,7 +2512,7 @@ fn phasePreflight(run: *Run) void {
 
     // ---- preflight cut ------------------------------------------------------------
     //
-    // Deliberately *before* the zero-op PASS branch and the exploration loop: preflight
+    // Deliberately *before* the exploration's own zero-crash-point refusal and its loop: preflight
     // makes no PASS claim (so the completeness gate does not apply), and everything a
     // preflight can honestly say is known once the recording-phase gates above have all
     // held their fire. The exploration-only refusals — kill landing, world-side process
@@ -2510,6 +2537,10 @@ fn phasePreflight(run: *Run) void {
             .str => |x| x,
             .argv => setupError(.define_invalid, pf_msg),
         };
+        // #682, ADR 0091: the README promises a preflight refusal names the detector a real
+        // run would use, and an exploration with no crash point is refused. Ahead of the
+        // second run, which would only measure the repeatability of nothing.
+        if (n == 0) refuse.refuseNoCrashPoint(arena, args.has_oracle);
         // #199: the second observation, opt-in. Without `--twice` this is the answer
         // preflight has always given from one run, and the report names determinism as
         // unchecked; with it, the second run happens here and the report carries what
@@ -2522,35 +2553,14 @@ fn phasePreflight(run: *Run) void {
     }
 
     if (n == 0) {
+        // The completeness gate first, as it always was (acceptance check 2f pins why): with no
+        // oracle, zero records is also what a target whose writes the shim never saw looks like,
+        // and the weaker claim is the caller's to accept before anything else is said.
         refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
-        // A PASS, not a refusal: the checker's pre-run wording says the run "stopped",
-        // which is the wrong word beside a verdict. A declared checker had no world to be
-        // falsified in, and the account says that (#352, review).
-        if (args.check != null) report.checker_note = "configured; not run (no crash point, so no world to falsify it in)";
-        // "judged state", not "state directory": a run whose only writes are
-        // ownership/permission metadata lands exactly here with zero kill points,
-        // and those writes DO change the directory — just nothing the verdict
-        // judges. The metadata line below is the disclosure; without it this
-        // headline reads as a plain falsehood over a chmod-only operation (R1 #121).
-        // The oracle line rides along because it is the metadata note's provenance.
-        say(
-            \\PASS  the operation performed nothing that can change the judged state
-            \\      explored 0 crash points; nothing to kill before
-            \\      expected status: {d}
-            \\      atomicity: {s}
-            \\      oracle: {s}
-            \\      metadata: {s}
-            \\      l1: {s}
-            \\      case: {s}
-            \\      not tested: {s}
-            \\
-        , .{ report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.l1_note, report.case_note, report.notTestedText() });
-        report.sayCwd(arena, "      cwd: {s}{s}\n");
-        report.sayApparatus(arena, "      apparatus: {s}\n");
-        report.sayRecovery("      recovery: {s}\n");
-        if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
-        report.emitSeal();
-        std.process.exit(@intFromEnum(contract.ExitCode.pass));
+        // Was a PASS — "the operation performed nothing that can change the judged state" —
+        // until ADR 0091 (#682): a PASS no world could have failed, read by a caller that sees
+        // only the exit code as a check that ran. A checker declared here never ran either.
+        refuse.refuseNoCrashPoint(arena, args.has_oracle);
     }
 }
 
@@ -3246,6 +3256,7 @@ fn phaseExploration(run: *Run) void {
     run.firsts.first_checker_path_len = first_checker_path_len;
     run.firsts.first_failure_ev = first_failure_ev;
     run.firsts.first_checker_ev = first_checker_ev;
+    run.firsts.marker_worlds = marker_worlds;
 
     // The recovery phase (#606, ADR 0072), after every world including the baseline: the
     // verdict is decided and nothing the recovery does can reach a world. `recovery.run` cannot
@@ -3586,9 +3597,12 @@ fn phaseReport(run: *Run) void {
     }
 
     refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+    // #683, ADR 0091: after every world — a FAIL has already exited above — and not for a
+    // replay, whose one world answers a different question.
+    if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
 
     say(
-        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}
+        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}
         \\      explored {d} worlds (crash points {d} + 1 baseline)
         \\      expected status: {d}
         \\      atomicity: {s}
@@ -3600,7 +3614,7 @@ fn phaseReport(run: *Run) void {
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ report.explored, report.explored, report.singleCrashPointClause(n), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
+    , .{ report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
     report.sayCwd(arena, "      cwd: {s}{s}\n");
     report.sayApparatus(arena, "      apparatus: {s}\n");
     report.sayRecovery("      recovery: {s}\n");
@@ -3973,9 +3987,8 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
     const split = if (repeat) |r| !r.count.equal() else false;
     if (split) {
         say("PREFLIGHT  not accepted — the two observed runs left different state\n\n", .{});
-    } else if (n == 0) {
-        say("PREFLIGHT  recording accepted, but nothing to explore — 0 state-changing operations observed\n\n", .{});
     } else {
+        // Never zero: a recording with no crash point is refused before this (#682, ADR 0091).
         say("PREFLIGHT  recording accepted — {d} state-changing operation(s) observed\n\n", .{n});
     }
     if (repeat) |r| {
@@ -4020,7 +4033,9 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         \\processes    {s}
         \\
         \\not checked  kill landing, world-side process boundaries, baseline behavior,
-        \\             checker falsification — only a real exploration runs these
+        \\             checker falsification, whether any world could fail (with no
+        \\             check or marker, an operation that only creates files is refused
+        \\             nothing_could_fail) — only a real exploration runs these
         \\
         \\
     , .{ report.l0_note, report.oracle_note, boundary.boundaryAccount() });

@@ -119,8 +119,10 @@ the recorded one has its answer.
 - The operation child inherits the **engine's** environment, not your setup
   script's exports. A tool that resolves its store through an environment
   variable needs that variable exported where the engine launches — a
-  zero-operation PASS ("the operation performed nothing that can change the
-  judged state") is the tell. **A one-crash-point PASS carries a tell of its
+  run with no crash point is the tell. It was a PASS ("the operation performed
+  nothing that can change the judged state") until ADR 0091 and is refused
+  `nothing_could_fail` now, with a `next` line that says where an undeclared
+  define's commands run — which is where a relative argument resolved. **A one-crash-point PASS carries a tell of its
   own** on its verdict line ("over a single crash point", #487), with the check
   to run underneath it — and the two usually arise differently. Zero is most
   often the store landing wholly outside the judged directory (though not

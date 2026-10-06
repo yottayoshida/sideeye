@@ -1365,9 +1365,10 @@ fi
 
 echo ""
 echo "=========== check 2f: the zero-operation path is guarded too ==========="
-# `doctor` only reads, so no crash points are recorded. That early-PASS branch sits before
-# the exploration loop, and an operation count of zero is exactly the shape a target
-# takes when the shim could not see it — so it needs the same completeness requirement.
+# `doctor` only reads, so no crash points are recorded. That early branch — a PASS until
+# ADR 0091, `nothing_could_fail` since — sits before the exploration loop, and an operation
+# count of zero is exactly the shape a target takes when the shim could not see it — so it
+# needs the same completeness requirement, and meets it first.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
@@ -1381,20 +1382,167 @@ else
     fails=$((fails + 1))
 fi
 
-# With an oracle the same run is a legitimate PASS: nothing happened, and that is known.
+# With an oracle the same run is known to have changed nothing — and so no world in it could
+# have failed. It was a PASS until ADR 0091 (#682) and is refused `nothing_could_fail` now,
+# still behind the completeness gate above, with the step that says where an undeclared
+# define's commands run.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
-    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
+    --json /tmp/acc/zero.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "nothing that can change" \
-    && echo "$o" | grep -q "expected status: 0"; then
-    echo "ok   the same run passes once an oracle confirms it"
+if refused nothing_could_fail "$rc" "$o" \
+    && echo "$o" | grep -q "^next        The operation changed nothing in the state directory" \
+    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if (d["crash_points"], d["explored"], d["unknown_reason"]) == (0, 0, "nothing_could_fail") else 1)' /tmp/acc/zero.json; then
+    echo "ok   the same run, once an oracle confirms nothing happened, is refused nothing_could_fail"
+    echo "     (no crash point, so no world could fail; the step says where the commands ran)"
 else
     echo "FAIL zero-op with oracle: exit $rc"
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
+
+echo ""
+echo "=========== check 2nf: an exploration in which nothing could fail is not a PASS (#682, #683, ADR 0091) ==========="
+# The plan's three falsifiable checks, on one toy built here. Each half of each pair is the
+# control for the other: a build that refuses everything fails the PASS halves, and the
+# build before ADR 0091 — which PASSed every one of these with exit 0 — fails the refusals.
+#   untouched  — `sub/keep.txt` exists before and after; the operation mkdirs `sub` (EEXIST),
+#                fsyncs `keep.txt` (opened read-only) and `sub`, and creates `sub/new.txt`.
+#                ggshield's shape plus the records that would wrongly count as touching it:
+#                a rule that counted fsync, or mkdir, or any record naming a directory above,
+#                would call `sub/keep.txt` touched and PASS.
+#   atomic     — the existing `cfg` rewritten with the bytes it held, through tmp + rename:
+#                unchanged, but named, so the atomicity invariant can fail and the run PASSes.
+#                A rule that read only the snapshots' difference would refuse it.
+#   trunc      — the same bytes through O_TRUNC + write: the world killed between the two
+#                holds an empty `cfg`, and that FAIL is reached before the gate is asked.
+#   marker     — two new files, the marker, then an fsync that changes nothing: one crash
+#                world printed the marker over paths only the post snapshot holds.
+#   none       — nothing at all.
+#   unlinkdir  — an unlink of `sub` itself, which fails (it is a directory) and is recorded
+#                anyway. It names `sub`, so `sub` counts as touched — the documented floor: a
+#                failed call still counts — and nothing else does: only a rename reaches the
+#                paths below a directory. With fsync and mkdir already set aside, this count is
+#                the one place a rule that matched a parent for any operation shows (it would
+#                also count `sub/keep.txt`); the verdict is a PASS either way.
+nf_fails=0
+rm -rf /tmp/acc-nf && mkdir -p /tmp/acc-nf
+cat > /tmp/acc-nf/t.c <<'EOC'
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+static void put(const char *p, const char *s, int fl) { int fd = open(p, fl, 0644); if (fd >= 0) { write(fd, s, strlen(s)); close(fd); } }
+int main(int argc, char **argv) {
+    if (argc < 3) return 2;
+    const char *st = argv[1], *m = argv[2];
+    char a[4096], b[4096];
+    if (!strcmp(m, "init")) {
+        snprintf(a, sizeof a, "%s/sub", st); mkdir(a, 0755);
+        snprintf(a, sizeof a, "%s/sub/keep.txt", st); put(a, "keep", O_WRONLY | O_CREAT | O_TRUNC);
+        snprintf(a, sizeof a, "%s/cfg", st); put(a, "same\n", O_WRONLY | O_CREAT | O_TRUNC);
+    } else if (!strcmp(m, "untouched")) {
+        snprintf(a, sizeof a, "%s/sub", st); mkdir(a, 0755);
+        snprintf(a, sizeof a, "%s/sub/keep.txt", st); int fd = open(a, O_RDONLY); fsync(fd); close(fd);
+        snprintf(a, sizeof a, "%s/sub", st); fd = open(a, O_RDONLY); fsync(fd); close(fd);
+        snprintf(a, sizeof a, "%s/sub/new.txt", st); put(a, "new\n", O_WRONLY | O_CREAT | O_TRUNC);
+    } else if (!strcmp(m, "atomic")) {
+        snprintf(a, sizeof a, "%s/cfg.tmp", st); put(a, "same\n", O_WRONLY | O_CREAT | O_TRUNC);
+        snprintf(b, sizeof b, "%s/cfg", st); rename(a, b);
+    } else if (!strcmp(m, "unlinkdir")) {
+        snprintf(a, sizeof a, "%s/sub", st); (void)unlink(a);
+    } else if (!strcmp(m, "trunc")) {
+        snprintf(a, sizeof a, "%s/cfg", st); put(a, "same\n", O_WRONLY | O_TRUNC);
+    } else if (!strcmp(m, "marker")) {
+        snprintf(a, sizeof a, "%s/one", st); put(a, "1\n", O_WRONLY | O_CREAT | O_TRUNC);
+        snprintf(a, sizeof a, "%s/two", st); put(a, "2\n", O_WRONLY | O_CREAT | O_TRUNC);
+        printf("SAVED\n"); fflush(stdout);
+        int fd = open(a, O_RDONLY); fsync(fd); close(fd);
+    }
+    return 0;
+}
+EOC
+printf '#!/bin/sh\n[ "$(cat "$SIDEEYE_STATE_DIR/cfg")" = same ] && [ "$(cat "$SIDEEYE_STATE_DIR/sub/keep.txt")" = keep ]\n' > /tmp/acc-nf/check.sh
+chmod 755 /tmp/acc-nf/check.sh
+( cc -O0 -o /tmp/acc-nf/t /tmp/acc-nf/t.c 2>/tmp/acc-nf/build.log || gcc -O0 -o /tmp/acc-nf/t /tmp/acc-nf/t.c 2>>/tmp/acc-nf/build.log ) || {
+    echo "FAIL could not build the nothing-could-fail toy"; sed 's/^/     | /' /tmp/acc-nf/build.log | head -4; nf_fails=1; }
+nf_run() { # nf_run <name> <mode> [extra flags…] — explore, text in $o, rc in $rc, JSON at /tmp/acc-nf/<name>.json
+    nfn=$1; nfm=$2; shift 2
+    mkdir -p "/tmp/acc-nf/$nfn/state"
+    o=$("$SIDEEYE" explore --state "/tmp/acc-nf/$nfn/state" \
+        --setup "/tmp/acc-nf/t /tmp/acc-nf/$nfn/state init" --operation "/tmp/acc-nf/t /tmp/acc-nf/$nfn/state $nfm" \
+        --shim "$SHIM" --work "/tmp/acc-nf/$nfn/work" --oracle /usr/bin/strace --json "/tmp/acc-nf/$nfn.json" "$@" 2>&1)
+    rc=$?
+}
+nf_json() { python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get(sys.argv[2]))' "$1" "$2" 2>/dev/null; }
+nf_bad() { echo "FAIL $1"; printf '%s\n' "$o" | sed 's/^/     | /' | head -4; nf_fails=$((nf_fails + 1)); }
+if [ "$nf_fails" = "0" ]; then
+    # Check 1: untouched judged paths only — refused; with a checker that can fail — PASS, and says so.
+    nf_run untouched untouched
+    if refused nothing_could_fail "$rc" "$o" && [ "$(nf_json /tmp/acc-nf/untouched.json l0_judged_paths_touched)" = "0" ] \
+        && [ "$(nf_json /tmp/acc-nf/untouched.json crash_points)" -ge 3 ] 2>/dev/null \
+        && echo "$o" | grep -q "^next        The built-in invariant judges only paths"; then
+        echo "ok   judged paths no crash point could change, no checker, no marker: nothing_could_fail"
+    else nf_bad "untouched judged paths only: wanted 2 nothing_could_fail with l0_judged_paths_touched 0 (rc=$rc)"; fi
+    nf_run untouched-ck untouched --check /tmp/acc-nf/check.sh
+    if [ "$rc" = "0" ] && echo "$o" | head -1 | grep -q ", but the operation touched none of the 3 path(s) it judged$" \
+        && [ "$(nf_json /tmp/acc-nf/untouched-ck.json l0_judged_paths_touched)" = "0" ]; then
+        echo "ok   the same run with a checker that can fail PASSes, and its verdict line says the atomicity invariant touched nothing"
+    else nf_bad "untouched with a checker: wanted 0 PASS with the untouched clause (rc=$rc)"; fi
+    # Check 2: the same bytes through tmp + rename — PASS; through O_TRUNC — FAIL.
+    nf_run atomic atomic
+    if [ "$rc" = "0" ] && [ "$(nf_json /tmp/acc-nf/atomic.json l0_judged_paths_touched)" = "1" ] \
+        && ! echo "$o" | head -1 | grep -q "touched none"; then
+        echo "ok   an atomic rewrite with the bytes the file held PASSes: the rename names a judged path"
+    else nf_bad "atomic same-bytes rewrite: wanted 0 PASS with l0_judged_paths_touched 1 (rc=$rc)"; fi
+    nf_run unlinkdir unlinkdir
+    if [ "$rc" = "0" ] && [ "$(nf_json /tmp/acc-nf/unlinkdir.json l0_judged_paths_touched)" = "1" ]; then
+        echo "ok   a failed unlink of a directory counts that directory and nothing below it (only a rename reaches below)"
+    else nf_bad "a failed unlink of sub: wanted 0 PASS with l0_judged_paths_touched 1 (rc=$rc, touched=$(nf_json /tmp/acc-nf/unlinkdir.json l0_judged_paths_touched))"; fi
+    nf_run trunc trunc
+    if [ "$rc" = "1" ]; then
+        echo "ok   the same bytes through O_TRUNC FAIL: the gate is asked after the worlds, never before"
+    else nf_bad "O_TRUNC same-bytes rewrite: wanted 1 FAIL (rc=$rc)"; fi
+    # Check 3: no crash point — refused whatever is declared, in explore and in preflight;
+    # a marker world over created paths — PASS.
+    nf_run none none
+    if refused_uncredited nothing_could_fail "$rc" "$o" && [ "$(nf_json /tmp/acc-nf/none.json crash_points)" = "0" ] \
+        && echo "$o" | grep -q "^next        The operation changed nothing in the state directory"; then
+        echo "ok   no crash point: nothing_could_fail, with the step that says where the commands ran"
+    else nf_bad "no crash point: wanted 2 nothing_could_fail (rc=$rc)"; fi
+    nf_run none-ck none --check /tmp/acc-nf/check.sh
+    if refused_uncredited nothing_could_fail "$rc" "$o"; then
+        echo "ok   no crash point with a checker that can fail is still nothing_could_fail: the checker had no world"
+    else nf_bad "no crash point with a checker: wanted 2 nothing_could_fail (rc=$rc)"; fi
+    mkdir -p /tmp/acc-nf/pf/state
+    o=$("$SIDEEYE" preflight --state /tmp/acc-nf/pf/state --setup "/tmp/acc-nf/t /tmp/acc-nf/pf/state init" \
+        --operation "/tmp/acc-nf/t /tmp/acc-nf/pf/state none" --shim "$SHIM" --work /tmp/acc-nf/pf/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if refused_uncredited nothing_could_fail "$rc" "$o"; then
+        echo "ok   preflight refuses a recording with no crash point with the detector explore uses"
+    else nf_bad "preflight with no crash point: wanted 2 nothing_could_fail (rc=$rc)"; fi
+    nf_run marker marker --marker SAVED
+    if [ "$rc" = "0" ] && [ "$(nf_json /tmp/acc-nf/marker.json l0_judged_paths_touched)" = "0" ]; then
+        echo "ok   a crash world that printed the marker over created paths judged the run: PASS"
+    else nf_bad "a marker world over created paths: wanted 0 PASS (rc=$rc)"; fi
+    nf_run marker-none marker
+    if refused_uncredited nothing_could_fail "$rc" "$o" && echo "$o" | grep -q "or a marker for the success claim"; then
+        echo "ok   the same run without the marker is nothing_could_fail, and the step offers a marker"
+    else nf_bad "the marker run without a marker: wanted 2 nothing_could_fail (rc=$rc)"; fi
+    # #682's other half: a `state` that is a regular file is refused before anything runs.
+    printf 'x' > /tmp/acc-nf/afile
+    o=$("$SIDEEYE" explore --state /tmp/acc-nf/afile --operation "/tmp/acc-nf/t /tmp/acc-nf/afile none" \
+        --shim "$SHIM" --work /tmp/acc-nf/wf --oracle /usr/bin/strace --json /tmp/acc-nf/afile.json 2>&1)
+    rc=$?
+    if [ "$rc" = "3" ] && [ "$(nf_json /tmp/acc-nf/afile.json setup_error_reason)" = "define_invalid" ] \
+        && echo "$o" | grep -q "is not a directory"; then
+        echo "ok   a state that is a regular file is SETUP ERROR define_invalid, before anything runs"
+    else nf_bad "a state that is a regular file: wanted 3 define_invalid (rc=$rc)"; fi
+fi
+fails=$((fails + nf_fails))
 
 echo ""
 echo "=========== check 2e: restore does not follow a symlink out of the tree ==========="
@@ -1670,10 +1818,10 @@ fi
 
 echo ""
 echo "=========== check 2k: an empty oracle is not agreement ==========="
-# The pair with check 2d. There, a target that touches nothing PASSes because a real
-# strace examined hundreds of lines and confirmed it. Here the same target meets an
-# oracle that recorded nothing: two empty views, which the comparison would call
-# agreement. It has to be UNKNOWN.
+# The pair with check 2f's second half. There, a target that touches nothing is confirmed by
+# a real strace that examined hundreds of lines — a PASS until ADR 0091, `nothing_could_fail`
+# since. Here the same target meets an oracle that recorded nothing: two empty views, which
+# the comparison would call agreement. It has to be UNKNOWN, and for this reason.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
@@ -2490,11 +2638,17 @@ fi
 # matching and the run refuses rather than reaching a verdict. The count is asserted too,
 # because a verdict alone would survive a handler that recorded nothing and an oracle that
 # saw nothing — both accounts empty agree with each other.
+#
+# What the toy writes it creates, so no world can fail and the run ends `nothing_could_fail`
+# after every world has run (ADR 0091) — the last gate before a PASS, so reaching it is the
+# same evidence a PASS was. The UNKNOWN text prints no `oracle:` line; the JSON carries the
+# sentence the PASS block printed, and that is what this leg reads (`json_oracle`).
+json_oracle() { python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("oracle",""))' "$1" 2>/dev/null; }
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw raw-all" \
     --observe syscalls --shim "$SHIM" --work /tmp/acc/work \
-    --oracle /usr/bin/strace 2>&1)
+    --oracle /usr/bin/strace --json /tmp/acc/rawall.json 2>&1)
 rc=$?
 # What "agreed on N" pins is the two accounts being the SAME, which is the property this
 # leg is for: a handler arm that records the wrong class or nothing at all makes them
@@ -2507,9 +2661,9 @@ rc=$?
 # because this file would then carry a number nobody on the other machine can check.
 want_ops=20
 raw_fails=0
-got_ops=$(echo "$o" | sed -n 's/.*oracle: agreed on \([0-9][0-9]*\) operations.*/\1/p' | head -1)
-if [ "$rc" != "0" ]; then
-    echo "FAIL raw-all under --observe syscalls was refused: exit $rc"
+got_ops=$(json_oracle /tmp/acc/rawall.json | sed -n 's/.*agreed on \([0-9][0-9]*\) operations.*/\1/p' | head -1)
+if ! refused nothing_could_fail "$rc" "$o"; then
+    echo "FAIL raw-all under --observe syscalls did not run every world: exit $rc (wanted 2 nothing_could_fail)"
     echo "$o" | sed 's/^/     | /' | head -8
     raw_fails=1
 elif [ -z "$got_ops" ]; then
@@ -2661,12 +2815,13 @@ rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw blocked" \
     --observe syscalls --shim "$SHIM" --work /tmp/acc/work \
-    --oracle /usr/bin/strace 2>&1)
+    --oracle /usr/bin/strace --json /tmp/acc/blocked.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "oracle: agreed on 3 operations"; then
+# `nothing_could_fail` since ADR 0091 (the toy writes only what it creates), read as raw-all's is.
+if refused nothing_could_fail "$rc" "$o" && json_oracle /tmp/acc/blocked.json | grep -q "agreed on 3 operations"; then
     echo "ok   a target that blocks SIGSYS through both libc doors is still counted"
 else
-    echo "FAIL a target blocking SIGSYS was not observed: exit $rc (wanted 0 with three"
+    echo "FAIL a target blocking SIGSYS was not observed: exit $rc (wanted 2 nothing_could_fail with three"
     echo "     operations; recording_run_failed means the process died of the trap)"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
@@ -3673,10 +3828,9 @@ echo "=========== check 2nt: the two reports agree about not_tested, at the call
 # history form and L1 each add one), and the property is that the two forms agree, not
 # that the list has a particular length today.
 #
-# These three runs cover FOUR of the five call sites: the UNKNOWN, FAIL and full-PASS
-# text sites, and the single JSON site, which every one of the three writes. The fifth,
-# the zero-operation PASS, has no cheap target here and is NOT covered -- the goldens are
-# all that holds it.
+# These three runs cover every call site: the UNKNOWN, FAIL and full-PASS text sites, and
+# the single JSON site, which every one of the three writes. There were five until ADR 0091;
+# the fifth, the zero-operation PASS, is now the UNKNOWN text site.
 nt_fails=0
 nt_pair() {   # nt_pair <label> <text output> <json path>
     nt_t=$(printf '%s\n' "$2" | sed -n -e 's/^ *not tested: *//p' -e 's/^not tested  */&/p' | head -1)
@@ -4291,9 +4445,11 @@ o=$(TOY_OUTSIDE=/tmp/acc-cp/outside "$SIDEEYE" explore --state /tmp/acc-cp/state
     --setup "$OUT/toy-copy init" --operation "$OUT/toy-copy rotate" \
     --shim "$SHIM" --work /tmp/acc-cp/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-# A verdict (0 or 1), and the copy actually became a crash point: "explored 0" would
-# mean the destination was scoped out — the miss an argument-0 reading produces.
-if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! echo "$o" | grep -q "explored 0 crash points"; then
+# A verdict (0 or 1), and so the copy actually became a crash point: since ADR 0091 a run
+# with none is refused `nothing_could_fail` (exit 2) — the miss an argument-0 reading
+# produces, the destination scoped out — so the exit code alone tells the two apart. The
+# grep for "explored 0 crash points" that stood here matched a line that no longer exists.
+if [ "$rc" = "0" ] || [ "$rc" = "1" ]; then
     echo "ok   a copy INTO the state directory is counted and reaches a verdict"
 else
     echo "FAIL copy into state: exit $rc"
@@ -4305,12 +4461,13 @@ o=$(TOY_OUTSIDE=/tmp/acc-cp2/outside "$SIDEEYE" explore --state /tmp/acc-cp2/sta
     --setup "$OUT/toy-copy init" --operation "$OUT/toy-copy read-out" \
     --shim "$SHIM" --work /tmp/acc-cp2/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-# Reading the state out changes nothing in it: no crash points, and the honest
-# answer is the 0-operation PASS. An argument-0 reading would count a write here.
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 0 crash points"; then
-    echo "ok   a copy OUT of the state directory counts nothing (0 crash points)"
+# Reading the state out changes nothing in it: no crash points, and since ADR 0091 the
+# honest answer is `nothing_could_fail` — it was the 0-operation PASS before. An
+# argument-0 reading would count a write here, and reach a verdict instead.
+if refused nothing_could_fail "$rc" "$o" && echo "$o" | grep -q "no crash point"; then
+    echo "ok   a copy OUT of the state directory counts nothing (no crash point, nothing_could_fail)"
 else
-    echo "FAIL copy out of state: exit $rc (wanted 0 with no crash points)"
+    echo "FAIL copy out of state: exit $rc (wanted 2 nothing_could_fail with no crash points)"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
@@ -5853,8 +6010,8 @@ fi
 # #487: a PASS over exactly one crash point says so on its verdict line.
 #
 # Zero already had this — `PASS  the operation performed nothing that can change the judged
-# state` — and `docs/scouting.md` names it as the tell for a store that resolved outside
-# `--state`. One had the count in the account block and nowhere else, which is where #487's
+# state`, the refusal `nothing_could_fail` since ADR 0091 — and `docs/scouting.md` names it as
+# the tell for a store that resolved outside `--state`. One had the count in the account block and nowhere else, which is where #487's
 # reporter read past it: a full exploration and the conclusion "trash-cli holds", against a
 # corrected define that answers FAIL 2 of 7.
 #
@@ -5868,10 +6025,18 @@ fi
 # invariant$` against `head -1`, at line 557, some three thousand lines ABOVE this — drives
 # toy-fixed at four crash points and would fail on this define, because the clause is part of
 # the line it anchors.
+#
+# Since ADR 0091 the define carries a checker: the one crash point is an unlink of a path the
+# built-in invariant does not judge (it is gone after), so without one no world could fail and
+# the run is refused `nothing_could_fail` before any verdict line is printed. The checker
+# accepts the key present with its content or absent, and rejects the junk falsification
+# writes; the verdict line then also says the atomicity invariant had nothing to judge.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+printf '#!/bin/sh\nfor f in "$SIDEEYE_STATE_DIR"/*; do [ -e "$f" ] || continue; [ "$(cat "$f")" = key=1 ] || exit 1; done\n' > /tmp/acc/one-check.sh
+chmod 755 /tmp/acc/one-check.sh
 TOY_ONE_UNLINK=1 export TOY_ONE_UNLINK
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --check /tmp/acc/one-check.sh \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
 unset TOY_ONE_UNLINK
@@ -5883,7 +6048,7 @@ if [ "$rc" != "0" ]; then
 elif [ "${cp:-0}" != "1" ]; then
     echo "FAIL one-crash-point: the toy produced ${cp:-no} crash point(s), not 1 — nothing was measured"
     fails=$((fails + 1))
-elif ! echo "$o" | head -1 | grep -q "over a single crash point"; then
+elif ! echo "$o" | head -1 | grep -q "over a single crash point, but it had no path to judge"; then
     echo "FAIL one-crash-point: the verdict line does not name the count: $(echo "$o" | head -1)"
     fails=$((fails + 1))
 elif ! echo "$o" | grep -q "check that the target's store resolves inside the state directory"; then
@@ -9022,7 +9187,8 @@ fi
 # ---- #647, ADR 0086: the report names the directory the define's commands ran in -----------
 # `command_cwd` and `command_cwd_declared` in the JSON, a `cwd` line in the text. Every block
 # that prints `expected` carries the line, so each of the four is reached here on a run of its
-# own — PASS, the zero-operation PASS, FAIL, UNKNOWN. A test that reached only FAIL and UNKNOWN
+# own — PASS, a run with no crash point (a PASS block of its own until ADR 0091, an UNKNOWN
+# since), FAIL, UNKNOWN. A test that reached only FAIL and UNKNOWN
 # would stay green with the line missing from PASS, which is the block the plan for this change
 # first mislabelled. Paths are compared against `pwd -P`: `realpath` and `getcwd` both return
 # the resolved spelling, and a `"."` declaration only matches if it WAS resolved — written raw
@@ -9068,13 +9234,16 @@ cwd_toml $cw/proj/pass-none.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "
 o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/pass-none.toml --shim "$SHIM" --work $cw/w7 --oracle /usr/bin/strace --json $cw/r7.json 2>&1)
 cwd_expect "an undeclared cwd is Sideeye's own, and the report says so" $cw/r7.json "$o" "$from_real" false "      cwd: $from_real  (none declared: Sideeye's own)"
 
-# Leg 8 — the zero-operation PASS, which renders a block of its own (`doctor` only reads).
+# Leg 8 — a run with no crash point (`doctor` only reads). It rendered a PASS block of its own
+# until ADR 0091; it is refused `nothing_could_fail` now, and the step it carries talks about
+# `cwd`, so the line naming the directory has to be under it.
 cwd_toml $cw/proj/zero.toml "$OUT/toy-bug init" "$OUT/toy-bug doctor" "."
 o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/zero.toml --shim "$SHIM" --work $cw/w8 --oracle /usr/bin/strace --json $cw/r8.json 2>&1)
-if echo "$o" | grep -q "nothing that can change"; then
-    cwd_expect "the zero-operation PASS carries it too" $cw/r8.json "$o" "$proj_real" true "      cwd: $proj_real"
+rc=$?
+if refused_uncredited nothing_could_fail "$rc" "$o"; then
+    cwd_expect "a run with no crash point carries it too" $cw/r8.json "$o" "$proj_real" true "cwd         $proj_real"
 else
-    echo "FAIL zero-operation leg did not reach the zero-operation PASS block (nothing to check)"
+    echo "FAIL zero-operation leg did not reach nothing_could_fail (nothing to check)"
     echo "$o" | sed 's/^/     | /' | head -4
     cwd_fails=$((cwd_fails + 1))
 fi
@@ -9193,6 +9362,12 @@ echo "=========== check 2ad: two witnesses that disagree are both reported (#405
 # 2026-08-30). The verdict and the count are unchanged by the fix; only the account moved.
 vf_fails=0
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+# The toy rewrites a.txt; it is there, empty, before the run (ADR 0091). Created by the
+# operation instead, it would be a path only the post snapshot holds, which the built-in
+# invariant does not judge — no world could fail, and the run is nothing_could_fail before
+# the account this leg reads is ever printed. Empty, the world between the truncating open
+# and the write holds what it held before, so the verdict stays the PASS the leg reads.
+: > /tmp/acc/state/a.txt
 # The compiler the rest of the suite's toys use, with the same fallback, and its
 # stderr kept: swallowing it left "could not build" as the only thing a broken build
 # could say (review).
@@ -9386,16 +9561,19 @@ if [ "$rn_fails" = "0" ]; then
         --shim "$SHIM" --work /tmp/acc/work --allow-unverified \
         --json /tmp/acc/renamein.json 2>&1)
     rc=$?
-    if [ "$rc" != "0" ]; then
-        echo "FAIL wanted PASS (exit 0), got exit $rc — the reconciliation refused a run whose change a record does name"
+    # `nothing_could_fail` since ADR 0091: what moved in is post-only, so nothing the built-in
+    # invariant judges was touched and no checker was declared. It is raised after every world
+    # has run — past the reconciliation this leg is about, which would have refused first.
+    if ! refused_uncredited nothing_could_fail "$rc" "$o"; then
+        echo "FAIL wanted nothing_could_fail (exit 2), got exit $rc — the reconciliation refused a run whose change a record does name, or the run stopped short"
         printf '%s\n' "$o" | sed 's/^/     | /' | head -4
         rn_fails=$((rn_fails + 1))
     else
         python3 - <<'PYEOF' || rn_fails=$((rn_fails + 1))
 import json, sys
 d = json.load(open("/tmp/acc/renamein.json"))
-if d.get("verdict") != "PASS":
-    sys.exit("verdict %r" % d.get("verdict"))
+if (d.get("verdict"), d.get("unknown_reason")) != ("UNKNOWN", "nothing_could_fail"):
+    sys.exit("verdict %r %r" % (d.get("verdict"), d.get("unknown_reason")))
 l0 = d.get("l0") or ""
 if "attributed to a directory a recorded rename moved in" not in l0:
     sys.exit("the window is not disclosed in the l0 account: %r" % l0)
@@ -9482,16 +9660,19 @@ rc=$?
 if [ ! -L /tmp/acc/state/cur ]; then
     echo "FAIL the toy did not reach the shape this leg measures: no interior symlink"
     sl_fails=$((sl_fails + 1))
-elif [ "$rc" != "0" ]; then
-    echo "FAIL a run observed end to end was refused: exit $rc"
+elif ! refused_uncredited nothing_could_fail "$rc" "$o"; then
+    # `nothing_could_fail` since ADR 0091: the judged paths here are the link and its directory,
+    # neither of which the operation changed. Reaching it means every world ran and the
+    # reconciliation accepted the run — which is what this leg is about.
+    echo "FAIL a run observed end to end did not run every world: exit $rc (wanted 2 nothing_could_fail)"
     printf '%s\n' "$o" | sed 's/^/     | /' | head -6
     sl_fails=$((sl_fails + 1))
 else
     python3 - <<'PYEOF' || sl_fails=$((sl_fails + 1))
 import json, sys
 d = json.load(open("/tmp/acc/symlink.json"))
-if d.get("verdict") != "PASS":
-    sys.exit("wanted PASS, got %r %r" % (d.get("verdict"), d.get("unknown_reason")))
+if (d.get("verdict"), d.get("unknown_reason")) != ("UNKNOWN", "nothing_could_fail"):
+    sys.exit("wanted nothing_could_fail, got %r %r" % (d.get("verdict"), d.get("unknown_reason")))
 # Not a rename: the count has to stay zero, or the substitution is being paid for by
 # absorbing the difference into a window instead of naming it.
 if d.get("paths_attributed_to_rename") != 0:
@@ -10098,12 +10279,13 @@ rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw samask" \
     --observe syscalls --shim "$SHIM" --work /tmp/acc/work \
-    --oracle /usr/bin/strace 2>&1)
+    --oracle /usr/bin/strace --json /tmp/acc/samask.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "oracle: agreed on 3 operations"; then
+# `nothing_could_fail` since ADR 0091, read as raw-all's is; below the ledger gate, so not credited.
+if refused_uncredited nothing_could_fail "$rc" "$o" && json_oracle /tmp/acc/samask.json | grep -q "agreed on 3 operations"; then
     echo "ok   a handler whose sa_mask holds SIGSYS writes and is counted under --observe syscalls"
 else
-    echo "FAIL a handler installed with a full sa_mask was not observed: exit $rc (wanted 0 with"
+    echo "FAIL a handler installed with a full sa_mask was not observed: exit $rc (wanted 2 nothing_could_fail with"
     echo "     three operations; recording_run_failed means the process died of the trap)"
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))

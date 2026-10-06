@@ -368,6 +368,15 @@ pub var l0_judged_paths_omitted: u32 = 0;
 /// empty array with nothing omitted, and that is a different fact from never having classified.
 pub var l0_classified: bool = false;
 
+/// How many of the judged paths a crash world could have shown changed (#683, ADR 0091): those
+/// that ended other than they began, or that a crash point named. Null until measured, which
+/// happens once every check on the recording's trace has held (the last is a contained run's
+/// cgroup account), so a refusal on an untrustworthy trace carries none. Zero beside a
+/// non-empty `l0_judged_paths` is the reading this exists for — the atomicity invariant held
+/// over paths the operation never touched, and on an exploration's PASS it is the checker or the
+/// marker that judged the run (a replay's PASS is not gated, and can carry zero with neither).
+pub var l0_judged_paths_touched: ?u32 = null;
+
 /// The recovery account (#606, ADR 0072): what the run did about a declared recovery, as a
 /// sentence. Null until the define was read and found to declare one, so a report from a
 /// define without `[recovery]` — and a refusal raised before the define was read — carries no
@@ -1028,7 +1037,7 @@ pub fn sayRecovery(comptime fmt: []const u8) void {
 
 /// The text report's `cwd` line (#647), in the calling block's own style, read from the
 /// variable the JSON field reads. Printed in every block that prints `expected` — UNKNOWN,
-/// FAIL, PASS and the zero-operation PASS — and in `preflight`'s report; like `sayRecovery`,
+/// FAIL and PASS — and in `preflight`'s report; like `sayRecovery`,
 /// not on SETUP ERROR's one-line text, whose JSON still carries the field. Nothing is printed
 /// while `command_cwd` is unset, which is every report raised before the `cwd` is resolved.
 ///
@@ -1057,9 +1066,10 @@ fn jsonRecoveryField(w: *std.ArrayList(u8), arena: std.mem.Allocator, r: Recover
 
 /// The verdict line's clause for a run with exactly one crash point (#487).
 ///
-/// Zero has a verdict line of its own — "the operation performed nothing that can change the
-/// judged state" — and `docs/scouting.md` names it as the tell for a store that resolved
-/// outside `--state`. One had nothing: the count was in the account block and nowhere else,
+/// Zero had a verdict line of its own — "the operation performed nothing that can change the
+/// judged state" — until ADR 0091 made it the refusal `nothing_could_fail`, whose step says where
+/// an undeclared define's commands run; `docs/scouting.md` calls it the tell for a store outside
+/// `--state`. One had nothing: the count was in the account block and nowhere else,
 /// which is where #487's reporter read past it, at the price of a full exploration and the
 /// wrong conclusion. `preflight` has named its count on its own headline all along
 /// (`recording accepted — N state-changing operation(s) observed`), so this is explore
@@ -1074,6 +1084,28 @@ fn jsonRecoveryField(w: *std.ArrayList(u8), arena: std.mem.Allocator, r: Recover
 /// still reaches two (`open` + `write`) and gets no tell.
 pub fn singleCrashPointClause(n: usize) []const u8 {
     return if (n == 1) ", over a single crash point" else "";
+}
+
+/// The verdict line's clause for a PASS whose atomicity invariant compared nothing a crash
+/// could change (#683, ADR 0091). An exploration's such PASS reaches the print only because a
+/// checker, or a marker over a created or removed path, judged the worlds — otherwise it is
+/// refused `nothing_could_fail` — and the headline's claim stays true: the invariant held. What the
+/// clause adds is that it held vacuously, on the same line, where #683's reader stopped.
+/// Empty when any judged path was touched, so every other PASS reads as it did. A replay's
+/// PASS carries it too: the clause does not move the verdict.
+pub fn untouchedClause(arena: std.mem.Allocator, touched: u32, judged: usize) []const u8 {
+    if (touched > 0) return "";
+    if (judged == 0) return ", but it had no path to judge";
+    return std.fmt.allocPrint(arena, ", but the operation touched none of the {d} path(s) it judged", .{judged}) catch ", but the operation touched none of the paths it judged";
+}
+
+test "the untouched clause is empty whenever a judged path was touched, and names the count otherwise (#683)" {
+    const a = std.testing.allocator;
+    try std.testing.expectEqualStrings("", untouchedClause(a, 1, 3));
+    try std.testing.expectEqualStrings(", but it had no path to judge", untouchedClause(a, 0, 0));
+    const s = untouchedClause(a, 0, 2);
+    defer a.free(s);
+    try std.testing.expectEqualStrings(", but the operation touched none of the 2 path(s) it judged", s);
 }
 
 /// The advice that goes with the clause above, in the account block's own style, only when
@@ -1467,6 +1499,8 @@ fn buildJson(
     if (l0_classified) {
         try jsonArrayField(w, arena, "l0_judged_paths", l0_judged_paths, false);
         try w.print(arena, ",\n  \"l0_judged_paths_omitted\": {d}", .{l0_judged_paths_omitted});
+        // After the two it qualifies, so it moves no byte that was there before it (#683).
+        if (l0_judged_paths_touched) |t| try w.print(arena, ",\n  \"l0_judged_paths_touched\": {d}", .{t});
     }
     try w.appendSlice(arena, "\n}\n");
     return buf.items;

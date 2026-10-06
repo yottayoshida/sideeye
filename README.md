@@ -75,7 +75,7 @@ case "$claim:$reality" in
 esac
 ```
 
-Sideeye refuses to trust a checker it has not seen fail: before exploring, it corrupts the state and requires the check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS. The report this one produced: [docs/cli.md](docs/cli.md#example). More checkers: [docs/checker-cookbook.md](docs/checker-cookbook.md).
+Sideeye refuses to trust a checker it has not seen fail: before exploring, it corrupts the state and requires the check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS. So does an exploration in which no world could have failed: no crash point; or no checker, no crash world that printed the marker over a created or removed path, and no crash point other than an fsync or a mkdir that named a path the built-in invariant judges, or renamed a directory above one, while every such path ended as it began. The report this one produced: [docs/cli.md](docs/cli.md#example). More checkers: [docs/checker-cookbook.md](docs/checker-cookbook.md).
 
 ## What the target has to be
 
