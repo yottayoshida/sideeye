@@ -1,0 +1,1 @@
+  listxattr   e.g. 83    listxattr("/s/fw/zones/public.xml", "", 256) = 0

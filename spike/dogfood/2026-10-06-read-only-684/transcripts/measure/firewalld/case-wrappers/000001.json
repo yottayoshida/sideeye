@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/fw",
+    "operation": "firewall-offline-cmd --system-config /s/fw --zone=public --add-port=8080/tcp",
+    "cwd": "/s/fw-in",
+    "expected_status": 0
+  },
+  "k": 5,
+  "ops_total": 5,
+  "prefix_hash": "f7bddc2f240cdadf",
+  "after_class": "open",
+  "after_path": "/s/fw/zones/public.xml",
+  "before_class": "write",
+  "before_path": "/s/fw/zones/public.xml",
+  "violation": "hybrid"
+}

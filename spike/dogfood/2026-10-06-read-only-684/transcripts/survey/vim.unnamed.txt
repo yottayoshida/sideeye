@@ -1,0 +1,2 @@
+  getxattr   e.g. 24    getxattr("/s/vim/state/a.txt", "system.posix_acl_access", 0xffffcd859420, 132) = -1 ENODATA (No data available)
+  setxattr   e.g. 24    setxattr("/s/vim/state/a.txt", "system.posix_acl_access", "\2\0\0\0\1\0\6\0\377\377\377\377\4\0\4\0\377\377\377\377 \0\4\0\377\377\377\377", 28, 0) = 0

@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/dotdrop",
+    "operation": "dotdrop install -f -c /s/dotdrop-in/config.yaml -p host",
+    "cwd": "/s/dotdrop-in",
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 14,
+  "prefix_hash": "e01f9cb94dc69b7f",
+  "after_class": "open",
+  "after_path": "/s/dotdrop/home/.bashrc",
+  "before_class": "write",
+  "before_path": "/s/dotdrop/home/.bashrc",
+  "violation": "hybrid"
+}

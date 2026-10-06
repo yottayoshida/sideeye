@@ -1,0 +1,24 @@
+FAIL  2 of 15 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 6 of 14
+            after  open(/s/dotdrop/home/.bashrc)
+            before write(/s/dotdrop/home/.bashrc)
+path        home/.bashrc
+observed    holding neither the old nor the new content
+explored    15 worlds (crash points 14 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 14 operations (6437 syscall lines examined, 118 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    6 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): utimensat x2, fchmodat x2, fchownat x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/dotdrop/work-syscalls/cases/000001.json
+replay      sideeye replay /out/dotdrop/work-syscalls/cases/000001.json --shim /eng/lib/libsideeye_shim.so
+evidence    /out/dotdrop/work-syscalls/evidence/000001.json
+cwd         /s/dotdrop-in
+processes   6 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/dotdrop SIDEEYE_TRACE_PATH=/out/dotdrop/work-syscalls/trace-repro.bin LD_PRELOAD=/eng/lib/libsideeye_shim.so SIDEEYE_KILL_AT=6 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=5ea0b971b5725faec978fdba3a2c39b5d4565613ca95be9f480877bc5dd37d7a;

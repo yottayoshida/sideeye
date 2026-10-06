@@ -213,7 +213,14 @@
  *                  invisible to the verdict: none can be state-directory content.
  *                  On Linux it also asks two things of key.json that change nothing —
  *                  an epoll registration (EPERM for a regular file) and a faccessat2
- *                  permission query — which the oracle must read as reads (#542).
+ *                  permission query — which the oracle must read as reads (#542); and,
+ *                  since #684, its extended attributes in all three spellings, an
+ *                  inotify watch, preadv/preadv2, and the polls (poll, ppoll, select,
+ *                  pselect).
+ *   TOY_SETXATTR   on Linux, rotate also sets an extended attribute on key.json — a
+ *                  write the oracle has no class for, which must still refuse
+ *                  (unsupported_syscall_observed naming setxattr; #684's control).
+ *                  rotate only: init never reads it.
  *   TOY_EXIT_STATUS=N  rotate exits N after completing all of its state work — the
  *                  git-convention shape (#3). Without --expect-status N the run must
  *                  refuse as recording_run_failed naming both statuses; with it, the
@@ -356,9 +363,14 @@
 #include <errno.h>
 #include <fcntl.h>
 #ifdef __linux__
+#include <poll.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
+#include <sys/inotify.h>
+#include <sys/select.h>
 #include <sys/syscall.h>
+#include <sys/uio.h>
+#include <sys/xattr.h>
 #endif
 #ifdef __APPLE__
 #include <sys/event.h>
@@ -1219,6 +1231,16 @@ static int cmd_rotate_body(void) {
         close(fd);
     }
 
+#ifdef __linux__
+    /* #684's control: an attribute WRITE on key.json, which the oracle must still refuse by
+     * name. Read here, in rotate, and never in init. */
+    if (getenv("TOY_SETXATTR")) {
+        char sp[4096];
+        join_path(sp, sizeof sp, "key.json");
+        (void)setxattr(sp, "user.sideeye", "1", 1, 0);
+    }
+#endif
+
     /* Descriptors that are provably not files; opening and closing them must not
      * move the verdict. */
     if (getenv("TOY_ANONFD")) {
@@ -1239,6 +1261,33 @@ static int cmd_rotate_body(void) {
         struct epoll_event ev = { .events = EPOLLIN };
         (void)epoll_ctl(epfd, EPOLL_CTL_ADD, kfd, &ev);
         (void)faccessat(AT_FDCWD, kp, R_OK, AT_EACCESS);
+        /* #684: the rest of what changes nothing, each with the state file on its line.
+         * The answers are ignored: an attribute that is not there (ENODATA) or a
+         * filesystem without them (ENOTSUP) still leaves the line. preadv2 goes through
+         * syscall(2) so the line is preadv2 whatever glibc does with flags of 0; glibc may
+         * issue poll and select as ppoll and pselect6 (it does on aarch64), so the explicit
+         * ppoll and pselect make sure those two spellings appear whatever it does. */
+        char xb[256];
+        (void)getxattr(kp, "user.sideeye", xb, sizeof xb);
+        (void)lgetxattr(kp, "user.sideeye", xb, sizeof xb);
+        (void)fgetxattr(kfd, "user.sideeye", xb, sizeof xb);
+        (void)listxattr(kp, xb, sizeof xb);
+        (void)llistxattr(kp, xb, sizeof xb);
+        (void)flistxattr(kfd, xb, sizeof xb);
+        int ifd = inotify_init1(0);
+        if (ifd >= 0) { (void)inotify_add_watch(ifd, kp, IN_MODIFY); close(ifd); }
+        struct iovec iv = { .iov_base = xb, .iov_len = 16 };
+        (void)preadv(kfd, &iv, 1, 0);
+        (void)syscall(SYS_preadv2, kfd, &iv, 1, 0, 0, 0);
+        struct pollfd pf = { .fd = kfd, .events = POLLIN };
+        (void)poll(&pf, 1, 0);
+        struct timespec zero = { 0, 0 };
+        (void)ppoll(&pf, 1, &zero, NULL);
+        fd_set rs; FD_ZERO(&rs); FD_SET(kfd, &rs);
+        struct timeval tv = { 0, 0 };
+        (void)select(kfd + 1, &rs, NULL, NULL, &tv);
+        FD_ZERO(&rs); FD_SET(kfd, &rs);
+        (void)pselect(kfd + 1, &rs, NULL, NULL, &zero, NULL);
         close(kfd);
         close(efd);
         close(epfd);

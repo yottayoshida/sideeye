@@ -1,0 +1,2 @@
+# The corporate proxy CA host.sh stages for the image build (see 2026-09-21-verdict-chain/apparatus/.gitignore).
+proxy-ca.pem

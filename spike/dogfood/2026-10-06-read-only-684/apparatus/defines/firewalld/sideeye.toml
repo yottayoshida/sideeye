@@ -1,0 +1,6 @@
+[world]
+state = "/s/fw"
+
+[define]
+operation = "firewall-offline-cmd --system-config /s/fw --zone=public --add-port=8080/tcp"
+cwd       = "/s/fw-in"

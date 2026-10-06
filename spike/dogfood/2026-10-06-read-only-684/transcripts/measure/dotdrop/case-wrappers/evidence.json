@@ -1,0 +1,26 @@
+{
+  "schema": "sideeye/evidence",
+  "evidence_version": 1,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "target": {"operation": "dotdrop install -f -c /s/dotdrop-in/config.yaml -p host", "state_root": "/s/dotdrop"},
+  "exhibit": "earliest",
+  "crash_point": 6,
+  "crash_points_total": 14,
+  "boundary": {"after_op": "open", "after_path": "/s/dotdrop/home/.bashrc", "before_op": "write", "before_path": "/s/dotdrop/home/.bashrc"},
+  "invariant": "built-in atomicity (L0)",
+  "subject": "home/.bashrc",
+  "observed": "holding neither the old nor the new content",
+  "consequence": [
+    {"path": "home/.bashrc", "before": {"kind": "file", "size": 59}, "completed": {"kind": "file", "size": 35}, "crashed": {"kind": "file", "size": 0}, "pre_existing": true, "declared_scratch": false, "old_bytes_elsewhere": "yes", "old_bytes_at": "home/.bashrc.dotdropbak"},
+    {"path": "home/.bashrc.dotdropbak", "before": null, "completed": {"kind": "file", "size": 59}, "crashed": {"kind": "file", "size": 59}, "pre_existing": false, "declared_scratch": false, "old_bytes_elsewhere": "not_applicable", "old_bytes_at": ""},
+    {"path": "home/.gitconfig", "before": {"kind": "file", "size": 19}, "completed": {"kind": "file", "size": 18}, "crashed": {"kind": "file", "size": 19}, "pre_existing": true, "declared_scratch": false, "old_bytes_elsewhere": "no", "old_bytes_at": ""},
+    {"path": "home/.gitconfig.dotdropbak", "before": null, "completed": {"kind": "file", "size": 19}, "crashed": null, "pre_existing": false, "declared_scratch": false, "old_bytes_elsewhere": "not_applicable", "old_bytes_at": ""}
+  ],
+  "consequence_truncated": false,
+  "checker": {"configured": false, "failed": null, "diagnostic": null},
+  "replay": "sideeye replay /out/dotdrop/work-wrappers/cases/000001.json --shim /eng/lib/libsideeye_shim.so",
+  "case": "/out/dotdrop/work-wrappers/cases/000001.json",
+  "recovery": {"result": "not_configured"},
+  "caveats": []
+}
