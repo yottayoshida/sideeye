@@ -155,6 +155,7 @@ const usage_fmt =
     \\usage:
     \\  sideeye demo [--shim <lib>]
     \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--twice]
+    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--twice]
     \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
@@ -168,14 +169,19 @@ const usage_fmt =
     \\expected exit code is 1 — the planted bug found — so the demo doubles as a
     \\smoke test of this binary and its shim.
     \\
-    \\preflight answers "does the recording phase accept this target?" before a
-    \\define exists: it runs the operation under observation and either accepts
-    \\the recording (exit 0) or refuses with the same named detector a real run
-    \\would use (exit 2). With --twice it observes a second run and compares the
-    \\two, adding one outcome: the runs left different state (exit 1, and no
-    \\verdict — see --twice below). What only a real exploration can check — kill
-    \\landing, world-side process boundaries, baseline behavior, checker
-    \\falsification — is listed as not checked, never silently claimed.
+    \\preflight answers "does the recording phase accept this target?" without
+    \\exploring — from the define flags before a sideeye.toml exists, or from the
+    \\toml itself with --config, read as explore reads it. It runs the operation
+    \\under observation and either accepts the recording (exit 0) or refuses with
+    \\the same named detector a real run would use (exit 2). A toml's marker must
+    \\appear in the recording's output, and a check is refused if it cannot be
+    \\started or the state holds nothing to corrupt; neither the check nor a
+    \\recovery is run.
+    \\With --twice it observes a second run and compares the two, adding one
+    \\outcome: the runs left different state (exit 1, and no verdict — see
+    \\--twice below). What only a real exploration can check — kill landing,
+    \\world-side process boundaries, baseline behavior, checker falsification —
+    \\is listed as not checked, never silently claimed.
     \\
     \\evidence renders the bundle a FAIL saved beside its case: the paths whose
     \\before, completed and crashed states differ, whether each existed before the
@@ -348,14 +354,15 @@ const usage_fmt =
     \\               instead, the way the first one would.
     \\               What this does NOT establish: that the target is
     \\               deterministic. The comparison covers file bytes, entry kinds
-    \\               and symlink targets under --state; modes, ownership,
-    \\               timestamps, inode identity, a symlink's destination and
-    \\               everything outside --state are not compared, the pre-state
+    \\               and symlink targets in the state directory (--state, or a
+    \\               toml's [world] state); modes, ownership, timestamps, inode
+    \\               identity, a symlink's destination and everything outside
+    \\               the state directory are not compared, the pre-state
     \\               run B starts from is rebuilt rather than byte-identical, and
     \\               two runs are not all runs. The two-second gap is what
     \\               epoch-second stamping needs to move — not a measured
     \\               sufficiency threshold for nondeterminism in general.
-    \\               It also REWRITES --state: the directory is restored from the
+    \\               It also REWRITES the state directory: it is restored from the
     \\               pre-run snapshot before the second run, so the first run's
     \\               output is gone and file modes come back as 0644/0755. A
     \\               preflight without this flag leaves the directory as the run
@@ -622,9 +629,10 @@ pub fn parse(argv: []const []const u8) Parsed {
     }
 
     // preflight answers one question — "does the recording phase accept this target?" —
-    // before a define exists. The define-shaped flags are refused by name rather than
-    // ignored: an accepted-but-inert flag would be a declared intention that silently
-    // never fires, the exact shape the config parser refuses too (ADR 0007).
+    // without exploring, from the flags or from a toml (#704, ADR 0094). The flags that only
+    // an exploration acts on are refused by name rather than ignored: an accepted-but-inert
+    // flag would be a declared intention that silently never fires, the exact shape the
+    // config parser refuses too (ADR 0007).
     // Two observers cannot both be the completeness oracle: they produce different
     // accounts of the same run, and a caller who named both has not said which one the
     // verdict rests on. Refused by name rather than resolved by precedence — the
@@ -655,10 +663,15 @@ pub fn parse(argv: []const []const u8) Parsed {
 
     if (mode == .preflight) {
         if (args.oracle_fs_usage) setupError(.define_invalid, "--oracle-fs-usage belongs to explore and replay; preflight asks whether the recording phase accepts this target, and answers that without a second witness");
-        if (args.check != null) setupError(.define_invalid, "preflight runs before an invariant exists; --check belongs to explore, which also falsifies it before trusting it");
-        if (args.marker != null) setupError(.define_invalid, "--marker belongs to explore; preflight makes no claim a marker could strengthen");
-        if (args.recovery != null or args.recovery_check != null) setupError(.define_invalid, "--recovery and --recovery-check belong to explore and replay; preflight saves no FAIL for a recovery to be run against");
-        if (args.config != null) setupError(.define_invalid, "preflight takes the define-surface flags directly; once a sideeye.toml exists, `sideeye explore --config` answers strictly more");
+        // Under --config these three are define-surface flags beside a config, and the
+        // refusal for that is explore's own, in `phaseDefine` (#704): checked here first, a
+        // flag given beside a toml would be told something about preflight instead of that
+        // the define lives in one place. Only the flags' preflight refuses them by name.
+        if (args.config == null) {
+            if (args.check != null) setupError(.define_invalid, "--check belongs to explore, which falsifies it before trusting it; a check declared in a sideeye.toml is read by preflight --config, which refuses it if it cannot be started or the state holds nothing to corrupt, and does not run it");
+            if (args.marker != null) setupError(.define_invalid, "--marker belongs to explore; a marker declared in a sideeye.toml is read by preflight --config, which confirms the recording run printed it");
+            if (args.recovery != null or args.recovery_check != null) setupError(.define_invalid, "--recovery and --recovery-check belong to explore and replay; preflight saves no FAIL for a recovery to be run against, and a recovery declared in a sideeye.toml is read by preflight --config without being run");
+        }
         if (args.allow_unverified) setupError(.define_invalid, "preflight never claims PASS, so there is nothing --allow-unverified could weaken");
     }
     return .{ .mode = mode, .case_arg = case_arg, .args = args };
