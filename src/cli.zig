@@ -225,7 +225,8 @@ const usage_fmt =
     \\               root, nor the owner of this binary. A path given here is
     \\               used as named and not checked
     \\  --work       scratch directory for traces (default /tmp/sideeye-work)
-    \\  --oracle     path to strace; the recording run is compared against it
+    \\  --oracle     path to strace; the recording run is compared against it (Linux;
+    \\               refused on macOS, whose witness is --oracle-fs-usage)
     \\  --oracle-fs-usage
     \\               macOS: compare the recording run against fs_usage instead. Needs
     \\               root, so sudo must already hold credentials (`sudo -v` first, in

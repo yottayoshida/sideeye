@@ -459,8 +459,13 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
 /// weaker claim deliberately, and the report says which claim was made.
 pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool) void {
     if (has_oracle or allow_unverified) return;
+    // The verdict does not branch on the platform (the paragraph above); the step it names
+    // does (#702). macOS refuses `--oracle` outright — it runs strace — so the sentence there
+    // names the witness macOS has. `supervised` is Linux only, so its sentence keeps one.
     const base = if (boundary.observe_mode == .supervised)
         "no oracle was given, so the supervising engine's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim"
+    else if (builtin.os.tag == .macos)
+        "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle-fs-usage (run sudo -v first, in the same terminal), or --allow-unverified to accept the weaker claim"
     else
         "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim";
     // A discovered strace is only ever NAMED here, never attached: a second witness

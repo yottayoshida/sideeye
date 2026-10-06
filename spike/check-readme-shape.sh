@@ -20,7 +20,7 @@
 # The size bound is the other half. The page had grown to 33 KB by writing each
 # decision's record into it — issue numbers, ADR numbers, the reason behind each refusal —
 # and those have homes of their own (DESIGN.md, docs/, docs/adr/). The bound is a sum of what
-# the page must carry plus a fixed slack, not a target picked first: 8076 + 590 = 8666.
+# the page must carry plus a fixed slack, not a target picked first: 8139 + 590 = 8729.
 # The sum was corrected twice, upward, during the change that introduced this check, and both
 # corrections were elements it had never counted rather than drafts that would not fit. First
 # the 382-byte clause naming the one exception to "never a silent PASS", which an owner ruling
@@ -28,6 +28,12 @@
 # reader start from the release artifact: the onboarding box holds README.md and a tarball and
 # nothing else, network-off, so a page that sends the untar line to another file leaves the
 # only artifact in the box unusable — which is what check 8 below now holds.
+# A third, the same kind (#702, 2026-10-06): the brew formula serves macOS, and the page's only
+# explore line named strace, which macOS refuses — the first command a macOS reader copied could
+# not run. The macOS line and the words that say which line is which are 63 bytes net, after
+# the `--oracle` bullet gave up the clause naming strace; the two bytes of slack the page had are
+# left as they were. Not as a `# macOS` at the end of the line: zsh, macOS's shell, does not read
+# `#` as a comment when typed, so a pasted line would hand `#` to sideeye as an argument.
 #
 # Sunset: if this has not failed once by 2026-12-04, delete it and its CI step.
 set -u
@@ -46,7 +52,7 @@ has() { grep -qF -e "$1" "$R"; }
 
 bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 8666 ]; then ok "size: $bytes bytes, at most 8666"; else bad "size: $bytes bytes, over 8666"; fi
+if [ "$bytes" -le 8729 ]; then ok "size: $bytes bytes, at most 8729"; else bad "size: $bytes bytes, over 8729"; fi
 if [ "$lines" -le 120 ]; then ok "length: $lines lines, at most 120"; else bad "length: $lines lines, over 120"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi
