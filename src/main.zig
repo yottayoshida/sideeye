@@ -1277,6 +1277,25 @@ fn phaseDefine(run: *Run) void {
         setupError(.define_invalid, "--state names a location nothing sacrificial belongs in: exploration empties and rebuilds this directory once per world, hundreds of times. Point it at a scratch directory the run owns");
     };
 
+    // #701 (ADR 0092): a setup that cannot be started is refused as that, not spawned and
+    // read back as `--setup exited 127`. Here rather than in `phaseSetup` because a setup
+    // cannot create itself, so nothing is lost by asking before the one destructive step
+    // below — and the mkdirs are undone, as every refusal between them and that step does.
+    //
+    // Not earlier. The CLI self-description check (spike/acceptance.sh) pins the base
+    // command's first refusal — its `--state` that does not resolve, above — and reads a flag
+    // that changes the first line as one the mode does not accept; a refusal of a dummy
+    // `--setup` raised ahead of that one would make `--setup` read as refused everywhere
+    // (the shape `src/cli.zig` records for `--oracle-fs-usage`, #406). After `effective_cwd`
+    // too, so the report names the directory the setup would have run in (#647).
+    const setup_arena = arena_state.allocator();
+    const setup_cwd = effective_cwd orelse args.cwd;
+    const setup_argv: []const []const u8 = if (args.setup) |cmd| commandArgv(setup_arena, cmd) catch &[_][]const u8{} else &[_][]const u8{};
+    if (refuse.unstartable(setup_arena, "setup", setup_argv, setup_cwd)) |m| {
+        undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+        setupError(.environment, m);
+    }
+
     // --fresh-state (#69): empty the case's state dir before setup runs. The dir is
     // sacrificial by contract — exploration kills processes mid-write into it — and
     // the deletion rides the engine's guarded path (assertSafeRoot + the same
@@ -1286,8 +1305,17 @@ fn phaseDefine(run: *Run) void {
     // every earlier setup validation — the --work containment vet included — ahead of
     // the one destructive step, and the mkdir-then-resolve above already covers a
     // state dir that does not exist yet.
-    if (args.fresh_state)
+    if (args.fresh_state) {
         engine.freshDir(state_abs) catch |e| refuse.restoreFailure(e, "--fresh-state could not empty the case's state directory");
+        // Asked again after the emptying (#701 review): a setup that lived inside the state
+        // directory passed the question above and is gone now, and would otherwise reach
+        // `--setup exited 127` naming no file. Only here, where the directory is
+        // sacrificial by contract and the replay was going to empty it anyway.
+        if (refuse.unstartable(setup_arena, "setup", setup_argv, setup_cwd)) |m| {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError(.environment, m);
+        }
+    }
 
     // The spelling the caller used, absolute but with symlinks left alone.
     //
@@ -1408,6 +1436,19 @@ fn phaseApparatus(run: *Run) void {
     const arena_state = run.arena_state;
     const args = run.parsed.args;
     const state_abs = run.define.state_abs;
+
+    // ---- the operation and the checker can be started (#701, ADR 0092) --------------
+    // After setup, not before it: a setup that builds the operation or writes the checker is
+    // a define this must not refuse. Before the first snapshot and before either command
+    // runs, so a name that is not there is a SETUP ERROR naming the file — not a recording
+    // that "exited 127", and not a checker that "rejected the state" without ever starting.
+    {
+        const a = arena_state.allocator();
+        const cwd = run.define.effective_cwd orelse args.cwd;
+        const none = &[_][]const u8{};
+        if (refuse.unstartable(a, "operation", commandArgv(a, run.define.operation) catch none, cwd)) |m| setupError(.environment, m);
+        if (args.check) |c| if (refuse.unstartable(a, "check", commandArgv(a, c) catch none, cwd)) |m| setupError(.environment, m);
+    }
 
     // ---- apparatus (ADR 0041) -----------------------------------------------------
     // After setup, which is where the cohorts generated their devices (a sitecustomize, a
