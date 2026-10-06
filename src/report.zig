@@ -43,6 +43,58 @@ const writeWholeFile = files.writeWholeFile;
 
 var out_buf: [16 * 1024]u8 = undefined;
 
+/// Whether the verdict word is coloured (#712, docs/cli.md): only when standard output is a
+/// terminal, `NO_COLOR` is unset or empty (no-color.org), and `TERM` is not `dumb`. Pure, so
+/// the cases are tested without touching the environment. Only fd 1 is asked: a report
+/// redirected into a file from a terminal carries no escape sequence of Sideeye's.
+fn colourFor(stdout_is_tty: bool, no_color: ?[]const u8, term: ?[]const u8) bool {
+    if (!stdout_is_tty) return false;
+    if (no_color) |v| if (v.len > 0) return false;
+    if (term) |t| if (std.mem.eql(u8, t, "dumb")) return false;
+    return true;
+}
+
+/// Decided at the first verdict word, not at startup: a SETUP ERROR can be printed while
+/// the flags are still being read. The answer cannot change within one run.
+var colour_decided: ?bool = null;
+
+fn colourOn() bool {
+    if (colour_decided) |c| return c;
+    const no_color: ?[]const u8 = if (posix.getenv("NO_COLOR")) |z| std.mem.span(z) else null;
+    const term: ?[]const u8 = if (posix.getenv("TERM")) |z| std.mem.span(z) else null;
+    const c = colourFor(posix.isatty(1) == 1, no_color, term);
+    colour_decided = c;
+    return c;
+}
+
+/// The verdict word, coloured where `colourFor` allows it and as written everywhere else.
+/// The word stays at the call site (`paint("FAIL")`) so a search for the verdict finds the
+/// line that prints it; only the four verdicts are accepted.
+pub fn paint(comptime word: []const u8) []const u8 {
+    const code = comptime if (std.mem.eql(u8, word, "PASS"))
+        "32"
+    else if (std.mem.eql(u8, word, "FAIL"))
+        "31"
+    else if (std.mem.eql(u8, word, "UNKNOWN"))
+        "33"
+    else if (std.mem.eql(u8, word, "SETUP ERROR"))
+        "35"
+    else
+        @compileError("paint takes a verdict word: PASS, FAIL, UNKNOWN or SETUP ERROR");
+    return if (colourOn()) "\x1b[1;" ++ code ++ "m" ++ word ++ "\x1b[0m" else word;
+}
+
+test "the verdict is coloured only on a terminal, without NO_COLOR, and not for TERM=dumb (#712)" {
+    const T = std.testing;
+    for ([_]?[]const u8{ null, "xterm", "dumb" }) |term| {
+        for ([_]?[]const u8{ null, "", "1" }) |nc| {
+            const want_on = (nc == null or nc.?.len == 0) and !(term != null and std.mem.eql(u8, term.?, "dumb"));
+            try T.expectEqual(want_on, colourFor(true, nc, term));
+            try T.expectEqual(false, colourFor(false, nc, term));
+        }
+    }
+}
+
 /// The report is the product. Losing it silently is not an option.
 ///
 /// This used to `catch return` on overflow, so a FAIL whose paths pushed the text past

@@ -3489,8 +3489,11 @@ fn phaseReport(run: *Run) void {
                 .evidence = cevidence,
             };
         } else null;
+        // The verdict word in a write of its own (#712): coloured on a terminal, and the
+        // table of arguments below keeps its two columns.
+        say("{s}", .{report.paint("FAIL")});
         say(
-            \\FAIL  {d} of {d} explored worlds violated an invariant
+            \\  {d} of {d} explored worlds violated an invariant
             \\
             \\invariant   {s}
             \\earliest    crash point {d} of {d}
@@ -3593,7 +3596,7 @@ fn phaseReport(run: *Run) void {
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
 
     say(
-        \\PASS  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}
+        \\{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}
         \\      explored {d} worlds (crash points {d} + 1 baseline)
         \\      expected status: {d}
         \\      atomicity: {s}
@@ -3605,7 +3608,7 @@ fn phaseReport(run: *Run) void {
         \\      processes: {s}
         \\      not tested: {s}
         \\
-    , .{ report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
+    , .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
     report.sayCwd(arena, "      cwd: {s}{s}\n");
     report.sayApparatus(arena, "      apparatus: {s}\n");
     report.sayRecovery("      recovery: {s}\n");
