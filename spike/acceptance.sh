@@ -8376,13 +8376,19 @@ fi
 acc_seen="$acc_seen $acc_demo_accepted"
 acc_lines=$((acc_lines + 1))
 
-# The three argument-free modes. Their lines advertise nothing, so the claim is that they
-# accept nothing — checked by execution rather than assumed, and the flag alone never
-# starts the MCP server because the refusal happens before anything else.
+# The three flag-free modes. Their lines advertise no flag, so the claim is that they accept
+# none — checked by execution rather than assumed, and the flag alone never starts the MCP
+# server because the refusal happens before anything else. `help` takes a command name
+# since #705 (`sideeye help [<command>]`), so a flag there is an unknown command, named;
+# `mcp` and `version` take nothing and say so. The refusal is read for the flag it got, so
+# a refusal that stopped naming what it was given reads as one that did not refuse.
 for acc_m in mcp help version; do
-    acc_m_line=$(printf '%s\n' "$h1" | grep -E "^  sideeye $acc_m\$")
+    case "$acc_m" in
+        help) acc_m_line=$(printf '%s\n' "$h1" | grep -E '^  sideeye help \[<command>\]$'); acc_m_says="unknown command" ;;
+        *)    acc_m_line=$(printf '%s\n' "$h1" | grep -E "^  sideeye $acc_m\$"); acc_m_says="takes no arguments" ;;
+    esac
     if [ -z "$acc_m_line" ]; then
-        echo "     the synopsis has no bare line for $acc_m"
+        echo "     the synopsis has no line of the expected shape for $acc_m"
         cli_fails=$((cli_fails + 1))
         continue
     fi
@@ -8390,9 +8396,9 @@ for acc_m in mcp help version; do
         acc_out=$(acc_first "$acc_m" "$acc_f")
         acc_probes=$((acc_probes + 1))
         case "$acc_out" in
-            *"takes no arguments"*) ;;
+            *"$acc_m_says"*"'$acc_f'"*) ;;
             *)
-                echo "     $acc_m accepts $acc_f, which its synopsis line does not advertise: $acc_out"
+                echo "     $acc_m accepts $acc_f, which its synopsis line does not advertise, or refused it without naming it: $acc_out"
                 cli_fails=$((cli_fails + 1))
                 ;;
         esac
@@ -8463,9 +8469,9 @@ echo "=========== check 15: help is answered per mode, and cannot reach the pars
 # the old set. Same reason #295 takes its flag candidates from the parser.
 help_fails=0
 
-# The modes that take flags, from the parser. mcp/help/version take no arguments and
-# keep refusing extras, so they are deliberately absent — their synopsis lines advertise
-# nothing and --help is an extra there in the literal sense.
+# The modes that take flags, from the parser. mcp/help/version are left out of this loop:
+# their synopsis lines advertise no flag, `<one of them> --help` prints that one line since
+# #705, and #273's loop above holds what each refuses.
 help_modes=$(parser_literals 1 | grep -v '^-' | grep -vE '^(mcp|help|version)$')
 help_mode_n=$(printf '%s\n' $help_modes | grep -c .)
 if [ "$help_mode_n" -lt 4 ]; then
@@ -8485,15 +8491,42 @@ fi
 # rc, stdout and stderr are three separate assertions, and stdout is compared with cmp
 # rather than in a shell variable: command substitution strips trailing newlines, so a
 # variable comparison cannot honestly be called byte-identical.
+#
+# Since #705 the answer is the mode's own help, not the whole reference: `sideeye <mode>
+# --help` prints what `sideeye help <mode>` prints, which is shorter than `sideeye --help`,
+# starts with the version line, and carries a summary line for every flag the mode's
+# synopsis line names (read here from the whole reference, so a flag the mode help lost
+# reads as missing rather than agreeing about a smaller world).
 for help_m in $help_modes; do
+    "$SIDEEYE" help "$help_m" > "$help_dir/ref" 2>"$help_dir/ref.err"
+    help_rc=$?
+    if [ "$help_rc" != "0" ] || [ ! -s "$help_dir/ref" ] || [ -s "$help_dir/ref.err" ]; then
+        echo "     sideeye help $help_m is not usable as the mode's reference (rc=$help_rc)"
+        help_fails=$((help_fails + 1))
+    fi
+    if cmp -s "$help_dir/canonical" "$help_dir/ref"; then
+        echo "     sideeye help $help_m prints the whole reference, not $help_m's own help"
+        help_fails=$((help_fails + 1))
+    fi
+    [ "$(wc -c < "$help_dir/ref")" -lt "$(wc -c < "$help_dir/canonical")" ] || {
+        echo "     sideeye help $help_m is not shorter than the whole reference"
+        help_fails=$((help_fails + 1)); }
+    head -1 "$help_dir/ref" | grep -q '^sideeye ' || {
+        echo "     sideeye help $help_m does not start with the version line: $(head -1 "$help_dir/ref")"
+        help_fails=$((help_fails + 1)); }
+    for help_f in $(printf '%s\n' "$h1" | grep -E "^  sideeye $help_m( |\$)" | grep -oE -- '--[A-Za-z0-9][A-Za-z0-9-]*' | sort -u); do
+        grep -qE -- "^  $help_f( |\$)" "$help_dir/ref" || {
+            echo "     sideeye help $help_m has no summary line for $help_f, which its synopsis line names"
+            help_fails=$((help_fails + 1)); }
+    done
     for help_spelling in --help -h; do
         "$SIDEEYE" "$help_m" "$help_spelling" > "$help_dir/out" 2>"$help_dir/err"
         help_rc=$?
         [ "$help_rc" = "0" ] || {
             echo "     sideeye $help_m $help_spelling exited $help_rc, want 0"
             help_fails=$((help_fails + 1)); }
-        cmp -s "$help_dir/canonical" "$help_dir/out" || {
-            echo "     sideeye $help_m $help_spelling does not print what sideeye --help prints"
+        cmp -s "$help_dir/ref" "$help_dir/out" || {
+            echo "     sideeye $help_m $help_spelling does not print what sideeye help $help_m prints"
             help_fails=$((help_fails + 1)); }
         # Weak on its own: setupError writes to STDOUT in this program (measured), so a
         # failing help path leaves stderr empty too. The cmp above is what catches that.
@@ -8593,11 +8626,103 @@ done
     echo "     --help/-h appears as a parse-loop literal in src/main.zig or src/cli.zig ($help_loop site(s)); help must be answered before the loop, which calls removeFile for --json"
     help_fails=$((help_fails + 1)); }
 
-rm -f "$help_dir"/canonical "$help_dir"/canonical.err "$help_dir"/out "$help_dir"/err "$help_dir"/marker.err "$help_dir"/control.err
+# #705: a mistake is named in one line, with the nearest spelling the command accepts —
+# never the whole reference. Each row is an argv and the words its first line must hold
+# (in order); a row ending `!did you mean` must NOT offer a spelling, because the near
+# names there belong to another command. The exit code is 3 for every row: these are
+# refusals, and a refusal that exited 0 would read as an answer.
+#
+# A dash-led value is still a value: `--marker -x` takes the same path as `--marker ZZZ`.
+help_mk_rc=0; help_mk_ctl=0
+"$SIDEEYE" explore --marker -x > "$help_dir/mk.out" 2>&1 || help_mk_rc=$?
+"$SIDEEYE" explore --marker ZZZ > "$help_dir/mk.ctl" 2>&1 || help_mk_ctl=$?
+if [ "$help_mk_rc" != "$help_mk_ctl" ] || ! cmp -s "$help_dir/mk.out" "$help_dir/mk.ctl" || [ ! -s "$help_dir/mk.ctl" ]; then
+    echo "     explore --marker -x did not take the path --marker ZZZ takes; a dash-led value was read as a flag"
+    help_fails=$((help_fails + 1))
+fi
+help_esc=$(printf 'ex\033]0;x\007')
+while IFS='|' read -r help_args help_want; do
+    [ -n "$help_args" ] || continue
+    # shellcheck disable=SC2086
+    help_out=$("$SIDEEYE" $help_args </dev/null 2>&1); help_rc=$?
+    help_first=$(printf '%s\n' "$help_out" | head -1)
+    help_n=$(printf '%s\n' "$help_out" | grep -c .)
+    help_ok=1
+    [ "$help_rc" = "3" ] || help_ok=0
+    [ "$help_n" -le 3 ] || help_ok=0
+    help_rest=$help_want
+    while [ -n "$help_rest" ]; do
+        help_w=${help_rest%%^*}; [ "$help_w" = "$help_rest" ] && help_rest="" || help_rest=${help_rest#*^}
+        case "$help_w" in
+            !*) case "$help_first" in *"${help_w#!}"*) help_ok=0 ;; esac ;;
+            *)  case "$help_first" in *"$help_w"*) ;; *) help_ok=0 ;; esac ;;
+        esac
+    done
+    [ "$help_ok" = "1" ] || {
+        echo "     sideeye $help_args: rc=$help_rc, $help_n line(s), first: $help_first (want rc 3, at most 3 lines, holding: $help_want)"
+        help_fails=$((help_fails + 1)); }
+done <<HELP_705
+explor|unknown command 'explor'^did you mean 'explore'
+init|unknown command 'init'^!did you mean
+--state x|unknown command '--state'^the command comes first
+help explor|sideeye help: unknown command 'explor'^did you mean 'explore'
+version --x|takes no arguments; got '--x'
+mcp --x|takes no arguments; got '--x'
+replay|replay takes the saved case's path first
+replay -x|replay takes the saved case's path first; got '-x'
+replay c.json --sim x|unknown option '--sim'^did you mean '--shim'
+explore --frobnicate|unknown option '--frobnicate'^sideeye help explore
+explore --frobnicate x|unknown option '--frobnicate'
+explore --stat x|unknown option '--stat'^did you mean '--state'
+explore --twic x|unknown option '--twic'^!did you mean
+explore --state-undr x|unknown option '--state-undr'^!did you mean
+preflight --jsn x|unknown option '--jsn'^!did you mean
+explore foo|takes no positional argument here: 'foo'
+explore --state|an option is missing its value: --state takes one
+explore --state x --help|'--help' is answered only on its own^sideeye help explore
+explore --help --state x|'--help' is answered only on its own^with nothing after it
+explore --recover x|unknown option '--recover'^did you mean '--recovery'
+explore --observe bogus|--observe takes^got 'bogus'
+explore --observe syscall|got 'syscall'^did you mean 'syscalls'
+explore --expect-status abc|must be an integer in 0..255; got 'abc'
+explore --world-timeout abc|whole number of seconds, 1..86400; got 'abc'
+explore --apparatus bad|--apparatus: ^got 'bad'
+explore --scratch /abs|--scratch: ^got '/abs'
+demo --frobnicate|demo takes only --shim <lib>; got '--frobnicate'
+demo --sim x|demo takes only^did you mean '--shim'
+evidence --frobnicate|got '--frobnicate', which is no file here
+evidence --frob x|got '--frob' too
+$help_esc|unknown command 'ex?]0;x?'
+HELP_705
+# A dash-led path is still a path when the file is there: read, not refused as an option.
+help_dash_out=$(cd "$help_dir" && : > ./-x.json && "$SIDEEYE" evidence -x.json 2>&1)
+case "$help_dash_out" in
+    *"no file here"*|*"takes one argument"*)
+        echo "     sideeye evidence -x.json refused an existing file as an option: $help_dash_out"
+        help_fails=$((help_fails + 1)) ;;
+esac
+rm -f "$help_dir/-x.json"
+# `--help -h` is help asking about itself, as `help -h` is.
+help_h1=$("$SIDEEYE" --help -h 2>&1); help_h1_rc=$?
+help_h2=$("$SIDEEYE" help -h 2>&1); help_h2_rc=$?
+if [ "$help_h1_rc" != "0" ] || [ "$help_h1" != "$help_h2" ]; then
+    echo "     sideeye --help -h (rc=$help_h1_rc) does not answer what sideeye help -h answers"
+    help_fails=$((help_fails + 1))
+fi
+# `--version` is `version`: the same one line, exit 0.
+help_v1=$("$SIDEEYE" version 2>&1); help_v1_rc=$?
+help_v2=$("$SIDEEYE" --version 2>&1); help_v2_rc=$?
+if [ "$help_v1_rc" != "0" ] || [ "$help_v2_rc" != "0" ] || [ "$help_v1" != "$help_v2" ]; then
+    echo "     sideeye --version (rc=$help_v2_rc: $help_v2) is not sideeye version (rc=$help_v1_rc: $help_v1)"
+    help_fails=$((help_fails + 1))
+fi
+
+rm -f "$help_dir"/canonical "$help_dir"/canonical.err "$help_dir"/out "$help_dir"/err "$help_dir"/marker.err "$help_dir"/control.err \
+    "$help_dir"/ref "$help_dir"/ref.err "$help_dir"/mk.out "$help_dir"/mk.ctl
 rmdir "$help_dir" 2>/dev/null || true
 
 if [ "$help_fails" = "0" ]; then
-    echo "ok   $help_mode_n modes answer --help and -h with the top-level text, exit 0, and no help path enters the parse loop"
+    echo "ok   $help_mode_n modes answer --help and -h with their own help, exit 0, no help path enters the parse loop, and a mistake is named in one line (#705)"
 else
     echo "FAIL per-mode help: $help_fails problem(s)"
     fails=$((fails + 1))
