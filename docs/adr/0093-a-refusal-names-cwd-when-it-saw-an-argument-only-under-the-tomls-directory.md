@@ -76,5 +76,6 @@ silently.
   operation that writes outside the state directory through an argument that names nothing on
   either side — refused `nothing_could_fail` since ADR 0091, with `nothing_in_state` as its step.
   The README's `cwd` line is what prevents those.
-- Not asked under flags (their relative arguments resolve where the operator typed them), on a
-  replay (a case carries no toml), or by preflight, which reads no toml.
+- Not asked under flags (their relative arguments resolve where the operator typed them) or on a
+  replay (a case carries no toml). *(Amended by ADR 0094, 2026-10-06: this said preflight was not
+  asked either, because it read no toml; `preflight --config` reads one as explore does, and is.)*
