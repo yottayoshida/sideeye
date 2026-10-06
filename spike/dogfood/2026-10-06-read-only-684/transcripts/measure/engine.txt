@@ -1,0 +1,5 @@
+engine: /eng/bin/sideeye
+sha256: d4a624714ba8a393292f17de7fd4f343fe8ca8df7ee322664e9e697d211b1891
+shim sha256: a00c33361a6e723f717ab8a1eef0970e3bdfee6953eba4a33374f9338a4e450e
+commit: 7b9d1fd + the uncommitted #684 diff (oracle.zig read_only)
+sideeye 1.8.0 (trace contract v18)

@@ -1,0 +1,7 @@
+firewalld	2.3.1-1+deb13u1
+fish	4.0.2-1
+vim	2:9.1.1230-2
+vim => VIM - Vi IMproved 9.1 (2024 Jan 02, compiled May 23 2025 00:48:59)
+fish => fish, version 4.0.2
+firewall-offline-cmd => 2.3.1
+dotdrop => 1.17.0

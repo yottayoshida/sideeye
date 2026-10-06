@@ -6228,18 +6228,40 @@ fi
 # unresolvable_path (measured), which made every epoll-based target unjudgeable.
 # The same toy also registers a state file with epoll (EPERM) and queries it with
 # faccessat2 — calls on the state that change nothing, which the oracle refused as
-# unsupported_syscall_observed until #542 named them reads. The strace lines are real,
-# so this is where a name dropping out of the oracle's read-only list shows.
+# unsupported_syscall_observed until #542 named them reads — and, since #684, reads its
+# extended attributes in three spellings, watches it with inotify, reads it with preadv and
+# preadv2, and waits on it with poll, ppoll, select and pselect. The strace lines are real,
+# so this is where a name dropping out of the oracle's read-only list shows. glibc may
+# issue poll and select as ppoll and pselect6 — it does on aarch64, and newer glibc may on
+# x86_64 too — so whether `poll` and `select` themselves appear here depends on the runner;
+# the unit test in src/oracle.zig holds both spellings either way.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
 if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
-    echo "ok   anon-inode descriptors (eventfd, epoll), and epoll_ctl and faccessat2 on a state file, are invisible to the verdict"
+    echo "ok   anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
+    echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls) are invisible to the verdict"
 else
     echo "FAIL anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# The control (#684): the writing side of the same family is still a call the oracle has no
+# class for, and refuses by name. A list grown into "anything *xattr" would let it through.
+# `TOY_SETXATTR` is read by rotate only (cmd_rotate_body), so setup never issues it and the
+# line the oracle refuses on is the recording's own.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_SETXATTR=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if refused_uncredited unsupported_syscall_observed "$rc" "$o" && printf '%s\n' "$o" | sed -n 2p | grep -q 'setxattr'; then
+    echo "ok   setxattr on a state file still refuses unsupported_syscall_observed, naming the call"
+else
+    echo "FAIL setxattr on a state file was not refused by name: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 

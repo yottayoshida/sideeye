@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/evidence",
+  "evidence_version": 1,
+  "sideeye_version": "1.8.0",
+  "contract_version": 18,
+  "target": {"operation": "firewall-offline-cmd --system-config /s/fw --zone=public --add-port=8080/tcp", "state_root": "/s/fw"},
+  "exhibit": "earliest",
+  "crash_point": 5,
+  "crash_points_total": 5,
+  "boundary": {"after_op": "open", "after_path": "/s/fw/zones/public.xml", "before_op": "write", "before_path": "/s/fw/zones/public.xml"},
+  "invariant": "built-in atomicity (L0)",
+  "subject": "zones/public.xml",
+  "observed": "holding neither the old nor the new content",
+  "consequence": [
+    {"path": "zones/public.xml", "before": {"kind": "file", "size": 328}, "completed": {"kind": "file", "size": 365}, "crashed": {"kind": "file", "size": 0}, "pre_existing": true, "declared_scratch": false, "old_bytes_elsewhere": "yes", "old_bytes_at": "zones/public.xml.old"},
+    {"path": "zones/public.xml.old", "before": null, "completed": {"kind": "file", "size": 328}, "crashed": {"kind": "file", "size": 328}, "pre_existing": false, "declared_scratch": false, "old_bytes_elsewhere": "not_applicable", "old_bytes_at": ""}
+  ],
+  "consequence_truncated": false,
+  "checker": {"configured": false, "failed": null, "diagnostic": null},
+  "replay": "sideeye replay /out/firewalld/work-supervised/cases/000001.json --observe supervised",
+  "case": "/out/firewalld/work-supervised/cases/000001.json",
+  "recovery": {"result": "not_configured"},
+  "caveats": []
+}

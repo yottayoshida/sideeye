@@ -1,0 +1,1 @@
+  inotify_add_watch   e.g. 46    inotify_add_watch(4<anon_inode:inotify>, "/s/fish/state/fish", IN_MODIFY|IN_MOVED_TO) = 1

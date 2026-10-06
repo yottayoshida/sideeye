@@ -1,0 +1,1 @@
+  listxattr   e.g. 62    listxattr("/s/dotdrop/home/.bashrc", "", 256) = 0

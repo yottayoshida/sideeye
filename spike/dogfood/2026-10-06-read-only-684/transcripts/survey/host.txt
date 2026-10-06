@@ -1,0 +1,10 @@
+survey: 81 names the oracle classifies (/out/survey/named.txt)
+vim: operation exit 0 (vim -es -u NONE -c set nobackup noswapfile nowritebackup -c %s/old/new/g -c wq /s/vim/state/a.txt)
+  getxattr   e.g. 24    getxattr("/s/vim/state/a.txt", "system.posix_acl_access", 0xffffcd859420, 132) = -1 ENODATA (No data available)
+  setxattr   e.g. 24    setxattr("/s/vim/state/a.txt", "system.posix_acl_access", "\2\0\0\0\1\0\6\0\377\377\377\377\4\0\4\0\377\377\377\377 \0\4\0\377\377\377\377", 28, 0) = 0
+fish: operation exit 0 (fish -c set -U MARKER_THIRD third-value)
+  inotify_add_watch   e.g. 46    inotify_add_watch(4<anon_inode:inotify>, "/s/fish/state/fish", IN_MODIFY|IN_MOVED_TO) = 1
+dotdrop: operation exit 0 (dotdrop install -f -c /s/dotdrop-in/config.yaml -p host)
+  listxattr   e.g. 62    listxattr("/s/dotdrop/home/.bashrc", "", 256) = 0
+firewalld: operation exit 0 (firewall-offline-cmd --system-config /s/fw --zone=public --add-port=8080/tcp)
+  listxattr   e.g. 83    listxattr("/s/fw/zones/public.xml", "", 256) = 0

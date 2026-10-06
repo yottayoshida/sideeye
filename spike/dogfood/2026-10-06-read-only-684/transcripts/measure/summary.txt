@@ -1,0 +1,36 @@
+vim: wrappers: exit 2: UNKNOWN unsupported_syscall_observed oracle=ran;_the_comparison_did_not_complete crash_points=0
+      | UNKNOWN  unsupported_syscall_observed
+      |          setxattr
+vim: syscalls: exit 2: UNKNOWN unsupported_syscall_observed oracle=ran;_the_comparison_did_not_complete crash_points=0
+      | UNKNOWN  unsupported_syscall_observed
+      |          setxattr
+vim: supervised: exit 2: UNKNOWN unsupported_syscall_observed oracle=ran;_the_comparison_did_not_complete_—_the_account_compared_ crash_points=0
+      | UNKNOWN  unsupported_syscall_observed
+      |          setxattr
+fish: wrappers: exit 0: PASS - oracle=agreed_on_5_operations_(497_syscall_lines_examined,_40_in_sc crash_points=5
+      | falsify: 前からあった変数 MARKER_KEPT が消えた（読めた値: ''、25 bytes）
+      | PASS  6/6 explored worlds satisfied the built-in atomicity invariant
+fish: syscalls: exit 0: PASS - oracle=agreed_on_5_operations_(536_syscall_lines_examined,_40_in_sc crash_points=5
+      | falsify: 前からあった変数 MARKER_KEPT が消えた（読めた値: ''、25 bytes）
+      | PASS  6/6 explored worlds satisfied the built-in atomicity invariant
+fish: supervised: exit 0: PASS - oracle=agreed_on_5_operations_(388_syscall_lines_examined,_32_in_sc crash_points=5
+      | falsify: 前からあった変数 MARKER_KEPT が消えた（読めた値: ''、25 bytes）
+      | PASS  6/6 explored worlds satisfied the built-in atomicity invariant
+dotdrop: wrappers: exit 1: FAIL - oracle=agreed_on_14_operations_(6205_syscall_lines_examined,_118_in crash_points=14
+      | FAIL  2 of 15 explored worlds violated an invariant
+      | 
+dotdrop: syscalls: exit 1: FAIL - oracle=agreed_on_14_operations_(6437_syscall_lines_examined,_118_in crash_points=14
+      | FAIL  2 of 15 explored worlds violated an invariant
+      | 
+dotdrop: supervised: exit 1: FAIL - oracle=agreed_on_14_operations_(5407_syscall_lines_examined,_90_in_ crash_points=14
+      | FAIL  2 of 15 explored worlds violated an invariant
+      | 
+firewalld: wrappers: exit 1: FAIL - oracle=agreed_on_5_operations_(7583_syscall_lines_examined,_72_in_s crash_points=5
+      | FAIL  1 of 6 explored worlds violated an invariant
+      | 
+firewalld: syscalls: exit 1: FAIL - oracle=agreed_on_5_operations_(7595_syscall_lines_examined,_72_in_s crash_points=5
+      | FAIL  1 of 6 explored worlds violated an invariant
+      | 
+firewalld: supervised: exit 1: FAIL - oracle=agreed_on_5_operations_(6430_syscall_lines_examined,_56_in_s crash_points=5
+      | FAIL  1 of 6 explored worlds violated an invariant
+      | 

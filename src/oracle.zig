@@ -187,17 +187,17 @@ fn isFdSyscall(name: []const u8) bool {
 /// measurement — the first real target to clear the boundary gate (omamori) stopped
 /// here instead, on the lock it takes around its audit log.
 const read_only = [_][]const u8{
-    "stat",      "lstat",     "fstat",    "newfstatat", "statx",
-    "access",    "faccessat", "readlink", "readlinkat", "read",
-    "pread64",   "readv",     "lseek",    "getdents64", "fcntl",
-    "fadvise64", "statfs",    "fstatfs",  "dup",        "dup2",
-    "dup3",      "ioctl",     "mmap",     "munmap",     "mprotect",
+    "stat",       "lstat",      "fstat",             "newfstatat", "statx",
+    "access",     "faccessat",  "readlink",          "readlinkat", "read",
+    "pread64",    "readv",      "lseek",             "getdents64", "fcntl",
+    "fadvise64",  "statfs",     "fstatfs",           "dup",        "dup2",
+    "dup3",       "ioctl",      "mmap",              "munmap",     "mprotect",
     "flock",
     // `getcwd` reads the working directory and changes nothing; it reaches this list
     // rather than the path table because it has no path *argument* — its result is a
     // string the conservative net would otherwise scope in once the cwd is inside the
     // state directory (a relative-spelling target does exactly that).
-        "getcwd",
+         "getcwd",
     // `chdir` and `fchdir` move the CALLING PROCESS's working directory and change no
     // byte and no directory entry (v15). They are here for the same reason `getcwd` is,
     // and the omission had a cost that only showed once a child's operations could be
@@ -209,7 +209,7 @@ const read_only = [_][]const u8{
     //
     // The subject's own `chdir` never reaches this list — it is handled above, where a
     // successful one moves the cwd this reader resolves relative paths against.
-       "chdir",    "fchdir",
+        "chdir",             "fchdir",
     // `faccessat2` is `faccessat` with a flags argument: the `access` family, a permission
     // query that changes nothing, and with it that family is complete here. glibc 2.33 and
     // later issues it for any `faccessat` that passes flags, `AT_EACCESS` among them.
@@ -224,6 +224,33 @@ const read_only = [_][]const u8{
     // runtime registers every file it opens with its netpoller, and mlr's in-place rewrite
     // was refused for registering its temporary file (#542).
     "epoll_ctl",
+    // The extended-attribute reads, in all three spellings (by path, not following a final
+    // link, and by descriptor): they read an inode's attributes and change nothing (#684).
+    // The writes — `setxattr`, `removexattr` and their `l`/`f` forms — are not here and keep
+    // refusing: what an attribute write does to the state has not been ruled on. The restore
+    // does not put attributes back, and nothing yet says whether such a write is judged or,
+    // like the ownership and permission calls #121 observes, set aside. Found by measurement: vim
+    // asks for a file's ACL before saving it (getxattr), dotdrop and firewall-offline-cmd
+    // list a file's attributes before copying it (listxattr) — each refused for asking.
+     "getxattr",   "lgetxattr",         "fgetxattr",  "listxattr",
+    "llistxattr", "flistxattr",
+    // `inotify_add_watch` adds a path to an in-kernel watch list that dies with the process —
+    // the reason `epoll_ctl` and `flock` are here. Found by measurement: fish watches its
+    // universal-variables directory and was refused for watching it (#684).
+    "inotify_add_watch",
+    // More of the read family: `read`, `pread64` and `readv` are above, and the two vector
+    // forms with an offset were missing. `preadv2`'s flags (RWF_NOWAIT, RWF_HIPRI) change how
+    // it waits, not what it does to the file (#684). `readahead`, which only fills the page
+    // cache, is not named either; no recorded target has issued it.
+    "preadv",     "preadv2",
+    // Waiting on descriptors changes nothing they refer to. strace's `-y` annotates the
+    // descriptors inside the sets — 2026-09-27's jj capture shows the form on ppoll, over its
+    // standard descriptors — so a state file's descriptor in a set would scope the line in. No
+    // recorded target has been refused on one; these four, like `preadv` above, are named
+    // because the list in docs/report-schema.md put them beside the calls that had been —
+    // the xattr reads and `inotify_add_watch` (#684). glibc may issue
+    // `poll` as `ppoll` and `select` as `pselect6` (always on aarch64), so both are named.
+    "poll",       "ppoll",      "select",            "pselect6",
 };
 
 /// Syscalls that cross a process boundary.
@@ -2608,6 +2635,80 @@ test "faccessat2 and epoll_ctl on the state directory are reads, for the subject
     const unknown_sys = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    frobnicate(3</tmp/s/key.json>) = 0\n";
     const r = try parse(a, unknown_sys, "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("frobnicate", r.unsupported.?);
+}
+
+test "extended-attribute reads, inotify_add_watch, preadv and the polls are reads; xattr writes still refuse (#684)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // `real` lines are strace's own, from the survey in spike/dogfood/2026-10-06-read-only-684/
+    // (vim, fish, dotdrop, firewalld; its `transcripts/survey/*.unnamed.txt` keep them) and the
+    // 2026-09-27 jj capture (ppoll), with the state directory rewritten to /tmp/s; the rest are built in the same shape for names no recorded target
+    // has issued yet. Each is its own parse, so a dropped name fails at its own case.
+    const Case = struct { what: []const u8, line: []const u8 };
+    const reads = [_]Case{
+        .{ .what = "getxattr (real: vim)", .line = "getxattr(\"/tmp/s/a.txt\", \"system.posix_acl_access\", 0xffffcd859420, 132) = -1 ENODATA (No data available)" },
+        .{ .what = "lgetxattr", .line = "lgetxattr(\"/tmp/s/a.txt\", \"security.selinux\", 0xffff0000, 255) = -1 ENODATA (No data available)" },
+        .{ .what = "fgetxattr", .line = "fgetxattr(3</tmp/s/a.txt>, \"user.mime_type\", 0xffff0000, 64) = -1 ENODATA (No data available)" },
+        .{ .what = "listxattr (real: dotdrop)", .line = "listxattr(\"/tmp/s/home/.bashrc\", \"\", 256) = 0" },
+        .{ .what = "llistxattr", .line = "llistxattr(\"/tmp/s/home/.bashrc\", \"\", 256) = 0" },
+        .{ .what = "flistxattr", .line = "flistxattr(3</tmp/s/zones/public.xml>, \"\", 256) = 0" },
+        .{ .what = "inotify_add_watch (real: fish)", .line = "inotify_add_watch(4<anon_inode:inotify>, \"/tmp/s/fish\", IN_MODIFY|IN_MOVED_TO) = 1" },
+        .{ .what = "preadv", .line = "preadv(3</tmp/s/key.json>, [{iov_base=\"key=1\\n\", iov_len=16}], 1, 0) = 6" },
+        .{ .what = "preadv2", .line = "preadv2(3</tmp/s/key.json>, [{iov_base=\"key=1\\n\", iov_len=16}], 1, 0, RWF_NOWAIT) = 6" },
+        .{ .what = "poll", .line = "poll([{fd=3</tmp/s/key.json>, events=POLLIN}], 1, 0) = 1 ([{fd=3, revents=POLLIN}])" },
+        .{ .what = "ppoll (real shape: jj)", .line = "ppoll([{fd=0</dev/null>, events=0}, {fd=3</tmp/s/key.json>, events=0}], 2, {tv_sec=0, tv_nsec=0}, NULL, 8) = 0 (Timeout)" },
+        .{ .what = "select", .line = "select(4, [3</tmp/s/key.json>], NULL, NULL, {tv_sec=0, tv_usec=0}) = 1 (in [3], left {tv_sec=0, tv_usec=0})" },
+        .{ .what = "pselect6", .line = "pselect6(4, [3</tmp/s/key.json>], NULL, NULL, {tv_sec=0, tv_nsec=0}, NULL) = 1 (in [3], left {tv_sec=0, tv_nsec=0})" },
+    };
+    for (reads) |c| {
+        const subject = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    {s}\n", .{c.line});
+        const p = try parse(a, subject, "/tmp/s", "", "/work");
+        if (p.unsupported) |u| {
+            std.debug.print("{s}: the subject was refused on {s}\n", .{ c.what, u });
+            return error.TestUnexpectedResult;
+        }
+        try std.testing.expect(p.lines_in_scope >= 1);
+        try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
+        const child = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  {s}\n", .{c.line});
+        const q = try parse(a, child, "/tmp/s", "", "/work");
+        if (q.childTouched() or q.unsupported != null) {
+            std.debug.print("{s}: the child was counted as touching the state\n", .{c.what});
+            return error.TestUnexpectedResult;
+        }
+        try std.testing.expectEqual(@as(usize, 1), q.children);
+    }
+    // The writing side of the same family stays refused, for the subject and for a child —
+    // what the list added is reads, not a rule that waves through every `*xattr`. The first
+    // line is real: vim writing its ACL back, the call it meets after `getxattr`.
+    const writes = [_]Case{
+        // vim's line, with its 28-byte value shortened to four.
+        .{ .what = "setxattr (real: vim)", .line = "setxattr(\"/tmp/s/a.txt\", \"system.posix_acl_access\", \"\\2\\0\\0\\0\", 28, 0) = 0" },
+        .{ .what = "lsetxattr", .line = "lsetxattr(\"/tmp/s/a.txt\", \"user.x\", \"1\", 1, 0) = 0" },
+        .{ .what = "fsetxattr", .line = "fsetxattr(3</tmp/s/a.txt>, \"user.x\", \"1\", 1, 0) = 0" },
+        .{ .what = "removexattr", .line = "removexattr(\"/tmp/s/a.txt\", \"user.x\") = 0" },
+        .{ .what = "lremovexattr", .line = "lremovexattr(\"/tmp/s/a.txt\", \"user.x\") = 0" },
+        .{ .what = "fremovexattr", .line = "fremovexattr(3</tmp/s/a.txt>, \"user.x\") = 0" },
+    };
+    for (writes) |c| {
+        const subject = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    {s}\n", .{c.line});
+        const p = try parse(a, subject, "/tmp/s", "", "/work");
+        const name = c.what[0 .. std.mem.indexOfScalar(u8, c.what, ' ') orelse c.what.len];
+        if (p.unsupported == null or !std.mem.eql(u8, p.unsupported.?, name)) {
+            std.debug.print("{s}: the subject was not refused on it\n", .{c.what});
+            return error.TestUnexpectedResult;
+        }
+        const child = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  {s}\n", .{c.line});
+        const q = try parse(a, child, "/tmp/s", "", "/work");
+        // Read as the child's line — one child, counted as touching, and not the subject's
+        // refusal, which is what the line would produce if the pid were misread.
+        try std.testing.expectEqual(@as(usize, 1), q.children);
+        try std.testing.expectEqual(@as(?[]const u8, null), q.unsupported);
+        if (!q.childTouched()) {
+            std.debug.print("{s}: a child's write was let through\n", .{c.what});
+            return error.TestUnexpectedResult;
+        }
+    }
 }
 
 test "both of strace's -f pid prefixes are stripped" {

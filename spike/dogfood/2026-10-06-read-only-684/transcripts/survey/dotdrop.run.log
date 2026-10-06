@@ -1,0 +1,12 @@
+     _       _      _
+  __| | ___ | |_ __| |_ __ ___  _ __
+ / _` |/ _ \| __/ _` | '__/ _ \| '_ |
+ \__,_|\___/ \__\__,_|_|  \___/| .__/  v1.17.0
+                               |_|
+
+backup /s/dotdrop/home/.bashrc to /s/dotdrop/home/.bashrc.dotdropbak
+	-> install /s/dotdrop-in/dotfiles/bashrc to /s/dotdrop/home/.bashrc
+backup /s/dotdrop/home/.gitconfig to /s/dotdrop/home/.gitconfig.dotdropbak
+	-> install /s/dotdrop-in/dotfiles/gitconfig to /s/dotdrop/home/.gitconfig
+
+2 dotfile(s) installed.

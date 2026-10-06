@@ -195,11 +195,20 @@ A member added after the v1.0 tag is a break of surface 2: each needs its own ow
 permission query, and an event loop registering a descriptor — not refused as
 unmodelled (#542). A call the oracle has no name for is refused as
 `unsupported_syscall_observed` when its line reaches the state directory, because it
-may have changed something; these two cannot, and they are the two that refused real
-targets for nothing (ocrmypdf asking whether it may write its input, mlr's Go runtime
-registering a file with its netpoller). Other calls that change nothing on disk and
-have no name yet — extended-attribute reads, `inotify_add_watch`, `preadv`, `poll` —
-still refuse as unmodelled.
+may have changed something; these two cannot, and they were the first two found refusing
+real targets for nothing (ocrmypdf asking whether it may write its input, mlr's Go runtime
+registering a file with its netpoller). **Under the strace oracle, extended-attribute
+reads (`getxattr`, `lgetxattr`, `fgetxattr`, `listxattr`, `llistxattr`, `flistxattr`),
+`inotify_add_watch`, `preadv`/`preadv2`, `poll`/`ppoll` and `select`/`pselect6` on the
+state directory are read as reads too** (#684): vim asking for a file's ACL, dotdrop and
+firewall-offline-cmd listing a file's attributes, and fish watching its variables'
+directory were each refused for asking. Extended-attribute writes (`setxattr`,
+`removexattr` and their `l`/`f` forms) still refuse: what an attribute write does to the state
+has not been ruled on — the restore does not put attributes back, and nothing yet says whether
+such a write is judged or, like the ownership and permission calls #121 observes, set aside.
+The macOS fs_usage oracle keeps its own list (`src/fsusage.zig`), which already reads
+`getxattr`, `fgetxattr`, `listxattr`, `flistxattr` and `select` as reads; it was not measured
+for the rest.
 
 `setup_error_reason` values (closed set — added with #518, ADR 0057, held to the
 contract's enum by the same acceptance check, and carrying no version of its own: the

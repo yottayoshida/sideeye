@@ -1,0 +1,15 @@
+UNKNOWN  unsupported_syscall_observed
+         setxattr
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /  (none declared: Sideeye's own)
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=7311f27bcd352855fb333f58a6bd843b775ec871bf02b32d8a898fd1bf2e0de9;
