@@ -1265,7 +1265,7 @@ pub const SetupErrorReason = enum {
     /// executable or not reachable, or a bare name with nothing on `PATH` — #701, ADR 0092).
     environment,
     /// What the define asks for does not exist on this platform or kernel: `--oracle-fs-usage`
-    /// off macOS, `--observe syscalls` off Linux or on a kernel that refuses
+    /// off macOS, `--oracle` (strace) on macOS (#702), `--observe syscalls` off Linux or on a kernel that refuses
     /// `SECCOMP_RET_TRAP`, a shim built without the filter, `apparatus preload:` on macOS,
     /// which has no global preload file.
     platform_unsupported,

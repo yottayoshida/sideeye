@@ -33,11 +33,12 @@ Three commands, in the order you will meet them.
 $ sideeye demo
 $ sideeye preflight --state <dir> --operation "<cmd>"
 $ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
+$ sideeye explore --config sideeye.toml --allow-unverified
 ```
 
 - **`demo`** — sixty seconds, needs a C compiler, writes nothing permanent. It explores a planted bug and prints a real FAIL report. Exit 1 — the bug found — is success, so it doubles as a smoke test of binary and shim.
 - **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted` (exit 0), or a refusal naming the detector a real run would use (exit 2; 3 if the define cannot be set up). `--twice` also checks that two clean runs leave the same bytes (exit 1 if not).
-- **`explore`** — the real thing, with the whole define in one file:
+- **`explore`** — the real thing (Linux, then macOS), with the whole define in one file:
 
 ```toml
 [world]
@@ -51,7 +52,7 @@ check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + r
 
 - `operation` is the one command the shim is inserted into; `setup` and `check` are ordinary commands. Naming an executable image rather than a `#!` script keeps the insertion independent of the interpreter.
 - Command strings split on spaces, no quoting. An argument with a space takes the argv form: `operation = ["mytool", "commit", "-m", "a message"]`.
-- `--oracle` is a second witness, checking the shim's account against the kernel's (strace on Linux, `--oracle-fs-usage` after `sudo -v` on macOS). Without one, a single-process target reaches PASS only under `--allow-unverified`, and the report says so.
+- `--oracle` is a second witness, checking the shim's account against the kernel's (on macOS, `--oracle-fs-usage` after `sudo -v`). Without one, a single-process target reaches PASS only under `--allow-unverified`, and the report says so.
 - `--shim` names the shim when it is not beside the binary; `--work` moves the scratch for traces and cases (default `/tmp/sideeye-work`); `--json <path>` writes the report as JSON too.
 - Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0.
 

@@ -1130,10 +1130,27 @@ fn phaseDefine(run: *Run) void {
     // exploration replaces it once a recovery has run.
     if (args.recovery != null) report.recovery_note = "configured; not run (no world was saved as a FAIL)";
 
-    // Still before setup runs, so the refusal is a configuration error and nothing has
-    // been touched. See the flag's parse site for why this is not raised there.
-    if (args.oracle_fs_usage and builtin.os.tag != .macos)
+    // Still before setup runs, so the refusal is a configuration error; the state directory
+    // this run made above is undone, as the recovery refusals above undo it. See the flag's
+    // parse site for why this is not raised there (and why not before the state resolves:
+    // the CLI self-description check pins the base command's first refusal, #406).
+    if (args.oracle_fs_usage and builtin.os.tag != .macos) {
+        if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError(.platform_unsupported, "--oracle-fs-usage is macOS only; on Linux the completeness oracle is --oracle <strace>, which needs no privilege");
+    }
+    // The mirror (#702): `--oracle` wraps the target in strace and reads strace's account, and
+    // macOS has no strace — whatever executable the path names there, it is not a second
+    // witness this engine can read. Refused by platform rather than by "not an executable
+    // file", which is what a missing strace said on macOS and named no way forward. The step
+    // depends on the mode: preflight takes neither macOS flag (`cli.zig`), and under
+    // `sideeye mcp` the path arrives from SIDEEYE_MCP_ORACLE rather than a flag.
+    if (args.oracle != null and builtin.os.tag == .macos) {
+        if (state_created) _ = posix.rmdir(state_z.ptr);
+        setupError(.platform_unsupported, if (mode == .preflight)
+            "--oracle runs strace, which is Linux only; preflight on macOS answers without a second witness, so drop --oracle"
+        else
+            "--oracle runs strace, which is Linux only; drop it. On macOS the second witness is --oracle-fs-usage (run sudo -v first, in the same terminal), or accept the weaker claim with --allow-unverified; under sideeye mcp, leave SIDEEYE_MCP_ORACLE unset");
+    }
 
     // With no descriptor number exempt from observation (contract v8), the engine's
     // own artifacts under --work — every operation's stdout capture rides the target's
@@ -1979,7 +1996,7 @@ fn phaseStructural(run: *Run) void {
     // second witness — its writes reach the shim, which shares its process. The
     // sampling keeps `crossed_boundary`, which keeps every class.
     if (trace.needsOracle() and !args.has_oracle)
-        unknown(.boundary_without_oracle, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
+        unknown(.boundary_without_oracle, if (builtin.os.tag == .macos) "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)" else "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
     // The fs_usage oracle cannot account for other processes the way strace does, so a
     // boundary the shim saw is not tolerated under it. fs_usage excludes processes by
     // name — the man page lists Terminal, sshd and the shells, and `-e` does not lift
@@ -3880,7 +3897,7 @@ fn observeAgain(
     // does not rest on: the post-states are read from the filesystem, not from either
     // witness. The report's `scope` line says so, and widening it is a separate promise.
     if (trace.needsOracle() and oracle_path == null)
-        unknown(.boundary_without_oracle, "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
+        unknown(.boundary_without_oracle, if (builtin.os.tag == .macos) "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)" else "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
 
     // The third trace read's share of the same rule. Run A's copy is above (and it is
     // what a refusing record in the recording run trips), but run B is a second
@@ -4055,18 +4072,32 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
             say("scratch        declared scratch, not compared: {s}\n", .{report.scratchNote(arena)});
         say("\n", .{});
     }
-    if (oracle_path == null)
-        say(
+    // The note and the hint below name what explore on THIS platform takes (#702). macOS refuses
+    // `--oracle` — it runs strace — so a hint naming it there was a first command that could not
+    // run. The Linux text is unchanged byte for byte; the macOS one names the macOS witness and
+    // ends its hint with `--allow-unverified`, the flag that runs without `sudo` and without
+    // fs_usage's limit on how deep the state directory may sit.
+    if (oracle_path == null) {
+        if (builtin.os.tag == .macos) say(
+            \\note         no oracle checked the shim's account against a second witness;
+            \\             explore's PASS will require --oracle-fs-usage (after sudo -v)
+            \\             or --allow-unverified
+            \\
+            \\
+        , .{}) else say(
             \\note         no oracle checked the shim's account against a second witness;
             \\             explore's PASS will require --oracle <strace> (Linux) or
             \\             --allow-unverified (macOS)
             \\
             \\
         , .{});
+    }
     // When no oracle was given but strace is discoverable, the hint names the real
     // path so the next command is pasteable — named, never attached (#78).
     const oracle_part = if (oracle_path) |o|
         std.fmt.allocPrint(arena, " --oracle {s}", .{o}) catch " --oracle <strace>"
+    else if (builtin.os.tag == .macos)
+        " --allow-unverified"
     else if (refuse.findStraceForHint(arena)) |s|
         std.fmt.allocPrint(arena, " --oracle {s}", .{s}) catch " --oracle <strace>"
     else

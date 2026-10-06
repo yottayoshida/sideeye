@@ -11,11 +11,11 @@ $ tar xzf sideeye-v1.8.0-aarch64-macos.tar.gz && cd sideeye-v1.8.0-aarch64-macos
 $ ./sideeye version
 ```
 
-Each release asset carries a sha256 GitHub computed when it was uploaded, so checking a download needs nothing published beside it:
+Each release asset carries a sha256 GitHub computed when it was uploaded, so checking a download needs nothing published beside it (on Linux, `sha256sum` in place of `shasum -a 256`):
 
 ```
 $ gh api repos/yottayoshida/sideeye/releases/tags/v1.8.0 --jq '.assets[] | "\(.digest)  \(.name)"'
-$ shasum -a 256 sideeye-v1.8.0-aarch64-macos.tar.gz     # sha256sum, on Linux
+$ shasum -a 256 sideeye-v1.8.0-aarch64-macos.tar.gz
 ```
 
 The digest reads `sha256:<hex>`; compare the hex. What this establishes is that the bytes are the ones GitHub holds — not who produced them: the digest and the release are the same account's word, and a checksum file published in the same release would be too.
@@ -40,14 +40,15 @@ The demo compiles a small planted-bug tool, explores it, and prints a real FAIL 
 $ sideeye preflight --state <dir> --operation "<cmd>"
 ```
 
-One observed run: either `recording accepted` (exit 0) or a refusal naming the same detector a real run would use (exit 2).
+One observed run: either `recording accepted` (exit 0) or a refusal naming the same detector a real run would use (exit 2). An accepted run — under `--twice`, one whose two runs left the same bytes — ends with a `next` line, the `explore` command for the define it just accepted, ending in what explore on this platform takes: the second witness `--oracle <strace>` on Linux; on macOS, where `--oracle` is refused, `--allow-unverified` — no second witness, the weaker claim, said so in the report — with `--oracle-fs-usage` named in the note above it as the witness macOS has (#702).
 
 Add `--twice` and it observes a second run from the restored pre-state, at least two seconds later, and compares the two. Byte repeatability is a property of two runs — one observation structurally cannot see it, and a tool that rewrites a timestamp on every run passes everything else preflight asks and is refused only once a full define has been written and explored. Equal post-states: exit 0. Different: the differing paths are named and the command exits 1, which is the negative answer to the question `--twice` asked, not a FAIL verdict — preflight produces none. What it does not establish is that the target is deterministic: the comparison covers file bytes, entry kinds and symlink targets under `--state`, and two runs are not all runs.
 
-**3. Explore** — the real thing, with the whole define in one file:
+**3. Explore** — the real thing, with the whole define in one file. The first line is Linux's; the second is macOS's, where `--oracle` (strace) is refused:
 
 ```
 $ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
+$ sideeye explore --config sideeye.toml --allow-unverified
 ```
 
 ```toml
@@ -88,9 +89,10 @@ A FAIL saves its counterexample to `<work>/cases/NNNNNN.json`, writes an evidenc
 
 ### The flags the define does not spell
 
-Six flags never appear in a `sideeye.toml`: they belong to the run rather than to the question.
+Seven flags never appear in a `sideeye.toml`: they belong to the run rather than to the question.
 
 - `--observe wrappers|syscalls|supervised` — where operations are counted. The default, `wrappers`, counts at the interposed libc entry points, with buffered stdio observed at flush granularity. `syscalls` (Linux) counts at the kernel boundary instead, through a seccomp filter and a `SIGSYS` handler inside the target's own process — the only way to see an operation libc issues from *inside* itself (an `fwrite` past the buffer), or one that never reaches libc at all: a raw `syscall(SYS_write, ...)`, or a runtime like Go's that issues every file call directly. Its trap set is every operation that can be a crash point. Check the second entry of the README's constraint list before reaching for it: under this mode an `exec`'d image the shim cannot be loaded into dies at its first state-changing call, which is the one limit that changes what the target does instead of making Sideeye refuse. `supervised` (Linux 5.19 or later, aarch64 and x86_64; #217, ADR 0089) counts the same operations from **outside** the target: the engine starts the operation through `sideeye __filter-exec`, which installs a seccomp user-notification filter and execs it, and no shim is loaded. **A statically linked target, which the other two modes refuse as `no_shim_marker`, is counted and reaches a verdict under this mode**, with the oracle watching the same run; where it cannot be judged it refuses with an existing reason. Each state-changing call waits for the engine, which counts it and lets it run, or at the crash point kills the run while the call is still waiting, so the call never runs. It needs a cgroup v2 the engine can create cgroups in (a setup error names it otherwise). Its walls: a run whose writes come from two or more threads refuses `multiple_threads_detected`, because the thread-order records are the shim's; a target that installs its own seccomp filter can return an error or trap for a call before this one sees it; `no_new_privs` is set, so a setuid child does not gain its privilege; i386-compat and x32 calls are not seen. Reading a call's paths needs the engine to read the target's memory, which Yama's `ptrace_scope` governs: at 2 or 3 every in-scope operation is unplaceable and the run refuses rather than guesses. The filter outlives the engine only as long as the engine does: were the engine to die mid-run, the target's next watched call would fail with `ENOSYS` — a changed target, which the run that follows cannot report because nobody is left to report it. On a run that reached the oracle comparison — whether it agreed or refused — and under `--allow-unverified`, the report's `oracle` line says who counted: the supervising engine, from outside the target, with no shim loaded. A run refused before the comparison (a thread refusal, say) says `not compared`, as in every mode. Its case is replayed with `--observe supervised`, not `--shim` — the report's `replay` line says so — and `sideeye_replay_case` over MCP, which has no `observe`, cannot replay it.
+- `--oracle <strace>` — the Linux oracle: the recording run is wrapped in strace and the shim's account is compared against strace's. **Refused on macOS** as `platform_unsupported`, whatever the path names (macOS has no strace, and the engine reads strace's account and nothing else); the refusal names `--oracle-fs-usage` and `--allow-unverified` under explore and replay, and says to drop the flag under preflight, which takes neither (#702).
 - `--oracle-fs-usage` — the macOS oracle, in place of `--oracle`. It compares the recording run against `fs_usage`, which needs root, so `sudo` must already hold credentials (`sudo -v` first, in the same terminal — the cache is per-terminal); the run refuses rather than prompting. It is narrower than strace. `fs_usage` prints only a rename's old path and cuts long pathnames from the left (both measured), so a rename it cannot match and a state directory deep enough to be cut are refusals rather than agreements. It cannot account for other processes, so a child the shim saw, or the subject replacing its own image, is UNKNOWN under it. A single-process run with neither, whose state-directory writes come from one thread the shim recorded — the main thread or a worker — is explored and judged under it as under `--oracle` (ADR 0060).
 - `--allow-unverified` — accept a PASS with no completeness check. On macOS this is the answer when no privilege is available: SIP leaves DTrace's syscall provider with no probes even as root, and the one candidate that measured oracle-shaped, `fs_usage`, requires it. The report says which claim was made, and this one is weaker.
 - `--world-timeout <s>` — a wall-clock budget per explored world (1 to 86400, off by default). A world's operation still running when the budget expires is sent `SIGKILL` and refused UNKNOWN `child_timed_out`, with the budget in the message. Worlds only: a recording run, a setup command or a checker that hangs still hangs, so this is not a promise of a hang-free run. Setting it also resets `SIGCHLD` to its default disposition for the whole run, and it is not settable over MCP today.

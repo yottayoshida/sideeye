@@ -635,6 +635,95 @@ jobs:
           echo "$out" | grep -q "before rename" || { echo "next operation not named"; exit 1; }
           echo "$out" | grep -q "NOT VERIFIED" || { echo "weaker claim not labelled"; exit 1; }
 
+      # #702: every next step printed on macOS runs on macOS. `--oracle` runs strace, which
+      # macOS lacks, so it is refused by platform even when the path names a real executable —
+      # /usr/bin/true here, because a missing path would pass for the older "not an executable
+      # file" refusal too — and before anything ran: the setup's mark file must not exist.
+      # Preflight's own refusal does not name the two flags preflight itself refuses; replay's
+      # refusal says to drop it; a process boundary's detail names no flag macOS refuses. The hint
+      # preflight prints is run as printed (the --check placeholder taken out, as Linux's leg
+      # 14 does) and has to reach PASS; the no-oracle refusal names --oracle-fs-usage.
+      - name: The next step printed on macOS runs on macOS (#702)
+        run: |
+          set -eu
+          S=./zig-out/bin/sideeye
+          SHIM="$PWD/zig-out/lib/libsideeye_shim.dylib"
+          d=/tmp/ci-702
+          rm -rf $d
+          mkdir -p $d
+          zig cc -o $d/toy-fixed spike/toys/toy.c
+          zig cc -DBUGGY=1 -o $d/toy-bug spike/toys/toy.c
+          printf '#!/bin/sh\ntouch %s/setup-ran\nexec %s/toy-fixed init\n' "$d" "$d" > $d/setup.sh
+          chmod 755 $d/setup.sh
+          fail() { echo "$1"; printf '%s\n' "$o" | sed 's/^/  | /'; exit 1; }
+
+          set +e
+          o=$($S explore --state $d/s1 --setup $d/setup.sh --operation "$d/toy-fixed rotate" --shim "$SHIM" --work $d/w1 --oracle /usr/bin/true 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "3" ] || fail "explore --oracle /usr/bin/true: expected exit 3, got $rc"
+          printf '%s\n' "$o" | grep -q "^SETUP ERROR  --oracle runs strace, which is Linux only" || fail "explore --oracle: not refused by platform"
+          printf '%s\n' "$o" | grep -qF -- "--oracle-fs-usage" || fail "explore --oracle: the refusal does not name --oracle-fs-usage"
+          printf '%s\n' "$o" | grep -qF -- "--allow-unverified" || fail "explore --oracle: the refusal does not name --allow-unverified"
+          [ ! -e $d/setup-ran ] || fail "explore --oracle: the setup ran before the refusal"
+
+          set +e
+          o=$($S preflight --state $d/s2 --operation "$d/toy-fixed rotate" --shim "$SHIM" --work $d/w2 --oracle /usr/bin/true 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "3" ] || fail "preflight --oracle /usr/bin/true: expected exit 3, got $rc"
+          printf '%s\n' "$o" | grep -qF "so drop --oracle" || fail "preflight --oracle: the refusal does not say to drop it"
+          ! printf '%s\n' "$o" | grep -qF -- "--allow-unverified" || fail "preflight --oracle: the refusal names a flag preflight refuses"
+          ! printf '%s\n' "$o" | grep -qF -- "--oracle-fs-usage" || fail "preflight --oracle: the refusal names a flag preflight refuses"
+
+          # replay takes --oracle too: a real FAIL's case, replayed with it.
+          set +e
+          o=$($S explore --state $d/s6 --setup "$d/toy-bug init" --operation "$d/toy-bug rotate" --shim "$SHIM" --work $d/w6 --allow-unverified 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "1" ] || fail "the planted bug: expected FAIL, got $rc"
+          set +e
+          o=$($S replay $d/w6/cases/000001.json --shim "$SHIM" --work $d/w7 --oracle /usr/bin/true 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "3" ] || fail "replay --oracle /usr/bin/true: expected exit 3, got $rc"
+          printf '%s\n' "$o" | grep -qF "Linux only; drop it" || fail "replay --oracle: not refused by platform"
+
+          # A process boundary with no oracle: the detail names no flag macOS refuses.
+          set +e
+          o=$(TOY_FORK=1 $S explore --state $d/s8 --setup "$d/toy-fixed init" --operation "$d/toy-fixed rotate" --shim "$SHIM" --work $d/w8 --allow-unverified 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "2" ] || fail "a forked child with no oracle: expected exit 2, got $rc"
+          printf '%s\n' "$o" | grep -qxF "UNKNOWN  boundary_without_oracle" || fail "a forked child with no oracle: not boundary_without_oracle"
+          ! printf '%s\n' "$o" | grep -qF -- "pass --oracle" || fail "boundary_without_oracle names --oracle on macOS"
+
+          set +e
+          o=$($S preflight --state $d/s3 --setup "$d/toy-fixed init" --operation "$d/toy-fixed rotate" --shim "$SHIM" --work $d/w3 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "0" ] || fail "preflight: expected exit 0, got $rc"
+          next=$(printf '%s\n' "$o" | sed -n '/^next  /,$p' | tr -d '\\\n')
+          case "$next" in *strace*) fail "preflight's next names strace: [$next]" ;; esac
+          case "$next" in *--allow-unverified*) ;; *) fail "preflight's next does not end with --allow-unverified: [$next]" ;; esac
+          hint=$(printf '%s\n' "$next" | sed 's/^next *sideeye //; s/--check <your-invariant.sh> //')
+          set +e
+          o=$(eval "$S $hint --work $d/w4" 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "0" ] || fail "preflight's next, run as printed: expected exit 0, got $rc"
+          printf '%s\n' "$o" | grep -q "^PASS" || fail "preflight's next, run as printed: no PASS"
+
+          set +e
+          o=$($S explore --state $d/s5 --setup "$d/toy-fixed init" --operation "$d/toy-fixed rotate" --shim "$SHIM" --work $d/w5 2>&1)
+          rc=$?
+          set -e
+          [ "$rc" = "2" ] || fail "explore with no oracle: expected exit 2, got $rc"
+          printf '%s\n' "$o" | grep -qxF "UNKNOWN  completeness_not_verified" || fail "explore with no oracle: not completeness_not_verified"
+          printf '%s\n' "$o" | grep -qF -- "pass --oracle-fs-usage" || fail "the no-oracle refusal does not name --oracle-fs-usage"
+          ! printf '%s\n' "$o" | grep -qF -- "pass --oracle," || fail "the no-oracle refusal still names --oracle"
+          echo "ok: every next step printed on macOS runs on macOS"
+
       # Contract v8 parity: state writes through re-bound standard descriptors must be
       # counted identically on both platforms (exact numbers, not just the verdict —
       # F_GETPATH is a different resolution mechanism than /proc/self/fd, and the count

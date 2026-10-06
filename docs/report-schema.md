@@ -229,8 +229,8 @@ environment does not carry, a setup, operation or checker that cannot be started
 the `#!` interpreter that file names, missing, not a regular file, not executable or not
 reachable, or a bare name with no executable file on `PATH`, refused before it runs (#701,
 ADR 0092)); platform_unsupported — what the define asks for does not
-exist on this platform or kernel (the fs_usage oracle off macOS, syscall observation off
-Linux or on a kernel that refuses the trap, a preload apparatus on macOS); internal — the
+exist on this platform or kernel (the fs_usage oracle off macOS, the strace oracle on macOS,
+syscall observation off Linux or on a kernel that refuses the trap, a preload apparatus on macOS); internal — the
 engine contradicted itself.
 
 The classes are coarse on purpose, and the rule above places a site: resolving a path the
