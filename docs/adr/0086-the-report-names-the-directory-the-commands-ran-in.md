@@ -2,6 +2,13 @@
 
 Status: Accepted (2026-09-21)
 
+> **Amended by ADR 0093 (2026-10-06):** the refusal's wording changes after all, for a define read
+> from a toml: where the failed command carries an argument found under the toml's directory and
+> not under the one it ran in, the detail names it and the refusal names `cwd = "."` (in
+> `next_step`, or in the sentence where no `next_step` will). The
+> Alternatives entry "Diagnose the cause in the refusal" stands — that is still a guess; this is
+> an observation. See ADR 0093.
+
 ## Context
 
 The 2026-09-21 release-path dogfood run took the adoption route `docs/ci-quickstart.md` tells

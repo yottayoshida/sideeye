@@ -1911,6 +1911,120 @@ else
     fails=$((fails + 1))
 fi
 
+# ---- #700 (ADR 0093): a toml with no cwd, run from elsewhere, is told which line to add ----
+# A toml resolves its own paths and argv[0] against its directory, and every other argument
+# against the directory the commands run in — Sideeye's own when no `cwd` is declared. Each
+# define below lives in T beside a file `seed` and is run from another directory. Where the
+# command that failed names `seed`, the refusal has to say it is under the toml's directory
+# and not under the one it ran in, and name `cwd = "."`; where it names nothing found only
+# there, it must not. One leg per refusal that carries it, two controls, and the same define
+# with `cwd = "."` added. Before this, none of them said anything about `cwd`.
+rm -rf /tmp/acc-700 && mkdir -p /tmp/acc-700/T /tmp/acc-700/from
+echo seed > /tmp/acc-700/T/seed
+echo both > /tmp/acc-700/T/both
+echo both > /tmp/acc-700/from/both
+c700() {   # c700 <name> <setup> <operation> [<check>] [cwd] — writes T/<name>.toml
+    {
+        printf '[world]\nstate = "./state-%s"\n\n[define]\n' "$1"
+        [ -n "${5:-}" ] && printf 'cwd = "%s"\n' "$5"
+        printf 'setup = "%s"\noperation = "%s"\n' "$2" "$3"
+        [ -n "${4:-}" ] && printf 'check = "%s"\n' "$4"
+    } > /tmp/acc-700/T/$1.toml
+}
+r700() {   # r700 <name> — runs T/<name>.toml from the other directory; sets o700, rc700
+    o700=$(cd /tmp/acc-700/from && "$SIDEEYE" explore --config /tmp/acc-700/T/$1.toml \
+        --shim "$SHIM" --work /tmp/acc-700/w-$1 --oracle /usr/bin/strace 2>&1)
+    rc700=$?
+}
+want700() {   # want700 <label> <rc> <verdict line prefix> <must say cwd: yes|no>
+    # The verdict line is looked for anywhere: a failing command's own stderr comes first.
+    says=no; printf '%s\n' "$o700" | grep -qF 'cwd = "."' && says=yes
+    if [ "$rc700" = "$2" ] && printf '%s\n' "$o700" | grep -q -- "^$3" && [ "$says" = "$4" ]; then
+        echo "ok   #700: $1"; return
+    fi
+    echo "FAIL #700: $1 (exit $rc700, wanted $2 and a line [$3...]; cwd named: $says, wanted $4)"
+    printf '%s\n' "$o700" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+}
+step700() {   # step700 <label> — next_step is declare_cwd, and the detail keeps only the observation
+    # The detail is the line under `UNKNOWN  <reason>`. A run that left the step alone and put the
+    # line in the detail instead also says `cwd = "."` somewhere, so want700 alone passes it.
+    d700=$(printf '%s\n' "$o700" | grep -A1 '^UNKNOWN  ' | tail -1)
+    if printf '%s\n' "$o700" | grep -q '^next  *Add cwd = "\."' &&
+       printf '%s\n' "$d700" | grep -qF "is under the toml's directory" &&
+       ! printf '%s\n' "$d700" | grep -qF 'add cwd'; then
+        echo "ok   #700: $1: next_step names the line, the detail only the observation"; return
+    fi
+    echo "FAIL #700: $1: next_step is not declare_cwd, or the detail lacks the observation or carries the line too"
+    printf '%s\n' "$o700" | grep -A1 -e '^UNKNOWN  ' -e '^next' | sed 's/^/     | /'
+    fails=$((fails + 1))
+}
+c700 setup "/bin/cp ./seed /tmp/acc-700/T/state-setup/seed" "$OUT/toy-fixed rotate"
+r700 setup
+want700 "a setup whose ./seed is only under the toml's directory names it and cwd" 3 "SETUP ERROR  --setup exited 1" yes
+printf '%s\n' "$o700" | grep -qF "./seed is under the toml's directory /tmp/acc-700/T and not under /tmp/acc-700/from" ||
+    { echo "FAIL #700: the setup refusal does not name ./seed and both directories"; fails=$((fails + 1)); }
+c700 op "$OUT/toy-fixed init" "/bin/cat ./seed"
+r700 op
+want700 "an operation whose ./seed is only under the toml's directory: recording_run_failed names cwd" 2 "UNKNOWN  recording_run_failed" yes
+step700 "recording_run_failed"
+c700 base "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "/usr/bin/test -e ./seed"
+r700 base
+want700 "a checker whose ./seed is only under the toml's directory: baseline_violates_invariant names cwd" 2 "UNKNOWN  baseline_violates_invariant" yes
+step700 "baseline_violates_invariant"
+c700 fals "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "/usr/bin/test ! -e ./seed"
+r700 fals
+want700 "a checker that passes when ./seed is missing: checker_not_falsified names cwd" 2 "UNKNOWN  checker_not_falsified" yes
+step700 "checker_not_falsified"
+# An operation that exits 0 without printing its marker, because what it tested for is not
+# where it ran: marker_never_observed carries the same observation and step.
+printf '[world]\nstate = "./state-marker"\n\n[define]\nsetup = "%s init"\noperation = "/usr/bin/test ! -e ./seed"\nmarker = "DONE"\n' "$OUT/toy-fixed" > /tmp/acc-700/T/marker.toml
+r700 marker
+want700 "an operation that exits 0 and never prints its marker: marker_never_observed names cwd" 2 "UNKNOWN  marker_never_observed" yes
+step700 "marker_never_observed"
+# The shape #700 was measured on: a file the setup is about to create, inside a directory under
+# the toml's only. The file is under neither; the directory is what gets named.
+c700 nested "/bin/cp /tmp/acc-700/T/seed ./state-nested/config.json" "$OUT/toy-fixed rotate"
+r700 nested
+want700 "a setup writing ./state-nested/config.json names the directory, which is only under the toml's" 3 "SETUP ERROR  --setup exited 1" yes
+printf '%s\n' "$o700" | grep -qF "./state-nested is under the toml's directory" ||
+    { echo "FAIL #700: the nested refusal does not name ./state-nested"; fails=$((fails + 1)); }
+# Under --observe syscalls the step stays the mode's own (check before changing the define), so
+# the line to add rides on the detail instead — the refusal still names it.
+o700=$(cd /tmp/acc-700/from && "$SIDEEYE" explore --config /tmp/acc-700/T/op.toml --observe syscalls \
+    --shim "$SHIM" --work /tmp/acc-700/w-op-sys --oracle /usr/bin/strace 2>&1)
+rc700=$?
+want700 "under --observe syscalls the detail carries the line, the step stays the mode's" 2 "UNKNOWN  recording_run_failed" yes
+printf '%s\n' "$o700" | grep -q "^next  *Under --observe syscalls" ||
+    { echo "FAIL #700: under --observe syscalls the step was replaced"; printf '%s\n' "$o700" | grep '^next' | sed 's/^/     | /'; fails=$((fails + 1)); }
+# A config read from a pipe has no directory worth naming. /dev/stdin redirected from a file
+# resolves to a regular file through its link, and its directory is /dev, where ./null exists:
+# a check that followed the link would tell the operator /dev is the toml's directory.
+printf '[world]\nstate = "/tmp/acc-700/T/state-pipe"\n\n[define]\nsetup = "%s init"\noperation = "/bin/cat ./null ./nothing"\n' "$OUT/toy-fixed" > /tmp/acc-700/T/pipe.toml
+o700=$(cd /tmp/acc-700/from && "$SIDEEYE" explore --config /dev/stdin --shim "$SHIM" --work /tmp/acc-700/w-pipe \
+    --oracle /usr/bin/strace < /tmp/acc-700/T/pipe.toml 2>&1)
+rc700=$?
+want700 "a config read through /dev/stdin is never asked, so /dev is not named" 2 "UNKNOWN  recording_run_failed" no
+c700 nothing "$OUT/toy-fixed init" "/bin/cat ./nothing"
+r700 nothing
+want700 "control: an argument found in neither directory says nothing about cwd" 2 "UNKNOWN  recording_run_failed" no
+c700 both "$OUT/toy-fixed init" "/bin/cat ./both ./nothing"
+r700 both
+want700 "control: an argument found in both directories says nothing about cwd" 2 "UNKNOWN  recording_run_failed" no
+# The setup is a script here so that it can both read ./seed and initialise the toy; its name
+# resolves against the toml either way, and with `cwd = "."` so does the ./seed inside it.
+printf '#!/bin/sh\ncp ./seed "$TOY_STATE/seed" && exec "%s" init\n' "$OUT/toy-fixed" > /tmp/acc-700/T/setup-declared.sh
+chmod 755 /tmp/acc-700/T/setup-declared.sh
+c700 declared "./setup-declared.sh" "$OUT/toy-fixed rotate" "" "."
+r700 declared
+if [ "$rc700" = "0" ]; then
+    echo "ok   #700: the same setup with cwd = \".\" runs from the other directory, and the run reaches PASS"
+else
+    echo "FAIL #700: the setup with cwd = \".\": exit $rc700, wanted 0"
+    printf '%s\n' "$o700" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2l: a state directory larger than one buffer ==========="
 # restore() collects names into a fixed buffer before deleting. Stopping at the bound

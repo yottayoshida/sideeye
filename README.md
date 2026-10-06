@@ -45,6 +45,7 @@ $ sideeye explore --config sideeye.toml --allow-unverified
 state = "./state"               # the one directory your tool's state lives in
 
 [define]
+cwd       = "."                 # relative arguments resolve here, from anywhere
 setup     = "mytool init"
 operation = "mytool rotate-key" # the shim is inserted into this one, not into setup or check
 check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + restart

@@ -293,6 +293,16 @@ so a kill that happened in both runs does not reach it. The checker is the
 exception because it judges the state from outside rather than against the
 recording, and the baseline is the first clean state it sees.
 
+A define read from a toml that declares no `cwd` takes `declare_cwd` where `recording_run_failed`,
+`marker_never_observed`, `checker_not_falsified` (the corrupted state accepted) and
+`baseline_violates_invariant`'s checker layer would say `fix_define`, when the command that failed
+carries an argument the engine found under the toml's directory and not under the one it ran in (or a
+directory above an argument that is under neither); `message` gains that observation as its last
+clause (#700, ADR 0093). Where a site's step under `--observe syscalls` is
+`syscalls_may_have_killed` — the recording run, the marker, the baseline's checker layer — that
+step stays, and `message` carries the line to add as well, as `setup_failed`'s does, having no
+`next_step`.
+
 When the shim's trace is the witness, `child_touched_state_dir`'s `message`
 names the foreign process's pid and the first state-directory operation it
 performed — its class and its path, both ends for a two-path operation (#484): `a process

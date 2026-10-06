@@ -926,6 +926,17 @@ fn phaseDefine(run: *Run) void {
                 var dir_real: [contract.max_path]u8 = undefined;
                 const dir_abs = posix.realpath(dz.ptr, &dir_real) orelse setupError(.environment, "--config's directory could not be resolved");
                 const dir = arena.dupe(u8, std.mem.span(dir_abs)) catch setupError(.environment, "out of memory");
+                // #700 (ADR 0093): the directory a failed command's relative arguments are
+                // compared under, and only for a config that is a file — read from a pipe, its
+                // "directory" is `/dev` or `/dev/fd`, and "add cwd" would point there.
+                {
+                    var cfg_z: [contract.max_path]u8 = undefined;
+                    if (std.fmt.bufPrintZ(&cfg_z, "{s}", .{cfg_path})) |cz| {
+                        // Not followed through a link: `/dev/stdin` redirected from a file
+                        // resolves to a regular file, and its directory is still `/dev`.
+                        if ((posix.kindOfPathNoFollow(cz.ptr) catch .other) == .file) refuse.toml_dir = dir;
+                    } else |_| {}
+                }
                 args.state = resolvePathAgainst(arena, dir, d.state);
                 args.setup = if (d.setup) |s| resolveCommand(arena, dir, s) else null;
                 args.operation = resolveCommand(arena, dir, d.operation);
@@ -1401,7 +1412,9 @@ fn phaseSetup(run: *Run) void {
             // is all this can honestly carry: a first draft annotated 127 as "command
             // not found", and `exec /no/such/binary` under /bin/sh measured 126 here —
             // the mapping from a failed exec to a status is the shell's, not ours.
-            .exited => |code| if (code != 0) setupErrorFmt(a, .setup_failed, "--setup exited {d}{s}{s}", .{ code, report.setupOutputDetail(a, setup_out), report.exit126Note(code) }),
+            // #700 (ADR 0093): a SETUP ERROR has no `next_step`, so the observation and the line
+            // to add both ride on the one sentence, as other SETUP ERRORs carry their remedy.
+            .exited => |code| if (code != 0) setupErrorFmt(a, .setup_failed, "--setup exited {d}{s}{s}{s}", .{ code, report.setupOutputDetail(a, setup_out), report.exit126Note(code), refuse.withObservation(a, "", refuse.cwdObservation(a, setup_argv), null) }),
             // The same class, found by this PR's own same-class scan: `Term` carries
             // `signaled: u8` and `unknown: c_int`, and the old `else` threw both away.
             // A setup killed by a guard on the machine (the case #483 was filed from)
@@ -1678,6 +1691,12 @@ fn phaseRecording(run: *Run) void {
     // become two, and the exploration is confidently complete over a sequence the target
     // never finishes. `--setup` was already checked here; the operation is the one whose
     // result the entire trace depends on.
+    //
+    // #700 (ADR 0093): what the refusals below and the marker's say about where the operation
+    // ran, taken once so a detail and its step cannot disagree. Nothing is looked at unless the
+    // define came from a toml with no `cwd`, run from somewhere else.
+    const op_obs = refuse.cwdObservation(arena, op_argv);
+    const op_step = refuse.cwdStep(op_obs, boundary.fixDefineUnder(args.observe));
     switch (rec_term) {
         // 126 before the status comparison, and without the --expect-status advice: it
         // is the code the engine's own fork stub keeps for a child it could not arrange
@@ -1688,8 +1707,8 @@ fn phaseRecording(run: *Run) void {
         .exited => |code| if (code == 126 and code != expect_status)
             unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
         else if (code != expect_status)
-            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", boundary.fixDefineUnder(args.observe)),
-        else => unknown(.recording_run_failed, "the operation did not exit normally during the recording run", boundary.fixDefineUnder(args.observe)),
+            unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", op_obs, op_step), op_step),
+        else => unknown(.recording_run_failed, refuse.withObservation(arena, "the operation did not exit normally during the recording run", op_obs, op_step), op_step),
     }
 
     // A marker the clean run cannot produce would make every post-success obligation
@@ -1705,7 +1724,7 @@ fn phaseRecording(run: *Run) void {
     if (args.marker != null) {
         if (!rec_capture.marker_seen) {
             report.l1_note = "marker configured; never observed, even in the recording run";
-            unknown(.marker_never_observed, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", boundary.fixDefineUnder(args.observe));
+            unknown(.marker_never_observed, refuse.withObservation(arena, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", op_obs, op_step), op_step);
         }
         report.l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
@@ -2637,8 +2656,12 @@ fn phaseChecker(run: *Run) void {
                 // which is indistinguishable from it and gets the fail-closed reading.
                 if (code == 126)
                     unknown(.checker_not_falsified, "the checker probe exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
-                if (code == 0)
-                    unknown(.checker_not_falsified, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", .fix_define);
+                if (code == 0) {
+                    // #700 (ADR 0093): taken once, so the detail and the step cannot disagree.
+                    const obs = refuse.cwdObservation(arena, cargv);
+                    const step = refuse.cwdStep(obs, .fix_define);
+                    unknown(.checker_not_falsified, refuse.withObservation(arena, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", obs, step), step);
+                }
             },
             else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .fix_define),
         }
@@ -3146,13 +3169,18 @@ fn phaseExploration(run: *Run) void {
             // state from outside, so the same gap in both runs is red at the first clean state it
             // ever sees — this one: the falsification probe only ever shows it a corrupted state.
             const step: contract.NextStep = if (l0 != null) .class_wall else if (l1 != null) .fix_define else boundary.fixDefineUnder(args.observe);
+            // #700 (ADR 0093): the checker layer alone, where a checker with a relative argument
+            // read under the wrong directory rejects every state. The line above is pinned by
+            // spike/acceptance.sh, so the step is replaced here rather than there.
+            const base_obs: ?[]const u8 = if (l0 == null and l1 == null) (if (check_argv) |c| refuse.cwdObservation(arena, c) else null) else null;
+            const base_step = refuse.cwdStep(base_obs, step);
             const what: []const u8 = if (l0) |v|
                 std.fmt.allocPrint(arena, "{s}{s}", .{ report.baselineObserved(arena, v), report.baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
             else if (l1) |v|
                 std.fmt.allocPrint(arena, "the operation printed its success marker, and {s} did not hold the new state that marker promised{s}; check the marker and the operation against each other first", .{ textShown(arena, report.violationPath(v)), report.baselineAlsoFailed(false, l2_failed) }) catch "the success marker's promise did not hold in the un-killed re-run; check the marker and the operation against each other first"
             else
-                "the checker rejected the state the operation leaves on its own; check the operation and the checker against each other first";
-            unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "{s}: {s}", .{ report.baseline_refusal_lead, what }) catch what, step);
+                refuse.withObservation(arena, "the checker rejected the state the operation leaves on its own; check the operation and the checker against each other first", base_obs, base_step);
+            unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "{s}: {s}", .{ report.baseline_refusal_lead, what }) catch what, base_step);
         }
 
         // The watch on a contained world (contract v17, #559), after every refusal this world
