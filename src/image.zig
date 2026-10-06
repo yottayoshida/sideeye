@@ -420,25 +420,34 @@ fn fileFault(arena: std.mem.Allocator, path: []const u8) Fault {
 
 /// The `#!` half of `startable`. Anything this cannot read — an execute-only file, a first
 /// line longer than `shebang_max` — is passed, not refused: the exec will say.
+/// What follows `#!` on the first line of `file`, when the first `max` bytes hold the whole
+/// line — or the whole file, when it is shorter than that and has no line end. Null for a
+/// file that cannot be opened, holds no `#!`, or whose line runs past `max`. Opened
+/// `O_NONBLOCK` for the reason `observePath` gives: the path is the define's, and a FIFO
+/// there must not hang the engine before anything has run. The one reader of a `#!` line
+/// here: `startable` asks it with Linux's limit and `frameworkPython` with macOS's (#703).
+fn shebangLine(arena: std.mem.Allocator, file: []const u8, comptime max: usize) ?[]const u8 {
+    const z = arena.dupeZ(u8, file) catch return null;
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    if (fd < 0) return null;
+    defer _ = posix.close(fd);
+    var buf: [max]u8 = undefined;
+    const n = posix.read(fd, &buf, buf.len);
+    if (n < 2) return null;
+    const head = buf[0..@intCast(n)];
+    if (!std.mem.startsWith(u8, head, "#!")) return null;
+    const line_end = std.mem.indexOfScalar(u8, head, '\n') orelse
+        (if (head.len < buf.len) head.len else return null);
+    return arena.dupe(u8, head[2..line_end]) catch null;
+}
+
 fn interpreterOf(arena: std.mem.Allocator, file: []const u8, cwd: ?[]const u8, path_env: ?[]const u8) Start {
     const ok: Start = .{ .fault = .ok, .file = file };
-    const z = arena.dupeZ(u8, file) catch return ok;
-    // O_NONBLOCK for the reason `observePath` gives: the path is the define's, and a FIFO
-    // there must not hang the engine before anything has run.
-    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
-    if (fd < 0) return ok;
-    defer _ = posix.close(fd);
-    var buf: [shebang_max]u8 = undefined;
-    const n = posix.read(fd, &buf, buf.len);
-    if (n < 2) return ok;
-    const head = buf[0..@intCast(n)];
-    if (!std.mem.startsWith(u8, head, "#!")) return ok;
-    const line_end = std.mem.indexOfScalar(u8, head, '\n') orelse
-        (if (head.len < buf.len) head.len else return ok);
+    const line = shebangLine(arena, file, shebang_max) orelse return ok;
     // Spaces and tabs separate the words, and nothing else does: a CR is part of the
     // interpreter's name to the kernel, so a script saved with CRLF line endings names
     // `/bin/sh\r`, which does not exist — and saying so is the diagnosis.
-    var words = std.mem.tokenizeAny(u8, head[2..line_end], " \t");
+    var words = std.mem.tokenizeAny(u8, line, " \t");
     const interp_word = words.next() orelse return ok;
     if (interp_word[0] != '/') return ok;
     const interp = arena.dupe(u8, interp_word) catch return ok;
@@ -575,31 +584,21 @@ fn venvLauncher(arena: std.mem.Allocator, launcher: []const u8) ?[]const u8 {
 /// the script (`-sE`), which a rewritten operation has to carry too (review of #703).
 const Shebang = struct { interpreter: []const u8, options: []const u8, path: []const u8 };
 
-/// Read from at most the first 512 bytes — the length of a `#!` line macOS's kernel honours —
-/// opened `O_NONBLOCK` for the reason `observePath` gives. Null for no `#!`, a relative
-/// interpreter, or a line longer than that. `#!/usr/bin/env python3` names `/usr/bin/env`, an
-/// Apple-shipped binary the shim never reaches, so such a script is refused before the chain
-/// this is for.
+/// The length of a `#!` line macOS's kernel honours (xnu's `IMG_SHSIZE`), where `startable`
+/// reads Linux's `shebang_max`: the launcher this is for runs only on macOS.
+const shebang_max_macos = 512;
+
+/// Read through `shebangLine`, so its words are split as `startable` splits them — a CR is
+/// part of the interpreter's name, as it is to the kernel. Null for no `#!`, a relative
+/// interpreter, or a line past `shebang_max_macos`. `#!/usr/bin/env python3` names
+/// `/usr/bin/env`, an Apple-shipped binary the shim never reaches, so such a script is
+/// refused before the chain this is for.
 fn shebangOf(arena: std.mem.Allocator, path: []const u8) ?Shebang {
-    const path_z = arena.dupeZ(u8, path) catch return null;
-    const fd = posix.open(path_z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
-    if (fd < 0) return null;
-    defer _ = posix.close(fd);
-    var head: [512]u8 = undefined;
-    const n = posix.pread(fd, &head, head.len, 0);
-    if (n < 2) return null;
-    const got = head[0..@intCast(n)];
-    if (!std.mem.startsWith(u8, got, "#!")) return null;
-    const line_end = std.mem.indexOfScalar(u8, got, '\n') orelse return null;
-    const line = std.mem.trimStart(u8, got[2..line_end], " \t");
-    const word_end = std.mem.indexOfAny(u8, line, " \t\r") orelse line.len;
-    const word = line[0..word_end];
-    if (word.len == 0 or word[0] != '/') return null;
-    return .{
-        .interpreter = arena.dupe(u8, word) catch return null,
-        .options = arena.dupe(u8, std.mem.trim(u8, line[word_end..], " \t\r")) catch return null,
-        .path = path,
-    };
+    const line = shebangLine(arena, path, shebang_max_macos) orelse return null;
+    var words = std.mem.tokenizeAny(u8, line, " \t");
+    const word = words.next() orelse return null;
+    if (word[0] != '/') return null;
+    return .{ .interpreter = word, .options = std.mem.trim(u8, words.rest(), " \t\r"), .path = path };
 }
 
 
@@ -1901,7 +1900,9 @@ test "a #! line's interpreter is its first word, when that is an absolute path (
         .{ .body = "#! \t/opt/x/python3\n", .want = "/opt/x/python3" },
         .{ .body = "#!/usr/bin/env python3\n", .want = "/usr/bin/env" },
         .{ .body = "#!python3\n", .want = null },
-        .{ .body = "#!/opt/x/python3", .want = null }, // no line end within what was read
+        // No line end, in a file shorter than what is read: the whole file is the line, as
+        // `startable` reads it (one reader of a `#!` line, #703).
+        .{ .body = "#!/opt/x/python3", .want = "/opt/x/python3" },
         .{ .body = "print()\n", .want = null },
     };
     for (cases) |c| {
