@@ -2559,7 +2559,7 @@ fn phasePreflight(run: *Run) void {
         // #682, ADR 0091: the README promises a preflight refusal names the detector a real
         // run would use, and an exploration with no crash point is refused. Ahead of the
         // second run, which would only measure the repeatability of nothing.
-        if (n == 0) refuse.refuseNoCrashPoint(arena, args.has_oracle);
+        if (n == 0) refuse.refuseNoCrashPoint(arena, args.has_oracle, refuse.cwdObservation(arena, op_argv));
         // #199: the second observation, opt-in. Without `--twice` this is the answer
         // preflight has always given from one run, and the report names determinism as
         // unchecked; with it, the second run happens here and the report carries what
@@ -2579,7 +2579,7 @@ fn phasePreflight(run: *Run) void {
         // Was a PASS — "the operation performed nothing that can change the judged state" —
         // until ADR 0091 (#682): a PASS no world could have failed, read by a caller that sees
         // only the exit code as a check that ran. A checker declared here never ran either.
-        refuse.refuseNoCrashPoint(arena, args.has_oracle);
+        refuse.refuseNoCrashPoint(arena, args.has_oracle, refuse.cwdObservation(arena, op_argv));
     }
 }
 

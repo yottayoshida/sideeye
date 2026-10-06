@@ -1018,14 +1018,19 @@ fn hasOneSidedEntry(plan: engine.L0Plan, pre: engine.Snapshot, post: engine.Snap
 /// what that leaves open: an operation that rewrote a file with the bytes it already held
 /// through a raw syscall changes no snapshot and leaves no record, so "nothing" is the shim's
 /// word alone.
-pub fn refuseNoCrashPoint(arena: std.mem.Allocator, has_oracle: bool) noreturn {
+pub fn refuseNoCrashPoint(arena: std.mem.Allocator, has_oracle: bool, observation: ?[]const u8) noreturn {
     const who = boundary.recorder();
     const detail = if (has_oracle)
         "the operation performed no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail"
     else
         std.fmt.allocPrint(arena, "{s} recorded no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail; no oracle ran, so an operation {s} did not see is not ruled out", .{ who, who }) catch
             "no state-changing operation was recorded inside the state directory, so there was no crash point and no world in which anything could fail; no oracle ran, so an operation that was not seen is not ruled out";
-    unknown(.nothing_could_fail, detail, .nothing_in_state);
+    // #700 (ADR 0093): an operation whose relative argument was read under the wrong directory
+    // can find nothing to do there and exit 0 — or write outside the state — and record nothing.
+    // Where the operation's arguments show that (`cwdObservation`), the step names the line to
+    // add instead of saying the operation changed nothing.
+    const step: contract.NextStep = if (observation != null) .declare_cwd else .nothing_in_state;
+    unknown(.nothing_could_fail, withObservation(arena, detail, observation, step), step);
 }
 
 /// An exploration with crash points in which still nothing could have failed (#683, ADR 0091).

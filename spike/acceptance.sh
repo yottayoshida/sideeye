@@ -2130,6 +2130,13 @@ printf '[world]\nstate = "./state-marker"\n\n[define]\nsetup = "%s init"\noperat
 r700 marker
 want700 "an operation that exits 0 and never prints its marker: marker_never_observed names cwd" 2 "UNKNOWN  marker_never_observed" yes
 step700 "marker_never_observed"
+# The same operation with no marker: it finds nothing to do where it ran and records nothing, so
+# the exploration has no crash point — nothing_could_fail (ADR 0091), whose step is otherwise
+# nothing_in_state. The observation turns it into the line to add.
+c700 zero "$OUT/toy-fixed init" "/usr/bin/test ! -e ./seed"
+r700 zero
+want700 "an operation that finds nothing where it ran and records nothing: nothing_could_fail names cwd" 2 "UNKNOWN  nothing_could_fail" yes
+step700 "nothing_could_fail"
 # The shape #700 was measured on: a file the setup is about to create, inside a directory under
 # the toml's only. The file is under neither; the directory is what gets named.
 c700 nested "/bin/cp /tmp/acc-700/T/seed ./state-nested/config.json" "$OUT/toy-fixed rotate"

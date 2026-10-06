@@ -311,7 +311,7 @@ recording, and the baseline is the first clean state it sees.
 
 A define read from a toml that declares no `cwd` takes `declare_cwd` where `recording_run_failed`,
 `marker_never_observed`, `checker_not_falsified` (the corrupted state accepted) and
-`baseline_violates_invariant`'s checker layer would say `fix_define`, when the command that failed
+`baseline_violates_invariant`'s checker layer would say `fix_define` — and where `nothing_could_fail` with no crash point would say `nothing_in_state` — when the command that failed
 carries an argument the engine found under the toml's directory and not under the one it ran in (or a
 directory above an argument that is under neither); `message` gains that observation as its last
 clause (#700, ADR 0093). Where a site's step under `--observe syscalls` is

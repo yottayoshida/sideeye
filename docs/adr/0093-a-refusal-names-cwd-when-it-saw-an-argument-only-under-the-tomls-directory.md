@@ -40,7 +40,9 @@ silently.
    "the operation may need a `cwd`" because the engine did not know; here it states what it saw.
 2. **Where**, named branch by branch rather than by a rule: `setup_failed` when the setup exited
    non-zero; `recording_run_failed` for an undeclared exit status or no normal exit;
-   `marker_never_observed`; `checker_not_falsified` when the checker accepted the corrupted state;
+   `marker_never_observed`; `nothing_could_fail` with no crash point, whose step is otherwise
+   `nothing_in_state` (ADR 0091 — an operation that found nothing to do where it ran records
+   nothing); `checker_not_falsified` when the checker accepted the corrupted state;
    and `baseline_violates_invariant`'s checker layer. Each looks only at its own command's
    arguments. A config named through a link or read from a pipe (`/dev/stdin` resolves to a
    regular file through its link, and its directory is still `/dev`) is never asked.
@@ -71,7 +73,8 @@ silently.
   `unknown_reason` and `setup_error_reason`); ADR 0069 added one the same way.
 - Seen nowhere: a file the command would create in a directory present in both places, or in
   neither (unless a directory further up is under the toml's only); a relative argument that finds a different file where it ran and succeeds; and an
-  operation that writes outside the state directory and so records nothing, which reads as a
-  zero-operation PASS rather than a refusal. The README's `cwd` line is what prevents those.
+  operation that writes outside the state directory through an argument that names nothing on
+  either side — refused `nothing_could_fail` since ADR 0091, with `nothing_in_state` as its step.
+  The README's `cwd` line is what prevents those.
 - Not asked under flags (their relative arguments resolve where the operator typed them), on a
   replay (a case carries no toml), or by preflight, which reads no toml.
