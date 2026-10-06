@@ -162,6 +162,10 @@ This limitation is a focus, not a weakness. The bugs that surface under the proc
 - **On macOS, a framework Python's `bin/python3` is a launcher, not the interpreter** (#703). Built from CPython's `Mac/Tools/pythonw.c`, it replaces itself with the framework's interpreter through `posix_spawn` with `POSIX_SPAWN_SETEXEC`; the shim's `posix_spawn` records a spawn only when the call returns, which that one never does, so the new image announces itself with no exec record and the chain of observation breaks. The refusal stays — a hand-off nothing recorded is an image change no witness accounted for — and it names the way past: the interpreter the launcher hands the run to, which is observed directly, and in a virtual environment the `__PYVENV_LAUNCHER__` value the launcher would have passed. Both are read from the layout `pythonw.c` relies on, not from a list of distributions; a layout that does not hold keeps the refusal's ordinary step.
 - v0 runs **natively on macOS and Linux.** (On macOS, every language is forced through libSystem, which makes userspace interposition a single mechanism covering Rust, Go, Python, and friends; the same approach covers dynamically linked Linux binaries.)
 
+#### The one named exception: a directory renamed in from outside
+
+A directory a recorded `rename` moved into the judged tree from outside it is attributed to that one record, because its source was never snapshotted — so a later unrecorded write inside that subtree can still ride a PASS. The JSON report counts the paths that attribution covered (`paths_attributed_to_rename`) and the text report states how many on its `atomicity` line when there are any; a run counting zero has no such gap. The README names this in the sentence that makes the promise it qualifies, "never a silent PASS", rather than here alone (ADR 0032).
+
 ### Not in v0
 
 Network failure, clock manipulation, multi-process races, distributed systems, and partial remote effects are not goals for v0. They remain future possibilities — not before the first product value is proven.

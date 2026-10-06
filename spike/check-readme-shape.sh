@@ -20,10 +20,11 @@
 # The size bound is the other half. The page had grown to 33 KB by writing each
 # decision's record into it — issue numbers, ADR numbers, the reason behind each refusal —
 # and those have homes of their own (DESIGN.md, docs/, docs/adr/). The bound is a sum of what
-# the page must carry plus a fixed slack, not a target picked first: 8994 + 590 = 9584.
+# the page must carry plus a fixed slack, not a target picked first: 9692 + 590 = 10282.
 # The sum was corrected twice, upward, during the change that introduced this check, and both
 # corrections were elements it had never counted rather than drafts that would not fit. First
-# the 382-byte clause naming the one exception to "never a silent PASS", which an owner ruling
+# the clause naming the one exception to "never a silent PASS"
+# (284 bytes since #714 cut it from two sentences), which an owner ruling
 # (ADR 0032) requires in the sentence that makes the promise. Then the 284 bytes that let a
 # reader start from the release artifact: the onboarding box holds README.md and a tarball and
 # nothing else, network-off, so a page that sends the untar line to another file leaves the
@@ -47,6 +48,12 @@
 # A seventh (#713, 2026-10-06): 24 bytes, the count of upstream reports turned into a link to
 # docs/found.md, which the ledgers generate and CI compares. A number typed into this page went
 # stale with the next filing — it said 27 when the ledger held 35.
+# An eighth (#714, 2026-10-06): 798 bytes and 19 lines of real `sideeye demo` output under the
+# first paragraph, with the sentence that says what it is; the owner asked for a real report on
+# the first screen, and spike/check-readme-demo.py holds every line of it to a fresh demo. The
+# exception's two sentences became one clause in the same edit, which paid back 100 bytes, so
+# the page grew by 698. The line bound moves for the same reason and the same way: the page's
+# count plus two.
 #
 # Sunset: if this has not failed once by 2026-12-04, delete it and its CI step.
 set -u
@@ -65,8 +72,8 @@ has() { grep -qF -e "$1" "$R"; }
 
 bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 9584 ]; then ok "size: $bytes bytes, at most 9584"; else bad "size: $bytes bytes, over 9584"; fi
-if [ "$lines" -le 120 ]; then ok "length: $lines lines, at most 120"; else bad "length: $lines lines, over 120"; fi
+if [ "$bytes" -le 10282 ]; then ok "size: $bytes bytes, at most 10282"; else bad "size: $bytes bytes, over 10282"; fi
+if [ "$lines" -le 137 ]; then ok "length: $lines lines, at most 137"; else bad "length: $lines lines, over 137"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi
 n=$(grep -cE 'ADR[ -][0-9]{4}' "$R")
@@ -116,6 +123,20 @@ else bad "--shim or --work is gone"; fi
 # README alone" — a brew line alone is unusable there.
 if has 'tar xzf' && has './sideeye'; then ok "the release artifact can be started from the page"
 else bad "the untar-and-run path is gone; the onboarding box has no other way to start the tarball"; fi
+
+# 9. The one named exception to "never a silent PASS" sits in the sentence that makes that
+# promise (ADR 0032: a reader meets the exception where the promise is made). The sentence
+# runs from the phrase to the next ". " or the end of its line; the exception is named by the
+# field the JSON report counts it in. Not one of run 1's seven either: added when #714 shortened
+# the exception to a clause, so that a later edit cannot move it out of the sentence again.
+promise_line=$(grep -F 'never a silent PASS' "$R" | head -1)
+promise_rest=${promise_line#*never a silent PASS}
+promise_sentence=$(printf '%s\n' "$promise_rest" | sed 's/\. .*//')
+if [ -n "$promise_line" ] && printf '%s\n' "$promise_sentence" | grep -qF 'paths_attributed_to_rename'; then
+    ok "the promise names its one exception in the same sentence"
+else
+    bad "\"never a silent PASS\" is gone, or its sentence no longer names paths_attributed_to_rename"
+fi
 
 if [ "$fails" -ne 0 ]; then
     echo "$fails check(s) failed on $R"
