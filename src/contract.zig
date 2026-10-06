@@ -1385,7 +1385,24 @@ pub const NextStep = enum {
     /// produces none of those either, so the question is answered "no" at both. One is in and
     /// one is out because the owner fixed the scope at five, and #506 records that rather than
     /// dressing it as a distinction.
+    ///
+    /// On macOS one of the five gives way to `name_framework_interpreter` (#703): the
+    /// recording run's broken self-exec chain, when the operation's image is a framework
+    /// Python's launcher. Everywhere else, and at that site for any other image, it is this.
     unwrap_or_class_wall,
+    /// The recording run's self-exec chain broke on macOS and the operation's image — named
+    /// directly, or as a script's `#!` interpreter — sits where a framework Python's
+    /// launcher sits, with the framework's interpreter beside it (#703, `image.frameworkPython`).
+    /// Homebrew's `bin/python3` hands itself to that interpreter through `posix_spawn` with
+    /// `POSIX_SPAWN_SETEXEC`, which the shim cannot follow; the interpreter named directly is
+    /// observed and judged, measured. Not `unwrap_or_class_wall`: the operation is no shell
+    /// wrapper, and the way out is one word of the define, which the detail names exactly.
+    ///
+    /// The sentence names `__PYVENV_LAUNCHER__` conditionally, because the detail names a
+    /// value only for a virtual environment, and it says where the variable has to live: in
+    /// the environment Sideeye runs in, since an `env:` apparatus entry is checked, never
+    /// applied (ADR 0041) — and that it reaches setup and the checker too.
+    name_framework_interpreter,
     /// `boundary_without_oracle` in the recording run, where the boundary may be the
     /// operation's own wrapper (#506, owner's scope ruling extending the five).
     ///
@@ -1522,6 +1539,7 @@ pub const NextStep = enum {
             .raise_world_timeout => "Raise --world-timeout, or find out what the operation waits on.",
             .class_wall => "This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.",
             .unwrap_or_class_wall => "Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one the README's 'What the target has to be' names, with DESIGN.md giving the reason.",
+            .name_framework_interpreter => "Make the interpreter the detail above names the operation's first word — followed by the #! line's options and the script, when the detail names them — and, when the detail names a __PYVENV_LAUNCHER__ value, set that variable to it in the environment Sideeye runs in (an apparatus entry env:__PYVENV_LAUNCHER__=<value> then stops a run without it as a SETUP ERROR; the variable reaches setup and the checker too): a framework Python's bin/python3 is a launcher that replaces itself with that interpreter where the shim cannot follow.",
             .check_shim => "Check that --shim names the interposition library from this build and that nothing strips the preload from the target's environment.",
             .operation_not_an_image => "What was read at operation is not something the loader inserts a library into. Point operation at an executable image; a #! script hands execution to its interpreter, which is what the insertion would have to reach.",
             .rebuild_pair => "Use the shim and the engine from the same build: --shim must name the library this binary shipped with.",

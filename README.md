@@ -89,6 +89,7 @@ Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2), wit
 - **A clean run exits its declared success status** (default 0).
 - **Byte-repeatable writes.** A second clean run must leave the same bytes under `--state`; `preflight --twice` measures this.
 - **Other processes take turns with the state.** Forked helpers are judged under an oracle, provided no two processes' writes interleave and every writing child is reaped. One leaving its process group is judged only on Linux, where the engine can make cgroups. A process boundary or a self-`exec` needs Linux's `--oracle`, or is UNKNOWN.
+- **On macOS, a framework Python's `bin/python3` — Homebrew's and the Command Line Tools' among them — is a launcher that replaces itself with the framework's interpreter**, so a target started through it, directly or from a script's `#!` line, is refused; the refusal names that interpreter, which can lead the operation instead (in a virtual environment, with the `__PYVENV_LAUNCHER__` value it also names).
 
 ## What Sideeye is not
 

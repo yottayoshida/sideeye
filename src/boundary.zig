@@ -1287,6 +1287,48 @@ pub fn noShimDetailSecondRun(arena: std.mem.Allocator) []const u8 {
     ) catch opening;
 }
 
+/// The step for the recording run's broken self-exec chain, and what the detail adds to the
+/// refusal's own sentence (#703). On macOS, an operation whose image `image.frameworkPython`
+/// reads as a framework Python's launcher takes `name_framework_interpreter`, and the detail
+/// names what was read — the interpreter, the script, the `__PYVENV_LAUNCHER__` value — so the
+/// step's sentence can point at it. Everything else keeps `unwrap_or_class_wall` and adds
+/// nothing. Read at the refusal, which the detail says.
+pub const SelfExecStep = struct { next: contract.NextStep, detail: []const u8 };
+
+pub fn selfExecStep(arena: std.mem.Allocator) SelfExecStep {
+    return selfExecStepFor(arena, rec_image, @import("builtin").os.tag == .macos);
+}
+
+/// `selfExecStep` with its observation and its platform as arguments, so every arm is pinned
+/// by a test on any host, as `noShimNextFor`'s are.
+fn selfExecStepFor(arena: std.mem.Allocator, observed: ?image.Observation, darwin: bool) SelfExecStep {
+    const plain: SelfExecStep = .{ .next = .unwrap_or_class_wall, .detail = "" };
+    if (!darwin) return plain;
+    const fw = image.frameworkPython(arena, observed orelse return plain) orelse return plain;
+    const launcher = textShown(arena, fw.launcher);
+    // Said apart: what was read before the run — the operation's image, a Mach-O or not an
+    // image at all — and what was read at this refusal: a script's `#!` line, where the
+    // launcher resolves, and what stands beside it. The second can differ from what ran
+    // (two reviews of #703 caught the line between them drawn in the wrong place).
+    const before = if (fw.script != null) "was read before the run and is not an executable image" else "was read before the run as a Mach-O";
+    const script = if (fw.script) |s|
+        std.fmt.allocPrint(arena, "it is the script {s}, whose #! line names {s}{s}{s}, and ", .{
+            textShown(arena, s), launcher, if (fw.script_options.len > 0) " with the options " else "", textShown(arena, fw.script_options),
+        }) catch return plain
+    else
+        "";
+    const venv = if (fw.venv_launcher) |v|
+        std.fmt.allocPrint(arena, "; a pyvenv.cfg stands in {s}'s directory or the one above, so the launcher sets __PYVENV_LAUNCHER__={s}", .{ launcher, textShown(arena, v) }) catch return plain
+    else
+        "";
+    const detail = std.fmt.allocPrint(
+        arena,
+        ". The operation's image {s}; at this refusal, {s}{s} resolves into the bin directory of a framework Python, whose interpreter is {s}{s}",
+        .{ before, script, launcher, textShown(arena, fw.interpreter), venv },
+    ) catch return plain;
+    return .{ .next = .name_framework_interpreter, .detail = detail };
+}
+
 /// The reachable boundary-evidence states, written out rather than generated as a
 /// product of the fields: most of the product is unreachable (a witness that never ran
 /// cannot have counted children, and `oracle_child_touched` needs one that read), and a
@@ -2190,4 +2232,52 @@ test "under --observe supervised a missing start record and an unrecorded writer
     observe_mode = .wrappers;
     try std.testing.expect(std.mem.startsWith(u8, noShimDetail(arena), "the trace carries no shim marker"));
     try std.testing.expect(std.mem.startsWith(u8, noShimDetailSecondRun(arena), "the second observed run carries no shim marker"));
+}
+
+test "selfExecStepFor: a framework Python's launcher is named on macOS, and nothing else changes (#703)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const ff = try image.fakeFrameworkForTest(a, "boundary-selfexec");
+    defer ff.remove();
+    const launcher = image.reobserve(a, ff.launcher);
+
+    // Off macOS, with no observation, or with an image that is not a framework's launcher:
+    // the step every other broken chain takes, and nothing added to the sentence.
+    for ([_]SelfExecStep{
+        selfExecStepFor(a, launcher, false),
+        selfExecStepFor(a, null, true),
+        selfExecStepFor(a, image.reobserve(a, ff.stray), true),
+        selfExecStepFor(a, .{ .path = null, .size = null, .facts = .{ .not_resolved = .not_found } }, true),
+    }) |sx| {
+        try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, sx.next);
+        try std.testing.expectEqualStrings("", sx.detail);
+    }
+
+    // The launcher named directly: the interpreter is in the detail, and no venv value is.
+    const direct = selfExecStepFor(a, launcher, true);
+    try std.testing.expectEqual(contract.NextStep.name_framework_interpreter, direct.next);
+    try std.testing.expect(std.mem.indexOf(u8, direct.detail, "Resources/Python.app/Contents/MacOS/Python") != null);
+    try std.testing.expect(std.mem.indexOf(u8, direct.detail, "__PYVENV_LAUNCHER__") == null);
+    try std.testing.expect(std.mem.indexOf(u8, direct.detail, "#! line") == null);
+    // What was read before the run is said apart from what was read at the refusal, and the
+    // first clause is never empty.
+    try std.testing.expect(std.mem.indexOf(u8, direct.detail, "was read before the run as a Mach-O; at this refusal, ") != null);
+
+    // Through the venv's link, and through a console script naming it: the value the
+    // launcher would set is named, and so is the script.
+    const venv = selfExecStepFor(a, image.reobserve(a, ff.venv_python), true);
+    try std.testing.expectEqual(contract.NextStep.name_framework_interpreter, venv.next);
+    try std.testing.expect(std.mem.indexOf(u8, venv.detail, "__PYVENV_LAUNCHER__=") != null);
+    const script = selfExecStepFor(a, image.reobserve(a, ff.script), true);
+    try std.testing.expectEqual(contract.NextStep.name_framework_interpreter, script.next);
+    // The `#!` line is read at the refusal, so it is said on that side.
+    try std.testing.expect(std.mem.indexOf(u8, script.detail, "is not an executable image; at this refusal, it is the script ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, script.detail, "whose #! line names") != null);
+    // The pyvenv.cfg is placed by the launcher's path, not by a pronoun.
+    try std.testing.expect(std.mem.indexOf(u8, venv.detail, "'s directory or the one above") != null);
+    // The fixture's `#!` line carries `-sE`, which the launcher passes on ahead of the
+    // script, so a rewritten operation has to carry it too.
+    try std.testing.expect(std.mem.indexOf(u8, script.detail, "with the options -sE") != null);
+    try std.testing.expect(std.mem.indexOf(u8, script.detail, "__PYVENV_LAUNCHER__=") != null);
 }

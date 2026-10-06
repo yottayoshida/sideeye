@@ -420,25 +420,34 @@ fn fileFault(arena: std.mem.Allocator, path: []const u8) Fault {
 
 /// The `#!` half of `startable`. Anything this cannot read — an execute-only file, a first
 /// line longer than `shebang_max` — is passed, not refused: the exec will say.
+/// What follows `#!` on the first line of `file`, when the first `max` bytes hold the whole
+/// line — or the whole file, when it is shorter than that and has no line end. Null for a
+/// file that cannot be opened, holds no `#!`, or whose line runs past `max`. Opened
+/// `O_NONBLOCK` for the reason `observePath` gives: the path is the define's, and a FIFO
+/// there must not hang the engine before anything has run. The one reader of a `#!` line
+/// here: `startable` asks it with Linux's limit and `frameworkPython` with macOS's (#703).
+fn shebangLine(arena: std.mem.Allocator, file: []const u8, comptime max: usize) ?[]const u8 {
+    const z = arena.dupeZ(u8, file) catch return null;
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    if (fd < 0) return null;
+    defer _ = posix.close(fd);
+    var buf: [max]u8 = undefined;
+    const n = posix.read(fd, &buf, buf.len);
+    if (n < 2) return null;
+    const head = buf[0..@intCast(n)];
+    if (!std.mem.startsWith(u8, head, "#!")) return null;
+    const line_end = std.mem.indexOfScalar(u8, head, '\n') orelse
+        (if (head.len < buf.len) head.len else return null);
+    return arena.dupe(u8, head[2..line_end]) catch null;
+}
+
 fn interpreterOf(arena: std.mem.Allocator, file: []const u8, cwd: ?[]const u8, path_env: ?[]const u8) Start {
     const ok: Start = .{ .fault = .ok, .file = file };
-    const z = arena.dupeZ(u8, file) catch return ok;
-    // O_NONBLOCK for the reason `observePath` gives: the path is the define's, and a FIFO
-    // there must not hang the engine before anything has run.
-    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
-    if (fd < 0) return ok;
-    defer _ = posix.close(fd);
-    var buf: [shebang_max]u8 = undefined;
-    const n = posix.read(fd, &buf, buf.len);
-    if (n < 2) return ok;
-    const head = buf[0..@intCast(n)];
-    if (!std.mem.startsWith(u8, head, "#!")) return ok;
-    const line_end = std.mem.indexOfScalar(u8, head, '\n') orelse
-        (if (head.len < buf.len) head.len else return ok);
+    const line = shebangLine(arena, file, shebang_max) orelse return ok;
     // Spaces and tabs separate the words, and nothing else does: a CR is part of the
     // interpreter's name to the kernel, so a script saved with CRLF line endings names
     // `/bin/sh\r`, which does not exist — and saying so is the diagnosis.
-    var words = std.mem.tokenizeAny(u8, head[2..line_end], " \t");
+    var words = std.mem.tokenizeAny(u8, line, " \t");
     const interp_word = words.next() orelse return ok;
     if (interp_word[0] != '/') return ok;
     const interp = arena.dupe(u8, interp_word) catch return ok;
@@ -453,6 +462,145 @@ fn interpreterOf(arena: std.mem.Allocator, file: []const u8, cwd: ?[]const u8, p
     if (searchPath(sbuf, name_word, env, cwd) != null) return ok;
     return .{ .fault = .not_on_path, .file = file, .interpreter = interp, .name = arena.dupe(u8, name_word) catch return ok };
 }
+
+// ---------------------------------------------------------------------------
+// A framework Python's launcher (#703).
+//
+// `bin/python3.x` in a framework build of CPython — Homebrew's among them — is not the
+// interpreter. It is built from `Mac/Tools/pythonw.c`: it finds the framework library that
+// holds `Py_Initialize`, appends `Resources/Python.app/Contents/MacOS/Python` to that
+// library's directory, sets `__PYVENV_LAUNCHER__` to the path it was started as (its
+// directory realpath'd, its own name kept), and replaces itself with that image through
+// `posix_spawn` with `POSIX_SPAWN_SETEXEC`. The shim's `posix_spawn` records a spawn only when
+// the call returns, which that one never does, so the trace holds no exec record and the new
+// image announces itself again: a broken self-exec chain. Measured on this repository's
+// macOS host on 2026-10-06: Homebrew's python@3.12 and @3.14 launchers import `posix_spawn`
+// and `posix_spawnattr_setflags` and no exec function, and the interpreter they name, given
+// as the operation directly, is observed and judged.
+//
+// What is read here is the layout that launcher relies on, read at the refusal. It observes
+// and does not conclude, like the rest of this module: the operation's image sits where a
+// framework's launcher sits and the framework's interpreter is there — never that a hand-off
+// happened, which nothing here saw.
+
+/// Where a framework Python's launcher would have handed the run, and what it would have
+/// passed. Every path is the target's and goes through `textShown` before it is printed.
+pub const FrameworkPython = struct {
+    /// `<V>/Resources/Python.app/Contents/MacOS/<name>`, where `<V>` holds the launcher's
+    /// `bin` directory and the framework's library, and `<name>` is the framework's own name
+    /// or `Python` (`frameworkOf` says which distribution takes which).
+    interpreter: []const u8,
+    /// The launcher as it was started: the operation's first word, or the interpreter the
+    /// `#!` line of the operation's script names.
+    launcher: []const u8,
+    /// The script the operation names, when the launcher is its `#!` interpreter (a console
+    /// script such as `black` or `pytest`).
+    script: ?[]const u8,
+    /// What follows the interpreter on that `#!` line (`-sE`), which the launcher passes on
+    /// ahead of the script; empty when there is none or no script.
+    script_options: []const u8,
+    /// `__PYVENV_LAUNCHER__` as the launcher would set it, when a `pyvenv.cfg` stands where
+    /// CPython looks for one beside that value — a virtual environment, which the
+    /// interpreter started directly would otherwise not know it is in. Null outside one.
+    venv_launcher: ?[]const u8,
+};
+
+/// The framework Python behind the operation's image `obs`, or null. A Mach-O is read as the
+/// launcher itself; a file that is not an image is read for a `#!` line, whose interpreter is
+/// then the launcher if it is a Mach-O. Anything else, and any layout that does not hold
+/// both the framework library and the interpreter, is null.
+pub fn frameworkPython(arena: std.mem.Allocator, obs: Observation) ?FrameworkPython {
+    const path = obs.path orelse return null;
+    switch (obs.facts) {
+        .macho => return frameworkOf(arena, path, null),
+        .unrecognised => {
+            const sb = shebangOf(arena, path) orelse return null;
+            if (std.meta.activeTag(observePath(arena, sb.interpreter).facts) != .macho) return null;
+            return frameworkOf(arena, sb.interpreter, sb);
+        },
+        else => return null,
+    }
+}
+
+fn frameworkOf(arena: std.mem.Allocator, launcher: []const u8, script: ?Shebang) ?FrameworkPython {
+    var buf: [search_path_max]u8 = undefined;
+    const lz = arena.dupeZ(u8, launcher) catch return null;
+    const real = std.mem.span(posix.realpath(lz.ptr, &buf) orelse return null);
+    const bin = std.fs.path.dirname(real) orelse return null;
+    if (!std.mem.eql(u8, std.fs.path.basename(bin), "bin")) return null;
+    const v = std.fs.path.dirname(bin) orelse return null;
+    // The framework library is named after the framework: `Python` in Homebrew's and
+    // python.org's `Python.framework`, `Python3` in the Command Line Tools' `Python3.framework`,
+    // `PythonT` in python.org's free-threaded `PythonT.framework` (review of #703; read off this
+    // host's Command Line Tools and python.org's 3.13.7 installer). The interpreter is named
+    // after the framework too, except in the Command Line Tools, whose launcher names
+    // `MacOS/Python` like the upstream one — so the framework's own name is tried first, then
+    // `Python`, which is what each launcher's own strings say it starts.
+    const name = frameworkName(v);
+    const lib = std.fs.path.joinZ(arena, &.{ v, name }) catch return null;
+    if (posix.access(lib.ptr, posix.F_OK) != 0) return null;
+    const interp = for ([_][]const u8{ name, "Python" }) |n| {
+        const p = std.fs.path.joinZ(arena, &.{ v, "Resources/Python.app/Contents/MacOS", n }) catch return null;
+        if (posix.isExecutableRegular(p.ptr)) break p;
+    } else return null;
+    return .{
+        .interpreter = interp,
+        .launcher = launcher,
+        .script = if (script) |s| s.path else null,
+        .script_options = if (script) |s| s.options else "",
+        .venv_launcher = venvLauncher(arena, launcher),
+    };
+}
+
+/// The name of the framework `v` is a version of: `Python3` for `…/Python3.framework/Versions/3.9`,
+/// and `Python` when `v` is not inside a `.framework` bundle at all.
+fn frameworkName(v: []const u8) []const u8 {
+    const versions = std.fs.path.dirname(v) orelse return "Python";
+    const bundle = std.fs.path.basename(std.fs.path.dirname(versions) orelse return "Python");
+    if (!std.mem.eql(u8, std.fs.path.basename(versions), "Versions") or !std.mem.endsWith(u8, bundle, ".framework")) return "Python";
+    const name = bundle[0 .. bundle.len - ".framework".len];
+    return if (name.len == 0) "Python" else name;
+}
+
+/// `__PYVENV_LAUNCHER__` as `pythonw.c` computes it — the launcher's directory realpath'd and
+/// its own name kept, so a venv's `bin/python` symlink stays the venv's — when a `pyvenv.cfg`
+/// stands in that directory or the one above it, the two places CPython's getpath looks.
+fn venvLauncher(arena: std.mem.Allocator, launcher: []const u8) ?[]const u8 {
+    const dir = std.fs.path.dirname(launcher) orelse return null;
+    var buf: [search_path_max]u8 = undefined;
+    const dz = arena.dupeZ(u8, dir) catch return null;
+    const real_dir = std.mem.span(posix.realpath(dz.ptr, &buf) orelse return null);
+    const value = std.fs.path.join(arena, &.{ real_dir, std.fs.path.basename(launcher) }) catch return null;
+    const here = std.fs.path.joinZ(arena, &.{ real_dir, "pyvenv.cfg" }) catch return null;
+    if (posix.access(here.ptr, posix.F_OK) == 0) return value;
+    const up = std.fs.path.dirname(real_dir) orelse return null;
+    const above = std.fs.path.joinZ(arena, &.{ up, "pyvenv.cfg" }) catch return null;
+    if (posix.access(above.ptr, posix.F_OK) == 0) return value;
+    return null;
+}
+
+/// What a `#!` line says: the interpreter, its first word, when that is an absolute path, and
+/// whatever follows it on the line — the options the kernel hands the interpreter ahead of
+/// the script (`-sE`), which a rewritten operation has to carry too (review of #703).
+const Shebang = struct { interpreter: []const u8, options: []const u8, path: []const u8 };
+
+/// The length of a `#!` line macOS's kernel honours (xnu's `IMG_SHSIZE`), where `startable`
+/// reads Linux's `shebang_max`: the launcher this is for runs only on macOS.
+const shebang_max_macos = 512;
+
+/// Read through `shebangLine`, so its words are split as `startable` splits them — a CR is
+/// part of the interpreter's name, as it is to the kernel. Null for no `#!`, a relative
+/// interpreter, or a line past `shebang_max_macos`. `#!/usr/bin/env python3` names
+/// `/usr/bin/env`, an Apple-shipped binary the shim never reaches, so such a script is
+/// refused before the chain this is for.
+fn shebangOf(arena: std.mem.Allocator, path: []const u8) ?Shebang {
+    const line = shebangLine(arena, path, shebang_max_macos) orelse return null;
+    var words = std.mem.tokenizeAny(u8, line, " \t");
+    const word = words.next() orelse return null;
+    if (word[0] != '/') return null;
+    return .{ .interpreter = word, .options = std.mem.trim(u8, words.rest(), " \t\r"), .path = path };
+}
+
 
 // ---------------------------------------------------------------------------
 // Parsing. Every read goes through `at`, which is the only place a file offset turns
@@ -1602,4 +1750,276 @@ test "the host's own binaries, as a smoke test only" {
     // change, and the parser's own falsification is the fixtures above.
     const other = observe(a, "/bin/ls", null, null);
     try testing.expect(other.facts == .macho or other.facts == .undecidable);
+}
+
+/// A framework Python laid out the way `pythonw.c` relies on, a virtual environment whose
+/// `bin/python` links to its launcher, and a console script whose `#!` line names that
+/// link, in a pid-unique directory (#703). Test-only: `boundary.zig`'s tests use it too.
+pub const FakeFramework = struct {
+    root: [:0]const u8,
+    dirs: [10][:0]const u8,
+    launcher: [:0]const u8,
+    lib: [:0]const u8,
+    interpreter: [:0]const u8,
+    venv_python: [:0]const u8,
+    venv_cfg: [:0]const u8,
+    script: [:0]const u8,
+    stray: [:0]const u8,
+
+    /// Remove what `fakeFrameworkForTest` made, files first, then the directories deepest
+    /// first. Best effort, as every fixture cleanup in this file is.
+    pub fn remove(self: FakeFramework) void {
+        for ([_][:0]const u8{ self.script, self.venv_python, self.venv_cfg, self.interpreter, self.lib, self.launcher, self.stray }) |f| _ = posix.unlink(f.ptr);
+        var i: usize = self.dirs.len;
+        while (i > 0) {
+            i -= 1;
+            _ = posix.rmdir(self.dirs[i].ptr);
+        }
+        _ = posix.rmdir(self.root.ptr);
+    }
+};
+
+pub fn fakeFrameworkForTest(a: std.mem.Allocator, tag: []const u8) !FakeFramework {
+    var dbuf: [256]u8 = undefined;
+    const root = try a.dupeZ(u8, fixtureDir(&dbuf, tag));
+    const rel = [_][]const u8{
+        "Versions",                    "Versions/3.99",
+        "Versions/3.99/bin",           "Versions/3.99/Resources",
+        "Versions/3.99/Resources/Python.app", "Versions/3.99/Resources/Python.app/Contents",
+        "Versions/3.99/Resources/Python.app/Contents/MacOS", "venv",
+        "venv/bin",                    "elsewhere",
+    };
+    var ff: FakeFramework = undefined;
+    ff.root = root;
+    for (rel, 0..) |r, k| {
+        ff.dirs[k] = try std.fs.path.joinZ(a, &.{ root, r });
+        _ = posix.mkdir(ff.dirs[k].ptr, 0o755);
+    }
+    var pbuf: [512]u8 = undefined;
+    ff.launcher = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[2], "python3.99", try buildMachO(a, .{}), &pbuf, 0o755));
+    ff.lib = try a.dupeZ(u8, try writeFixture(ff.dirs[1], "Python", "not a real dylib", &pbuf));
+    ff.interpreter = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[6], "Python", try buildMachO(a, .{}), &pbuf, 0o755));
+    ff.venv_cfg = try a.dupeZ(u8, try writeFixture(ff.dirs[7], "pyvenv.cfg", "home = x\n", &pbuf));
+    ff.venv_python = try std.fs.path.joinZ(a, &.{ ff.dirs[8], "python" });
+    _ = posix.unlink(ff.venv_python.ptr);
+    if (posix.symlink(ff.launcher.ptr, ff.venv_python.ptr) != 0) return error.SkipZigTest;
+    const shebang = try std.fmt.allocPrint(a, "#!{s} -sE\nprint('tool')\n", .{ff.venv_python});
+    ff.script = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[8], "tool", shebang, &pbuf, 0o755));
+    // A Mach-O outside any bin directory, for the layout that is not a framework's.
+    ff.stray = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[9], "python3", try buildMachO(a, .{}), &pbuf, 0o755));
+    return ff;
+}
+
+fn realpathOf(a: std.mem.Allocator, p: []const u8) ![]const u8 {
+    var buf: [search_path_max]u8 = undefined;
+    const z = try a.dupeZ(u8, p);
+    return a.dupe(u8, std.mem.span(posix.realpath(z.ptr, &buf) orelse return error.TestUnexpectedResult));
+}
+
+test "a framework Python's launcher names the framework's interpreter (#703)" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const ff = try fakeFrameworkForTest(a, "fw-launcher");
+    defer ff.remove();
+
+    // The launcher named directly: no script, and no venv beside it.
+    const direct = frameworkPython(a, observePath(a, ff.launcher)) orelse return error.TestUnexpectedResult;
+    try testing.expectEqualStrings(try realpathOf(a, ff.interpreter), try realpathOf(a, direct.interpreter));
+    try testing.expectEqualStrings(ff.launcher, direct.launcher);
+    try testing.expect(direct.script == null and direct.venv_launcher == null);
+
+    // Through a venv's `bin/python` link: the venv's own path is the launcher, and the
+    // `__PYVENV_LAUNCHER__` value is its directory realpath'd with the link's name kept.
+    const venv = frameworkPython(a, observePath(a, ff.venv_python)) orelse return error.TestUnexpectedResult;
+    try testing.expectEqualStrings(ff.venv_python, venv.launcher);
+    const want = try std.fs.path.join(a, &.{ try realpathOf(a, ff.dirs[8]), "python" });
+    try testing.expectEqualStrings(want, venv.venv_launcher orelse return error.TestUnexpectedResult);
+
+    // A console script whose `#!` line names that link: the script is named, and the
+    // launcher is the interpreter its `#!` line names.
+    const script = frameworkPython(a, observePath(a, ff.script)) orelse return error.TestUnexpectedResult;
+    try testing.expectEqualStrings(ff.script, script.script orelse return error.TestUnexpectedResult);
+    try testing.expectEqualStrings(ff.venv_python, script.launcher);
+}
+
+test "nothing is named where the framework's layout does not hold (#703)" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const ff = try fakeFrameworkForTest(a, "fw-negative");
+    defer ff.remove();
+
+    // A Mach-O that is not in a bin directory.
+    try testing.expect(frameworkPython(a, observePath(a, ff.stray)) == null);
+    // A `#!` script whose interpreter is not an image (a pip3 or pydoc in `<V>/bin`
+    // names the launcher and is read through it; one that names a text file is nothing).
+    var pbuf: [512]u8 = undefined;
+    const text_interp = try writeFixture(ff.dirs[9], "notanimage", "plain text\n", &pbuf);
+    const text_interp_d = try a.dupeZ(u8, text_interp);
+    defer _ = posix.unlink(text_interp_d.ptr);
+    const bad_script = try writeFixtureMode(ff.dirs[2], "pip3", try std.fmt.allocPrint(a, "#!{s}\n", .{text_interp_d}), &pbuf, 0o755);
+    const bad_script_d = try a.dupeZ(u8, bad_script);
+    defer _ = posix.unlink(bad_script_d.ptr);
+    try testing.expect(frameworkPython(a, observePath(a, bad_script_d)) == null);
+    // The same file read as if it were the image: a `#!` script is never the launcher.
+    try testing.expect(frameworkPython(a, .{ .path = bad_script_d, .size = 0, .facts = .unrecognised }) == null);
+    // A `#!` line naming a file in the framework's own bin directory that is not an image
+    // (a `python3.99-config` is itself a script): the layout holds, the interpreter does
+    // not, so nothing is named — only a Mach-O is read as the launcher.
+    const config = try writeFixtureMode(ff.dirs[2], "python3.99-config", "#!/bin/sh\necho flags\n", &pbuf, 0o755);
+    const config_d = try a.dupeZ(u8, config);
+    defer _ = posix.unlink(config_d.ptr);
+    const via_config = try writeFixtureMode(ff.dirs[9], "uses-config", try std.fmt.allocPrint(a, "#!{s}\n", .{config_d}), &pbuf, 0o755);
+    const via_config_d = try a.dupeZ(u8, via_config);
+    defer _ = posix.unlink(via_config_d.ptr);
+    try testing.expect(frameworkPython(a, observePath(a, via_config_d)) == null);
+    // An ELF observation, whatever the path.
+    try testing.expect(frameworkPython(a, .{ .path = ff.launcher, .size = 0, .facts = .{ .elf = .{ .has_interp = true, .class64 = true } } }) == null);
+
+    // Take away the interpreter, then the framework library: either one missing is no
+    // framework.
+    _ = posix.unlink(ff.interpreter.ptr);
+    try testing.expect(frameworkPython(a, observePath(a, ff.launcher)) == null);
+    var pbuf2: [512]u8 = undefined;
+    _ = try writeFixtureMode(ff.dirs[6], "Python", try buildMachO(a, .{}), &pbuf2, 0o755);
+    try testing.expect(frameworkPython(a, observePath(a, ff.launcher)) != null);
+    _ = posix.unlink(ff.lib.ptr);
+    try testing.expect(frameworkPython(a, observePath(a, ff.launcher)) == null);
+}
+
+test "a #! line's interpreter is its first word, when that is an absolute path (#703)" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var dbuf: [256]u8 = undefined;
+    const dir = fixtureDir(&dbuf, "shebang");
+    defer _ = posix.rmdir(dir.ptr);
+    const cases = [_]struct { body: []const u8, want: ?[]const u8 }{
+        .{ .body = "#!/opt/x/python3 -E\nprint()\n", .want = "/opt/x/python3" },
+        .{ .body = "#! \t/opt/x/python3\n", .want = "/opt/x/python3" },
+        .{ .body = "#!/usr/bin/env python3\n", .want = "/usr/bin/env" },
+        .{ .body = "#!python3\n", .want = null },
+        // No line end, in a file shorter than what is read: the whole file is the line, as
+        // `startable` reads it (one reader of a `#!` line, #703).
+        .{ .body = "#!/opt/x/python3", .want = "/opt/x/python3" },
+        .{ .body = "print()\n", .want = null },
+    };
+    for (cases) |c| {
+        var pbuf: [512]u8 = undefined;
+        const p = try writeFixture(dir, "s", c.body, &pbuf);
+        defer _ = posix.unlink(p.ptr);
+        const got = if (shebangOf(a, p)) |sb| sb.interpreter else null;
+        if (c.want) |w| try testing.expectEqualStrings(w, got orelse return error.TestUnexpectedResult) else try testing.expect(got == null);
+    }
+}
+
+/// `<root>/<bundle>/Versions/<version>` and the directories under it down to the
+/// interpreter's, for the tests below that lay out a framework other than the fake one (#703).
+/// Index 2 is the version directory, 3 its bin, 7 the interpreter's.
+fn bundleDirsForTest(a: std.mem.Allocator, root: []const u8, bundle: []const u8, version: []const u8) ![8][:0]const u8 {
+    const v = try std.fmt.allocPrint(a, "{s}/Versions/{s}", .{ bundle, version });
+    const app = try std.fmt.allocPrint(a, "{s}/Resources/Python.app", .{v});
+    const rel = [8][]const u8{
+        bundle,
+        try std.fmt.allocPrint(a, "{s}/Versions", .{bundle}),
+        v,
+        try std.fmt.allocPrint(a, "{s}/bin", .{v}),
+        try std.fmt.allocPrint(a, "{s}/Resources", .{v}),
+        app,
+        try std.fmt.allocPrint(a, "{s}/Contents", .{app}),
+        try std.fmt.allocPrint(a, "{s}/Contents/MacOS", .{app}),
+    };
+    var dirs: [8][:0]const u8 = undefined;
+    for (rel, 0..) |r, k| {
+        dirs[k] = try std.fs.path.joinZ(a, &.{ root, r });
+        _ = posix.mkdir(dirs[k].ptr, 0o755);
+    }
+    return dirs;
+}
+
+/// Remove `files`, then `dirs` deepest first, then `root`. Best effort.
+fn removeForTest(files: []const [:0]const u8, dirs: []const [:0]const u8, root: [:0]const u8) void {
+    for (files) |f| _ = posix.unlink(f.ptr);
+    var i: usize = dirs.len;
+    while (i > 0) {
+        i -= 1;
+        _ = posix.rmdir(dirs[i].ptr);
+    }
+    _ = posix.rmdir(root.ptr);
+}
+
+test "the framework library is named after the framework, as in the Command Line Tools' Python3.framework (#703)" {
+    try testing.expectEqualStrings("Python3", frameworkName("/L/Frameworks/Python3.framework/Versions/3.9"));
+    try testing.expectEqualStrings("Python", frameworkName("/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14"));
+    try testing.expectEqualStrings("PythonT", frameworkName("/x/PythonT.framework/Versions/3.14"));
+    // Not inside a `.framework` bundle at all, as the test fixture is: the upstream name.
+    try testing.expectEqualStrings("Python", frameworkName("/tmp/sideeye-image-x-1/Versions/3.99"));
+    try testing.expectEqualStrings("Python", frameworkName("/a/b"));
+
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var dbuf: [256]u8 = undefined;
+    const root = try a.dupeZ(u8, fixtureDir(&dbuf, "fw-clt"));
+    const dirs = try bundleDirsForTest(a, root, "Python3.framework", "3.9");
+    var pbuf: [512]u8 = undefined;
+    const launcher = try a.dupeZ(u8, try writeFixtureMode(dirs[3], "python3.9", try buildMachO(a, .{}), &pbuf, 0o755));
+    const interp = try a.dupeZ(u8, try writeFixtureMode(dirs[7], "Python", try buildMachO(a, .{}), &pbuf, 0o755));
+    // A library under the upstream name only is not this framework's library, and nothing
+    // is named.
+    const wrong = try a.dupeZ(u8, try writeFixture(dirs[2], "Python", "not this framework's library", &pbuf));
+    try testing.expect(frameworkPython(a, observePath(a, launcher)) == null);
+    _ = posix.unlink(wrong.ptr);
+    const lib = try a.dupeZ(u8, try writeFixture(dirs[2], "Python3", "the framework's library", &pbuf));
+    const fw = frameworkPython(a, observePath(a, launcher)) orelse return error.TestUnexpectedResult;
+    try testing.expectEqualStrings(try realpathOf(a, interp), try realpathOf(a, fw.interpreter));
+    removeForTest(&.{ launcher, interp, lib }, &dirs, root);
+}
+
+test "a #! line's options are carried with its interpreter (#703)" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var dbuf: [256]u8 = undefined;
+    const dir = fixtureDir(&dbuf, "shebang-opts");
+    defer _ = posix.rmdir(dir.ptr);
+    const cases = [_]struct { body: []const u8, interp: []const u8, opts: []const u8 }{
+        .{ .body = "#!/opt/x/python3 -sE\n", .interp = "/opt/x/python3", .opts = "-sE" },
+        .{ .body = "#!/opt/x/python3 -I -u \r\n", .interp = "/opt/x/python3", .opts = "-I -u" },
+        .{ .body = "#!/opt/x/python3\n", .interp = "/opt/x/python3", .opts = "" },
+    };
+    for (cases) |c| {
+        var pbuf: [512]u8 = undefined;
+        const p = try writeFixture(dir, "s", c.body, &pbuf);
+        defer _ = posix.unlink(p.ptr);
+        const sb = shebangOf(a, p) orelse return error.TestUnexpectedResult;
+        try testing.expectEqualStrings(c.interp, sb.interpreter);
+        try testing.expectEqualStrings(c.opts, sb.options);
+    }
+    // A line longer than 256 bytes and within 512 — a deep venv's interpreter — is read.
+    var long: [400]u8 = undefined;
+    @memset(&long, 'd');
+    long[0] = '/';
+    var pbuf: [512]u8 = undefined;
+    const body = try std.fmt.allocPrint(a, "#!{s}/python3\n", .{long[0..]});
+    const p = try writeFixture(dir, "long", body, &pbuf);
+    defer _ = posix.unlink(p.ptr);
+    try testing.expect(shebangOf(a, p) != null);
+}
+
+test "a free-threaded PythonT.framework names its PythonT interpreter (#703)" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var dbuf: [256]u8 = undefined;
+    const root = try a.dupeZ(u8, fixtureDir(&dbuf, "fw-t"));
+    const dirs = try bundleDirsForTest(a, root, "PythonT.framework", "3.13");
+    var pbuf: [512]u8 = undefined;
+    const launcher = try a.dupeZ(u8, try writeFixtureMode(dirs[3], "python3.13t", try buildMachO(a, .{}), &pbuf, 0o755));
+    const lib = try a.dupeZ(u8, try writeFixture(dirs[2], "PythonT", "the framework's library", &pbuf));
+    const interp = try a.dupeZ(u8, try writeFixtureMode(dirs[7], "PythonT", try buildMachO(a, .{}), &pbuf, 0o755));
+    const fw = frameworkPython(a, observePath(a, launcher)) orelse return error.TestUnexpectedResult;
+    try testing.expectEqualStrings(try realpathOf(a, interp), try realpathOf(a, fw.interpreter));
+    removeForTest(&.{ launcher, interp, lib }, &dirs, root);
 }

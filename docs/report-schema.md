@@ -257,6 +257,20 @@ clock, a random id and a cache keyed on an inode the restore moved all look
 the same from the bytes. For the success marker and the checker, `next_step`
 is `fix_define`.
 
+`child_process_detected` from the recording run's broken self-exec chain chooses
+its `next_step` from an observation on macOS (#703). When the operation's first
+word — or the interpreter on the `#!` line of the script it names — is a Mach-O
+that resolves into a `bin` directory beside the framework's library — named after
+the framework: `Python`, the Command Line Tools' `Python3`, the free-threaded
+`PythonT` — and an interpreter in `Resources/Python.app/Contents/MacOS` named after
+the framework or `Python`, the layout CPython's `pythonw.c` launcher relies on, the
+`message` adds what was read (the image, before the run; at the refusal, the script
+and the options on its `#!` line, the interpreter and, in a virtual environment, the
+`__PYVENV_LAUNCHER__` value the launcher would set), and the step names that
+interpreter as the operation's first word rather than asking about a shell
+wrapper. Anywhere else, and for any other image, the step is the wrapper question
+it always was. The reason, the verdict and the exit code do not move.
+
 `no_shim_marker` is raised at two sites, and only one of them chooses its
 `next_step` from an observation (ADR 0040, amended by ADR 0090). At the recording
 run, `noShimNext` reads the same image facts the detail line reports. The image is
