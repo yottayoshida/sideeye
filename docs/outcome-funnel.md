@@ -58,7 +58,7 @@ line, with the refusal in its `stop` and `note`.
 
 `explored` and `judged` are decided from the report the row names, not from prose and
 not from the refusal's name. `docs/report-schema.md` holds the refusal vocabulary as a
-closed set of thirty-four reasons but says nothing about which phase raises which, so
+closed set of thirty-five reasons but says nothing about which phase raises which, so
 reading a stage off a refusal name would be inventing a classification this project has
 not made. Reading `explored` off the report needs no such invention — and the first
 draft of this page, written from prose, put three fewer targets past exploration than
