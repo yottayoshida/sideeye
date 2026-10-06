@@ -2256,6 +2256,120 @@ else
 fi
 rm -rf /tmp/acc-708/work
 
+# ---- #706 (ADR 0095): a define written for a shell is told how Sideeye reads it ----
+# A string-form command is split on spaces and run without a shell, so its quotes reach the
+# program as written and `&&` arrives as an argument — and the run can still PASS. The legs
+# want a warning naming the command on Sideeye's stderr (at the end), in the report and in the
+# JSON, with the line that writes what was meant; the toml legs want that line in the parser's
+# refusal. The controls want none: a plain define, quotes around a `|` (a quote, not a shell —
+# no "script" advice), and words a program run without a shell reads as meant. Before #706 none
+# of them said anything. They reuse the #708 setup and check, which ignore their arguments.
+rm -rf /tmp/acc-706 && mkdir -p /tmp/acc-706
+r706() {   # r706 <name> <explore|preflight> <flags...> — sets o706 (stdout), e706 (stderr), rc706
+    n706=$1; m706=$2; shift 2
+    mkdir -p /tmp/acc-706/$n706
+    if [ "$m706" = preflight ]; then
+        o706=$("$SIDEEYE" preflight --state /tmp/acc-706/$n706/state --work /tmp/acc-706/$n706/work \
+            --shim "$SHIM" --oracle /usr/bin/strace "$@" 2>/tmp/acc-706/$n706.err)
+    else
+        o706=$("$SIDEEYE" explore --state /tmp/acc-706/$n706/state --work /tmp/acc-706/$n706/work \
+            --shim "$SHIM" --oracle /usr/bin/strace --json /tmp/acc-706/$n706.json "$@" 2>/tmp/acc-706/$n706.err)
+    fi
+    rc706=$?
+    e706=$(cat /tmp/acc-706/$n706.err)
+}
+bad706() {
+    echo "FAIL #706: $1 (exit $rc706)"
+    printf '%s\n' "$o706" "--- stderr" "$e706" | sed 's/^/     | /' | head -10
+    fails=$((fails + 1))
+}
+r706 qcheck explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh 'a b'"
+if [ "$rc706" = 0 ] && printf '%s\n' "$e706" | grep -qF "sideeye: warning: check: \`/tmp/acc-708/check.sh 'a b'\`" &&
+   printf '%s\n' "$o706" | grep -qF "      warning: check: " &&
+   grep -qF 'the argv form groups what they meant: check = [\"/tmp/acc-708/check.sh\", \"a b\"]' /tmp/acc-706/qcheck.json; then
+    echo "ok   #706: a check spelled with shell quotes runs, and stderr, the report and the JSON name the argv form it meant"
+else
+    bad706 "a check spelled with shell quotes"
+fi
+mkdir -p /tmp/acc-706/qfirst
+first706=$("$SIDEEYE" explore --state /tmp/acc-706/qfirst/state --work /tmp/acc-706/qfirst/work --shim "$SHIM" \
+    --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" \
+    --check "/tmp/acc-708/check.sh 'a b'" 2>&1 | head -1)
+case "$first706" in
+    PASS*) echo "ok   #706: with a warning, the first line of merged output is still the verdict" ;;
+    *) echo "FAIL #706: the first line of merged output was [$first706], wanted the verdict"; fails=$((fails + 1)) ;;
+esac
+r706 andand explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate && echo ok" --check /tmp/acc-708/check.sh
+if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: operation: ' && printf '%s\n' "$e706" | grep -qF 'holds `&&`' &&
+   printf '%s\n' "$e706" | grep -qF 'put them in a script'; then
+    echo "ok   #706: an operation holding && is told it reaches the program as written, and to use a script"
+else
+    bad706 "an operation holding &&"
+fi
+r706 setupq explore --setup "/bin/sh -c 'exit 1'" --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/check.sh
+if [ "$rc706" = 3 ] && printf '%s\n' "$o706" | head -1 | grep -q '^SETUP ERROR' &&
+   printf '%s\n' "$e706" | grep -qF "sideeye: warning: setup: \`/bin/sh -c 'exit 1'\`"; then
+    echo "ok   #706: a setup that fails over its shell quotes ends in SETUP ERROR, and stderr still names the quotes"
+else
+    bad706 "a setup that fails over its shell quotes"
+fi
+r706 pre preflight --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate 'x y'"
+if printf '%s\n' "$o706" | head -1 | grep -q '^PREFLIGHT' && printf '%s\n' "$e706" | grep -qF 'sideeye: warning: operation: '; then
+    echo "ok   #706: preflight names a quoted operation on stderr"
+else
+    bad706 "preflight with a quoted operation"
+fi
+mkdir -p /tmp/acc-706/toml
+printf '[world]\nstate = "./state"\n[define]\noperation = "./kva put "hello world""\n' > /tmp/acc-706/toml/a.toml
+printf "[world]\nstate = './state'  # dir\n[define]\noperation = \"o\"\n" > /tmp/acc-706/toml/b.toml
+printf '[world]\nstate = "./state"\n[define]\noperation = "o"\nexpected_status = 0\n' > /tmp/acc-706/toml/c.toml
+for t706 in 'a:write it as: operation = ["./kva", "put", "hello world"]' 'b:write it as: state = "./state"  # dir' 'c:write it as: expected_status = "0"'; do
+    f706=${t706%%:*}; w706=${t706#*:}
+    o706=$("$SIDEEYE" explore --config /tmp/acc-706/toml/$f706.toml 2>&1); rc706=$?; e706=""
+    if [ "$rc706" = 3 ] && printf '%s\n' "$o706" | head -1 | grep -qF -- "$w706"; then
+        echo "ok   #706: a toml value the parser refuses is shown the line it would have been read as ($f706)"
+    else
+        bad706 "toml $f706: wanted [$w706]"
+    fi
+done
+r706 plain explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/check.sh
+c1=$(printf '%s\n' "$e706" | grep -c 'sideeye: warning' || true); c2=$(grep -c '"define_warnings"' /tmp/acc-706/plain.json || true)
+r706 pipeq explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh -q 'a|b' f"
+c3=$(printf '%s\n' "$e706" | grep -c 'sideeye: warning: check: ' || true); c4=$(printf '%s\n' "$e706" | grep -c 'put them in a script' || true)
+r706 keys explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh ggiX<esc> ~>1.6 x=n*10"
+c5=$(printf '%s\n' "$e706" | grep -c 'sideeye: warning' || true)
+if [ "$c1" = 0 ] && [ "$c2" = 0 ] && [ "$c3" = 1 ] && [ "$c4" = 0 ] && [ "$c5" = 0 ]; then
+    echo "ok   #706: no warning for a plain define or for words read as meant; a quoted | is a quote, not a shell"
+else
+    echo "FAIL #706 controls: plain warned $c1 / json $c2 (wanted 0/0); quoted | warned $c3 (wanted 1), script advice $c4 (wanted 0); key words warned $c5 (wanted 0)"
+    fails=$((fails + 1))
+fi
+# Inside double quotes a shell expands `$`: no argv is offered as what was meant.
+r706 dollar explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh \"\$HOME/a b\""
+if printf '%s\n' "$e706" | grep -qF 'nothing expands it' && ! printf '%s\n' "$e706" | grep -qF 'groups what they meant'; then
+    echo "ok   #706: a \$ inside double quotes is named as unexpanded, and no argv is offered for it"
+else
+    bad706 "a \$ inside double quotes"
+fi
+# A toml command value cut at an inner quote by a `#` is accepted as before, and said.
+printf '[world]\nstate = "./state"\n[define]\noperation = "/tmp/acc-706/no-such-op"\ncheck = "grep -c "#include" f"\n' > /tmp/acc-706/toml/d.toml
+o706=$("$SIDEEYE" explore --config /tmp/acc-706/toml/d.toml 2>/tmp/acc-706/d.err); rc706=$?; e706=$(cat /tmp/acc-706/d.err)
+if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: check: the value ends at its second' &&
+   printf '%s\n' "$e706" | grep -qF 'check = ["grep", "-c", "#include", "f"]'; then
+    echo "ok   #706: a toml command cut at an inner quote by a # is named, with the argv form"
+else
+    bad706 "a toml command cut at an inner quote by a #"
+fi
+ctl706=$(printf '/tmp/acc-708/check.sh "a\001b"')
+r706 ctl explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "$ctl706"
+raw706=$( { printf '%s\n' "$e706"; printf '%s\n' "$o706" | grep 'warning: '; } | LC_ALL=C grep -c "$(printf '\001')" || true)
+if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: check: ' && [ "${raw706:-0}" = 0 ] &&
+   ! printf '%s\n' "$e706" | grep -qF 'groups what they meant'; then
+    echo "ok   #706: a control byte in a quoted flag is shown, not printed, and no argv is offered for it"
+else
+    bad706 "a control byte in a quoted flag (raw bytes in the warning: $raw706)"
+fi
+
 echo ""
 echo "=========== check 2l: a state directory larger than one buffer ==========="
 # restore() collects names into a fixed buffer before deleting. Stopping at the bound
@@ -4983,6 +5097,16 @@ if ! grep -q '"apparatus_unchecked"' "$SD/apparatus.json" 2>/dev/null; then
     echo "FAIL the apparatus fixture carries no apparatus_unchecked field, so the schema check below cannot see the rows it documents"
     fails=$((fails + 1))
 fi
+# A report carrying define_warnings (#706, ADR 0095): an operation spelled with shell quotes.
+mkdir -p "$SD/sdw"
+TOY_STATE=$SD/sdw "$SIDEEYE" explore --state "$SD/sdw" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate 'quoted arg'" \
+    --shim "$SHIM" --work "$SD/wdw" --oracle /usr/bin/strace \
+    --json "$SD/warnings.json" >/dev/null 2>&1
+if ! grep -q '"define_warnings"' "$SD/warnings.json" 2>/dev/null; then
+    echo "FAIL the warnings fixture carries no define_warnings field, so the schema check below cannot see the row it documents"
+    fails=$((fails + 1))
+fi
 # An eighth report, for the field only an admitted-children run carries (v15, ADR 0053):
 # `oracle_verified_subject_only` appears when a run's writing children became crash points
 # and nowhere else, for the reason the divergence and apparatus reports above exist. The
@@ -5093,7 +5217,7 @@ if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
