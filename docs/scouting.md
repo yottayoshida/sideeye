@@ -105,10 +105,9 @@ instead. A named refusal that survives an honest fix attempt is itself the
 result: the define budget could not spell this target, and the refusal says
 why.
 
-One routing note: `sideeye preflight` reads the define-surface flags, which
-carry the string form only — a define spelled as argv goes straight to
-`sideeye explore --config`, which answers strictly more. Once a toml exists
-that is the better door in either spelling.
+One routing note: once a toml exists, `sideeye preflight --config` reads it
+as explore does, in either spelling, and refuses the define mistakes it can
+see before a single crash world; `sideeye explore --config` answers the rest.
 
 And treat a null result — every world holds — as a result. Record it with
 the proposal metadata; do not go shopping for a different question until

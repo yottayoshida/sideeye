@@ -61,6 +61,8 @@ does not consult you.
 
 - `sideeye preflight` takes define-surface flags, not `--config`; once a
   toml exists, go straight to `explore` — it answers strictly more.
+  *(True when written. Since 2026-10-06, #704, `preflight --config` reads the
+  toml as explore does and refuses the define mistakes it can see first.)*
 - The operation child inherits the ENGINE's environment, not your setup
   script's exports. If the target resolves its store through an
   environment variable, export it where you launch the engine (a zero-op
