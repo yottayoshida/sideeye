@@ -13,6 +13,13 @@ as-of note there. Cohort 4's two rows (himalaya's verdict, unison's probe
 wall) landed 2026-08-23, the day that cohort closed, which is where this
 page is meant to be updated rather than backfilled.*
 
+*Rule note (2026-10-06, ADR 0091): a PASS recorded here with no crash point, or with no
+checker, no marker world over a created or removed path, and no judged path any crash point
+could change — ggshield's "6/6 over files it did not write" is the shape — would be refused
+`nothing_could_fail` by an engine carrying that ADR. The rows are left as the engine of
+their day measured them; none was re-run for this note, and which of them have that shape
+was not counted row by row.*
+
 ## Measured, with verdicts
 
 | Class | Tool | What happened | Recorded in |
