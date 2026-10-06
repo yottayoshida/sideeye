@@ -34,7 +34,7 @@ $ sideeye demo
 
 The demo compiles a small planted-bug tool, explores it, and prints a real FAIL report. Exit 1 — the planted bug found — is success, which makes the demo double as a smoke test of the binary + shim pair.
 
-**2. Ask whether Sideeye can watch your tool** — before writing any config:
+**2. Ask whether Sideeye can watch your tool** — before writing any config, and again once you have one:
 
 ```
 $ sideeye preflight --state <dir> --operation "<cmd>"
@@ -42,7 +42,26 @@ $ sideeye preflight --state <dir> --operation "<cmd>"
 
 One observed run: either `recording accepted` (exit 0) or a refusal naming the same detector a real run would use (exit 2). An accepted run — under `--twice`, one whose two runs left the same bytes — ends with a `next` line, the `explore` command for the define it just accepted, ending in what explore on this platform takes: the second witness `--oracle <strace>` on Linux; on macOS, where `--oracle` is refused, `--allow-unverified` — no second witness, the weaker claim, said so in the report — with `--oracle-fs-usage` named in the note above it as the witness macOS has (#702).
 
-Add `--twice` and it observes a second run from the restored pre-state, at least two seconds later, and compares the two. Byte repeatability is a property of two runs — one observation structurally cannot see it, and a tool that rewrites a timestamp on every run passes everything else preflight asks and is refused only once a full define has been written and explored. Equal post-states: exit 0. Different: the differing paths are named and the command exits 1, which is the negative answer to the question `--twice` asked, not a FAIL verdict — preflight produces none. What it does not establish is that the target is deterministic: the comparison covers file bytes, entry kinds and symlink targets under `--state`, and two runs are not all runs.
+Once a `sideeye.toml` exists, the same question takes the toml itself, read as explore reads it:
+
+```
+$ sideeye preflight --config sideeye.toml
+```
+
+**Every define mistake listed below is refused by `sideeye preflight --config` before any crash world, by the same detector and in the same words `explore --config` uses** — one mistake per run, the first one met, as explore does (#704, ADR 0094):
+
+- the toml does not parse: a syntax error, an unknown key, a value of the wrong shape;
+- a `cwd`, `apparatus` or `scratch` entry that does not hold;
+- a `state` that is not a directory;
+- a `setup`, `operation` or `check` that cannot be started, as the Usage list below defines it;
+- a `marker` the recording run does not print (`marker_never_observed`);
+- an operation that changes nothing in the state directory, so there is no crash point (`nothing_could_fail`) — explore answers this in the same words when it is given `--oracle` or `--allow-unverified`, and answers the completeness gate first without either;
+- for an operation with a crash point, a `check` with no command in it (`--check is empty`), or one declared against a state with nothing in it to corrupt (`checker_not_falsified`);
+- in a toml with no `cwd`, run from another directory, a relative argument that is under the toml's directory and not where the commands ran — named, with `cwd = "."` as the line to add.
+
+Neither the check nor a `[recovery]` is run: the report says each was declared, and a recovery that cannot be started moves no verdict in explore either (ADR 0072). What a world can do differently from the recording is not on the list: an operation that changes the state but nothing the verdict judges can still be refused `nothing_could_fail` by explore, which only a crash world shows. An accepted run's `next` line is `sideeye explore --config '<the toml>'`, named in the directory its relative paths were resolved against (a toml that is a symlink keeps its own side); a toml read from `/dev/stdin`, from a shell's `<(…)`, or through a link into `/dev` or `/proc` gets a line saying to save it to a file first, and one whose name cannot be printed as typed a line saying to copy it to a file with a plain name. (zsh's `=(…)` is an ordinary temporary file and is named as one, though it is gone once the command ends.)
+
+Add `--twice` and it observes a second run from the restored pre-state, at least two seconds later, and compares the two. Byte repeatability is a property of two runs — one observation structurally cannot see it, and a tool that rewrites a timestamp on every run passes everything else preflight asks and is refused only once a full define has been written and explored. Equal post-states: exit 0. Different: the differing paths are named and the command exits 1, which is the negative answer to the question `--twice` asked, not a FAIL verdict — preflight produces none. What it does not establish is that the target is deterministic: the comparison covers file bytes, entry kinds and symlink targets in the state directory (`--state`, or a toml's `[world] state` under `--config`), and two runs are not all runs.
 
 **3. Explore** — the real thing, with the whole define in one file. The first line is Linux's; the second is macOS's, where `--oracle` (strace) is refused:
 
@@ -83,7 +102,7 @@ check     = "./check-repaired.sh"
 - `--fresh-state` (replay only) empties and recreates the case's state directory before setup, for a caller that cannot hand over a pristine one — a second replay in the same directory would otherwise die in the leftovers of the first.
 - Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0.
 - Command strings split on spaces, no quoting. An argument that carries a space uses the argv form instead: `operation = ["mytool", "commit", "-m", "a message with spaces"]` — one line, passed verbatim.
-- `preflight` reads flags only; a define spelled as argv goes straight to `explore --config`.
+- A define spelled as argv lives in a toml; `preflight --config` reads it, as explore does.
 - **A command, option or argument Sideeye does not accept is answered in one line that names what was typed and, when one is close, the nearest spelling that command accepts — never by the whole reference; `sideeye help <command>` (or `sideeye <command> --help`) prints that command's own synopsis and flags** (#705). A value is named as well as a flag (`--observe bogus` says `bogus`). The command's own help carries each flag's first sentence and every sentence of its entry that begins `Caution:`; `sideeye help` prints the whole reference, and `sideeye --version` is `sideeye version`. `sideeye <command> --help` is answered only as those three words: `explore --state X --help` and `explore --help --state X` are refused with that said, because the parser may already have acted on what came before it — `--json` removes the report at its path.
 
 A FAIL saves its counterexample to `<work>/cases/NNNNNN.json`, writes an evidence bundle carrying the same id under `<work>/evidence/NNNNNN.json` — a directory of its own, so a reader of `cases/*.json` is never handed one, and prints the ready-to-paste `sideeye replay` line along with the bundle's path on an `evidence` line. `sideeye evidence <case.json>` renders that bundle as Markdown for a maintainer who has never used Sideeye — the paths whose before, completed and crashed states differ, whether each existed before the operation and whether its old bytes survive elsewhere inside the judged state, the two operations around the crash point, the checker's result and its last output line, the replay command and the run's own caveats. It runs nothing and produces no verdict: exit 0 when it renders, 3 when the bundle cannot be read. Every field is something the run measured or the word `unknown`, and nothing is ranked ([docs/evidence.md](evidence.md)). When some world failed your checker and it is not the overall earliest, that world is saved as its own case beside the first and the text report gains a `checker red` section naming it — two files, both replayable; one file when the two exhibits are the same world, and none of this when no world failed the checker. Replay re-runs the same pipeline restricted to that crash point; when the code changed underneath the case, it says `case no longer applies` instead of guessing. The path you hand it has to be an ordinary file: a pipe, a device or a process substitution is refused rather than read, because a case that cannot be read whole is not a case — and because reading one that never ends would leave the run with no exit code at all (#400). A relative `define.state` inside a case resolves **against the case file's own directory**, the way a relative path in a `sideeye.toml` resolves against the toml (ADR 0007) — so the same case names the same state directory from anywhere, and replay empties the directory the case meant rather than one named by whoever happened to invoke it. Cases this engine saves always store the resolved absolute path, so this rule is about the hand-written ones.

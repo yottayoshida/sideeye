@@ -1013,6 +1013,27 @@ fn hasOneSidedEntry(plan: engine.L0Plan, pre: engine.Snapshot, post: engine.Snap
     return false;
 }
 
+/// A declared checker whose command splits to no words has nothing to run — `check = " "` gets
+/// past the config parser, and `unstartable` judges an argv only once it has a first word. The
+/// exploration refuses it ahead of the falsification, and `preflight --config` at the same
+/// point (#704 review), so the two give the same answer for it.
+pub fn checkerArgv(split: anyerror![]const []const u8) []const []const u8 {
+    const cargv = split catch setupError(.define_invalid, "--check is empty");
+    if (cargv.len == 0) setupError(.define_invalid, "--check is empty");
+    return cargv;
+}
+
+/// A declared checker against an initial state with nothing in it to corrupt: the
+/// falsification (DESIGN §14-13) has nothing to break, so the checker cannot be shown to
+/// respond. One function for the exploration's falsification and for `preflight --config`
+/// (#704, ADR 0094), which reaches the same answer from the same snapshot before any world,
+/// so the two say it in the same words. Called with a crash point: with none, both answer
+/// `nothing_could_fail` first.
+pub fn refuseNothingToCorrupt(initial: engine.Snapshot) void {
+    if (engine.countCorruptible(initial) == 0)
+        unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested", .fix_define);
+}
+
 /// The exploration with no crash point (#682, ADR 0091): it is UNKNOWN, not PASS, with or
 /// without a checker — a checker has no world to run in. Raised in `preflight` too, which the
 /// README promises names the detector a real run would use. Without an oracle the detail says

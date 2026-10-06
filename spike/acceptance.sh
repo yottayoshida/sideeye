@@ -5587,6 +5587,240 @@ else
 fi
 
 echo ""
+echo "=========== check 6c: preflight reads a sideeye.toml as explore reads it (#704, ADR 0094) ==========="
+# The property docs/cli.md states: every define mistake on its list is refused by `preflight
+# --config` before any crash world, by the same detector and in the same words `explore
+# --config` uses. Each row below runs one toml through both and compares the exit code, the
+# first line, and the detail line beneath an UNKNOWN — not a reason name alone, which a
+# constant could satisfy. Explore gets the oracle preflight gets, so its zero-crash-point
+# answer is preflight's rather than the completeness gate that comes first without one.
+# No toml's check may start under preflight: the checker appends to a file each time it
+# starts, and that file must not exist after a preflight run.
+rm -rf /tmp/acc-704 && mkdir -p /tmp/acc-704/T /tmp/acc-704/from
+echo seed > /tmp/acc-704/T/seed
+echo x > /tmp/acc-704/T/afile
+printf '#!/bin/sh\necho ran >> /tmp/acc-704/check-ran\nexec %s/spike/check.sh\n' "$ROOT" > /tmp/acc-704/T/check.sh
+chmod 755 /tmp/acc-704/T/check.sh
+TOY=$OUT/toy-bug
+export TOY
+c704() {   # c704 <name> <lines of [define]> [extra sections] — writes T/<name>.toml
+    printf '[world]\nstate = "./state-%s"\n\n[define]\n%s\n%s' "$1" "$2" "${3:-}" > /tmp/acc-704/T/$1.toml
+}
+p704() {   # p704 <name> [from] — preflight on T/<name>.toml; sets op704, prc704, ran704
+    rm -rf /tmp/acc-704/T/state-$1 /tmp/acc-704/check-ran
+    op704=$(cd "${2:-/tmp/acc-704/T}" && "$SIDEEYE" preflight --config /tmp/acc-704/T/$1.toml \
+        --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+    prc704=$?
+    ran704=no; [ -e /tmp/acc-704/check-ran ] && ran704=yes
+}
+e704() {   # e704 <name> [from] — explore on the same toml; sets oe704, erc704
+    rm -rf /tmp/acc-704/T/state-$1
+    oe704=$(cd "${2:-/tmp/acc-704/T}" && "$SIDEEYE" explore --config /tmp/acc-704/T/$1.toml \
+        --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+    erc704=$?
+}
+same704() {   # same704 <name> <first-line prefix> [from] — preflight and explore refuse alike
+    p704 "$1" "${3:-}"; e704 "$1" "${3:-}"
+    # The verdict line is looked for anywhere, as #700's legs do: a failing command's own
+    # stderr can come first. Compared from there: that line and the one under it.
+    pl=$(printf '%s\n' "$op704" | grep -A1 -m1 -- "^$2")
+    el=$(printf '%s\n' "$oe704" | grep -A1 -m1 -- "^$2")
+    if [ -n "$pl" ] && [ "$pl" = "$el" ] && [ "$prc704" = "$erc704" ] && [ "$ran704" = no ]; then
+        echo "ok   #704: $1 — preflight --config refuses as explore --config does, the check never started"
+        return
+    fi
+    echo "FAIL #704: $1 (preflight exit $prc704, explore exit $erc704, check started: $ran704; wanted a line [$2...] in both, alike)"
+    printf '%s\n' "$op704" | sed 's/^/     p| /' | head -4
+    printf '%s\n' "$oe704" | sed 's/^/     e| /' | head -4
+    fails=$((fails + 1))
+}
+d704='cwd = "."'
+s704="setup = \"$OUT/toy-bug init\""
+
+# Accepted, string and argv forms: the report names what the toml declared, and the next
+# command names the toml. A preflight that kept refusing --config, or that took it and
+# printed the flags' hint, fails here.
+c704 good "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./check.sh\"
+marker = \"COMMITTED\""
+TOY_MARKER=1
+export TOY_MARKER
+p704 good
+ok=1
+[ "$prc704" = "0" ] || ok=0
+printf '%s\n' "$op704" | grep -q "^PREFLIGHT  recording accepted" || ok=0
+printf '%s\n' "$op704" | grep -qxF "marker       observed in the recording run's output; preflight explores no crash world" || ok=0
+printf '%s\n' "$op704" | grep -qxF "checker      declared, not run: not refused as a command that cannot be" || ok=0
+printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/good.toml' --shim $SHIM --oracle /usr/bin/strace" || ok=0
+[ "$ran704" = no ] || ok=0
+e704 good
+unset TOY_MARKER
+case "$erc704" in 0|1) ;; *) ok=0 ;; esac
+printf '%s\n' "$oe704" | grep -q "explored worlds" || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   #704: a toml with a check and a marker is accepted by preflight, its check not run, and the hint names the toml explore then explores"
+else
+    echo "FAIL #704: accepted leg (preflight exit $prc704, check started: $ran704; explore exit $erc704)"
+    printf '%s\n' "$op704" | sed 's/^/     p| /' | head -14
+    fails=$((fails + 1))
+fi
+c704 argv "$d704
+$s704
+operation = [\"$OUT/toy-bug\", \"rotate\"]"
+p704 argv
+if [ "$prc704" = "0" ] && printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/argv.toml' --shim $SHIM --oracle /usr/bin/strace"; then
+    echo "ok   #704: an argv-form operation is accepted by preflight --config and needs no spelling in the hint"
+else
+    echo "FAIL #704: argv leg (exit $prc704)"
+    printf '%s\n' "$op704" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# One mistake per toml, each refused alike by both and before any world.
+c704 badkey "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+colour = \"blue\""
+same704 badkey "SETUP ERROR  /tmp/acc-704/T/badkey.toml line"
+c704 cwd "cwd = \"./no-such-dir\"
+operation = \"$OUT/toy-bug rotate\""
+same704 cwd "SETUP ERROR  "
+c704 apparatus "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+apparatus = [\"env:ACC_NO_SUCH_704\"]"
+same704 apparatus "SETUP ERROR  apparatus env:ACC_NO_SUCH_704"
+c704 scratch "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+scratch = [\"/abs/path\"]"
+same704 scratch "SETUP ERROR  /tmp/acc-704/T/scratch.toml line"
+printf '[world]\nstate = "./afile"\n\n[define]\n%s\noperation = "%s rotate"\n' "$d704" "$OUT/toy-bug" > /tmp/acc-704/T/statefile.toml
+same704 statefile "SETUP ERROR  --state"
+c704 nocheck "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./no-such-check.sh\""
+same704 nocheck "SETUP ERROR  check:"
+# A check with no words in it passes the parser and has no first word to judge; explore refuses
+# it ahead of the falsification, with a crash point, whether or not the state is empty.
+c704 blank "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \" \""
+same704 blank "SETUP ERROR  --check is empty"
+c704 blankempty "$d704
+operation = \"$OUT/toy-bug rotate\"
+check = \" \""
+same704 blankempty "SETUP ERROR  --check is empty"
+c704 marker "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+marker = \"NEVER-PRINTED\""
+same704 marker "UNKNOWN  marker_never_observed"
+c704 zero "$d704
+$s704
+operation = \"$OUT/toy-bug doctor\"
+check = \"./check.sh\""
+same704 zero "UNKNOWN  nothing_could_fail"
+# A check, an empty state and no crash point: explore answers the crash point first and never
+# reaches the checker, so preflight must too — `nothing_could_fail`, not `checker_not_falsified`.
+c704 zeroempty "$d704
+operation = \"$OUT/toy-bug doctor\"
+check = \"./check.sh\""
+same704 zeroempty "UNKNOWN  nothing_could_fail"
+# The one detector this change adds to preflight: a check, an empty state, and a crash point.
+c704 empty "$d704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./check.sh\""
+same704 empty "UNKNOWN  checker_not_falsified"
+# No cwd, run from elsewhere, an argument only under the toml's directory (#700).
+c704 relarg "$s704
+operation = \"/bin/cat ./seed\""
+same704 relarg "UNKNOWN  recording_run_failed" /tmp/acc-704/from
+printf '%s\n' "$op704" | grep -q '^next  *Add cwd = "\."' ||
+    { echo "FAIL #704: relarg: preflight's step is not the one naming cwd"; fails=$((fails + 1)); }
+
+# What this change decided. A recovery is never started (ADR 0072) and the report says so; a
+# define-surface flag beside --config gets explore's refusal, not one about preflight; a toml
+# read from a pipe gets no hint naming the pipe; --twice names the toml's state.
+c704 recovery "$d704
+$s704
+operation = \"$OUT/toy-bug rotate\"
+check = \"./check.sh\"" "
+[recovery]
+command = \"/no/such/recovery\"
+check = \"./check.sh\"
+"
+p704 recovery
+if [ "$prc704" = "0" ] && [ "$ran704" = no ] && printf '%s\n' "$op704" | grep -qxF "recovery     declared; preflight runs no recovery"; then
+    echo "ok   #704: a recovery that does not exist is not run by preflight, which says it is declared"
+else
+    echo "FAIL #704: recovery leg (exit $prc704, check started: $ran704)"
+    printf '%s\n' "$op704" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+o=$("$SIDEEYE" preflight --config /tmp/acc-704/T/good.toml --check /bin/true 2>&1 | head -1)
+case "$o" in
+    "SETUP ERROR  --config and the define-surface flags"*"are mutually exclusive"*)
+        echo "ok   #704: a define-surface flag beside --config is refused as explore refuses it" ;;
+    *)  echo "FAIL #704: --config with --check: $o"; fails=$((fails + 1)) ;;
+esac
+sed "s|^cwd = .*||; s|\./|/tmp/acc-704/T/|g" /tmp/acc-704/T/argv.toml > /tmp/acc-704/abs.toml
+# The hint names the toml in the directory its relative paths were resolved against: a toml
+# that is a symlink keeps its own side, where the target's side would be another define. A toml
+# read from /dev/stdin — through a pipe, or redirected from a file, whose directory is still
+# /dev — cannot be named for a pasted command to read, and gets the line that says to save it.
+mkdir -p /tmp/acc-704/T/link /tmp/acc-704/T/real
+cp /tmp/acc-704/T/argv.toml /tmp/acc-704/T/real/real.toml
+ln -sf ../real/real.toml /tmp/acc-704/T/link/sideeye.toml
+rm -rf /tmp/acc-704/T/link/state-argv
+o=$("$SIDEEYE" preflight --config /tmp/acc-704/T/link/sideeye.toml --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/link/sideeye.toml' --shim $SHIM --oracle /usr/bin/strace"; then
+    echo "ok   #704: a toml that is a symlink is named on its own side, whose directory its paths resolved against"
+else
+    echo "FAIL #704: symlink leg (exit $rc)"
+    printf '%s\n' "$o" | sed 's/^/     | /' | tail -4
+    fails=$((fails + 1))
+fi
+# A toml that is itself a link to /dev/stdin, redirected from a file, resolves on Linux all the
+# way to that file through /proc/self/fd/0; the hint must still not name the link.
+ln -sf /dev/stdin /tmp/acc-704/stdin-link.toml
+for how in pipe redirect link; do
+    rm -rf /tmp/acc-704/T/state-argv
+    from=/dev/stdin
+    if [ "$how" = pipe ]; then
+        o=$(cat /tmp/acc-704/abs.toml | "$SIDEEYE" preflight --config /dev/stdin --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+    elif [ "$how" = redirect ]; then
+        o=$("$SIDEEYE" preflight --config /dev/stdin --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace < /tmp/acc-704/abs.toml 2>&1)
+    else
+        from=/tmp/acc-704/stdin-link.toml
+        o=$("$SIDEEYE" preflight --config "$from" --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace < /tmp/acc-704/abs.toml 2>&1)
+    fi
+    rc=$?
+    if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -qxF "next         the define was read from $from," &&
+       printf '%s\n' "$o" | grep -qxF "             which a second command may not read the same way: save it to a file, then"; then
+        echo "ok   #704: a toml read from /dev/stdin ($how) gets the line that says to save it, not one naming /dev/stdin or the file behind it"
+    else
+        echo "FAIL #704: /dev/stdin $how leg (exit $rc)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | tail -4
+        fails=$((fails + 1))
+    fi
+done
+rm -rf /tmp/acc-704/T/state-argv
+o=$("$SIDEEYE" preflight --config /tmp/acc-704/T/argv.toml --twice --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
+if printf '%s\n' "$o" | grep -qE "^repeatability  two runs [0-9]+ ms apart left equal state under \[world\] state$"; then
+    echo "ok   #704: --twice reads the toml's state and names it as the toml does"
+else
+    echo "FAIL #704: --twice leg"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo ""
 echo "=========== check 2sc: a define names its scratch paths, and the judge leaves them alone (#261, ADR 0043) ==========="
 # `[define] scratch` / `--scratch`: a declared path (itself and everything beneath it) is
 # judged by neither built-in invariant, in no world, on no side of the pair. The legs:
@@ -8026,6 +8260,7 @@ acc_flags=$( { parser_literals i
 #
 #   key | base argv | flags the line's required part must name | expected failure
 acc_specs="preflight|preflight --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
+preflight-config|preflight --config $acc_nx.toml|--config|--config could not be read
 explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-config|explore --config $acc_nx.toml|--config|--config could not be read
 replay|replay $acc_nx.json||the case file could not be read
@@ -8033,7 +8268,8 @@ evidence|evidence $acc_nx.json||no evidence file could be read beside that case"
 
 acc_line_for() {
     case "$1" in
-        preflight)      printf '%s\n' "$h1" | grep -E '^  sideeye preflight ' ;;
+        preflight)      printf '%s\n' "$h1" | grep -E '^  sideeye preflight --state ' ;;
+        preflight-config) printf '%s\n' "$h1" | grep -E '^  sideeye preflight --config ' ;;
         explore-define) printf '%s\n' "$h1" | grep -E '^  sideeye explore --state ' ;;
         explore-config) printf '%s\n' "$h1" | grep -E '^  sideeye explore --config ' ;;
         replay)         printf '%s\n' "$h1" | grep -E '^  sideeye replay ' ;;

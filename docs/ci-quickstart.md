@@ -72,9 +72,10 @@ where its *paths* resolve; where its *commands run* is `cwd`, above — a separa
 the one a tool that needs its own directory depends on.
 Commands split on spaces — no quoting. An argument that carries a space is
 spelled with the argv form, one line, passed verbatim (ADR 0019):
-`operation = ["myapp", "commit", "-m", "a message with spaces"]`. A define
-spelled as argv skips `sideeye preflight` (flags carry the string form only)
-and goes straight to `explore --config`, which answers strictly more.
+`operation = ["myapp", "commit", "-m", "a message with spaces"]`. Either
+spelling, `sideeye preflight --config sideeye.toml` checks the toml before
+`explore --config` explores it, and refuses the define mistakes it can see
+without a crash world (docs/cli.md lists them).
 
 **2. The workflow steps** — run the installer's own selftest, check that no Zig is on `PATH`,
 install `strace` (the completeness oracle; without it a would-be PASS refuses as

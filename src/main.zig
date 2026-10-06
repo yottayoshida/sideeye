@@ -476,6 +476,11 @@ const Run = struct {
         /// Computed once in phase 0 and read by both the report and the oracle (#647); null
         /// only when Sideeye's own `getcwd` failed.
         effective_cwd: ?[]const u8,
+        /// The resolved directory a toml's relative paths were resolved against — its own
+        /// directory, not its target's when it is a symlink. Null without `--config`. Read by
+        /// preflight's `next` hint, which names the toml there (#704), so the hint and the
+        /// resolution cannot disagree about it.
+        config_dir: ?[]const u8,
     };
     const Recording = struct {
         rec_trace: []const u8,
@@ -832,6 +837,7 @@ fn phaseDefine(run: *Run) void {
     // The define surface comes from exactly one place (ADR 0007): a config file or
     // the flags, never a merge — a precedence table would make the file unreadable
     // on its own, and which line was in effect would be invisible.
+    var config_dir: ?[]const u8 = null;
     if (args.config) |cfg_path| {
         if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.recovery != null or args.recovery_check != null)
             setupError(.define_invalid, "--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch, --recovery, --recovery-check) are mutually exclusive: the define lives in one place or the other");
@@ -864,6 +870,7 @@ fn phaseDefine(run: *Run) void {
                 var dir_real: [contract.max_path]u8 = undefined;
                 const dir_abs = posix.realpath(dz.ptr, &dir_real) orelse setupError(.environment, "--config's directory could not be resolved");
                 const dir = arena.dupe(u8, std.mem.span(dir_abs)) catch setupError(.environment, "out of memory");
+                config_dir = dir;
                 // #700 (ADR 0093): the directory a failed command's relative arguments are
                 // compared under, and only for a config that is a file — read from a pipe, its
                 // "directory" is `/dev` or `/dev/fd`, and "add cwd" would point there.
@@ -1070,8 +1077,14 @@ fn phaseDefine(run: *Run) void {
         }
     }
     // True of every run that stops before a FAIL is saved, which is where this stays; the
-    // exploration replaces it once a recovery has run.
-    if (args.recovery != null) report.recovery_note = "configured; not run (no world was saved as a FAIL)";
+    // exploration replaces it once a recovery has run. Preflight saves no world at all, and a
+    // recovery reaches it only from a toml (#704): said as what preflight does with it, so a
+    // refusal does not read as though worlds had been explored. Never started either way —
+    // a recovery that cannot be started is `unknown` and moves no verdict (ADR 0072).
+    if (args.recovery != null) report.recovery_note = if (mode == .preflight)
+        "declared; preflight runs no recovery"
+    else
+        "configured; not run (no world was saved as a FAIL)";
 
     // Still before setup runs, so the refusal is a configuration error; the state directory
     // this run made above is undone, as the recovery refusals above undo it. See the flag's
@@ -1304,6 +1317,7 @@ fn phaseDefine(run: *Run) void {
     run.define.state_alt = state_alt;
     run.define.alt_differs = alt_differs;
     run.define.effective_cwd = effective_cwd;
+    run.define.config_dir = config_dir;
 }
 
 /// Phase 1 of the run: Runs the setup command, if any, and refuses on its failure.
@@ -2475,27 +2489,38 @@ fn phasePreflight(run: *Run) void {
     // report says so by name. This exit is unconditional; no explore/replay code below
     // is reachable in preflight mode.
     if (mode == .preflight) {
-        // Preflight binds its define from the flags alone (--config is refused above),
-        // and the flags always carry the string form — so both unwraps below are
-        // structurally satisfied today. They are refusals rather than unreachables so
-        // that a future route feeding preflight an argv-form define fails closed with
-        // the constraint named instead of printing a hint that cannot be spelled.
-        // (If such a route ever exists, this check should move ahead of the recording
-        // run — firing here would be a refusal after a side effect, the shape the
-        // --json placement refusal above deliberately avoids.)
-        const pf_msg = "preflight takes the define-surface flags, which carry the string form; the argv form lives in a sideeye.toml, and `sideeye explore --config` answers strictly more";
-        const pf_setup: ?[]const u8 = if (args.setup) |s| switch (s) {
-            .str => |x| x,
-            .argv => setupError(.define_invalid, pf_msg),
-        } else null;
-        const pf_op: []const u8 = switch (operation) {
-            .str => |x| x,
-            .argv => setupError(.define_invalid, pf_msg),
+        // The `next` hint repeats the define the way it came. From a toml (#704, ADR 0094) it
+        // names the toml, and an argv-form define needs no spelling. From the flags the define
+        // always carries the string form, so the unwraps below are structurally satisfied;
+        // they are refusals rather than unreachables so that another route feeding preflight
+        // an argv-form define fails closed with the constraint named instead of printing a
+        // hint that cannot be spelled.
+        const hint: PreflightHint = if (args.config) |cfg| .{ .config = .{ .path = cfg, .dir = run.define.config_dir.? } } else blk: {
+            const pf_msg = "preflight's flags carry the string form of a define; the argv form lives in a sideeye.toml, which `sideeye preflight --config` reads";
+            const pf_setup: ?[]const u8 = if (args.setup) |s| switch (s) {
+                .str => |x| x,
+                .argv => setupError(.define_invalid, pf_msg),
+            } else null;
+            const pf_op: []const u8 = switch (operation) {
+                .str => |x| x,
+                .argv => setupError(.define_invalid, pf_msg),
+            };
+            break :blk .{ .flags = .{ .setup = pf_setup, .operation = pf_op } };
         };
         // #682, ADR 0091: the README promises a preflight refusal names the detector a real
         // run would use, and an exploration with no crash point is refused. Ahead of the
         // second run, which would only measure the repeatability of nothing.
         if (n == 0) refuse.refuseNoCrashPoint(arena, args.has_oracle, refuse.cwdObservation(arena, op_argv));
+        // #704: a checker reaches preflight only from a toml, and with a crash point the
+        // exploration's first refusals for it are these two, in `phaseChecker` and in this
+        // order — a command with no words, then nothing to corrupt in the initial snapshot —
+        // both before any world. After the zero-crash-point refusal, as there: with none,
+        // explore answers that and never reaches the checker. Ahead of the second run, which
+        // would rewrite the state.
+        if (args.check) |c| {
+            _ = refuse.checkerArgv(commandArgv(arena, c));
+            refuse.refuseNothingToCorrupt(initial);
+        }
         // #199: the second observation, opt-in. Without `--twice` this is the answer
         // preflight has always given from one run, and the report names determinism as
         // unchecked; with it, the second run happens here and the report carries what
@@ -2504,7 +2529,11 @@ fn phasePreflight(run: *Run) void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
-        preflightReport(arena, n, state, pf_setup, args.cwd, pf_op, shim, args.oracle, args.expect_status, repeat);
+        preflightReport(arena, n, state, hint, args.cwd, shim, args.oracle, args.expect_status, .{
+            .check = args.check != null,
+            .marker = args.marker != null,
+            .recovery = args.recovery != null,
+        }, repeat);
     }
 
     if (n == 0) {
@@ -2535,16 +2564,14 @@ fn phaseChecker(run: *Run) void {
     // derived from an instrument that was never shown to respond.
     var check_argv: ?[]const []const u8 = null;
     if (args.check) |check_cmd| {
-        const cargv = commandArgv(arena, check_cmd) catch setupError(.define_invalid, "--check is empty");
-        if (cargv.len == 0) setupError(.define_invalid, "--check is empty");
+        const cargv = refuse.checkerArgv(commandArgv(arena, check_cmd));
         check_argv = cargv;
         // Before the falsification exits, for the same reason as the oracle note above:
         // `checker_not_falsified` next to `checker: none configured` is a report arguing
         // with itself about whether a checker was given.
         report.checker_note = "configured; falsification did not complete";
 
-        if (engine.countCorruptible(initial) == 0)
-            unknown(.checker_not_falsified, "the state directory holds no files or symlinks, so there was nothing to corrupt and the checker could not be tested", .fix_define);
+        refuse.refuseNothingToCorrupt(initial);
 
         engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore before falsifying the checker");
         // Through the same disposition as the restore one line up, not setupError:
@@ -3942,7 +3969,22 @@ fn observeAgain(
 /// behavior, checker falsification) have not run, and the fixed `not checked` list
 /// names them. The acceptance suite pins this wording — the claim cannot quietly grow
 /// back into one this command does not earn.
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?[]const u8, cwd: ?[]const u8, operation: []const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, repeat: ?Repeat) noreturn {
+/// What preflight's `next` hint repeats: the define flags it was given, or the toml it read
+/// (#704, ADR 0094), which the hint names instead of spelling the define out.
+const PreflightHint = union(enum) {
+    flags: struct { setup: ?[]const u8, operation: []const u8 },
+    /// The toml as given, and the directory its relative paths were resolved against.
+    config: struct { path: []const u8, dir: []const u8 },
+};
+
+/// What a toml declared beyond what the flags' define can carry (#704): the report names each
+/// and what preflight did with it, none of it run. All false from the flags, which refuse them.
+const PreflightDeclared = struct { check: bool, marker: bool, recovery: bool };
+
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: PreflightHint, cwd: ?[]const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
+    // Where the comparison and the rewrite of `--twice` happen, named the way the define named
+    // it: byte for byte the old wording from the flags, which acceptance pins.
+    const state_named: []const u8 = if (hint == .config) "[world] state" else "--state";
     // "not accepted", not "accepted but split". `docs/contract-freeze.md` says a
     // preflight that ACCEPTS the recording exits 0; under `--twice` the caller asked a
     // second question, so acceptance means the recording held *and* the two runs
@@ -3996,13 +4038,41 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         \\oracle       {s}
         \\processes    {s}
         \\
+    , .{ report.l0_note, report.oracle_note, boundary.boundaryAccount() });
+    // #704: what a toml declared, and what preflight did with each. The marker was found in the
+    // recording run's output — a marker that never appears is refused in `phaseRecording`, so
+    // reaching here means it was seen; `l1_note` says "crash worlds not explored yet", which reads
+    // as though an exploration followed. The checker was not refused by `unstartable` — which leaves some
+    // files unjudged (an execute-only one; the script an interpreter is handed), so the line says
+    // what was not refused rather than that it will start — had something in the state to
+    // corrupt, and was not run. A recovery is never started
+    // (ADR 0072), and its line is the one the refusals print.
+    if (declared.marker) say("marker       observed in the recording run's output; preflight explores no crash world\n", .{});
+    if (declared.check) say(
+        \\checker      declared, not run: not refused as a command that cannot be
+        \\             started, and the state holds something to corrupt
+        \\
+    , .{});
+    if (declared.recovery) report.sayRecovery("recovery     {s}\n");
+    // The parenthesis is #682's: with no check and no marker, explore can refuse an operation
+    // that only creates files `nothing_could_fail`, which one recording cannot rule out. A toml
+    // that declares either has said what makes a world fail, and the sentence would not apply.
+    if (declared.check or declared.marker) say(
+        \\
+        \\not checked  kill landing, world-side process boundaries, baseline behavior,
+        \\             checker falsification, whether any world could fail — only a real
+        \\             exploration runs these
+        \\
+        \\
+    , .{}) else say(
+        \\
         \\not checked  kill landing, world-side process boundaries, baseline behavior,
         \\             checker falsification, whether any world could fail (with no
         \\             check or marker, an operation that only creates files is refused
         \\             nothing_could_fail) — only a real exploration runs these
         \\
         \\
-    , .{ report.l0_note, report.oracle_note, boundary.boundaryAccount() });
+    , .{});
     if (repeat) |r| {
         // Reported whether the runs agreed or split, and worded as an observation
         // rather than a property: two samples cannot establish that a target is
@@ -4011,12 +4081,12 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         // that was requested would be the measurement describing its own intent.
         const verdict = if (split) "differed" else "left equal state";
         say(
-            \\repeatability  two runs {d} ms apart {s} under --state
+            \\repeatability  two runs {d} ms apart {s} under {s}
             \\scope          file bytes, entry kinds and symlink targets only; modes,
-            \\               ownership, timestamps, and anything outside --state are
+            \\               ownership, timestamps, and anything outside {s} are
             \\               not compared, and two runs are not all runs
             \\
-        , .{ r.gap_ms, verdict });
+        , .{ r.gap_ms, verdict, state_named, state_named });
         // Stated only when run B actually carried the oracle, because otherwise it
         // describes a file that does not exist. Run B carries it in every mode since
         // ADR 0054, so there is one sentence again: its capture exists and what it lacks
@@ -4066,27 +4136,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         std.fmt.allocPrint(arena, " --oracle {s}", .{s}) catch " --oracle <strace>"
     else
         " --oracle <strace>";
-    // The hint carries the define that was actually accepted — dropping --setup here
-    // would hand the reader a silently different define than the one preflight ran
-    // (R1 finding; acceptance check 6 pins its presence). --expect-status rides the
-    // same rule: preflight accepted the recording *under that status*, and a hint
-    // without it would hand explore a define that refuses the very run preflight
-    // just blessed (the known defect class where a hint carries a different define).
-    const setup_part = if (setup) |s|
-        std.fmt.allocPrint(arena, " --setup \"{s}\"", .{s}) catch " --setup <cmd>"
-    else
-        "";
-    // #647: a declared `cwd` rides the same rule. Pasted without it, the hint runs the
-    // operation from wherever explore is started, and a tool that needs its own directory
-    // refuses `recording_run_failed` on the very define preflight accepted.
-    const cwd_part = if (cwd) |c|
-        std.fmt.allocPrint(arena, " --cwd \"{s}\"", .{c}) catch " --cwd <dir>"
-    else
-        "";
-    const expect_part = if (expect_status) |es|
-        std.fmt.allocPrint(arena, " --expect-status {d}", .{es}) catch " --expect-status <n>"
-    else
-        "";
     if (split) {
         // No graduation hint on a split: the next step is not `explore` — that command
         // would reach the same divergence in its un-killed baseline and refuse there,
@@ -4118,11 +4167,106 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, setup: ?
         "--observe supervised"
     else
         std.fmt.allocPrint(arena, "--shim {s}", .{shim}) catch "--shim <lib>";
-    say(
-        \\next         sideeye explore --state {s}{s}{s} --operation "{s}"{s} \
-        \\               --check <your-invariant.sh> {s}{s}
-        \\
-    , .{ state, setup_part, cwd_part, operation, expect_part, observe_part, oracle_part });
+    switch (hint) {
+        .flags => |f| {
+            // The hint carries the define that was actually accepted — dropping --setup here
+            // would hand the reader a silently different define than the one preflight ran
+            // (R1 finding; acceptance check 6 pins its presence). --expect-status rides the
+            // same rule: preflight accepted the recording *under that status*, and a hint
+            // without it would hand explore a define that refuses the very run preflight
+            // just blessed (the known defect class where a hint carries a different define).
+            const setup_part = if (f.setup) |s|
+                std.fmt.allocPrint(arena, " --setup \"{s}\"", .{s}) catch " --setup <cmd>"
+            else
+                "";
+            // #647: a declared `cwd` rides the same rule. Pasted without it, the hint runs the
+            // operation from wherever explore is started, and a tool that needs its own directory
+            // refuses `recording_run_failed` on the very define preflight accepted.
+            const cwd_part = if (cwd) |c|
+                std.fmt.allocPrint(arena, " --cwd \"{s}\"", .{c}) catch " --cwd <dir>"
+            else
+                "";
+            const expect_part = if (expect_status) |es|
+                std.fmt.allocPrint(arena, " --expect-status {d}", .{es}) catch " --expect-status <n>"
+            else
+                "";
+            say(
+                \\next         sideeye explore --state {s}{s}{s} --operation "{s}"{s} \
+                \\               --check <your-invariant.sh> {s}{s}
+                \\
+            , .{ state, setup_part, cwd_part, f.operation, expect_part, observe_part, oracle_part });
+        },
+        .config => |c| {
+            // #704: the toml that was read is the define, so the hint names it rather than
+            // spelling it out. Named as the toml's resolved directory joined with its own name:
+            // that directory is what `phaseDefine` resolved every relative path against, and what
+            // explore will resolve them against when the line is pasted — so a toml that is a
+            // symlink keeps its own side rather than its target's, whose relative paths would mean
+            // a different define (review of #704). Single-quoted for /bin/sh, as the replay line
+            // quotes a recovery. A toml read from a pipe, a process substitution or `/dev/stdin`
+            // (which `phaseDefine` reads on purpose) cannot be read again by the pasted command, and
+            // a name `textShown` would rewrite cannot be pasted as printed; both get the line that
+            // says to save the define, rather than one that would read nothing or another file.
+            const Sys = struct {
+                // A device or process path: what is read there need not be what a second
+                // command reads (`/dev/stdin`, `/dev/fd/N`, `/proc/self/fd/N`).
+                fn under(p: []const u8) bool {
+                    for ([_][]const u8{ "/dev", "/proc" }) |sys| {
+                        if (std.mem.eql(u8, p, sys) or (std.mem.startsWith(u8, p, sys) and p[sys.len] == '/')) return true;
+                    }
+                    return false;
+                }
+            };
+            const sys_why = "which a second command may not read the same way";
+            var file_buf: [contract.max_path]u8 = undefined;
+            var hop_buf: [contract.max_path]u8 = undefined;
+            var why: []const u8 = "which is not a regular file a second command can read again";
+            var then: []const u8 = "save it to a file, then";
+            const pastable: ?[]const u8 = blk: {
+                if (Sys.under(c.dir)) {
+                    why = sys_why;
+                    break :blk null;
+                }
+                const named = std.fs.path.join(arena, &.{ c.dir, std.fs.path.basename(c.path) }) catch break :blk null;
+                // Each link the name goes through is read, not resolved: Linux's realpath follows
+                // `/proc/self/fd/0` to the file stdin was redirected from, so a toml that is a link
+                // to `/dev/stdin` would resolve to a regular file the pasted command never reads
+                // (the change's second review). Bounded as the kernel bounds a chain.
+                var cur: []const u8 = named;
+                var hops: usize = 0;
+                while (hops < 40) : (hops += 1) {
+                    const cz = arena.dupeZ(u8, cur) catch break :blk null;
+                    const len = posix.readlink(cz.ptr, &hop_buf, hop_buf.len);
+                    if (len < 0) break;
+                    const target = hop_buf[0..@intCast(len)];
+                    cur = std.fs.path.resolvePosix(arena, &.{ std.fs.path.dirname(cur) orelse "/", target }) catch break :blk null;
+                    if (Sys.under(cur)) {
+                        why = sys_why;
+                        break :blk null;
+                    }
+                }
+                const nz = arena.dupeZ(u8, named) catch break :blk null;
+                const real = std.mem.span(posix.realpath(nz.ptr, &file_buf) orelse break :blk null);
+                const rz = arena.dupeZ(u8, real) catch break :blk null;
+                if ((posix.kindOfPathNoFollow(rz.ptr) catch .other) != .file) break :blk null;
+                if (!std.mem.eql(u8, textShown(arena, named), named)) {
+                    why = "whose name cannot be printed here as a line to paste";
+                    then = "copy it to a file with a plain name, then";
+                    break :blk null;
+                }
+                break :blk named;
+            };
+            if (pastable) |p| say(
+                \\next         sideeye explore --config {s} {s}{s}
+                \\
+            , .{ shellSingleQuote(arena, p), observe_part, oracle_part }) else say(
+                \\next         the define was read from {s},
+                \\             {s}: {s}
+                \\             sideeye explore --config <that file> {s}{s}
+                \\
+            , .{ textShown(arena, c.path), why, then, observe_part, oracle_part });
+        },
+    }
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
