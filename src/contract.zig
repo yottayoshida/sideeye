@@ -1200,6 +1200,23 @@ pub const UnknownReason = enum {
     /// launcher that dies between fork and the engine's first instruction is not seen
     /// (the baseline is then already the reaper's pid).
     parent_exited,
+    /// An exploration in which no world could have failed (#682, #683, ADR 0091): no crash
+    /// point at all; or no checker, no crash world that printed the marker over a path only
+    /// one snapshot holds, and no crash point — other than an `fsync` or a `mkdir` — that
+    /// named a path both snapshots hold or renamed a directory above one, while every such
+    /// path ended as it began. The README already refuses to trust a checker it has not
+    /// seen fail; this is the same rule for the built-in layers. A PASS here would have been
+    /// true of any target, and read by a caller that looks only at the exit code as a check
+    /// that ran.
+    ///
+    /// The commonest way here is a define whose store resolved outside `--state` — the
+    /// zero-operation PASS `docs/scouting.md` used to call the tell — and the second is an
+    /// operation that only creates files, which the pre-or-post rule does not judge.
+    ///
+    /// **Added after the v1.0 tag**, the third member to be; `docs/contract-freeze.md`
+    /// records the ruling. A floor, not a guarantee: a crash point that names a judged path
+    /// without changing it — a lock file opened for writing, a failed call — still counts.
+    nothing_could_fail,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);
@@ -1475,6 +1492,26 @@ pub const NextStep = enum {
     declare_cwd,
     /// Nothing the operator changes fixes this; it is Sideeye's.
     sideeye_defect,
+    /// `nothing_could_fail` with no crash point (#682, ADR 0091): the operation changed nothing
+    /// the verdict judges. Most often the store resolved outside `--state`; an operation whose
+    /// only changes are ownership or permissions lands here too, and the sentence says so
+    /// rather than calling it "nothing". It names where an undeclared define's commands run
+    /// because that is the mistake #682 measured — `docs/cli.md`'s `cwd` entry is the
+    /// reference. A define that changes nothing on purpose has no crash point to test, and
+    /// the sentence says that too rather than implying every such run is a mistake.
+    nothing_in_state,
+    /// `nothing_could_fail` with crash points and no marker declared (#683, ADR 0091): the
+    /// built-in invariant judges paths both snapshots hold, and no crash point named one that
+    /// could change. A checker judges the rest; so does a marker, over what the operation
+    /// created or removed.
+    declare_check_or_marker,
+    /// The same refusal where a marker cannot help: one was declared and printed in no crash
+    /// world — it is printed after the last state operation — or applied with nothing only one
+    /// snapshot held; or none was declared and there is nothing of that kind for one to judge
+    /// (every created or removed path declared scratch). Asking for a marker here would ask for
+    /// what the define already has, or for what cannot judge anything (R1 of the plan, M6, and
+    /// of the diff).
+    declare_check,
 
     pub fn render(self: NextStep) []const u8 {
         return switch (self) {
@@ -1500,6 +1537,9 @@ pub const NextStep = enum {
             .syscalls_may_have_killed => "Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.",
             .declare_cwd => "Add cwd = \".\" under [define]: the define declares none, so its commands ran in Sideeye's own directory rather than the toml's, and the detail names an argument, or a directory above one, that exists only under the toml's directory.",
             .sideeye_defect => "Nothing in the define fixes this: it is a defect in Sideeye. File it with the report attached.",
+            .nothing_in_state => "The operation changed nothing in the state directory that the verdict judges (a change of ownership or permissions alone lands here too). If it should have, find where its store resolved: a define that declares no cwd runs its commands in Sideeye's own directory, and a relative argument resolves there — declare cwd, or point state at the store (docs/cli.md). An operation that is meant to change nothing has no crash point to test.",
+            .declare_check_or_marker => "The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.",
+            .declare_check => "No crash point changed a path the built-in invariants judge, and no marker could judge the rest (none printed in a crash world, or nothing was created or removed outside scratch), so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md).",
         };
     }
 };

@@ -20,21 +20,24 @@
 # The size bound is the other half. The page had grown to 33 KB by writing each
 # decision's record into it — issue numbers, ADR numbers, the reason behind each refusal —
 # and those have homes of their own (DESIGN.md, docs/, docs/adr/). The bound is a sum of what
-# the page must carry plus a fixed slack, not a target picked first: 8220 + 590 = 8810.
+# the page must carry plus a fixed slack, not a target picked first: 8556 + 590 = 9146.
 # The sum was corrected twice, upward, during the change that introduced this check, and both
 # corrections were elements it had never counted rather than drafts that would not fit. First
 # the 382-byte clause naming the one exception to "never a silent PASS", which an owner ruling
 # (ADR 0032) requires in the sentence that makes the promise. Then the 284 bytes that let a
 # reader start from the release artifact: the onboarding box holds README.md and a tarball and
 # nothing else, network-off, so a page that sends the untar line to another file leaves the
-# only artifact in the box unusable — which is what check 8 below now holds.
-# A third, the same kind (#702, 2026-10-06): the brew formula serves macOS, and the page's only
+# only artifact in the box unusable — which is what check 8 below now holds. A third, after the
+# check shipped and for the same reason as the first: the 336-byte sentence that extends "a checker
+# that cannot fail makes the run UNKNOWN" to an exploration in which no world could have failed,
+# which an owner ruling (ADR 0091) puts beside the promise it extends rather than in another file.
+# A fourth, the same kind (#702, 2026-10-06): the brew formula serves macOS, and the page's only
 # explore line named strace, which macOS refuses — the first command a macOS reader copied could
 # not run. The macOS line and the words that say which line is which are 63 bytes net, after
 # the `--oracle` bullet gave up the clause naming strace; the two bytes of slack the page had are
 # left as they were. Not as a `# macOS` at the end of the line: zsh, macOS's shell, does not read
 # `#` as a comment when typed, so a pasted line would hand `#` to sideeye as an argument.
-# A fourth (#700, 2026-10-06): the toml example's `cwd` line, 81 bytes. Without it the example
+# A fifth (#700, 2026-10-06): the toml example's `cwd` line, 81 bytes. Without it the example
 # ran its commands in Sideeye's own directory, so a define copied from it and given a relative
 # argument meant one file from the toml's directory and another from anywhere else.
 #
@@ -55,7 +58,7 @@ has() { grep -qF -e "$1" "$R"; }
 
 bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 8810 ]; then ok "size: $bytes bytes, at most 8810"; else bad "size: $bytes bytes, over 8810"; fi
+if [ "$bytes" -le 9146 ]; then ok "size: $bytes bytes, at most 9146"; else bad "size: $bytes bytes, over 9146"; fi
 if [ "$lines" -le 120 ]; then ok "length: $lines lines, at most 120"; else bad "length: $lines lines, over 120"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi
