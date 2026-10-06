@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **The CI quickstart pins v1.8.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`). The release lane installs the published v1.8.0 asset instead of v1.7.0's. The pin moves after the release, as on v1.7.0, because the lane downloads the asset and the asset exists only once the release is published. Nothing else in the lane changes.
 
+### Fixed
+
+- **A setup, operation or check that cannot be started is a SETUP ERROR naming the file, raised before it runs** (#701, ADR 0092; `src/image.zig`, `src/main.zig`, `docs/cli.md`, `docs/report-schema.md`). The engine used to spawn the command and read the failed `exec`'s 127 as a fact about the target: an absent or mode-644 checker passed the falsification gate and then refused `baseline_violates_invariant` — a judgement by a checker that never ran — an absent operation refused `recording_run_failed` pointing at `--expect-status`, and an absent setup "exited 127" without naming a file. Now the run stops as `environment`, saying which command, which resolved file, and whether it is missing, not a regular file, not executable by this user or could not be examined — or that the `#!` interpreter it names is, or that a bare name has nothing on `PATH` that would start (execvp moves past a file whose interpreter is missing, so this does too). The setup is asked about before it runs, leaving nothing on disk when refused; the operation and the check after the setup, which may build or write them — a checker the operation itself would create is now refused, so write it in `setup`. **Exit codes move for these inputs**: an absent or mode-644 checker 2 → 3 (0 → 3 where the run recorded no operation and so never ran the checker), an absent operation 2 → 3 under explore, replay and preflight; an absent setup stays 3. The `[recovery]` commands are not asked about: a recovery changes no verdict and no exit code (ADR 0072).
+
 ## [1.8.0] - 2026-10-03
 
 ### Added

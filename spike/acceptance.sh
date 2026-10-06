@@ -1803,6 +1803,114 @@ else
     fails=$((fails + 1))
 fi
 
+# ---- #701 (ADR 0092): a define command that cannot be started is refused before it runs ----
+# The same shape as the oracle above, for the define's own three commands. Before this, an
+# absent or mode-644 checker passed the falsification gate (the failed exec's 127 reads as
+# "red") and then refused `baseline_violates_invariant` — a judgement by a checker that never
+# ran; an absent operation was `recording_run_failed` pointing at --expect-status; an absent
+# setup "exited 127". Each leg wants exit 3, `setup_error_reason` environment, and the
+# sentence that names the file and which fault it has. Run from the fixture directory, so a
+# relative --check is resolved against it and reported as the absolute file.
+rm -rf /tmp/acc-701 && mkdir -p /tmp/acc-701
+printf '#!/bin/sh\nexit 0\n' > /tmp/acc-701/c644.sh && chmod 644 /tmp/acc-701/c644.sh
+printf '#!/nonexistent-interpreter-for-701\nexit 0\n' > /tmp/acc-701/badinterp.sh && chmod 755 /tmp/acc-701/badinterp.sh
+s701() {   # s701 <leg> <wanted sentence> <define flags...>
+    s701_d=/tmp/acc-701/$1; s701_want=$2; shift 2
+    mkdir -p "$s701_d"
+    s701_o=$(cd /tmp/acc-701 && "$SIDEEYE" explore --state "$s701_d/state" --work "$s701_d/work" \
+        --shim "$SHIM" --json "$s701_d/r.json" --oracle /usr/bin/strace "$@" 2>&1)
+    s701_rc=$?
+    if [ "$s701_rc" = "3" ] && grep -q '^  "setup_error_reason": "environment"' "$s701_d/r.json" 2>/dev/null &&
+       printf '%s\n' "$s701_o" | grep -qF -- "$s701_want"; then
+        return 0
+    fi
+    echo "FAIL #701 $(basename "$s701_d"): exit $s701_rc, wanted 3 + environment + [$s701_want]"
+    printf '%s\n' "$s701_o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+    return 1
+}
+s701 nocheck "check: /tmp/acc-701/./nocheck.sh does not exist" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --check ./nocheck.sh &&
+    echo "ok   #701: an absent checker is SETUP ERROR naming the file, not a checker that rejected the state"
+s701 c644 "check: /tmp/acc-701/./c644.sh exists but this user may not execute it" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --check ./c644.sh &&
+    echo "ok   #701: a mode-644 checker is SETUP ERROR saying this user may not execute it"
+s701 badinterp "check: /tmp/acc-701/badinterp.sh names #! interpreter /nonexistent-interpreter-for-701, which does not exist" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --check /tmp/acc-701/badinterp.sh &&
+    echo "ok   #701: a checker whose #! interpreter is absent is SETUP ERROR naming the interpreter"
+s701 noop "operation: /tmp/acc-701/no-such-operation does not exist" \
+    --setup "$OUT/toy-bug init" --operation "/tmp/acc-701/no-such-operation rotate" --check "$ROOT/spike/check.sh" &&
+    echo "ok   #701: an absent operation is SETUP ERROR, not recording_run_failed"
+# The setup legs also hold "nothing left on disk": the setup is checked before the one
+# destructive step, with the state and work directories this run made undone.
+if s701 nosetup "setup: /tmp/acc-701/no-such-setup does not exist" \
+    --setup "/tmp/acc-701/no-such-setup init" --operation "$OUT/toy-bug rotate" --check "$ROOT/spike/check.sh"; then
+    if [ ! -e /tmp/acc-701/nosetup/state ] && [ ! -e /tmp/acc-701/nosetup/work ]; then
+        echo "ok   #701: an absent setup is SETUP ERROR naming the file, and leaves no state or work directory"
+    else
+        echo "FAIL #701: an absent setup was refused but left $(ls -d /tmp/acc-701/nosetup/state /tmp/acc-701/nosetup/work 2>/dev/null | tr '\n' ' ')behind"
+        fails=$((fails + 1))
+    fi
+fi
+s701 barenosetup "setup: no executable file named no-such-tool-for-701 is on PATH" \
+    --setup "no-such-tool-for-701 init" --operation "$OUT/toy-bug rotate" --check "$ROOT/spike/check.sh" &&
+    echo "ok   #701: a bare setup name off PATH is SETUP ERROR saying so"
+# Controls: a setup that BUILDS the operation, and one that WRITES the checker, still reach a
+# verdict. Each goes red if its command's check moves ahead of the setup — the reason the
+# operation and the checker are asked about after it (`phaseApparatus`), not with the setup.
+mkdir -p /tmp/acc-701/builds-op /tmp/acc-701/writes-check
+printf '#!/bin/sh\ncp "%s" /tmp/acc-701/builds-op/op && exec /tmp/acc-701/builds-op/op init\n' "$OUT/toy-bug" > /tmp/acc-701/builds-op/setup.sh
+printf '#!/bin/sh\ncp "%s" /tmp/acc-701/writes-check/check.sh && chmod 755 /tmp/acc-701/writes-check/check.sh && exec "%s" init\n' "$ROOT/spike/check.sh" "$OUT/toy-bug" > /tmp/acc-701/writes-check/setup.sh
+chmod 755 /tmp/acc-701/builds-op/setup.sh /tmp/acc-701/writes-check/setup.sh
+o=$(TOY=/tmp/acc-701/builds-op/op "$SIDEEYE" explore --state /tmp/acc-701/builds-op/state --work /tmp/acc-701/builds-op/work \
+    --setup /tmp/acc-701/builds-op/setup.sh --operation "/tmp/acc-701/builds-op/op rotate" --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ]; then
+    echo "ok   #701 control: a setup that builds the operation still reaches a verdict (FAIL, the planted bug)"
+else
+    echo "FAIL #701 control: a setup that builds the operation: exit $rc, wanted 1"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+o=$(TOY="$OUT/toy-bug" "$SIDEEYE" explore --state /tmp/acc-701/writes-check/state --work /tmp/acc-701/writes-check/work \
+    --setup /tmp/acc-701/writes-check/setup.sh --operation "$OUT/toy-bug rotate" --check /tmp/acc-701/writes-check/check.sh \
+    --shim "$SHIM" --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "1" ]; then
+    echo "ok   #701 control: a setup that writes the checker still reaches a verdict (FAIL, the planted bug)"
+else
+    echo "FAIL #701 control: a setup that writes the checker: exit $rc, wanted 1"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+# A setup that lives inside the state directory a replay's --fresh-state empties (#701 review):
+# it is there when the setup is first asked about and gone when it would run, so the refusal
+# has to come from the question asked again after the emptying — without it this reads
+# `--setup exited 127` and names no file. The case is a real one, its setup rewritten.
+mkdir -p /tmp/acc-701/fresh/state
+TOY="$OUT/toy-bug" "$SIDEEYE" explore --state /tmp/acc-701/fresh/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --check "$ROOT/spike/check.sh" --shim "$SHIM" \
+    --work /tmp/acc-701/fresh/work --oracle /usr/bin/strace >/dev/null 2>&1
+f701_case=$(ls /tmp/acc-701/fresh/work/cases/*.json 2>/dev/null | head -1)
+o=""; rc=""
+if [ -n "$f701_case" ] && python3 -c 'import json,sys
+d=json.load(open(sys.argv[1])); d["define"]["setup"]="/tmp/acc-701/fresh/state/setup.sh"
+json.dump(d,open(sys.argv[1],"w"))' "$f701_case"; then
+    printf '#!/bin/sh\nexec "%s" init\n' "$OUT/toy-bug" > /tmp/acc-701/fresh/state/setup.sh
+    chmod 755 /tmp/acc-701/fresh/state/setup.sh
+    o=$(TOY="$OUT/toy-bug" "$SIDEEYE" replay "$f701_case" --fresh-state --shim "$SHIM" \
+        --work /tmp/acc-701/fresh/work2 --oracle /usr/bin/strace 2>&1)
+    rc=$?
+fi
+if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "setup: /tmp/acc-701/fresh/state/setup.sh does not exist"; then
+    echo "ok   #701: a setup that --fresh-state empties out of the state directory is SETUP ERROR naming it"
+else
+    echo "FAIL #701: a setup inside the state directory under --fresh-state: exit ${rc:-not run} (case: ${f701_case:-none}), wanted 3 naming the setup"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2l: a state directory larger than one buffer ==========="
 # restore() collects names into a fixed buffer before deleting. Stopping at the bound

@@ -489,6 +489,14 @@ fn statNoFollow(dirfd_: c_int, path: [*:0]const u8, want_uid: bool) ClassifyErro
 /// search moves on either way.
 pub fn isExecutableRegular(path: [*:0]const u8) bool {
     if (access(path, X_OK) != 0) return false;
+    return isRegularFollowing(path);
+}
+
+/// Whether `path`, followed through links, is a regular file — the type half of
+/// `isExecutableRegular`, on its own for the caller that has to say which half failed
+/// (`image.startable`, #701: "is not a regular file" and "this user may not execute it" are
+/// different sentences). Any failure to stat is `false`.
+pub fn isRegularFollowing(path: [*:0]const u8) bool {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
         var stx: lnx.Statx = undefined;

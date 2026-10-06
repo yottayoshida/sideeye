@@ -3,8 +3,9 @@
 //! `src/refuse.zig` owns the exits that carry a verdict without a counterexample —
 //! `unknown` (UNKNOWN, exit 2) and `setupError` (SETUP_ERROR, exit 3) — the classifiers
 //! that choose between them from what they hold (`spawnFailure`, `snapshotRefusal`,
-//! `restoreFailure`, `rewriteFailureDisposition`, `readFailedStep`), and the `*OrRefuse`
-//! helpers that wrap an engine call in its refusal. Every verdict line that reads
+//! `restoreFailure`, `rewriteFailureDisposition`, `readFailedStep`), the `*OrRefuse`
+//! helpers that wrap an engine call in its refusal, and `unstartable`, the sentence for a
+//! define command that cannot be started (#701, ADR 0092), which `main.zig` raises. Every verdict line that reads
 //! `UNKNOWN  <reason>` or `SETUP ERROR  <detail>` comes out of `unknown` or `setupError`
 //! (the usage banner lists the four verdict words too, and is no verdict), and each of the
 //! two does the same things in the same order: stops the privileged observer if one
@@ -39,6 +40,7 @@ const boundary = @import("boundary.zig");
 const defang = @import("defang.zig");
 const report = @import("report.zig");
 const files = @import("files.zig");
+const image = @import("image.zig");
 const textShown = defang.textShown;
 const removeFile = files.removeFile;
 const say = report.say;
@@ -487,6 +489,43 @@ pub fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
             return arena.dupe(u8, z) catch null;
     }
     return null;
+}
+
+/// The refusal for a define command that cannot be started (#701, ADR 0092), or null when
+/// `image.startable` found nothing to say. `argv` is the command already split by the caller
+/// (`commandArgv` stays in `main.zig`, where the freeze audit reads surface 1); an empty one is
+/// not judged, because the site that spawns it refuses an empty command by name. `role`
+/// is the define key — `setup`, `operation`, `check` — because under `--config` argv[0] is
+/// already the toml-resolved absolute path and the spelling the author typed is gone; the key
+/// and the resolved file are what identify it.
+///
+/// `cwd` is the directory the command will run in: the declared one, or Sideeye's own when
+/// none was declared, so a relative name is reported as the absolute file it would have been.
+/// Every path and name here came from the define, so each goes through `textShown`.
+pub fn unstartable(arena: std.mem.Allocator, role: []const u8, argv: []const []const u8, cwd: ?[]const u8) ?[]const u8 {
+    if (argv.len == 0) return null;
+    const s = image.startable(arena, argv[0], cwd, if (std.c.getenv("PATH")) |p| std.mem.span(p) else null);
+    const file = textShown(arena, s.file orelse "");
+    const name = textShown(arena, s.name orelse "");
+    if (s.interpreter) |raw| {
+        const interp = textShown(arena, raw);
+        return switch (s.fault) {
+            .ok, .not_judged => return null,
+            .missing => std.fmt.allocPrint(arena, "{s}: {s} names #! interpreter {s}, which does not exist", .{ role, file, interp }),
+            .not_regular => std.fmt.allocPrint(arena, "{s}: {s} names #! interpreter {s}, which is not a regular file", .{ role, file, interp }),
+            .no_exec_bit => std.fmt.allocPrint(arena, "{s}: {s} names #! interpreter {s}, which exists but this user may not execute", .{ role, file, interp }),
+            .unreachable_path => |e| std.fmt.allocPrint(arena, "{s}: {s} names #! interpreter {s}, which could not be examined (errno {d}{s})", .{ role, file, interp, e, report.errnoName(e) }),
+            .not_on_path => std.fmt.allocPrint(arena, "{s}: {s} names #! interpreter {s} {s}, and no executable file named {s} is on PATH", .{ role, file, interp, name, name }),
+        } catch "a define command cannot be started";
+    }
+    return switch (s.fault) {
+        .ok, .not_judged => return null,
+        .missing => std.fmt.allocPrint(arena, "{s}: {s} does not exist", .{ role, file }),
+        .not_regular => std.fmt.allocPrint(arena, "{s}: {s} is not a regular file, so it cannot be executed", .{ role, file }),
+        .no_exec_bit => std.fmt.allocPrint(arena, "{s}: {s} exists but this user may not execute it (no execute bit, or a noexec mount or an ACL that denies it); Sideeye executes the file itself, as ./check.sh rather than sh check.sh", .{ role, file }),
+        .unreachable_path => |e| std.fmt.allocPrint(arena, "{s}: {s} could not be examined (errno {d}{s}), so whether it exists is not known", .{ role, file, e, report.errnoName(e) }),
+        .not_on_path => std.fmt.allocPrint(arena, "{s}: no executable file named {s} is on PATH", .{ role, name }),
+    } catch "a define command cannot be started";
 }
 
 /// A setup error is a verdict too, and it has to reach the JSON.

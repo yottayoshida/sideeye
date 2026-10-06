@@ -223,18 +223,39 @@ pub const search_path_max = 4096;
 /// agrees with this one as far as both follow the rule above. `refuse.zig`'s
 /// `findStraceForHint` is a separate search, for a hint that names strace, and is not this one.
 pub fn searchPath(buf: []u8, name: []const u8, path_env: []const u8, cwd: ?[]const u8) ?[:0]const u8 {
-    if (name.len == 0) return null;
-    var it = std.mem.splitScalar(u8, path_env, ':');
-    while (it.next()) |raw| {
-        const dir = if (raw.len == 0) "." else raw;
-        const full = if (dir[0] != '/' and cwd != null)
-            std.fmt.bufPrintZ(buf, "{s}/{s}/{s}", .{ cwd.?, dir, name }) catch continue
-        else
-            std.fmt.bufPrintZ(buf, "{s}/{s}", .{ dir, name }) catch continue;
-        if (posix.isExecutableRegular(full.ptr)) return full;
-    }
-    return null;
+    var s = PathSearch.init(buf, name, path_env, cwd);
+    return s.next();
 }
+
+/// `searchPath`'s walk, one candidate at a time: every executable regular file of that name
+/// along `PATH`, in order. `searchPath` is its first answer. `startable` reads further —
+/// execvp moves past a candidate whose `execve` fails ENOENT or EACCES, which a missing or
+/// non-executable `#!` interpreter makes it fail with — and this keeps that second reader on
+/// the same rule rather than a copy of it. Each answer is written into `buf`, so it is valid
+/// until the next call.
+pub const PathSearch = struct {
+    buf: []u8,
+    name: []const u8,
+    cwd: ?[]const u8,
+    it: std.mem.SplitIterator(u8, .scalar),
+
+    pub fn init(buf: []u8, name: []const u8, path_env: []const u8, cwd: ?[]const u8) PathSearch {
+        return .{ .buf = buf, .name = name, .cwd = cwd, .it = std.mem.splitScalar(u8, path_env, ':') };
+    }
+
+    pub fn next(self: *PathSearch) ?[:0]const u8 {
+        if (self.name.len == 0) return null;
+        while (self.it.next()) |raw| {
+            const dir = if (raw.len == 0) "." else raw;
+            const full = if (dir[0] != '/' and self.cwd != null)
+                std.fmt.bufPrintZ(self.buf, "{s}/{s}/{s}", .{ self.cwd.?, dir, self.name }) catch continue
+            else
+                std.fmt.bufPrintZ(self.buf, "{s}/{s}", .{ dir, self.name }) catch continue;
+            if (posix.isExecutableRegular(full.ptr)) return full;
+        }
+        return null;
+    }
+};
 
 /// Read the file at `path`, already resolved. The half of `observe` after the name has
 /// become a path.
@@ -294,6 +315,143 @@ fn resolveAgainst(arena: std.mem.Allocator, p: []const u8, cwd: ?[]const u8) ?[]
     if (p.len != 0 and p[0] == '/') return p;
     const base = cwd orelse return p;
     return std.fs.path.join(arena, &.{ base, p }) catch null;
+}
+
+/// What `startable` found. `fault` is the answer; the three paths say where.
+pub const Start = struct {
+    fault: Fault,
+    /// The file argv[0] resolved to. Null when a bare name found nothing on `PATH`, or when
+    /// nothing was judged. Define-derived, so a caller that prints it sends it through
+    /// `textShown` first.
+    file: ?[]const u8 = null,
+    /// Set when the fault is in the file's `#!` line rather than in the file: the
+    /// interpreter that line names.
+    interpreter: ?[]const u8 = null,
+    /// The bare name a `PATH` search found nothing for — argv[0] itself, or the one name a
+    /// `#!/usr/bin/env NAME` line hands to `env`.
+    name: ?[]const u8 = null,
+};
+
+pub const Fault = union(enum) {
+    ok,
+    /// Nothing was judged: an empty argv[0] (the site's own emptiness refusal speaks), or a
+    /// bare name with `PATH` unset — execvp's default list differs between libcs and ADR 0090
+    /// declines to pick one.
+    not_judged,
+    /// `access(F_OK)` answered ENOENT or ENOTDIR: no file at that path (a dangling link
+    /// included — the exec follows it to nothing).
+    missing,
+    /// Present, and not a regular file: a directory, a device, a socket.
+    not_regular,
+    /// A regular file this process may not execute.
+    no_exec_bit,
+    /// The path could not be examined for a reason other than absence — a directory above it
+    /// this user may not search (EACCES), a link loop. The errno, for the message; no
+    /// instruction is built from it, because "make it executable" would be the wrong one.
+    unreachable_path: c_int,
+    /// A bare name, and no component of `PATH` holds an executable regular file of that name.
+    not_on_path,
+};
+
+/// The bytes of a `#!` line this reads. Linux's own limit (`BINPRM_BUF_SIZE`) is the same
+/// number since 5.1; a first line longer than this is not judged.
+const shebang_max = 256;
+
+/// Can a define command be started at all? Asked before it runs (#701, ADR 0092), so that a
+/// file that is not there or may not be executed is refused as what it is, instead of being
+/// spawned and read back as an exit status — 127 from the fork stub's failed exec, which
+/// the gates downstream took for a checker that rejected the state, or an operation that
+/// exited non-zero.
+///
+/// The same resolution the spawn uses: a name with a `/` against `cwd` (`resolveAgainst`,
+/// as `observe` does), a bare name along `path_env` with `PathSearch` (`searchPath`'s walk,
+/// ADR 0090), read past a first candidate whose `#!` fails the way execvp reads past it —
+/// see the body. `cwd` is the directory the child runs in.
+///
+/// A file that passes is read once more for a `#!` line, one step deep: the interpreter it
+/// names is put to the same test, and so is the one name a `#!/usr/bin/env NAME` line hands
+/// to `env`. Not deeper, and not wider: an `env` line with a flag or a second word is not
+/// judged (Linux hands everything after the interpreter to it as ONE argument and macOS
+/// splits it, so the name `env` would look for depends on the kernel), and a relative
+/// interpreter is not judged either. What still reaches the exec and fails there — an image
+/// built for another CPU, a second level of `env` — keeps arriving as the exit status it
+/// always did.
+pub fn startable(arena: std.mem.Allocator, argv0: []const u8, cwd: ?[]const u8, path_env: ?[]const u8) Start {
+    if (argv0.len == 0) return .{ .fault = .not_judged };
+    if (std.mem.indexOfScalar(u8, argv0, '/') != null) {
+        const f = resolveAgainst(arena, argv0, cwd) orelse return .{ .fault = .not_judged };
+        const fault = fileFault(arena, f);
+        if (fault != .ok) return .{ .fault = fault, .file = f };
+        return interpreterOf(arena, f, cwd, path_env);
+    }
+    const env = path_env orelse return .{ .fault = .not_judged };
+    const buf = arena.alloc(u8, search_path_max) catch return .{ .fault = .not_judged };
+    // A bare name is refused only when execvp would fail it too (review of #701). execvp
+    // tries each candidate in turn and moves past one whose `execve` fails ENOENT or EACCES —
+    // what a missing, non-regular or non-executable interpreter makes it fail with — so a
+    // broken `#!` in the first directory does not stop a name a later one supplies. A failing
+    // `env NAME` line is the exception: `env` itself executes, so execvp stops at that
+    // candidate and `env` exits 127. `--observe supervised` and `--oracle` take the first
+    // candidate and do not move on; there a broken first `#!` passes this check and fails at
+    // the spawn as it always did — a refusal missed, never one added.
+    var search = PathSearch.init(buf, argv0, env, cwd);
+    var first: ?Start = null;
+    while (search.next()) |found| {
+        // `PathSearch` answers only with an executable regular file, so what it found needs
+        // no second `fileFault`. Copied: the next answer overwrites `buf`.
+        const f = arena.dupe(u8, found) catch return .{ .fault = .not_judged };
+        const s = interpreterOf(arena, f, cwd, path_env);
+        if (s.fault == .ok or s.fault == .not_on_path) return s;
+        if (first == null) first = s;
+    }
+    return first orelse .{ .fault = .not_on_path, .name = argv0 };
+}
+
+fn fileFault(arena: std.mem.Allocator, path: []const u8) Fault {
+    const z = arena.dupeZ(u8, path) catch return .not_judged;
+    if (posix.access(z.ptr, posix.F_OK) != 0) {
+        const e = std.c._errno().*;
+        return if (e == posix.ENOENT or e == posix.ENOTDIR) .missing else .{ .unreachable_path = e };
+    }
+    if (!posix.isRegularFollowing(z.ptr)) return .not_regular;
+    if (posix.access(z.ptr, posix.X_OK) != 0) return .no_exec_bit;
+    return .ok;
+}
+
+/// The `#!` half of `startable`. Anything this cannot read — an execute-only file, a first
+/// line longer than `shebang_max` — is passed, not refused: the exec will say.
+fn interpreterOf(arena: std.mem.Allocator, file: []const u8, cwd: ?[]const u8, path_env: ?[]const u8) Start {
+    const ok: Start = .{ .fault = .ok, .file = file };
+    const z = arena.dupeZ(u8, file) catch return ok;
+    // O_NONBLOCK for the reason `observePath` gives: the path is the define's, and a FIFO
+    // there must not hang the engine before anything has run.
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
+    if (fd < 0) return ok;
+    defer _ = posix.close(fd);
+    var buf: [shebang_max]u8 = undefined;
+    const n = posix.read(fd, &buf, buf.len);
+    if (n < 2) return ok;
+    const head = buf[0..@intCast(n)];
+    if (!std.mem.startsWith(u8, head, "#!")) return ok;
+    const line_end = std.mem.indexOfScalar(u8, head, '\n') orelse
+        (if (head.len < buf.len) head.len else return ok);
+    // Spaces and tabs separate the words, and nothing else does: a CR is part of the
+    // interpreter's name to the kernel, so a script saved with CRLF line endings names
+    // `/bin/sh\r`, which does not exist — and saying so is the diagnosis.
+    var words = std.mem.tokenizeAny(u8, head[2..line_end], " \t");
+    const interp_word = words.next() orelse return ok;
+    if (interp_word[0] != '/') return ok;
+    const interp = arena.dupe(u8, interp_word) catch return ok;
+    const fault = fileFault(arena, interp);
+    if (fault != .ok) return .{ .fault = fault, .file = file, .interpreter = interp };
+    if (!std.mem.eql(u8, std.fs.path.basename(interp), "env")) return ok;
+    const name_word = words.next() orelse return ok;
+    if (words.next() != null) return ok;
+    if (name_word[0] == '-' or std.mem.indexOfAny(u8, name_word, "=/") != null) return ok;
+    const env = path_env orelse return ok;
+    const sbuf = arena.alloc(u8, search_path_max) catch return ok;
+    if (searchPath(sbuf, name_word, env, cwd) != null) return ok;
+    return .{ .fault = .not_on_path, .file = file, .interpreter = interp, .name = arena.dupe(u8, name_word) catch return ok };
 }
 
 // ---------------------------------------------------------------------------
@@ -1214,6 +1372,137 @@ test "searchPath takes the first executable regular file, as execvp would (ADR 0
     );
     // The same relative component against another directory finds nothing there.
     try testing.expect(searchPath(&out, "tool", "c", a) == null);
+}
+
+test "startable says which of missing, not a regular file, no execute bit, or off PATH (#701)" {
+    var as = std.heap.ArenaAllocator.init(testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    var rbuf: [256]u8 = undefined;
+    const root = fixtureDir(&rbuf, "start");
+    var pd: [320]u8 = undefined;
+    const dir = try std.fmt.bufPrintZ(&pd, "{s}/d", .{root});
+    _ = posix.mkdir(dir.ptr, 0o755);
+    var p1: [512]u8 = undefined;
+    var p2: [512]u8 = undefined;
+    var p3: [512]u8 = undefined;
+    var p4: [512]u8 = undefined;
+    var p5: [512]u8 = undefined;
+    var p6: [512]u8 = undefined;
+    var p7: [512]u8 = undefined;
+    var p8: [512]u8 = undefined;
+    const prog = try writeFixtureMode(root, "prog", "x", &p1, 0o755);
+    const plain = try writeFixtureMode(root, "plain", "x", &p2, 0o644);
+    const bad_interp = try writeFixtureMode(root, "bad", "#!/nonexistent-interpreter-for-701 -x\necho\n", &p3, 0o755);
+    const good_interp = try writeFixtureMode(root, "good", "#!/bin/sh\necho\n", &p4, 0o755);
+    const crlf = try writeFixtureMode(root, "crlf", "#!/bin/sh\r\necho\r\n", &p5, 0o755);
+    const env_missing = try writeFixtureMode(root, "envmiss", "#!/usr/bin/env no-such-name-for-701\n", &p6, 0o755);
+    const env_found = try writeFixtureMode(root, "envfound", "#!/usr/bin/env prog\n", &p7, 0o755);
+    const env_two = try writeFixtureMode(root, "envtwo", "#!/usr/bin/env no-such-name-for-701 -u\n", &p8, 0o755);
+    defer {
+        for ([_][:0]u8{ prog, plain, bad_interp, good_interp, crlf, env_missing, env_found, env_two }) |p| _ = posix.unlink(p.ptr);
+        _ = posix.rmdir(dir.ptr);
+        _ = posix.rmdir(root.ptr);
+    }
+    // `/usr/bin/env` is where every platform this runs on keeps it; skip rather than
+    // assert something about a machine without it.
+    if (posix.access("/usr/bin/env", posix.X_OK) != 0) return error.SkipZigTest;
+
+    try testing.expect(startable(a, prog, null, null).fault == .ok);
+    // Each failing shape, and the path it names.
+    var mb: [512]u8 = undefined;
+    const absent = try std.fmt.bufPrint(&mb, "{s}/absent", .{root});
+    const m = startable(a, absent, null, null);
+    try testing.expect(m.fault == .missing);
+    try testing.expectEqualStrings(absent, m.file.?);
+    try testing.expect(startable(a, plain, null, null).fault == .no_exec_bit);
+    try testing.expect(startable(a, dir, null, null).fault == .not_regular);
+    // A path through a regular file is ENOTDIR to the kernel: nothing is there.
+    var nb: [512]u8 = undefined;
+    try testing.expect(startable(a, try std.fmt.bufPrint(&nb, "{s}/x", .{plain}), null, null).fault == .missing);
+    // Relative, against the cwd given — and the answer names the resolved file.
+    const rel = startable(a, "./plain", root, null);
+    try testing.expect(rel.fault == .no_exec_bit);
+    try testing.expect(std.mem.endsWith(u8, rel.file.?, "/plain"));
+
+    // The `#!` line, one step deep.
+    const bi = startable(a, bad_interp, null, null);
+    try testing.expect(bi.fault == .missing);
+    try testing.expectEqualStrings("/nonexistent-interpreter-for-701", bi.interpreter.?);
+    try testing.expectEqualStrings(bad_interp, bi.file.?);
+    try testing.expect(startable(a, good_interp, null, null).fault == .ok);
+    // A CR is part of the interpreter's name: CRLF scripts name `/bin/sh\r`.
+    const cr = startable(a, crlf, null, null);
+    try testing.expect(cr.fault == .missing);
+    try testing.expectEqualStrings("/bin/sh\r", cr.interpreter.?);
+    // `env NAME`: NAME along PATH. `root` on PATH holds `prog`, not the missing name.
+    const em = startable(a, env_missing, null, root);
+    try testing.expect(em.fault == .not_on_path);
+    try testing.expectEqualStrings("no-such-name-for-701", em.name.?);
+    try testing.expectEqualStrings("/usr/bin/env", em.interpreter.?);
+    try testing.expect(startable(a, env_found, null, root).fault == .ok);
+    // A second word is not judged: the kernels disagree about what `env` receives.
+    try testing.expect(startable(a, env_two, null, root).fault == .ok);
+    // PATH unset: `env NAME` is not judged either.
+    try testing.expect(startable(a, env_missing, null, null).fault == .ok);
+
+    // Bare names: off PATH, on PATH, and PATH unset.
+    const off = startable(a, "no-such-name-for-701", null, root);
+    try testing.expect(off.fault == .not_on_path);
+    try testing.expectEqualStrings("no-such-name-for-701", off.name.?);
+    try testing.expect(off.file == null);
+    try testing.expectEqualStrings(prog, startable(a, "prog", null, root).file.?);
+    // Control for the row above: `plain` is on the same PATH and is not executable, so the
+    // search walks past it — the answer is "not on PATH", as execvp would fail.
+    try testing.expect(startable(a, "plain", null, root).fault == .not_on_path);
+    try testing.expect(startable(a, "prog", null, null).fault == .not_judged);
+    try testing.expect(startable(a, "", null, root).fault == .not_judged);
+}
+
+test "a bare name passes when execvp would reach a later candidate past a broken #! (#701 review)" {
+    // execvp moves past a candidate whose execve fails ENOENT or EACCES — which is what a
+    // missing or non-executable interpreter makes it fail with — so the first file on PATH
+    // with a broken `#!` does not stop a bare name that a later directory supplies.
+    var as = std.heap.ArenaAllocator.init(testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    var rbuf: [256]u8 = undefined;
+    const root = fixtureDir(&rbuf, "start-path");
+    var b1: [320]u8 = undefined;
+    var b2: [320]u8 = undefined;
+    const d1 = try std.fmt.bufPrintZ(&b1, "{s}/one", .{root});
+    const d2 = try std.fmt.bufPrintZ(&b2, "{s}/two", .{root});
+    _ = posix.mkdir(d1.ptr, 0o755);
+    _ = posix.mkdir(d2.ptr, 0o755);
+    var p1: [512]u8 = undefined;
+    var p2: [512]u8 = undefined;
+    var p3: [512]u8 = undefined;
+    var p4: [512]u8 = undefined;
+    const broken = try writeFixtureMode(d1, "tool", "#!/nonexistent-interpreter-for-701\n", &p1, 0o755);
+    const good = try writeFixtureMode(d2, "tool", "#!/bin/sh\necho\n", &p2, 0o755);
+    const env_first = try writeFixtureMode(d1, "envtool", "#!/usr/bin/env no-such-name-for-701\n", &p3, 0o755);
+    const env_later = try writeFixtureMode(d2, "envtool", "#!/bin/sh\necho\n", &p4, 0o755);
+    defer {
+        for ([_][:0]u8{ broken, good, env_first, env_later }) |p| _ = posix.unlink(p.ptr);
+        _ = posix.rmdir(d1.ptr);
+        _ = posix.rmdir(d2.ptr);
+        _ = posix.rmdir(root.ptr);
+    }
+    if (posix.access("/usr/bin/env", posix.X_OK) != 0) return error.SkipZigTest;
+    var eb: [700]u8 = undefined;
+    const both = try std.fmt.bufPrint(&eb, "{s}:{s}", .{ d1, d2 });
+    const s = startable(a, "tool", null, both);
+    try testing.expect(s.fault == .ok);
+    try testing.expectEqualStrings(good, s.file.?);
+    // Control: with the good directory off PATH, the broken first candidate is the answer.
+    const only = startable(a, "tool", null, d1);
+    try testing.expect(only.fault == .missing);
+    try testing.expectEqualStrings("/nonexistent-interpreter-for-701", only.interpreter.?);
+    // `env NAME` is different: the execve of `env` succeeds, so execvp stops at that
+    // candidate and `env` exits 127 — the later directory is never tried.
+    const e = startable(a, "envtool", null, both);
+    try testing.expect(e.fault == .not_on_path);
+    try testing.expectEqualStrings(env_first, e.file.?);
 }
 
 test "a bare argv[0] is read off PATH and says it was, or says why it was not" {

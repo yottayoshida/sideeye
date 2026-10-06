@@ -1226,9 +1226,13 @@ pub const SetupErrorReason = enum {
     /// names is the machine's answer, not the define's — that is `environment`.
     define_invalid,
     /// `--setup` was handed to `exec` and ended badly: exited non-zero, was killed by a
-    /// signal, or ended in a status `waitpid` did not decode. An image that could not be
-    /// executed at all arrives here too, as the child's `_exit(127)` after the failed `exec`
-    /// (measured: a `--setup` path that does not exist reports exit code 127) — and a child
+    /// signal, or ended in a status `waitpid` did not decode. A setup whose file, or the `#!`
+    /// interpreter it names, is missing or may not be executed does not: it is refused
+    /// before it runs, as `environment` (#701, ADR 0092 — it used to arrive here as
+    /// `--setup exited 127`). What that check does not judge still arrives here with
+    /// whatever status the failed exec leaves — the child's `_exit(127)` when `exec`
+    /// fails, or the shell's status when the libc hands a file it does not recognise to
+    /// `/bin/sh` — and a child
     /// the fork stub could not arrange before `exec` as its `_exit(126)`, with a stderr line
     /// naming the call and errno. `posix.SpawnError` has no exec member. The
     /// report carries the status as `setup_exit_code` or `setup_signal`; neither for the
@@ -1239,7 +1243,9 @@ pub const SetupErrorReason = enum {
     /// oracle's account, the demo's scratch), a process it could not fork or wait for, a
     /// privilege (`sudo` for `fs_usage`), a tool (a C compiler for the demo), the state tree
     /// it could not snapshot or rewrite before exploration, an apparatus entry the
-    /// environment does not carry.
+    /// environment does not carry, a setup, operation or checker that cannot be started
+    /// (`image.startable`: its file or `#!` interpreter missing, not a regular file, not
+    /// executable or not reachable, or a bare name with nothing on `PATH` — #701, ADR 0092).
     environment,
     /// What the define asks for does not exist on this platform or kernel: `--oracle-fs-usage`
     /// off macOS, `--observe syscalls` off Linux or on a kernel that refuses
