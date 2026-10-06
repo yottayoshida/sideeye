@@ -2180,6 +2180,29 @@ else
     fails=$((fails + 1))
 fi
 
+# ---- #708: a setup and a check that find the state through SIDEEYE_STATE_DIR alone ----
+# The checker cookbook names SIDEEYE_STATE_DIR as the variable holding the state directory, and
+# every define command has to receive it — the setup had only TOY_STATE, the demo toy's name.
+# The setup writes a sentinel through `${SIDEEYE_STATE_DIR:?}` (`:?` because an empty variable
+# would write `/sentinel` instead, which root in a container is allowed to do) and the check
+# reads it back through the same variable; neither script names TOY_STATE. Run under `env -u`
+# so a SIDEEYE_STATE_DIR left in the caller's environment cannot stand in for the engine's.
+rm -rf /tmp/acc-708 && mkdir -p /tmp/acc-708
+printf '#!/bin/sh\nset -eu\n"%s" init\nprintf ok > "${SIDEEYE_STATE_DIR:?}/sentinel"\n' "$OUT/toy-fixed" > /tmp/acc-708/setup.sh
+printf '#!/bin/sh\n[ "$(cat "$SIDEEYE_STATE_DIR/sentinel" 2>/dev/null)" = ok ]\n' > /tmp/acc-708/check.sh
+chmod 755 /tmp/acc-708/setup.sh /tmp/acc-708/check.sh
+o708=$(env -u SIDEEYE_STATE_DIR "$SIDEEYE" explore --state /tmp/acc-708/state --work /tmp/acc-708/work \
+    --shim "$SHIM" --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh \
+    --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/check.sh 2>&1)
+rc708=$?
+if [ "$rc708" = "0" ] && printf '%s\n' "$o708" | grep -q '^PASS'; then
+    echo "ok   #708: a setup and a check that use SIDEEYE_STATE_DIR alone reach PASS"
+else
+    echo "FAIL #708: SIDEEYE_STATE_DIR in the setup and the check: exit $rc708, wanted 0 and PASS"
+    printf '%s\n' "$o708" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2l: a state directory larger than one buffer ==========="
 # restore() collects names into a fixed buffer before deleting. Stopping at the bound

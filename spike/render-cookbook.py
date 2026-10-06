@@ -96,7 +96,9 @@ RECIPES = [
         "## Recipe 4",
         "spike/assisted/buku/ops/check.sh",
         "Swap `XDG_DATA_HOME`, the database path, the bystander query and its expected "
-        "row for your target's; the leg ORDER is the part to copy unchanged.",
+        "row for your target's, and take the state from `$SIDEEYE_STATE_DIR` "
+        "(`export XDG_DATA_HOME=\"$SIDEEYE_STATE_DIR\"` here) rather than a fixed path; "
+        "the leg ORDER is the part to copy unchanged.",
     ),
 ]
 

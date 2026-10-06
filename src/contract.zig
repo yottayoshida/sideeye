@@ -180,7 +180,8 @@ pub const magic = "SIDEEYE1";
 /// Environment variables the engine sets and the shim reads.
 pub const env = struct {
     /// Absolute path of the directory whose contents define the target's state.
-    /// Operations outside it are not counted.
+    /// Operations outside it are not counted. Set for every define command — setup,
+    /// operation, check, recovery — and the name the checker cookbook gives them (#708).
     pub const state_dir = "SIDEEYE_STATE_DIR";
     /// A second spelling of the same directory, when the caller named it through a
     /// symlink. Operations under either spelling are counted, and both are recorded

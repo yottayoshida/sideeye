@@ -1409,6 +1409,10 @@ fn phaseSetup(run: *Run) void {
         removeFile(setup_out);
         const term = posix.runChildCapture(gpa, setup_argv, &.{
             .{ "TOY_STATE", state_abs },
+            // #708: the variable the checker cookbook names for every define command. The
+            // operation, the check and the recovery had it; the setup had only the demo
+            // toy's name, so a setup written from the cookbook found an empty variable.
+            .{ contract.env.state_dir, state_abs },
         }, .{
             .path = setup_out,
             // #483 names stderr, which is where a setup writes its diagnosis. Capturing
