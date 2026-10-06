@@ -23,8 +23,14 @@
 # the defect reaches a hosted runner at all rests on #569's own record of check 6 in
 # spike/fsusage/acceptance-local.sh refusing on CI's macOS before this change.
 #
-# The count is checked as well as the verdict so that a toy which quietly wrote nothing — a
-# PASS over zero crash points — cannot read as a kill that landed.
+# The count is checked as well as the verdict so that a toy which quietly wrote nothing cannot
+# read as a kill that landed.
+#
+# The three files are in the state before the run, and the toy rewrites each with the three
+# bytes it already holds, in place (no O_TRUNC). Since ADR 0091 a run whose operation only
+# creates files, with no checker, is refused `nothing_could_fail` — every run here was that
+# until then. Rewriting in place keeps the nine crash points, and leaves no world holding
+# anything but those bytes, so a PASS is still the only verdict a landed kill produces.
 set -u
 
 RUNS="${1:-12}"
@@ -71,7 +77,7 @@ static int rc = 1;
 static dispatch_semaphore_t done;
 static int writefile(const char *name) {
     char p[1024]; snprintf(p, sizeof(p), "%s/%s", dir, name);
-    int fd = open(p, O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    int fd = open(p, O_CREAT | O_WRONLY, 0600);
     if (fd < 0) { perror("open"); return 1; }
     if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
     if (fsync(fd) != 0) { perror("fsync"); return 1; }
@@ -180,6 +186,7 @@ for kind in pthread gcd nothread; do
     pass=0
     for i in $(seq 1 "$RUNS"); do
         st="$WORK/state-$kind-$i"; mkdir -p "$st"
+        for f in keep keep2 keep3; do printf 'ok\n' > "$st/$f"; done
         PROBE_STATE="$st" "$SIDEEYE" explore --state "$st" --operation "$WORK/toy $kind" \
             --shim "$SHIM" --work "$WORK/w-$kind-$i" --json "$WORK/$kind-$i.json" --allow-unverified \
             > "$WORK/$kind-$i.txt" 2>&1

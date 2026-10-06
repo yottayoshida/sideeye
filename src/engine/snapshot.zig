@@ -403,6 +403,46 @@ fn resolveThroughLinks(
     return cur;
 }
 
+/// Whether a record of `class` acts on the entry its path names, without following a symlink
+/// in the path's last component. `unlink`, `rename`, `link` (neither end, as Linux's `link`
+/// does not dereference its source), `symlink`, `rmdir` and `mkdir` do; `open`, `truncate`
+/// and the descriptor-borne records (`write`, `fsync`, `close`) reach what a final link
+/// points at.
+fn actsOnLastComponent(class: contract.OpClass) bool {
+    return switch (class) {
+        .unlink, .rename, .link, .symlink, .rmdir, .mkdir => true,
+        else => false,
+    };
+}
+
+/// `resolveThroughLinks` for one record end, by what the record's class does with a final
+/// link (R1 of #682/#683's diff). Resolving every component made a record on a link stand
+/// for the link's target: `symlink("pkg/f", "new")`, recorded at `new`, read as naming
+/// `pkg/f` — so a run that only makes links counted the files they point at as touched, and
+/// a change at `pkg/f` that nothing recorded was accounted for by the record that made the
+/// link. For a class that acts on the last component, only the directories above it are
+/// resolved and the name is put back. `joined` holds that result; on overflow the literal
+/// spelling is returned, which matches less rather than more.
+fn resolveForRecord(
+    lexical: []const u8,
+    class: contract.OpClass,
+    links: []const Link,
+    root: []const u8,
+    alt: []const u8,
+    scratch: []u8,
+    joined: []u8,
+) []const u8 {
+    if (!actsOnLastComponent(class)) return resolveThroughLinks(lexical, links, root, alt, scratch);
+    const slash = std.mem.lastIndexOfScalar(u8, lexical, '/') orelse return lexical;
+    const parent = resolveThroughLinks(lexical[0..slash], links, root, alt, scratch);
+    const base = lexical[slash + 1 ..];
+    if (parent.len + 1 + base.len > joined.len) return lexical;
+    @memcpy(joined[0..parent.len], parent);
+    joined[parent.len] = '/';
+    @memcpy(joined[parent.len + 1 ..][0..base.len], base);
+    return joined[0 .. parent.len + 1 + base.len];
+}
+
 /// Every path the state changed at that no recorded operation names.
 ///
 /// The general form of the zero-ops detector: that one asks whether the state moved
@@ -432,6 +472,7 @@ pub fn reconcile(
     out: []Unaccounted,
 ) Reconciled {
     var res: Reconciled = .{ .stored = 0, .total = 0, .by_rename_prefix = 0 };
+    var joined: [contract.max_path]u8 = undefined;
     for (diffs) |d| {
         var named = false;
         var by_prefix = false;
@@ -442,7 +483,7 @@ pub fn reconcile(
             for (ends) |p| {
                 if (p.len == 0) continue;
                 const lexical = relUnderRoot(p, root, alt) orelse continue;
-                const rel = resolveThroughLinks(lexical, links, root, alt, scratch);
+                const rel = resolveForRecord(lexical, op.class, links, root, alt, scratch, &joined);
                 // BOTH spellings, because a path can name a link or name through it and
                 // the two answers are different objects. `unlink("cur")` removes the link
                 // and the difference is at `cur`; `unlink("cur/f")` removes a file and the
@@ -522,6 +563,161 @@ pub fn collectLinks(a: Allocator, first: Snapshot, second: Snapshot, out: *std.A
             if (!seen) try out.append(a, .{ .rel = e.rel, .target = e.content });
         }
     }
+}
+
+/// Whether some recorded operation could have changed the judged path `rel` in a crash
+/// world (ADR 0091): one that names `rel` itself, or a rename that names a directory above
+/// it. The question `reconcile` asks of a *difference*, asked of a path the built-in
+/// invariant judges — through the same two spellings, so an operation spelled through an
+/// interior symlink names what it reached (#683), and an operation on a link itself names the
+/// link and not its target (`resolveForRecord`).
+///
+/// **Two classes never count, and the ancestor rule is a rename's alone.** Each of the
+/// three is a measured way for this answer to say "touched" about a path no crash world
+/// could show changed, which turns an exploration where nothing could fail back into a
+/// PASS (R1 of the plan):
+/// - `fsync` changes nothing under the process-crash model — every completed write is
+///   already durable — so a world killed in front of it holds what the world before it held.
+/// - `mkdir` on a judged path cannot succeed while that path is there, and a judged path is
+///   there before and after the operation; for it to be created again, something else must
+///   first have named it (or renamed a directory above it), and that operation counts. The
+///   shim records a `mkdir` before it knows the answer, so `os.makedirs(…, exist_ok=True)`
+///   leaves one per existing component.
+/// - Above a judged path, only a rename moves it. `unlink` and `open` fail on a directory,
+///   `rmdir` needs it empty — its children named first — and a parent's `fsync` or `mkdir`
+///   is the commonest record of all: matched as an ancestor, it would make every path
+///   beneath it "touched".
+///
+/// The root itself (`rel` ""), which `relUnderRoot` returns for the state directory, is
+/// never an ancestor here: the snapshot holds no entry for it, and a rename of the root
+/// takes every judged path away mid-run, which the judgement or the snapshot refuses first.
+///
+/// Fail direction: a path this cannot place falls back to its literal spelling, matches
+/// nothing, and counts as untouched — the side that refuses rather than PASSes, which is
+/// where a detector belongs (the same choice `collectLinks` makes).
+pub fn namedByMutation(
+    rel: []const u8,
+    ops: []const Op,
+    links: []const Link,
+    root: []const u8,
+    alt: []const u8,
+    scratch: []u8,
+) bool {
+    var joined: [contract.max_path]u8 = undefined;
+    for (ops) |op| {
+        if (!op.class.isKillPoint()) continue;
+        if (op.class == .fsync or op.class == .mkdir) continue;
+        const ends = [2][]const u8{ op.path, op.aux };
+        for (ends) |p| {
+            if (p.len == 0) continue;
+            const lexical = relUnderRoot(p, root, alt) orelse continue;
+            const resolved = resolveForRecord(lexical, op.class, links, root, alt, scratch, &joined);
+            if (std.mem.eql(u8, lexical, rel) or std.mem.eql(u8, resolved, rel)) return true;
+            if (op.class == .rename and (isStrictAncestor(lexical, rel) or isStrictAncestor(resolved, rel))) return true;
+        }
+    }
+    return false;
+}
+
+/// `dir` is a directory strictly above `rel`, both relative to the root. The root itself
+/// (`dir` empty) is not: see `namedByMutation`. `a` is not above `ab/x`.
+fn isStrictAncestor(dir: []const u8, rel: []const u8) bool {
+    return dir.len > 0 and rel.len > dir.len and std.mem.startsWith(u8, rel, dir) and rel[dir.len] == '/';
+}
+
+test "namedByMutation: a write, a truncating open and either end of a rename name a judged path" {
+    var scratch: [2048]u8 = undefined;
+    const root = "/tmp/s";
+    const write = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cfg.json", .aux = "" }};
+    try std.testing.expect(namedByMutation("cfg.json", &write, &.{}, root, "", &scratch));
+    const open = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cfg.json", .aux = "" }};
+    try std.testing.expect(namedByMutation("cfg.json", &open, &.{}, root, "", &scratch));
+    // The atomic rewrite: the temp file is not judged, the rename's destination is.
+    const swap = [_]Op{
+        .{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cfg.json.tmp", .aux = "" },
+        .{ .class = .rename, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/cfg.json.tmp", .aux = "/tmp/s/cfg.json" },
+    };
+    try std.testing.expect(namedByMutation("cfg.json", &swap, &.{}, root, "", &scratch));
+    // Through the alternate spelling of the root (macOS's /private/tmp).
+    const alt_write = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/private/tmp/s/cfg.json", .aux = "" }};
+    try std.testing.expect(namedByMutation("cfg.json", &alt_write, &.{}, root, "/private/tmp/s", &scratch));
+    // A judged path nothing named: the control the assertions above are measured against.
+    try std.testing.expect(!namedByMutation("keep.txt", &swap, &.{}, root, "", &scratch));
+}
+
+test "namedByMutation: fsync and mkdir never count, and only a rename counts from above" {
+    var scratch: [2048]u8 = undefined;
+    const root = "/tmp/s";
+    // The R1 shape: `makedirs(store, exist_ok=True)`, an fsync of the file and of its
+    // directory, and a new file beside it. None of these could change `sub/keep.txt`.
+    const ops = [_]Op{
+        .{ .class = .mkdir, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .class = .mkdir, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/sub", .aux = "" },
+        .{ .class = .fsync, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/sub/keep.txt", .aux = "" },
+        .{ .class = .fsync, .seq = 4, .pid = 7, .tid = 7, .path = "/tmp/s/sub", .aux = "" },
+        .{ .class = .open, .seq = 5, .pid = 7, .tid = 7, .path = "/tmp/s/sub/new.txt", .aux = "" },
+        .{ .class = .write, .seq = 6, .pid = 7, .tid = 7, .path = "/tmp/s/sub/new.txt", .aux = "" },
+        .{ .class = .close, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s/sub/keep.txt", .aux = "" },
+    };
+    try std.testing.expect(!namedByMutation("sub/keep.txt", &ops, &.{}, root, "", &scratch));
+    try std.testing.expect(!namedByMutation("sub", &ops, &.{}, root, "", &scratch));
+    // A rename of the directory above does move it.
+    const moved = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/sub", .aux = "/tmp/s/old" }};
+    try std.testing.expect(namedByMutation("sub/keep.txt", &moved, &.{}, root, "", &scratch));
+    // ... but `su` is not above `sub/keep.txt`, and the root is above nothing.
+    const sibling = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/su", .aux = "/tmp/s/sv" }};
+    try std.testing.expect(!namedByMutation("sub/keep.txt", &sibling, &.{}, root, "", &scratch));
+    const whole = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "/tmp/t" }};
+    try std.testing.expect(!namedByMutation("sub/keep.txt", &whole, &.{}, root, "", &scratch));
+    // An unlink of the directory above is not a rename: it fails on a non-empty directory.
+    const unl = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/sub", .aux = "" }};
+    try std.testing.expect(!namedByMutation("sub/keep.txt", &unl, &.{}, root, "", &scratch));
+}
+
+test "namedByMutation: an operation spelled through an interior symlink names what it reached" {
+    var scratch: [2048]u8 = undefined;
+    const root = "/tmp/s";
+    const links = [_]Link{.{ .rel = "cur", .target = "v1" }};
+    const ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    try std.testing.expect(namedByMutation("v1/f", &ops, &links, root, "", &scratch));
+    // A rename spelled through `cur` names what it reached.
+    const ren = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur/g", .aux = "/tmp/s/cur/f" }};
+    try std.testing.expect(namedByMutation("v1/f", &ren, &links, root, "", &scratch));
+    // Outside the root: nothing.
+    const outside = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/other/v1/f", .aux = "" }};
+    try std.testing.expect(!namedByMutation("v1/f", &outside, &links, root, "", &scratch));
+}
+
+test "namedByMutation: an operation on a link itself does not name what the link points at (R1 of the diff)" {
+    // The stow shape: a run that only makes, removes or renames links to existing files.
+    // `symlink`, `unlink`, `rename` and `link` act on the name they are given and do not
+    // follow its last component, so `new -> pkg/f` being in the snapshots says nothing about
+    // whether `pkg/f` could change. Resolving the whole path counted it touched, and such a
+    // run PASSed with nothing judged.
+    var scratch: [2048]u8 = undefined;
+    const root = "/tmp/s";
+    const made = [_]Link{.{ .rel = "new", .target = "pkg/f" }};
+    const symlink_op = [_]Op{.{ .class = .symlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/new", .aux = "" }};
+    try std.testing.expect(!namedByMutation("pkg/f", &symlink_op, &made, root, "", &scratch));
+    const to_dir = [_]Link{.{ .rel = "cur", .target = "v1" }};
+    const unlink_op = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur", .aux = "" }};
+    try std.testing.expect(!namedByMutation("v1", &unlink_op, &to_dir, root, "", &scratch));
+    const rename_op = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur", .aux = "/tmp/s/old" }};
+    try std.testing.expect(!namedByMutation("v1/f", &rename_op, &to_dir, root, "", &scratch));
+    const link_op = [_]Op{.{ .class = .link, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/new", .aux = "/tmp/s/new2" }};
+    try std.testing.expect(!namedByMutation("pkg/f", &link_op, &made, root, "", &scratch));
+    // An rmdir of a link to a directory fails (ENOTDIR) and is recorded anyway; it names the
+    // link, and the directory behind it stays untouched (R2 of the diff).
+    const rmdir_op = [_]Op{.{ .class = .rmdir, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur", .aux = "" }};
+    try std.testing.expect(!namedByMutation("v1", &rmdir_op, &to_dir, root, "", &scratch));
+    // The control: an open or a write through the same link does reach its target.
+    const open_op = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/new", .aux = "" }};
+    try std.testing.expect(namedByMutation("pkg/f", &open_op, &made, root, "", &scratch));
+    const write_op = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/new", .aux = "" }};
+    try std.testing.expect(namedByMutation("pkg/f", &write_op, &made, root, "", &scratch));
+    // ... and an unlink THROUGH an interior link still names what it removed.
+    const inner = [_]Op{.{ .class = .unlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur/f", .aux = "" }};
+    try std.testing.expect(namedByMutation("v1/f", &inner, &to_dir, root, "", &scratch));
 }
 
 /// Every reconcile test goes through this so the scratch buffer is one decision, and so
@@ -792,6 +988,29 @@ test "reconcile: link substitution follows a chain and survives a cycle" {
     };
     const cyc_ops = [_]Op{.{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a/f", .aux = "" }};
     try std.testing.expect(!reconcileIn(&diffs, &cyc_ops, &cyc, "/tmp/s", "", &buf).clean());
+}
+
+test "reconcile: a record that makes a link does not account for a change at its target (R1 of the diff)" {
+    // The over-explaining direction of the same resolution: the shim recorded the
+    // `symlink` that made `new -> pkg/f`, and nothing recorded the change at `pkg/f` — a raw
+    // write, say. The record names `new`; `pkg/f` changed with no record naming it.
+    const links = [_]Link{.{ .rel = "new", .target = "pkg/f" }};
+    var buf: [4]Unaccounted = undefined;
+    const diffs = [_]Difference{
+        .{ .rel = "new", .how = .only_in_second },
+        .{ .rel = "pkg/f", .how = .content_differs },
+    };
+    const ops = [_]Op{.{ .class = .symlink, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/new", .aux = "" }};
+    const r = reconcileIn(&diffs, &ops, &links, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("pkg/f", buf[0].rel);
+    // A `mkdir` recorded at a link to a directory (EEXIST, recorded before the answer) does
+    // not account for a change inside the directory it points at either (R2 of the diff).
+    const to_dir = [_]Link{.{ .rel = "cur", .target = "v1" }};
+    const dir_diffs = [_]Difference{.{ .rel = "v1", .how = .kind_differs }};
+    const mk = [_]Op{.{ .class = .mkdir, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cur", .aux = "" }};
+    const r2 = reconcileIn(&dir_diffs, &mk, &to_dir, "/tmp/s", "", &buf);
+    try std.testing.expectEqual(@as(usize, 1), r2.total);
 }
 
 test "reconcile: an operation on the link itself names the link, not its target" {

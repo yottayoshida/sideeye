@@ -225,6 +225,22 @@ stay the same.
    include them is that sweep's job and not this change's, for the reason the paragraph above
    gives and the script says where a reader meets it.
 
+   **Amended 2026-10-06: broken a fifth time, by owner ruling — the third addition to
+   `unknown_reason`.** `nothing_could_fail` takes the set from 34 members to 35 (#682, #683,
+   ADR 0091). An exploration in which no world could have failed — no crash point; or no
+   checker, no crash world that printed the marker over a path only one snapshot holds, and no
+   judged path any crash point could change — used to PASS, and the README's own rule for a
+   checker ("a checker that cannot fail makes the run UNKNOWN, not PASS") was not applied to the
+   built-in layers. No existing member could carry it without saying something false:
+   `checker_not_falsified` is about a checker, and these runs mostly have none;
+   `state_changed_without_ops` says the state moved, and here it did not. Ruled on its own
+   merits, as the paragraphs above require; four earlier breaks were not an argument in it. The
+   same change adds one optional field under the allowance, `l0_judged_paths_touched` — the count
+   of judged paths a crash world could have shown changed — which needs no ruling of its own and
+   is, like the two `l0_` fields above, outside the extraction's pattern. **The rule is
+   unchanged** — a sixth ruling would be its own. Its ledger row is a sweep's job, as the notes
+   above give; `contract_version` does not move.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
@@ -250,6 +266,14 @@ stay the same.
    below. The removal moved no version: the contract read v15 before it and reads
    v15 after, which is why that note is dated rather than versioned. That decision is about which code a PASS
    carries, and is untouched by the paragraph above.
+   **Which runs exit 0 moved on 2026-10-06** (ADR 0091), and this is not the split declined
+   above. That ruling kept every PASS at 0 whatever evidence stood behind it; this one moves runs
+   that were PASS to UNKNOWN, because no world in them could have failed — and an UNKNOWN takes
+   2, as the promise requires. A preflight with no crash point moves the same way: it accepted
+   the recording with exit 0 and now refuses with the reason `explore` reaches past its
+   completeness gate, which is what `README.md` says preflight does (without an oracle, `explore`
+   asks for one first and preflight, which has no such gate, does not). The verdict-to-code mapping is untouched; what changed is
+   which verdict those runs reach, recorded with the reason in surface 2's dated note.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies`, whether the code changed underneath
    it or the trace contract did (the refusal message names which) — never a
