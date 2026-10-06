@@ -416,6 +416,18 @@ jobs:
              zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib \
              /tmp/mcp-observe /tmp/mcp-observe/toy
 
+      # The recording run's broken self-exec chain, reached through a stand-in for CPython's
+      # framework launcher: the shipped engine names the interpreter, the interpreter is
+      # judged, and without the framework library the step stays the wrapper one (#703).
+      - name: A framework Python's launcher is refused with its interpreter named (#703)
+        run: |
+          mkdir -p /tmp/fw-launcher
+          cc -o /tmp/fw-launcher/launcher spike/toys/pythonw-launcher.c
+          cc -o /tmp/fw-launcher/toy spike/toys/toy.c -lpthread
+          sh spike/check-framework-launcher-macos.sh \
+             zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib \
+             /tmp/fw-launcher/ws /tmp/fw-launcher/launcher /tmp/fw-launcher/toy
+
       # #325's call site, on the platform the author works on. The property — a relative
       # `define.state` resolves against the case file, not the invoking cwd — is held in
       # the Linux container by acceptance legs I-M, and `resolvePathAgainst`'s own unit

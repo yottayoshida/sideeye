@@ -1919,9 +1919,13 @@ fn phaseStructural(run: *Run) void {
         // A subject exec is hard only when its chain broke (#123): an unbroken
         // self-exec chain — exec record, then a same-pid shim_ready carrying the
         // operation count — is a continuation and never reaches here.
-        .exec => if (trace.exec_chain_broken)
-            unknown(.child_process_detected, "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)", .unwrap_or_class_wall)
-        else
+        // On macOS a framework Python's launcher is named, with the interpreter it hands the
+        // run to (#703): `boundary.selfExecStep` reads the image and chooses the step.
+        .exec => if (trace.exec_chain_broken) {
+            const broke = "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)";
+            const sx = boundary.selfExecStep(arena);
+            unknown(.child_process_detected, std.fmt.allocPrint(arena, "{s}{s}", .{ broke, sx.detail }) catch broke, sx.next);
+        } else
             unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .unwrap_or_class_wall),
         else => {},
     };
