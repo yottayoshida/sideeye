@@ -1,0 +1,973 @@
+== novelty pre-scan: canonical/lxd
+== date: 2026-10-07T05:58:42Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15866 open 2025-06-24 event (or log) for VM crash
+      #19192 open 2026-10-01 Ceph RBD mirroring: follow-ups from #18913
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #19123 open 2026-09-23 timeout flag with restart resulting in unexpected behavior
+      #19070 merged 2026-09-16 Backport EDK2 and CI fixes (release-6.9)
+      #13176 open 2024-03-19 Check whether the Ceph RBD driver needs to have `RunningCopyFreeze=true` for block volumes
+      #19054 merged 2026-09-15 Improve snap-tests
+      #16731 open 2025-10-14 doc: production readiness of howto/cluster_vip
+      #10590 open 2022-06-22 Moving instances between projects can require double storage capacity
+      #14178 open 2024-09-28 LXD containers randomly drops/missing /proc/cpuinfo when using ZFS and Linux 6.8 (Noble)
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #19026 merged 2026-09-10 DR: Replicator telemetry
+      #18381 merged 2026-06-01 Improve logging for crash consistent multi-volume snapshotting
+      #18319 closed 2026-05-22 Confusions around crash-consistent snapshots
+      #18933 open 2026-08-28 lxcfs process leaked after snap refresh
+      #18534 closed 2026-06-24 LXD daemon crashes every 2-3 days: "fatal error: concurrent map iteration and map write" in operations.(*Operation).Render racing with ExtendMetadata
+      #10077 open 2022-03-17 Add lxc config device add disk --type=block for containers 
+      #18652 merged 2026-07-02 lxd: skip member-role handover in Stop() when cluster DB never opened
+      #14549 open 2024-11-27 Set OOMScoreAdjust for LXD VMs?
+      #17892 closed 2026-03-16 Fix `dnsmasq` crash from `tests/cluster`
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13154 open 2024-03-14 Check VMs filesystem volume for concurrent read/writes during live migration
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #9278 open 2021-09-23 Support LVM storage pool unmount
+      #19094 merged 2026-09-18 Code quality (20260918)
+      #18932 merged 2026-08-27 doc: update documentation for `lxd recover`
+      #14178 open 2024-09-28 LXD containers randomly drops/missing /proc/cpuinfo when using ZFS and Linux 6.8 (Noble)
+      #19054 merged 2026-09-15 Improve snap-tests
+      #10077 open 2022-03-17 Add lxc config device add disk --type=block for containers 
+      #18812 merged 2026-07-24 github: Streamline `dqlite`/`liblxc` dependency caching and build steps
+      #18226 merged 2026-05-04 Import: Validate struct slices and config (stable-5.21)
+      #17795 merged 2026-03-03 lxc/config/file: include path to bogus or missing file in errors
+      #18125 merged 2026-04-15 Add helper for compressing JSON responses
+      #17972 merged 2026-03-25 Device: Add support for hotplugging GPU CDI devices into containers
+      #17882 merged 2026-03-13 Extend ACME tests
+      #522 closed 2015-04-16 lxd corrupts database after large number of containers created
+      #17379 closed 2026-01-14 Hot-plugging for CDI GPU devices
+      #17985 merged 2026-03-27 lxd: Stricter image fingerprint validation
+      #18217 merged 2026-05-01 lxd: Improvements to YAML validation
+      #8111 closed 2020-11-03 mistake in dir storage pool creation can easily corrupt the LXD global database 
+  corruption     91 hit(s) (all listed)
+      #19123 open 2026-09-23 timeout flag with restart resulting in unexpected behavior
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #12526 open 2023-11-10 Disconnecting cluster member from network and then moving ceph based instance doesn't stop the instance on disconnected member
+      #13374 open 2024-04-23 Remove cluster healing feature
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #14178 open 2024-09-28 LXD containers randomly drops/missing /proc/cpuinfo when using ZFS and Linux 6.8 (Noble)
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #18963 closed 2026-09-01 lxd: Add changed block tracking for virtual machine block volumes
+      #17972 merged 2026-03-25 Device: Add support for hotplugging GPU CDI devices into containers
+      #17122 merged 2025-12-01 lxd: Fix in-memory config corruption on update failure
+      #17087 closed 2025-11-27 In-memory configuration state corruption on trigger failure in doAPI10Update
+      #223 closed 2015-02-23 Use a single database connection within LXD
+      #16812 closed 2025-10-24 Fail to configure OIDC authentication if discovery fails
+      #17098 merged 2025-11-28 lxd: Validate OIDC issuer configuration during update
+      #3730 closed 2017-08-28 Allow exporting/importing containers (for backups)
+      #1919 closed 2016-04-22 Add configuration option to have LXD remove newer zfs snapshots on restore
+      #12254 closed 2023-09-14 Prevent custom storage volumes to be used more than once
+      #17163 merged 2025-12-04 test/suites/storage_driver_zfs: fix `/dev/zfs` permissions if `udev`  didn't do it
+      #17173 merged 2025-12-05 doc: vale updates
+      #2904 closed 2017-02-18 lxd zpool and all container disappear
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19206 open 2026-10-05 build(deps): bump the actions group across 1 directory with 6 updates
+      #18739 merged 2026-07-13 lxd/endpoints: optimize `stripLog`
+      #19205 merged 2026-10-05 build(deps): bump the actions group across 1 directory with 4 updates
+      #18995 closed 2026-09-07 build(deps): bump github.com/golangci/golangci-lint/v2 from 2.12.2 to 2.13.2 in /tools in the gomod group across 1 directory
+      #19150 merged 2026-09-28 build(deps): bump the actions group across 1 directory with 4 updates
+      #19149 merged 2026-09-28 build(deps): bump the actions group across 1 directory with 4 updates
+      #18997 merged 2026-09-07 build(deps): bump the pip group across 1 directory with 11 updates
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #18998 merged 2026-09-07 build(deps): bump the pip group across 1 directory with 10 updates
+      #19040 closed 2026-09-14 build(deps): bump the actions group across 5 directories with 15 updates
+      #19099 merged 2026-09-21 build(deps): bump the actions group across 1 directory with 7 updates
+      #19009 merged 2026-09-08 build(deps): bump the gomod group across 1 directory with 4 updates
+      #19100 merged 2026-09-21 build(deps): bump the actions group across 1 directory with 8 updates
+      #18999 closed 2026-09-07 build(deps): bump the actions group across 5 directories with 15 updates
+      #19000 merged 2026-09-07 build(deps): bump the actions group across 5 directories with 15 updates
+      #18125 merged 2026-04-15 Add helper for compressing JSON responses
+      #18217 merged 2026-05-01 lxd: Improvements to YAML validation
+      #18994 closed 2026-09-07 build(deps): bump the actions group across 1 directory with 3 updates
+      #18996 merged 2026-09-07 build(deps): bump the actions group across 1 directory with 3 updates
+      #19037 merged 2026-09-14 build(deps): bump the gomod group across 1 directory with 7 updates
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18678 open 2026-07-07 Removing lxd snap fails when using btrfs storage driver
+      #18106 open 2026-04-13 Excessive log spam when restoring backup that exceeds block storage volume.size
+      #19157 merged 2026-09-28 Improve validation
+      #18939 merged 2026-08-29 lxd/instance/drivers/qemu: Bind-mount lxd-agent into VM config drive
+      #19206 open 2026-10-05 build(deps): bump the actions group across 1 directory with 6 updates
+      #19035 merged 2026-09-14 Server state endpoint
+      #18739 merged 2026-07-13 lxd/endpoints: optimize `stripLog`
+      #16897 open 2025-11-06 lxc import issue GPT secondary headers on RHEL qcow2
+      #19205 merged 2026-10-05 build(deps): bump the actions group across 1 directory with 4 updates
+      #18995 closed 2026-09-07 build(deps): bump github.com/golangci/golangci-lint/v2 from 2.12.2 to 2.13.2 in /tools in the gomod group across 1 directory
+      #19150 merged 2026-09-28 build(deps): bump the actions group across 1 directory with 4 updates
+      #19149 merged 2026-09-28 build(deps): bump the actions group across 1 directory with 4 updates
+      #18427 merged 2026-06-10 Improve file path quoting
+      #18350 closed 2026-05-26 Use `strconv.Atoi` instead of `strconv.ParseInt(..., 10, 32)`
+      #18997 merged 2026-09-07 build(deps): bump the pip group across 1 directory with 11 updates
+      #18488 merged 2026-06-18 Code quality (20260618)
+      #18236 merged 2026-05-05  test: Add regression tests for nullable BackupConfig fields
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #18998 merged 2026-09-07 build(deps): bump the pip group across 1 directory with 10 updates
+      #19040 closed 2026-09-14 build(deps): bump the actions group across 5 directories with 15 updates
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18879 open 2026-08-19 lxd_cpu_effective_total metric empty for VMs
+      #16564 open 2025-09-19 lxc config keys are empty on read if set to default value (remove node Config Schema concept)
+      #18923 open 2026-08-25 snap/hooks: Validate string configuration values
+      #19193 open 2026-10-01 Storage: Let the driver say when a project's volumes are read-only (follow-up from #18929)
+      #15090 open 2025-02-28 Pushing very large directories fills shell with empty space
+      #18658 open 2026-07-03 github: combine gh pr view calls into a single one
+      #19141 open 2026-09-25 [Placement over failure domain][2] Restructure placement logic
+      #19190 open 2026-09-30 lxc/remote: Accept an optional fingerprint with --accept-certificate
+      #18989 open 2026-09-04 SCSI/FC: `RemoveDiskDevice` times out waiting for SCSI paths to disappear on real FC hardware
+      #18919 merged 2026-08-25 Allow `lxc <action> --all` on empty projects
+      #15933 open 2025-07-03 `lxc config unset` should allow unsetting multiple keys
+      #19211 open 2026-10-06 Security job fixes
+      #18398 open 2026-06-02 Editing read-only properties is silently ignored
+      #17247 open 2025-12-12 Failing to assign ACL if OVN uplink has no IPv6 gateway
+      #18543 open 2026-06-24 LXD defaults storage pool backend to dir when ZFS cannot mount
+      #13384 open 2024-04-25 Ceph-based pool info should display overall projected utilization of the pool
+      #15904 open 2025-07-01  `lxd init` doesn't work with already existing local storage pools
+      #15010 open 2025-02-17 Allow increasing `limits.memory` for VMs
+      #13679 open 2024-06-28 Allow updating CA files at runtime
+      #18842 open 2026-08-10 lxc/auth: Show identity expiry when listing identities
+  atomic         68 hit(s) (all listed)
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #17694 open 2026-02-19 Allow multi instance attachment when shared.security is set
+      #8097 open 2020-10-29 Create a command-line option for full image copy/unpack
+      #19070 merged 2026-09-16 Backport EDK2 and CI fixes (release-6.9)
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #18959 open 2026-09-01 Add support for preliminary support of microvm using libkrun (start/stop/restart)
+      #18896 merged 2026-08-21 Various operations follow ups
+      #19153 merged 2026-09-28 lxd/cluster: fix handling of joins during heartbeat rounds (LXD-5070)
+      #11636 open 2023-05-02 Concurent instance creation from same unavailable image cause DB errors
+      #18488 merged 2026-06-18 Code quality (20260618)
+      #18455 closed 2026-06-15 Panic when schema version is more recent than expected
+      #18949 merged 2026-08-31 Pure Storage: add SCSI/FC support
+      #18400 merged 2026-06-03 Address some TiCS abstract issues
+      #19085 merged 2026-09-18 Restore the target instance when a refresh fails
+      #18456 merged 2026-06-15 Add custom volume support to replicators
+      #18319 closed 2026-05-22 Confusions around crash-consistent snapshots
+      #18284 merged 2026-05-12 Auth: Retry OIDC verifier initialization on start up
+      #17837 merged 2026-03-07 lxd/apparmor/apparmor: avoid TOCTOU in `hasProfile`
+      #17840 merged 2026-03-08 Address many TOCTOU races
+  atomically     18 hit(s) (all listed)
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #8097 open 2020-10-29 Create a command-line option for full image copy/unpack
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #18959 open 2026-09-01 Add support for preliminary support of microvm using libkrun (start/stop/restart)
+      #19070 merged 2026-09-16 Backport EDK2 and CI fixes (release-6.9)
+      #18319 closed 2026-05-22 Confusions around crash-consistent snapshots
+      #17837 merged 2026-03-07 lxd/apparmor/apparmor: avoid TOCTOU in `hasProfile`
+      #17630 merged 2026-02-12 Feature: Optimize ZFS instance creation with image variants
+      #2752 closed 2016-12-21 feature request: launch from container or snapshot
+      #17371 merged 2026-01-12 Prevent concurrent evacuations to prevent races
+      #13825 merged 2024-07-26 API: Add request metrics for disaster recovery
+      #12181 closed 2023-08-25 LXD 5.17 breaks RBAC
+      #11399 merged 2023-02-24 Network: Update ip.Link to support applying settings atomically when adding interfaces
+      #2669 closed 2016-11-30 Question: The proper way to backup and restore lxc container
+      #2613 closed 2016-11-15 Question: Update a published image or some other High availability setup
+      #1260 closed 2015-11-02 Unable to connect to: images.linuxcontainers.org:8443
+      #6875 merged 2020-02-12 Firewall: nftables driver
+      #4347 merged 2018-03-22 Always use transactions when querying the database
+  interrupted    58 hit(s) (all listed)
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #19173 open 2026-09-30 Document replicators with Ceph RBD mirroring
+      #18924 merged 2026-08-25 Public cluster links follow-up and documentation improvements
+      #18929 merged 2026-08-27 Guard a standby project's storage on a mirrored Ceph pool
+      #18654 merged 2026-07-02 Fix failed file operation due to deleted forkfile as a result of race condition
+      #18404 merged 2026-06-04 lxd/api/cluster/certificate: Don't use request context in updateClusterCertificate
+      #17969 merged 2026-03-25 Fix: Recover from phantom DB entries and orphaned storage after interrupted cluster migrations
+      #18101 merged 2026-04-10 Improve error messages for phantom db entries
+      #17523 closed 2026-01-30 Network create leaves stale database record if interrupted (context canceled)
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #17978 merged 2026-03-26 lxd: Async network and network ACL endpoints
+      #18243 merged 2026-05-05 Bound YAML decoding to 1MiB
+      #2494 closed 2016-10-14 rsync over websocket sometimes fails
+      #10672 closed 2022-07-18 Return migration error to user
+      #6772 closed 2020-01-25  lxc exec:  sanity timeout expired
+      #4546 closed 2018-05-08 Fix same-name container move in cluster
+      #2644 closed 2016-11-24 container has now same uid/gid as hypervisor
+      #5763 closed 2019-05-15 Publishing image from container lxd.CreateImage failing on ShiftOwner
+      #9706 closed 2021-12-16 Option to let rsync finish with errors if the operator desires
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11822 open 2023-06-12 lxc copy --refresh in ZFS deletes CT target volume after network interruption
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #14770 open 2025-01-13 Apparmor doesn't work in nested containers (which breaks snapd)
+      #19173 open 2026-09-30 Document replicators with Ceph RBD mirroring
+      #18869 merged 2026-08-17 Convert replicators to durable operations
+      #18924 merged 2026-08-25 Public cluster links follow-up and documentation improvements
+      #18705 closed 2026-07-08 Opening a REST API connection blocks future connections
+      #18929 merged 2026-08-27 Guard a standby project's storage on a mirrored Ceph pool
+      #18654 merged 2026-07-02 Fix failed file operation due to deleted forkfile as a result of race condition
+      #18404 merged 2026-06-04 lxd/api/cluster/certificate: Don't use request context in updateClusterCertificate
+      #17969 merged 2026-03-25 Fix: Recover from phantom DB entries and orphaned storage after interrupted cluster migrations
+      #18021 merged 2026-04-01 Network: Idempotent load balancer edits
+      #18101 merged 2026-04-10 Improve error messages for phantom db entries
+      #18359 merged 2026-05-27 Events: Fix hung goroutine on ReadJSON
+      #18284 merged 2026-05-12 Auth: Retry OIDC verifier initialization on start up
+      #17523 closed 2026-01-30 Network create leaves stale database record if interrupted (context canceled)
+      #18329 merged 2026-05-22 Cluster connect use context
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #17978 merged 2026-03-26 lxd: Async network and network ACL endpoints
+  sigkill        61 hit(s) (all listed)
+      #18684 open 2026-07-07 forkfile SFTP session leaks after unix-socket client dies mid file op; file ops for that instance hang until daemon reload
+      #18857 open 2026-08-13 lxd forkstart error in I/O constrained environments
+      #18888 closed 2026-08-20 LXD kills random processes after reboot
+      #18964 merged 2026-09-01 Merge `lxd-ci` test scripts
+      #18871 closed 2026-08-17 subprocess: pid-reuse can result in LXD signaling unrelated processes
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #15026 closed 2025-02-19 Don't append the `minio.path` to the daemon's `PATH`
+      #6835 closed 2020-02-05 lxd 3.20 daemon fails to fully start
+      #2027 closed 2016-05-14 Feature: Add container timeout as a configuration option
+      #8427 closed 2021-02-05 Restarting LXC CT fails sometimes with network errors
+      #9839 closed 2022-01-24 Websocket panic
+      #2294 closed 2016-08-18 Support operation cancellation in the client (and make more operations support it)
+      #6852 closed 2020-02-07 Failed to add second ipvlan interface with IP.
+      #2082 closed 2016-06-04 Honor boot.autostart.priority when stopping lxd service
+      #9419 closed 2021-10-23 Cannot start any container - Arch Linux - kernel 5.10.75-1-lts 
+      #16227 closed 2025-08-17 NVIDIA CDI will not work with multiple GPUs when `nvidia-persistenced` is running
+      #10034 closed 2022-03-11 "lxc exec" frequently runs into I/O timeouts
+      #2964 closed 2017-02-27 lxd high cpu usage
+      #14350 merged 2024-10-28 lxc: Handle sigkill in `vga()` properly to clean spice sockets and avoid accumulating them
+      #14075 closed 2024-09-09 Container: Match container disconnection with VMs
+  sigint         22 hit(s) (all listed)
+      #2311 closed 2016-08-24 LXD hangs when restart frozen container
+      #11923 closed 2023-07-04 Sending `SIGQUIT` to `lxc monitor` shows a goroutine dump
+      #2294 closed 2016-08-18 Support operation cancellation in the client (and make more operations support it)
+      #3496 closed 2017-07-05 client disconnects after few seconds with "got message barrier" error
+      #1834 closed 2016-03-31 lxc delete hangs
+      #17523 closed 2026-01-30 Network create leaves stale database record if interrupted (context canceled)
+      #1752 closed 2016-03-13 lxc stop / lxc restart are not reliable and sometimes hang
+      #8896 closed 2021-06-15 limits.cpu does not apply with cgroupsV2 on Gentoo
+      #14350 merged 2024-10-28 lxc: Handle sigkill in `vga()` properly to clean spice sockets and avoid accumulating them
+      #11952 closed 2023-07-06 client: Support SIGQUIT handling in monitoring interface
+      #11578 closed 2023-04-18 instance/lxc: Manage SFTP sessions as stoppable 'processes'
+      #8401 closed 2021-01-29 armhf debugging using gdb does not work
+      #2224 closed 2016-07-22 Can still ping container IP address after removing container
+      #1707 closed 2016-03-07 lxc list hanging after reboot
+      #2189 closed 2016-07-07 Concurrent restarts cause lxd to freeze
+      #2685 closed 2016-12-05 lxc list hangs and does not return anything if another machine is powered off (reproducible locally)
+      #3442 closed 2017-06-24 Installing samba on ZFS inside container
+      #5078 closed 2018-09-27 LXD restarts after creating many containers at once using LXD REST API
+      #4485 closed 2018-04-23 LXD service fails to start with "failed to handle BEGIN request: FSM out of sync: timed out enqueuing operation"
+      #7385 closed 2020-05-19 After upgrade to Fossa containers have problems and processes hang
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18687 open 2026-07-08 Proxy device from tcp to unix socket doesn't seem to close the connection
+      #18959 open 2026-09-01 Add support for preliminary support of microvm using libkrun (start/stop/restart)
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #15766 open 2025-06-10 NetworkManager tries to manage LXD network interfaces
+      #16569 open 2025-09-19 `swtpm` is not killed on device removal or instance stop
+      #18705 closed 2026-07-08 Opening a REST API connection blocks future connections
+      #262 closed 2015-02-25 The ctrl+c escape sequence isn't sent through on exec
+      #2294 closed 2016-08-18 Support operation cancellation in the client (and make more operations support it)
+      #263 closed 2015-02-25 LXD needs to properly set the controlling terminal on exec
+      #17402 merged 2026-01-16 Fix snapshot config volume edit
+      #17729 closed 2026-02-24 VMs sometimes stuck booting with 100% cpu usage on host for minutes on 6/edge
+      #764 closed 2015-06-14 `lxc exec` hangs - how to troubleshoot?
+      #9688 closed 2021-12-13 Running lxd cluster edit on a standalone server gives save error: At least one member must be a "voter"
+      #17070 merged 2025-11-25 Storage volume/instance snapshot edit restriction
+      #12211 closed 2023-09-04 Booting VMs on Arm64 with standard Ubuntu images leads to `Synchronous Exception`
+      #6512 closed 2019-11-26 Console Error: Failed running forkconsole: "attaching to the container failed"
+      #7307 closed 2020-05-05 Support additional link modes in resources API
+      #5233 closed 2018-11-01 When aborting zfs move, dataset is left busy
+      #17523 closed 2026-01-30 Network create leaves stale database record if interrupted (context canceled)
+      #12163 closed 2023-08-21 Ceph storage create pool has a possibility of deleting exist pool
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19123 open 2026-09-23 timeout flag with restart resulting in unexpected behavior
+      #19082 merged 2026-09-18 Keep the target's volatile keys on a migration refresh
+      #14813 open 2025-01-17 Store changed config keys as pending when they are immutable on running instances
+      #18628 open 2026-06-29 shared dir in vm reports "Too many open files in system"
+      #17471 open 2026-01-23 Online LXC but Cluster thinks its offline [Nested Virtualization + LXD Cluster + LXC with shared IP]
+      #13463 open 2024-05-09 `lxd recover` should better handle containers with `security.idmap.isolated=true`
+      #17094 open 2025-11-27 Topology aware scheduling for placement groups
+      #9327 open 2021-10-04 Stopping instances during LXD shutdown when no database available doesn't work
+      #17346 open 2026-01-08 Get instance details when cluster member is down
+      #15180 open 2025-03-15 lxc network list-allocations does not prints macvlan interfaces
+      #15643 open 2025-05-23 Metrics endpoint reporting MaxUint64 value for free/available memory on frozen VM
+      #19024 closed 2026-09-10 lxc stop times out when run during VM boot
+      #12128 open 2023-08-08 LXD/LXC fails to release GPU on VM stop
+      #16029 open 2025-07-14 Unresponsive container prevents system from reboot
+      #18941 merged 2026-08-31 Promote and demote a mirrored project's volumes on failover
+      #18132 open 2026-04-17 OVN Network ACLs: @internal and ACL-name subject selectors fail to allow intra-subnet traffic (while explicit CIDRs work)
+      #8614 open 2021-03-29 Allow setting SNAT address per container
+      #19070 merged 2026-09-16 Backport EDK2 and CI fixes (release-6.9)
+      #16860 open 2025-10-30 Modern `systemd` cause `console-getty.service` to fail inside unprivileged containers
+      #14178 open 2024-09-28 LXD containers randomly drops/missing /proc/cpuinfo when using ZFS and Linux 6.8 (Noble)
+  outage         29 hit(s) (all listed)
+      #18990 closed 2026-09-04 doc: add an end-to-end disaster recovery guide
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #18854 merged 2026-08-12 Fix stacked tmpfs shmounts; Moving devlxd to shmounts;  Migrate old devlxd path to new path;
+      #12224 closed 2023-09-07 lxc list shows duplicate entries for containers, one that's running and one that's stopped.
+      #9706 closed 2021-12-16 Option to let rsync finish with errors if the operator desires
+      #16895 merged 2025-11-05 Feature : Alias show - Alias edit
+      #3730 closed 2017-08-28 Allow exporting/importing containers (for backups)
+      #15131 merged 2025-03-07 doc: hard-code discourse and related links titles
+      #6022 closed 2019-07-29 dqlite error: Error during dqlite proxy copy: tls: use of closed connection
+      #14295 merged 2024-10-17 doc: embed discourse post title as link text
+      #11089 closed 2022-11-03 macvlan NICs losing connectivity when LXD is reloaded
+      #14116 merged 2024-09-16 Fix pool limits metadata invocation
+      #14083 merged 2024-09-11 Backup before cluster reconfigure
+      #12702 merged 2024-01-05 Stop dead client connection from blocking instance snapshot / remove 
+      #12231 merged 2023-09-07 storage/drivers/ceph: Differentiate between a true non-existent OSD pool and a Ceph internal issue
+      #11969 merged 2023-07-07 Storage: Don't delete the target root volume when migrating between ZFS pools
+      #8924 closed 2021-06-21 Failed to run: ip link  ... RTNETLINK answers: File exists
+      #10351 merged 2022-04-29 Client: Add some default timeouts
+      #8748 closed 2021-05-06 Heavy disk usage on LXD 4 start, compared with LXD 3
+  ENOSPC         7 hit(s) (all listed)
+      #13154 open 2024-03-14 Check VMs filesystem volume for concurrent read/writes during live migration
+      #10590 open 2022-06-22 Moving instances between projects can require double storage capacity
+      #12081 merged 2023-07-27 lxd/instance/lxc: Restrict /dev/zfs to unprivileged containers
+      #11754 closed 2023-05-30 Use `fallocate()` to create loop devices pools
+      #3915 closed 2017-10-08 error: unable to open database file
+      #5362 closed 2018-12-15 lxc copy to remote incorrect volume size, ceph.
+      #6591 merged 2019-12-11 tests: Don't leak storage in ENOSPC test
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19201 open 2026-10-02 lxd/instance/drivers: Revert VM disk hotplug when guest mount fails
+      #19164 open 2026-09-29 Creating a disk device fails silently in a VM which lacks spare IRQ vectors
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #19159 open 2026-09-29 lxd/device: Allow custom block volumes to be attached to containers
+      #15874 open 2025-06-25 disk propagation not working
+      #19163 open 2026-09-29 lxd/instance/drivers/qmp: remove limit on QMP response size
+      #18984 open 2026-09-04 Nested disk device is shadowed by its parent volume on container start when the parent volume uses `security.shifted=true`
+      #8468 open 2021-02-16 BTRFS reporting incorrect disk usage
+      #18609 open 2026-06-27 (GetIOStats) `(unknown)` device in cgroup2 io.stat aborts all disk metrics for instance
+      #18794 open 2026-07-21 LXD Console Breaks with FIPS - Spice server 1024 bit key
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #16362 open 2025-09-03 Windows 11 VM shared folder not properly remounted
+      #15265 open 2025-03-26 Wrong disk size in metrics for btrfs backend instances
+      #17046 open 2025-11-24 Project's used by returns root volumes for the instances
+      #10077 open 2022-03-17 Add lxc config device add disk --type=block for containers 
+      #14768 open 2025-01-11 LXD snap hold on to old swapfile
+      #18875 open 2026-08-18 Consistent ID maps for virtiofs
+      #19015 open 2026-09-08 LXD deletes VM database entry without cleaning up ZFS datasets
+      #13812 open 2024-07-24 snap remove lxd apparently deletes external zfs zpool but the disk is not re-usuable
+      #13311 open 2024-04-11 Support growing the VM disk size without needing to reboot the VM
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19190 open 2026-09-30 lxc/remote: Accept an optional fingerprint with --accept-certificate
+      #19161 open 2026-09-29 lxd/device: Add wait_ready support for bridged NIC external routes
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #17346 open 2026-01-08 Get instance details when cluster member is down
+      #16943 open 2025-11-13 Show allocations of instances connected from all projects in the network list-leases view
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #19176 merged 2026-09-30 Code quality: btrfs refresh readonly
+      #19081 closed 2026-09-18 Failed replicator refresh leaves stale custom-volume device on target instance
+      #17672 open 2026-02-17 `images:ubuntu/{noble,questing}/desktop` unable to get IP when `ipv4.nat=false`
+      #18960 merged 2026-09-01 storage: Report all Fibre Channel initiator WWPNs and register them with Pure Storage
+      #19064 merged 2026-09-16 Pure Storage: add NVMe/FC support
+      #19113 closed 2026-09-22 build(deps): bump the gomod group across 1 directory with 6 updates
+      #17983 open 2026-03-27 udisksd running in lxd container breaks suspension in the host
+      #18949 merged 2026-08-31 Pure Storage: add SCSI/FC support
+      #18652 merged 2026-07-02 lxd: skip member-role handover in Stop() when cluster DB never opened
+      #19095 closed 2026-09-21 build(deps): bump the gomod group with 7 updates
+      #17680 merged 2026-02-18 Image registries switchover
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #18370 merged 2026-05-28 lxd/storage/drivers: check for scanner.Err() in volume listing functions
+      #18363 merged 2026-05-27 lxd-agent/metrics: check for scan.Err()
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #17382 open 2026-01-14 VM restart/reboot fails with LVM thin pool: "Failed to deactivate LVM logical volume... contains a filesystem in use"
+      #17139 open 2025-11-28 Expose VM agent booted event (was: data in instance view stale after migration)
+      #18855 merged 2026-08-13 Identities with effective groups api
+      #19050 merged 2026-09-15 Code quality (20260915)
+      #19101 merged 2026-09-21 client: Use the cookiejar in a websocket connection
+      #18966 merged 2026-09-02 github/dependabot: `github.com/gorilla/websocket` is no longer pinned
+      #18860 merged 2026-08-14 Initial implementation of 'Feature preview' mechanism
+      #17983 open 2026-03-27 udisksd running in lxd container breaks suspension in the host
+      #18739 merged 2026-07-13 lxd/endpoints: optimize `stripLog`
+      #18812 merged 2026-07-24 github: Streamline `dqlite`/`liblxc` dependency caching and build steps
+      #18738 merged 2026-07-13 storage: Make powerstore.mode optional to prevent per-target error
+      #18434 merged 2026-06-11 docs: Add PowerStore examples and missing reference in list of storage drivers
+      #18376 merged 2026-05-30 [minor] Extend DNS tests
+      #18854 merged 2026-08-12 Fix stacked tmpfs shmounts; Moving devlxd to shmounts;  Migrate old devlxd path to new path;
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #13853 open 2024-08-01 Cloud-init user-defined meta-data can create malformed YAML
+      #18237 merged 2026-05-05 dbgen: Support composite primary keys
+      #2801 closed 2017-01-19 Incomplete rootfs when publish from snapshot on LVM
+      #18069 merged 2026-04-08 doc: Adds LXD 6.8 release notes
+  dataloss       6 hit(s) (all listed)
+      #12465 closed 2023-10-25 ZFS: storage_zfs_drop_block_volume_filesystem_extension is broken on non-trivial pools
+      #4184 closed 2018-01-20 Allow using the ZFS backend in containers
+      #10800 closed 2022-08-17 VM: Restart force after doing lxc file push makes file contents go away (ZFS backed)
+      #8965 merged 2021-07-01 Add cluster member evacuation
+      #7557 closed 2020-06-20 Containers won't start after migration to lxd snap
+      #3661 merged 2017-08-14 zfs: Always require existing datasets to be empty
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15909 open 2025-07-01 Make `lxd recover` work inside a cluster
+      #14754 open 2025-01-07 `lxd recover` does not restore profile configs
+      #13463 open 2024-05-09 `lxd recover` should better handle containers with `security.idmap.isolated=true`
+      #18932 merged 2026-08-27 doc: update documentation for `lxd recover`
+      #19173 open 2026-09-30 Document replicators with Ceph RBD mirroring
+      #18748 open 2026-07-15 Feature Request: Disable/Enable storage pools
+      #15904 open 2025-07-01  `lxd init` doesn't work with already existing local storage pools
+      #13083 open 2024-03-08 Stopping cluster member for longer than `cluster.healing_threshold` causes it to go into `EVACUATED` state
+      #19133 merged 2026-09-25 doc: organize related material into a dedicated disaster recovery explanation
+      #18770 closed 2026-07-17 Add project level filtering to `lxd recover`
+      #17928 open 2026-03-20 Add ipv4.dhcp.expire to OVN networks
+      #13812 open 2024-07-24 snap remove lxd apparently deletes external zfs zpool but the disk is not re-usuable
+      #14753 closed 2025-01-07 `lxd recover` fails to import external zpool
+      #19105 merged 2026-09-21 doc: reorganize disaster recovery how-to guides
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #12526 open 2023-11-10 Disconnecting cluster member from network and then moving ceph based instance doesn't stop the instance on disconnected member
+      #19089 merged 2026-09-18 Remove `cluster.healing_threshold`
+      #17927 open 2026-03-20 Preseeding a cluster with BTRFS storage pool does not work
+      #18990 closed 2026-09-04 doc: add an end-to-end disaster recovery guide
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19173 open 2026-09-30 Document replicators with Ceph RBD mirroring
+      #19209 merged 2026-10-05 doc: add disaster recovery monitoring section
+      #17620 open 2026-02-11 Add recovery tests to `lxd-ci` for new remote drivers
+      #19105 merged 2026-09-21 doc: reorganize disaster recovery how-to guides
+      #19133 merged 2026-09-25 doc: organize related material into a dedicated disaster recovery explanation
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #18990 closed 2026-09-04 doc: add an end-to-end disaster recovery guide
+      #14754 open 2025-01-07 `lxd recover` does not restore profile configs
+      #14802 open 2025-01-15 Improve handling of aborted image downloads
+      #18932 merged 2026-08-27 doc: update documentation for `lxd recover`
+      #13797 open 2024-07-22 Support of Backup Management
+      #11926 open 2023-07-04 Improve backup procedure
+      #13374 open 2024-04-23 Remove cluster healing feature
+      #18770 closed 2026-07-17 Add project level filtering to `lxd recover`
+      #12526 open 2023-11-10 Disconnecting cluster member from network and then moving ceph based instance doesn't stop the instance on disconnected member
+      #18816 merged 2026-07-29 Add promote/demote guards for replicated projects
+      #18938 merged 2026-08-28 lxd/api_replicators: Preserve protected config keys during refresh
+      #18562 merged 2026-06-25 doc(disaster recovery): add UI section to replicator page
+      #13463 open 2024-05-09 `lxd recover` should better handle containers with `security.idmap.isolated=true`
+      #15904 open 2025-07-01  `lxd init` doesn't work with already existing local storage pools
+  rollback       66 hit(s) (all listed)
+      #19201 open 2026-10-02 lxd/instance/drivers: Revert VM disk hotplug when guest mount fails
+      #17522 open 2026-01-29 lxd/instance: prevent data loss during cross-pool move
+      #19154 merged 2026-09-28 storage/lvm: Rename VM FS volume during snapshot rename
+      #13812 open 2024-07-24 snap remove lxd apparently deletes external zfs zpool but the disk is not re-usuable
+      #14472 open 2024-11-15 lxc copy --refresh deletes latest snapshot and resends it even when trees are already in sync. ZFS storage backend
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #18929 merged 2026-08-27 Guard a standby project's storage on a mirrored Ceph pool
+      #18933 open 2026-08-28 lxcfs process leaked after snap refresh
+      #18949 merged 2026-08-31 Pure Storage: add SCSI/FC support
+      #18963 closed 2026-09-01 lxd: Add changed block tracking for virtual machine block volumes
+      #12519 open 2023-11-08 lxc launch fills up btrfs filesystem in default storage pool and makes it readonly
+      #19085 merged 2026-09-18 Restore the target instance when a refresh fails
+      #18400 merged 2026-06-03 Address some TiCS abstract issues
+      #17875 merged 2026-03-12 Improved error logging on errors
+      #18941 merged 2026-08-31 Promote and demote a mirrored project's volumes on failover
+      #18913 merged 2026-08-24 Replicate a project's volumes with Ceph RBD mirroring
+      #18456 merged 2026-06-15 Add custom volume support to replicators
+      #15661 closed 2025-05-26 Regular 'Error: websocket: close 1006 (abnormal closure): unexpected EOF' errors
+      #17840 merged 2026-03-08 Address many TOCTOU races
+      #5234 closed 2018-11-01 Improve handling of db retries
+  resume         86 hit(s) (all listed)
+      #19173 open 2026-09-30 Document replicators with Ceph RBD mirroring
+      #13083 open 2024-03-08 Stopping cluster member for longer than `cluster.healing_threshold` causes it to go into `EVACUATED` state
+      #17983 open 2026-03-27 udisksd running in lxd container breaks suspension in the host
+      #18880 merged 2026-08-19 Fix VM live migration between cluster members with different CPU counts (from Incus)
+      #18869 merged 2026-08-17 Convert replicators to durable operations
+      #18941 merged 2026-08-31 Promote and demote a mirrored project's volumes on failover
+      #18423 closed 2026-06-10 HTTP2 Internal Error when cookie expired
+      #18913 merged 2026-08-24 Replicate a project's volumes with Ceph RBD mirroring
+      #18562 merged 2026-06-25 doc(disaster recovery): add UI section to replicator page
+      #18932 merged 2026-08-27 doc: update documentation for `lxd recover`
+      #18340 merged 2026-05-26 Storage: Freeze instance before multi-volume snapshot
+      #9622 closed 2021-12-03 Websocket closed after hardware resume from suspend
+      #14425 closed 2024-11-09 Improve runtime detection of KVM support
+      #17045 merged 2025-11-24 Durable workflows
+      #2311 closed 2016-08-24 LXD hangs when restart frozen container
+      #3129 closed 2017-03-30 Is it possible to automatically restart crashed container? 
+      #5759 closed 2019-05-15 lxc copy --refresh also copies running state and so starts container on backup server
+      #6743 closed 2020-01-20 Stopping a VM causes lxd to crash
+      #8386 closed 2021-01-26 Live migrate VMs
+      #17330 merged 2026-01-05 Remove more `i18n`
+  half-written   8 hit(s) (all listed)
+      #18989 open 2026-09-04 SCSI/FC: `RemoveDiskDevice` times out waiting for SCSI paths to disappear on real FC hardware
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #18913 merged 2026-08-24 Replicate a project's volumes with Ceph RBD mirroring
+      #1750 closed 2016-03-12 Uevent-based matching for `unix-char` and `unix-block`
+      #10944 closed 2022-09-26 lxd-generate: Supporting more handwritten queries
+      #4656 closed 2018-06-14 Cannot delete LXD zfs backed containers: dataset is busy
+      #11460 merged 2023-03-13 Adding basic support for AMD SEV VMs
+      #9052 merged 2021-07-27 Generator: Cleanup
+  wipe           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11224 open 2022-12-14 LXD doesn't play nicely with other firewall rules - use "chains"
+      #9327 open 2021-10-04 Stopping instances during LXD shutdown when no database available doesn't work
+      #13812 open 2024-07-24 snap remove lxd apparently deletes external zfs zpool but the disk is not re-usuable
+      #12978 open 2024-02-28 Host kernel may probe and activate storage on a VM block device, preventing deactivation/shutdown (e.g. LVM PV or bcache backed by ZFS zvol)
+      #19082 merged 2026-09-18 Keep the target's volatile keys on a migration refresh
+      #18628 open 2026-06-29 shared dir in vm reports "Too many open files in system"
+      #15904 open 2025-07-01  `lxd init` doesn't work with already existing local storage pools
+      #19128 merged 2026-09-24 Replicator vm tests
+      #18794 open 2026-07-21 LXD Console Breaks with FIPS - Spice server 1024 bit key
+      #17046 open 2025-11-24 Project's used by returns root volumes for the instances
+      #12926 open 2024-02-20 Error: `argument list too long` on wide ranges over OVN backed network forwards
+      #16752 open 2025-10-17 Cannot create VM with more than one CPU (s390x)
+      #16362 open 2025-09-03 Windows 11 VM shared folder not properly remounted
+      #16688 open 2025-10-07 Add `volatile.pool.pristine` config key to ZFS driver
+      #17797 open 2026-03-03 Error: Only running operations can be connected
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #12546 open 2023-11-23 vethXXXXX interfaces are not removed when lxc container is stopped
+      #17995 open 2026-03-29 Docs: The recommended approach for resolved configuration persistence does not work on Ubuntu Desktop
+      #12449 open 2023-10-24 BGP: same ipv4.routes.external on more than one container
+      #14549 open 2024-11-27 Set OOMScoreAdjust for LXD VMs?
+  wipes          15 hit(s) (all listed)
+      #9327 open 2021-10-04 Stopping instances during LXD shutdown when no database available doesn't work
+      #5832 closed 2019-06-10 Changing network config (such as NAT mode) wipes out any container specific static routes of running containers
+      #17848 merged 2026-03-09 Optimize dnsmasq log  message creation
+      #2668 closed 2016-11-29 lxc file push seems broken
+      #9093 closed 2021-08-06 raw.lxc key does't appened but inserted into container's lxc.conf
+      #11089 closed 2022-11-03 macvlan NICs losing connectivity when LXD is reloaded
+      #13339 closed 2024-04-16 Storage pool `source.wipe` option behaviour is insufficient for GPT disks.
+      #11687 merged 2023-05-16 Support for instance rebuild
+      #9802 merged 2022-01-17 lxd: Refresh all dnsmasq hosts during patch.
+      #9790 merged 2022-01-13 Bug static ip on multiple bridged nics
+      #8805 closed 2021-05-24 LXD "routed" nictype containers need to be restarted after host network disconnect/reconnect
+      #1376 merged 2015-12-06 Basic CPU load balancing and a ton of cleanup
+      #4053 merged 2017-11-24 devices: switch to improved device naming scheme
+      #6486 merged 2019-11-21 Use the node ID from the nodes ID table, not the raft one
+      #4296 merged 2018-03-02 Delete the namespaced veth before killing the process
+  erase          13 hit(s) (all listed)
+      #11224 open 2022-12-14 LXD doesn't play nicely with other firewall rules - use "chains"
+      #17729 closed 2026-02-24 VMs sometimes stuck booting with 100% cpu usage on host for minutes on 6/edge
+      #18456 merged 2026-06-15 Add custom volume support to replicators
+      #1919 closed 2016-04-22 Add configuration option to have LXD remove newer zfs snapshots on restore
+      #7152 closed 2020-04-07 Nictype: routed broken on multiple VLANs setup
+      #10874 closed 2022-09-03 Breaks on 4 level `$HOME` dir path, Permission error, No network error in container.
+      #12284 closed 2023-09-20 Deployments subsystem
+      #9593 closed 2021-11-29 Clarify cluster join question handling
+      #4301 closed 2018-03-06 Installation via snap and backports causing issues
+      #3634 closed 2017-08-04 lxd zfs corrupted on profile cat update
+      #4947 closed 2018-08-18 LXD database - unexpected response type 6
+      #7064 closed 2020-03-20 Upgrade to lxc 3.2.1 fails
+      #7195 closed 2020-04-15 firewalld & lxd : allow containers to access the internet
+  erasing        2 hit(s) (all listed)
+      #7152 closed 2020-04-07 Nictype: routed broken on multiple VLANs setup
+      #3634 closed 2017-08-04 lxd zfs corrupted on profile cat update
+  erased         5 hit(s) (all listed)
+      #12284 closed 2023-09-20 Deployments subsystem
+      #9593 closed 2021-11-29 Clarify cluster join question handling
+      #4947 closed 2018-08-18 LXD database - unexpected response type 6
+      #7064 closed 2020-03-20 Upgrade to lxc 3.2.1 fails
+      #7195 closed 2020-04-15 firewalld & lxd : allow containers to access the internet
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19015 open 2026-09-08 LXD deletes VM database entry without cleaning up ZFS datasets
+      #17682 open 2026-02-18 support for instance deletion on offline storage pools
+      #18857 open 2026-08-13 lxd forkstart error in I/O constrained environments
+      #10322 open 2022-04-27 OVN network custom DNS support
+      #19153 merged 2026-09-28 lxd/cluster: fix handling of joins during heartbeat rounds (LXD-5070)
+      #13812 open 2024-07-24 snap remove lxd apparently deletes external zfs zpool but the disk is not re-usuable
+      #12228 open 2023-09-07 Incremental copy of VM between unencrypted and encrypted dataset fails
+      #15911 open 2025-07-01 Unable to rebuild vm / remove / add same name
+      #14472 open 2024-11-15 lxc copy --refresh deletes latest snapshot and resends it even when trees are already in sync. ZFS storage backend
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #14383 open 2024-11-04 Copying container from one server in an encrypted pool to another in an encrypted pool fails after performing a second copy/--refresh
+      #18470 closed 2026-06-16 Unable to delete running instances if the LXD snap was refreshed
+      #19177 merged 2026-09-30 Code quality: btrfs subvol dest fd
+      #19128 merged 2026-09-24 Replicator vm tests
+      #18894 merged 2026-08-20 Fix LXCFS clean up logic; Avoid generating new certs on running instances
+      #18929 merged 2026-08-27 Guard a standby project's storage on a mirrored Ceph pool
+      #18629 closed 2026-06-30 Touching stopped container's ZFS filesystem prevents rebuild
+      #13069 closed 2024-03-01 lxd-ci: Debug why `tests/network-ovn` peering test fails on GHA runners but succeeds locally
+      #15664 closed 2025-05-26 Unable to delete instance while editing its profile (`lvm` and `zfs` backends)
+      #17548 merged 2026-02-03 test/includes/ovn: only run `ovn-nbctl destroy` if the ID is not empty
+  destroys       12 hit(s) (all listed)
+      #19128 merged 2026-09-24 Replicator vm tests
+      #18929 merged 2026-08-27 Guard a standby project's storage on a mirrored Ceph pool
+      #17630 merged 2026-02-12 Feature: Optimize ZFS instance creation with image variants
+      #8421 closed 2021-02-03 Unable to add zfs pool to running cluster
+      #4656 closed 2018-06-14 Cannot delete LXD zfs backed containers: dataset is busy
+      #13513 closed 2024-05-28 lxd/storage/drivers: Disable async zpool destroy
+      #2439 closed 2016-09-30 Race condition when rebooting a container including a nic device with a host_name
+      #2555 closed 2016-10-25 Ephemeral containers not removed from file system after a failed restart
+      #3977 closed 2017-10-26 Requesting example of /etc/netplan YAML file to describe one or more public IPs
+      #2520 closed 2016-10-18 Snapshot Restore Destroys (?) Data
+      #3634 closed 2017-08-04 lxd zfs corrupted on profile cat update
+      #2650 merged 2016-11-25 blacklist lxc.syslog and lxc.ephemeral
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19055 open 2026-09-16 Inconsistent template file permissions for containers and VMs
+      #19196 open 2026-10-01 Code quality: images (20261001)
+      #17928 open 2026-03-20 Add ipv4.dhcp.expire to OVN networks
+      #12228 open 2023-09-07 Incremental copy of VM between unencrypted and encrypted dataset fails
+      #19197 merged 2026-10-01 [minor]: FileCopy improvements
+      #8468 open 2021-02-16 BTRFS reporting incorrect disk usage
+      #14383 open 2024-11-04 Copying container from one server in an encrypted pool to another in an encrypted pool fails after performing a second copy/--refresh
+      #19153 merged 2026-09-28 lxd/cluster: fix handling of joins during heartbeat rounds (LXD-5070)
+      #14047 open 2024-09-05 Aliases from `lxc image copy --copy-aliases` are exclusive to one image type
+      #18883 merged 2026-08-19 Allow user specified uid/gid/mode on CDI GPU devices
+      #18980 merged 2026-09-03 lxd/auth_groups: Allow adding server admin permission to admins group
+      #18858 open 2026-08-14 lxd/cluster: Speed up cluster link creation
+      #18987 merged 2026-09-04 Restrict image reuse to cached images with identical image source
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #18922 closed 2026-08-25 Subprocess: Use pidfd (PIDFD_GET_INFO if supported) to monitor an imported process for exit status
+      #18746 merged 2026-07-14 github: Use git force push when syncing to lxd-private
+      #18495 merged 2026-06-19 lxd-private integration
+      #18354 merged 2026-05-26 Cluster: Don't use the proxy for cluster join requests
+      #18896 merged 2026-08-21 Various operations follow ups
+      #19016 merged 2026-09-09 build(deps): bump google.golang.org/grpc from 1.83.1 to 1.83.2
+  clobber        14 hit(s) (all listed)
+      #19196 open 2026-10-01 Code quality: images (20261001)
+      #18746 merged 2026-07-14 github: Use git force push when syncing to lxd-private
+      #18495 merged 2026-06-19 lxd-private integration
+      #18512 merged 2026-06-22 Ubuntu 26.04 preparation and minor test tweaks
+      #18248 closed 2026-05-06 Network: Prepare for load balancer pools
+      #17972 merged 2026-03-25 Device: Add support for hotplugging GPU CDI devices into containers
+      #17840 merged 2026-03-08 Address many TOCTOU races
+      #18027 merged 2026-04-02 lxd/events: Add foundation for security event emission and routing
+      #13375 merged 2024-04-23 Storage: Fix `source.wipe` for lvm and correctly detect raw disks in btrfs
+      #12691 merged 2023-12-25 build(deps): bump golang.org/x/crypto from 0.16.0 to 0.17.0
+      #12690 merged 2023-12-20 build(deps): bump golang.org/x/crypto from 0.16.0 to 0.17.0
+      #12689 merged 2023-12-20 build(deps): bump golang.org/x/crypto from 0.15.0 to 0.17.0 in /test/mini-oidc
+      #7334 closed 2020-05-08 expose a way to use -kernel -initrd -append for virtual machines
+      #7327 merged 2020-05-07 ethtool: resources/ethtool: implement ETHTOOL_GLINKSETTINGS
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15090 open 2025-02-28 Pushing very large directories fills shell with empty space
+      #19163 open 2026-09-29 lxd/instance/drivers/qmp: remove limit on QMP response size
+      #19211 open 2026-10-06 Security job fixes
+      #19166 open 2026-09-29 Fix some off-by-one errors in the idmap package
+      #19196 open 2026-10-01 Code quality: images (20261001)
+      #19192 open 2026-10-01 Ceph RBD mirroring: follow-ups from #18913
+      #19141 open 2026-09-25 [Placement over failure domain][2] Restructure placement logic
+      #19190 open 2026-09-30 lxc/remote: Accept an optional fingerprint with --accept-certificate
+      #18900 open 2026-08-21 Add stat parsing helpers and integrate into subprocess/, seccomp, 
+      #19118 merged 2026-09-22 Bump Go to 1.27.1
+      #18936 open 2026-08-28 lxd/resources/memory: fix memory usage reporting
+      #19193 open 2026-10-01 Storage: Let the driver say when a project's volumes are read-only (follow-up from #18929)
+      #19045 merged 2026-09-14 github: do not download `minio`/`mc` for no reason (stable-4.0)
+      #19185 merged 2026-09-30 lxd/images: Accept a null properties field in image upload tokens
+      #19170 merged 2026-09-29 Fix image update and btrfs cleanup
+      #19208 open 2026-10-05 lxd: increase and pool migration/websocket transfer buffers
+      #18842 open 2026-08-10 lxc/auth: Show identity expiry when listing identities
+      #18923 open 2026-08-25 snap/hooks: Validate string configuration values
+      #17000 open 2025-11-19 Assign GPU to VM via web interface on laptop; lose display to VM thereafter
+      #19197 merged 2026-10-01 [minor]: FileCopy improvements
+  unreadable     25 hit(s) (all listed)
+      #14397 open 2024-11-05 docs: `lxc list` web-based documentation has broken/unreadable layout
+      #18872 merged 2026-08-17 LXD-4897 - Enhance subprocess handling to prevent pid-reuse issues
+      #18366 merged 2026-05-27 Code quality improvements
+      #17912 closed 2026-03-18 Add vm backed integration test wrapper
+      #17692 merged 2026-02-18 Activate the `lxd-agent.service` with a systemd generator
+      #7189 closed 2020-04-14 Resources endpoint does not provide mainboard and system information
+      #17072 merged 2025-11-25 Reworked system-tests matrix
+      #2118 closed 2016-06-14 Encrypt container
+      #15500 merged 2025-04-30 github: Add KEV matching to security alerts
+      #13062 closed 2024-03-07 doc: unreadable in dark mode
+      #10413 merged 2022-05-13 lxd/resources: Handle unreadable VPD
+      #10376 closed 2022-05-07 404 on /1.0/certificates
+      #8416 closed 2021-02-02 VM: -readconfig is soft-deprecated by QEMU
+      #719 closed 2015-05-29 Split up lxd/containers.go
+      #1904 closed 2016-04-18 Log file is not readable
+      #2773 closed 2017-01-04 Cannot use iptables CLUSTERIP inside container
+      #3068 closed 2017-03-13 lxd.sql checker / verifyier 
+      #3967 closed 2017-10-24 [Feature Request] Hide columns in "lxc list"
+      #3875 closed 2017-09-30 man lxc, does not mention the CLI options of "lxc list"
+      #3652 closed 2017-08-11 Creating a bridge will create an unreadable dnsmasq.raw config file
+  garbage        46 hit(s) (all listed)
+      #18933 open 2026-08-28 lxcfs process leaked after snap refresh
+      #18957 merged 2026-09-01 lxd/instance: Use moveMount() when it's available (stable-5.21)
+      #19146 merged 2026-09-28 build(deps): bump the gomod group with 3 updates
+      #19145 merged 2026-09-28 build(deps): bump the gomod group with 4 updates
+      #18872 merged 2026-08-17 LXD-4897 - Enhance subprocess handling to prevent pid-reuse issues
+      #18284 merged 2026-05-12 Auth: Retry OIDC verifier initialization on start up
+      #17729 closed 2026-02-24 VMs sometimes stuck booting with 100% cpu usage on host for minutes on 6/edge
+      #2013 closed 2016-05-10 zfs copy-* hidden snapshots aren't getting garbage collected properly
+      #17835 merged 2026-03-06 String handling improvements
+      #8340 closed 2021-01-16 TestIsAddressCovered failing when localhost resolves to IPv6 address
+      #11780 closed 2023-06-02 LXD leaks file handles from liblxc
+      #355 closed 2015-03-10 lxc exec sometimes leaks an fd for /var/lib/lxd/lxc/container/log
+      #379 closed 2015-03-13 Implement cached image tracking and expiry
+      #17554 merged 2026-02-03 Bidirectional cluster links
+      #5635 closed 2019-04-05 Memory issue with lxd proxy (possible leak)
+      #4548 closed 2018-05-09 LXD cluster 'lxc list' command extremely laggy
+      #5584 closed 2019-03-21 Possible Memory Leak in LXD (Ubuntu 16.04)
+      #15900 merged 2025-06-30 Daemon: Validate browser fetch metadata if supplied to reject non-same-origin requests
+      #1129 closed 2015-09-23 container console access
+      #6380 closed 2019-11-01 Multi-architecture clustering
+  mangled        9 hit(s) (all listed)
+      #17248 merged 2025-12-12 auth: LXD bearer tokens
+      #1438 closed 2015-12-22 lxc edit file inconsistent results
+      #14003 merged 2024-08-28 Make lxd-agent install script compatible with SUSE
+      #12152 closed 2023-08-14 long device names don't show up properly under /dev/disk/by-id
+      #2510 closed 2016-10-17 LXD containers are unable to reach  network 
+      #4177 closed 2018-01-17 LXD service installed from snap on Trusty doesn't start on boot
+      #4279 closed 2018-02-23 Simple lxc copy between physical machines sometimes breaks root uid
+      #2275 merged 2016-08-11 Prevent using invalid profile names
+      #4001 merged 2017-11-07 console attach
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19083 open 2026-09-18 lxd-agent: Preserve existing template file permissions
+      #19160 open 2026-09-29 lxd-convert: Add support for attaching and creating custom storage volumes
+      #18982 merged 2026-09-03 snap: move `snapcraft/` directory contents into `snap/local/`
+      #18794 open 2026-07-21 LXD Console Breaks with FIPS - Spice server 1024 bit key
+      #13929 open 2024-08-14 Remote add tokens should not include the `client_name` and `expires_at` fields
+      #12285 open 2023-09-20 lxc exec: command output is incorrect if interactive mode is enforced
+      #18983 merged 2026-09-03 doc: reorganize home page domains of concern
+      #19127 merged 2026-09-23 Code quality (20260923)
+      #19129 merged 2026-09-24 Simplify env handling during CI builds and fix `govulncheck` step
+      #18902 merged 2026-08-21 doc: update storage driver tables and reference
+      #19042 merged 2026-09-14 Observability: Support OTLP and COS deployments
+      #12643 open 2023-12-08 LXD physical gpu does not pass through the entire gpu 
+      #19144 merged 2026-09-28 docs: include effective groups in warning for idp group mappings
+      #19018 merged 2026-09-09 lxd/cluster: Use member address for cluster link bootstrap
+      #9327 open 2021-10-04 Stopping instances during LXD shutdown when no database available doesn't work
+      #18852 merged 2026-08-12 lxd/operations: Return failed operation state from wait endpoint
+      #12128 open 2023-08-08 LXD/LXC fails to release GPU on VM stop
+      #16613 open 2025-09-25 Auth: Use entity type and ID for authorization checks
+      #17797 open 2026-03-03 Error: Only running operations can be connected
+      #15449 open 2025-04-25 Re-Open:  Snap LXD.daemon hanging on startup (no containers start up and no operations can be executed)
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19023 open 2026-09-10 doc: Follow abbreviation best practices
+      #19173 open 2026-09-30 Document replicators with Ceph RBD mirroring
+      #18959 open 2026-09-01 Add support for preliminary support of microvm using libkrun (start/stop/restart)
+      #12868 open 2024-02-12 DB: Consolidate entity URL methods
+      #19186 merged 2026-09-30 test/snap/bgp: Check stale next-hops are withdrawn
+      #18903 open 2026-08-23 fix(ovn): update instance DNS records on dns.domain change
+      #18672 open 2026-07-07 Redesign instance hostnames
+      #18933 open 2026-08-28 lxcfs process leaked after snap refresh
+      #16564 open 2025-09-19 lxc config keys are empty on read if set to default value (remove node Config Schema concept)
+      #19063 merged 2026-09-16 storage: Dedup WWN normalization
+      #14815 open 2025-01-17 Cache external tool versions
+      #18900 open 2026-08-21 Add stat parsing helpers and integrate into subprocess/, seccomp, 
+      #14424 open 2024-11-08 Network: Show parent interfaces in `lxc network show`
+      #11224 open 2022-12-14 LXD doesn't play nicely with other firewall rules - use "chains"
+      #18066 open 2026-04-07 Inconsistent Network Default Action and ACL Interactions
+      #15972 open 2025-07-07 Audit `GetConfig` and optimize its use
+      #18917 merged 2026-08-24 test/cli: report monitor liveness under --verbose mode and use new liveness wait function to simplify testing
+      #19112 merged 2026-09-22 Refuse to delete or rename a cluster link referenced by a project's replica.cluster
+      #18989 open 2026-09-04 SCSI/FC: `RemoveDiskDevice` times out waiting for SCSI paths to disappear on real FC hardware
+      #16613 open 2025-09-25 Auth: Use entity type and ID for authorization checks
+  unclean        23 hit(s) (all listed)
+      #18894 merged 2026-08-20 Fix LXCFS clean up logic; Avoid generating new certs on running instances
+      #2469 closed 2016-10-07 Inconsistent autostart behavior
+      #18456 merged 2026-06-15 Add custom volume support to replicators
+      #17696 closed 2026-02-19 The `sudo lxd init --auto` command is not working on Ubuntu 24.04 WSL
+      #4931 closed 2018-08-16 lxd daemon stops after adding new container
+      #6972 closed 2020-03-03 lxd crashes when attaching a HID device
+      #15949 merged 2025-07-05 Mount read-only snapshots with `norecovery` to avoid writes
+      #14599 merged 2024-12-06 Storage: Add Pure Storage storage driver
+      #11089 closed 2022-11-03 macvlan NICs losing connectivity when LXD is reloaded
+      #12577 closed 2023-11-30 `ceph` storage pool creation fails with MicroCeph
+      #12029 merged 2023-07-17 Expiry storage volume backups
+      #9232 closed 2021-09-17 Report OVN network state in /1.0/networks/NAME/state
+      #9263 closed 2021-09-21 snapd.seeded.service doesn't finish on non-amd64 (possible udev issue)
+      #8503 closed 2021-02-26 Can't interact with LXC
+      #8688 closed 2021-04-19 Failed to start the daemon: Failed to start dqlite server
+      #4624 closed 2018-06-04 Many syslog entries for some, but not all containers: Failed to load config for xxxx
+      #4957 closed 2018-08-22 Monitor hungs after container restart
+      #6298 closed 2019-10-09 Failed to start the daemon: Failed to start dqlite server: failed to start task
+      #6917 closed 2020-02-22 dqlite issues preventing startup after reboot
+      #6980 closed 2020-03-05 Failed to migrate to dqlite 1.0: No database dump found
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19123 open 2026-09-23 timeout flag with restart resulting in unexpected behavior
+      #12667 open 2023-12-12 Investigate LXD shutdown timeout/behavior
+      #19077 merged 2026-09-17 test/includes/lxd: use timeout with lxd shutdown in shutdown_lxd
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #9327 open 2021-10-04 Stopping instances during LXD shutdown when no database available doesn't work
+      #13083 open 2024-03-08 Stopping cluster member for longer than `cluster.healing_threshold` causes it to go into `EVACUATED` state
+      #18959 open 2026-09-01 Add support for preliminary support of microvm using libkrun (start/stop/restart)
+      #12978 open 2024-02-28 Host kernel may probe and activate storage on a VM block device, preventing deactivation/shutdown (e.g. LVM PV or bcache backed by ZFS zvol)
+      #18948 merged 2026-08-31 Fix zfs storage leak after shutdown due to lingering forkfile daemon (stable-5.21)
+      #19049 merged 2026-09-15 snapcraft/commands: Ensure LXD shuts down before all Microceph/ovn units (stable-5.21)
+      #18946 merged 2026-08-31 Fix zfs storage leak after shutdown due to lingering forkfile daemon (stable-5.0)
+      #18947 closed 2026-08-31 Fix zfs storage leak after shutdown due to lingering forkfile daemon (stable-5.21)
+      #18945 closed 2026-08-31 Fix zfs storage leak after shutdown due to lingering forkfile daemon (stable-5.0)
+      #18944 closed 2026-08-31 Fix zfs storage leak after shutdown due to lingering forkfile daemon (stable-5.21)
+      #15866 open 2025-06-24 event (or log) for VM crash
+      #14464 open 2024-11-14 systemctl reload snap.lxd.daemon.service starts stopped instances with boot.auto = true
+      #9278 open 2021-09-23 Support LVM storage pool unmount
+      #10625 open 2022-06-30 Introduce starting/stopping/restarting instance states
+      #19024 closed 2026-09-10 lxc stop times out when run during VM boot
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+  reboot         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17796 open 2026-03-03 VM Fast reboot
+      #16184 open 2025-08-11 LXC VM console broken across reboot
+      #16029 open 2025-07-14 Unresponsive container prevents system from reboot
+      #18119 open 2026-04-15 CentOS LXC VM is not reachable after reboot with snapd
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #13311 open 2024-04-11 Support growing the VM disk size without needing to reboot the VM
+      #19123 open 2026-09-23 timeout flag with restart resulting in unexpected behavior
+      #18972 open 2026-09-02 RISC-V: add [boot-opts] menu=off to qemu-system-riscv64 configuration
+      #17382 open 2026-01-14 VM restart/reboot fails with LVM thin pool: "Failed to deactivate LVM logical volume... contains a filesystem in use"
+      #18888 closed 2026-08-20 LXD kills random processes after reboot
+      #14813 open 2025-01-17 Store changed config keys as pending when they are immutable on running instances
+      #18378 open 2026-05-31 LXD/LXC snaps fail to start after apparmor updates SOLUTION: REQUEST:
+      #11822 open 2023-06-12 lxc copy --refresh in ZFS deletes CT target volume after network interruption
+      #18543 open 2026-06-24 LXD defaults storage pool backend to dir when ZFS cannot mount
+      #17960 open 2026-03-24 lxdbr0 is recreated after "snap restart --reload lxd" even when it was deleted and there are no instances
+      #18933 open 2026-08-28 lxcfs process leaked after snap refresh
+      #19171 merged 2026-09-29 test/snap/bgp: prevent `frr` from starting on boot
+      #14838 open 2025-01-21 Unsetting `size` property does not change block based volume's sizes
+      #18841 open 2026-08-10 OVN network `dns.domain`/`dns.search` change do not propagate to running instances' DNS records
+      #16690 open 2025-10-07 LXD/dqlite unable to start because (ACME) cluster certificates expired
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #18794 open 2026-07-21 LXD Console Breaks with FIPS - Spice server 1024 bit key
+      #16362 open 2025-09-03 Windows 11 VM shared folder not properly remounted
+      #17046 open 2025-11-24 Project's used by returns root volumes for the instances
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #16752 open 2025-10-17 Cannot create VM with more than one CPU (s390x)
+      #16688 open 2025-10-07 Add `volatile.pool.pristine` config key to ZFS driver
+      #17995 open 2026-03-29 Docs: The recommended approach for resolved configuration persistence does not work on Ubuntu Desktop
+      #15275 open 2025-03-30 Connectivity issues with VM using SRIOV, constant `...NIC Link is Up...` kernel log entries
+      #18628 open 2026-06-29 shared dir in vm reports "Too many open files in system"
+      #17797 open 2026-03-03 Error: Only running operations can be connected
+      #16844 open 2025-10-28 Automatic provisioning of custom volumes from profile config 
+      #17517 open 2026-01-28 NVIDIA GPU CDI: /run/nvidia-persistenced/socket is mounted but not visible inside the container
+      #15766 open 2025-06-10 NetworkManager tries to manage LXD network interfaces
+      #18959 open 2026-09-01 Add support for preliminary support of microvm using libkrun (start/stop/restart)
+      #17681 open 2026-02-18 There is no practical method to mirror/replicate a Ceph RBD storage pool for newly created images
+      #17927 open 2026-03-20 Preseeding a cluster with BTRFS storage pool does not work
+      #18005 open 2026-03-30 lxc list -h output doesn't suggest that booleans can have three values
+      #16976 open 2025-11-18 Network leak: Persistent accumulation of ESTAB TCP connections on port 8443 after lxc copy --refresh between hosts with ZFS
+      #12926 open 2024-02-20 Error: `argument list too long` on wide ranges over OVN backed network forwards
+  data+loss      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17522 open 2026-01-29 lxd/instance: prevent data loss during cross-pool move
+      #19123 open 2026-09-23 timeout flag with restart resulting in unexpected behavior
+      #10704 open 2022-07-28 Ceph storage should support rados namespaces
+      #19173 open 2026-09-30 Document replicators with Ceph RBD mirroring
+      #19133 merged 2026-09-25 doc: organize related material into a dedicated disaster recovery explanation
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #18989 open 2026-09-04 SCSI/FC: `RemoveDiskDevice` times out waiting for SCSI paths to disappear on real FC hardware
+      #14178 open 2024-09-28 LXD containers randomly drops/missing /proc/cpuinfo when using ZFS and Linux 6.8 (Noble)
+      #17797 open 2026-03-03 Error: Only running operations can be connected
+      #13069 closed 2024-03-01 lxd-ci: Debug why `tests/network-ovn` peering test fails on GHA runners but succeeds locally
+      #18172 merged 2026-04-23 storage: Add PowerStore driver
+      #18456 merged 2026-06-15 Add custom volume support to replicators
+      #17696 closed 2026-02-19 The `sudo lxd init --auto` command is not working on Ubuntu 24.04 WSL
+      #12514 closed 2023-11-07 `lxc exec` sometimes fails with `Error: Only running operations can be connected`
+      #17280 merged 2025-12-19 Recovery: Extend help text and provide more context
+      #17969 merged 2026-03-25 Fix: Recover from phantom DB entries and orphaned storage after interrupted cluster migrations
+      #1773 closed 2016-03-17 Container shutdown appears to happen sequentially rather than in parallel
+      #301 closed 2015-03-02 Add test to ensure no DB table is locked by end of testsuite
+      #8641 closed 2021-04-07 Fix cluster image replication logic
+      #12119 closed 2023-08-04 Dynamic reconfiguring of routed devices
+  partial+write  35 hit(s) (all listed)
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #18663 merged 2026-07-03 github: add additional instructions to code-review skill
+      #17680 merged 2026-02-18 Image registries switchover
+      #18872 merged 2026-08-17 LXD-4897 - Enhance subprocess handling to prevent pid-reuse issues
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #18456 merged 2026-06-15 Add custom volume support to replicators
+      #18218 closed 2026-05-01 Use io.CopyN with 4MiB buffer everywhere
+      #18366 merged 2026-05-27 Code quality improvements
+      #18458 merged 2026-06-15 WD-36616 Documentation: Add UI tab for cluster links and replicators
+      #17985 merged 2026-03-27 lxd: Stricter image fingerprint validation
+      #17880 merged 2026-03-13 golangci-lint: remove now unused exclusion rule
+      #17859 merged 2026-03-11 lxd/operations: Make operation error a string
+      #17630 merged 2026-02-12 Feature: Optimize ZFS instance creation with image variants
+      #5763 closed 2019-05-15 Publishing image from container lxd.CreateImage failing on ShiftOwner
+      #4571 closed 2018-05-19 lxd-p2c: Rsync error handling and arbitrary arguments
+      #9706 closed 2021-12-16 Option to let rsync finish with errors if the operator desires
+      #8896 closed 2021-06-15 limits.cpu does not apply with cgroupsV2 on Gentoo
+      #16491 closed 2025-09-15 build(deps): bump github.com/openfga/openfga from 1.9.5 to 1.10.0
+      #16499 closed 2025-09-15 build(deps): bump github.com/openfga/openfga from 1.9.5 to 1.10.0
+      #2905 closed 2017-02-18 "error: No storage pool specified." after upgrade lxd to 2.9.1
+  crash+safe     33 hit(s) (all listed)
+      #19070 merged 2026-09-16 Backport EDK2 and CI fixes (release-6.9)
+      #14178 open 2024-09-28 LXD containers randomly drops/missing /proc/cpuinfo when using ZFS and Linux 6.8 (Noble)
+      #18933 open 2026-08-28 lxcfs process leaked after snap refresh
+      #18319 closed 2026-05-22 Confusions around crash-consistent snapshots
+      #18333 merged 2026-05-25 storage: Add FC connector and PowerStore FC support
+      #18243 merged 2026-05-05 Bound YAML decoding to 1MiB
+      #17524 merged 2026-01-30 test/main: ignore `unattended-upgrades` core dumps (LP: #2139433)
+      #17969 merged 2026-03-25 Fix: Recover from phantom DB entries and orphaned storage after interrupted cluster migrations
+      #17850 merged 2026-03-09 Use `dbgen` for identities
+      #17729 closed 2026-02-24 VMs sometimes stuck booting with 100% cpu usage on host for minutes on 6/edge
+      #16286 merged 2025-08-25 Storage: Always allow recovery of existing pool
+      #5515 closed 2019-02-20 Make it possible to store images and backups on a storage pool
+      #18027 merged 2026-04-02 lxd/events: Add foundation for security event emission and routing
+      #17696 closed 2026-02-19 The `sudo lxd init --auto` command is not working on Ubuntu 24.04 WSL
+      #16478 merged 2025-09-12 Add "volatile.cluster.group" config key
+      #2504 closed 2016-10-15 Implement a "proxy" device type (udp/tcp/unix-socket/unix-abstract between host and container)
+      #6022 closed 2019-07-29 dqlite error: Error during dqlite proxy copy: tls: use of closed connection
+      #10034 closed 2022-03-11 "lxc exec" frequently runs into I/O timeouts
+      #15990 merged 2025-07-09 Per-project backups and images storage
+      #4656 closed 2018-06-14 Cannot delete LXD zfs backed containers: dataset is busy
+  atomic+write   23 hit(s) (all listed)
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #17694 open 2026-02-19 Allow multi instance attachment when shared.security is set
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #19085 merged 2026-09-18 Restore the target instance when a refresh fails
+      #18488 merged 2026-06-18 Code quality (20260618)
+      #18456 merged 2026-06-15 Add custom volume support to replicators
+      #19187 merged 2026-09-30 BGP: associate advertised prefixes with their owning peer session
+      #18284 merged 2026-05-12 Auth: Retry OIDC verifier initialization on start up
+      #17045 merged 2025-11-24 Durable workflows
+      #17840 merged 2026-03-08 Address many TOCTOU races
+      #17630 merged 2026-02-12 Feature: Optimize ZFS instance creation with image variants
+      #17696 closed 2026-02-19 The `sudo lxd init --auto` command is not working on Ubuntu 24.04 WSL
+      #6380 closed 2019-11-01 Multi-architecture clustering
+      #14557 merged 2024-11-29 OpenFGA: Add request cache to the OpenFGA datastore
+      #13825 merged 2024-07-26 API: Add request metrics for disaster recovery
+      #12181 closed 2023-08-25 LXD 5.17 breaks RBAC
+      #9931 merged 2022-02-16 Replace `forkfile` with Go implementation using SFTP
+      #9357 merged 2021-10-07 lxd: Replace inotify with fsnotify/fanotify
+      #2543 closed 2016-10-21 zfs panics on multiple container migrations to the specified host.
+      #5836 closed 2019-06-12 usb hotplug fails on kernel 5.1
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #15786 open 2025-06-12 Ceph RBD driver might not wait for volume discovery
+      #9327 open 2021-10-04 Stopping instances during LXD shutdown when no database available doesn't work
+      #19172 merged 2026-09-30 storage/zfs: Wait for the snapshot device to disappear on unmount
+      #15911 open 2025-07-01 Unable to rebuild vm / remove / add same name
+      #14770 open 2025-01-13 Apparmor doesn't work in nested containers (which breaks snapd)
+      #18896 merged 2026-08-21 Various operations follow ups
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #12042 open 2023-07-19 `lxc copy` fails when LXD is listening on multiple interfaces
+      #19018 merged 2026-09-09 lxd/cluster: Use member address for cluster link bootstrap
+      #18727 closed 2026-07-13 lxd daemon 100% cpu waiting for logfile lock
+      #14768 open 2025-01-11 LXD snap hold on to old swapfile
+      #18963 closed 2026-09-01 lxd: Add changed block tracking for virtual machine block volumes
+      #15315 open 2025-04-03 Concurrently launching instances backed by `ceph` is unreliable
+      #15478 open 2025-04-29 Metrics are currently being built by another request: Failed to obtain lock \"metricsGet\": context deadline exceeded
+      #14178 open 2024-09-28 LXD containers randomly drops/missing /proc/cpuinfo when using ZFS and Linux 6.8 (Noble)
+      #18918 merged 2026-08-25 Disk: Allow volume `security.shifted` and directory `shift` to be enabled when `raw.idmap` is set on a VM
+      #18730 merged 2026-07-13 Operation stages
+      #18516 merged 2026-06-22 Prune all operations in a recurring task
+      #18971 merged 2026-09-02 Replicator status table
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19193 open 2026-10-01 Storage: Let the driver say when a project's volumes are read-only (follow-up from #18929)
+      #19196 open 2026-10-01 Code quality: images (20261001)
+      #18106 open 2026-04-13 Excessive log spam when restoring backup that exceeds block storage volume.size
+      #19167 open 2026-09-29 lxd: Add persistent changed block tracking for VM block volumes
+      #12519 open 2023-11-08 lxc launch fills up btrfs filesystem in default storage pool and makes it readonly
+      #19090 closed 2026-09-18 Test: Clear `dmesg` and don't output
+      #14770 open 2025-01-13 Apparmor doesn't work in nested containers (which breaks snapd)
+      #19130 merged 2026-09-24 Keep a refused refresh from leaving the source's config on the target
+      #18007 open 2026-03-31 lxd/storage: Improved handling of aborted image downloads
+      #19085 merged 2026-09-18 Restore the target instance when a refresh fails
+      #12526 open 2023-11-10 Disconnecting cluster member from network and then moving ceph based instance doesn't stop the instance on disconnected member
+      #18929 merged 2026-08-27 Guard a standby project's storage on a mirrored Ceph pool
+      #19028 merged 2026-09-10 Fix `test/snap/lxd-user` coverage collection
+      #12168 open 2023-05-17 lxc failing with `Error: mkdir /var/snap/lxd/common/lxd/shmounts: file exists` when using snap in parallel mode
+      #19165 open 2026-09-29 `snap.lxd.daemon.service` ExecStop hangs indefinitely when LXD's mount namespace is missing — only via systemd, not from a shell
+      #18852 merged 2026-08-12 lxd/operations: Return failed operation state from wait endpoint
+      #18987 merged 2026-09-04 Restrict image reuse to cached images with identical image source
+      #19054 merged 2026-09-15 Improve snap-tests
+      #19019 merged 2026-09-09 Update GH actions and address zizmor issues (stable-5.21)
+      #18963 closed 2026-09-01 lxd: Add changed block tracking for virtual machine block volumes
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #19083 open 2026-09-18 lxd-agent: Preserve existing template file permissions
+      #18794 open 2026-07-21 LXD Console Breaks with FIPS - Spice server 1024 bit key
+      #12285 open 2023-09-20 lxc exec: command output is incorrect if interactive mode is enforced
+      #9327 open 2021-10-04 Stopping instances during LXD shutdown when no database available doesn't work
+      #19042 merged 2026-09-14 Observability: Support OTLP and COS deployments
+      #19127 merged 2026-09-23 Code quality (20260923)
+      #19129 merged 2026-09-24 Simplify env handling during CI builds and fix `govulncheck` step
+      #19018 merged 2026-09-09 lxd/cluster: Use member address for cluster link bootstrap
+      #12168 open 2023-05-17 lxc failing with `Error: mkdir /var/snap/lxd/common/lxd/shmounts: file exists` when using snap in parallel mode
+      #15449 open 2025-04-25 Re-Open:  Snap LXD.daemon hanging on startup (no containers start up and no operations can be executed)
+      #18964 merged 2026-09-01 Merge `lxd-ci` test scripts
+      #18852 merged 2026-08-12 lxd/operations: Return failed operation state from wait endpoint
+      #18780 closed 2026-07-18 LXD Snap unable to edit (remote?) profiles due to apparmor namespace restriction
+      #18855 merged 2026-08-13 Identities with effective groups api
+      #18896 merged 2026-08-21 Various operations follow ups
+      #18894 merged 2026-08-20 Fix LXCFS clean up logic; Avoid generating new certs on running instances
+      #18460 merged 2026-06-15 Effective project handling
+      #18872 merged 2026-08-17 LXD-4897 - Enhance subprocess handling to prevent pid-reuse issues
+      #18376 merged 2026-05-30 [minor] Extend DNS tests
+      #18327 merged 2026-05-22 doc: update PureStorage, HPE Alletra references
+
+== 51 terms run; 51 returned hits, 26 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,2 @@
+static: /opt/py/bin/espsecure: Python script, ASCII text executable
+next: pin or relocate what differs, then re-run this command;

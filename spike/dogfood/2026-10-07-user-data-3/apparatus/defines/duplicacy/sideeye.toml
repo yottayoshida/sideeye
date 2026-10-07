@@ -1,0 +1,6 @@
+[world]
+state = "/s/dup/repo/.duplicacy"
+
+[define]
+operation = "duplicacy set -no-backup"
+cwd       = "/s/dup/repo"

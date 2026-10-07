@@ -1,0 +1,6 @@
+[world]
+state = "/s/snd"
+
+[define]
+operation = "sndfile-metadata-set --str-comment edited /s/snd/a.wav"
+cwd       = "/s/snd-in"

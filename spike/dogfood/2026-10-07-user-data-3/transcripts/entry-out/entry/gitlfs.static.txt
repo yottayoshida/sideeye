@@ -1,0 +1,4 @@
+static: /opt/bin/git-lfs: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=I11_HBRdWq-7I9t9jNHa/ziWv1XN3lR0w7pmPXHbE/yvYyL5nsQstw4P1LoEEf/fh2gIyCBqTKV7-FIatH6, BuildID[sha1]=d801259625b1101060b0fe3f4c05f8bc34b8d1fb, stripped
+default mode: rc 0; 
+default next: sideeye explore --state /s/glfs --cwd "/s/glfs-in" --operation "git-lfs install --skip-repo" \
+next: sideeye explore --state /s/glfs --cwd "/s/glfs-in" --operation "git-lfs install --skip-repo" \

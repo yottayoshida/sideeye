@@ -1,0 +1,11 @@
+== Qalculate/libqalculate (label (any label, asked for: the bug label held too few))
+#1038 2026-10-05 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#1037 2026-10-04 comments=0 first_project_reply=none
+#1036 2026-10-04 comments=0 first_project_reply=none
+#1035 2026-10-04 comments=1 first_project_reply=CONTRIBUTOR 2026-10-04
+#1033 2026-10-01 comments=0 first_project_reply=none
+#1031 2026-10-01 comments=1 first_project_reply=CONTRIBUTOR 2026-10-01
+#1029 2026-09-28 comments=1 first_project_reply=CONTRIBUTOR 2026-09-29
+#1028 2026-09-27 comments=1 first_project_reply=CONTRIBUTOR 2026-09-28
+#1027 2026-09-26 comments=0 first_project_reply=none
+#1026 2026-09-21 comments=2 first_project_reply=CONTRIBUTOR 2026-09-22

@@ -1,0 +1,8 @@
+== cline
+== cspell
+== toolhive
+== doit
+== comfy
+== ruler
+== sui
+spike/dogfood/2026-10-05-user-data-2/SELECTION.md:78:| sui | — | no linux/arm64 release, and a source build of the whole chain is out of this box's reach |

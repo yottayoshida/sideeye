@@ -1,0 +1,760 @@
+== novelty pre-scan: ostreedev/ostree
+== date: 2026-10-07T08:36:22Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          72 hit(s) (all listed)
+      #2339 open 2021-04-14 test-core.js fails/crashes on ppc64 after recent change
+      #3662 open 2026-10-01 fetcher-curl: Bound header value copies to buffer length
+      #704 open 2017-02-23 /boot readonly fails after txn if not altering bootloader config
+      #3499 open 2025-08-15 docs: Add boot-transaction
+      #1848 open 2019-05-03 Possible libcurl interaction bug
+      #1793 open 2018-12-26 Factory reset with OSTree
+      #373 open 2016-06-29 exception in non-404 error paths
+      #3597 merged 2026-06-23 pull: Fix GLib assertion crash on invalid UTF-8 ref names
+      #3647 merged 2026-08-19 static-delta: validate bspatch payload offset and length
+      #3583 merged 2026-04-13 kargs: Fix crash on quoted values in /proc/cmdline
+      #378 open 2016-07-04 Tests failure on Debian stable on ARM
+      #3606 merged 2026-07-01 Release 2026.2
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #3571 merged 2026-03-04 generator: Add DefaultDependencies=no to var.mount for soft-reboot
+      #3559 merged 2026-01-08 libarchive: Handle UTF-8 filenames without locale dependency
+      #3538 merged 2025-10-20 prepare-root: Fix crash if no valid signatures
+      #3551 merged 2025-11-10 Release 2025.7
+      #3532 merged 2025-10-09 deploy: Use delete_if_present in can_soft_reboot
+      #3456 merged 2025-06-30 sysroot: Remove now-spurious assertion change from soft reboot changes
+      #3504 merged 2025-08-18 deploy: call syncfs() for /ostree instead of /
+  corrupt        53 hit(s) (all listed)
+      #959 open 2017-06-25 Add fsck --repair
+      #2889 open 2023-06-16 corruption in staged objects not detected well
+      #2005 open 2020-02-12 Fix handling of scratch deltas with existing commits
+      #1875 open 2019-06-17 About using libostree as a data version control
+      #3286 open 2024-08-15 Coverity: Possible ARRAY_VS_SINGLETON - Invalid Dereference
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+      #925 open 2017-06-13 Better support for deploying to non-ostree-as-host
+      #1612 open 2018-06-05 lib/repo-pull: Retry pulls without static deltas if they fail
+      #2237 open 2020-11-13 Support for remote repo on S3 and others for upload after commiting
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #3610 merged 2026-07-07 Revert "sysroot: Merge bootconfig-extra from previously staged deployment"
+      #2732 open 2022-10-10 Ensure pulls are reliable with lower resources (memory, network speed)
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #2825 open 2023-03-06 2023.1: test suite is failing
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #3545 closed 2025-10-30 tests: account for different locales in remote-gpg-list-keys test
+      #3288 closed 2024-08-22 corrupt gpg signatures are written when repo is on cifs (samba)
+      #3278 merged 2024-07-12 sign: Support generic "spki" type of commit signatures
+      #3284 merged 2024-08-15 commit/payload-link: Ensure we don't overrun target_checksum size
+      #2884 merged 2023-06-14 pull: Add error prefixing for corrupt checksums
+  corruption     33 hit(s) (all listed)
+      #2889 open 2023-06-16 corruption in staged objects not detected well
+      #3092 open 2023-11-09 solving `ostree fsck` errors when using container images?
+      #3546 open 2025-10-31 fix: allow curl fetcher to properly fallback to next mirror
+      #2732 open 2022-10-10 Ensure pulls are reliable with lower resources (memory, network speed)
+      #605 open 2016-12-01 pull tests sometimes stall/hang
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #3354 merged 2024-12-16 prepare-root: Add composefs.enabled=verity
+      #3435 merged 2025-05-29 prep patches for: soft-reboot
+      #3288 closed 2024-08-22 corrupt gpg signatures are written when repo is on cifs (samba)
+      #2640 merged 2022-06-09 Add initial composefs integration
+      #2761 closed 2022-11-10 test-basic-bare-split-xattrs fails when run under user with sudo access
+      #2632 merged 2022-06-06 lib/prune: speed up pruning by retrieving only commits
+      #2549 merged 2022-02-19 Fix marking static delta commits as partial
+      #2522 closed 2022-01-20 Clean up fsck errors
+      #2452 closed 2021-10-01 libarchive: Always ensure we have a label
+      #2421 merged 2021-08-25 lib: improve transactions auto-cleanup logic
+      #2328 closed 2021-04-08 error: Cleaning deployments
+      #345 closed 2016-06-15 POC: fsck repair
+      #2348 merged 2021-04-16 Improve multi-threaded locking
+      #601 closed 2016-11-29 large pull sometimes segfaults in g_mutex_lock(<some invalid pointer>)
+  truncated      12 hit(s) (all listed)
+      #1848 open 2019-05-03 Possible libcurl interaction bug
+      #3661 merged 2026-09-30 prepare-root: Guard against short digest in load_variant
+      #3617 merged 2026-07-31 prepare-root: Properly check return value of snprintf()
+      #3568 closed 2026-02-06 prepare-root: Properly check return value of snprintf()
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #3544 closed 2025-10-28 bootc upgrade fails after appending quoted kernel argument
+      #3439 merged 2025-06-03 ci: Rework Dockerfile, add Justfile and improved testing
+      #2266 closed 2021-01-12 pull-local with depth != 0 fails on truncated remote histories
+      #2265 closed 2021-01-12 Pull with depth succeeds on missing commit
+      #3 merged 2014-07-18 Partial checksums
+      #232 closed 2016-03-31 [merged] Fix various build-time test failures
+      #2267 merged 2021-01-12 Pull depth fixes
+  truncate       28 hit(s) (all listed)
+      #1848 open 2019-05-03 Possible libcurl interaction bug
+      #2945 open 2023-07-19 as-installed test regressed in 2023.5 or .4: fusermount: failed to unmount /tmp/test-tmp-libostree_test-rofiles-fuse.sh.test-AGRK81/mnt: Device or resource busy
+      #3520 open 2025-09-05 staged-deploy: Verify we didn't fail to unmount /sysroot or /etc
+      #2291 open 2021-03-08 ostree create-usb performance
+      #3661 merged 2026-09-30 prepare-root: Guard against short digest in load_variant
+      #1723 open 2018-09-14 eliminate file duplication during a local untrusted pull
+      #3568 closed 2026-02-06 prepare-root: Properly check return value of snprintf()
+      #3617 merged 2026-07-31 prepare-root: Properly check return value of snprintf()
+      #3630 merged 2026-08-05 Release 2026.3
+      #1719 open 2018-09-12 systemd-boot support
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #3544 closed 2025-10-28 bootc upgrade fails after appending quoted kernel argument
+      #3509 merged 2025-08-21 Deduplicate repo+sysroot syncfs logic
+      #3516 merged 2025-08-28 Add ostree-shutdown.service: hide /sysroot and make /etc read-only
+      #3174 closed 2024-02-14 rofiles-fuse: Support breaking hardlinks to fs-verity files
+      #2874 merged 2023-06-06 commit: fix ostree deployment on 64-bit inode fs
+      #2558 closed 2022-03-04 2022.2: configure fails on missing `gpgme-pthread`
+      #2632 merged 2022-06-06 lib/prune: speed up pruning by retrieving only commits
+      #2266 closed 2021-01-12 pull-local with depth != 0 fails on truncated remote histories
+      #2265 closed 2021-01-12 Pull with depth succeeds on missing commit
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2809 open 2023-02-01 some files don't have mtime set to 0
+      #3633 open 2026-08-06 ostree-gpg-verify-result: Strictly match subkeys if suffixed with `!`
+      #3552 open 2025-11-15 dracut release 109 breaks dracut module in some cases
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+      #2527 open 2022-01-25 tests/test-sysroot.js intermittently failing on s390x
+      #2007 open 2020-02-13 Provide a way to list orphaned commits
+      #2820 open 2023-02-21 How to deploy the /var/home directory
+      #729 open 2017-03-10 delta-only repositories
+      #3652 open 2026-08-30 man: Document signed-delta and sign-verify behaviour
+      #1593 open 2018-05-19 Installed tests do not work without trivial-httpd
+      #2582 open 2022-04-20 Make deployment finalization do less things
+      #1712 open 2018-08-20 rev-parse command missing support for `refs/mirrors`
+      #3240 open 2024-05-07 ostree checkout fails after ima-sign is called
+      #1658 open 2018-06-28 Enhance command line utils to take a tree/file sha
+      #1854 open 2019-05-06 Support on avoiding undesired in-tree hardlinks
+      #578 open 2016-11-16 commit: Support merging docker-style layers
+      #1678 open 2018-07-12 ostree commit: Add option --use-bare-user-xattrs
+      #2310 open 2021-03-25 error: Not a regular file or symlink: node when adding node container image to the tree
+      #925 open 2017-06-13 Better support for deploying to non-ostree-as-host
+      #479 open 2016-08-31 Support default kernel arguments
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #518 open 2016-09-27 unable to pull commit metadata when GPG verification enabled and deltas in use
+      #1469 open 2018-02-26 ostree archive's mtime modification results in slower python execution
+      #1630 open 2018-06-16 traceback with enabled http2
+      #1340 open 2017-11-11 RFE: ostree filesystem usage information
+      #534 open 2016-10-19 [RFE] enhance how commit history is retrieved from a remote
+      #1459 open 2018-02-21 ostree init fails with readlinkat error
+      #686 open 2017-02-14 pull:  ostree_repo_pull_with_options: assertion 'pull_data->maxdepth >= -1' failed
+      #487 open 2016-09-01 Summary file races
+      #361 open 2016-06-22 improve reterieval of version information (RHBZ 1298200)
+      #1648 open 2018-06-26 filesystem space checks for /boot/ 
+      #1109 open 2017-08-23 Pulling just a subpath still uses static deltas
+      #288 open 2016-05-09 First-class support for testing OSTree deployments in a lightweight container
+      #443 open 2016-08-08 repo: Add a high level ostree_repo_import_oci_image_layer()
+      #1228 open 2017-09-29 Add the concept of "checkpoint" commits
+      #1549 open 2018-04-19 itest-pull.sh timeout flake while pulling from http
+      #960 open 2017-06-25 Render mount source as /var
+      #364 open 2016-06-24 [RFE] 'ostree copy-config` - method for copying contents of /etc between trees
+      #872 open 2017-05-17 lib/deploy: Remove code to SELinux relabel /var
+      #1394 open 2018-01-03 Admin command somtimes becomes useless when more than two deployments exist
+  atomically     24 hit(s) (all listed)
+      #487 open 2016-09-01 Summary file races
+      #3499 open 2025-08-15 docs: Add boot-transaction
+      #1793 open 2018-12-26 Factory reset with OSTree
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #1719 open 2018-09-12 systemd-boot support
+      #3603 merged 2026-06-29 repo-commit: preserve existing .file object inode on consume commit
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #3438 merged 2025-06-03 docs: Some typo and link fixes
+      #1693 closed 2018-07-30 Deprecate commit-update-summary and rename change-update-summary
+      #2640 merged 2022-06-09 Add initial composefs integration
+      #2250 closed 2020-12-08 Consider combining summary.idx with summary.idx.sig
+      #1523 closed 2018-03-29 Race condition on summary cache
+      #1649 closed 2018-06-26 Add a new ostree admin instutil subcommand to copy EFI binaries to the ESP
+      #2052 closed 2020-04-02 ways to update grub.cfg with an OSTree update
+      #2154 closed 2020-07-24 v2020.4 triggers assertion failure when upgrading with deployments with device trees
+      #797 closed 2017-04-14  checkout: Add force_copy+SELinux options for checkout, use in deploy
+      #1810 closed 2019-02-06 lib/repo-pull: Allow the keyring remote to be overridden
+      #1968 merged 2019-11-04 libostree: Add ostree_async_progress_copy_state()
+      #1873 closed 2019-06-14 Add an ostree-admin-esp-upgrade subcommand to update the EFI System Partition
+      #1681 closed 2018-07-16 Add a change-update-summary config option
+  interrupted    27 hit(s) (all listed)
+      #3649 open 2026-08-25 fix: don't wedge deployment finalization on SELinux policy refresh
+      #1395 open 2018-01-04 interrupted delta pull turns into archive pull
+      #1017 open 2017-07-19 previously retrieved deltas can be ignored/retrieved again during 'rpm-ostree upgrade'
+      #1224 open 2017-09-27 Support faster dir diffing via xattr
+      #639 open 2017-01-03 [RFE] Incremental download during initial installation
+      #1951 open 2019-10-21 Rework BLS fragment writing to do "two phase commit"
+      #713 open 2017-02-27 More intelligent pruning of tmp/
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #1631 closed 2018-06-18 deploy: Delete .updated file from /etc and /var on new deployments
+      #2844 closed 2023-04-05 Add ostree=aboot for signed Android Boot Images
+      #2747 closed 2022-10-27 [RFE] Retry mechanism for HTTP 500 error when pulling ostree
+      #2549 merged 2022-02-19 Fix marking static delta commits as partial
+      #1035 closed 2017-07-29 Assert in curl callback makes gnome-software crash on rawhide
+      #2154 closed 2020-07-24 v2020.4 triggers assertion failure when upgrading with deployments with device trees
+      #85 closed 2015-04-06  Teach fsck about partial commits
+      #84 closed 2015-04-04 pull: Handle remote web server not honoring range requests
+      #100 closed 2015-05-04 repo: Stop creating "transaction" symlink
+      #40 merged 2015-01-12 Pull metadata objects before content objects
+      #1937 merged 2019-10-14  bootloader: Add a zipl bootloader backend 
+  interrupt      33 hit(s) (all listed)
+      #3649 open 2026-08-25 fix: don't wedge deployment finalization on SELinux policy refresh
+      #1395 open 2018-01-04 interrupted delta pull turns into archive pull
+      #1017 open 2017-07-19 previously retrieved deltas can be ignored/retrieved again during 'rpm-ostree upgrade'
+      #1224 open 2017-09-27 Support faster dir diffing via xattr
+      #639 open 2017-01-03 [RFE] Incremental download during initial installation
+      #1951 open 2019-10-21 Rework BLS fragment writing to do "two phase commit"
+      #713 open 2017-02-27 More intelligent pruning of tmp/
+      #3554 open 2025-12-13 static-delta: Avoid copying bspatch output
+      #1019 open 2017-07-19 Enhance txn API to support resume better
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+      #1631 closed 2018-06-18 deploy: Delete .updated file from /etc and /var on new deployments
+      #2844 closed 2023-04-05 Add ostree=aboot for signed Android Boot Images
+      #2747 closed 2022-10-27 [RFE] Retry mechanism for HTTP 500 error when pulling ostree
+      #2549 merged 2022-02-19 Fix marking static delta commits as partial
+      #1035 closed 2017-07-29 Assert in curl callback makes gnome-software crash on rawhide
+      #2154 closed 2020-07-24 v2020.4 triggers assertion failure when upgrading with deployments with device trees
+      #85 closed 2015-04-06  Teach fsck about partial commits
+      #84 closed 2015-04-04 pull: Handle remote web server not honoring range requests
+  sigkill        4 hit(s) (all listed)
+      #3571 merged 2026-03-04 generator: Add DefaultDependencies=no to var.mount for soft-reboot
+      #3513 closed 2025-08-27 Fix unmount of /etc and /sysroot
+      #1941 closed 2019-10-15 ostree-trivial-httpd --daemon --autoexit no longer works
+      #607 closed 2016-12-01 [merged] Terminate individual tests after 10 minutes
+  sigint         4 hit(s) (all listed)
+      #1017 open 2017-07-19 previously retrieved deltas can be ignored/retrieved again during 'rpm-ostree upgrade'
+      #1262 closed 2017-10-11 FIFREEZE watchdogs not exiting from test-sysroot.js
+      #1031 closed 2017-07-26 rpm-ostree ignores CTRL-C while downloading rpm-md or rpms
+      #643 closed 2017-01-12 [merged] trivial-httpd: Daemonize better
+  ctrl-c         6 hit(s) (all listed)
+      #1262 closed 2017-10-11 FIFREEZE watchdogs not exiting from test-sysroot.js
+      #1031 closed 2017-07-26 rpm-ostree ignores CTRL-C while downloading rpm-md or rpms
+      #1794 closed 2018-12-31 Why is --die-with-parent needed ?
+      #643 closed 2017-01-12 [merged] trivial-httpd: Daemonize better
+      #1055 closed 2017-08-05 lib/pull: Add support for timestamp-check option, use in upgrader
+      #1266 closed 2017-10-12 lib/deltas: Check cancellable during processing
+  power          24 hit(s) (all listed)
+      #3219 open 2024-03-20 prepare-root: Avoid retries
+      #7 open 2014-08-21 Deployment names: easier referencing a commit and keeping track
+      #2223 open 2020-10-26 Using OSTree with Raspberry Pi (Raspberry Pi OS)
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #1592 open 2018-05-19 installed tests fail with pseudoterminal active
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #2753 open 2022-10-31 Support UKI
+      #3497 closed 2025-08-14 Make a 2025-2 branch
+      #3504 merged 2025-08-18 deploy: call syncfs() for /ostree instead of /
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+      #3438 merged 2025-06-03 docs: Some typo and link fixes
+      #3393 merged 2025-03-13 Use fsfreeze_thaw_cycle(/boot) instead of fsync(/boot)
+      #3427 merged 2025-05-21 ci: Update deny to v2
+      #3428 merged 2025-05-22 rust: Release new minor version
+      #3437 merged 2025-06-02 A few buildsystem fixes
+      #3435 merged 2025-05-29 prep patches for: soft-reboot
+      #3430 merged 2025-05-22 rust: Also add a feature for v2025_2
+      #2837 merged 2023-03-17 Use g_steal_fd() in preference to glnx_steal_fd()
+      #545 closed 2016-10-24 Support commit, syncfs, /etc merge just before reboot
+      #717 closed 2017-03-03 rework grub2 backend for new fedora grub model
+  outage         3 hit(s) (all listed)
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+      #1068 closed 2017-08-08 man: Update ostree-refs manpage
+  ENOSPC         12 hit(s) (all listed)
+      #1557 open 2018-04-24 Pro-actively abort pull operations which will fail due to disk space
+      #713 open 2017-02-27 More intelligent pruning of tmp/
+      #3410 merged 2025-04-09 generator: Still create /run/ostree in static prepareroot path
+      #3123 merged 2023-12-19 deploy: Log calculated needed space
+      #3130 merged 2024-01-04 lib/deploy: Round to block size in early prune space check
+      #2866 merged 2023-05-29 lib/deploy: Use `fallocate` for early prune space check
+      #2670 closed 2022-07-08 Add a repo option to auto-prune other deployments (e.g. rollback) when starting upgrade
+      #1688 closed 2018-07-23 min-free-space-percent '3%' would be exceeded,
+      #2197 closed 2020-09-15 checkout: Always fall back to copy on EMLINK
+      #1602 closed 2018-05-29 Cleanup current boot's staging dir if we hit min-free-space-* condition
+      #1614 closed 2018-06-06 lib/repo: Enforce min-free-space-* size check for regfile writes in deltas
+      #1616 closed 2018-06-07 Adjust min-free-space-percent config option to accept specfic size
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+      #1557 open 2018-04-24 Pro-actively abort pull operations which will fail due to disk space
+      #3271 open 2024-06-25 u-boot: add 'bootdir' to the generated uEnv.txt
+      #3109 open 2023-12-04 Slow IO cause stateroot not bind mounted
+      #3554 open 2025-12-13 static-delta: Avoid copying bspatch output
+      #1608 open 2018-05-30 repo: Expose API to discard the current boot's staging directory (repo/tmp)
+      #2510 open 2022-01-06 Cleanup from staged deployments
+      #2955 open 2023-07-27 No free storage watermark for the static delta specific storage availability check
+      #3648 merged 2026-08-21 static-delta: validate on-disk checksum names when listing deltas
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #2442 open 2021-09-21 `ostree pull-local` failing to `openat(<checksum>.filez)` with EINVAL
+      #1550 open 2018-04-19 RFE:  mechanism for determining the size of the delta between two commits
+      #1019 open 2017-07-19 Enhance txn API to support resume better
+      #3499 open 2025-08-15 docs: Add boot-transaction
+      #1419 open 2018-01-15 WIP: deploy: Attempt accelerated deploy by updating old deploy
+      #1924 open 2019-09-19 Silverblue 31: `finalize-staged` taking over 15 minutes to complete
+      #1974 open 2019-11-14 ostree_repo_resolve_collection_ref() should check txn.refs
+      #2289 open 2021-03-05 Failed to update grub configuration if managing deployments on a loop device
+      #1723 open 2018-09-14 eliminate file duplication during a local untrusted pull
+      #1487 open 2018-03-06 `ostree summary -u` shouldn't trust the collection IDs in the repo config
+  partial        78 hit(s) (all listed)
+      #1289 open 2017-10-18 GPG verification issue with partial histories and --commit-metadata-only
+      #2004 open 2020-02-12 Scratch deltas should be fetched when current rev is partial
+      #1622 open 2018-06-13 ostree_repo_find_remotes_async() should support partial override-commit-ids
+      #1395 open 2018-01-04 interrupted delta pull turns into archive pull
+      #1612 open 2018-06-05 lib/repo-pull: Retry pulls without static deltas if they fail
+      #2445 open 2021-09-23 Static deltas should be disabled when subdirs specified
+      #2005 open 2020-02-12 Fix handling of scratch deltas with existing commits
+      #1557 open 2018-04-24 Pro-actively abort pull operations which will fail due to disk space
+      #1222 open 2017-09-27 Traverse reports missing objects as reachable
+      #1000 open 2017-07-11 lower flatpak's xa.installed-size etc. to libostree
+      #713 open 2017-02-27 More intelligent pruning of tmp/
+      #959 open 2017-06-25 Add fsck --repair
+      #7 open 2014-08-21 Deployment names: easier referencing a commit and keeping track
+      #2237 open 2020-11-13 Support for remote repo on S3 and others for upload after commiting
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #487 open 2016-09-01 Summary file races
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+      #2825 open 2023-03-06 2023.1: test suite is failing
+  incomplete     23 hit(s) (all listed)
+      #3649 open 2026-08-25 fix: don't wedge deployment finalization on SELinux policy refresh
+      #3563 open 2026-01-24 /etc merge during deployment finalization creating invalid SELinux policy
+      #3267 closed 2024-06-19 relabel-etc: Split remount into, remount and relabel-etc
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #2291 open 2021-03-08 ostree create-usb performance
+      #3470 merged 2025-07-14 build-sys: Always EXTRA_DIST test scripts
+      #3439 merged 2025-06-03 ci: Rework Dockerfile, add Justfile and improved testing
+      #3300 merged 2024-09-13 bootloader/grub2: Handle empty static configs
+      #2942 merged 2023-07-19 bootloader: fold all Android Bootloader specific logic into prepare-root
+      #2836 merged 2023-03-17 Cope with GLib 2.76 being more strict about GFileInfo standard::size
+      #2547 merged 2022-02-18 port to libsoup3
+      #2713 closed 2022-09-13 WIP/DNM / Support overlayfs whiteout character files
+      #2844 closed 2023-04-05 Add ostree=aboot for signed Android Boot Images
+      #2581 closed 2022-04-19 man: ostree-admin-instutil manpage layout is broken / incomplete
+      #2549 merged 2022-02-19 Fix marking static delta commits as partial
+      #2474 closed 2021-10-26 Repo write operations (e.g. pulls, commits) should respect exclusive locks even when not using transaction API
+      #774 closed 2017-04-03 soup: Hold a ref to the pending URI during completion processing
+      #2127 merged 2020-06-08 tests/inst: Add destructive test framework
+      #1754 closed 2018-10-12 lib/commit: Don't chown objects to repo target owner
+      #540 closed 2016-10-21 [merged] Release 2016.12
+  dataloss       0 hit(s)
+  recover        15 hit(s) (all listed)
+      #727 open 2017-03-10 Persistent "GPGME: Invalid crypto engine" after stress testing
+      #3563 open 2026-01-24 /etc merge during deployment finalization creating invalid SELinux policy
+      #2527 open 2022-01-25 tests/test-sysroot.js intermittently failing on s390x
+      #2310 open 2021-03-25 error: Not a regular file or symlink: node when adding node container image to the tree
+      #1612 open 2018-06-05 lib/repo-pull: Retry pulls without static deltas if they fail
+      #2732 open 2022-10-10 Ensure pulls are reliable with lower resources (memory, network speed)
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+      #2574 closed 2022-03-26 Incorrect installation path for test fixture
+      #2584 merged 2022-04-21 ci: Mask zincati for synthetic update
+      #2495 closed 2021-12-07 CI: tests regression on Ubuntu latest
+      #2328 closed 2021-04-08 error: Cleaning deployments
+      #1265 closed 2017-10-12 Extending read-only state to /sysroot and /boot
+      #1698 closed 2018-08-02 Fix corrupted summary cache
+      #912 closed 2017-06-07 lib/pull: Fix construction of a refspec to use the correct separator
+      #1626 closed 2018-06-14 lib/repo-commit: Delay propagation of errors from abort_transaction()
+  recovery       6 hit(s) (all listed)
+      #1793 open 2018-12-26 Factory reset with OSTree
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #2753 open 2022-10-31 Support UKI
+      #1924 open 2019-09-19 Silverblue 31: `finalize-staged` taking over 15 minutes to complete
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+      #1913 closed 2019-09-05 ostree causing issues with multiple KDE users
+  rollback       68 hit(s) (all listed)
+      #1808 open 2019-01-29 Add `ostree admin rollback`
+      #3634 open 2026-08-08 bls-append option for supplementary initrd
+      #1780 open 2018-12-06 [RFE] Add ability to backup current state of /etc directory and also rollback when needed.
+      #3162 open 2024-02-08 ostree-grub-generator: allow adding custom scripts to grub.cfg
+      #2510 open 2022-01-06 Cleanup from staged deployments
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #2271 open 2021-01-27 Allow re-running /etc merge
+      #380 open 2016-07-05 Roll back an update and use of /proc/cmdline
+      #947 open 2017-06-20 documentation: Clarify the ordering of the deployments in ostree_sysroot_get_deployments.
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #2085 open 2020-04-24 question: home in sysroot deprecated?
+      #3289 open 2024-08-28 feat: Add Custom bootloader names so pretty_name can be static
+      #2393 open 2021-07-06 Unable to change origin url with `ostree admin set-origin` if remote already exists
+      #1163 open 2017-09-12 Describe subcommands in help output
+      #3291 open 2024-08-30 support deploying a composefs directly
+      #2391 open 2021-07-01 Improper handling of missing signature by `ostree admin status`
+      #2725 open 2022-10-03 add greenboot-like functionality integrated here
+      #3414 open 2025-04-20 Rebasing to F41 from F42 is not possible due to semodule not executing
+      #2753 open 2022-10-31 Support UKI
+      #1903 open 2019-08-24 Bootloader Plugin: efivar
+  resume         24 hit(s) (all listed)
+      #1019 open 2017-07-19 Enhance txn API to support resume better
+      #639 open 2017-01-03 [RFE] Incremental download during initial installation
+      #1395 open 2018-01-04 interrupted delta pull turns into archive pull
+      #1017 open 2017-07-19 previously retrieved deltas can be ignored/retrieved again during 'rpm-ostree upgrade'
+      #2796 open 2022-12-30 sysroot.readonly caused unbootable system
+      #475 open 2016-08-29 pull-progress-changed unreliable
+      #605 open 2016-12-01 pull tests sometimes stall/hang
+      #2825 open 2023-03-06 2023.1: test suite is failing
+      #2653 open 2022-06-20 ostree admin unlock should not create mount namespace
+      #2741 closed 2022-10-21 aria2 integration for downstream flatpak 
+      #3033 closed 2023-09-07 An internet hiccup isn't ever a reasonable cause to abort
+      #2843 merged 2023-04-03 ostree-fetcher-curl: handle non 404 errors as G_IO_ERROR_TIMED_OUT
+      #601 closed 2016-11-29 large pull sometimes segfaults in g_mutex_lock(<some invalid pointer>)
+      #1018 closed 2017-07-19 'rpm-ostree upgrade' bails out if '/sysroot/ostree/repo/tmp' does not exist 
+      #1982 closed 2019-12-10 grub finding deployment
+      #169 closed 2016-01-13 repo: Note global transaction resume is legacy
+      #85 closed 2015-04-06  Teach fsck about partial commits
+      #100 closed 2015-05-04 repo: Stop creating "transaction" symlink
+      #40 merged 2015-01-12 Pull metadata objects before content objects
+      #774 closed 2017-04-03 soup: Hold a ref to the pending URI during completion processing
+  half-written   3 hit(s) (all listed)
+      #2510 open 2022-01-06 Cleanup from staged deployments
+      #2291 open 2021-03-08 ostree create-usb performance
+      #2044 merged 2020-03-26 grub2: Don't add menu entries if GRUB supports parsing BLS snippets
+  wipe           13 hit(s) (all listed)
+      #1793 open 2018-12-26 Factory reset with OSTree
+      #2024 open 2020-03-11 error: Not a regular file or symlink: S.gpg-agent.extra
+      #3570 merged 2026-02-27 bootconfig: Preserve extension BLS keys across staged deployments
+      #3431 closed 2025-05-28 error: Pathname can't be converted from UTF-8 to current locale
+      #3372 closed 2025-01-18 Add simple service to comment / in fstab
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+      #2217 closed 2020-10-14 Support kargs.d directories for default kargs (rebased)
+      #2351 closed 2021-04-18 test-remote-gpg-import.sh intermittently failing: Can't check signature: public key not found
+      #1541 closed 2018-04-17 Follow redirect (HTTP 302) just once for `objects/`
+      #2154 closed 2020-07-24 v2020.4 triggers assertion failure when upgrading with deployments with device trees
+      #1685 closed 2018-07-19 lib/repo: Allow min-free-space-size and -percent to co-exist
+      #1182 closed 2017-09-18 create-usb: Add a create-usb command to complement OstreeRepoFinderMount
+      #1343 closed 2017-11-15 Slimmer repo locking
+  wipes          2 hit(s) (all listed)
+      #1541 closed 2018-04-17 Follow redirect (HTTP 302) just once for `objects/`
+      #1182 closed 2017-09-18 create-usb: Add a create-usb command to complement OstreeRepoFinderMount
+  erase          4 hit(s) (all listed)
+      #1793 open 2018-12-26 Factory reset with OSTree
+      #3431 closed 2025-05-28 error: Pathname can't be converted from UTF-8 to current locale
+      #608 closed 2016-12-01 signature duplicate checking not working
+      #2044 merged 2020-03-26 grub2: Don't add menu entries if GRUB supports parsing BLS snippets
+  erasing        0 hit(s)
+  erased         2 hit(s) (all listed)
+      #3431 closed 2025-05-28 error: Pathname can't be converted from UTF-8 to current locale
+      #2044 merged 2020-03-26 grub2: Don't add menu entries if GRUB supports parsing BLS snippets
+  destroy        29 hit(s) (all listed)
+      #373 open 2016-06-29 exception in non-404 error paths
+      #2383 open 2021-06-22 ostree pull hangs forever if a network connection is down for more than ~16 minutes
+      #378 open 2016-07-04 Tests failure on Debian stable on ARM
+      #605 open 2016-12-01 pull tests sometimes stall/hang
+      #3366 merged 2025-01-09 Always generate composefs blob, don't enable runtime by default
+      #3307 merged 2024-09-18 curl: Make socket callback during cleanup into no-op
+      #3299 closed 2024-09-13 `flatpak update` produces ostree error with curl 8.10.0 (+ patch)
+      #1954 merged 2019-10-23 lib/pull: Avoid calling destroy on unref'ed GSource
+      #1961 merged 2019-10-28 lib/pull: Tweak update_timeout logic again
+      #2899 merged 2023-06-23 build(deps): bump composefs from `08bdb03` to `412cb5e`
+      #2225 merged 2020-10-27 lib/fetch-curl: Unref timeout source
+      #2898 closed 2023-06-22 build(deps): bump composefs from `08bdb03` to `3e750ff`
+      #381 closed 2016-07-05 SIGBUS/use-after-free on ARM
+      #601 closed 2016-11-29 large pull sometimes segfaults in g_mutex_lock(<some invalid pointer>)
+      #1265 closed 2017-10-12 Extending read-only state to /sysroot and /boot
+      #370 closed 2016-06-27 crash when pulling with flatpak
+      #1649 closed 2018-06-26 Add a new ostree admin instutil subcommand to copy EFI binaries to the ESP
+      #851 closed 2017-05-11 ostree defaults to non-upstream gpgme pkg-config files (but supports gpgme m4)
+      #1738 closed 2018-09-28 OstreeAsyncProcess leaks sources
+      #1958 closed 2019-10-25 ostree_repo_list_collection_refs() unusable from Python
+  destroys       0 hit(s)
+  overwrite      89 hit(s) (all listed)
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #2403 open 2021-07-22 ostree commit sign with using external key/cert files
+      #3620 merged 2026-08-03 ostree-sign-ed25519: Fix overwriting already-set GErrors
+      #353 open 2016-06-18 More pull code changes
+      #2416 open 2021-08-20 Run /usr/lib/ostree-boot/setup.sh if it exists during u-boot bootloader setup
+      #2237 open 2020-11-13 Support for remote repo on S3 and others for upload after commiting
+      #2255 open 2021-01-06 OSTree extlinux.conf on Nvidia Jetson Xavier
+      #3601 merged 2026-06-25 zipl: Switch from genprotimg to pvimg for SE boot image generation
+      #3603 merged 2026-06-29 repo-commit: preserve existing .file object inode on consume commit
+      #479 open 2016-08-31 Support default kernel arguments
+      #2291 open 2021-03-08 ostree create-usb performance
+      #3630 merged 2026-08-05 Release 2026.3
+      #3654 merged 2026-09-01 generator: Skip boot.mount if /etc/fstab has a /boot entry
+      #3570 merged 2026-02-27 bootconfig: Preserve extension BLS keys across staged deployments
+      #3449 merged 2025-06-24 prepare-root: Fix error overwrite
+      #3468 merged 2025-07-10 Release 2025.3
+      #3355 closed 2024-12-16 Proposal: offer an object-based merge command
+      #3379 merged 2025-02-03 zipl: remove 'sdboot' image before generating new one
+      #3168 merged 2024-02-12 Drop tmpfiles var
+      #2865 merged 2023-05-25 Increase the metadata size limit to 128MB
+  clobber        0 hit(s)
+  blank          29 hit(s) (all listed)
+      #3663 open 2026-10-02 lib: Validate commit tree checksum length on read
+      #3662 open 2026-10-01 fetcher-curl: Bound header value copies to buffer length
+      #3659 open 2026-09-18 lib/gpg: request all signatures from GPGME (proc-all-sigs)
+      #3642 open 2026-08-14 main: Don't pass subcommand verb to external CLI extensions
+      #3650 open 2026-08-29 fetcher: Back off between HTTP retries
+      #3633 open 2026-08-06 ostree-gpg-verify-result: Strictly match subkeys if suffixed with `!`
+      #3652 open 2026-08-30 man: Document signed-delta and sign-verify behaviour
+      #1793 open 2018-12-26 Factory reset with OSTree
+      #3541 open 2025-10-23 aboot: Add missing stdint.h include
+      #1888 open 2019-07-15 s390x bootloader setup
+      #3621 closed 2026-08-04 commit: Support comments in --statoverride files
+      #3655 merged 2026-09-11 static-delta: bound mode and xattr dict offsets
+      #3654 merged 2026-09-01 generator: Skip boot.mount if /etc/fstab has a /boot entry
+      #3653 merged 2026-08-31 docs: drop parameters that are no longer in the signatures
+      #3638 merged 2026-08-12 core: don't skip entries in _ostree_validate_structureof_xattrs
+      #3647 merged 2026-08-19 static-delta: validate bspatch payload offset and length
+      #3640 merged 2026-08-14 min-free-space: Use min(3%, 1GB) as default
+      #3620 merged 2026-08-03 ostree-sign-ed25519: Fix overwriting already-set GErrors
+      #3624 merged 2026-08-04 ot-builtin-summary: Verify signature when viewing a summary file
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+  unreadable     9 hit(s) (all listed)
+      #3563 open 2026-01-24 /etc merge during deployment finalization creating invalid SELinux policy
+      #1562 open 2018-04-30 Inability to pull from sysrepo to a user repo
+      #2568 open 2022-03-18 What if char devices are being used as regular files?
+      #2199 merged 2020-09-16 checkout: Ensure copies of unreadable usermode checkouts are readable
+      #634 closed 2016-12-14 [merged] static-delta: Pretend that world unreadable objects are new objects
+      #989 closed 2017-06-30  lib/commit: Ensure bare-user objects are always user-readable
+      #1176 closed 2017-09-15 lib/pull: Drop partial fetch code from libsoup backend
+      #1564 closed 2018-04-30 repo: Add checksum to error message opening unreadable object
+      #678 closed 2017-02-10 Delta progress
+  garbage        19 hit(s) (all listed)
+      #3633 open 2026-08-06 ostree-gpg-verify-result: Strictly match subkeys if suffixed with `!`
+      #2125 open 2020-06-05 Support for deploying sysroot tree without writing deployment in /boot
+      #2338 open 2021-04-14 Prune with depth != -1 can delete reachable commits
+      #3242 closed 2024-05-13 support systemd soft reboots
+      #3018 merged 2023-08-29 build(deps): bump composefs from `1aed878` to `597a766`
+      #2556 merged 2022-03-03 Release 2022.2
+      #2493 merged 2021-12-03 repo: Change locking for summary regeneration to be shared
+      #2464 merged 2021-10-08 repo/private: move OstreeRepoAutoTransaction to a boxed type
+      #393 closed 2016-07-12 OSTree should clean up old ovl dirs in /var/tmp
+      #1460 closed 2018-02-21 Add support for "pinning" 📌 deployments
+      #2154 closed 2020-07-24 v2020.4 triggers assertion failure when upgrading with deployments with device trees
+      #212 closed 2016-03-19 admin: Add an `unlock` command
+      #327 closed 2016-06-09 [merged] Small patches
+      #286 closed 2016-05-09 [merged] OstreeRepo: add extensions directory
+      #2103 merged 2020-05-17 Add "transient" unlock
+      #490 closed 2016-09-01 Narrow summary file race
+      #458 closed 2016-08-11 [merged] repo: Really ignore progress changed user data
+      #1588 closed 2018-05-14 docs: var/local -> var/usrlocal
+      #257 closed 2016-04-13 OstreeRepo: add extensions directory
+  mangled        4 hit(s) (all listed)
+      #2403 open 2021-07-22 ostree commit sign with using external key/cert files
+      #479 open 2016-08-31 Support default kernel arguments
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #3507 merged 2025-08-19 aboot: Use fd and not absolute path
+  contents       87 hit(s) (all listed)
+      #3663 open 2026-10-02 lib: Validate commit tree checksum length on read
+      #493 open 2016-09-07 automatic remove own /etc stuff if it equal to tree contents
+      #364 open 2016-06-24 [RFE] 'ostree copy-config` - method for copying contents of /etc between trees
+      #1109 open 2017-08-23 Pulling just a subpath still uses static deltas
+      #2820 open 2023-02-21 How to deploy the /var/home directory
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #1836 open 2019-04-08 Support kargs.d directories for default kargs
+      #1593 open 2018-05-19 Installed tests do not work without trivial-httpd
+      #1775 open 2018-11-18 Current Retry logic does not consider that lost connections might be a sign of congestion.
+      #1578 open 2018-05-05 Better introductory explanation for docs?
+      #3032 open 2023-09-06 extensible metadata on deployments
+      #2227 open 2020-10-30 OSTree over OpenZFS it's too slow. Install flatpak packets in OpenZFS it's too slow.
+      #3289 open 2024-08-28 feat: Add Custom bootloader names so pretty_name can be static
+      #605 open 2016-12-01 pull tests sometimes stall/hang
+      #1854 open 2019-05-06 Support on avoiding undesired in-tree hardlinks
+      #2357 open 2021-05-06 ostree on Beaglebone Black
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #3350 open 2024-12-05 HTTP 1.1 connections not being reused
+      #3587 merged 2026-05-09 sysroot: Merge bootconfig-extra from previously staged deployment
+      #2825 open 2023-03-06 2023.1: test suite is failing
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1658 open 2018-06-28 Enhance command line utils to take a tree/file sha
+      #830 open 2017-05-03 Use more specific error codes
+      #2483 open 2021-11-15 possible memory overuse when pruning
+      #2734 open 2022-10-11 migrate sysroot-readonly code here
+      #1866 open 2019-05-27 Fully teach OSTree about staged deployment locking
+      #2518 open 2022-01-13 How to apply changes made in `ostree admin unlock`?
+      #2397 open 2021-07-12 doc: extend hello world example to include modification
+      #1292 open 2017-10-18 Repository locking 🔒
+      #3536 open 2025-10-18 ostree hook for mkinitcpio contain no help
+      #487 open 2016-09-01 Summary file races
+      #2223 open 2020-10-26 Using OSTree with Raspberry Pi (Raspberry Pi OS)
+      #1017 open 2017-07-19 previously retrieved deltas can be ignored/retrieved again during 'rpm-ostree upgrade'
+      #727 open 2017-03-10 Persistent "GPGME: Invalid crypto engine" after stress testing
+      #1854 open 2019-05-06 Support on avoiding undesired in-tree hardlinks
+      #2260 open 2021-01-09 WIP: GPG remote trusted key updating
+      #2216 open 2020-10-14 Migration of ostree-list to GNOME Discourse instance
+      #3651 open 2026-08-30 Lack of Documentation Details on Signed Deltas
+      #2080 open 2020-04-20 signing: explicit expected signature types
+      #3109 open 2023-12-04 Slow IO cause stateroot not bind mounted
+      #3034 open 2023-09-07 Android Bootloader (aboot) entries generated in config even in non-aboot deployments
+  unclean        4 hit(s) (all listed)
+      #2796 open 2022-12-30 sysroot.readonly caused unbootable system
+      #2510 open 2022-01-06 Cleanup from staged deployments
+      #2605 merged 2022-05-11 ostree-sysroot-deploy: parse bls-append-except-default key
+      #918 closed 2017-06-08 repo: After renaming in all loose objects, ensure metadata is stable
+  shutdown       42 hit(s) (all listed)
+      #2436 open 2021-09-08 sysroot-remount: umount races on shutdown
+      #2796 open 2022-12-30 sysroot.readonly caused unbootable system
+      #2582 open 2022-04-20 Make deployment finalization do less things
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+      #2992 open 2023-08-17 Fix `--sysroot /sysroot` on booted system
+      #1924 open 2019-09-19 Silverblue 31: `finalize-staged` taking over 15 minutes to complete
+      #3267 closed 2024-06-19 relabel-etc: Split remount into, remount and relabel-etc
+      #2510 open 2022-01-06 Cleanup from staged deployments
+      #1903 open 2019-08-24 Bootloader Plugin: efivar
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #3571 merged 2026-03-04 generator: Add DefaultDependencies=no to var.mount for soft-reboot
+      #3570 merged 2026-02-27 bootconfig: Preserve extension BLS keys across staged deployments
+      #3516 merged 2025-08-28 Add ostree-shutdown.service: hide /sysroot and make /etc read-only
+      #3518 merged 2025-09-03 Rework mounts to fix sysroot.mount umount
+      #3513 closed 2025-08-27 Fix unmount of /etc and /sysroot
+      #3514 merged 2025-08-27 ostree-finalize-staged.service: RequiresMountsFor=/etc
+      #3459 merged 2025-07-01 sysroot: Cache deployment device/inode
+      #3458 closed 2025-06-30 deploy: Clean soft reboot state if /run/nextroot isn't mounted
+      #3454 closed 2025-06-27 soft-reboot followup tracker
+      #3460 merged 2025-07-01 soft-reboot: Many changes
+  reboot         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3474 open 2025-07-18 upgrade: Add --soft-reboot
+      #3491 open 2025-07-29 investigate soft reboots on rhel9
+      #3519 open 2025-09-04 Missing `/sysroot/ostree/deploy/fedora/var` bind mount after soft-reboot (cosmetic)
+      #1986 open 2019-12-26 question: /ostree/boot.0 or .1?
+      #3502 open 2025-08-16 Debug: soft-reboot [  388.410231] systemd[1]: Failed to load new SELinux policy. Continuing with old policy.
+      #2582 open 2022-04-20 Make deployment finalization do less things
+      #3520 open 2025-09-05 staged-deploy: Verify we didn't fail to unmount /sysroot or /etc
+      #1922 open 2019-09-16 Add a builtin command to pin the current deployment?
+      #3402 open 2025-04-03 transient `/etc` also mount `/var/etc` as a layer of the composefs/overlayfs
+      #2056 open 2020-04-05 reworking test suite: dropping gnome-installed-tests
+      #3440 open 2025-06-11 Document `ostree admin finalize-staged` in `ostree admin --help`
+      #1951 open 2019-10-21 Rework BLS fragment writing to do "two phase commit"
+      #1606 open 2018-05-29 Downgrades don't work when collection IDs are set
+      #3109 open 2023-12-04 Slow IO cause stateroot not bind mounted
+      #1780 open 2018-12-06 [RFE] Add ability to backup current state of /etc directory and also rollback when needed.
+      #2725 open 2022-10-03 add greenboot-like functionality integrated here
+      #1793 open 2018-12-26 Factory reset with OSTree
+      #2369 open 2021-06-04 Can't `ostree admin unlock` on top of a transiently locked system
+      #3365 open 2025-01-06 prepare-root: boot is kept writable
+      #1960 open 2019-10-28 Keep last version of deployment
+  disk+full      48 hit(s) (all listed)
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+      #1557 open 2018-04-24 Pro-actively abort pull operations which will fail due to disk space
+      #3271 open 2024-06-25 u-boot: add 'bootdir' to the generated uEnv.txt
+      #2510 open 2022-01-06 Cleanup from staged deployments
+      #3499 open 2025-08-15 docs: Add boot-transaction
+      #1419 open 2018-01-15 WIP: deploy: Attempt accelerated deploy by updating old deploy
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #443 open 2016-08-08 repo: Add a high level ostree_repo_import_oci_image_layer()
+      #701 open 2017-02-21 pull: Support require-deltas=upgrade
+      #3616 closed 2026-07-29 Harmful min-free-space-percent these days
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #1469 open 2018-02-26 ostree archive's mtime modification results in slower python execution
+      #1989 open 2020-01-08 PXE live boot of ostree system no longer works
+      #3615 merged 2026-07-24 lib/commit: Fix min-free-space accounting for reflinked content objects
+      #3154 open 2024-02-02 use `command -v` instead `which` command
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #3595 merged 2026-06-11 checkout: Fix GVariant leak when scanning for opaque whiteouts
+      #2753 open 2022-10-31 Support UKI
+      #3571 merged 2026-03-04 generator: Add DefaultDependencies=no to var.mount for soft-reboot
+      #3431 closed 2025-05-28 error: Pathname can't be converted from UTF-8 to current locale
+  data+loss      11 hit(s) (all listed)
+      #894 open 2017-05-30 ostree pull seems to do a lot of dns lookups
+      #729 open 2017-03-10 delta-only repositories
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #3587 merged 2026-05-09 sysroot: Merge bootconfig-extra from previously staged deployment
+      #3120 merged 2023-12-14 Add concept of state overlays
+      #3113 closed 2023-12-07 Add support for full overlayfs for `/`
+      #545 closed 2016-10-24 Support commit, syncfs, /etc merge just before reboot
+      #157 closed 2015-11-14 Rework OstreeFetcher to allow for temporary main contexts
+      #813 closed 2017-04-26 Prune concurrency
+      #1482 closed 2018-03-05 prune: Error if --static-deltas-only without --delete-commit
+  partial+write  16 hit(s) (all listed)
+      #713 open 2017-02-27 More intelligent pruning of tmp/
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #3611 open 2026-07-07 sysroot: Fix bootconfig-extra merge for repeated staging
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #2825 open 2023-03-06 2023.1: test suite is failing
+      #2843 merged 2023-04-03 ostree-fetcher-curl: handle non 404 errors as G_IO_ERROR_TIMED_OUT
+      #2851 closed 2023-04-28 Add .clang-format file which defines coding style as GNU
+      #2640 merged 2022-06-09 Add initial composefs integration
+      #2761 closed 2022-11-10 test-basic-bare-split-xattrs fails when run under user with sudo access
+      #2340 merged 2021-04-14 Add an API to verify a commit signature explicitly
+      #878 closed 2017-05-19 add some retry logic for pulling from remotes
+      #1778 closed 2018-12-04 Corrupt object after `ostree admin switch` on 2018.9
+      #162 closed 2015-12-16 repo: Set tmp permission to 01777 on each open
+      #140 closed 2015-09-14 Don't prune repository before a deploy
+      #1880 closed 2019-06-26 fsck: Throw and error and return non-zero for non-verified commits
+      #972 closed 2017-06-28 collection ref in commit metadata
+  crash+safe     7 hit(s) (all listed)
+      #3571 merged 2026-03-04 generator: Add DefaultDependencies=no to var.mount for soft-reboot
+      #3435 merged 2025-05-29 prep patches for: soft-reboot
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+      #3299 closed 2024-09-13 `flatpak update` produces ostree error with curl 8.10.0 (+ patch)
+      #47 closed 2015-01-16 static-delta: limit the number of writes in process to 10
+      #2103 merged 2020-05-17 Add "transient" unlock
+      #1049 closed 2017-08-03 lib/deploy: Use a FIFREEZE/FITHAW cycle for /boot
+  atomic+write   86 hit(s) (all listed)
+      #443 open 2016-08-08 repo: Add a high level ostree_repo_import_oci_image_layer()
+      #2804 open 2023-01-13 Add support for forcing on selinux labels
+      #1836 open 2019-04-08 Support kargs.d directories for default kargs
+      #2478 open 2021-11-03 Preparing final bootloader swap: symlinkat: Operation not permitted
+      #2291 open 2021-03-08 ostree create-usb performance
+      #1719 open 2018-09-12 systemd-boot support
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #2223 open 2020-10-26 Using OSTree with Raspberry Pi (Raspberry Pi OS)
+      #1469 open 2018-02-26 ostree archive's mtime modification results in slower python execution
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #3630 merged 2026-08-05 Release 2026.3
+      #2753 open 2022-10-31 Support UKI
+      #1967 closed 2019-11-03 Use rename of directories instead of symbolic links in boot partition.
+      #3315 closed 2024-09-28 Request a kernel commandline for `sysroot.readonly`
+      #3171 merged 2024-02-13 docs/atomic-rollbacks: Add a section on rollbacks
+      #3076 closed 2023-10-13 Mount /sysroot with read-write permissions
+      #1830 closed 2019-03-14 [WIP] lib/deploy: Check space before copying into /boot
+      #1841 closed 2019-04-16 lib/deploy: Support locking deployment finalization
+      #2847 merged 2023-04-13 lib/sysroot-deploy: Add experimental support for automatic early prune
+      #2844 closed 2023-04-05 Add ostree=aboot for signed Android Boot Images
+  lock+file      79 hit(s) (all listed)
+      #2478 open 2021-11-03 Preparing final bootloader swap: symlinkat: Operation not permitted
+      #1866 open 2019-05-27 Fully teach OSTree about staged deployment locking
+      #731 open 2017-03-10 Add work-around for TEMP_FAILURE_RETRY to support musl
+      #2021 open 2020-03-09 Idea for more efficient prune operation
+      #1739 open 2018-09-28 [WIP] lib/repo: Validate config more strictly
+      #1292 open 2017-10-18 Repository locking 🔒
+      #2653 open 2022-06-20 ostree admin unlock should not create mount namespace
+      #2125 open 2020-06-05 Support for deploying sysroot tree without writing deployment in /boot
+      #373 open 2016-06-29 exception in non-404 error paths
+      #2220 open 2020-10-15 deploy: Add support for providing config overlay for `/etc`
+      #3588 open 2026-05-13 Parallel compression and bsdiff
+      #378 open 2016-07-04 Tests failure on Debian stable on ARM
+      #2338 open 2021-04-14 Prune with depth != -1 can delete reachable commits
+      #1612 open 2018-06-05 lib/repo-pull: Retry pulls without static deltas if they fail
+      #2510 open 2022-01-06 Cleanup from staged deployments
+      #2727 open 2022-10-04 Update test-rofiles-fuse.sh
+      #2291 open 2021-03-08 ostree create-usb performance
+      #2056 open 2020-04-05 reworking test suite: dropping gnome-installed-tests
+      #2237 open 2020-11-13 Support for remote repo on S3 and others for upload after commiting
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+  write+failure  56 hit(s) (all listed)
+      #3563 open 2026-01-24 /etc merge during deployment finalization creating invalid SELinux policy
+      #3359 open 2024-12-19 sysroot: Support for directories instead of symbolic links in boot part
+      #2164 open 2020-08-06 ostree: review committing logic for umask handling
+      #713 open 2017-02-27 More intelligent pruning of tmp/
+      #3198 open 2024-02-24 grub2-mkconfig fail with composefs enabled
+      #1292 open 2017-10-18 Repository locking 🔒
+      #1551 open 2018-04-23 Use streaming reads for delta superblock for better memory use with inline parts
+      #353 open 2016-06-18 More pull code changes
+      #3154 open 2024-02-02 use `command -v` instead `which` command
+      #2056 open 2020-04-05 reworking test suite: dropping gnome-installed-tests
+      #3654 merged 2026-09-01 generator: Skip boot.mount if /etc/fstab has a /boot entry
+      #3640 merged 2026-08-14 min-free-space: Use min(3%, 1GB) as default
+      #2900 open 2023-06-23 drop FUSE detection workaround for flatpak
+      #3603 merged 2026-06-29 repo-commit: preserve existing .file object inode on consume commit
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #2753 open 2022-10-31 Support UKI
+      #3516 merged 2025-08-28 Add ostree-shutdown.service: hide /sysroot and make /etc read-only
+      #3523 merged 2025-09-09 Support using composefs signatures also with bootc commits
+      #3310 merged 2024-09-19 sysroot: Support boot counting for boot entries
+      #3358 closed 2024-12-18 [RFC] Hide /sysroot in a private mount namespace
+  file+contents  70 hit(s) (all listed)
+      #3663 open 2026-10-02 lib: Validate commit tree checksum length on read
+      #1836 open 2019-04-08 Support kargs.d directories for default kargs
+      #1593 open 2018-05-19 Installed tests do not work without trivial-httpd
+      #1408 open 2018-01-11 Add ostree checkout overwrite mode "--update"
+      #1578 open 2018-05-05 Better introductory explanation for docs?
+      #3032 open 2023-09-06 extensible metadata on deployments
+      #2227 open 2020-10-30 OSTree over OpenZFS it's too slow. Install flatpak packets in OpenZFS it's too slow.
+      #1854 open 2019-05-06 Support on avoiding undesired in-tree hardlinks
+      #2867 open 2023-05-30 ex-integrity.composefs: Tracking issue
+      #2357 open 2021-05-06 ostree on Beaglebone Black
+      #3289 open 2024-08-28 feat: Add Custom bootloader names so pretty_name can be static
+      #3350 open 2024-12-05 HTTP 1.1 connections not being reused
+      #2825 open 2023-03-06 2023.1: test suite is failing
+      #3587 merged 2026-05-09 sysroot: Merge bootconfig-extra from previously staged deployment
+      #3523 merged 2025-09-09 Support using composefs signatures also with bootc commits
+      #3477 merged 2025-07-20 ostree-prepare-root: remove duplicate transient directory
+      #1967 closed 2019-11-03 Use rename of directories instead of symbolic links in boot partition.
+      #3310 merged 2024-09-19 sysroot: Support boot counting for boot entries
+      #3421 closed 2025-05-16 Move /run  from initramfs to real-rootfs(sysroot/run)
+      #2283 closed 2021-02-22 OSTree boot links can get out of sync
+
+== 51 terms run; 47 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

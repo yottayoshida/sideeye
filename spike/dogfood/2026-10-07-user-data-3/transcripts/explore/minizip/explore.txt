@@ -1,0 +1,24 @@
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  rename(/s/mz/a.zip)
+            before rename(/s/aux/tmp/mz_dZzDaJ/1791357636x)
+path        a.zip
+observed    present before and after the operation, but gone from the crashed state
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (127 syscall lines examined, 25 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/minizip/work-explore/cases/000001.json
+replay      sideeye replay /out/minizip/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/minizip/work-explore/evidence/000001.json
+cwd         /s/mz-in
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/mz SIDEEYE_TRACE_PATH=/out/minizip/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=f1e27735e26f9b132e09e2bbb90a84dbe5b232353b39d2af8b03fdc741c3d04f;

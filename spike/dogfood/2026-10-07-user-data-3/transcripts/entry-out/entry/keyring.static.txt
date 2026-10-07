@@ -1,0 +1,2 @@
+static: /opt/py/bin/keyring: Python script, ASCII text executable
+next: sideeye explore --state /s/aux/data/python_keyring --cwd "/s/keyring-in" --operation "keyring del svc u1" \

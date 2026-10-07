@@ -1,0 +1,493 @@
+== novelty pre-scan: allinurl/goaccess
+== date: 2026-10-07T08:19:37Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          95 hit(s) (all listed)
+      #2825 open 2025-04-04 Crashes in Warp
+      #536 open 2016-10-10 Change time-unit in report
+      #189 open 2014-11-20 Segmentation fault with symbolic link
+      #1781 open 2020-05-22 Help static compile GoAccess on Centos
+      #572 open 2016-11-15 Extend documentation for processing very large logs
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #1988 open 2020-12-30 Improvement: change counters to uint64_t
+      #2918 closed 2026-03-03 Crash with latest goaccess with caddy logs
+      #2923 closed 2026-03-17 [Bug] HTML report crashes on initial render when `dataItem.data` is empty string — TypeError: s.split is not a function
+      #2911 closed 2026-02-14 GoAccess 1.10 crashed by Sig 11 due to persisted GEO data
+      #1699 open 2020-03-11 Can't get the realtime update working 
+      #2861 merged 2025-06-28 Fix Potential NULL dereference in ws_start when cfdstate remains uninitialized
+      #2871 closed 2025-07-26 lost passsword to goacces
+      #2818 closed 2025-03-28 prefix with line numbers for where errors happened
+      #2689 closed 2024-07-04 GoAccess crashed :(
+      #2679 merged 2024-05-08 Miscellaneous bug fixes and improvements
+      #2600 closed 2023-12-22 Crashed by Sig 11
+      #2594 merged 2023-12-14 Add Multi-thread Support
+      #2603 merged 2024-01-04 Multithread parsing
+      #2609 closed 2024-01-10 Segmentation fault when using multithreading option (Apple M1 Max)
+  corrupt        30 hit(s) (all listed)
+      #2857 open 2025-06-23 GeoIP2 - Error Traversing Database
+      #1324 open 2018-12-05 when i use --load-from-disk --keep-db-files with --daemonize，it's not working well
+      #418 open 2016-05-27 OpenBSD Loading Abstract Database Fails
+      #2052 open 2021-03-11 Doesn match specifier '%d'
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2955 closed 2026-06-01 No more continents/countries/cities after upgrading to 1.10.2
+      #2822 closed 2025-03-31 “SyntaxError: Unexpected end of script” when opening HTML page
+      #2756 closed 2024-11-09 Goaccess stops parsing after one second
+      #2540 closed 2023-07-31 Rewind persisted db to remove corrupted entries
+      #2570 closed 2023-10-22 Tables after the first fail to render properly
+      #2063 closed 2021-03-25 Inaccurate number of requested files
+      #923 closed 2017-10-25 Crashing after forced server restart using the on-disk DB
+      #523 closed 2016-09-21 High CPU usage using on-disk storage
+      #646 closed 2017-02-01 GoAccess 1.1.1 crashed by Sig 11 on-disk storage
+      #813 closed 2017-06-16 goaccess crashing when using --keep-db-files --load-from-disk 
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+      #620 closed 2017-01-12 Error Traversing Database for ipnum = <number> - Perhaps database is corrupt?
+      #1187 closed 2018-08-02 GoAccess 1.2 crashed by Sig 11 using on-disk storage
+      #918 closed 2017-10-17 GoAccess 1.2 crashed by Sig 11 using the on-disk DB
+      #900 closed 2017-09-28 tokyo cabinet and out of disk space notification
+  corruption     11 hit(s) (all listed)
+      #2679 merged 2024-05-08 Miscellaneous bug fixes and improvements
+      #296 closed 2015-09-08 GoAccess 0.9.3 crashed by Signal 11 when loading persisted data
+      #696 closed 2017-03-21 On-disk storage crash in GoAccess
+      #935 closed 2017-11-06 Current performance and incremental reports
+      #946 closed 2017-11-17 GoAccess 1.2 crashed by Sig 11 during parsing log with the on-disk storage
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+      #1052 closed 2018-03-23 GoAccess 1.2 crashed using the on-disk storage
+      #1391 closed 2019-03-01 TokyoCabinet corruption with lot's of traffic
+      #1412 closed 2019-03-24 GoAccess 1.3 crashed by Sig 11
+      #1549 closed 2019-09-17 kernel message: goaccess trap divide error
+      #1804 closed 2020-06-07 Statistics not shown: translation issue?
+  truncated      10 hit(s) (all listed)
+      #1947 closed 2020-10-22 IIS and Windows How To Guide
+      #2785 closed 2025-01-09 Truncated IP addresses in Data field in Visitor Hostnames and IPs table
+      #2244 closed 2021-12-10 Goaccess silently discards log data
+      #1952 closed 2020-11-02 Total Requests != Valid Requests + Failed Requests
+      #209 closed 2015-01-23 set default MAX_CHOICES to 400?
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+      #1646 closed 2020-01-02 Parsing Error on Log Turn-Over Message
+      #1913 closed 2020-09-09 Real-time with wrong accounting hits
+      #1815 closed 2020-06-17 Possible issue with incremental logic
+      #1906 closed 2020-08-29 Real time follow rotated log file
+  truncate       20 hit(s) (all listed)
+      #2849 open 2025-06-04 Use WebSocket HTTP server to serve HTML reports
+      #2711 open 2024-08-28 data does not hit and does not appear on the graph
+      #1781 open 2020-05-22 Help static compile GoAccess on Centos
+      #2951 closed 2026-05-25 Add persisted database retention window
+      #1947 closed 2020-10-22 IIS and Windows How To Guide
+      #2785 closed 2025-01-09 Truncated IP addresses in Data field in Visitor Hostnames and IPs table
+      #1009 closed 2018-02-12 How to hide IP (make report anonymous)
+      #2244 closed 2021-12-10 Goaccess silently discards log data
+      #2333 closed 2022-06-02 docker-compose - reading gz logs + normal logs?
+      #1952 closed 2020-11-02 Total Requests != Valid Requests + Failed Requests
+      #2037 closed 2021-02-22 Segfault caused by extra-long line from Caddy JSON log
+      #209 closed 2015-01-23 set default MAX_CHOICES to 400?
+      #303 closed 2015-09-25 Failed requests /w insanely large request lines
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+      #571 closed 2016-11-15 Change how chart x-axis labels are rendered
+      #858 closed 2017-08-04 Feature Request: Spanish translation
+      #1646 closed 2020-01-02 Parsing Error on Log Turn-Over Message
+      #1913 closed 2020-09-09 Real-time with wrong accounting hits
+      #1815 closed 2020-06-17 Possible issue with incremental logic
+      #1906 closed 2020-08-29 Real time follow rotated log file
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1682 open 2020-02-26 How to ignore empty referer
+      #1773 open 2020-05-15 [Visual] Some plot metric options are empty / redundant
+      #2798 open 2025-03-07 Suggestion: empty user-agent should be identified as crawler
+      #879 open 2017-09-12 Multiple logs, if one is empty, report is not generated
+      #2946 open 2026-05-21 Feature: Allow reading live-logs from varnish
+      #2857 open 2025-06-23 GeoIP2 - Error Traversing Database
+      #2004 open 2021-01-24 --ignore-status option does not work when it has a trailing comment # in the config file
+      #1972 open 2020-11-27 Improvement: defining fresh time in real-time monitoring
+      #2709 open 2024-08-28 [BUG?] Dark Theme causes radio buttons to display inverted
+      #845 open 2017-07-19 Using GoAccess to monitor everything, not just web logs!
+      #1322 open 2018-12-04 application-gateway-logviewer-goaccess - 404 Error with no report.html created
+      #1667 open 2020-02-10 Help with my log format
+      #1210 open 2018-08-22 Would GoAccess be capable to analyze a webmail logs generated with RoundCube?
+      #2711 open 2024-08-28 data does not hit and does not appear on the graph
+      #2482 open 2023-03-06 NPM with Geolocation - How is the correct format
+      #117 open 2014-05-21 Ability to filter dataset by fields or regex
+      #1756 open 2020-05-05 Help with custom log file format
+      #989 open 2018-01-11 goacess web 400 Invalid request
+      #685 open 2017-03-09 Ability to generate HTML report without Javascript (for mailing)
+      #2200 open 2021-10-03 LetsEncrypt Sep 30 Root Expiry broke ssl
+  atomic         4 hit(s) (all listed)
+      #2836 open 2025-04-29 Switch from old sync* built-ins to modern atomic* ones: `Undefined symbols for architecture ppc: "___sync_add_and_fetch_8"`
+      #2635 open 2024-02-21 __sync_add_and_fetch() breaks cross-compilation
+      #2750 merged 2024-10-29 Add semantic HTML to overall analytics and panel wrappers
+      #1961 closed 2020-11-12 v1.4.1 crashes with STDIN in Alpine Linux
+  atomically     0 hit(s)
+  interrupted    5 hit(s) (all listed)
+      #856 open 2017-08-03 real time reporting with ssl not working - Stopping WebSocket server
+      #2979 closed 2026-08-22 Race condition when loading panels
+      #572 open 2016-11-15 Extend documentation for processing very large logs
+      #2895 closed 2025-10-28 Parse logs from Google Logs Explorer with GoAccess?
+      #630 closed 2017-01-20 The connection to ws: //hots: 7890 / was interrupted while the page was being loaded.
+  interrupt      10 hit(s) (all listed)
+      #944 open 2017-11-14 Interrupting parsing leaves terminal unusable
+      #856 open 2017-08-03 real time reporting with ssl not working - Stopping WebSocket server
+      #2712 open 2024-08-30 Crontab
+      #2979 closed 2026-08-22 Race condition when loading panels
+      #572 open 2016-11-15 Extend documentation for processing very large logs
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2895 closed 2025-10-28 Parse logs from Google Logs Explorer with GoAccess?
+      #2163 closed 2021-08-14 PRI * Requests
+      #630 closed 2017-01-20 The connection to ws: //hots: 7890 / was interrupted while the page was being loaded.
+      #914 closed 2017-10-12 Slow terminal keyboard input while tailing via SSH and having local goaccess parse from the pipe
+  sigkill        3 hit(s) (all listed)
+      #1324 open 2018-12-05 when i use --load-from-disk --keep-db-files with --daemonize，it's not working well
+      #2605 merged 2024-01-05 handle SIGQUIT as a signal for a graceful shutdown
+      #310 closed 2015-10-05 ```18435 Bus error``` on a 22 Gbyte CLF [fixed/resolved]
+  sigint         23 hit(s) (all listed)
+      #944 open 2017-11-14 Interrupting parsing leaves terminal unusable
+      #1324 open 2018-12-05 when i use --load-from-disk --keep-db-files with --daemonize，it's not working well
+      #1636 open 2019-12-25 Output file not created when using tail
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2766 closed 2024-12-07 How make it work on nixos + journalctl (or: `No input data was provided nor there's data to restore`)
+      #2584 closed 2023-11-24 Minor issue with CTRL-C in Quick Help dialog
+      #1282 closed 2018-10-25 Running goaccess locally and tailing log from remote server
+      #1898 closed 2020-08-23 Running as systemd service
+      #1384 closed 2019-02-22 didn't enable real-time-html, but comes out: websocket ready to accept new client
+      #1491 closed 2019-07-02 Nginx reverse proxy - Green dot disconnected automatically after a period of time
+      #2155 closed 2021-07-28 Having a hard time with persistent storage
+      #334 closed 2015-11-19 Processing a log twice will count entries twice using on-disk store (dumb protection)
+      #428 closed 2016-06-10 Display stats from an unclosed STDIN
+      #612 closed 2017-01-07 On-disk database crashes with SIGSEGV
+      #600 closed 2016-12-23 real-time with multiple log
+      #665 closed 2017-02-17 on the fly log analysis - parse the log only partially 
+      #742 closed 2017-04-23 --real-time-html doesn't start using latest master
+      #582 closed 2016-12-02 Enhancement: Live Mode
+      #914 closed 2017-10-12 Slow terminal keyboard input while tailing via SSH and having local goaccess parse from the pipe
+      #1082 closed 2018-04-13 Multiple instances of goaccess are failed
+  ctrl-c         26 hit(s) (all listed)
+      #944 open 2017-11-14 Interrupting parsing leaves terminal unusable
+      #2315 open 2022-05-07 Exit confirmation dialog
+      #185 open 2014-11-07 Goaccess terminal dashboard shortcut keys not working.
+      #2461 open 2023-02-09 Daemon not working after sleep on macOS
+      #1636 open 2019-12-25 Output file not created when using tail
+      #981 closed 2018-01-01 Reading from multiple logs using zcat disables realtime html.
+      #969 closed 2017-12-21 Web access returns 400 Invalid Request
+      #2584 closed 2023-11-24 Minor issue with CTRL-C in Quick Help dialog
+      #2598 closed 2023-12-21 Add newline to HTML output
+      #1491 closed 2019-07-02 Nginx reverse proxy - Green dot disconnected automatically after a period of time
+      #1898 closed 2020-08-23 Running as systemd service
+      #2155 closed 2021-07-28 Having a hard time with persistent storage
+      #365 closed 2016-02-03 Error occured at: goaccess.c - main - Nothing valid to process.
+      #520 closed 2016-09-16 GoAccess Dockerfile
+      #589 closed 2016-12-15 Parsing counter Real time Monitoring Over SSL
+      #813 closed 2017-06-16 goaccess crashing when using --keep-db-files --load-from-disk 
+      #742 closed 2017-04-23 --real-time-html doesn't start using latest master
+      #625 closed 2017-01-16 How to run two or more real-time-html instances of GoAccess
+      #914 closed 2017-10-12 Slow terminal keyboard input while tailing via SSH and having local goaccess parse from the pipe
+      #1204 closed 2018-08-20 Fish shell buffering issue
+  power          8 hit(s) (all listed)
+      #2204 open 2021-10-06 Improvement: html-refresh small value when MAX_BATCH_LINES is reached
+      #2692 closed 2024-07-20 Unique visitor count too high, parse problem?
+      #2594 merged 2023-12-14 Add Multi-thread Support
+      #496 closed 2016-08-18 Add support for timezones
+      #2123 closed 2021-05-28 CPU hogging?
+      #39 closed 2013-09-27 Show all instead of top 300 requested files (Pages-URL)
+      #727 closed 2017-04-07 Real-time html report not reloading using Docker
+      #1121 closed 2018-05-21 how to configure tomcat custom log
+  outage         1 hit(s) (all listed)
+      #1698 open 2020-03-09 Proper hosting provider
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1950 open 2020-10-28 On-Disk Persistance Storage compression
+      #1324 open 2018-12-05 when i use --load-from-disk --keep-db-files with --daemonize，it's not working well
+      #2909 open 2026-02-04 High memory usage despite persisting data.
+      #1555 open 2019-09-28 How to use different options when generating report
+      #2849 open 2025-06-04 Use WebSocket HTTP server to serve HTML reports
+      #2943 open 2026-05-20 Some suggestions on the effective use of data at the smallest unit (such as daily reports).
+      #1904 open 2020-08-28 Importing/Migrating data from GoAccess < 1.4
+      #1783 open 2020-05-24 migration path for tokyocabinet with v1.4
+      #1876 open 2020-08-09 goaccess built with LTO is super slow
+      #1310 open 2018-11-24 Proposal: About the date display of report.
+      #2696 open 2024-07-26 Real-time JSON export
+      #741 open 2017-04-21 Missing Hours in VisitorCount Panel
+      #2836 open 2025-04-29 Switch from old sync* built-ins to modern atomic* ones: `Undefined symbols for architecture ppc: "___sync_add_and_fetch_8"`
+      #757 open 2017-05-04 Memory usage of goaccess using the live HTML report
+      #213 open 2015-02-04 Multiple different log formats with a merge report
+      #2328 open 2022-05-25 Timeframe of --real-time-html & persist data
+      #1179 open 2018-07-19 Panels for 403 and 5xx codes in the report
+      #631 open 2017-01-21 Question: Merge/import html, json or csvs with an html report?
+      #418 open 2016-05-27 OpenBSD Loading Abstract Database Fails
+      #572 open 2016-11-15 Extend documentation for processing very large logs
+  partial        14 hit(s) (all listed)
+      #182 open 2014-11-04 Detect and aggregate requests with 206 response
+      #2946 open 2026-05-21 Feature: Allow reading live-logs from varnish
+      #2972 closed 2026-07-18 Batch parse with multiple sources can loop re-printing the per-file error report (~16/s) instead of exiting
+      #1699 open 2020-03-11 Can't get the realtime update working 
+      #2308 closed 2022-04-27 Caddy 2.5.0 - Verify your log/date/time format
+      #2257 closed 2021-12-23 Unable to gain HTML reports on GoAccess
+      #238 closed 2015-04-17 help with my log/date/time format please
+      #334 closed 2015-11-19 Processing a log twice will count entries twice using on-disk store (dumb protection)
+      #373 closed 2016-02-17 Partial logs/incremental processing?
+      #554 closed 2016-10-25 Possible wrong bandwidth usage calculation
+      #1016 closed 2018-02-16 Static Resources Panel empty
+      #887 closed 2017-09-19 Weird problem with invalid data in html report
+      #1373 closed 2019-02-08 Swedish Translation
+      #1987 closed 2020-12-28 Suddenly missing tons of data
+  incomplete     9 hit(s) (all listed)
+      #2849 open 2025-06-04 Use WebSocket HTTP server to serve HTML reports
+      #856 open 2017-08-03 real time reporting with ssl not working - Stopping WebSocket server
+      #2314 open 2022-05-04 real time logging problem - wss
+      #2651 closed 2024-03-25 xff ips Incomplete
+      #2202 closed 2021-10-05 Real time web log not work after update to 1.5.2 SSL
+      #1832 closed 2020-06-29 how do i process aws elb json formatted logs
+      #113 closed 2014-05-19 more standard JSON escape process for escape_json_output
+      #1566 closed 2019-10-11 Documentation issue
+      #89 closed 2014-03-04 Solaris 9 SPARC build error
+  dataloss       0 hit(s)
+  recover        4 hit(s) (all listed)
+      #2955 closed 2026-06-01 No more continents/countries/cities after upgrading to 1.10.2
+      #2871 closed 2025-07-26 lost passsword to goacces
+      #1490 closed 2019-07-01 Mac OS Server Log Format
+      #1806 closed 2020-06-08 Scrambled browsers and OS aggregations 
+  recovery       1 hit(s) (all listed)
+      #2153 closed 2021-07-27 Prebuilt docker image error
+  rollback       1 hit(s) (all listed)
+      #2523 closed 2023-06-14 Can't bind the listener server to IPv4 and IPv6 (dual stack)
+  resume         28 hit(s) (all listed)
+      #1382 open 2019-02-17 Snap Package
+      #2328 open 2022-05-25 Timeframe of --real-time-html & persist data
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2699 open 2024-07-30 Custom JSON format for Caddy log structure
+      #1856 open 2020-07-26 Log format configuration help
+      #2918 closed 2026-03-03 Crash with latest goaccess with caddy logs
+      #750 closed 2017-04-27 Add cities within countries in GeoLocation panel
+      #2564 closed 2023-09-30 Empty "ENCRYPTION SETTINGS" panel with --log-format=CADDY and Caddy v2.7.4
+      #2780 closed 2025-01-05 Caddy iso8601
+      #2784 closed 2025-01-09 Requested Files and Not Found panels duplicate information
+      #2634 closed 2024-02-20 Caddy: Token '0' doesn't match specifier '%s'
+      #2626 closed 2024-02-06 Format Errors with Caddy JSON  (client_ip vs remote_ip)
+      #2601 closed 2023-12-23 Caddy log format - client_ip should be used instead of remote_ip
+      #2476 closed 2023-03-01 goaccess-1.7.1 dumps core when reading from STDIN
+      #2387 closed 2022-09-30 Latest caddy and goaccess, not able to parse access logs
+      #2382 closed 2022-09-15 Error parsing Caddy logs with goaccess 1.6.3
+      #2308 closed 2022-04-27 Caddy 2.5.0 - Verify your log/date/time format
+      #496 closed 2016-08-18 Add support for timezones
+      #2081 closed 2021-04-08 Caddy JSON parsing fails for IPv6 addresses with "[" (bracket) in log
+      #2045 closed 2021-02-27 Token '1614408909' doesn't match specifier '%x'
+  half-written   2 hit(s) (all listed)
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+  wipe           4 hit(s) (all listed)
+      #813 closed 2017-06-16 goaccess crashing when using --keep-db-files --load-from-disk 
+      #884 closed 2017-09-15 Crash at startup using the on-disk database
+      #1215 closed 2018-08-24 Older data wiped
+      #1277 closed 2018-10-23 on-disk data retention
+  wipes          0 hit(s)
+  erase          7 hit(s) (all listed)
+      #1210 open 2018-08-22 Would GoAccess be capable to analyze a webmail logs generated with RoundCube?
+      #1988 open 2020-12-30 Improvement: change counters to uint64_t
+      #2139 closed 2021-06-30 lengthy static-file configuration value will cause unexpected results
+      #844 closed 2017-07-18 Error generating html report using v0.9.4 and --log-format option
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+      #1211 closed 2018-08-22 Correct use of --db-path when incrementally processing logfile per vhost
+      #1945 closed 2020-10-18 Duplicated request entries on "Requested Files" panel
+  erasing        1 hit(s) (all listed)
+      #1210 open 2018-08-22 Would GoAccess be capable to analyze a webmail logs generated with RoundCube?
+  erased         3 hit(s) (all listed)
+      #1988 open 2020-12-30 Improvement: change counters to uint64_t
+      #1211 closed 2018-08-22 Correct use of --db-path when incrementally processing logfile per vhost
+      #1945 closed 2020-10-18 Duplicated request entries on "Requested Files" panel
+  destroy        4 hit(s) (all listed)
+      #2788 closed 2025-01-21 `--no-ip-validation` option has no influence on report generation, which fails.
+      #2101 closed 2021-05-05 Updating to the new hash table code panics GoAccess
+      #847 closed 2017-07-20 Need instruction for NGINX Docker installation
+      #848 closed 2017-07-20 Suggestion, a plug-and-play Docker first!
+  destroys       0 hit(s)
+  overwrite      15 hit(s) (all listed)
+      #2988 open 2026-10-02 Debian Package overwrites config file on update
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2911 closed 2026-02-14 GoAccess 1.10 crashed by Sig 11 due to persisted GEO data
+      #2351 closed 2022-07-09 Stats when rewriting log file on remote sync
+      #2245 closed 2021-12-11 Store and use persistent data on S3
+      #1959 closed 2020-11-12 Remove CMD from Dockerfile
+      #170 closed 2014-09-20 Do not overwrite config file when update using package manager
+      #116 closed 2014-05-20 Configuration file improvement ideas
+      #136 closed 2014-07-08 No date format was found on your conf file
+      #935 closed 2017-11-06 Current performance and incremental reports
+      #877 closed 2017-09-08 Output html gets always overridden
+      #813 closed 2017-06-16 goaccess crashing when using --keep-db-files --load-from-disk 
+      #622 closed 2017-01-13 Issue with custom log and response times
+      #826 closed 2017-06-29 Date format issue on Cygwin and different locale
+      #2034 merged 2021-02-20 add some browsers
+  clobber        0 hit(s)
+  blank          36 hit(s) (all listed)
+      #1567 open 2019-10-12 the web interface real-time can't work
+      #879 open 2017-09-12 Multiple logs, if one is empty, report is not generated
+      #2708 open 2024-08-25 Docker Deployment and WebSocket Questions for Beginners
+      #1328 open 2018-12-06 Websocket server configuration???
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2951 closed 2026-05-25 Add persisted database retention window
+      #2923 closed 2026-03-17 [Bug] HTML report crashes on initial render when `dataItem.data` is empty string — TypeError: s.split is not a function
+      #2822 closed 2025-03-31 “SyntaxError: Unexpected end of script” when opening HTML page
+      #2700 closed 2024-08-01 confirm config file format for GoAccess config file (for syntax highlighting in Vim)
+      #1444 closed 2019-05-02 Haproxy log format help
+      #2379 closed 2022-09-11 Blank page when html report is generated
+      #2326 closed 2022-05-23 Please help with my Apache Log format (including request times)
+      #2344 closed 2022-07-01 real-time html accessed on local network shows nothing
+      #2272 closed 2022-02-07 Request help with custom log format
+      #205 closed 2015-01-10 3xx shouldn't count as failed visitors
+      #661 closed 2017-02-15 Access log issues and cPanel
+      #697 closed 2017-03-21 Console not showing information that's in web interface - bandwidth, visitors, etc
+      #250 closed 2015-05-18 Pattern won't match log format containing a syslog date format 
+      #454 closed 2016-06-29 IIS Web Proxy Log Fields
+      #992 closed 2018-01-13 https issue -'load unsafe script'
+  unreadable     3 hit(s) (all listed)
+      #1210 open 2018-08-22 Would GoAccess be capable to analyze a webmail logs generated with RoundCube?
+      #836 closed 2017-07-10 Token: doesn't match specifier '%s'
+      #2346 closed 2022-07-01 GoAccess for DNS query logs (Bind9)
+  garbage        4 hit(s) (all listed)
+      #2645 open 2024-03-13 Does goaccess respect docker mem_limit?
+      #1683 closed 2020-02-26 parsing stopps at first empty logfiles
+      #78 closed 2014-01-23 Support reverse proxy setup for Apache logs
+      #1768 closed 2020-05-13 Support structured log formats such as JSON
+  mangled        1 hit(s) (all listed)
+      #319 closed 2015-10-18 goaccess considers HTTP/2 protocol to be invalid
+  contents       33 hit(s) (all listed)
+      #1966 open 2020-11-16 HTML report view breaks copy&paste by constantly updating data
+      #2731 open 2024-09-30 Feature Request: Search inside HTML panels
+      #2204 open 2021-10-06 Improvement: html-refresh small value when MAX_BATCH_LINES is reached
+      #2509 open 2023-05-10 Website monitoring with GoAccess: Permission denied
+      #2321 open 2022-05-17 GoAccess Invalid deb signatures EXPKEYSIG - deb repo
+      #2788 closed 2025-01-21 `--no-ip-validation` option has no influence on report generation, which fails.
+      #925 closed 2017-10-27 Scan gzipped log files
+      #2513 closed 2023-05-27 Working on Ubuntu: File does not exist on the server, how to create it If so, where to upload the same?
+      #2533 closed 2023-06-27 Goaccess error - not showing report.html
+      #2341 closed 2022-06-22 Real Time HTML report not updating
+      #2433 closed 2022-12-16 GoAccess Html contents are not loading properly
+      #2490 closed 2023-03-18 Feature Request: Latest entries
+      #1132 closed 2018-05-30 deb.goaccess.io: doesn't support architecture 'arm64' / 'armhf'
+      #162 closed 2014-08-28 Nothing valid to process.
+      #312 closed 2015-10-09 Issue with HTML generation
+      #691 closed 2017-03-17 make with error "use of undeclared identifier 'GEOIP_MEMORY_CACHE'" on MacOS
+      #76 closed 2014-01-21 Amazon Cloudfront Parser
+      #966 closed 2017-12-12 Another log format - traefik inside a Docker container
+      #895 closed 2017-09-24 How to list out static contents hosted in a subdomain in the goaccess report? 
+      #600 closed 2016-12-23 real-time with multiple log
+  in-place       73 hit(s) (all listed)
+      #112 open 2014-05-19 Additional features that would be cool
+      #1561 open 2019-10-04 Set favicon for GoAccess?
+      #1532 open 2019-08-14 Error occurred at: src/parser.c - read_log - 2764
+      #1329 open 2018-12-06 gopanel - Web interface for multi-log goaccess realtime
+      #2849 open 2025-06-04 Use WebSocket HTTP server to serve HTML reports
+      #1775 open 2020-05-18 APT repository signing key changed?
+      #878 open 2017-09-09 Terminal height
+      #1821 open 2020-06-23 Fix definitions of combined/common log formats
+      #1089 open 2018-04-18 Custom log specifier for geolocation country code
+      #2718 open 2024-09-18 Goaccess Web Problem
+      #2745 open 2024-10-25 Possible bug / display issue with "Visitor Hostnames and IPS"
+      #2888 open 2025-10-04 Documentation - add working config example for goaccess with NGINX and systemd service
+      #1035 open 2018-03-01 [Question] Why Requested files report 404?
+      #1369 open 2019-02-01 how to show full requested URL instead of relative link
+      #2321 open 2022-05-17 GoAccess Invalid deb signatures EXPKEYSIG - deb repo
+      #2545 open 2023-08-13 WebSocket Handshake Fails with 400 Bad Request Error
+      #2200 open 2021-10-03 LetsEncrypt Sep 30 Root Expiry broke ssl
+      #1280 open 2018-10-24 goaccess websocket behind reverse proxy is not working 
+      #2659 closed 2024-04-10 How to hide paths duplicated based on protocol
+      #2805 closed 2025-03-18 Change map-projection for map view
+  unclean        1 hit(s) (all listed)
+      #2955 closed 2026-06-01 No more continents/countries/cities after upgrading to 1.10.2
+  shutdown       11 hit(s) (all listed)
+      #856 open 2017-08-03 real time reporting with ssl not working - Stopping WebSocket server
+      #2314 open 2022-05-04 real time logging problem - wss
+      #2200 open 2021-10-03 LetsEncrypt Sep 30 Root Expiry broke ssl
+      #2972 closed 2026-07-18 Batch parse with multiple sources can loop re-printing the per-file error report (~16/s) instead of exiting
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2605 merged 2024-01-05 handle SIGQUIT as a signal for a graceful shutdown
+      #2608 merged 2024-01-08 doc: add minor documentation
+      #2202 closed 2021-10-05 Real time web log not work after update to 1.5.2 SSL
+      #946 closed 2017-11-17 GoAccess 1.2 crashed by Sig 11 during parsing log with the on-disk storage
+      #884 closed 2017-09-15 Crash at startup using the on-disk database
+      #1761 closed 2020-05-08 geoip-database
+  reboot         14 hit(s) (all listed)
+      #1781 open 2020-05-22 Help static compile GoAccess on Centos
+      #1066 closed 2018-04-01 How can I pass custom nginx log format to GoAccess
+      #2186 closed 2021-09-20 [Help] Need real-time-html report
+      #2169 closed 2021-08-23 No input data was provided nor there's data to restore
+      #684 closed 2017-03-08 GoAccess as a system service
+      #600 closed 2016-12-23 real-time with multiple log
+      #812 closed 2017-06-16 Incorrect time on Real-Time HTML Report
+      #742 closed 2017-04-23 --real-time-html doesn't start using latest master
+      #1014 closed 2018-02-15 Unable to start websocket on first boot using Vagrant
+      #824 closed 2017-06-28 Feed HAProxy logs to GoAccess using remote Rsyslog
+      #884 closed 2017-09-15 Crash at startup using the on-disk database
+      #1390 closed 2019-02-28 Help with log format
+      #1628 closed 2019-12-08 Is my configuration file incorrect? (doesnt start with config)
+      #1508 closed 2019-07-19 I can not activate --real-time-html on Cron
+  disk+full      28 hit(s) (all listed)
+      #2943 open 2026-05-20 Some suggestions on the effective use of data at the smallest unit (such as daily reports).
+      #631 open 2017-01-21 Question: Merge/import html, json or csvs with an html report?
+      #2328 open 2022-05-25 Timeframe of --real-time-html & persist data
+      #757 open 2017-05-04 Memory usage of goaccess using the live HTML report
+      #1988 open 2020-12-30 Improvement: change counters to uint64_t
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2835 open 2025-04-29 custom logs format error
+      #2440 closed 2023-01-16 Goaccess does not parse all the file
+      #673 closed 2017-03-01 Extracting virtual host from the file name
+      #2320 closed 2022-05-16 GoAccess & IIS 10.0 Logformat
+      #1770 closed 2020-05-14 Docker : persisting parsed data 
+      #310 closed 2015-10-05 ```18435 Bus error``` on a 22 Gbyte CLF [fixed/resolved]
+      #327 closed 2015-10-26 GoAccess 0.9.5 crashed by Signal 11
+      #696 closed 2017-03-21 On-disk storage crash in GoAccess
+      #359 closed 2016-01-18 Request to support json log format
+      #935 closed 2017-11-06 Current performance and incremental reports
+      #646 closed 2017-02-01 GoAccess 1.1.1 crashed by Sig 11 on-disk storage
+      #612 closed 2017-01-07 On-disk database crashes with SIGSEGV
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+      #1187 closed 2018-08-02 GoAccess 1.2 crashed by Sig 11 using on-disk storage
+  data+loss      6 hit(s) (all listed)
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #2446 closed 2023-01-23 Having trouble with --real-time-html refreshing
+      #1976 closed 2020-12-03 Official GoAccess' Debian/Ubuntu Repository returns 403
+      #918 closed 2017-10-17 GoAccess 1.2 crashed by Sig 11 using the on-disk DB
+      #1052 closed 2018-03-23 GoAccess 1.2 crashed using the on-disk storage
+      #1927 closed 2020-10-01 Need some improvement in keep-last algorithm
+  partial+write  1 hit(s) (all listed)
+      #334 closed 2015-11-19 Processing a log twice will count entries twice using on-disk store (dumb protection)
+  crash+safe     3 hit(s) (all listed)
+      #1781 open 2020-05-22 Help static compile GoAccess on Centos
+      #2746 open 2024-10-25 JSON response bandwidth usage via WebSocket server
+      #900 closed 2017-09-28 tokyo cabinet and out of disk space notification
+  atomic+write   0 hit(s)
+  lock+file      8 hit(s) (all listed)
+      #2712 open 2024-08-30 Crontab
+      #852 closed 2017-07-27 Missing development files for the GeoIP library
+      #377 closed 2016-02-22 Support multiple parsing threads
+      #66 closed 2013-12-22 Completion of error handling
+      #730 closed 2017-04-10 Server locked (outgoing flood)
+      #708 closed 2017-03-30 Crashed by SIG 11 using on-disk storage
+      #585 closed 2016-12-12 Can we run multiple real-time goaccess instances in one hosts?
+      #1373 closed 2019-02-08 Swedish Translation
+  write+failure  0 hit(s)
+  file+contents  26 hit(s) (all listed)
+      #2731 open 2024-09-30 Feature Request: Search inside HTML panels
+      #2509 open 2023-05-10 Website monitoring with GoAccess: Permission denied
+      #2321 open 2022-05-17 GoAccess Invalid deb signatures EXPKEYSIG - deb repo
+      #2788 closed 2025-01-21 `--no-ip-validation` option has no influence on report generation, which fails.
+      #925 closed 2017-10-27 Scan gzipped log files
+      #2513 closed 2023-05-27 Working on Ubuntu: File does not exist on the server, how to create it If so, where to upload the same?
+      #2533 closed 2023-06-27 Goaccess error - not showing report.html
+      #2341 closed 2022-06-22 Real Time HTML report not updating
+      #2490 closed 2023-03-18 Feature Request: Latest entries
+      #1132 closed 2018-05-30 deb.goaccess.io: doesn't support architecture 'arm64' / 'armhf'
+      #2093 closed 2021-04-23 Binding WSS to 127.0.0.1 prevents realtime output from working
+      #162 closed 2014-08-28 Nothing valid to process.
+      #312 closed 2015-10-09 Issue with HTML generation
+      #76 closed 2014-01-21 Amazon Cloudfront Parser
+      #966 closed 2017-12-12 Another log format - traefik inside a Docker container
+      #895 closed 2017-09-24 How to list out static contents hosted in a subdomain in the goaccess report? 
+      #600 closed 2016-12-23 real-time with multiple log
+      #725 closed 2017-04-07 Filter request url from into log file
+      #1168 closed 2018-07-03 Docker GoAccess 1.2 crashed by Sig 11
+      #817 closed 2017-06-22 date format specifier %h not working?
+
+== 51 terms run; 43 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

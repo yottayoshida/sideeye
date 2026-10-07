@@ -1,0 +1,6 @@
+[world]
+state = "/s/plakar/repo"
+
+[define]
+operation = "plakar at /s/plakar/repo rm -apply -tag old"
+cwd       = "/s/plakar-in"

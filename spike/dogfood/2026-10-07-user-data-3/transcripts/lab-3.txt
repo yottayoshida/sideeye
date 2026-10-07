@@ -1,0 +1,142 @@
+=== tiddlywiki: save a single-file wiki over itself
+  image: /usr/bin/node: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ tiddlywiki /s/tw/folder --init empty
+Copied edition 'empty' to /s/tw/folder
+  -> exit 0
+$ tiddlywiki /s/tw/folder --render $:/core/save/all wiki.html text/plain
+  -> exit 0
+-rw-r--r-- 1 root root 2552335 Oct  7 06:15 wiki.html
+$ tiddlywiki --load /s/tw/wiki.html --output /s/tw --render $:/core/save/all wiki.html text/plain
+  -> exit 0
+  state: 73c01d546e60 -> 73c01d546e60
+drwxr-xr-x 3 root root    4096 Oct  7 06:15 folder
+-rw-r--r-- 1 root root 2552335 Oct  7 06:15 wiki.html
+=== broot --install / --set-install-state
+  image: /opt/bin/broot: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ broot --install
+You requested a clean (re)install.
+Writing [38;5;13m[3mbr[0m shell function in [48;5;234m[38;5;250m/s/aux/data/broot/launcher/bash/1[49m[39m.
+Creating link from [48;5;234m[38;5;250m/s/aux/home/.config/broot/launcher/bash/br[49m[39m to [48;5;234m[38;5;250m/s/aux/data/broot/launcher/bash/1[49m[3
+[48;5;234m[38;5;250m/s/aux/home/.bashrc[49m[39m successfully patched, you can make the function immediately available with [48;5;234m[38;5;250msource [49
+
+The [1mbr[0m function has been successfully installed.
+You may have to restart your shell or source your 
+shell init files.
+Afterwards, you should start broot with [48;5;234m[38;5;250mbr[49m[39m in 
+order to use its full power.
+
+  -> exit 0
+  home: 07c7c9dfe495 -> 4c6d70b1cb93
+alias ll=ls
+
+source /s/aux/home/.config/broot/launcher/bash/br
+drwxr-xr-x 3 root root 4096 Oct  7 06:15 .
+drwxr-xr-x 3 root root 4096 Oct  7 06:15 ..
+drwxr-xr-x 3 root root 4096 Oct  7 06:15 launcher
+$ broot --set-install-state refused
+Removing [48;5;234m[38;5;250m/s/aux/home/.config/broot/launcher/installed-v5[49m[39m.
+  -> exit 0
+  home: 4c6d70b1cb93 -> b98a2fbf8d93
+=== ziptool: edit an archive in place
+  image: /opt/bin/ziptool: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ ziptool a.zip delete 0
+  -> exit 0
+-rw-r--r-- 1 root root 8386 Oct  7 06:15 a.zip
+$ ziptool a.zip rename 0 renamed.bin
+  -> exit 0
+  state: eb1d2d365c58 -> 925606939cb0
+$ ziptool a.zip set_archive_comment hello
+  -> exit 0
+  state: 925606939cb0 -> 1d08ef01c643
+drwxr-xr-x 3 root root 4096 Oct  7 06:15 .
+drwxr-xr-x 6 root root 4096 Oct  7 06:15 ..
+-rw-r--r-- 1 root root 8403 Oct  7 06:15 a.zip
+drwxr-xr-x 2 root root 4096 Oct  7 06:15 src
+=== clipse -a
+  image: /opt/bin/clipse: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch6
+$ clipse -a first-entry
+clipse: error while loading shared libraries: libX11.so.6: cannot open shared object file: No such file or directory
+  -> exit 127
+/ap/lab-3.sh: 7: cd: can't cd to /s/aux/home/.config/clipse
+$ clipse -a second-entry
+clipse: error while loading shared libraries: libX11.so.6: cannot open shared object file: No such file or directory
+  -> exit 127
+/ap/lab-3.sh: 7: cd: can't cd to /s/aux/home/.config/clipse
+  state:  -> 
+=== lnav: write a config value
+  image: /opt/bin/lnav: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=061ea4dcfe9d9169c5e
+$ lnav -n -c :config /ui/theme monocai /dev/null
+  error: unable to open file: /dev/null
+ reason: failed to open required file “/dev/null”
+ |        reason: Invalid argument
+  -> exit 1
+drwxr-x--- 6 root root 4096 Oct  7 06:15 .
+drwxr-xr-x 4 root root 4096 Oct  7 06:15 ..
+drwxr-x--- 4 root root 4096 Oct  7 06:15 configs
+drwxr-x--- 2 root root 4096 Oct  7 06:15 crash
+drwxr-x--- 4 root root 4096 Oct  7 06:15 formats
+drwxr-x--- 2 root root 4096 Oct  7 06:15 staging
+$ lnav -n -c :config /ui/theme eldar /dev/null
+  error: unable to open file: /dev/null
+ reason: failed to open required file “/dev/null”
+ |        reason: Invalid argument
+  -> exit 1
+  state: b0739eec200b -> b0739eec200b
+=== prek install / uninstall
+  image: /opt/bin/prek: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ prek install
+Hook already exists at `.git/hooks/pre-commit`, moved it to `.git/hooks/pre-commit.legacy`
+Migration mode: prek will also run legacy hook `.git/hooks/pre-commit.legacy`. Use `--force` to remove legacy hooks.
+Installed Git hook at `.git/hooks/pre-commit`
+  -> exit 0
+  hooks: eeebabf170a7 -> 5e243299b7c8
+total 80
+drwxr-xr-x 2 root root 4096 Oct  7 06:15 .
+drwxr-xr-x 7 root root 4096 Oct  7 06:15 ..
+-rwxr-xr-x 1 root root  379 Oct  7 06:15 pre-commit
+-rwxr-xr-x 1 root root   27 Oct  7 06:15 pre-commit.legacy
+$ prek uninstall
+Uninstalled `pre-commit`
+Restored `.git/hooks/pre-commit.legacy` to `.git/hooks/pre-commit`
+  -> exit 0
+  hooks: 5e243299b7c8 -> eeebabf170a7
+total 76
+drwxr-xr-x 2 root root 4096 Oct  7 06:15 .
+drwxr-xr-x 7 root root 4096 Oct  7 06:15 ..
+-rwxr-xr-x 1 root root   27 Oct  7 06:15 pre-commit
+=== oh-my-fish: install offline, then switch theme
+  image: /opt/bin/fish: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=9ecbca468e64e6ee511
+$ fish bin/install --offline --noninteractive --yes
+Checking for a sane environment...
+Installing Oh My Fish to /s/aux/data/omf...
+Writing bootstrap to /s/aux/home/.config/fish/conf.d/omf.fish...
+Setting up Oh My Fish configuration...
+To complete the Oh My Fish installation, please run the command "omf install" 
+(without ") when network access is available
+Installation successful!
+  -> exit 0
+drwxr-xr-x 2 root root 4096 Oct  7 06:15 .
+drwxr-xr-x 6 root root 4096 Oct  7 06:15 ..
+-rw-r--r-- 1 root root   14 Oct  7 06:15 bundle
+-rw-r--r-- 1 root root    7 Oct  7 06:15 channel
+-rw-r--r-- 1 root root    8 Oct  7 06:15 theme
+default
+$ fish -c omf theme default
+[31;1mTheme not installed![m
+Install it using [36momf install default[m
+  -> exit 3
+  state: ce728db1cbf7 -> ce728db1cbf7
+$ fish -c omf list
+[4mPlugins[m
+fish: Unknown command: column
+//s/aux/data/omf/pkg/omf/functions/cli/omf.cli.list.fish (line 5): 
+    omf.packages.list --plugin | column
+                                 ^~~~~^
+in function 'omf.cli.list'
+	called on line 2 of file -
+in function '__omf_last_command'
+	called on line 50 of file /s/aux/data/omf/pkg/omf/functions/omf.fish
+in function 'omf' with arguments 'list'
+
+[4mThemes[m
+  -> exit 127

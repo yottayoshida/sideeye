@@ -1,0 +1,182 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: the page's (working tree)    sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: the page's at tag v1.9.0     sha256 45c7cc0c812e083a417914776f47758fc25bb4791cf862949c52906efe88c82d
+build: NOTE the page's installer has moved since v1.9.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 21.59kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/47] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f 0.0s done
+#4 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [25/47] RUN { for c in "broot --version" "prek --version" "clipse -v" "lnav -V" "ziptool -h" "fish --version" "tiddlywiki --version"; do         printf '%s: ' "$c"; sh -c "$c" 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -7 /versions.txt
+#6 CACHED
+
+#7 [35/47] RUN for p in ezdxf==1.4.4 mcpm==2.15.0; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done
+#7 CACHED
+
+#8 [41/47] RUN /opt/py/bin/pip install --no-cache-dir doit==0.37.0 > /tmp/pip-doit.log 2>&1 && echo "OK doit" || { echo "FAILED doit"; tail -3 /tmp/pip-doit.log; }
+#8 CACHED
+
+#9 [ 7/47] COPY install-sideeye.sh /opt/install-sideeye.sh
+#9 CACHED
+
+#10 [31/47] RUN set -u; cd /tmp/dl; mkdir -p x-xiso && tar xzf xiso.tgz -C x-xiso --strip-components=1 && cd x-xiso &&     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /tmp/xiso-cmake.log 2>&1 && cmake --build build -j"$(nproc)" > /tmp/xiso-make.log 2>&1 &&     f=$(find build -type f -name extract-xiso -perm -u+x | head -1) && install -m 755 "$f" /opt/bin/extract-xiso && echo "extract-xiso built <- $f" || { echo "extract-xiso: FAILED"; tail -n 5 /tmp/xiso-make.log || true; }
+#10 CACHED
+
+#11 [27/47] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/nesbox/TIC-80/releases/download/v1.3.1/tic80-v1.3-linux-arm64.zip tic80.zip;     get $gh/kubernetes-sigs/krew/releases/download/v0.5.0/krew-linux_arm64.tar.gz krew.tgz;     get $gh/zlib-ng/minizip-ng/archive/refs/tags/4.2.2.tar.gz minizip.tgz;     get $gh/LAStools/LAStools/archive/refs/tags/v2.0.5.tar.gz lastools.tgz;     get $gh/XboxDev/extract-xiso/archive/refs/tags/build-202609111233.tar.gz xiso.tgz;     get $gh/Limine-Bootloader/Limine/releases/download/v12.9.3/limine-12.9.3.tar.gz limine.tgz;     get $gh/void-linux/xbps/archive/refs/tags/0.60.7.tar.gz xbps.tgz;     get $gh/Qalculate/libqalculate/releases/download/v5.13.1/libqalculate-5.13.1.tar.gz qalc.tgz;     ls -l /tmp/dl | tail -n 8
+#11 CACHED
+
+#12 [ 8/47] RUN sh /opt/install-sideeye.sh v1.9.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#12 CACHED
+
+#13 [26/47] RUN for p in testdisk sndfile-programs libarchive-dev libssl-dev libmpfr-dev libgmp-dev libxml2-dev libicu-dev libreadline-dev intltool autoconf automake libtool; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done
+#13 CACHED
+
+#14 [42/47] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/stacklok/toolhive/releases/download/v0.51.4/toolhive_0.51.4_linux_arm64.tar.gz thv.tgz;     get $gh/kovidgoyal/kitty/releases/download/v0.49.2/kitten-linux-arm64 kitten;     get https://codeload.github.com/kovidgoyal/kitty-themes/zip/refs/heads/master kitty-themes.zip;     mkdir -p x-thv && tar xzf thv.tgz -C x-thv && install -m 755 "$(find x-thv -type f -name thv | head -1)" /opt/bin/thv && echo "bin thv";     install -m 755 kitten /opt/bin/kitten && echo "bin kitten";     mkdir -p /opt/kitty-themes && cp kitty-themes.zip /opt/kitty-themes/kitty-themes.zip && ls -l /opt/kitty-themes
+#14 CACHED
+
+#15 [16/47] RUN for p in afdko==5.0.1 legendary-gl==0.21.1 weewx==5.5.2 snakemake==9.27.0 esptool==5.4.0; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done
+#15 CACHED
+
+#16 [17/47] RUN npm install -g --no-fund --no-audit netlify-cli@27.11.2 > /tmp/npm-netlify.log 2>&1 && echo "OK netlify-cli" || { echo "FAILED netlify-cli"; tail -3 /tmp/npm-netlify.log; }
+#16 CACHED
+
+#17 [10/47] WORKDIR /w
+#17 CACHED
+
+#18 [12/47] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz openssl.tgz;     get $gh/smallstep/cli/releases/download/v0.31.0/step_linux_0.31.0_arm64.tar.gz step.tgz;     get $gh/lxc/incus/releases/download/v7.5.1/bin.linux.incus.aarch64 incus;     get $gh/canonical/lxd/releases/download/lxd-6.9/bin.linux.lxc.aarch64 lxc;     get $gh/git-lfs/git-lfs/releases/download/v3.8.0/git-lfs-linux-arm64-v3.8.0.tar.gz git-lfs.tgz;     get $gh/gilbertchen/duplicacy/releases/download/v3.2.5/duplicacy_linux_arm64_3.2.5 duplicacy;     get $gh/PlakarKorp/plakar/releases/download/v1.1.7/plakar_1.1.7_linux_arm64.tar.gz plakar.tgz;     get $gh/rustic-rs/rustic/releases/download/v0.11.4/rustic-v0.11.4-aarch64-unknown-linux-gnu.tar.gz rustic.tgz;     get $gh/gorilla-devs/ferium/releases/download/v4.7.1/ferium-linux-arm64-nogui.zip ferium.zip;     get $gh/OpenVPN/easy-rsa/releases/download/v3.2.7/EasyRSA-3.2.7.tgz easyrsa.tgz;     get $gh/acmesh-official/acme.sh/archive/refs/tags/3.1.6.tar.gz acme.tgz;     get $gh/agkozak/zsh-z/archive/refs/tags/v2.0.1.tar.gz zshz.tgz;     ls -l /tmp/dl
+#18 CACHED
+
+#19 [15/47] RUN for p in certstrap@v1.3.0 sbctl@0.18; do       case "$p" in certstrap*) m=github.com/square/certstrap@v1.3.0 ;; sbctl*) m=github.com/foxboron/sbctl/cmd/sbctl@0.18 ;; esac;       GOFLAGS=-mod=mod go install "$m" > /tmp/go-$p.log 2>&1 && echo "OK go $p" || { echo "FAILED go $p"; tail -3 /tmp/go-$p.log; };     done; ls -l /root/go/bin
+#19 CACHED
+
+#20 [33/47] RUN set -u; cd /tmp/dl; mkdir -p x-xbps && tar xzf xbps.tgz -C x-xbps --strip-components=1 && cd x-xbps &&     ./configure --prefix=/opt/xbps > /tmp/xbps-conf.log 2>&1 && make -j"$(nproc)" > /tmp/xbps-make.log 2>&1 && make install > /tmp/xbps-install.log 2>&1 &&     ln -sf /opt/xbps/bin/xbps-pkgdb /opt/bin/xbps-pkgdb && ln -sf /opt/xbps/bin/xbps-install /opt/bin/xbps-install && ln -sf /opt/xbps/bin/xbps-query /opt/bin/xbps-query && echo "xbps built" || { echo "xbps: FAILED"; tail -n 5 /tmp/xbps-conf.log /tmp/xbps-make.log || true; }
+#20 CACHED
+
+#21 [30/47] RUN set -u; cd /tmp/dl; mkdir -p x-las && tar xzf lastools.tgz -C x-las --strip-components=1 && cd x-las &&     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /tmp/las-cmake.log 2>&1 && cmake --build build -j"$(nproc)" --target lasinfo > /tmp/las-make.log 2>&1 &&     f=$(find . -type f -name lasinfo -perm -u+x | head -1) && install -m 755 "$f" /opt/bin/lasinfo && echo "lasinfo built <- $f" || { echo "lasinfo: FAILED"; tail -n 5 /tmp/las-cmake.log /tmp/las-make.log || true; }
+#21 CACHED
+
+#22 [38/47] RUN { for c in "lasinfo -version" "xbps-pkgdb -V" "tic80 --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -3 /versions.txt
+#22 CACHED
+
+#23 [21/47] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/Canop/broot/releases/download/v1.61.0/broot_1.61.0.zip broot.zip;     get $gh/j178/prek/releases/download/v0.5.5/prek-aarch64-unknown-linux-gnu.tar.gz prek.tgz;     get $gh/savedra1/clipse/releases/download/v1.2.1/clipse_v1.2.1_linux_x11_arm64.tar.gz clipse.tgz;     get $gh/tstack/lnav/releases/download/v0.14.1/lnav-0.14.1-linux-musl-arm64.zip lnav.zip;     get $gh/nih-at/libzip/releases/download/v1.11.4/libzip-1.11.4.tar.gz libzip.tgz;     get $gh/fish-shell/fish-shell/releases/download/4.9.3/fish-4.9.3-linux-aarch64.tar.xz fish.txz;     get $gh/oh-my-fish/oh-my-fish/archive/refs/tags/v8.tar.gz omf.tgz;     ls -l /tmp/dl | tail -n 8
+#23 CACHED
+
+#24 [20/47] RUN apt-get install -y --no-install-recommends cmake zlib1g-dev libbz2-dev liblzma-dev libzstd-dev > /tmp/apt-cmake.log 2>&1 && echo "OK cmake and zlib" || echo "MISSING cmake"
+#24 CACHED
+
+#25 [37/47] RUN install -m 755 /tmp/dl/x-las/bin64/lasinfo64 /opt/bin/lasinfo && echo "bin lasinfo <- bin64/lasinfo64";     echo /opt/xbps/lib > /etc/ld.so.conf.d/xbps.conf && ldconfig && echo "xbps libs registered";     apt-get install -y --no-install-recommends libgl1 libegl1 > /tmp/apt-libgl.log 2>&1 && echo "OK libgl1" || echo "MISSING libgl1"
+#25 CACHED
+
+#26 [ 3/47] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#26 CACHED
+
+#27 [19/47] RUN for p in keyring==25.7.0 keyrings.alt==5.0.2; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done; printf 'keyring --version: ' >> /versions.txt; /opt/py/bin/keyring --version >> /versions.txt 2>&1; tail -1 /versions.txt
+#27 CACHED
+
+#28 [ 6/47] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#28 CACHED
+
+#29 [14/47] RUN set -u; cd /tmp/dl;     for t in step git-lfs plakar rustic easyrsa acme zshz; do mkdir -p x-$t && tar xzf $t.tgz -C x-$t && echo "untar $t: ok" || echo "untar $t: FAILED"; done;     mkdir -p x-ferium && unzip -q ferium.zip -d x-ferium && echo "unzip ferium: ok";     install -m 755 incus /opt/bin/incus; install -m 755 lxc /opt/bin/lxc; install -m 755 duplicacy /opt/bin/duplicacy;     for n in step git-lfs plakar rustic ferium; do       f=$(find /tmp/dl/x-* -type f -name "$n" | head -1);       [ -n "$f" ] && install -m 755 "$f" /opt/bin/$n && echo "bin $n <- $f" || echo "bin $n: NOT FOUND";     done;     d=$(dirname "$(find /tmp/dl/x-easyrsa -type f -name easyrsa | head -1)"); cp -a "$d" /opt/easyrsa && ln -sf /opt/easyrsa/easyrsa /opt/bin/easyrsa && echo "easyrsa <- $d";     d=$(find /tmp/dl/x-acme -maxdepth 1 -mindepth 1 -type d | head -1); cp -a "$d" /opt/acme.sh-src && echo "acme.sh src <- $d";     d=$(find /tmp/dl/x-zshz -maxdepth 1 -mindepth 1 -type d | head -1); cp -a "$d" /opt/zsh-z && echo "zsh-z <- $d";     ls -l /opt/bin
+#29 CACHED
+
+#30 [24/47] RUN npm install -g --no-fund --no-audit tiddlywiki@5.4.1 > /tmp/npm-tiddlywiki.log 2>&1 && echo "OK tiddlywiki" || { echo "FAILED tiddlywiki"; tail -3 /tmp/npm-tiddlywiki.log; }
+#30 CACHED
+
+#31 [ 4/47] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#31 CACHED
+
+#32 [34/47] RUN set -u; cd /tmp/dl; mkdir -p x-qalc && tar xzf qalc.tgz -C x-qalc --strip-components=1 && cd x-qalc &&     ./configure --prefix=/opt/qalc --without-libcurl --disable-nls > /tmp/qalc-conf.log 2>&1 && make -j"$(nproc)" > /tmp/qalc-make.log 2>&1 && make install > /tmp/qalc-install.log 2>&1 &&     ln -sf /opt/qalc/bin/qalc /opt/bin/qalc && echo "qalc built" || { echo "qalc: FAILED"; tail -n 5 /tmp/qalc-conf.log /tmp/qalc-make.log || true; }
+#32 CACHED
+
+#33 [11/47] RUN for p in minisign zsh; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done
+#33 CACHED
+
+#34 [32/47] RUN set -u; cd /tmp/dl; mkdir -p x-lim && tar xzf limine.tgz -C x-lim --strip-components=1 && cd x-lim &&     { ./configure --disable-all > /tmp/lim-conf.log 2>&1 || true; } && { make -j"$(nproc)" > /tmp/lim-make.log 2>&1 || true; } &&     f=$(find . -maxdepth 3 -type f -name limine -perm -u+x | head -1);     if [ -z "$f" ] && [ -f limine.c ]; then cc -O2 -std=c99 -o limine-host limine.c > /tmp/lim-cc.log 2>&1 && f=./limine-host; fi;     [ -n "$f" ] && install -m 755 "$f" /opt/bin/limine && echo "limine built <- $f" || { echo "limine: FAILED"; tail -n 5 /tmp/lim-conf.log /tmp/lim-make.log || true; }
+#34 CACHED
+
+#35 [ 2/47] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#35 CACHED
+
+#36 [13/47] RUN set -u; cd /tmp/dl; mkdir -p x-openssl && tar xzf openssl.tgz -C x-openssl --strip-components=1 && cd x-openssl &&     ./Configure --prefix=/opt/openssl --openssldir=/opt/openssl/ssl --libdir=lib '-Wl,-rpath,/opt/openssl/lib' > /tmp/openssl-configure.log 2>&1 &&     make -j"$(nproc)" > /tmp/openssl-make.log 2>&1 && make install_sw install_ssldirs > /tmp/openssl-install.log 2>&1 &&     ln -sf /opt/openssl/bin/openssl /opt/bin/openssl && echo "openssl: $(/opt/bin/openssl version)" || { echo "openssl: FAILED"; tail -5 /tmp/openssl-make.log; }
+#36 CACHED
+
+#37 [23/47] RUN set -u; cd /tmp/dl; mkdir -p x-libzip && tar xzf libzip.tgz -C x-libzip --strip-components=1 && cd x-libzip && mkdir build && cd build &&     cmake .. -DCMAKE_INSTALL_PREFIX=/opt/libzip -DCMAKE_INSTALL_RPATH=/opt/libzip/lib -DENABLE_GNUTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_MBEDTLS=OFF -DBUILD_REGRESS=OFF -DBUILD_DOC=OFF > /tmp/libzip-cmake.log 2>&1 &&     make -j"$(nproc)" > /tmp/libzip-make.log 2>&1 && make install > /tmp/libzip-install.log 2>&1 &&     cp src/ziptool /opt/bin/ziptool 2>/dev/null || find . -type f -name ziptool -perm -u+x -exec cp {} /opt/bin/ziptool ; ;     ls -l /opt/bin/ziptool && echo "ziptool built" || { echo "ziptool: FAILED"; tail -5 /tmp/libzip-make.log; }
+#37 CACHED
+
+#38 [18/47] RUN { for c in "openssl version" "minisign -v" "zsh --version" "step version" "incus version" "lxc version" "git-lfs version"         "duplicacy -h" "plakar version" "rustic --version" "ferium --version" "easyrsa --version" "certstrap --version" "sbctl --version"         "sfntedit -h" "legendary --version" "weectl --version" "snakemake --version" "esptool version" "netlify --version"; do         printf '%s: ' "$c"; sh -c "$c" 2>&1 | head -1; done; } > /versions.txt 2>&1; cat /versions.txt
+#38 CACHED
+
+#39 [43/47] RUN set -u; cd /tmp/dl/x-las && cmake --build build -j"$(nproc)" --target txt2las > /tmp/las-txt2las.log 2>&1;     f=$(find . -type f -name 'txt2las*' -perm -u+x | head -1); [ -n "$f" ] && install -m 755 "$f" /opt/bin/txt2las && echo "bin txt2las <- $f" || { echo "txt2las: FAILED"; tail -n 5 /tmp/las-txt2las.log || true; }
+#39 CACHED
+
+#40 [36/47] RUN { for c in "testdisk /version" "sndfile-metadata-set --version" "tic80 --version" "kubectl-krew version" "minizip -h" "lasinfo -version" "extract-xiso -h" "limine --version" "xbps-pkgdb -V" "qalc --version" "ezdxf --version" "mcpm --version"; do         printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -12 /versions.txt
+#40 CACHED
+
+#41 [29/47] RUN set -u; cd /tmp/dl; mkdir -p x-mz && tar xzf minizip.tgz -C x-mz --strip-components=1 && cd x-mz &&     cmake -S . -B build -DMZ_BUILD_TESTS=ON -DMZ_FETCH_LIBS=OFF -DMZ_OPENSSL=OFF -DMZ_LIBBSD=OFF -DMZ_ZSTD=OFF -DMZ_LZMA=OFF -DMZ_BZIP2=OFF -DMZ_ICONV=OFF -DMZ_BUILD_UNIT_TESTS=OFF -DCMAKE_BUILD_TYPE=Release > /tmp/mz-cmake.log 2>&1 &&     cmake --build build -j"$(nproc)" > /tmp/mz-make.log 2>&1 && f=$(find build -type f -name 'minizip' -perm -u+x | head -1) && install -m 755 "$f" /opt/bin/minizip && echo "minizip built <- $f" || { echo "minizip: FAILED"; tail -n 5 /tmp/mz-cmake.log /tmp/mz-make.log || true; }
+#41 CACHED
+
+#42 [ 9/47] RUN "$(cat /install.path)" version
+#42 CACHED
+
+#43 [39/47] RUN for p in fdisk e2fsprogs; do apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p"; done
+#43 CACHED
+
+#44 [ 5/47] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#44 CACHED
+
+#45 [28/47] RUN set -u; cd /tmp/dl;     mkdir -p x-tic && unzip -q tic80.zip -d x-tic && f=$(find x-tic -type f -name 'tic80*' ! -name '*.zip' | head -1) && install -m 755 "$f" /opt/bin/tic80 && echo "bin tic80 <- $f";     mkdir -p x-krew && tar xzf krew.tgz -C x-krew && install -m 755 "$(find x-krew -type f -name 'krew-linux_arm64' | head -1)" /opt/bin/kubectl-krew && echo "bin kubectl-krew"
+#45 CACHED
+
+#46 [40/47] RUN for p in @earendil-works/pi-coding-agent@1.0.4 cspell@10.3.6 @intellectronica/ruler@0.3.44; do       npm install -g --no-fund --no-audit "$p" > /tmp/npm-$(echo $p | tr /@ __).log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/npm-$(echo $p | tr /@ __).log; };     done
+#46 CACHED
+
+#47 [22/47] RUN set -u; cd /tmp/dl;     mkdir -p x-broot && unzip -q broot.zip -d x-broot && f=$(find x-broot -path '*aarch64-unknown-linux-gnu*' -type f -name broot | head -1) && install -m 755 "$f" /opt/bin/broot && echo "bin broot <- $f";     mkdir -p x-prek && tar xzf prek.tgz -C x-prek && install -m 755 "$(find x-prek -type f -name prek | head -1)" /opt/bin/prek && echo "bin prek";     mkdir -p x-clipse && tar xzf clipse.tgz -C x-clipse && install -m 755 "$(find x-clipse -type f -name 'clipse*' ! -name '*.tar.gz' | head -1)" /opt/bin/clipse && echo "bin clipse";     mkdir -p x-lnav && unzip -q lnav.zip -d x-lnav && install -m 755 "$(find x-lnav -type f -name lnav | head -1)" /opt/bin/lnav && echo "bin lnav";     mkdir -p x-fish && tar xJf fish.txz -C x-fish && install -m 755 "$(find x-fish -type f -name fish | head -1)" /opt/bin/fish && echo "bin fish";     mkdir -p x-omf && tar xzf omf.tgz -C x-omf && d=$(find x-omf -maxdepth 1 -mindepth 1 -type d | head -1) && cp -a "$d" /opt/omf-src && echo "omf src <- $d"
+#47 CACHED
+
+#48 [44/47] RUN { for c in "pi --version" "cspell --version" "ruler --version" "doit --version" "thv version" "kitten --version" "txt2las -version" "sfdisk --version" "mkfs.ext2 -V"; do         printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -9 /versions.txt
+#48 CACHED
+
+#49 [45/47] RUN set -u; cd /tmp/dl; curl -fsSL -o node22.txz https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-arm64.tar.xz &&     echo "a44aeb94849a299b22df10b9e622ec2f605c2183501bc40590705131de7c740f  node22.txz" | sha256sum -c &&     mkdir -p /opt/node22 && tar xJf node22.txz -C /opt/node22 --strip-components=1 && /opt/node22/bin/node --version
+#49 2.223 node22.txz: OK
+#49 3.862 v22.23.3
+#49 DONE 4.5s
+
+#50 [46/47] RUN for p in @earendil-works/pi-coding-agent@1.0.4 cspell@10.3.6; do       PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/root/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin /opt/node22/bin/npm install -g --no-fund --no-audit "$p" > /tmp/npm22-$(echo $p | tr /@ __).log 2>&1 && echo "OK node22 $p" || { echo "FAILED $p"; tail -3 /tmp/npm22-$(echo $p | tr /@ __).log; };     done
+#50 8.942 OK node22 @earendil-works/pi-coding-agent@1.0.4
+#50 13.35 OK node22 cspell@10.3.6
+#50 DONE 13.6s
+
+#51 [47/47] RUN { for c in "pi --version" "cspell --version"; do printf '%s (node22): ' "$c"; PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/root/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -2 /versions.txt
+#51 2.586 pi --version (node22): 1.0.4
+#51 2.586 cspell --version (node22): 10.3.6
+#51 DONE 2.7s
+
+#52 exporting to image
+#52 exporting layers
+#52 exporting layers 5.2s done
+#52 exporting manifest sha256:343353873526ff248a7caedd916f6c4a3bb638cab064a1c55826f34f1bf712ce done
+#52 exporting config sha256:5ccd4169b00a7fcf2cf319676cc52087204693d5b392472bf4da80f4f7032aa4 done
+#52 exporting attestation manifest sha256:4e5ad074433d2e520e7a9d00b665a8823f1e79353e1d97384a1fcfd425fa6e58 done
+#52 exporting manifest list sha256:80f4b398cbe20976902bcac2b9c58fab0d97a2ace55a315c9827b7e640aa7228 done
+#52 naming to docker.io/library/sideeye-ud1007:latest done
+#52 unpacking to docker.io/library/sideeye-ud1007:latest
+#52 unpacking to docker.io/library/sideeye-ud1007:latest 2.4s done
+#52 DONE 7.6s
+build: sideeye-ud1007 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

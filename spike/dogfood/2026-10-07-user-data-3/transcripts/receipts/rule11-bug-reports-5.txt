@@ -1,0 +1,106 @@
+== earendil-works/pi (label bug)
+#10584 2026-10-07 comments=1 first_project_reply=CONTRIBUTOR 2026-10-07
+#10576 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#10575 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#10565 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#10561 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#10558 2026-10-06 comments=4 first_project_reply=CONTRIBUTOR 2026-10-06
+#10555 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#10554 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#10552 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#10544 2026-10-06 comments=2 first_project_reply=CONTRIBUTOR 2026-10-06
+
+== cline/cline (label bug)
+#14863 2026-10-06 comments=1 first_project_reply=none
+#14767 2026-10-02 comments=3 first_project_reply=CONTRIBUTOR 2026-10-04
+#14766 2026-10-02 comments=1 first_project_reply=none
+#14703 2026-09-30 comments=2 first_project_reply=none
+#14702 2026-09-30 comments=2 first_project_reply=none
+#14491 2026-09-24 comments=1 first_project_reply=none
+#14013 2026-09-09 comments=1 first_project_reply=none
+#13568 2026-08-25 comments=10 first_project_reply=CONTRIBUTOR 2026-08-29
+#10930 2026-05-20 comments=2 first_project_reply=none
+#10379 2026-04-23 comments=3 first_project_reply=CONTRIBUTOR 2026-06-23
+
+== vercel-labs/skills (label bug)
+#2393 2026-10-06 comments=0 first_project_reply=none
+#2392 2026-10-05 comments=1 first_project_reply=none
+#2388 2026-10-05 comments=0 first_project_reply=none
+#2385 2026-10-05 comments=0 first_project_reply=none
+#2381 2026-10-04 comments=0 first_project_reply=none
+#2378 2026-10-04 comments=1 first_project_reply=none
+#2376 2026-10-04 comments=1 first_project_reply=none
+#2373 2026-10-03 comments=1 first_project_reply=none
+#2371 2026-10-03 comments=2 first_project_reply=none
+#2367 2026-10-03 comments=1 first_project_reply=none
+
+== mistralai/mistral-vibe (label bug)
+#1194 2026-10-06 comments=0 first_project_reply=none
+#1184 2026-10-05 comments=0 first_project_reply=none
+#1176 2026-10-04 comments=0 first_project_reply=none
+#1173 2026-10-03 comments=0 first_project_reply=none
+#1170 2026-10-02 comments=1 first_project_reply=none
+#1167 2026-10-02 comments=0 first_project_reply=none
+#1166 2026-10-01 comments=0 first_project_reply=none
+#1162 2026-09-30 comments=1 first_project_reply=none
+#1160 2026-09-29 comments=0 first_project_reply=none
+#1159 2026-09-29 comments=1 first_project_reply=none
+
+== stacklok/toolhive (label bug)
+#6737 2026-10-01 comments=1 first_project_reply=COLLABORATOR 2026-10-04
+#6732 2026-10-01 comments=0 first_project_reply=none
+#6705 2026-09-23 comments=1 first_project_reply=CONTRIBUTOR 2026-09-23
+#6681 2026-09-17 comments=1 first_project_reply=CONTRIBUTOR 2026-09-18
+#6634 2026-09-10 comments=2 first_project_reply=MEMBER 2026-09-11
+#6542 2026-09-08 comments=0 first_project_reply=none
+#6536 2026-09-08 comments=0 first_project_reply=none
+#6531 2026-09-08 comments=0 first_project_reply=none
+#6522 2026-09-06 comments=2 first_project_reply=CONTRIBUTOR 2026-09-07
+#6451 2026-08-28 comments=0 first_project_reply=none
+
+== streetsidesoftware/cspell (label bug)
+#9326 2026-09-29 comments=0 first_project_reply=none
+#8962 2026-07-15 comments=1 first_project_reply=CONTRIBUTOR 2026-09-20
+#8907 2026-06-12 comments=1 first_project_reply=CONTRIBUTOR 2026-07-13
+#8778 2026-04-03 comments=3 first_project_reply=COLLABORATOR 2026-05-23
+#8736 2026-03-23 comments=3 first_project_reply=COLLABORATOR 2026-03-23
+#8636 2026-02-23 comments=1 first_project_reply=CONTRIBUTOR 2026-06-24
+#7965 2025-11-06 comments=3 first_project_reply=CONTRIBUTOR 2025-12-13
+#7837 2025-09-11 comments=1 first_project_reply=CONTRIBUTOR 2026-01-14
+#7689 2025-07-31 comments=5 first_project_reply=COLLABORATOR 2025-08-06
+#7517 2025-06-22 comments=3 first_project_reply=COLLABORATOR 2025-06-23
+
+== Comfy-Org/comfy-cli (label bug)
+#844 2026-09-03 comments=1 first_project_reply=none
+#797 2026-08-26 comments=1 first_project_reply=CONTRIBUTOR 2026-09-01
+#790 2026-08-26 comments=1 first_project_reply=none
+#781 2026-08-25 comments=1 first_project_reply=none
+#750 2026-08-21 comments=0 first_project_reply=none
+#749 2026-08-21 comments=0 first_project_reply=none
+#748 2026-08-21 comments=0 first_project_reply=none
+#747 2026-08-21 comments=0 first_project_reply=none
+#746 2026-08-21 comments=0 first_project_reply=none
+#725 2026-08-17 comments=1 first_project_reply=none
+
+== pydoit/doit (label bug)
+#437 2022-08-19 comments=4 first_project_reply=none
+#436 2022-08-11 comments=1 first_project_reply=none
+#434 2022-07-31 comments=1 first_project_reply=none
+#372 2020-09-04 comments=11 first_project_reply=MEMBER 2020-09-04
+#356 2020-04-17 comments=3 first_project_reply=MEMBER 2020-04-18
+#349 2020-01-31 comments=1 first_project_reply=none
+#316 2019-07-25 comments=5 first_project_reply=MEMBER 2019-07-27
+#312 2019-07-04 comments=7 first_project_reply=MEMBER 2019-07-05
+#299 2019-05-14 comments=1 first_project_reply=MEMBER 2019-05-14
+#285 2019-03-24 comments=5 first_project_reply=MEMBER 2019-03-25
+
+== intellectronica/ruler (label bug)
+#252 2025-09-23 comments=2 first_project_reply=OWNER 2025-09-23
+#199 2025-08-30 comments=2 first_project_reply=OWNER 2025-08-30
+#178 2025-08-26 comments=1 first_project_reply=OWNER 2025-08-26
+#177 2025-08-26 comments=2 first_project_reply=OWNER 2025-08-26
+#162 2025-08-25 comments=0 first_project_reply=none
+#160 2025-08-25 comments=0 first_project_reply=none
+#60 2025-07-21 comments=3 first_project_reply=OWNER 2025-08-08
+
+rule11-all: done 2026-10-07T07:49:49Z

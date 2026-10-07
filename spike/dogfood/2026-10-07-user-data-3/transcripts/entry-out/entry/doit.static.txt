@@ -1,0 +1,2 @@
+static: /opt/py/bin/doit: Python script, ASCII text executable
+next: sideeye explore --state /s/doit/state --cwd "/s/doit" --operation "doit forget --backend json --db-file /s/doit/state/d.json a" \

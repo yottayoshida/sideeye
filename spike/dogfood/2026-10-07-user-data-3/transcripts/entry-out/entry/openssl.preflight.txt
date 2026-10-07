@@ -1,0 +1,27 @@
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Database updated
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Database updated
+PREFLIGHT  recording accepted — 8 state-changing operation(s) observed
+
+cwd          /s/ca-in
+atomicity    23 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): index.txt.old
+oracle       agreed on 8 operations (217 syscall lines examined, 72 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2008 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/ca --cwd "/s/ca-in" --operation "openssl ca -config /s/ca/ca.cnf -revoke /s/ca/b.crt -batch" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

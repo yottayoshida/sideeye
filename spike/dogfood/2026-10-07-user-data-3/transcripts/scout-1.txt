@@ -1,0 +1,66 @@
+# Scout 1 (fresh Opus subagent, read-only; 2026-10-07). Its report, as handed back.
+
+sideeye dogfood の候補集めの結果。fresh で、星 1,000 以上・2026-04-07 以降に push・archive されていない、を満たしたのは 55 件。規則 5 がしっかり当たる 48 件を下に 1 行ずつ、星の多い順に並べた。残る 7 件は規則 5 が弱いので、最後に名前だけ挙げる。ファイルは作っておらず、使ったのは fresh.sh・gh api・読み取りのシェルだけ。push は 2026 年の月日で、星は k（千）単位。
+
+【要判断】
+- keytool は fresh だが、`openjdk` という語が target-classes:77 に 1 回出てくる。google-java-format を測った時の実行環境（JVM）としての記述で、openjdk 自体を測った記録ではない。入れるか決めてほしい。
+- keyring（jaraco）の SEEN は「GnuPG の keyring」という語に当たっただけ（outside-git の SELECTION:47）。jaraco/keyring 自体は fresh。
+
+名前 | repo | 星 | push | 書き換えるコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念
+1. omz | ohmyzsh/ohmyzsh | 190k | 10-06 | `omz plugin enable git` / `omz theme set x` | ~/.zshrc | zsh | git clone | zsh の関数なので `zsh -ic` が要る。awk・cp を起動する
+2. flutter | flutter/flutter | 179k | 10-06 | `flutter config --no-analytics` / `--android-sdk p` | ~/.config/flutter/settings | Dart | git clone | 初回に Dart SDK を取りに行く（ネットワーク）。重い。VM がスレッドを使う
+3. acme.sh | acmesh-official/acme.sh | 47.8k | 10-03 | `--set-default-ca --server letsencrypt` / `--set-notify` / `--remove -d x` | ~/.acme.sh/account.conf、各ドメインの conf | sh | git clone | sed などを大量に起動する
+4. openssl ca | openssl/openssl | 30.9k | 10-06 | `openssl ca -revoke c.pem -batch -config ca.cnf` / `-gencrl` | index.txt、serial、crlnumber（.new から rename で差し替える） | C | Debian | 特になし
+5. keytool / jarsigner | openjdk/jdk | 23.4k | 10-07 | `keytool -changealias / -delete / -storepasswd -keystore ks.p12`、`jarsigner a.jar alias` | ks.p12・.jks、a.jar | Java | Debian openjdk-17-jdk-headless | JVM はスレッドが多い。上の要判断を参照
+6. asciinema | asciinema/asciinema | 17.9k | 08-14 | `asciinema rec --append -c cmd demo.cast` | demo.cast | Rust | arm64 リリース | pty が要る。非同期ランタイム
+7. quickemu | quickemu-project/quickemu | 16.4k | 09-28 | `quickemu --vm x.conf --snapshot create/apply/delete t` | disk.qcow2 | bash | Debian（trixie） | 中身は qemu-img を包んだだけ（11 と同じ機構）
+8. git-lfs | git-lfs/git-lfs | 14.5k | 10-01 | `git lfs install / uninstall` / `checkout` / `prune` | ~/.gitconfig、ポインタのファイル、.git/lfs | Go 静的 | arm64 リリース・Debian | git を起動する
+9. qemu-img | qemu/qemu | 13.8k | 10-06 | `qemu-img snapshot -c s d.qcow2` / `amend -o compat=0.10` / `resize` / `rebase -u` | d.qcow2 をその場で | C | Debian qemu-utils | AIO のスレッドプールとコルーチン
+10. omf | oh-my-fish/oh-my-fish | 11.4k | 09-30 | `omf theme x` / `omf remove pkg` | ~/.config/omf/theme、bundle | fish | インストーラ | fish の関数。導入時だけネットワーク
+11. buildah | podman-container-tools/buildah | 9.1k | 10-07 | `buildah config --env A=B ctr` / `buildah rename` | storage 配下の containers.json など | Go | Debian | vfs ドライバとユーザー名前空間か root が要る。podman（同じ持ち主）は SEEN
+12. sl（sapling） | facebook/sapling | 7.0k | 10-07 | `sl config --user ui.username x` | ~/.config/sapling/sapling.conf | Rust+Python | ソースからビルド | arm64 の配布物が無く、ビルドが重い
+13. openmw-iniimporter | OpenMW/openmw | 6.6k | 10-07 | `openmw-iniimporter -i Morrowind.ini -c openmw.cfg` | openmw.cfg | C++ | Debian openmw | 本体はゲーム（規則 4）。CLI は付属の道具
+14. espsecure | espressif/esptool | 6.5k | 10-06 | `espsecure sign-data --version 2 --keyfile k.pem fw.bin`（`--output` を付けないと入力をその場で署名、と help に明記） | fw.bin | Python | pip | 規則 5 はやや弱い（ビルドし直せる）
+15. ludusavi | mtkennerly/ludusavi | 6.4k | 09-11 | `ludusavi backup --force`（差分で mapping.yaml を更新）/ `restore --force` | バックアップの木、ゲームのセーブ | Rust | cargo | GUI と兼用。初回に manifest を取りに行く（`--no-manifest-update`）。arm64 の配布物なし
+16. incus | lxc/incus | 6.3k | 10-06 | `incus remote switch / rename / remove`、`incus alias add` | ~/.config/incus/config.yml（クライアント鍵と同じ場所） | Go 静的 | Debian incus-client | 特になし
+17. duplicacy | gilbertchen/duplicacy | 5.7k | 08-06 | `duplicacy set -key k -value v` / `prune -exclusive -r 1` | .duplicacy/preferences、storage | Go | arm64 リリース | ライセンスが OSI 準拠でない。スレッド
+18. legendary | legendary-gl/legendary | 5.3k | 10-06 | `legendary auth --delete` / `alias add` / `move` / `uninstall --keep-files` | ~/.config/legendary の user.json・installed.json・config.ini | Python | pip legendary-gl | 状態は普通ログインで作られるので、手で仕込む必要がある
+19. fw_setenv | u-boot/u-boot | 5.3k | 10-06 | `fw_setenv k v`（fw_env.config をファイルに向ける） | env イメージ | C | `make tools-only_defconfig envtools` | Debian の fw_* は別実装（libubootenv）
+20. lxc-update-config | lxc/lxc | 5.3k | 10-02 | `lxc-update-config -c /var/lib/lxc/c1/config` | config（.backup を作る） | C | Debian lxc | root が要る
+21. lxc（クライアント） | canonical/lxd | 4.8k | 10-06 | `lxc remote switch / rename`、`lxc alias add` | ~/.config/lxc/config.yml | Go | Debian lxd | 配布は snap が中心。incus はこの fork
+22. easyrsa | OpenVPN/easy-rsa | 4.5k | 10-05 | `easyrsa --batch revoke c` / `gen-crl` / `build-client-full c nopass` / `set-pass` | pki/index.txt、serial、crl.pem、private/*.key | sh（openssl） | Debian | 特になし
+23. step | smallstep/cli | 4.3k | 10-05 | `step crypto change-pass k.pem -f`（パスワードはファイルで渡す）/ `step context select / remove` | k.pem、~/.step/contexts.json | Go | arm64 リリース | 特になし
+24. fwupdtool | fwupd/fwupd | 4.2k | 10-07 | `fwupdtool modify-config fwupd IdleTimeout 10` / `modify-remote lvfs Enabled false` / `firmware-patch` | /etc/fwupd/fwupd.conf、remotes.d/*.conf | C | Debian | root が要る。プラグインがハードを探る。GLib のスレッド
+25. pishrink | Drewsif/PiShrink | 4.1k | 05-10 | `pishrink.sh x.img` | x.img をその場で | bash | git | losetup とループデバイス、root、parted・resize2fs が要る
+26. stack | commercialhaskell/stack | 4.1k | 10-06 | `stack config set install-ghc false --global` | ~/.stack/config.yaml | Haskell | arm64 の静的バイナリ | threaded RTS
+27. git-secret | sobolevn/git-secret | 4.0k | 09-28 | `git secret hide` / `reveal -f` / `removeperson` | *.secret、平文のファイル、.gitsecret/keys | bash+gpg | Debian | gpg-agent が自動で起動する（デーモン）
+28. ssh-keygen | openssh/openssh-portable | 4.0k | 10-06 | `ssh-keygen -p -P a -N b -f k` / `-c -C x -f k` / `-R host -f known_hosts` | k、known_hosts（.old を残す） | C | Debian | 特になし
+29. winetricks | Winetricks/winetricks | 3.5k | 08-27 | `winetricks -q settings win10` | prefix の user.reg・system.reg | sh | Debian | wine と wineserver（自動で起動するデーモン）が要る。arm64 の wine
+30. nextflow | nextflow-io/nextflow | 3.5k | 10-06 | `nextflow secrets set N v` / `secrets delete` | ~/.nextflow/secrets/store.json | JVM | ランチャー | 初回にランタイムを取りに行く。JVM のスレッド
+31. git-town | git-town/git-town | 3.4k | 09-26 | `git town offline yes` / `git town config remove` | ~/.gitconfig、.git/config | Go | arm64 リリース | git を何度も起動する
+32. rustic | rustic-rs/rustic | 3.3k | 09-01 | `rustic forget --keep-last 1 --prune` / `config --set-compression 3` / `key add` | ローカルの repo | Rust | arm64 リリース | rayon のスレッド。restic（同じ形式）は台帳に「read」として載っている
+33. dotnet nuget | dotnet/sdk | 3.2k | 10-07 | `dotnet nuget add / update source --password p --store-password-in-clear-text` / `remove source` | NuGet.Config | C# | dotnet-install | ランタイムのスレッド
+34. kicad-cli | KiCad/kicad-source-mirror | 3.0k | 10-06 | `kicad-cli pcb upgrade --force b.kicad_pcb` / `sch upgrade` | 図面をその場で | C++ | Debian trixie | GitHub はミラー。スイート本体は GUI
+35. librepcb-cli | LibrePCB/LibrePCB | 3.0k | 10-06 | `librepcb-cli open-project --save p.lpp` | プロジェクト一式 | C++/Qt | Debian | Qt を offscreen で動かす。Debian の版に `--save` があるか未確認
+36. snakemake | snakemake/snakemake | 2.9k | 10-05 | `--cleanup-metadata f` / `--touch` / `--unlock` | .snakemake/metadata、locks | Python | pip | 規則 5 は中程度
+37. minisign | jedisct1/minisign | 2.8k | 08-26 | `printf 'a\nb\nb\n' \| minisign -C -s k`（tty でなければ stdin から読むことを get_line.c で確認） | k | C | Debian | 特になし
+38. zsh-z | agkozak/zsh-z | 2.5k | 10-02 | `zshz -x` / `zshz --add p` | ~/.z | zsh | git | 関数。z.lua（同じ種類）は過去に測った
+39. certstrap | square/certstrap | 2.5k | 10-06 | `certstrap revoke --CN c --CA CA` | out/CA.crl | Go | go install | 特になし
+40. sbctl | Foxboron/sbctl | 2.3k | 09-06 | `sbctl sign -s x.efi` / `remove-file` | x.efi、/var/lib/sbctl/files.json | Go | arm64 リリース | root が要る。EFI の検査
+41. plakar | PlakarKorp/plakar | 2.1k | 10-05 | `plakar at /r backup d` / `plakar at /r rm <snap>` | repo | Go | arm64 リリース | キャッシュが組み込み DB（~/.cache/plakar）
+42. netlify | netlify/cli | 1.9k | 10-06 | `netlify --telemetry-disable` / `unlink` / `logout` | ~/.config/netlify/config.json、.netlify/state.json | Node | npm | logout がネットワークに触れるかもしれない
+43. ostree | ostreedev/ostree | 1.7k | 09-30 | `ostree --repo=r commit -b main d` / `refs --delete` / `prune` / `config set` | repo/config、refs、objects | C | Debian | GLib のスレッド
+44. m4b-tool | sandreas/m4b-tool | 1.6k | 04-18 | `m4b-tool chapters ... b.m4b`（`-o` を付けないとその場で書き換え） | b.m4b | PHP | git/Docker | ffmpeg・mp4v2 を起動する。章を musicbrainz から取るとネットワーク。正式版は古く、プレリリースだけが更新されている
+45. keyring | jaraco/keyring | 1.5k | 04-13 | `echo pw \| keyring set svc u`（`PYTHON_KEYRING_BACKEND=keyrings.alt.file.PlaintextKeyring`） | ~/.local/share/python_keyring/keyring_pass.cfg | Python | pip | 既定の保存先は Secret Service（DBus）なので keyrings.alt に固定する必要がある。上の要判断を参照
+46. ferium | gorilla-devs/ferium | 1.4k | 05-16 | `ferium profile switch / delete` / `ferium remove m` | ~/.config/ferium/config.json | Rust | cargo | add と create はネットワーク
+47. weectl | weewx/weewx | 1.2k | 10-06 | `weectl station reconfigure --no-prompt` / `extension uninstall x -y` | weewx.conf | Python | pip | 本体はデーモン
+48. sfntedit | adobe-type-tools/afdko | 1.2k | 09-10 | `sfntedit -a name=f.bin font.otf` | font.otf をその場で | C/Python | pip | 規則 5 は中程度
+
+規則 5 が弱い（fresh で規則 1・2 は満たす）7 件: fnm（27k）、bash-it（15k）、sealed-secrets/kubeseal `--merge-into`（9.3k、封をしたファイルは普通 git に入っている）、sdkman（6.9k）、tfenv（5.0k、tenv と同じ種類）、crosstool-ng `upgradeconfig`（2.5k）、picotool `config -s`（1.0k）。
+
+fresh だが別の規則で落としたもの: BoilR と scummvm（GUI）、protontricks（Steam が要る）、packwiz（状態が git に入る）、kubelogin（トークンのキャッシュだけ）、teleport tsh と coursier（規則 5 が弱い）、amplify と lego（ネットワーク）、nebula-cert と cfssl と bgzip（新しいファイルを作るだけ）、esphome（書き換えるコマンドが無い）、claude-code と opencode（TUI）、docker-credential-helpers（DBus か gpg-agent が要る）、resticprofile（親の restic が SEEN）。
+
+SEEN で落ちた名前の数: 137（同じ道具の別名を含む。たとえば flac/metaflac、sops/getsops）。ほかに、自分の名前は fresh だが親が SEEN なので落としたのが 9: tageditor、argo-cd、lima-vm、mksquashfs、sfdisk、hetznercloud、thoughtbot（rcm）、condarc、docker context。どの文書にも出てこない語に当たっただけの SEEN が 3 つあり、uci（reproducible の中の uci）と、上の要判断の keyring と openjdk。
+規則 1・2 で落ちた名前の数: 37（星が 1,000 未満: igir 937、DCMTK 911、umoci 963 など。push が古い: mkcert、rupa/z、autorestic 04-05 など。archive 済み: ghcup-hs、blackbox、Picocrypt、r128gain）。
+
+音声・電子書籍・PDF のメタデータの分野は、ほぼ全部 SEEN だった（exiftool、MP4Box、mkvpropedit、pdfcpu、metaflac、tageditor ほか）。新しく取れたのは、PKI・証明書（openssl、easy-rsa、acme.sh、step、certstrap、ssh-keygen、minisign、keytool）、ディスクイメージとコンテナのローカル設定（qemu-img、incus、lxd、lxc、ostree、buildah）、ゲーム（ludusavi、legendary、ferium、OpenMW）、ハードウェア（sbctl、fw_setenv、fwupdtool、espsecure）、バックアップ（rustic、plakar、duplicacy）。

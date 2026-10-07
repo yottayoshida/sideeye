@@ -1,0 +1,238 @@
+== novelty pre-scan: void-linux/xbps
+== date: 2026-10-07T07:20:20Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          14 hit(s) (all listed)
+      #457 open 2021-12-29 Fix crashes due to incorrectly registered alternatives
+      #317 open 2020-07-30 xbps-remove removes directories it shouldn't
+      #384 open 2021-03-06 xbps-install: add --verify-sig option.
+      #663 open 2025-12-18 Stack buffer underflow (read) in `xbps_path_rel`
+      #312 open 2020-07-23 "switch_alt_group: Assertion `curpkgd' failed." when uninstalling a package
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+      #660 closed 2025-12-05 removal of dependencies via ignorepkg occasionally results in an XBPS crash
+      #650 closed 2025-09-20 xbps-query aborts with "free(): invalid pointer" for repository searches that return any results
+      #637 closed 2025-07-06 xbps-query fails to free the search result
+      #614 closed 2024-12-24 xbps-dgraph fails with assertion when not provided with package
+      #567 closed 2023-08-10 Inconsistant sigsegv on void-musl wsl xbps-install -Su
+      #393 merged 2021-03-19 hold fixes
+      #242 closed 2020-03-04 xbps-install "Segmentation fault"
+      #175 closed 2019-10-29 xbps-install -Su crashes after updating to 0.57.1_1
+  corrupt        6 hit(s) (all listed)
+      #700 open 2026-09-15 libfetch connection reuse corrupts proxied requests after cross-host redirect
+      #695 open 2026-08-15 xbps-install: Pressing Enter at confirmation prompt should ignore or require explicit input (prevent accidental proceed)
+      #452 open 2021-12-27 Handle alternatives in transaction files
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+      #614 closed 2024-12-24 xbps-dgraph fails with assertion when not provided with package
+      #173 merged 2019-10-25 Archive write errors
+  corruption     2 hit(s) (all listed)
+      #675 open 2026-02-17 lib: add file locking to downloads
+      #159 closed 2019-07-31 icu-libs dependency corruption
+  truncated      8 hit(s) (all listed)
+      #701 open 2026-09-24 Out-of-bounds read in portableproplib on a truncated XML plist preamble
+      #641 closed 2025-07-20 `xbps-install` fails with "Truncated tar archive"
+      #639 closed 2025-07-09 fix: fixed segmentation fault caused by `archive_entry_pathname`
+      #390 closed 2021-03-15 remove anything mtime related
+      #32 closed 2018-11-16 empty line in mirror conf
+      #222 merged 2020-02-09 lib/util_path.c: add some nice path utils
+      #270 merged 2020-04-18 bin/xbps-query: simplify search result printing (with truncation)
+      #38 closed 2018-12-13 import gcc8 patches from xbps-src
+  truncate       11 hit(s) (all listed)
+      #701 open 2026-09-24 Out-of-bounds read in portableproplib on a truncated XML plist preamble
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+      #641 closed 2025-07-20 `xbps-install` fails with "Truncated tar archive"
+      #639 closed 2025-07-09 fix: fixed segmentation fault caused by `archive_entry_pathname`
+      #660 closed 2025-12-05 removal of dependencies via ignorepkg occasionally results in an XBPS crash
+      #390 closed 2021-03-15 remove anything mtime related
+      #32 closed 2018-11-16 empty line in mirror conf
+      #248 closed 2020-03-08 segfault on invalid local repodata file
+      #222 merged 2020-02-09 lib/util_path.c: add some nice path utils
+      #270 merged 2020-04-18 bin/xbps-query: simplify search result printing (with truncation)
+      #38 closed 2018-12-13 import gcc8 patches from xbps-src
+  empty          33 hit(s) (all listed)
+      #406 open 2021-06-06 xbps-install removes empty directories but doesn't create them
+      #443 open 2021-12-23 pre-install broken for bootstrapping new chroots
+      #317 open 2020-07-30 xbps-remove removes directories it shouldn't
+      #473 open 2022-03-01 Virtuals from provides are accepted in any version
+      #541 open 2023-02-20 track file mode and ownership in files.plist
+      #662 open 2025-12-09 multi repo staging
+      #162 open 2019-08-05 xbps-install: remove obsolete packages during update
+      #361 open 2020-12-17 warn user is querying a non existent package
+      #76 open 2019-04-10 xbps-rindex: remove mode
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+      #668 merged 2025-12-31 lib: handle replaces if replaced pkg is installed in the same transaction
+      #478 closed 2022-03-25 xbps-rindex -r Assertion `obj' failed when $arch-repodata is empty
+      #648 closed 2025-09-14 xbps-install ignores newer version of package when overriding default repo
+      #639 closed 2025-07-09 fix: fixed segmentation fault caused by `archive_entry_pathname`
+      #340 merged 2020-10-14 bin/xbps-alternatives: add repository mode to list repo alternatives
+      #23 closed 2018-10-14 Empty directories don't get removed on xbps-remove
+      #562 closed 2023-06-29 xbps-install, unexpectedly terminates, in docker only on a single machine
+      #357 closed 2020-12-09 xbps-remove -On listing differs between running as root vs non-root
+      #434 closed 2021-11-21 xbps-install issue with bluez and blueman
+      #393 merged 2021-03-19 hold fixes
+  atomic         2 hit(s) (all listed)
+      #531 closed 2023-01-30 Unable to build xbps
+      #35 closed 2018-12-09 zstd compression by default propose
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #212 closed 2020-01-20 xbps-install: resume an interrupted download fails
+  interrupt      3 hit(s) (all listed)
+      #547 open 2023-03-04 interrupting xbps-install in the middle of configure step leads to confusing behavior
+      #202 closed 2019-12-30 interupting xbps-install fails to lock pkgdb
+      #212 closed 2020-01-20 xbps-install: resume an interrupted download fails
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         5 hit(s) (all listed)
+      #693 open 2026-07-05 xbps-install gets stuck on verifying RSA signature
+      #547 open 2023-03-04 interrupting xbps-install in the middle of configure step leads to confusing behavior
+      #621 open 2025-01-31 xbps-remove memory leakage
+      #167 open 2019-09-03 [Feature request] Built-in pager for long output
+      #202 closed 2019-12-30 interupting xbps-install fails to lock pkgdb
+  power          3 hit(s) (all listed)
+      #542 open 2023-02-20 format strings for library and xbps-query
+      #585 open 2024-01-11 Reimplemented xlocate as xbps-locate
+      #462 closed 2022-01-05 `xbps-install --session`: Allow for temporary package installations
+  outage         0 hit(s)
+  ENOSPC         1 hit(s) (all listed)
+      #68 closed 2019-03-16 Store file, directory sizes in files.plist and add directory_sizes dictionary to repodata
+  disk           48 hit(s) (all listed)
+      #371 open 2021-01-28 xbps-install add -T option to skip disk space check
+      #694 open 2026-08-11 when upgrading i want this feature;
+      #635 open 2025-06-27 Void with 512 megs of RAM (VM) - xbps sync causes OOMkill
+      #377 open 2021-02-12 xbps-remove -R does not remove all dependencies when removing multiple packages
+      #359 open 2020-12-12 lib: replace xbps_file_hash_check_dictionary with transaction_file lookup
+      #459 open 2021-12-30 `xbps-query`: Unify default output formats of package lists
+      #489 open 2022-05-04 xbps-install: download-only misleading information and explanation.
+      #582 open 2024-01-10 Replace `xbps_file_hash_check_dictionary`
+      #547 open 2023-03-04 interrupting xbps-install in the middle of configure step leads to confusing behavior
+      #455 open 2021-12-29 `xbps-reconfigure -fa` on a fresh install adds (missing?) `pkgname` entries to `pkgdb-0.38.plist`
+      #448 open 2021-12-26 `xbps-install` man page: Describe creation of `.new-<version>` files
+      #600 open 2024-08-13 package names that contain `x86_64` break xbps-install/xbps-remove
+      #342 open 2020-11-01 Updating a package with a newly added conf_files should not overwrite the exisiting not yet tracked file.
+      #317 open 2020-07-30 xbps-remove removes directories it shouldn't
+      #312 open 2020-07-23 "switch_alt_group: Assertion `curpkgd' failed." when uninstalling a package
+      #405 open 2021-05-31 WIP : New feature : new xbps cache management
+      #341 open 2020-10-24 `xbps-install` download only mode queues extra packages.
+      #474 open 2022-03-02 Memory-sync mode still opens some files for writing
+      #1 open 2018-06-22 [Feature request] Optional runtime dependencies
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+  partial        4 hit(s) (all listed)
+      #580 open 2024-01-04 verify shlib errors on partial upgrade bypassed by multilib
+      #556 closed 2023-05-30 xbps wants to remove manually installed packages with `xbps-remove -o`
+      #424 closed 2021-08-17 Don't fatally warn insufficient disk space when --dry-run is used
+      #187 closed 2019-12-09 Overall progress bar or percentage when downloading
+  incomplete     6 hit(s) (all listed)
+      #528 open 2023-01-21 [Low Priority] Improve speed measurement
+      #501 open 2022-07-30 xbps-query: add message when no packages have been found
+      #253 open 2020-03-24 lib/transaction_files.c: allow replacing file with alternative
+      #378 closed 2021-02-17 New feature : packagekit backend for xbps
+      #245 closed 2020-03-04 Global updates randomly refused in certain conditions
+      #173 merged 2019-10-25 Archive write errors
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         2 hit(s) (all listed)
+      #202 closed 2019-12-30 interupting xbps-install fails to lock pkgdb
+      #212 closed 2020-01-20 xbps-install: resume an interrupted download fails
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #159 closed 2019-07-31 icu-libs dependency corruption
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #165 closed 2019-09-01 [Feature request] pacman’s NoExtract
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        4 hit(s) (all listed)
+      #691 open 2026-06-26 lib: remove automatic self replacement
+      #347 open 2020-11-15 shell completion is slow to list all packages on some hardware
+      #513 closed 2022-10-03 Again. xbps destroy links in root [BUG]
+      #512 closed 2022-10-03 xbps destroy links from /bin /lib etc.
+  destroys       0 hit(s)
+  overwrite      14 hit(s) (all listed)
+      #696 open 2026-09-04 xbps-query -RX repository overrides
+      #342 open 2020-11-01 Updating a package with a newly added conf_files should not overwrite the exisiting not yet tracked file.
+      #287 open 2020-05-16 File conflicts when installing two packages at the same time, but not when installing one at a time
+      #448 open 2021-12-26 `xbps-install` man page: Describe creation of `.new-<version>` files
+      #682 open 2026-03-12 add support for parallel downloads
+      #359 open 2020-12-12 lib: replace xbps_file_hash_check_dictionary with transaction_file lookup
+      #253 open 2020-03-24 lib/transaction_files.c: allow replacing file with alternative
+      #453 closed 2021-12-28 add XBPS_SYSLOG environment variable to overwrite configuration
+      #604 closed 2024-09-26 xbps-install looks at installed package's conf_files when updating instead of the new package's one
+      #100 closed 2019-06-11 [Feature request] add a preserv-config option to xbps.d file preservation lists
+      #164 merged 2019-08-13 lib/package_script.c: try to find a usable shell instead of using /bin/sh
+      #173 merged 2019-10-25 Archive write errors
+      #214 merged 2020-01-24 RFC: configuration: add keepconf option
+      #67 closed 2019-03-15  bin/xbps-install: don't overwrite action with downgrade if its on hold 
+  clobber        1 hit(s) (all listed)
+      #253 open 2020-03-24 lib/transaction_files.c: allow replacing file with alternative
+  blank          0 hit(s)
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       2 hit(s) (all listed)
+      #435 open 2021-11-28 Bug in xbps-create when a relative symlink point to an absolute symlink
+      #312 open 2020-07-23 "switch_alt_group: Assertion `curpkgd' failed." when uninstalling a package
+  in-place       36 hit(s) (all listed)
+      #229 open 2020-02-15 [feature request] automatically update xbps in-place
+      #654 open 2025-10-28 The ergonomics of xbps-remove -F
+      #317 open 2020-07-30 xbps-remove removes directories it shouldn't
+      #455 open 2021-12-29 `xbps-reconfigure -fa` on a fresh install adds (missing?) `pkgname` entries to `pkgdb-0.38.plist`
+      #152 open 2019-07-09 Proxy settings are ignored by xbps-install
+      #359 open 2020-12-12 lib: replace xbps_file_hash_check_dictionary with transaction_file lookup
+      #162 open 2019-08-05 xbps-install: remove obsolete packages during update
+      #573 open 2023-09-17 repo reorg bikeshed
+      #421 open 2021-07-24 Print install and remove messages below transaction summary
+      #287 open 2020-05-16 File conflicts when installing two packages at the same time, but not when installing one at a time
+      #377 open 2021-02-12 xbps-remove -R does not remove all dependencies when removing multiple packages
+      #542 open 2023-02-20 format strings for library and xbps-query
+      #1 open 2018-06-22 [Feature request] Optional runtime dependencies
+      #601 open 2024-09-10 why not xbp install , xbp query or xbp remove ?
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+      #665 closed 2025-12-22 typo in xbps-query manpage
+      #647 closed 2025-09-14 Internationalization of xbps
+      #648 closed 2025-09-14 xbps-install ignores newer version of package when overriding default repo
+      #602 closed 2024-09-12 Repo not found all of the sudden?
+      #568 closed 2023-08-11 bin/xbps-install: add --import-key arg for non-interactive key import
+  unclean        1 hit(s) (all listed)
+      #418 open 2021-07-12 xbps-repodb: add --index
+  shutdown       2 hit(s) (all listed)
+      #635 open 2025-06-27 Void with 512 megs of RAM (VM) - xbps sync causes OOMkill
+      #660 closed 2025-12-05 removal of dependencies via ignorepkg occasionally results in an XBPS crash
+  reboot         3 hit(s) (all listed)
+      #621 open 2025-01-31 xbps-remove memory leakage
+      #635 open 2025-06-27 Void with 512 megs of RAM (VM) - xbps sync causes OOMkill
+      #252 closed 2020-03-16 can't boot void after system upgrade
+  disk+full      2 hit(s) (all listed)
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+      #322 closed 2020-08-20 xbps-install: in dry run mode, print transaction even when disk is full
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     2 hit(s) (all listed)
+      #663 open 2025-12-18 Stack buffer underflow (read) in `xbps_path_rel`
+      #687 closed 2026-04-26 NULL pointer dereference fixes
+  atomic+write   1 hit(s) (all listed)
+      #531 closed 2023-01-30 Unable to build xbps
+  lock+file      8 hit(s) (all listed)
+      #675 open 2026-02-17 lib: add file locking to downloads
+      #359 open 2020-12-12 lib: replace xbps_file_hash_check_dictionary with transaction_file lookup
+      #582 open 2024-01-10 Replace `xbps_file_hash_check_dictionary`
+      #76 open 2019-04-10 xbps-rindex: remove mode
+      #347 open 2020-11-15 shell completion is slow to list all packages on some hardware
+      #645 closed 2025-08-17 Fix off-by-one error adding ellipsis
+      #202 closed 2019-12-30 interupting xbps-install fails to lock pkgdb
+      #123 closed 2019-06-17 Useless / not informative error messages
+  write+failure  2 hit(s) (all listed)
+      #474 open 2022-03-02 Memory-sync mode still opens some files for writing
+      #139 closed 2019-06-24 xbps-install -u fails with unresolved dependencies
+  file+contents  2 hit(s) (all listed)
+      #435 open 2021-11-28 Bug in xbps-create when a relative symlink point to an absolute symlink
+      #312 open 2020-07-23 "switch_alt_group: Assertion `curpkgd' failed." when uninstalling a package
+
+== 51 terms run; 32 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

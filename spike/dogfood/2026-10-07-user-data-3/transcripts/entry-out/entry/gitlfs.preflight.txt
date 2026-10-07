@@ -1,0 +1,21 @@
+PREFLIGHT  recording accepted — 17 state-changing operation(s) observed
+
+cwd          /s/glfs-in
+atomicity    0 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): gitconfig
+oracle       agreed on 0 operations (1996 syscall lines examined, 0 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed) — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and ordered rather than compared one by one: this is `oracle_verified_subject_only`, and `oracle_verified` stays false. What accounts for a write neither observer placed is the per-path reconciliation, not this comparison
+processes    a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 7 thread(s) created, and 0 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/glfs --cwd "/s/glfs-in" --operation "git-lfs install --skip-repo" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

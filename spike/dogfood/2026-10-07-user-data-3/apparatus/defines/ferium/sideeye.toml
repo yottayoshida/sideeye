@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/ferium"
+
+[define]
+operation = "ferium profile delete p2"
+cwd       = "/s/ferium-in"

@@ -1,0 +1,379 @@
+== novelty pre-scan: Canop/broot
+== date: 2026-10-07T06:52:38Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          29 hit(s) (all listed)
+      #1211 merged 2026-09-01 Fix crash in zune on 16 bits per channel PNGs
+      #1210 closed 2026-09-01 Zune 16 bits channels
+      #1209 closed 2026-09-01 Panic when previewing a PNG without extension
+      #534 closed 2022-04-11 nt/haplot|gyno crashes
+      #493 open 2022-02-03 Content search in PDF
+      #1190 merged 2026-08-07 fix: detect a duplicate broot server name instead of silently overtaking it (#1065)
+      #91 closed 2020-01-09 MacOS 10.14 No application knows how to open - panic
+      #504 closed 2022-02-15 token search broken under default directory (~)
+      #947 closed 2024-09-23 viewing image in broot on kitty using filling too much ram
+      #1183 merged 2026-07-18 fix(content_search): guard Needle::find_naive_* against short haystacks
+      #78 closed 2020-01-07 Paths on Windows are invalid
+      #997 closed 2025-04-04 Possible Stack-buffer-overflow in Mmap Struct
+      #1122 merged 2026-01-29 Climb path on missing working directory when restoring from terminal mode
+      #967 closed 2024-12-30 Panic when previewing seemingly innocent JavaScript text file
+      #968 merged 2024-12-30 Use a new version of the forked syntect
+      #326 closed 2021-01-20 Typing :!!a panics
+      #777 merged 2023-10-27 Fix Windows crash when running -c
+      #776 closed 2023-10-27 br -c "incomplete_comm" crashes on Windows
+      #485 closed 2022-01-21 Crash on previewing some files
+      #643 closed 2022-12-14 CRASH: Panic when hitting delete in empty help prompt
+  corrupt        2 hit(s) (all listed)
+      #1087 closed 2025-10-21 Mathematical operations in verbs
+      #223 closed 2020-04-23 Broot breaks on exotic file names (newline and tab verified, possibly more)
+  corruption     1 hit(s) (all listed)
+      #997 closed 2025-04-04 Possible Stack-buffer-overflow in Mmap Struct
+  truncated      15 hit(s) (all listed)
+      #1212 open 2026-09-02 Add a way to keep lists truncated when doing a total-search
+      #1214 open 2026-09-02 Inconsistent use of ellipses when truncating lists during a search
+      #1213 open 2026-09-02 Show when an incomplete search has take place
+      #1192 merged 2026-08-08 fix: correct highlight offset when a matched name is truncated on the left
+      #950 open 2024-10-15 what about LSP integration?
+      #314 closed 2020-12-11 Icons aren't properly rendered on Kitty
+      #1170 closed 2026-05-30 fix: resolve #788 — `br` command fails on Windows
+      #1177 closed 2026-07-02 write file names too long for one line on several
+      #948 merged 2024-09-25 Fix IME popup position
+      #811 merged 2023-12-22 Bump zerocopy from 0.7.26 to 0.7.32
+      #808 closed 2023-12-15 Bump zerocopy from 0.7.26 to 0.7.31
+      #700 closed 2023-04-27 shorten long directories to show filenames
+      #459 closed 2021-10-24 Alt+enter to cd not working in Win10
+      #106 closed 2020-01-10 Truncated listing for current directory
+      #426 closed 2021-08-03 Bump open from 1.7.1 to 2.0.0
+  truncate       19 hit(s) (all listed)
+      #1214 open 2026-09-02 Inconsistent use of ellipses when truncating lists during a search
+      #1212 open 2026-09-02 Add a way to keep lists truncated when doing a total-search
+      #1221 open 2026-10-01 Allow MINIMAL_PANEL_WIDTH to equal 0
+      #1213 open 2026-09-02 Show when an incomplete search has take place
+      #950 open 2024-10-15 what about LSP integration?
+      #1192 merged 2026-08-08 fix: correct highlight offset when a matched name is truncated on the left
+      #314 closed 2020-12-11 Icons aren't properly rendered on Kitty
+      #1170 closed 2026-05-30 fix: resolve #788 — `br` command fails on Windows
+      #1174 merged 2026-06-16 Change the way possible verbs are listed
+      #1177 closed 2026-07-02 write file names too long for one line on several
+      #984 merged 2025-03-05 Truncate long root path names
+      #948 merged 2024-09-25 Fix IME popup position
+      #811 merged 2023-12-22 Bump zerocopy from 0.7.26 to 0.7.32
+      #808 closed 2023-12-15 Bump zerocopy from 0.7.26 to 0.7.31
+      #700 closed 2023-04-27 shorten long directories to show filenames
+      #459 closed 2021-10-24 Alt+enter to cd not working in Win10
+      #106 closed 2020-01-10 Truncated listing for current directory
+      #426 closed 2021-08-03 Bump open from 1.7.1 to 2.0.0
+      #26 closed 2019-02-11 Allow full directory listing
+  empty          79 hit(s) (all listed)
+      #1201 merged 2026-08-16 fix: panic on an empty content match at end of line
+      #403 open 2021-06-18 configurable separators for query parts and verbs | use space instead of comma in token search
+      #848 closed 2024-03-06 x86_64-unknown-netbsd empty in broot v1.35.0
+      #152 open 2020-01-13 Your inputs for a cookbook
+      #614 open 2022-10-06 Modal mode enhancement
+      #888 open 2024-06-09 Output from Br shell function in powershell doesn't print to stdout
+      #471 closed 2021-12-23 Try other modal mode switching patterns
+      #572 closed 2022-07-05 size, position and orientation of stagging area
+      #820 closed 2024-01-13 br shell function does not escape file path
+      #373 closed 2021-04-18 Terminal opening from broot fails with nushell
+      #1172 merged 2026-05-31 Fix extra empty line when printing a multi-item staging area
+      #1062 closed 2025-09-26 pp from staging area prints additional empty line
+      #1162 closed 2026-05-13 x86_64-pc-windows-gnu empty in broot v1.56.3
+      #78 closed 2020-01-07 Paths on Windows are invalid
+      #1165 closed 2026-05-16 Latest release on windows doesn't work
+      #182 open 2020-01-25 I need testers - please register
+      #1156 closed 2026-04-19 "selected_line" variable in skins is broken
+      #1160 merged 2026-05-06 open all staged files with :open_stay (#444)
+      #1120 closed 2026-01-28 Nushell 0.110 $nu.temp-path changed to $nu.temp-dir
+      #1155 closed 2026-04-17 fix: avoid trailing blank lines in staged path output
+  atomic         1 hit(s) (all listed)
+      #573 closed 2022-07-06 Broot fails to compile with cargo install
+  atomically     0 hit(s)
+  interrupted    10 hit(s) (all listed)
+      #631 closed 2022-11-05 `ctrl-h` binding not working?
+      #381 closed 2021-05-03 i3-wm: No resize event when broot started together with a terminal emulator
+      #504 closed 2022-02-15 token search broken under default directory (~)
+      #534 closed 2022-04-11 nt/haplot|gyno crashes
+      #643 closed 2022-12-14 CRASH: Panic when hitting delete in empty help prompt
+      #410 closed 2021-06-26 broot + kitty does not display images in high resolution
+      #496 closed 2022-02-13 character " fairly often replacing all the search/command (bar) content whenever typing the key Tab, triggering a verb
+      #147 closed 2020-01-12 'enter' during a search does not focus
+      #303 closed 2020-11-14 Search performance goes down as search string get's longer.
+      #274 closed 2020-09-04 Hidden files feature is not functional
+  interrupt      12 hit(s) (all listed)
+      #631 closed 2022-11-05 `ctrl-h` binding not working?
+      #381 closed 2021-05-03 i3-wm: No resize event when broot started together with a terminal emulator
+      #504 closed 2022-02-15 token search broken under default directory (~)
+      #534 closed 2022-04-11 nt/haplot|gyno crashes
+      #701 merged 2023-05-01 clear events after delay on windows
+      #699 closed 2023-04-19 [Windows] broot -c 'filter;:pt' does not filter
+      #643 closed 2022-12-14 CRASH: Panic when hitting delete in empty help prompt
+      #410 closed 2021-06-26 broot + kitty does not display images in high resolution
+      #496 closed 2022-02-13 character " fairly often replacing all the search/command (bar) content whenever typing the key Tab, triggering a verb
+      #147 closed 2020-01-12 'enter' during a search does not focus
+      #303 closed 2020-11-14 Search performance goes down as search string get's longer.
+      #274 closed 2020-09-04 Hidden files feature is not functional
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         62 hit(s) (all listed)
+      #593 open 2022-09-02 a fixed results for content search when navigates through occurences
+      #1056 open 2025-09-22 Refresh preview when searching content without reopening
+      #630 open 2022-11-05 Multiple key combo verbs
+      #493 open 2022-02-03 Content search in PDF
+      #807 open 2023-12-06 broot hangs on a large nested directory
+      #943 open 2024-09-13 Transformers without output?
+      #433 open 2021-08-13 Running editor from xdg-open hangs broot
+      #152 open 2020-01-13 Your inputs for a cookbook
+      #642 open 2022-12-14 feature request: Fuzzy verb matching
+      #182 open 2020-01-25 I need testers - please register
+      #631 closed 2022-11-05 `ctrl-h` binding not working?
+      #879 closed 2024-05-20 Backspace key not working when running in xterm
+      #650 closed 2023-01-14 Show multiple instances of files in content search mode
+      #1147 closed 2026-04-01 Feature: external command executes in the background
+      #624 closed 2022-10-31 external: "setsid -f imv *"
+      #373 closed 2021-04-18 Terminal opening from broot fails with nushell
+      #495 closed 2022-02-10 invalid command or invalid broot behavior ?
+      #460 closed 2021-10-24 Launch broot as br in win 10
+      #534 closed 2022-04-11 nt/haplot|gyno crashes
+      #504 closed 2022-02-15 token search broken under default directory (~)
+  power          14 hit(s) (all listed)
+      #484 open 2022-01-21 High CPU usage in macOS 12.1 on M1 Pro
+      #182 open 2020-01-25 I need testers - please register
+      #888 open 2024-06-09 Output from Br shell function in powershell doesn't print to stdout
+      #788 closed 2023-11-10 `br` command fails on Windows
+      #949 closed 2024-09-26 br on PowerShell not working
+      #802 closed 2023-11-25 shell command without quitting 
+      #655 merged 2023-01-19 Shell function upgrade
+      #559 closed 2022-06-10 Add info about logical operators for filter patterns, and examples, to help text 
+      #50 closed 2019-03-25 Windows compatibility
+      #179 closed 2020-01-24 Suggestion: use left and right for jumping into / out of directories as default
+      #108 closed 2020-01-10 Cannot install br command under Ubuntu 18.04
+      #101 closed 2020-01-09 Fish detection is broken
+      #88 closed 2020-01-09 Fish installation does not work
+      #81 closed 2020-01-09 First start installs shell function even if confirmation question is answered with no
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           33 hit(s) (all listed)
+      #1008 open 2025-05-06 whale spotting on specific disk
+      #409 open 2021-06-25 --show-gitignored, but do not enter
+      #560 open 2022-06-11 Filter history scrollback
+      #493 open 2022-02-03 Content search in PDF
+      #533 closed 2022-04-11 verb to hide the selection from research ?
+      #529 closed 2022-04-01 Superfluous recalculations in "br -w" mode when navigating with arrow keys
+      #663 closed 2023-02-03 Option to get a **full** tree listing, exactly like running `tree`
+      #105 closed 2020-01-10 Support github repository trees
+      #531 closed 2022-04-04 GLIBC_2.28 not found
+      #247 closed 2020-07-07 [Request] Add a way of tracking and easily cd-ing into your most used directories
+      #205 closed 2020-02-17 Follow symbolic links in search
+      #304 closed 2020-11-18 [opinion needed] Replace TOML for config with another format ?
+      #891 merged 2024-06-26 Use XDG_RUNTIME_DIR when available
+      #812 closed 2023-12-27 When creating a new pane under Windows, the path contains garbage
+      #707 merged 2023-05-17 Define disk space availability colors in skin 
+      #727 closed 2023-08-03 Ignore symbolic object's size
+      #704 closed 2023-05-16 Allow dir size computation in /run/media 
+      #710 merged 2023-05-21 Allow dir size computation in /run/media
+      #734 closed 2023-08-23 Property content_search_max_file_size not accepted in toml format?
+      #656 closed 2023-01-20 Glitches in editor launched by br in nushell
+  partial        9 hit(s) (all listed)
+      #546 open 2022-04-27 case insensitive exact content search
+      #775 closed 2023-10-27 Stage all items and range base staging in current directory 
+      #528 closed 2022-03-30 Possible UX Feature for Multiple-Selection to Staging
+      #1175 merged 2026-06-24 Add Sixel image-preview support
+      #1055 merged 2025-09-22 initial partial loading of big text files
+      #776 closed 2023-10-27 br -c "incomplete_comm" crashes on Windows
+      #24 closed 2019-02-07 Support emacs-style key binding
+      #303 closed 2020-11-14 Search performance goes down as search string get's longer.
+      #4 closed 2019-01-12 Panic (sometimes) when using `:cd` without the companion shell function
+  incomplete     7 hit(s) (all listed)
+      #1213 open 2026-09-02 Show when an incomplete search has take place
+      #1159 closed 2026-05-06 fix: iTerm version check
+      #460 closed 2021-10-24 Launch broot as br in win 10
+      #776 closed 2023-10-27 br -c "incomplete_comm" crashes on Windows
+      #777 merged 2023-10-27 Fix Windows crash when running -c
+      #747 closed 2023-09-20 "Could NOT find Lpeg"
+      #36 closed 2019-02-24 Feature request: Pass any text following a custom verb to the execution command
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #680 closed 2023-02-28 Search freezes (on Mac)
+      #1007 closed 2025-04-29 verb with focus_staging_area_no_open remains active after invoking
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #735 closed 2023-08-24 broot blocking ctrl-z (SIGSTOP)
+  half-written   0 hit(s)
+  wipe           2 hit(s) (all listed)
+      #496 closed 2022-02-13 character " fairly often replacing all the search/command (bar) content whenever typing the key Tab, triggering a verb
+      #408 closed 2021-06-24 Installation error
+  wipes          1 hit(s) (all listed)
+      #496 closed 2022-02-13 character " fairly often replacing all the search/command (bar) content whenever typing the key Tab, triggering a verb
+  erase          5 hit(s) (all listed)
+      #1175 merged 2026-06-24 Add Sixel image-preview support
+      #944 closed 2024-09-16 Rendering Office files as images
+      #932 merged 2024-08-14 Non erased global ignore
+      #643 closed 2022-12-14 CRASH: Panic when hitting delete in empty help prompt
+      #106 closed 2020-01-10 Truncated listing for current directory
+  erasing        0 hit(s)
+  erased         3 hit(s) (all listed)
+      #1175 merged 2026-06-24 Add Sixel image-preview support
+      #932 merged 2024-08-14 Non erased global ignore
+      #106 closed 2020-01-10 Truncated listing for current directory
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      28 hit(s) (all listed)
+      #240 closed 2020-06-09 Windows (cmd.exe): second tab slows down the whole display
+      #944 closed 2024-09-16 Rendering Office files as images
+      #846 closed 2024-03-04 Bump mio from 0.8.10 to 0.8.11
+      #768 merged 2023-10-18 Bump rustix from 0.38.18 to 0.38.19
+      #811 merged 2023-12-22 Bump zerocopy from 0.7.26 to 0.7.32
+      #808 closed 2023-12-15 Bump zerocopy from 0.7.26 to 0.7.31
+      #694 closed 2023-04-03 Bump spin from 0.9.7 to 0.9.8
+      #657 closed 2023-01-20 Bump libgit2-sys from 0.13.4+1.4.2 to 0.13.5+1.4.5
+      #185 closed 2020-01-29 Suggestion: vim mode
+      #443 closed 2021-09-01 Bump open from 2.0.0 to 2.0.1
+      #456 closed 2021-10-01 Bump git2 from 0.13.20 to 0.13.23
+      #441 closed 2021-09-01 Bump serde from 1.0.127 to 1.0.130
+      #439 closed 2021-09-01 Bump phf from 0.9.0 to 0.10.0
+      #461 closed 2021-10-29 Bump libc from 0.2.98 to 0.2.105
+      #455 closed 2021-10-01 Bump git2 from 0.13.20 to 0.13.22
+      #454 closed 2021-10-01 Bump libc from 0.2.98 to 0.2.103
+      #442 closed 2021-09-01 Bump git2 from 0.13.20 to 0.13.21
+      #440 closed 2021-09-01 Bump libc from 0.2.98 to 0.2.101
+      #424 closed 2021-08-03 Bump is_executable from 0.1.2 to 1.0.1
+      #458 closed 2021-10-17 Bump libc from 0.2.98 to 0.2.104
+  clobber        1 hit(s) (all listed)
+      #958 closed 2024-12-10 Request: Add new verb argument: {instance-name}
+  blank          13 hit(s) (all listed)
+      #293 closed 2020-10-19 Run custom command on selected file
+      #1191 merged 2026-08-08 fix(content_search): correct off-by-one in line_count_at_pos for line-start matches
+      #1200 merged 2026-08-15 New build chain
+      #1155 closed 2026-04-17 fix: avoid trailing blank lines in staged path output
+      #1186 merged 2026-07-26 Quote paths containing a backslash
+      #78 closed 2020-01-07 Paths on Windows are invalid
+      #1167 merged 2026-05-30 fix: resolve #849 — Username with one or more spaces causes an error
+      #1099 merged 2025-11-09 Fix PowerShell profile path in installation
+      #364 closed 2021-03-19 Survey: what's your opinion on including the directory itself when counting files ?
+      #1004 merged 2025-04-21 Add type hint to `max-depth` for nushell launcher
+      #745 closed 2023-09-19 :e has `$EDITOR +0`, should default be `$EDITOR`?
+      #157 closed 2020-01-14 No/incorrect rendering on Windows 7
+      #71 closed 2019-10-15 Installing broot under Windows failed during umask compilation
+  unreadable     5 hit(s) (all listed)
+      #1174 merged 2026-06-16 Change the way possible verbs are listed
+      #249 closed 2020-07-07 not repeating paths
+      #87 closed 2020-01-09 Detect if terminal is black on white and propose to change them accordingly
+      #83 closed 2020-01-09 Unreadable text
+      #250 closed 2020-07-08 Use LS_COLOR not own colors for elements
+  garbage        6 hit(s) (all listed)
+      #619 open 2022-10-20 ANSI escape characters show up when invoked via xargs
+      #203 open 2020-02-16 Donate your skin!
+      #78 closed 2020-01-07 Paths on Windows are invalid
+      #504 closed 2022-02-15 token search broken under default directory (~)
+      #812 closed 2023-12-27 When creating a new pane under Windows, the path contains garbage
+      #687 closed 2023-03-18 Redefine special paths handling (discussion)
+  mangled        1 hit(s) (all listed)
+      #98 closed 2020-01-09 Fails to start in Msysgit bash on Windows
+  contents       34 hit(s) (all listed)
+      #546 open 2022-04-27 case insensitive exact content search
+      #105 closed 2020-01-10 Support github repository trees
+      #775 closed 2023-10-27 Stage all items and range base staging in current directory 
+      #849 closed 2024-03-07 Username with one or more spaces causes an error
+      #240 closed 2020-06-09 Windows (cmd.exe): second tab slows down the whole display
+      #247 closed 2020-07-07 [Request] Add a way of tracking and easily cd-ing into your most used directories
+      #888 open 2024-06-09 Output from Br shell function in powershell doesn't print to stdout
+      #788 closed 2023-11-10 `br` command fails on Windows
+      #1136 closed 2026-02-21 alt+enter doesn't work on file (xdg-open)
+      #465 closed 2021-11-18 Make it possible for a verb to issue a single command for the whole list of staged files
+      #944 closed 2024-09-16 Rendering Office files as images
+      #1034 merged 2025-08-02 Show images via *Kitty* in unknown terminals, *Tmux*, SSH
+      #992 closed 2025-03-22 Confirmation before rm/mv + jump to parent folder from search
+      #197 closed 2020-02-11 Ability to enter archives (jar, tar, zip, 7z, etc.)
+      #745 closed 2023-09-19 :e has `$EDITOR +0`, should default be `$EDITOR`?
+      #365 closed 2021-03-20 Broot throws an error when trying to remap `:cd`
+      #122 closed 2020-01-10 Some directories that are not empty, are listed as empty?
+      #692 closed 2023-03-27 feat: add a `is_terminal` verb attribute, so externals that don't have terminal output, don't flicker
+      #136 closed 2020-01-11 Cleanup using rm. What is rm is aliased to something else? How to fix?
+      #643 closed 2022-12-14 CRASH: Panic when hitting delete in empty help prompt
+  in-place       48 hit(s) (all listed)
+      #1157 open 2026-04-23 Feature: add favorite panel
+      #954 open 2024-11-26 Show search result counts
+      #560 open 2022-06-11 Filter history scrollback
+      #981 open 2025-02-13 Shift Key Issue on First Character in Ghostty Terminal
+      #569 open 2022-06-29 Suggestion: alternative zsh `br` function
+      #403 open 2021-06-18 configurable separators for query parts and verbs | use space instead of comma in token search
+      #635 open 2022-11-20 Find and replace
+      #1189 merged 2026-08-06 Strip terminal escape sequences from displayed file/directory names
+      #554 closed 2022-05-22 `vscode.ttf` font with Termux?
+      #182 open 2020-01-25 I need testers - please register
+      #1188 closed 2026-08-06 Tree view does not strip terminal escape sequences from file/directory names, allowing injection via a crafted filename
+      #879 closed 2024-05-20 Backspace key not working when running in xterm
+      #297 closed 2020-11-03 Please support Pistol for previewing
+      #225 closed 2020-04-30 [Feature proposal] Single instance
+      #568 closed 2022-06-26 Request for sixel support for image previews, to support multiplexers
+      #695 closed 2023-04-05 Execute program with file name(s) as argument
+      #240 closed 2020-06-09 Windows (cmd.exe): second tab slows down the whole display
+      #1062 closed 2025-09-26 pp from staging area prints additional empty line
+      #1085 closed 2025-10-20 Broot to "accept" input when verb argument is presented
+      #1034 merged 2025-08-02 Show images via *Kitty* in unknown terminals, *Tmux*, SSH
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #511 closed 2022-02-21 broot closes and everything it called with it (sometimes not though... ??) as the tilling wm resizes the window too short
+  reboot         1 hit(s) (all listed)
+      #952 merged 2024-10-20 remove temp files used by kitty
+  disk+full      4 hit(s) (all listed)
+      #493 open 2022-02-03 Content search in PDF
+      #533 closed 2022-04-11 verb to hide the selection from research ?
+      #386 closed 2021-05-18 color of root_fs disk usage not reset properly
+      #208 closed 2020-02-26 Dealing with slow, remote directories. 
+  data+loss      0 hit(s)
+  partial+write  1 hit(s) (all listed)
+      #775 closed 2023-10-27 Stage all items and range base staging in current directory 
+  crash+safe     2 hit(s) (all listed)
+      #1183 merged 2026-07-18 fix(content_search): guard Needle::find_naive_* against short haystacks
+      #997 closed 2025-04-04 Possible Stack-buffer-overflow in Mmap Struct
+  atomic+write   0 hit(s)
+  lock+file      14 hit(s) (all listed)
+      #807 open 2023-12-06 broot hangs on a large nested directory
+      #1191 merged 2026-08-08 fix(content_search): correct off-by-one in line_count_at_pos for line-start matches
+      #887 closed 2024-06-07 Compilation of `trash` feature fails on darwin
+      #633 closed 2022-11-06 Question: copy the full path to the buffer
+      #322 closed 2021-01-04 Feature request: Command to copy a line of text in preview
+      #568 closed 2022-06-26 Request for sixel support for image previews, to support multiplexers
+      #1175 merged 2026-06-24 Add Sixel image-preview support
+      #304 closed 2020-11-18 [opinion needed] Replace TOML for config with another format ?
+      #895 closed 2024-06-29 Is there a way to print the file list and exit, just like `ls`?
+      #661 merged 2023-02-02 New version of the nushell script
+      #564 closed 2022-06-13 Compilation broken due to crokey crossterm dependecy mismatch with broot
+      #24 closed 2019-02-07 Support emacs-style key binding
+      #342 closed 2021-02-06 Release 1.2.2 has an outdated lockfile
+      #71 closed 2019-10-15 Installing broot under Windows failed during umask compilation
+  write+failure  2 hit(s) (all listed)
+      #152 open 2020-01-13 Your inputs for a cookbook
+      #1041 merged 2025-09-08 Watch
+  file+contents  29 hit(s) (all listed)
+      #546 open 2022-04-27 case insensitive exact content search
+      #888 open 2024-06-09 Output from Br shell function in powershell doesn't print to stdout
+      #105 closed 2020-01-10 Support github repository trees
+      #775 closed 2023-10-27 Stage all items and range base staging in current directory 
+      #247 closed 2020-07-07 [Request] Add a way of tracking and easily cd-ing into your most used directories
+      #240 closed 2020-06-09 Windows (cmd.exe): second tab slows down the whole display
+      #788 closed 2023-11-10 `br` command fails on Windows
+      #944 closed 2024-09-16 Rendering Office files as images
+      #1136 closed 2026-02-21 alt+enter doesn't work on file (xdg-open)
+      #465 closed 2021-11-18 Make it possible for a verb to issue a single command for the whole list of staged files
+      #1034 merged 2025-08-02 Show images via *Kitty* in unknown terminals, *Tmux*, SSH
+      #992 closed 2025-03-22 Confirmation before rm/mv + jump to parent folder from search
+      #197 closed 2020-02-11 Ability to enter archives (jar, tar, zip, 7z, etc.)
+      #745 closed 2023-09-19 :e has `$EDITOR +0`, should default be `$EDITOR`?
+      #365 closed 2021-03-20 Broot throws an error when trying to remap `:cd`
+      #122 closed 2020-01-10 Some directories that are not empty, are listed as empty?
+      #692 closed 2023-03-27 feat: add a `is_terminal` verb attribute, so externals that don't have terminal output, don't flicker
+      #643 closed 2022-12-14 CRASH: Panic when hitting delete in empty help prompt
+      #136 closed 2020-01-11 Cleanup using rm. What is rm is aliased to something else? How to fix?
+      #557 closed 2022-05-28 $EDITOR environment variable and explicitly set editor not respected
+
+== 51 terms run; 36 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

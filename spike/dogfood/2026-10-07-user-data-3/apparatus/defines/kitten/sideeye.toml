@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/kitty"
+
+[define]
+operation = "kitten themes --cache-age=-1 --reload-in=none Dracula"
+cwd       = "/s/kitten-in"

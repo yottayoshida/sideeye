@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/ros/home",
+    "operation": "ros config set dynamic-space-size 4gb",
+    "cwd": "/s/ros-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/ros/home/config",
+  "before_class": "write",
+  "before_path": "/s/ros/home/config",
+  "violation": "hybrid"
+}

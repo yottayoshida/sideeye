@@ -1,0 +1,346 @@
+=== openssl ca -revoke
+  image: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+a.crt
+a.csr
+a.key
+b.crt
+b.csr
+b.key
+c.crt
+c.csr
+c.key
+ca.cnf
+ca.crt
+crlnumber
+index.txt
+index.txt.attr
+index.txt.attr.old
+index.txt.old
+newcerts
+private
+seed.log
+serial
+serial.old
+V	271007053806Z		1000	unknown	/CN=a
+V	271007053806Z		1001	unknown	/CN=b
+V	271007053806Z		1002	unknown	/CN=c
+$ openssl ca -config ca.cnf -revoke b.crt -batch
+Using configuration from ca.cnf
+Revoking Certificate 1001.
+Database updated
+  -> exit 0
+  state: c34e49181b39 -> 2242355bff53
+a.crt
+a.csr
+a.key
+b.crt
+b.csr
+b.key
+c.crt
+c.csr
+c.key
+ca.cnf
+ca.crt
+crlnumber
+index.txt
+index.txt.attr
+index.txt.attr.old
+index.txt.old
+newcerts
+private
+seed.log
+serial
+serial.old
+V	271007053806Z		1000	unknown	/CN=a
+R	271007053806Z	261007053806Z	1001	unknown	/CN=b
+V	271007053806Z		1002	unknown	/CN=c
+$ openssl ca -config ca.cnf -gencrl -out crl.pem
+Using configuration from ca.cnf
+  -> exit 0
+  crlnumber now 1001
+=== minisign -C
+  image: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ minisign -G -W -p pk -s sk
+The secret key was saved as sk - Keep it secret!
+The public key was saved as pk - That one can be public.
+
+Files signed using this key pair can be verified with the following command:
+
+minisign -Vm <file> -P RWSh07f/7gDlxwd0sj8eeGOQVFOPsI8v04kVjaLZPOPYsyCs5R+xv8Ib
+
+  -> exit 0
+$ minisign -C -W -s sk
+Key encryption for [sk] is going to be removed.
+Password removed.
+  -> exit 0
+  state: 1a9936b70558 -> 1a9936b70558
+$ minisign -C -s sk
+Please enter a password to protect the secret key.
+
+Password: get_password()
+  -> exit 0
+  state: 1a9936b70558
+  passworded key made: sk2
+$ minisign -C -W -s sk2
+Key encryption for [sk2] is going to be removed.
+Password: get_password()
+  -> exit 0
+  state: a279ee9e4a1b -> a279ee9e4a1b
+=== sfntedit (afdko)
+  image: Python script, ASCII text executable
+-rw-r--r-- 1 root root 656 Oct  7 05:38 f.ttf
+$ sfntedit -l f.ttf
+--- sfnt header [f.ttf]
+version      =1.0 (00010000)
+numTables    =11
+searchRange  =128
+entrySelector=3
+rangeShift   =48
+--- table directory [index]={tag,checksum,offset,length}
+[ 0]={DSIG,00000001,00000288,00000008}
+[ 1]={OS/2,4138436d,00000138,00000060}
+[ 2]={cmap,000c0094,000001a0,00000034}
+[ 3]={glyf,3e2d3e2c,000001dc,00000034}
+[ 4]={head,30d55a1c,000000bc,00000036}
+  -> exit 0
+$ sfntedit -d DSIG f.ttf
+  -> exit 0
+  state: e1bca5662050 -> f7294fbe43f1
+f.ttf
+$ sfntedit -a TEST=blob.bin f.ttf
+  -> exit 0
+  state: 10dd0ff62e00 -> ddbf07f82b08
+blob.bin
+f.ttf
+=== keyring del (keyrings.alt plaintext)
+  image: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch6
+/s/aux/data/python_keyring/keyring_pass.cfg
+-rw------- 1 root root 90 Oct  7 05:38 keyring_pass.cfg
+$ keyring del svc u1
+  -> exit 0
+  state: abf8349b325a -> 39ffe0eca55a
+8
+=== zsh-z --add
+  image: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ zsh seed.zsh
+  -> exit 0
+/s/z/d1|1|1791351488
+/s/z/d2|1|1791351488
+$ zsh op.zsh
+  -> exit 0
+  state: 5f486cd115a7 -> 172311d540ca
+/s/z/d1|2|1791351488
+/s/z/d2|1|1791351488
+/s/z/d3|1|1791351488
+total 12
+drwxr-xr-x 2 root root 4096 Oct  7 05:38 .
+drwxr-xr-x 6 root root 4096 Oct  7 05:38 ..
+-rw------- 1 root root   63 Oct  7 05:38 .z
+-rw------- 1 root root    0 Oct  7 05:38 .z.lock
+=== rustic
+  image: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ rustic init
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] key 7d6f0dfd successfully added.
+[INFO] repository df202a07 successfully created.
+[INFO] using cache at /s/aux/cache/rustic/df202a07de58d6b01d81818a372072bc056fad14c623586654d1ee4061714790
+  -> exit 0
+$ rustic backup /s/rustic/data
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using cache at /s/aux/cache/rustic/df202a07de58d6b01d81818a372072bc056fad14c623586654d1ee4061714790
+[INFO] using no parent
+[INFO] starting to backup ["/s/rustic/data"] ...
+[INFO] Files:       1 new, 0 changed, 0 unchanged
+[INFO] Dirs:        4 new, 0 changed, 0 unchanged
+[INFO] Added to the repo: 758 B (raw: 779 B)
+[INFO] processed 1 files, 2 B
+[INFO] snapshot 854be707 successfully saved.
+[INFO] backup of /s/rustic/data done.
+  -> exit 0
+$ rustic backup /s/rustic/data
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using cache at /s/aux/cache/rustic/df202a07de58d6b01d81818a372072bc056fad14c623586654d1ee4061714790
+[INFO] using parents 854be707
+[INFO] starting to backup ["/s/rustic/data"] ...
+[INFO] Files:       1 new, 0 changed, 1 unchanged
+[INFO] Dirs:        0 new, 4 changed, 0 unchanged
+[INFO] Added to the repo: 831 B (raw: 1.1 KiB)
+[INFO] processed 2 files, 4 B
+[INFO] snapshot 202a5669 successfully saved.
+[INFO] backup of /s/rustic/data done.
+  -> exit 0
+$ rustic snapshots
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using cache at /s/aux/cache/rustic/df202a07de58d6b01d81818a372072bc056fad14c623586654d1ee4061714790
+
+snapshots for (host [c881d4a1593f], label [], paths [/s/rustic/data])
+| ID       | Time                | Host         | Label | Tags | Paths          | Files | Dirs | Size |
+|----------|---------------------|--------------|-------|------|----------------|-------|------|------|
+| 854be707 | 2026-10-07 05:38:09 | c881d4a1593f |       |      | /s/rustic/data |     1 |    4 |  2 B |
+| 202a5669 | 2026-10-07 05:38:09 | c881d4a1593f |       |      | /s/rustic/data |     2 |    4 |  4 B |
+2 snapshot(s)
+
+total: 2 snapshot(s)
+  -> exit 0
+$ rustic config --set-compression 5
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using cache at /s/aux/cache/rustic/df202a07de58d6b01d81818a372072bc056fad14c623586654d1ee4061714790
+saved new config
+  -> exit 0
+  state: 30327a66ba4d -> ae123601e00c
+$ rustic forget --keep-last 1 --prune
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using cache at /s/aux/cache/rustic/df202a07de58d6b01d81818a372072bc056fad14c623586654d1ee4061714790
+[INFO] snapshots for (host [c881d4a1593f], label [], paths [/s/rustic/data]):
+| ID       | Time                | Host         | Label | Tags | Paths          | Action | Reason |
+|----------|---------------------|--------------|-------|------|----------------|--------|--------|
+| 202a5669 | 2026-10-07 05:38:09 | c881d4a1593f |       |      | /s/rustic/data | keep   | last   |
+| 854be707 | 2026-10-07 05:38:09 | c881d4a1593f |       |      | /s/rustic/data | remove |        |
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using cache at /s/aux/cache/rustic/df202a07de58d6b01d81818a372072bc056fad14c623586654d1ee4061714790
+[INFO] to repack:          0 packs,          0 blobs,        0 B
+[INFO] this removes:                         0 blobs,        0 B
+  -> exit 0
+  state: ae123601e00c -> 621c83813873
+=== lxc (lxd client) alias
+  image: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=PQSYrzlFPvKgYxc7tqKu/I
+$ lxc alias add l1 list
+  -> exit 0
+$ lxc alias add l2 info
+  -> exit 0
+$ lxc alias list
++-------+--------+
+| ALIAS | TARGET |
++-------+--------+
+| l1    | list   |
++-------+--------+
+| l2    | info   |
++-------+--------+
+  -> exit 0
+drwxr-x--- 2 root root 4096 Oct  7 05:38 .
+drwxr-x--- 3 root root 4096 Oct  7 05:38 ..
+-rw-r--r-- 1 root root  107 Oct  7 05:38 config.yml
+$ lxc alias remove l1
+  -> exit 0
+  state: e53ad062bca5 -> 140579f49ffc
+$ lxc alias rename l2 l3
+  -> exit 0
+  state: 140579f49ffc -> 853b1532e814
+=== duplicacy set
+  image: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=yOhMdKmDQFtKWaQIM2rp/4
+$ duplicacy init snap1 /s/dup/storage
+/s/dup/repo will be backed up to /s/dup/storage with id snap1
+  -> exit 0
+$ duplicacy backup
+Storage set to /s/dup/storage
+No previous backup found
+Indexing /s/dup/repo
+Parsing filter file /s/dup/repo/.duplicacy/filters
+Loaded 0 include/exclude pattern(s)
+Packed f (2)
+Backup for /s/dup/repo at revision 1 completed
+  -> exit 0
+total 16
+drwxr--r-- 3 root root 4096 Oct  7 05:38 .
+drwxr-xr-x 3 root root 4096 Oct  7 05:38 ..
+drwxr--r-- 3 root root 4096 Oct  7 05:38 cache
+-rw------- 1 root root  360 Oct  7 05:38 preferences
+$ duplicacy set
+The options for storage /s/dup/storage have not been modified
+  -> exit 0
+$ duplicacy set -nobackup
+Incorrect Usage.
+
+NAME:
+   duplicacy set - Change the options for the default or specified storage
+
+USAGE:
+   duplicacy set [command options]  
+
+OPTIONS:
+   -encrypt, e[=true]		encrypt the storage with a password
+   -no-backup[=true]		backup to this storage is prohibited
+   -no-restore[=true]		restore from this storage is prohibited
+  -> exit 0
+  state: fa1be05f82e0 -> fa1be05f82e0
+=== plakar rm
+  image: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=nWEdmxBVfso0tAbX6JBF/q
+$ plakar at /s/plakar/repo create -plaintext
+Welcome to plakar !
+
+By default, plakar checks for security updates on the releases feed once every 24h.
+It will notify you if there are important updates that you need to install.
+
+If you prefer to watch yourself, you can disable this permanently by running:
+
+	plakar -disable-security-check
+
+If you change your mind, run:
+
+	plakar -enable-security-check
+  -> exit 0
+$ plakar at /s/plakar/repo create -no-encryption
+flag provided but not defined: -no-encryption
+Usage: plakar [at /path/to/repository] create [OPTIONS]
+       plakar [at @REPOSITORY] create [OPTIONS]
+
+OPTIONS:
+  -hashing string
+    	hashing algorithm to use for digests (default "BLAKE3")
+  -no-compression
+    	disable transparent compression
+  -plaintext
+    	disable transparent encryption
+  -weak-passphrase
+  -> exit 0
+$ plakar at /s/plakar/repo backup /s/plakar/data
+plakar: refusing to open a plaintext repository without explicit consent
+  -> exit 0
+$ plakar at /s/plakar/repo backup /s/plakar/data
+plakar: refusing to open a plaintext repository without explicit consent
+  -> exit 0
+$ plakar at /s/plakar/repo ls
+plakar: refusing to open a plaintext repository without explicit consent
+  -> exit 0
+=== ferium profile
+  image: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped
+$ ferium profile create --name p1 --game-version 1.20.1 --mod-loader fabric --output-dir /s/ferium/mods1
+After adding your mods, remember to run `ferium upgrade` to download them!
+  -> exit 0
+drwxr-xr-x 2 root root 4096 Oct  7 05:38 .
+drwxr-x--- 5 root root 4096 Oct  7 05:38 ..
+-rw-r--r-- 1 root root  173 Oct  7 05:38 config.json
+$ ferium profiles
+p1 *
+          Output directory:   /s/ferium/mods1
+          Minecraft Version:  1.20.1
+          Mod Loader:         Fabric
+          Mods:               0
+
+  -> exit 0
+=== espsecure sign-data in place
+  image: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch6
+$ espsecure generate-signing-key --version 2 --scheme ecdsa256 k.pem
+espsecure v5.4.0
+ECDSA NIST256p private key in PEM format written to "k.pem".
+  -> exit 0
+$ espsecure sign-data --version 2 --keyfile k.pem fw.bin
+espsecure v5.4.0
+                                                                                
+ Usage: espsecure sign-data [OPTIONS] DATAFILE                                  
+                                                                                
+ Try 'espsecure sign-data -h' for help                                          
+╭─ Error ─────────────────────────────────────────────────
+│ Missing argument 'DATAFILE'.                                                 │
+╰────────────────────────────────────────────────────�
+                                                                                
+  -> exit 0
+  state: 420bd1a6e9f9 -> 420bd1a6e9f9
+total 68
+-rw-r--r-- 1 root root 65536 Oct  7 05:38 fw.bin
+-rw-r--r-- 1 root root   227 Oct  7 05:38 k.pem

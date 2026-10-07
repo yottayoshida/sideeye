@@ -1,0 +1,6 @@
+[world]
+state = "/s/alac"
+
+[define]
+operation = "alacritty migrate -c /s/alac/alacritty.toml"
+cwd       = "/s/alac-in"

@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/data/qalculate"
+
+[define]
+operation = "qalc -f /s/qalc-in/op.txt"
+cwd       = "/s/qalc-in"

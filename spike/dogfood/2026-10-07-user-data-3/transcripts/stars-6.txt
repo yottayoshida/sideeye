@@ -1,0 +1,9 @@
+earendil-works/pi stars=113048 pushed=2026-10-07 archived=false issues=true full=earendil-works/pi
+cline/cline stars=69961 pushed=2026-10-07 archived=false issues=true full=cline/cline
+vercel-labs/skills stars=33304 pushed=2026-10-07 archived=false issues=true full=vercel-labs/skills
+mistralai/mistral-vibe stars=5059 pushed=2026-10-07 archived=false issues=true full=mistralai/mistral-vibe
+stacklok/toolhive stars=2238 pushed=2026-10-07 archived=false issues=true full=stacklok/toolhive
+streetsidesoftware/cspell stars=1697 pushed=2026-10-06 archived=false issues=true full=streetsidesoftware/cspell
+Comfy-Org/comfy-cli stars=1002 pushed=2026-10-07 archived=false issues=true full=Comfy-Org/comfy-cli
+pydoit/doit stars=2090 pushed=2026-09-21 archived=false issues=true full=pydoit/doit
+intellectronica/ruler stars=2942 pushed=2026-09-30 archived=false issues=true full=intellectronica/ruler

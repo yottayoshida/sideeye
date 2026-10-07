@@ -1,0 +1,15 @@
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /opt/bin/ferium (found along PATH): it names no interpreter, so it is statically linked and no preloaded library can reach it
+next        Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+cwd         /s/ferium-in
+
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: the shim never announced itself in this run, so nothing observed process boundaries
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=05c92e766c7d0c91be84531ca4ccaabbea0e50abd322bc3551a70245543679d1;

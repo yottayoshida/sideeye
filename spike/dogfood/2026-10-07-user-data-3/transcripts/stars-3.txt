@@ -1,0 +1,1 @@
+jaraco/keyrings.alt stars=29 pushed=2026-04-13 archived=false issues=true full=jaraco/keyrings.alt

@@ -1,0 +1,4 @@
+PLAIN pi exit=0 state=changed  (Installed /s/pi-in/ext2)
+PLAIN cspell exit=0 state=changed  (/s/cspell-in/b.json |       )
+PLAIN doit exit=0 state=changed  (forgetting a)
+PLAIN kitten exit=0 state=changed  ()

@@ -1,0 +1,23 @@
+scan ended for pi (earendil-works/pi); exploring 2026-10-07T08:03:47Z
+=== pi 2026-10-07T08:03:47Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for doit (pydoit/doit); exploring 2026-10-07T08:13:38Z
+=== doit 2026-10-07T08:13:38Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for kitten (kovidgoyal/kitty); exploring 2026-10-07T08:19:43Z
+=== kitten 2026-10-07T08:19:43Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+explore-after-scan: done 2026-10-07T08:19:45Z

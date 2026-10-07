@@ -1,0 +1,442 @@
+== novelty pre-scan: zlib-ng/minizip-ng
+== date: 2026-10-07T07:15:04Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          24 hit(s) (all listed)
+      #1045 closed 2026-09-06 Incomplete fix for #1023: entry_close() memcmp still uses attacker-controlled hash_digest_size (stack OOB read on develop)
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1023 closed 2026-07-22 Stack-buffer-overflow in mz_zip_reader_entry_get_hash
+      #970 closed 2026-03-26 Missing null check after malloc in ioapi_mem.c write handler
+      #1017 closed 2026-07-04 Support custom memory allocation functions like zlib-ng
+      #848 closed 2025-03-02 `unzGetCurrentFileZStreamPos64` is missing
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #984 merged 2026-04-25 mz_os: fix symlink check at or above destination dir
+      #916 closed 2025-10-30 Negative-size-param memcopy via `mz_zip_reader_open_buffer`
+      #891 merged 2025-06-17 zip_rw: validate the handle in each getter/setter
+      #792 closed 2024-07-24 mz_zip_writer_add_path will crash when the filename contains *
+      #854 closed 2025-04-03 Segfault when extracting a valid file with minizip CLI (Deflate, ~3.8MB)
+      #739 closed 2023-11-08 Heap-buffer-overflow in mz_os.c:71 mz_path_has_slash
+      #740 closed 2023-11-08 Heap-buffer-overflow in mz_os.c:188 in mz_path_resolve
+      #784 closed 2024-05-29 Fail to Build on Mingw 
+      #623 closed 2022-04-17 3.0.5: test suite eats all avalable storage space
+      #605 closed 2022-01-20 Add check for double call into mz_crypt_sha_begin
+      #566 closed 2021-05-02 fix or drop zipOpen2/unzOpen2
+      #531 merged 2020-11-24 mz_zip_rw.c - fix potential null dereference in create functions
+      #206 merged 2017-11-11 Fixes for the mz_compat layer.
+  corrupt        37 hit(s) (all listed)
+      #1013 open 2026-07-03 Restore stream position after reading data descriptor in read close
+      #840 open 2025-02-18 Is mz_zip_entry_read_close suitable with non-NULL args?
+      #1041 merged 2026-09-04 Fix stack overflow in mz_zip_reader_entry_get_hash
+      #1052 merged 2026-09-12 Extract AES counter mode into a reusable primitive and batch its keystream
+      #1012 merged 2026-07-03 Widen mz_stream_mem size types and mz_stream_copy len to int64_t
+      #1024 merged 2026-07-22 Fix non-ASCII filename handling on Windows (for CJK)
+      #597 closed 2021-10-21 Read corrupted zip files with more than 65535 entries
+      #1023 closed 2026-07-22 Stack-buffer-overflow in mz_zip_reader_entry_get_hash
+      #1014 merged 2026-07-03 Allow recover flag to read zips with >65535 entries missing zip64 EOCD
+      #1006 closed 2026-06-30 Fix for issue744: Added support for int64_t for mz_strm_mem
+      #1017 closed 2026-07-04 Support custom memory allocation functions like zlib-ng
+      #1022 merged 2026-07-15 Harden extraction against destination symlink traversal
+      #933 closed 2025-12-26 Invalid or corrupted file: Unable to read "zlib-ng.dll"
+      #1018 merged 2026-07-04 Add MZ_ICU option for string encoding conversion
+      #834 merged 2024-11-24 fix: unzipping with backslashes in the name on UNIX
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #836 closed 2025-01-04 minizip_erase() corrupts an encrypted zip archive
+      #830 closed 2024-11-20 LibreOffice data descriptor validation
+      #831 closed 2024-11-22 [macOS] zipping something named a\b will change it to folder a/b
+      #800 closed 2024-09-16 minizip-ng is incorrectly unzipping PKCrypt archives when using an incorrect password
+  corruption     11 hit(s) (all listed)
+      #1013 open 2026-07-03 Restore stream position after reading data descriptor in read close
+      #1017 closed 2026-07-04 Support custom memory allocation functions like zlib-ng
+      #936 closed 2026-01-13 Arbitrary File Write Vulnerability via Symlinks
+      #834 merged 2024-11-24 fix: unzipping with backslashes in the name on UNIX
+      #897 closed 2025-07-24 `compat/crypt.h` lacks required `#include <stdint.h>` for `uint32_t`, breaking Clang module builds
+      #716 closed 2023-06-11 Fix for Names truncated at 256 bytes
+      #740 closed 2023-11-08 Heap-buffer-overflow in mz_os.c:188 in mz_path_resolve
+      #594 closed 2021-09-02 When running on some larger zip files, in CreateProcessA(...), an exe with minizip gets bad file index
+      #4 closed 2013-06-22 Zip file corruption after writing less than 4 GB (with 64 bit I/O) on iOS 
+      #258 closed 2018-05-01 Impossible to create .zip files with `version_needed` < 45
+      #381 closed 2019-04-16 When I closed the file, I found the file was damaged
+  truncated      41 hit(s) (all listed)
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1055 merged 2026-09-12 cmake: fall back to pkg-config when zstd ships no CMake config
+      #1040 merged 2026-09-04 Harden extraction against symlink traversal
+      #1031 merged 2026-08-22 Fix dangling pointer in mz_zip_set_comment() to prevent double-free/UAF
+      #1014 merged 2026-07-03 Allow recover flag to read zips with >65535 entries missing zip64 EOCD
+      #1003 merged 2026-06-26 test: improve: validate cipher bytes after encryption
+      #993 closed 2026-05-10 CVE-2014-9485 Windows variants in minizip-ng?
+      #1005 merged 2026-06-29 fix: reject symlink targets that escape extraction dir
+      #1006 closed 2026-06-30 Fix for issue744: Added support for int64_t for mz_strm_mem
+      #1009 merged 2026-07-01 build(deps): bump actions/cache from 5 to 6
+      #1028 merged 2026-08-01 build(deps): bump actions/setup-python from 6 to 7
+      #1008 merged 2026-07-01 build(deps): bump codecov/codecov-action from 6 to 7
+      #1029 merged 2026-08-01 build(deps): bump github/codeql-action from 4 to 4.37.3
+      #1007 merged 2026-07-01 build(deps): bump actions/checkout from 6 to 7
+      #973 merged 2026-04-01 Bump codecov/codecov-action from 5 to 6
+      #919 merged 2025-11-01 Bump github/codeql-action from 3 to 4
+      #931 merged 2025-12-01 Bump actions/checkout from 5 to 6
+      #920 merged 2025-11-01 Bump actions/upload-artifact from 4 to 5
+      #902 merged 2025-09-01 Bump actions/checkout from 4 to 5
+      #910 merged 2025-10-01 Bump actions/setup-python from 5 to 6
+  truncate       48 hit(s) (all listed)
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1040 merged 2026-09-04 Harden extraction against symlink traversal
+      #1038 closed 2026-09-04 Absolute Path Zip Slip in minizip Extraction Allows Arbitrary File Write
+      #1055 merged 2026-09-12 cmake: fall back to pkg-config when zstd ships no CMake config
+      #1031 merged 2026-08-22 Fix dangling pointer in mz_zip_set_comment() to prevent double-free/UAF
+      #1012 merged 2026-07-03 Widen mz_stream_mem size types and mz_stream_copy len to int64_t
+      #1003 merged 2026-06-26 test: improve: validate cipher bytes after encryption
+      #1006 closed 2026-06-30 Fix for issue744: Added support for int64_t for mz_strm_mem
+      #1014 merged 2026-07-03 Allow recover flag to read zips with >65535 entries missing zip64 EOCD
+      #993 closed 2026-05-10 CVE-2014-9485 Windows variants in minizip-ng?
+      #1005 merged 2026-06-29 fix: reject symlink targets that escape extraction dir
+      #1009 merged 2026-07-01 build(deps): bump actions/cache from 5 to 6
+      #1028 merged 2026-08-01 build(deps): bump actions/setup-python from 6 to 7
+      #969 merged 2026-03-13 Fix integer overflow in split stream write for disk sizes > 2GB
+      #1008 merged 2026-07-01 build(deps): bump codecov/codecov-action from 6 to 7
+      #1029 merged 2026-08-01 build(deps): bump github/codeql-action from 4 to 4.37.3
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #1007 merged 2026-07-01 build(deps): bump actions/checkout from 6 to 7
+      #973 merged 2026-04-01 Bump codecov/codecov-action from 5 to 6
+      #919 merged 2025-11-01 Bump github/codeql-action from 3 to 4
+  empty          65 hit(s) (all listed)
+      #1053 merged 2026-09-12 improve: mz_path_combine - don't strlen(path) to check if path is empty
+      #1016 open 2026-07-04 Add MZ_EXPORT to public API symbols and hide internal symbols
+      #1038 closed 2026-09-04 Absolute Path Zip Slip in minizip Extraction Allows Arbitrary File Write
+      #1025 closed 2026-07-23 Zip Slip via absolute-path entry names bypasses extraction path confinement (arbitrary file write)
+      #1044 closed 2026-09-06 Path traversal in mz_path_combine_safe(): entry names whose second character is ':' are stripped as drive letters (regression introduced by fcc8858)
+      #1043 merged 2026-09-04 Confine absolute entry names on extraction
+      #1032 merged 2026-08-22 Fix comment leak in mz_zip_read_cd()
+      #1034 merged 2026-09-01 Fix compression test error propagation
+      #1022 merged 2026-07-15 Harden extraction against destination symlink traversal
+      #597 closed 2021-10-21 Read corrupted zip files with more than 65535 entries
+      #993 closed 2026-05-10 CVE-2014-9485 Windows variants in minizip-ng?
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #968 closed 2026-03-12 Bug: Unsafe Symlink detection code is overzealous
+      #960 merged 2026-02-10 Harden the cmake Address Sanitizer detection code.
+      #989 merged 2026-04-27 cmake: pick zstd and zlib-ng targets per BUILD_SHARED_LIBS
+      #938 closed 2026-01-17 Other path for Arbitrary File Write Vulnerability 
+      #937 merged 2026-01-13 Add support for PPMd compression
+      #987 merged 2026-04-27 mz_os: split file and link attribute getters (#797)
+      #984 merged 2026-04-25 mz_os: fix symlink check at or above destination dir
+      #983 merged 2026-04-25 cmake: produce portable installed package config
+  atomic         3 hit(s) (all listed)
+      #1040 merged 2026-09-04 Harden extraction against symlink traversal
+      #957 merged 2026-02-04 Compiler warning: use of `mktemp` is dangerous. Fixes #956
+      #499 merged 2020-06-14 CMakeLists.txt: use pkg-config to find openssl
+  atomically     1 hit(s) (all listed)
+      #957 merged 2026-02-04 Compiler warning: use of `mktemp` is dangerous. Fixes #956
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #1002 merged 2026-06-25 fix: mz_crypt_aes_set_*_key for GCM on OpenSSL
+  power          4 hit(s) (all listed)
+      #774 merged 2024-04-01 Bump codecov/codecov-action from 3 to 4
+      #768 merged 2024-03-06 Bump codecov/codecov-action from 3 to 4
+      #506 merged 2020-06-24 Create codeql-analysis.yml
+      #209 merged 2017-11-18 Mark libbsd as REQUIRED on Linux.
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           75 hit(s) (all listed)
+      #1069 open 2026-10-01 build(deps): bump github/codeql-action from 4.37.9 to 4.38.2
+      #1013 open 2026-07-03 Restore stream position after reading data descriptor in read close
+      #1048 merged 2026-09-08 zip_writer: skip the output archive when adding a path that contains it
+      #840 open 2025-02-18 Is mz_zip_entry_read_close suitable with non-NULL args?
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1024 merged 2026-07-22 Fix non-ASCII filename handling on Windows (for CJK)
+      #475 open 2020-05-08 Windows: DLL export mz functions in mz_zip.h
+      #922 closed 2025-11-05 Fix invalid timestamps (1980-00-00) when dos_date is zero
+      #1014 merged 2026-07-03 Allow recover flag to read zips with >65535 entries missing zip64 EOCD
+      #969 merged 2026-03-13 Fix integer overflow in split stream write for disk sizes > 2GB
+      #994 merged 2026-05-16 fix: warning: '=': narrowing conversion, possible loss of data
+      #968 closed 2026-03-12 Bug: Unsafe Symlink detection code is overzealous
+      #943 closed 2026-01-25 4.1.0 build failing tests on gcc 14 + cmake 4.2.2 with Error -111
+      #1029 merged 2026-08-01 build(deps): bump github/codeql-action from 4 to 4.37.3
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #921 closed 2025-11-05 Extracted files have 1980-00-00 00:00 timestamp
+      #945 closed 2026-01-27 unzipping an ansolute-path symlink can delete target file
+      #894 closed 2025-07-15 Zip64 compatibility with MS Excel and DuckDB Excel
+      #893 closed 2025-07-11 Help with mz_zip_writer_open_file and split size
+      #689 closed 2023-04-05 -c works with -x but not -l
+  partial        22 hit(s) (all listed)
+      #1052 merged 2026-09-12 Extract AES counter mode into a reusable primitive and batch its keystream
+      #1034 merged 2026-09-01 Fix compression test error propagation
+      #1047 merged 2026-09-08 Reject oversized ZIP hash digests
+      #1022 merged 2026-07-15 Harden extraction against destination symlink traversal
+      #1015 merged 2026-07-04 Fix resource leaks
+      #922 closed 2025-11-05 Fix invalid timestamps (1980-00-00) when dos_date is zero
+      #1017 closed 2026-07-04 Support custom memory allocation functions like zlib-ng
+      #989 merged 2026-04-27 cmake: pick zstd and zlib-ng targets per BUILD_SHARED_LIBS
+      #969 merged 2026-03-13 Fix integer overflow in split stream write for disk sizes > 2GB
+      #1006 closed 2026-06-30 Fix for issue744: Added support for int64_t for mz_strm_mem
+      #913 closed 2025-10-29 fix missing includes in header files
+      #1 closed 2013-02-05 Xcode / iOS support
+      #809 merged 2024-10-30 Split compat layer into different source files
+      #808 merged 2024-10-30 Fixed disk spanning failures in CI 
+      #776 merged 2024-04-01 Bump actions/checkout from 3 to 4
+      #769 merged 2024-03-06 Bump actions/checkout from 3 to 4
+      #716 closed 2023-06-11 Fix for Names truncated at 256 bytes
+      #644 merged 2022-08-06 Fixed writing backslashes in zip on Windows.
+      #646 merged 2022-08-06 Fixed GCC build compilation with ctest due to missing zlib.h
+      #645 merged 2022-08-06 Mention support for ZIP64 on features list. 
+  incomplete     16 hit(s) (all listed)
+      #1045 closed 2026-09-06 Incomplete fix for #1023: entry_close() memcmp still uses attacker-controlled hash_digest_size (stack OOB read on develop)
+      #1051 merged 2026-09-11 Preserve compression finalization errors when closing ZIP entries
+      #1041 merged 2026-09-04 Fix stack overflow in mz_zip_reader_entry_get_hash
+      #1012 merged 2026-07-03 Widen mz_stream_mem size types and mz_stream_copy len to int64_t
+      #1047 merged 2026-09-08 Reject oversized ZIP hash digests
+      #1015 merged 2026-07-04 Fix resource leaks
+      #1005 merged 2026-06-29 fix: reject symlink targets that escape extraction dir
+      #981 merged 2026-04-25 cmake: fix: mz_config.h was missing in install target (#980)
+      #722 closed 2023-06-27 minizip-ng-config.cmake relies on non-existant zlib-ng-config.cmake
+      #772 closed 2024-03-22 cmake fails on WIndows
+      #654 closed 2022-10-17 Support system copy of gtest
+      #409 closed 2019-08-01 mz_crypt_openssl.c:31 3:16: error: field ‘ctx’ has incomplete type
+      #439 closed 2019-12-26 Compilation Question
+      #305 merged 2018-08-31 Fix: if(<variable|string> LESS_EQUAL <variable|string>)
+      #255 closed 2018-04-26 Incomplete file entry flags when adding an LZMA, AES-encrypted file in raw mode
+      #271 closed 2018-06-20 Incomplete instructions for Windows?
+  dataloss       0 hit(s)
+  recover        20 hit(s) (all listed)
+      #1051 merged 2026-09-11 Preserve compression finalization errors when closing ZIP entries
+      #1014 merged 2026-07-03 Allow recover flag to read zips with >65535 entries missing zip64 EOCD
+      #1027 closed 2026-07-25 ZIP Extraction Allows Arbitrary File Write via Pre-existing Dangling Symlink
+      #1023 closed 2026-07-22 Stack-buffer-overflow in mz_zip_reader_entry_get_hash
+      #1025 closed 2026-07-23 Zip Slip via absolute-path entry names bypasses extraction path confinement (arbitrary file write)
+      #1024 merged 2026-07-22 Fix non-ASCII filename handling on Windows (for CJK)
+      #597 closed 2021-10-21 Read corrupted zip files with more than 65535 entries
+      #475 open 2020-05-08 Windows: DLL export mz functions in mz_zip.h
+      #916 closed 2025-10-30 Negative-size-param memcopy via `mz_zip_reader_open_buffer`
+      #602 closed 2022-01-04 idea : miniunz strip-components option
+      #827 merged 2024-11-13 ignore number_entry_cd
+      #829 merged 2024-11-14 Fix and improve fuzzers
+      #799 merged 2024-09-12 Infinite loop occurs while decompressing zip multi-volume archive file
+      #822 closed 2024-11-11 Archive cannot be unzipped with `unzOpen_MZ` but works with `mz_zip_reader_open_file`
+      #471 closed 2020-04-24 Problem with finding the the central dir position
+      #443 closed 2020-01-13 Bad zip file check
+      #381 closed 2019-04-16 When I closed the file, I found the file was damaged
+      #425 closed 2019-09-27 Unzip the file and return -103 （-101）
+      #431 closed 2019-10-14 macOS and files over 4GB in Finder-created zips
+      #428 closed 2019-10-04 Problem at editing created zip files using 7-Zip 
+  recovery       7 hit(s) (all listed)
+      #1063 closed 2026-09-13 `mz_zip_set_cd_stream` keeps stale central directory bounds
+      #1014 merged 2026-07-03 Allow recover flag to read zips with >65535 entries missing zip64 EOCD
+      #1052 merged 2026-09-12 Extract AES counter mode into a reusable primitive and batch its keystream
+      #916 closed 2025-10-30 Negative-size-param memcopy via `mz_zip_reader_open_buffer`
+      #827 merged 2024-11-13 ignore number_entry_cd
+      #381 closed 2019-04-16 When I closed the file, I found the file was damaged
+      #428 closed 2019-10-04 Problem at editing created zip files using 7-Zip 
+  rollback       1 hit(s) (all listed)
+      #984 merged 2026-04-25 mz_os: fix symlink check at or above destination dir
+  resume         7 hit(s) (all listed)
+      #1047 merged 2026-09-08 Reject oversized ZIP hash digests
+      #1024 merged 2026-07-22 Fix non-ASCII filename handling on Windows (for CJK)
+      #1022 merged 2026-07-15 Harden extraction against destination symlink traversal
+      #981 merged 2026-04-25 cmake: fix: mz_config.h was missing in install target (#980)
+      #984 merged 2026-04-25 mz_os: fix symlink check at or above destination dir
+      #983 merged 2026-04-25 cmake: produce portable installed package config
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+  half-written   1 hit(s) (all listed)
+      #976 merged 2026-04-09 Fix two bugs causing premature exiting the PPMd decompression
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          25 hit(s) (all listed)
+      #1034 merged 2026-09-01 Fix compression test error propagation
+      #1025 closed 2026-07-23 Zip Slip via absolute-path entry names bypasses extraction path confinement (arbitrary file write)
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #1001 closed 2026-06-23 minizip-ng symlink target boundary missing
+      #968 closed 2026-03-12 Bug: Unsafe Symlink detection code is overzealous
+      #966 merged 2026-03-11 Fix MSVC workflows
+      #993 closed 2026-05-10 CVE-2014-9485 Windows variants in minizip-ng?
+      #943 closed 2026-01-25 4.1.0 build failing tests on gcc 14 + cmake 4.2.2 with Error -111
+      #959 merged 2026-02-09 Remove calls to `add_subdirectory` in `CMakeLists.txt` for lzma & zlib
+      #984 merged 2026-04-25 mz_os: fix symlink check at or above destination dir
+      #938 closed 2026-01-17 Other path for Arbitrary File Write Vulnerability 
+      #836 closed 2025-01-04 minizip_erase() corrupts an encrypted zip archive
+      #693 closed 2023-04-09 3.0.10:  test suite is failing
+      #756 closed 2023-12-28 Issues when adding an empty directory
+      #740 closed 2023-11-08 Heap-buffer-overflow in mz_os.c:188 in mz_path_resolve
+      #739 closed 2023-11-08 Heap-buffer-overflow in mz_os.c:71 mz_path_has_slash
+      #717 closed 2023-06-11 Sanitizer reports memory leaks in `mz_crypt_sha_create` and `mz_zip_writer_entry_open`
+      #688 closed 2023-04-02 Help regarding usage
+      #623 closed 2022-04-17 3.0.5: test suite eats all avalable storage space
+      #625 closed 2022-05-07 pkcrypt tests failed
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        3 hit(s) (all listed)
+      #791 closed 2024-07-22 Missing symbols when linking statically on macOS: SecRandomCopyBytes, _compression_stream_init
+      #198 merged 2017-10-25 For C++ projects
+      #368 merged 2019-03-04 Fix use after context release
+  destroys       0 hit(s)
+  overwrite      62 hit(s) (all listed)
+      #1049 open 2026-09-08 Add CMake option to disable symbolic-link extraction
+      #1027 closed 2026-07-25 ZIP Extraction Allows Arbitrary File Write via Pre-existing Dangling Symlink
+      #1038 closed 2026-09-04 Absolute Path Zip Slip in minizip Extraction Allows Arbitrary File Write
+      #1069 open 2026-10-01 build(deps): bump github/codeql-action from 4.37.9 to 4.38.2
+      #475 open 2020-05-08 Windows: DLL export mz functions in mz_zip.h
+      #1041 merged 2026-09-04 Fix stack overflow in mz_zip_reader_entry_get_hash
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1034 merged 2026-09-01 Fix compression test error propagation
+      #1040 merged 2026-09-04 Harden extraction against symlink traversal
+      #912 closed 2025-10-29 Rename cmake target files to avoid overwrite of PACKAGE_VERSION
+      #1033 merged 2026-09-01 build(deps): bump github/codeql-action from 4.37.3 to 4.37.9
+      #1029 merged 2026-08-01 build(deps): bump github/codeql-action from 4 to 4.37.3
+      #1008 merged 2026-07-01 build(deps): bump codecov/codecov-action from 6 to 7
+      #1006 closed 2026-06-30 Fix for issue744: Added support for int64_t for mz_strm_mem
+      #1028 merged 2026-08-01 build(deps): bump actions/setup-python from 6 to 7
+      #945 closed 2026-01-27 unzipping an ansolute-path symlink can delete target file
+      #938 closed 2026-01-17 Other path for Arbitrary File Write Vulnerability 
+      #1009 merged 2026-07-01 build(deps): bump actions/cache from 5 to 6
+      #974 merged 2026-04-01 Bump svenstaro/upload-release-action from 2.11.4 to 2.11.5
+      #991 merged 2026-05-01 build(deps): bump actions/upload-artifact from 6 to 7
+  clobber        3 hit(s) (all listed)
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #981 merged 2026-04-25 cmake: fix: mz_config.h was missing in install target (#980)
+      #983 merged 2026-04-25 cmake: produce portable installed package config
+  blank          4 hit(s) (all listed)
+      #1024 merged 2026-07-22 Fix non-ASCII filename handling on Windows (for CJK)
+      #1005 merged 2026-06-29 fix: reject symlink targets that escape extraction dir
+      #912 closed 2025-10-29 Rename cmake target files to avoid overwrite of PACKAGE_VERSION
+      #492 closed 2020-06-06 readme additional info on password protection
+  unreadable     0 hit(s)
+  garbage        4 hit(s) (all listed)
+      #475 open 2020-05-08 Windows: DLL export mz functions in mz_zip.h
+      #987 merged 2026-04-27 mz_os: split file and link attribute getters (#797)
+      #24 merged 2015-06-15 Fix use-of-uninitialized-value warning.
+      #287 closed 2018-07-26 Global comment is not properly read
+  mangled        1 hit(s) (all listed)
+      #993 closed 2026-05-10 CVE-2014-9485 Windows variants in minizip-ng?
+  contents       36 hit(s) (all listed)
+      #1065 merged 2026-09-13 docs: add contribution guidelines for AI agents
+      #1046 merged 2026-09-06 Fix heap buffer overflow on encrypted entries with an undersized compressed size
+      #1036 closed 2026-09-02 Offline compilation support
+      #1038 closed 2026-09-04 Absolute Path Zip Slip in minizip Extraction Allows Arbitrary File Write
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1055 merged 2026-09-12 cmake: fall back to pkg-config when zstd ships no CMake config
+      #1005 merged 2026-06-29 fix: reject symlink targets that escape extraction dir
+      #1047 merged 2026-09-08 Reject oversized ZIP hash digests
+      #1001 closed 2026-06-23 minizip-ng symlink target boundary missing
+      #1024 merged 2026-07-22 Fix non-ASCII filename handling on Windows (for CJK)
+      #358 open 2019-01-16 Status of integration in distributions
+      #797 closed 2024-08-27 Multiple issues with symlinks
+      #914 closed 2025-10-29 [macOS] absolute path to MacOSX14.sdk is injected which fails downstream build with CMake
+      #943 closed 2026-01-25 4.1.0 build failing tests on gcc 14 + cmake 4.2.2 with Error -111
+      #981 merged 2026-04-25 cmake: fix: mz_config.h was missing in install target (#980)
+      #689 closed 2023-04-05 -c works with -x but not -l
+      #822 closed 2024-11-11 Archive cannot be unzipped with `unzOpen_MZ` but works with `mz_zip_reader_open_file`
+      #791 closed 2024-07-22 Missing symbols when linking statically on macOS: SecRandomCopyBytes, _compression_stream_init
+      #690 closed 2023-04-06 Names truncated at 256 bytes
+      #688 closed 2023-04-02 Help regarding usage
+  in-place       40 hit(s) (all listed)
+      #1016 open 2026-07-04 Add MZ_EXPORT to public API symbols and hide internal symbols
+      #1025 closed 2026-07-23 Zip Slip via absolute-path entry names bypasses extraction path confinement (arbitrary file write)
+      #358 open 2019-01-16 Status of integration in distributions
+      #1043 merged 2026-09-04 Confine absolute entry names on extraction
+      #1060 merged 2026-09-13 ci: move the install test into its own workflow
+      #1001 closed 2026-06-23 minizip-ng symlink target boundary missing
+      #1010 merged 2026-07-01 Update to use upstream 7zip version 26.02
+      #993 closed 2026-05-10 CVE-2014-9485 Windows variants in minizip-ng?
+      #976 merged 2026-04-09 Fix two bugs causing premature exiting the PPMd decompression
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #937 merged 2026-01-13 Add support for PPMd compression
+      #919 merged 2025-11-01 Bump github/codeql-action from 3 to 4
+      #834 merged 2024-11-24 fix: unzipping with backslashes in the name on UNIX
+      #540 closed 2020-12-11 adding to vcpkg
+      #806 closed 2024-10-30 mz_crypt.h is missing macros like `zencode` and `zdecode` which is breaking the compatibility
+      #809 merged 2024-10-30 Split compat layer into different source files
+      #788 closed 2024-06-28 mz_zip_writer_set_certificate function definition removed from version 4.0.5
+      #758 closed 2024-01-04 MZ_VERSION_BUILD became an octal number in 3.0.0, that becomes invalid with certain version numbers
+      #710 merged 2023-06-07 mz_zip.c - correctly close entry with streams other than split_stream
+      #696 closed 2023-04-19 Xcode warning: A function declaration without a prototype is deprecated in all versions of C and is not supported in C2x
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #1022 merged 2026-07-15 Harden extraction against destination symlink traversal
+  reboot         1 hit(s) (all listed)
+      #943 closed 2026-01-25 4.1.0 build failing tests on gcc 14 + cmake 4.2.2 with Error -111
+  disk+full      10 hit(s) (all listed)
+      #1014 merged 2026-07-03 Allow recover flag to read zips with >65535 entries missing zip64 EOCD
+      #1029 merged 2026-08-01 build(deps): bump github/codeql-action from 4 to 4.37.3
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+      #756 closed 2023-12-28 Issues when adding an empty directory
+      #740 closed 2023-11-08 Heap-buffer-overflow in mz_os.c:188 in mz_path_resolve
+      #739 closed 2023-11-08 Heap-buffer-overflow in mz_os.c:71 mz_path_has_slash
+      #543 closed 2020-12-17 Incorect compressed size in the local header with 4+ GB files and data_descriptor = 0
+      #88 merged 2017-02-07 fix endless loop in zipFlushWriteBuffer() 
+      #372 closed 2019-03-15 Generated zip archive is empty
+      #395 closed 2019-05-14 [No CMake] Error "-102" while adding to ZIP file
+  data+loss      3 hit(s) (all listed)
+      #1050 merged 2026-09-10 fix warning conversion from 'size_t' to 'int32_t', possible loss of data
+      #994 merged 2026-05-16 fix: warning: '=': narrowing conversion, possible loss of data
+      #1021 merged 2026-07-14 crypt: fix: mz_crypt_aes_{encrypt,decrypt}_final with NULL in buf
+  partial+write  5 hit(s) (all listed)
+      #1052 merged 2026-09-12 Extract AES counter mode into a reusable primitive and batch its keystream
+      #1047 merged 2026-09-08 Reject oversized ZIP hash digests
+      #1022 merged 2026-07-15 Harden extraction against destination symlink traversal
+      #1006 closed 2026-06-30 Fix for issue744: Added support for int64_t for mz_strm_mem
+      #1017 closed 2026-07-04 Support custom memory allocation functions like zlib-ng
+  crash+safe     4 hit(s) (all listed)
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1017 closed 2026-07-04 Support custom memory allocation functions like zlib-ng
+      #984 merged 2026-04-25 mz_os: fix symlink check at or above destination dir
+      #985 merged 2026-04-25 minizip: place erase temp on same filesystem when TMPDIR differs
+  atomic+write   1 hit(s) (all listed)
+      #1040 merged 2026-09-04 Harden extraction against symlink traversal
+  lock+file      6 hit(s) (all listed)
+      #1009 merged 2026-07-01 build(deps): bump actions/cache from 5 to 6
+      #984 merged 2026-04-25 mz_os: fix symlink check at or above destination dir
+      #983 merged 2026-04-25 cmake: produce portable installed package config
+      #934 merged 2026-01-01 Bump actions/upload-artifact from 5 to 6
+      #474 closed 2020-05-07 Local file header for stored files have 0 size values
+      #73 closed 2016-10-06 Implement flock()-Based POSIX Locking
+  write+failure  32 hit(s) (all listed)
+      #1051 merged 2026-09-11 Preserve compression finalization errors when closing ZIP entries
+      #1052 merged 2026-09-12 Extract AES counter mode into a reusable primitive and batch its keystream
+      #1068 merged 2026-09-17 zip_reader: clean up after hash setup failures on entry open
+      #1041 merged 2026-09-04 Fix stack overflow in mz_zip_reader_entry_get_hash
+      #1047 merged 2026-09-08 Reject oversized ZIP hash digests
+      #1048 merged 2026-09-08 zip_writer: skip the output archive when adding a path that contains it
+      #1059 merged 2026-09-13 ci: add an install test for the CMake package
+      #1057 merged 2026-09-13 docs: fix memory stream examples
+      #1056 merged 2026-09-12 crypt: rename MZ_ZIP_NO_CRYPTO to MZ_ZIP_NO_CRYPT_BACKEND
+      #1062 merged 2026-09-13 crypt: replace MZ_ZIP_NO_CRYPT_BACKEND with HAVE_CRYPT_BACKEND
+      #1042 merged 2026-09-04 Strip setuid and setgid bits when extracting
+      #1043 merged 2026-09-04 Confine absolute entry names on extraction
+      #1031 merged 2026-08-22 Fix dangling pointer in mz_zip_set_comment() to prevent double-free/UAF
+      #1040 merged 2026-09-04 Harden extraction against symlink traversal
+      #1022 merged 2026-07-15 Harden extraction against destination symlink traversal
+      #1006 closed 2026-06-30 Fix for issue744: Added support for int64_t for mz_strm_mem
+      #1028 merged 2026-08-01 build(deps): bump actions/setup-python from 6 to 7
+      #1005 merged 2026-06-29 fix: reject symlink targets that escape extraction dir
+      #1002 merged 2026-06-25 fix: mz_crypt_aes_set_*_key for GCM on OpenSSL
+      #987 merged 2026-04-27 mz_os: split file and link attribute getters (#797)
+  file+contents  28 hit(s) (all listed)
+      #1065 merged 2026-09-13 docs: add contribution guidelines for AI agents
+      #1038 closed 2026-09-04 Absolute Path Zip Slip in minizip Extraction Allows Arbitrary File Write
+      #1046 merged 2026-09-06 Fix heap buffer overflow on encrypted entries with an undersized compressed size
+      #1039 closed 2026-09-04 Symlink Target Truncation Bypass Allows Path Traversal Outside Extraction Directory
+      #1055 merged 2026-09-12 cmake: fall back to pkg-config when zstd ships no CMake config
+      #1047 merged 2026-09-08 Reject oversized ZIP hash digests
+      #358 open 2019-01-16 Status of integration in distributions
+      #1005 merged 2026-06-29 fix: reject symlink targets that escape extraction dir
+      #1001 closed 2026-06-23 minizip-ng symlink target boundary missing
+      #797 closed 2024-08-27 Multiple issues with symlinks
+      #914 closed 2025-10-29 [macOS] absolute path to MacOSX14.sdk is injected which fails downstream build with CMake
+      #981 merged 2026-04-25 cmake: fix: mz_config.h was missing in install target (#980)
+      #943 closed 2026-01-25 4.1.0 build failing tests on gcc 14 + cmake 4.2.2 with Error -111
+      #689 closed 2023-04-05 -c works with -x but not -l
+      #822 closed 2024-11-11 Archive cannot be unzipped with `unzOpen_MZ` but works with `mz_zip_reader_open_file`
+      #791 closed 2024-07-22 Missing symbols when linking statically on macOS: SecRandomCopyBytes, _compression_stream_init
+      #690 closed 2023-04-06 Names truncated at 256 bytes
+      #688 closed 2023-04-02 Help regarding usage
+      #628 closed 2022-05-19 Decompression cutting file with NUL characters before the end of file
+      #591 closed 2021-08-18 configure: error: cannot find minizip/unzip.h, bailing out
+
+== 51 terms run; 37 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

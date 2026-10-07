@@ -1,0 +1,890 @@
+== novelty pre-scan: kovidgoyal/kitty
+== date: 2026-10-07T08:13:29Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10495 merged 2026-09-18 Fix disk full startup crash
+      #10505 merged 2026-09-21 Fix crash on 32-bit x86 CPUs that support AVX-512
+      #10542 merged 2026-09-25 choose-files: Do not crash on a bare "!" line in an ignore file
+      #10576 closed 2026-09-30 macOS arm64: SIGBUS while waiting for Claude Code in 0.46.2 (likely duplicate of #9778)
+      #10612 closed 2026-10-05 [Wayland] Fatal display error: Broken pipe on workspace switch with maximized window (NVIDIA / Wayfire)
+      #10604 closed 2026-10-04 Wayland: use-after-free in setCursorImage when the desktop-portal settings reply arrives after cursors are loaded (crash shortly after start, see #8138)
+      #10465 closed 2026-09-13 Wayland: font fallback heap leak + FT_Get_Char_Index crash
+      #10364 merged 2026-08-15 Wayland: fix crash when an output global is removed
+      #10482 closed 2026-09-15 SIGABRT: glibc "double free or corruption" in _glfwPlatformDestroyWindow during window close on session shutdown
+      #10525 closed 2026-09-24 Does not start on Fedora 43
+      #1197 open 2018-12-02 Mac OS: kitty doesn't restore
+      #10305 closed 2026-08-01 Crash on tab drag & drop
+      #10383 closed 2026-08-21 Segfault in wl_display_disconnect during exit — EGL module unloaded before Wayland teardown (glfw#2744)
+      #10301 closed 2026-07-31 Drag and Dropping files crashes Kitty 0.48.1
+      #10349 closed 2026-08-12 Report parallel test failures
+      #10506 closed 2026-09-21 Use Cassowary constraints for layouts and add docked windows
+      #10474 closed 2026-09-14 [RFC] Content Rendering Protocol with terminal-retained source
+      #10508 closed 2026-09-21 Align window frames and make layout spacing consistent
+      #10182 closed 2026-06-24 Harden STAT format 4 parsing and improve macOS crash symbolication
+      #10180 merged 2026-06-23 Fix macOS Brew crash in STAT format 4 font parsing
+  corrupt        56 hit(s) (all listed)
+      #10401 closed 2026-08-24 clipboard protocol: invalid base64 in write data is handled inconsistently
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #10033 merged 2026-05-19 ssh kitten: avoid in-place mutation of cmd by slices.Insert
+      #9844 closed 2026-04-09 Colors occassionally become bugged after suspending
+      #9949 merged 2026-05-01 Fix display corruption in splits layout when maximizing with large window padding
+      #9463 closed 2026-02-03 All the Apple created Tahoe breakage
+      #9954 merged 2026-05-03 Fix remote DnD drag: wrong URI index for top-level files and truncated URI list after remote data rewrite
+      #10144 closed 2026-06-14 0.47.3: color/bitmap emoji rendered far too small (fontconfig size matrix double-applied)
+      #9936 closed 2026-04-27 gl: drop GL_MAP_INVALIDATE_RANGE_BIT from partial UBO maps
+      #9580 merged 2026-03-02 Splits layout: Fix variable shadowing in layout_pair causing corrupted pane positions
+      #9900 closed 2026-04-20 feat: respawn_window
+      #9490 merged 2026-02-09 macOS: fix menus getting stuck when window title updates during menu tracking
+      #9773 closed 2026-03-29 `macos_titlebar_color` broken on macOS 15.x/26.x — root cause identified with fix suggestion
+      #6845 closed 2023-11-23 Colours rendering too dark
+      #33 closed 2017-01-14 Graphics rendering
+      #9430 closed 2026-01-28 Wayland resize can leave stale terminal content until restart
+      #9656 closed 2026-03-13 Memory corruption when dragging text from GTK apps onto Kitty under Hyprland
+      #8902 closed 2025-08-15 Rendering artifact: Raw ANSI escape codes for line highlighting displayed in git log -p over SSH
+      #8390 closed 2025-03-03 Non-ZWJ emoji break line rendering and cursor movement in zsh/bash
+      #8138 closed 2024-12-19 setCursorImage segfault on Gnome Wayland , mutter 47.3
+  corruption     48 hit(s) (all listed)
+      #10618 closed 2026-10-06 Heap Buffer Overrun & Corruption in parse_uri_list()
+      #10615 closed 2026-10-06 safe-wrappers.h fixes
+      #10482 closed 2026-09-15 SIGABRT: glibc "double free or corruption" in _glfwPlatformDestroyWindow during window close on session shutdown
+      #10483 closed 2026-09-15 Tab bar shows stale substring of a neighboring tab's title under frequent OSC title updates
+      #10484 closed 2026-09-15 Tab bar shows stale substring of a neighboring tab's title under frequent OSC title updates
+      #10383 closed 2026-08-21 Segfault in wl_display_disconnect during exit — EGL module unloaded before Wayland teardown (glfw#2744)
+      #10180 merged 2026-06-23 Fix macOS Brew crash in STAT format 4 font parsing
+      #9949 merged 2026-05-01 Fix display corruption in splits layout when maximizing with large window padding
+      #8533 open 2025-04-12 [RFC] Specifying how terminals process Unicode text
+      #9844 closed 2026-04-09 Colors occassionally become bugged after suspending
+      #10284 closed 2026-07-25 kitty 0.48.1 aborts when dragging a tab out: drag icon surface listener missing preferred_buffer_scale
+      #9656 closed 2026-03-13 Memory corruption when dragging text from GTK apps onto Kitty under Hyprland
+      #10135 closed 2026-06-11 Mouse input permanently stops working in all windows after an aborted tab drag on Wayland
+      #9848 closed 2026-04-10 Implement remote drag receive (t=k) in dnd.c with 1GB transfer cap
+      #9554 closed 2026-02-24 Since recent change to fractional scaling, fractional-scaled text with s>1 doesn't display
+      #9992 merged 2026-05-11 Bump the all-go-deps group with 4 updates
+      #9953 closed 2026-05-02 SIGSEGV in apply_selection - scrollback selection during DECSET 2026 paused rendering - X11/Linux, 0.46.2
+      #9295 closed 2025-12-17 Consider throttling pastes in cooked mode specifically
+      #9384 closed 2026-01-15 kitty segfault in fast_data_types.so
+      #9015 closed 2025-09-25 Interaction with Emacs and emojis make screen a mess
+  truncated      81 hit(s) (all listed)
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #10549 closed 2026-09-26 Incomplete rounded split-window borders on x86_64 macOS (AMD Radeon RX 6600)
+      #10589 merged 2026-10-02 devenv: Escape spaces when relocating pkg-config prefixes
+      #10526 merged 2026-09-24 Vertical tabs: Fix rendering of the powerline tab bar style
+      #9954 merged 2026-05-03 Fix remote DnD drag: wrong URI index for top-level files and truncated URI list after remote data rewrite
+      #10605 merged 2026-10-05 Bump the all-go-deps group with 2 updates
+      #10303 merged 2026-08-01 Vertical tabs: support multi-line and wrapped tab titles
+      #10338 merged 2026-08-10 Bump github.com/shirou/gopsutil/v4 from 4.26.6 to 4.26.7 in the all-go-deps group
+      #9620 closed 2026-03-07 Segfault when dragging tab off-screen with `window_title_bar_min_windows 1`
+      #9955 closed 2026-05-03 fix: DnD remote drag truncates files whose size % 3 != 0
+      #9963 merged 2026-05-05 Fix bg_alpha affecting whole drag image opacity and wide char truncation in text DnD thumbnail
+      #9779 closed 2026-03-31 Add an experimental interactive search kitten
+      #9475 closed 2026-02-05 Rendering double width mathematical operators
+      #10203 merged 2026-06-29 Bump the actions group with 4 updates
+      #9547 closed 2026-02-23 Fix URL detection truncating URLs that contain `*` characters
+      #9633 closed 2026-03-10 GLFW drop: always present full original MIME list to every drop callback
+      #10118 merged 2026-06-08 Bump actions/checkout from 6 to 6.0.2 in the actions group
+      #10228 merged 2026-07-06 Bump the actions group with 3 updates
+      #9898 merged 2026-04-20 Bump github/codeql-action from 4 to 4.35.1 in the actions group
+      #9069 closed 2025-10-03 Nerd fonts are rendered with one cell rather than two
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #10549 closed 2026-09-26 Incomplete rounded split-window borders on x86_64 macOS (AMD Radeon RX 6600)
+      #10589 merged 2026-10-02 devenv: Escape spaces when relocating pkg-config prefixes
+      #10526 merged 2026-09-24 Vertical tabs: Fix rendering of the powerline tab bar style
+      #10530 merged 2026-09-24 Completion: Fix options with multi line help adding spurious fish candidates
+      #10410 merged 2026-08-27 Fix composed animation frame metadata
+      #9955 closed 2026-05-03 fix: DnD remote drag truncates files whose size % 3 != 0
+      #9963 merged 2026-05-05 Fix bg_alpha affecting whole drag image opacity and wide char truncation in text DnD thumbnail
+      #10605 merged 2026-10-05 Bump the all-go-deps group with 2 updates
+      #10303 merged 2026-08-01 Vertical tabs: support multi-line and wrapped tab titles
+      #9954 merged 2026-05-03 Fix remote DnD drag: wrong URI index for top-level files and truncated URI list after remote data rewrite
+      #9547 closed 2026-02-23 Fix URL detection truncating URLs that contain `*` characters
+      #10338 merged 2026-08-10 Bump github.com/shirou/gopsutil/v4 from 4.26.6 to 4.26.7 in the all-go-deps group
+      #9620 closed 2026-03-07 Segfault when dragging tab off-screen with `window_title_bar_min_windows 1`
+      #9786 closed 2026-03-31 Add configurable progress bar position and indeterminate animation for OSC 9;4
+      #9633 closed 2026-03-10 GLFW drop: always present full original MIME list to every drop callback
+      #9784 closed 2026-03-31 Smooth animated scrolling for scroll_line_up/scroll_line_down
+      #9793 merged 2026-04-02 dnd: strip query/fragment from file:// URLs before path resolution
+      #9779 closed 2026-03-31 Add an experimental interactive search kitten
+      #10203 merged 2026-06-29 Bump the actions group with 4 updates
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10580 closed 2026-10-01 Inherit CWD in new tab when double clicking empty space tab bar
+      #10415 merged 2026-08-28 Fix empty hints selection handling
+      #10424 merged 2026-08-30 Treat empty display server envvars as unset
+      #10417 merged 2026-08-28 Fix EOF handling for empty DnD transfers
+      #10469 merged 2026-09-14 Go shlex: fix completion position after trailing space and keep empty quoted strings
+      #10357 merged 2026-08-13 Document last non-empty get-text extent
+      #10542 merged 2026-09-25 choose-files: Do not crash on a bare "!" line in an ignore file
+      #10520 closed 2026-09-23 save_as_session: entering a directory at the "path" prompt silently saves to <parent>/<dirname>.kitty-session
+      #10510 merged 2026-09-22 Custom shaders: Include window title bars in active padding bounds
+      #10448 closed 2026-09-07 Wayland: momentum scrolling does not start after fast touchpad flicks on GNOME, empty wl_pointer frames reset prev_frame_offset_type
+      #10602 closed 2026-10-04 Wayland: app_id (and title) lost when an OS window is hidden and shown again via resize-os-window --action=hide/show
+      #10603 closed 2026-10-04 quick-access-terminal: run a command in a new tab of the already running instance
+      #10572 merged 2026-09-29 Do not stay in the escape state after a backslash-newline in StringLiteral
+      #10414 merged 2026-08-28 Fix notification close mode
+      #10472 merged 2026-09-14 Allow dropping single-window tabs into another tab layout
+      #10372 closed 2026-08-18 OSC 22: an unknown pointer shape name raises an unhandled KeyError
+      #10354 merged 2026-08-12 Skip disabled Bash command hook
+      #10201 merged 2026-06-28 fix(erase_last_command): erase the most recent command even empty output
+      #10352 closed 2026-08-12 Wayland clipboard sharing fails between containerized Kitty instances due to PID collision
+      #10427 closed 2026-08-31 macOS: allow configuring the hardcoded " :: " prefix on the global menu bar title
+  atomic         44 hit(s) (all listed)
+      #10615 closed 2026-10-06 safe-wrappers.h fixes
+      #10521 merged 2026-09-23 save_as_session: Show an error when the path is a directory
+      #10598 closed 2026-10-04 IME: send committed text as bracketed paste when the child requests it
+      #10013 merged 2026-05-14 macOS DnD: implement file-promise text/uri-list delivery
+      #9900 closed 2026-04-20 feat: respawn_window
+      #9934 merged 2026-04-27 Convert RemoveChildren to iterative stack-based traversal
+      #10078 closed 2026-05-27 Regression in 0.47.0 on macOS: drag-and-drop delivers percent-encoded paths to PTY, breaks all TUI apps that consume file paths
+      #9748 closed 2026-03-25 kitty in full-screen causes $(2x display refresh rate) extra CPU wake-ups per second
+      #9348 closed 2026-01-02 Can't use kittens from a toolbx container on Fedora Atomic
+      #4471 closed 2022-01-07 macOS "Secure Keyboard Entry" doesn't persist across app restarts
+      #8911 closed 2025-08-18 [RFC] Saving and jumping between kitty sessions
+      #9430 closed 2026-01-28 Wayland resize can leave stale terminal content until restart
+      #8809 closed 2025-07-12 Kitty not rendering images inside container
+      #8730 closed 2025-06-13 `resize_window` and broadcast input fail when used with `layout_action` in a combined key mapping
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #8701 closed 2025-06-02 Clarification about the graphics protocol
+      #2495 closed 2020-03-30 Using the shell option doesn't set SHELL
+      #4817 closed 2022-03-11 Vim scrolling causing background to flash with the terminal background color (with t_ut unset)
+      #7513 closed 2024-06-04 Fonts are blurry and sometimes cut off on 0.35.x with Wayland fractional scaling.
+      #7825 closed 2024-09-05 using `kitten themes --reload-in=all` no longer changes theme of open windows when using nix home manager.
+  atomically     9 hit(s) (all listed)
+      #10598 closed 2026-10-04 IME: send committed text as bracketed paste when the child requests it
+      #9900 closed 2026-04-20 feat: respawn_window
+      #9934 merged 2026-04-27 Convert RemoveChildren to iterative stack-based traversal
+      #8911 closed 2025-08-18 [RFC] Saving and jumping between kitty sessions
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #7283 closed 2024-03-30 Preserve modified keys when modifier and key are sent simultaneously on Wayland
+      #5054 closed 2022-05-04 SSH Not Working
+      #3111 closed 2020-11-19 glkitty - port of the OpenGL gears demo to kitty terminal graphics protocol
+      #2450 closed 2020-03-19 Process pending resize events before sizing viewport on startup
+  interrupted    15 hit(s) (all listed)
+      #9255 closed 2025-11-29 [command] --help and stuff like ripgrep will get printed again even after running clear in terminal if the output of these exceeds window height
+      #9473 closed 2026-02-05 Kitten desktop-ui portal on hyprland
+      #9131 merged 2025-10-19 Reduce macOS idle wakeups by gating display link and timers
+      #8723 closed 2025-06-09 `clipboard` kitten hangs indefinitely when invoked from Kakoune editor.
+      #7968 closed 2024-10-12 Deleting an image after interrupted direct transmission doesn't work
+      #7390 closed 2024-04-25 focus_visible_window breaks if interrupted by mouse click
+      #6448 closed 2023-07-12 SSH connect interrupted with ctrl + c send encrypted messages to kitty
+      #6307 closed 2023-05-26 kitty outputs a lot of text when an ssh connection is interrupted
+      #6083 closed 2023-03-02 Fix on_focus_change being fired even when the window focus is not actually changed
+      #4338 closed 2021-12-10 supporting mosh style intermittent connectivity
+      #4723 closed 2022-02-19 Add basic underline offset in px
+      #4809 closed 2022-03-09 `dd ibs` and `ghead`
+      #1681 closed 2019-06-04 Linux: Kitty freezes when reloading i3 config while window is hidden in tabbed mode and compton is running
+      #3779 closed 2021-07-01 SU timeout results in abort of graphic
+      #4165 closed 2021-10-29 get Window ID in same tab with only num 
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10615 closed 2026-10-06 safe-wrappers.h fixes
+      #10389 closed 2026-08-22 kitty does not load theme on startup, only upon manual reload
+      #10322 closed 2026-08-05 Auto color theme timing out on Sway
+      #10253 closed 2026-07-11 kitty @ scroll-window syntax change?
+      #10173 closed 2026-06-19 paste_from_clipboard silently consumes Ctrl+V when clipboard has no text (Wayland)
+      #9871 closed 2026-04-14 SSH kitten locks terminal until timeout when unable to connect to remote
+      #10071 closed 2026-05-26 Cursor Colour Getting Overridden By The Theme
+      #7674 closed 2024-07-28 IV Kitten Development - A Dynamically Recursive Image Grid Layout for Kitty Terminal
+      #9511 closed 2026-02-16 copy_last_command_output_or_clipboard
+      #9512 merged 2026-02-16 Add copy_last_command_output_or_clipboard action
+      #7632 closed 2024-07-15 Add a standard right-click/context menu? 
+      #9593 closed 2026-03-03 Possible memory leak
+      #9984 closed 2026-05-07 [RFC] Drag and drop in TUI applications with new dnd protocol
+      #9255 closed 2025-11-29 [command] --help and stuff like ripgrep will get printed again even after running clear in terminal if the output of these exceeds window height
+      #9473 closed 2026-02-05 Kitten desktop-ui portal on hyprland
+      #2134 closed 2019-11-15 Can interrupt signal be remapped?
+      #7298 closed 2024-04-02 Make `kitten transfer` work in tmux
+      #9294 closed 2025-12-15 quick-access-terminal lost focus (be hidden) on specific key input
+      #692 closed 2018-06-29 Open new tab in same folder
+      #9210 closed 2025-11-10 `send_key` shows inconsistent behavior between versions `0.43.1` and `0.44.0`
+  sigkill        17 hit(s) (all listed)
+      #10493 closed 2026-09-18 Drag-and-drop between Yazi instances in two splits freezes kitty
+      #10333 closed 2026-08-08 CSI Ps S (Scroll Up) with a huge count hangs the terminal (100% CPU busy-loop)
+      #9473 closed 2026-02-05 Kitten desktop-ui portal on hyprland
+      #8507 closed 2025-04-03 Crash when resizing window aggressively
+      #8737 closed 2025-06-18 More responsive terminal image buffer eviction
+      #8464 closed 2025-03-21 kitty frozen after frequent resizing
+      #7968 closed 2024-10-12 Deleting an image after interrupted direct transmission doesn't work
+      #7602 closed 2024-07-07 Fish shell auto-completion does not work on OpenBSD (access via SSH from macOS)
+      #2790 closed 2020-06-23 OpenGL ES 3: Fail to start on aarch64: [glfw error 65543]
+      #4391 closed 2021-12-24 Kitty freezes randomly
+      #4270 closed 2021-11-24 livelock spinning on sendfile()
+      #426 closed 2018-03-30 Randomly goes to 100% CPU
+      #1329 closed 2019-01-23 Use kitty automation to send Ctrl+c
+      #2635 closed 2020-05-08 Occasional freezes while switching virtual desktops
+      #2956 closed 2020-09-09 `scrollback_lines -1' will make kitty crash when running `time find ~/bigdir`
+      #2778 closed 2020-06-20 Send SIGTERM and SIGKILL with keyboard shortcut
+      #1780 closed 2019-07-05 Implement basic support for 'live' kittens
+  sigint         22 hit(s) (all listed)
+      #9871 closed 2026-04-14 SSH kitten locks terminal until timeout when unable to connect to remote
+      #9480 merged 2026-02-06 edit-in-kitty: Warn if SSH dropped + ssh: Restore keyboard flags
+      #1077 closed 2018-10-17 OSX ctrl cmd swapped - way to swap in kitty too?
+      #9460 closed 2026-02-03 getting the scrollback into micro or a real text editor
+      #7632 closed 2024-07-15 Add a standard right-click/context menu? 
+      #8716 closed 2025-06-07 `--single-instance` causes `copy_or_interrupt` to redirect SIGINT to inactive terminal on different desktop after 3 s
+      #9192 closed 2025-11-05 `kitty`/`kitten` commands hang and Ctrl-C does not terminate the process
+      #8754 closed 2025-06-26 Programs launched by terminal that had --hold won't Interrupt
+      #9567 closed 2026-02-27 Kitty crashes when move window to right/left using Magnet
+      #7961 closed 2024-10-11 kbd protocol "Disambiguate escape codes" disables VINTR/VSTOP
+      #320 closed 2018-02-11 open terminal failed: missing or unsuitable terminal: xterm-kitty
+      #7429 closed 2024-05-13 Support receiving stdout/stderr of `kitten @ launch --type=background some_script`
+      #7085 closed 2024-02-01 Output from background proccesses disappears when adjusting windows
+      #4815 closed 2022-03-11 Help text for the @ signal-child --help command needs update
+      #3570 closed 2021-05-04 stty contains "-brkint"
+      #3441 closed 2021-04-05 Cursor misplaced/erratic text rendering on tab completion, etc. on Mac OS
+      #2289 closed 2020-01-16 Using `ctrl+c` for copy removes `ctrl+c` for SIGINT on Arch Linux
+      #94 closed 2017-07-16 Map keys to escape sequence
+      #1329 closed 2019-01-23 Use kitty automation to send Ctrl+c
+      #2778 closed 2020-06-20 Send SIGTERM and SIGKILL with keyboard shortcut
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10609 closed 2026-10-05 kitty swallows up a space character after a \t in its pager
+      #10524 closed 2026-09-24 [macOS] Black borders with custom shaders
+      #10511 closed 2026-09-22 [macOS] Custom shader dim-inactive-windows does nothing
+      #10497 closed 2026-09-19 Paste silently fails into a window whose foreground job was suspended (Ctrl+Z)
+      #10494 closed 2026-09-18 text-sizing protocol issue in tab bar title rendering
+      #10545 closed 2026-09-26 macOS: custom dock icon reverts to stock icon after progress bar is cleared
+      #10385 closed 2026-08-21 `ctrl+shift+delete`  reset terminal broke `adb shell`
+      #10577 closed 2026-09-30 Running ./dev.sh deps -for-docs && ./dev.sh docs seems to fail on ANSI Escape Sequence.
+      #10377 closed 2026-08-20 Scaled image placements are distorted instead of clipped when scrolling within margins
+      #10448 closed 2026-09-07 Wayland: momentum scrolling does not start after fast touchpad flicks on GNOME, empty wl_pointer frames reset prev_frame_offset_type
+      #10389 closed 2026-08-22 kitty does not load theme on startup, only upon manual reload
+      #10365 closed 2026-08-15 regression: lazyvim with a statusline causes flicker when entering fullscreen
+      #10307 merged 2026-08-02 Add remap_modifier to present one modifier key to kitty as another
+      #10519 closed 2026-09-23 Secure Input is Always Active: macOS 27
+      #10443 merged 2026-09-06 Allow dragging selected text with drag_or_normal_select
+      #10322 closed 2026-08-05 Auto color theme timing out on Sway
+      #10352 closed 2026-08-12 Wayland clipboard sharing fails between containerized Kitty instances due to PID collision
+      #10253 closed 2026-07-11 kitty @ scroll-window syntax change?
+      #10333 closed 2026-08-08 CSI Ps S (Scroll Up) with a huge count hangs the terminal (100% CPU busy-loop)
+      #10298 closed 2026-07-30 Doesn't reset key releases reporting when a child process dies
+  power          82 hit(s) (all listed)
+      #10245 closed 2026-07-09 kitty exits with XI_BadDevice after USB-C monitor / hub power loss
+      #9958 closed 2026-05-04 Mouse wheel scrolling not working on Deskflow/Barrier/Synergy clients
+      #9463 closed 2026-02-03 All the Apple created Tahoe breakage
+      #10292 closed 2026-07-28 Kitty choose-files fails in Firefox when file parent folder no longer exists 
+      #10259 closed 2026-07-13 Define a clear gen AI/LLM policy
+      #9998 closed 2026-05-11 Wayland: kitty exits when a monitor it's on gets turned off / disconnected (multi-monitor; other clients survive)
+      #10329 closed 2026-08-06 Wayland: kitty stops rendering permanently when its wl_output is removed and re-added
+      #10168 closed 2026-06-18 Trackpad two-finger scroll starts unintended text selection (Magic Trackpad, Wayland/Hyprland)
+      #9973 closed 2026-05-05 Kitty is incompatible with the `typeless` dictation input method.
+      #8533 open 2025-04-12 [RFC] Specifying how terminals process Unicode text
+      #9723 closed 2026-03-21 [X11] All kitty windows exit silently when USB HID keyboard is disconnected (regression in 0.46.2)
+      #7674 closed 2024-07-28 IV Kitten Development - A Dynamically Recursive Image Grid Layout for Kitty Terminal
+      #7632 closed 2024-07-15 Add a standard right-click/context menu? 
+      #214 closed 2017-12-04 Sub-pixel anti-aliasing
+      #9131 merged 2025-10-19 Reduce macOS idle wakeups by gating display link and timers
+      #9269 closed 2025-12-05 Cold start delay
+      #33 closed 2017-01-14 Graphics rendering
+      #9245 closed 2025-11-25 glfw error process_desktop_settings failed with error
+      #8250 closed 2025-01-24 Request to Add Custom Shader Background Feature
+      #8932 closed 2025-08-28 Wrap terminal like agentic capabilities, but with blazing speed of kitty, and done the kitty way
+  outage         2 hit(s) (all listed)
+      #10140 closed 2026-06-13 ssh kitten: opt-in auto-reconnect on a dropped connection
+      #10245 closed 2026-07-09 kitty exits with XI_BadDevice after USB-C monitor / hub power loss
+  ENOSPC         3 hit(s) (all listed)
+      #10426 merged 2026-08-31 Bump github/codeql-action from 4.37.7 to 4.37.8 in the actions group
+      #9860 merged 2026-04-13 Fix 8 bugs in t=k remote drag implementation and add comprehensive tests
+      #3539 closed 2021-04-26 notcurses pixel images stopped working in version 20.1
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10495 merged 2026-09-18 Fix disk full startup crash
+      #10589 merged 2026-10-02 devenv: Escape spaces when relocating pkg-config prefixes
+      #10562 merged 2026-09-28 Bump github/codeql-action from 4.38.0 to 4.38.1 in the actions group
+      #10426 merged 2026-08-31 Bump github/codeql-action from 4.37.7 to 4.37.8 in the actions group
+      #10445 merged 2026-09-07 Bump github.com/shirou/gopsutil/v4 from 4.26.7 to 4.26.8 in the all-go-deps group
+      #10501 merged 2026-09-21 Bump github/codeql-action from 4.37.9 to 4.38.0 in the actions group
+      #10229 closed 2026-07-06 [Feature request] prevent crashes when disk is full
+      #10496 closed 2026-09-18 Many distinct font-uncovered codepoints in one screen cause severe, low-CPU stalling
+      #10092 merged 2026-05-30 graphics: add memory-only storage for graphics data
+      #10090 closed 2026-05-29 Recommended way to avoid graphics disk-cache writes for high-frequency image updates
+      #10304 closed 2026-08-01 Background text alpha for inactive text
+      #10227 merged 2026-07-06 Bump the all-go-deps group with 2 updates
+      #10184 closed 2026-06-24 macos_crash_report: add source file/line numbers via atos symbolication
+      #10022 merged 2026-05-17 Fix empty file not created when dragging from remote Linux to Finder
+      #10037 closed 2026-05-19 explicit_bzero doesn't exist on NetBSD
+      #9970 merged 2026-05-05 dnd kitten: delete source files on move drag completion
+      #9816 merged 2026-04-06 Bump github.com/shirou/gopsutil/v4 from 4.26.2 to 4.26.3 in the all-go-deps group
+      #9993 merged 2026-05-11 Bump github/codeql-action from 4.35.2 to 4.35.3 in the actions group
+      #10117 merged 2026-06-08 Bump the all-go-deps group with 2 updates
+      #9627 merged 2026-03-09 Bump github.com/shirou/gopsutil/v4 from 4.26.1 to 4.26.2 in the all-go-deps group
+  partial        92 hit(s) (all listed)
+      #10599 closed 2026-10-04 Kitty animation-frame ACK bug report
+      #10256 merged 2026-07-12 Fix erroneous scroll when using X/Y offsets in images
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #10506 closed 2026-09-21 Use Cassowary constraints for layouts and add docked windows
+      #10128 merged 2026-06-10 fix(choose-fonts): guard preview rendering against partial terminal color query
+      #10466 merged 2026-09-14 Bump the all-go-deps group with 3 updates
+      #10273 closed 2026-07-21 Option to force pixel-smooth scrolling for programs that handle the scroll wheel
+      #9936 closed 2026-04-27 gl: drop GL_MAP_INVALIDATE_RANGE_BIT from partial UBO maps
+      #10083 merged 2026-05-28 Fix X11 layer shell _NET_WM_STATE loss after unmap/remap cycle
+      #9952 merged 2026-05-02 Add streaming base64 encoder to streaming_base64 package
+      #9901 merged 2026-04-21 Add comprehensive tests for streaming_base64 decoder
+      #9916 merged 2026-04-24 fix ligature
+      #9850 merged 2026-04-11 Render missing block elements from Unicode Symbols for Legacy Computing Supplement
+      #9794 merged 2026-04-02 dnd: use non-blocking I/O for file chunk reads
+      #8533 open 2025-04-12 [RFC] Specifying how terminals process Unicode text
+      #9726 closed 2026-03-22 tools/libraries/projects employing Kitty Text Sizing Protocol?
+      #33 closed 2017-01-14 Graphics rendering
+      #9792 merged 2026-04-01 dnd: chunked file transfer with fd+1 sentinel pattern
+      #9750 merged 2026-03-26 Refactor ShortcutTracker.Match() to respect AllowFallback priority order
+      #9784 closed 2026-03-31 Smooth animated scrolling for scroll_line_up/scroll_line_down
+  incomplete     61 hit(s) (all listed)
+      #10549 closed 2026-09-26 Incomplete rounded split-window borders on x86_64 macOS (AMD Radeon RX 6600)
+      #10265 merged 2026-07-19 Wayland: map first window at correct size with fractional scaling
+      #10251 merged 2026-07-11 Garbage collect the text cache so unique cell texts do not grow memory without bound
+      #10146 closed 2026-06-14 First OS window ignores Wayland fractional scale → initial size in cells is a few cells too small (subsequent windows correct)
+      #10005 merged 2026-05-13 Fix hints kitten breaking multi-byte UTF-8 characters
+      #9800 merged 2026-04-03 dnd: implement drag source MIME population in drag_add_mimes
+      #10128 merged 2026-06-10 fix(choose-fonts): guard preview rendering against partial terminal color query
+      #9799 closed 2026-04-03 Expose last_focused_at in kitty @ ls JSON output (kitty sessions)
+      #9551 merged 2026-02-24 Add timeout option to key mappings
+      #9600 closed 2026-03-04 Fix blank rendering when a second OS window has a larger dimension (needs_layers path)
+      #9504 closed 2026-02-14 Discussion: Terminal Audio Protocol
+      #33 closed 2017-01-14 Graphics rendering
+      #8930 merged 2025-08-26 Make detached-log line buffered
+      #9192 closed 2025-11-05 `kitty`/`kitten` commands hang and Ctrl-C does not terminate the process
+      #9106 closed 2025-10-13 Kitty Terminal Issues on macOS: SSH Backspace Behavior and Ctrl+L Screen Clearing
+      #8898 closed 2025-08-14 [glfw error 65542]: EGL: Failed to get EGL display: Success when using installer
+      #9049 closed 2025-09-30 screen_delete_lines passes incorrect top parameter to screen_delete_lines_impl
+      #8746 closed 2025-06-23 Using the DRI_PRIME environment variable to force kitty to use integrated graphics will cause a crash.
+      #719 closed 2018-07-11 Feature Request: Ability to select text with the keyboard (vim-like)
+      #8779 closed 2025-07-04 Terminal Output Overwritten in Edge Case
+  dataloss       0 hit(s)
+  recover        38 hit(s) (all listed)
+      #10542 merged 2026-09-25 choose-files: Do not crash on a bare "!" line in an ignore file
+      #10600 closed 2026-10-04 Ci/verify frame ack
+      #10333 closed 2026-08-08 CSI Ps S (Scroll Up) with a huge count hangs the terminal (100% CPU busy-loop)
+      #10320 closed 2026-08-05 save_as_session loses the layout state of any layout that is not the active one
+      #10249 closed 2026-07-11 Anonymous heap grows without bound in proportion to terminal output (≥1.6 B retained per byte processed), freed only on window close
+      #10329 closed 2026-08-06 Wayland: kitty stops rendering permanently when its wl_output is removed and re-added
+      #10138 merged 2026-06-12 fix(wayland): detect start_drag silently ignored by the compositor
+      #10195 closed 2026-06-26 Add option to use prefix-free hints so confirmation is not needed.
+      #10268 closed 2026-07-20 0.48, window size regression in Hyprland
+      #9984 closed 2026-05-07 [RFC] Drag and drop in TUI applications with new dnd protocol
+      #9469 closed 2026-02-03 edit-in-kitty: detect if SSH connection has dropped before attempting to update remote file
+      #9280 closed 2025-12-09 Clearing Console with crtl + shift + delete results in two line returns
+      #9222 closed 2025-11-14 Strange Behavior with `clear_terminal reset active`
+      #9247 closed 2025-11-25 Kitty quick access terminal lost its' window focus when input method changed automatically by im-select.nvim
+      #8742 closed 2025-06-20 Crash on resize with [glfw error 65544]: Wayland: fatal display error: Too many open files
+      #8508 merged 2025-04-04 Prevent mouse cursor from showing on short, unintentional flicks
+      #8272 closed 2025-01-30 broken(?) OSC sequence seemingly breaks kitty
+      #3248 closed 2021-01-17 [RFC] New keyboard reporting protocol
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #391 closed 2018-03-15 kitty tmux like daemon
+  recovery       10 hit(s) (all listed)
+      #10400 closed 2026-08-24 clipboard protocol: malformed walias payload raises an uncaught exception
+      #10474 closed 2026-09-14 [RFC] Content Rendering Protocol with terminal-retained source
+      #10443 merged 2026-09-06 Allow dragging selected text with drag_or_normal_select
+      #10599 closed 2026-10-04 Kitty animation-frame ACK bug report
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #10372 closed 2026-08-18 OSC 22: an unknown pointer shape name raises an unhandled KeyError
+      #10135 closed 2026-06-11 Mouse input permanently stops working in all windows after an aborted tab drag on Wayland
+      #10138 merged 2026-06-12 fix(wayland): detect start_drag silently ignored by the compositor
+      #5363 closed 2022-08-10 "recover windows" after accidental crash
+      #370 closed 2018-03-10 tmux; open terminal failed: can't find terminfo database
+  rollback       6 hit(s) (all listed)
+      #5662 closed 2022-11-12 Kitty on gentoo segfaulting with nvidia opengl
+      #8966 closed 2025-09-10 The unicode character ⚙ causes kitty to freeze
+      #7517 closed 2024-06-07 After installing NVIDIA drivers, kitty won't start from taskbar.
+      #4391 closed 2021-12-24 Kitty freezes randomly
+      #1504 closed 2019-03-28 Random, frequent crashes on macOS 10.14.4
+      #850 closed 2018-09-01 Kitty 12.0 breaks image preview.
+  resume         46 hit(s) (all listed)
+      #1197 open 2018-12-02 Mac OS: kitty doesn't restore
+      #10437 closed 2026-09-05 Repeated full freeze after ~1-4h: 'file descriptor expected, object (27), message format_table(hu)' on stderr before hang
+      #10329 closed 2026-08-06 Wayland: kitty stops rendering permanently when its wl_output is removed and re-added
+      #10320 closed 2026-08-05 save_as_session loses the layout state of any layout that is not the active one
+      #9463 closed 2026-02-03 All the Apple created Tahoe breakage
+      #9283 closed 2025-12-11 Blank windows after unlocking system (sometimes) on Tahoe [26.0, 26.1, 26.2]
+      #9936 closed 2026-04-27 gl: drop GL_MAP_INVALIDATE_RANGE_BIT from partial UBO maps
+      #9844 closed 2026-04-09 Colors occassionally become bugged after suspending
+      #9520 merged 2026-02-17 fix: blank screen on macOS resume from sleep
+      #9788 merged 2026-04-01 tui/password: hide cursor and show blinking 🔒 as position indicator
+      #9691 closed 2026-03-17 Double-clicking tab bar can spawn multiple stacking "Rename tab" overlay windows
+      #9718 closed 2026-03-20 triggering screen_bell seems to freeze Kitty for  30 seconds
+      #9186 merged 2025-11-04 Resume old behavior of tab_switch_strategy=left/right
+      #8911 closed 2025-08-18 [RFC] Saving and jumping between kitty sessions
+      #9192 closed 2025-11-05 `kitty`/`kitten` commands hang and Ctrl-C does not terminate the process
+      #392 closed 2018-03-15 Quake mode
+      #391 closed 2018-03-15 kitty tmux like daemon
+      #8448 closed 2025-03-18 Theme switching issues
+      #8527 closed 2025-04-10 Memory usage keeps increasing after wakeup from suspend in existing kitty
+      #7970 merged 2024-10-13 Add Cursor Trail Feature to Enhance Cursor Visibility
+  half-written   17 hit(s) (all listed)
+      #10522 closed 2026-09-24 Splits: equalizing a tab with a single-child pair leaves a 100/0 bias, so the next split collapses
+      #10306 closed 2026-08-02 Wayland: do not ignore small movements of the scroll wheel
+      #33 closed 2017-01-14 Graphics rendering
+      #9626 merged 2026-03-09 Add draggable window title bars
+      #719 closed 2018-07-11 Feature Request: Ability to select text with the keyboard (vim-like)
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #45 closed 2017-02-02 Add pulldown mode like tilda, quake and other terminals.
+      #391 closed 2018-03-15 kitty tmux like daemon
+      #6478 closed 2023-07-17 Pressing Alt-Tab insert chars in a text editor
+      #2701 closed 2020-05-28 Why does Alacritty terminal gets more attention than Kitty?
+      #1716 closed 2019-06-15 Starting a word with the hash sign (#) will color it black and thus not visible on dark themes
+      #4430 closed 2022-01-04 SIGSEGV when viewing clicked command output
+      #182 closed 2017-11-24 Inconsistent rendering of double-width characters and ligatures
+      #1761 closed 2019-06-28 Crash after closing last window from OS X fullscreen mode
+      #2016 closed 2019-10-01 Kitty freezes after sleep/screensaver
+      #1051 closed 2018-10-05 Copy paste in sway (Wayland) is semi-broken
+      #2247 closed 2020-01-03 Disabling ligatures disables other OpenType features (which are enabled by default) too
+  wipe           16 hit(s) (all listed)
+      #10554 closed 2026-09-26 clear command is broken
+      #10504 closed 2026-09-21 tab-change custom shader makes the tab black
+      #9631 closed 2026-03-09 Fix mouse demo kitten DnD drop: drops show no content
+      #9280 closed 2025-12-09 Clearing Console with crtl + shift + delete results in two line returns
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #7266 merged 2024-03-25 Oxipng/svgo images to save some 150KB~
+      #2774 closed 2020-06-18 Lack of support for TERM=xterm-kitty
+      #6302 closed 2023-05-24 kitty +kitten clipboard -g should not read stdin
+      #4890 closed 2022-03-28 Ctrl+L (new page ASCII code) cuts off previous lines
+      #3809 closed 2021-07-07 proposal for animation: t=z to reference previous frames
+      #747 closed 2018-07-26 Allow clearing pane like iterm CMD-k
+      #3317 closed 2021-02-14 set environment variable TERM_PROGRAM to "Kitty"
+      #1805 closed 2019-07-15 Clipboard wiped when kitty is closed
+      #2734 closed 2020-06-05 kitty @ set-colors wipes keyboard input buffer (zle)
+      #3111 closed 2020-11-19 glkitty - port of the OpenGL gears demo to kitty terminal graphics protocol
+      #1356 closed 2019-02-03 Feature request: implement vt510 left and right scrolling regions
+  wipes          4 hit(s) (all listed)
+      #4890 closed 2022-03-28 Ctrl+L (new page ASCII code) cuts off previous lines
+      #3809 closed 2021-07-07 proposal for animation: t=z to reference previous frames
+      #2734 closed 2020-06-05 kitty @ set-colors wipes keyboard input buffer (zle)
+      #3111 closed 2020-11-19 glkitty - port of the OpenGL gears demo to kitty terminal graphics protocol
+  erase          87 hit(s) (all listed)
+      #10201 merged 2026-06-28 fix(erase_last_command): erase the most recent command even empty output
+      #10573 closed 2026-09-30 Draw IME pre-edit text without the application's SGR attributes
+      #1990 open 2019-09-22 Issue with custom XKB keymap
+      #10214 merged 2026-07-03 Fix spurious edge strips when tab bar doesn't fill its full extent
+      #10255 merged 2026-07-12 Do not animate cursor trail while the cursor is hidden
+      #9706 closed 2026-03-19 Fix marker highlighting for wide/CJK characters not at column 0
+      #2327 closed 2020-01-30 [Question] How to use neovim (or vim) as scrollback pager?
+      #33 closed 2017-01-14 Graphics rendering
+      #9660 closed 2026-03-14 ctrl-l / clear over writes parts of scrollback buffer
+      #2929 closed 2020-08-20 Single width glyphs that occupy 2 columns (succeeded by U+FE0F) mess up command lines/vim/etc
+      #9282 closed 2025-12-11 Doesn't seem to support DECSERA or DECERA
+      #2511 closed 2020-04-05 [RFC] Sixel support
+      #226 closed 2017-12-12 support for SGR 21: double underlining text
+      #148 closed 2017-10-19 feature request: when scrolled back, do not clear selection in response to new output
+      #9090 closed 2025-10-10 background color for text disappears for empty space created by resize induced wrapping
+      #9010 closed 2025-09-24 Clearing terminal doesn't work
+      #8900 closed 2025-08-14 Text above gets consumed line-by-line while prompted for input
+      #3935 closed 2021-08-16 Backspace key is broken over ssh
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #2441 closed 2020-03-18 Drag&drop URL to kitty
+  erasing        25 hit(s) (all listed)
+      #10573 closed 2026-09-30 Draw IME pre-edit text without the application's SGR attributes
+      #226 closed 2017-12-12 support for SGR 21: double underlining text
+      #3935 closed 2021-08-16 Backspace key is broken over ssh
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #7676 merged 2024-07-28 Fix env assignation in ssh kitten docs
+      #7085 closed 2024-02-01 Output from background proccesses disappears when adjusting windows
+      #3948 closed 2021-08-18 [RFC] Shell integration
+      #6306 closed 2023-05-26 Duplicating lines in terminal
+      #5532 closed 2022-09-24 Do not set default to tab.{title,name} when renaming tab
+      #2047 closed 2019-10-11 Kitty 0.14.6 Rendering Glitch with NeoVim and Tmux
+      #5186 closed 2022-06-09 Backspace , MacOS , ssh
+      #2225 closed 2019-12-23 High memory usage
+      #3870 closed 2021-07-26 Internal kitty shell has broken backspace when term != xterm-kitty
+      #3874 closed 2021-07-27 composition animation doesn't take effect until next frame transfer
+      #4682 closed 2022-02-10 active_tab_foreground is ignored in 0.24.2 on Mac
+      #3653 merged 2021-05-23 macOS: add menu items for new_window and close_window
+      #4313 closed 2021-12-03 System Freeze
+      #4092 closed 2021-10-04 Blur with transparency doesn't work under Plasma Wayland
+      #3132 closed 2020-11-30 scrollback_pager_history_size keeps formatting escape codes without --stdin-add-formatting
+      #160 closed 2017-11-01 Errors with neovim when termguicolors is set
+  erased         8 hit(s) (all listed)
+      #10214 merged 2026-07-03 Fix spurious edge strips when tab bar doesn't fill its full extent
+      #9660 closed 2026-03-14 ctrl-l / clear over writes parts of scrollback buffer
+      #9282 closed 2025-12-11 Doesn't seem to support DECSERA or DECERA
+      #9010 closed 2025-09-24 Clearing terminal doesn't work
+      #8779 closed 2025-07-04 Terminal Output Overwritten in Edge Case
+      #7978 closed 2024-10-16 Misplaced cmdline after terminal resize
+      #5081 closed 2022-05-10 Kitty graphics protocol: Incorrect image deletion behaviour
+      #5186 closed 2022-06-09 Backspace , MacOS , ssh
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10597 closed 2026-10-04 Wayland: frame callbacks accumulate for covered windows since 0.49.0 (Broken pipe)
+      #10482 closed 2026-09-15 SIGABRT: glibc "double free or corruption" in _glfwPlatformDestroyWindow during window close on session shutdown
+      #10604 closed 2026-10-04 Wayland: use-after-free in setCursorImage when the desktop-portal settings reply arrives after cursors are loaded (crash shortly after start, see #8138)
+      #10392 closed 2026-08-22 Text sizing protocol has no composition model. Sized text cells cannot be overlaid by normal text
+      #10383 closed 2026-08-21 Segfault in wl_display_disconnect during exit — EGL module unloaded before Wayland teardown (glfw#2744)
+      #10308 merged 2026-08-02 Remember maximized window state across restarts
+      #10364 merged 2026-08-15 Wayland: fix crash when an output global is removed
+      #10474 closed 2026-09-14 [RFC] Content Rendering Protocol with terminal-retained source
+      #10475 closed 2026-09-14 Wayland: `background_blur` silently does nothing on KDE Plasma 6.7 — official 0.48.2 Linux binary was built against wayland-protocols 1.45, where `CAPABILITY_BLUR` is 0
+      #10430 closed 2026-09-01 macOS: dragged file-promise paths die within milliseconds (pasted path unresolvable)
+      #10506 closed 2026-09-21 Use Cassowary constraints for layouts and add docked windows
+      #10138 merged 2026-06-12 fix(wayland): detect start_drag silently ignored by the compositor
+      #10254 merged 2026-07-11 Allocate scrollback history segments with mmap
+      #10363 closed 2026-08-15 Wayland: `surfaceHandleEnter`/`surfaceHandleLeave` deref NULL `wl_output` when an output global is removed (KVM / monitor input switch)
+      #10329 closed 2026-08-06 Wayland: kitty stops rendering permanently when its wl_output is removed and re-added
+      #9832 merged 2026-04-08 Add drag protocol tests and fix double-free in drag_free_built_data
+      #9823 closed 2026-04-07 Fix drag icon not visible under GNOME Wayland
+      #9864 merged 2026-04-14 Move DnD test infrastructure from glfw.c to dnd.c
+      #9683 closed 2026-03-17 Fix crashes when dragging tabs between OS windows on Wayland and X11
+      #9998 closed 2026-05-11 Wayland: kitty exits when a monitor it's on gets turned off / disconnected (multi-monitor; other clients survive)
+  destroys       13 hit(s) (all listed)
+      #10597 closed 2026-10-04 Wayland: frame callbacks accumulate for covered windows since 0.49.0 (Broken pipe)
+      #10138 merged 2026-06-12 fix(wayland): detect start_drag silently ignored by the compositor
+      #10363 closed 2026-08-15 Wayland: `surfaceHandleEnter`/`surfaceHandleLeave` deref NULL `wl_output` when an output global is removed (KVM / monitor input switch)
+      #9795 merged 2026-04-02 glfw: Add `operations == -3` to cancel an active drag in glfwStartDrag
+      #9522 closed 2026-02-18 Implement X11 drag thumbnail with pixmap window and cancel-on-restart behavior
+      #9544 closed 2026-02-22 Wayland: implement xdg-toplevel-drag-v1 for detachable drag windows
+      #9536 closed 2026-02-21 Add ext-background-effect-v1 Wayland protocol support for window blur
+      #8965 closed 2025-09-10 kitty doesn't launch after update with ZedMono font
+      #7843 closed 2024-09-10 kitty crashes when trying to use Hack Nerd Font.
+      #2329 closed 2020-01-31 Wayland: `kitty` crashes with `Broken pipe` after a lot of CLI output
+      #3669 closed 2021-05-29 image is cleared when space still seems available in storage quota
+      #426 closed 2018-03-30 Randomly goes to 100% CPU
+      #1206 closed 2018-12-05 macOS: resizing window destroys content
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10362 open 2026-08-14 Add option for box-drawing characters to scale with font zoom
+      #10369 closed 2026-08-17 Kitty documentation: Script is overwriting instead of appending
+      #10379 closed 2026-08-21 graphics: a=f overwrite composition mode moved from documented X key to C key in 0.45.0
+      #9977 closed 2026-05-06 dnd kitten: remove staged files immediately on overwrite rejection; add overwrite tests
+      #10599 closed 2026-10-04 Kitty animation-frame ACK bug report
+      #10032 merged 2026-05-19 glfw/input.c: preserve duplicate mime pointers by swapping to tail instead of overwriting
+      #10415 merged 2026-08-28 Fix empty hints selection handling
+      #9940 merged 2026-04-30 Add text/uri-list edge case and overwrite confirmation tests to dnd_kitten_drop
+      #10608 merged 2026-10-05 Fix stale Unicode placeholder images after a synchronized update
+      #10276 closed 2026-07-22 [Suggestion] [Protocol extension] Control over scrollback
+      #10606 merged 2026-10-05 Bump github/codeql-action from 4.38.1 to 4.38.2 in the actions group
+      #10500 merged 2026-09-21 Bump github.com/seancfoley/ipaddress-go from 1.8.3 to 1.8.4 in the all-go-deps group
+      #10562 merged 2026-09-28 Bump github/codeql-action from 4.38.0 to 4.38.1 in the actions group
+      #10425 merged 2026-08-31 Bump the all-go-deps group with 2 updates
+      #10561 merged 2026-09-28 Bump the all-go-deps group with 3 updates
+      #10501 merged 2026-09-21 Bump github/codeql-action from 4.37.9 to 4.38.0 in the actions group
+      #10446 merged 2026-09-07 Bump github/codeql-action from 4.37.8 to 4.37.9 in the actions group
+      #10396 merged 2026-08-24 Bump github.com/seancfoley/ipaddress-go from 1.8.1 to 1.8.3 in the all-go-deps group
+      #10426 merged 2026-08-31 Bump github/codeql-action from 4.37.7 to 4.37.8 in the actions group
+      #10177 closed 2026-06-23 Terminal shortcut broken on Ubuntu systems using xdg-terminal-exec
+  clobber        10 hit(s) (all listed)
+      #10265 merged 2026-07-19 Wayland: map first window at correct size with fractional scaling
+      #10146 closed 2026-06-14 First OS window ignores Wayland fractional scale → initial size in cells is a few cells too small (subsequent windows correct)
+      #8745 closed 2025-06-23 kitty sets/overwrites MANPATH
+      #8634 closed 2025-05-13 Switching tabs in most recently used order
+      #1915 closed 2019-08-20 Conditional padding or 'moving the prompt'
+      #7800 closed 2024-08-29 Set IN_NIX_SHELL=1 for tests
+      #434 closed 2018-04-02 SSH wrong keyboard
+      #5470 closed 2022-09-04 Mappable action for copy_on_select.
+      #3948 closed 2021-08-18 [RFC] Shell integration
+      #981 merged 2018-09-18 bash completion: make complete helper start with _
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10344 closed 2026-08-11 [RFC] Custom shaders for fun and profit!
+      #10609 closed 2026-10-05 kitty swallows up a space character after a \t in its pager
+      #9283 closed 2025-12-11 Blank windows after unlocking system (sometimes) on Tahoe [26.0, 26.1, 26.2]
+      #10530 merged 2026-09-24 Completion: Fix options with multi line help adding spurious fish candidates
+      #10334 merged 2026-08-08 Fix hang on Scroll Up (CSI S) with a huge count
+      #10477 closed 2026-09-15 Widen the cell for Thai/Lao vowel sign AM (U+0E33, U+0EB3)
+      #10333 closed 2026-08-08 CSI Ps S (Scroll Up) with a huge count hangs the terminal (100% CPU busy-loop)
+      #10573 closed 2026-09-30 Draw IME pre-edit text without the application's SGR attributes
+      #10508 closed 2026-09-21 Align window frames and make layout spacing consistent
+      #10329 closed 2026-08-06 Wayland: kitty stops rendering permanently when its wl_output is removed and re-added
+      #9463 closed 2026-02-03 All the Apple created Tahoe breakage
+      #10214 merged 2026-07-03 Fix spurious edge strips when tab bar doesn't fill its full extent
+      #10303 merged 2026-08-01 Vertical tabs: support multi-line and wrapped tab titles
+      #10286 closed 2026-07-26 Bytes after an invalid byte in CSI sequence are printed to screen
+      #10216 closed 2026-07-03 [request] Option to use border color for padding around borders
+      #10428 closed 2026-09-01 `bell_path` does not accept quoted paths
+      #10506 closed 2026-09-21 Use Cassowary constraints for layouts and add docked windows
+      #9940 merged 2026-04-30 Add text/uri-list edge case and overwrite confirmation tests to dnd_kitten_drop
+      #9407 closed 2026-01-23 After hibernation, it becomes blank on macos.
+      #9520 merged 2026-02-17 fix: blank screen on macOS resume from sleep
+  unreadable     21 hit(s) (all listed)
+      #10402 closed 2026-08-24 Light themes are all grey
+      #8533 open 2025-04-12 [RFC] Specifying how terminals process Unicode text
+      #10405 closed 2026-08-25 Light themes are all grey
+      #10304 closed 2026-08-01 Background text alpha for inactive text
+      #9605 closed 2026-03-04 Fix debug_config grouping all sequence shortcuts under a single entry
+      #9441 merged 2026-01-30 Fix new_os_window_with_cwd in presence of defunct processes
+      #9508 closed 2026-02-15 Add support for OSC 50, and extend it to support dynamic font loading from application
+      #8787 closed 2025-07-06 Help with SSH and colors
+      #8947 closed 2025-09-03 OSC 3008 Support, particularly for `elevate`
+      #8240 closed 2025-01-21 Copypasting with input source other than `ABC` or `EN` produces unreadable characters instead of copied text.
+      #6767 closed 2023-10-29 Warn that text_fg_override_threshold can cause confusing issues with block characters
+      #541 closed 2018-05-16 URLs invisible on "text hints" screen with Solarized Light colors
+      #6534 closed 2023-08-07 0.29.1 Font rendering with transparent background has black pixels around edges of characters
+      #6298 closed 2023-05-23 Different font for tabs (smaller)
+      #5907 closed 2023-01-20 [syntax highlighting] wrong color / unreadable
+      #5717 closed 2022-11-28 Kannada (All Indic) fonts with ligatures get garbled for certain characters
+      #5278 closed 2022-07-14 Invert foreground color if bg and fg color is too close for readability.
+      #3703 closed 2021-06-10 Add missing newline in debug print
+      #3103 closed 2020-11-14 '$' leading words inherit wrong color?
+      #2177 closed 2019-11-29 selection_background still takes into account background_opacity
+  garbage        38 hit(s) (all listed)
+      #10508 closed 2026-09-21 Align window frames and make layout spacing consistent
+      #10251 merged 2026-07-11 Garbage collect the text cache so unique cell texts do not grow memory without bound
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #10249 closed 2026-07-11 Anonymous heap grows without bound in proportion to terminal output (≥1.6 B retained per byte processed), freed only on window close
+      #9981 merged 2026-05-06 Fix opaque background in dnd text drag thumbnail on macOS
+      #3056 closed 2020-10-24 open-actions mime inconsistent 
+      #9880 merged 2026-04-16 Fix cursor artifacts after exiting alternate screen buffer
+      #9414 closed 2026-01-24 Garbage data is spewed out after running `mpv --vo=kitty`
+      #9486 merged 2026-02-08 Support hide_window_decorations titlebar-only on Wayland
+      #9621 merged 2026-03-07 Fix segfault when dragging tab to detach with window title bars enabled
+      #9683 closed 2026-03-17 Fix crashes when dragging tabs between OS windows on Wayland and X11
+      #9304 closed 2025-12-19 kitty SSH mouse clicks generate garbage characters (0;52;15M) requiring reset after each reconnect
+      #9215 closed 2025-11-11 cmd+` stops looping back to first window on MacOS Tahoe
+      #8745 closed 2025-06-23 kitty sets/overwrites MANPATH
+      #3248 closed 2021-01-17 [RFC] New keyboard reporting protocol
+      #8723 closed 2025-06-09 `clipboard` kitten hangs indefinitely when invoked from Kakoune editor.
+      #8478 closed 2025-03-25 Kitty apparently requesting huge amounts of memory from the OS
+      #8272 closed 2025-01-30 broken(?) OSC sequence seemingly breaks kitty
+      #8185 closed 2025-01-01 refuse launching kitty-only kittens outside kitty
+      #8075 closed 2024-11-26 Bitmap fonts don't work
+  mangled        6 hit(s) (all listed)
+      #7005 closed 2024-01-17 [RFC] New 2x faster escape code parser using vector CPU instructions
+      #5966 closed 2023-02-01 Creating a new window messes up vim
+      #2249 closed 2020-01-04 Colorspace of truecolor renderings
+      #1484 closed 2019-03-17 kitty does not render on mesa 19
+      #2376 closed 2020-02-19 Bold font looks mangled and misaligned
+      #665 closed 2018-06-21 Added keyboard-mapping based on symbol (use "mapsym" in config)
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10601 closed 2026-10-04 OSC 52 under WSL2
+      #10571 closed 2026-09-29 MacOS wakes from sleep, Kitty has lost its color scheme
+      #10584 closed 2026-10-01 [macOS] Broken rendering after idle
+      #10513 merged 2026-09-22 tests: accept coreutils >= 9.12 shell-quoted env output in test_ssh_env_vars
+      #10540 closed 2026-09-25 [macOS] System titlebar background becomes transparent with `background_opacity < 1` since 0.49 on macOS 27
+      #10531 closed 2026-09-24 Garbled display on Mac
+      #10428 closed 2026-09-01 `bell_path` does not accept quoted paths
+      #10511 closed 2026-09-22 [macOS] Custom shader dim-inactive-windows does nothing
+      #10524 closed 2026-09-24 [macOS] Black borders with custom shaders
+      #10487 closed 2026-09-16 Mouse coordinates printed upon click after exiting fish subshell.
+      #10519 closed 2026-09-23 Secure Input is Always Active: macOS 27
+      #10545 closed 2026-09-26 macOS: custom dock icon reverts to stock icon after progress bar is cleared
+      #10576 closed 2026-09-30 macOS arm64: SIGBUS while waiting for Claude Code in 0.46.2 (likely duplicate of #9778)
+      #10494 closed 2026-09-18 text-sizing protocol issue in tab bar title rendering
+      #10433 closed 2026-09-03 Kitty window cannot closed at macOS 27.
+      #10411 closed 2026-08-27 Can't set the shortcut for the quick access
+      #10395 closed 2026-08-23 Either `add_timer` or `mark_tab_bar_dirty` doesn't work as expected
+      #10497 closed 2026-09-19 Paste silently fails into a window whose foreground job was suspended (Ctrl+Z)
+      #10298 closed 2026-07-30 Doesn't reset key releases reporting when a child process dies
+      #10539 closed 2026-09-25 macOS: OS window remains covered after focus-window reports it focused
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10534 open 2026-09-25 Native split panes for Claude Code agent teams (tmux-compatible shim over kitty remote control)
+      #10615 closed 2026-10-06 safe-wrappers.h fixes
+      #10601 closed 2026-10-04 OSC 52 under WSL2
+      #10530 merged 2026-09-24 Completion: Fix options with multi line help adding spurious fish candidates
+      #10523 closed 2026-09-24 Splits: Fix a stale bias on a redundant pair collapsing the next split
+      #10509 closed 2026-09-22 Underline style protocol cannot be used in `GREP_COLORS`
+      #10536 closed 2026-09-25 Wayland: Support touchscreens
+      #10486 merged 2026-09-16 Use GuessMimeType for mime based completion
+      #10510 merged 2026-09-22 Custom shaders: Include window title bars in active padding bounds
+      #10497 closed 2026-09-19 Paste silently fails into a window whose foreground job was suspended (Ctrl+Z)
+      #10391 closed 2026-08-22 Protocol clarification needed: aspect ratio behaviour when both `c=` and `r=` are specified
+      #8533 open 2025-04-12 [RFC] Specifying how terminals process Unicode text
+      #10474 closed 2026-09-14 [RFC] Content Rendering Protocol with terminal-retained source
+      #10451 merged 2026-09-07 Raise the maximum font size and fix the legacy zoom limit
+      #10508 closed 2026-09-21 Align window frames and make layout spacing consistent
+      #10369 closed 2026-08-17 Kitty documentation: Script is overwriting instead of appending
+      #10427 closed 2026-08-31 macOS: allow configuring the hardcoded " :: " prefix on the global menu bar title
+      #10492 closed 2026-09-18 macOS: IME auto-insertion of spaces between Latin and CJK text does not work
+      #10351 merged 2026-08-12 Re-apply remap_modifiers to a reloaded xkb keymap state
+      #10033 merged 2026-05-19 ssh kitten: avoid in-place mutation of cmd by slices.Insert
+  unclean        1 hit(s) (all listed)
+      #1405 closed 2019-02-22 Opacity setting persisting in Full Screen Mode on MacOS
+  shutdown       23 hit(s) (all listed)
+      #1197 open 2018-12-02 Mac OS: kitty doesn't restore
+      #10482 closed 2026-09-15 SIGABRT: glibc "double free or corruption" in _glfwPlatformDestroyWindow during window close on session shutdown
+      #6018 closed 2023-02-14 gpg: Screen or window too small
+      #9173 closed 2025-10-29 An abnormal shutdown occurs.
+      #2511 closed 2020-04-05 [RFC] Sixel support
+      #9218 closed 2025-11-12 Segmentation fault on closing kitty using "exit", no error when using ^D
+      #330 closed 2018-02-16 Slow startup
+      #9131 merged 2025-10-19 Reduce macOS idle wakeups by gating display link and timers
+      #8704 closed 2025-06-03 --toggle-visibility race condition
+      #8058 merged 2024-11-18 tui: explicitly turn off in-band resize mode
+      #7800 closed 2024-08-29 Set IN_NIX_SHELL=1 for tests
+      #7846 closed 2024-09-11 can't launch kitty with --single-instance in macos-launch-services-cmdline
+      #5325 closed 2022-07-28 Different keybindings per running foreground process
+      #4290 closed 2021-11-27 XTMODKEYS handling
+      #4532 closed 2022-01-18 Weird hang after `git difftool -y`
+      #4351 closed 2021-12-12 XTPOPCOLORS doesn't affect palette onscreen
+      #4410 closed 2021-12-31 `coretext_all_fonts` affects kitty startup time
+      #1546 closed 2019-04-20 Pushing the limits of Kitty's startup time
+      #1763 closed 2019-06-28 It cost too much power on mbp
+      #2016 closed 2019-10-01 Kitty freezes after sleep/screensaver
+  reboot         62 hit(s) (all listed)
+      #10482 closed 2026-09-15 SIGABRT: glibc "double free or corruption" in _glfwPlatformDestroyWindow during window close on session shutdown
+      #10604 closed 2026-10-04 Wayland: use-after-free in setCursorImage when the desktop-portal settings reply arrives after cursors are loaded (crash shortly after start, see #8138)
+      #1197 open 2018-12-02 Mac OS: kitty doesn't restore
+      #6845 closed 2023-11-23 Colours rendering too dark
+      #247 closed 2017-12-22 Shells not running in interactive mode on some macOS systems
+      #9348 closed 2026-01-02 Can't use kittens from a toolbx container on Fedora Atomic
+      #9035 closed 2025-09-29 Unable to open kitten quick-access-terminal
+      #9020 closed 2025-09-27 ssh kitten: add optional password/TOTP auto-fill via ssh.conf
+      #8976 closed 2025-09-16 Kitty Interferes with Window Focus on macOS Tahoe
+      #8823 closed 2025-07-15 Dynamic % based height of the kitty panel
+      #8735 closed 2025-06-17 Kitty not accepting default binds on Workman Extended
+      #8632 closed 2025-05-12 `--session` option mirroring `@ ls` output syntax
+      #8381 closed 2025-03-01 Kitty Freezes and Becomes Unresponsive on Wayland (D+ State, kill -9 fails)
+      #8376 closed 2025-02-26 Cinnamon desktop with X11 in Proxmox VMs - no mouse cursor in the kitty window
+      #8432 closed 2025-03-12 Killing process running under kitty leads to broken terminal subsystem(?) in macOS
+      #8235 closed 2025-01-20 starship_precmd: command not found
+      #8194 merged 2025-01-05 ssh kitten: Fix zsh shell integration expanding variables in title
+      #7846 closed 2024-09-11 can't launch kitty with --single-instance in macos-launch-services-cmdline
+      #391 closed 2018-03-15 kitty tmux like daemon
+      #7528 closed 2024-06-09 dot command file fails to execute
+  disk+full      36 hit(s) (all listed)
+      #10495 merged 2026-09-18 Fix disk full startup crash
+      #10229 closed 2026-07-06 [Feature request] prevent crashes when disk is full
+      #10445 merged 2026-09-07 Bump github.com/shirou/gopsutil/v4 from 4.26.7 to 4.26.8 in the all-go-deps group
+      #10496 closed 2026-09-18 Many distinct font-uncovered codepoints in one screen cause severe, low-CPU stalling
+      #10090 closed 2026-05-29 Recommended way to avoid graphics disk-cache writes for high-frequency image updates
+      #10227 merged 2026-07-06 Bump the all-go-deps group with 2 updates
+      #10117 merged 2026-06-08 Bump the all-go-deps group with 2 updates
+      #9816 merged 2026-04-06 Bump github.com/shirou/gopsutil/v4 from 4.26.2 to 4.26.3 in the all-go-deps group
+      #9802 merged 2026-04-03 Fix timing, memory safety, and tar extraction vulnerabilities
+      #9627 merged 2026-03-09 Bump github.com/shirou/gopsutil/v4 from 4.26.1 to 4.26.2 in the all-go-deps group
+      #9992 merged 2026-05-11 Bump the all-go-deps group with 4 updates
+      #8911 closed 2025-08-18 [RFC] Saving and jumping between kitty sessions
+      #33 closed 2017-01-14 Graphics rendering
+      #9354 merged 2026-01-05 Bump github.com/shirou/gopsutil/v4 from 4.25.11 to 4.25.12 in the all-go-deps group
+      #9488 merged 2026-02-09 Bump github.com/shirou/gopsutil/v4 from 4.25.12 to 4.26.1 in the all-go-deps group
+      #9391 merged 2026-01-19 Bump the all-go-deps group with 2 updates
+      #9181 merged 2025-11-03 Bump github.com/shirou/gopsutil/v4 from 4.25.9 to 4.25.10 in the all-go-deps group
+      #9277 merged 2025-12-08 Bump github.com/shirou/gopsutil/v4 from 4.25.10 to 4.25.11 in the all-go-deps group
+      #719 closed 2018-07-11 Feature Request: Ability to select text with the keyboard (vim-like)
+      #8118 closed 2024-12-13 EINVAL:[Errno 45] Operation not supported: '/home/sa' when trying to kitten transfer
+  data+loss      24 hit(s) (all listed)
+      #10478 closed 2026-09-15 Filtered test runs can recursively delete the user's ~/.config
+      #10383 closed 2026-08-21 Segfault in wl_display_disconnect during exit — EGL module unloaded before Wayland teardown (glfw#2744)
+      #33 closed 2017-01-14 Graphics rendering
+      #9469 closed 2026-02-03 edit-in-kitty: detect if SSH connection has dropped before attempting to update remote file
+      #9432 closed 2026-01-29 Quick-access-terminal stops rendering if hide_on_focus_loss activates while terminal is updating.
+      #9748 closed 2026-03-25 kitty in full-screen causes $(2x display refresh rate) extra CPU wake-ups per second
+      #8609 closed 2025-05-07 Add an ability to set an ignore list for the `confirm_os_window_close`
+      #3248 closed 2021-01-17 [RFC] New keyboard reporting protocol
+      #719 closed 2018-07-11 Feature Request: Ability to select text with the keyboard (vim-like)
+      #391 closed 2018-03-15 kitty tmux like daemon
+      #7261 closed 2024-03-25 upgrade SIMDe version to 0.8.0
+      #6559 closed 2023-08-18 text_fg_override_threshold B&W issue with themes kitten
+      #3948 closed 2021-08-18 [RFC] Shell integration
+      #5869 closed 2023-01-09 Unbracketed pastes of > 1024 characters on macos drop or repeat characters
+      #171 closed 2017-11-14 Some dead keys does not work
+      #4757 closed 2022-02-26 Shell integration: title changing breaks when certain characters are part of the command
+      #4713 closed 2022-02-17 somehow ctrl-c fails if copy_or_interupts is set and breaking out of an infinite loop
+      #4428 closed 2022-01-04 New shell integration not playing nicely with zsh plugins
+      #3819 closed 2021-07-09 Implement a process guard
+      #3937 closed 2021-08-16 Clipboard size limit
+  partial+write  27 hit(s) (all listed)
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #33 closed 2017-01-14 Graphics rendering
+      #9802 merged 2026-04-03 Fix timing, memory safety, and tar extraction vulnerabilities
+      #3248 closed 2021-01-17 [RFC] New keyboard reporting protocol
+      #8701 closed 2025-06-02 Clarification about the graphics protocol
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #7971 closed 2024-10-13 In "kitten themes" search function via "/" does not do anything
+      #4110 closed 2021-10-10 Show window titles
+      #7426 closed 2024-05-13 Tests failure with python-3.13.0b1
+      #6139 closed 2023-03-28 base64 decode error when pasting to selection using escape codes
+      #6306 closed 2023-05-26 Duplicating lines in terminal
+      #2047 closed 2019-10-11 Kitty 0.14.6 Rendering Glitch with NeoVim and Tmux
+      #4682 closed 2022-02-10 active_tab_foreground is ignored in 0.24.2 on Mac
+      #3898 closed 2021-08-04 Implement frame damage tracking on Linux
+      #4313 closed 2021-12-03 System Freeze
+      #1032 closed 2018-09-27 Possibility to avoid margin if border width is set > 0
+      #2249 closed 2020-01-04 Colorspace of truecolor renderings
+      #4092 closed 2021-10-04 Blur with transparency doesn't work under Plasma Wayland
+      #3371 merged 2021-03-07 Add `scrollback_fill_enlarged_window` option
+      #2108 closed 2019-10-30 RFE: Custom hotlink patterns
+  crash+safe     13 hit(s) (all listed)
+      #10508 closed 2026-09-21 Align window frames and make layout spacing consistent
+      #9848 closed 2026-04-10 Implement remote drag receive (t=k) in dnd.c with 1GB transfer cap
+      #9778 closed 2026-03-30 Crash in apply_selection() during pending mode when scrolling and selecting text on macOS
+      #9538 closed 2026-02-21 SIGSEGV in `has_scrollbar()`: NULL Window* dereference in `screen_needs_rendering_in_layers()` when **scrollbar=hovered**
+      #8449 merged 2025-03-18 Handle the edge case of someone running a development go build
+      #7846 closed 2024-09-11 can't launch kitty with --single-instance in macos-launch-services-cmdline
+      #4878 closed 2022-03-24 kitty chrashes on GNOME 42 when moving to a HiDPI Display
+      #6650 closed 2023-09-24 *** buffer overflow detected ***: terminated
+      #2701 closed 2020-05-28 Why does Alacritty terminal gets more attention than Kitty?
+      #5159 closed 2022-06-01 Add prewarm option for additional ssh kitten connections
+      #160 closed 2017-11-01 Errors with neovim when termguicolors is set
+      #2803 closed 2020-06-26 There was an error creating your Issue: title can't be blank. Now it isn’t. And now maybe a bit looooonger than needed.                            Also, some more words here.
+      #2450 closed 2020-03-19 Process pending resize events before sizing viewport on startup
+  atomic+write   16 hit(s) (all listed)
+      #10615 closed 2026-10-06 safe-wrappers.h fixes
+      #10598 closed 2026-10-04 IME: send committed text as bracketed paste when the child requests it
+      #4471 closed 2022-01-07 macOS "Secure Keyboard Entry" doesn't persist across app restarts
+      #8911 closed 2025-08-18 [RFC] Saving and jumping between kitty sessions
+      #720 closed 2018-07-11 Protocol extension: multiple cursors
+      #8701 closed 2025-06-02 Clarification about the graphics protocol
+      #7825 closed 2024-09-05 using `kitten themes --reload-in=all` no longer changes theme of open windows when using nix home manager.
+      #7789 closed 2024-08-26 proposed enhancement: ESC sequence to get actual string length
+      #6638 closed 2023-09-18 themes kitten does not recognize absolute paths
+      #6305 closed 2023-05-26 Permission denied kitty +kitten themes
+      #3948 closed 2021-08-18 [RFC] Shell integration
+      #5239 merged 2022-06-28 Minor fixes, refactorings and docs improvements to recent features
+      #5054 closed 2022-05-04 SSH Not Working
+      #4794 merged 2022-03-07 Minor tweaks to ssh kitten and shell integration
+      #3111 closed 2020-11-19 glkitty - port of the OpenGL gears demo to kitty terminal graphics protocol
+      #1571 closed 2019-04-25 Rewrite compilation code
+  lock+file      76 hit(s) (all listed)
+      #1990 open 2019-09-22 Issue with custom XKB keymap
+      #10437 closed 2026-09-05 Repeated full freeze after ~1-4h: 'file descriptor expected, object (27), message format_table(hu)' on stderr before hang
+      #10571 closed 2026-09-29 MacOS wakes from sleep, Kitty has lost its color scheme
+      #9283 closed 2025-12-11 Blank windows after unlocking system (sometimes) on Tahoe [26.0, 26.1, 26.2]
+      #10168 closed 2026-06-18 Trackpad two-finger scroll starts unintended text selection (Magic Trackpad, Wayland/Hyprland)
+      #10117 merged 2026-06-08 Bump the all-go-deps group with 2 updates
+      #9871 closed 2026-04-14 SSH kitten locks terminal until timeout when unable to connect to remote
+      #9777 closed 2026-03-30 Support for the OSC 9;4 escape sequence
+      #9718 closed 2026-03-20 triggering screen_bell seems to freeze Kitty for  30 seconds
+      #9898 merged 2026-04-20 Bump github/codeql-action from 4 to 4.35.1 in the actions group
+      #10203 merged 2026-06-29 Bump the actions group with 4 updates
+      #2164 closed 2019-11-26 list keyboard shortcuts
+      #9315 merged 2025-12-22 Bump actions/cache from 4 to 5 in the actions group
+      #9567 closed 2026-02-27 Kitty crashes when move window to right/left using Magnet
+      #3248 closed 2021-01-17 [RFC] New keyboard reporting protocol
+      #8837 closed 2025-07-19 Kitty crashes when you are doing resizes
+      #9061 closed 2025-10-02 kitty crashes under macOS 26
+      #8593 closed 2025-04-30 Keys freeze when TMUX + CAPS LOCK is on
+      #1915 closed 2019-08-20 Conditional padding or 'moving the prompt'
+      #9092 closed 2025-10-10 0.43.1 – SIGSEGV – MacOS 26.0.1 – After wake up, windowed mode
+  write+failure  27 hit(s) (all listed)
+      #10601 closed 2026-10-04 OSC 52 under WSL2
+      #10464 closed 2026-09-13 Write to `/tmp` when setting up Kitty integration in `kitten ssh`, not `~/.kitty-ssh-kitten-untar-XXXXXXXXXXXX`
+      #10399 closed 2026-08-24 clipboard protocol: oversized writes are silently truncated but still report DONE, intended?
+      #10474 closed 2026-09-14 [RFC] Content Rendering Protocol with terminal-retained source
+      #10182 closed 2026-06-24 Harden STAT format 4 parsing and improve macOS crash symbolication
+      #9882 closed 2026-04-16 Add tests for watch_for_kitty_config_changes Go function
+      #9869 merged 2026-04-14 Fix DnD memory safety issues, protocol output bugs, and undefined behavior
+      #9802 merged 2026-04-03 Fix timing, memory safety, and tar extraction vulnerabilities
+      #9894 closed 2026-04-19 feat(dnd): implement drag-and-drop kitten
+      #9778 closed 2026-03-30 Crash in apply_selection() during pending mode when scrolling and selecting text on macOS
+      #33 closed 2017-01-14 Graphics rendering
+      #247 closed 2017-12-22 Shells not running in interactive mode on some macOS systems
+      #9327 closed 2025-12-25 Cannot set property OOMPolicy on systemd version < 253
+      #7970 merged 2024-10-13 Add Cursor Trail Feature to Enhance Cursor Visibility
+      #391 closed 2018-03-15 kitty tmux like daemon
+      #7426 closed 2024-05-13 Tests failure with python-3.13.0b1
+      #3948 closed 2021-08-18 [RFC] Shell integration
+      #5607 closed 2022-10-19 Remote SSH bootstrapping support for read-only hosts
+      #5629 closed 2022-10-27 test_bash_integration fails with bash 5.2.0-release
+      #5567 closed 2022-10-09 add support for out-of-source builds
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10513 merged 2026-09-22 tests: accept coreutils >= 9.12 shell-quoted env output in test_ssh_env_vars
+      #10571 closed 2026-09-29 MacOS wakes from sleep, Kitty has lost its color scheme
+      #10584 closed 2026-10-01 [macOS] Broken rendering after idle
+      #10540 closed 2026-09-25 [macOS] System titlebar background becomes transparent with `background_opacity < 1` since 0.49 on macOS 27
+      #10531 closed 2026-09-24 Garbled display on Mac
+      #10576 closed 2026-09-30 macOS arm64: SIGBUS while waiting for Claude Code in 0.46.2 (likely duplicate of #9778)
+      #10511 closed 2026-09-22 [macOS] Custom shader dim-inactive-windows does nothing
+      #10524 closed 2026-09-24 [macOS] Black borders with custom shaders
+      #10545 closed 2026-09-26 macOS: custom dock icon reverts to stock icon after progress bar is cleared
+      #10519 closed 2026-09-23 Secure Input is Always Active: macOS 27
+      #10428 closed 2026-09-01 `bell_path` does not accept quoted paths
+      #10494 closed 2026-09-18 text-sizing protocol issue in tab bar title rendering
+      #10433 closed 2026-09-03 Kitty window cannot closed at macOS 27.
+      #10411 closed 2026-08-27 Can't set the shortcut for the quick access
+      #10395 closed 2026-08-23 Either `add_timer` or `mark_tab_bar_dirty` doesn't work as expected
+      #10539 closed 2026-09-25 macOS: OS window remains covered after focus-window reports it focused
+      #10374 closed 2026-08-19 ci: Add automated Linux package builds (DEB, RPM, Arch) on release
+      #10430 closed 2026-09-01 macOS: dragged file-promise paths die within milliseconds (pasted path unresolvable)
+      #10278 closed 2026-07-23 quick-access-terminal: `edge=none` panel's height shrinks as `margin_top` increases (macOS)
+      #10361 closed 2026-08-14 Option to disable alternate screen buffer
+
+== 51 terms run; 50 returned hits, 12 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

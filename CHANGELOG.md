@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Eighteen tools whose state git does not hold, in four waves on the released v1.9.0: 11 FAIL, 5 PASS, 2 UNKNOWN, and nothing filed upstream** (`spike/dogfood/2026-10-07-user-data-3/`; `docs/target-classes.md`, `spike/dogfood/RUNS.md`, `spike/outcome-funnel.tsv`, the B2 exclusions). Nine FAILs are the truncating open and the kill before the write; ezdxf's `.bak` rotation and libsndfile's in-place WAV lose nothing a rename or a reader does not restore. No FAIL loses data its user cannot get back from the tool's own documented command, so none was reported. roswell, a static image starting a dynamic SBCL, is turned away under `unresolvable_path` as refused by design although `--observe supervised` judges it — the shape #685 records under `oracle_missed_operation`.
+
 ### Changed
 
 - **The CI quickstart pins v1.9.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`). The release lane installs the published v1.9.0 asset instead of v1.8.0's. The pin moves after the release, as on v1.8.0, because the lane downloads the asset and the asset exists only once the release is published. Nothing else in the lane changes.

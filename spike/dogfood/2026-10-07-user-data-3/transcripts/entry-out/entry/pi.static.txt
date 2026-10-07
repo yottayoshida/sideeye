@@ -1,0 +1,2 @@
+static: /opt/node22/bin/pi: Node.js script executable, ASCII text
+next: sideeye explore --state /s/aux/home/.pi --cwd "/s/pi-in" --operation "pi install /s/pi-in/ext2" \

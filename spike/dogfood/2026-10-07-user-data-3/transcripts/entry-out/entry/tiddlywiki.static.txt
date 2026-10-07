@@ -1,0 +1,2 @@
+static: /usr/local/bin/tiddlywiki: Node.js script executable, ASCII text
+next: sideeye explore --state /s/tw --cwd "/s/tw-in" --operation "tiddlywiki --load /s/tw/wiki.html --deletetiddlers [[Beta]] --output /s/tw --render $:/core/save/all wiki.html text/plain" \

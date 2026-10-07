@@ -1,0 +1,5 @@
+sideeye 1.9.0 (trace contract v18)
+engine path: /opt/se/sideeye-v1.9.0-aarch64-linux/sideeye
+install-sideeye: reading yottayoshida/sideeye release v1.9.0 (unauthenticated; shares this runner's rate limit)
+install-sideeye: downloaded digest matches (2960d33d0f32352ac635dd8b14f1256678e444691f5f779558dfc0f089078bdb)
+install-sideeye: sideeye 1.9.0 (trace contract v18)

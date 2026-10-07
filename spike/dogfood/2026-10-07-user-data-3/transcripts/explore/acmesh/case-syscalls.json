@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/acme/conf",
+    "operation": "/s/acme/acme.sh --home /s/acme --config-home /s/acme/conf --set-default-ca --server letsencrypt",
+    "cwd": "/s/acme-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 4,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/acme/conf/account.conf",
+  "before_class": "write",
+  "before_path": "/s/acme/conf/account.conf",
+  "violation": "hybrid"
+}

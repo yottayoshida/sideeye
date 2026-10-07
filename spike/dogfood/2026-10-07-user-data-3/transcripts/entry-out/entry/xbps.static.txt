@@ -1,0 +1,2 @@
+static: /opt/bin/xbps-pkgdb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=61a148a2a60e2c86fae78b58ad0577cc83e85a74, for GNU/Linux 3.7.0, with debug_info, not stripped
+next: sideeye explore --state /s/xbps/root/var/db/xbps --cwd "/s/xbps-in" --operation "xbps-pkgdb -r /s/xbps/root -m hold hello" \

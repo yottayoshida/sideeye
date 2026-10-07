@@ -1,0 +1,6 @@
+[world]
+state = "/s/easyrsa/pki"
+
+[define]
+operation = "easyrsa revoke c1"
+cwd       = "/s/easyrsa-in"

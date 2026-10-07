@@ -1,0 +1,440 @@
+== novelty pre-scan: streetsidesoftware/cspell
+== date: 2026-10-07T08:03:43Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9298 merged 2026-09-27 chore: Keep ESLint out of git worktrees
+      #9339 merged 2026-09-30 ci: Install pnpm with pnpm/setup for integration tests
+      #4639 closed 2023-07-15 [Bug]: `cspell` crashes under pnpm due to undeclared dependency on `@cspell/cspell-types`
+      #8778 closed 2026-04-03 [Bug]: `Linter Error: readline was closed` on Node 24
+      #2278 closed 2022-01-18 ci: Upgrade `typedoc`
+      #2285 closed 2022-01-20 CSpell does not check all files if one is missing with `--file-list`
+      #8907 closed 2026-06-12 [Bug]: Ignored words with unicode characters not ignored when using Github Actions
+      #6059 closed 2024-08-07 Typo: "Most likely it is already install."
+      #3847 closed 2022-11-16 Safari fails
+      #5375 closed 2024-03-13 CSpell is not running on Node 12
+      #9308 merged 2026-09-28 chore: Detect hidden comments in PR descriptions
+      #2011 closed 2021-11-23 `[cspell-types]` Interfaces `*Source` incorrectly extends interface `BaseSource`
+      #3269 closed 2022-07-20 Unexpected warnings in clean quick setup
+      #5151 closed 2024-01-08 [Bug]: cspell json file is ignored entirely when the json file has syntactical errors
+      #4580 closed 2023-06-26 [Bug]: Can't add "re:Inforce" to dictionary
+      #2350 closed 2022-01-27 Cspell does not find any files
+      #2360 closed 2022-01-30 Cspell performances with large (7k) words list in cspell configuration 
+      #4184 closed 2023-02-16 [Bug]: Possible breaking change for node v14.16.0
+      #5334 closed 2024-03-01 [Bug]: Failed to resolve file /node_modules/@cspell/dict-aws/cspell-ext.json
+      #2341 closed 2022-01-26 Missing typescript definitions
+  corrupt        5 hit(s) (all listed)
+      #2800 closed 2022-05-07 Refactoring docs + spring cleaning + some rewriting
+      #8562 merged 2026-02-11 fix: Add convertToBtrie method to trie-lib
+      #8218 merged 2025-12-24 feat: auto load btrie files if available
+      #8204 merged 2025-12-22 feat: Add Support reading / writing bTrie files
+      #8947 closed 2026-07-09 chore: bump the development-dependencies group with 12 updates
+  corruption     3 hit(s) (all listed)
+      #2800 closed 2022-05-07 Refactoring docs + spring cleaning + some rewriting
+      #8487 merged 2026-02-01 chore: bump the development-dependencies group across 1 directory with 3 updates
+      #8484 closed 2026-02-01 chore: bump the development-dependencies group with 6 updates
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9410 open 2026-10-05 chore: bump the action-dependencies-version group across 1 directory with 2 updates
+      #9401 open 2026-10-01 chore: bump eslint-plugin-unicorn from 74.0.0 to 76.0.0
+      #9399 merged 2026-10-01 chore: bump simple-git from 3.36.0 to 4.0.2
+      #9398 open 2026-10-01 chore: bump the development-dependencies group with 4 updates
+      #9167 merged 2026-09-03 chore: bump mocha from 11.8.0 to 12.0.0
+      #8980 closed 2026-08-09 chore: bump esbuild from 0.28.1 to 0.28.2
+      #9018 merged 2026-08-18 chore: bump streetsidesoftware/cspell-action from 8 to 9 in the action-dependencies-version group across 1 directory
+      #8978 merged 2026-08-04 chore: bump the action-dependencies-version group across 1 directory with 5 updates
+      #9012 merged 2026-08-13 chore: bump eslint-plugin-unicorn from 70.0.0 to 73.0.0
+      #8932 closed 2026-06-25 chore: bump the action-dependencies-version group across 4 directories with 4 updates
+      #8979 closed 2026-08-06 chore: bump the development-dependencies group across 1 directory with 13 updates
+      #8908 closed 2026-06-12 chore: bump esbuild from 0.28.0 to 0.28.1
+      #8906 merged 2026-06-11 chore: bump eslint-plugin-n from 17.24.0 to 18.1.0
+      #8931 closed 2026-06-23 chore: bump the action-dependencies-version group across 4 directories with 3 updates
+      #8889 closed 2026-06-04 chore: bump eslint-plugin-n from 17.24.0 to 18.1.0
+      #8982 merged 2026-08-09 chore: bump the development-dependencies group across 1 directory with 16 updates
+      #8926 closed 2026-06-18 chore: bump csv-parse from 6.2.1 to 7.0.0
+      #8925 merged 2026-06-18 chore: bump commander from 14.0.3 to 15.0.0
+      #8843 merged 2026-05-21 chore: bump dessant/lock-threads from 6.0.0 to 6.0.1 in the action-dependencies-version group across 1 directory
+      #8969 closed 2026-07-23 chore: bump the development-dependencies group across 1 directory with 12 updates
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9410 open 2026-10-05 chore: bump the action-dependencies-version group across 1 directory with 2 updates
+      #9401 open 2026-10-01 chore: bump eslint-plugin-unicorn from 74.0.0 to 76.0.0
+      #9399 merged 2026-10-01 chore: bump simple-git from 3.36.0 to 4.0.2
+      #9398 open 2026-10-01 chore: bump the development-dependencies group with 4 updates
+      #9167 merged 2026-09-03 chore: bump mocha from 11.8.0 to 12.0.0
+      #8980 closed 2026-08-09 chore: bump esbuild from 0.28.1 to 0.28.2
+      #9018 merged 2026-08-18 chore: bump streetsidesoftware/cspell-action from 8 to 9 in the action-dependencies-version group across 1 directory
+      #8978 merged 2026-08-04 chore: bump the action-dependencies-version group across 1 directory with 5 updates
+      #9012 merged 2026-08-13 chore: bump eslint-plugin-unicorn from 70.0.0 to 73.0.0
+      #8932 closed 2026-06-25 chore: bump the action-dependencies-version group across 4 directories with 4 updates
+      #8979 closed 2026-08-06 chore: bump the development-dependencies group across 1 directory with 13 updates
+      #8908 closed 2026-06-12 chore: bump esbuild from 0.28.0 to 0.28.1
+      #8906 merged 2026-06-11 chore: bump eslint-plugin-n from 17.24.0 to 18.1.0
+      #8931 closed 2026-06-23 chore: bump the action-dependencies-version group across 4 directories with 3 updates
+      #8889 closed 2026-06-04 chore: bump eslint-plugin-n from 17.24.0 to 18.1.0
+      #8982 merged 2026-08-09 chore: bump the development-dependencies group across 1 directory with 16 updates
+      #8926 closed 2026-06-18 chore: bump csv-parse from 6.2.1 to 7.0.0
+      #8836 closed 2026-05-14 chore: bump the production-dependencies group across 1 directory with 4 updates
+      #8925 merged 2026-06-18 chore: bump commander from 14.0.3 to 15.0.0
+      #8843 merged 2026-05-21 chore: bump dessant/lock-threads from 6.0.0 to 6.0.1 in the action-dependencies-version group across 1 directory
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2709 open 2022-04-12 The `useGitIgnore` setting should also consider `.git/info/exclude
+      #5023 open 2023-11-28 Automatic suggestion fixes 
+      #7235 open 2025-04-25 💡: Follow xdg standards
+      #4627 merged 2023-07-12 fix: Fix empty build target
+      #6680 merged 2024-12-16 fix: Make sure empty string is not checked.
+      #2150 merged 2021-12-29 fix: Make sure help is not shown if the file list is empty.
+      #9152 merged 2026-09-02 chore: bump brace-expansion from 5.0.6 to 5.0.9 in /test-packages/yarn/yarn2/test-eslint-plugin in the npm_and_yarn group across 1 directory
+      #6589 closed 2024-11-26 [Bug]: 8.16.0 does not respect `--no-color` option
+      #1813 open 2021-09-29 [Feature request] Add docs for cspell-lib so that it's easier to use it as a library
+      #9080 merged 2026-08-27 feat: Add `--force-check` cli option
+      #8967 merged 2026-07-21 chore: bump brace-expansion from 5.0.6 to 5.0.9 in /examples/yarn/cspell-eslint-plugin in the npm_and_yarn group across 1 directory
+      #4931 closed 2023-10-27 Bug]: Failed to read config file of unexisting folder
+      #1850 closed 2021-10-08 Accept files list from stdin
+      #127 closed 2019-11-19 How to use cspell for git commit-msg
+      #9166 merged 2026-09-03 chore: bump eslint-plugin-unicorn from 73.0.0 to 74.0.0
+      #4012 merged 2023-01-13 feat: Switch from `glob` to `fast-glob`
+      #9281 closed 2026-09-27 Assertion in isWordTooShort for Thai text with useIntlWordSegmentation
+      #7194 closed 2025-04-17 [Bug]: cspell fails when have a directory with name constructor in it
+      #8975 closed 2026-07-31 [Bug]: `findRepoRoot` prefers a distant `.git` directory over a worktree's own `.git` file
+      #7084 closed 2025-03-27 [Bug]: "Linter Error: Invalid URL" error for remote dictionary (when input is stdin and gitignore support is enabled) since 8.18.0
+  atomic         12 hit(s) (all listed)
+      #3943 closed 2022-12-30 How to bundle CSpell with WebPack?
+      #5918 merged 2024-07-15 chore: bump configstore from 6.0.0 to 7.0.0
+      #6281 closed 2024-09-24 chore: bump eslint and @types/eslint
+      #6370 closed 2024-10-14 chore: bump eslint and @types/eslint
+      #4073 merged 2023-01-30 chore(deps-dev): bump @vitest/coverage-istanbul from 0.27.3 to 0.28.3
+      #2073 closed 2021-12-07 build(deps-dev): bump eslint from 7.32.0 to 8.4.1
+      #2072 merged 2021-12-06 build(deps-dev): bump eslint from 7.32.0 to 8.4.0
+      #2069 closed 2021-12-06 build(deps-dev): bump eslint from 7.32.0 to 8.4.0
+      #56 closed 2018-07-10 enable cspell to be used as a pre-commit hook
+      #1210 closed 2021-05-10 build(deps-dev): bump eslint from 7.25.0 to 7.26.0
+      #1212 closed 2021-05-10 build(deps-dev): bump eslint from 7.25.0 to 7.26.0
+      #766 closed 2020-12-21 build(deps-dev): bump eslint from 7.15.0 to 7.16.0
+  atomically     1 hit(s) (all listed)
+      #5918 merged 2024-07-15 chore: bump configstore from 6.0.0 to 7.0.0
+  interrupted    2 hit(s) (all listed)
+      #8976 merged 2026-07-31 fix: Find the nearest `.git` when a worktree is inside a clone
+      #5552 merged 2024-05-02 chore: bump actions/stale from 5 to 9
+  interrupt      3 hit(s) (all listed)
+      #8976 merged 2026-07-31 fix: Find the nearest `.git` when a worktree is inside a clone
+      #5552 merged 2024-05-02 chore: bump actions/stale from 5 to 9
+      #4856 closed 2023-09-22 chore(deps): bump react-dom from 17.0.2 to 18.1.0
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #8387 merged 2026-01-19 refactor: Refactor CLI to make it easier to spell check files in parallel
+  ctrl-c         4 hit(s) (all listed)
+      #6170 closed 2024-08-26 chore: bump rollup from 4.21.0 to 4.21.1
+      #4655 closed 2023-07-17 chore(deps-dev): bump vitest from 0.31.4 to 0.33.0
+      #158 closed 2019-12-24 npm run test-watch not working on Windows
+      #487 merged 2020-10-31 ci: debug coveralls code coverage issue
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8652 open 2026-02-26 💡: Native Oxlint plugin
+      #6999 closed 2025-03-07 [Bug]: Twice as slow when used as ESLint plugin
+      #8969 closed 2026-07-23 chore: bump the development-dependencies group across 1 directory with 12 updates
+      #373 merged 2020-10-08 feat: specify dictionaries with in document settings
+      #372 merged 2020-10-08 Enforce whitespace after language in-doc setting
+      #6251 closed 2024-09-16 chore: bump @eslint/js from 8.57.0 to 8.57.1
+      #5553 merged 2024-05-02 ci: Fix Lint -- Workflow Bot
+      #6003 closed 2024-07-29 chore: bump @eslint/js from 8.57.0 to 10.0.0
+      #6087 closed 2024-08-12 chore: bump eslint and @types/eslint
+      #5010 merged 2023-11-27 chore: bump @lerna-lite/cli from 2.7.2 to 3.0.0
+      #5215 merged 2024-01-31 chore: bump codecov/codecov-action from 3.1.6 to 4.0.0
+      #4212 closed 2023-02-20 chore(deps-dev): update vite requirement from ^4.1.2 to ^4.1.3
+      #2744 merged 2022-04-25 build(deps): bump github/codeql-action from 1 to 2
+      #2743 merged 2022-04-25 build(deps): bump github/codeql-action from 1 to 2
+      #240 closed 2020-07-21 Bump codecov from 3.6.5 to 3.7.1
+      #249 merged 2020-08-12 Bump actions/setup-node from v1 to v2.1.1
+      #266 merged 2020-08-13 Bump ts-json-schema-generator from 0.65.0 to 0.71.1
+      #264 merged 2020-08-13 Bump commander from 4.1.1 to 6.0.0
+      #209 closed 2020-04-06 Update packages
+      #212 merged 2020-04-11 ci: clean up packages
+  outage         1 hit(s) (all listed)
+      #5334 closed 2024-03-01 [Bug]: Failed to resolve file /node_modules/@cspell/dict-aws/cspell-ext.json
+  ENOSPC         0 hit(s)
+  disk           14 hit(s) (all listed)
+      #9369 open 2026-09-30 cspell-gitignore: Match git's ignore rules more closely
+      #7841 open 2025-09-12 Accept extra dictionaries via `CSPELL_DICT_PATH` env var and `--dict-path`
+      #1981 closed 2021-11-09 Feature Request: Add Stream Support
+      #6262 closed 2024-09-19 💡: problems invoking cspell from api
+      #4084 closed 2023-02-01 Lint piped-in content in the context of a file (filename)?
+      #8204 merged 2025-12-22 feat: Add Support reading / writing bTrie files
+      #8974 closed 2026-07-30 chore: bump the action-dependencies-version group across 1 directory with 6 updates
+      #7856 closed 2025-09-22 chore: bump typedoc-plugin-markdown from 4.8.1 to 4.9.0
+      #8849 closed 2026-05-23 chore: bump the development-dependencies group across 1 directory with 14 updates
+      #8844 closed 2026-05-21 chore: bump the development-dependencies group across 1 directory with 13 updates
+      #4402 closed 2023-04-15 CSpell 7.0.0 Release
+      #1763 merged 2021-09-24 feat: add --cache option to lint only changed files
+      #37 closed 2018-04-27 ability to spell from stdin
+      #237 closed 2020-06-23 Wrong check with stdin
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9163 merged 2026-09-03 fix: Only hide code-like partial words
+      #4102 closed 2023-02-04 fix(lint): make reporter parameter partial
+      #7515 closed 2025-06-21 [Bug]: CSpell incorrectly flags partial words from PascalCase compound words
+      #9175 merged 2026-09-04 chore: Prepare Release v10.3.0-alpha.0 (auto-deploy)
+      #7965 closed 2025-11-06 [Bug]: spell cannot find .mts config file, regardless if runtime supports typescript
+      #3306 closed 2022-07-27 Consider allowing `cspell-lib` to create settings from object.
+      #9186 merged 2026-09-04 chore: Prepare Release v10.3.0 (auto-deploy)
+      #3588 closed 2022-09-12 Markdown - Ignore links
+      #8948 merged 2026-07-09 chore: bump conventional-changelog-conventionalcommits from 9.3.1 to 10.2.1
+      #8616 merged 2026-02-22 feat: Substitution Part 3
+      #8559 merged 2026-02-11 refactor: Use standard dispose
+      #8659 merged 2026-02-27 chore: bump the npm_and_yarn group across 2 directories with 1 update
+      #8259 merged 2025-12-30 fix: Support string prefixes when walking nodes
+      #8777 merged 2026-04-02 chore: bump eslint-plugin-unicorn from 63.0.0 to 64.0.0
+      #8352 closed 2026-01-13 chore: bump typescript-eslint from 8.52.0 to 8.53.0
+      #8354 closed 2026-01-13 chore: bump @typescript-eslint/parser from 8.52.0 to 8.53.0
+      #8837 closed 2026-05-14 chore: bump the development-dependencies group across 1 directory with 11 updates
+      #7654 merged 2025-07-20 chore: Improve the perf reporting.
+      #8849 closed 2026-05-23 chore: bump the development-dependencies group across 1 directory with 14 updates
+      #8844 closed 2026-05-21 chore: bump the development-dependencies group across 1 directory with 13 updates
+  incomplete     32 hit(s) (all listed)
+      #3311 merged 2022-07-29 feat: Support Ignoring characters before checking
+      #8556 merged 2026-02-10 refactor: Experiment with bundling default dictionaries
+      #2234 closed 2022-01-10 How do you specify one-to-one recommendations？
+      #9244 merged 2026-09-15 fix: Plugin
+      #8527 merged 2026-02-06 fix: stemming rules part 1
+      #8330 merged 2026-01-09 fix: Improve word lookup performance when not found
+      #8265 merged 2026-01-01 fix: Make endian required when encoding a StringTable
+      #8273 merged 2026-01-01 feat: ESLint-plugin -- Add `report` option to be able to control the reporting level (matching the CLI): "all", "simple", "typos", "flagged".
+      #8423 merged 2026-01-22 fix: Add NotifyEmitter
+      #8259 merged 2025-12-30 fix: Support string prefixes when walking nodes
+      #8653 closed 2026-02-26 chore: bump ts-json-schema-generator from 2.4.0 to 2.5.0 in the production-dependencies group
+      #8611 closed 2026-02-21 chore: bump ts-json-schema-generator from 2.4.0 to 2.5.0 in the production-dependencies group across 1 directory
+      #8597 closed 2026-02-17 chore: bump ts-json-schema-generator from 2.4.0 to 2.5.0 in the production-dependencies group across 1 directory
+      #8595 closed 2026-02-17 chore: bump the production-dependencies group across 1 directory with 2 updates
+      #8582 closed 2026-02-15 chore: bump ts-json-schema-generator from 2.4.0 to 2.5.0 in the production-dependencies group across 1 directory
+      #8572 closed 2026-02-13 chore: bump the production-dependencies group across 1 directory with 2 updates
+      #8601 closed 2026-02-19 chore: bump the production-dependencies group across 1 directory with 3 updates
+      #8534 closed 2026-02-06 chore: bump ts-json-schema-generator from 2.4.0 to 2.5.0 in the production-dependencies group across 1 directory
+      #8579 closed 2026-02-14 chore: bump the production-dependencies group across 1 directory with 2 updates
+      #8576 closed 2026-02-14 chore: bump the production-dependencies group across 1 directory with 3 updates
+  dataloss       0 hit(s)
+  recover        7 hit(s) (all listed)
+      #8864 closed 2026-05-28 chore: bump the development-dependencies group with 10 updates
+      #8849 closed 2026-05-23 chore: bump the development-dependencies group across 1 directory with 14 updates
+      #8844 closed 2026-05-21 chore: bump the development-dependencies group across 1 directory with 13 updates
+      #8832 closed 2026-05-08 chore: bump the action-dependencies-version group across 6 directories with 9 updates
+      #8835 merged 2026-05-13 chore: bump the action-dependencies-version group across 6 directories with 9 updates
+      #2855 merged 2022-05-19 build(deps): bump nokogiri from 1.13.4 to 1.13.6 in /docs
+      #2517 merged 2022-02-26 build(deps): bump nokogiri from 1.13.1 to 1.13.3 in /docs
+  recovery       1 hit(s) (all listed)
+      #2517 merged 2022-02-26 build(deps): bump nokogiri from 1.13.1 to 1.13.3 in /docs
+  rollback       2 hit(s) (all listed)
+      #5919 closed 2024-07-15 chore: bump minimatch from 9.0.5 to 10.0.1
+      #56 closed 2018-07-10 enable cspell to be used as a pre-commit hook
+  resume         2 hit(s) (all listed)
+      #7399 closed 2025-05-26 💡: Add separate options for case sensitivity and accent sensitivity in spell checking
+      #7341 closed 2025-05-16 💡: `caseSensitive` word by word
+  half-written   1 hit(s) (all listed)
+      #9290 closed 2026-09-27 chore: Release notes: remove hidden comments and maintainer blocks
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #9032 merged 2026-08-20 chore: bump cosmiconfig from 9.0.2 to 10.0.0
+      #8752 merged 2026-03-24 chore: clean up imports
+      #7105 closed 2025-03-31 chore: bump @typescript-eslint/parser from 8.28.0 to 8.29.0
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #8752 merged 2026-03-24 chore: clean up imports
+  destroy        6 hit(s) (all listed)
+      #7584 closed 2025-07-08 💡: Support ts config files
+      #4848 merged 2023-09-21 chore(deps): bump peter-evans/create-pull-request from 4.2.3 to 5.0.2 in /.github/actions/pr
+      #4371 merged 2023-04-04 chore(deps): bump peter-evans/create-pull-request from 4.2.4 to 5.0.0
+      #1804 closed 2021-09-28 build(deps-dev): bump jest from 27.2.2 to 27.2.3
+      #1805 closed 2021-09-28 build(deps): bump jest-diff from 27.2.2 to 27.2.3
+      #1803 merged 2021-09-28 build(deps): bump jest-diff from 27.2.2 to 27.2.3
+  destroys       1 hit(s) (all listed)
+      #7584 closed 2025-07-08 💡: Support ts config files
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9345 merged 2026-09-30 chore: bump brace-expansion from 5.0.9 to 5.0.12 in /examples/yarn/cspell-eslint-plugin in the npm_and_yarn group across 1 directory
+      #9275 merged 2026-09-21 chore: bump codecov/codecov-action from 7.1.0 to 7.1.1 in the action-dependencies-version group across 1 directory
+      #8980 closed 2026-08-09 chore: bump esbuild from 0.28.1 to 0.28.2
+      #9265 merged 2026-09-17 chore: bump codecov/codecov-action from 7.0.0 to 7.1.0 in the action-dependencies-version group across 1 directory
+      #9410 open 2026-10-05 chore: bump the action-dependencies-version group across 1 directory with 2 updates
+      #9011 closed 2026-08-13 chore: bump @types/node from 22.20.1 to 26.2.0
+      #9032 merged 2026-08-20 chore: bump cosmiconfig from 9.0.2 to 10.0.0
+      #9398 open 2026-10-01 chore: bump the development-dependencies group with 4 updates
+      #9152 merged 2026-09-02 chore: bump brace-expansion from 5.0.6 to 5.0.9 in /test-packages/yarn/yarn2/test-eslint-plugin in the npm_and_yarn group across 1 directory
+      #8437 merged 2026-01-26 fix: Conditionally compress and build bTrie
+      #9399 merged 2026-10-01 chore: bump simple-git from 3.36.0 to 4.0.2
+      #8964 closed 2026-07-16 bump the development-dependencies group across 1 directory with 9 updates
+      #8963 closed 2026-07-16 bump the production-dependencies group across 1 directory with 3 updates
+      #9166 merged 2026-09-03 chore: bump eslint-plugin-unicorn from 73.0.0 to 74.0.0
+      #9087 merged 2026-08-27 chore: bump inject-markdown from 4.0.0 to 5.0.2
+      #8973 merged 2026-07-30 chore: bump chalk from 5.6.2 to 6.0.0
+      #9400 merged 2026-10-01 chore: bump inject-markdown from 5.0.3 to 6.1.0
+      #9156 merged 2026-09-03 chore: bump the npm_and_yarn group across 2 directories with 1 update
+      #8905 closed 2026-06-11 chore: bump @types/node from 22.19.20 to 25.9.3
+      #8888 merged 2026-06-04 chore: bump lorem-ipsum from 2.0.10 to 3.0.0
+  clobber        1 hit(s) (all listed)
+      #6250 closed 2024-09-16 chore: bump vite from 5.4.5 to 5.4.6
+  blank          74 hit(s) (all listed)
+      #9395 open 2026-10-01 Test the Detect Hidden Comments check on a real PR, then decide whether to require it
+      #9308 merged 2026-09-28 chore: Detect hidden comments in PR descriptions
+      #9291 closed 2026-09-27 chore: PR template, title check, and PR body rules
+      #9272 merged 2026-09-21 chore: Add feature-adr skill for structured feature design
+      #8976 merged 2026-07-31 fix: Find the nearest `.git` when a worktree is inside a clone
+      #9022 merged 2026-08-19 chore: Secure pnpm settings
+      #8830 merged 2026-05-07 chore: bump comment-json from 4.6.2 to 5.0.0
+      #8366 merged 2026-01-14 fix: Add CSpellRPCServer and CSpellRPCClient classes
+      #9402 merged 2026-10-02 fix: Recognize MATLAB files
+      #8423 merged 2026-01-22 fix: Add NotifyEmitter
+      #9017 merged 2026-08-18 fix: allow substitutions across ignored ranges
+      #8259 merged 2025-12-30 fix: Support string prefixes when walking nodes
+      #8243 merged 2025-12-29 fix: Add StringTable and refactor BinaryFormat
+      #9244 merged 2026-09-15 fix: Plugin
+      #9267 merged 2026-09-20 fix: Report errors
+      #9196 merged 2026-09-10 fix: Split words on soft hyphens
+      #8903 closed 2026-06-11 chore: bump the development-dependencies group with 3 updates
+      #8945 merged 2026-07-08 feat(cspell-junit-reporter): add JUnit XML reporter package
+      #9144 merged 2026-09-01 fix: support soft hyphens in the word splitter
+      #8265 merged 2026-01-01 fix: Make endian required when encoding a StringTable
+  unreadable     2 hit(s) (all listed)
+      #6589 closed 2024-11-26 [Bug]: 8.16.0 does not respect `--no-color` option
+      #8924 closed 2026-06-18 chore: bump eslint-plugin-unicorn from 64.0.0 to 67.0.0
+  garbage        10 hit(s) (all listed)
+      #9293 merged 2026-09-27 refactor: Use less memory when checking short word pieces
+      #3804 merged 2022-11-03 feat: Improve Memory Usage
+      #8866 merged 2026-05-29 chore: bump diff from 8.0.4 to 9.0.0
+      #8788 merged 2026-04-05 chore: bump esbuild from 0.27.7 to 0.28.0 in the development-dependencies group across 1 directory
+      #8774 closed 2026-04-02 chore: bump the development-dependencies group with 5 updates
+      #8784 closed 2026-04-05 chore: bump the development-dependencies group across 1 directory with 7 updates
+      #7530 merged 2025-06-24 chore: bump jest-diff from 29.7.0 to 30.0.2
+      #7533 closed 2025-06-24 chore: bump jest and @types/jest
+      #7141 merged 2025-04-08 chore: bump react and @types/react
+      #3770 merged 2022-10-20 chore(deps): bump nokogiri from 1.13.7 to 1.13.9 in /docs
+  mangled        4 hit(s) (all listed)
+      #378 closed 2020-10-11 build(deps-dev): bump webpack from 4.44.2 to 5.0.0
+      #379 closed 2020-10-11 build(deps-dev): bump webpack from 4.44.2 to 5.0.0
+      #389 closed 2020-10-14 build(deps-dev): bump webpack from 4.44.2 to 5.1.0
+      #388 closed 2020-10-14 build(deps-dev): bump webpack from 4.44.2 to 5.1.0
+  contents       32 hit(s) (all listed)
+      #7841 open 2025-09-12 Accept extra dictionaries via `CSPELL_DICT_PATH` env var and `--dict-path`
+      #9189 merged 2026-09-05 fix: Add dictionary kind: suggest-words
+      #9309 merged 2026-09-28 chore: Label per package, and bugs links to its open issues
+      #3197 closed 2022-07-05 Why are the following words not recognized: alias, media and entries?
+      #4084 closed 2023-02-01 Lint piped-in content in the context of a file (filename)?
+      #62 closed 2018-08-17 How to disable/remove an entry from the default value for ignoreRegExpList
+      #4082 closed 2023-02-01 v2.15 ignores wrong files
+      #3943 closed 2022-12-30 How to bundle CSpell with WebPack?
+      #9186 merged 2026-09-04 chore: Prepare Release v10.3.0 (auto-deploy)
+      #2537 closed 2022-03-04 React components in MDX files are not ignored
+      #6353 closed 2024-10-11 [Bug]: no files found for v8.15.0
+      #8868 merged 2026-05-30 chore: fix labeler when it comes from a fork
+      #5780 merged 2024-06-19 fix: Make sure binary files are not checked.
+      #8330 merged 2026-01-09 fix: Improve word lookup performance when not found
+      #8680 merged 2026-03-06 feat: make flatpack diff friendly
+      #8508 merged 2026-02-03 Add Copilot coding agent onboarding documentation
+      #8762 merged 2026-03-26 chore: bump jsdom from 28.1.0 to 29.0.1
+      #6957 merged 2025-02-24 chore: bump peter-evans/create-pull-request from 7.0.6 to 7.0.7 in /.github/actions/pr
+      #6738 merged 2025-01-03 chore: bump typedoc-plugin-markdown from 4.3.2 to 4.4.1
+      #6733 closed 2024-12-30 chore: bump typedoc-plugin-markdown from 4.3.2 to 4.4.0
+  in-place       54 hit(s) (all listed)
+      #2738 open 2022-04-25 Document "files" options (and all other missing options) in CSpell configuration
+      #7023 open 2025-01-12  Support Helix through a LSP
+      #26 open 2018-02-02 Possible to bypass string values?
+      #7235 open 2025-04-25 💡: Follow xdg standards
+      #1317 open 2021-06-07 New `add` words command option
+      #4942 open 2023-11-02 Allow pluralisation of words in the dictionary without explicitly adding the plurals as additional entries
+      #9293 merged 2026-09-27 refactor: Use less memory when checking short word pieces
+      #6643 open 2024-12-06 💡:  Add grammar check exclusion options
+      #9289 merged 2026-09-27 fix: Thai text and substitutions are checked and reported correctly
+      #9376 merged 2026-09-30 fix: Deprecate `cspell-lib/rpc`; import from `@cspell/rpc`
+      #9339 merged 2026-09-30 ci: Install pnpm with pnpm/setup for integration tests
+      #9291 closed 2026-09-27 chore: PR template, title check, and PR body rules
+      #9378 merged 2026-09-30 chore: Prepare Release v10.4.0-alpha.1 (auto-deploy)
+      #8945 merged 2026-07-08 feat(cspell-junit-reporter): add JUnit XML reporter package
+      #9277 merged 2026-09-24 chore: Prepare Release v10.3.5 (auto-deploy)
+      #2800 closed 2022-05-07 Refactoring docs + spring cleaning + some rewriting
+      #2307 merged 2022-01-24 feat: Add `failFast` config option to exit as soon as an issue encountered
+      #9164 closed 2026-09-03 [Bug]: a listed word is no longer accepted inside a `.`, `-` or `_` compound
+      #4284 closed 2023-03-05 Allow configuration file in `.config` directory
+      #7563 closed 2025-07-02 💡: Support TOML for config files
+  unclean        0 hit(s)
+  shutdown       4 hit(s) (all listed)
+      #8387 merged 2026-01-19 refactor: Refactor CLI to make it easier to spell check files in parallel
+      #8760 merged 2026-03-26 chore: bump webpack-cli from 6.0.1 to 7.0.2
+      #1379 closed 2021-06-28 build(deps-dev): bump webpack from 5.40.0 to 5.41.0
+      #1380 closed 2021-06-30 build(deps-dev): bump webpack from 5.40.0 to 5.41.1
+  reboot         0 hit(s)
+  disk+full      5 hit(s) (all listed)
+      #9369 open 2026-09-30 cspell-gitignore: Match git's ignore rules more closely
+      #8974 closed 2026-07-30 chore: bump the action-dependencies-version group across 1 directory with 6 updates
+      #8849 closed 2026-05-23 chore: bump the development-dependencies group across 1 directory with 14 updates
+      #8844 closed 2026-05-21 chore: bump the development-dependencies group across 1 directory with 13 updates
+      #7856 closed 2025-09-22 chore: bump typedoc-plugin-markdown from 4.8.1 to 4.9.0
+  data+loss      1 hit(s) (all listed)
+      #7913 closed 2025-10-19 chore: bump eslint from 8.57.1 to 9.38.0
+  partial+write  4 hit(s) (all listed)
+      #8616 merged 2026-02-22 feat: Substitution Part 3
+      #8837 closed 2026-05-14 chore: bump the development-dependencies group across 1 directory with 11 updates
+      #8849 closed 2026-05-23 chore: bump the development-dependencies group across 1 directory with 14 updates
+      #8844 closed 2026-05-21 chore: bump the development-dependencies group across 1 directory with 13 updates
+  crash+safe     4 hit(s) (all listed)
+      #5825 closed 2024-06-28 [Bug]: failed with 'time-out'
+      #8689 merged 2026-03-10 chore: bump the production-dependencies group across 1 directory with 7 updates
+      #2171 closed 2022-01-03 build(deps-dev): bump eslint-plugin-import from 2.25.3 to 2.25.4
+      #1244 closed 2021-05-17 build(deps-dev): bump eslint-plugin-import from 2.22.1 to 2.23.2
+  atomic+write   3 hit(s) (all listed)
+      #3943 closed 2022-12-30 How to bundle CSpell with WebPack?
+      #5918 merged 2024-07-15 chore: bump configstore from 6.0.0 to 7.0.0
+      #56 closed 2018-07-10 enable cspell to be used as a pre-commit hook
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9407 open 2026-10-04 ci: Workflow Bot -- Update PNPM (main)
+      #9403 open 2026-10-02 ci: Workflow Bot -- Update Yarn (main)
+      #9360 open 2026-09-30 ci: Workflow Bot -- Update ALL Dependencies (main)
+      #5833 open 2024-06-30 Glob Support for URLs
+      #1320 open 2021-06-08 Consider Ignoring Auto-generated Yarn Files When usePnP is True
+      #9405 open 2026-10-02 fix: Workflow Bot -- Update Dictionaries (main)
+      #9336 merged 2026-09-29 ci: Workflow Bot -- Update Yarn (main)
+      #9383 merged 2026-09-30 ci: Workflow Bot -- Update PNPM (main)
+      #9279 merged 2026-09-26 ci: Workflow Bot -- Update Yarn (main)
+      #9346 merged 2026-09-30 ci: Workflow Bot -- Update ALL Dependencies (main)
+      #9255 merged 2026-09-16 ci: Workflow Bot -- Update Yarn (main)
+      #9239 merged 2026-09-13 ci: Workflow Bot -- Update Yarn (main)
+      #9201 merged 2026-09-11 ci: Workflow Bot -- Update Yarn (main)
+      #9204 merged 2026-09-12 ci: Workflow Bot -- Update PNPM (main)
+      #9338 merged 2026-09-29 ci: Workflow Bot -- Update ALL Dependencies (main)
+      #9266 merged 2026-09-18 fix: Workflow Bot -- Update Dictionaries (main)
+      #9179 merged 2026-09-04 ci: Workflow Bot -- Update Yarn (main)
+      #9218 merged 2026-09-12 fix: Workflow Bot -- Update Dictionaries (main)
+      #9161 merged 2026-09-03 ci: Workflow Bot -- Update Yarn (main)
+      #9155 closed 2026-09-03 ci: Workflow Bot -- Update Yarn (main)
+  write+failure  8 hit(s) (all listed)
+      #9308 merged 2026-09-28 chore: Detect hidden comments in PR descriptions
+      #8914 merged 2026-06-14 fix: Handle Windows UNC Long Path Names
+      #8868 merged 2026-05-30 chore: fix labeler when it comes from a fork
+      #8553 merged 2026-02-10 fix: Enable reading dictionaries from cspell-vfs
+      #8562 merged 2026-02-11 fix: Add convertToBtrie method to trie-lib
+      #8680 merged 2026-03-06 feat: make flatpack diff friendly
+      #8945 merged 2026-07-08 feat(cspell-junit-reporter): add JUnit XML reporter package
+      #8616 merged 2026-02-22 feat: Substitution Part 3
+  file+contents  21 hit(s) (all listed)
+      #7841 open 2025-09-12 Accept extra dictionaries via `CSPELL_DICT_PATH` env var and `--dict-path`
+      #9309 merged 2026-09-28 chore: Label per package, and bugs links to its open issues
+      #9189 merged 2026-09-05 fix: Add dictionary kind: suggest-words
+      #3197 closed 2022-07-05 Why are the following words not recognized: alias, media and entries?
+      #4084 closed 2023-02-01 Lint piped-in content in the context of a file (filename)?
+      #9186 merged 2026-09-04 chore: Prepare Release v10.3.0 (auto-deploy)
+      #4082 closed 2023-02-01 v2.15 ignores wrong files
+      #3943 closed 2022-12-30 How to bundle CSpell with WebPack?
+      #2537 closed 2022-03-04 React components in MDX files are not ignored
+      #6353 closed 2024-10-11 [Bug]: no files found for v8.15.0
+      #5780 merged 2024-06-19 fix: Make sure binary files are not checked.
+      #8868 merged 2026-05-30 chore: fix labeler when it comes from a fork
+      #8330 merged 2026-01-09 fix: Improve word lookup performance when not found
+      #8680 merged 2026-03-06 feat: make flatpack diff friendly
+      #8508 merged 2026-02-03 Add Copilot coding agent onboarding documentation
+      #6957 merged 2025-02-24 chore: bump peter-evans/create-pull-request from 7.0.6 to 7.0.7 in /.github/actions/pr
+      #6738 merged 2025-01-03 chore: bump typedoc-plugin-markdown from 4.3.2 to 4.4.1
+      #6733 closed 2024-12-30 chore: bump typedoc-plugin-markdown from 4.3.2 to 4.4.0
+      #4311 closed 2023-03-13 chore(deps-dev): update @lerna-lite/cli requirement from ^1.16.1 to ^1.16.2
+      #49 closed 2018-06-24 Can't set language via config file
+
+== 51 terms run; 43 returned hits, 8 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

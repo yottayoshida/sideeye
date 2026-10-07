@@ -1,0 +1,6 @@
+[world]
+state = "/s/goa/db"
+
+[define]
+operation = "goaccess /s/goa-in/b.log --log-format=COMBINED --persist --restore --db-path=/s/goa/db -o /s/goa-in/b.html"
+cwd       = "/s/goa-in"

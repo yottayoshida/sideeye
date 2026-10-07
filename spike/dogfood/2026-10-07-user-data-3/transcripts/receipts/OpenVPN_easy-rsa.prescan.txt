@@ -1,0 +1,326 @@
+== novelty pre-scan: OpenVPN/easy-rsa
+== date: 2026-10-07T06:36:06Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          3 hit(s) (all listed)
+      #1388 closed 2025-09-13 Easy RSA Flagged as trojan/ransomware
+      #1371 merged 2025-07-19 Windows easyrsa-shell-init.sh: Replace 'read -p'
+      #619 closed 2022-07-06 sh.exe crashes on virtual Windows servers
+  corrupt        4 hit(s) (all listed)
+      #530 merged 2022-04-07 Disallow use of single quote (') in vars file
+      #626 closed 2022-08-07 Older certs for a CN cannot be revoked
+      #145 closed 2017-08-25 Error when signing
+      #106 closed 2016-08-26 EasyRSA-3.0.1.tgz corrupt?
+  corruption     0 hit(s)
+  truncated      4 hit(s) (all listed)
+      #1435 closed 2026-02-27 Password input truncates shell-sensitive characters in build-ca (e.g., $)
+      #728 closed 2022-10-18 'build-ca' fails if '--passin=file:' and '--passout=file:' use the same filename
+      #342 closed 2019-12-02 Bug: export-p12
+      #259 closed 2018-10-22 Install directory no longer immutable.
+  truncate       7 hit(s) (all listed)
+      #1435 closed 2026-02-27 Password input truncates shell-sensitive characters in build-ca (e.g., $)
+      #1095 closed 2024-03-20 Any magic about the 64 bytes common-name length limit
+      #728 closed 2022-10-18 'build-ca' fails if '--passin=file:' and '--passout=file:' use the same filename
+      #543 closed 2022-04-21 Easy-rsa date: invalid date '+30day' Renewal not allowed.
+      #342 closed 2019-12-02 Bug: export-p12
+      #259 closed 2018-10-22 Install directory no longer immutable.
+      #250 closed 2018-10-03 fix cleanup and exit code when a signal is received
+  empty          54 hit(s) (all listed)
+      #1436 open 2026-03-14 Fix infinite loop on EOF, eval injection risk, and subshell inefficiency
+      #1466 merged 2026-09-17 check_serial_unique(); Do not export EASYRSA_SSL_CONF for LibreSSL
+      #1441 open 2026-04-11 security: harden Python rewrite against key/algorithm/permission vulnerabilities
+      #1122 closed 2024-04-14 CA Private Key will be encrypted with des-ede3-cbc during build-ca with OpenSSL 3.x - CVE-2024-13454
+      #1395 closed 2025-10-02 Signing a KDC certificate with default settings is a mess
+      #1331 closed 2025-05-27 `easyrsa show-expire` on brand-new PKI: "will_cert_be_valid - Non-decimal value: "
+      #1095 closed 2024-03-20 Any magic about the 64 bytes common-name length limit
+      #1074 closed 2024-02-02 set_var EASYRSA_SSL_CONF - add wrong /
+      #1236 closed 2024-10-08 New x509-types signing type OCSP
+      #1161 closed 2024-06-04 Force display_dn() and verify_file() to work without $OPENSSL_CONF
+      #1132 closed 2024-04-23 Remove `OPENSSL_CONF=/dev/null`
+      #1076 closed 2024-02-07 New branch `win-write-access`: Initial commit
+      #971 merged 2023-07-03 set_var(): Allow empty input to return without error
+      #897 merged 2023-02-19 sign-req: Use either SSL option -days OR -startdate/-enddate
+      #954 merged 2023-05-06 Build Safe SSL config at correct stage
+      #49 closed 2014-11-25 PKI Profile for IKE/IPSec
+      #639 merged 2022-08-15 show: Reorder parameter checks to guard against empty input
+      #835 closed 2023-01-02 EASYRSA_NO_PASS conflict with --passin and --passout
+      #68 closed 2015-07-31 Allow make-cadir's target directory to exist if it's empty
+      #769 closed 2022-11-17 Allow to set 0 as the subca pathlen
+  atomic         11 hit(s) (all listed)
+      #1323 closed 2025-05-15 Make atomic features OS dependent
+      #1322 merged 2025-05-13 easyrsa_mktemp(): Remove secondary atomic operation
+      #1078 closed 2024-02-14 Easy-RSA hangs on Windows 11
+      #1020 merged 2023-09-09 gen-crl: preserve existing crl.pem ownership+mode
+      #1017 closed 2023-09-08 Line length in easyrsa script
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+      #874 closed 2023-02-06 Windows: Creating temp-files with random names from SSL is slow
+      #541 merged 2022-04-16 Replace non-POSIX mktemp with POSIX mkdir and mv
+      #538 closed 2022-04-13 Replace 'mktemp' with 'openssl'
+      #232 closed 2018-09-21 Avoid storing password in insecure disk file
+      #4 closed 2013-05-31 Fix -n "User PIN:" mis-print and Token/SmartCard keysize adjust in vars
+  atomically     1 hit(s) (all listed)
+      #232 closed 2018-09-21 Avoid storing password in insecure disk file
+  interrupted    3 hit(s) (all listed)
+      #706 merged 2022-09-24 Opt. --subca-len: basicConstraints CA extension, Append 'pathlen:N'
+      #648 closed 2022-08-20 Easy-RSA RHEL 9 EPEL nopass bug
+      #613 closed 2022-06-23 Command 'renew' should not use option 'nopass'
+  interrupt      2 hit(s) (all listed)
+      #706 merged 2022-09-24 Opt. --subca-len: basicConstraints CA extension, Append 'pathlen:N'
+      #613 closed 2022-06-23 Command 'renew' should not use option 'nopass'
+  sigkill        0 hit(s)
+  sigint         3 hit(s) (all listed)
+      #775 merged 2022-11-20 cleanup(): Exit correctly for SIGINT
+      #713 closed 2022-09-28 `easyrsa` does not exit correctly on `SIGINT`
+      #236 closed 2018-09-24 fix trap cleanup for non-bash
+  ctrl-c         12 hit(s) (all listed)
+      #1440 open 2026-04-11 security: harden shell script against algorithm/passphrase/permission vulnerabilities
+      #433 closed 2021-02-23 Added improved support for CA stored in PKCS#11 based token (RFC 7512 URIs). 
+      #1049 closed 2023-12-21 easyrsa visually hangs when run in Windows Terminal
+      #705 merged 2022-09-23 build_full: Remove sign_req() subshell and do full cleanup
+      #636 merged 2022-08-15 gen-dh: Use temporary file
+      #613 closed 2022-06-23 Command 'renew' should not use option 'nopass'
+      #84 closed 2015-11-11 Mktemp dependency is neither POSIX nor Windows compatible
+      #125 closed 2017-04-18 build-ca fail, rc2 binarys
+      #247 closed 2018-10-02 Ctrl-C out from entering the build-ca password leaves terminal echo disabled
+      #250 closed 2018-10-03 fix cleanup and exit code when a signal is received
+      #236 closed 2018-09-24 fix trap cleanup for non-bash
+      #312 merged 2019-05-30 Fix dirtemp windows
+  power          3 hit(s) (all listed)
+      #1075 closed 2024-02-03 EasyRSA on Windows 11 with `mksh` hangs
+      #1049 closed 2023-12-21 easyrsa visually hangs when run in Windows Terminal
+      #386 closed 2020-05-15 easy-rsa-3.0.7: default should be sha512 instead of sha256
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           12 hit(s) (all listed)
+      #1241 closed 2024-10-18 Please consider adding a `prune-expired` and a `prune-revoked` subcommand
+      #1051 closed 2023-12-28 Upgrade easy-rsa of OVPN-Server without switching to Debian 13 (Trixie)
+      #962 closed 2023-06-04 Create a CA without using a temp-file for the password
+      #950 closed 2023-05-03 Fix build-ca with --passout option
+      #728 closed 2022-10-18 'build-ca' fails if '--passin=file:' and '--passout=file:' use the same filename
+      #232 closed 2018-09-21 Avoid storing password in insecure disk file
+      #881 closed 2023-02-08 EasyRSA on win server 22? Suddenly having lots of trouble. 
+      #234 closed 2018-09-23 build_ca fails to remove temp files when passwords do not match
+      #261 closed 2018-11-03 Can't load /usr/share/easy-rsa/pki/.rnd into RNG
+      #182 closed 2018-02-01 Generate the CA key and request in one command
+      #30 closed 2014-06-02 Fix --req-ca to be used for build-ca
+      #213 closed 2018-07-05 Fix temp files
+  partial        1 hit(s) (all listed)
+      #692 closed 2022-09-17 `--subca-len=X sign-req ca` honour user set critical flag in ca
+  incomplete     16 hit(s) (all listed)
+      #1439 open 2026-03-15 Re: #1436 - Fix infinite loop on EOF, eval injection risk, and subshell inefficiency
+      #1449 closed 2026-07-18 Command `build-ca` creates an incomplete PKI erroneously
+      #1436 open 2026-03-14 Fix infinite loop on EOF, eval injection risk, and subshell inefficiency
+      #1425 closed 2026-01-29 WARNING incomplete inline file created
+      #1435 closed 2026-02-27 Password input truncates shell-sensitive characters in build-ca (e.g., $)
+      #1248 closed 2024-10-27 Help: Problem with missing SANs
+      #1210 closed 2024-08-11 `inline`: Missing files should be commented out in new inline file
+      #1148 closed 2024-05-27 EasyRSA Behavior Change - 3.0.8 - 3.2.0 - EASYRSA_REQ_CN / --req-cn /--subject-alt-name
+      #622 closed 2022-07-22 Upgrade EasyRSA v2.x to v3.x PKI stops working from v3.0.9-rc1 onward
+      #406 closed 2020-09-16 easy-rsa upgrade - documentation
+      #991 merged 2023-07-25 Export PKCS: Expand usage for incomplete PKI
+      #897 merged 2023-02-19 sign-req: Use either SSL option -days OR -startdate/-enddate
+      #751 closed 2022-11-01 `detect_host()` should not try to get Easy-RSA Version
+      #612 closed 2022-06-23 'rewind-renew' needs to make 'renewed/issued' folder
+      #167 closed 2017-12-12 missing dependencies in easyrsa script
+      #31 closed 2014-06-02 Locate vars in the working directory
+  dataloss       0 hit(s)
+  recover        5 hit(s) (all listed)
+      #699 closed 2022-09-21 warn about renewed/cert-by-serial not revoked
+      #572 closed 2022-05-18 if 'renew' fails then the certificate is lost
+      #579 merged 2022-05-21 Introduce 'rewind-renew' - Recover "guineapig" renewed certificates
+      #612 closed 2022-06-23 'rewind-renew' needs to make 'renewed/issued' folder
+      #106 closed 2016-08-26 EasyRSA-3.0.1.tgz corrupt?
+  recovery       1 hit(s) (all listed)
+      #572 closed 2022-05-18 if 'renew' fails then the certificate is lost
+  rollback       0 hit(s)
+  resume         3 hit(s) (all listed)
+      #929 closed 2023-04-06 ./easyrsa build-server-full issue on Windows
+      #543 closed 2022-04-21 Easy-rsa date: invalid date '+30day' Renewal not allowed.
+      #499 closed 2022-03-22 Running easyrsa from a symlink or PATH
+  half-written   0 hit(s)
+  wipe           4 hit(s) (all listed)
+      #332 closed 2019-10-08 Added support for CA hosted in PKCS#11 based token
+      #837 closed 2023-01-03 Global options '--passin/--passout' ALWAYS take priority
+      #500 merged 2022-03-22 Windows unit test: On error then exit with error
+      #168 closed 2017-12-15 signing a server fails for unknown reasons (fresh install OpenSUSE Leap, openssl 1.0.2j-13.1)
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #1138 merged 2024-05-11 LibreSSL: Ignore and discard missing config file warning
+      #975 closed 2023-07-07 Improve user messages and wrap long lines, no functional changes.
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #975 closed 2023-07-07 Improve user messages and wrap long lines, no functional changes.
+  destroy        11 hit(s) (all listed)
+      #1119 closed 2024-04-11 Remove command 'init-pki', option 'soft', undefined usage
+      #1178 closed 2024-06-26 `gen-req` overwrites an existing request without confirmation
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+      #711 merged 2022-09-26 Option --keep-tmp: Append EASYRSA_TEMP_DIR_session random number
+      #678 closed 2022-09-05 `renew-req` does not work from the CA signing side PKI
+      #566 closed 2022-05-14 'init-pki' should be mutually exclusive to '--vars'
+      #446 closed 2021-06-09 Remove pki/CN.creds on revoke [patch]
+      #368 merged 2020-03-21 Expose EASYRSA_PASSIN and EASYRSA_PASSOUT env variables
+      #237 closed 2018-09-24 Set default branch to master
+      #26 merged 2014-03-21 use temp files to avoid loss of files on error
+      #213 closed 2018-07-05 Fix temp files
+  destroys       2 hit(s) (all listed)
+      #1119 closed 2024-04-11 Remove command 'init-pki', option 'soft', undefined usage
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+  overwrite      27 hit(s) (all listed)
+      #1468 closed 2026-09-27 `gen-req` allows overwriting an existing key and req in batch mode
+      #1122 closed 2024-04-14 CA Private Key will be encrypted with des-ede3-cbc during build-ca with OpenSSL 3.x - CVE-2024-13454
+      #1318 merged 2025-05-12 Command 'write': Remove options 'overwrite' and 'filename'
+      #1336 closed 2025-05-28 `add_critical_attrib_v2()` overwrites standard, in-place `x509-types/$file`
+      #1317 closed 2025-05-11 Command `write` does not work with option `overwrite` and `filename` together
+      #332 closed 2019-10-08 Added support for CA hosted in PKCS#11 based token
+      #1178 closed 2024-06-26 `gen-req` overwrites an existing request without confirmation
+      #1061 closed 2024-01-09 Command `write` syntax details
+      #1099 closed 2024-03-29 Add equivalent of `--req-*` but for `sign-req`.
+      #439 closed 2021-04-13 Add an option to change the subject when signing a request.
+      #1086 closed 2024-03-07 Incorrect SAN entries presented on signing confirmation
+      #1075 closed 2024-02-03 EasyRSA on Windows 11 with `mksh` hangs
+      #111 closed 2016-10-26 EASYRSA_KEY_SIZE in vars is ignored
+      #543 closed 2022-04-21 Easy-rsa date: invalid date '+30day' Renewal not allowed.
+      #669 closed 2022-08-30 Prevent overwriting EASYRSA_REQ_CN with default value
+      #668 closed 2022-08-30 easyrsa gen-req is overwriting `--req-cn` option with default value
+      #461 closed 2021-10-14 Gen-Req: Setting commonname using batch
+      #612 closed 2022-06-23 'rewind-renew' needs to make 'renewed/issued' folder
+      #89 closed 2016-02-05 Allow subject alternative names to be copied from certificate signing requests
+      #443 merged 2021-05-04 fixed renew filename confusion
+  clobber        8 hit(s) (all listed)
+      #1430 merged 2026-02-16 import_tls_key(): Use set_no_clobber() to preserve existing key file
+      #1423 merged 2026-01-24 Inline sub ca v1
+      #1379 merged 2025-08-07 set_no_clobber(): Add simple error detection
+      #1314 merged 2025-05-07 New function set_no_clobber()
+      #1322 merged 2025-05-13 easyrsa_mktemp(): Remove secondary atomic operation
+      #1148 closed 2024-05-27 EasyRSA Behavior Change - 3.0.8 - 3.2.0 - EASYRSA_REQ_CN / --req-cn /--subject-alt-name
+      #512 closed 2022-03-28 Batch mode should not silence output
+      #131 closed 2017-06-20 easyrsa in $PATH, sign-req cannot find x509-types
+  blank          45 hit(s) (all listed)
+      #1478 open 2026-10-06 Naming convention defined by the SECG is not allowed in the var file due to migration to genpkey
+      #454 closed 2021-08-20 Asking for passphrase when not expected during build-ca
+      #1435 closed 2026-02-27 Password input truncates shell-sensitive characters in build-ca (e.g., $)
+      #1382 closed 2025-08-12 Pull request #1342 is partially broken
+      #1308 merged 2025-04-16 add_critical_attrib(): Do not add 'critical' if 'critical' exists
+      #1306 closed 2025-04-14 add_critical_attrib(): do not add critical if critical exists
+      #1063 closed 2024-01-14 Introduce new global options: --ku-critical and --bc-critical
+      #1110 closed 2024-04-06 Error using --startdate/--enddate
+      #1067 closed 2024-01-19 Abandon `escape_hazard()` - Replace with heredoc expansion
+      #1004 closed 2023-08-27 [Resolved-v316] `init-pki` does not respect `vars`
+      #111 closed 2016-10-26 EASYRSA_KEY_SIZE in vars is ignored
+      #543 closed 2022-04-21 Easy-rsa date: invalid date '+30day' Renewal not allowed.
+      #907 closed 2023-03-07 Windows server permissions issue. 
+      #49 closed 2014-11-25 PKI Profile for IKE/IPSec
+      #728 closed 2022-10-18 'build-ca' fails if '--passin=file:' and '--passout=file:' use the same filename
+      #862 closed 2023-01-28 Restore inter-active individual field confirmation when signing
+      #835 closed 2023-01-02 EASYRSA_NO_PASS conflict with --passin and --passout
+      #881 closed 2023-02-08 EasyRSA on win server 22? Suddenly having lots of trouble. 
+      #692 closed 2022-09-17 `--subca-len=X sign-req ca` honour user set critical flag in ca
+      #673 closed 2022-08-30 SSL config ENV-VARS for KDC-Realm are not expanded for safe SSL config
+  unreadable     1 hit(s) (all listed)
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+  garbage        5 hit(s) (all listed)
+      #881 closed 2023-02-08 EasyRSA on win server 22? Suddenly having lots of trouble. 
+      #680 closed 2022-09-07 `build-x-full` does not use temp files correctly
+      #532 closed 2022-04-08 Support for Windows-git-bash 
+      #106 closed 2016-08-26 EasyRSA-3.0.1.tgz corrupt?
+      #356 closed 2020-01-24 Take out the garbage https://chris.beams.io/posts/git-commit/
+  mangled        0 hit(s)
+  contents       16 hit(s) (all listed)
+      #1422 closed 2026-01-21 Inline file generation with intermediate CAs and separate server CA
+      #1425 closed 2026-01-29 WARNING incomplete inline file created
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+      #1049 closed 2023-12-21 easyrsa visually hangs when run in Windows Terminal
+      #1020 merged 2023-09-09 gen-crl: preserve existing crl.pem ownership+mode
+      #728 closed 2022-10-18 'build-ca' fails if '--passin=file:' and '--passout=file:' use the same filename
+      #934 closed 2023-04-10 Providing nameConstraints and pathlen in subca CSR
+      #543 closed 2022-04-21 Easy-rsa date: invalid date '+30day' Renewal not allowed.
+      #631 closed 2022-08-08 ff_date_to_cert_date() - busybox date *sometimes* fails.
+      #609 closed 2022-06-22 EasyRSA 'renew' does NOT renew, it builds a new certificate *and* key
+      #178 closed 2018-01-26 init-pki should remove contents of $EASYRSA_PKI, not $EASYRSA_PKI itself
+      #54 closed 2015-02-24 EASYRSA_EXTRA_EXTS ignored build build-ca
+      #75 closed 2015-10-21 I can't easily renew certificate for any user. What's the point of "EASY" in the name of this product?
+      #421 closed 2020-12-21 Question: After revoking a cert, what needs to be kept around?
+      #157 closed 2017-10-13 vars.bat on Windows - "reg query" change
+      #245 closed 2018-09-28 use easyrsa3/easyrsa in build-dist.sh
+  in-place       83 hit(s) (all listed)
+      #1436 open 2026-03-14 Fix infinite loop on EOF, eval injection risk, and subshell inefficiency
+      #841 open 2023-01-06 Windows: Ten year [Tin] anniversary for MIRBSD KSH
+      #1412 closed 2025-12-05 Setting EASYRSA_DIGEST=sha384 doesn't work
+      #1336 closed 2025-05-28 `add_critical_attrib_v2()` overwrites standard, in-place `x509-types/$file`
+      #1077 closed 2024-02-12 Windows busybox install
+      #979 closed 2023-07-12 SHA1 Key signature warnings in Debian build for releases 3.x
+      #332 closed 2019-10-08 Added support for CA hosted in PKCS#11 based token
+      #1289 closed 2025-02-03 link to `easyrsa-tools.lib` is dead.
+      #1281 closed 2025-01-19 easyrsa release tarball is not shipping easyrsa-tools.lib (v3.2.1)
+      #1172 closed 2024-06-19 Command `revoke` must not move key and request files
+      #1158 closed 2024-06-04 Outline use and expansion of `openssl-easyrsa.cnf`
+      #1161 closed 2024-06-04 Force display_dn() and verify_file() to work without $OPENSSL_CONF
+      #1155 closed 2024-05-31 Importing the CA certificates for OpenVPN clients and internal domains.
+      #1099 closed 2024-03-29 Add equivalent of `--req-*` but for `sign-req`.
+      #995 closed 2023-08-07 sign-req: Option 'comply', certificate subject will comply with CA
+      #448 closed 2021-06-25 adjust critical extensions and key usage
+      #1069 closed 2024-01-22 Input/output error: Cannot create openssl-easyrsa.cnf
+      #1058 closed 2024-01-04 allow cert_type option to renew command like in sign-req
+      #997 closed 2023-08-08 `renew` and `revoke` should not remove request files
+      #1032 closed 2023-10-05 Adding a silent option to `sign-req`
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         2 hit(s) (all listed)
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+      #543 closed 2022-04-21 Easy-rsa date: invalid date '+30day' Renewal not allowed.
+  disk+full      3 hit(s) (all listed)
+      #728 closed 2022-10-18 'build-ca' fails if '--passin=file:' and '--passout=file:' use the same filename
+      #261 closed 2018-11-03 Can't load /usr/share/easy-rsa/pki/.rnd into RNG
+      #213 closed 2018-07-05 Fix temp files
+  data+loss      1 hit(s) (all listed)
+      #612 closed 2022-06-23 'rewind-renew' needs to make 'renewed/issued' folder
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   2 hit(s) (all listed)
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+      #232 closed 2018-09-21 Avoid storing password in insecure disk file
+  lock+file      14 hit(s) (all listed)
+      #1435 closed 2026-02-27 Password input truncates shell-sensitive characters in build-ca (e.g., $)
+      #1389 closed 2025-09-16 `init-pki` must respect `lock-file`
+      #1390 closed 2025-09-16 OpenBSD/LibreSSL failure
+      #1358 closed 2025-06-23 Use tmp dir for lock file
+      #1357 closed 2025-06-23 Use tmp dir for lock file
+      #1340 merged 2025-06-03 PKI lock-file: Move possible creation to sub-function request_lock_file()
+      #1359 closed 2025-06-23 Commands that do not write to the PKI could forego the `lock.file`
+      #1313 merged 2025-04-27 Introduce "robust" lock-file mechanism
+      #1354 closed 2025-06-18 openssl '-not_before' support
+      #1279 closed 2025-01-06 two generated certificates have the same serial number [Concurrency issue]
+      #1009 closed 2023-08-29 Warning about moving `vars` to the PKI
+      #548 closed 2022-04-29 `--copy-ext` does not work
+      #190 closed 2018-02-12 Create client from intermediate?
+      #261 closed 2018-11-03 Can't load /usr/share/easy-rsa/pki/.rnd into RNG
+  write+failure  7 hit(s) (all listed)
+      #1436 open 2026-03-14 Fix infinite loop on EOF, eval injection risk, and subshell inefficiency
+      #1148 closed 2024-05-27 EasyRSA Behavior Change - 3.0.8 - 3.2.0 - EASYRSA_REQ_CN / --req-cn /--subject-alt-name
+      #1073 merged 2024-01-30 Windows: Introduce 'Non-Admin' mode
+      #1076 closed 2024-02-07 New branch `win-write-access`: Initial commit
+      #591 closed 2022-06-05 3.1.0: date(1) command sensitive to LC_TIME locale, causing date parse failures if locale's time/date formers differ from C/POSIX [FreeBSD 13.1]
+      #141 closed 2017-08-23 Unknown extension name on Arch Linux with openssl-1.1.x and openssl-1.0.x
+      #229 closed 2018-09-18 Correct set_pass()
+  file+contents  12 hit(s) (all listed)
+      #1422 closed 2026-01-21 Inline file generation with intermediate CAs and separate server CA
+      #1425 closed 2026-01-29 WARNING incomplete inline file created
+      #1019 closed 2023-09-08 gen-crl recreates crl.pem file - not only contents
+      #1049 closed 2023-12-21 easyrsa visually hangs when run in Windows Terminal
+      #1020 merged 2023-09-09 gen-crl: preserve existing crl.pem ownership+mode
+      #728 closed 2022-10-18 'build-ca' fails if '--passin=file:' and '--passout=file:' use the same filename
+      #543 closed 2022-04-21 Easy-rsa date: invalid date '+30day' Renewal not allowed.
+      #631 closed 2022-08-08 ff_date_to_cert_date() - busybox date *sometimes* fails.
+      #75 closed 2015-10-21 I can't easily renew certificate for any user. What's the point of "EASY" in the name of this product?
+      #421 closed 2020-12-21 Question: After revoking a cert, what needs to be kept around?
+      #157 closed 2017-10-13 vars.bat on Windows - "reg query" change
+      #245 closed 2018-09-28 use easyrsa3/easyrsa in build-dist.sh
+
+== 51 terms run; 37 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,406 @@
+== novelty pre-scan: carloscuesta/gitmoji-cli
+== date: 2026-10-07T08:25:01Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          30 hit(s) (all listed)
+      #1547 closed 2026-06-01 ⬆️ Bump fuse.js from 7.1.0 to 7.4.2
+      #1433 merged 2025-05-01 ⬆️ Bump typescript from 5.8.2 to 5.8.3
+      #1404 merged 2025-03-01 ⬆️ Bump prettier from 3.4.2 to 3.5.2
+      #1383 closed 2025-01-01 ⬆️ Bump execa from 8.0.1 to 9.5.2
+      #1368 closed 2024-11-01 ⬆️ Bump execa from 8.0.1 to 9.5.1
+      #1330 merged 2024-08-01 ⬆️ Bump typescript from 5.5.3 to 5.5.4
+      #1319 closed 2024-07-01 ⬆️ Bump typescript from 5.4.5 to 5.5.2
+      #1354 merged 2024-10-01 ⬆️ Bump eslint from 8.57.0 to 8.57.1
+      #1353 closed 2024-10-01 ⬆️ Bump execa from 8.0.1 to 9.4.0
+      #1340 closed 2024-09-01 ⬆️ Bump execa from 8.0.1 to 9.3.1
+      #1323 merged 2024-07-02 ⬆️ Bump typescript from 5.4.5 to 5.5.3
+      #1237 merged 2024-01-01 ⬆️ Bump @babel/core from 7.23.5 to 7.23.7
+      #1263 merged 2024-03-01 ⬆️ Bump @babel/cli from 7.23.4 to 7.23.9
+      #1238 merged 2024-01-01 ⬆️ Bump @babel/preset-env from 7.23.5 to 7.23.7
+      #1184 merged 2023-09-01 ⬆️ Bump jest and @types/jest
+      #1151 merged 2023-07-10 ⬆️ Bump jest and @types/jest
+      #1142 closed 2023-07-10 ⬆️ Bump jest from 29.5.0 to 29.6.1
+      #64 closed 2017-08-23 Unable to create .git/index.lock
+      #331 closed 2020-03-11 CLI can't query gitmoji list
+      #62 closed 2017-08-09 Error during commit.
+  corrupt        3 hit(s) (all listed)
+      #1575 open 2026-10-01 ⬆️ Bump jest-fetch-mock from 3.0.3 to 4.2.0
+      #340 closed 2020-03-23 ⬆️ Bump prettier from 1.19.1 to 2.0.1
+      #988 merged 2023-01-09 ⬆️ Bump @babel/core from 7.20.7 to 7.20.12
+  corruption     0 hit(s)
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1578 open 2026-10-01 ⬆️ Bump prettier from 3.8.3 to 3.9.9
+      #1577 open 2026-10-01 ⬆️ Bump ora from 8.2.0 to 9.4.1
+      #1579 open 2026-10-01 ⬆️ Bump flow-bin from 0.309.0 to 0.333.0
+      #1581 open 2026-10-01 ⬆️ Bump @babel/preset-typescript from 7.28.5 to 7.29.7
+      #1582 open 2026-10-01 ⬆️ Bump lint-staged from 16.3.3 to 17.6.0
+      #1575 open 2026-10-01 ⬆️ Bump jest-fetch-mock from 3.0.3 to 4.2.0
+      #1571 merged 2026-09-06 ⬆️ Bump browserslist from 4.24.0 to 4.29.0
+      #1566 closed 2026-09-01 ⬆️ Bump flow-bin from 0.309.0 to 0.332.0
+      #1555 closed 2026-07-01 ⬆️ Bump proxy-agent from 6.5.0 to 8.0.2
+      #1568 closed 2026-09-01 ⬆️ Bump lint-staged from 16.3.3 to 17.5.1
+      #1563 closed 2026-08-01 ⬆️ Bump lint-staged from 16.3.3 to 17.3.0
+      #1570 merged 2026-09-03 ⬆️ Bump fast-uri from 3.0.5 to 3.1.7
+      #1564 closed 2026-08-04 ⬆️ Bump fast-uri from 3.0.5 to 3.1.6
+      #1551 merged 2026-07-01 ⬆️ Bump @babel/cli from 7.28.6 to 7.29.7
+      #1569 merged 2026-09-01 ⬆️ Bump jest from 30.3.0 to 30.5.0
+      #1556 closed 2026-07-01 ⬆️ Bump lint-staged from 16.3.3 to 17.1.0
+      #1583 open 2026-10-01 ⬆️ Bump execa from 8.0.1 to 10.0.1
+      #1559 merged 2026-08-01 ⬆️ Bump fuse.js from 7.1.0 to 7.5.0
+      #1558 merged 2026-08-01 ⬆️ Bump actions/setup-node from 6 to 7
+      #1549 closed 2026-07-01 ⬆️ Bump hermes-eslint from 0.35.0 to 0.37.0
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1578 open 2026-10-01 ⬆️ Bump prettier from 3.8.3 to 3.9.9
+      #1577 open 2026-10-01 ⬆️ Bump ora from 8.2.0 to 9.4.1
+      #1579 open 2026-10-01 ⬆️ Bump flow-bin from 0.309.0 to 0.333.0
+      #1581 open 2026-10-01 ⬆️ Bump @babel/preset-typescript from 7.28.5 to 7.29.7
+      #1582 open 2026-10-01 ⬆️ Bump lint-staged from 16.3.3 to 17.6.0
+      #1575 open 2026-10-01 ⬆️ Bump jest-fetch-mock from 3.0.3 to 4.2.0
+      #1571 merged 2026-09-06 ⬆️ Bump browserslist from 4.24.0 to 4.29.0
+      #1566 closed 2026-09-01 ⬆️ Bump flow-bin from 0.309.0 to 0.332.0
+      #1555 closed 2026-07-01 ⬆️ Bump proxy-agent from 6.5.0 to 8.0.2
+      #1568 closed 2026-09-01 ⬆️ Bump lint-staged from 16.3.3 to 17.5.1
+      #1563 closed 2026-08-01 ⬆️ Bump lint-staged from 16.3.3 to 17.3.0
+      #1570 merged 2026-09-03 ⬆️ Bump fast-uri from 3.0.5 to 3.1.7
+      #1564 closed 2026-08-04 ⬆️ Bump fast-uri from 3.0.5 to 3.1.6
+      #1551 merged 2026-07-01 ⬆️ Bump @babel/cli from 7.28.6 to 7.29.7
+      #1569 merged 2026-09-01 ⬆️ Bump jest from 30.3.0 to 30.5.0
+      #1556 closed 2026-07-01 ⬆️ Bump lint-staged from 16.3.3 to 17.1.0
+      #1583 open 2026-10-01 ⬆️ Bump execa from 8.0.1 to 10.0.1
+      #1559 merged 2026-08-01 ⬆️ Bump fuse.js from 7.1.0 to 7.5.0
+      #1558 merged 2026-08-01 ⬆️ Bump actions/setup-node from 6 to 7
+      #1549 closed 2026-07-01 ⬆️ Bump hermes-eslint from 0.35.0 to 0.37.0
+  empty          77 hit(s) (all listed)
+      #1575 open 2026-10-01 ⬆️ Bump jest-fetch-mock from 3.0.3 to 4.2.0
+      #1568 closed 2026-09-01 ⬆️ Bump lint-staged from 16.3.3 to 17.5.1
+      #1531 closed 2026-05-01 ⬆️ Bump fuse.js from 7.1.0 to 7.3.0
+      #1547 closed 2026-06-01 ⬆️ Bump fuse.js from 7.1.0 to 7.4.2
+      #1494 merged 2025-12-01 ⬆️ Bump prettier from 3.6.2 to 3.7.3
+      #1441 merged 2025-06-01 ⬆️ Bump @babel/preset-env from 7.27.1 to 7.27.2
+      #1421 merged 2025-04-01 ⬆️ Bump prettier from 3.5.2 to 3.5.3
+      #1417 merged 2025-04-01 ⬆️ Bump lint-staged from 15.4.3 to 15.5.0
+      #1439 closed 2025-06-01 ⬆️ Bump @babel/core from 7.27.1 to 7.27.4
+      #1371 merged 2024-12-01 ⬆️ Bump ora from 8.1.0 to 8.1.1
+      #1364 merged 2024-11-01 ⬆️ Bump turbo from 2.1.3 to 2.2.3
+      #1316 merged 2024-07-01 ⬆️ Bump prettier from 3.2.5 to 3.3.2
+      #1292 merged 2024-05-01 ⬆️ Bump inquirer from 9.2.15 to 9.2.20
+      #1280 merged 2024-04-01 ⬆️ Bump softprops/action-gh-release from 1 to 2
+      #1271 merged 2024-03-09 ⬆️ Bump turbo from 1.11.2 to 1.12.5
+      #1200 merged 2023-10-01 ⬆️ Bump jest and @types/jest
+      #1074 closed 2023-05-05 ✨ Add way for users to generate commit messages with AI
+      #128 closed 2018-09-15 Add auto on empty stage option
+      #1167 merged 2023-07-31 ⬆️ Bump eslint from 8.45.0 to 8.46.0
+      #41 merged 2017-04-15 Report stdout as error if stderr is empty
+  atomic         4 hit(s) (all listed)
+      #423 merged 2020-07-20 ⬆️ Bump conf from 7.0.1 to 7.1.1
+      #1009 merged 2023-02-13 ⬆️ Bump jest from 29.4.1 to 29.4.2
+      #157 merged 2019-02-11 ⬆️ Bump jest from 24.0.0 to 24.1.0
+      #935 merged 2022-10-03 ⬆️ Bump jest from 29.0.3 to 29.1.2
+  atomically     1 hit(s) (all listed)
+      #423 merged 2020-07-20 ⬆️ Bump conf from 7.0.1 to 7.1.1
+  interrupted    1 hit(s) (all listed)
+      #825 merged 2022-05-02 :arrow_up: Bump inquirer from 8.2.2 to 8.2.4
+  interrupt      7 hit(s) (all listed)
+      #1578 open 2026-10-01 ⬆️ Bump prettier from 3.8.3 to 3.9.9
+      #1522 merged 2026-04-01 ⬆️ Bump turbo from 2.8.17 to 2.9.3
+      #507 merged 2020-12-07 Implement hook abord on amend
+      #820 merged 2022-04-17 ⬆️ Bump lint-staged from 12.3.7 to 12.3.8
+      #352 merged 2020-04-12 Fix hook abort with ctrl-c behavior to match v3.0.0
+      #445 merged 2020-08-21 ✨ Cancel hook on rebase
+      #825 merged 2022-05-02 :arrow_up: Bump inquirer from 8.2.2 to 8.2.4
+  sigkill        1 hit(s) (all listed)
+      #185 closed 2019-07-01 ⬆️ Bump execa from 1.0.0 to 2.0.1
+  sigint         5 hit(s) (all listed)
+      #1488 merged 2025-11-01 ⬆️ Bump lint-staged from 16.2.4 to 16.2.6
+      #1348 merged 2024-10-01 ⬆️ Bump update-notifier from 7.3.0 to 7.3.1
+      #29 merged 2017-02-13 Update update-notifier to version 2.0.0 🚀
+      #389 closed 2020-06-08 ⬆️ Bump lint-staged from 10.0.8 to 10.2.9
+      #392 merged 2020-06-15 ⬆️ Bump lint-staged from 10.0.8 to 10.2.10
+  ctrl-c         16 hit(s) (all listed)
+      #1536 closed 2026-05-01 ⬆️ Bump ora from 8.2.0 to 9.4.0
+      #1516 closed 2026-03-01 ⬆️ Bump ora from 8.2.0 to 9.3.0
+      #1364 merged 2024-11-01 ⬆️ Bump turbo from 2.1.3 to 2.2.3
+      #22 closed 2016-12-07 CLI hangs until ctrl+c
+      #1097 closed 2023-05-19 git hook should ignore fixup commits
+      #352 merged 2020-04-12 Fix hook abort with ctrl-c behavior to match v3.0.0
+      #266 closed 2019-12-23 ctrl-c skip gitmoji prompts stopped working in 3.0.1
+      #497 closed 2020-11-28 Hook conflicting with npm version
+      #367 closed 2020-05-02 [Feature] Change position of emoji in mode client.
+      #19 closed 2016-11-28 Commiting takes insanely long
+      #332 closed 2020-03-12 Command line stucks when commiting with "gitmoji -c"
+      #397 closed 2020-06-18 [Feature discussion] Rebase and --no-edit behaviour with hook
+      #445 merged 2020-08-21 ✨ Cancel hook on rebase
+      #197 closed 2019-08-10 skip hook if flag `--no-edit`
+      #152 closed 2019-01-19 [Improvement] Increase remote fetch timeout
+      #40 closed 2017-04-13 ERROR: Network connection not found - ECONNABORTED (proxy issue?)
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1354 merged 2024-10-01 ⬆️ Bump eslint from 8.57.0 to 8.57.1
+      #446 merged 2020-08-21 ✨ Prefill title and message in hook mode
+      #581 closed 2021-04-22 Garbled rendering
+      #559 merged 2021-03-06 🔧 Migrate to Husky v5
+      #329 merged 2020-03-11 🐛 Reduced sum of search weights to equal 1
+      #175 merged 2019-05-13 ⬆️ Bump codecov from 3.3.0 to 3.4.0
+      #77 merged 2017-10-24 ☂️ Add codecov
+      #153 closed 2019-01-21 ⬆️ Bump conf from 2.1.0 to 2.2.0
+      #155 merged 2019-01-28 ⬆️ Bump jest from 23.6.0 to 24.0.0
+      #164 merged 2019-04-08 ⬆️ Bump codecov from 3.2.0 to 3.3.0
+      #167 merged 2019-04-08 ⬆️ Bump jest from 24.5.0 to 24.7.1
+      #149 merged 2018-12-03 ⬆️ Bump inquirer from 6.2.0 to 6.2.1
+      #156 merged 2019-02-04 ⬆️ Bump inquirer from 6.2.1 to 6.2.2
+      #201 merged 2019-08-26 ⬆️ Bump inquirer from 6.5.0 to 6.5.2
+      #203 merged 2019-08-26 ⬆️🔒 Bump eslint-utils from 1.3.1 to 1.4.2
+      #157 merged 2019-02-11 ⬆️ Bump jest from 24.0.0 to 24.1.0
+      #159 merged 2019-02-18 ⬆️ Bump codecov from 3.1.0 to 3.2.0
+      #158 closed 2019-02-14 ⬆️ 🔒 Bump handlebars from 4.0.12 to 4.1.0
+      #189 merged 2019-07-11 ⬆️ Bump inquirer from 6.3.1 to 6.5.0
+      #188 merged 2019-07-11 ⬆️🔒 Bump lodash from 4.17.11 to 4.17.14
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #363 closed 2020-04-27 ⬆️ Bump lint-staged from 10.0.8 to 10.1.7
+      #368 closed 2020-05-04 ⬆️ Bump lint-staged from 10.0.8 to 10.2.2
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1571 merged 2026-09-06 ⬆️ Bump browserslist from 4.24.0 to 4.29.0
+      #1570 merged 2026-09-03 ⬆️ Bump fast-uri from 3.0.5 to 3.1.7
+      #1569 merged 2026-09-01 ⬆️ Bump jest from 30.3.0 to 30.5.0
+      #1567 merged 2026-09-01 ⬆️ Bump @babel/preset-env from 7.29.3 to 7.29.7
+      #1572 closed 2026-09-10 ⬆️ Bump baseline-browser-mapping from 2.9.19 to 2.11.21
+      #1564 closed 2026-08-04 ⬆️ Bump fast-uri from 3.0.5 to 3.1.6
+      #1555 closed 2026-07-01 ⬆️ Bump proxy-agent from 6.5.0 to 8.0.2
+      #1562 merged 2026-08-01 ⬆️ Bump hermes-eslint from 0.35.0 to 0.37.0
+      #1559 merged 2026-08-01 ⬆️ Bump fuse.js from 7.1.0 to 7.5.0
+      #1539 closed 2026-05-08 ⬆️ Bump basic-ftp from 5.0.3 to 5.3.1
+      #1519 closed 2026-03-19 ⬆️ Bump flatted from 3.2.7 to 3.4.2
+      #1551 merged 2026-07-01 ⬆️ Bump @babel/cli from 7.28.6 to 7.29.7
+      #1515 closed 2026-03-01 ⬆️ Bump conf from 13.1.0 to 15.1.0
+      #1558 merged 2026-08-01 ⬆️ Bump actions/setup-node from 6 to 7
+      #1554 closed 2026-07-01 ⬆️ Bump fuse.js from 7.1.0 to 7.5.0
+      #1549 closed 2026-07-01 ⬆️ Bump hermes-eslint from 0.35.0 to 0.37.0
+      #1553 merged 2026-07-01 ⬆️ Bump actions/checkout from 6 to 7
+      #1552 merged 2026-07-01 ⬆️ Bump codecov/codecov-action from 6 to 7
+      #1550 merged 2026-07-01 ⬆️ Bump @babel/core from 7.29.6 to 7.29.7
+      #1540 closed 2026-05-08 ⬆️ Bump fast-uri from 3.0.5 to 3.1.2
+  incomplete     4 hit(s) (all listed)
+      #1533 merged 2026-05-01 ⬆️ Bump prettier from 3.8.1 to 3.8.3
+      #1528 merged 2026-04-09 ⬆️ Bump lodash from 4.17.23 to 4.18.1
+      #1402 merged 2025-02-01 ⬆️ Bump @babel/core from 7.26.0 to 7.26.7
+      #1397 merged 2025-02-01 ⬆️ Bump @babel/preset-env from 7.26.0 to 7.26.7
+  dataloss       0 hit(s)
+  recover        30 hit(s) (all listed)
+      #1385 closed 2025-01-01 ⬆️ Bump lint-staged from 15.2.10 to 15.3.0
+      #1394 closed 2025-01-16 ⬆️ Bump lint-staged from 15.2.10 to 15.4.0
+      #1396 merged 2025-01-16 ⬆️ Bump lint-staged from 15.2.10 to 15.4.1
+      #1295 merged 2024-05-01 ⬆️ Bump @babel/cli from 7.23.9 to 7.24.5
+      #1293 merged 2024-05-01 ⬆️ Bump @babel/core from 7.24.0 to 7.24.5
+      #1291 merged 2024-05-01 ⬆️ Bump @babel/preset-env from 7.23.9 to 7.24.5
+      #1304 closed 2024-06-01 ⬆️ Bump @babel/preset-flow from 7.24.0 to 7.24.6
+      #1300 closed 2024-06-01 ⬆️ Bump @babel/plugin-syntax-import-assertions from 7.24.1 to 7.24.6
+      #428 merged 2020-07-27 ⬆️ Bump codecov from 3.7.1 to 3.7.2
+      #543 merged 2021-02-15 ⬆️ Bump @babel/preset-env from 7.12.13 to 7.12.16
+      #544 merged 2021-02-15 ⬆️ Bump @babel/core from 7.12.13 to 7.12.16
+      #546 merged 2021-02-15 ⬆️ Bump @babel/cli from 7.12.13 to 7.12.16
+      #550 merged 2021-02-22 ⬆️ Bump @babel/cli from 7.12.16 to 7.12.17
+      #548 merged 2021-02-22 ⬆️ Bump @babel/preset-env from 7.12.16 to 7.12.17
+      #551 merged 2021-02-22 ⬆️ Bump @babel/core from 7.12.16 to 7.12.17
+      #538 merged 2021-02-08 ⬆️ Bump @babel/cli from 7.12.10 to 7.12.13
+      #515 merged 2020-12-14 ⬆️ Bump @babel/core from 7.12.9 to 7.12.10
+      #537 merged 2021-02-08 ⬆️ Bump @babel/core from 7.12.10 to 7.12.13
+      #514 merged 2020-12-14 ⬆️ Bump @babel/cli from 7.12.8 to 7.12.10
+      #512 merged 2020-12-14 ⬆️ Bump @babel/preset-env from 7.12.7 to 7.12.10
+  recovery       8 hit(s) (all listed)
+      #1538 merged 2026-05-01 ⬆️ Bump softprops/action-gh-release from 2 to 3
+      #1173 merged 2023-07-31 ⬆️ Bump turbo from 1.10.9 to 1.10.12
+      #229 merged 2019-11-11 ⬆️ Bump @babel/cli from 7.6.4 to 7.7.0
+      #227 merged 2019-11-11 ⬆️ Bump @babel/preset-env from 7.6.3 to 7.7.1
+      #232 merged 2019-11-11 ⬆️ Bump @babel/core from 7.6.4 to 7.7.2
+      #455 merged 2020-09-07 ⬆️ Bump @babel/core from 7.11.4 to 7.11.6
+      #457 merged 2020-09-07 ⬆️ Bump @babel/preset-env from 7.11.0 to 7.11.5
+      #456 merged 2020-09-07 ⬆️ Bump @babel/cli from 7.10.5 to 7.11.6
+  rollback       6 hit(s) (all listed)
+      #513 merged 2020-12-14 ⬆️ Bump husky from 4.3.0 to 4.3.6
+      #740 merged 2021-12-27 Bump fuse.js from 6.4.6 to 6.5.3
+      #556 closed 2021-03-01 ⬆️ Bump husky from 5.1.0 to 5.1.2
+      #834 merged 2022-05-09 ⬆️ Bump fuse.js from 6.4.1 to 6.6.1
+      #629 merged 2021-06-21 ⬆️ Bump inquirer from 7.3.3 to 8.1.1
+      #480 merged 2020-10-22 ⬆️ Bump jest from 25.1.0 to 26.6.0
+  resume         2 hit(s) (all listed)
+      #1000 merged 2023-02-01 🚸 Improve error message when doing commits
+      #536 closed 2021-02-05 Add support to skip prompting filled info
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #908 closed 2022-09-01 Config schema violation: `gitmojisUrl` must match format "url"
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        4 hit(s) (all listed)
+      #1389 merged 2025-01-01 ⬆️ Bump proxy-agent from 6.3.1 to 6.5.0
+      #180 merged 2019-06-03 ⬆️ 🔒 Bump axios from 0.18.0 to 0.18.1
+      #698 merged 2021-10-04 ⬆️ Bump jest from 27.2.2 to 27.2.4
+      #191 closed 2019-07-15 ⬆️ Bump axios from 0.18.1 to 0.19.0
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1582 open 2026-10-01 ⬆️ Bump lint-staged from 16.3.3 to 17.6.0
+      #1576 open 2026-10-01 ⬆️ Bump chalk from 5.6.2 to 6.0.1
+      #1577 open 2026-10-01 ⬆️ Bump ora from 8.2.0 to 9.4.1
+      #1581 open 2026-10-01 ⬆️ Bump @babel/preset-typescript from 7.28.5 to 7.29.7
+      #1574 open 2026-10-01 ⬆️ Bump jest from 30.5.0 to 30.5.2
+      #1578 open 2026-10-01 ⬆️ Bump prettier from 3.8.3 to 3.9.9
+      #1580 open 2026-10-01 ⬆️ Bump validator from 13.15.26 to 13.15.35
+      #1579 open 2026-10-01 ⬆️ Bump flow-bin from 0.309.0 to 0.333.0
+      #1575 open 2026-10-01 ⬆️ Bump jest-fetch-mock from 3.0.3 to 4.2.0
+      #1567 merged 2026-09-01 ⬆️ Bump @babel/preset-env from 7.29.3 to 7.29.7
+      #1572 closed 2026-09-10 ⬆️ Bump baseline-browser-mapping from 2.9.19 to 2.11.21
+      #1570 merged 2026-09-03 ⬆️ Bump fast-uri from 3.0.5 to 3.1.7
+      #1550 merged 2026-07-01 ⬆️ Bump @babel/core from 7.29.6 to 7.29.7
+      #1515 closed 2026-03-01 ⬆️ Bump conf from 13.1.0 to 15.1.0
+      #1583 open 2026-10-01 ⬆️ Bump execa from 8.0.1 to 10.0.1
+      #1552 merged 2026-07-01 ⬆️ Bump codecov/codecov-action from 6 to 7
+      #1558 merged 2026-08-01 ⬆️ Bump actions/setup-node from 6 to 7
+      #1557 closed 2026-07-22 ⬆️ Bump fast-uri from 3.0.5 to 3.1.4
+      #1569 merged 2026-09-01 ⬆️ Bump jest from 30.3.0 to 30.5.0
+      #1524 merged 2026-04-01 ⬆️ Bump flow-bin from 0.303.0 to 0.307.1
+  clobber        0 hit(s)
+  blank          8 hit(s) (all listed)
+      #150 open 2018-12-06 Multiline message support
+      #1547 closed 2026-06-01 ⬆️ Bump fuse.js from 7.1.0 to 7.4.2
+      #1454 merged 2025-08-01 ⬆️ Bump prettier from 3.5.3 to 3.6.2
+      #31 closed 2017-03-04 Git commits should include an empty line between title and description
+      #8 closed 2016-11-23 git-hook doesn't work as expected
+      #444 closed 2020-08-18 Commit hook is not working anymore since 3.2.9 upgrade
+      #276 closed 2020-01-10 timedPromise.finally is not a function
+      #462 merged 2020-09-21 ⬆️ Bump prettier from 2.1.1 to 2.1.2
+  unreadable     1 hit(s) (all listed)
+      #1569 merged 2026-09-01 ⬆️ Bump jest from 30.3.0 to 30.5.0
+  garbage        25 hit(s) (all listed)
+      #1577 open 2026-10-01 ⬆️ Bump ora from 8.2.0 to 9.4.1
+      #1549 closed 2026-07-01 ⬆️ Bump hermes-eslint from 0.35.0 to 0.37.0
+      #1536 closed 2026-05-01 ⬆️ Bump ora from 8.2.0 to 9.4.0
+      #1516 closed 2026-03-01 ⬆️ Bump ora from 8.2.0 to 9.3.0
+      #1508 closed 2026-02-01 ⬆️ Bump ora from 8.2.0 to 9.1.0
+      #1525 merged 2026-04-01 ⬆️ Bump hermes-eslint from 0.33.3 to 0.34.0
+      #1489 closed 2025-11-01 ⬆️ Bump ora from 8.2.0 to 9.0.0
+      #1501 merged 2026-01-01 ⬆️ Bump hermes-eslint from 0.32.1 to 0.33.2
+      #1471 merged 2025-10-01 ⬆️ Bump hermes-eslint from 0.32.0 to 0.32.1
+      #1464 merged 2025-09-01 ⬆️ Bump hermes-eslint from 0.31.0 to 0.32.0
+      #1455 merged 2025-08-01 ⬆️ Bump hermes-eslint from 0.28.1 to 0.31.0
+      #1449 merged 2025-07-01 ⬆️ Bump jest and @types/jest
+      #1431 merged 2025-05-01 ⬆️ Bump hermes-eslint from 0.26.0 to 0.28.1
+      #1418 closed 2025-04-01 ⬆️ Bump hermes-eslint from 0.26.0 to 0.27.0
+      #1382 merged 2024-12-20 ⬆️ Bump hermes-eslint from 0.23.1 to 0.26.0
+      #1377 closed 2024-12-01 ⬆️ Bump hermes-eslint from 0.23.1 to 0.25.1
+      #1341 merged 2024-09-01 ⬆️ Bump hermes-eslint from 0.22.0 to 0.23.1
+      #1305 merged 2024-06-04 ⬆️ Bump hermes-eslint from 0.20.1 to 0.22.0
+      #1299 closed 2024-06-01 ⬆️ Bump hermes-eslint from 0.20.1 to 0.21.1
+      #1272 merged 2024-03-09 ⬆️ Bump hermes-eslint from 0.16.0 to 0.20.1
+  mangled        1 hit(s) (all listed)
+      #1465 merged 2025-09-01 ⬆️ Bump jest from 30.0.5 to 30.1.2
+  contents       18 hit(s) (all listed)
+      #1575 open 2026-10-01 ⬆️ Bump jest-fetch-mock from 3.0.3 to 4.2.0
+      #1515 closed 2026-03-01 ⬆️ Bump conf from 13.1.0 to 15.1.0
+      #1539 closed 2026-05-08 ⬆️ Bump basic-ftp from 5.0.3 to 5.3.1
+      #1530 closed 2026-04-16 ⬆️ Bump basic-ftp from 5.0.3 to 5.3.1
+      #1529 closed 2026-04-10 ⬆️ Bump basic-ftp from 5.0.3 to 5.2.2
+      #1511 closed 2026-02-25 ⬆️ Bump basic-ftp from 5.0.3 to 5.2.0
+      #1324 merged 2024-07-16 Predefined list of scopes
+      #1440 closed 2025-06-01 ⬆️ Bump lint-staged from 15.5.1 to 16.1.0
+      #254 merged 2019-12-12 🐛 Check pre-commit-hook for contents
+      #929 closed 2022-09-30 Old code published in version 7.0.0
+      #782 closed 2022-03-12 auto merge triggered by git pull will execute hook
+      #49 closed 2017-06-02 ERROR: Network connection not found
+      #404 closed 2020-06-27 Interactive prompt config 
+      #750 closed 2022-01-13 Pin all dependencies
+      #515 merged 2020-12-14 ⬆️ Bump @babel/core from 7.12.9 to 7.12.10
+      #514 merged 2020-12-14 ⬆️ Bump @babel/cli from 7.12.8 to 7.12.10
+      #512 merged 2020-12-14 ⬆️ Bump @babel/preset-env from 7.12.7 to 7.12.10
+      #418 closed 2020-07-14 Fetch gitmoji list manually?
+  in-place       45 hit(s) (all listed)
+      #989 open 2023-01-09 Additional custom fields
+      #1563 closed 2026-08-01 ⬆️ Bump lint-staged from 16.3.3 to 17.3.0
+      #1569 merged 2026-09-01 ⬆️ Bump jest from 30.3.0 to 30.5.0
+      #1549 closed 2026-07-01 ⬆️ Bump hermes-eslint from 0.35.0 to 0.37.0
+      #1529 closed 2026-04-10 ⬆️ Bump basic-ftp from 5.0.3 to 5.2.2
+      #1525 merged 2026-04-01 ⬆️ Bump hermes-eslint from 0.33.3 to 0.34.0
+      #1501 merged 2026-01-01 ⬆️ Bump hermes-eslint from 0.32.1 to 0.33.2
+      #1471 merged 2025-10-01 ⬆️ Bump hermes-eslint from 0.32.0 to 0.32.1
+      #1464 merged 2025-09-01 ⬆️ Bump hermes-eslint from 0.31.0 to 0.32.0
+      #1455 merged 2025-08-01 ⬆️ Bump hermes-eslint from 0.28.1 to 0.31.0
+      #1431 merged 2025-05-01 ⬆️ Bump hermes-eslint from 0.26.0 to 0.28.1
+      #1277 closed 2024-03-14 feat: Convert gitmoji commands & flags to ts
+      #1418 closed 2025-04-01 ⬆️ Bump hermes-eslint from 0.26.0 to 0.27.0
+      #1382 merged 2024-12-20 ⬆️ Bump hermes-eslint from 0.23.1 to 0.26.0
+      #1377 closed 2024-12-01 ⬆️ Bump hermes-eslint from 0.23.1 to 0.25.1
+      #1341 merged 2024-09-01 ⬆️ Bump hermes-eslint from 0.22.0 to 0.23.1
+      #1305 merged 2024-06-04 ⬆️ Bump hermes-eslint from 0.20.1 to 0.22.0
+      #1299 closed 2024-06-01 ⬆️ Bump hermes-eslint from 0.20.1 to 0.21.1
+      #1077 closed 2023-05-07 Replace `inquirer` with `prompts`
+      #1272 merged 2024-03-09 ⬆️ Bump hermes-eslint from 0.16.0 to 0.20.1
+  unclean        0 hit(s)
+  shutdown       3 hit(s) (all listed)
+      #1466 merged 2025-09-01 ⬆️ Bump turbo from 2.5.5 to 2.5.6
+      #1364 merged 2024-11-01 ⬆️ Bump turbo from 2.1.3 to 2.2.3
+      #1265 closed 2024-03-01 ⬆️ Bump turbo from 1.11.2 to 1.12.4
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      5 hit(s) (all listed)
+      #1568 closed 2026-09-01 ⬆️ Bump lint-staged from 16.3.3 to 17.5.1
+      #1461 merged 2025-09-01 ⬆️ Bump lint-staged from 15.5.1 to 16.1.5
+      #1447 closed 2025-07-01 ⬆️ Bump lint-staged from 15.5.1 to 16.1.2
+      #1234 merged 2023-12-04 ⬆️ Bump lint-staged from 14.0.1 to 15.2.0
+      #49 closed 2017-06-02 ERROR: Network connection not found
+  partial+write  2 hit(s) (all listed)
+      #1276 merged 2024-03-12 🚸 Warn user if they are not in a git repository
+      #192 closed 2019-07-19 ✨ Add extraArgs option
+  crash+safe     0 hit(s)
+  atomic+write   4 hit(s) (all listed)
+      #423 merged 2020-07-20 ⬆️ Bump conf from 7.0.1 to 7.1.1
+      #1009 merged 2023-02-13 ⬆️ Bump jest from 29.4.1 to 29.4.2
+      #157 merged 2019-02-11 ⬆️ Bump jest from 24.0.0 to 24.1.0
+      #935 merged 2022-10-03 ⬆️ Bump jest from 29.0.3 to 29.1.2
+  lock+file      32 hit(s) (all listed)
+      #1568 closed 2026-09-01 ⬆️ Bump lint-staged from 16.3.3 to 17.5.1
+      #1569 merged 2026-09-01 ⬆️ Bump jest from 30.3.0 to 30.5.0
+      #1534 closed 2026-05-01 ⬆️ Bump lint-staged from 16.3.3 to 17.0.5
+      #1557 closed 2026-07-22 ⬆️ Bump fast-uri from 3.0.5 to 3.1.4
+      #1540 closed 2026-05-08 ⬆️ Bump fast-uri from 3.0.5 to 3.1.2
+      #1502 merged 2026-01-21 ⬆️ Bump lodash from 4.17.21 to 4.17.23
+      #1332 merged 2024-08-01 ⬆️ Bump husky from 9.0.11 to 9.1.4
+      #1267 merged 2024-03-01 ⬆️ Bump husky from 9.0.7 to 9.0.11
+      #1254 merged 2024-02-01 ⬆️ Bump prettier from 3.1.1 to 3.2.4
+      #1189 merged 2023-09-01 ⬆️ Bump typescript from 5.1.6 to 5.2.2
+      #2 closed 2016-11-18 ⚡️ Add yarn.lock file
+      #1143 merged 2023-07-10 ⬆️ Bump prettier from 2.8.8 to 3.0.0
+      #9 closed 2016-11-23 Unable to create `index.lock`: File exists.
+      #62 closed 2017-08-09 Error during commit.
+      #130 closed 2018-09-25 🐛 Fix pinned broken dependency
+      #64 closed 2017-08-23 Unable to create .git/index.lock
+      #920 closed 2022-09-21 🔒️ Upgrade update-notifier & other minor versions.
+      #163 closed 2019-03-30 Add "amend" option
+      #418 closed 2020-07-14 Fetch gitmoji list manually?
+      #157 merged 2019-02-11 ⬆️ Bump jest from 24.0.0 to 24.1.0
+  write+failure  4 hit(s) (all listed)
+      #1556 closed 2026-07-01 ⬆️ Bump lint-staged from 16.3.3 to 17.1.0
+      #1394 closed 2025-01-16 ⬆️ Bump lint-staged from 15.2.10 to 15.4.0
+      #1396 merged 2025-01-16 ⬆️ Bump lint-staged from 15.2.10 to 15.4.1
+      #1278 closed 2024-03-19 unknown write failure on standard output
+  file+contents  11 hit(s) (all listed)
+      #1575 open 2026-10-01 ⬆️ Bump jest-fetch-mock from 3.0.3 to 4.2.0
+      #1539 closed 2026-05-08 ⬆️ Bump basic-ftp from 5.0.3 to 5.3.1
+      #1515 closed 2026-03-01 ⬆️ Bump conf from 13.1.0 to 15.1.0
+      #1530 closed 2026-04-16 ⬆️ Bump basic-ftp from 5.0.3 to 5.3.1
+      #1529 closed 2026-04-10 ⬆️ Bump basic-ftp from 5.0.3 to 5.2.2
+      #1511 closed 2026-02-25 ⬆️ Bump basic-ftp from 5.0.3 to 5.2.0
+      #1440 closed 2025-06-01 ⬆️ Bump lint-staged from 15.5.1 to 16.1.0
+      #1324 merged 2024-07-16 Predefined list of scopes
+      #782 closed 2022-03-12 auto merge triggered by git pull will execute hook
+      #49 closed 2017-06-02 ERROR: Network connection not found
+      #418 closed 2020-07-14 Fetch gitmoji list manually?
+
+== 51 terms run; 36 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

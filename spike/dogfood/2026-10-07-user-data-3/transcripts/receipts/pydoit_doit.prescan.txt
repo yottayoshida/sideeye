@@ -1,0 +1,210 @@
+== novelty pre-scan: pydoit/doit
+== date: 2026-10-07T08:09:10Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          12 hit(s) (all listed)
+      #484 open 2026-06-23 fix: doit forget crashes with TypeError when no default tasks specified
+      #372 open 2020-09-04 doit auto crashes with python 3.8 on MacOS
+      #312 open 2019-07-04 Parallel execution issues on macOS
+      #344 closed 2020-01-07 default_tasks: wildcard selection crashes `doit clean`
+      #4 closed 2014-09-18 UnicodeDecodeError when running command
+      #161 closed 2016-12-28 Crashes on Python 3.3 due to missing pathlib
+      #153 closed 2016-10-10 Load sqlite3 module only as needed
+      #188 closed 2017-08-22 Support decorator on task creator
+      #231 closed 2018-01-11 `doit.get_var()` fails when invoked from the REPL or when using multiple processes on Windows
+      #302 closed 2019-05-16 Add a lock on tasks
+      #228 closed 2018-01-08 Sync changes in the db after each task execution.
+      #369 merged 2020-08-31 Remove pip import and version check from setup.py to make doit install with setuptools 50.0
+  corrupt        7 hit(s) (all listed)
+      #191 open 2017-08-26 Equivalent of DELETE_ON_ERROR
+      #395 closed 2021-04-24 FileNotFoundError: [Errno 2] No such file or directory: '.doit.db.dat'
+      #121 closed 2016-01-25 DatabaseException: (35, 'Resource temporarily unavailable')
+      #182 closed 2017-06-05 database corruption
+      #248 closed 2018-03-13 Test cases fail when python3-gdbm is installed
+      #380 closed 2020-12-08 Re-entrancy isn't achieved because of db-backend
+      #15 merged 2015-01-07 listen for MOVED_TO events in doit auto
+  corruption     2 hit(s) (all listed)
+      #426 closed 2022-05-27 0.36.0: strace test is failing 
+      #182 closed 2017-06-05 database corruption
+  truncated      0 hit(s)
+  truncate       2 hit(s) (all listed)
+      #490 open 2026-09-20 Implementation of Dependency.release() and Depedency.reopen()
+      #230 closed 2018-01-11 avoid race condition when multiple tasks update the same file? 
+  empty          21 hit(s) (all listed)
+      #494 open 2026-10-06 feat: show saved values in info command
+      #441 open 2022-10-26 normalize_callable breaking action property for positional arguments
+      #179 open 2017-05-24 Output has additional 0x0D
+      #478 open 2025-12-18 TypeError using `doit forget` with no default tasks specified
+      #277 open 2019-01-05 Python-action: detect which dependencies changed and which targets are missing
+      #120 closed 2016-01-21 "reset-dep" command doesn't work
+      #251 closed 2018-03-21 Can't build cross-platform pex containing doit due to file-watching dependencies
+      #404 closed 2021-09-28 Allow passing empty strings to short options + Check 'default' values
+      #387 closed 2021-03-30 No output from failed tasks when multiple processes are used
+      #396 closed 2021-04-27 Allow database-less execution, considering only file_dep and target mtimes
+      #14 closed 2015-01-05 delay creation of tasks until after another task is executed
+      #169 closed 2017-02-19 v0.30.2 installation error on Ubuntu 16.04 with Python3
+      #194 closed 2017-09-17 interpolate `%(changed)s` in action string even if it is empty list
+      #241 closed 2018-02-17 doit.get_var(): _CMDLINE_VARS is None unless running from doit utility
+      #271 closed 2018-10-04 doit reruns each time
+      #230 closed 2018-01-11 avoid race condition when multiple tasks update the same file? 
+      #308 closed 2019-06-11 "clean" cannot be given as a task_dep
+      #285 closed 2019-03-24 Unexpected targets' cleanup order
+      #10 closed 2014-11-01 Feature dry run
+      #58 merged 2015-06-07 Delayed target regex
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    2 hit(s) (all listed)
+      #191 open 2017-08-26 Equivalent of DELETE_ON_ERROR
+      #269 closed 2018-09-08 Problems running tests
+  interrupt      2 hit(s) (all listed)
+      #191 open 2017-08-26 Equivalent of DELETE_ON_ERROR
+      #269 closed 2018-09-08 Problems running tests
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #191 open 2017-08-26 Equivalent of DELETE_ON_ERROR
+      #101 closed 2015-09-03 use Watchdog in auto command
+  power          18 hit(s) (all listed)
+      #392 open 2021-04-10 Implement --show-action command line argument
+      #357 closed 2020-04-29 Document doit integration into another program.
+      #200 closed 2017-09-27 Make Open Collective public
+      #288 closed 2019-04-08 clean not able to access doit data?
+      #433 merged 2022-07-29 add tab completion support for gitbash
+      #417 closed 2022-02-15 Bugfix for issue 416
+      #407 merged 2021-11-28 Enable file checker to handle remote storage.
+      #411 closed 2021-12-19 Correct behavior for default
+      #402 closed 2021-08-17 Fix #349: not able to pass task args in single task execution
+      #377 closed 2020-11-09 Add -a/--all option to doit forget
+      #405 merged 2021-10-15 Add field 'meta' to tasks that can be used by plugins
+      #374 closed 2020-10-31 Add TOML config loading, autodetect pyproject.toml
+      #396 closed 2021-04-27 Allow database-less execution, considering only file_dep and target mtimes
+      #384 merged 2021-03-14 add codecov, tweak some spelling
+      #68 closed 2015-06-23 docs: add a section to advertise other projects based on doit
+      #73 closed 2015-07-08 Ability to select tasks using a shortcut
+      #302 closed 2019-05-16 Add a lock on tasks
+      #15 merged 2015-01-07 listen for MOVED_TO events in doit auto
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #455 open 2023-05-11 dep_manager.get_result() should not be discouraged if MRunner is also used
+      #396 closed 2021-04-27 Allow database-less execution, considering only file_dep and target mtimes
+  partial        10 hit(s) (all listed)
+      #390 open 2021-04-08 Ability to print action before executing it.
+      #447 open 2023-02-19 Pre-commit hook
+      #392 open 2021-04-10 Implement --show-action command line argument
+      #384 merged 2021-03-14 add codecov, tweak some spelling
+      #112 closed 2015-11-05 drop python 2 compatibility
+      #253 closed 2018-04-17 Realistic example for home page
+      #286 closed 2019-03-24 Cannot use functools.partial as title
+      #84 closed 2015-08-05 Windows tests working PR
+      #295 merged 2019-05-05 Fix issue #285 - Unexpected targets' cleanup order
+      #293 merged 2019-05-01 Solve issue #286 - task.title accept partials
+  incomplete     3 hit(s) (all listed)
+      #191 open 2017-08-26 Equivalent of DELETE_ON_ERROR
+      #427 closed 2022-06-08 Passing a reference to a task as action does nothing
+      #14 closed 2015-01-05 delay creation of tasks until after another task is executed
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #14 closed 2015-01-05 delay creation of tasks until after another task is executed
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #125 closed 2016-02-09 "doit list" fails if tasks contain non-ASCII characters in doc
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #14 closed 2015-01-05 delay creation of tasks until after another task is executed
+  destroys       0 hit(s)
+  overwrite      6 hit(s) (all listed)
+      #390 open 2021-04-08 Ability to print action before executing it.
+      #177 open 2017-05-09 input() doesn't work when `-n` is used on the command line
+      #394 merged 2021-04-13 remove redundant code (overwrite_verbosity)
+      #73 closed 2015-07-08 Ability to select tasks using a shortcut
+      #302 closed 2019-05-16 Add a lock on tasks
+      #322 closed 2019-07-28 Add feature to specify task parameters in doit.cfg (issue #283)
+  clobber        1 hit(s) (all listed)
+      #247 closed 2018-03-04 "pip install doit" fails (before and after `brew upgrade python3`)
+  blank          6 hit(s) (all listed)
+      #249 closed 2018-03-15 TypeError when failed task with dependency with --continue option
+      #147 closed 2016-08-15 Fix #144
+      #53 closed 2015-05-22 Fix pickling on windows so that we can spawn new processes
+      #37 closed 2015-03-24 Feature: CmdParse can construct lists by providing an 'append' style option
+      #294 closed 2019-05-03 Taskloader API Update
+      #301 closed 2019-05-15 Implement configurable JSON encoder/decoder to allow non-serializable python-action return values
+  unreadable     1 hit(s) (all listed)
+      #249 closed 2018-03-15 TypeError when failed task with dependency with --continue option
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       5 hit(s) (all listed)
+      #119 open 2016-01-05 Incorrect result when input file is modified during task execution
+      #316 open 2019-07-25 'uptodate' output is *always* sent to DEVNULL
+      #214 open 2017-10-15 Provide HTML, HTML.zip and PDF version of documentation (retro, stable, latest)
+      #32 closed 2015-03-23 plugin system
+      #271 closed 2018-10-04 doit reruns each time
+  in-place       40 hit(s) (all listed)
+      #375 open 2020-11-03 Add reference to `doit-api` in the documentation ?
+      #130 open 2016-03-22 Prohibit concurrent execution of tasks using shared resource
+      #437 open 2022-08-19 CmdAction calls callable more than once
+      #463 open 2023-11-03 Gradual update of doit.dat file for multi-tasks (subtasks)
+      #436 open 2022-08-11 Default values for param of type list not being overridden. 
+      #440 open 2022-10-06 support async Python actions
+      #287 open 2019-03-24 Path are coerced to string
+      #412 open 2021-12-24 CmdAction with list does not set shell=False
+      #208 open 2017-10-01 `doit` gallery
+      #447 open 2023-02-19 Pre-commit hook
+      #452 open 2023-03-23 Problems with interaction between config files and --seek-file/--file
+      #254 open 2018-04-17 dependencies is a set not a list
+      #123 open 2016-02-02 tutorial
+      #255 closed 2018-04-20 Save process return code in CmdAction
+      #288 closed 2019-04-08 clean not able to access doit data?
+      #427 closed 2022-06-08 Passing a reference to a task as action does nothing
+      #307 closed 2019-06-07 Bind delayed task creating functions to the object instance.
+      #374 closed 2020-10-31 Add TOML config loading, autodetect pyproject.toml
+      #158 closed 2016-11-21 How to Cite Doit
+      #396 closed 2021-04-27 Allow database-less execution, considering only file_dep and target mtimes
+  unclean        1 hit(s) (all listed)
+      #10 closed 2014-11-01 Feature dry run
+  shutdown       2 hit(s) (all listed)
+      #50 closed 2015-04-27 Executing tasks in parallel fails on Windows
+      #146 closed 2016-08-08 Suggestion
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #396 closed 2021-04-27 Allow database-less execution, considering only file_dep and target mtimes
+  data+loss      0 hit(s)
+  partial+write  2 hit(s) (all listed)
+      #447 open 2023-02-19 Pre-commit hook
+      #84 closed 2015-08-05 Windows tests working PR
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      6 hit(s) (all listed)
+      #490 open 2026-09-20 Implementation of Dependency.release() and Depedency.reopen()
+      #395 closed 2021-04-24 FileNotFoundError: [Errno 2] No such file or directory: '.doit.db.dat'
+      #182 closed 2017-06-05 database corruption
+      #230 closed 2018-01-11 avoid race condition when multiple tasks update the same file? 
+      #302 closed 2019-05-16 Add a lock on tasks
+      #280 closed 2019-01-17  Add support for new-style command formatting.
+  write+failure  6 hit(s) (all listed)
+      #372 open 2020-09-04 doit auto crashes with python 3.8 on MacOS
+      #50 closed 2015-04-27 Executing tasks in parallel fails on Windows
+      #128 closed 2016-03-10 Add `Logbook` or `logging` based Reporter
+      #248 closed 2018-03-13 Test cases fail when python3-gdbm is installed
+      #84 closed 2015-08-05 Windows tests working PR
+      #23 closed 2015-02-06 Allow to customize how file_dep are checked.
+  file+contents  4 hit(s) (all listed)
+      #119 open 2016-01-05 Incorrect result when input file is modified during task execution
+      #214 open 2017-10-15 Provide HTML, HTML.zip and PDF version of documentation (retro, stable, latest)
+      #32 closed 2015-03-23 plugin system
+      #271 closed 2018-10-04 doit reruns each time
+
+== 51 terms run; 28 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,56 @@
+== openssl
+spike/cohort2/probes/raw/borg-frozen.strace:1551:50    openat(AT_FDCWD</>, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 4</etc/ssl/openssl.cnf>
+spike/cohort2/probes/raw/borg-pinned.strace:1469:37    openat(AT_FDCWD</>, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 3</etc/ssl/openssl.cnf>
+spike/cohort2/probes/raw/borg-control.strace:1469:37    openat(AT_FDCWD</>, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 3</etc/ssl/openssl.cnf>
+spike/cohort2/probes/raw/hg.strace:1127:37    openat(AT_FDCWD</>, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 3</etc/ssl/openssl.cnf>
+spike/cohort3/probes/raw/cargo.strace:16:63    openat(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/ssl/openssl.cnf", O_RDONLY) = -1 ENOENT (No such file or directory)
+spike/cohort3/probes/raw/cargo.strace:46:63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/openssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+spike/cohort3/probes/raw/cargo.strace:47:63    statx(AT_FDCWD</tmp/probe-cargo/appS>, "/usr/local/etc/openssl", AT_STATX_SYNC_AS_STAT, STATX_ALL, 0xffffc7fea8c0) = -1 ENOENT (No such file or directory)
+spike/cohort3/probes/raw/papis.strace:1448:124   openat(AT_FDCWD</>, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 3</etc/ssl/openssl.cnf>
+== ssh-keygen
+== minisign
+== qemu-img
+== fw_setenv
+== sfntedit
+== lxc
+== ostree
+== kicad
+== librepcb
+== step
+spike/libc-internal/RESULTS.md:310:write sizes were not traced (`ci-x86_64-glibc-2.39.txt`, the step's own lines).
+spike/libc-internal/2026-09-13-both-modes/ci-x86_64-glibc-2.39.txt:2:# the step 'The libc-internal-call class matches its declarations (#39)', copied from `gh run view --log`
+spike/cohort2/borg-r2/proposals.md:54:  break-lock` (the documented stale-lock step); the frozen probe's
+spike/cohort2/borg-r3/RUNLOG.md:3:## Timeline (all 2026-08-21, each step's evidence committed where named)
+spike/cohort2/borg-r3/proposals.md:59:  break-lock` (the documented stale-lock step); the frozen probe's
+spike/cohort2/hg-r4/RUNLOG.md:3:## Timeline (all 2026-08-21, each step's evidence committed where named)
+spike/cohort2/borg/proposals.md:40:  break-lock` (the documented stale-lock step); the frozen probe's
+spike/cohort2/PROTOCOL.md:249:  documented step for exactly that, and only that: it is lock removal, not
+== certstrap
+== incus
+== lxd
+== git-lfs
+== git-town
+== duplicacy
+== plakar
+== sbctl
+== rustic
+== ferium
+== ludusavi
+== legendary
+== keyring
+spike/scout-model-comparison/arms/opus/proposals-pass.md:4:`man/pass.1` and a `tests/` suite that ships a working GPG keyring.
+spike/scout-model-comparison/arms/opus/proposals-pass.md:168:   home. Point it at `targets/pass/tests/gnupg`, which ships a ready-made keyring
+spike/scout-model-comparison/arms/fable/proposals-pass.md:33:- **argv**: `pass init NEWKEY-ID`（環境: `PASSWORD_STORE_DIR=<state>`、fixture: OLDKEY で暗号化された `*.gpg` を 5〜10 件、git 無し。keyring は両鍵入りを engine 側 fixture として固定）
+spike/cohort3/probes/run-poetry.sh:5:# files. Keyring is nulled (fully-qualified backend name); cache and
+spike/cohort3/probes/run-poetry.sh:39:export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+spike/cohort3/probes/run-poetry.sh:40:note "condition 7 — ambient: POETRY_CACHE_DIR and POETRY_CONFIG_DIR are created FRESH PER RUN (the reset); HOME=<WS>/home fresh and shown after the runs; PYTHON_KEYRING_BACKEND=keyring.backend
+spike/cohort3/probes/poetry.txt:2:== condition 7 — ambient: POETRY_CACHE_DIR and POETRY_CONFIG_DIR are created FRESH PER RUN (the reset); HOME=<WS>/home fresh and shown after the runs; PYTHON_KEYRING_BACKEND=keyring.backends.null.
+spike/cohort3/probes/raw/papis.strace:922:124   openat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/keyring-25.7.0.dist-info/entry_points.txt", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/python3.13/dist-packages/keyring-25.7.
+== weectl
+== snakemake
+== espsecure
+== netlify
+== keytool
+== easyrsa
+== acme.sh
+== zsh-z

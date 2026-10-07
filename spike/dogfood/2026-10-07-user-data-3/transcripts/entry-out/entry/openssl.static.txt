@@ -1,0 +1,2 @@
+static: /opt/bin/openssl: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=3ee7474d1e7c84de7b5519f94e7f776fc9928896, for GNU/Linux 3.7.0, not stripped
+next: sideeye explore --state /s/ca --cwd "/s/ca-in" --operation "openssl ca -config /s/ca/ca.cnf -revoke /s/ca/b.crt -batch" \

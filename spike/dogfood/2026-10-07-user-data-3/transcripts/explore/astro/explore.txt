@@ -1,0 +1,24 @@
+FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  open(/s/aux/home/.config/astro/settings.json)
+            before write(/s/aux/home/.config/astro/settings.json)
+path        settings.json
+observed    holding neither the old nor the new content
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (11194 syscall lines examined, 12 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/astro/work-explore/cases/000001.json
+replay      sideeye replay /out/astro/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/astro/work-explore/evidence/000001.json
+cwd         /s/astro-in
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 22 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/aux/home/.config/astro SIDEEYE_TRACE_PATH=/out/astro/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=0a3ca3e986e4f2f59f31a4a35db7e71043f53c66ff90c4709d8b68878e9f4bf2;

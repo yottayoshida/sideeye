@@ -1,0 +1,6 @@
+[world]
+state = "/s/gm/.git/hooks"
+
+[define]
+operation = "gitmoji -i"
+cwd       = "/s/gm"

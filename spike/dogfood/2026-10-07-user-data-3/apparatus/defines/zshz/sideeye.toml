@@ -1,0 +1,6 @@
+[world]
+state = "/s/z/data"
+
+[define]
+operation = "zsh /s/z-in/op.zsh"
+cwd       = "/s/z-in"

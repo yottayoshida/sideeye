@@ -1,0 +1,3 @@
+ohmyzsh/ohmyzsh stars=190200 pushed=2026-10-06 archived=false issues=true full=ohmyzsh/ohmyzsh
+jaraco/keyring stars=1514 pushed=2026-04-13 archived=false issues=true full=jaraco/keyring
+oh-my-fish/oh-my-fish stars=11396 pushed=2026-09-30 archived=false issues=true full=oh-my-fish/oh-my-fish

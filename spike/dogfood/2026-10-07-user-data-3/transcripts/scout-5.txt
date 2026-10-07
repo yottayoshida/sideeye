@@ -1,0 +1,23 @@
+# Scout 5 (fresh Opus subagent, read-only; 2026-10-07). Its report, as handed back.
+
+sideeye dogfood 候補集め 5 回目（最後）の結果。読み取りのみ（fresh.sh・`gh api repos/`・読み取りシェル・Web 検索。`gh api search` 不使用、ファイル作成・状態変更なし）。scout-1〜4 に出た名前は除外。
+
+【要判断】★先に読んでほしい
+今回は **clean に全規則を満たす fresh が極端に少ない**。4 回の scout（計 100 件超）＋ b2-candidates の 289 名プール＋巨大な exclusion 台帳で、clean・CLI 主体・単一プロセス・平文インプレースの空間はほぼ掘り尽くされている。私が広く掘った分野（言語 CLI の config set、個人データ平文ストア、codemod/インプレース編集、データ形式エディタ、クラウド config、AI/MCP CLI、科学データ、ゲームセーブ、GPS、楽譜、辞書、レシピ、シェル管理）の fresh はほぼ SEEN か、星<1000／push 古い／issues off で脱落した。
+**明確に clean で全規則を満たすのは chef・roswell の 2 件だけ。** 下表の残り 6 件は (a) rule 4（GUI/Web が主な使い方。scout-1 が kicad-cli/openmw-iniimporter を rule 4 注記つきで挙げたのと同型）か (b) 壁（別プロセス起動／Go スレッド／ネット）に当たる。**12 件に達しない。** 壁つき/rule 4 つきでも載せてよいか、2 件で止めるか、別の切り口（低星 OSS を許すか、SEEN 済みの別コマンド面を測り直すか）を指定してほしい。下表は star 降順で、懸念を明記した 8 件。
+
+名前 | owner/repo | 星 | 最終push | 書き換えるコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念
+semgrep | semgrep/semgrep | 16,911 | 2026-10-07 | `semgrep --autofix --config=r.yaml f.py` | f.py をその場で | Python+OCaml | pip semgrep | **壁(c)**: Python CLI が semgrep-core を別プロセス起動＋多スレッド。確度 høy
+musescore | musescore/MuseScore | 15,191 | 2026-10-06 | `QT_QPA_PLATFORM=offscreen mscore -o s.mscz s.mscz`（同パス上書き、LibreSprite/aseprite と同型） | s.mscz | C++ | Debian musescore3 | **rule 4**(GUI が主、kicad-cli と同型)＋Qt の多スレッド。確度60%
+chef(knife) | chef/chef | 8,246 | 2026-10-07 | `knife config use-profile prod`（→`~/.chef/context` を書き換え。docs.chef.io で確認済み） | ~/.chef/context | Ruby | gem chef / arm64 omnibus | **clean**。CLI 主体、単一プロセス、ネット無し。既存の context を上書き
+bottles | bottlesdevs/Bottles | 8,937 | 2026-10-07 | `bottles-cli edit -b Name --sync=fsync`（bottle.yml を書き換え） | ~/.local/share/bottles/bottles/Name/bottle.yml | Python | pip/flatpak | **rule 4**(GUI が主)＋実運用は wine 子プロセス。edit 自体は YAML 書き込みのみ。確度60%
+webmin | webmin/webmin | 6,081 | 2026-10-07 | `perl changepass.pl ./etc user pass`（miniserv.users をその場で） | ./etc/miniserv.users | Perl | git/pkg | **rule 4**(Web UI が主)＋通常 root/`/etc`。config ディレクトリを引数で渡せば非 root 可。確度65%
+inspec | inspec/inspec | 3,098 | 2026-10-07 | `inspec vendor --overwrite ./profile` | ./profile/inspec.lock（YAML） | Ruby | gem inspec / arm64 | 依存が remote だと取得でネット。ローカル path 依存なら閉じる。確度70%
+roswell | roswell/roswell | 1,907 | 2026-09-04 | `ros config set default.lisp sbcl`（man ros-config で確認。→`~/.roswell/config`） | ~/.roswell/config | Common Lisp | arm64 deb/brew | **clean**。単一プロセス、ネット無し。`ros setup` 後に既存 config を書き換え
+qshell | qiniu/qshell | 1,021 | 2026-09-11 | `qshell user change Name`（ローカル account の JSON を書き換え） | ~/.qshell/users 配下の JSON | Go | arm64 release | **壁(a)**: Go goroutine。他の大半のサブコマンドはネット（Qiniu）
+
+参考（fresh と出たが脱落）:
+- **SEEN（親/リポ名でも照合）約140件**。音声/電子書籍/PDF メタ、plain-text accounting、連絡先/予定表、RSS、ドットファイル、OTP/KeePass、version manager、config set（npm/pip/poetry/aws/gh…）はほぼ全滅。codemod 系も comby/fastmod/rector/ast-grep/biome/oxlint/ruff/sqlfluff が SEEN。**名前は fresh でも tool 本体が SEEN だった重要例: doing（2026-10-03 に測定済・FAIL）、raco=racket（測定済）、typos（測定済）、clang-tidy=llvm/llvm-project（clang-format が rule 4 で却下済＝同リポ）**。
+- **規則1・2・issue で脱落 約45件**。星<1000: oci-cli 672・chirp 589・postconf 576・silverstripe 724・statamic/statamic 835・bump-my-version 632・knope 197・hcledit 557・tfupdate 657・eccodes 270・GMT 984・nco 196・rhash 732・verovio 940・vit 584・Fixit 715・libredwg は 1,615 だが変換器で in-place 無し。push 古い: classifier 2022・get_iplayer 2025-05・s3cmd 2025-10・teller 2026-01・captainhook 2026-03・shodan 2024-08・rbw 2025-12・nap 2024-05・zplug 2026-03・Fiona 2025-02。archive: taskell・client9/misspell・facebook/codemod・googler・tea・vocage。issues off: TYPO3・apache/httpd・gnucash。GitHub 外: glab(gitlab.com)・gcloud・tlmgr・prosody・amp・factory。
+
+総括: この 5 回目は、clean な新規が 2 件（chef・roswell）に留まる。空間は実質掘り尽くされており、上積みは「rule 4 の GUI/Web 付属 CLI」か「壁つき（semgrep の子プロセス・qshell の Go/ネット）」を許容するかの判断次第。

@@ -1,0 +1,5 @@
+cohort4-recheck: done
+# control, the same script on two names 2026-10-05 found in cohort 4:
+ffsubsync: CANDIDATES-REJECTED.md:58
+ggshield: CANDIDATES-REJECTED.md:69
+cohort4-recheck: done

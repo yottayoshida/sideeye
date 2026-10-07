@@ -1,0 +1,2 @@
+static: /opt/node22/bin/cspell: Node.js script executable, ASCII text
+next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.

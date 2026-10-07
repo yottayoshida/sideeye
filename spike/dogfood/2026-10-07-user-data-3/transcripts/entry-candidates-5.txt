@@ -1,0 +1,8 @@
+ROW pi static=0 preflight_rc=0 gate=0 detail=accepted, 8 operations
+EXIT pi 0
+ROW cspell static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT cspell 1
+ROW doit static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT doit 0
+ROW kitten static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 10 operations
+EXIT kitten 0

@@ -1,0 +1,12 @@
+# Lab 11 only (not a slate target): sndfile's define with an inspector declared as its recovery, so each
+# saved FAIL world's a.wav is read as the crash left it. The inspector changes nothing.
+[world]
+state = "/s/snd"
+
+[define]
+operation = "sndfile-metadata-set --str-comment edited /s/snd/a.wav"
+cwd       = "/s/snd-in"
+
+[recovery]
+command = "/opt/py/bin/python -I /ap/inspect-wav.py /s/snd/a.wav"
+check   = "true"

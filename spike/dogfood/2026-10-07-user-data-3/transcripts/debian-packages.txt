@@ -1,0 +1,33 @@
+lxd | by-name: lxd | ships /usr/bin/lxc: lxd-client 
+duplicacy | by-name: none | ships /usr/bin/duplicacy: none
+ferium | by-name: none | ships /usr/bin/ferium: none
+easy-rsa | by-name: easy-rsa | ships /usr/bin/easyrsa: none
+tiddlywiki | by-name: none | ships /usr/bin/tiddlywiki: none
+broot | by-name: broot | ships /usr/bin/broot: broot 
+libzip | by-name: none | ships /usr/bin/ziptool: ziptool 
+xbps | by-name: none | ships /usr/bin/xbps-pkgdb: none
+mcpm | by-name: none | ships /usr/bin/mcpm: none
+libsndfile | by-name: none | ships /usr/bin/sndfile-metadata-set: sndfile-programs 
+ezdxf | by-name: python3-ezdxf | ships /usr/bin/ezdxf: python3-ezdxf 
+pi | by-name: pi | ships /usr/bin/pi: pi 
+doit | by-name: python3-doit | ships /usr/bin/doit: python3-doit 
+kitty | by-name: kitty | ships /usr/bin/kitten: kitty 
+alacritty | by-name: alacritty | ships /usr/bin/alacritty: alacritty 
+gitmoji | by-name: none | ships /usr/bin/gitmoji: none
+astro | by-name: none | ships /usr/bin/astro: none
+roswell | by-name: none | ships /usr/bin/ros: none
+zsh-z | by-name: none | ships /usr/bin/zshz: none
+openssl | by-name: openssl python3-openssl | ships /usr/bin/openssl: openssl 
+afdko | by-name: afdko python3-afdko | ships /usr/bin/sfntedit: none
+acme.sh | by-name: acme.sh | ships /usr/bin/acme.sh: acme.sh 
+minizip-ng | by-name: none | ships /usr/bin/minizip: minizip 
+rustic | by-name: none | ships /usr/bin/rustic: none
+esptool | by-name: esptool | ships /usr/bin/espsecure: esptool 
+plakar | by-name: none | ships /usr/bin/plakar: none
+cspell | by-name: none | ships /usr/bin/cspell: none
+prek | by-name: none | ships /usr/bin/prek: none
+goaccess | by-name: goaccess | ships /usr/bin/goaccess: goaccess 
+ostree | by-name: ostree | ships /usr/bin/ostree: ostree 
+capacitor | by-name: none | ships /usr/bin/cap: capistrano 
+git-lfs | by-name: git-lfs | ships /usr/bin/git-lfs: git-lfs 
+keyring | by-name: python3-keyring | ships /usr/bin/keyring: python3-keyring 

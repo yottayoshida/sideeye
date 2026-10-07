@@ -1,0 +1,46 @@
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Database updated
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Database updated
+FAIL  2 of 9 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 6 of 8
+            after  rename(/s/ca/index.txt)
+            before rename(/s/ca/index.txt.new)
+path        index.txt
+observed    present before and after the operation, but gone from the crashed state
+explored    9 worlds (crash points 8 + 1 baseline)
+expected    exit 0
+atomicity   23 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): index.txt.old
+oracle      agreed on 8 operations (217 syscall lines examined, 72 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/openssl/work-explore/cases/000001.json
+replay      sideeye replay /out/openssl/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/openssl/work-explore/evidence/000001.json
+cwd         /s/ca-in
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   SIDEEYE_STATE_DIR=/s/ca SIDEEYE_TRACE_PATH=/out/openssl/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=6 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=77744049b5f628e5a007c22b702e741038238d7e875a0713ab3f90af64abe8c7;

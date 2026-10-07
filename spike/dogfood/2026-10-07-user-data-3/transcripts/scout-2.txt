@@ -1,0 +1,49 @@
+# Scout 2 (fresh Opus subagent, read-only; 2026-10-07). Its report, as handed back.
+
+sideeye dogfood の候補集め、2 回目の結果。fresh で、星 1,000 以上・2026-04-07 以降に push・archive されていない・issue が有効、の 4 つを満たしたのは 42 件。そのうち規則 5 が中程度以上で、書き換えるコマンドを確かめられた 31 件を表にした。残る 11 件は規則 5 が弱いか懸念が大きいので、最後に名前だけ挙げる。ファイルは作っておらず、使ったのは fresh.sh・`gh api repos/`・読み取りのシェル・Web 検索だけ（`gh api search` は使っていない）。
+
+【要判断】
+- chia と kubo: コマンドが書き換えるのは YAML・JSON・鍵のファイルだが、道具全体の主な保管先は組み込み DB（chia はチェーンとウォレットが SQLite、kubo は datastore が leveldb）。規則 6・7 で入れるか決めてほしい。
+- llama.cpp の gguf-set-metadata: numpy の memmap で書き換えるので、書き込みが write 呼び出しとして出てこない恐れがある。sideeye で見えるかどうか。
+- hass（Home Assistant）: 道具の本体はサーバー（規則 4）。CLI は付属のスクリプト。
+- fabric が SEEN と出たのは「fabricated」という語に当たっただけ。持ち主 danielmiessler の名前でも照合して fresh だった。
+
+名前 | repo | 星 | push | 書き換えるコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念
+1. gguf-set-metadata | ggml-org/llama.cpp | 131k | 10-07 | `gguf-set-metadata m.gguf general.file_type 7 --force` | m.gguf をその場で（r+ と mmap） | Python | pip gguf | 要判断を参照。--force を付けないと stdin で確認を求める
+2. hass --script auth | home-assistant/core | 91k | 10-07 | `hass --script auth -c cfg change_password u pw`／`add u pw`（パスワードは引数で渡す） | cfg/.storage/auth_provider.homeassistant | Python | pip | 規則 4。executor のスレッドで書く
+3. alacritty migrate | alacritty/alacritty | 66k | 10-05 | `alacritty migrate -c a.toml`（import 先のファイルも書き換える） | a.toml（一時ファイルから rename） | Rust | Debian trixie | 特になし
+4. kitten themes | kovidgoyal/kitty | 35k | 10-07 | `kitten themes --reload-in=none Dracula` | kitty.conf、current-theme.conf | Go/C | Debian | 初回にテーマ一覧を取りに行く（キャッシュを先に置く必要がある）
+5. ipfs | ipfs/kubo | 17k | 10-01 | `ipfs config profile apply lowpower`／`ipfs key rename a b`／`ipfs key rm a`（daemon は不要） | $IPFS_PATH/config、keystore/ | Go | arm64 の tar | 要判断を参照。goroutine が多い
+6. broot | Canop/broot | 13k | 10-04 | `broot --install`（尋ねずに入れることをソースで確認）／`--set-install-state refused` | ~/.bashrc・.zshrc への追記、br スクリプト、状態ファイル | Rust | arm64 リリース | 特になし
+7. gix | GitoxideLabs/gitoxide | 12k | 10-06 | `gix clean -xde`／`gix index from-tree HEAD` | 追跡外・無視対象のファイル（削除）、.git/index | Rust | cargo | スレッドの可能性
+8. chia | Chia-Network/chia-blockchain | 10.8k | 10-07 | `chia configure --set-log-level INFO`／`chia keys delete -f FP` | config.yaml、keyring.yaml | Python | arm64 の .deb | 先に `chia init` が要る。要判断を参照
+9. lnav | tstack/lnav | 10.7k | 10-06 | `lnav -n -c ':config /ui/theme monocai'`（確度 70%）／`lnav -i fmt.json` | ~/.config/lnav/config.json | C++ | Debian | スレッドあり
+10. chdman | mamedev/mame | 10.6k | 10-07 | `chdman addmeta -i d.chd -t TEST -vt x`／`delmeta` | d.chd をその場で | C++ | Debian mame-tools | 事前に CHD を作る（createraw はスレッドを使う）
+11. aicommits | Nutlope/aicommits | 9.1k | 09-05 | `aicommits config set OPENAI_KEY=x generate=2` | ~/.aicommits（INI） | TS | npm | Node
+12. tiddlywiki | TiddlyWiki/TiddlyWiki5 | 8.7k | 10-05 | `tiddlywiki --load w.html --deletetiddlers '[[X]]' --output . --render '$:/core/save/all' w.html text/plain`（確度 70%） | w.html を上書き | JS | npm | `--savewikifolder` は空のフォルダにしか書けないことを確認済み
+13. prek | j178/prek | 8.6k | 10-05 | `prek install`／`uninstall`／`gc` | .git/hooks/pre-commit（既存のフックは .legacy に退避）、キャッシュ | Rust | arm64 リリース | git を読み取りで起動する
+14. oco | di-sukharev/opencommit | 7.5k | 09-09 | `oco config set OCO_API_KEY=x` | ~/.opencommit | JS | npm | 起動時の版確認でネットワークに出る恐れ
+15. clamscan | Cisco-Talos/clamav | 7.3k | 08-27 | `clamscan -d t.hdb -r --remove=yes d`／`--move=q` | 検出されたファイル（削除・移動） | C | Debian | 自作の小さいシグネチャを使えば freshclam もネットワークも要らない
+16. cb | Slackadays/Clipboard | 5.9k | 05-06 | `CLIPBOARD_NOGUI=1 cb copy_x f`／`add_x`／`remove_x`／`clear_x` | $XDG_STATE_HOME の下の永続クリップボードの木 | C++ | ソースからビルド | 進捗表示にスレッドを使う可能性（未確認）
+17. me_cleaner | corna/me_cleaner | 5.0k | 10-02 | `python3 me_cleaner.py -S fw.bin`（-O を付けないとその場で書き換える） | fw.bin | Python | git clone | 試すには ME を含む実物のファームウェアが要る
+18. mcaselector | Querz/mcaselector | 4.9k | 09-24 | `java -jar mcaselector.jar --mode delete --world w --query "xPos > 10"`／`--mode change` | w/region/*.mca | Java | jar と JRE 17 | JVM。`--process-threads 1 --write-threads 1` で絞れる。JavaFX は不要
+19. gitmoji | carloscuesta/gitmoji-cli | 4.8k | 10-01 | `gitmoji -i`／`gitmoji -r` | .git/hooks/prepare-commit-msg | JS | npm | git を読み取りで起動する
+20. dnscontrol | DNSControl/dnscontrol | 4.0k | 10-06 | `dnscontrol push`（BIND プロバイダ） | zones/*.zone（既存の SOA serial を読んで書き直す） | Go | arm64 リリース | zone ファイルは dnsconfig.js からの生成物なので規則 5 は中程度
+21. octodns-sync | octodns/octodns | 3.8k | 10-05 | `octodns-sync --config-file c.yaml --doit`（書き出し先は YamlProvider） | 書き出し先の *.yaml | Python | pip | 20 と同じ
+22. atac | Julien-cpsn/ATAC | 3.7k | 09-03 | `atac -d D collection rename a b`／`request new a/r`／`env key ... set` | D の下のコレクション（JSON・YAML）、.env.* | Rust | arm64 リリース | tokio のランタイム
+23. ckan | KSP-CKAN/CKAN | 2.7k | 10-01 | `ckan compat add 1.12`／`ckan mark user M`／`ckan instance add n p` | <game>/CKAN/registry.json ほか、~/.local/share/CKAN/config.json | C# | ckan.exe と mono | mono のスレッド。ゲームのディレクトリを偽装する必要がある
+24. f2 | ayoisaiah/f2 | 2.5k | 10-04 | `f2 -f IMG -r pic -x`／`f2 -u`（取り消し） | ファイル名（rename）、取り消し用の backup JSON | Go | arm64 リリース | 特になし
+25. apptainer sif | apptainer/apptainer | 2.0k | 10-02 | `apptainer sif del 3 a.sif`／`sif add`／`sign --key k.pem a.sif` | a.sif をその場で | Go | ソースからビルド | goroutine
+26. simple-git-hooks | toplenboren/simple-git-hooks | 1.7k | 08-28 | `npx simple-git-hooks` | .git/hooks/*（上書きし、設定に無いフックは消す） | JS | npm | 特になし
+27. toot | ihabunek/toot | 1.3k | 09-12 | `toot activate a@h`／`toot logout a@h`（どちらもネットワークに出ないことをソースで確認） | ~/.config/toot/config.json | Python | pip | 状態はログインで作られるので、手で仕込む必要がある
+28. flashrom | flashrom/flashrom | 1.2k | 10-06 | `flashrom -p dummy:emulate=W25Q128FV,image=f.bin -w n.bin` | f.bin（終了時に書き戻す） | C | Debian | 実機でなく dummy で擬似したチップ
+29. GRASS | OSGeo/grass | 1.2k | 10-07 | `r.null map=x setnull=0`／`r.support`／`g.rename` | mapset の cell・cellhd・WIND など | C | Debian | `grass --exec` はモジュールを子プロセスで起動する。GISRC を設定して直接呼ぶ必要がある
+30. ziptool | nih-at/libzip | 1.05k | 10-04 | `ziptool a.zip delete 0`／`rename 0 b`／`set_archive_comment x` | a.zip（一時ファイルから rename） | C | Debian か cmake | 特になし
+31. clipse | savedra1/clipse | 1.05k | 06-09 | `clipse -a "t"`／`-clear`／`-clear-all` | ~/.config/clipse/clipboard_history.json | Go | go install | 特になし
+
+規則 5 が弱いか懸念が大きいもの（fresh で、規則 1・2・issue は満たす）11 件: Fabric 44k（`--wipesession` で消すだけ）、fastlane 42k（plist は git に入っている）、radare2 25k と rizin 3.9k（`-w -c 'wx ..'` によるバイナリの汎用編集）、spicetify 24.8k（arm64 には Spotify が無く、本体の検出で止まる恐れ）、arkenfox prefsCleaner 12.9k（mv・sed を起動する）、wabt の wasm-strip 8.1k（ビルドの成果物）、aptos-core 6.4k（arm64 の配布物は未確認）、git-machete 1.1k（git を多数起動する）、bin 1.3k（中身は導入済み一覧だけ）、dosbox-staging 1.8k（設定を書く CLI が無い）。ほかに corepack・backintime・homeshick・aqua・phpenv も、子プロセスかネットワークの理由で外した。
+
+指定された分野はほぼ掘り尽くされていた。plain-text accounting・連絡先と予定表・RSS・ドットファイル・ブックマーク・OTP・KeePass・XMP・BibTeX・version manager は、主な道具がすべて SEEN だった（hledger、khard、khal、newsboat、chezmoi、yadm、keepassxc、papis、jrnl、pyenv、mise、direnv、dotenvx など）。crontab・at、翻訳メモリ、Jupyter 以外のノートブック、API クライアントのコレクションは、条件を満たす CLI が見つからなかった（ネットワークが要るか、新しいファイルを作るだけ）。ATAC だけはオフラインでコレクションを書き換えられた。
+
+SEEN で落ちた名前の数: 184（同じ道具の持ち主名・別名を含む）。ほかに、自分の名前は fresh だが親プロジェクトが SEEN なので落としたのが 5: gdaladdo（GDAL）、micromamba（mamba）、jj（jujutsu）、shell_gpt（sgpt）、denoland（deno）。organize・nvm・nb・zk・oras・yarn は当たった行を読み、道具そのものの記録だったので落とした。
+規則 1・2・issue で落ちた名前の数: 41（星が 1,000 未満が 29: hdf5 993、kiwix-tools 961、chatgpt-cli 962、swiftly 966 など。push が古いのが 9: pet、aichat、autoenv、confd など。archive 済みが 1: kbs2。issue が無効なのが 2: coreboot、arm-trusted-firmware）。

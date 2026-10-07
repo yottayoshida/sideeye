@@ -1,0 +1,1026 @@
+== novelty pre-scan: openssl/openssl
+== date: 2026-10-07T05:42:43Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32697 open 2026-09-05 ml-dsa-mu: fix crash with empty message
+      #30186 open 2026-02-26 Req: No outfile crashes without config
+      #32818 open 2026-09-14 Fix AES-CBC-HMAC multiblock crash and hang on short record lanes
+      #31486 open 2026-06-12 Address crash seen with AIX not honouring atexit registered routine
+      #32445 open 2026-08-20 ML-DSA-MU crashes when finalizing an empty message
+      #32741 open 2026-09-08 GCM empty EVP_Cipher() calls alter AAD processing, OCB NULL output crashes
+      #32447 open 2026-08-20 providers: initialize ML-DSA-MU before empty-message finalization
+      #31401 open 2026-06-05 aes_wrap: prevent crash on update without a key (3.4 backport)
+      #31400 open 2026-06-05 aes_wrap: prevent crash on update without a key (3.5 backport)
+      #31399 open 2026-06-05 aes_wrap: prevent crash on update without a key (3.6 backport)
+      #32905 open 2026-09-21 ossl_asn1_string_set_internal(): Check for str->data before deref
+      #31986 open 2026-07-17 ec/ecp_nistz256: fix NULL scalar handling.
+      #30912 open 2026-04-20 `ecp_nistz256_windowed_mul` crashes on NULL scalar despite documented contract
+      #32602 open 2026-08-30 Fix potential double-free in DSA/DH finish slots [3.6, 3.5, 3.4, 3.0]
+      #29669 open 2026-01-19 check_revocation may crash when ocsp_check_all_enabled is set
+      #32690 open 2026-09-04 Remove the library context from X509 and X509_REQ
+      #31925 open 2026-07-11 Fix known PSK/ticket issues (master)
+      #19106 open 2022-08-31 3.0.5 - EVP_RAND_generate crash
+      #27129 open 2025-03-23 Crash seen in multi-threaded processes using OpenSSL3
+      #13723 open 2020-12-21 Rare and random crash in bn_sqr8x_internal
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33105 open 2026-10-05 apps/x509.c: fail -checkend on unparsable validity times
+      #32861 open 2026-09-16 evp_test: fix AES-SIV Wycheproof decrypt-failure vectors
+      #29574 open 2026-01-07 Loading "short" certificate is accepted but corrupts openssl
+      #32743 open 2026-09-08 Fix GCM empty EVP_Cipher() calls and OCB NULL output handling
+      #32025 open 2026-07-21 TLS record failures must be reported on the error queue
+      #33072 open 2026-10-01 SSH corruptions with 3.0.13 on AARCH64
+      #32830 open 2026-09-14 evp_test: fix AES-GCM-SIV Wycheproof tag-mismatch vectors
+      #27695 open 2025-05-26 pairwise_fail_test not properly test for dsa and dsakat
+      #30773 open 2026-04-10 ISSUE-30725: Validate lengths in BIO_f_buffer buffer_ctrl()
+      #31504 open 2026-06-15 crypto/modes/asm/aesni-gcm-x86_64.pl uses %rax as frame pointer, not %rbp
+      #27784 open 2025-06-07 OpenSSL corrupts ALL file descriptors in address space if SSL_connect() tries to contact hung SSL server
+      #32804 open 2026-09-11 Backport 0c2a196af8 (per-OSSL_LIB_CTX CONF storage) to 3.0-3.6: conf_ssl.c double-free still present in all release branches
+      #23525 open 2024-02-08 Soft failure in certificate revocation check using CRL
+      #32428 closed 2026-08-19 test recipes: `local $/` risks corrupting TAP output
+      #32079 open 2026-07-26 ASAN reports double-free in EVP provider store teardown when default+legacy providers are loaded, used, then default is reloaded and unloaded again
+      #31425 open 2026-06-09 ECH client: include GREASE extensions in the EncodedClientHelloInner
+      #31770 open 2026-06-29 Memory Leak: Unfreed BIO allocated by BIO_new_file() at line 1630 apps/s_server.c on OSSL_ECHSTORE_read_pem failure (OpenSSL 4.0.1)
+      #30584 open 2026-03-26 POWER10 ChaCha20 assembly fails to restore callee-save registers
+      #30879 open 2026-04-17 Explanation of the Alert Semantic Difference in the Certificate Signature Failure Scenario
+      #28722 open 2025-10-01 Double free or use-after-free following ossl_quic_tls_free in ssl3_free
+  corruption     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33072 open 2026-10-01 SSH corruptions with 3.0.13 on AARCH64
+      #33029 open 2026-09-29 Add validation for negative length in BIO buffer APIs
+      #32830 open 2026-09-14 evp_test: fix AES-GCM-SIV Wycheproof tag-mismatch vectors
+      #31412 open 2026-06-08 Add validation for negative length in BIO buffer APIs
+      #32861 open 2026-09-16 evp_test: fix AES-SIV Wycheproof decrypt-failure vectors
+      #27030 open 2025-03-11 Windows ARM64 crash on stack corruption when compiled in release
+      #28710 open 2025-09-30 Possible memory corruption in BN_bn2mpi if negative zero Bignum is passed
+      #30725 open 2026-04-08 BIO buffer APIs allow negative length → heap corruption, missing input validation (OpenSSL 3.0.2, 3.6.1)
+      #31542 open 2026-06-16 Add a lock to the global variable app_methods
+      #29834 open 2026-01-29 Fuzzers for the CVEs
+      #32436 closed 2026-08-19 test: fix TAP stream corruption in 20-test_pkeyutl.t
+      #30584 open 2026-03-26 POWER10 ChaCha20 assembly fails to restore callee-save registers
+      #32429 closed 2026-08-19 Fix TAP stream corruption in ML codec and pkeyutl test recipes
+      #31126 open 2026-05-09 Use PKCS#8 v2 publicKey when loading X25519/X448/Ed25519/Ed448
+      #32095 open 2026-07-28 Add aggregate reassembly byte budget for DTLS handshake state
+      #27784 open 2025-06-07 OpenSSL corrupts ALL file descriptors in address space if SSL_connect() tries to contact hung SSL server
+      #33111 open 2026-10-05 Concurrent first default allocations race on allocator customization state
+      #30840 open 2026-04-15 Support for id-shake128-len and id-shake256-len
+      #32902 closed 2026-09-21 The test_dtls fails sporadically on our internal CI on s390x
+      #32957 closed 2026-09-23 DTLS 1.3: unbounded ACK list growth during handshake fragment reassembly
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32517 open 2026-08-26 cSHAKE-128/256:  Truncates customization strings that contain embedded null bytes.
+      #32237 open 2026-08-07 CRLDP URI with embedded NUL is accepted after truncation
+      #32857 open 2026-09-16 FIPS provider 3.1.2 accepts prohibited 8-bit AES-GCM authentication tags
+      #28013 open 2025-07-10 Set unused bits to 0 on BIT STRING passed to X509_REQ_set0_signature
+      #19026 open 2022-08-19 Enc with longer SALT
+      #32269 closed 2026-08-10 Fix RSA SHA-512 truncated digest signature mappings
+      #25276 open 2024-08-22 fips: Add configure option to only allow pedantic installs
+      #31242 open 2026-05-19 The "constructor" function attribute caused relocation overflow on ppc64le
+      #32526 open 2026-08-26 apps: ignore CRL distribution point URIs with an embedded NUL byte
+      #30953 open 2026-04-24 Fix dangeours truncating memsize to 32bit
+      #32709 open 2026-09-06 apps: reject malformed trailing certificates in nseq -toseq
+      #28855 open 2025-10-11 conn_gets does 1-byte reads, causing syscall flood
+      #30932 open 2026-04-22 X509 verification with PARTIAL_CHAIN and CRL_CHECK_ALL returns CRL_SIGNATURE_FAILURE
+      #32266 open 2026-08-10 allow dgram pair to dump datagrams into libpcapp
+      #31575 open 2026-06-18 Add OSSL_HPKE_CTX_set1_psk_ex() for PSK ids containing NUL bytes
+      #32601 closed 2026-08-30 Fix DTLS 1.3 sequence number truncation and reconstruction
+      #32728 closed 2026-09-07 Openssl command `req` option `-newkey` for `EC:$filename` inconsistent behavior
+      #32194 open 2026-08-05 Regressions in asn1/apps/tests after #31194: ASN1_STRING C-string and empty-string handling
+      #29117 open 2025-11-10 Make ASN1_STRING opaque and X509 more memory-efficient in 4.x
+      #25781 open 2024-10-23 Malformed hybrid ML-KEM key shares are not handled correctly
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30953 open 2026-04-24 Fix dangeours truncating memsize to 32bit
+      #32517 open 2026-08-26 cSHAKE-128/256:  Truncates customization strings that contain embedded null bytes.
+      #32237 open 2026-08-07 CRLDP URI with embedded NUL is accepted after truncation
+      #30809 open 2026-04-14 ASN1_BIT_STRING_get_length can be simpler with implicit truncation gone
+      #33121 open 2026-10-06 Give the cross-compile matrix jobs stable names
+      #32365 open 2026-08-14 [robustness] -purpose crlsign|ocsphelper infers aux-blind X509_TRUST_COMPAT (x509_vfy.c:2621) → anchor REJECT blacklist ignored
+      #32516 closed 2026-08-26 Fix check-style truncation
+      #32857 open 2026-09-16 FIPS provider 3.1.2 accepts prohibited 8-bit AES-GCM authentication tags
+      #28845 open 2025-10-10 comp/zstd BIO control bugs: wrong return values for WPENDING and PENDING, and long to int truncation
+      #31412 open 2026-06-08 Add validation for negative length in BIO buffer APIs
+      #30681 open 2026-04-04 Fix signed integer overflow in OPENSSL_asc2uni()
+      #28013 open 2025-07-10 Set unused bits to 0 on BIT STRING passed to X509_REQ_set0_signature
+      #29339 open 2025-12-08 Adds a test for the gettable params IV, updated IV and AEAD tag size for EVP ciphers.
+      #32601 closed 2026-08-30 Fix DTLS 1.3 sequence number truncation and reconstruction
+      #32526 open 2026-08-26 apps: ignore CRL distribution point URIs with an embedded NUL byte
+      #16232 open 2021-08-05 [feature removal] BN_mod_inverse() should reject negative moduli
+      #19026 open 2022-08-19 Enc with longer SALT
+      #31154 open 2026-05-12 comp/zstd: return byte counts from BIO_pending and BIO_wpending
+      #32347 open 2026-08-13 CMS -noattr signing and verification fail for exact 10 KiB file BIO boundaries
+      #31925 open 2026-07-11 Fix known PSK/ticket issues (master)
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32697 open 2026-09-05 ml-dsa-mu: fix crash with empty message
+      #32447 open 2026-08-20 providers: initialize ML-DSA-MU before empty-message finalization
+      #32753 open 2026-09-09 Fix ChaCha20-Poly1305 AAD handling after empty EVP_Cipher() call
+      #32743 open 2026-09-08 Fix GCM empty EVP_Cipher() calls and OCB NULL output handling
+      #32445 open 2026-08-20 ML-DSA-MU crashes when finalizing an empty message
+      #32634 open 2026-09-01 Fix has_stdin_waiting() treating an empty redirected pipe as ready
+      #32554 open 2026-08-27 Accept a {NULL, 0} octet string as an empty context string
+      #32741 open 2026-09-08 GCM empty EVP_Cipher() calls alter AAD processing, OCB NULL output crashes
+      #5158 open 2018-01-24 Replace setters and empty states with better constructors
+      #31728 open 2026-06-25 Fix CMS_decrypt_set1_pkey returning 0 with empty error queue 
+      #32211 open 2026-08-06 TLS 1.3 certificate_authorities accepts and emits an empty authorities vector
+      #33101 open 2026-10-05 mkerr: derive reason descriptions before writing state
+      #32194 open 2026-08-05 Regressions in asn1/apps/tests after #31194: ASN1_STRING C-string and empty-string handling
+      #32752 open 2026-09-09 ChaCha20-Poly1305 zero-length EVP_Cipher() call can collapse distinct AAD inputs
+      #32638 open 2026-09-02 Keep pending client credentials out of cached sessions
+      #33123 open 2026-10-06 Document DTLS 1.3 KeyUpdate post-handshake record drop as a known issue
+      #31632 open 2026-06-22 CMS_decrypt_set1_pkey returns 0 but OpenSSL error queue remains empty (no error code)
+      #31783 open 2026-06-30 SLH-DSA signing rejects NULL,0 but accepts non-NULL,0 for an empty context string
+      #33082 open 2026-10-02 Add multi-SKEY derivation to TLS-PRF/HKDF
+      #8553 open 2019-03-21 i2d_ASN1_OBJECT: dubious handling of null/empty objects
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33133 open 2026-10-06 Suppress benign TSan race in allocator initialization
+      #32965 open 2026-09-23 Skip method construction if no new providers have been loaded
+      #33111 open 2026-10-05 Concurrent first default allocations race on allocator customization state
+      #32968 open 2026-09-24 DTLS listener connections race on the shared write BIO chain
+      #33042 closed 2026-09-29 Increase performance under msvc for atomic int load/store
+      #32145 open 2026-08-03 Multi-threaded handshake with a shared SSL_CTX became unstable (2–3x run-to-run) on Windows
+      #32914 open 2026-09-22 Fix deadlock on allocation failure during error string init
+      #33125 open 2026-10-06 Run zero-yield jobs nightly instead of on every push
+      #26741 open 2025-02-13 crypto: 64-bit atomics requires linking to `libatomic` on some 32-bit platforms
+      #28643 open 2025-09-23 Fix inconsistent memory order in CRYPTO_GET_REF
+      #32844 closed 2026-09-16 test: handle atomic load failure in hashtable cleanup
+      #31892 open 2026-07-08 apps/rehash: reject files with invalid PEM format
+      #30659 open 2026-04-01 Analysis of read locks taken while handshaking
+      #30672 open 2026-04-03 Convert ex_data handling to use an RCU lock
+      #27628 open 2025-05-15 Make it easy to authenticate a server correctly
+      #28572 open 2025-09-16 Reproducer for intermittent RCU problem
+      #26721 open 2025-02-12 [BUG] Build Breakage at 3.3.3 for PUT Model on NonStop
+      #26898 open 2025-02-25 Experimental RCU change
+      #24785 open 2024-07-03 Consider caching algorithmic improvement
+      #32633 closed 2026-09-01 Fix CRYPTO_atomic_* aborting on a NULL lock on 32-bit Windows
+  atomically     37 hit(s) (all listed)
+      #32965 open 2026-09-23 Skip method construction if no new providers have been loaded
+      #27628 open 2025-05-15 Make it easy to authenticate a server correctly
+      #30672 open 2026-04-03 Convert ex_data handling to use an RCU lock
+      #25272 open 2024-08-22 openssl rehash does not remove links first
+      #32312 closed 2026-08-11 test: let the kernel pick the DTLS client port in TLSProxy
+      #28572 open 2025-09-16 Reproducer for intermittent RCU problem
+      #32404 closed 2026-08-17 Make CI run a lot faster. 
+      #30659 open 2026-04-01 Analysis of read locks taken while handshaking
+      #32243 closed 2026-08-08 Build system improvements - Make it much faster.
+      #30948 closed 2026-04-23 asn1: convert bit-string flag mashing to ASN1_BIT_STRING_set1
+      #30525 closed 2026-03-21 ASN1: use ASN1_STRING accessors in crypto/rsa, crmf, pkcs7, cms, x509
+      #31018 closed 2026-04-28 remove the read/write lock from the ossl method store cache
+      #30670 closed 2026-04-02 Improve execution time of RAND_get_rand_method with atomics instead of an rwlock
+      #22059 closed 2023-09-11 Windows CRYPTO_THREAD_run_once() implementation does not guarantee memory ordering which leads to undefined behaviour in multithreading contexts
+      #22285 closed 2023-10-04 CMS / PKCS7: fix doc on signer/chain certs
+      #12753 closed 2020-08-30 Certificate hot-reloading
+      #20286 closed 2023-02-14 3.0 performance degraded due to locking
+      #6934 closed 2018-08-13 DTLSv1_listen() regression on 1.1.x
+      #25664 closed 2024-10-10 Add test for releasing a shared EVP_PKEY across threads and fix memory ordering for refcounts
+      #25660 closed 2024-10-10 Data races: there is wrong memory order in refcount.h
+  interrupted    55 hit(s) (all listed)
+      #25263 open 2024-08-21 Jitter entropy source doesn't include locking
+      #32996 closed 2026-09-25 DTLS 1.3: Track sent message ACKs by byte range across retransmits
+      #26208 open 2024-12-18 openssl smime verify fails on checking files bigger than 1.8G in size
+      #31463 open 2026-06-11 3.5.7: `70-test_quic_radix.t` failure on OpenIndiana when compiled 32-bit
+      #32854 closed 2026-09-16 DTLS: preserve outstanding flights after incomplete ACKs
+      #32139 closed 2026-08-02 docs: document thread cancellation safety limitations
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+      #11560 open 2020-04-16 Ignore trailing dot in hostname for ssl certificate hostname verification
+      #31109 closed 2026-05-07 ossl_quic_new client mfail issues
+      #7724 closed 2018-11-28 Do what's needed for a new version scheme and set the next version to 3.0.0
+      #28507 closed 2025-09-10 Introduce OSSL_sleep_interruptible()
+      #12253 closed 2020-06-24 Speed API
+      #28725 closed 2025-10-01 Introduce the ability to run FIPS KAT tests on demand
+      #25440 closed 2024-09-11 openssl genpkey leaves empty file if encryption passphrase does not match
+      #25552 closed 2024-09-26 APPS/pkey etc.: fix case where infile and outfile are the same
+      #21650 closed 2023-08-04 PEM_read_bio_X509 return NULL in centos
+      #28501 closed 2025-09-10 QUIC: Double-free in error handling when connection reset with multiple connections
+      #25613 closed 2024-10-05 This is a workaround to failures we occasionally see on self-hosted
+      #23910 closed 2024-03-20 [BUG - OpenSSL 3.3-alpha1] Infinite loop threadstest on NonStop x86 and ia64 using PUT threads
+      #24012 closed 2024-03-30 Fix use of sleep() so that it is not called in threaded code with 0 value.
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32353 open 2026-08-13 Zeroize ML-KEM "implicit reject" flag
+      #25263 open 2024-08-21 Jitter entropy source doesn't include locking
+      #32996 closed 2026-09-25 DTLS 1.3: Track sent message ACKs by byte range across retransmits
+      #26208 open 2024-12-18 openssl smime verify fails on checking files bigger than 1.8G in size
+      #31463 open 2026-06-11 3.5.7: `70-test_quic_radix.t` failure on OpenIndiana when compiled 32-bit
+      #28572 open 2025-09-16 Reproducer for intermittent RCU problem
+      #32854 closed 2026-09-16 DTLS: preserve outstanding flights after incomplete ACKs
+      #32139 closed 2026-08-02 docs: document thread cancellation safety limitations
+      #16474 open 2021-08-30 ALPN set APIs return 0 on success, 1 on failure
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+      #11560 open 2020-04-16 Ignore trailing dot in hostname for ssl certificate hostname verification
+      #26366 closed 2025-01-09 Encrypt Memory used to hold Private Keys
+      #31109 closed 2026-05-07 ossl_quic_new client mfail issues
+      #30231 closed 2026-03-02 (--coverage) __gcov_exit not called by s_server on SIGINT
+      #30670 closed 2026-04-02 Improve execution time of RAND_get_rand_method with atomics instead of an rwlock
+      #7724 closed 2018-11-28 Do what's needed for a new version scheme and set the next version to 3.0.0
+      #7967 closed 2018-12-29 ssl_do_handshake can hang with small buffer
+      #28193 closed 2025-08-07 crypto/sleep.c: avoid returning early due to signal
+      #28507 closed 2025-09-10 Introduce OSSL_sleep_interruptible()
+      #18454 closed 2022-06-01 Error "unknown directive" when building OpenSSL 3.1.0 for android-arm64
+  sigkill        11 hit(s) (all listed)
+      #32784 closed 2026-09-10 70-test_stime.t: SIGKILL the server instead of SIGHUP
+      #32372 open 2026-08-14 Missing a way to limit execution of CPU or memory-intensive KDFs from an application
+      #26138 closed 2024-12-09 SSL_new_from_listener implementation
+      #28963 closed 2025-10-21 QUIC OpenSSL 3.5 SSL_CTX_sess_set_new_cb() callback not called
+      #24913 closed 2024-07-16 [BUG] test_lhash fails on NonStop (threading) at commit 01753c09bb
+      #17916 closed 2022-03-16 Acceleration of chacha20 on aarch64 by SVE
+      #15797 closed 2021-06-17 test/recipes/80-test_cmp_http.t: Kill the mock server brutally
+      #16116 closed 2021-07-20 Non-caching CI build regression for no apparent reason
+      #10161 closed 2019-10-13 endless loop in ASN1_generate_v3() may cause DoS
+      #13976 closed 2021-01-26 SSL_ERROR_SYSCALL after SSL_shutdown
+      #14747 closed 2021-03-30 SSL_accept() Crashes due to SSL_STORE param field Corruption
+  sigint         24 hit(s) (all listed)
+      #30231 closed 2026-03-02 (--coverage) __gcov_exit not called by s_server on SIGINT
+      #8908 closed 2019-05-10 Return from computational exception signal handler
+      #12253 closed 2020-06-24 Speed API
+      #26138 closed 2024-12-09 SSL_new_from_listener implementation
+      #28963 closed 2025-10-21 QUIC OpenSSL 3.5 SSL_CTX_sess_set_new_cb() callback not called
+      #26964 closed 2025-03-03 Fix a memory order issue with weakly ordered systems (yet another alternative)
+      #7203 closed 2018-09-12 70-test_comp.t waits for input from stdin
+      #22923 closed 2023-12-03 OSSL_PARAM_locate called ~500 times per session. is it ok?
+      #24283 closed 2024-04-28 openssl --version does not return on version 3.0.13 and 3.3.0 sparc v8
+      #22497 closed 2023-10-25 apps/pkcs12: fix dump_certs_keys_p12 password
+      #18355 closed 2022-05-20 Add Reproducible Error Injection
+      #15046 closed 2021-04-27 heap-buffer-overflow of memory managed/allocated by ssl3_setup_write_buffer
+      #17537 closed 2022-01-17 Test 30-test_evp_extra broken on master and 3.1 on NonStop platforms
+      #16224 closed 2021-08-05 `OSSL_STORE_load()` loading certs can be mislead to prompt for password
+      #9444 closed 2019-07-23 Add Argon2 KDF support.
+      #14225 closed 2021-02-18 EVP_SIGNATURE_settable_ctx_params() hangs in pthread_rwlock_wrlock for HMAC
+      #13469 closed 2020-11-21 3.0.0: Segfault when using FIPS module
+      #3076 closed 2017-03-29 Cancel OpenSSL RSA key generation via command line
+      #1086 closed 2016-05-18 OpenSSL on Win10 x64 fails to build
+      #1899 closed 2016-11-11 `openssl version` command hangs with 1.1.0c and `no-dso` option
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33029 open 2026-09-29 Add validation for negative length in BIO buffer APIs
+      #32525 open 2026-08-26 Fix NULL dereference in EVP_PKEY_CTX_set_dh_paramgen_type()
+      #30773 open 2026-04-10 ISSUE-30725: Validate lengths in BIO_f_buffer buffer_ctrl()
+      #31391 open 2026-06-04 pkcs7: fix four more NULL contents dereferences
+      #32586 open 2026-08-29 Fix CMS RSA-OAEP decrypt error convention (-1 -> 0)
+      #31412 open 2026-06-08 Add validation for negative length in BIO buffer APIs
+      #31065 open 2026-05-03 fix: NULL pointer write in EVP_PKEY_CTX_get_rsa_padding/saltlen
+      #32981 open 2026-09-24 FIPS 3.5. Some additional polish for Shane's #32913
+      #32520 open 2026-08-26 Validate the host name passed to SSL_set_tlsext_host_name()
+      #32906 open 2026-09-21 BIO: fix shared peer leak and dangling pointer in dgram_pair_ctrl_destroy_bio_pair
+      #30729 open 2026-04-08 Cleanse sensitive key material in freed memory
+      #32448 open 2026-08-20 fix: accept 512-byte cSHAKE customization strings (off-by-one in CSHAKE_MAX_STRING comparison)
+      #30921 open 2026-04-21 Null Pointer Dereference in DH Paramgen Type Translation via `EVP_PKEY_CTX_set_dh_paramgen_type(0)`
+      #32552 open 2026-08-27 Leave BIO_f_ssl() consistent when replacing its SSL object fails
+      #30911 open 2026-04-20 NULL pointer write in `EVP_PKEY_CTX_get_rsa_padding()` and `EVP_PKEY_CTX_get_rsa_pss_saltlen()` when output pointer is NULL
+      #27044 open 2025-03-12 fix potential null pointer dereference in cms_main function in apps/cms.c #26941
+      #17043 open 2021-11-15 Non-uniform result of `BIO_seek()` on success for file BIOs
+      #18584 open 2022-06-16 Resolve the BIO_ctrl() / OSSL_FUNC_BIO_ctrl_fn declaration clash [TAKE 2]
+      #31388 open 2026-06-04 `ssl_free()` (or its callers) doesn't reset `ptr` to `NULL`, which may lead to double-free
+      #32057 open 2026-07-23 Fix build on macOS with -D_XOPEN_SOURCE=1 -D_POSIX_C_SOURCE=200809L
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29269 open 2025-11-30 Additional architecture specific testing
+      #32583 open 2026-08-29 riscv: improve AES-128-CBC encryption performance on RISC-V
+      #27916 open 2025-06-27 Implements: #27827 - RFC 8449 Record Size Limit for TLS
+      #31365 open 2026-06-02 torture_rw_low test fails on AIX: reader-preferring rwlock starves writers
+      #27899 open 2025-06-25 04-test_bio_dgram.t hangs on AIX PPC64
+      #31306 open 2026-05-27 CHANGES.md checks in CI are insufficient for the desired level of pedantry
+      #32575 open 2026-08-28 riscv: boost SHA-512 round throughput by interleaving the schedule
+      #32455 closed 2026-08-21 OSSL_FN: Make OSSL_FN_mod_exp_mont() constant-time w.r.t. the exponent
+      #32722 open 2026-09-07 providers: hardware-accelerated AES-GCM-SIV (up to 15x)
+      #5158 open 2018-01-24 Replace setters and empty states with better constructors
+      #33014 open 2026-09-27 Add Merkle Tree Certificates and TLS Trust Anchor Identifiers (Feature Branch)
+      #29854 open 2026-01-29 Critical thread initialization lost for NonStop builds
+      #32118 closed 2026-07-30 [3.0][urgent] `include/internal/constant_time.h`: add `value_barrier_bn`
+      #6130 open 2018-04-29 Review RSA operation with large modulus and/or large public exponents
+      #20772 open 2023-04-19 OpenSSL emits invalid ASN.1 when an explicit text contains non-ASCII text, but no explicit tag
+      #31311 closed 2026-05-27 crypto/ppccap: Add VMX check for AIX POWER7+ systems
+      #24253 closed 2024-04-24 Minerva attack on power PC architecture
+      #16131 closed 2021-07-22 NSIF VULNERABILITY
+      #30584 open 2026-03-26 POWER10 ChaCha20 assembly fails to restore callee-save registers
+      #31633 open 2026-06-22 aes-gcm-avx512: improve AES-GCM throughput with dynamic block-loop dispatch
+  outage         8 hit(s) (all listed)
+      #30085 open 2026-02-19 Design for better configuration granularity of X.509 chain verification
+      #32366 open 2026-08-14 [robustness] x_crl.c:101/:123: undecodable CRL entry ext → success return mid-loop; RFC 5280 §5.3 critical-entry gate evaded
+      #5013 closed 2018-01-04 Improve usage of static analysis tools
+      #25476 closed 2024-09-16 feat: support the timeSpecification X.509v3 extension
+      #20394 closed 2023-02-28 Hardware Randomizer not sufficient on NonStop x86
+      #17952 closed 2022-03-23 ticket_lifetime_hint may exceed 1 week in TLSv1.3
+      #7016 closed 2018-08-21 Re-enable linux-ppc64le support for travis job
+      #1658 closed 2016-10-03 Use EVP interface for ECDH in apps/speed.c
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #29574 open 2026-01-07 Loading "short" certificate is accepted but corrupts openssl
+      #31118 open 2026-05-08 Using the callback of SSL_CTX_set_cert_cb to load certificates
+      #27104 open 2025-03-20 Intermittent CI failure in quic_multistream_test in script 17
+      #26686 open 2025-02-10 A problem when using sm2 keys to generate signature.
+      #27874 closed 2025-06-23 Waste of disk space by many `test/` binaries statically linked to `libcrypto.a`
+      #26898 open 2025-02-25 Experimental RCU change
+      #17662 open 2022-02-08 Add configuration options to enable/disable algorithms for signature creation/verification
+      #32411 closed 2026-08-17 Dependabot update
+
+CLA: trivial
+
+(deps): Bump cross-platform-actions/action from 0.30.0 to 1.4.0
+      #31355 closed 2026-06-01 BIO_write on file BIOs does not report partial writes
+      #2746 closed 2017-02-25 Refactor PEM_read_bio_{PrivateKey,Parameters,DHparams}
+      #20362 closed 2023-02-22 Allow dlopen() to reference unqualified names
+      #4310 closed 2017-08-31 Don't try to use ucontext_t on aarch64 with glibc version < 2.20
+      #20357 closed 2023-02-22 command line prime function -in filename
+      #21106 closed 2023-06-01 a performance problem in non-blocking mode 
+      #30559 closed 2026-03-24 Fix certificate read from stdin on Windows
+      #21792 closed 2023-08-20 OpenSSL/3.0.8: error:0200008A:rsa routines::invalid padding
+      #6864 closed 2018-08-06 doubts about OpenSSL asynchronous mode
+      #11677 closed 2020-04-29 Use memory mapped files for `pkeyutl -rawin`
+      #32371 closed 2026-08-14 [robustness] crypto/pem/pvkfmt.c:897 check-after-use memcpy → ≤8-byte heap over-read on crafted PVK blob (keylen<8, legacy provider)
+      #29404 closed 2025-12-15 Harden digest context deserialization
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #27609 open 2025-05-13 Add Partial Update Support for AES-CBC-HMAC-SHA-ETM Ciphers
+      #32917 open 2026-09-22 Check failures from X509_check_purpose() and X509_self_signed()
+      #30932 open 2026-04-22 X509 verification with PARTIAL_CHAIN and CRL_CHECK_ALL returns CRL_SIGNATURE_FAILURE
+      #32078 open 2026-07-26 DTLS handshake reassembly lacks an aggregate buffered-bytes limit
+      #31776 open 2026-06-29 Removes SSL3 MS functionality
+      #32403 open 2026-08-16 ssl: add ECDHE fallback for missing supported_groups
+      #32743 open 2026-09-08 Fix GCM empty EVP_Cipher() calls and OCB NULL output handling
+      #32375 open 2026-08-14 [robustness] check_trust (x509_vfy.c:967): leaf REJECT entry skipped once the chain anchors → operator-blacklisted certificate accepted
+      #32796 open 2026-09-11 Reject invalid extensions on directly trusted certificates
+      #30840 open 2026-04-15 Support for id-shake128-len and id-shake256-len
+      #32908 open 2026-09-22 CApath certificate lookup clears unrelated errors and can erase CMS failure diagnostics
+      #23606 open 2024-02-15 quic: SSL_write_ex can return success but no written bytes (in partial writes mode)
+      #32741 open 2026-09-08 GCM empty EVP_Cipher() calls alter AAD processing, OCB NULL output crashes
+      #32563 open 2026-08-28 Enforce TLS 1.3 AES-GCM record usage limits
+      #32055 open 2026-07-23 Allow adding untrusted intermediates to cert stores
+      #32095 open 2026-07-28 Add aggregate reassembly byte budget for DTLS handshake state
+      #32835 open 2026-09-15 riscv: vectorize constant_time_lookup for Curve448 scalarmul
+      #30771 open 2026-04-10 RISC-V AES: allow independent Zkne/Zknd acceleration
+      #30346 open 2026-03-10 OpenSSL nameConstraints bypass via wildcard CN in CN-fallback hostname verification
+      #29669 open 2026-01-19 check_revocation may crash when ocsp_check_all_enabled is set
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #20116 open 2023-01-23 Potentially incomplete checks for EVP_CIPHER_asn1_to_param
+      #18708 open 2022-07-03 X509: chain building is incomplete on alternative roots
+      #33106 open 2026-10-05 `OSSL_CRMF_ENCRYPTEDKEY_get1_pkey()` frees decrypted private key with plain `OPENSSL_free()` (CWE-226)
+      #9172 open 2019-06-18 Incomplete -[client_]sigalgs description in man s_client/s_server
+      #32854 closed 2026-09-16 DTLS: preserve outstanding flights after incomplete ACKs
+      #25984 open 2024-11-18 Incomplete SP800-56Arev3 5.6.2.1.3 Owner Assurance of Public-Key Validity
+      #32318 open 2026-08-12 CI: allow manual workflow_dispatch runs from forks
+      #32757 closed 2026-09-09 OpenSSL 3.5.8 tarball has incomplete generated header files.
+      #27016 open 2025-03-10 Feature Request: Certificate Chain Completion via AIA
+      #28767 open 2025-10-06 RUSAGE mandatory in test/timing_load_creds.c breaks builds
+      #32878 open 2026-09-18 DTLS 1.3: incoming KeyUpdate clears unacknowledged session tickets
+      #32958 closed 2026-09-23 Fix DTLS 1.3 ACK list growth and oversized ACK records
+      #21103 open 2023-06-01 x509/verify tools spin CPU high for unexpected processing of PKCS12 files
+      #30810 open 2026-04-14 Add support for HSS signature verification.
+      #31623 open 2026-06-20 Add safe_getenv callback
+      #32957 closed 2026-09-23 DTLS 1.3: unbounded ACK list growth during handshake fragment reassembly
+      #30729 open 2026-04-08 Cleanse sensitive key material in freed memory
+      #22705 open 2023-11-12 X509_ALGOR_copy() is strange
+      #13723 open 2020-12-21 Rare and random crash in bn_sqr8x_internal
+      #17938 open 2022-03-22 Remove support for attacker-supplied curve parameters
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32893 open 2026-09-20 cms: check recipient key lengths during staged decryption
+      #31154 open 2026-05-12 comp/zstd: return byte counts from BIO_pending and BIO_wpending
+      #32361 open 2026-08-14 QUIC: pass the user SSL to custom session ID callbacks
+      #32538 open 2026-08-27 Support crypto-auditing probes
+      #32801 open 2026-09-11 ECH: reset per-handshake state on SSL connection reuse
+      #32184 open 2026-08-04 ssl: replace handshake-memfail with in-tree mfail tests
+      #32963 closed 2026-09-23 DTLS 1.3: Retain the previous read epoch to recover from lost ACKs
+      #17101 open 2021-11-22 ERR: Make use of the reason flags for diagnostic output and error handling
+      #32374 open 2026-08-14 [robustness] check_extensions (x509_vfy.c:714): LONG_MAX pathLenConstraint + proxy cert → signed-long overflow → valid chain over-rejected
+      #17220 open 2021-12-07 Wrap around of input text length in AES-GCM
+      #30057 open 2026-02-17 Async-signal-safe API to clear `EVP_PKEY` contents
+      #32654 open 2026-09-02 Bound QUIC stream reassembly and RX buffering
+      #32595 closed 2026-08-29 apps: cover the pkeyutl asn1parse and hexdump options in the test recipe
+      #32891 closed 2026-09-20 DTLS 1.3: read-epoch changes prevent recovery from lost Finished/KeyUpdate ACKs
+      #32567 open 2026-08-28 CMS KTRI decrypt (cms_env.c:619): rsa_cms_decrypt error return swallowed → malformed rsaesOAEP parameters silently fall back to PKCS#1 v1.5
+      #30481 open 2026-03-18 ISSUE-30359: Remove TLS record compression for OpenSSL 5.0
+      #32001 closed 2026-07-19 Restore empty raw PKCS#1 verify-recover behavior
+      #32770 closed 2026-09-09 improve QUIC stream reassembly [ backport to 3.6 ]
+      #19046 open 2022-08-23 Add a way how to generate the public key from a private key
+      #33038 closed 2026-09-29 evp: validate NULL method and context pointers in provider operations
+  recovery       70 hit(s) (all listed)
+      #33106 open 2026-10-05 `OSSL_CRMF_ENCRYPTEDKEY_get1_pkey()` frees decrypted private key with plain `OPENSSL_free()` (CWE-226)
+      #32929 open 2026-09-22 argon2: fix thread tracking and error unwind in fill_mem_blocks_mt
+      #32120 open 2026-07-30 test: make SSL_poll abort regression deterministic
+      #32891 closed 2026-09-20 DTLS 1.3: read-epoch changes prevent recovery from lost Finished/KeyUpdate ACKs
+      #33098 open 2026-10-04 Improve CRNG failure reporting
+      #33014 open 2026-09-27 Add Merkle Tree Certificates and TLS Trust Anchor Identifiers (Feature Branch)
+      #32878 open 2026-09-18 DTLS 1.3: incoming KeyUpdate clears unacknowledged session tickets
+      #31553 open 2026-06-17 EC_GROUP_set_generator() accepts singular curves — no discriminant validation
+      #8443 open 2019-03-08 Wrong alerts/error handling in case some signature algorithms are disabled
+      #32854 closed 2026-09-16 DTLS: preserve outstanding flights after incomplete ACKs
+      #31093 open 2026-05-05 Fix DTLS out-of-sequence message error code (#25698)
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+      #32886 open 2026-09-18 ML-DSA Composite signatures and key implementation 
+      #32963 closed 2026-09-23 DTLS 1.3: Retain the previous read epoch to recover from lost ACKs
+      #21620 open 2023-08-01 Certificate decoding is overly liberal
+      #32958 closed 2026-09-23 Fix DTLS 1.3 ACK list growth and oversized ACK records
+      #32153 closed 2026-08-03 Integration regression: Fix variable shadowing in TLS write retry path
+      #32853 closed 2026-09-16 DTLS 1.3: client doesn't acknowledge retransmitted session tickets
+      #26061 closed 2024-11-25 fips: in RSA KEM always call rsa key check with protect 1
+      #24533 closed 2024-05-30 Will OpenSSL consider supporting the RSA signature padding algorithm defined in ISO9796-2？
+  rollback       20 hit(s) (all listed)
+      #31179 open 2026-05-14 OpenSSL 3.6.2: ruby require 'openssl' and openssl CLI hang indefinitely on macOS arm64 (regression from 3.6.1)
+      #17064 open 2021-11-18 Massive performance degradation in OpenSsl 3.0 if used in a heavy multi threaded server application
+      #31137 closed 2026-05-10 DTLS 1.3 Limit DTLSv1_listen to DTLS1.2 and add SSL Listener for DTLS
+      #14222 closed 2021-02-18 Digest State Serialization
+      #28044 closed 2025-07-15 Remove support for SSLv3
+      #28431 closed 2025-09-03 Clang Format
+      #27748 closed 2025-06-03 TLS_FALLBACK_SCSV algorithm client behavior is inconsistent with rfc7507.
+      #25367 closed 2024-09-03 util/mkinstallvars.pl: replace List::Util::pairs with our own
+      #25417 closed 2024-09-10 QUIC SERVER: Testing the http3 demo server with chrome produces unexpected errors
+      #19261 closed 2022-09-22 s_client support for TLSv1.3 then TLSv1.2
+      #18445 closed 2022-06-01 Performance degradation in 1.1.1m
+      #16082 closed 2021-07-15 SSL_OP_BIT macro makes constant incompatible with preprocessor
+      #4282 closed 2017-08-29 Remove version rollback checking for SSL v2
+      #15372 closed 2021-05-20 Too aggressive error suppressing
+      #221 closed 2015-02-02 1.0.2: configure no-cms -> make failure
+      #1190 closed 2016-06-08 1.0.1t-1+deb8u2 causing compilation failures "error: ‘SSLv2_method’ redeclared as different kind of symbol"
+      #6623 closed 2018-07-01 Fix potential NULL pointer dereference in EVP "int_ctx_new".
+      #791 closed 2016-03-04 Minor improvements to CT functions
+      #11188 closed 2020-02-26 S390x backports for 1.1.1
+      #12186 closed 2020-06-18 Revert KDF/MAC renaming
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31395 open 2026-06-04 TLS 1.x: Bind resumed session lifetime to full handshake
+      #33127 open 2026-10-06 DTLS 1.3 client does not retransmit ClientHello when early_data is enabled
+      #33128 open 2026-10-06 Retransmit the DTLS 1.3 ClientHello when sending early data
+      #32808 open 2026-09-12 TLS 1.3: Enforce the ticket lifetime when offering a ticket
+      #32293 open 2026-08-11 RFC 9846 issue: `pre_shared_key` trailing data is accepted
+      #32727 open 2026-09-07 Add provider-defined TLS 1.3 ciphersuites
+      #32527 open 2026-08-26 Send missing_extension when a TLS 1.3 ServerHello lacks key_share
+      #32563 open 2026-08-28 Enforce TLS 1.3 AES-GCM record usage limits
+      #30729 open 2026-04-08 Cleanse sensitive key material in freed memory
+      #11378 open 2020-03-22 New EOF detection breaks session resumption
+      #32638 open 2026-09-02 Keep pending client credentials out of cached sessions
+      #32522 open 2026-08-26 Fix CMS one-shot signing of content at exact 10 KiB boundaries
+      #30481 open 2026-03-18 ISSUE-30359: Remove TLS record compression for OpenSSL 5.0
+      #30363 open 2026-03-11 Enforce EMS during Session Resumption to prevent Triple Handshake Attacks
+      #25443 open 2024-09-12 Why dtls isn't allowed resumption on renegotiate with session ticket
+      #13745 open 2020-12-28 Peer X.509 chain is more naturally part of SSL than SSL_SESSION
+      #10714 open 2019-12-27 s_client -reconnect option is broken with TLSv1.3
+      #20223 open 2023-02-06 SSL_free races against other uses of the session
+      #19341 open 2022-10-04 Infinite session prolongation for TLS 1.3
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+  half-written   91 hit(s) (all listed)
+      #30633 open 2026-03-31 Performance optimization of SM4-XTS encryption and decryption on RISC-V
+      #30840 open 2026-04-15 Support for id-shake128-len and id-shake256-len
+      #28545 open 2025-09-15 Add target configs for cross-compiling to Windows using Clang-CL and Microsoft CRT
+      #7757 open 2018-12-04 Non-blocking Socket and Early Data
+      #32376 open 2026-08-14 [robustness] OCSP_resp_find_status accepts contradictory duplicate-CertID response: good+revoked silently resolves to first entry
+      #32601 closed 2026-08-30 Fix DTLS 1.3 sequence number truncation and reconstruction
+      #32498 closed 2026-08-25 Dont have dgram_pairs track bios, track bio_dgram_pair_st instead
+      #10280 open 2019-10-28 Broken accessors for fields moved from SSL_SESSION to SSL
+      #11378 open 2020-03-22 New EOF detection breaks session resumption
+      #30812 closed 2026-04-14 Vectorize (inverse) NTT in ML-DSA
+      #6880 closed 2018-08-07 Make EVP_PKEY_asn1_new() stricter with its input
+      #31929 closed 2026-07-13 Optimize ML-KEM for the s390x architecture
+      #5179 closed 2018-01-28 Make sure that apps/openssl prefixes its output with '# ' during tests
+      #4986 closed 2017-12-27 Add 'openssl req' option to specify extension values on command line
+      #10041 closed 2019-09-28 Make manuals with TYPE conform with man-pages(7)
+      #30967 closed 2026-04-24 Unicode codepoints fit in 32 bit values. 
+      #9328 closed 2019-07-09 Rework EVP_CIPHER support, enhance existing functions
+      #5032 closed 2018-01-07 Restore OS390-Unix
+      #9409 closed 2019-07-18 Rework provider and fetching documentation
+      #31137 closed 2026-05-10 DTLS 1.3 Limit DTLSv1_listen to DTLS1.2 and add SSL Listener for DTLS
+  wipe           82 hit(s) (all listed)
+      #31633 open 2026-06-22 aes-gcm-avx512: improve AES-GCM throughput with dynamic block-loop dispatch
+      #33082 open 2026-10-02 Add multi-SKEY derivation to TLS-PRF/HKDF
+      #31715 open 2026-06-25 riscv64: add Zbb SHA1 block implementation
+      #17586 open 2022-01-25 EXPERIMENTAL: Add an internal test to see what happens when reloading a shared object
+      #30057 open 2026-02-17 Async-signal-safe API to clear `EVP_PKEY` contents
+      #31222 open 2026-05-18 avoid signed-to-unsigned integer conversion
+      #32567 open 2026-08-28 CMS KTRI decrypt (cms_env.c:619): rsa_cms_decrypt error return swallowed → malformed rsaesOAEP parameters silently fall back to PKCS#1 v1.5
+      #32770 closed 2026-09-09 improve QUIC stream reassembly [ backport to 3.6 ]
+      #32254 closed 2026-08-09 VAES AES-CBC round-key cleanup misses GCC-generated spills
+      #10021 open 2019-09-25 In the (D)TLS engine of libssl, ERR_clear_error() calls should be avoided
+      #32515 closed 2026-08-26 quic: test the rstream packet pinning path
+      #28320 closed 2025-08-21 ML-KEM: cleanse (zeroize) failure_key and Kr for encap and decap.
+      #32257 closed 2026-08-10 Fix VAES CBC round-key stack cleanup
+      #31326 open 2026-05-29 HPKE: Add Post Quantum KEM support.
+      #32324 closed 2026-08-12 DTLS 1.3 Support blocking mode on listeners and connections (pending #32239)
+      #23682 closed 2024-02-26 tvOS Target Failing (use of fork() which is disabled for this platform) / watchOS - CMake
+      #31346 closed 2026-05-31 quic: cleanse derived IV on setup failure
+      #32011 closed 2026-07-20 GCM: reject out-of-order update calls
+      #29925 closed 2026-02-02 Remove obsolete and partial support for engine-only dstu and gost
+      #30902 closed 2026-04-20 AES CBC decrypt implementation with VAES-512
+  wipes          13 hit(s) (all listed)
+      #31222 open 2026-05-18 avoid signed-to-unsigned integer conversion
+      #32567 open 2026-08-28 CMS KTRI decrypt (cms_env.c:619): rsa_cms_decrypt error return swallowed → malformed rsaesOAEP parameters silently fall back to PKCS#1 v1.5
+      #32254 closed 2026-08-09 VAES AES-CBC round-key cleanup misses GCC-generated spills
+      #28320 closed 2025-08-21 ML-KEM: cleanse (zeroize) failure_key and Kr for encap and decap.
+      #32011 closed 2026-07-20 GCM: reject out-of-order update calls
+      #30355 closed 2026-03-10 ml-kem: wipe full seed buffer in ml_kem_gen_cleanup
+      #30614 closed 2026-03-28 sm2: check buffer size before writing ciphertext
+      #27305 closed 2025-04-09 hkdf: allow salt to be reset to null
+      #11169 closed 2020-02-25 `req` app: `-addext` option does not combine with other options adding X.509v3 extensions
+      #14464 closed 2021-03-08 Added randomization to constant time swap in ECC to mitigate new Nonce@Once attack
+      #14020 closed 2021-01-29 Downgrading a key is not thread safe
+      #5785 closed 2018-03-29 dump in BN_from_montgomery_word
+      #3207 closed 2017-04-12 testlist/OpenSSL/Test.pm: keep default input private.
+  erase          57 hit(s) (all listed)
+      #32908 open 2026-09-22 CApath certificate lookup clears unrelated errors and can erase CMS failure diagnostics
+      #32909 open 2026-09-22 X509: preserve earlier errors during CApath certificate lookup
+      #32213 open 2026-08-06 OpenSSL retains consumed TLS 1.3 stage secrets
+      #32133 open 2026-07-31 Add MIPS32 AES-CTR assembly implementation
+      #32288 open 2026-08-11 TLS 1.3 connection secrets remain nonzero when the connection object is freed
+      #33098 open 2026-10-04 Improve CRNG failure reporting
+      #31419 open 2026-06-09 EVP_MAC: Add EVP_MAC_cleanse() API.
+      #30849 open 2026-04-15 Inconsistent TLS 1.3 key schedule secret cleanup in SSL_CONNECTION
+      #32870 closed 2026-09-17 CMS_verify(): avoid queued errors on successful return
+      #32257 closed 2026-08-10 Fix VAES CBC round-key stack cleanup
+      #32770 closed 2026-09-09 improve QUIC stream reassembly [ backport to 3.6 ]
+      #32963 closed 2026-09-23 DTLS 1.3: Retain the previous read epoch to recover from lost ACKs
+      #28320 closed 2025-08-21 ML-KEM: cleanse (zeroize) failure_key and Kr for encap and decap.
+      #32688 closed 2026-09-04 HTTP client: HTTPS-to-HTTP downgrade bypassable via a relative redirect (`redirection_ok()` derives TLS state from the URL string)
+      #30850 closed 2026-04-15 cleanse tls 1.3 key schedule secrets
+      #29078 closed 2025-11-05 Fix empty AKID/SKID handling
+      #30937 closed 2026-04-22 Pkcs12 symmetric v2
+      #29062 closed 2025-11-04 ML_KEM init refactoring
+      #28599 closed 2025-09-18 Reduce lock contention in X509_STORE
+      #10589 closed 2019-12-08 Improvement of the ciphersuite selection
+  erasing        8 hit(s) (all listed)
+      #32213 open 2026-08-06 OpenSSL retains consumed TLS 1.3 stage secrets
+      #30849 open 2026-04-15 Inconsistent TLS 1.3 key schedule secret cleanup in SSL_CONNECTION
+      #32288 open 2026-08-11 TLS 1.3 connection secrets remain nonzero when the connection object is freed
+      #30850 closed 2026-04-15 cleanse tls 1.3 key schedule secrets
+      #17568 closed 2022-01-23 `SSL_CTX_set_cert_verify_callback(3)` semantic change
+      #9042 closed 2019-05-30 Document property hierarchy.
+      #9423 closed 2019-07-20 Allocate DRBG additional data pool from non-secure memory
+      #4328 closed 2017-09-03 Fix reseeding issues introduced by new RAND_OpenSSL() method
+  erased         24 hit(s) (all listed)
+      #31419 open 2026-06-09 EVP_MAC: Add EVP_MAC_cleanse() API.
+      #32213 open 2026-08-06 OpenSSL retains consumed TLS 1.3 stage secrets
+      #32288 open 2026-08-11 TLS 1.3 connection secrets remain nonzero when the connection object is freed
+      #32257 closed 2026-08-10 Fix VAES CBC round-key stack cleanup
+      #28320 closed 2025-08-21 ML-KEM: cleanse (zeroize) failure_key and Kr for encap and decap.
+      #29078 closed 2025-11-05 Fix empty AKID/SKID handling
+      #29062 closed 2025-11-04 ML_KEM init refactoring
+      #10589 closed 2019-12-08 Improvement of the ciphersuite selection
+      #25945 closed 2024-11-14 fips: zeroize temporary self-check out MD variable
+      #26037 closed 2024-11-22 ML-KEM documentation
+      #25859 closed 2024-11-04 Feature/quic server arrange the demo server to test with chrome
+      #26127 closed 2024-12-06 Add ML-DSA
+      #23456 closed 2024-02-02 Fix EVP_PKEY_CTX_add1_hkdf_info() behavior
+      #23300 closed 2024-01-13 LoongArch: chacha20 speed has huge performance degraded
+      #20639 closed 2023-03-29 Erase temporary buffer in EVP_PKEY_get_bn_param()
+      #20626 closed 2023-03-28 EVP_PKEY_get_bn_param() does not zeroize temporary buffer
+      #19333 closed 2022-10-03 Question about  SSL_CTX_free function
+      #10590 closed 2019-12-08 Improvement of the ciphersuite selection
+      #13359 closed 2020-11-09 Test CLI key validation and SM2 key validation
+      #10457 closed 2019-11-15 AES CTR-DRGB: use platform specific AES-CTR support
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32906 open 2026-09-21 BIO: fix shared peer leak and dangling pointer in dgram_pair_ctrl_destroy_bio_pair
+      #32353 open 2026-08-13 Zeroize ML-KEM "implicit reject" flag
+      #33060 open 2026-09-30 make install fails on NonStop for 4.1.0-beta1 (since 4.1.0 initial)
+      #33063 open 2026-10-01 Use after free when X509_STORE_get0_objects runs concurrently with X.509 verification
+      #33110 open 2026-10-05 Decoders and i2d free private key DER buffers without clearing them
+      #32018 open 2026-07-20 BN_CTX pool doesn't scrub a BIGNUM's backing memory on release (BN_CTX_end/BN_POOL_release)
+      #27784 open 2025-06-07 OpenSSL corrupts ALL file descriptors in address space if SSL_connect() tries to contact hung SSL server
+      #33111 open 2026-10-05 Concurrent first default allocations race on allocator customization state
+      #32653 closed 2026-09-02 bio: fix use-after-free on freeing a dgram pair half
+      #28347 open 2025-08-26 [DOC] Some pointer ownership details
+      #30584 open 2026-03-26 POWER10 ChaCha20 assembly fails to restore callee-save registers
+      #32943 closed 2026-09-23 Fix[3.4,3.5,3.6]: CI Failure
+      #32896 closed 2026-09-21 Use NO_ATEXIT in non-static legacy provider
+      #16474 open 2021-08-30 ALPN set APIs return 0 on success, 1 on failure
+      #15335 open 2021-05-18 TLS 1.0/1.1 and DTLS 1.0 formally deprecated
+      #32498 closed 2026-08-25 Dont have dgram_pairs track bios, track bio_dgram_pair_st instead
+      #32770 closed 2026-09-09 improve QUIC stream reassembly [ backport to 3.6 ]
+      #30360 open 2026-03-11 [Bug] Memory leak in app_provider_load when sk_OSSL_PROVIDER_push fails (apps/lib/app_provider.c)
+      #7743 open 2018-12-03 SSL_CTX_dup(3) for SNI?
+      #32464 closed 2026-08-24 RFC: QUIC: fix heap-use-after-free in quic_free_listener() BIO teardown
+  destroys       28 hit(s) (all listed)
+      #27784 open 2025-06-07 OpenSSL corrupts ALL file descriptors in address space if SSL_connect() tries to contact hung SSL server
+      #2745 closed 2017-02-25 Add internal STORE functions to fetch PEM data from an opened BIO
+      #15335 open 2021-05-18 TLS 1.0/1.1 and DTLS 1.0 formally deprecated
+      #32374 open 2026-08-14 [robustness] check_extensions (x509_vfy.c:714): LONG_MAX pathLenConstraint + proxy cert → signed-long overflow → valid chain over-rejected
+      #30372 closed 2026-03-11 apps: fix resource leak in crls_http_cb()
+      #24650 closed 2024-06-14 Scrypt cannot be used with more than 16 megabytes of memory
+      #30366 closed 2026-03-11 [Bug] Memory leak in `crls_http_cb` due to improper stack freeing (`sk_X509_CRL_free`) in error path (apps/lib/apps.c)
+      #26239 closed 2024-12-21 Crash on Windows 11 ARM64 with OpenSSL built in release mode
+      #30252 closed 2026-03-03 Some more X509 extension add/del polish
+      #30307 closed 2026-03-08 [QUIC] Use-after-free on listener mutex in ossl_quic_accept_int after SSL_up_ref failure
+      #28981 closed 2025-10-22 TSAN: data race in ossl_init_thread_start / init_thread_deregister
+      #28781 closed 2025-10-08 OPENSSL_thread_stop(): Also cleanup master key sparse array
+      #28116 closed 2025-07-29 Make SSL_poll() and SSL_shutdown() better friends
+      #27441 closed 2025-04-19 let underlying stream object know connection is being closed
+      #8136 closed 2019-01-31 Remove spurious '00:' printing RSA/DSA/DH/EC key material with leading bit set in unsigned BN
+      #16778 closed 2021-10-08 Calling OPENSSL_thread_stop_ex() before OSSL_LIB_CTX_free() may not be managable for some applications.
+      #12737 closed 2020-08-28 AIX: RAND_priv_bytes fails inside drbg initialization
+      #9654 closed 2019-08-21 Implementation of Email Address International support (RFC 8398) in OpenSSL
+      #15841 closed 2021-06-21 asn1: properly clean up on failed BIO creation
+      #7698 closed 2018-11-23 curve25519.c does not conform to the coding standards
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31623 open 2026-06-20 Add safe_getenv callback
+      #32287 open 2026-08-11 TLS 1.3 ServerHello legacy_version is not rejected
+      #20223 open 2023-02-06 SSL_free races against other uses of the session
+      #23033 open 2023-12-13 SIGPIPE in ktls_send_ctrl_message on Linux
+      #31182 open 2026-05-14 RISC-V: Port dot-asm poly1305 assembly implementation
+      #28710 open 2025-09-30 Possible memory corruption in BN_bn2mpi if negative zero Bignum is passed
+      #32133 open 2026-07-31 Add MIPS32 AES-CTR assembly implementation
+      #15254 open 2021-05-12 `openssl x509 -text` output can contain control characters
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+      #32804 open 2026-09-11 Backport 0c2a196af8 (per-OSSL_LIB_CTX CONF storage) to 3.0-3.6: conf_ssl.c double-free still present in all release branches
+      #31126 open 2026-05-09 Use PKCS#8 v2 publicKey when loading X25519/X448/Ed25519/Ed448
+      #32116 closed 2026-07-30 poll() RIO backend overwrites duplicate fd event masks instead of merging them
+      #31326 open 2026-05-29 HPKE: Add Post Quantum KEM support.
+      #8530 open 2019-03-19 Add X509_set1_signature_algo() and X509_set1_signature_value() as in boringssl
+      #33135 open 2026-10-06 [NSF] Migrate test_aes_siv_ctx_enc_retval to evp_aead_test.c
+      #32815 closed 2026-09-13 rsa_keygen() pairwise test is never run
+      #33130 open 2026-10-06 Dependabot update
+
+CLA: trivial
+
+(deps): Bump dtolnay/rust-toolchain from 0f44b27771c32bda9f458f75a1e241b09791b331 to 7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      #32840 open 2026-09-15 Dependabot update
+
+CLA: trivial
+
+(deps): Bump dtolnay/rust-toolchain from 0f44b27771c32bda9f458f75a1e241b09791b331 to 02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+      #14691 open 2021-03-26 X509_time_adj_ex normalizes the object type or not depending on how it was created
+      #32215 open 2026-08-06 OpenSSL TLS 1.3 0-RTT Older-Server Fallback
+  clobber        81 hit(s) (all listed)
+      #32986 open 2026-09-25 LoongArch64: Add GHASH assembly for AES-GCM
+      #29382 open 2025-12-12 ODR violation in test/testutil/basic_output.c and test/bioprinttest.c
+      #30953 open 2026-04-24 Fix dangeours truncating memsize to 32bit
+      #32872 closed 2026-09-17 Remove /Gs0 windows compiler flag
+      #30584 open 2026-03-26 POWER10 ChaCha20 assembly fails to restore callee-save registers
+      #32971 closed 2026-09-24 ssl/quic: restore relocated token pointer after second header decode
+      #32831 closed 2026-09-14 TLSProxy: track message reassembly per sender, not globally
+      #31633 open 2026-06-22 aes-gcm-avx512: improve AES-GCM throughput with dynamic block-loop dispatch
+      #25651 closed 2024-10-09 Should provide easily usable `snprintf()` and `vsnprintf()`
+      #32324 closed 2026-08-12 DTLS 1.3 Support blocking mode on listeners and connections (pending #32239)
+      #31550 closed 2026-06-16 Provide ossl_asprintf(), and simplify a bunch of things with it.
+      #30948 closed 2026-04-23 asn1: convert bit-string flag mashing to ASN1_BIT_STRING_set1
+      #10953 closed 2020-01-27 config: ensure the perl Configure run is the last statement
+      #31208 closed 2026-05-18 ssl: add OSSL_PQ intrusive priority queue
+      #30587 closed 2026-03-26 chacha/asm: fix callee-saved register clobber in ChaCha20_ctr32_vsx_8x (POWER10)
+      #1050 closed 2016-05-10 DJGPP adjustments
+      #30967 closed 2026-04-24 Unicode codepoints fit in 32 bit values. 
+      #13723 open 2020-12-21 Rare and random crash in bn_sqr8x_internal
+      #30253 closed 2026-03-03 Changed Bug Report Template to be a Fillable Form in yaml
+      #31001 closed 2026-04-27 Make include files guarded and self-contained.
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33101 open 2026-10-05 mkerr: derive reason descriptions before writing state
+      #33006 open 2026-09-27 Restore QUIC token value after second decode in initial packet validation
+      #32930 open 2026-09-22 ECH: fix SNI length padding to match RFC 9849 guidance
+      #29470 open 2025-12-20 'openssl req' can't be used to print certificate request without a config file
+      #25247 open 2024-08-21 Library build fails if prefix contains whitespaces
+      #31391 open 2026-06-04 pkcs7: fix four more NULL contents dereferences
+      #31535 open 2026-06-16 doc: Clarify EVP_CipherInit enc parameter handling of other values
+      #18715 open 2022-07-04 Implement some pending changes in RFC6125bis (WGLC over, IETF LC shortly)?
+      #17088 open 2021-11-20 HTTP client: simplify and improve HTTP(S) proxy support
+      #30163 open 2026-02-24 Add CMS encrypt, decrypt for provider-implemented PKEYs
+      #33098 open 2026-10-04 Improve CRNG failure reporting
+      #30882 open 2026-04-17 Add SSL_client_hello_get0_extensions() raw accessor
+      #28352 open 2025-08-27 Add missing null check
+      #28483 open 2025-09-08 CMP `sender` and `senderKID`: fix implementation, option checking, documentation, and code comments
+      #3297 open 2017-04-25 OpenSSL gladly creates invalid SubjectAltName extensions
+      #31336 open 2026-05-29 Add utility APIs for HPKE suite introspection
+      #17734 open 2022-02-18 Allow users to set the send flags used by send/sendto via BIO_ctrl
+      #26675 open 2025-02-09 Miscellaneous cleanup changes
+      #23145 closed 2023-12-24 When create CSR file, can't input correctly.
+      #31396 open 2026-06-05 v3_ncons: Reject embedded NUL bytes in URI name constraints
+  unreadable     30 hit(s) (all listed)
+      #31664 closed 2026-06-23 crypto/armcap.c: reformat MIDR CPU-model conditionals for readability
+      #32031 closed 2026-07-21 add ossl_list_##name##_append(head, tail) function
+      #31263 closed 2026-05-21 s390x: Selectively re-format s390xcap.c
+      #30324 closed 2026-03-09 tests: fix configutl test on Windows
+      #29695 closed 2026-01-20 Fix or workaround cast-qual warning and enable it as default
+      #9740 closed 2019-08-30 Android with 32 bit kernel and cpu crypto support doesn't use the cpu crypto support.
+      #29242 closed 2025-11-27 Clang format head
+      #32038 closed 2026-07-22 improve QUIC stream reassembly
+      #13832 closed 2021-01-11 Correct check_chain() on X509_V_FLAG_X509_STRICT (-x509_strict option)
+      #29192 closed 2025-11-21 Do not make key share choice in tls1_set_groups()
+      #29222 closed 2025-11-26 Implementation of Deferred FIPS Self-Tests
+      #13405 closed 2020-11-13 Suggestion: add basic program examples to https://www.openssl.org/docs/man1.1.1/man3/ (concrete suggestions inside)
+      #27852 closed 2025-06-19 Potential issue gaining entropy when statically cross-compiling for x86
+      #9081 closed 2019-06-05 EC only uses approved curves in FIPS mode.
+      #20935 closed 2023-05-10 Lookup params @hlandau's approach
+      #26815 closed 2025-02-18 Enhance thread sanitizer CI tests
+      #27950 closed 2025-07-02 Homebrew issue!
+      #25432 closed 2024-09-11 Rebase of quic-server feature branch [DO NOT MERGE - to be force pushed to the feature branch]
+      #22994 closed 2023-12-09 openssl 3.2 pkcs12 regression - requires configuration
+      #12255 closed 2020-06-24 Add threading support
+  garbage        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32368 open 2026-08-14 [robustness] asn_pack.c:58 ASN1_item_unpack drops the decode cursor: openssl ocsp verifies non-DER OCSP responses with trailing garbage
+      #32468 open 2026-08-24 QUIC: check both incoming default stream candidates
+      #31986 open 2026-07-17 ec/ecp_nistz256: fix NULL scalar handling.
+      #32466 open 2026-08-24 QUIC: incoming stream policy can become inconsistent with the accept queue
+      #32248 open 2026-08-08 Cms -sign with Ed25519 produces an unverifiable signature
+      #30633 open 2026-03-31 Performance optimization of SM4-XTS encryption and decryption on RISC-V
+      #32188 closed 2026-08-04 QUIC: allow fully drained streams to be garbage collected
+      #32557 closed 2026-08-27 quic: collect rejected incoming streams and return their stream credit
+      #16538 open 2021-09-07 tasn_enc.c does not check for default-constructed MSTRING and ANY values
+      #27916 open 2025-06-27 Implements: #27827 - RFC 8449 Record Size Limit for TLS
+      #32373 open 2026-08-14 nc_email_eai (v3_ncons.c:708-719): mailbox-form excluded rfc822Name never matches a SmtpUTF8Mailbox SAN → wrong accept
+      #32567 open 2026-08-28 CMS KTRI decrypt (cms_env.c:619): rsa_cms_decrypt error return swallowed → malformed rsaesOAEP parameters silently fall back to PKCS#1 v1.5
+      #32020 closed 2026-07-20 QUIC: ignore rejected default stream candidates
+      #31690 open 2026-06-23 [robustness] ssl_ciph.c:2029 — SSL_COMP_add_compression_method drops comp->method, UBSan crash in COMP_CTX_new (PR#24414)
+      #32083 closed 2026-07-27 test: fix flaky -md and -iter mismatch checks in 20-test_enc.t
+      #31700 closed 2026-06-24 25-test_verify_store.t: Add missing capture for bare run()
+      #31831 closed 2026-07-02 EVP_MD_CTX_copy_ex might crash on inconsistent context
+      #22297 closed 2023-10-05 EVP_CipherInit_ex does not reset an unset iv for AES CBC 128 and 256 in OpenSSL 3.0.9
+      #31647 closed 2026-06-22 Fix unqualified reference to openssl in 25-test_verify_store.t
+      #9370 closed 2019-07-15 Fix init_get_thread_local()
+  mangled        18 hit(s) (all listed)
+      #27577 open 2025-05-06 New website is missing many security vulnerability attributions
+      #7208 closed 2018-09-12 VMS: turn on name mangling for all our programs
+      #5546 closed 2018-03-07 Configure: don't mangle the directory again when checking DEPEND inclusion
+      #31263 closed 2026-05-21 s390x: Selectively re-format s390xcap.c
+      #26272 closed 2024-12-26 `asn1_d2i_read_bio()` blocks on too short DER input, causing test servers to hang
+      #9386 closed 2019-07-15 DSO pathbyaddr for Android
+      #7390 closed 2018-10-12 WIP: apps: Switch to using OSSL_STORE for loading keys, certs, ...
+      #17704 closed 2022-02-14 Provide a way to set the config file include prefix to OPENSSLDIR
+      #7763 closed 2018-12-06 Mangled line endings from cms -sign
+      #19227 closed 2022-09-16 Strange behavior in openssl mac (or bad documentation)
+      #18510 closed 2022-06-09 Fix BN_mod_exp_consttime so it does not produce unreduced result
+      #15283 closed 2021-05-14 Fix spurious error queue entries while loading private keys
+      #6710 closed 2018-07-13 Cipher 0x001E mapping
+      #3350 closed 2017-04-30 Command /usr/bin/make failed with exit code 72
+      #2880 closed 2017-03-08 Support version letter in shlib version number
+      #6198 closed 2018-05-08 Fix ticket callbacks in TLSv1.3
+      #664 closed 2016-02-12 Verify Certificate Transparency SCT signatures
+      #841 closed 2016-03-10 Remove 'log' field from SCT and related accessors
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31391 open 2026-06-04 pkcs7: fix four more NULL contents dereferences
+      #30057 open 2026-02-17 Async-signal-safe API to clear `EVP_PKEY` contents
+      #30990 open 2026-04-27 Improve CMP client-side debugging: optional console cutput of CSR Contents
+      #32759 open 2026-09-09 CONTRIBUTING.md: restructure, fix inaccuracies and omissions
+      #32545 open 2026-08-27 x509: Refresh CRL caches after signing
+      #32514 open 2026-08-26 Revoked certificate accepted when a delta CRL from `X509_CRL_diff` is used in memory without a DER round trip
+      #21620 open 2023-08-01 Certificate decoding is overly liberal
+      #31650 open 2026-06-22 [3.5] x509: fix duplicate CRL detection in X509_STORE_add_crl
+      #14652 open 2021-03-23 asn1parse does not enforce proper use of end-of-content (EOC) markers
+      #25619 open 2024-10-06 FIPS os-seed/getrandom() seed source
+      #30773 open 2026-04-10 ISSUE-30725: Validate lengths in BIO_f_buffer buffer_ctrl()
+      #26471 open 2025-01-19 OpenSSL accepts PKCS#8 elliptic curve private key with inconsistent OIDs
+      #21122 open 2023-06-04 X509_STORE_CTX_get_by_subject and related functions leak memory if writing to a non-empty X509_OBJECT
+      #25247 open 2024-08-21 Library build fails if prefix contains whitespaces
+      #15188 open 2021-05-07 [WIP] Add RedHat keyfile-corpus as an external test
+      #14192 open 2021-02-15 Information is lost when decoding PEM files
+      #31649 open 2026-06-22 X509_STORE_add_crl() may insert duplicate CRLs when store objects are unsorted
+      #26412 open 2025-01-14 OSSL_STORE_error() returns true at EOF when no error occurred, leading to "error:success"
+      #18652 open 2022-06-24 Symlinks to man1 pages go wrong 
+      #25276 open 2024-08-22 fips: Add configure option to only allow pedantic installs
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30268 open 2026-03-05 HMAC_Init should not be used directly in a few places.
+      #32903 open 2026-09-21 Dynamic compression: do not leak unexpected errors
+      #33094 open 2026-10-04 ssl: include ECDHE-PSK in EC point format handling
+      #32133 open 2026-07-31 Add MIPS32 AES-CTR assembly implementation
+      #33107 open 2026-10-05 OSSL_FN: Require the frame token in OSSL_FN_CTX_get_*()
+      #33125 open 2026-10-06 Run zero-yield jobs nightly instead of on every push
+      #32966 open 2026-09-23 Fix FuzzerTestOneInput's return value in fuzz/provider.c
+      #33013 open 2026-09-27 exporters/cmake: find the prefix when reached through a symlinked dir
+      #32888 open 2026-09-19 Update PKIX Access Descriptor and CMS Content Type OID arcs
+      #32519 open 2026-08-26 Reject PKCS#8 EC keys whose curve parameters are inconsistent
+      #32523 open 2026-08-26 Reject unknown extensions in TLS 1.3 EncryptedExtensions
+      #33110 open 2026-10-05 Decoders and i2d free private key DER buffers without clearing them
+      #32318 open 2026-08-12 CI: allow manual workflow_dispatch runs from forks
+      #14192 open 2021-02-15 Information is lost when decoding PEM files
+      #33136 open 2026-10-07 test_ocsp_cert_chain.t leaks its ocsp/s_server test fixtures on HP-UX, causing a later libcrypto.so.3 relink failure
+      #32503 open 2026-08-26 cms -sign -cades fails with ML-DSA signers: ESSCertIDv2 inherits SHAKE256 from the signature algorithm
+      #31455 open 2026-06-11 Cleanup pointless documentation in the code
+      #28494 open 2025-09-09 Don't modify the provider store when finding a provider.
+      #32638 open 2026-09-02 Keep pending client credentials out of cached sessions
+      #28643 open 2025-09-23 Fix inconsistent memory order in CRYPTO_GET_REF
+  unclean        32 hit(s) (all listed)
+      #32534 closed 2026-08-26 doc: move OPENSSL_RUNNING_UNIT_TESTS out of OPENSSL_TRACE [3.5, 3.4]
+      #32770 closed 2026-09-09 improve QUIC stream reassembly [ backport to 3.6 ]
+      #28320 closed 2025-08-21 ML-KEM: cleanse (zeroize) failure_key and Kr for encap and decap.
+      #8208 closed 2019-02-11 BIO_read_ex does not distinguish EOF from failure
+      #8236 closed 2019-02-14 Support of VS2017-64bit (getting rid of warnings)
+      #14218 closed 2021-02-17 X509: Add support for directly checking leaf cert EKU
+      #27368 closed 2025-04-13 CMS: add missing output error checks and CLI failure messages; fix micalg output for SHAKE and GostR3411
+      #18792 closed 2022-07-13 TLS1.3 session reuse
+      #27461 closed 2025-04-22 Loading certs via `file:` scheme only works for absolute paths and fails silently on error
+      #17469 closed 2022-01-11 We shouldn't use atexit() in our libraries (or modules, engines and providers alike)
+      #7948 closed 2018-12-23 AFAICT openssl's strategy for handling TLS 1.3 session tickets makes it impossible to reliably implement communication patterns where the server never sends application-level data
+      #16886 closed 2021-10-22 OCSP_sendreq_bio: Avoid doublefree of mem BIO
+      #18508 closed 2022-06-09 OpenSSL s_client not able to connect to the server with Openssl 3.0.3
+      #17318 closed 2021-12-20 HTTP client: Fix cleanup of TLS BIO via `bio_update_fn` callback
+      #13906 merged 2021-01-19 SSL_connect: Enable non-threaded TLS client apps to fetch missing server certs or status info
+      #16770 closed 2021-10-07 permitting no/empty digest in core_obj_add_sigid
+      #16053 closed 2021-07-12 tls13kexmodes test fails on NonStop ia64
+      #15283 closed 2021-05-14 Fix spurious error queue entries while loading private keys
+      #16083 closed 2021-07-15 How to checkout 1_0_2 branch?
+      #15756 closed 2021-06-15 Failing build on buildbot fips:build+test:macosx11[default,default]
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32212 open 2026-08-06 User_canceled is not followed by close_notify
+      #32550 open 2026-08-27 quic-radix: complete thread-assisted client test coverage
+      #11378 open 2020-03-22 New EOF detection breaks session resumption
+      #32552 open 2026-08-27 Leave BIO_f_ssl() consistent when replacing its SSL object fails
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+      #25254 open 2024-08-21 Getting SSL_ERROR_SYSCAL starting from v3.2 instead of SSL_ERROR_ZERO_RETURN
+      #30894 open 2026-04-18 On OpenSSL 4, `SSL_read_ex()` fails with a different error on EOF
+      #21671 open 2023-08-07 y2038: tests should not be failing if system date is set to after 2038
+      #27133 open 2025-03-24 Intermittent CI failure in test_quic_tserver.t
+      #31444 open 2026-06-10 The TLS record layer reconstruction in OpenSSL has led to a performance decline in Nginx
+      #3283 open 2017-04-23 Add support for DTLS new associations with existing parameters (RFC 6347, Section 4.2.8)
+      #28722 open 2025-10-01 Double free or use-after-free following ossl_quic_tls_free in ssl3_free
+      #32079 open 2026-07-26 ASAN reports double-free in EVP provider store teardown when default+legacy providers are loaded, used, then default is reloaded and unloaded again
+      #31227 open 2026-05-19 s_server -www sends NewSessionTicket instead of required KeyUpdate response after client KeyUpdate request
+      #27557 open 2025-05-04 tls_client_method and sendmail/STARTTLS not working on a number of mail servers with TLS1.2 and TLS1.1
+      #26404 open 2025-01-13 TLS 1.3 PSK server callback does not populate server random
+      #9047 open 2019-05-30 Many BIO_dgram functions/macros are missing documentation
+      #32896 closed 2026-09-21 Use NO_ATEXIT in non-static legacy provider
+      #27784 open 2025-06-07 OpenSSL corrupts ALL file descriptors in address space if SSL_connect() tries to contact hung SSL server
+      #28999 open 2025-10-27 TLS handshake failed with error:00000005:lib(0):func(0):DH lib. Code: 5. Errno: 0
+  reboot         30 hit(s) (all listed)
+      #32411 closed 2026-08-17 Dependabot update
+
+CLA: trivial
+
+(deps): Bump cross-platform-actions/action from 0.30.0 to 1.4.0
+      #31311 closed 2026-05-27 crypto/ppccap: Add VMX check for AIX POWER7+ systems
+      #31359 closed 2026-06-02 FIPS: Key generation pairwise consistency tests (PCT) no longer cause the  FIPS provider to enter a non recoverable error state.
+      #31293 closed 2026-05-25 Dependabot update
+
+CLA: trivial
+
+(deps): Bump cross-platform-actions/action from 0.30.0 to 1.1.0
+      #30176 closed 2026-02-25 crypto/ppccap: Add VMX check for AIX POWER7+ systems
+      #25023 closed 2024-07-29 SSLError(58, '[ASN1] nested asn1 error (_ssl.c:4174)') and SSLError(0, 'not enough data: cadata does not contain a certificate (_ssl.c:4159)')
+      #27517 closed 2025-04-28 79-test_http.t and 80-test_cmp_http.t fail on 3.0.16
+      #28708 closed 2025-09-30 Openssl segfaults on FIPS enabled ubuntu 24.04 with pkcs11-tool (smartcards)
+      #26613 closed 2025-02-03 Perl crashes in test_sslrecords on Windows 11 due to stack overflow
+      #28153 closed 2025-08-01 OPENSSL_NO_POSIX_IO not defined on a Solaris 10 server
+      #26632 closed 2025-02-04 Garbage data when decrypt aes-256-cbc after update Ubuntu from 20.04 to 22.04
+      #18818 closed 2022-07-18 ARM Ubuntu 22.04: cc1: error: '-mfloat-abi=hard': selected architecture lacks an FPU
+      #20825 closed 2023-04-25 Concurrent EVP_PKEY_pairwise_check calls seem to cause a deadlock [FIPS enabled]
+      #3993 closed 2017-07-22 libssl.so.1.1: cannot open shared object file
+      #18880 closed 2022-07-26 perl Configure for VC-WIN64A not handling directory with spaces
+      #18279 closed 2022-05-10 Error Load key ".ssh/id_ecdsa.pub": error in libcrypto
+      #10583 closed 2019-12-06 Ruby Mysql2-Gem OpenSSL Segmentation Fault
+      #1934 closed 2016-11-16 test_async causes system hang on Ubuntu 14.04 LTS
+      #3719 closed 2017-06-20 OpenSSL OCSP Responder don't start anymore
+      #2014 closed 2016-11-29 error make: *** [configdata.pm] Error 1 when running make on openssl 1.1.1-dev
+  disk+full      23 hit(s) (all listed)
+      #32411 closed 2026-08-17 Dependabot update
+
+CLA: trivial
+
+(deps): Bump cross-platform-actions/action from 0.30.0 to 1.4.0
+      #31355 closed 2026-06-01 BIO_write on file BIOs does not report partial writes
+      #32371 closed 2026-08-14 [robustness] crypto/pem/pvkfmt.c:897 check-after-use memcpy → ≤8-byte heap over-read on crafted PVK blob (keylen<8, legacy provider)
+      #22357 closed 2023-10-12 Add design document for LMS.
+      #28945 closed 2025-10-17 Clean thread local storage OPENSSL_cleanup
+      #28923 closed 2025-10-15 CMS: Add support for hashless signing schemes (ML/SLH-DSA & EdDSA) for no-attributes case
+      #27083 closed 2025-03-18 Intermittent CI failures due to stuck tests
+      #27002 closed 2025-03-07 Work around for ARM64 atomics bug (another attempt)
+      #22342 closed 2023-10-11 rand: for low quality seed sources, allow collection of more entropy
+      #12898 closed 2020-09-17 a crash happened on openssl-1.1.1g
+      #22624 closed 2023-11-04 Augment rand argument parsing to allow scaling
+      #17172 closed 2021-11-30 HPKE pr
+      #18691 closed 2022-06-30 X509_verify_cert returns different result with OpenSSL 3.0
+      #14834 closed 2021-04-12 ENCODER & DECODER: Allow decoder implementations to specify "carry on"
+      #3232 closed 2017-04-15 Writing to a full disk does not result in "no space left on device"
+      #947 closed 2016-04-06 No .PDB available in static Windows builds
+      #14517 closed 2021-03-11 3.0.0 Alpha13 Broken on NonStop x86
+      #13618 closed 2020-12-04 Should the NULL cipher be included in the FIPS provider?
+      #5025 closed 2018-01-05 Fix error handling in X509_REQ_print_ex
+      #11180 closed 2020-02-26 Add assembly config targets for UEFI build [1.1.1]
+  data+loss      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33099 open 2026-10-05 quic: release pseudo-lost packets from NewReno
+      #30953 open 2026-04-24 Fix dangeours truncating memsize to 32bit
+      #32908 open 2026-09-22 CApath certificate lookup clears unrelated errors and can erase CMS failure diagnostics
+      #33098 open 2026-10-04 Improve CRNG failure reporting
+      #31925 open 2026-07-11 Fix known PSK/ticket issues (master)
+      #32854 closed 2026-09-16 DTLS: preserve outstanding flights after incomplete ACKs
+      #32891 closed 2026-09-20 DTLS 1.3: read-epoch changes prevent recovery from lost Finished/KeyUpdate ACKs
+      #21005 open 2023-05-19  performance of openssl 1.1.1p vs. 3.1.0 
+      #32601 closed 2026-08-30 Fix DTLS 1.3 sequence number truncation and reconstruction
+      #20171 open 2023-01-30 OpenSSL 3.0 performance degradation due to bottleneck in the `ossl_gcm_get_ctx_params` and `ossl_gcm_set_ctx_params` functions
+      #32127 closed 2026-07-30 quic: copy buffered stream data out of the received packets
+      #10021 open 2019-09-25 In the (D)TLS engine of libssl, ERR_clear_error() calls should be avoided
+      #28764 open 2025-10-06 Add support for DIT in AArch64
+      #31000 closed 2026-04-27 Fix 4.0 regression: retain pending base64 BIO output on retry
+      #23350 closed 2024-01-21 Openssl s_time does not work well，when I use netem to set loss rate，s_time will hang
+      #32657 closed 2026-09-03 Fix AES-CBC-HMAC multiblock output validation
+      #32033 closed 2026-07-21 RedBlack tree for OpenSSL.
+      #30663 closed 2026-04-01 Fix heap buffer overflow in CRYPTO_128_unwrap_pad error paths
+      #32368 open 2026-08-14 [robustness] asn_pack.c:58 ASN1_item_unpack drops the decode cursor: openssl ocsp verifies non-DER OCSP responses with trailing garbage
+      #8497 closed 2019-03-16 test/params_api_test.c: fix size_t assumptions
+  partial+write  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #23606 open 2024-02-15 quic: SSL_write_ex can return success but no written bytes (in partial writes mode)
+      #32563 open 2026-08-28 Enforce TLS 1.3 AES-GCM record usage limits
+      #30939 open 2026-04-22 Clarify the documentation about interleaving SSL_read()/SSL_write()
+      #32731 open 2026-09-07 ec_asn1: cleanse the SEC1 EC private-key octet string on free (fixes #32639)
+      #27768 open 2025-06-05 Add vectored io api: SSL_writev
+      #28494 open 2025-09-09 Don't modify the provider store when finding a provider.
+      #30729 open 2026-04-08 Cleanse sensitive key material in freed memory
+      #32642 closed 2026-09-02 test: add unit test for the buffering BIO
+      #32842 open 2026-09-16 AEAD regression test for EVP_CIPHER_do_all_provided
+      #7757 open 2018-12-04 Non-blocking Socket and Early Data
+      #20918 open 2023-05-10 Add/design SSL_writev
+      #31434 closed 2026-06-09 Fix BIO_write on file BIOs to report partial writes.
+      #17688 open 2022-02-11 Access to intermediate HASH data is need to support ISO7816-8 "5.5 HASH operation"
+      #31355 closed 2026-06-01 BIO_write on file BIOs does not report partial writes
+      #31004 open 2026-04-28 OpenSSL unknown extension handling split analysis
+      #32793 closed 2026-09-11 CA rollover regression rejects valid chains and promotes stored intermediaries to trust anchors [4.0, 4.1, master]
+      #32614 closed 2026-08-31 Don't update the certificate in cache_extensions if we lost the race.
+      #32162 closed 2026-08-03 Improve robustness of the Windows registry directory lookup
+      #31633 open 2026-06-22 aes-gcm-avx512: improve AES-GCM throughput with dynamic block-loop dispatch
+      #22628 open 2023-11-06 EVP_CIPHER update and final APIs are dangerous and not size_t-clean
+  crash+safe     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30057 open 2026-02-17 Async-signal-safe API to clear `EVP_PKEY` contents
+      #32552 open 2026-08-27 Leave BIO_f_ssl() consistent when replacing its SSL object fails
+      #26642 open 2025-02-05 The new EVP_PKEY_sign/verify_message API only supports RSA, but not RSA-PSS ?
+      #28660 open 2025-09-25 Add support for Tuplehash
+      #30810 open 2026-04-14 Add support for HSS signature verification.
+      #31909 open 2026-07-09 x509 store: keep store object lists sorted for O(log n) duplicate detection
+      #31699 open 2026-06-24 Race condition: missing lock protection for dgbl->random_provider read/write (rand_lib.c)
+      #32194 open 2026-08-05 Regressions in asn1/apps/tests after #31194: ASN1_STRING C-string and empty-string handling
+      #31542 open 2026-06-16 Add a lock to the global variable app_methods
+      #31685 open 2026-06-23 QUIC: SSL_read_ex on REJECT-policy connection triggers list_remove assert on unlinked stream node → SIGABRT/SIGSEGV
+      #32804 open 2026-09-11 Backport 0c2a196af8 (per-OSSL_LIB_CTX CONF storage) to 3.0-3.6: conf_ssl.c double-free still present in all release branches
+      #30921 open 2026-04-21 Null Pointer Dereference in DH Paramgen Type Translation via `EVP_PKEY_CTX_set_dh_paramgen_type(0)`
+      #31326 open 2026-05-29 HPKE: Add Post Quantum KEM support.
+      #17088 open 2021-11-20 HTTP client: simplify and improve HTTP(S) proxy support
+      #27129 open 2025-03-23 Crash seen in multi-threaded processes using OpenSSL3
+      #13723 open 2020-12-21 Rare and random crash in bn_sqr8x_internal
+      #25294 open 2024-08-27 Race condition on error strings cleanup?
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+      #31396 open 2026-06-05 v3_ncons: Reject embedded NUL bytes in URI name constraints
+      #31397 closed 2026-06-05 Add NULL checks in ssl_lib.c
+  atomic+write   >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33111 open 2026-10-05 Concurrent first default allocations race on allocator customization state
+      #32968 open 2026-09-24 DTLS listener connections race on the shared write BIO chain
+      #30672 open 2026-04-03 Convert ex_data handling to use an RCU lock
+      #32145 open 2026-08-03 Multi-threaded handshake with a shared SSL_CTX became unstable (2–3x run-to-run) on Windows
+      #30659 open 2026-04-01 Analysis of read locks taken while handshaking
+      #26898 open 2025-02-25 Experimental RCU change
+      #28572 open 2025-09-16 Reproducer for intermittent RCU problem
+      #33042 closed 2026-09-29 Increase performance under msvc for atomic int load/store
+      #30660 open 2026-04-01 For internal only objects don't create them with ex_data support
+      #26741 open 2025-02-13 crypto: 64-bit atomics requires linking to `libatomic` on some 32-bit platforms
+      #32868 closed 2026-09-17 crypto/threads_pthread.c: acquire on cmp_exch failure
+      #7757 open 2018-12-04 Non-blocking Socket and Early Data
+      #32947 open 2026-09-23 PKCS12_newpass under-allocates AES-WRAP-PAD output and causes a heap buffer overflow
+      #32498 closed 2026-08-25 Dont have dgram_pairs track bios, track bio_dgram_pair_st instead
+      #31713 closed 2026-06-24 ensure writes are syncronized on windows in CRYPTO_THREAD_run_once
+      #32404 closed 2026-08-17 Make CI run a lot faster. 
+      #31204 closed 2026-05-17 Add optional external session-ID collision callbacks for external cache checks
+      #25155 open 2024-08-10 QUIC and Thread Fail on NonStop in 3.3 and 3.4
+      #31638 closed 2026-06-22 Various fixes, refactoring, and improvements across ASN1, compression BIOs, QUIC, CMS, and build config
+      #29881 closed 2026-02-01 Connection fails on Solaris (32-bit, x86, x64) with OpenSSL 3.5.5
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #33063 open 2026-10-01 Use after free when X509_STORE_get0_objects runs concurrently with X.509 verification
+      #29526 open 2025-12-31 threads_pthread: make lock contention log location configurable
+      #32804 open 2026-09-11 Backport 0c2a196af8 (per-OSSL_LIB_CTX CONF storage) to 3.0-3.6: conf_ssl.c double-free still present in all release branches
+      #32145 open 2026-08-03 Multi-threaded handshake with a shared SSL_CTX became unstable (2–3x run-to-run) on Windows
+      #32266 open 2026-08-10 allow dgram pair to dump datagrams into libpcapp
+      #17950 open 2022-03-23 Performance issue with Openssl 3.0 in multi threaded application when using d2i_x509
+      #26721 open 2025-02-12 [BUG] Build Breakage at 3.3.3 for PUT Model on NonStop
+      #23451 open 2024-02-01 Getting to zero global mutable state long-term
+      #31118 open 2026-05-08 Using the callback of SSL_CTX_set_cert_cb to load certificates
+      #30672 open 2026-04-03 Convert ex_data handling to use an RCU lock
+      #26898 open 2025-02-25 Experimental RCU change
+      #24421 open 2024-05-16 openssl enc support for aead ciphers
+      #21770 open 2023-08-17 OpenSSL can't see OPENSSL_MODULES env var when using Linux capabilities
+      #31486 open 2026-06-12 Address crash seen with AIX not honouring atexit registered routine
+      #31699 open 2026-06-24 Race condition: missing lock protection for dgbl->random_provider read/write (rand_lib.c)
+      #28782 open 2025-10-08 Create ability to "pre-resolve" EVP APIs
+      #25155 open 2024-08-10 QUIC and Thread Fail on NonStop in 3.3 and 3.4
+      #32614 closed 2026-08-31 Don't update the certificate in cache_extensions if we lost the race.
+      #17064 open 2021-11-18 Massive performance degradation in OpenSsl 3.0 if used in a heavy multi threaded server application
+      #31027 open 2026-04-29 Add support for RFC 9861 TurboSHAKE and KangarooTwelve XOF digests
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #32934 open 2026-09-22 DTLS 1.3: Don't discard unacknowledged DTLS 1.3 flights
+      #32552 open 2026-08-27 Leave BIO_f_ssl() consistent when replacing its SSL object fails
+      #32120 open 2026-07-30 test: make SSL_poll abort regression deterministic
+      #32266 open 2026-08-10 allow dgram pair to dump datagrams into libpcapp
+      #32397 open 2026-08-15 ech: fix ECHConfig vs ECHConfigList encoding confusion
+      #32605 open 2026-08-31 Add CRL distribution point URI output to x509 command
+      #31925 open 2026-07-11 Fix known PSK/ticket issues (master)
+      #32705 open 2026-09-06 ECH: external TLS 1.3 PSK handshakes fail with BAD_PSK_IDENTITY
+      #33098 open 2026-10-04 Improve CRNG failure reporting
+      #32690 open 2026-09-04 Remove the library context from X509 and X509_REQ
+      #32222 open 2026-08-06 TLS 1.3 aborts instead of sending a fallback certificate chain
+      #32085 open 2026-07-27 SSL Echo Update from IP to hostname
+      #31711 open 2026-06-24 ossl_siv128_finish does not follow OpenSSL's expected return values.
+      #32251 open 2026-08-09 Miscellaneous fixes on error handling in ASN1_item_ex_i2d()
+      #30939 open 2026-04-22 Clarify the documentation about interleaving SSL_read()/SSL_write()
+      #32693 open 2026-09-05 Build the X509 v3 cache only at sign and decode time. 
+      #32212 open 2026-08-06 User_canceled is not followed by close_notify
+      #30729 open 2026-04-08 Cleanse sensitive key material in freed memory
+      #30356 open 2026-03-11 fuzz: fix quic-server fuzzer to complete TLS 1.3 handshake
+      #31093 open 2026-05-05 Fix DTLS out-of-sequence message error code (#25698)
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31391 open 2026-06-04 pkcs7: fix four more NULL contents dereferences
+      #32545 open 2026-08-27 x509: Refresh CRL caches after signing
+      #30990 open 2026-04-27 Improve CMP client-side debugging: optional console cutput of CSR Contents
+      #21620 open 2023-08-01 Certificate decoding is overly liberal
+      #14192 open 2021-02-15 Information is lost when decoding PEM files
+      #26471 open 2025-01-19 OpenSSL accepts PKCS#8 elliptic curve private key with inconsistent OIDs
+      #15188 open 2021-05-07 [WIP] Add RedHat keyfile-corpus as an external test
+      #25247 open 2024-08-21 Library build fails if prefix contains whitespaces
+      #26412 open 2025-01-14 OSSL_STORE_error() returns true at EOF when no error occurred, leading to "error:success"
+      #14652 open 2021-03-23 asn1parse does not enforce proper use of end-of-content (EOC) markers
+      #18652 open 2022-06-24 Symlinks to man1 pages go wrong 
+      #29586 open 2026-01-09 Mutual TLS for TLSv1.3 using OpenSSL 3.5.1 on CentOS stream 9
+      #32447 open 2026-08-20 providers: initialize ML-DSA-MU before empty-message finalization
+      #27300 open 2025-04-08 Config .include directive processing for directories is not deterministic
+      #26274 open 2024-12-27 openssl CMS decrypt fails on big files.
+      #29682 open 2026-01-20 OpenSSL s_server – chainCAfile2 directive??
+      #32919 closed 2026-09-22 Reject and never send an empty TLS 1.3 certificate_authorities list
+      #28483 open 2025-09-08 CMP `sender` and `senderKID`: fix implementation, option checking, documentation, and code comments
+      #5158 open 2018-01-24 Replace setters and empty states with better constructors
+      #15289 open 2021-05-14 OpenSSL 1.1.1k DTLS server responds to invalid Finished by re-transmitting ChangeCipherSpec, Finished
+
+== 51 terms run; 49 returned hits, 29 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

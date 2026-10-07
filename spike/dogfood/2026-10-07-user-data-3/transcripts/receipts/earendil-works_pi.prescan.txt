@@ -1,0 +1,980 @@
+== novelty pre-scan: earendil-works/pi
+== date: 2026-10-07T07:56:42Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10272 open 2026-10-01 stdin `read EIO` is recorded as a crash — `process.stdin` has no `error` guard while stdout/stderr do
+      #8036 open 2026-08-12 Edit tool crashes TUI when rendering a large diff during execution and session resume
+      #10585 open 2026-10-07 bash temp-file stream errors still crash the whole process on 1.0.4 (ENOSPC on a full /tmp, EACCES)
+      #8057 open 2026-08-13 fix(examples): todo renderResult returns undefined on validation errors
+      #5886 open 2026-06-18 AgentSession settlement/continuation and assistant-tail lifecycle bugs
+      #9915 closed 2026-09-22 Fix crash caused by unbound modelRegistry.streamSimple
+      #10135 closed 2026-09-28 fix(coding-agent): normalise compaction usage to prevent footer crash on resume
+      #10455 open 2026-10-04 durable: nested tool execution from ToolExecutionApi (executeTool + nestedCalls)
+      #10453 closed 2026-10-04 Package-discovered TypeScript extension crashes Bun (JSC panic: index out of bounds) — same file loads fine via --extension
+      #10050 open 2026-09-25 fix(coding-agent): keep extension console output off the interactive TUI
+      #10320 closed 2026-10-02 v1.0.0 CodingTools omit replay, so crash recovery interrupts read
+      #10209 closed 2026-09-30 Extension-registered models get no cost default; calculateCost crashes reading 'tiers'
+      #9879 closed 2026-09-22 Selecting a session crashes pi with an uncaught AbortError
+      #10283 closed 2026-10-01 codemode: script output grows pi's memory without bound until it crashes
+      #10444 closed 2026-10-04 pi-codemode: a script that sets Array.prototype.toJSON crashes the host process
+      #10054 closed 2026-09-25 registerCommand accepts a non-string name; extension loads, then `/` crashes pi
+      #9583 open 2026-09-14 Windows (pwsh/ConPTY): loader line suddenly paints at the top of the screen (autowrap drift in main-screen renderer)
+      #10313 closed 2026-10-01 Interactive TUI exits on terminal resize with getWindowSize ENOTTY
+      #10092 closed 2026-09-27 compaction: provider usage persisted without `cost` crashes the footer on every resume (un-normalised passthrough at compaction.js:722/:728)
+      #10210 closed 2026-09-30 applyModelOverride crashes reading 'tiers' when base model has no cost (provider-composer.js:59)
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10504 open 2026-10-05 Split ANSI sequences corrupt user bash output retained in context
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #9332 open 2026-09-08 Fullscreen: drag-selecting the editor row that contains the caret corrupts the display (cursor marker leaks to the terminal)
+      #10349 closed 2026-10-02 edit: corrupts non-UTF-8 files (e.g. GBK) but still reports success
+      #9828 closed 2026-09-21 Fullscreen exit with default fullscreenExitOutput ("transcript") corrupts scrollback during teardown handoff
+      #10157 open 2026-09-29 Gemini tool-call thought signatures are dropped with the AI Studio OpenAI-compatible endpoint
+      #9974 closed 2026-09-23 pi mishandles Responses API tool calls as returned by llama.cpp, executing duplicated and corrupted calls
+      #9684 closed 2026-09-16 Copying non-ASCII text corrupts it when the pbcopy fallback runs on macOS
+      #10318 open 2026-10-01 Feature: expose a prompt hook after native virtual model resolution
+      #9100 closed 2026-09-04 openai-completions replays text/summary reasoning_details that providers reject (Corrupted thought signature)
+      #9887 open 2026-09-22 `read` tool call rendering in TUI breaks if line numbers are strings
+      #8345 closed 2026-08-19 SessionManager corrupts the next append after an unterminated JSONL tail
+      #10597 closed 2026-10-07 tui: trailing-space padding on every line breaks copy-paste of shell line continuations
+      #9825 closed 2026-09-21 [Not a bug — caused by a plugin] Multi-line tool-call arguments corrupt `<parameter>` closing tag boundary — literal `</parameter>` leaks into TUI error echo
+      #6883 closed 2026-07-20 BUG - Corrupted session
+      #8852 closed 2026-08-30 JSONL session opened twice in one process writes duplicate seq and corrupts the file
+      #9682 closed 2026-09-16 fix(clipboard): keep non-ASCII text intact when pbcopy is used on macOS
+      #9105 closed 2026-09-04 processFileArguments() silently corrupts binary file attachments via a lossy forced UTF-8 decode (@file mention and Read tool)
+      #10088 closed 2026-09-26 /copy-code [n]: copy a fenced code block from internal state
+      #9590 closed 2026-09-14 openai-completions: image base64 corrupted (invalid length) when resuming a session with many multi-MB image tool results — every subsequent request fails 400
+  corruption     77 hit(s) (all listed)
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #10002 open 2026-09-24 Extension console output writes over the interactive TUI
+      #8584 closed 2026-08-24 TUI row corruption during streaming: assistant text rendered one word per line after long tool output
+      #8939 closed 2026-09-01 Session file deleted mid-run is recreated without the header line; next resume fails with 'not a valid pi session'
+      #7917 closed 2026-08-10 TUI fullscreen mode: rendering corruption, host app freeze, GPU spike (inside Orca)
+      #9600 closed 2026-09-14 [VIDEO] Ctrl+Y loses large-paste content after another message
+      #10250 closed 2026-09-30 Since 0.99.0 (system theme default) pi startup inside tmux 3.6/3.6a fills the input box with hex color garbage
+      #7006 closed 2026-07-23 Home-prefix path corruption persists outside the footer
+      #9682 closed 2026-09-16 fix(clipboard): keep non-ASCII text intact when pbcopy is used on macOS
+      #9011 closed 2026-09-02 fix: `readWaylandClipboardText` leaks `wl-paste` stderr to terminal, breaking TUI rendering
+      #9590 closed 2026-09-14 openai-completions: image base64 corrupted (invalid length) when resuming a session with many multi-MB image tool results — every subsequent request fails 400
+      #9596 closed 2026-09-14 coding-agent: two concurrent `-c` runs in one directory append into a single session file with no lock or warning
+      #8673 closed 2026-08-26 TUI: soft line breaks render as hard breaks — thinking blocks show as ragged sequential lines
+      #10166 closed 2026-09-29 SessionManager: failed append advances memory and leaves a missing parent in subsequent JSONL entries
+      #7669 merged 2026-08-05 feat: harness v2 r2
+      #9930 closed 2026-09-22 session-manager: a metadata entry can become the session's leaf and silently truncate the transcript
+      #7448 merged 2026-08-01 feat(agent): add bounded branch entry queries
+      #9828 closed 2026-09-21 Fullscreen exit with default fullscreenExitOutput ("transcript") corrupts scrollback during teardown handoff
+      #8476 closed 2026-08-22 Session corruption: `400 tool must be a response to a preceding message with 'tool_calls'` when a `subagent_control_notice` lands between a subagent tool call and its result
+      #6696 closed 2026-07-16 TUI emits raw tabs after fixed-width layout, causing overlay autowrap and row corruption
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10164 open 2026-09-29 User ! commands can return truncated: false after discarding output
+      #10435 open 2026-10-03 openai-completions: truncated stream persists partial tool calls with empty arguments
+      #10015 open 2026-09-24 bash: truncation notice reports 0B for a >50KB last line ending in a newline
+      #9718 open 2026-09-17 --print exits 0 with empty output when the model exhausts its output budget
+      #9793 open 2026-09-20 Ambiguous length stop drops history far below the window when streaming usage omits reasoning tokens
+      #10585 open 2026-10-07 bash temp-file stream errors still crash the whole process on 1.0.4 (ENOSPC on a full /tmp, EACCES)
+      #9409 open 2026-09-10 Sessions wedge permanently at the context ceiling on reasoning models
+      #10113 closed 2026-09-28 Keep the useful lines when shell output is tail-truncated
+      #10330 open 2026-10-02 Auto-compaction does not start in CLI mode
+      #9157 open 2026-09-04 fix(coding-agent): render session tree search cursor
+      #9075 open 2026-09-03 Compaction summarisation inherits the session thinking level on adaptive models and deterministically hits the output cap at high efforts
+      #9986 open 2026-09-24 Aborting during tool execution leaves unanswered tool calls in the session
+      #9010 open 2026-09-02 Context compaction causes memory spikes with local LLMs due to in-process string duplication
+      #9410 open 2026-09-10 [Bug]: Pressing Escape to interrupt streaming in large sessions causes ~60s complete TUI freeze
+      #10452 closed 2026-10-04 Durable tool-result evidence: a supported way to externalize complete tool output without materializing or truncating it in context
+      #10216 closed 2026-09-30 Improve collapsed paste marker - show first and last line of pasted text
+      #9099 open 2026-09-04 pi.dev provider registry serves wrong OpenRouter baseUrl (missing /v1) for non-batch Anthropic models — agents 404 with an HTML page
+      #10086 closed 2026-09-26 mistral-conversations: any strict field on tool functions makes Mistral mangle zai-glm streamed tool-call arguments (truncated to first property)
+      #8140 open 2026-08-14 Research: a recoverable long-line guard for read
+      #9265 open 2026-09-07 @earendil-works/pi-ai: O(n²) tool-call argument re-parsing in openai-completions streaming freezes the event loop
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10164 open 2026-09-29 User ! commands can return truncated: false after discarding output
+      #10435 open 2026-10-03 openai-completions: truncated stream persists partial tool calls with empty arguments
+      #10015 open 2026-09-24 bash: truncation notice reports 0B for a >50KB last line ending in a newline
+      #9793 open 2026-09-20 Ambiguous length stop drops history far below the window when streaming usage omits reasoning tokens
+      #9718 open 2026-09-17 --print exits 0 with empty output when the model exhausts its output budget
+      #9409 open 2026-09-10 Sessions wedge permanently at the context ceiling on reasoning models
+      #10585 open 2026-10-07 bash temp-file stream errors still crash the whole process on 1.0.4 (ENOSPC on a full /tmp, EACCES)
+      #9010 open 2026-09-02 Context compaction causes memory spikes with local LLMs due to in-process string duplication
+      #9157 open 2026-09-04 fix(coding-agent): render session tree search cursor
+      #9216 open 2026-09-05 Ollama qwen3.8:27b: stream 'terminated' errors (clean 0.84.x->0.85.x regression) + auto-compaction stops re-triggering after first run
+      #9602 open 2026-09-14 Compaction can overflow by including thinking messages omitted from earlier model requests
+      #10460 closed 2026-10-04 Footer: make extension-status rendering (wrap vs truncate) a toggleable setting
+      #10390 open 2026-10-03 Anthropic SSE parser mishandles a CRLF that is split across two network chunks → `Could not parse ... Unexpected end of JSON input; data=` and the turn aborts
+      #10113 closed 2026-09-28 Keep the useful lines when shell output is tail-truncated
+      #9897 closed 2026-09-22 Stream truncation silently produces incomplete tool-call arguments
+      #6665 open 2026-07-15 TUI pins a full core while streaming: uncached Intl.Segmenter + per-chunk Markdown rebuild
+      #10330 open 2026-10-02 Auto-compaction does not start in CLI mode
+      #8301 open 2026-08-18 Can't interleave compaction requests with prompts in prompt queue
+      #9075 open 2026-09-03 Compaction summarisation inherits the session thinking level on adaptive models and deterministically hits the output cap at high efforts
+      #9986 open 2026-09-24 Aborting during tool execution leaves unanswered tool calls in the session
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10435 open 2026-10-03 openai-completions: truncated stream persists partial tool calls with empty arguments
+      #9718 open 2026-09-17 --print exits 0 with empty output when the model exhausts its output budget
+      #9268 open 2026-09-07 tui: remote Markdown image with empty alt hides URL in user messages
+      #10299 open 2026-10-01 openai-completions: empty tool call from OpenRouter/GLM permanently wedges the session (repro + fix for #4854)
+      #8720 open 2026-08-27 tool result with whitespace-only output permanently bricks the session (HTTP 400)
+      #10516 open 2026-10-05 Env daemon stops replying after one oversized file-watch change
+      #10478 closed 2026-10-05 Fix empty defaultTools selections when merging settings layers
+      #10431 open 2026-10-03 Codemode classifier returns "fetch failed" for TypeSafe models
+      #10507 open 2026-10-05 Radius gateway config accepts missing pricing fields and produces NaN costs
+      #9918 closed 2026-09-22 Codex replays empty signed final answers
+      #10415 open 2026-10-03 [Bug] Startup hangs indefinitely when stdin is an open non-TTY pipe without EOF in readPipedStdin()
+      #10390 open 2026-10-03 Anthropic SSE parser mishandles a CRLF that is split across two network chunks → `Could not parse ... Unexpected end of JSON input; data=` and the turn aborts
+      #9508 open 2026-09-12 pi-ai sends unsupported OpenAI-specific request fields/roles/auth to compatible providers
+      #10317 open 2026-10-01 Emit `queue_update` to extensions so an injected input's discard is observable
+      #9944 closed 2026-09-23 [tui] Skill autocomplete is empty while typing "/skill"
+      #10047 closed 2026-09-25 Allow empty thinking signatures for OpenCode qwen3.8-flash
+      #10569 open 2026-10-06 feat(ai,coding-agent): filter OpenRouter models by key availability
+      #9869 closed 2026-09-22 fix(ai): skip empty Mistral content deltas (#9674)
+      #10351 open 2026-10-02 Editor: deleting a duplicate large paste drops the remaining paste content
+      #9920 closed 2026-09-22 fix(ai): omit empty Codex final answers from replay
+  atomic         61 hit(s) (all listed)
+      #10407 open 2026-10-03 custom entry submission with steering/followup
+      #9578 closed 2026-09-14 Extension API: atomic interrupt and lossless delivery of pending messages
+      #9632 closed 2026-09-15 Extensions need atomic idle submission for timer-driven follow-up work
+      #7658 open 2026-08-05 Extension API for persisting API-key credentials (auth.json)
+      #8559 closed 2026-08-24 feat(coding-agent): attach clipboard images as atomic markers
+      #9432 open 2026-09-10 Allow session_start extensions to append stable base system prompt context
+      #9470 closed 2026-09-11 edit/write: ownership-aware file operations (as_user) for agents on multi-user hosts
+      #8100 closed 2026-08-14 Contribution proposal: atomic session-only model state for extensions
+      #10517 closed 2026-10-05 Concurrent Env host-key accept/forget through equivalent known-hosts paths loses updates
+      #10595 closed 2026-10-07 Contribution proposal: lazy media references and explicit inspection
+      #10214 closed 2026-09-30 edit: allow an edit to intentionally replace all occurrences
+      #10424 closed 2026-10-03 Durable: persist a per-conversation UUIDv7 and forward it as pi-ai sessionId
+      #9340 closed 2026-09-08 AgentSession.abort() can start auto-compaction after cancellation
+      #7707 merged 2026-08-06 harness-v2 jsonl session atomic writes for forks & torn-tail truncation
+      #9572 closed 2026-09-14 pi update --extensions leaves packages with removed node_modules after a pi update --extensions leaves packages with removed node_modules after a
+      #6578 closed 2026-07-12 Add atomic compaction/dispatch coordination capability
+      #9606 closed 2026-09-15 TUI crash: wordWrapLine infinitely recurses on a single grapheme wider than maxWidth (any CJK char at layout width 1)
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #9236 closed 2026-09-06 Contribution: acknowledged user-turn delivery for extensions
+      #10401 closed 2026-10-03 codemode: backpressured output sink and pre-transfer JSON byte limits
+  atomically     21 hit(s) (all listed)
+      #10407 open 2026-10-03 custom entry submission with steering/followup
+      #9432 open 2026-09-10 Allow session_start extensions to append stable base system prompt context
+      #10424 closed 2026-10-03 Durable: persist a per-conversation UUIDv7 and forward it as pi-ai sessionId
+      #9572 closed 2026-09-14 pi update --extensions leaves packages with removed node_modules after a pi update --extensions leaves packages with removed node_modules after a
+      #9236 closed 2026-09-06 Contribution: acknowledged user-turn delivery for extensions
+      #8052 closed 2026-08-12 fix(coding-agent): make session persistence transactional
+      #7379 merged 2026-07-31 fix(agent): clarify session persistence ownership
+      #7092 closed 2026-07-25 Expose a final immutable pre-execute tool admission hook
+      #7880 closed 2026-08-10 Proposal: five small bug fixes across tui, ai, and coding-agent
+      #8215 closed 2026-08-16 Package installs/updates race under concurrency and /reload can complete with a partial extension set
+      #8927 closed 2026-08-31 pi credential-store read path takes an exclusive lock for a snapshot read; sync-path acquire budget ~200ms
+      #6728 closed 2026-07-16 Compaction queue flush can race with resumed agent and reject queued message
+      #5749 closed 2026-06-15 TUI reload replays all chat history visually instead of instant refresh (especially noticeable in tmux)
+      #5311 closed 2026-06-01 Screen flicker when extension confirm/select dialog appears during streaming
+      #4084 closed 2026-05-02 Add extension tool unregister APIs
+      #2111 merged 2026-03-13 feat(tui): treat paste markers as atomic segments in editor
+      #1439 closed 2026-02-09 feat: expose replaceEntries + message_end event to Extension API
+      #1438 closed 2026-02-09 feat: add replaceEntries for session editing + expose message_end event to extensions
+      #2030 closed 2026-03-10 Cron jobs create orphaned sessions that never get cleaned up
+      #683 closed 2026-01-13 Feature proposal: Add a curl-based installer and self-update command (without needing npm)
+  interrupted    66 hit(s) (all listed)
+      #9126 open 2026-09-04 fix(coding-agent): settle tool results before disposal
+      #10506 open 2026-10-05 retryAssistantCall retains abort listeners after successful backoff
+      #10016 open 2026-09-24 fix(coding-agent): resume aborted runs when a wake follow-up is queued
+      #9986 open 2026-09-24 Aborting during tool execution leaves unanswered tool calls in the session
+      #9124 open 2026-09-04 Runtime dispose can leave dangling tool calls in persisted session history
+      #8283 open 2026-08-18 fix(coding-agent): restore continuation after retry and compaction
+      #10455 open 2026-10-04 durable: nested tool execution from ToolExecutionApi (executeTool + nestedCalls)
+      #10133 closed 2026-09-28 package-manager: ensureGitRef fails with exit 128 on unborn HEAD (interrupted clone)
+      #10272 open 2026-10-01 stdin `read EIO` is recorded as a crash — `process.stdin` has no `error` guard while stdout/stderr do
+      #9526 closed 2026-09-12 gentle-pi SDD settle contract requires evidence revision for interrupted attempts
+      #9793 open 2026-09-20 Ambiguous length stop drops history far below the window when streaming usage omits reasoning tokens
+      #10094 closed 2026-09-27 Let users change the "Operation aborted" text and its red color
+      #7920 closed 2026-08-11 Interrupted Thinking Messages Are Included in the Summary
+      #9866 closed 2026-09-22 fix(agent): validate persisted tool arguments before replay
+      #10320 closed 2026-10-02 v1.0.0 CodingTools omit replay, so crash recovery interrupts read
+      #9867 closed 2026-09-22 Validate persisted tool arguments before replay
+      #10120 closed 2026-09-28 Model cleanup command terminated the Pi host process; expose host pid to shell tools
+      #10240 closed 2026-09-30 Orphaned tool calls after an unclean exit are silently replaced with "No result provided"
+      #8378 closed 2026-08-19 No way to finish a turn that was interrupted during a tool call
+      #7053 open 2026-07-24 Parallel tool batches lose already-completed tool results when one sibling stalls (orphaned toolCalls -> "No result provided")
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9410 open 2026-09-10 [Bug]: Pressing Escape to interrupt streaming in large sessions causes ~60s complete TUI freeze
+      #9126 open 2026-09-04 fix(coding-agent): settle tool results before disposal
+      #10506 open 2026-10-05 retryAssistantCall retains abort listeners after successful backoff
+      #10362 open 2026-10-02 mintty OSC 4 replies leak into input: text artifact + BEL triggers Ctrl+G / external editor
+      #8085 open 2026-08-13 feat(tui): cancel active mouse selection with escape
+      #10016 open 2026-09-24 fix(coding-agent): resume aborted runs when a wake follow-up is queued
+      #9986 open 2026-09-24 Aborting during tool execution leaves unanswered tool calls in the session
+      #8283 open 2026-08-18 fix(coding-agent): restore continuation after retry and compaction
+      #9124 open 2026-09-04 Runtime dispose can leave dangling tool calls in persisted session history
+      #10320 closed 2026-10-02 v1.0.0 CodingTools omit replay, so crash recovery interrupts read
+      #10455 open 2026-10-04 durable: nested tool execution from ToolExecutionApi (executeTool + nestedCalls)
+      #10002 open 2026-09-24 Extension console output writes over the interactive TUI
+      #10272 open 2026-10-01 stdin `read EIO` is recorded as a crash — `process.stdin` has no `error` guard while stdout/stderr do
+      #10133 closed 2026-09-28 package-manager: ensureGitRef fails with exit 128 on unborn HEAD (interrupted clone)
+      #9578 closed 2026-09-14 Extension API: atomic interrupt and lossless delivery of pending messages
+      #8250 open 2026-08-17 fix(coding-agent): make subagent progress and failures reliable
+      #7787 open 2026-08-07 Bash PI_* guideline triggers unnecessary permission prompts during unrelated tasks
+      #10240 closed 2026-09-30 Orphaned tool calls after an unclean exit are silently replaced with "No result provided"
+      #10094 closed 2026-09-27 Let users change the "Operation aborted" text and its red color
+      #9526 closed 2026-09-12 gentle-pi SDD settle contract requires evidence revision for interrupted attempts
+  sigkill        29 hit(s) (all listed)
+      #10386 open 2026-10-03 Durable: host coding-agent extensions (AgentSession-backed runtime or hook parity)
+      #9200 closed 2026-09-05 SIGKILL (exit 137, no output) on a positional message arg >= ~993 bytes
+      #9460 closed 2026-09-10 bash tool has no default timeout: a hung child (SIGTERM-ignoring descendants) deadlocks the agent session
+      #9129 open 2026-09-04 On Windows, bash timeout kill leaves pipeline processes orphaned
+      #9985 closed 2026-09-24 bash tool timeout parameter does not fire (pi 0.87.1)
+      #9577 closed 2026-09-14 bug(coding-agent): signal-killed bash tools still resolve successfully
+      #8994 merged 2026-09-02 fix(agent): map signal-killed processes to non-zero exit codes
+      #9328 closed 2026-09-08 Allow RPC supervisors to own SIGTERM shutdown
+      #8992 closed 2026-09-02 Signal-killed shell commands report exit code 0
+      #7864 closed 2026-08-09 ExtensionContext.exec timeout never force-kills a SIGTERM-ignoring child
+      #8472 closed 2026-08-22 Expose RPC request, shutdown, and command-settlement controls
+      #7824 closed 2026-08-08 Extension-side turn termination, and caller-controlled RpcClient timeout/shutdown
+      #7466 closed 2026-08-02 feat(coding-agent): opt-in pre-dispatch durability barrier
+      #7511 closed 2026-08-03 Provider request can start before the session is persisted, making crash recovery ambiguous
+      #9349 closed 2026-09-08 bash tool: event loop wedges after child exits normally — unreaped zombie child, unresponsive TUI, SIGTERM ignored (0.84.4)
+      #7730 open 2026-08-06 High CPU usage on Mac OS with long session
+      #8215 closed 2026-08-16 Package installs/updates race under concurrency and /reload can complete with a partial extension set
+      #6846 closed 2026-07-20 fix: use spawnSync with absolute taskkill.exe path to prevent ENOENT on Node.js 24
+      #8209 closed 2026-08-16 fix(coding-agent): defer non-turn custom messages to end of turn while streaming
+      #6043 closed 2026-06-24 task工具: 子进程exitCode为undefined时错误信息不明确
+  sigint         17 hit(s) (all listed)
+      #9840 closed 2026-09-21 Kimi provider: pi completes final output then sleeps at 0% CPU and never exits (SIGINT exits cleanly)
+      #8082 closed 2026-08-13 fix(tui): render only the visible viewport in fullRender; restore terminal on SIGINT
+      #9997 closed 2026-09-24 Quit hangs without feedback when a session_shutdown handler never resolves
+      #8080 closed 2026-08-13 SIGINT kills pi leaving the terminal in raw mode; window title not restored
+      #10133 closed 2026-09-28 package-manager: ensureGitRef fails with exit 128 on unborn HEAD (interrupted clone)
+      #8910 closed 2026-08-31 Ctrl+C dropped and keystrokes lost when event loop is busy (raw-mode input responsiveness)
+      #10079 closed 2026-09-26 Force-killed, crashed, or restored local session leaves the terminal stuck in Kitty flags=7 — every keystroke afterwards emits CSI-u release events
+      #9419 closed 2026-09-10 Fullscreen exit leaves terminal cursor hidden when an overlay-owning extension is loaded
+      #5168 closed 2026-05-29 Make tool paths clickable - support OSC 8 hyperlinks
+      #4839 closed 2026-05-21 Markdown links and raw URLs in TUI output are not Cmd-clickable in Ghostty
+      #1668 merged 2026-02-27 fix(coding-agent): ignore SIGINT while process is suspended
+      #4558 merged 2026-05-15 fix(ai): openai-completions - throw error on missing finish-reason
+      #3458 closed 2026-04-20 DeadLock on settings lock in directory
+      #3917 closed 2026-04-28 fix(tui): restore terminal state on unexpected exit
+      #842 closed 2026-01-19 Soft lock in "pi --resume"
+      #4514 closed 2026-05-14 Kimi K2.6 error 400: Error: 400 Error from provider: Extra inputs are not permitted, field: 'messages[8].reasoning
+      #278 closed 2025-12-22 Add "before" events for session state changes (clear, switch, shutdown)
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10522 open 2026-10-05 /login llama.cpp : if the api endpoint /models is unavaillable, fallback to /v1/models (compatibility with Unsloth)
+      #10256 open 2026-09-30 0.99.x: terminal color query replies leak into the prompt and BEL opens the external editor (mintty on Windows, ConPTY)
+      #9256 open 2026-09-06 Resumed session re-renders tool-result images as full-size inline images
+      #8212 open 2026-08-16 Theme switch leaves stale colors in header, tree labels, and markdown default-style prefix (0.84.2)
+      #10527 open 2026-10-05 AgentSession#prompt() with image data fail to resize with Node's --watch flag
+      #6300 open 2026-07-04 Windows: Input line is redrawn on every keystroke (each character appears on a new line)
+      #9190 closed 2026-09-05 Why in the HELL <CTRL> + C clears the entire prompt???
+      #10561 closed 2026-10-06 "/tree" can't edit last user message after pi is killed during response
+      #7730 open 2026-08-06 High CPU usage on Mac OS with long session
+      #9997 closed 2026-09-24 Quit hangs without feedback when a session_shutdown handler never resolves
+      #10558 open 2026-10-06 Clipboard copy fails when DISPLAY/WAYLAND_DISPLAY are exported without a working socket
+      #10031 closed 2026-09-25 Pi sporadically stuck in "Working..." when thinking is stopped with <esc>
+      #10042 closed 2026-09-25 Alacritty on Windows, SSH to Pi on Linux, special keys not responding
+      #9181 closed 2026-09-05 Skip session events on invalidated extension runners (stale ctx errors when /new races Ctrl+C)
+      #9999 closed 2026-09-24 macOS: clipboard image paste (Ctrl+V) pastes the Finder file icon when a file was copied in Finder
+      #8910 closed 2026-08-31 Ctrl+C dropped and keystrokes lost when event loop is busy (raw-mode input responsiveness)
+      #9949 closed 2026-09-23 Editor: select-all (Cmd+A) then Delete to clear the input
+      #7687 closed 2026-08-05 Keybindings docs omit double Ctrl+C and other supported behavior
+      #7939 closed 2026-08-11 Hardcoded key checks (shift+backspace, shift+space, ctrl+c) bypass keybinding configuration
+      #9847 closed 2026-09-21 Hide child sessions in the /resume picker
+  power          34 hit(s) (all listed)
+      #9622 closed 2026-09-15 RFC: Standardizing Pi Co-Authoring Identity
+      #9576 closed 2026-09-14 /resume: show recent sessions first, load rest in background
+      #9716 closed 2026-09-17 Cannot use Claude Opus 5 and Sonnet 5 models when running Pi via Kiro CLI
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #8854 closed 2026-08-30 [RFC/Discussion] Addressing base System Prompt bloat from accumulated third-party promptGuidelines & Community Solution (pi-prompt-diet)
+      #8188 closed 2026-08-16 Prevent Margin Leaks & Surprise LLM Bills: Add a Hybrid Spend Firewall
+      #6506 closed 2026-07-10 feat: add configurable auto-update on new session
+      #8023 closed 2026-08-12 Extension API: acknowledge durable custom-message publication
+      #9071 closed 2026-09-03 Extension tool registered with a built-in tool's name never replaces it in the final tool list
+      #1837 closed 2026-03-05 Feature Request: Add temperature, top_p, and other generation parameters for power users
+      #8209 closed 2026-08-16 fix(coding-agent): defer non-turn custom messages to end of turn while streaming
+      #6991 closed 2026-07-23 Question: Three @joyanhui/pi-ext-* packages not appearing on pi.dev/packages gallery
+      #2144 closed 2026-03-14 Cannot paste images into Pi.
+      #2223 closed 2026-03-16 feat(tui): ghost text / inline suggestion API for Editor
+      #4643 closed 2026-05-17 Support OpenAI Codex Fast mode
+      #4051 closed 2026-05-01 TensorZero-based providers (ollm.com) return empty responses in 0.71.0
+      #5142 closed 2026-05-28 Extension API additions for non-TUI remote clients
+      #3590 closed 2026-04-23 Support layered config via settings.d/ directory (or settings.*.json glob)
+      #2355 closed 2026-03-18 feat(tui): ghost text / inline suggestion API for Editor
+      #5514 closed 2026-06-08 Project Trust Feature Feedback
+  outage         17 hit(s) (all listed)
+      #8826 closed 2026-08-29 Cap agent retry backoff for prolonged transient outages
+      #7113 open 2026-07-25 TUI freezes after entering an API key in /login when the pi.dev model catalog is unreachable
+      #9843 closed 2026-09-21 0.86.x regression: mid-stream `litellm.APIConnectionError: OpenAIException - Internal server error` on longer requests via OpenAI-compatible (LiteLLM) provider
+      #8233 closed 2026-08-17 agentLoop silently retries when provider returns empty response (no content, zero usage)
+      #8468 closed 2026-08-22 Github Copilot fails with timeout
+      #6677 closed 2026-07-15 Improve provider errors for non-JSON HTTP failures
+      #8004 closed 2026-08-12 General tool-call timeout + extension abort handle (hung tool calls freeze the session indefinitely)
+      #9620 closed 2026-09-15 feat(ai): add OrcaRouter as a first-class provider with API-key and OAuth 2.0 PKCE sign-in
+      #6705 closed 2026-07-16 estimateContextTokens crashes with "Cannot read properties of undefined (reading 'totalTokens')" on any assistant message missing usage
+      #845 closed 2026-01-19 "Error: terminated" while using glm-4.7 from z.ai
+      #5744 closed 2026-06-15 Decompose generate-models.ts for maintainability (behaviour-preserving)
+      #5743 closed 2026-06-15 refactor(ai): decompose generate-models.ts into a data-driven generator (#5702)
+      #2943 closed 2026-04-08 Claude: You're out of extra usage
+      #2060 closed 2026-03-11 fix(ai): add fetch timeout and abort signal threading to all OAuth providers
+      #5702 closed 2026-06-13 prompt_cache_retention sent to providers that reject it (opencode/zen 400) — and a maintainability concern in generate-models.ts
+      #3001 closed 2026-04-10 Unhandled promise rejection: `Agent listener invoked outside active run` at agent.ts:533 crashes the process
+      #75 closed 2025-11-28 A way for the agent to prompt itself based on execution environment triggers
+  ENOSPC         9 hit(s) (all listed)
+      #10585 open 2026-10-07 bash temp-file stream errors still crash the whole process on 1.0.4 (ENOSPC on a full /tmp, EACCES)
+      #9827 closed 2026-09-21 bash output temp file WriteStream has no error listener; stream failure crashes the process
+      #10166 closed 2026-09-29 SessionManager: failed append advances memory and leaves a missing parent in subsequent JSONL entries
+      #9800 closed 2026-09-20 fix(coding-agent): handle bash output temp file WriteStream errors
+      #8575 closed 2026-08-24 fix(coding-agent): surface + bound the torn-append replay loss in session JSONL files
+      #8052 closed 2026-08-12 fix(coding-agent): make session persistence transactional
+      #2445 merged 2026-03-20 fix(models): align minimax and zai defaults
+      #2512 closed 2026-03-22 Harden bash temp-output capture when /tmp is exhausted
+      #2513 closed 2026-03-22 fix(coding-agent): harden bash temp output capture
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9792 open 2026-09-20 SessionManager.create() does not write session file to disk until first assistant message despite isPersisted() returning true
+      #10585 open 2026-10-07 bash temp-file stream errors still crash the whole process on 1.0.4 (ENOSPC on a full /tmp, EACCES)
+      #8250 open 2026-08-17 fix(coding-agent): make subagent progress and failures reliable
+      #9256 open 2026-09-06 Resumed session re-renders tool-result images as full-size inline images
+      #9874 open 2026-09-22 Skills manifest silently omitted from the system prompt when no tool named read/bash is active
+      #10291 closed 2026-10-01 MCP: Store auth in keychain instead of `mcp-auth.json`
+      #10540 closed 2026-10-06 System prompt: local models return file contents in chat instead of writing the file
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #10178 closed 2026-09-29 Store passwords and credentials in OS password keychain
+      #9827 closed 2026-09-21 bash output temp file WriteStream has no error listener; stream failure crashes the process
+      #7739 open 2026-08-06 Set a startup-time budget targeting jcode-comparable latency and memory
+      #10166 closed 2026-09-29 SessionManager: failed append advances memory and leaves a missing parent in subsequent JSONL entries
+      #8331 open 2026-08-18 Agent loop hangs forever when a provider stream stalls mid-response
+      #9413 closed 2026-09-10 New session is not written to disk until the first assistant reply — interrupting early loses it completely
+      #10466 closed 2026-10-05 Let hosts that bundle pi-coding-agent set the codemode wasm and worker paths
+      #10235 closed 2026-09-30 Programmatic provider configuration for embedding pi in agiquery
+      #10227 closed 2026-09-30 Rejected session-file switch redirects subsequent writes to the invalid file
+      #9235 closed 2026-09-06 Extension loading fails with opaque "Unknown system error -122" when temp file writes fail (EDQUOT)
+      #7931 closed 2026-08-11 /resume shows session count inconsistent with actual sessions on disk
+      #10000 closed 2026-09-24 [pi-ai] session file is not written until the first assistant message — first-turn failure loses the session entirely
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10435 open 2026-10-03 openai-completions: truncated stream persists partial tool calls with empty arguments
+      #10482 open 2026-10-05 Preserve oversized final bash output after rolling-buffer trimming
+      #9062 open 2026-09-03 Tool-call argument parsing becomes quadratic with fragmented deltas
+      #9718 open 2026-09-17 --print exits 0 with empty output when the model exhausts its output budget
+      #9265 open 2026-09-07 @earendil-works/pi-ai: O(n²) tool-call argument re-parsing in openai-completions streaming freezes the event loop
+      #10015 open 2026-09-24 bash: truncation notice reports 0B for a >50KB last line ending in a newline
+      #9807 open 2026-09-20 perf(tui): full re-render causes scroll/typing lag in sessions with 800+ messages
+      #8331 open 2026-08-18 Agent loop hangs forever when a provider stream stalls mid-response
+      #9793 open 2026-09-20 Ambiguous length stop drops history far below the window when streaming usage omits reasoning tokens
+      #7062 open 2026-07-24 fix(openai-completions): handle array content and missing finish_reason
+      #9474 open 2026-09-11 Codex transport: no non-resetting per-request total deadline; periodic events defeat idle timeout
+      #9461 open 2026-09-10 fix(ai): defer streamed tool argument parsing until read
+      #9306 open 2026-09-08 Aborted/error turn leaves unmatched toolCall blocks in context; next runAgentLoopContinue is rejected by provider
+      #8250 open 2026-08-17 fix(coding-agent): make subagent progress and failures reliable
+      #10520 closed 2026-10-05 Contribution proposal: lazy Responses tool-argument snapshots
+      #8577 closed 2026-08-24 Late partial tool image conversion can overwrite the final image
+      #10141 closed 2026-09-28 Regular mode: frozen partial frames accumulate in scrollback when a non-empty extension dock widget is present (cleaned by resize, macOS + tmux)
+      #7611 merged 2026-08-04 partial harness v2/json backend
+      #10452 closed 2026-10-04 Durable tool-result evidence: a supported way to externalize complete tool output without materializing or truncating it in context
+      #6665 open 2026-07-15 TUI pins a full core while streaming: uncached Intl.Segmenter + per-chunk Markdown rebuild
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9512 open 2026-09-12 Compaction hits summary output cap with GPT-6 Astra at max reasoning
+      #10282 closed 2026-10-01 openai-responses replays incomplete reasoning after a completed response
+      #10575 closed 2026-10-06 False "Your JSON was incomplete" recovery triggered while discussing tool-calling internals
+      #9897 closed 2026-09-22 Stream truncation silently produces incomplete tool-call arguments
+      #10435 open 2026-10-03 openai-completions: truncated stream persists partial tool calls with empty arguments
+      #9124 open 2026-09-04 Runtime dispose can leave dangling tool calls in persisted session history
+      #8157 open 2026-08-15 Migrate grok-mermaid -> lovely-mermaid
+      #9075 open 2026-09-03 Compaction summarisation inherits the session thinking level on adaptive models and deterministically hits the output cap at high efforts
+      #9959 closed 2026-09-23 Non-standard `incomplete_details.reason` (Volcengine Ark `"length"`) defeats context-overflow detection in `openai-responses`
+      #10318 open 2026-10-01 Feature: expose a prompt hook after native virtual model resolution
+      #10593 closed 2026-10-07 fix(ai): add Muse Code User-Agent to Meta OAuth requests
+      #6695 closed 2026-07-16 Incomplete Args in Prompt Template
+      #7817 closed 2026-08-08 fix(ai): treat incomplete reason 'length' as a length stop, not an error
+      #10503 closed 2026-10-05 fix(coding-agent): preserve ANSI state across user bash output chunks
+      #10137 closed 2026-09-28 Failed threshold compaction continues with the unchanged context
+      #9800 closed 2026-09-20 fix(coding-agent): handle bash output temp file WriteStream errors
+      #6600 open 2026-07-13 pi update --extensions and npm scripts: npm 11.16.0 warns, npm 12 blocks
+      #7540 merged 2026-08-03 fix(coding-agent): resume after context-limited length stops
+      #9950 closed 2026-09-23 forkFrom skips migration on legacy sessions, so the forked copy has empty history
+      #8562 closed 2026-08-24 fix: add retry logic to compaction summarization for transient stream errors
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8140 open 2026-08-14 Research: a recoverable long-line guard for read
+      #9569 open 2026-09-14 fix(ai): coerce JSON-encoded object and array tool arguments
+      #9793 open 2026-09-20 Ambiguous length stop drops history far below the window when streaming usage omits reasoning tokens
+      #9409 open 2026-09-10 Sessions wedge permanently at the context ceiling on reasoning models
+      #8057 open 2026-08-13 fix(examples): todo renderResult returns undefined on validation errors
+      #10536 open 2026-10-06 Cache warming stops immediately for sessions on a virtual model (`registerVirtualModel`)
+      #9602 open 2026-09-14 Compaction can overflow by including thinking messages omitted from earlier model requests
+      #8283 open 2026-08-18 fix(coding-agent): restore continuation after retry and compaction
+      #10299 open 2026-10-01 openai-completions: empty tool call from OpenRouter/GLM permanently wedges the session (repro + fix for #4854)
+      #9410 open 2026-09-10 [Bug]: Pressing Escape to interrupt streaming in large sessions causes ~60s complete TUI freeze
+      #9042 closed 2026-09-03 Contribution proposal: make AgentHarness the canonical recoverable runtime
+      #8617 open 2026-08-25 Codex: Use file references for image-heavy tool results
+      #9129 open 2026-09-04 On Windows, bash timeout kill leaves pipeline processes orphaned
+      #9064 closed 2026-09-03 Compaction cannot recover sessions that exceed transport body-size limits
+      #8874 closed 2026-08-31 Recover when OpenRouter auto changes endpoint with encrypted reasoning history
+      #9044 closed 2026-09-03 feat(agent): add initial recoverable harness runtime and capability policy
+      #9306 open 2026-09-08 Aborted/error turn leaves unmatched toolCall blocks in context; next runAgentLoopContinue is rejected by provider
+      #4945 open 2026-05-24 openai-codex Connection Reliability Issues
+      #10390 open 2026-10-03 Anthropic SSE parser mishandles a CRLF that is split across two network chunks → `Could not parse ... Unexpected end of JSON input; data=` and the turn aborts
+      #8130 closed 2026-08-14 Second recoverable length stop is mislabeled as context overflow
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9408 open 2026-09-10 Remember plan-level model errors and surface them in /model (badge, sort, recovery hint)
+      #9512 open 2026-09-12 Compaction hits summary output cap with GPT-6 Astra at max reasoning
+      #10386 open 2026-10-03 Durable: host coding-agent extensions (AgentSession-backed runtime or hook parity)
+      #9474 open 2026-09-11 Codex transport: no non-resetting per-request total deadline; periodic events defeat idle timeout
+      #7648 open 2026-08-05 fix(ai): retry transient Codex websocket errors
+      #9051 open 2026-09-03 session_compact custom message misses the immediate overflow retry
+      #10455 open 2026-10-04 durable: nested tool execution from ToolExecutionApi (executeTool + nestedCalls)
+      #10162 open 2026-09-29 Too many input images stop the agent task
+      #10407 open 2026-10-03 custom entry submission with steering/followup
+      #9409 open 2026-09-10 Sessions wedge permanently at the context ceiling on reasoning models
+      #8141 open 2026-08-14 feat(coding-agent): preview long read lines
+      #7694 open 2026-08-06 fix(coding-agent): avoid Linux clipboard X11 leaks
+      #10575 closed 2026-10-06 False "Your JSON was incomplete" recovery triggered while discussing tool-calling internals
+      #10320 closed 2026-10-02 v1.0.0 CodingTools omit replay, so crash recovery interrupts read
+      #9793 open 2026-09-20 Ambiguous length stop drops history far below the window when streaming usage omits reasoning tokens
+      #9781 closed 2026-09-19 fix(coding-agent): stop recovery after prompt cancellation
+      #8283 open 2026-08-18 fix(coding-agent): restore continuation after retry and compaction
+      #10299 open 2026-10-01 openai-completions: empty tool call from OpenRouter/GLM permanently wedges the session (repro + fix for #4854)
+      #9569 open 2026-09-14 fix(ai): coerce JSON-encoded object and array tool arguments
+      #10045 open 2026-09-25 Auto compaction of opus 5.5 on bedrock blocked by anthro policy
+  rollback       34 hit(s) (all listed)
+      #9615 closed 2026-09-15 feat(coding-agent): add /forget command for context rollback
+      #9677 closed 2026-09-16 fix(coding-agent): stop compaction queue rollback from replaying accepted messages
+      #5886 open 2026-06-18 AgentSession settlement/continuation and assistant-tail lifecycle bugs
+      #10392 closed 2026-10-03 Managed installs accumulate every old release dir (~168MB each) — add automatic pruning or a cleanup command
+      #9992 closed 2026-09-24 Add opt-in Claude Agent SDK carrier for Pi-owned tools
+      #10371 closed 2026-10-02 pi-web (web UI): attached images never render in the chat after update — data and model path fine, presentation layer regression candidate
+      #10166 closed 2026-09-29 SessionManager: failed append advances memory and leaves a missing parent in subsequent JSONL entries
+      #9780 closed 2026-09-19 Feature: double-click a prior user prompt in the fullscreen transcript to rewind/edit it
+      #10246 closed 2026-09-30 feat(coding-agent): reload additions to defaultTools
+      #8052 closed 2026-08-12 fix(coding-agent): make session persistence transactional
+      #7400 merged 2026-07-31 Remove obsolete SQLite session connection internals
+      #8570 closed 2026-08-24 fix(ai): preserve Codex thread affinity headers
+      #4259 closed 2026-05-07 feat: complete rollback architecture with 1300+ tests
+      #4974 closed 2026-05-25 feat: rollback fixes, change review redesign, hooks compat, auto-memory RPC
+      #7906 closed 2026-08-10 feat(coding-agent): add fullscreen fixed top bar
+      #6744 closed 2026-07-16 Serialize concurrent prompt startup
+      #7813 closed 2026-08-08 feat: support multiple settings profiles (e.g. via CLI flag, env var, or per-project switching)
+      #6580 closed 2026-07-12 feat(tui): v2 in-Pi full-history pager over Ledger snapshot
+      #5771 closed 2026-06-15 feat(agents): port gentle-ai 4R review agents for parity
+      #2222 closed 2026-03-16 fix: theme hot reload, model.input optional chaining, model selector improvements
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10082 open 2026-09-26 Resuming a session will not render correct context level
+      #10016 open 2026-09-24 fix(coding-agent): resume aborted runs when a wake follow-up is queued
+      #9256 open 2026-09-06 Resumed session re-renders tool-result images as full-size inline images
+      #8036 open 2026-08-12 Edit tool crashes TUI when rendering a large diff during execution and session resume
+      #10535 open 2026-10-06 pi-durable: commit retry delays as task state
+      #9157 open 2026-09-04 fix(coding-agent): render session tree search cursor
+      #10415 open 2026-10-03 [Bug] Startup hangs indefinitely when stdin is an open non-TTY pipe without EOF in readPipedStdin()
+      #10125 closed 2026-09-28 Exit resume hint offers to fork after /resume of a session from another project
+      #10394 closed 2026-10-03 /resume selection jumps after deleting a session
+      #10565 open 2026-10-06 Built-in MCP OAuth does not abort pending network requests on cancel or session shutdown
+      #10437 open 2026-10-03 fix(coding-agent): report settings save failures in interactive mode
+      #9492 closed 2026-09-11 Resume session bug
+      #10523 open 2026-10-05 Make the hardware cursor focus-aware in Kitty and tmux
+      #9647 open 2026-09-15 Emit session_compact_end event to extensions after clearing compaction state
+      #9986 open 2026-09-24 Aborting during tool execution leaves unanswered tool calls in the session
+      #10411 open 2026-10-03 pi-durable: wait cycles deadlock instead of being rejected
+      #10285 closed 2026-10-01 MCP tool calls render fully expanded in resumed sessions
+      #10325 open 2026-10-02 pi-durable: let a host tell when a harness is only sleeping (and replace the in-process sleep)
+      #9847 closed 2026-09-21 Hide child sessions in the /resume picker
+      #10244 closed 2026-09-30 Add AgentSession.continue() to resume a turn without adding a message
+  half-written   13 hit(s) (all listed)
+      #9557 open 2026-09-13 Anthropic adapter drops root-level JSON Schema keywords (anyOf, ) from non-strict tool input_schema
+      #10263 closed 2026-09-30 `transformMessages`: an `aborted`/`error` assistant message is dropped while its `toolResult` messages are kept → `role:'tool'` with no preceding `tool_calls` → provider 400
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #8785 closed 2026-08-28 cap max_tokens per model for routes that reject above catalog claim (e.g. M3/GMICloud 524288)
+      #7827 closed 2026-08-08 Scroll long tool/skill descriptions in the slash autocomplete popup
+      #8421 closed 2026-08-21 Generalize the Termux keyboard-resize exemption to any mobile client (mosh/SSH from iOS)
+      #6051 closed 2026-06-24 fix(ai): recover from hung streams and retry unmodeled Bedrock errors
+      #7245 closed 2026-07-28 feat(tui): inline images under tmux via sixel
+      #5753 merged 2026-06-15 fix: drain stdout before resolving when a child holds the pipe past exit
+      #7136 closed 2026-07-26 bash tool silently truncates long commands (partial execution, no error)
+      #8845 closed 2026-08-30 Branch summarization deterministically fails: generateBranchSummary hardcodes maxTokens: 2048
+      #5778 closed 2026-06-15 Bug: pi-agent-core hangs indefinitely on unresponsive streams or tool execution deadlocks
+      #645 closed 2026-01-12 Extension package management and hot reload
+  wipe           46 hit(s) (all listed)
+      #9255 open 2026-09-06 TuiMainScreen: full-screen redraw storm when changed rows sit above the viewport top (long transcripts jump violently / doubled text)
+      #10030 closed 2026-09-25 Auto-compaction triggers clearOnShrink full redraw, wiping terminal scrollback
+      #9555 closed 2026-09-13 compaction_end always wipes the visible TUI transcript
+      #9563 closed 2026-09-13 coding-agent (MCP adapter): concurrent sessions race the OAuth refresh — provider rotation invalidates the shared token chain
+      #9562 closed 2026-09-13 coding-agent (MCP adapter): keychain secure-storage rewrites reset the item's partition list, wiping external silent-read grants
+      #9369 closed 2026-09-09 Anthropic OAuth: token endpoint 429s from datacenter IPs, and a non-rotating refresh wipes the stored refresh token
+      #9865 closed 2026-09-22 Persist jiti's transpile cache in the agent dir (extension loader fsCache)
+      #9240 closed 2026-09-06 regular TUI: line changes above the viewport trigger destructive full redraw (ESC[3J + full replay) — scroll position lost mid-task
+      #7719 closed 2026-08-06 [TUI] Viewing a session wipes terminal scrollback and jumps to top (streaming redraws)
+      #7718 closed 2026-08-06 fix(tui): preserve scrollback on content-driven full redraws
+      #9185 closed 2026-09-05 regular TUI: long session keeps jumping to top and losing scrollback
+      #9218 closed 2026-09-06 npm install -g pi-coding-agent@0.85.1: subagent child runs fail — @earendil-works/pi-server and @earendil-works/pi-client are not declared as dependencies
+      #7652 closed 2026-08-05 TUI jumps to top of screen while viewing output during a task — `fullRender(true)` clears terminal scrollback
+      #8421 closed 2026-08-21 Generalize the Termux keyboard-resize exemption to any mobile client (mosh/SSH from iOS)
+      #8860 closed 2026-08-30 Running `pi -e npm:<ext>@latest`, dist-tag does not refresh temporary -e extensions
+      #9184 closed 2026-09-05 regular TUI: full redraw clears terminal scrollback (ESC[3J) and jumps viewport on long transcripts
+      #10104 closed 2026-09-27 Session creation (attach / new_chat) latency: 15.5s baseline, degrading to >140s with cumulative CPU spikes
+      #7750 closed 2026-08-07 fix(tui): preserve scrollback for above-viewport changes
+      #8998 closed 2026-09-02 System prompt refactor
+      #7304 closed 2026-07-30 Issue: Scrolled-up viewport jumps/disrupts during streaming when a line above the viewport reflows
+  wipes          19 hit(s) (all listed)
+      #9555 closed 2026-09-13 compaction_end always wipes the visible TUI transcript
+      #9369 closed 2026-09-09 Anthropic OAuth: token endpoint 429s from datacenter IPs, and a non-rotating refresh wipes the stored refresh token
+      #7719 closed 2026-08-06 [TUI] Viewing a session wipes terminal scrollback and jumps to top (streaming redraws)
+      #9185 closed 2026-09-05 regular TUI: long session keeps jumping to top and losing scrollback
+      #9218 closed 2026-09-06 npm install -g pi-coding-agent@0.85.1: subagent child runs fail — @earendil-works/pi-server and @earendil-works/pi-client are not declared as dependencies
+      #8421 closed 2026-08-21 Generalize the Termux keyboard-resize exemption to any mobile client (mosh/SSH from iOS)
+      #10104 closed 2026-09-27 Session creation (attach / new_chat) latency: 15.5s baseline, degrading to >140s with cumulative CPU spikes
+      #7718 closed 2026-08-06 fix(tui): preserve scrollback on content-driven full redraws
+      #6040 closed 2026-06-24 anthropic-beta set via model.headers clobbers the provider's own betas
+      #5870 closed 2026-06-18 fix(pi-ai): Kimi/Moonshot tool schema validation fails on missing type and conditional allOf
+      #5023 closed 2026-05-26 bug: terminal scrolls to beginning without reason
+      #4595 closed 2026-05-16 Extension loader still imports @mariozechner/pi-ai subpaths after rename to @earendil-works/pi-ai
+      #3044 closed 2026-04-11 models.json custom models for extension-registered providers are silently wiped on registerProvider()
+      #3589 closed 2026-04-23 OpenAI/Anthropic clients constructed without timeout — long local inference (>10 min) silently aborted
+      #4204 closed 2026-05-05 fix(tui): preserve scrollback on content-driven full redraws
+      #2956 closed 2026-04-08 models.json custom models for extension-registered providers are silently wiped on registerProvider()
+      #3367 closed 2026-04-18 Introductory hint doesn't work
+      #2874 closed 2026-04-06 bug: slash command Tab completion doesn't show argument completions
+      #508 closed 2026-01-06 feat(coding-agent): add /reload command
+  erase          47 hit(s) (all listed)
+      #9432 open 2026-09-10 Allow session_start extensions to append stable base system prompt context
+      #9255 open 2026-09-06 TuiMainScreen: full-screen redraw storm when changed rows sit above the viewport top (long transcripts jump violently / doubled text)
+      #10319 closed 2026-10-02 Fullscreen TUI: inline image collapses to a one-row strip on any scroll
+      #8923 closed 2026-08-31 Fullscreen focus-in does not repaint an intact composer
+      #6248 closed 2026-07-02 fix: stop padding TUI lines with trailing spaces
+      #9240 closed 2026-09-06 regular TUI: line changes above the viewport trigger destructive full redraw (ESC[3J + full replay) — scroll position lost mid-task
+      #7352 closed 2026-07-31 pi-tui emits ESC[3J at startup and destroys terminal scrollback (extension-dependent; distinct from #6050)
+      #9615 closed 2026-09-15 feat(coding-agent): add /forget command for context rollback
+      #7482 closed 2026-08-02 fix(tui): prefer iTerm2 inline images over kitty on WezTerm
+      #6514 closed 2026-07-10 fix: erase entire turn on abort/error, not just the assistant message
+      #9169 closed 2026-09-04 Images rendered incorrectly in fullscreen TUI mode
+      #9464 closed 2026-09-11 Issue: TUI regular mode renders every line doubled after the first repaint (Windows, 0.85.1)
+      #7481 closed 2026-08-02 WezTerm: inline kitty images degrade to a one-row sliver in scrolling transcripts
+      #6391 closed 2026-07-07 TUI: \x1b[2K erase-line during differential render clears mouse text selection mid-drag on URL lines
+      #4888 closed 2026-05-22 Proposal: prevent TUI background renders from erasing IME preedit
+      #8055 closed 2026-08-13 tui: Ambiguous-width chars (① ± … €) counted as 1 col, break table alignment on CJK terminals
+      #7165 closed 2026-07-27 iTerm2: /resume leaves duplicate rows when navigating with arrow keys
+      #5168 closed 2026-05-29 Make tool paths clickable - support OSC 8 hyperlinks
+      #5394 closed 2026-06-04 Footer thinking level text truncated after differential render on WezTerm (Windows)
+      #7245 closed 2026-07-28 feat(tui): inline images under tmux via sixel
+  erasing        4 hit(s) (all listed)
+      #9432 open 2026-09-10 Allow session_start extensions to append stable base system prompt context
+      #9255 open 2026-09-06 TuiMainScreen: full-screen redraw storm when changed rows sit above the viewport top (long transcripts jump violently / doubled text)
+      #4888 closed 2026-05-22 Proposal: prevent TUI background renders from erasing IME preedit
+      #4965 closed 2026-05-25 fix(tui): disable Kitty flag 2 to prevent VS Code viewport reset on focus regain
+  erased         18 hit(s) (all listed)
+      #9615 closed 2026-09-15 feat(coding-agent): add /forget command for context rollback
+      #7482 closed 2026-08-02 fix(tui): prefer iTerm2 inline images over kitty on WezTerm
+      #7481 closed 2026-08-02 WezTerm: inline kitty images degrade to a one-row sliver in scrolling transcripts
+      #7165 closed 2026-07-27 iTerm2: /resume leaves duplicate rows when navigating with arrow keys
+      #5168 closed 2026-05-29 Make tool paths clickable - support OSC 8 hyperlinks
+      #6391 closed 2026-07-07 TUI: \x1b[2K erase-line during differential render clears mouse text selection mid-drag on URL lines
+      #4839 closed 2026-05-21 Markdown links and raw URLs in TUI output are not Cmd-clickable in Ghostty
+      #5394 closed 2026-06-04 Footer thinking level text truncated after differential render on WezTerm (Windows)
+      #5618 closed 2026-06-11 WezTerm fails rendering images
+      #3165 closed 2026-04-14 Gemma 4 and Qwen 3.5 models often reprocessing the whole prompt after system prompt.
+      #2644 closed 2026-03-27 Long sessions crash with `FATAL ERROR: JavaScript heap out of memory` (SIGABRT)
+      #5327 closed 2026-06-02 plan-mode extension's rebindSession callback overwrites extension-registered tools, dropping all custom tools from LLM catalog
+      #2848 merged 2026-04-05 fix(coding-agent): preserve json mode for piped stdin
+      #3083 closed 2026-04-13 pi-tui: spinner row leaks into scrollback and is not cleared on stop()
+      #4942 closed 2026-05-24 coding-agent CLI does not exit after main() completes
+      #1245 closed 2026-02-04 bug(web-ui): Long-running tool message gets duplicated during execution
+      #502 closed 2026-01-06 bug: queued messages wipe unsent input
+      #954 closed 2026-01-26 Text before tool calls is overwritten when content exceeds viewport
+  destroy        73 hit(s) (all listed)
+      #9886 open 2026-09-22 clearQueue() silently destroys extension-delivered custom messages without returning them。
+      #10415 open 2026-10-03 [Bug] Startup hangs indefinitely when stdin is an open non-TTY pipe without EOF in readPipedStdin()
+      #9482 closed 2026-09-11 Empty-body 400 from OpenAI-compatible gateways (opencode-go/deepseek-v4-flash) misclassified as context overflow → destructive auto-compaction destroys up to ~400k tokens
+      #10031 closed 2026-09-25 Pi sporadically stuck in "Working..." when thinking is stopped with <esc>
+      #8587 closed 2026-08-24 `-p` and `--mode rpc` exit 0 silently when stdin was consumed before the CLI entry runs
+      #10080 closed 2026-09-26 mistral-conversations: multiple leading ThinkChunks from fragmented thinking output permanently brick sessions (400 on every request)
+      #8823 closed 2026-08-29 Esc during active streaming often fails to cancel the in-flight request until the provider finishes naturally
+      #8984 closed 2026-09-02 /import can overwrite an existing session with the same filename
+      #8993 closed 2026-09-02 /import can silently overwrite an existing session file
+      #8995 closed 2026-09-02 fix(coding-agent): never overwrite existing session files on /import
+      #9677 closed 2026-09-16 fix(coding-agent): stop compaction queue rollback from replaying accepted messages
+      #7352 closed 2026-07-31 pi-tui emits ESC[3J at startup and destroys terminal scrollback (extension-dependent; distinct from #6050)
+      #7771 closed 2026-08-07 Unable to start 0.84.1
+      #8727 closed 2026-08-27 fix(tui): preserve scrollback on offscreen changes
+      #6708 closed 2026-07-16 TUI bash component setInterval leaks on unmount
+      #10079 closed 2026-09-26 Force-killed, crashed, or restored local session leaves the terminal stuck in Kitty flags=7 — every keystroke afterwards emits CSI-u release events
+      #8939 closed 2026-09-01 Session file deleted mid-run is recreated without the header line; next resume fails with 'not a valid pi session'
+      #8188 closed 2026-08-16 Prevent Margin Leaks & Surprise LLM Bills: Add a Hybrid Spend Firewall
+      #9184 closed 2026-09-05 regular TUI: full redraw clears terminal scrollback (ESC[3J) and jumps viewport on long transcripts
+      #7536 closed 2026-08-03 fix(server): restrict legacy IPC socket to owner and cap buffered input
+  destroys       22 hit(s) (all listed)
+      #9886 open 2026-09-22 clearQueue() silently destroys extension-delivered custom messages without returning them。
+      #9482 closed 2026-09-11 Empty-body 400 from OpenAI-compatible gateways (opencode-go/deepseek-v4-flash) misclassified as context overflow → destructive auto-compaction destroys up to ~400k tokens
+      #8727 closed 2026-08-27 fix(tui): preserve scrollback on offscreen changes
+      #8993 closed 2026-09-02 /import can silently overwrite an existing session file
+      #7352 closed 2026-07-31 pi-tui emits ESC[3J at startup and destroys terminal scrollback (extension-dependent; distinct from #6050)
+      #8587 closed 2026-08-24 `-p` and `--mode rpc` exit 0 silently when stdin was consumed before the CLI entry runs
+      #9184 closed 2026-09-05 regular TUI: full redraw clears terminal scrollback (ESC[3J) and jumps viewport on long transcripts
+      #7837 closed 2026-08-08 Fullscreen TUI: mouse selection silently overwrites the system clipboard (OSC 52, target c); no opt-out
+      #7791 closed 2026-08-07 Global Undici dispatcher inherits 16 KiB maxHeaderSize, causing UND_ERR_HEADERS_OVERFLOW
+      #7059 closed 2026-07-24 Add setRenderedSession extension API for rendering an external AgentSession
+      #8526 closed 2026-08-23 Vertex AI array-wrapped error bodies are dropped, and the resulting "(no body)" text triggers false context-overflow compaction
+      #8421 closed 2026-08-21 Generalize the Termux keyboard-resize exemption to any mobile client (mosh/SSH from iOS)
+      #5753 merged 2026-06-15 fix: drain stdout before resolving when a child holds the pipe past exit
+      #10031 closed 2026-09-25 Pi sporadically stuck in "Working..." when thinking is stopped with <esc>
+      #7058 closed 2026-07-24 Extension API: setRenderedSession(session | undefined) — render an external AgentSession in the main TUI
+      #6002 closed 2026-06-23 `SessionManager.open()` silently truncates non-session files
+      #2630 closed 2026-03-26 pi.exec() returns empty stdout when spawning pi -p subprocesses (race in waitForChildProcess)
+      #2787 closed 2026-04-02 memory-first extension destroys interactive sessions with irrelevant results
+      #5023 closed 2026-05-26 bug: terminal scrolls to beginning without reason
+      #7304 closed 2026-07-30 Issue: Scrolled-up viewport jumps/disrupts during streaming when a line above the viewport reflows
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10421 closed 2026-10-03 HTML export can overwrite its source session journal
+      #10229 closed 2026-09-30 `pi update` overwrites mise-managed installs in place
+      #9925 closed 2026-09-22 Pi always overwrites the hardware cursor into a block
+      #9884 open 2026-09-22 Configured default model is sometimes replaced by a fallback at startup
+      #9972 closed 2026-09-23 Saving a default model overwrites global scope with a project override
+      #9301 open 2026-09-07 feat(coding-agent): confirm device-code browser and clipboard actions
+      #8985 merged 2026-09-02 fix(coding-agent): avoid overwriting imported sessions
+      #8993 closed 2026-09-02 /import can silently overwrite an existing session file
+      #8995 closed 2026-09-02 fix(coding-agent): never overwrite existing session files on /import
+      #8984 closed 2026-09-02 /import can overwrite an existing session with the same filename
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #8577 closed 2026-08-24 Late partial tool image conversion can overwrite the final image
+      #10591 closed 2026-10-07 ExtensionAPI: support version-fenced conditional model selection
+      #9279 closed 2026-09-07 Updating a per-model thinking default can overwrite changes saved by another Pi session
+      #8212 open 2026-08-16 Theme switch leaves stale colors in header, tree labels, and markdown default-style prefix (0.84.2)
+      #9188 closed 2026-09-05 anthropic-messages adapter overwrites AssistantMessage.model with the response-echoed name, breaking thinking replay behind model-renaming proxies
+      #10077 closed 2026-09-26 llama.cpp model: contextWindow getting reset (to 128000) in models-store.json
+      #8810 open 2026-08-29 Extension-registered providers: fresh sessions intermittently ignore defaultProvider/defaultModel and start on another provider's default
+      #9389 closed 2026-09-09 New files bypass the mutation queue through directory symlinks
+      #10330 open 2026-10-02 Auto-compaction does not start in CLI mode
+  clobber        18 hit(s) (all listed)
+      #10271 closed 2026-10-01 Pi `/mcp` Command Clobbers Community Plugin Nomenclature
+      #10430 closed 2026-10-03 [coding-agent] Active-tool set is not durable: N extensions read-modify-write one global `setActiveTools` and the host auto-activates on every `registerTool` — no coordinate, no opt-out, no post-refresh hook
+      #10438 closed 2026-10-03 Terminal left in cooked mode after /new or /resume when an extension touches the tty
+      #9596 closed 2026-09-14 coding-agent: two concurrent `-c` runs in one directory append into a single session file with no lock or warning
+      #9934 closed 2026-09-23 feat(ai,coding-agent): add Yolo-Auto provider with plan-bounded /v1/models auto-discovery
+      #10434 closed 2026-10-03 pi-goal@0.1.7 fails to load on current hosts: stale `@mariozechner/*` peer deps (should be `@earendil-works/*`)
+      #8873 closed 2026-08-31 fix(ai): serve DeepSeek V4 through the OpenAI Responses API i
+      #9500 closed 2026-09-11 SIGILL (ILL_ILLOPN) crash of pi 0.85.1 — runtime execution fault; suspect=bundled addon fs-native-extensions, cause UNCONFIRMED
+      #7699 closed 2026-08-06 Add SessionManager.reload() to re-read the session file from disk
+      #6040 closed 2026-06-24 anthropic-beta set via model.headers clobbers the provider's own betas
+      #7421 closed 2026-08-01 fix(coding-agent): recover model availability after a stalled refresh
+      #7097 closed 2026-07-25 openai-completions: empty tool_calls[].custom: {} drops valid function.arguments
+      #6700 closed 2026-07-16 Can't override a tool's rendering without taking over its execution
+      #7007 closed 2026-07-23 Concurrent inline `ctx.ui.custom({ overlay: false })` prompts deadlock — the superseded one's Promise never resolves
+      #7870 closed 2026-08-09 Remote catalog overlay (pi.dev) silently overrides correct built-in contextWindow for z-ai/glm-5.2 — stuck at 262k instead of 1M
+      #5522 closed 2026-06-08 Restore files on rewind (file checkpoints)
+      #5521 closed 2026-06-08 feat(coding-agent): restore files on rewind (checkpoints)
+      #3947 closed 2026-04-29 feat(bedrock): Cline-parity auth modes, VPC endpoint, 1M beta, adaptive thinking
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9907 closed 2026-09-22 fix(ai): omit blank tool-call names on replay
+      #9508 open 2026-09-12 pi-ai sends unsupported OpenAI-specific request fields/roles/auth to compatible providers
+      #10303 closed 2026-10-01 Anthropic SSE: a stray blank line dispatches an empty frame and fails the turn
+      #10492 closed 2026-10-05 A tool row that draws nothing still leaves a blank line, unless it uses renderShell: "self"
+      #9495 closed 2026-09-11 fix(approve-contributor): stop inserting blank lines before new entries
+      #9765 closed 2026-09-19 Hidden thinking blocks render stray blank lines (ANSI-wrapped empty label + Spacers count hidden thinking as visible)
+      #8919 closed 2026-08-31 Fullscreen mode reserves a blank line for zero-row custom footers (footer minSize should be 0)
+      #8154 closed 2026-08-15 Hidden thinking blocks leave blank spacer lines in the transcript
+      #9047 closed 2026-09-03 openai-codex-responses drops a terminal SSE event that is not followed by a blank line
+      #10356 merged 2026-10-02 fix(coding-agent): keep syntax colors on multiline tokens
+      #9160 closed 2026-09-04 Make vertical padding on tool rows configurable (information density)
+      #9944 closed 2026-09-23 [tui] Skill autocomplete is empty while typing "/skill"
+      #10043 closed 2026-09-25 Detect Otty terminal (kitty images + hyperlinks)
+      #4748 open 2026-05-19 pi-tui: `getKeybindings()` realm/instance singleton breaks extensions that import keyText
+      #7923 closed 2026-08-11 Chinese input renders as blank for a single CJK character in VSCode integrated terminal
+      #6665 open 2026-07-15 TUI pins a full core while streaming: uncached Intl.Segmenter + per-chunk Markdown rebuild
+      #8430 closed 2026-08-21 ai: SSE streams that split event: and data: with a blank line fail with "Unexpected end of JSON input"
+      #9513 closed 2026-09-12 OpenAI Responses intermittently fails "stream ended before a terminal response event" — bundled openai-node drops the final SSE event
+      #9721 closed 2026-09-17 Making default tool shell vertical padding configurable
+      #9719 closed 2026-09-17 feat(tui): make default tool shell vertical padding configurable
+  unreadable     37 hit(s) (all listed)
+      #10062 closed 2026-09-26 Skills loader swallows directory read errors: an unreadable skills directory yields no skills and no diagnostic
+      #8934 closed 2026-09-01 [packages/coding-agent] ExtensionUIContext.select() dialog is unreadable on dark themes — colors not derived from ctx.theme
+      #10117 closed 2026-09-28 Fullscreen TUI: selection highlight recolors text after the selection
+      #7977 closed 2026-08-11 ls tool drops entries it cannot stat, reports unreadable dirs as "(empty directory)"
+      #9023 closed 2026-09-02 Pasted images show as raw temp-file paths in input and transcript — suggest [Image #N] chip placeholders like Claude Code
+      #9610 closed 2026-09-15 confirm/select dialog body is clipped on short terminals with no keyboard scroll
+      #9088 closed 2026-09-03 Contribution proposal: two small fixes (multiline bash summary, repeated paste markers)
+      #9214 closed 2026-09-05 Invoke skills and prompt templates mid-sentence
+      #7949 closed 2026-08-11 fix(coding-agent): ignore docs in custom skill directories
+      #8619 closed 2026-08-25 openai-completions: per-token reasoning_details stored unmerged in thinkingSignature → thinking renders one word per line
+      #8457 closed 2026-08-21 Invoke skills mid-sentence like prompt templates (/name args after the first line)
+      #8584 closed 2026-08-24 TUI row corruption during streaming: assistant text rendered one word per line after long tool output
+      #8673 closed 2026-08-26 TUI: soft line breaks render as hard breaks — thinking blocks show as ragged sequential lines
+      #5763 closed 2026-06-15 Providers swallow the HTTP error body, so gateway / non-schema errors are unreadable
+      #7906 closed 2026-08-10 feat(coding-agent): add fullscreen fixed top bar
+      #8013 closed 2026-08-12 Regression: /resume All eagerly scans giant JSONL sessions before selector is usable
+      #6243 closed 2026-07-02 fix(session): prevent UUID collisions and race conditions in session storage
+      #8269 closed 2026-08-17 Allow session replacement to carry history across cwds (fork-across-cwd / session move)
+      #7770 closed 2026-08-07 Auto theme detection loads light theme on Ghostty when macOS appearance differs from terminal background
+      #8852 closed 2026-08-30 JSONL session opened twice in one process writes duplicate seq and corrupts the file
+  garbage        55 hit(s) (all listed)
+      #8913 open 2026-08-31 Expose the fullscreen renderer's existing `mouse` option: fullscreen unconditionally enables mouse tracking, including 1003 any-event, with no way to opt out
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #9362 closed 2026-09-09 CapsLock inserts garbage characters into the editor
+      #10256 open 2026-09-30 0.99.x: terminal color query replies leak into the prompt and BEL opens the external editor (mintty on Windows, ConPTY)
+      #10250 closed 2026-09-30 Since 0.99.0 (system theme default) pi startup inside tmux 3.6/3.6a fills the input box with hex color garbage
+      #10440 closed 2026-10-03 fix(coding-agent): resolve the QuickJS wasm path once per process
+      #6628 closed 2026-07-14 StdinBuffer flushes partial SGR mouse sequences, causing garbage input in host apps
+      #10141 closed 2026-09-28 Regular mode: frozen partial frames accumulate in scrollback when a non-empty extension dock widget is present (cleaned by resize, macOS + tmux)
+      #9105 closed 2026-09-04 processFileArguments() silently corrupts binary file attachments via a lossy forced UTF-8 decode (@file mention and Read tool)
+      #10439 closed 2026-10-03 codemode fails for the rest of the session after a pnpm global update
+      #10079 closed 2026-09-26 Force-killed, crashed, or restored local session leaves the terminal stuck in Kitty flags=7 — every keystroke afterwards emits CSI-u release events
+      #8995 closed 2026-09-02 fix(coding-agent): never overwrite existing session files on /import
+      #9822 closed 2026-09-21 0.86.x: Codex tool calls leak as raw harmony text (to=functions.*) after compaction on gpt-5.6-luna
+      #8881 closed 2026-08-31 `openaiProvider()` always dispatches to Responses API regardless of `model.api` (breaks chat-completions gateways)
+      #7856 closed 2026-08-09 fix(ai): repair JSON-serialized structured tool arguments during validation
+      #8503 closed 2026-08-23 plan-mode: demo "Plan:" text gets extracted as real todos, polluting context
+      #7205 merged 2026-07-28 fix(ai): treat only plain objects as provider error bodies
+      #7798 closed 2026-08-07 TUI Crash on Session Resume: "Cannot read properties of undefined (reading 'render')"
+      #6063 merged 2026-06-25 Extension stats
+      #3391 closed 2026-04-18 Fix media and other functional keys causing garbage input
+  mangled        14 hit(s) (all listed)
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #9911 closed 2026-09-22 Windows skill invocation block renders mangled path (backslash eaten: "C:\Users\<username>.pi\..." instead of "C:\Users\<username>\.pi\...")
+      #9094 closed 2026-09-03 Reasoning-markup literals silently stripped/mangled from tool I/O content (both directions)
+      #10087 closed 2026-09-26 fix(ai): omit strict field on Mistral tools; use reasoning_effort for zai-glm models
+      #10086 closed 2026-09-26 mistral-conversations: any strict field on tool functions makes Mistral mangle zai-glm streamed tool-call arguments (truncated to first property)
+      #7919 closed 2026-08-11 plan-mode example: steps never get checked off during execution
+      #8514 closed 2026-08-23 pi install misparses valid single-segment ssh:// git URLs as local paths — misleading "Path does not exist" error
+      #7140 closed 2026-07-26 MiniMax-M3: `<think>` tags in content break after compaction, `reasoning_split` would fix this
+      #7956 closed 2026-08-11 feat(coding-agent): render Mermaid diagrams in HTML exports
+      #7138 closed 2026-07-26 MiniMax-M3 Token Plan: messy thinking output, compaction breaks reasoning, and the `reasoning_split` parameter
+      #7547 open 2026-08-03 [Windows] [sink-thread] How do you use Pi on windows? What issues are you seeing?
+      #1965 closed 2026-03-08 fix(coding-agent): harden --session path handling on Windows/Git Bash
+      #3815 closed 2026-04-27 Aggressive autolink transformation corrupts both source strings and runtime input/output
+      #2080 closed 2026-03-12 Windows: system prompt exposes cwd with backslashes, causing bash path mangling
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10317 open 2026-10-01 Emit `queue_update` to extensions so an injected input's discard is observable
+      #10251 closed 2026-09-30 codemode only mode: built-in read cannot expose image contents to scripts
+      #10540 closed 2026-10-06 System prompt: local models return file contents in chat instead of writing the file
+      #10525 open 2026-10-05 MCP: OAuth client credentials with a JWT client assertion (workload identity)
+      #10330 open 2026-10-02 Auto-compaction does not start in CLI mode
+      #9473 closed 2026-09-11 TUI: inline code inside a heading loses heading bold/underline (H1 underline breaks)
+      #10340 closed 2026-10-02 edit: fuzzy replacements fail with a whitespace-only final line
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #9763 closed 2026-09-18 feat(coding-agent): add pi.dev compatibility check
+      #7584 closed 2026-08-04 Interactive @ file picker only inserts path text, doesn't attach file contents
+      #10088 closed 2026-09-26 /copy-code [n]: copy a fenced code block from internal state
+      #7223 closed 2026-07-28 Clarify that skill invocation prompts already include the SKILL.md contents
+      #9071 closed 2026-09-03 Extension tool registered with a built-in tool's name never replaces it in the final tool list
+      #10345 closed 2026-10-02 bugreport-pi-rightclick-paste
+      #9206 closed 2026-09-05 Suggestion: remove Available Tools from system message
+      #10109 closed 2026-09-27 auto-mode bash screen denies benign token-echo as 'social engineering' while the identical write-tool action passes
+      #10192 closed 2026-09-29 codemode.mode: "only" leaves hidden tools advertised in the system prompt
+      #9172 closed 2026-09-04 fix(coding-agent): prevent broken package root publication
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #9389 closed 2026-09-09 New files bypass the mutation queue through directory symlinks
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10229 closed 2026-09-30 `pi update` overwrites mise-managed installs in place
+      #9501 open 2026-09-11 fix(coding-agent): resolve Windows shells from installation directories
+      #10521 open 2026-10-05 fix(ai): inline $ref tool schemas for NVIDIA NIM models
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #8066 open 2026-08-13 fix(tui): add visual lines caching to avoid unnecessary computes on each b…
+      #7629 open 2026-08-04 tui.select.pageUp and tui.select.pageDown are not handled in all select lists
+      #9887 open 2026-09-22 `read` tool call rendering in TUI breaks if line numbers are strings
+      #10525 open 2026-10-05 MCP: OAuth client credentials with a JWT client assertion (workload identity)
+      #9432 open 2026-09-10 Allow session_start extensions to append stable base system prompt context
+      #8720 open 2026-08-27 tool result with whitespace-only output permanently bricks the session (HTTP 400)
+      #9074 open 2026-09-03 Anthropic mid-output fallback fails the turn instead of recording the handoff
+      #8645 closed 2026-08-25 RPC: expose navigate_tree (TUI /tree in-place branch jump)
+      #9549 open 2026-09-13 [fullscreen] Large transcripts re-render every frame; every resize re-emits the whole transcript (1 core saturated)
+      #7658 open 2026-08-05 Extension API for persisting API-key credentials (auth.json)
+      #9773 open 2026-09-19 before_provider_request does not fire for summarization/compaction requests
+      #8913 open 2026-08-31 Expose the fullscreen renderer's existing `mouse` option: fullscreen unconditionally enables mouse tracking, including 1003 any-event, with no way to opt out
+      #8262 open 2026-08-17 feat(coding-agent): dispatch hooks on every turn-start path (cancellable turn preflight)
+      #7740 open 2026-08-06 TUI after /reload does not follows custom tool's renderCall/renderResult, if they registered on "session_start"
+      #9647 open 2026-09-15 Emit session_compact_end event to extensions after clearing compaction state
+      #10402 closed 2026-10-03 fix(coding-agent): bind Ctrl+H to delete backward on macOS
+  unclean        1 hit(s) (all listed)
+      #10240 closed 2026-09-30 Orphaned tool calls after an unclean exit are silently replaced with "No result provided"
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10470 open 2026-10-05 RPC new_session/switch_session/fork/clone emit session_start twice
+      #10565 open 2026-10-06 Built-in MCP OAuth does not abort pending network requests on cancel or session shutdown
+      #9126 open 2026-09-04 fix(coding-agent): settle tool results before disposal
+      #9222 open 2026-09-06 fix(coding-agent): reject reload while running or compacting
+      #9351 open 2026-09-08 Fix the edit preview flicker on remote edits
+      #6552 open 2026-07-11 Allow extensions to request a deferred canonical reload
+      #10249 closed 2026-09-30 Built-in MCP shutdown returns before pending initialization is retired
+      #10272 open 2026-10-01 stdin `read EIO` is recorded as a crash — `process.stdin` has no `error` guard while stdout/stderr do
+      #10425 closed 2026-10-03 Revoke invokeTool on session disposal to eliminate dead tool context waste
+      #10026 closed 2026-09-25 Regular-mode exit leaves cursor hidden after overlay shutdown cleanup
+      #9997 closed 2026-09-24 Quit hangs without feedback when a session_shutdown handler never resolves
+      #9474 open 2026-09-11 Codex transport: no non-resetting per-request total deadline; periodic events defeat idle timeout
+      #9328 closed 2026-09-08 Allow RPC supervisors to own SIGTERM shutdown
+      #10438 closed 2026-10-03 Terminal left in cooked mode after /new or /resume when an extension touches the tty
+      #9352 closed 2026-09-08 treat TTY-stdin `read EIO` as a terminal-gone shutdown, not an uncaughtException exit(1)
+      #10057 closed 2026-09-26 fix(tui): do not exit the process when stdout goes away
+      #9181 closed 2026-09-05 Skip session events on invalidated extension runners (stale ctx errors when /new races Ctrl+C)
+      #8225 closed 2026-08-17 Detached bash descendants survive Pi shutdown
+      #8472 closed 2026-08-22 Expose RPC request, shutdown, and command-settlement controls
+      #9507 closed 2026-09-11 RPC mode: resuming an existing session on Windows crashes with libuv assertion (0xC0000409) during shutdown
+  reboot         6 hit(s) (all listed)
+      #9865 closed 2026-09-22 Persist jiti's transpile cache in the agent dir (extension loader fsCache)
+      #6752 closed 2026-07-17 Docs: recipe for running pi headless as a systemd service
+      #7675 closed 2026-08-05 Extension load fails on cold jiti cache: "First argument must be an Error object" (Bun + jiti + follow-redirects)
+      #2870 closed 2026-04-06 Follow XDG Base Directory
+      #6774 closed 2026-07-17 Ctrl+G external editor is slow to launch when os.tmpdir() is crowded
+      #5718 closed 2026-06-14 cache_control TTL ordering error (400) when used behind a proxy that rewrites system block TTLs (regression in 0.79.0)
+  disk+full      66 hit(s) (all listed)
+      #10585 open 2026-10-07 bash temp-file stream errors still crash the whole process on 1.0.4 (ENOSPC on a full /tmp, EACCES)
+      #9256 open 2026-09-06 Resumed session re-renders tool-result images as full-size inline images
+      #8250 open 2026-08-17 fix(coding-agent): make subagent progress and failures reliable
+      #9874 open 2026-09-22 Skills manifest silently omitted from the system prompt when no tool named read/bash is active
+      #8331 open 2026-08-18 Agent loop hangs forever when a provider stream stalls mid-response
+      #9827 closed 2026-09-21 bash output temp file WriteStream has no error listener; stream failure crashes the process
+      #7739 open 2026-08-06 Set a startup-time budget targeting jcode-comparable latency and memory
+      #9760 closed 2026-09-18 Extension API for contextFiles freshness — invalidation (mtime or content) of AGENTS.md between turns
+      #9919 closed 2026-09-22 Add an extension lifecycle hook for cleanup on package uninstall
+      #9800 closed 2026-09-20 fix(coding-agent): handle bash output temp file WriteStream errors
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #9465 closed 2026-09-11 [Bug] --mode rpc: every prompt fails with startsWith TypeError, all providers (0.85.1)
+      #8575 closed 2026-08-24 fix(coding-agent): surface + bound the torn-append replay loss in session JSONL files
+      #9671 closed 2026-09-16 Anthropic /login succeeds but subsequent turns still fail with "Not logged in · Please run /login" (0.85.1)
+      #9094 closed 2026-09-03 Reasoning-markup literals silently stripped/mangled from tool I/O content (both directions)
+      #10246 closed 2026-09-30 feat(coding-agent): reload additions to defaultTools
+      #8364 closed 2026-08-19 Emit event before built-in slash command execution
+      #8173 closed 2026-08-15 Request approval: tool-result pruner + spill extension example
+      #8325 closed 2026-08-18 Add `disabledCommands` setting to block built-in slash commands
+      #9822 closed 2026-09-21 0.86.x: Codex tool calls leak as raw harmony text (to=functions.*) after compaction on gpt-5.6-luna
+  data+loss      26 hit(s) (all listed)
+      #9537 open 2026-09-12 SDK embed: /login status line reports the global auth.json path when a custom agentDir is in use
+      #9461 open 2026-09-10 fix(ai): defer streamed tool argument parsing until read
+      #9255 open 2026-09-06 TuiMainScreen: full-screen redraw storm when changed rows sit above the viewport top (long transcripts jump violently / doubled text)
+      #9075 open 2026-09-03 Compaction summarisation inherits the session thinking level on adaptive models and deterministically hits the output cap at high efforts
+      #7730 open 2026-08-06 High CPU usage on Mac OS with long session
+      #9930 closed 2026-09-22 session-manager: a metadata entry can become the session's leaf and silently truncate the transcript
+      #10000 closed 2026-09-24 [pi-ai] session file is not written until the first assistant message — first-turn failure loses the session entirely
+      #8315 closed 2026-08-18 Preserve Bedrock redactedContent reasoning across turns
+      #5899 closed 2026-06-19 edit tool fuzzy match silently rewrites the whole file (data loss on untouched lines)
+      #8910 closed 2026-08-31 Ctrl+C dropped and keystrokes lost when event loop is busy (raw-mode input responsiveness)
+      #8476 closed 2026-08-22 Session corruption: `400 tool must be a response to a preceding message with 'tool_calls'` when a `subagent_control_notice` lands between a subagent tool call and its result
+      #7150 closed 2026-07-26 RPC prompt during in-flight compaction: ACKed success:true, then silently dropped (0.82.1)
+      #8526 closed 2026-08-23 Vertex AI array-wrapped error bodies are dropped, and the resulting "(no body)" text triggers false context-overflow compaction
+      #7836 closed 2026-08-08 Edit fuzzy match misses lines with differences in whitespace length
+      #5414 closed 2026-06-04 let pasted clipboard images be stored in a configurable location via settings.json
+      #5898 closed 2026-06-19 fix(coding-agent): preserve untouched content in fuzzy edit matches
+      #4715 closed 2026-05-18 truncateTail returns empty content when input is one long line ending in \n
+      #5653 closed 2026-06-11 Move off Shrinkwrap
+      #4207 closed 2026-05-05 Extension API: typed cross-extension service calls (beyond the event bus)
+      #3084 closed 2026-04-13 Bug: executeToolCallsParallel loses tool results when afterToolCall hook throws
+  partial+write  66 hit(s) (all listed)
+      #10482 open 2026-10-05 Preserve oversized final bash output after rolling-buffer trimming
+      #10435 open 2026-10-03 openai-completions: truncated stream persists partial tool calls with empty arguments
+      #9718 open 2026-09-17 --print exits 0 with empty output when the model exhausts its output budget
+      #9306 open 2026-09-08 Aborted/error turn leaves unmatched toolCall blocks in context; next runAgentLoopContinue is rejected by provider
+      #8331 open 2026-08-18 Agent loop hangs forever when a provider stream stalls mid-response
+      #7902 closed 2026-08-10 JSONL recovery drops an acknowledged append after a partial write failure
+      #8227 closed 2026-08-17 [Feature/Bug] Graceful partial write & resume when hitting output token limit (stopReason: 'length')
+      #10452 closed 2026-10-04 Durable tool-result evidence: a supported way to externalize complete tool output without materializing or truncating it in context
+      #9255 open 2026-09-06 TuiMainScreen: full-screen redraw storm when changed rows sit above the viewport top (long transcripts jump violently / doubled text)
+      #10166 closed 2026-09-29 SessionManager: failed append advances memory and leaves a missing parent in subsequent JSONL entries
+      #6665 open 2026-07-15 TUI pins a full core while streaming: uncached Intl.Segmenter + per-chunk Markdown rebuild
+      #10357 closed 2026-10-02 pi-durable: make the progress commit interval configurable
+      #9897 closed 2026-09-22 Stream truncation silently produces incomplete tool-call arguments
+      #8501 closed 2026-08-23 OpenAI-compatible streams accept truncated tool arguments when finish_reason is tool_calls
+      #8575 closed 2026-08-24 fix(coding-agent): surface + bound the torn-append replay loss in session JSONL files
+      #9643 closed 2026-09-15 agent-core: turn dies with no toolResult when a tool-call argument stream is malformed JSON (SDK partialParse throw)
+      #10141 closed 2026-09-28 Regular mode: frozen partial frames accumulate in scrollback when a non-empty extension dock widget is present (cleaned by resize, macOS + tmux)
+      #7925 closed 2026-08-11 RPC: tool name unavailable at toolcall_start after partial removal (#7290)
+      #8927 closed 2026-08-31 pi credential-store read path takes an exclusive lock for a snapshot read; sync-path acquire budget ~200ms
+      #7561 closed 2026-08-03 fix(coding-agent): stream delta-only message_updates in json mode
+  crash+safe     60 hit(s) (all listed)
+      #10455 open 2026-10-04 durable: nested tool execution from ToolExecutionApi (executeTool + nestedCalls)
+      #9691 closed 2026-09-17 TUI crashes with uncaughtException when a rendered line exceeds terminal width
+      #8395 closed 2026-08-20 fix(coding-agent): prevent TUI crash on large diffs by avoiding spread in push
+      #8367 closed 2026-08-19 TUI: rendered line 1 cell wider than terminal kills the whole session
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #8618 closed 2026-08-25 parseKittyImageHeader crashes with "line.indexOf is not a function" via expandChangedRangeForKittyImages
+      #7744 closed 2026-08-07 Tokenizer crash when tool results contain media markers without image data (e.g., from llama.cpp /props endpoint)
+      #8151 closed 2026-08-15 fix(extensions): contain widget render failures and tear down ctx-owned widgets on invalidation
+      #7116 closed 2026-07-25 fix(tui): truncate over-width lines instead of crashing
+      #8173 closed 2026-08-15 Request approval: tool-result pruner + spill extension example
+      #7466 closed 2026-08-02 feat(coding-agent): opt-in pre-dispatch durability barrier
+      #6678 closed 2026-07-15 Regression: `getTextOutput` still crashes on undefined `content` — affects v0.80.7
+      #7184 closed 2026-07-27 fix(ai): strip multimodal media markers from tool results to prevent tokenizer crashes
+      #7181 closed 2026-07-27 fix(ai): strip multimodal media markers from tool results to prevent tokenizer crashes
+      #8150 closed 2026-08-15 Extensions: unhandled widget render exceptions and ctx-owned widgets outliving the ctx kill the process on /reload
+      #8055 closed 2026-08-13 tui: Ambiguous-width chars (① ± … €) counted as 1 col, break table alignment on CJK terminals
+      #8172 closed 2026-08-15 example: tool-result pruner + spill extension
+      #5945 closed 2026-06-21 Crash / UI breakage when tool execution returns missing or malformed content array (Not Fail-Safe) and related patch
+      #6867 closed 2026-07-20 Add awaited durable queue lifecycle hooks to agent core
+      #6688 closed 2026-07-15 Extension selector (`ctx.ui.select`) renders all options without viewport windowing so that selection scrolls off-screen
+  atomic+write   21 hit(s) (all listed)
+      #10407 open 2026-10-03 custom entry submission with steering/followup
+      #7658 open 2026-08-05 Extension API for persisting API-key credentials (auth.json)
+      #9470 closed 2026-09-11 edit/write: ownership-aware file operations (as_user) for agents on multi-user hosts
+      #7707 merged 2026-08-06 harness-v2 jsonl session atomic writes for forks & torn-tail truncation
+      #10401 closed 2026-10-03 codemode: backpressured output sink and pre-transfer JSON byte limits
+      #9992 closed 2026-09-24 Add opt-in Claude Agent SDK carrier for Pi-owned tools
+      #8543 closed 2026-08-24 fix(settings,retry,sdk): settings concurrency, quota-error retryability, provider-failure visibility, model warnings
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #8927 closed 2026-08-31 pi credential-store read path takes an exclusive lock for a snapshot read; sync-path acquire budget ~200ms
+      #8334 closed 2026-08-19 Session persistence needs one live writer and provider-prefix lineage diagnostics
+      #7163 merged 2026-07-27 feat: search index sqlite
+      #8215 closed 2026-08-16 Package installs/updates race under concurrency and /reload can complete with a partial extension set
+      #10246 closed 2026-09-30 feat(coding-agent): reload additions to defaultTools
+      #5304 closed 2026-06-01 `nul` file created on Windows when using `bash` tool
+      #3788 closed 2026-04-27 Add custom-provider-litellm extension example
+      #3143 closed 2026-04-14 feat(coding-agent): add async-tasks example extension
+      #1875 closed 2026-03-06 AuthStorage.reload() fails with ELOCKED when multiple instances start simultaneously
+      #1439 closed 2026-02-09 feat: expose replaceEntries + message_end event to Extension API
+      #1188 closed 2026-02-02 Better compatibility with screen readers
+      #75 closed 2025-11-28 A way for the agent to prompt itself based on execution environment triggers
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8928 open 2026-08-31 Parallel pi startup can report "No API key found" for ~48s when auth.json contains an expired OAuth credential for another provider
+      #8301 open 2026-08-18 Can't interleave compaction requests with prompts in prompt queue
+      #8249 open 2026-08-17 fix(coding-agent,tui): refresh theme-derived text on invalidation
+      #7658 open 2026-08-05 Extension API for persisting API-key credentials (auth.json)
+      #8848 closed 2026-08-30 SessionManager has no lock/detection for concurrent writers on the same session file
+      #9596 closed 2026-09-14 coding-agent: two concurrent `-c` runs in one directory append into a single session file with no lock or warning
+      #9265 open 2026-09-07 @earendil-works/pi-ai: O(n²) tool-call argument re-parsing in openai-completions streaming freezes the event loop
+      #5323 open 2026-06-02 Improve Vertex + GCP metadata server support
+      #8300 closed 2026-08-18 Pi allows two processes to share one session file (no in-use detection), causing divergent branches and cross-window delivery
+      #8927 closed 2026-08-31 pi credential-store read path takes an exclusive lock for a snapshot read; sync-path acquire budget ~200ms
+      #10166 closed 2026-09-29 SessionManager: failed append advances memory and leaves a missing parent in subsequent JSONL entries
+      #9653 closed 2026-09-16 plan-mode: bash allowlist lets curl/find/awk/sed write files or run arbitrary commands
+      #6406 closed 2026-07-07 Read-only ~/.pi/agent fails every credential read with "No API key found" (lock file created even for reads)
+      #6167 open 2026-06-29 `transformMessages` + `isSameModel === false` thinking block normalization interacts poorly with `requiresReasoningContentOnAssistantMessages` compat flag
+      #9432 open 2026-09-10 Allow session_start extensions to append stable base system prompt context
+      #9130 closed 2026-09-04 Workers SQLite session backend (Durable Objects)
+      #7547 open 2026-08-03 [Windows] [sink-thread] How do you use Pi on windows? What issues are you seeing?
+      #9563 closed 2026-09-13 coding-agent (MCP adapter): concurrent sessions race the OAuth refresh — provider rotation invalidates the shared token chain
+      #8890 closed 2026-08-31 npmCommand + version probe installs phantom packages (view, version, install) into project package.json
+      #9993 closed 2026-09-24 feat(ai,coding-agent): add Anthropic Claude support to Google Vertex AI provider
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10437 open 2026-10-03 fix(coding-agent): report settings save failures in interactive mode
+      #10585 open 2026-10-07 bash temp-file stream errors still crash the whole process on 1.0.4 (ENOSPC on a full /tmp, EACCES)
+      #10168 open 2026-09-29 Interactive mode silently drops settings save failures (read-only settings.json)
+      #10330 open 2026-10-02 Auto-compaction does not start in CLI mode
+      #7658 open 2026-08-05 Extension API for persisting API-key credentials (auth.json)
+      #10002 open 2026-09-24 Extension console output writes over the interactive TUI
+      #8617 open 2026-08-25 Codex: Use file references for image-heavy tool results
+      #8928 open 2026-08-31 Parallel pi startup can report "No API key found" for ~48s when auth.json contains an expired OAuth credential for another provider
+      #9306 open 2026-09-08 Aborted/error turn leaves unmatched toolCall blocks in context; next runAgentLoopContinue is rejected by provider
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #10558 open 2026-10-06 Clipboard copy fails when DISPLAY/WAYLAND_DISPLAY are exported without a working socket
+      #9441 open 2026-09-10 fix(tui): prevent cursor marker leaks
+      #9718 open 2026-09-17 --print exits 0 with empty output when the model exhausts its output budget
+      #10157 open 2026-09-29 Gemini tool-call thought signatures are dropped with the AI Studio OpenAI-compatible endpoint
+      #10388 open 2026-10-03 prompt() called from an agent_settled handler silently defers — resolves immediately, executes nothing, emits no signal
+      #10565 open 2026-10-06 Built-in MCP OAuth does not abort pending network requests on cancel or session shutdown
+      #8036 open 2026-08-12 Edit tool crashes TUI when rendering a large diff during execution and session resume
+      #6300 open 2026-07-04 Windows: Input line is redrawn on every keystroke (each character appears on a new line)
+      #6600 open 2026-07-13 pi update --extensions and npm scripts: npm 11.16.0 warns, npm 12 blocks
+      #10056 closed 2026-09-26 TUI calls process.exit(1) when stdout goes away, so losing a terminal looks like a crash
+  file+contents  90 hit(s) (all listed)
+      #10540 closed 2026-10-06 System prompt: local models return file contents in chat instead of writing the file
+      #10525 open 2026-10-05 MCP: OAuth client credentials with a JWT client assertion (workload identity)
+      #10330 open 2026-10-02 Auto-compaction does not start in CLI mode
+      #10074 open 2026-09-26 Anthropic tool calls: corrupted non-ASCII edit arguments are silently accepted (dropped `u` in `\uXXXX` → `\b`/`\f` control chars)
+      #7584 closed 2026-08-04 Interactive @ file picker only inserts path text, doesn't attach file contents
+      #10109 closed 2026-09-27 auto-mode bash screen denies benign token-echo as 'social engineering' while the identical write-tool action passes
+      #9071 closed 2026-09-03 Extension tool registered with a built-in tool's name never replaces it in the final tool list
+      #9708 closed 2026-09-17 Migration rewrites the session file in place with no backup
+      #10192 closed 2026-09-29 codemode.mode: "only" leaves hidden tools advertised in the system prompt
+      #9206 closed 2026-09-05 Suggestion: remove Available Tools from system message
+      #7547 open 2026-08-03 [Windows] [sink-thread] How do you use Pi on windows? What issues are you seeing?
+      #9389 closed 2026-09-09 New files bypass the mutation queue through directory symlinks
+      #10251 closed 2026-09-30 codemode only mode: built-in read cannot expose image contents to scripts
+      #9094 closed 2026-09-03 Reasoning-markup literals silently stripped/mangled from tool I/O content (both directions)
+      #8604 closed 2026-08-25 Add `--no-ignore` to file autocomplete so ignored files (e.g. `.env`) can be referenced with `@`
+      #8116 closed 2026-08-14 AGENTS.md symlink aliases load duplicate instructions
+      #7513 closed 2026-08-03 issue-analysis workflow feeds public issue content to auto-approving model holding GH_TOKEN + OAuth refresh tokens
+      #7223 closed 2026-07-28 Clarify that skill invocation prompts already include the SKILL.md contents
+      #8337 closed 2026-08-19 UTF-8 BOM breaks frontmatter parsing and settings.json loading
+      #9548 merged 2026-09-13 Mid conversation system messages
+
+== 51 terms run; 50 returned hits, 20 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

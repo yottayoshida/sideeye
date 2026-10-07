@@ -1,0 +1,41 @@
+# Scout 3 (fresh Opus subagent, read-only; 2026-10-07). Its report, as handed back.
+
+sideeye dogfood 候補集め 3 回目。使ったのは fresh.sh・`gh api repos/`・読み取りシェル・Web 検索のみ（`gh api search` 不使用、ファイル作成・状態変更なし）。scout-1 / scout-2 に出た名前は再掲していない。fresh かつ星1,000以上・2026-04-07以降push・非archive・issue有効を満たし、その場書き換えコマンドを一次資料で確認できたのは下記 25 件。星の多い順。
+
+【要判断】
+- grav（login プラグイン）: unlock-user / new-user が書き換えるコードは別リポ getgrav/grav-plugin-login（星48）にある。grav 本体は 15,681 だが、書き込む実装は星48側＝規則1の境界（keyring→keyrings.alt と同型）。入れるか判断を。
+- tinc: 台帳の "tinc" ヒットは全て "distinct/distinction" の一部で、tinc VPN 本体は fresh（確認済み）。残してある。
+- libressl の `openssl ca`: scout-1 が openssl（未upstream）を挙げており機構が同一。別リポだが近い。重複とみなすなら落として可。
+
+名前 | owner/repo | 星 | push | その場書き換えコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念
+goaccess | allinurl/goaccess | 21.0k | 10-01 | `goaccess a.log -o r.html --persist --db-path=d` | d/ 配下の db ファイル（上書き） | C | Debian | -o 無しだと ncurses TUI。db 上書きは in-place
+optuna | optuna/optuna | 14.9k | 10-07 | `optuna delete-study --study-name=s --storage=j.log --storage-class=JournalFileBackend` | journal の .log（追記/書換） | Python | pip 5.0.0 | create/delete/set-user-attr が書く。軽スレッド
+grav(login) | getgrav/grav | 15.7k | 10-06 | `bin/plugin login unlock-user -u joe` | user/accounts/*.yaml | PHP | git clone | 要判断（書込み実装が星48プラグイン）
+mosquitto_passwd | eclipse-mosquitto/mosquitto | 11.3k | 10-04 | `mosquitto_passwd -b pw.txt u p` / `-D pw.txt u` | パスワードファイル（r+t→ftruncate→書戻し） | C | Debian mosquitto-clients | 非常に素直。-b で stdin 回避
+PrivateBin | PrivateBin/PrivateBin | 8.7k | 10-06 | `php bin/administration --delete=ID` / `--purge` | data/ 配下の paste ファイル（削除） | PHP | git clone | 削除は git で戻らない状態。単一プロセス
+krew | kubernetes-sigs/krew | 7.0k | 09-18 | `kubectl-krew install --manifest=m.yaml --archive=a.tar.gz` | ~/.krew/receipts/*.yaml、展開物 | Go | arm64 release v0.5.0 | Go のスレッド。uninstall も offline
+TIC-80 | nesbox/TIC-80 | 6.2k | 10-05 | `tic80 --cli --fs=. --cmd="load_cart.tic import_tiles_f.png save"` | cart.tic（上書き） | C | cmake build v1.3.1 | --cli で窓は消すが SDL audio 初期化の有無が未確認
+testdisk | cgsecurity/testdisk | 2.6k | 10-04 | `testdisk /cmd d.dd advanced,boot,rebuildbs,write` （`noconfirm,write`） | d.dd の区画表/ブートセクタ（in-place） | C | Debian 7.2 | 単一プロセス。write/rebuildbs/repairfat が書く
+qalc | Qalculate/libqalculate | 2.7k | 10-06 | `qalc -f cmds.txt`（cmds に `save_definitions`/`save_mode`） | ~/.config/qalculate/*.cfg | C++ | Debian / src 5.13.1 | 計算用スレッドの可能性。非対話-f
+tinc | gsliepen/tinc | 2.3k | 06-27 | `tinc -n net set_Mode_switch` / `add` / `del` | tinc.conf、hosts/*（書換） | C | Debian trixie 1.1pre / src | import は stdin なので使わない。set/add/del は tincd 不要
+rgbfix | gbdev/rgbds | 1.7k | 10-04 | `rgbfix -v -p0xFF rom.gb` | rom.gb（既定で in-place） | C++ | Debian rgbds / src v1.0.4 | 子プロセスなし。-o 無指定で上書き
+libsndfile(meta) | libsndfile/libsndfile | 1.7k | 09-01 | `sndfile-metadata-set --bext-description=x a.wav` | a.wav（SFM_RDWR で in-place） | C | src 1.2.2 | 単一ファイル指定で in-place。wav/aiff 等
+minizip | zlib-ng/minizip-ng | 1.5k | 10-01 | `minizip -e a.zip f.txt`（消去） | a.zip（同プロセスで .mz_tmp→rename） | C | cmake build 4.2.2 | rename は同一プロセス内（子プロセス起動せず）
+libressl(openssl) | libressl/portable | 1.5k | 10-07 | `openssl ca -revoke c.pem -batch -config ca.cnf` | index.txt、serial（.new→rename） | C | src tarball v4.3.3 | 要判断（openssl と機構同一）。時計の pin が要る
+ezdxf | mozman/ezdxf | 1.5k | 10-04 | `ezdxf strip -b drawing.dxf` | drawing.dxf（上書き、-b で .bak） | Python | pip | audit は .rec.dxf を作る（別物）。strip が in-place
+sqitch | sqitchers/sqitch | 3.2k | 09-26 | `sqitch add widgets -n x` / `sqitch tag v1` | sqitch.plan（追記）＋deploy/revert/verify スクリプト | Perl | Debian / cpan v1.6.1 | add に DB/ネット不要。単一プロセス
+lasinfo | LAStools/LAStools | 1.07k | 09-21 | `lasinfo -i a.laz -set_file_source_ID 7` / `-repair` | a.las/.laz のヘッダ（in-place） | C++ | make build v2.0.5 | LAStools は一部 proprietary だが lasinfo は open。.laz 可
+extract-xiso | XboxDev/extract-xiso | 1.19k | 09-11 | `extract-xiso -r game.iso` / `-r -D game.iso` | game.iso（元を .old に rename し元パスへ新規） | C | cmake build | 単一スレッド。-D で .old 削除
+Limine | Limine-Bootloader/Limine | 3.8k | 10-06 | `limine bios-install disk.img` | disk.img のブート領域（in-place） | C | make / release v12.9.3 | enroll-config は EFI バイナリに鍵を要する。bios-install は image 可
+sysstat(sadc) | sysstat/sysstat | 3.4k | 10-04 | `sadc -F 1 3 data.sa` | data.sa（既存へ追記、-F で truncate） | C | Debian | 既存ファイルへの追記が主で in-place はやや弱い
+xbps-pkgdb | void-linux/xbps | 1.16k | 05-01 | `xbps-pkgdb -r root -m hold pkg` / `-u` | root の pkgdb-0.38.plist（書換） | C | make build 0.60.7 | root もしくは -r rootdir が要る
+mcpm | pathintegral-institute/mcpm.sh | 1.01k | 10-06 | `mcpm edit srv --env=K=v --force` | ~ の servers/profiles の JSON | Python | pipx v2.15.0 | 一部コマンドで更新確認のネット通信の恐れ
+LibreSprite | LibreSprite/LibreSprite | 8.5k | 10-04 | `libresprite -b in.aseprite --save-as=in.aseprite` | in.aseprite（同パスなら上書き） | C++ | cmake build v1.3 | --save-as は本来新規出力。同パス指定時のみ in-place
+voidint/g | voidint/g | 2.9k | 08-30 | `g config set=...` （go 版管理） | ~/.g/config | Go | go install / release v1.8.0 | 規則5 やや弱い（version manager）。Go
+aseprite | aseprite/aseprite | 39.9k | 10-05 | `aseprite -b in.aseprite --save-as=in.aseprite` | in.aseprite（同パス上書き） | C++ | Skia 依存の重いビルド | 非OSS ライセンス（EULA）、arm64 バイナリ無し。batch は headless
+
+分野の所見: 設定ファイル系（augeas/augtool/xmlstarlet/crudini/dasel/hostctl/python-dotenv/ejson）は全て SEEN。メディアタグ系（AtomicParsley/opustags/kid3/rsgain/metaflac/vorbisgain ほか）もほぼ SEEN。新規に取れたのは PKI/署名（mosquitto_passwd・libressl・sqitch）、ディスク/ブートイメージ（testdisk・Limine・extract-xiso・xbps-pkgdb）、点群/CAD（lasinfo・ezdxf）、音声（sndfile-metadata-set）、ゲーム/レトロ（TIC-80・rgbfix・LibreSprite・aseprite）、ログ/計測（goaccess・sysstat・optuna）。地図（GPX/GeoJSON）は条件を満たす in-place CLI が無かった（gpsbabel 552・tippecanoe は mbtiles=SQLite で規則6/7 違反・node-gpx/togeojson は404）。テキスト置換は brief が挙げた srgn(914)・ruplacer(archived)・sad(stdin のみ=規則8) がいずれも脱落。
+
+落ちた数（この回の自分の照合分、概算）:
+SEEN で落ちた名前: 約150（augeas〜e2fsprogs 系56、メディア系31、ツール広域54、borg/kopia/espanso/xmake/meson/rector/libvips/scooter 等9 ほか。別語一致で残したのは tinc・rector・borg の照合で確認）。
+規則1・2・issue で落ちた名前: 約35（星1,000未満: gpsbabel552・srgn914・palworld-save-tools869・conserve278・flvmeta126・nsc144・node-gpx 等／push 古い: lebab 2026-04-01・ts-migrate・kubeswitch 2025-05・handlr 2023・qtfaststart 2017・toml-cli 2024・dosfstools 2024／archived: ruplacer・Flips）。

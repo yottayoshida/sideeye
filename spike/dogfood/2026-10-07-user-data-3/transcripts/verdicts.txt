@@ -1,0 +1,24 @@
+lxc	supervised	FAIL 1/3 	cp 2/2: after open config.yml, before write config.yml; config.yml	replays: FAIL FAIL
+duplicacy	supervised	FAIL 1/3 	cp 2/2: after open preferences, before write preferences; preferences	replays: FAIL FAIL
+ferium	supervised	FAIL 1/4 	cp 3/3: after truncate config.json, before write config.json; config.json	replays: FAIL FAIL
+easyrsa	syscalls	UNKNOWN 0/0 recording_run_failed		replays: 
+tiddlywiki	explore	FAIL 1/3 	cp 2/2: after open wiki.html, before write wiki.html; wiki.html	replays: FAIL FAIL
+broot	explore	PASS 0/23 		replays: 
+ziptool	syscalls	PASS 0/6 		replays: 
+xbps	explore	PASS 0/6 		replays: 
+mcpm	explore	FAIL 4/33 	cp 29/32: after open servers.json, before write servers.json; servers.json	replays: FAIL FAIL
+sndfile	explore	FAIL 1/4 	cp 3/3: after write a.wav, before write a.wav; a.wav	replays: FAIL FAIL
+ezdxf	explore	FAIL 1/11 	cp 9/10: after rename drawing.dxf, before rename drawing.ezdxf.tmp; drawing.dxf	replays: FAIL FAIL
+pi	explore	FAIL 1/9 	cp 7/8: after open settings.json, before write settings.json; agent/settings.json	replays: FAIL FAIL
+doit	explore	FAIL 1/3 	cp 2/2: after open d.json, before write d.json; d.json	replays: FAIL FAIL
+kitten	supervised	PASS 0/11 		replays: 
+alacritty	syscalls	PASS 0/9 		replays: 
+gitmoji	explore	FAIL 1/3 	cp 2/2: after open prepare-commit-msg, before write prepare-commit-msg; prepare-commit-msg	replays: FAIL FAIL
+astro	explore	FAIL 1/4 	cp 3/3: after open settings.json, before write settings.json; settings.json	replays: FAIL FAIL
+roswell	explore	UNKNOWN 0/0 unresolvable_path		replays: 
+zshz	syscalls	FAIL 1/7 	cp 5/6: after open .z, before write .z; .z	replays: FAIL FAIL
+openssl	explore	FAIL 2/9 	cp 6/8: after rename index.txt, before rename index.txt.new; index.txt	replays: FAIL FAIL
+sfntedit	explore	FAIL 1/3 	cp 2/2: after open f.ttf, before write f.ttf; f.ttf	replays: FAIL FAIL
+acmesh	syscalls	FAIL 3/5 	cp 2/4: after open account.conf, before write account.conf; account.conf	replays: FAIL FAIL
+minizip	explore	FAIL 1/3 	cp 2/2: after rename a.zip, before rename 1791357636x; a.zip	replays: FAIL FAIL
+easyrsa-unpinned	syscalls	UNKNOWN 22/40 baseline_violates_invariant		replays: 

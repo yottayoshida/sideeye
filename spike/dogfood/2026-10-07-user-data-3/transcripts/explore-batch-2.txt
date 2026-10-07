@@ -1,0 +1,43 @@
+scan ended for sfntedit (adobe-type-tools/afdko); exploring 2026-10-07T06:30:32Z
+=== sfntedit 2026-10-07T06:30:32Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for acmesh (acmesh-official/acme.sh); exploring 2026-10-07T06:36:16Z
+=== acmesh 2026-10-07T06:36:16Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 1: FAIL -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for easyrsa (OpenVPN/easy-rsa); exploring 2026-10-07T06:41:03Z
+=== easyrsa 2026-10-07T06:41:03Z
+explore exit 2: UNKNOWN child_touched_state_dir
+explore --observe syscalls exit 2: UNKNOWN baseline_violates_invariant
+explore exit 2: UNKNOWN child_touched_state_dir
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 2: UNKNOWN baseline_violates_invariant
+scan ended for tiddlywiki (TiddlyWiki/TiddlyWiki5); exploring 2026-10-07T06:52:53Z
+=== tiddlywiki 2026-10-07T06:52:54Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for broot (Canop/broot); exploring 2026-10-07T06:57:37Z
+=== broot 2026-10-07T06:57:37Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+scan ended for ziptool (nih-at/libzip); exploring 2026-10-07T07:02:39Z
+=== ziptool 2026-10-07T07:02:39Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 0: PASS -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 0: PASS -
+explore-after-scan: done 2026-10-07T07:02:46Z

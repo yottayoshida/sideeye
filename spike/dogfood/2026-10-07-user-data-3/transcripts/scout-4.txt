@@ -1,0 +1,65 @@
+# Scout 4 (fresh Opus subagent, read-only; 2026-10-07). Its report, as handed back.
+
+sideeye dogfood の候補集め、4 回目の結果です。fresh で、星 1,000 以上・2026-04-07 以降に push・archive されていない・issue が有効、を満たし、書き換えるコマンドをソースか公式文書で確かめたのは 20 件です。規則 11 は測っていません。ファイルは作っておらず、使ったのは fresh.sh・`gh api repos/…`（contents・releases・tags を含む）・読み取りのシェル・Web 取得だけです（`gh api search` は使っていません）。
+
+【要判断】
+1. 20 件のうち 13 件は、AI エージェントとその周辺の設定を書く CLI です。gemini-cli と codex を測ったのと同じ種類なので、波に何件まで入れるか決めてください。仕組みも既に知られているものがあります。
+   - qwen-code は gemini-cli の fork で、`mcp add` も同じ形です。
+   - mini-swe-agent の `config set` は python-dotenv の `set_key` で書いています。python-dotenv は測定済みです。
+2. hermes-agent・forgecode・promptfoo は、コマンドが書くのは YAML か TOML です。ただ、道具の主な保管先は SQLite です（会話・評価。hermes は state.db、forge は diesel の conversations、promptfoo は promptfoo.db）。規則 6・7 で入れるか決めてください。
+3. code-server と vscode は同じコードで拡張を管理しています。どちらか 1 つで足ります。
+4. 指定された分野はほぼ全部 SEEN でした。中身は次のとおりです。
+   - シェル・端末: starship、oh-my-posh、sheldon、fish、hstr
+   - ディレクトリ移動: zoxide、autojump、gsamokovarov/jump
+   - 画像: svgo、gifsicle、pngquant、jpegoptim、zopflipng、ECT、Leanify、caesium、imgp、jhead
+   - フォント: fontforge
+   - config set: npm、pnpm、pip、uv、gh、go env、pdm、hatch、conan、spack、pixi、composer、luarocks
+   - 照合で気づいた分: perl -i は 10-03 に PASS で測定済みです。dvc も既に測っています（照合は「DVCS」に当たるので、名前だけでは fresh に見えます）。
+   - PDF（qpdf と mutool 以外）・ゲームのセーブ・ブラウザ拡張・SQLite でないノートは、条件を満たす fresh が見つかりませんでした。
+
+名前 | owner/repo | 星 | push | その場で書き換えるコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念
+1. hermes | NousResearch/hermes-agent | 251,770 | 10-07 | `hermes config set display.compact true`／`hermes config set FOO_API_KEY x`（大文字の名前は .env へ）／`hermes config unset k` | ~/.hermes/config.yaml、.env（一時ファイル→fsync→rename） | Python | 公式の導入スクリプト（git clone と uv、tag v2026.9.24） | 要判断 2。起動時に state.db を開くかは未確認
+2. code | microsoft/vscode | 193,612 | 10-07 | `code --install-extension ./x.vsix --force`／`code --uninstall-extension pub.x` | ~/.vscode/extensions/extensions.json と拡張の木 | TS（Electron） | 公式 linux-arm64 tar 1.140.0 | Electron でスレッドが多い。表示なしで動くか、marketplace に問い合わせるかは未確認
+3. pi | earendil-works/pi | 113,040 | 10-07 | `pi install ./ext`／`pi remove ./ext`（`-l` を付けると .pi/settings.json） | ~/.pi/agent/settings.json | TS | npm @earendil-works/pi-coding-agent 1.0.4 | 取得元が npm: だと npm を子プロセスで起動する。ローカルのパスなら起動しない（確度 70%）
+4. code-server | coder/code-server | 79,556 | 10-02 | `code-server --install-extension ./x.vsix`／`--uninstall-extension pub.x` | ~/.local/share/code-server/extensions/extensions.json と拡張の木 | TS（Node） | 公式 arm64 .deb・tar 4.140.0 | 2 と同じ仕組み。Open VSX への問い合わせと子プロセスの有無は未確認
+5. cline | cline/cline | 69,960 | 10-07 | `cline mcp add fs --yes -- node s.js`／`cline mcp rm fs` | MCP 設定の JSON（~/.cline 配下と推定、確度 60%）。一時ファイル→rename、ロックは mkdir と rename | TS | npm @cline/cli 3.0.69 | `--yes` を付けないと TTY を要求する
+6. astro | withastro/astro | 63,085 | 10-07 | `astro preferences disable devToolbar --global`／`astro preferences reset devToolbar --global` | ~/.config/astro の設定 JSON（writeFileSync でそのまま上書き） | TS | npm astro 7.3.6 | 規則 5 は弱め。telemetry は ASTRO_TELEMETRY_DISABLED で切る
+7. skills | vercel-labs/skills | 33,302 | 10-07 | `skills add ./s -g -y -a claude-code`／`skills remove s -g -y` | ~/.agents/.skill-lock.json（writeFile で上書き、一時ファイルなし）、各エージェントの skills 配下 | TS | npm skills 1.7.1 | telemetry を送る（切る変数は未確認）。git の取得元では git を起動するので、ローカルのパスを使う
+8. qwen | QwenLM/qwen-code | 28,339 | 10-07 | `qwen mcp add -s user srv node s.js`／`qwen mcp remove srv` | ~/.qwen/settings.json | TS | npm @qwen-code/qwen-code 0.25.0 | 要判断 1。起動時に更新を確認する
+9. promptfoo | promptfoo/promptfoo | 25,771 | 10-07 | `promptfoo config set email a@b.co`／`promptfoo config unset email -f` | ~/.promptfoo/promptfoo.yaml（writeFileSync） | TS | npm promptfoo 0.124.0 | 要判断 2。email を設定するときの通信と telemetry は未確認
+10. jscodeshift | facebook/jscodeshift | 10,037 | 10-03 | `jscodeshift -t t.js --run-in-band f.js` | f.js をその場で | JS | npm 17.3.0 | 規則 5 は弱い（対象は普通 git にある）。`--run-in-band` を外すとワーカーを子プロセスで起動する
+11. mini-extra | SWE-agent/mini-swe-agent | 8,257 | 10-06 | `mini-extra config set MSWEA_MODEL_NAME x`／`mini-extra config unset MSWEA_MODEL_NAME` | ~/.config/mini-swe-agent/.env | Python | pip mini-swe-agent 2.4.6 | 要判断 1
+12. sui | MystenLabs/sui | 7,766 | 10-07 | `sui client switch --env devnet`／`sui keytool update-alias a b` | ~/.sui/sui_config/client.yaml、sui.aliases | Rust | 公式 ubuntu-aarch64 tgz mainnet-v1.80.1 | tokio。client.yaml は手で仕込む
+13. forge | tailcallhq/forgecode | 7,641 | 10-07 | `forge config set reasoning-effort high`／`forge mcp remove -s user x` | ~/.forge/.forge.toml、.mcp.json | Rust | 公式 aarch64-unknown-linux-gnu v2.14.0 | tokio。要判断 2
+14. vibe | mistralai/mistral-vibe | 5,059 | 10-06 | `vibe mcp add srv --transport stdio --command node --arg s.js`／`vibe mcp remove srv` | ~/.vibe/config.toml | Python | pip mistral-vibe 2.26.0 | add がサーバーに接続して確かめるかは未確認（remove は接続しない）
+15. ruler | intellectronica/ruler | 2,942 | 09-30 | `ruler apply --agents claude,codex --mcp`／`ruler revert` | CLAUDE.md、AGENTS.md、.mcp.json、.codex/config.toml、.gitignore（.bak を作る） | TS | npm @intellectronica/ruler 0.3.44 | 規則 5 は中程度
+16. thv | stacklok/toolhive | 2,238 | 10-07 | `thv config set-registry ./r.json`／`thv config usage-metrics disable`／`thv config set-ca-cert ca.pem` | ~/.config/toolhive/config.yaml | Go | 公式 linux_arm64 tar 0.51.4 | Go のスレッド。コンテナの実行環境を探すかは未確認
+17. doit | pydoit/doit | 2,090 | 09-21 | `doit forget --backend json --db-file d.json t1`／`doit ignore --backend json --db-file d.json t1` | d.json（json.dump で上書き） | Python | pip doit 0.37.0 | dodo.py を仕込む。python の action だけなら子プロセスは起動しない
+18. cspell | streetsidesoftware/cspell | 1,697 | 10-06 | `cspell link add ./ext.json`／`cspell link remove ./ext.json` | ~/.config/cspell/cspell.json（fs.writeFile で上書き） | TS | npm cspell 10.3.6 | 特になし
+19. rulesync | dyoshikawa/rulesync | 1,502 | 10-05 | `rulesync generate --targets claudecode --features rules,mcp`／`rulesync import --targets claudecode` | CLAUDE.md、.mcp.json、.rulesync/ | TS | npm rulesync 27.0.0 | 15 と同じ種類
+20. comfy | Comfy-Org/comfy-cli | 1,002 | 10-07 | `comfy --skip-prompt tracking disable`／`comfy --skip-prompt set-default /w/ComfyUI` | ~/.config/comfy-cli/config.ini（open "w" で上書き） | Python | pip comfy-cli 1.22.0 | tracking が有効だと送信するので先に切る。set-default がワークスペースの中身を確かめる恐れ
+
+規則 5 が弱いもの（fresh で、規則 1・2・issue は満たす）:
+- gatsby（55.9k）: `gatsby telemetry --disable`
+- capacitor（16.8k）: `cap telemetry off`
+- hexo（41.8k）: `hexo publish`。git に入る
+- changesets（12.5k）: CHANGELOG を書く。git に入る
+- doctoc（4.5k）: Markdown の目次をその場で書き換える
+- zimfw（4.7k）: 書くのは生成物
+
+fresh だが別の理由で落としたもの:
+- goose: 会話は SQLite、configure は対話
+- kilocode: Bun で動く
+- letta-code: サーバーが要る
+- continue の cn・nanocoder・gptme・crush・claude-code-router: 書き換える非対話のコマンドが無い
+- fast-agent: 書き換えるのは `config migrate-mcp --write` だけ
+- SuperClaude: `claude mcp add` を子プロセスで起動する
+- tmuxinator: 確認を stdin で聞く
+- xonsh・mpv: 台本が要るか、スレッドが多い
+- kondo・cheat: 削除だけで、規則 5 が弱い
+
+SEEN で落ちた名前の数: 約 180（持ち主名・別名を含む）。cline（declined）、forge（fontforge）、sui（suite）、astro（astropy）は別の語に当たっただけだったので残しました。
+規則 1・2・issue で落ちた名前の数: 約 36。
+- 星が 1,000 未満: flavours、wd、1mcp、fatcat、btrfs-progs、exfatprogs、elan、pyHanko、pdfCropMargins、pysubs2、rip2、securefs、tone、cog、auggie、stellar-cli、nuxt/cli、tccli、modal-client など
+- push が古い: enhancd、tide、mcptools、iflow-cli、openskills、yalc、gomodifytags、gotests、uber-apk-signer、hostess
+- archive 済み: kimi-cli、storm

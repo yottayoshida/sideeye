@@ -1,0 +1,49 @@
+== allinurl/goaccess (label bug)
+#2984 2026-09-19 comments=0 first_project_reply=none
+#2974 2026-07-27 comments=2 first_project_reply=OWNER 2026-08-06
+#2972 2026-07-18 comments=3 first_project_reply=OWNER 2026-07-19
+#2955 2026-06-01 comments=12 first_project_reply=OWNER 2026-06-03
+#2927 2026-04-04 comments=2 first_project_reply=OWNER 2026-08-29
+#2918 2026-03-03 comments=4 first_project_reply=OWNER 2026-03-03
+#2911 2026-02-14 comments=5 first_project_reply=OWNER 2026-02-14
+#2908 2026-01-21 comments=1 first_project_reply=OWNER 2026-01-23
+#2863 2025-07-01 comments=1 first_project_reply=OWNER 2025-07-01
+#2822 2025-03-31 comments=4 first_project_reply=OWNER 2025-03-31
+
+== flashrom/flashrom (label (none matched; last issues of any label))
+#369 2026-08-19 comments=6 first_project_reply=none
+#368 2026-06-30 comments=1 first_project_reply=none
+#367 2026-06-12 comments=3 first_project_reply=CONTRIBUTOR 2026-06-12
+#366 2026-06-09 comments=0 first_project_reply=none
+#364 2026-04-30 comments=1 first_project_reply=none
+#363 2026-03-15 comments=1 first_project_reply=none
+#360 2026-02-13 comments=1 first_project_reply=none
+#359 2026-02-04 comments=1 first_project_reply=none
+#358 2026-01-24 comments=1 first_project_reply=none
+#357 2026-01-23 comments=1 first_project_reply=none
+
+== carloscuesta/gitmoji-cli (label bug)
+#1391 2025-01-15 comments=0 first_project_reply=none
+#1084 2023-05-09 comments=5 first_project_reply=OWNER 2023-05-09
+#782 2022-03-12 comments=0 first_project_reply=none
+#672 2021-09-02 comments=2 first_project_reply=OWNER 2021-09-02
+#658 2021-08-04 comments=5 first_project_reply=OWNER 2021-08-04
+#552 2021-02-27 comments=7 first_project_reply=OWNER 2021-02-27
+#497 2020-11-28 comments=4 first_project_reply=OWNER 2020-11-28
+#444 2020-08-18 comments=6 first_project_reply=OWNER 2020-08-18
+#397 2020-06-18 comments=3 first_project_reply=OWNER 2020-06-18
+#324 2020-03-09 comments=8 first_project_reply=OWNER 2020-03-10
+
+== optuna/optuna (label bug)
+#6874 2026-09-29 comments=0 first_project_reply=none
+#6855 2026-09-11 comments=3 first_project_reply=MEMBER 2026-09-17
+#6827 2026-08-25 comments=3 first_project_reply=MEMBER 2026-08-26
+#6798 2026-08-12 comments=3 first_project_reply=MEMBER 2026-08-17
+#6785 2026-07-31 comments=1 first_project_reply=none
+#6734 2026-07-01 comments=3 first_project_reply=MEMBER 2026-07-02
+#6708 2026-06-05 comments=4 first_project_reply=MEMBER 2026-06-17
+#6662 2026-05-07 comments=2 first_project_reply=none
+#6626 2026-04-15 comments=3 first_project_reply=MEMBER 2026-04-17
+#6486 2026-02-28 comments=2 first_project_reply=none
+
+rule11-all: done 2026-10-07T07:55:09Z
