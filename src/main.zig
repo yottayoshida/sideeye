@@ -882,6 +882,10 @@ fn phaseDefine(run: *Run) void {
                         if ((posix.kindOfPathNoFollow(cz.ptr) catch .other) == .file) refuse.toml_dir = dir;
                     } else |_| {}
                 }
+                // #706 (ADR 0095): read as written, before argv[0] is resolved against `dir`; the
+                // parser's own sentences (a value cut at an inner quote) first.
+                const spelled = config.shellWarnings(arena, .toml, d.setup, d.operation, d.check, d.recovery, d.recovery_check);
+                report.define_warnings = std.mem.concat(arena, []const u8, &.{ d.cut_at_comment, spelled }) catch spelled;
                 args.state = resolvePathAgainst(arena, dir, d.state);
                 args.setup = if (d.setup) |s| resolveCommand(arena, dir, s) else null;
                 args.operation = resolveCommand(arena, dir, d.operation);
@@ -910,6 +914,10 @@ fn phaseDefine(run: *Run) void {
             },
         }
     }
+    // #706 (ADR 0095): the flags' define, read as typed. Not a replay's: its case holds what an
+    // exploration already read, and a toml-born case holds argv[0] resolved to a path.
+    if (args.config == null and replay_case == null)
+        report.define_warnings = config.shellWarnings(arena_state.allocator(), .flags, args.setup, args.operation, args.check, args.recovery, args.recovery_check);
 
     const state = args.state orelse setupError(.define_invalid, "--state is required");
     const operation = args.operation orelse setupError(.define_invalid, "--operation is required");
@@ -3534,6 +3542,7 @@ fn phaseReport(run: *Run) void {
         });
         report.sayCwd(arena, "cwd         {s}{s}\n");
         report.sayApparatus(arena, "apparatus   {s}\n");
+        report.sayWarnings("warning     {s}\n");
         report.sayRecovery("recovery    {s}\n");
         // Printed only when the two exhibits are different worlds; when the
         // earliest is itself checker-red — every FAIL this engine produced
@@ -3615,6 +3624,7 @@ fn phaseReport(run: *Run) void {
     , .{ report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
     report.sayCwd(arena, "      cwd: {s}{s}\n");
     report.sayApparatus(arena, "      apparatus: {s}\n");
+    report.sayWarnings("      warning: {s}\n");
     report.sayRecovery("      recovery: {s}\n");
     report.saySingleCrashPointNote(n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
@@ -4166,6 +4176,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
         // forbids — a verdict arriving under a different code, or exit 0 read as proof a
         // check ran — but if the owner wants that reading written into §3, this comment
         // is the place that owes the reference.
+        report.emitWarnings();
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
     // Under `--observe supervised` the next command names the mode, not a shim: there is no shim
@@ -4274,6 +4285,8 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             , .{ textShown(arena, c.path), why, then, observe_part, oracle_part });
         },
     }
+    // #706: preflight seals nothing (it takes no --json), so the warnings go out here.
+    report.emitWarnings();
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 

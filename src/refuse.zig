@@ -424,6 +424,7 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     // one line that can name the `cwd` an operation needed and did not get.
     report.sayCwd(json_arena orelse std.heap.page_allocator, "cwd         {s}{s}\n");
     report.sayApparatus(json_arena orelse std.heap.page_allocator, "apparatus   {s}\n");
+    report.sayWarnings("warning     {s}\n");
     report.sayRecovery("recovery    {s}\n");
     say(
         \\
