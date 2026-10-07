@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-07
+
 ### Added
 
 - **`sideeye completions zsh|bash|fish` prints a completion script built from the usage lines** (#712; `src/cli.zig`, `docs/cli.md`). It offers exactly the commands, a command's positional argument (a case file, a command name, a shell), and exactly the flags its usage lines list (explore's and preflight's two lines together, so `--config` and `--state` are both offered), with a flag's value completed as a file where the usage names a path and as its listed words where it lists them (`--observe`). The bash script runs on bash 3.2, macOS's `/bin/bash`, quotes a file name with a space, gives a directory its slash (except one named after a `:`, `=` or `@` in the word, which completes without it), and completes a path holding `:`, `=` or `@`. `spike/check-completions.py` reads the usage lines on its own and asks each shell what the script offers at every position; acceptance runs it on Linux with all three shells installed, the macOS job with `/bin/bash` and zsh. A Homebrew formula can take the scripts with `generate_completions_from_executable`; the tap is not changed here.
