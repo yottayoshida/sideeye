@@ -410,11 +410,11 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     // self-exec chain adds "the subject's image replaced N time(s), chain unbroken", a run
     // refused before the trace was read says the account was never established.
     say(
-        \\UNKNOWN  {s}
+        \\{s}  {s}
         \\         {s}
         \\next        {s}
         \\
-    , .{ reason.name(), detail, next_step });
+    , .{ report.paint("UNKNOWN"), reason.name(), detail, next_step });
     // #337: the same value the JSON carries, on its own line, and only when there is one
     // — a `divergence` line reading empty would be a field pretending to an answer. After
     // `next`, before the classification block, so the two lines the acceptance suite
@@ -697,7 +697,7 @@ pub fn setupError(reason: contract.SetupErrorReason, detail: []const u8) noretur
     dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
         report.writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, reason, detail, null);
-    say("SETUP ERROR  {s}\n", .{detail});
+    say("{s}  {s}\n", .{ report.paint("SETUP ERROR"), detail });
     report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
 }

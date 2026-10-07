@@ -152,6 +152,7 @@ pub extern "c" fn nanosleep(req: *const std.c.timespec, rem: ?*std.c.timespec) c
 pub extern "c" fn signal(sig: c_int, handler: usize) usize;
 pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
 pub extern "c" fn getenv(name: [*:0]const u8) ?[*:0]u8;
+pub extern "c" fn isatty(fd: c_int) c_int;
 pub extern "c" fn _exit(status: c_int) noreturn;
 /// For the one child-side failure that must not become an exit code (#263): a signal
 /// death is outside the target's 0..255 and cannot be mistaken for its own status.

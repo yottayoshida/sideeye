@@ -1369,6 +1369,149 @@ else
 fi
 
 echo ""
+echo "=========== check 2co: the verdict word is coloured on a terminal, and only there (#712) ==========="
+# docs/cli.md: when standard output is a terminal the verdict word is coloured; when it is
+# not, when NO_COLOR is non-empty, or when TERM is dumb, Sideeye adds no escape sequence of
+# its own. The terminal is given to stdout alone (os.openpty, stdin and stderr /dev/null),
+# so an implementation that asks fd 0 or fd 2 is told apart from one that asks fd 1 -- a
+# pty.spawn would hand all three the same terminal and pass both. Each verdict is run twice,
+# on the terminal and into a file, with the same argv (but for where --json goes), cwd and
+# environment and a fresh work area, and the terminal's bytes must be the file's with exactly
+# the verdict word wrapped: colour outside the word, or none on it, both fail the one
+# comparison.
+co_out=$(python3 - "$SIDEEYE" "$SHIM" "$OUT" <<'COLOUREOF'
+import errno, json, os, select, shutil, subprocess, sys, time
+SIDEEYE, SHIM, OUT = sys.argv[1:4]
+CODE = {"PASS": "32", "FAIL": "31", "UNKNOWN": "33", "SETUP ERROR": "35"}
+RC = {"PASS": 0, "FAIL": 1, "UNKNOWN": 2, "SETUP ERROR": 3}
+AREA = "/tmp/acc/colour"
+bad = []
+
+def argv_for(kind, json_path):
+    a = [SIDEEYE, "explore", "--json", json_path]
+    if kind == "SETUP ERROR":     # refused while the flags are read; --json is already in
+        return a + ["--world-timeout", "0", "--state", AREA + "/state", "--operation", "x"]
+    toy = OUT + ("/toy-bug" if kind == "FAIL" else "/toy-fixed")
+    a += ["--state", AREA + "/state", "--setup", toy + " init", "--operation", toy + " rotate",
+          "--shim", SHIM, "--work", AREA + "/work"]
+    return a + (["--allow-unverified"] if kind in ("FAIL", "PASS") else [])
+
+def fresh():
+    shutil.rmtree(AREA, ignore_errors=True)
+    os.makedirs(AREA + "/state")
+
+def env(**kw):
+    e = dict(os.environ)
+    e.pop("NO_COLOR", None)
+    e["TERM"] = "xterm"
+    e.update(kw)
+    return e
+
+def on_terminal(argv, e, fds="stdout"):
+    master, slave = os.openpty()
+    out_to = slave if "stdout" in fds else open(AREA + "-out.txt", "wb")
+    p = subprocess.Popen(argv, cwd="/tmp/acc", env=e,
+                         stdin=slave if "stdin" in fds else subprocess.DEVNULL,
+                         stdout=out_to,
+                         stderr=slave if "stderr" in fds else subprocess.DEVNULL)
+    os.close(slave)
+    buf, deadline = b"", time.time() + 120
+    while time.time() < deadline:
+        r, _, _ = select.select([master], [], [], 0.5)
+        if master in r:
+            try:
+                chunk = os.read(master, 65536)
+            except OSError as exc:
+                if exc.errno != errno.EIO:
+                    raise
+                chunk = b""
+            if not chunk:
+                break
+            buf += chunk
+        elif p.poll() is not None:
+            break
+    else:
+        p.kill()
+    rc = p.wait()
+    os.close(master)
+    if "stdout" not in fds:
+        out_to.close()
+        with open(AREA + "-out.txt", "rb") as fh:
+            buf = fh.read()
+    return rc, buf.replace(b"\r\n", b"\n").decode("utf-8", "replace")
+
+def into_file(argv, e):
+    with open(AREA + "-file.txt", "wb") as fh:
+        rc = subprocess.run(argv, cwd="/tmp/acc", env=e, stdin=subprocess.DEVNULL,
+                            stdout=fh, stderr=subprocess.DEVNULL).returncode
+    with open(AREA + "-file.txt", encoding="utf-8", errors="replace") as fh:
+        return rc, fh.read()
+
+def strings(x):
+    if isinstance(x, dict):
+        for v in x.values():
+            yield from strings(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from strings(v)
+    elif isinstance(x, str):
+        yield x
+
+for kind in ("FAIL", "PASS", "UNKNOWN", "SETUP ERROR"):
+    fresh()
+    rc_t, tty = on_terminal(argv_for(kind, AREA + "-t.json"), env())
+    try:
+        with open(AREA + "-t.json") as fh:
+            doc = json.load(fh)
+    except (OSError, ValueError) as exc:
+        bad.append("%s: the terminal run left no readable JSON (%s)" % (kind, exc))
+        doc = {}
+    if doc.get("verdict") != kind.replace(" ", "_"):
+        bad.append("%s: the terminal run's JSON says verdict %r" % (kind, doc.get("verdict")))
+    if any("\x1b" in s for s in strings(doc)):
+        bad.append("%s: an escape sequence reached the JSON" % kind)
+    fresh()
+    rc_f, plain = into_file(argv_for(kind, AREA + "-f.json"), env())
+    if rc_t != RC[kind] or rc_f != RC[kind]:
+        bad.append("%s: exit %d on the terminal and %d into a file, wanted %d"
+                   % (kind, rc_t, rc_f, RC[kind]))
+    lines = plain.split("\n")
+    at = next((i for i, l in enumerate(lines) if l.startswith(kind + "  ")), None)
+    if at is None:
+        bad.append("%s: no line opens with the verdict in the file's output" % kind)
+        continue
+    lines[at] = "\x1b[1;%sm%s\x1b[0m%s" % (CODE[kind], kind, lines[at][len(kind):])
+    if tty != "\n".join(lines):
+        seen = next((l for l in tty.split("\n") if kind in l), "")
+        bad.append("%s: the terminal's output is not the file's with only the verdict word "
+                   "coloured; the terminal's verdict line: %r" % (kind, seen[:120]))
+# Where no colour may appear. Each run must still have produced its verdict line, so an
+# empty capture cannot pass as "no escape".
+for name, e, fds in (("stdout into a file, stdin and stderr on the terminal", env(), "stdin,stderr"),
+                     ("NO_COLOR=1 on the terminal", env(NO_COLOR="1"), "stdout"),
+                     ("TERM=dumb on the terminal", env(TERM="dumb"), "stdout")):
+    fresh()
+    rc, out = on_terminal(argv_for("SETUP ERROR", AREA + "-n.json"), e, fds)
+    if rc != 3 or "SETUP ERROR  " not in out or "\x1b" in out:
+        bad.append("%s: exit %d, verdict line %s, escape %s"
+                   % (name, rc, "SETUP ERROR  " in out, "\x1b" in out))
+fresh()
+rc, out = on_terminal(argv_for("SETUP ERROR", AREA + "-e.json"), env(NO_COLOR=""), "stdout")
+if "\x1b[1;35mSETUP ERROR\x1b[0m" not in out:
+    bad.append("NO_COLOR set but empty: the verdict was not coloured (exit %d)" % rc)
+print("\n".join(bad) if bad else "ok")
+COLOUREOF
+)
+if [ "$co_out" = "ok" ]; then
+    echo "ok   the verdict word is coloured on a terminal and nowhere else (4 verdicts, 4 controls)"
+else
+    echo "FAIL the verdict word's colour:"
+    printf '%s\n' "$co_out" | sed 's/^/     | /' | head -12
+    fails=$((fails + 1))
+fi
+
+
+echo ""
 echo "=========== check 2f: the zero-operation path is guarded too ==========="
 # `doctor` only reads, so no crash points are recorded. That early branch — a PASS until
 # ADR 0091, `nothing_could_fail` since — sits before the exploration loop, and an operation
