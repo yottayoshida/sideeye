@@ -214,6 +214,12 @@ jobs:
       - name: Install the completeness oracle
         run: sudo apt-get update && sudo apt-get install -y strace
 
+      # Acceptance check 5c asks bash, zsh and fish what `sideeye completions` offers (#712);
+      # the runner has only bash, and SIDEEYE_EXPECT_SHELLS below turns a missing shell red
+      # instead of NOT MEASURED.
+      - name: Install the shells the completion scripts are checked in
+        run: sudo apt-get install -y zsh fish
+
       - name: Build the toy targets
         run: sh spike/build-toys.sh
         env:
@@ -228,6 +234,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_SHELLS: "1"
 
       # Then in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`), where the
       # engine contains every observed run: the same legs, measured contained, and check 2cg
@@ -507,6 +514,15 @@ jobs:
           # it has to be one this run printed, in order.
           printf '%s\n' "$out" > "$RUNNER_TEMP/demo-output.txt"
           python3 spike/check-readme-demo.py README.md "$RUNNER_TEMP/demo-output.txt"
+
+      # The completion scripts on the shells a macOS user has (#712): /bin/bash, which is
+      # 3.2 and is held to that, and zsh. fish is not on the runner and is NOT MEASURED
+      # here; the Linux job measures it.
+      - name: sideeye completions offer what the usage lines list, in bash 3.2 and zsh
+        run: python3 spike/check-completions.py ./zig-out/bin/sideeye
+        env:
+          SIDEEYE_BASH: /bin/bash
+          SIDEEYE_EXPECT_BASH3: "1"
 
       # An Apple-shipped platform binary can never be observed, but *how* it
       # refuses is OS-dependent — measured, not assumed: macOS 15 strips the

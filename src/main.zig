@@ -636,6 +636,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(evidence.runCommand(gpa, argv[2]));
     }
 
+    // `completions <shell>` prints a completion script built from the usage lines (#712);
+    // `completions --help` and its mistakes are answered above, in `cli.answerEntry`.
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "completions")) cli.runCompletions(arena_state.allocator(), argv);
+
     // `demo` compiles the embedded planted-bug toy on this machine and self-execs
     // `explore` against it — it never returns. Exit codes are explore's own: the
     // expected outcome is 1 (FAIL, the planted bug found), which makes the demo double
