@@ -205,6 +205,12 @@ jobs:
       - name: The README keeps the path to a first verdict, and stays short
         run: sh spike/check-readme-shape.sh README.md
 
+      # The README shows a trimmed demo report and says every line of it is real (#714). The
+      # check against a fresh demo runs where the demo does — the macOS job's demo step and
+      # acceptance check 5; here, only that the checker can still see a composed line fail.
+      - name: The README's demo-output checker can still see its own predicates fail
+        run: python3 spike/check-readme-demo.py --selftest
+
       - name: Install the completeness oracle
         run: sudo apt-get update && sudo apt-get install -y strace
 
@@ -497,6 +503,10 @@ jobs:
           set -e
           echo "$out" | tail -25
           [ "$rc" = "1" ] || { echo "expected exit 1 from the demo, got $rc"; exit 1; }
+          # The README's first screen is a trimmed copy of this report (#714): every line of
+          # it has to be one this run printed, in order.
+          printf '%s\n' "$out" > "$RUNNER_TEMP/demo-output.txt"
+          python3 spike/check-readme-demo.py README.md "$RUNNER_TEMP/demo-output.txt"
 
       # An Apple-shipped platform binary can never be observed, but *how* it
       # refuses is OS-dependent — measured, not assumed: macOS 15 strips the

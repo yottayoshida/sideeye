@@ -5670,6 +5670,16 @@ else
     echo "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
+# The README's first screen is a trimmed copy of this report (#714), and says every line of it
+# is one the demo prints. Held here on Linux; the macOS CI job holds it on its own demo.
+mkdir -p /tmp/acc && printf '%s\n' "$o" > /tmp/acc/demo-output.txt
+if dm=$(python3 "$ROOT/spike/check-readme-demo.py" "$ROOT/README.md" /tmp/acc/demo-output.txt 2>&1); then
+    echo "$dm"
+else
+    echo "FAIL the README's demo block is not what this demo printed"
+    printf '%s\n' "$dm" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
 
 # The compiler ladder, exercised rather than claimed: a stub `cc` that always fails
 # must make the demo fall back to gcc — and the preamble names the compiler that won.

@@ -8,7 +8,26 @@
 
 Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process before each state-changing operation, one crash world each, then brings back the earliest failing one as a replayable case. It breaks worlds, not inputs: same input, hostile universe.
 
-It has found counterexamples in real tools — RuboCop, Himalaya, ImageMagick, AWS CLI, codespell, and more — [those reported on GitHub are listed](docs/found.md). Verdicts are deterministic, and a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS. One exception is named rather than hidden: a directory a recorded `rename` moved in from outside the judged tree is attributed to that one record, because its source was never snapshotted — so a later unrecorded write inside that subtree can still ride a PASS. Every report says how many paths that covered (`paths_attributed_to_rename`), and a run reporting zero has no such gap.
+Trimmed real output of `sideeye demo` — every line below is a line it prints, in its order, with the scratch directory shown as `…`; CI runs the demo and checks.
+
+<!-- demo-output:begin -->
+```
+FAIL  1 of 6 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 5 of 5
+            after  unlink(…/state/key.json)
+            before rename(…/state/key.json.tmp)
+path        key.json
+observed    present before and after the operation, but gone from the crashed state
+explored    6 worlds (crash points 5 + 1 baseline)
+checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
+case        …/work/cases/000001.json
+not tested  power loss, torn writes, concurrent processes
+```
+<!-- demo-output:end -->
+
+It has found counterexamples in real tools — RuboCop, Himalaya, ImageMagick, AWS CLI, codespell, and more — [those reported on GitHub are listed](docs/found.md). Verdicts are deterministic, and a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes inside a directory a recorded `rename` moved in from outside the judged tree; every JSON report counts the paths so covered as `paths_attributed_to_rename`, zero meaning none ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
 
 ## Installation
 
