@@ -140,6 +140,10 @@ def expected_text(s):
     # ADR 0041: the declared devices ride after next_step and before case, outside the
     # region — define text, control bytes refused by the parser.
     if isinstance(s.get("apparatus"), list): t += "\napparatus: " + ", ".join(x for x in s["apparatus"] if isinstance(x, str))
+    # #706, ADR 0095: one line per define warning, after apparatus, outside the region.
+    if isinstance(s.get("define_warnings"), list):
+        for x in s["define_warnings"]:
+            if isinstance(x, str): t += "\nwarning: " + x
     if isinstance(s.get("case"), str) and s["case"] != "(none)": t += "\ncase: " + s["case"]
     if isinstance(s.get("replay"), str) and s["replay"] != "-": t += "\nreplay: " + s["replay"]
     # #336: the advisory rides exactly the results whose text holds a region — same

@@ -13,6 +13,7 @@
 //! an unknown key instead of parsing and quietly not acting.
 
 const std = @import("std");
+const defang = @import("defang.zig");
 
 /// A define command in one of its two spellings (ADR 0007 decision 5; ADR 0019).
 /// The string form is split on spaces at the spawn site — no quoting, no escapes.
@@ -87,6 +88,10 @@ pub const Define = struct {
     /// `command` or not at all — the pair is held in one place, after every source of the
     /// define has been read (`main.zig`), not here.
     recovery_check: ?[]const u8 = null,
+    /// #706 (ADR 0095): a sentence for each command value the parser read as ending at an inner
+    /// `"`, because a `#` right after it opened a comment — accepted as it always was
+    /// (`docs/contract-freeze.md` surface 1), and said. `main.zig` adds them to the warnings.
+    cut_at_comment: []const []const u8 = &.{},
 };
 
 pub const Fault = struct {
@@ -118,6 +123,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var scratch: ?[]const []const u8 = null;
     var recovery: ?[]const u8 = null;
     var recovery_check: ?[]const u8 = null;
+    var cut_at_comment: std.ArrayList([]const u8) = .empty;
 
     var it = std.mem.splitScalar(u8, text, '\n');
     var line_no: usize = 0;
@@ -195,10 +201,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 if (is_array)
                     return fault(line_no, "this key takes one double-quoted string; the array form belongs to the commands (setup, operation, check), to apparatus and to scratch");
                 const value = stripQuoted(rawv) orelse
-                    return fault(line_no, "the value must be one double-quoted string (an inline # comment may follow it)");
+                    return fault(line_no, try notOneString(arena, key, rawv, false, section == .recovery));
                 if (badBytes(value)) |msg| return fault(line_no, msg);
                 if (p.* != null) return fault(line_no, "duplicate key");
                 if (value.len == 0) return fault(line_no, "the value is empty");
+                if (section == .recovery) if (try cutAtComment(arena, key, rawv, value, true)) |w| try cut_at_comment.append(arena, w);
                 p.* = try arena.dupe(u8, value);
             },
             .cmd => |p| {
@@ -210,9 +217,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                     }
                 } else {
                     const value = stripQuoted(rawv) orelse
-                        return fault(line_no, "the value must be one double-quoted string (an inline # comment may follow it)");
+                        return fault(line_no, try notOneString(arena, key, rawv, true, false));
                     if (badBytes(value)) |msg| return fault(line_no, msg);
                     if (value.len == 0) return fault(line_no, "the value is empty");
+                    if (try cutAtComment(arena, key, rawv, value, false)) |w| try cut_at_comment.append(arena, w);
                     p.* = .{ .str = try arena.dupe(u8, value) };
                 }
             },
@@ -255,7 +263,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus, .scratch = scratch, .recovery = recovery, .recovery_check = recovery_check } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus, .scratch = scratch, .recovery = recovery, .recovery_check = recovery_check, .cut_at_comment = cut_at_comment.items } };
 }
 
 pub const ScratchParse = union(enum) { ok: []const u8, bad: []const u8 };
@@ -584,6 +592,342 @@ fn stripQuoted(v: []const u8) ?[]const u8 {
     return v[1..close];
 }
 
+// ---- #706 (ADR 0095): a string-form command written for a shell ----------------------------
+//
+// A string-form command is split on spaces and run without a shell (ADR 0007), so its quotes
+// reach the program as written and `&&` arrives as an argument. Nothing here changes how a
+// command runs — the spelling stays accepted (docs/contract-freeze.md surface 1). A define that
+// looks written for a shell is told, in a warning, how Sideeye reads it and how to write what
+// it meant.
+
+/// Where a define's commands came from, which decides how a warning spells the remedy: a toml
+/// key can take the argv form, a flag cannot (the argv form lives only in a sideeye.toml), and a
+/// `[recovery]` command has no argv form in either.
+pub const From = enum { toml, flags };
+
+/// A string-form command split the way a POSIX shell splits words, to say what its quotes
+/// meant. Only quotes are read: no expansion, and no escapes outside double quotes.
+const ShellWords = struct {
+    words: []const []const u8,
+    /// A `'` or `"` appears in the string.
+    quoted: bool,
+    /// A quote opened and never closed: a shell would not read one argv, so none is offered.
+    unterminated: bool,
+    /// The first unquoted word a shell would act on rather than pass along.
+    operator: ?[]const u8,
+};
+
+fn shellWords(arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}!ShellWords {
+    var words: std.ArrayList([]const u8) = .empty;
+    var cur: std.ArrayList(u8) = .empty;
+    var quoted = false;
+    var unterminated = false;
+    var operator: ?[]const u8 = null;
+    var in_word = false;
+    var word_quoted = false;
+    // A `$` or backquote inside double quotes: a shell expands it there, so the word's text is
+    // not what a shell would pass, and no argv built from it says what was meant.
+    var word_expands = false;
+    var word_start: usize = 0;
+    var i: usize = 0;
+    while (i <= s.len) {
+        if (i == s.len or s[i] == ' ' or s[i] == '\t') {
+            if (in_word) {
+                const raw = s[word_start..i];
+                // A word beginning `$` expands however it is quoted (`$'a b'`, `$"x"`).
+                if (operator == null and (word_expands or raw[0] == '$' or (!word_quoted and shellOperator(raw, words.items.len == 0))))
+                    operator = raw;
+                try words.append(arena, try arena.dupe(u8, cur.items));
+                cur.clearRetainingCapacity();
+                in_word = false;
+                word_quoted = false;
+                word_expands = false;
+            }
+            i += 1;
+            continue;
+        }
+        if (!in_word) {
+            in_word = true;
+            word_start = i;
+        }
+        switch (s[i]) {
+            '\'' => {
+                quoted = true;
+                word_quoted = true;
+                const close = std.mem.indexOfScalarPos(u8, s, i + 1, '\'') orelse {
+                    unterminated = true;
+                    try cur.appendSlice(arena, s[i + 1 ..]);
+                    i = s.len;
+                    continue;
+                };
+                try cur.appendSlice(arena, s[i + 1 .. close]);
+                i = close + 1;
+            },
+            '"' => {
+                quoted = true;
+                word_quoted = true;
+                var j = i + 1;
+                while (j < s.len and s[j] != '"') : (j += 1) {
+                    if (s[j] == '\\' and j + 1 < s.len and (s[j + 1] == '"' or s[j + 1] == '\\')) j += 1;
+                    if (expandsAt(s, j)) word_expands = true;
+                    try cur.append(arena, s[j]);
+                }
+                if (j >= s.len) {
+                    unterminated = true;
+                    i = s.len;
+                    continue;
+                }
+                i = j + 1;
+            },
+            else => {
+                // Unquoted, mid-word: `--out=$HOME/x` expands too, and an argv built from it
+                // would carry the unexpanded text as the meaning.
+                if (expandsAt(s, i)) word_expands = true;
+                try cur.append(arena, s[i]);
+                i += 1;
+            },
+        }
+    }
+    return .{ .words = words.items, .quoted = quoted, .unterminated = unterminated, .operator = operator };
+}
+
+/// A backquote, or a `$` a shell would expand at `s[i]`: one followed by a name, a digit, `{`,
+/// `(` or a special parameter. A `$` with nothing such after it (`^x$`, `s/$/x/`) stays a `$`.
+fn expandsAt(s: []const u8, i: usize) bool {
+    if (s[i] == '`') return true;
+    if (s[i] != '$' or i + 1 >= s.len) return false;
+    const n = s[i + 1];
+    return n == '_' or std.ascii.isAlphanumeric(n) or std.mem.indexOfScalar(u8, "{(@*#?$!-", n) != null;
+}
+
+/// A whole unquoted word a shell acts on: a pipe, a list, a redirection, an expansion, or an
+/// assignment in front of the command. Only whole words count — `x=n*10`, `ggiX<esc>`, `~>1.6`
+/// and `%(title)s` mean what they say to a program run without a shell, and are left alone.
+fn shellOperator(w: []const u8, first: bool) bool {
+    const exact = [_][]const u8{ "&&", "||", "|", "|&", "&", ";", "(", ")" };
+    for (exact) |e| if (std.mem.eql(u8, w, e)) return true;
+    // A redirection: an optional fd number, then `>` or `<` (`>`, `2>&1`, `1>/dev/null`, `0<in`),
+    // or `&>`. Not `>=1.6` / `<=2` (a version constraint) and not a `<esc>`-shaped key name.
+    var d: usize = 0;
+    while (d < w.len and std.ascii.isDigit(w[d])) d += 1;
+    const r = w[d..];
+    if (r.len > 0 and (r[0] == '>' or r[0] == '<')) {
+        const constraint = r.len > 1 and r[1] == '=';
+        const key_name = d == 0 and r[0] == '<' and w.len > 1 and w[w.len - 1] == '>';
+        if (!constraint and !key_name) return true;
+    }
+    if (std.mem.startsWith(u8, w, "&>")) return true;
+    if (w[0] == '$') return true;
+    if (std.mem.eql(u8, w, "~") or std.mem.startsWith(u8, w, "~/")) return true;
+    if (std.mem.indexOfScalar(u8, w, '`') != null) return true;
+    return first and isAssignment(w);
+}
+
+fn isAssignment(w: []const u8) bool {
+    const eq = std.mem.indexOfScalar(u8, w, '=') orelse return false;
+    if (eq == 0) return false;
+    for (w[0..eq], 0..) |c, k| {
+        if (!(c == '_' or std.ascii.isAlphabetic(c) or (k > 0 and std.ascii.isDigit(c)))) return false;
+    }
+    return true;
+}
+
+/// `key = ["a", "b c"]`, the argv form that reads the words as meant — or null where it cannot
+/// say it: an empty word (the argv form refuses one), a word with a `"` or `\` (the argv form has
+/// no escapes), or a word `textShown` would rewrite (the line shown would not be the one meant).
+fn argvLine(arena: std.mem.Allocator, key: []const u8, words: []const []const u8) error{OutOfMemory}!?[]const u8 {
+    if (words.len == 0) return null;
+    var out: std.ArrayList(u8) = .empty;
+    try out.appendSlice(arena, key);
+    try out.appendSlice(arena, " = [");
+    for (words, 0..) |w, k| {
+        if (w.len == 0 or std.mem.indexOfAny(u8, w, "\"\\") != null) return null;
+        if (!std.mem.eql(u8, defang.textShown(arena, w), w)) return null;
+        if (k > 0) try out.appendSlice(arena, ", ");
+        try out.append(arena, '"');
+        try out.appendSlice(arena, w);
+        try out.append(arena, '"');
+    }
+    try out.append(arena, ']');
+    return out.items;
+}
+
+/// One sentence for a string-form command that looks written for a shell, or null. `key` names
+/// it as the define does (`setup`, `operation`, `check`, `recovery command`, `recovery check`);
+/// `raw` is the string as written, before argv[0] is resolved against a toml's directory. Every
+/// piece of `raw` it quotes goes through `textShown`: a flag's value never met `badBytes`.
+pub fn shellWarning(arena: std.mem.Allocator, from: From, key: []const u8, raw: []const u8, recovery: bool) error{OutOfMemory}!?[]const u8 {
+    const sw = try shellWords(arena, raw);
+    const shown = defang.textShown(arena, raw);
+    if (sw.operator) |op| {
+        const tail: []const u8 = if (std.mem.indexOfAny(u8, op, "$`") != null or op[0] == '~')
+            "nothing expands it; a command that needs a shell belongs in a script the define names"
+        else if (isAssignment(op))
+            "it is run as a program of that name; to set a variable for the command, run it through `env` (`env NAME=VALUE program ...`) or set it where Sideeye runs"
+        else
+            "to pipe, redirect or chain commands through a shell, put them in a script the define names";
+        return try std.fmt.allocPrint(arena, "{s}: `{s}` holds `{s}`, which reaches the program as written: a string-form command is split on spaces and never run by a shell; {s}", .{ key, shown, defang.textShown(arena, op), tail });
+    }
+    if (!sw.quoted) return null;
+    const line: ?[]const u8 = if (recovery or sw.unterminated) null else try argvLine(arena, key, sw.words);
+    const remedy: []const u8 = if (recovery)
+        "a [recovery] command has no argv form, so put it in a script"
+    else if (line) |l| switch (from) {
+        .toml => try std.fmt.allocPrint(arena, "the argv form groups what they meant: {s}", .{l}),
+        .flags => try std.fmt.allocPrint(arena, "in a sideeye.toml, the argv form groups what they meant: {s}", .{l}),
+    } else if (sw.unterminated) switch (from) {
+        .toml => "one of its quotes is never closed, so what it meant is not one argv; write the argv form, or put it in a script",
+        .flags => "one of its quotes is never closed, so what it meant is not one argv; write the argv form in a sideeye.toml, or put it in a script",
+    } else
+        "the argv form cannot spell one of its words (an empty word, a `\"` or `\\`, or a control byte), so put it in a script";
+    return try std.fmt.allocPrint(arena, "{s}: `{s}` is split on spaces and its quotes reach the program as written, grouping nothing; {s}", .{ key, shown, remedy });
+}
+
+/// Every warning a define's string-form commands earn, in the order the define names them. The
+/// argv form says what it means and is not looked at. Called once the define is read, from a
+/// toml or from flags — never for a replay, whose case holds the commands an exploration
+/// already read (and, from a toml, with argv[0] resolved to a path this would misread).
+pub fn shellWarnings(arena: std.mem.Allocator, from: From, setup: ?Command, operation: ?Command, check: ?Command, recovery: ?[]const u8, recovery_check: ?[]const u8) []const []const u8 {
+    const Item = struct { key: []const u8, raw: ?[]const u8, recovery: bool };
+    const items = [_]Item{
+        .{ .key = "setup", .raw = stringForm(setup), .recovery = false },
+        .{ .key = "operation", .raw = stringForm(operation), .recovery = false },
+        .{ .key = "check", .raw = stringForm(check), .recovery = false },
+        .{ .key = "recovery command", .raw = recovery, .recovery = true },
+        .{ .key = "recovery check", .raw = recovery_check, .recovery = true },
+    };
+    var out: std.ArrayList([]const u8) = .empty;
+    for (items) |it| {
+        const raw = it.raw orelse continue;
+        const w = (shellWarning(arena, from, it.key, raw, it.recovery) catch return out.items) orelse continue;
+        out.append(arena, w) catch return out.items;
+    }
+    return out.items;
+}
+
+fn stringForm(c: ?Command) ?[]const u8 {
+    const cmd = c orelse return null;
+    return switch (cmd) {
+        .str => |s| s,
+        .argv => null,
+    };
+}
+
+const Fix = union(enum) { line: []const u8, script };
+
+/// The line a value the parser refused would have been read as, when one exists. A comment
+/// (a `#` after a space or tab) is kept after the fixed value; a `#` with no space before it is
+/// part of the value. A value in single quotes, unquoted, or with quotes inside its double
+/// quotes becomes one double-quoted string — or, for a command whose words those inner quotes
+/// group, the argv form (`\"` counted as a quote, the way a reader of a toml string means it).
+/// Offered only when the line it builds parses back as that value; `.script` is the one remedy
+/// for a `[recovery]` command whose words need quotes, which has no argv form.
+fn fixedLine(arena: std.mem.Allocator, key: []const u8, rawv: []const u8, command: bool, recovery: bool) error{OutOfMemory}!?Fix {
+    // Empty, or nothing but a comment (`cwd = # TODO`): there is no value to fix.
+    if (rawv.len == 0 or rawv[0] == '#') return null;
+    var value: []const u8 = rawv;
+    var comment: []const u8 = "";
+    if (rawv[0] == '\'') {
+        const close = std.mem.indexOfScalarPos(u8, rawv, 1, '\'') orelse return null;
+        value = rawv[0 .. close + 1];
+        comment = std.mem.trim(u8, rawv[close + 1 ..], " \t");
+        if (comment.len != 0 and comment[0] != '#') return null;
+    } else if (rawv[0] == '"') {
+        // The first `"` followed by nothing, or by a space and a comment, closes the value — so a
+        // comment holding a `"` of its own (`# see "docs"`) stays a comment.
+        var k: usize = 2;
+        while (k <= rawv.len) : (k += 1) {
+            if (rawv[k - 1] != '"') continue;
+            const rest = std.mem.trim(u8, rawv[k..], " \t");
+            if (rest.len == 0 or (rest[0] == '#' and (rawv[k] == ' ' or rawv[k] == '\t'))) {
+                value = rawv[0..k];
+                comment = rest;
+                break;
+            }
+        } else return null;
+    } else {
+        var k: usize = 1;
+        while (k < rawv.len) : (k += 1) {
+            if (rawv[k] == '#' and (rawv[k - 1] == ' ' or rawv[k - 1] == '\t')) {
+                value = std.mem.trimEnd(u8, rawv[0..k], " \t");
+                comment = rawv[k..];
+                break;
+            }
+        }
+    }
+    // What this quotes back is toml text the parser never vetted: anything `textShown` would
+    // rewrite (a control byte, C1, invalid UTF-8) means no line is offered, so none is printed raw.
+    if (!std.mem.eql(u8, defang.textShown(arena, comment), comment)) return null;
+    var inner: []const u8 = value;
+    if (value.len >= 2 and value[0] == '"' and value[value.len - 1] == '"') {
+        inner = try std.mem.replaceOwned(u8, arena, value[1 .. value.len - 1], "\\\"", "\"");
+    } else if (value.len >= 2 and value[0] == '\'' and value[value.len - 1] == '\'') {
+        inner = value[1 .. value.len - 1];
+    }
+    if (inner.len == 0 or badBytes(inner) != null) return null;
+    if (!std.mem.eql(u8, defang.textShown(arena, inner), inner)) return null;
+    var line: []const u8 = undefined;
+    if (std.mem.indexOfAny(u8, inner, "\"'") != null) {
+        if (!command) return if (recovery) .script else null;
+        const sw = try shellWords(arena, inner);
+        if (sw.unterminated or sw.operator != null) return null;
+        // `"a" "b"` reads two ways — a toml string holding `a" "b`, or two shell words — and
+        // the two argvs differ, so neither is offered. The ordinary case does not: read as
+        // shell words, `"tool put "a b""` gives `tool put a` as argv[0], which no one meant.
+        if (value[0] == '"') {
+            // The inner reading is taken only where the shell reading's argv[0] holds a space —
+            // the form nobody means. `"tool" "a b"` reads as shell words with a sane argv[0]
+            // (`tool`, `a b`), and the inner reading would give `tool a`, `b`: no line.
+            const whole = try shellWords(arena, value);
+            if (!whole.unterminated and whole.words.len > 0 and std.mem.indexOfScalar(u8, whole.words[0], ' ') == null) return null;
+        }
+        line = (try argvLine(arena, key, sw.words)) orelse return null;
+    } else {
+        line = try std.fmt.allocPrint(arena, "{s} = \"{s}\"", .{ key, inner });
+    }
+    if (comment.len != 0) line = try std.fmt.allocPrint(arena, "{s}  {s}", .{ line, comment });
+    const nv = line[key.len + 3 ..];
+    if (nv[0] == '[') {
+        switch (try parseArrayValue(arena, nv)) {
+            .ok => {},
+            .bad => return null,
+        }
+    } else {
+        const v = stripQuoted(nv) orelse return null;
+        if (badBytes(v) != null) return null;
+    }
+    return .{ .line = line };
+}
+
+/// A command value the parser read as ending at an inner `"` because a `#` follows that quote
+/// with no space: `check = "grep -c "#include" f"` is the command `grep -c ` and a comment.
+/// Accepted as it always was (surface 1 of `docs/contract-freeze.md`); said, with the argv form
+/// when reading the inner quotes as meant gives one. `key` is the toml key; a `[recovery]`
+/// value is named `recovery <key>` and, having no argv form, pointed at a script.
+fn cutAtComment(arena: std.mem.Allocator, key: []const u8, rawv: []const u8, value: []const u8, recovery: bool) error{OutOfMemory}!?[]const u8 {
+    const after = rawv[value.len + 2 ..];
+    if (after.len == 0 or after[0] != '#' or std.mem.indexOfScalar(u8, after, '"') == null) return null;
+    const label = if (recovery) try std.fmt.allocPrint(arena, "recovery {s}", .{key}) else key;
+    const remedy: []const u8 = if (recovery)
+        "a [recovery] command has no argv form, so put it in a script"
+    else if (try fixedLine(arena, key, rawv, true, false)) |fix| switch (fix) {
+        .line => |l| try std.fmt.allocPrint(arena, "the argv form says so: {s}", .{l}),
+        .script => "put it in a script",
+    } else "write it in the argv form";
+    return try std.fmt.allocPrint(arena, "{s}: the value ends at its second `\"`, so `{s}` is read as a comment and the command is `{s}`; if those quotes belong to the command, {s}", .{ label, defang.textShown(arena, after), defang.textShown(arena, value), remedy });
+}
+
+/// The parser's refusal of a value that is not one double-quoted string, with the line it would
+/// have been read as when there is one (#706, ADR 0095).
+fn notOneString(arena: std.mem.Allocator, key: []const u8, rawv: []const u8, command: bool, recovery: bool) error{OutOfMemory}![]const u8 {
+    const base = "the value must be one double-quoted string (an inline # comment may follow it)";
+    const fix = (try fixedLine(arena, key, rawv, command, recovery)) orelse return base;
+    return switch (fix) {
+        .line => |l| try std.fmt.allocPrint(arena, "{s}; write it as: {s}", .{ base, l }),
+        .script => base ++ "; a [recovery] command has no argv form, so one whose words need quotes belongs in a script",
+    };
+}
+
 // ---------------------------------------------------------------------------------
 
 const t = std.testing;
@@ -826,4 +1170,144 @@ test "escapes, empty values and trailing junk after the closing quote refuse" {
     try t.expectEqualStrings("the value is empty", empty.fault.what);
     const junk = parseFor(as.allocator(), "[world]\nstate = \"s\" extra\n");
     try t.expect(std.mem.indexOf(u8, junk.fault.what, "double-quoted") != null);
+}
+
+test "a string-form command written for a shell earns one sentence saying what Sideeye does with it (#706)" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    // Quotes: the argv form the words meant, as a toml line, or as the toml spelling of a flag.
+    const q = (try shellWarning(a, .toml, "check", "./c.sh 'a b' x", false)).?;
+    try t.expect(std.mem.indexOf(u8, q, "check = [\"./c.sh\", \"a b\", \"x\"]") != null);
+    try t.expect(std.mem.indexOf(u8, q, "grouping nothing") != null);
+    const qf = (try shellWarning(a, .flags, "check", "./c.sh \"a b\"", false)).?;
+    try t.expect(std.mem.indexOf(u8, qf, "in a sideeye.toml, the argv form") != null);
+    // A recovery has no argv form to offer.
+    const qr = (try shellWarning(a, .toml, "recovery command", "./fix 'a b'", true)).?;
+    try t.expect(std.mem.indexOf(u8, qr, "no argv form") != null and std.mem.indexOf(u8, qr, "[\"") == null);
+    // Whole unquoted words a shell acts on: passed as written, and the sentence says so.
+    const op = (try shellWarning(a, .toml, "operation", "tool run && echo ok", false)).?;
+    try t.expect(std.mem.indexOf(u8, op, "holds `&&`") != null and std.mem.indexOf(u8, op, "script") != null);
+    try t.expect(std.mem.indexOf(u8, (try shellWarning(a, .toml, "setup", "tool > out.txt", false)).?, "holds `>`") != null);
+    try t.expect(std.mem.indexOf(u8, (try shellWarning(a, .toml, "setup", "tool $HOME/x", false)).?, "nothing expands it") != null);
+    try t.expect(std.mem.indexOf(u8, (try shellWarning(a, .toml, "setup", "FOO=1 tool", false)).?, "`env NAME=VALUE program ...`") != null);
+    // Redirections with an fd number, and `|&`, are whole words a shell acts on.
+    for ([_][]const u8{ "tool 1>&2", "tool 1>/dev/null", "tool 0<in", "tool |& tee x" }) |redir|
+        try t.expect(std.mem.indexOf(u8, (try shellWarning(a, .toml, "operation", redir, false)).?, "put them in a script") != null);
+    // Inside double quotes a shell expands `$` and backquotes, and `$'…'` is a quoting of its
+    // own: no argv is offered as "what they meant" — it would carry the unexpanded text.
+    for ([_][]const u8{ "./c.sh \"$HOME/a b\"", "test \"$(cat f)\" = 3", "./c.sh \"`date`\"", "./c.sh $'a b'" }) |exp| {
+        const w = (try shellWarning(a, .flags, "check", exp, false)).?;
+        try t.expect(std.mem.indexOf(u8, w, "nothing expands it") != null);
+        try t.expect(std.mem.indexOf(u8, w, "groups what they meant") == null);
+    }
+    // Inside quotes an operator is a character: the quotes are named, a shell is not.
+    const inq = (try shellWarning(a, .toml, "check", "grep -q 'a|b' f", false)).?;
+    try t.expect(std.mem.indexOf(u8, inq, "holds") == null);
+    try t.expect(std.mem.indexOf(u8, inq, "check = [\"grep\", \"-q\", \"a|b\", \"f\"]") != null);
+    // Left alone: what a program run without a shell reads as meant — four of them are defines
+    // this repository runs (kakoune, mapshaper, tenv, yt-dlp).
+    for ([_][]const u8{ "kak -n -e ggiX<esc>", "mapshaper -each x=n*10 in.shp", "tenv tf constraint ~>1.6", "yt-dlp -o %(title)s.%(ext)s u", "toy rotate", "grep -E ^x$ f", "tenv tf constraint >=1.6", "kak -e <esc>" }) |plain|
+        try t.expect((try shellWarning(a, .toml, "operation", plain, false)) == null);
+    // No argv is offered where it would not be the one meant, and no raw control byte is quoted.
+    const ctl = try std.fmt.allocPrint(a, "./c.sh \"a{c}b\"", .{@as(u8, 1)});
+    for ([_][]const u8{ "./c.sh 'unterminated", "./c.sh '' x", "./c.sh 'a\\b'", ctl }) |odd| {
+        const w = (try shellWarning(a, .flags, "check", odd, false)).?;
+        try t.expect(std.mem.indexOf(u8, w, "groups what they meant") == null);
+        try t.expect(std.mem.indexOfScalar(u8, w, 1) == null);
+    }
+    // The define's commands in order; the argv form is not looked at.
+    const all = shellWarnings(a, .toml, .{ .str = "s 'x y'" }, .{ .argv = &.{ "o", "'z'" } }, .{ .str = "c" }, "r && r", null);
+    try t.expectEqual(@as(usize, 2), all.len);
+    try t.expect(std.mem.startsWith(u8, all[0], "setup: ") and std.mem.startsWith(u8, all[1], "recovery command: "));
+}
+
+test "a value that is not one double-quoted string is refused with the line it would have been read as (#706)" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const head = "[world]\nstate = \"s\"\n[define]\noperation = \"o\"\n";
+    const cases = [_]struct { text: []const u8, want: ?[]const u8 }{
+        .{ .text = "[world]\nstate = './state'  # dir\n", .want = "; write it as: state = \"./state\"  # dir" },
+        .{ .text = head ++ "expected_status = 0\n", .want = "; write it as: expected_status = \"0\"" },
+        .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"./kva put \"hello world\"\"\n", .want = "; write it as: operation = [\"./kva\", \"put\", \"hello world\"]" },
+        .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"./kva put \\\"hello world\\\"\"\n", .want = "; write it as: operation = [\"./kva\", \"put\", \"hello world\"]" },
+        .{ .text = head ++ "check = ./check.sh # x\n", .want = "; write it as: check = \"./check.sh\"  # x" },
+        .{ .text = head ++ "marker = done#1\n", .want = "; write it as: marker = \"done#1\"" },
+        .{ .text = head ++ "[recovery]\ncommand = \"./fix \"a b\"\"\n", .want = "belongs in a script" },
+        // A comment that holds a `"` of its own stays a comment.
+        .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"./kva put \"a b\"\"  # see \"docs\"\n", .want = "; write it as: operation = [\"./kva\", \"put\", \"a b\"]  # see \"docs\"" },
+        // Nothing is offered that would not read back as what was written.
+        .{ .text = head ++ "marker = say \"done\"\n", .want = null },
+        .{ .text = head ++ "check = ./c.sh 'unterminated\n", .want = null },
+        // Two readings with different argvs (`a b` or `a`, `b`): neither is offered — nor where
+        // each word is quoted on its own and the shell reading's argv[0] is sane.
+        .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"a\" \"b\"\n", .want = null },
+        .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"./kva\" \"put\" \"hello world\"\n", .want = null },
+        .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"tool\" \"a b\"\n", .want = null },
+        // Nothing but a comment is not a value to fix.
+        .{ .text = head ++ "cwd = # TODO\n", .want = null },
+    };
+    for (cases) |c| {
+        const what = parseFor(a, c.text).fault.what;
+        try t.expect(std.mem.startsWith(u8, what, "the value must be one double-quoted string"));
+        if (c.want) |w|
+            try t.expect(std.mem.indexOf(u8, what, w) != null)
+        else
+            try t.expect(std.mem.indexOf(u8, what, "write it as") == null);
+    }
+    // A value or comment `textShown` would rewrite (raw C1, encoded C1) earns no line, so the
+    // refusal never prints toml bytes the parser did not vet.
+    for ([_][]const u8{ "\x9b", "\xc2\x9b" }) |c1| {
+        const v = try std.fmt.allocPrint(a, "[world]\nstate = './st{s}2J'\n", .{c1});
+        const cm = try std.fmt.allocPrint(a, "[world]\nstate = './state'  # {s}2J\n", .{c1});
+        for ([_][]const u8{ v, cm }) |text| {
+            const what = parseFor(a, text).fault.what;
+            try t.expect(std.mem.indexOf(u8, what, "write it as") == null);
+            try t.expect(std.mem.indexOf(u8, what, c1) == null);
+        }
+    }
+}
+
+test "a command value cut at an inner quote by a comment is accepted as before, and said (#706)" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const d = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = \"o\"\ncheck = \"grep -c \"#include\" f\"\n[recovery]\ncommand = \"fix \"#1\" now\"\n").ok;
+    try t.expectEqualStrings("grep -c ", d.check.?.str);
+    try t.expectEqual(@as(usize, 2), d.cut_at_comment.len);
+    try t.expect(std.mem.startsWith(u8, d.cut_at_comment[0], "check: the value ends at its second `\"`"));
+    try t.expect(std.mem.indexOf(u8, d.cut_at_comment[0], "check = [\"grep\", \"-c\", \"#include\", \"f\"]") != null);
+    try t.expect(std.mem.startsWith(u8, d.cut_at_comment[1], "recovery command: ") and std.mem.indexOf(u8, d.cut_at_comment[1], "script") != null);
+    // An ordinary trailing comment is not a cut, quoted or not.
+    const plain = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = \"o\" # \"x\"\ncheck = \"c\"#y\n").ok;
+    try t.expectEqual(@as(usize, 0), plain.cut_at_comment.len);
+}
+
+test "where the argv form cannot spell a word, the remedy is a script (#706)" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    for ([_][]const u8{ "./c.sh '' x", "./c.sh 'a\\b'" }) |odd| {
+        const w = (try shellWarning(a, .toml, "check", odd, false)).?;
+        try t.expect(std.mem.indexOf(u8, w, "cannot spell one of its words") != null);
+    }
+    try t.expect(std.mem.indexOf(u8, (try shellWarning(a, .toml, "check", "./c.sh 'open", false)).?, "never closed") != null);
+    // A flag has no argv form: the advice names the toml's.
+    try t.expect(std.mem.indexOf(u8, (try shellWarning(a, .flags, "check", "./c.sh 'open", false)).?, "argv form in a sideeye.toml") != null);
+}
+
+test "a $ a shell would expand, quoted or mid-word, gets no argv; a $ it would not, does (#706)" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    for ([_][]const u8{ "./tool --out=$HOME/x 'a b'", "./tool \"a b\" pre${X}post" }) |exp| {
+        const w = (try shellWarning(a, .toml, "check", exp, false)).?;
+        try t.expect(std.mem.indexOf(u8, w, "nothing expands it") != null);
+        try t.expect(std.mem.indexOf(u8, w, "groups what they meant") == null);
+    }
+    // `$` at the end of a regex stays a `$`, inside double quotes too.
+    const re = (try shellWarning(a, .toml, "check", "grep -E \"^x$\" f", false)).?;
+    try t.expect(std.mem.indexOf(u8, re, "check = [\"grep\", \"-E\", \"^x$\", \"f\"]") != null);
+    try t.expect((try shellWarning(a, .toml, "check", "sed s/$/x/ f", false)) == null);
 }

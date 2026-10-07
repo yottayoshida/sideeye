@@ -1203,6 +1203,20 @@ test "the summary carries apparatus after next_step and before case, joined, and
     try std.testing.expect(std.mem.indexOf(u8, without, "\napparatus: ") == null);
 }
 
+test "the summary carries one warning line per define warning, after apparatus and before case (#706)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const with = summarize(a, "{\"verdict\":\"PASS\",\"define_warnings\":[\"check: one\",\"setup: two\"],\"apparatus\":[\"note:n\"],\"case\":\"/c.json\"}") orelse return error.TestUnexpectedResult;
+    const ap_at = std.mem.indexOf(u8, with, "\napparatus: note:n") orelse return error.TestUnexpectedResult;
+    const w1 = std.mem.indexOf(u8, with, "\nwarning: check: one") orelse return error.TestUnexpectedResult;
+    const w2 = std.mem.indexOf(u8, with, "\nwarning: setup: two") orelse return error.TestUnexpectedResult;
+    const case_at = std.mem.indexOf(u8, with, "\ncase: ") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(ap_at < w1 and w1 < w2 and w2 < case_at);
+    const without = summarize(a, "{\"verdict\":\"PASS\"}") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.indexOf(u8, without, "\nwarning: ") == null);
+}
+
 /// Best-effort unlink for a work-dir artifact this server is about to recreate.
 fn unlinkPath(path: []const u8) void {
     var zb: [contract.max_path]u8 = undefined;
@@ -1372,6 +1386,16 @@ fn summarize(arena: std.mem.Allocator, report_min: []const u8) ?[]const u8 {
             if (item != .string) continue;
             if (!first) out.appendSlice(arena, ", ") catch return null;
             first = false;
+            out.appendSlice(arena, item.string) catch return null;
+        }
+    };
+    // #706, ADR 0095: what the define spelled for a shell, one line each, outside the region
+    // like `apparatus`. The engine put each through `textShown`, so no control byte — and so no
+    // newline that could start a banner — reaches here.
+    if (o.get("define_warnings")) |a| if (a == .array) {
+        for (a.array.items) |item| {
+            if (item != .string) continue;
+            out.appendSlice(arena, "\nwarning: ") catch return null;
             out.appendSlice(arena, item.string) catch return null;
         }
     };

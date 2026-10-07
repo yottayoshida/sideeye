@@ -1016,20 +1016,25 @@ else
     fails=$((fails + 1))
 fi
 
-# ---- #134: the falsification gate's child output is labeled per line ----
+# ---- #134, #707: the gate's and each world's checker output are labeled per line ----
 # The gate produces, by design, exactly the output a real finding would — a target
 # failing over a broken store — and one unlabeled gate line was harvested as world
 # evidence (the buku correction, PR #133). The buggy run above has the checker
-# speaking in BOTH places: over the gate's corruption probe (must carry the
-# `falsify: ` prefix on every line) and in a failing world (must stay unlabeled).
+# speaking in BOTH places: over the gate's corruption probe (every line must carry
+# `falsify: `) and in a failing world (every line must carry `world N: `, #707 — until
+# then the world side stayed bare, which told the two apart but not which world).
 # Both sides are counted, not just grepped: a silent checker would make a
-# presence-only check pass vacuously.
+# presence-only check pass vacuously. And no checker line may come out unmarked.
+# The world's number is the report's: the checker speaks only in the failing world, which is
+# the earliest crash point, so its line must carry exactly that number.
 gate_n=$(printf '%s\n' "$o" | grep -c "^falsify: doctor says" || true)
-world_n=$(printf '%s\n' "$o" | grep -c "^doctor says" || true)
-if [ "${gate_n:-0}" -ge 1 ] && [ "${world_n:-0}" -ge 1 ]; then
-    echo "ok   gate output labeled (falsify: x$gate_n), world checker output unlabeled (x$world_n)"
+k134=$(printf '%s\n' "$o" | sed -n 's/^earliest *crash point \([0-9][0-9]*\) of .*/\1/p' | head -1)
+world_n=$(printf '%s\n' "$o" | grep -c "^world ${k134:-none}: doctor says" || true)
+bare_n=$(printf '%s\n' "$o" | grep -c "^doctor says" || true)
+if [ "${gate_n:-0}" -ge 1 ] && [ "${world_n:-0}" -ge 1 ] && [ "${bare_n:-0}" = 0 ]; then
+    echo "ok   gate output labeled (falsify: x$gate_n), world checker output labeled with the earliest crash point (world $k134: x$world_n), none bare"
 else
-    echo "FAIL #134 labeling: gate falsify-lines=$gate_n world unlabeled-lines=$world_n"
+    echo "FAIL #134/#707 labeling: gate falsify-lines=$gate_n world-$k134-lines=$world_n bare-lines=$bare_n"
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
@@ -2178,6 +2183,191 @@ else
     echo "FAIL #700: the setup with cwd = \".\": exit $rc700, wanted 0"
     printf '%s\n' "$o700" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
+fi
+
+# ---- #708: a setup and a check that find the state through SIDEEYE_STATE_DIR alone ----
+# The checker cookbook names SIDEEYE_STATE_DIR as the variable holding the state directory, and
+# every define command has to receive it — the setup had only TOY_STATE, the demo toy's name.
+# The setup writes a sentinel through `${SIDEEYE_STATE_DIR:?}` (`:?` because an empty variable
+# would write `/sentinel` instead, which root in a container is allowed to do) and the check
+# reads it back through the same variable; neither script names TOY_STATE. Run under `env -u`
+# so a SIDEEYE_STATE_DIR left in the caller's environment cannot stand in for the engine's.
+rm -rf /tmp/acc-708 && mkdir -p /tmp/acc-708
+printf '#!/bin/sh\nset -eu\n"%s" init\nprintf ok > "${SIDEEYE_STATE_DIR:?}/sentinel"\n' "$OUT/toy-fixed" > /tmp/acc-708/setup.sh
+printf '#!/bin/sh\n[ "$(cat "$SIDEEYE_STATE_DIR/sentinel" 2>/dev/null)" = ok ]\n' > /tmp/acc-708/check.sh
+chmod 755 /tmp/acc-708/setup.sh /tmp/acc-708/check.sh
+o708=$(env -u SIDEEYE_STATE_DIR "$SIDEEYE" explore --state /tmp/acc-708/state --work /tmp/acc-708/work \
+    --shim "$SHIM" --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh \
+    --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/check.sh 2>&1)
+rc708=$?
+if [ "$rc708" = "0" ] && printf '%s\n' "$o708" | grep -q '^PASS'; then
+    echo "ok   #708: a setup and a check that use SIDEEYE_STATE_DIR alone reach PASS"
+else
+    echo "FAIL #708: SIDEEYE_STATE_DIR in the setup and the check: exit $rc708, wanted 0 and PASS"
+    printf '%s\n' "$o708" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+# ---- #707: every re-emitted checker line says which world it came from ----
+# The same define, with a checker that speaks on both streams in every world it runs in.
+# Each crash world's lines must carry `world N: ` with N running exactly 1..n, n the report's
+# crash point count; the un-killed world's `baseline: `; the gate's `falsify: `. The checker's
+# stderr line must come out on Sideeye's stdout with the same mark (the capture holds both
+# streams in order) and never on Sideeye's stderr. None may come out bare.
+printf '#!/bin/sh\necho "probe out"\necho "probe err" >&2\n[ "$(cat "$SIDEEYE_STATE_DIR/sentinel" 2>/dev/null)" = ok ]\n' > /tmp/acc-708/talk.sh
+chmod 755 /tmp/acc-708/talk.sh
+rm -rf /tmp/acc-708/state /tmp/acc-708/work
+o707=$("$SIDEEYE" explore --state /tmp/acc-708/state --work /tmp/acc-708/work \
+    --shim "$SHIM" --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh \
+    --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/talk.sh 2>/tmp/acc-708/err707)
+rc707=$?
+n707=$(printf '%s\n' "$o707" | sed -n 's/.*(crash points \([0-9][0-9]*\) + 1 baseline).*/\1/p' | head -1)
+seen707=$(printf '%s\n' "$o707" | sed -n 's/^world \([0-9][0-9]*\): probe out$/\1/p' | tr '\n' ' ')
+want707=$(seq 1 "${n707:-0}" 2>/dev/null | tr '\n' ' ')
+we707=$(printf '%s\n' "$o707" | grep -cE '^world [0-9]+: probe err$' || true)
+b707=$(printf '%s\n' "$o707" | grep -cE '^baseline: probe (out|err)$' || true)
+g707=$(printf '%s\n' "$o707" | grep -cE '^falsify: probe (out|err)$' || true)
+bare707=$(printf '%s\n' "$o707" | grep -cE '^probe (out|err)$' || true)
+err707=$(grep -c 'probe' /tmp/acc-708/err707 || true)
+if [ "$rc707" = "0" ] && [ -n "$want707" ] && [ "$seen707" = "$want707" ] && [ "${we707:-0}" = "${n707:-x}" ] &&
+   [ "${b707:-0}" = 2 ] && [ "${g707:-0}" -ge 1 ] && [ "${bare707:-0}" = 0 ] && [ "${err707:-0}" = 0 ]; then
+    echo "ok   #707: checker lines marked world 1..$n707 (stderr on stdout x$we707), baseline (x$b707), falsify (x$g707), none bare, none on Sideeye's stderr"
+else
+    echo "FAIL #707: exit $rc707; worlds seen [$seen707] wanted [$want707]; stderr-marked $we707; baseline $b707 (wanted 2); falsify $g707; bare $bare707; on Sideeye's stderr $err707 (wanted 0)"
+    printf '%s\n' "$o707" | sed 's/^/     | /' | head -12
+    fails=$((fails + 1))
+fi
+# The one path that cannot mark: a capture that cannot be opened (a non-empty directory where
+# the file goes) runs the checker uncaptured, its stdout and stderr reaching Sideeye's own
+# directly and unmarked, and the verdict standing. docs/cli.md says so; this holds it.
+rm -rf /tmp/acc-708/state /tmp/acc-708/work && mkdir -p /tmp/acc-708/work/checker-output.txt/x
+o707u=$("$SIDEEYE" explore --state /tmp/acc-708/state --work /tmp/acc-708/work \
+    --shim "$SHIM" --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh \
+    --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/talk.sh 2>/tmp/acc-708/err707u)
+rc707u=$?
+outu=$(printf '%s\n' "$o707u" | grep -c '^probe out$' || true)
+erru=$(grep -c '^probe err$' /tmp/acc-708/err707u || true)
+if [ "$rc707u" = "0" ] && [ "${outu:-0}" -ge 1 ] && [ "${erru:-0}" -ge 1 ]; then
+    echo "ok   #707: with no capture the checker's stdout and stderr reach Sideeye's own, unmarked, and the run still PASSes"
+else
+    echo "FAIL #707: no capture: exit $rc707u, bare stdout lines $outu, stderr lines $erru (wanted 0 exit and both >= 1)"
+    printf '%s\n' "$o707u" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-708/work
+
+# ---- #706 (ADR 0095): a define written for a shell is told how Sideeye reads it ----
+# A string-form command is split on spaces and run without a shell, so its quotes reach the
+# program as written and `&&` arrives as an argument — and the run can still PASS. The legs
+# want a warning naming the command on Sideeye's stderr (at the end), in the report and in the
+# JSON, with the line that writes what was meant; the toml legs want that line in the parser's
+# refusal. The controls want none: a plain define, quotes around a `|` (a quote, not a shell —
+# no "script" advice), and words a program run without a shell reads as meant. Before #706 none
+# of them said anything. They reuse the #708 setup and check, which ignore their arguments.
+rm -rf /tmp/acc-706 && mkdir -p /tmp/acc-706
+r706() {   # r706 <name> <explore|preflight> <flags...> — sets o706 (stdout), e706 (stderr), rc706
+    n706=$1; m706=$2; shift 2
+    mkdir -p /tmp/acc-706/$n706
+    if [ "$m706" = preflight ]; then
+        o706=$("$SIDEEYE" preflight --state /tmp/acc-706/$n706/state --work /tmp/acc-706/$n706/work \
+            --shim "$SHIM" --oracle /usr/bin/strace "$@" 2>/tmp/acc-706/$n706.err)
+    else
+        o706=$("$SIDEEYE" explore --state /tmp/acc-706/$n706/state --work /tmp/acc-706/$n706/work \
+            --shim "$SHIM" --oracle /usr/bin/strace --json /tmp/acc-706/$n706.json "$@" 2>/tmp/acc-706/$n706.err)
+    fi
+    rc706=$?
+    e706=$(cat /tmp/acc-706/$n706.err)
+}
+bad706() {
+    echo "FAIL #706: $1 (exit $rc706)"
+    printf '%s\n' "$o706" "--- stderr" "$e706" | sed 's/^/     | /' | head -10
+    fails=$((fails + 1))
+}
+r706 qcheck explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh 'a b'"
+if [ "$rc706" = 0 ] && printf '%s\n' "$e706" | grep -qF "sideeye: warning: check: \`/tmp/acc-708/check.sh 'a b'\`" &&
+   printf '%s\n' "$o706" | grep -qF "      warning: check: " &&
+   grep -qF 'the argv form groups what they meant: check = [\"/tmp/acc-708/check.sh\", \"a b\"]' /tmp/acc-706/qcheck.json; then
+    echo "ok   #706: a check spelled with shell quotes runs, and stderr, the report and the JSON name the argv form it meant"
+else
+    bad706 "a check spelled with shell quotes"
+fi
+mkdir -p /tmp/acc-706/qfirst
+first706=$("$SIDEEYE" explore --state /tmp/acc-706/qfirst/state --work /tmp/acc-706/qfirst/work --shim "$SHIM" \
+    --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" \
+    --check "/tmp/acc-708/check.sh 'a b'" 2>&1 | head -1)
+case "$first706" in
+    PASS*) echo "ok   #706: with a warning, the first line of merged output is still the verdict" ;;
+    *) echo "FAIL #706: the first line of merged output was [$first706], wanted the verdict"; fails=$((fails + 1)) ;;
+esac
+r706 andand explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate && echo ok" --check /tmp/acc-708/check.sh
+if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: operation: ' && printf '%s\n' "$e706" | grep -qF 'holds `&&`' &&
+   printf '%s\n' "$e706" | grep -qF 'put them in a script'; then
+    echo "ok   #706: an operation holding && is told it reaches the program as written, and to use a script"
+else
+    bad706 "an operation holding &&"
+fi
+r706 setupq explore --setup "/bin/sh -c 'exit 1'" --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/check.sh
+if [ "$rc706" = 3 ] && printf '%s\n' "$o706" | head -1 | grep -q '^SETUP ERROR' &&
+   printf '%s\n' "$e706" | grep -qF "sideeye: warning: setup: \`/bin/sh -c 'exit 1'\`"; then
+    echo "ok   #706: a setup that fails over its shell quotes ends in SETUP ERROR, and stderr still names the quotes"
+else
+    bad706 "a setup that fails over its shell quotes"
+fi
+r706 pre preflight --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate 'x y'"
+if printf '%s\n' "$o706" | head -1 | grep -q '^PREFLIGHT' && printf '%s\n' "$e706" | grep -qF 'sideeye: warning: operation: '; then
+    echo "ok   #706: preflight names a quoted operation on stderr"
+else
+    bad706 "preflight with a quoted operation"
+fi
+mkdir -p /tmp/acc-706/toml
+printf '[world]\nstate = "./state"\n[define]\noperation = "./kva put "hello world""\n' > /tmp/acc-706/toml/a.toml
+printf "[world]\nstate = './state'  # dir\n[define]\noperation = \"o\"\n" > /tmp/acc-706/toml/b.toml
+printf '[world]\nstate = "./state"\n[define]\noperation = "o"\nexpected_status = 0\n' > /tmp/acc-706/toml/c.toml
+for t706 in 'a:write it as: operation = ["./kva", "put", "hello world"]' 'b:write it as: state = "./state"  # dir' 'c:write it as: expected_status = "0"'; do
+    f706=${t706%%:*}; w706=${t706#*:}
+    o706=$("$SIDEEYE" explore --config /tmp/acc-706/toml/$f706.toml 2>&1); rc706=$?; e706=""
+    if [ "$rc706" = 3 ] && printf '%s\n' "$o706" | head -1 | grep -qF -- "$w706"; then
+        echo "ok   #706: a toml value the parser refuses is shown the line it would have been read as ($f706)"
+    else
+        bad706 "toml $f706: wanted [$w706]"
+    fi
+done
+r706 plain explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/check.sh
+c1=$(printf '%s\n' "$e706" | grep -c 'sideeye: warning' || true); c2=$(grep -c '"define_warnings"' /tmp/acc-706/plain.json || true)
+r706 pipeq explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh -q 'a|b' f"
+c3=$(printf '%s\n' "$e706" | grep -c 'sideeye: warning: check: ' || true); c4=$(printf '%s\n' "$e706" | grep -c 'put them in a script' || true)
+r706 keys explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh ggiX<esc> ~>1.6 x=n*10"
+c5=$(printf '%s\n' "$e706" | grep -c 'sideeye: warning' || true)
+if [ "$c1" = 0 ] && [ "$c2" = 0 ] && [ "$c3" = 1 ] && [ "$c4" = 0 ] && [ "$c5" = 0 ]; then
+    echo "ok   #706: no warning for a plain define or for words read as meant; a quoted | is a quote, not a shell"
+else
+    echo "FAIL #706 controls: plain warned $c1 / json $c2 (wanted 0/0); quoted | warned $c3 (wanted 1), script advice $c4 (wanted 0); key words warned $c5 (wanted 0)"
+    fails=$((fails + 1))
+fi
+# Inside double quotes a shell expands `$`: no argv is offered as what was meant.
+r706 dollar explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh \"\$HOME/a b\""
+if printf '%s\n' "$e706" | grep -qF 'nothing expands it' && ! printf '%s\n' "$e706" | grep -qF 'groups what they meant'; then
+    echo "ok   #706: a \$ inside double quotes is named as unexpanded, and no argv is offered for it"
+else
+    bad706 "a \$ inside double quotes"
+fi
+# A toml command value cut at an inner quote by a `#` is accepted as before, and said.
+printf '[world]\nstate = "./state"\n[define]\noperation = "/tmp/acc-706/no-such-op"\ncheck = "grep -c "#include" f"\n' > /tmp/acc-706/toml/d.toml
+o706=$("$SIDEEYE" explore --config /tmp/acc-706/toml/d.toml 2>/tmp/acc-706/d.err); rc706=$?; e706=$(cat /tmp/acc-706/d.err)
+if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: check: the value ends at its second' &&
+   printf '%s\n' "$e706" | grep -qF 'check = ["grep", "-c", "#include", "f"]'; then
+    echo "ok   #706: a toml command cut at an inner quote by a # is named, with the argv form"
+else
+    bad706 "a toml command cut at an inner quote by a #"
+fi
+ctl706=$(printf '/tmp/acc-708/check.sh "a\001b"')
+r706 ctl explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "$ctl706"
+raw706=$( { printf '%s\n' "$e706"; printf '%s\n' "$o706" | grep 'warning: '; } | LC_ALL=C grep -c "$(printf '\001')" || true)
+if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: check: ' && [ "${raw706:-0}" = 0 ] &&
+   ! printf '%s\n' "$e706" | grep -qF 'groups what they meant'; then
+    echo "ok   #706: a control byte in a quoted flag is shown, not printed, and no argv is offered for it"
+else
+    bad706 "a control byte in a quoted flag (raw bytes in the warning: $raw706)"
 fi
 
 echo ""
@@ -4907,6 +5097,16 @@ if ! grep -q '"apparatus_unchecked"' "$SD/apparatus.json" 2>/dev/null; then
     echo "FAIL the apparatus fixture carries no apparatus_unchecked field, so the schema check below cannot see the rows it documents"
     fails=$((fails + 1))
 fi
+# A report carrying define_warnings (#706, ADR 0095): an operation spelled with shell quotes.
+mkdir -p "$SD/sdw"
+TOY_STATE=$SD/sdw "$SIDEEYE" explore --state "$SD/sdw" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate 'quoted arg'" \
+    --shim "$SHIM" --work "$SD/wdw" --oracle /usr/bin/strace \
+    --json "$SD/warnings.json" >/dev/null 2>&1
+if ! grep -q '"define_warnings"' "$SD/warnings.json" 2>/dev/null; then
+    echo "FAIL the warnings fixture carries no define_warnings field, so the schema check below cannot see the row it documents"
+    fails=$((fails + 1))
+fi
 # An eighth report, for the field only an admitted-children run carries (v15, ADR 0053):
 # `oracle_verified_subject_only` appears when a run's writing children became crash points
 # and nowhere else, for the reason the divergence and apparatus reports above exist. The
@@ -5017,7 +5217,7 @@ if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json"; then
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json"; then
     echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -5174,6 +5374,14 @@ chmod 755 "$RD/recover-break.sh"
 r_explore b-break toy-bug --recovery "$RD/recover-break.sh" --recovery-check "$ROOT/spike/check-recovered-key.sh"
 r_want b-break exit "$(cat "$RD/b-break/rc")" 1
 r_want b-break earliest.recovery.result "$(field "$RD/b-break/r.json" earliest.recovery.result)" fail
+# #707: a recovery's lines carry the world's number — the exhibit's crash point. The recovery
+# checker says "the recovered key does not load" on this leg; before #707 it came out as
+# `recovery check: `, one mark shared by every exhibit's leg.
+b_k=$(field "$RD/b-break/r.json" earliest.crash_point)
+b_marked=$(grep -c "^recovery world ${b_k:-none} check: the recovered key does not load" "$RD/b-break/out.txt" || true)
+b_bare=$(grep -c '^recovery check: ' "$RD/b-break/out.txt" || true)
+r_want b-break "a line marked 'recovery world $b_k check: '" "$([ "${b_marked:-0}" -ge 1 ] && echo yes || echo "no (${b_marked:-0})")" yes
+r_want b-break "lines marked 'recovery check: ' with no world" "${b_bare:-0}" 0
 
 # (1c) No FAIL, nothing to recover: PASS, exit 0, no exhibit, the account says it did not run.
 r_explore c-fixed toy-fixed --recovery "$ROOT/spike/recover-key.sh" --recovery-check "$ROOT/spike/check-recovered-key.sh"
@@ -5187,8 +5395,16 @@ grep -q '"earliest"' "$RD/c-fixed/r.json" && { echo "     c-fixed: a PASS carrie
 # against that mutant); swapped would read fail/pass (predicted, not run). Each bundle carries its
 # own exhibit's result.
 TOY_SPLIT_REWRITE=1; export TOY_SPLIT_REWRITE
+# The recovery is recover-split.sh behind one line of its own, so every leg speaks and the
+# world each leg's lines name can be counted (#707, below).
+cat > "$RD/recover-split-say.sh" <<EOF
+#!/bin/sh
+echo "recovery ran"
+exec "$ROOT/spike/recover-split.sh"
+EOF
+chmod 755 "$RD/recover-split-say.sh"
 r_explore d-split toy-fixed --check "$ROOT/spike/check-split.sh" \
-    --recovery "$ROOT/spike/recover-split.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh"
+    --recovery "$RD/recover-split-say.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh"
 unset TOY_SPLIT_REWRITE
 r_want d-split earliest.crash_point "$(field "$RD/d-split/r.json" earliest.crash_point)" 2
 r_want d-split checker_earliest.crash_point "$(field "$RD/d-split/r.json" checker_earliest.crash_point)" 4
@@ -5196,6 +5412,13 @@ r_want d-split earliest.recovery.result "$(field "$RD/d-split/r.json" earliest.r
 r_want d-split checker_earliest.recovery.result "$(field "$RD/d-split/r.json" checker_earliest.recovery.result)" fail
 r_want d-split bundle-1.recovery "$(field "$(field "$RD/d-split/r.json" evidence)" recovery.result)" pass
 r_want d-split bundle-2.recovery "$(field "$(field "$RD/d-split/r.json" checker_earliest.evidence)" recovery.result)" fail
+# #707: two exhibits in two worlds, so each leg's lines carry its own world — the recovery
+# command's line once in world 2 and once in world 4, and the claim exhibit's failing recovery
+# check marked world 4. One number for both legs (the earliest's, or n) reads `2 2` or `4 4`.
+d_seen=$(sed -n 's/^recovery world \([0-9][0-9]*\): recovery ran$/\1/p' "$RD/d-split/out.txt" | sort -n | tr '\n' ' ')
+r_want d-split "worlds named on the recovery command's lines" "$d_seen" "2 4 "
+d_chk=$(grep -c '^recovery world 4 check: primary.txt holds neither' "$RD/d-split/out.txt" || true)
+r_want d-split "the claim exhibit's recovery check marked world 4" "$([ "${d_chk:-0}" -ge 1 ] && echo yes || echo "no (${d_chk:-0})")" yes
 
 # (1e) The replay line as printed — `sideeye` resolved to the binary under test, plus --work and
 # --json — reproduces the recovery; the same case replayed without the flags carries none.

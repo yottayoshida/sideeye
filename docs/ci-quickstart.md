@@ -163,10 +163,12 @@ different claim entirely. Give preflight its own branch, or read the headline.
 ## Notes
 
 - The demo toy finds its state through `TOY_STATE`, which sideeye itself
-  exports to its children pointed at the resolved `[world] state` — the
-  workflow supplies nothing extra. Your target locates its state its own way
-  (env, config, hardcoded path); the toml only tells *sideeye* where to watch,
-  and sideeye's children inherit your CI environment.
+  exports to its children pointed at the resolved `[world] state`, with the
+  same path in `SIDEEYE_STATE_DIR` — the name your own setup and check
+  should read. The workflow supplies nothing extra. The target itself
+  locates its state its own way (env, config, hardcoded path); the toml only
+  tells *sideeye* where to watch, and sideeye's children inherit your CI
+  environment.
 - One operation per explore, by design: the report must name one command's
   crash window, not an average over several.
 - Every field the report carries is documented in
